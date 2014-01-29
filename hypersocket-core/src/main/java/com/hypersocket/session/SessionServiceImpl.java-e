@@ -1,0 +1,188 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Hypersocket Limited.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v3.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/gpl.html
+ ******************************************************************************/
+package com.hypersocket.session;
+
+import java.util.Calendar;
+import java.util.Date;
+
+import javax.annotation.PostConstruct;
+
+import net.sf.uadetector.ReadableUserAgent;
+import net.sf.uadetector.UserAgentStringParser;
+import net.sf.uadetector.service.UADetectorServiceFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.auth.AuthenticationScheme;
+import com.hypersocket.auth.AuthenticationService;
+import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.events.EventService;
+import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.SystemPermission;
+import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.session.events.SessionClosedEvent;
+import com.hypersocket.session.events.SessionOpenEvent;
+
+@Service
+@Transactional
+public class SessionServiceImpl extends AuthenticatedServiceImpl implements
+		SessionService {
+
+	@Autowired
+	SessionRepository repository;
+
+	@Autowired
+	AuthenticationService authenticationService;
+
+	@Autowired
+	ConfigurationService configurationService;
+
+	@Autowired
+	EventService eventService;
+	
+	static final String SESSION_TIMEOUT = "session.timeout";
+
+	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
+
+	UserAgentStringParser parser;
+
+	@PostConstruct
+	public void registerConfiguration() throws AccessDeniedException {
+
+		if(log.isInfoEnabled()) {
+			log.info("Loading User Agent database");
+		}
+		parser = UADetectorServiceFactory.getCachingAndUpdatingParser();
+		if(log.isInfoEnabled()) {
+			log.info("Loaded User Agent database");
+		}
+		
+		eventService.registerEvent(SessionOpenEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(SessionClosedEvent.class, RESOURCE_BUNDLE);
+	}
+
+	@Override
+	public Session openSession(String remoteAddress, 
+			Principal principal,
+			AuthenticationScheme completedScheme, 
+			String userAgent) {
+		
+		if(userAgent==null) {
+			userAgent = "Unknown";
+		}
+		ReadableUserAgent ua = parser.parse(userAgent);
+		
+		Session session = repository.createSession(remoteAddress, principal,
+				completedScheme, ua.getFamily().getName(), ua.getVersionNumber().toVersionString(), 
+				ua.getOperatingSystem().getFamily().getName(), ua.getOperatingSystem().getVersionNumber().toVersionString());
+		session.setTimeout(configurationService.getIntValue(SESSION_TIMEOUT));
+		eventService.publishEvent(new SessionOpenEvent(this, session));
+		return session;
+	}
+
+	@Override
+	public Session getSession(String id) {
+		Session session = repository.getSessionById(id);
+
+		// Check for a null last updated indicating transient info needs setting
+		if (session!=null && !session.hasLastUpdated()) {
+			session.setTimeout(configurationService
+					.getIntValue(SESSION_TIMEOUT));
+
+			// We don't set last updated, let the session service work out if
+			// its timed out from last modified.
+		}
+		return session;
+	}
+
+	@Override
+	public boolean isLoggedOn(Session session, boolean touch) {
+		if (session == null)
+			return false;
+
+		if (session.getSignedOut() == null) {
+
+			Calendar currentTime = Calendar.getInstance();
+			Calendar c = Calendar.getInstance();
+			c.setTime(session.getLastUpdated());
+			c.add(Calendar.MINUTE, session.getTimeout());
+
+			if (log.isDebugEnabled()) {
+				log.debug("Checking session timeout currentTime="
+						+ currentTime.getTime() + " lastUpdated="
+						+ session.getLastUpdated() + " timeoutThreshold="
+						+ c.getTime());
+			}
+
+			if (c.before(currentTime)) {
+				if (log.isDebugEnabled()) {
+					log.debug("Session has timed out");
+				}
+				closeSession(session);
+
+				if (log.isDebugEnabled()) {
+					log.debug("Session "
+							+ session.getPrincipal().getPrincipalName() + "/"
+							+ session.getId() + " is now closed");
+				}
+
+				return false;
+			}
+
+			if (touch) {
+				if(session.isReadyForUpdate()) {
+					repository.updateSession(session);
+					if(log.isDebugEnabled()) {
+						log.debug("Session "
+								+ session.getPrincipal().getPrincipalName() + "/"
+								+ session.getId() + " state has been updated");
+					}
+				}
+				session.touch();
+			}
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+
+	@Override
+	public void closeSession(Session session) {
+
+		if (session.getSignedOut() != null) {
+			throw new IllegalArgumentException(
+					"Attempting to close a session which is already closed!");
+		}
+		session.setSignedOut(new Date());
+		repository.updateSession(session);
+		eventService.publishEvent(new SessionClosedEvent(this, session));
+
+	}
+
+	@Override
+	public void switchRealm(Session session, Realm realm)
+			throws AccessDeniedException {
+
+		assertPermission(SystemPermission.SYSTEM_ADMINISTRATION);
+
+		if(log.isInfoEnabled()) {
+			log.info("Switching " + session.getPrincipal().getName() + " to " + realm.getName() + " realm");
+		}
+		
+		session.setCurrentRealm(realm);
+		repository.updateSession(session);
+	}
+
+}

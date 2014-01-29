@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<propertyTemplates>
+	<propertyCategory resourceKey="local.userDetails"
+		resourceBundle="LocalRealm" weight="0">
+		<property resourceKey="user.fullname" inputType="text" weight="0"
+			defaultValue="" />
+		<property resourceKey="user.email" inputType="text" weight="10"
+			defaultValue="" />
+	</propertyCategory>
+</propertyTemplates>

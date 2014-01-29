@@ -1,0 +1,45 @@
+<?xml version="1.0" ?>
+<propertyTemplates>
+	<propertyCategory resourceKey="category.security"
+		resourceBundle="AuthenticationService" weight="500">
+		<property resourceKey="logon.banner" inputType="textarea"
+			rows="5" maxlength="1024" defaultValue="" weight="0" />
+	</propertyCategory>
+	<propertyCategory resourceKey="category.email"
+		resourceBundle="EmailService" weight="600">
+		<property resourceKey="smtp.host" inputType="text" weight="0"
+			defaultValue="localhost" />
+		<property resourceKey="smtp.port" inputType="number"
+			minValue="1" maxValue="65535" weight="100" defaultValue="25" />
+		<property resourceKey="smtp.protocol" inputType="select"
+			url="smtpProtocols" weight="200" defaultValue="0" nameIsResourceKey="true" />
+		<property resourceKey="smtp.username" inputType="text"
+			weight="300" defaultValue="" />
+		<property resourceKey="smtp.password" inputType="password"
+			weight="400" defaultValue="" />
+		<property resourceKey="smtp.fromAddress" inputType="text"
+			weight="500" defaultValue="admin@localhost" />
+		<property resourceKey="smtp.fromName" inputType="text"
+			weight="600" defaultValue="Nervepoint Admin" />
+	</propertyCategory>
+	<propertyCategory resourceKey="category.localization"
+		resourceBundle="I18NService" weight="700">
+		<property resourceKey="user.locales" inputType="boolean"
+			defaultValue="true" weight="0" />
+		<property resourceKey="current.locale" inputType="select"
+			url="locales" defaultValue="en" weight="100" nameIsResourceKey="true" />
+	</propertyCategory>
+	<propertyCategory resourceKey="category.sessions"
+		resourceBundle="SessionService" weight="800">
+		<property resourceKey="session.timeout" inputType="number"
+			minValue="0" maxValue="360" defaultValue="15" weight="0" />
+	</propertyCategory>
+	<propertyCategory resourceKey="category.updates"
+		resourceBundle="UpdateService" weight="900">
+		<property resourceKey="updates.check" inputType="boolean"
+			defaultValue="true" weight="0" />
+	</propertyCategory>
+
+</propertyTemplates>
+
+		

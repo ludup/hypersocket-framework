@@ -1,0 +1,195 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Hypersocket Limited.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v3.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/gpl.html
+ ******************************************************************************/
+package com.hypersocket.auth;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.session.Session;
+
+public class AuthenticationState {
+
+	AuthenticationScheme scheme;
+	String remoteAddress;
+	Integer currentIndex = new Integer(0);
+	List<AuthenticationModule> modules;
+	List<PostAuthenticationStep> postAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
+	String lastErrorMsg;
+	boolean lastErrorIsResourceKey;
+	String lastPrincipalName;
+	String lastRealmName;
+	Realm realm;
+	Principal principal;
+	Session session;
+	boolean isNew = true;
+	int attempts = 0;
+	Locale locale;
+	Map<String, String> parameters = new HashMap<String, String>();
+	Map<String, String> environment = new HashMap<String, String>();
+	AuthenticationState(String remoteAddress, Locale locale, Map<String,String> environment) {
+		this.remoteAddress = remoteAddress;
+		this.environment = environment;
+		this.locale = locale;
+	}
+
+	public AuthenticationModule getCurrentModule() {
+		if (currentIndex >= modules.size())
+			throw new IllegalStateException(
+					"Current index is greater than the number of modules");
+		return modules.get(currentIndex);
+	}
+
+	public void addParameter(String name, String value) {
+		parameters.put(name, value);
+	}
+
+	public boolean isNew() {
+		return isNew;
+	}
+
+	public Integer getCurrentIndex() {
+		return currentIndex;
+	}
+
+	public boolean isAuthenticationComplete() {
+		return currentIndex == modules.size();
+	}
+
+	void setCurrentIndex(Integer currentIndex) {
+		this.currentIndex = currentIndex;
+	}
+
+	public AuthenticationScheme getScheme() {
+		return scheme;
+	}
+
+	public String getRemoteAddress() {
+		return remoteAddress;
+	}
+
+	public List<AuthenticationModule> getModules() {
+		return modules;
+	}
+
+	public String getLastErrorMsg() {
+		return lastErrorMsg;
+	}
+
+	public void setLastErrorMsg(String lastErrorMsg) {
+		this.lastErrorMsg = lastErrorMsg;
+	}
+
+	public Principal getPrincipal() {
+		return principal;
+	}
+
+	public void setPrincipal(Principal principal) {
+		this.principal = principal;
+	}
+
+	public Realm getRealm() {
+		return realm;
+	}
+
+	public void setRealm(Realm realm) {
+		this.realm = realm;
+	}
+
+	public Session getSession() {
+		return session;
+	}
+
+	public void setSession(Session session) {
+		this.session = session;
+	}
+
+	public void addPostAuthenticationStep(PostAuthenticationStep proc) {
+		postAuthenticationSteps.add(proc);
+	}
+
+	public boolean hasPostAuthenticationStep() {
+		return postAuthenticationSteps.size() > 0;
+	}
+
+	public PostAuthenticationStep getCurrentPostAuthenticationStep() {
+		if (!hasPostAuthenticationStep()) {
+			return null;
+		}
+		return postAuthenticationSteps.get(0);
+	}
+
+	public void nextPostAuthenticationStep() {
+		postAuthenticationSteps.remove(0);
+	}
+
+	public Locale getLocale() {
+		return locale;
+	}
+
+	public String getParameter(String name) {
+		return parameters.get(name);
+	}
+	
+	public void setScheme(AuthenticationScheme scheme) {
+		this.scheme = scheme;
+	}
+
+	public void setModules(List<AuthenticationModule> modules) {
+		this.modules = modules;
+	}
+	
+	public void setLastErrorIsResourceKey(boolean lastErrorIsResourceKey) {
+		this.lastErrorIsResourceKey = lastErrorIsResourceKey;
+	}
+	
+	public boolean getLastErrorIsResourceKey() {
+		return lastErrorIsResourceKey;
+	}
+
+	public void setLastPrincipalName(String username) {
+		this.lastPrincipalName = username;
+	}
+
+	public void setLastRealmName(String realmName) {
+		this.lastRealmName = realmName;
+	}
+	
+	public String getLastPrincipalName() {
+		if(principal==null) {
+			if(lastPrincipalName==null) {
+				throw new IllegalStateException("Last principal name is not available. Did you forget to set it in your Authenticator?");
+			}
+			return lastPrincipalName;
+		} else {
+			return principal.getPrincipalName();
+		}
+	}
+	
+	public String getLastRealmName() {
+		if(realm==null) {
+			if(lastRealmName==null) {
+				throw new IllegalStateException("Last realm name is not available. Did you forget to set it in your Authenticator?");
+			} else {
+				return lastRealmName;
+			}
+		} else {
+			return realm.getName();
+		}
+	}
+
+	public String getUserAgent() {
+		return environment.get(BrowserEnvironment.USER_AGENT.toString());
+	}
+
+
+}
