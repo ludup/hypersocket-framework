@@ -50,9 +50,6 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 				200, CertificatePermission.CERTIFICATE_ADMINISTRATION, CertificatePermission.CERTIFICATE_ADMINISTRATION,
 				CertificatePermission.CERTIFICATE_ADMINISTRATION, CertificatePermission.CERTIFICATE_ADMINISTRATION),
 				"system");
-		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "extensions", "extensions",
-				Integer.MAX_VALUE-1, SystemPermission.SYSTEM_ADMINISTRATION, null,
-				SystemPermission.SYSTEM_ADMINISTRATION, null), "system");
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "shutdown", "shutdown",
 				Integer.MAX_VALUE, SystemPermission.SYSTEM_ADMINISTRATION, null,
 				SystemPermission.SYSTEM_ADMINISTRATION, null), "system");

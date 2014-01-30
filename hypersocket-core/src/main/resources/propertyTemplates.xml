@@ -34,11 +34,7 @@
 		<property resourceKey="session.timeout" inputType="number"
 			minValue="0" maxValue="360" defaultValue="15" weight="0" />
 	</propertyCategory>
-	<propertyCategory resourceKey="category.updates"
-		resourceBundle="UpdateService" weight="900">
-		<property resourceKey="updates.check" inputType="boolean"
-			defaultValue="true" weight="0" />
-	</propertyCategory>
+
 
 </propertyTemplates>
 
