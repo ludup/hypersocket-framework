@@ -49,9 +49,7 @@ public interface RealmService extends AuthenticatedService {
 	Principal updateUser(Realm realm, Principal user, String username,
 			Map<String, String> properties, List<Principal> principals)
 			throws ResourceChangeException, AccessDeniedException;
-
-	List<Principal> allPrincipals(Realm realm, PrincipalType... type);
-
+	
 	Principal getPrincipalByName(Realm realm, String principalName,
 			PrincipalType... type);
 
@@ -82,15 +80,15 @@ public interface RealmService extends AuthenticatedService {
 	boolean requiresPasswordChange(Principal principal, Realm realm);
 
 	Principal createGroup(Realm realm, String name, List<Principal> principals)
-			throws ResourceCreationException;
+			throws ResourceCreationException, AccessDeniedException;
 
 	Principal updateGroup(Realm realm, Principal principal, String name,
-			List<Principal> principals) throws ResourceChangeException;
+			List<Principal> principals) throws ResourceChangeException, AccessDeniedException;
 
 	void deleteGroup(Realm realm, Principal group)
-			throws ResourceChangeException;
+			throws ResourceChangeException, AccessDeniedException;
 
-	void deleteUser(Realm realm, Principal user) throws ResourceChangeException;
+	void deleteUser(Realm realm, Principal user) throws ResourceChangeException, AccessDeniedException;
 
 	Collection<PropertyCategory> getUserPropertyTemplates(Principal principalById)
 			throws AccessDeniedException;
@@ -105,8 +103,6 @@ public interface RealmService extends AuthenticatedService {
 
 	List<Realm> allRealms(Class<? extends RealmProvider> clz);
 
-	RealmProvider getProviderForRealm(Realm realm);
-
 	List<?> getPrincipals(Realm realm, PrincipalType type, String searchPattern, int start,
 			int length, ColumnSort[] sorting);
 
@@ -118,5 +114,9 @@ public interface RealmService extends AuthenticatedService {
 	boolean findUniquePrincipal(String user);
 
 	Principal getUniquePrincipal(String username) throws ResourceNotFoundException;
+
+	List<Principal> allUsers(Realm realm) throws AccessDeniedException;
+
+	List<Principal> allGroups(Realm realm) throws AccessDeniedException;
 
 }

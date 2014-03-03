@@ -39,7 +39,7 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 	Map<String, MenuRegistration> rootMenus = new HashMap<String, MenuRegistration>();
 
 	@PostConstruct
-	public void postConstruct() {
+	private void postConstruct() {
 
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "system", null, 100, null, null,
 				null, null));

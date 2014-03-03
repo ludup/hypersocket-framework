@@ -19,6 +19,7 @@
 		<module>hypersocket-server</module>
 		<module>hypersocket-json</module>
 		<module>hypersocket-netty</module>
+		<module>hypersocket-tests</module>
 	</modules>
 
 	<dependencies>
@@ -34,6 +35,13 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.2</version>
 		</dependency>
+		
+		<dependency>
+      		<groupId>junit</groupId>
+      		<artifactId>junit</artifactId>
+      		<version>4.11</version>
+      		<scope>test</scope>
+    	</dependency>
 	</dependencies>
 
 	<build>
@@ -61,7 +69,7 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>com.ludup</groupId>
+				<groupId>com.nervepoint</groupId>
 				<artifactId>google-translate-v2-java-maven-plugin</artifactId>
 				<executions>
 					<execution>
@@ -94,7 +102,7 @@
 					<artifactId>exec-maven-plugin</artifactId>
 				</plugin>
 				<plugin>
-					<groupId>com.ludup</groupId>
+					<groupId>com.nervepoint</groupId>
 					<artifactId>google-translate-v2-java-maven-plugin</artifactId>
 					<version>0.0.2-SNAPSHOT</version>
 
@@ -125,12 +133,12 @@
 							<pluginExecutions>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>com.ludup</groupId>
+										<groupId>com.nervepoint</groupId>
 										<artifactId>
 											google-translate-v2-java-maven-plugin
 										</artifactId>
 										<versionRange>
-											[0.0.1-SNAPSHOT,)
+											[0.0.2-SNAPSHOT,)
 										</versionRange>
 										<goals>
 											<goal>translate</goal>

@@ -39,7 +39,7 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 			throw new IOException("<propertyStore> of type PropertiesFileConfigurationStore requires a child <filename> element");
 		}
 		
-		this.propertiesFile = new File(filename.item(0).getTextContent());
+		this.propertiesFile = new File(filename.item(0).getTextContent().replace("${hypersocket.conf}", System.getProperty("hypersocket.conf", "conf")));
 
 		properties = new Properties();
 

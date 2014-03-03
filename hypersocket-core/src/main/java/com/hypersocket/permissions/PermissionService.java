@@ -31,10 +31,6 @@ public interface PermissionService extends AuthenticatedService {
 	
 	public Role createRole(String name, Realm realm) throws AccessDeniedException;
 	
-	public void grantPermission(Role role, Permission permission) throws AccessDeniedException;
-
-	void grantPermissions(Role role, Permission... permission) throws AccessDeniedException;
-	
 	void assignRole(Role role, Principal principal) throws AccessDeniedException;
 	
 	void verifyPermission(Principal principal, PermissionStrategy strategy, PermissionType... permission) throws AccessDeniedException;

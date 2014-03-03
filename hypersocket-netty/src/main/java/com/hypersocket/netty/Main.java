@@ -37,12 +37,24 @@ public class Main {
 	Runnable restartCallback;
 	Runnable shutdownCallback;
 	ClassLoader classLoader;
-	
+	File conf;
 	static Main instance;
 
 	public Main(Runnable restartCallback, Runnable shutdownCallback) {
 		this.restartCallback = restartCallback;
 		this.shutdownCallback = shutdownCallback;
+	}
+	
+	public void setConfigurationDir(File conf) {
+		this.conf = conf;
+	}
+	
+	public File getConfigurationDir() {
+		return conf;
+	}
+	
+	public HypersocketServer getServer() {
+		return server;
 	}
 	
 	public static void main(String[] args) {
@@ -56,15 +68,24 @@ public class Main {
 	public static void runApplication(Runnable restartCallback,
 			Runnable shutdownCallback) throws IOException {
 
-		instance = new Main(restartCallback, shutdownCallback);
-		instance.run();
+		new Main(restartCallback, shutdownCallback).run();
 
 	}
 
 	public void run() {
 
-		PropertyConfigurator.configure("conf" + File.separator
-				+ "log4j.properties");
+		if(instance!=null) {
+			throw new IllegalStateException("An attempt has been made to start a second instance of Main");
+		}
+		Main.instance = this;
+		
+		if(conf==null) {
+			conf = new File("conf");
+		}
+		
+		System.setProperty("hypersocket.conf", conf.getPath());
+		
+		PropertyConfigurator.configure(new File(conf, "log4j.properties").getAbsolutePath());
 		
 		classLoader = getClass().getClassLoader();
 		if(log.isInfoEnabled()) {

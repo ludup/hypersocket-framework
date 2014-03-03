@@ -15,6 +15,7 @@ import java.util.concurrent.ThreadFactory;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelException;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -38,11 +39,11 @@ public class NettyServer extends HypersocketServerImpl {
 
 	private ClientBootstrap clientBootstrap = null;
 	private ServerBootstrap serverBootstrap = null;
-
+	Channel httpChannel;
+	Channel httpsChannel;
+	
 	ExecutorService bossExecutor;
 	ExecutorService workerExecutors;
-	
-	boolean stopping = false;
 	
 	public NettyServer() {
 
@@ -98,19 +99,41 @@ public class NettyServer extends HypersocketServerImpl {
 		serverBootstrap.setOption("child.sendBufferSize", 1048576);
 		serverBootstrap.setOption("backlog", 5000);
 		
-		bindInterface(getHttpPort());
-		bindInterface(getHttpsPort());
+		httpChannel = bindInterface(getHttpPort());
+		httpsChannel = bindInterface(getHttpsPort());
 		
 	}
 
+	@Override
+	public int getActualHttpPort() {
+		if(httpChannel==null) {
+			throw new IllegalStateException("You cannot get the actual port in use because the server is not started");
+		}
+		return ((InetSocketAddress)httpChannel.getLocalAddress()).getPort();
+	}
+
+	@Override
+	public int getActualHttpsPort() {
+		if(httpChannel==null) {
+			throw new IllegalStateException("You cannot get the actual port in use because the server is not started");
+		}
+		return ((InetSocketAddress)httpChannel.getLocalAddress()).getPort();
+	}
 	
-	protected void bindInterface(Integer port) throws IOException {
+	protected Channel bindInterface(Integer port) throws IOException {
 		try {
 			if(log.isInfoEnabled()) {
 				log.info("Binding server to " + port);
 			}
 			
-			serverBootstrap.bind(new InetSocketAddress(port));
+			Channel ch = serverBootstrap.bind(new InetSocketAddress(port));
+			
+			if(log.isInfoEnabled()) {
+				log.info("Bound to port " + ((InetSocketAddress)ch.getLocalAddress()).getPort());
+			}
+			
+			return ch;
+			
 		} catch (ChannelException e) {
 			log.error("Failed to bind port", e);
 			throw e;
@@ -120,11 +143,6 @@ public class NettyServer extends HypersocketServerImpl {
 	@Override
 	protected void doStop() {
 
-//		clientBootstrap.shutdown();
-//		serverBootstrap.shutdown();
-//		
-//		bossExecutor.shutdown();
-//		workerExecutors.shutdown();
 	}
 
 	@Override
@@ -150,7 +168,6 @@ public class NettyServer extends HypersocketServerImpl {
 					if(log.isInfoEnabled()) {
 						log.info("Restarting...");
 					}
-					stopping = true;
 					Main.getInstance().restartServer();
 				} catch (Exception e) {
 					log.error("Failed to restart", e);
@@ -176,7 +193,6 @@ public class NettyServer extends HypersocketServerImpl {
 					if(log.isInfoEnabled()) {
 						log.info("Shutting down");
 					}
-					stopping = true;
 					Main.getInstance().shutdownServer();
 				} catch (Exception e) {
 					log.error("Failed to shutdown", e);
@@ -187,11 +203,6 @@ public class NettyServer extends HypersocketServerImpl {
 		t.start();
 		
 		
-	}
-
-	@Override
-	public boolean isStopping() {
-		return stopping;
 	}
 	
 	class NettyThreadFactory implements ThreadFactory {

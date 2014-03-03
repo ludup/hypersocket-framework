@@ -5,18 +5,13 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.hypersocket.auth.json;
+package com.hypersocket.json;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
-import com.hypersocket.auth.AuthenticationResult;
 import com.hypersocket.input.FormTemplate;
 
-@XmlRootElement(name="authenticationRequired")
 public class AuthenticationRequiredResult extends AuthenticationResult {
 
 	FormTemplate formTemplate;
-	boolean success = false;
 	boolean lastErrorIsResourceKey;
 	
 	public AuthenticationRequiredResult() {
@@ -35,10 +30,6 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 
 	public void setFormTemplate(FormTemplate template) {
 		this.formTemplate = template;
-	}
-	
-	public boolean getSuccess() {
-		return success;
 	}
 	
 	public boolean getLastErrorIsResourceKey() {

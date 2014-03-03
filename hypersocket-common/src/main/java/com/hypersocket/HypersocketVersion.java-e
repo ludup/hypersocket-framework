@@ -23,7 +23,7 @@ public class HypersocketVersion {
 	static String version;
 	
 	public static String getVersion() {
-		return getVersion("hypersocket-group");
+		return getVersion("hypersocket-framework");
 	}
 	
 	public static String getSerial() {

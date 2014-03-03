@@ -40,7 +40,7 @@ public class SchedulerServiceImpl implements SchedulerService {
 	Map<String, TriggerKey> triggerKeys = new HashMap<String, TriggerKey>();
 
 	@PostConstruct
-	public void postConstruct() throws SchedulerException {
+	private void postConstruct() throws SchedulerException {
 		scheduler = StdSchedulerFactory.getDefaultScheduler();
 		scheduler.setJobFactory(autowireJobFactory);
 		scheduler.start();

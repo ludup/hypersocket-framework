@@ -19,7 +19,7 @@ public class ConfigurationRepositoryImpl extends PropertyRepositoryImpl implemen
 
 	PropertyTemplateRepository repository;
 	@PostConstruct
-	public void postConstruct() {
+	private void postConstruct() {
 		repository = new PropertyTemplateRepositoryAbstractImpl(new DatabasePropertyStore(this));
 	}
 	

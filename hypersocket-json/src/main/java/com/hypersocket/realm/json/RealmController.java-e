@@ -100,8 +100,8 @@ public class RealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			return new ResourceList<Principal>(realmService.allPrincipals(
-					sessionUtils.getCurrentRealm(request), PrincipalType.GROUP));
+			return new ResourceList<Principal>(realmService.allGroups(
+					sessionUtils.getCurrentRealm(request)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -145,8 +145,8 @@ public class RealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			return new ResourceList<Principal>(realmService.allPrincipals(
-					sessionUtils.getCurrentRealm(request), PrincipalType.USER));
+			return new ResourceList<Principal>(realmService.allUsers(
+					sessionUtils.getCurrentRealm(request)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -487,7 +487,7 @@ public class RealmController extends ResourceController {
 	public ResourceStatus<Principal> createOrUpdateGroup(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestBody GroupUpdate group) throws UnauthorizedException,
-			SessionTimeoutException {
+			SessionTimeoutException, AccessDeniedException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));

@@ -40,7 +40,7 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 	ApplicationEventPublisher eventPublisher;
 
 	@PostConstruct
-	public void postConstruct() {
+	private void postConstruct() {
 
 		PermissionCategory cat = permissionService.registerPermissionCategory(
 				RESOURCE_BUNDLE, "category.configuration");

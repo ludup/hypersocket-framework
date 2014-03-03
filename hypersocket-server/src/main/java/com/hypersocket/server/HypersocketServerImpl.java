@@ -98,6 +98,8 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	String[] enabledCipherSuites;
 	String[] enabledProtocols;
 	
+	boolean stopping = false;
+	
 	public HypersocketServerImpl() {
 
 	}
@@ -358,6 +360,8 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	@Override
 	public void stop() {
 
+		stopping = true;
+		
 		eventService.publishEvent(new ServerStoppingEvent(this));
 		
 		if (log.isInfoEnabled())
@@ -370,6 +374,11 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		
 		eventService.publishEvent(new ServerStoppedEvent(this));
 		
+	}
+	
+	
+	public boolean isStopping() {
+		return stopping;
 	}
 
 	protected abstract void doStop();

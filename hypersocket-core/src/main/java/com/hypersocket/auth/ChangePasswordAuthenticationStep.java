@@ -31,7 +31,7 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 	AuthenticationService authenticationService;
 	
 	@PostConstruct
-	public void postConstruct() {
+	private void postConstruct() {
 		authenticationService.registerPostAuthenticationStep(this);
 	}
 	

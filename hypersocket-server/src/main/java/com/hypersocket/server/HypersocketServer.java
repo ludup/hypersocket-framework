@@ -92,4 +92,8 @@ public interface HypersocketServer {
 
 	String[] getSSLCiphers();
 
+	int getActualHttpPort();
+
+	int getActualHttpsPort();
+
 }

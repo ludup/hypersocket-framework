@@ -75,7 +75,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	Permission logonPermission;
 
 	@PostConstruct
-	public void postConstruct() {
+	private void postConstruct() {
 
 		if(log.isInfoEnabled()) {
 			log.info("Configuring Authentication Service");

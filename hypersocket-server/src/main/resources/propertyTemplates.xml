@@ -2,7 +2,7 @@
 <propertyTemplates>
 	<propertyStore id="hypersocketServer"
 		type="com.hypersocket.properties.PropertiesFileConfigurationStore">
-		<filename>conf/hypersocket.properties</filename>
+		<filename>${hypersocket.conf}/hypersocket.properties</filename>
 	</propertyStore>
 	<propertyCategory resourceKey="category.server" resourceBundle="HypersocketServer" weight="100">
 		<property resourceKey="application.name" inputType="text"

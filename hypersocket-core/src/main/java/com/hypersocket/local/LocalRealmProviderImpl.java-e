@@ -64,7 +64,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements Loc
 	PropertyCategory userDetailsCategory;
 	
 	@PostConstruct
-	public void registerProvider() throws Exception {
+	private void registerProvider() throws Exception {
 
 		realmService.registerRealmProvider(this);
 		

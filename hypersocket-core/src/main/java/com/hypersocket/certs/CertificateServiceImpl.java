@@ -37,10 +37,10 @@ import com.hypersocket.permissions.PermissionService;
 public class CertificateServiceImpl extends AuthenticatedServiceImpl implements
 		CertificateService {
 
-	static final File INSTALLED_CERT_FILE = new File("conf/server.crt");
-	static final File PRIVATE_KEY_FILE = new File("conf/server.key");
-	static final File CA_CERTS_BUNDLE_FILE = new File("conf/ca_bundle.crt");
-	static final File SELF_SIGNED_CERT_FILE = new File("conf/self-signed.crt");
+	static final File INSTALLED_CERT_FILE = new File(System.getProperty("hypersocket.conf", "conf"), "server.crt");
+	static final File PRIVATE_KEY_FILE = new File(System.getProperty("hypersocket.conf", "conf"), "server.key");
+	static final File CA_CERTS_BUNDLE_FILE = new File(System.getProperty("hypersocket.conf", "conf"), "ca_bundle.crt");
+	static final File SELF_SIGNED_CERT_FILE = new File(System.getProperty("hypersocket.conf", "conf"), "self-signed.crt");
 
 	static Logger log = LoggerFactory.getLogger(CertificateServiceImpl.class);
 
@@ -48,7 +48,7 @@ public class CertificateServiceImpl extends AuthenticatedServiceImpl implements
 	PermissionService permissionService;
 
 	@PostConstruct
-	public void postConstruct() {
+	private void postConstruct() {
 
 		PermissionCategory cat = permissionService.registerPermissionCategory(
 				RESOURCE_BUNDLE, "category.certificate");
