@@ -4,9 +4,39 @@
 	<groupId>com.hypersocket</groupId>
 	<artifactId>hypersocket-framework</artifactId>
 	<version>0.0.6-SNAPSHOT</version>
+	<url>http://www.hypersocket.com/</url>
 	<packaging>pom</packaging>
 	<name>Hypersocket Framework</name>
+	<description>A framework for building JSON web services based on Spring/Hibernate within a high performance HTTP server based on Netty.</description>
 
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
+
+	<licenses>
+		<license>
+			<name>GNU General Public License v3</name>
+			<url>http://www.gnu.org/licenses/gpl-3.0.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	
+	<scm>
+		<url>http://github.com/ludup/hypersocket-framework</url>
+		<connection>scm:git:https://github.com/ludup/hypersocket-framework</connection>
+		<developerConnection>scm:git:https://github.com/ludup/hypersocket-framework</developerConnection>
+	</scm>
+	
+	<developers>
+		<developer>
+			<id>lee</id>
+			<name>Lee David Painter</name>
+			<email>lee@hypersocket.com</email>
+		</developer>
+	</developers>
+	
 	<properties>
 		<org.springframework.version>3.1.4.RELEASE</org.springframework.version>
 		<aspectj.version>1.6.12</aspectj.version>
@@ -35,13 +65,13 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.2</version>
 		</dependency>
-		
+
 		<dependency>
-      		<groupId>junit</groupId>
-      		<artifactId>junit</artifactId>
-      		<version>4.11</version>
-      		<scope>test</scope>
-    	</dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -93,7 +123,30 @@
 					</archive>
 				</configuration>
 			</plugin>
-
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -104,7 +157,7 @@
 				<plugin>
 					<groupId>com.nervepoint</groupId>
 					<artifactId>google-translate-v2-java-maven-plugin</artifactId>
-					<version>0.0.2-SNAPSHOT</version>
+					<version>0.0.2</version>
 
 					<configuration>
 						<apikey>${googleAPIKey}</apikey>
@@ -138,7 +191,7 @@
 											google-translate-v2-java-maven-plugin
 										</artifactId>
 										<versionRange>
-											[0.0.2-SNAPSHOT,)
+											[0.0.2,)
 										</versionRange>
 										<goals>
 											<goal>translate</goal>
@@ -156,22 +209,4 @@
 		</pluginManagement>
 	</build>
 
-	<pluginRepositories>
-		<pluginRepository>
-			<id>plugins-releases</id>
-			<url>http://artifactory.javassh.com/plugins-releases-local/</url>
-			<releases />
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
-		<pluginRepository>
-			<id>plugins-snapshots</id>
-			<url>http://artifactory.javassh.com/plugins-snapshots-local/</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots />
-		</pluginRepository>
-	</pluginRepositories>
 </project>
