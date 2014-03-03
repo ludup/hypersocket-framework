@@ -44,7 +44,7 @@ public class I18NController {
 	SessionUtils sessionUtils;
 	
 	@PostConstruct
-	public void postConstruct() {
+	private void postConstruct() {
 		i18nService.registerBundle("UserInterface");
 	}
 	

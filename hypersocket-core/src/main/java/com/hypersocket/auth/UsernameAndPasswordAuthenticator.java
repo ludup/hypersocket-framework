@@ -19,6 +19,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.resource.ResourceNotFoundException;
 
 @Component
 public class UsernameAndPasswordAuthenticator implements Authenticator {
@@ -32,7 +33,7 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 	AuthenticationService authenticationService;
 
 	@PostConstruct
-	public void postConstruct() {
+	private void postConstruct() {
 		authenticationService.registerAuthenticator(this);
 	}
 
@@ -93,25 +94,16 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 		Principal principal = null;
 
 		if (realm == null) {
-			
-			int count = 0;
-			for(Realm r : realmService.allRealms()) {
-				if(realmService.getPrincipalByName(r, username)!=null) {
-					realm = r;
-					count++;
-				}
-			}
-			
-			if(count==0 || count > 1) {
+			try {
+				principal = realmService.getUniquePrincipal(username);
+			} catch (ResourceNotFoundException e) {
 				return AuthenticatorResult.INSUFFICIENT_DATA;
 			}
-			
-			
-		} 
+			realm = principal.getRealm();
+		} else {
+			principal = realmService.getPrincipalByName(realm, username);	
+		}
 		
-		principal = realmService.getPrincipalByName(realm, username);
-		
-
 		if (principal == null) {
 			state.setLastPrincipalName(username);
 			state.setLastRealmName(realmName);

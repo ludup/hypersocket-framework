@@ -58,7 +58,7 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 	UserAgentStringParser parser;
 
 	@PostConstruct
-	public void registerConfiguration() throws AccessDeniedException {
+	private void registerConfiguration() throws AccessDeniedException {
 
 		if(log.isInfoEnabled()) {
 			log.info("Loading User Agent database");

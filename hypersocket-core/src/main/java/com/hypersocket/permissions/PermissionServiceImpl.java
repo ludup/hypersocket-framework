@@ -7,9 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.permissions;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,10 +29,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hypersocket.auth.AbstractAuthenticatedService;
 import com.hypersocket.i18n.I18N;
-import com.hypersocket.realm.AccessControlPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.RolePermission;
 import com.hypersocket.resource.ResourceNotFoundException;
 
 @Service
@@ -60,7 +58,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	Cache permissionsCache;
 	
 	@PostConstruct
-	public void postConstruct() {
+	private void postConstruct() {
 
 		TransactionTemplate tmpl = new TransactionTemplate(txManager);
 		tmpl.execute(new TransactionCallbackWithoutResult() {
@@ -112,8 +110,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	public Role createRole(String name, Realm realm)
 			throws AccessDeniedException {
 
-		assertPermission(PermissionStrategy.REQUIRE_ANY,
-				AccessControlPermission.CREATE);
+		assertPermission(RolePermission.CREATE);
 
 		return repository.createRole(name, realm);
 	}
@@ -123,8 +120,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			List<Principal> principals, List<Permission> permissions)
 			throws AccessDeniedException {
 
-		assertPermission(PermissionStrategy.REQUIRE_ANY,
-				AccessControlPermission.CREATE);
+		assertPermission(RolePermission.CREATE);
 
 		Role role = new Role();
 		role.setName(name);
@@ -148,37 +144,11 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
-	public void grantPermission(Role role, Permission permission)
-			throws AccessDeniedException {
-
-		assertPermission(PermissionStrategy.REQUIRE_ANY,
-				AccessControlPermission.CREATE, AccessControlPermission.UPDATE);
-
-		repository.grantPermission(role, permission);
-		
-		permissionsCache.removeAll();
-	}
-
-	@Override
-	public void grantPermissions(Role role, Permission... permission)
-			throws AccessDeniedException {
-
-		assertPermission(PermissionStrategy.REQUIRE_ANY,
-				AccessControlPermission.CREATE, AccessControlPermission.UPDATE);
-
-		ArrayList<Permission> perms = new ArrayList<Permission>();
-		Collections.addAll(perms, permission);
-		repository.grantPermissions(role, perms);
-		
-		permissionsCache.removeAll();
-	}
-
-	@Override
 	public void assignRole(Role role, Principal principal)
 			throws AccessDeniedException {
 
 		assertPermission(PermissionStrategy.REQUIRE_ANY,
-				AccessControlPermission.CREATE, AccessControlPermission.UPDATE);
+				RolePermission.CREATE, RolePermission.UPDATE);
 
 		repository.assignRole(role, principal);
 		
@@ -297,8 +267,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	@Override
 	public void deleteRole(Role role) throws AccessDeniedException {
 
-		assertPermission(PermissionStrategy.REQUIRE_ANY,
-				AccessControlPermission.DELETE);
+		assertPermission(RolePermission.DELETE);
 
 		repository.deleteRole(role);
 		
@@ -335,8 +304,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	public Role updateRole(Role role, String name, List<Principal> principals,
 			List<Permission> permissions) throws AccessDeniedException {
 
-		assertPermission(PermissionStrategy.REQUIRE_ANY,
-				AccessControlPermission.CREATE, AccessControlPermission.UPDATE);
+		assertPermission(RolePermission.UPDATE);
 
 		role.setName(name);
 

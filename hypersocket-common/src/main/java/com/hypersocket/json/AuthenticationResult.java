@@ -5,16 +5,19 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.hypersocket.auth;
+package com.hypersocket.json;
+
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import com.hypersocket.HypersocketVersion;
 
-
-public abstract class AuthenticationResult {
+@JsonIgnoreProperties(ignoreUnknown=true)
+public class AuthenticationResult {
 
 	String bannerMsg;
 	String errorMsg;
 	boolean showLocales;
+	boolean success;
 	String version = HypersocketVersion.getVersion();
 	
 	public AuthenticationResult() {	
@@ -52,6 +55,14 @@ public abstract class AuthenticationResult {
 
 	public void setShowLocales(boolean showLocales) {
 		this.showLocales = showLocales;
+	}
+
+	public boolean getSuccess() {
+		return success;
+	}
+	
+	public void setSuccess(boolean success) {
+		this.success = success;
 	}
 	
 }

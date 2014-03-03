@@ -27,9 +27,15 @@ import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.events.GroupCreatedEvent;
+import com.hypersocket.realm.events.GroupDeletedEvent;
+import com.hypersocket.realm.events.GroupUpdatedEvent;
 import com.hypersocket.realm.events.RealmCreatedEvent;
 import com.hypersocket.realm.events.RealmDeletedEvent;
 import com.hypersocket.realm.events.RealmUpdatedEvent;
+import com.hypersocket.realm.events.UserCreatedEvent;
+import com.hypersocket.realm.events.UserDeletedEvent;
+import com.hypersocket.realm.events.UserUpdatedEvent;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -53,7 +59,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	Principal systemPrincipal;
 
 	@PostConstruct
-	public void postConstruct() {
+	private void postConstruct() {
 
 		PermissionCategory cat = permissionService.registerPermissionCategory(
 				RESOURCE_BUNDLE, "category.realms");
@@ -65,10 +71,15 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE,
 				"category.acl");
 
-		for (AccessControlPermission p : AccessControlPermission.values()) {
+		for (UserPermission p : UserPermission.values()) {
 			permissionService.registerPermission(p.getResourceKey(), cat);
 		}
-
+		for (GroupPermission p : GroupPermission.values()) {
+			permissionService.registerPermission(p.getResourceKey(), cat);
+		}
+		for (RolePermission p : RolePermission.values()) {
+			permissionService.registerPermission(p.getResourceKey(), cat);
+		}
 	}
 
 	@Override
@@ -79,16 +90,14 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		return new ArrayList<RealmProvider>(providersByModule.values());
 	}
 
-	@Override
-	public RealmProvider getProviderForRealm(Realm realm) {
+	protected RealmProvider getProviderForRealm(Realm realm) {
 		return getProviderForRealm(realm.getResourceCategory());
 	}
-	
-	private RealmProvider getProviderForRealm(String module) {
+
+	protected RealmProvider getProviderForRealm(String module) {
 		if (!providersByModule.containsKey(module))
 			throw new IllegalArgumentException(
-					"No provider available for realm module "
-							+ module);
+					"No provider available for realm module " + module);
 		return providersByModule.get(module);
 	}
 
@@ -97,7 +106,22 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public List<Principal> allPrincipals(Realm realm, PrincipalType... types) {
+	public List<Principal> allUsers(Realm realm) throws AccessDeniedException {
+		
+		assertPermission(UserPermission.READ);
+		
+		return allPrincipals(realm, PrincipalType.USER);
+	}
+	
+	@Override
+	public List<Principal> allGroups(Realm realm) throws AccessDeniedException {
+		
+		assertPermission(GroupPermission.READ);
+		
+		return allPrincipals(realm, PrincipalType.GROUP);
+	}
+	
+	protected List<Principal> allPrincipals(Realm realm, PrincipalType... types) {
 		if (types.length == 0) {
 			types = PrincipalType.ALL_TYPES;
 		}
@@ -107,31 +131,25 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public void registerRealmProvider(RealmProvider provider) {
 		providersByModule.put(provider.getModule(), provider);
-//		PropertyCategory category = realmRepository.registerPropertyCategory(
-//				"realm.server", RealmService.RESOURCE_BUNDLE,
-//				provider.getModule());
-//		realmRepository.registerPropertyTemplate(category, "realm.host",
-//				"{ \"inputType\": \"text\" }", 0, "");
 	}
 
 	@Override
 	public Realm getRealmByName(String realm) throws AccessDeniedException {
-		Realm result = realmRepository.getRealmByName(realm);
-		assertPermission(PermissionStrategy.REQUIRE_ANY, RealmPermission.READ);
-		return result;
+		return realmRepository.getRealmByName(realm);
 	}
 
 	@Override
 	public Realm getRealmByHost(String host) {
 
-//		List<DatabaseProperty> properties = realmRepository
-//				.getPropertiesWithValue("realm.host", host);
-//		if (properties.size() == 1) {
-//			return realmRepository.getRealmById(properties.get(0).getResource()
-//					.getId());
-//		} else {
-			return null;
-//		}
+		for (Realm r : allRealms()) {
+			String realmHost = r.getProperty("realm.host");
+			if (realmHost != null && !"".equals(realmHost)) {
+				if (realmHost.equalsIgnoreCase(host)) {
+					return r;
+				}
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -143,16 +161,79 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Principal createUser(Realm realm, String username,
 			Map<String, String> properties, List<Principal> principals)
 			throws ResourceCreationException, AccessDeniedException {
-		return getProviderForRealm(realm).createUser(realm, username,
-				properties, principals);
+
+		RealmProvider provider = getProviderForRealm(realm);
+
+		try {
+
+			assertAnyPermission(UserPermission.CREATE);
+
+			Principal principal = provider.createUser(realm, username,
+					properties, principals);
+
+			eventPublisher
+					.publishEvent(new UserCreatedEvent(this,
+							getCurrentSession(), realm, provider, principal,
+							principals));
+
+			return principal;
+		} catch (AccessDeniedException e) {
+			eventPublisher.publishEvent(new UserCreatedEvent(this, e,
+					getCurrentSession(), realm, provider, username, properties,
+					principals));
+			throw e;
+		} catch (ResourceCreationException e) {
+			eventPublisher.publishEvent(new UserCreatedEvent(this, e,
+					getCurrentSession(), realm, provider, username, properties,
+					principals));
+			throw e;
+		} catch (Exception e) {
+			eventPublisher.publishEvent(new UserCreatedEvent(this, e,
+					getCurrentSession(), realm, provider, username, properties,
+					principals));
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"createUser.unexpectedError", e.getMessage());
+		}
+
 	}
 
 	@Override
 	public Principal updateUser(Realm realm, Principal user, String username,
 			Map<String, String> properties, List<Principal> principals)
-			throws ResourceChangeException {
-		return getProviderForRealm(realm).updateUser(realm, user, username,
-				properties, principals);
+			throws ResourceChangeException, AccessDeniedException {
+
+		RealmProvider provider = getProviderForRealm(realm);
+
+		try {
+
+			assertPermission(UserPermission.UPDATE);
+
+			Principal principal = provider.updateUser(realm, user, username,
+					properties, principals);
+
+			eventPublisher
+					.publishEvent(new UserUpdatedEvent(this,
+							getCurrentSession(), realm, provider, principal,
+							principals));
+
+			return principal;
+		} catch (AccessDeniedException e) {
+			eventPublisher.publishEvent(new UserUpdatedEvent(this, e,
+					getCurrentSession(), realm, provider, username, properties,
+					principals));
+			throw e;
+		} catch (ResourceChangeException e) {
+			eventPublisher.publishEvent(new UserUpdatedEvent(this, e,
+					getCurrentSession(), realm, provider, username, properties,
+					principals));
+			throw e;
+		} catch (Exception e) {
+			eventPublisher.publishEvent(new UserUpdatedEvent(this, e,
+					getCurrentSession(), realm, provider, username, properties,
+					principals));
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"updateUser.unexpectedError", e.getMessage());
+		}
 	}
 
 	@Override
@@ -175,13 +256,16 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public void deleteRealm(String name) throws ResourceChangeException,
 			ResourceNotFoundException, AccessDeniedException {
 
-		assertPermission(PermissionStrategy.REQUIRE_ANY, RealmPermission.DELETE);
+		assertPermission(RealmPermission.DELETE);
 
 		Realm realm = getRealmByName(name);
 
 		if (realm == null) {
-			throw new ResourceNotFoundException(RESOURCE_BUNDLE,
+			ResourceNotFoundException ex = new ResourceNotFoundException(RESOURCE_BUNDLE,
 					"error.invalidRealm", name);
+			eventPublisher.publishEvent(new RealmDeletedEvent(this, ex,
+					getCurrentSession(), name));
+			throw ex;
 		}
 
 		deleteRealm(realm);
@@ -272,30 +356,37 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			Map<String, String> properties) throws AccessDeniedException,
 			ResourceCreationException {
 
-		assertPermission(PermissionStrategy.REQUIRE_ANY, RealmPermission.CREATE);
-
-		if (realmRepository.getRealmByName(name) != null) {
-			ResourceCreationException ex = new ResourceCreationException(
-					RESOURCE_BUNDLE, "error.nameAlreadyExists", name);
-			eventPublisher.publishEvent(new RealmCreatedEvent(this, ex,
-					getCurrentSession(), name));
-			throw ex;
-		}
-
 		try {
-			Realm realm = realmRepository.createRealm(name, module, properties, getProviderForRealm(module));
-			
+			assertPermission(RealmPermission.CREATE);
+
+			if (realmRepository.getRealmByName(name) != null) {
+				ResourceCreationException ex = new ResourceCreationException(
+						RESOURCE_BUNDLE, "error.nameAlreadyExists", name);
+				eventPublisher.publishEvent(new RealmCreatedEvent(this, ex,
+						getCurrentSession(), name));
+				throw ex;
+			}
+
+			Realm realm = realmRepository.createRealm(name, module, properties,
+					getProviderForRealm(module));
+
 			eventPublisher.publishEvent(new RealmCreatedEvent(this,
 					getCurrentSession(), realm));
 
 			return realm;
-		} catch (Throwable e) {
-			e.printStackTrace();
-			ResourceCreationException ex = new ResourceCreationException(
-					RESOURCE_BUNDLE, "error.genericError", name, e.getMessage());
-			eventPublisher.publishEvent(new RealmCreatedEvent(this, ex,
+		} catch (AccessDeniedException e) {
+			eventPublisher.publishEvent(new RealmCreatedEvent(this, e,
 					getCurrentSession(), name));
-			throw ex;
+			throw e;
+		} catch (ResourceCreationException e) {
+			eventPublisher.publishEvent(new RealmCreatedEvent(this, e,
+					getCurrentSession(), name));
+			throw e;
+		} catch (Throwable t) {
+			eventPublisher.publishEvent(new RealmCreatedEvent(this, t,
+					getCurrentSession(), name));
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"error.genericError", name, t.getMessage());
 		}
 	}
 
@@ -304,32 +395,40 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			Map<String, String> properties) throws AccessDeniedException,
 			ResourceChangeException {
 
-		if (!realm.getName().equals(name)) {
-			if (realmRepository.getRealmByName(name) != null) {
-				throw new ResourceChangeException(RESOURCE_BUNDLE,
-						"error.nameAlreadyExists", name);
-			}
-		}
-
 		try {
-			
+
+			assertPermission(RealmPermission.UPDATE);
+
+			if (!realm.getName().equals(name)) {
+				if (realmRepository.getRealmByName(name) != null) {
+					throw new ResourceChangeException(RESOURCE_BUNDLE,
+							"error.nameAlreadyExists", name);
+				}
+			}
+
 			String oldName = realm.getName();
-			
+
 			realm.setName(name);
 
-			realm = realmRepository.saveRealm(realm, properties, getProviderForRealm(realm));
+			realm = realmRepository.saveRealm(realm, properties,
+					getProviderForRealm(realm));
 
 			eventPublisher.publishEvent(new RealmUpdatedEvent(this,
-					getCurrentSession(), 
-					oldName, 
-					realmRepository.getRealmById(realm.getId())));
-		} catch (Throwable ex) {
-			ResourceChangeException e = new ResourceChangeException(
-					RESOURCE_BUNDLE, "error.genericError", name,
-					ex.getMessage());
-			eventPublisher.publishEvent(new RealmUpdatedEvent(this, ex,
+					getCurrentSession(), oldName, realmRepository
+							.getRealmById(realm.getId())));
+		} catch (AccessDeniedException e) {
+			eventPublisher.publishEvent(new RealmUpdatedEvent(this, e,
 					getCurrentSession(), name));
 			throw e;
+		} catch (ResourceChangeException e) {
+			eventPublisher.publishEvent(new RealmUpdatedEvent(this, e,
+					getCurrentSession(), name));
+			throw e;
+		} catch (Throwable t) {
+			eventPublisher.publishEvent(new RealmUpdatedEvent(this, t,
+					getCurrentSession(), name));
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"deleteRole.unexpectedError", t);
 		}
 		return realm;
 	}
@@ -338,49 +437,52 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public void deleteRealm(Realm realm) throws AccessDeniedException,
 			ResourceChangeException {
 
-		assertPermission(PermissionStrategy.REQUIRE_ANY, RealmPermission.DELETE);
+		try {
 
-		List<Realm> realms = realmRepository.allRealms();
-		if (realms.size() == 1) {
-			ResourceChangeException ex = new ResourceChangeException(RESOURCE_BUNDLE,
-					"error.zeroRealms", realm.getName());
-			eventPublisher.publishEvent(new RealmDeletedEvent(this, ex,
-					getCurrentSession(), realm.getName()));
-			throw ex;
-		}
-		realms.remove(realm);
+			assertPermission(RealmPermission.DELETE);
 
-		if (hasSystemAdministrator(realm)) {
-			boolean systemAdministratorPresent = false;
+			List<Realm> realms = realmRepository.allRealms();
+			if (realms.size() == 1) {
+				throw new ResourceChangeException(RESOURCE_BUNDLE,
+						"error.zeroRealms", realm.getName());
+			}
 
-			for (Realm r : realms) {
-				if (hasSystemAdministrator(r)) {
-					systemAdministratorPresent = true;
-					break;
+			realms.remove(realm);
+
+			if (hasSystemAdministrator(realm)) {
+				boolean systemAdministratorPresent = false;
+
+				for (Realm r : realms) {
+					if (hasSystemAdministrator(r)) {
+						systemAdministratorPresent = true;
+						break;
+					}
+				}
+
+				if (!systemAdministratorPresent) {
+					throw new ResourceChangeException(RESOURCE_BUNDLE,
+							"error.zeroSysAdmins", realm.getName());
 				}
 			}
 
-			if (!systemAdministratorPresent) {
-				ResourceChangeException ex = new ResourceChangeException(RESOURCE_BUNDLE,
-						"error.zeroSysAdmins", realm.getName());
-				eventPublisher.publishEvent(new RealmDeletedEvent(this, ex,
-						getCurrentSession(), realm.getName()));
-				throw ex;
-			}
-		}
-
-		String realmName = realm.getName();
-		
-		try {
-			
 			realmRepository.delete(realm);
 
 			eventPublisher.publishEvent(new RealmDeletedEvent(this,
-					getCurrentSession(), realmName));
-			
+					getCurrentSession(), realm.getName()));
+
+		} catch (AccessDeniedException e) {
+			eventPublisher.publishEvent(new RealmDeletedEvent(this, e,
+					getCurrentSession(), realm.getName()));
+			throw e;
+		} catch (ResourceChangeException e) {
+			eventPublisher.publishEvent(new RealmDeletedEvent(this, e,
+					getCurrentSession(), realm.getName()));
+			throw e;
 		} catch (Throwable t) {
 			eventPublisher.publishEvent(new RealmDeletedEvent(this, t,
-					getCurrentSession(), realmName));
+					getCurrentSession(), realm.getName()));
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"deleteRole.unexpectedError", t);
 		}
 	}
 
@@ -388,21 +490,21 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Collection<PropertyCategory> getRealmPropertyTemplates(Realm realm)
 			throws AccessDeniedException {
 
-		assertPermission(PermissionStrategy.REQUIRE_ANY, RealmPermission.READ);
+		assertPermission(RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(realm);
-		
+
 		return provider.getRealmProperties(realm);
-		
+
 	}
-	
+
 	@Override
 	public Collection<PropertyCategory> getRealmPropertyTemplates(String module)
 			throws AccessDeniedException {
-		assertPermission(PermissionStrategy.REQUIRE_ANY, RealmPermission.READ);
+		assertPermission(RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(module);
-		
+
 		return provider.getRealmProperties(null);
 	}
 
@@ -422,50 +524,155 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public Principal createGroup(Realm realm, String name,
-			List<Principal> principals) throws ResourceCreationException {
+			List<Principal> principals) throws ResourceCreationException, AccessDeniedException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
-		return provider.createGroup(realm, name, principals);
+		try {
+
+			assertAnyPermission(GroupPermission.CREATE);
+
+			Principal principal = provider.createGroup(realm, name, principals);
+
+			eventPublisher
+					.publishEvent(new GroupCreatedEvent(this,
+							getCurrentSession(), realm, provider, principal,
+							principals));
+
+			return principal;
+		} catch (AccessDeniedException e) {
+			eventPublisher.publishEvent(new GroupCreatedEvent(this, e,
+					getCurrentSession(), realm, provider, name,
+					principals));
+			throw e;
+		} catch (ResourceCreationException e) {
+			eventPublisher.publishEvent(new GroupCreatedEvent(this, e,
+					getCurrentSession(), realm, provider, name,
+					principals));
+			throw e;
+		} catch (Exception e) {
+			eventPublisher.publishEvent(new GroupCreatedEvent(this, e,
+					getCurrentSession(), realm, provider, name,
+					principals));
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"createGroup.unexpectedError", e.getMessage());
+		}
 	}
 
 	@Override
 	public Principal updateGroup(Realm realm, Principal group, String name,
-			List<Principal> principals) throws ResourceChangeException {
+			List<Principal> principals) throws ResourceChangeException, AccessDeniedException {
+
 
 		RealmProvider provider = getProviderForRealm(realm);
 
-		return provider.updateGroup(realm, group, name, principals);
+		try {
+
+			assertPermission(GroupPermission.UPDATE);
+
+			Principal principal = provider.updateGroup(realm, group, name, principals);
+
+			eventPublisher
+					.publishEvent(new GroupUpdatedEvent(this,
+							getCurrentSession(), realm, provider, principal,
+							principals));
+
+			return principal;
+		} catch (AccessDeniedException e) {
+			eventPublisher.publishEvent(new GroupUpdatedEvent(this, e,
+					getCurrentSession(), realm, provider, name,
+					principals));
+			throw e;
+		} catch (ResourceChangeException e) {
+			eventPublisher.publishEvent(new GroupUpdatedEvent(this, e,
+					getCurrentSession(), realm, provider, name,
+					principals));
+			throw e;
+		} catch (Exception e) {
+			eventPublisher.publishEvent(new GroupUpdatedEvent(this, e,
+					getCurrentSession(), realm, provider, name,
+					principals));
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"groupUser.unexpectedError", e.getMessage());
+		}
 
 	}
 
 	@Override
 	public void deleteGroup(Realm realm, Principal group)
-			throws ResourceChangeException {
+			throws ResourceChangeException, AccessDeniedException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
-		provider.deleteGroup(group);
+		try {
+			assertPermission(UserPermission.DELETE);
+
+			provider.deleteGroup(group);
+
+			eventPublisher.publishEvent(new GroupDeletedEvent(this,
+					getCurrentSession(), realm, provider, group));
+
+		} catch (AccessDeniedException e) {
+			eventPublisher.publishEvent(new GroupDeletedEvent(this, e,
+					getCurrentSession(), realm, provider, group
+							.getPrincipalName()));
+			throw e;
+		} catch (ResourceChangeException e) {
+			eventPublisher.publishEvent(new GroupDeletedEvent(this, e,
+					getCurrentSession(), realm, provider, group
+							.getPrincipalName()));
+			throw e;
+		} catch (Throwable e) {
+			eventPublisher.publishEvent(new GroupDeletedEvent(this, e,
+					getCurrentSession(), realm, provider, group
+							.getPrincipalName()));
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"deleteGroup.unexpectedError", e.getMessage());
+		}
 	}
 
 	@Override
 	public void deleteUser(Realm realm, Principal user)
-			throws ResourceChangeException {
+			throws ResourceChangeException, AccessDeniedException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
-		provider.deleteUser(user);
+		try {
+			assertPermission(UserPermission.DELETE);
+
+			provider.deleteUser(user);
+
+			eventPublisher.publishEvent(new UserDeletedEvent(this,
+					getCurrentSession(), realm, provider, user));
+
+		} catch (AccessDeniedException e) {
+			eventPublisher.publishEvent(new UserDeletedEvent(this, e,
+					getCurrentSession(), realm, provider, user
+							.getPrincipalName()));
+			throw e;
+		} catch (ResourceChangeException e) {
+			eventPublisher.publishEvent(new UserDeletedEvent(this, e,
+					getCurrentSession(), realm, provider, user
+							.getPrincipalName()));
+			throw e;
+		} catch (Throwable e) {
+			eventPublisher.publishEvent(new UserDeletedEvent(this, e,
+					getCurrentSession(), realm, provider, user
+							.getPrincipalName()));
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"deleteUser.unexpectedError", e.getMessage());
+		}
 
 	}
 
 	@Override
-	public Collection<PropertyCategory> getUserPropertyTemplates(Principal principal)
-			throws AccessDeniedException {
+	public Collection<PropertyCategory> getUserPropertyTemplates(
+			Principal principal) throws AccessDeniedException {
 
-		assertPermission(PermissionStrategy.REQUIRE_ANY, RealmPermission.READ);
-		
+		assertPermission(RealmPermission.READ);
+
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
-		
+
 		return provider.getUserProperties(principal);
 	}
 
@@ -473,13 +680,13 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Collection<PropertyCategory> getUserPropertyTemplates(String module)
 			throws AccessDeniedException {
 
-		assertPermission(PermissionStrategy.REQUIRE_ANY, RealmPermission.READ);
-		
+		assertPermission(RealmPermission.READ);
+
 		RealmProvider provider = getProviderForRealm(module);
-		
+
 		return provider.getUserProperties(null);
 	}
-	
+
 	@Override
 	public List<Principal> getAssociatedPrincipals(Principal principal) {
 
@@ -491,21 +698,6 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		return result;
 	}
 
-//	@Override
-//	public List<ResourceProperty> getRealmProperties(Realm realm) {
-//
-//		List<ResourceProperty> properties = new ArrayList<ResourceProperty>();
-//		properties.addAll(realmRepository.getPropertiesForResource(realm));
-//		return properties;
-//	}
-//
-//	@Override
-//	public List<ResourceProperty> getUserProperties(Principal principal) {
-//		List<ResourceProperty> properties = new ArrayList<ResourceProperty>();
-//		properties.addAll(realmRepository.getgetPropertiesForResource(principal));
-//		return properties;
-//	}
-
 	@Override
 	public List<Principal> getAssociatedPrincipals(Principal principal,
 			PrincipalType type) {
@@ -514,10 +706,10 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public List<?> getPrincipals(Realm realm, PrincipalType type,  String searchPattern, int start,
-			int length, ColumnSort[] sorting) {
-		return getProviderForRealm(realm).getPrincipals(realm, type, searchPattern, start,
-				length, sorting);
+	public List<?> getPrincipals(Realm realm, PrincipalType type,
+			String searchPattern, int start, int length, ColumnSort[] sorting) {
+		return getProviderForRealm(realm).getPrincipals(realm, type,
+				searchPattern, start, length, sorting);
 	}
 
 	@Override
@@ -527,34 +719,34 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public boolean findUniquePrincipal(String user) {
-		
+
 		int found = 0;
-		for(Realm r : allRealms()) {
+		for (Realm r : allRealms()) {
 			Principal p = getPrincipalByName(r, user, PrincipalType.USER);
-			if(p!=null) {
+			if (p != null) {
 				found++;
 			}
 		}
-		return found==1;
+		return found == 1;
 	}
 
 	@Override
-	public Principal getUniquePrincipal(String username) throws ResourceNotFoundException {
+	public Principal getUniquePrincipal(String username)
+			throws ResourceNotFoundException {
 		int found = 0;
 		Principal ret = null;
-		for(Realm r : allRealms()) {
+		for (Realm r : allRealms()) {
 			Principal p = getPrincipalByName(r, username, PrincipalType.USER);
-			if(p!=null) {
+			if (p != null) {
 				ret = p;
 				found++;
 			}
 		}
-		if(found != 1) {
-			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "principal.notFound");
+		if (found != 1) {
+			throw new ResourceNotFoundException(RESOURCE_BUNDLE,
+					"principal.notFound");
 		}
 		return ret;
 	}
-	
-	
 
 }

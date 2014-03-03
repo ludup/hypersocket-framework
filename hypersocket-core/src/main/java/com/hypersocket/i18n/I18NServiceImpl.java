@@ -50,7 +50,7 @@ public class I18NServiceImpl implements I18NService, ApplicationListener<Configu
 	
 	List<Locale> supportedLocales = new ArrayList<Locale>();
 	@PostConstruct
-	public void postConstruct() {
+	private void postConstruct() {
 		
 		registerBundle(RESOURCE_BUNDLE);
 		registerBundle(ConfigurationService.RESOURCE_BUNDLE);

@@ -18,9 +18,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.GenericGenerator;
 
 import com.hypersocket.auth.AuthenticationScheme;
@@ -30,7 +30,7 @@ import com.hypersocket.repository.AbstractEntity;
 
 @Entity
 @Table(name = "sessions")
-@XmlRootElement(name="session")
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class Session extends AbstractEntity<String> {
 
 	@Id
