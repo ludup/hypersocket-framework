@@ -111,6 +111,20 @@ public class FileUtils {
 	public static String formatLastModified(long lastModifiedTime) {
 		return dateFormat.format(new Date(lastModifiedTime));
 	}
+	
+	public static String getParentPath(String originalFilename) {
+		
+		originalFilename = checkEndsWithNoSlash(originalFilename);
+
+		int idx;
+		if ((idx = originalFilename.lastIndexOf('/')) > -1) {
+			originalFilename = originalFilename.substring(0, idx+1);
+		} else if ((idx = originalFilename.lastIndexOf('\\')) > -1) {
+			originalFilename = originalFilename.substring(0, idx+1);
+		}
+
+		return originalFilename;
+	}
 
 	public static String stripPath(String originalFilename) {
 
