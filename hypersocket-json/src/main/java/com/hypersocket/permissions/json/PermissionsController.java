@@ -73,7 +73,8 @@ public class PermissionsController extends ResourceController {
 	public ResourceStatus<Role> deleteRole(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("id") Long id)
 			throws AccessDeniedException, UnauthorizedException,
-			ResourceChangeException, ResourceNotFoundException, SessionTimeoutException {
+			ResourceChangeException, ResourceNotFoundException,
+			SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
@@ -109,7 +110,20 @@ public class PermissionsController extends ResourceController {
 		permissionService.verifyPermission(session.getPrincipal(),
 				PermissionStrategy.REQUIRE_ANY, RealmPermission.READ);
 
-		return new ResourceList<Role>(permissionService.allRoles(session.getCurrentRealm()));
+		return new ResourceList<Role>(permissionService.allRoles(session
+				.getCurrentRealm()));
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "permission/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Permission> getPermission(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String resourceKey)
+			throws AccessDeniedException, UnauthorizedException {
+
+		return new ResourceStatus<Permission>(
+				permissionService.getPermission(resourceKey));
 	}
 
 	@AuthenticationRequired
@@ -123,13 +137,13 @@ public class PermissionsController extends ResourceController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "role", method = RequestMethod.POST, produces = {
-			"application/xml", "application/json" })
+	@RequestMapping(value = "role", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<Role> createOrUpdateRole(HttpServletRequest request,
 			HttpServletResponse response, @RequestBody RoleUpdate role)
-			throws UnauthorizedException, AccessDeniedException, SessionTimeoutException {
+			throws UnauthorizedException, AccessDeniedException,
+			SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));

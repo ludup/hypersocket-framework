@@ -16,6 +16,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.jackson.JsonParseException;
@@ -34,7 +35,6 @@ public class AbstractServerTest {
 
 	static File tmp;
 	static Main main;
-	static HttpClient httpClient;
 	static BasicCookieStore cookieStore;
 	static ObjectMapper mapper = new ObjectMapper();
 
@@ -93,9 +93,7 @@ public class AbstractServerTest {
 		main.run();
 
 		cookieStore = new BasicCookieStore();
-		httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore)
-				.build();
-
+		
 		System.out.println("Integration test server is running. Changing admin password to Password123?");
 		
 		logon("Default", "admin", "admin", true, "Password123?");
@@ -107,6 +105,11 @@ public class AbstractServerTest {
 		System.out.println("Integration test server ready for tests");
 	}
 
+	public static HttpClient getHttpClient() {
+		return HttpClients.custom().setDefaultCookieStore(cookieStore)
+				.build();
+	}
+	
 	@AfterClass
 	public static void shutdown() throws IOException {
 
@@ -204,6 +207,7 @@ public class AbstractServerTest {
 		
 		System.out.println("Executing request " + login.getRequestLine());
 		
+		CloseableHttpClient httpClient = (CloseableHttpClient)getHttpClient();
 		CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(login);
 
 		if(response.getStatusLine().getStatusCode()!=200) {
@@ -214,6 +218,7 @@ public class AbstractServerTest {
 			return IOUtils.toString(response.getEntity().getContent(), "UTF-8");
 		} finally {
 			response.close();
+			httpClient.close();
 		}
 
 	}
@@ -230,7 +235,9 @@ public class AbstractServerTest {
 
 		System.out.println("Executing request " + httpget.getRequestLine());
 
+		CloseableHttpClient httpClient = (CloseableHttpClient)getHttpClient();
 		CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(httpget);
+		
 		try {
 			if(response.getStatusLine().getStatusCode()!=200) {
 				throw new ClientProtocolException("Expected status code 200 for doGet");
@@ -239,6 +246,7 @@ public class AbstractServerTest {
 			return IOUtils.toString(response.getEntity().getContent(), "UTF-8");
 		} finally {
 			response.close();
+			httpClient.close();
 		}
 	}
 

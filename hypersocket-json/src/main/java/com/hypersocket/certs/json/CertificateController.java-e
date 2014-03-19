@@ -41,8 +41,7 @@ public class CertificateController extends AuthenticatedController {
 	CertificateService certificateService;
 
 	@AuthenticationRequired
-	@RequestMapping(value = "certificates", method = RequestMethod.GET, produces = {
-			"application/xml", "application/json" })
+	@RequestMapping(value = "certificates", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public CertificateStatus getState(HttpServletRequest request,
@@ -68,8 +67,7 @@ public class CertificateController extends AuthenticatedController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "certificates", method = RequestMethod.DELETE, produces = {
-			"application/xml", "application/json" })
+	@RequestMapping(value = "certificates", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public CertificateStatus resetKey(HttpServletRequest request,
@@ -106,15 +104,15 @@ public class CertificateController extends AuthenticatedController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "certificates/key", method = RequestMethod.POST, produces = {
-			"application/xml", "application/json" })
+	@RequestMapping(value = "certificates/key", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
 	public CertificateStatus uploadKey(HttpServletRequest request,
 			HttpServletResponse response,
 			@RequestPart(value = "file") MultipartFile file,
 			@RequestParam(value = "passphrase") String passphrase)
-			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request), certificateService);
@@ -160,15 +158,15 @@ public class CertificateController extends AuthenticatedController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "certificates/cert", method = RequestMethod.POST, produces = {
-			"application/xml", "application/json" })
+	@RequestMapping(value = "certificates/cert", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
 	public CertificateStatus uploadCertificate(HttpServletRequest request,
 			HttpServletResponse response,
 			@RequestPart(value = "file") MultipartFile file,
 			@RequestPart(value = "bundle") MultipartFile bundle)
-			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request), certificateService);
@@ -218,8 +216,7 @@ public class CertificateController extends AuthenticatedController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "certificates/generateCSR", method = RequestMethod.POST, produces = {
-			"application/xml", "application/json" })
+	@RequestMapping(value = "certificates/generateCSR", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
 	public CertificateStatus generateCSR(HttpServletRequest request,

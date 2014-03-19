@@ -22,4 +22,5 @@ public class UnauthorizedTests extends AbstractServerTest {
 	public void tryUnauthorizedRoleList() throws ClientProtocolException, IOException {
 		doGet("/hypersocket/api/roles");
 	}
+	
 }
