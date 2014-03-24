@@ -207,16 +207,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				state.setLastErrorIsResourceKey(true);
 				break;
 			}
-			case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
-				state.setLastErrorMsg("error.genericLogonError");
-				state.setLastErrorIsResourceKey(true);
-				break;
-			}
-			case AUTHENTICATION_FAILURE_INVALID_PRINCIPAL: {
-				state.setLastErrorMsg("error.genericLogonError");
-				state.setLastErrorIsResourceKey(true);
-				break;
-			}
 			case AUTHENTICATION_SUCCESS: {
 
 				state.nextPostAuthenticationStep();
@@ -224,6 +214,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				if (!state.hasPostAuthenticationStep()) {
 					state.setSession(completeLogon(state));
 				}
+				break;
+			}
+			default: {
+				state.setLastErrorMsg("error.genericLogonError");
+				state.setLastErrorIsResourceKey(true);
 				break;
 			}
 			}
@@ -250,6 +245,12 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				state.setLastErrorIsResourceKey(true);
 				eventService.publishEvent(new AuthenticationEvent(this, 
 							state, authenticator, "hint.invalidPrincipal"));
+			}
+			case AUTHENTICATION_FAILURE_INVALID_REALM: {
+				state.setLastErrorMsg("error.genericLogonError");
+				state.setLastErrorIsResourceKey(true);
+				eventService.publishEvent(new AuthenticationEvent(this, 
+							state, authenticator, "hint.invalidRealm"));
 			}
 			case AUTHENTICATION_SUCCESS: {
 				try {

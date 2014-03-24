@@ -53,8 +53,8 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	protected void onValueChanged(PropertyTemplate template, String oldValue, String value) {
-		eventPublisher.publishEvent(new ConfigurationEvent(this,
-				EVENT_CONFIGURATION_CHANGED, true, getCurrentSession(),
+		eventPublisher.publishEvent(new ConfigurationChangedEvent(this,
+				true, getCurrentSession(),
 				template, oldValue, value));
 	}
 

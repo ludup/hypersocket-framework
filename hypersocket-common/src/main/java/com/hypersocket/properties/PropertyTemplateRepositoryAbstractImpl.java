@@ -143,7 +143,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements PropertyTemplateR
 							pnode.hasAttribute("hidden")
 									&& pnode.getAttribute("hidden")
 											.equalsIgnoreCase("true"),
-							pnode.getAttribute("defaultValue"));
+											Boolean.getBoolean("hypersocket.development") && pnode.hasAttribute("developmentValue") ? pnode.getAttribute("developmentValue") : pnode.getAttribute("defaultValue"));
 				} catch (Throwable e) {
 					log.error("Failed to register property item", e);
 				}

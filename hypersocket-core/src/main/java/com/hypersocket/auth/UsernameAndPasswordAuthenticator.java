@@ -89,6 +89,9 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 
 		if (realmName != null) {
 			realm = realmService.getRealmByName(realmName);
+			if(realm==null) {
+				return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_REALM;
+			}
 		}
 
 		Principal principal = null;
