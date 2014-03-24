@@ -40,7 +40,7 @@ public interface RealmService extends AuthenticatedService {
 
 	Realm getRealmByHost(String host);
 
-	Realm getRealmById(Long id);
+	Realm getRealmById(Long id) throws AccessDeniedException;
 
 	Principal createUser(Realm realm, String username,
 			Map<String, String> properties, List<Principal> principals)
@@ -75,7 +75,8 @@ public interface RealmService extends AuthenticatedService {
 	Realm updateRealm(Realm realm, String name, Map<String, String> properties)
 			throws AccessDeniedException, ResourceChangeException;
 
-	Principal getPrincipalById(Realm realm, Long id, PrincipalType... type);
+	Principal getPrincipalById(Realm realm, Long id, PrincipalType... type)
+			throws AccessDeniedException;
 
 	boolean requiresPasswordChange(Principal principal, Realm realm);
 

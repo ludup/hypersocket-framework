@@ -30,11 +30,12 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 		realm.setResourceCategory(module);
 		save(realm);
 		
-		for (Map.Entry<String, String> e : properties.entrySet()) {
-			provider.setValue(realm, e.getKey(), e.getValue());
+		if(!properties.isEmpty()) {
+			for (Map.Entry<String, String> e : properties.entrySet()) {
+				provider.setValue(realm, e.getKey(), e.getValue());
+			}
+			refresh(realm);
 		}
-		
-		refresh(realm);
 		
 		return realm;
 	}

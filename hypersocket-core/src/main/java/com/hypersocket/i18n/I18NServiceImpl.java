@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.certs.CertificateService;
-import com.hypersocket.config.ConfigurationEvent;
+import com.hypersocket.config.ConfigurationChangedEvent;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.local.LocalRealmProvider;
@@ -35,7 +35,7 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.SessionService;
 
 @Service
-public class I18NServiceImpl implements I18NService, ApplicationListener<ConfigurationEvent> {
+public class I18NServiceImpl implements I18NService, ApplicationListener<ConfigurationChangedEvent> {
 
 	static Logger log = LoggerFactory.getLogger(I18NServiceImpl.class);
 	
@@ -144,9 +144,9 @@ public class I18NServiceImpl implements I18NService, ApplicationListener<Configu
 	}
 
 	@Override
-	public void onApplicationEvent(ConfigurationEvent event) {
-		if(event.getResourceKey().equals(ConfigurationService.EVENT_CONFIGURATION_CHANGED)) {
-			String resourceKey = (String)event.getAttribute(ConfigurationEvent.ATTR_CONFIG_RESOURCE_KEY);
+	public void onApplicationEvent(ConfigurationChangedEvent event) {
+		if(event.getResourceKey().equals(ConfigurationChangedEvent.EVENT_RESOURCE_KEY)) {
+			String resourceKey = (String)event.getAttribute(ConfigurationChangedEvent.ATTR_CONFIG_RESOURCE_KEY);
 			if(resourceKey.equals("current.locale")) {
 				defaultLocale = null;
 				defaultLocale = getDefaultLocale();

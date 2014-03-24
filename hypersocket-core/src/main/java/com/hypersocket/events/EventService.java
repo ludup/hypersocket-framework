@@ -7,4 +7,6 @@ public interface EventService {
 
 	void publishEvent(SystemEvent event);
 
+	EventDefinition getEventDefinition(String resourceKey);
+
 }

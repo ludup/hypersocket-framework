@@ -180,4 +180,11 @@ public class SessionUtils {
 		
 	}
 
+	public void touchSession(Session session) throws SessionTimeoutException {
+		
+		if(!sessionService.isLoggedOn(session, true)) {
+			throw new SessionTimeoutException();
+		}		
+	}
+
 }

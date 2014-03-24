@@ -14,7 +14,5 @@ import com.hypersocket.properties.PropertyTemplateService;
 public interface ConfigurationService extends AuthenticatedService, PropertyTemplateService {
 
 	public static final String RESOURCE_BUNDLE = "ConfigurationService";
-	
-	public static final String EVENT_CONFIGURATION_CHANGED = "config.changed";
 
 }

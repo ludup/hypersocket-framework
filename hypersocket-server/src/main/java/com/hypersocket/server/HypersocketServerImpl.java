@@ -41,7 +41,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 
 import com.hypersocket.certs.CertificateService;
-import com.hypersocket.config.ConfigurationEvent;
+import com.hypersocket.config.ConfigurationChangedEvent;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
@@ -568,8 +568,8 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 			sessionCookieName = getApplicationName().toUpperCase().replace(' ', '_')
 					+ "_HTTP_SESSION";
 		}
-		if(event.getResourceKey().equals(ConfigurationService.EVENT_CONFIGURATION_CHANGED)) {
-			String resourceKey = (String) event.getAttribute(ConfigurationEvent.ATTR_CONFIG_RESOURCE_KEY);
+		if(event.getResourceKey().equals(ConfigurationChangedEvent.EVENT_RESOURCE_KEY)) {
+			String resourceKey = (String) event.getAttribute(ConfigurationChangedEvent.ATTR_CONFIG_RESOURCE_KEY);
 			if(resourceKey.equals("ssl.ciphers") || resourceKey.equals("ssl.protocols")) {
 				rebuildEnabledCipherSuites();
 			}

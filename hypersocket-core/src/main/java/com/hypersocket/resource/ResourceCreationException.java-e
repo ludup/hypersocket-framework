@@ -7,6 +7,10 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
+import java.util.Locale;
+
+import com.hypersocket.i18n.I18N;
+
 public class ResourceCreationException extends ResourceException {
 
 	private static final long serialVersionUID = 7411495296618455618L;
@@ -16,7 +20,7 @@ public class ResourceCreationException extends ResourceException {
 	Object[] args;
 	
 	public ResourceCreationException(String bundle, String resourceKey, Object... args) {
-		super((String)null);
+		super(I18N.getResource(Locale.getDefault(), bundle, resourceKey, args));
 		this.bundle = bundle;
 		this.resourceKey = resourceKey;
 		this.args = args;

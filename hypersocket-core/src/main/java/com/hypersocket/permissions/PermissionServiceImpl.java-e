@@ -56,7 +56,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	CacheManager cacheManager;
 	Cache permissionsCache;
-	
+
 	@PostConstruct
 	private void postConstruct() {
 
@@ -75,7 +75,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 		});
 
 		cacheManager = CacheManager.newInstance();
-		permissionsCache = new Cache("permissionsCache", 5000, false, false, 60*60, 60*60);
+		permissionsCache = new Cache("permissionsCache", 5000, false, false,
+				60 * 60, 60 * 60);
 		cacheManager.addCache(permissionsCache);
 	}
 
@@ -132,7 +133,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 		repository.grantPermissions(role, permissions);
 
-		for(Principal p : principals) {
+		for (Principal p : principals) {
 			permissionsCache.remove(p);
 		}
 		return role;
@@ -147,31 +148,34 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	public void assignRole(Role role, Principal principal)
 			throws AccessDeniedException {
 
-		assertPermission(PermissionStrategy.REQUIRE_ANY,
-				RolePermission.CREATE, RolePermission.UPDATE);
+		assertPermission(PermissionStrategy.REQUIRE_ANY, RolePermission.CREATE,
+				RolePermission.UPDATE);
 
 		repository.assignRole(role, principal);
-		
+
 		permissionsCache.remove(principal);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public Set<Permission> getPrincipalPermissions(Principal principal) {
-		
-		if(!permissionsCache.isElementInMemory(principal) 
-				|| permissionsCache.isExpired(permissionsCache.get(principal))) {
-			permissionsCache.put(new Element(principal, 
-					repository.getPrincipalPermissions(realmService
-					.getAssociatedPrincipals(principal))));		
+
+		if (!permissionsCache.isElementInMemory(principal)
+				|| (permissionsCache.get(principal) == null 
+				|| permissionsCache.isExpired(permissionsCache.get(principal)))) {
+			permissionsCache.put(new Element(principal, repository
+					.getPrincipalPermissions(realmService
+							.getAssociatedPrincipals(principal))));
 		}
-		return (Set<Permission>) permissionsCache.get(principal).getObjectValue();
+
+		return (Set<Permission>) permissionsCache.get(principal)
+				.getObjectValue();
 	}
 
 	protected void verifyPermission(Principal principal,
 			PermissionStrategy strategy, Set<Permission> principalPermissions,
 			PermissionType... permissions) throws AccessDeniedException {
-		
+
 		if (principal == null) {
 			throw new AccessDeniedException();
 		}
@@ -227,21 +231,22 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 		}
 
 		Set<Permission> principalPermissions = getPrincipalPermissions(principal);
-		
+
 		verifyPermission(principal, strategy, principalPermissions, permissions);
 	}
-	
 
 	@Override
 	public boolean hasSystemPermission(Principal principal) {
 		return hasSystemPrincipal(getPrincipalPermissions(principal));
 	}
-	
-	
+
 	protected boolean hasSystemPrincipal(Set<Permission> principalPermissions) {
-		for(Permission p : principalPermissions) {
-			if(p.getResourceKey().equals(SystemPermission.SYSTEM.getResourceKey())
-					|| p.getResourceKey().equals(SystemPermission.SYSTEM_ADMINISTRATION.getResourceKey())){
+		for (Permission p : principalPermissions) {
+			if (p.getResourceKey().equals(
+					SystemPermission.SYSTEM.getResourceKey())
+					|| p.getResourceKey().equals(
+							SystemPermission.SYSTEM_ADMINISTRATION
+									.getResourceKey())) {
 				return true;
 			}
 		}
@@ -270,7 +275,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 		assertPermission(RolePermission.DELETE);
 
 		repository.deleteRole(role);
-		
+
 		permissionsCache.removeAll();
 	}
 
@@ -341,7 +346,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 		repository.grantPermissions(role, grantPermissions);
 
 		permissionsCache.removeAll();
-		
+
 		return role;
 	}
 

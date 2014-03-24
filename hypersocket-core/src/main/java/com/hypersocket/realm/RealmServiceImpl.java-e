@@ -24,7 +24,6 @@ import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
-import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.events.GroupCreatedEvent;
@@ -107,20 +106,20 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public List<Principal> allUsers(Realm realm) throws AccessDeniedException {
-		
+
 		assertPermission(UserPermission.READ);
-		
+
 		return allPrincipals(realm, PrincipalType.USER);
 	}
-	
+
 	@Override
 	public List<Principal> allGroups(Realm realm) throws AccessDeniedException {
-		
+
 		assertPermission(GroupPermission.READ);
-		
+
 		return allPrincipals(realm, PrincipalType.GROUP);
 	}
-	
+
 	protected List<Principal> allPrincipals(Realm realm, PrincipalType... types) {
 		if (types.length == 0) {
 			types = PrincipalType.ALL_TYPES;
@@ -153,7 +152,10 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public Realm getRealmById(Long id) {
+	public Realm getRealmById(Long id) throws AccessDeniedException {
+		
+		assertAnyPermission(RealmPermission.READ, SystemPermission.SYSTEM_ADMINISTRATION);
+		
 		return realmRepository.getRealmById(id);
 	}
 
@@ -261,8 +263,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		Realm realm = getRealmByName(name);
 
 		if (realm == null) {
-			ResourceNotFoundException ex = new ResourceNotFoundException(RESOURCE_BUNDLE,
-					"error.invalidRealm", name);
+			ResourceNotFoundException ex = new ResourceNotFoundException(
+					RESOURCE_BUNDLE, "error.invalidRealm", name);
 			eventPublisher.publishEvent(new RealmDeletedEvent(this, ex,
 					getCurrentSession(), name));
 			throw ex;
@@ -289,6 +291,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	private List<Realm> filterRealms(Class<? extends RealmProvider> clz) {
+
 		List<Realm> realms = realmRepository.allRealms();
 		List<Realm> ret = new ArrayList<Realm>(realms);
 		for (Realm r : realms) {
@@ -510,7 +513,10 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public Principal getPrincipalById(Realm realm, Long id,
-			PrincipalType... type) {
+			PrincipalType... type) throws AccessDeniedException {
+
+		assertPermission(RealmPermission.READ);
+
 		if (type.length == 0) {
 			type = PrincipalType.ALL_TYPES;
 		}
@@ -524,7 +530,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public Principal createGroup(Realm realm, String name,
-			List<Principal> principals) throws ResourceCreationException, AccessDeniedException {
+			List<Principal> principals) throws ResourceCreationException,
+			AccessDeniedException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -542,18 +549,15 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			return principal;
 		} catch (AccessDeniedException e) {
 			eventPublisher.publishEvent(new GroupCreatedEvent(this, e,
-					getCurrentSession(), realm, provider, name,
-					principals));
+					getCurrentSession(), realm, provider, name, principals));
 			throw e;
 		} catch (ResourceCreationException e) {
 			eventPublisher.publishEvent(new GroupCreatedEvent(this, e,
-					getCurrentSession(), realm, provider, name,
-					principals));
+					getCurrentSession(), realm, provider, name, principals));
 			throw e;
 		} catch (Exception e) {
 			eventPublisher.publishEvent(new GroupCreatedEvent(this, e,
-					getCurrentSession(), realm, provider, name,
-					principals));
+					getCurrentSession(), realm, provider, name, principals));
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
 					"createGroup.unexpectedError", e.getMessage());
 		}
@@ -561,8 +565,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public Principal updateGroup(Realm realm, Principal group, String name,
-			List<Principal> principals) throws ResourceChangeException, AccessDeniedException {
-
+			List<Principal> principals) throws ResourceChangeException,
+			AccessDeniedException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -570,7 +574,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 			assertPermission(GroupPermission.UPDATE);
 
-			Principal principal = provider.updateGroup(realm, group, name, principals);
+			Principal principal = provider.updateGroup(realm, group, name,
+					principals);
 
 			eventPublisher
 					.publishEvent(new GroupUpdatedEvent(this,
@@ -580,18 +585,15 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			return principal;
 		} catch (AccessDeniedException e) {
 			eventPublisher.publishEvent(new GroupUpdatedEvent(this, e,
-					getCurrentSession(), realm, provider, name,
-					principals));
+					getCurrentSession(), realm, provider, name, principals));
 			throw e;
 		} catch (ResourceChangeException e) {
 			eventPublisher.publishEvent(new GroupUpdatedEvent(this, e,
-					getCurrentSession(), realm, provider, name,
-					principals));
+					getCurrentSession(), realm, provider, name, principals));
 			throw e;
 		} catch (Exception e) {
 			eventPublisher.publishEvent(new GroupUpdatedEvent(this, e,
-					getCurrentSession(), realm, provider, name,
-					principals));
+					getCurrentSession(), realm, provider, name, principals));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
 					"groupUser.unexpectedError", e.getMessage());
 		}

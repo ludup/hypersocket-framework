@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.config.ConfigurationPermission;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.MultiselectElement;
 import com.hypersocket.json.RequestStatus;
@@ -88,6 +89,11 @@ public class ServerController extends AuthenticatedController {
 			HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException {
 
+		permissionService.verifyPermission(
+				getSessionUtils().getPrincipal(request),
+				PermissionStrategy.REQUIRE_ALL_PERMISSIONS,
+				ConfigurationPermission.READ);
+
 		List<MultiselectElement> protocols = new ArrayList<MultiselectElement>();
 
 		for (String proto : server.getSSLProtocols()) {
@@ -104,6 +110,11 @@ public class ServerController extends AuthenticatedController {
 			HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException {
 
+		permissionService.verifyPermission(
+				getSessionUtils().getPrincipal(request),
+				PermissionStrategy.REQUIRE_ALL_PERMISSIONS,
+				ConfigurationPermission.READ);
+		
 		List<MultiselectElement> ciphers = new ArrayList<MultiselectElement>();
 
 		for (String proto : server.getSSLCiphers()) {
@@ -111,23 +122,33 @@ public class ServerController extends AuthenticatedController {
 		}
 		return new ResourceList<MultiselectElement>(ciphers);
 	}
-	
+
 	@AuthenticationRequired
-	@RequestMapping(value="networkInterfaces", method = RequestMethod.GET, produces = { "application/json"})
+	@RequestMapping(value = "networkInterfaces", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
-	@ResponseStatus(value=HttpStatus.OK)
-	public ResourceList<MultiselectElement> getCategories(HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, UnauthorizedException {
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<MultiselectElement> getCategories(
+			HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException {
+
+		permissionService.verifyPermission(
+				getSessionUtils().getPrincipal(request),
+				PermissionStrategy.REQUIRE_ALL_PERMISSIONS,
+				ConfigurationPermission.READ);
 		
 		List<MultiselectElement> interfaces = new ArrayList<MultiselectElement>();
-		
+
 		try {
-			Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
-			 for (NetworkInterface netint : Collections.list(nets)) {
-				 Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
-			        for (InetAddress inetAddress : Collections.list(inetAddresses)) {
-					 interfaces.add(new MultiselectElement(inetAddress.getHostAddress(), inetAddress.getHostAddress()));
-				 }
-			 }
+			Enumeration<NetworkInterface> nets = NetworkInterface
+					.getNetworkInterfaces();
+			for (NetworkInterface netint : Collections.list(nets)) {
+				Enumeration<InetAddress> inetAddresses = netint
+						.getInetAddresses();
+				for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+					interfaces.add(new MultiselectElement(inetAddress
+							.getHostAddress(), inetAddress.getHostAddress()));
+				}
+			}
 		} catch (SocketException e) {
 		}
 		return new ResourceList<MultiselectElement>(interfaces);

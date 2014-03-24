@@ -19,6 +19,7 @@ public class EventServiceImpl implements EventService {
 	static Logger log = LoggerFactory.getLogger(EventServiceImpl.class);
 	
 	Map<String,EventDefinition> eventDefinitions = new HashMap<String,EventDefinition>();
+	
 	@Autowired
 	ApplicationEventPublisher eventPublisher;
 	
@@ -70,5 +71,10 @@ public class EventServiceImpl implements EventService {
 			}
 		}
 		eventPublisher.publishEvent(event);
+	}
+	
+	@Override
+	public EventDefinition getEventDefinition(String resourceKey) {
+		return eventDefinitions.get(resourceKey);
 	}
 }
