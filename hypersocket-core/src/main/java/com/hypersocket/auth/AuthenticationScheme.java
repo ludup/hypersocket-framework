@@ -10,13 +10,11 @@ package com.hypersocket.auth;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import javax.xml.bind.annotation.XmlRootElement;
 
 import com.hypersocket.resource.Resource;
 
 @Entity
 @Table(name="auth_schemes")
-@XmlRootElement(name="authenticationScheme")
 public class AuthenticationScheme extends Resource {
 
 

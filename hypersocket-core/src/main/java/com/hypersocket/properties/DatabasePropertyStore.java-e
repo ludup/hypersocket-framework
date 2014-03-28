@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.AbstractResource;
 
 public class DatabasePropertyStore implements ResourcePropertyStore {
 
@@ -50,7 +50,7 @@ public class DatabasePropertyStore implements ResourcePropertyStore {
 		return c.getValue();
 	}
 
-	private String createCacheKey(String resourceKey, Resource resource) {
+	private String createCacheKey(String resourceKey, AbstractResource resource) {
 		String key = resourceKey;
 		if (resource != null) {
 			key += "/" + resource.getId();
@@ -88,7 +88,7 @@ public class DatabasePropertyStore implements ResourcePropertyStore {
 
 	@Override
 	public String getPropertyValue(AbstractPropertyTemplate template,
-			Resource resource) {
+			AbstractResource resource) {
 		Property c;
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
 		if (!cachedValues.containsKey(cacheKey)) {
@@ -106,7 +106,7 @@ public class DatabasePropertyStore implements ResourcePropertyStore {
 
 	@Override
 	public void setPropertyValue(AbstractPropertyTemplate template,
-			Resource resource, String value) {
+			AbstractResource resource, String value) {
 
 		DatabaseProperty property = repository.getProperty(
 				template.getResourceKey(), resource);

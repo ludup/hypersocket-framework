@@ -25,7 +25,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.AbstractResource;
 
 public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryImpl implements ResourceTemplateRepository {
 
@@ -45,6 +45,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		try {
 			Enumeration<URL> urls = getClass().getClassLoader().getResources(
 					resourceXmlPath);
+			if(!urls.hasMoreElements()) {
+				throw new IllegalArgumentException(resourceXmlPath + " does not exist!");
+			}
 			while (urls.hasMoreElements()) {
 				URL url = urls.nextElement();
 				try {
@@ -240,7 +243,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	@Override
-	public String getValue(Resource resource, String resourceKey) {
+	public String getValue(AbstractResource resource, String resourceKey) {
 
 		
 		
@@ -255,17 +258,17 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	@Override
-	public Integer getIntValue(Resource resource, String name) throws NumberFormatException {
+	public Integer getIntValue(AbstractResource resource, String name) throws NumberFormatException {
 		return Integer.parseInt(getValue(resource, name));
 	}
 
 	@Override
-	public Boolean getBooleanValue(Resource resource, String name) {
+	public Boolean getBooleanValue(AbstractResource resource, String name) {
 		return Boolean.parseBoolean(getValue(resource, name));
 	}
 
 	@Override
-	public void setValue(Resource resource, String resourceKey, String value) {
+	public void setValue(AbstractResource resource, String resourceKey, String value) {
 
 		AbstractPropertyTemplate template = configPropertyStore.getPropertyTemplate(resourceKey);
 
@@ -278,18 +281,18 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	@Override
-	public void setValue(Resource resource, String resourceKey, Integer value)  {
+	public void setValue(AbstractResource resource, String resourceKey, Integer value)  {
 		setValue(resource, resourceKey, String.valueOf(value));
 	}
 
 	@Override
-	public void setValue(Resource resource, String name, Boolean value) {
+	public void setValue(AbstractResource resource, String name, Boolean value) {
 		setValue(resource, name, String.valueOf(value));
 	}
 
 
 	@Override
-	public Collection<PropertyCategory> getPropertyCategories(Resource resource)  {
+	public Collection<PropertyCategory> getPropertyCategories(AbstractResource resource)  {
 		
 		List<PropertyCategory> cats = new ArrayList<PropertyCategory>();
 		for(PropertyCategory c : activeCategories.values()) {
@@ -314,14 +317,19 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	@Override
-	public String[] getValues(Resource resource, String name) {
-
-		String values = getValue(resource, name);
+	public String[] explodeValues(String values) {
 		StringTokenizer t = new StringTokenizer(values, "]|[");
 		List<String> ret = new ArrayList<String>();
 		while (t.hasMoreTokens()) {
 			ret.add(t.nextToken());
 		}
 		return ret.toArray(new String[0]);
+	}
+	
+	@Override
+	public String[] getValues(AbstractResource resource, String name) {
+
+		String values = getValue(resource, name);
+		return explodeValues(values);
 	}
 }

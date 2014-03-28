@@ -14,14 +14,14 @@ import com.hypersocket.repository.DetachedCriteriaConfiguration;
 
 public class ResourceRestriction implements DetachedCriteriaConfiguration {
 
-	private Resource resource;
+	private AbstractResource resource;
 	private String column;
 	
-	public ResourceRestriction(Resource resource) {
+	public ResourceRestriction(AbstractResource resource) {
 		this(resource, "resource");
 	}
 
-	public ResourceRestriction(Resource resource, String column) {
+	public ResourceRestriction(AbstractResource resource, String column) {
 		this.resource = resource;
 		this.column = column;
 	}

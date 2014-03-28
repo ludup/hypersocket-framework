@@ -2,26 +2,28 @@ package com.hypersocket.properties;
 
 import java.util.Collection;
 
-import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.AbstractResource;
 
 public interface ResourceTemplateRepository {
 
 	void loadPropertyTemplates(String xmlResourcePath);
 	
-	String getValue(Resource resource, String resourceKey);
+	String getValue(AbstractResource resource, String resourceKey);
 
-	Integer getIntValue(Resource resource, String resourceKey) throws NumberFormatException;
+	Integer getIntValue(AbstractResource resource, String resourceKey) throws NumberFormatException;
 
-	Boolean getBooleanValue(Resource resource, String resourceKey);
+	Boolean getBooleanValue(AbstractResource resource, String resourceKey);
 
-	void setValue(Resource resource, String resourceKey, String value);
+	void setValue(AbstractResource resource, String resourceKey, String value);
 
-	void setValue(Resource resource, String resourceKey, Integer value);
+	void setValue(AbstractResource resource, String resourceKey, Integer value);
 
-	void setValue(Resource resource, String name, Boolean value);
+	void setValue(AbstractResource resource, String name, Boolean value);
 
-	Collection<PropertyCategory> getPropertyCategories(Resource resource);
+	Collection<PropertyCategory> getPropertyCategories(AbstractResource resource);
 
-	String[] getValues(Resource resource, String name);
+	String[] explodeValues(String values);
+	
+	String[] getValues(AbstractResource resource, String name);
 
 }

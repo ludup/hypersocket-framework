@@ -9,13 +9,13 @@ package com.hypersocket.properties;
 
 import java.util.List;
 
-import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.AbstractResource;
 
 public interface PropertyRepository {
 
 	DatabaseProperty getProperty(String resourceKey);
 	
-	DatabaseProperty getProperty(String resourceKey, Resource resource);
+	DatabaseProperty getProperty(String resourceKey, AbstractResource resource);
 	
 	Property getProperty(Long id);
 
@@ -24,8 +24,8 @@ public interface PropertyRepository {
 	List<DatabaseProperty> getPropertiesWithValue(String resourceKey,
 			String value);
 
-	List<DatabaseProperty> getPropertiesForResource(Resource resource);
+	List<DatabaseProperty> getPropertiesForResource(AbstractResource resource);
 
-	void deletePropertiesForResource(Resource resource);
+	void deletePropertiesForResource(AbstractResource resource);
 
 }

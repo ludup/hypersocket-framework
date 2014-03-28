@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlElement;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import com.hypersocket.repository.AbstractEntity;
-import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.AbstractResource;
 
 @Entity
 @Table(name="properties", uniqueConstraints = {
@@ -41,7 +41,7 @@ public class DatabaseProperty extends AbstractEntity<Long> implements ResourcePr
 	
 	@ManyToOne(optional=true)
 	@JoinColumn(name="resource")
-	Resource resource;
+	AbstractResource resource;
 	
 	@Override
 	@XmlElement(name="id")
@@ -63,11 +63,11 @@ public class DatabaseProperty extends AbstractEntity<Long> implements ResourcePr
 	}
 	
 	@JsonIgnore
-	public Resource getResource() {
+	public AbstractResource getResource() {
 		return resource;
 	}
 
-	public void setResource(Resource resource) {
+	public void setResource(AbstractResource resource) {
 		this.resource = resource;
 	}
 	
