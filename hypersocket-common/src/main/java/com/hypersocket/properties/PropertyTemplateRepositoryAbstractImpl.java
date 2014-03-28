@@ -27,9 +27,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class PropertyTemplateRepositoryAbstractImpl implements PropertyTemplateRepository {
+public class PropertyTemplateRepositoryAbstractImpl implements
+		PropertyTemplateRepository {
 
-	static Logger log = LoggerFactory.getLogger(PropertyTemplateRepositoryAbstractImpl.class);
+	static Logger log = LoggerFactory
+			.getLogger(PropertyTemplateRepositoryAbstractImpl.class);
 
 	Map<String, PropertyStore> propertyStoresByResourceKey = new HashMap<String, PropertyStore>();
 	Map<String, PropertyStore> propertyStoresById = new HashMap<String, PropertyStore>();
@@ -38,13 +40,13 @@ public class PropertyTemplateRepositoryAbstractImpl implements PropertyTemplateR
 	Map<String, PropertyCategory> activeCategories = new HashMap<String, PropertyCategory>();
 
 	String resourceXmlPath;
-	
+
 	PropertyStore defaultStore;
-	
+
 	public PropertyTemplateRepositoryAbstractImpl(PropertyStore defaultStore) {
 		this.defaultStore = defaultStore;
 	}
-	
+
 	public void loadPropertyTemplates(String resourceXmlPath) {
 
 		try {
@@ -72,22 +74,25 @@ public class PropertyTemplateRepositoryAbstractImpl implements PropertyTemplateR
 		Document doc = xmlBuilder.parse(url.openStream());
 
 		Element root = doc.getDocumentElement();
-		if(root.hasAttribute("extends")) {
+		if (root.hasAttribute("extends")) {
 			String extendsTemplates = root.getAttribute("extends");
 			StringTokenizer t = new StringTokenizer(extendsTemplates, ",");
-			while(t.hasMoreTokens()) {
-				Enumeration<URL> extendUrls = getClass().getClassLoader().getResources(t.nextToken());
-				while(extendUrls.hasMoreElements()) {
+			while (t.hasMoreTokens()) {
+				Enumeration<URL> extendUrls = getClass().getClassLoader()
+						.getResources(t.nextToken());
+				while (extendUrls.hasMoreElements()) {
 					URL extendUrl = extendUrls.nextElement();
 					try {
 						loadPropertyTemplates(extendUrl);
-					} catch(Exception e) {
-						log.error("Failed to process " + extendUrl.toExternalForm(), e);
+					} catch (Exception e) {
+						log.error(
+								"Failed to process "
+										+ extendUrl.toExternalForm(), e);
 					}
 				}
 			}
 		}
-		
+
 		loadPropertyStores(doc);
 
 		loadPropertyCategories(doc);
@@ -139,11 +144,17 @@ public class PropertyTemplateRepositoryAbstractImpl implements PropertyTemplateR
 							store,
 							pnode.getAttribute("resourceKey"),
 							generateMetaData(pnode),
-							Integer.parseInt(pnode.getAttribute("weight")),
+							pnode.hasAttribute("weight") ? Integer
+									.parseInt(pnode.getAttribute("weight"))
+									: Integer.MAX_VALUE,
 							pnode.hasAttribute("hidden")
 									&& pnode.getAttribute("hidden")
 											.equalsIgnoreCase("true"),
-											Boolean.getBoolean("hypersocket.development") && pnode.hasAttribute("developmentValue") ? pnode.getAttribute("developmentValue") : pnode.getAttribute("defaultValue"));
+							Boolean.getBoolean("hypersocket.development")
+									&& pnode.hasAttribute("developmentValue") ? pnode
+									.getAttribute("developmentValue") : pnode
+									.hasAttribute("defaultValue") ? pnode
+									.getAttribute("defaultValue") : "");
 				} catch (Throwable e) {
 					log.error("Failed to register property item", e);
 				}
@@ -192,67 +203,65 @@ public class PropertyTemplateRepositoryAbstractImpl implements PropertyTemplateR
 		}
 
 	}
-	
+
 	private void registerPropertyItem(PropertyCategory category,
 			PropertyStore propertyStore, String resourceKey, String metaData,
 			int weight, boolean hidden, String defaultValue) {
 
-		
-		PropertyTemplate template = propertyStore.getPropertyTemplate(resourceKey);
+		PropertyTemplate template = propertyStore
+				.getPropertyTemplate(resourceKey);
 		if (template == null) {
 			template = new PropertyTemplate();
 			template.setResourceKey(resourceKey);
 		}
-		
+
 		template.setMetaData(metaData);
 		template.setDefaultValue(defaultValue);
 		template.setWeight(weight);
 		template.setHidden(hidden);
 		template.setCategory(category);
 		template.setPropertyStore(propertyStore);
-		
+
 		propertyStore.registerTemplate(template, resourceXmlPath);
 		category.getTemplates().add(template);
-		
-		Collections.sort(category.getTemplates(), new Comparator<AbstractPropertyTemplate>() {
-			@Override
-			public int compare(AbstractPropertyTemplate cat1, AbstractPropertyTemplate cat2) {
-				return cat1.getWeight().compareTo(cat2.getWeight());
-			}
-		});
-		
+
+		Collections.sort(category.getTemplates(),
+				new Comparator<AbstractPropertyTemplate>() {
+					@Override
+					public int compare(AbstractPropertyTemplate cat1,
+							AbstractPropertyTemplate cat2) {
+						return cat1.getWeight().compareTo(cat2.getWeight());
+					}
+				});
+
 		propertyStoresByResourceKey.put(resourceKey, propertyStore);
-		
+
 	}
 
 	private PropertyCategory registerPropertyCategory(String resourceKey,
 			String bundle, int weight) {
 
 		if (activeCategories.containsKey(resourceKey)) {
-			throw new IllegalStateException(
-						"Cannot register "
-								+ resourceKey
-								+ "/"
-								+ bundle
-								+ " as the resource key is already registered by bundle "
-								+ activeCategories.get(resourceKey).getBundle());
+			throw new IllegalStateException("Cannot register " + resourceKey
+					+ "/" + bundle
+					+ " as the resource key is already registered by bundle "
+					+ activeCategories.get(resourceKey).getBundle());
 		}
-		
+
 		PropertyCategory category = new PropertyCategory();
 		category.setBundle(bundle);
 		category.setCategoryKey(resourceKey);
 		category.setWeight(weight);
-		
+
 		activeCategories.put(category.getCategoryKey(), category);
 		return category;
 	}
-
 
 	@Override
 	public String getValue(String resourceKey) {
 
 		PropertyStore store = propertyStoresByResourceKey.get(resourceKey);
-		
+
 		PropertyTemplate template = store.getPropertyTemplate(resourceKey);
 
 		if (template == null) {
@@ -277,7 +286,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements PropertyTemplateR
 	public void setValue(String resourceKey, String value) {
 
 		PropertyStore store = propertyStoresByResourceKey.get(resourceKey);
-		
+
 		PropertyTemplate template = store.getPropertyTemplate(resourceKey);
 
 		if (template == null) {
@@ -295,13 +304,12 @@ public class PropertyTemplateRepositoryAbstractImpl implements PropertyTemplateR
 		}
 
 		onValueChanged(template, oldValue, value);
-		
-
 
 	}
 
-	protected void onValueChanged(PropertyTemplate template, String oldValue, String value) {
-		
+	protected void onValueChanged(PropertyTemplate template, String oldValue,
+			String value) {
+
 	}
 
 	@Override
@@ -314,11 +322,11 @@ public class PropertyTemplateRepositoryAbstractImpl implements PropertyTemplateR
 		setValue(name, String.valueOf(value));
 	}
 
-
 	@Override
 	public Collection<PropertyCategory> getPropertyCategories() {
-		
-		List<PropertyCategory> ret = new ArrayList<PropertyCategory>(activeCategories.values());
+
+		List<PropertyCategory> ret = new ArrayList<PropertyCategory>(
+				activeCategories.values());
 		Collections.sort(ret, new Comparator<PropertyCategory>() {
 			@Override
 			public int compare(PropertyCategory cat1, PropertyCategory cat2) {

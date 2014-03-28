@@ -51,7 +51,7 @@ public abstract class SystemEvent extends ApplicationEvent {
 		return this;
 	}
 	
-	public Object getAttribute(String name) {
+	public String getAttribute(String name) {
 		return attributes.get(name);
 	}
 	

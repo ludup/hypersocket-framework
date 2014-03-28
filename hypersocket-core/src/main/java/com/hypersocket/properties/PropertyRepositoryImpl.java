@@ -11,7 +11,7 @@ import java.util.List;
 
 import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.DistinctRootEntity;
-import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.ResourceRestriction;
 
 public abstract class PropertyRepositoryImpl extends AbstractRepositoryImpl<Long> implements PropertyRepository {
@@ -33,7 +33,7 @@ public abstract class PropertyRepositoryImpl extends AbstractRepositoryImpl<Long
 	}
 
 	@Override
-	public DatabaseProperty getProperty(String resourceKey, Resource resource) {
+	public DatabaseProperty getProperty(String resourceKey, AbstractResource resource) {
 		return get("resourceKey", resourceKey, DatabaseProperty.class, new ResourceRestriction(resource));
 	}
 	
@@ -43,12 +43,12 @@ public abstract class PropertyRepositoryImpl extends AbstractRepositoryImpl<Long
 	}
 
 	@Override
-	public List<DatabaseProperty> getPropertiesForResource(Resource resource) {
+	public List<DatabaseProperty> getPropertiesForResource(AbstractResource resource) {
 		return list("resource", resource, DatabaseProperty.class);
 	}
 
 	@Override
-	public void deletePropertiesForResource(Resource resource) {
+	public void deletePropertiesForResource(AbstractResource resource) {
 		
 		List<DatabaseProperty> properties = getPropertiesForResource(resource);
 		for(Property p : properties) {

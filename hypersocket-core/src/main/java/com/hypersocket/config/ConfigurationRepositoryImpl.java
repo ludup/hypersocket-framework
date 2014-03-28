@@ -18,6 +18,7 @@ import com.hypersocket.properties.PropertyTemplateRepositoryAbstractImpl;
 public class ConfigurationRepositoryImpl extends PropertyRepositoryImpl implements ConfigurationRepository {
 
 	PropertyTemplateRepository repository;
+	
 	@PostConstruct
 	private void postConstruct() {
 		repository = new PropertyTemplateRepositoryAbstractImpl(new DatabasePropertyStore(this));
