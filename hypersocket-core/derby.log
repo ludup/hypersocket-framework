@@ -1,7 +1,7 @@
 ----------------------------------------------------------------
-Wed Mar 26 15:48:52 GMT 2014:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.7.1.1 - (1040133): instance a816c00e-0144-ff14-6d97-0000084853e0 
-on database directory /Users/lee/git/hypersocket-framework/hypersocket-core/data  with class loader sun.misc.Launcher$AppClassLoader@17a7905e 
+Sun Apr 06 20:46:22 BST 2014:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.7.1.1 - (1040133): instance a816c00e-0145-3893-cec4-000006af28a0 
+on database directory /Users/lee/git/hypersocket-framework/hypersocket-core/data  with class loader sun.misc.Launcher$AppClassLoader@612dcb8c 
 Loaded from file:/Users/lee/.m2/repository/org/apache/derby/derby/10.7.1.1/derby-10.7.1.1.jar
 java.vendor=Oracle Corporation
 java.runtime.version=1.7.0_45-b18

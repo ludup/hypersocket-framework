@@ -8,6 +8,7 @@
 package com.hypersocket.config;
 
 import java.util.Collection;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -23,6 +24,7 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.resource.ResourceChangeException;
 
 @Transactional
 public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
@@ -104,5 +106,13 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public String[] getValues(String name) {
 		return repository.getValues(name);
+	}
+
+	@Override
+	public void setValues(Map<String, String> values) throws AccessDeniedException, ResourceChangeException {
+		
+		assertPermission(ConfigurationPermission.UPDATE);
+		repository.setValues(values);
+		
 	}
 }

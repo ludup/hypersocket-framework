@@ -7,12 +7,18 @@
  ******************************************************************************/
 package com.hypersocket.config;
 
+import java.util.Map;
+
 import com.hypersocket.auth.AuthenticatedService;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyTemplateService;
+import com.hypersocket.resource.ResourceChangeException;
 
 
 public interface ConfigurationService extends AuthenticatedService, PropertyTemplateService {
 
 	public static final String RESOURCE_BUNDLE = "ConfigurationService";
+
+	void setValues(Map<String, String> values) throws AccessDeniedException, ResourceChangeException;
 
 }

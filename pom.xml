@@ -44,6 +44,11 @@
 	</properties>
 
 	<modules>
+	    <module>client-common</module>
+	    <module>hypersocket-client</module>
+	    <module>client-service</module>
+	    <module>client-netty</module>
+	    <module>client-gui</module>
 		<module>hypersocket-common</module>
 		<module>hypersocket-core</module>
 		<module>hypersocket-server</module>

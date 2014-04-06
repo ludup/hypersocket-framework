@@ -347,4 +347,13 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		}
 		return ret.toArray(new String[0]);
 	}
+
+	@Override
+	public void setValues(Map<String, String> values) {
+		
+		for(String name : values.keySet()) {
+			setValue(name, values.get(name));
+		}
+		
+	}
 }
