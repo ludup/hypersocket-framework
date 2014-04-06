@@ -1,6 +1,7 @@
 package com.hypersocket.properties;
 
 import java.util.Collection;
+import java.util.Map;
 
 public interface PropertyTemplateRepository {
 
@@ -21,5 +22,7 @@ public interface PropertyTemplateRepository {
 	Collection<PropertyCategory> getPropertyCategories();
 
 	String[] getValues(String name);
+	
+	void setValues(Map<String,String> values);
 
 }

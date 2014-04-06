@@ -163,7 +163,7 @@ public class CertificateController extends AuthenticatedController {
 	@ResponseBody
 	public CertificateStatus uploadCertificate(HttpServletRequest request,
 			HttpServletResponse response,
-			@RequestPart(value = "file") MultipartFile file,
+			@RequestPart(value = "file") MultipartFile[] file,
 			@RequestPart(value = "bundle") MultipartFile bundle)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
@@ -175,7 +175,7 @@ public class CertificateController extends AuthenticatedController {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
-				if (certificateService.updateCertificate(file, bundle)) {
+				if (certificateService.updateCertificate(file[0], bundle)) {
 					status.setSuccess(true);
 					status.setMessage(I18N.getResource(
 							sessionUtils.getLocale(request),

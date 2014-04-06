@@ -1,6 +1,7 @@
 package com.hypersocket.config;
 
 import java.util.Collection;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -67,6 +68,13 @@ public class ConfigurationRepositoryImpl extends PropertyRepositoryImpl implemen
 	@Override
 	public String[] getValues(String name) {
 		return repository.getValues(name);
+	}
+
+	@Override
+	public void setValues(Map<String, String> values) {
+		
+		repository.setValues(values);
+		
 	}
 
 	

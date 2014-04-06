@@ -7,6 +7,9 @@
  ******************************************************************************/
 package com.hypersocket.config.json;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -31,6 +34,7 @@ import com.hypersocket.json.ResourceList;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.session.json.SessionTimeoutException;
 
 @Controller
@@ -64,13 +68,21 @@ public class ConfigurationController extends AuthenticatedController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			for (PropertyItem item : items) {
-				configurationService.setValue(item.getId(), item.getValue());
+			
+			Map<String,String> values=  new HashMap<String,String>();
+			for(PropertyItem item : items) {
+				values.put(item.getId(), item.getValue());
 			}
-
+			
+			configurationService.setValues(values);
+			
 			return new RequestStatus(true, I18N.getResource(
 					sessionUtils.getLocale(request), RESOURCE_KEY,
 					"message.saved"));
+		} catch (ResourceChangeException e) {
+			return new RequestStatus(false, I18N.getResource(
+					sessionUtils.getLocale(request), e.getBundle(),
+					e.getResourceKey()));
 		} finally {
 			clearAuthenticatedContext();
 		}
