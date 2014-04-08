@@ -162,7 +162,7 @@
 				<plugin>
 					<groupId>com.nervepoint</groupId>
 					<artifactId>google-translate-v2-java-maven-plugin</artifactId>
-					<version>0.0.2</version>
+					<version>0.0.3-SNAPSHOT</version>
 
 					<configuration>
 						<apikey>${googleAPIKey}</apikey>
@@ -196,7 +196,7 @@
 											google-translate-v2-java-maven-plugin
 										</artifactId>
 										<versionRange>
-											[0.0.2,)
+											[0.0.3-SNAPSHOT,)
 										</versionRange>
 										<goals>
 											<goal>translate</goal>
