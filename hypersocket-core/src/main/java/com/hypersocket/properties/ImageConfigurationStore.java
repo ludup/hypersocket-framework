@@ -2,16 +2,19 @@ package com.hypersocket.properties;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Component;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -24,23 +27,44 @@ public class ImageConfigurationStore implements XmlTemplatePropertyStore {
 	Map<String,PropertyTemplate> templates = new HashMap<String,PropertyTemplate>();
 	Map<String,List<PropertyTemplate>> templatesByModule = new HashMap<String,List<PropertyTemplate>>();
 	
+	Properties resourceKeyImages;
+	File resourceKeyImagesFile;
+	String id;
+	
 	public ImageConfigurationStore() {
 		
 	}
 
 	@Override
 	public String getPropertyValue(PropertyTemplate template) {
-		File val = new File(imageResources, template.getResourceKey());
+		if(!resourceKeyImages.containsKey(template.getResourceKey())) {
+			return null;
+		}
+		File val = new File(imageResources, resourceKeyImages.getProperty(template.getResourceKey()));
 		if (!val.exists()) {
 			return null;
 		}
-		return createURL(template.getResourceKey());
+		return createURL(resourceKeyImages.getProperty(template.getResourceKey()));
 	}
 
 	@Override
 	public void setProperty(PropertyTemplate template, String value) {
 
-		File val = new File(imageResources, template.getResourceKey());
+		String filename = template.getResourceKey();
+		int idx;
+		if((idx = value.indexOf(';')) > -1) {
+			filename = value.substring(0, idx);
+			value = value.substring(idx+1);
+		}
+		
+		resourceKeyImages.put(template.getResourceKey(), filename);
+		try {
+			resourceKeyImages.store(new FileOutputStream(resourceKeyImagesFile), "");
+		} catch (IOException e1) {
+			throw new IllegalStateException("Failed to save image.properties", e1);
+		}
+		
+		File val = new File(imageResources, filename);
 
 		FileOutputStream out;
 		try {
@@ -62,13 +86,13 @@ public class ImageConfigurationStore implements XmlTemplatePropertyStore {
 		
 		List<Property> props = new ArrayList<Property>();
 		for(PropertyTemplate template : templatesByModule.get(module)) {
-			props.add(new ImageProperty(template.getResourceKey(), createURL(template.getResourceKey())));
+			props.add(new ImageProperty(template.getResourceKey(), createURL(resourceKeyImages.getProperty(template.getResourceKey()))));
 		}
 		return props;
 	}
 	
-	private String createURL(String resourceKey) {
-		return "/hypersocket/api/images/" + resourceKey;
+	private String createURL(String filename) {
+		return System.getProperty("hypersocket.appPath", "/hypersocket") + "/"+ id + "/" + filename;
 	}
 
 
@@ -95,8 +119,18 @@ public class ImageConfigurationStore implements XmlTemplatePropertyStore {
 			throw new IOException("<propertyStore> of type ImageConfigurationStore requires a child <filename> element");
 		}
 
+		id = element.getAttribute("id");
+		
 		imageResources = new File(filename.item(0).getTextContent().replace("${hypersocket.conf}", System.getProperty("hypersocket.conf", "conf")));
 		imageResources.mkdirs();
+		
+		resourceKeyImages = new Properties();
+		resourceKeyImagesFile = new File(imageResources, "image.properties");
+		
+		if(resourceKeyImagesFile.exists()) {
+			resourceKeyImages.load(new FileInputStream(resourceKeyImagesFile));
+		}
+		
 	}
 
 }

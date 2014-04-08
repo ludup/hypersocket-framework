@@ -346,6 +346,9 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		if (log.isInfoEnabled())
 			log.info("Server started");
 		
+		System.setProperty("hypersocket.appPath", getBasePath());
+		System.setProperty("hypersocket.uiPath", getUiPath());
+		
 		eventService.publishEvent(new ServerStartedEvent(this));
 
 	}
@@ -573,6 +576,15 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 			if(resourceKey.equals("ssl.ciphers") || resourceKey.equals("ssl.protocols")) {
 				rebuildEnabledCipherSuites();
 			}
+		}
+		if(event instanceof ConfigurationChangedEvent) {
+			ConfigurationChangedEvent configEvent = (ConfigurationChangedEvent) event;
+			if(configEvent.getResourceKey().equals("application.path")) {
+				System.setProperty("hypersocket.appPath", getBasePath());
+			} else if(configEvent.getResourceKey().equals("ui.path")) {
+				System.setProperty("hypersocket.uiPath", getUiPath());
+			}
+			
 		}
 	}
 	
