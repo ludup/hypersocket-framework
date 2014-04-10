@@ -63,7 +63,8 @@ public class Main {
 			File dir = new File(System.getProperty("user.home"), ".hypersocket");
 			dir.mkdirs();
 			
-			PropertyConfigurator.configure("conf/log4j-gui.properties");
+			PropertyConfigurator.configure("conf" + File.separator + "log4j-gui.properties");
+			BasicConfigurator.configure();
 		} catch (Exception e) {
 			BasicConfigurator.configure();
 		}
