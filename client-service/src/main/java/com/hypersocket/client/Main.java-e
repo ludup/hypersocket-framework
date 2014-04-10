@@ -9,6 +9,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.PropertyConfigurator;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ public class Main {
 	ConnectionServiceImpl connectionService;
 	ConfigurationServiceImpl configurationService;
 	ClientServiceImpl clientService;
-	
+
 	Registry registry;
 
 	Main() {
@@ -49,12 +50,13 @@ public class Main {
 		}
 
 		configurationService = new ConfigurationServiceImpl();
-		
-		if(log.isInfoEnabled()) {
+
+		if (log.isInfoEnabled()) {
 			log.info("Creating ClientService");
 		}
-		
-		clientService = new ClientServiceImpl(connectionService, configurationService);
+
+		clientService = new ClientServiceImpl(connectionService,
+				configurationService);
 	}
 
 	boolean publishServices() {
@@ -87,7 +89,7 @@ public class Main {
 		}
 
 	}
-	
+
 	public boolean start() {
 		return clientService.startService();
 	}
@@ -99,9 +101,10 @@ public class Main {
 
 		File logs = new File("logs");
 		logs.mkdirs();
-		
-		PropertyConfigurator.configureAndWatch("conf/log4j.properties");
 
+		PropertyConfigurator.configureAndWatch("conf" + File.separator
+				+ "log4j.properties");
+		BasicConfigurator.configure();
 		if (System.getSecurityManager() == null) {
 			System.setSecurityManager(new RMISecurityManager());
 		}
@@ -115,7 +118,7 @@ public class Main {
 				System.exit(1);
 			}
 
-			if(!main.start()) {
+			if (!main.start()) {
 				System.exit(2);
 			}
 		} catch (Exception e) {
