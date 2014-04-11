@@ -1,6 +1,9 @@
 package com.hypersocket.client.gui;
 
 import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.NotBoundException;
@@ -11,6 +14,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
@@ -78,15 +82,11 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 	ConfigurationService configurationService;
 	ClientService clientService;
 	ConnectionsWindow connectionsWindow;
-	
-	int rmiPort;
 
-	protected SWTGui(Display display, Shell shell, int rmiPort)
-			throws RemoteException {
+	protected SWTGui(Display display, Shell shell) throws RemoteException {
 		super();
 		this.display = display;
 		this.shell = shell;
-		this.rmiPort = rmiPort;
 
 		try {
 			configureGrowl();
@@ -134,17 +134,17 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 	}
 
 	public void notify(String msg, int type) {
-		switch(type) {
+		switch (type) {
 		case NOTIFY_CONNECT:
 		case NOTIFY_DISCONNECT:
 			Display.getDefault().asyncExec(new Runnable() {
-			    public void run() {
-			    	if(connectionsWindow!=null) {
+				public void run() {
+					if (connectionsWindow != null) {
 						connectionsWindow.updateActions();
 					}
-			    }
+				}
 			});
-			
+
 			break;
 		default:
 			break;
@@ -161,15 +161,37 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 							.header(Gntp.APP_SPECIFIC_HEADER_PREFIX
 									+ "Filename", "file.txt").build(), 5,
 					TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
+		} catch (Throwable e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	private void connectToService(int port) throws RemoteException,
-			NotBoundException {
+	private void connectToService() throws RemoteException, NotBoundException {
+
+		Properties properties = new Properties();
+		FileInputStream in;
 		try {
+			if (Boolean.getBoolean("hypersocket.development")) {
+				in = new FileInputStream(System.getProperty("user.home") + File.separator + ".hypersocket"
+						+ File.separator + "conf" + File.separator
+						+ "rmi.properties");
+			} else {
+				in = new FileInputStream("conf" + File.separator + "rmi.properties");
+			}
+
+			try {
+				properties.load(in);
+			} finally {
+				in.close();
+			}
+		} catch (IOException e2) {
+			e2.printStackTrace();
+		}
+		int port = Integer.parseInt(properties.getProperty("port", "50000"));
+
+		try {
+
 			if (log.isDebugEnabled()) {
 				log.debug("Connecting to local service on port " + port);
 			}
@@ -205,7 +227,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 				Thread.sleep(1000);
 			} catch (InterruptedException e1) {
 			}
-			connectToService(port);
+			connectToService();
 		}
 
 	}
@@ -324,9 +346,9 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 		connectionsItem.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event e) {
 
-				if(connectionsWindow==null) {
+				if (connectionsWindow == null) {
 					connectionsWindow = new ConnectionsWindow(SWTGui.this,
-						clientService);
+							clientService);
 					shell.pack();
 					connectionsWindow.open();
 				}
@@ -344,21 +366,25 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 				System.exit(0);
 			}
 		});
-		
+
 		shell.addShellListener(new ShellListener() {
-            public void shellIconified(ShellEvent e) {
-            }
-            public void shellDeiconified(ShellEvent e) {
-            }
-            public void shellDeactivated(ShellEvent e) {
-            }
-            public void shellClosed(ShellEvent e) {
-                shell.setVisible(false);
-                e.doit = false;
-            }
-            public void shellActivated(ShellEvent e) {
-            }
-        });
+			public void shellIconified(ShellEvent e) {
+			}
+
+			public void shellDeiconified(ShellEvent e) {
+			}
+
+			public void shellDeactivated(ShellEvent e) {
+			}
+
+			public void shellClosed(ShellEvent e) {
+				shell.setVisible(false);
+				e.doit = false;
+			}
+
+			public void shellActivated(ShellEvent e) {
+			}
+		});
 
 		trayItem.addListener(SWT.MenuDetect, new Listener() {
 			public void handleEvent(Event event) {
@@ -380,7 +406,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 	class RMIConnectThread extends Thread {
 		public void run() {
 			try {
-				connectToService(rmiPort);
+				connectToService();
 			} catch (Exception e) {
 				if (log.isDebugEnabled()) {
 					log.debug("Failed to connect to service", e);
