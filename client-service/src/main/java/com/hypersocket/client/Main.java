@@ -83,7 +83,7 @@ public class Main {
 
 		Remote stub = UnicastRemoteObject.exportObject(obj, 50000);
 		registry.rebind(name, stub);
-
+		
 		if (log.isInfoEnabled()) {
 			log.info("Published service " + name);
 		}

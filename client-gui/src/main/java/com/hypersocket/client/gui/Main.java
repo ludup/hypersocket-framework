@@ -5,7 +5,10 @@ import java.rmi.RMISecurityManager;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.PropertyConfigurator;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +42,12 @@ public class Main {
 					log.error("Failed to parse expected port argument with value of " + args[0]);
 				}
 			}
+			
+			shell.addListener(SWT.CLOSE, new Listener() {
+				public void handleEvent(Event event) {
+					event.doit = false;
+				}
+			});
 			
 			swtGui = new SWTGui(display, shell, rmiPort);
 			

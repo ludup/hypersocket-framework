@@ -2,3 +2,5 @@
 /logs
 /conf
 /.settings
+/data/
+*.log

@@ -70,9 +70,6 @@ public class ClientServiceImpl implements ClientService,
 
 	@Override
 	public void registerGUI(GUICallback gui) throws RemoteException {
-		if (this.gui != null) {
-			throw new RemoteException("A gui is already registered");
-		}
 		this.gui = gui;
 		gui.registered();
 		if (log.isInfoEnabled()) {
@@ -82,12 +79,10 @@ public class ClientServiceImpl implements ClientService,
 
 	@Override
 	public void unregisterGUI(GUICallback gui) throws RemoteException {
-		if (this.gui.equals(gui)) {
-			this.gui = null;
-			gui.unregistered();
-			if (log.isInfoEnabled()) {
-				log.info("Unregistered GUI");
-			}
+		this.gui = null;
+		gui.unregistered();
+		if (log.isInfoEnabled()) {
+			log.info("Unregistered GUI");
 		}
 	}
 
