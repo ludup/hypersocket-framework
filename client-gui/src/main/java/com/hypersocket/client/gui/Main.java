@@ -2,6 +2,7 @@ package com.hypersocket.client.gui;
 
 import java.io.File;
 import java.rmi.RMISecurityManager;
+import java.util.prefs.Preferences;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.PropertyConfigurator;
@@ -33,23 +34,13 @@ public class Main {
 			display = new Display();
 			shell = new Shell(display);
 			
-			int rmiPort = 50000;
-			
-			if(args.length > 0) {
-				try {
-					rmiPort = Integer.parseInt(args[0]);
-				} catch (Exception e) {
-					log.error("Failed to parse expected port argument with value of " + args[0]);
-				}
-			}
-			
 			shell.addListener(SWT.CLOSE, new Listener() {
 				public void handleEvent(Event event) {
 					event.doit = false;
 				}
 			});
 			
-			swtGui = new SWTGui(display, shell, rmiPort);
+			swtGui = new SWTGui(display, shell);
 			
 			while (!shell.isDisposed()) {
 				if (!display.readAndDispatch())
