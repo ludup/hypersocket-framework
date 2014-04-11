@@ -3,12 +3,14 @@ package com.hypersocket.client.gui;
 import java.io.File;
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
@@ -21,6 +23,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -71,6 +75,8 @@ public class ConnectionsWindow extends ApplicationWindow {
 	private Action connectAction;
 	private Action disconnectAction;
 
+	private Preferences prefs;
+	
 	/**
 	 * @wbp.parser.constructor
 	 */
@@ -83,16 +89,56 @@ public class ConnectionsWindow extends ApplicationWindow {
 	}
 
 	public ConnectionsWindow(SWTGui gui, ClientService clientService) {
-		super(gui.getShell());
-		setShellStyle(SWT.MIN);
+		super(new Shell(gui.getShell()));
 		this.gui = gui;
 		this.clientService = clientService;
+		prefs = Preferences.userRoot().node(getClass().getName());
+		setShellStyle(SWT.CLOSE | SWT.RESIZE);
 		createActions();
 		addToolBar(SWT.FLAT | SWT.WRAP);
 		addMenuBar();
 		addStatusLine();
 	}
 
+	public ShellListener getShellListener() {
+		return new ShellListener() {
+
+			@Override
+			public void shellActivated(ShellEvent evt) {
+				getShell().setSize(prefs.getInt("window.width", 300),
+						prefs.getInt("window.height", 525));
+			}
+
+			@Override
+			public void shellClosed(ShellEvent evt) {
+				evt.doit = false;
+				saveSize();
+				getShell().setVisible(false);
+			}
+
+			@Override
+			public void shellDeactivated(ShellEvent evt) {
+				saveSize();
+			}
+
+			@Override
+			public void shellDeiconified(ShellEvent evt) {
+				getShell().setSize(prefs.getInt("window.width", 300),
+						prefs.getInt("window.height", 525));
+			}
+
+			@Override
+			public void shellIconified(ShellEvent evt) {
+				saveSize();
+			}
+			
+		};
+	}
+	
+	private void saveSize() {
+		prefs.put("window.width", String.valueOf(getShell().getBounds().width));
+		prefs.put("window.height", String.valueOf(getShell().getBounds().height));
+	}
 	/**
 	 * Create contents of the application window.
 	 * 
@@ -127,13 +173,13 @@ public class ConnectionsWindow extends ApplicationWindow {
 				new ConnectionLabelProvider());
 
 		table.setLinesVisible(true);
-		table.setBounds(0, 0, 280, 525);
+		table.setBounds(0, 0, prefs.getInt("window.width", 300), prefs.getInt("window.height", 525));
 		table.setHeaderVisible(false);
 		tableViewer.setContentProvider(new ClientListContentProvider());
 
 		table.addListener(SWT.MeasureItem, new Listener() {
 			public void handleEvent(Event event) {
-				event.height = 32;
+				event.height = 48;
 			}
 		});
 
@@ -152,7 +198,7 @@ public class ConnectionsWindow extends ApplicationWindow {
 		});
 
 		TableViewerColumn tvc1 = new TableViewerColumn(tableViewer, SWT.NONE);
-		tvc1.getColumn().setWidth(500);
+		tvc1.getColumn().setWidth(table.getBounds().width);
 		tvc1.setLabelProvider(styledCellLP1);
 
 		scrolledComposite.setContent(table);
@@ -212,8 +258,8 @@ public class ConnectionsWindow extends ApplicationWindow {
 				}
 			};
 
-			// action_4.setImageDescriptor(ImageDescriptor.createFromImage(SWTResourceManager.getImage(ConnectionsDialog.class,
-			// "/network.png")));
+			newAction.setImageDescriptor(ImageDescriptor.createFromImage(SWTResourceManager.getImage(ConnectionsWindow.class,
+					 "/new.png")));
 		}
 		{
 			editAction = new Action(I18N.getResource("edit.text")) {
@@ -236,8 +282,8 @@ public class ConnectionsWindow extends ApplicationWindow {
 					}
 				}
 			};
-			// action_5.setImageDescriptor(ImageDescriptor.createFromImage(SWTResourceManager.getImage(ConnectionsDialog.class,
-			// "/network.png")));
+			editAction.setImageDescriptor(ImageDescriptor.createFromImage(SWTResourceManager.getImage(ConnectionsWindow.class,
+					 "/edit.png")));
 		}
 		{
 			deleteAction = new Action(I18N.getResource("delete.text")) {
@@ -260,8 +306,8 @@ public class ConnectionsWindow extends ApplicationWindow {
 					}
 				}
 			};
-			// action_6.setImageDescriptor(ImageDescriptor.createFromImage(SWTResourceManager.getImage(ConnectionsDialog.class,
-			// "/plus.png")));
+			deleteAction.setImageDescriptor(ImageDescriptor.createFromImage(SWTResourceManager.getImage(ConnectionsWindow.class,
+					 "/delete.png")));
 		}
 		{
 			connectAction = new Action(I18N.getResource("connect.text")) {
@@ -269,6 +315,8 @@ public class ConnectionsWindow extends ApplicationWindow {
 					connectOrDisconnect();
 				}
 			};
+			connectAction.setImageDescriptor(ImageDescriptor.createFromImage(SWTResourceManager.getImage(ConnectionsWindow.class,
+			 "/network_open.png")));
 		}
 		{
 			disconnectAction = new Action(I18N.getResource("disconnect.text")) {
@@ -276,6 +324,8 @@ public class ConnectionsWindow extends ApplicationWindow {
 					connectOrDisconnect();
 				}
 			};
+			disconnectAction.setImageDescriptor(ImageDescriptor.createFromImage(SWTResourceManager.getImage(ConnectionsWindow.class,
+					 "/network_close.png")));
 		}
 	}
 
@@ -435,13 +485,15 @@ public class ConnectionsWindow extends ApplicationWindow {
 					if (!gui.getShell().isDisposed()) {
 						gui.getShell().getDisplay().syncExec(new Runnable() {
 							public void run() {
-								// try {
+								if(log.isInfoEnabled()) {
+									log.info("Getting status updates");
+								}
 								synchronized (tableViewer) {
 									tableViewer.refresh();
 								}
-								// } catch (Throwable e) {
-								// log.error("Table status update failed", e);
-								// }
+								if(log.isInfoEnabled()) {
+									log.info("Got status updates");
+								}
 							}
 						});
 					}

@@ -115,6 +115,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 
 	@Override
 	public void unregistered() throws RemoteException {
+		registrations--;
 		setOnlineState(false);
 		showPopupMessage("Disconnected from local Hypersocket service",
 				"Hypersocket Client");
@@ -326,9 +327,11 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 				if(connectionsWindow==null) {
 					connectionsWindow = new ConnectionsWindow(SWTGui.this,
 						clientService);
+					shell.pack();
 					connectionsWindow.open();
 				}
-				shell.setActive();
+				connectionsWindow.getShell().setVisible(true);
+				connectionsWindow.getShell().setActive();
 			}
 		});
 
