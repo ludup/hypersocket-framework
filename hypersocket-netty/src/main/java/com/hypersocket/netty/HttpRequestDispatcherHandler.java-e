@@ -196,7 +196,13 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			}
 		} else {
 			for (HttpRequestHandler handler : server.getHttpHandlers()) {
+				if(log.isDebugEnabled()) {
+					log.debug("Checking HTTP handler: " + handler.getName());
+				}
 				if (handler.handlesRequest(servletRequest)) {
+					if(log.isDebugEnabled()) {
+						log.debug(handler.getName() + " is processing HTTP request");
+					}
 					handler.handleHttpRequest(servletRequest, nettyResponse,
 							this);
 					return;
