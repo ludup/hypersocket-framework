@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.rmi.AccessException;
 import java.rmi.NoSuchObjectException;
-import java.rmi.NotBoundException;
 import java.rmi.RMISecurityManager;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -15,7 +14,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Properties;
 import java.util.Random;
 
-import org.apache.derby.iapi.tools.i18n.LocalizedResource;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.PropertyConfigurator;
 import org.quartz.SchedulerException;
@@ -124,7 +122,7 @@ public class Main {
 					
 				}
 				
-				String[] list = registry.list();
+				registry.list();
 
 			}
 		} catch (AccessException e) {

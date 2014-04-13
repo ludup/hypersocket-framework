@@ -2,7 +2,6 @@ package com.hypersocket.client.gui;
 
 import java.io.File;
 import java.rmi.RMISecurityManager;
-import java.util.prefs.Preferences;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.PropertyConfigurator;

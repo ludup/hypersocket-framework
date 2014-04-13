@@ -33,6 +33,8 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 	static Logger log = LoggerFactory
 			.getLogger(PropertyTemplateRepositoryAbstractImpl.class);
 
+	public static final String SYSTEM_GROUP = "system";
+	
 	Map<String, PropertyStore> propertyStoresByResourceKey = new HashMap<String, PropertyStore>();
 	Map<String, PropertyStore> propertyStoresById = new HashMap<String, PropertyStore>();
 
@@ -119,6 +121,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 			PropertyCategory cat = registerPropertyCategory(
 					node.getAttribute("resourceKey"),
+					node.hasAttribute("group") ? node.getAttribute("group") : SYSTEM_GROUP,
 					node.getAttribute("resourceBundle"),
 					Integer.parseInt(node.getAttribute("weight")));
 
@@ -173,9 +176,27 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 			}
 			buf.append("\"");
 			buf.append(n.getNodeName());
-			buf.append("\": \"");
-			buf.append(n.getNodeValue());
-			buf.append("\"");
+			buf.append("\": ");
+			if(n.getNodeName().equals("options")) {
+				buf.append("[");
+				StringTokenizer t = new StringTokenizer(n.getNodeValue(), ",");
+				while(t.hasMoreTokens()) {
+					String opt = t.nextToken();
+					buf.append("{ \"name\": \"");
+					buf.append(opt);
+					buf.append("\", \"value\": \"");
+					buf.append(opt);
+					buf.append("\"}");
+					if(t.hasMoreTokens()) {
+						buf.append(",");
+					}
+				}
+				buf.append("]");
+			} else {
+				buf.append("\"");
+				buf.append(n.getNodeValue());
+				buf.append("\"");
+			}
 		}
 		buf.append("}");
 		return buf.toString();
@@ -238,19 +259,20 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 	}
 
-	private PropertyCategory registerPropertyCategory(String resourceKey,
+	private PropertyCategory registerPropertyCategory(String categoryKey, String categoryGroup,
 			String bundle, int weight) {
 
-		if (activeCategories.containsKey(resourceKey)) {
-			throw new IllegalStateException("Cannot register " + resourceKey
+		if (activeCategories.containsKey(categoryKey)) {
+			throw new IllegalStateException("Cannot register " + categoryKey
 					+ "/" + bundle
 					+ " as the resource key is already registered by bundle "
-					+ activeCategories.get(resourceKey).getBundle());
+					+ activeCategories.get(categoryKey).getBundle());
 		}
 
 		PropertyCategory category = new PropertyCategory();
 		category.setBundle(bundle);
-		category.setCategoryKey(resourceKey);
+		category.setCategoryKey(categoryKey);
+		category.setCategoryGroup(categoryGroup);
 		category.setWeight(weight);
 
 		activeCategories.put(category.getCategoryKey(), category);
@@ -324,9 +346,18 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 	@Override
 	public Collection<PropertyCategory> getPropertyCategories() {
+		return getPropertyCategories(SYSTEM_GROUP);
+	}
+	
+	@Override
+	public Collection<PropertyCategory> getPropertyCategories(String group) {
 
-		List<PropertyCategory> ret = new ArrayList<PropertyCategory>(
-				activeCategories.values());
+		List<PropertyCategory> ret = new ArrayList<PropertyCategory>();
+		for(PropertyCategory c : activeCategories.values()) {
+			if(c.getCategoryGroup().equals(group)) {
+				ret.add(c);
+			}
+		}
 		Collections.sort(ret, new Comparator<PropertyCategory>() {
 			@Override
 			public int compare(PropertyCategory cat1, PropertyCategory cat2) {

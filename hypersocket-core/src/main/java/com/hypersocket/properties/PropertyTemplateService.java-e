@@ -23,6 +23,9 @@ public interface PropertyTemplateService {
 	Collection<PropertyCategory> getPropertyCategories()
 			throws AccessDeniedException;
 
+	Collection<PropertyCategory> getPropertyCategories(String group)
+			throws AccessDeniedException;
+	
 	String[] getValues(String name);
 
 }

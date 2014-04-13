@@ -20,6 +20,8 @@ public interface PropertyTemplateRepository {
 	void setValue(String name, Boolean value);
 
 	Collection<PropertyCategory> getPropertyCategories();
+	
+	Collection<PropertyCategory> getPropertyCategories(String group);
 
 	String[] getValues(String name);
 	
