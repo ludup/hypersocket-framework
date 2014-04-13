@@ -13,6 +13,7 @@ import java.util.List;
 public class PropertyCategory {
 
 	String categoryKey;
+	String categoryGroup;
 	String bundle;
 	int weight;
 	List<AbstractPropertyTemplate> templates = new ArrayList<AbstractPropertyTemplate>();
@@ -52,4 +53,14 @@ public class PropertyCategory {
 	public void setWeight(int weight) {
 		this.weight = weight;
 	}
+
+	public String getCategoryGroup() {
+		return categoryGroup;
+	}
+
+	public void setCategoryGroup(String categoryGroup) {
+		this.categoryGroup = categoryGroup;
+	}
+	
+	
 }

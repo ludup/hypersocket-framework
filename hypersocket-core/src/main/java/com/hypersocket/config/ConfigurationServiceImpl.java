@@ -115,4 +115,11 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 		repository.setValues(values);
 		
 	}
+
+	@Override
+	public Collection<PropertyCategory> getPropertyCategories(String group)
+			throws AccessDeniedException {
+		assertPermission(ConfigurationPermission.READ);
+		return repository.getPropertyCategories(group);
+	}
 }

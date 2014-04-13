@@ -3,7 +3,6 @@ package com.hypersocket.client.gui;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.NotBoundException;
