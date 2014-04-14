@@ -24,7 +24,7 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="category.localization"
 		resourceBundle="I18NService" weight="700">
-		<property resourceKey="user.locales" inputType="boolean"
+		<property resourceKey="user.locales" inputType="switch"
 			defaultValue="true" weight="0" />
 		<property resourceKey="current.locale" inputType="select"
 			url="locales" defaultValue="en" weight="100" nameIsResourceKey="true" />

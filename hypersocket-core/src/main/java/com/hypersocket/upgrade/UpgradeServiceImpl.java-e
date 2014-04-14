@@ -206,7 +206,6 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-
 		}
 
 	}
