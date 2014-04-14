@@ -17,7 +17,7 @@
 		<property resourceKey="https.port" inputType="number" minValue="1"
 			maxValue="65535" restart="true" defaultValue="443" weight="400"
 			store="hypersocketServer" />
-		<property resourceKey="require.https" inputType="boolean"
+		<property resourceKey="require.https" inputType="switch"
 			restart="false" defaultValue="true" weight="500" store="hypersocketServer" />
 		<property resourceKey="listening.interfaces" inputType="multipleSelect"
 			restart="false" url="networkInterfaces" selectAllIfEmpty="true"
