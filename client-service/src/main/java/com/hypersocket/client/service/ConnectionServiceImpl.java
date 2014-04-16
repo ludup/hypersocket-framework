@@ -66,4 +66,13 @@ public class ConnectionServiceImpl implements ConnectionService {
 		
 	}
 
+	@Override
+	public Connection getConnection(Long id) throws RemoteException {
+		
+		Criteria crit = session.createCriteria(ConnectionImpl.class);
+		crit.add(Restrictions.eq("id", id));
+		return (Connection) crit.uniqueResult();
+		
+	}
+
 }
