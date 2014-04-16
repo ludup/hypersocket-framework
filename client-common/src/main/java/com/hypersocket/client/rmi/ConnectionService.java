@@ -13,5 +13,7 @@ public interface ConnectionService extends Remote {
 	public List<Connection> getConnections() throws RemoteException;
 
 	public void delete(Connection con) throws RemoteException;
+
+	public Connection getConnection(Long id) throws RemoteException;
 	
 }
