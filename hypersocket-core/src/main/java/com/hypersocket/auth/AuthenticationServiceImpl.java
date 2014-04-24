@@ -64,10 +64,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 	@Autowired
 	EventService eventService;
-	
+
 	@Autowired
 	I18NService i18nService;
-	
+
 	Map<String, Authenticator> authenticators = new HashMap<String, Authenticator>();
 
 	List<PostAuthenticationStep> postAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
@@ -77,10 +77,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	@PostConstruct
 	private void postConstruct() {
 
-		if(log.isInfoEnabled()) {
+		if (log.isInfoEnabled()) {
 			log.info("Configuring Authentication Service");
 		}
-		
+
 		PermissionCategory authentication = permissionService
 				.registerPermissionCategory(RESOURCE_BUNDLE,
 						"category.authentication");
@@ -160,7 +160,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 					state.setScheme(getHTTPScheme());
 				}
-			} 
+			}
 		}
 
 		if (state.getRealm() == null) {
@@ -179,12 +179,12 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			}
 		}
 
-		if(state.getScheme()==null) {
+		if (state.getScheme() == null) {
 			state.setScheme(getDefaultScheme(remoteAddress, environment,
 					state.getRealm()));
 
 		}
-		
+
 		state.setModules(repository.getModulesForScheme(state.getScheme()));
 
 		return state;
@@ -200,27 +200,31 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 		if (state.isAuthenticationComplete()) {
 
-			switch (state.getCurrentPostAuthenticationStep().process(state,
-					parameterMap)) {
-			case INSUFFICIENT_DATA: {
-				state.setLastErrorMsg("error.insufficentData");
-				state.setLastErrorIsResourceKey(true);
-				break;
-			}
-			case AUTHENTICATION_SUCCESS: {
-
-				state.nextPostAuthenticationStep();
-
-				if (!state.hasPostAuthenticationStep()) {
-					state.setSession(completeLogon(state));
+			if (state.getCurrentPostAuthenticationStep() == null) {
+				state.setSession(completeLogon(state));
+			} else {
+				switch (state.getCurrentPostAuthenticationStep().process(state,
+						parameterMap)) {
+				case INSUFFICIENT_DATA: {
+					state.setLastErrorMsg("error.insufficentData");
+					state.setLastErrorIsResourceKey(true);
+					break;
 				}
-				break;
-			}
-			default: {
-				state.setLastErrorMsg("error.genericLogonError");
-				state.setLastErrorIsResourceKey(true);
-				break;
-			}
+				case AUTHENTICATION_SUCCESS: {
+
+					state.nextPostAuthenticationStep();
+
+					if (!state.hasPostAuthenticationStep()) {
+						state.setSession(completeLogon(state));
+					}
+					break;
+				}
+				default: {
+					state.setLastErrorMsg("error.genericLogonError");
+					state.setLastErrorIsResourceKey(true);
+					break;
+				}
+				}
 			}
 		} else {
 			Authenticator authenticator = authenticators.get(state
@@ -236,21 +240,21 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
 				state.setLastErrorMsg("error.genericLogonError");
 				state.setLastErrorIsResourceKey(true);
-				eventService.publishEvent(new AuthenticationEvent(this, 
-							state, authenticator, "hint.badCredentials"));
+				eventService.publishEvent(new AuthenticationEvent(this, state,
+						authenticator, "hint.badCredentials"));
 				break;
 			}
 			case AUTHENTICATION_FAILURE_INVALID_PRINCIPAL: {
 				state.setLastErrorMsg("error.genericLogonError");
 				state.setLastErrorIsResourceKey(true);
-				eventService.publishEvent(new AuthenticationEvent(this, 
-							state, authenticator, "hint.invalidPrincipal"));
+				eventService.publishEvent(new AuthenticationEvent(this, state,
+						authenticator, "hint.invalidPrincipal"));
 			}
 			case AUTHENTICATION_FAILURE_INVALID_REALM: {
 				state.setLastErrorMsg("error.genericLogonError");
 				state.setLastErrorIsResourceKey(true);
-				eventService.publishEvent(new AuthenticationEvent(this, 
-							state, authenticator, "hint.invalidRealm"));
+				eventService.publishEvent(new AuthenticationEvent(this, state,
+						authenticator, "hint.invalidRealm"));
 			}
 			case AUTHENTICATION_SUCCESS: {
 				try {
@@ -259,7 +263,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 							AuthenticationPermission.LOGON,
 							SystemPermission.SYSTEM_ADMINISTRATION);
 
-					eventService.publishEvent(new AuthenticationEvent(this, 
+					eventService.publishEvent(new AuthenticationEvent(this,
 							state, authenticator));
 					state.setCurrentIndex(state.getCurrentIndex() + 1);
 
@@ -275,8 +279,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 						}
 					}
 				} catch (AccessDeniedException e) {
-					
-					eventService.publishEvent(new AuthenticationEvent(this, 
+
+					eventService.publishEvent(new AuthenticationEvent(this,
 							state, authenticator, "hint.noPermission"));
 					// user does not have LOGON permission
 					state.setLastErrorMsg("error.noLogonPermission");
@@ -321,7 +325,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 		Session session = sessionService.openSession(state.getRemoteAddress(),
 				state.getPrincipal(), state.getScheme(), state.getUserAgent());
-		
+
 		return session;
 	}
 
@@ -349,32 +353,31 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		postAuthenticationSteps.add(postAuthenticationStep);
 	}
 
-//	@Override
-//	public boolean logon(String username, char[] password,
-//			InetSocketAddress remoteAddress) throws AccessDeniedException {
-//
-//		String realm = "";
-//		int idx = username.indexOf('\\');
-//		if (idx > -1) {
-//			realm = username.substring(0, idx);
-//			username = username.substring(idx + 1);
-//		}
-//
-//		Realm r = realmService.getRealmByName(realm);
-//		Principal principal = realmService.getPrincipalByName(r, username,
-//				PrincipalType.USER);
-//
-//		boolean success = realmService.verifyPassword(principal, password);
-//
-//		verifyPermission(principal, PermissionStrategy.REQUIRE_ANY,
-//				SystemPermission.SYSTEM_ADMINISTRATION,
-//				AuthenticationPermission.LOGON);
-//
-//		sessionService.openSession(remoteAddress.getAddress()
-//				.getHostAddress(), principal, null);
-//
-//		return success;
-//	}
-
+	// @Override
+	// public boolean logon(String username, char[] password,
+	// InetSocketAddress remoteAddress) throws AccessDeniedException {
+	//
+	// String realm = "";
+	// int idx = username.indexOf('\\');
+	// if (idx > -1) {
+	// realm = username.substring(0, idx);
+	// username = username.substring(idx + 1);
+	// }
+	//
+	// Realm r = realmService.getRealmByName(realm);
+	// Principal principal = realmService.getPrincipalByName(r, username,
+	// PrincipalType.USER);
+	//
+	// boolean success = realmService.verifyPassword(principal, password);
+	//
+	// verifyPermission(principal, PermissionStrategy.REQUIRE_ANY,
+	// SystemPermission.SYSTEM_ADMINISTRATION,
+	// AuthenticationPermission.LOGON);
+	//
+	// sessionService.openSession(remoteAddress.getAddress()
+	// .getHostAddress(), principal, null);
+	//
+	// return success;
+	// }
 
 }

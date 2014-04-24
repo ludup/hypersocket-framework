@@ -29,6 +29,7 @@ public class MenuRegistration {
 	PermissionType updatePermission;
 	PermissionType deletePermission;
 	String resourceName;
+	String icon;
 	Map<String,PermissionType> additionalPermissions;
 	
 	List<MenuRegistration> modules = new ArrayList<MenuRegistration>();
@@ -36,19 +37,20 @@ public class MenuRegistration {
 	public MenuRegistration() {
 	}
 
-	public MenuRegistration(String bundle, String resourceKey, String url, Integer weight,
+	public MenuRegistration(String bundle, String resourceKey, String icon, String url, Integer weight,
 			PermissionType readPermision, PermissionType createPermission,
 			PermissionType updatePermission, PermissionType deletePermission) {
-		this(bundle, resourceKey, url, weight, readPermision, createPermission,
+		this(bundle, resourceKey, icon, url, weight, readPermision, createPermission,
 				updatePermission, deletePermission, null);
 	}
 	
-	public MenuRegistration(String bundle, String resourceKey, String url, Integer weight,
+	public MenuRegistration(String bundle, String resourceKey, String icon, String url, Integer weight,
 			PermissionType readPermision, PermissionType createPermission,
 			PermissionType updatePermission, PermissionType deletePermission,
 			Map<String,PermissionType> additionalPermissions) {
 		this.bundle = bundle;
 		this.resourceKey = resourceKey;
+		this.icon = icon;
 		this.resourceName = url;
 		this.weight = weight;
 		this.readPermission = readPermision;
@@ -68,6 +70,10 @@ public class MenuRegistration {
 
 	public String getResourceKey() {
 		return resourceKey;
+	}
+	
+	public String getIcon() {
+		return icon;
 	}
 
 	public void addMenu(MenuRegistration module) {

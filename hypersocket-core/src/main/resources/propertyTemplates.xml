@@ -31,8 +31,8 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="category.sessions"
 		resourceBundle="SessionService" weight="800">
-		<property resourceKey="session.timeout" inputType="number"
-			minValue="0" maxValue="360" defaultValue="15" weight="0" />
+		<property resourceKey="session.timeout" inputType="slider"
+			minValue="0" maxValue="360" defaultValue="15" weight="0" labelResourceKey="session.timeout.slider.label" />
 	</propertyCategory>
 
 

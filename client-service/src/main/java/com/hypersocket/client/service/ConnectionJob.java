@@ -1,5 +1,6 @@
 package com.hypersocket.client.service;
 
+import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -14,6 +15,8 @@ import org.quartz.TriggerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hypersocket.client.HypersocketClient;
+import com.hypersocket.client.HypersocketClientAdapter;
 import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.netty.NettyClientTransport;
 
@@ -31,11 +34,13 @@ public class ConnectionJob implements Job {
 		JobDataMap data = context.getTrigger().getJobDataMap();
 
 		Connection c = (Connection) data.get("connection");
-		ClientServiceImpl service = (ClientServiceImpl) data.get("service");
 		ExecutorService boss = (ExecutorService) data.get("bossExecutor");
 		ExecutorService worker = (ExecutorService) data.get("workerExecutor");
 		Locale locale = (Locale) data.get("locale");
 		Integer reconnectSeconds = (Integer) data.get("reconnectSeconds");
+		
+		final ClientServiceImpl service = (ClientServiceImpl) data.get("service");
+		
 		String url = (String) data.get("url");
 
 		if (log.isInfoEnabled()) {
@@ -60,6 +65,20 @@ public class ConnectionJob implements Job {
 				client.loginHttp(c.getRealm(), c.getUsername(),
 						c.getHashedPassword(), true);
 			}
+			
+			client.addListener(new HypersocketClientAdapter<Connection>() {
+				@Override
+				public void disconnected(HypersocketClient<Connection> client) {
+					if(client.getAttachment().isStayConnected()) {
+						try {
+							service.connect(service.getConnectionService().getConnection(client.getAttachment().getId()));
+						} catch (RemoteException e) {
+							log.error("Error attempting to restart 'stay connected' client", e);
+						}
+					}
+				}
+			});
+			
 			if (log.isInfoEnabled()) {
 				log.info("Logged into " + url);
 			}
