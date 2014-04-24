@@ -62,7 +62,7 @@ public class AuthenticationState {
 	}
 
 	public boolean isAuthenticationComplete() {
-		return currentIndex == modules.size();
+		return currentIndex >= modules.size();
 	}
 
 	void setCurrentIndex(Integer currentIndex) {

@@ -12,12 +12,13 @@ public class Menu {
 	String bundle;
 	Integer weight;
 	String resourceName;
+	String icon;
 	boolean canCreate;
 	boolean canUpdate;
 	boolean canDelete;
 	List<Menu> menus = new ArrayList<Menu>();
 	
-	public Menu(MenuRegistration m, boolean canCreate, boolean canUpdate, boolean canDelete) {
+	public Menu(MenuRegistration m, boolean canCreate, boolean canUpdate, boolean canDelete, String icon) {
 		this.bundle = m.bundle;
 		this.resourceKey = m.getResourceKey();
 		this.weight = m.getWeight();
@@ -25,6 +26,7 @@ public class Menu {
 		this.canCreate = canCreate;
 		this.canUpdate = canUpdate;
 		this.canDelete = canDelete;
+		this.icon = icon;
 	}
 	
 	public String getId() {
@@ -95,5 +97,12 @@ public class Menu {
 		this.canDelete = canDelete;
 	}
 
+	public String getIcon() {
+		return icon;
+	}
+	
+	public void setIcon(String icon) {
+		this.icon = icon;
+	}
 	
 }

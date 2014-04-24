@@ -41,35 +41,35 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 	@PostConstruct
 	private void postConstruct() {
 
-		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "system", null, 100, null, null,
+		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "system", "", null, 100, null, null,
 				null, null));
-		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "configuration", "configuration",
+		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "configuration", "fa-cog", "configuration",
 				100, ConfigurationPermission.READ, null,
 				ConfigurationPermission.UPDATE, null), "system");
-		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "certificates", "certificates",
+		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "certificates", "fa-certificate", "certificates",
 				200, CertificatePermission.CERTIFICATE_ADMINISTRATION, CertificatePermission.CERTIFICATE_ADMINISTRATION,
 				CertificatePermission.CERTIFICATE_ADMINISTRATION, CertificatePermission.CERTIFICATE_ADMINISTRATION),
 				"system");
-		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "shutdown", "shutdown",
+		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "shutdown", "fa-power-off", "shutdown",
 				Integer.MAX_VALUE, SystemPermission.SYSTEM_ADMINISTRATION, null,
 				SystemPermission.SYSTEM_ADMINISTRATION, null), "system");
 		
 		
 		
-		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "security", null, 200, null, null,
+		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "security", "", null, 200, null, null,
 				null, null));
 
-		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "realms", "realms", 100,
+		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "realms", "fa-user", "realms", 100,
 				RealmPermission.READ, RealmPermission.CREATE,
 				RealmPermission.UPDATE, RealmPermission.DELETE), "security");
 
-		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "accessControl", "accessControl",
+		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "accessControl", "fa-unlock-alt", "accessControl",
 				200, AccessControlPermission.READ,
 				AccessControlPermission.CREATE,
 				AccessControlPermission.UPDATE,
 				AccessControlPermission.DELETE), "security");
 
-		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "resources", null, 300, null, null,
+		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "resources", "", null, 300, null, null,
 				null, null));
 	}
 
@@ -107,7 +107,8 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 				Menu rootMenu = new Menu(m, 
 						hasPermission(m.getCreatePermission()),
 						hasPermission(m.getUpdatePermission()),
-						hasPermission(m.getDeletePermission()));
+						hasPermission(m.getDeletePermission()),
+						m.getIcon());
 				for (MenuRegistration child : m.getMenus()) {
 					if (child.getReadPermission() != null) {
 						try {
@@ -130,7 +131,8 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 						rootMenu.getMenus().add(new Menu(child, 
 								hasPermission(child.getCreatePermission()),
 								hasPermission(child.getUpdatePermission()),
-								hasPermission(child.getDeletePermission())));
+								hasPermission(child.getDeletePermission()), 
+								child.getIcon()));
 					}
 				}
 				if (rootMenu.getResourceName() == null) {
