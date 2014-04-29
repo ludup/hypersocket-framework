@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.hypersocket.repository.AbstractRepository;
+import com.hypersocket.tables.ColumnSort;
 
 public interface RealmRepository extends AbstractRepository<Long> {
 	
@@ -31,4 +32,9 @@ public interface RealmRepository extends AbstractRepository<Long> {
 	Realm getRealmByName(String name, boolean deleted);
 
 	List<Realm> allRealms(String resourceKey);
+
+	List<Realm> searchRealms(String searchPattern, int start, int length,
+			ColumnSort[] sorting);
+
+	public Long countRealms(String searchPattern);
 }

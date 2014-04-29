@@ -15,6 +15,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.tables.ColumnSort;
 
 public interface PermissionService extends AuthenticatedService {
 
@@ -58,5 +59,10 @@ public interface PermissionService extends AuthenticatedService {
 	Set<Permission> getPrincipalPermissions(Principal principal);
 
 	boolean hasSystemPermission(Principal principal);
+
+	public Long getRoleCount(String searchPattern) throws AccessDeniedException;
+
+	public List<?> getRoles(String searchPattern, int start, int length,
+			ColumnSort[] sorting) throws AccessDeniedException;
 
 }

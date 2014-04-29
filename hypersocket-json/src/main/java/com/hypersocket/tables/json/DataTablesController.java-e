@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.DataTablesResult;
 import com.hypersocket.tables.Sort;
@@ -20,7 +21,7 @@ public class DataTablesController extends AuthenticatedController {
 	
 	protected DataTablesResult processDataTablesRequest(
 			HttpServletRequest request, DataTablesPageProcessor processor)
-			throws NumberFormatException, UnauthorizedException {
+			throws NumberFormatException, UnauthorizedException, AccessDeniedException {
 		
 		Integer start = Integer.parseInt(request.getParameter("iDisplayStart"));
 		Integer length = Integer.parseInt(request

@@ -37,11 +37,16 @@ import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmColumns;
 import com.hypersocket.realm.RealmPermission;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.json.SessionTimeoutException;
+import com.hypersocket.tables.Column;
+import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.tables.DataTablesResult;
+import com.hypersocket.tables.json.DataTablesPageProcessor;
 
 @Controller
 public class PermissionsController extends ResourceController {
@@ -114,6 +119,42 @@ public class PermissionsController extends ResourceController {
 				.getCurrentRealm()));
 	}
 
+	@AuthenticationRequired
+	@RequestMapping(value = "table/roles", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public DataTablesResult tableRoles(final HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return processDataTablesRequest(request,
+					new DataTablesPageProcessor() {
+
+						@Override
+						public Column getColumn(int col) {
+							return RealmColumns.values()[col];
+						}
+
+						@Override
+						public List<?> getPage(String searchPattern, int start, int length,
+								ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
+							return permissionService.getRoles(searchPattern, start, length, sorting);
+						}
+						
+						@Override
+						public Long getTotalCount(String searchPattern) throws UnauthorizedException, AccessDeniedException {
+							return permissionService.getRoleCount(searchPattern);
+						}
+					});
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "permission/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody

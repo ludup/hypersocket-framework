@@ -751,4 +751,22 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		return ret;
 	}
 
+	@Override
+	public List<Realm> getRealms(String searchPattern, int start, int length,
+			ColumnSort[] sorting) throws AccessDeniedException {
+		
+		
+		assertPermission(RealmPermission.READ);
+		
+		return realmRepository.searchRealms(searchPattern, start, length, sorting);
+	}
+
+	@Override
+	public Long getRealmCount(String searchPattern) throws AccessDeniedException {
+		
+		assertPermission(RealmPermission.READ);
+		
+		return realmRepository.countRealms(searchPattern);
+	}
+
 }

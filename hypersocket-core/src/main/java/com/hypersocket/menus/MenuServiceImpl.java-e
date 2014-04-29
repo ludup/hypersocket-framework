@@ -59,10 +59,6 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "security", "", null, 200, null, null,
 				null, null));
 
-		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "realms", "fa-user", "realms", 100,
-				RealmPermission.READ, RealmPermission.CREATE,
-				RealmPermission.UPDATE, RealmPermission.DELETE), "security");
-
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "accessControl", "fa-unlock-alt", "accessControl",
 				200, AccessControlPermission.READ,
 				AccessControlPermission.CREATE,

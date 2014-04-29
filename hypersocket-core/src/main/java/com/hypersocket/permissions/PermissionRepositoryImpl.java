@@ -26,9 +26,11 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmOrGlobalRestriction;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.AbstractRepositoryImpl;
+import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DetachedCriteriaConfiguration;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
+import com.hypersocket.tables.ColumnSort;
 
 @Repository
 public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> implements PermissionRepository {
@@ -300,6 +302,32 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> imple
 	@Override
 	public List<Role> getRolesForRealm(Realm realm) {
 		return allEntities(Role.class, JOIN_PRINCIPALS_PERMISSIONS, new RealmOrGlobalRestriction(realm));
+	}
+	
+	@Override
+	public List<Role> searchRoles(final Realm realm, String searchPattern, int start, int length, ColumnSort[] sorting) {
+		return search(Role.class, "name", searchPattern, start, length, sorting, new CriteriaConfiguration() {
+			
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.setFetchMode("permissions", FetchMode.JOIN);
+				criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);		
+				criteria.add(Restrictions.or(Restrictions.eq("realm", realm), Restrictions.isNull("realm")));
+			}
+		});
+	}
+	
+	@Override
+	public Long countRoles(final Realm realm, String searchPattern) {
+		return getCount(Role.class, "name", searchPattern, new CriteriaConfiguration() {
+			
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.setFetchMode("permissions", FetchMode.JOIN);
+				criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);		
+				criteria.add(Restrictions.or(Restrictions.eq("realm", realm), Restrictions.isNull("realm")));
+			}
+		});
 	}
 
 	@Override

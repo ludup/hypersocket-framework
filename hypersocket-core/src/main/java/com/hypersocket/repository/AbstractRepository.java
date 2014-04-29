@@ -16,6 +16,8 @@ public interface AbstractRepository<K> {
 	
 	public void flush();
 
+	Long getCount(Class<?> clz, String searchColumn, String searchPattern, CriteriaConfiguration... configs);
+
 	Long getCount(Class<?> clz, CriteriaConfiguration... configs);
 
 }

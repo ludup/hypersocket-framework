@@ -151,14 +151,23 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		return sessionFactory.getCurrentSession().createCriteria(entityClass);
 	}
 
-	@Override
+	@Override 
 	public Long getCount(Class<?> clz, CriteriaConfiguration... configs) {
+		return getCount(clz, "", "", configs);
+	}
+	
+	@Override
+	public Long getCount(Class<?> clz, String searchColumn, String searchPattern, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(clz);
 		
 		criteria.setProjection(Projections.rowCount());
 		for(CriteriaConfiguration c : configs) {
 			c.configure(criteria);
+		}
+		
+		if(!StringUtils.isEmpty(searchPattern)) {
+			criteria.add(Restrictions.like(searchColumn, searchPattern));
 		}
 		
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
