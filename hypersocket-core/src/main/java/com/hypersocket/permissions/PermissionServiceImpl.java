@@ -34,6 +34,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.tables.ColumnSort;
 
 @Service
 @Transactional
@@ -369,6 +370,21 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	private interface EntityMatch<T> {
 		boolean validate(T t);
+	}
+
+	@Override
+	public Long getRoleCount(String searchPattern) throws AccessDeniedException {
+		assertPermission(RolePermission.READ);
+		
+		return repository.countRoles(getCurrentRealm(), searchPattern);
+	}
+
+	@Override
+	public List<?> getRoles(String searchPattern, int start, int length,
+			ColumnSort[] sorting) throws AccessDeniedException {
+		assertPermission(RolePermission.READ);
+
+		return repository.searchRoles(getCurrentRealm(), searchPattern, start, length, sorting);
 	}
 
 }

@@ -37,6 +37,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalColumns;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmColumns;
 import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceChangeException;
@@ -152,6 +153,42 @@ public class RealmController extends ResourceController {
 		}
 	}
 
+	@AuthenticationRequired
+	@RequestMapping(value = "table/realms", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public DataTablesResult tableRealms(final HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return processDataTablesRequest(request,
+					new DataTablesPageProcessor() {
+
+						@Override
+						public Column getColumn(int col) {
+							return RealmColumns.values()[col];
+						}
+
+						@Override
+						public List<?> getPage(String searchPattern, int start, int length,
+								ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
+							return realmService.getRealms(searchPattern, start, length, sorting);
+						}
+						
+						@Override
+						public Long getTotalCount(String searchPattern) throws UnauthorizedException, AccessDeniedException {
+							return realmService.getRealmCount(searchPattern);
+						}
+					});
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "table/users", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody

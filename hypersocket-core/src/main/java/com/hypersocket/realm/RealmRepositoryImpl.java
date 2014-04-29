@@ -17,6 +17,7 @@ import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.resource.HiddenFilter;
+import com.hypersocket.tables.ColumnSort;
 
 @Repository
 @Transactional
@@ -63,6 +64,11 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 	}
 	
 	@Override
+	public List<Realm> searchRealms(String searchPattern, int start, int length, ColumnSort[] sorting) {
+		return search(Realm.class, "name", searchPattern, start, length, sorting);
+	}
+	
+	@Override
 	public List<Realm> allRealms(String resourceKey) {
 		return list("resourceCategory", resourceKey, Realm.class, new HiddenFilter(), new DeletedCriteria(false), new DistinctRootEntity());
 	}
@@ -97,5 +103,10 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 		realm.setName(realm.getName() + "[#" + realm.getId() + " deleted]");
 		
 		save(realm);
+	}
+
+	@Override
+	public Long countRealms(String searchPattern) {
+		return getCount(Realm.class, "name", searchPattern);
 	}
 }

@@ -120,4 +120,9 @@ public interface RealmService extends AuthenticatedService {
 
 	List<Principal> allGroups(Realm realm) throws AccessDeniedException;
 
+	List<?> getRealms(String searchPattern, int start, int length,
+			ColumnSort[] sorting) throws AccessDeniedException;
+
+	Long getRealmCount(String searchPattern) throws AccessDeniedException;
+
 }

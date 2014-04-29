@@ -14,6 +14,7 @@ import java.util.Set;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractRepository;
+import com.hypersocket.tables.ColumnSort;
 
 public interface PermissionRepository extends AbstractRepository<Long> {
 
@@ -75,5 +76,10 @@ public interface PermissionRepository extends AbstractRepository<Long> {
 	Set<Role> getRolesWithPermissions(PermissionType permission);
 
 	Set<Role> getRolesWithPermissions(Permission permission);
+
+	List<Role> searchRoles(Realm realm, String searchPattern, int start,
+			int length, ColumnSort[] sorting);
+
+	Long countRoles(Realm realm, String searchPattern);
 
 }
