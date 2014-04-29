@@ -15,33 +15,36 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 
-
 public interface AuthenticationService extends AuthenticatedService {
 
 	public static final String RESOURCE_BUNDLE = "AuthenticationService";
-	
+
 	void registerAuthenticator(Authenticator authenticator);
-	
+
 	AuthenticationScheme getDefaultScheme(String remoteAddress,
 			Map<String, String> environment, Realm realm);
 
-	AuthenticationState createAuthenticationState(String remoteAddress,
-			Map<String, String> environment, Locale locale)
+	AuthenticationState createAuthenticationState(String scheme,
+			String remoteAddress, Map<String, String> environment, Locale locale)
 			throws AccessDeniedException;
 
 	@SuppressWarnings("rawtypes")
-	void logon(AuthenticationState state, Map parameterMap) throws AccessDeniedException;
+	void logon(AuthenticationState state, Map parameterMap)
+			throws AccessDeniedException;
 
 	@SuppressWarnings("rawtypes")
-	FormTemplate nextAuthenticationTemplate(AuthenticationState state, Map params);
+	FormTemplate nextAuthenticationTemplate(AuthenticationState state,
+			Map params);
 
-	Session completeLogon(AuthenticationState state) throws AccessDeniedException;
+	Session completeLogon(AuthenticationState state)
+			throws AccessDeniedException;
 
 	FormTemplate nextPostAuthenticationStep(AuthenticationState state);
 
 	void registerPostAuthenticationStep(
 			ChangePasswordAuthenticationStep postAuthenticationStep);
-	
-//	boolean logon(String username, char[] password, InetSocketAddress remoteAddress) throws AccessDeniedException;
+
+	// boolean logon(String username, char[] password, InetSocketAddress
+	// remoteAddress) throws AccessDeniedException;
 
 }

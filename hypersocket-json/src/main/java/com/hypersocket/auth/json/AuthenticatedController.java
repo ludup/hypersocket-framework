@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.auth.AuthenticationService;
+import com.hypersocket.auth.AuthenticationServiceImpl;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.BrowserEnvironment;
 import com.hypersocket.config.ConfigurationService;
@@ -69,7 +70,7 @@ public class AuthenticatedController {
 	AuthenticationState createAuthenticationState(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException {
 
-		Map<String, String> environment  = new HashMap<String, String>();
+		Map<String, String> environment = new HashMap<String, String>();
 		for (BrowserEnvironment env : BrowserEnvironment.values()) {
 			if (request.getHeader(env.toString()) != null) {
 				environment.put(env.toString(),
@@ -78,8 +79,10 @@ public class AuthenticatedController {
 		}
 
 		AuthenticationState state = authenticationService
-				.createAuthenticationState(request.getRemoteAddr(),
-						environment, sessionUtils.getLocale(request));
+				.createAuthenticationState(
+						AuthenticationServiceImpl.DEFAULT_AUTHENTICATION_SCHEME,
+						request.getRemoteAddr(), environment,
+						sessionUtils.getLocale(request));
 		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, state);
 		return state;
 	}
@@ -141,8 +144,8 @@ public class AuthenticatedController {
 		}
 	}
 
-	protected void setupAuthenticatedContext(Principal principal, Locale locale,
-			Realm realm, AuthenticatedService... services) {
+	protected void setupAuthenticatedContext(Principal principal,
+			Locale locale, Realm realm, AuthenticatedService... services) {
 		authenticationService.setCurrentPrincipal(principal, locale, realm);
 		sessionService.setCurrentPrincipal(principal, locale, realm);
 		realmService.setCurrentPrincipal(principal, locale, realm);
