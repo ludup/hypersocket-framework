@@ -44,6 +44,9 @@ import com.hypersocket.session.SessionService;
 public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		implements AuthenticationService {
 
+	public static final String DEFAULT_AUTHENTICATION_SCHEME = "Default";
+	public static final String HTTP_AUTHENTICATION_SCHEME = "HTTP";
+	
 	private static Logger log = LoggerFactory
 			.getLogger(AuthenticationServiceImpl.class);
 
@@ -116,12 +119,12 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		return schemes.get(0);
 	}
 
-	public AuthenticationScheme getHTTPScheme() {
-		return repository.getScheme("HTTP");
+	public AuthenticationScheme getAuthenticationScheme(String scheme) {
+		return repository.getScheme(scheme);
 	}
 
 	@Override
-	public AuthenticationState createAuthenticationState(String remoteAddress,
+	public AuthenticationState createAuthenticationState(String scheme, String remoteAddress,
 			Map<String, String> environment, Locale locale)
 			throws AccessDeniedException {
 
@@ -158,7 +161,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 							UsernameAndPasswordTemplate.PASSWORD_FIELD,
 							password);
 
-					state.setScheme(getHTTPScheme());
 				}
 			}
 		}
@@ -179,12 +181,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			}
 		}
 
-		if (state.getScheme() == null) {
-			state.setScheme(getDefaultScheme(remoteAddress, environment,
-					state.getRealm()));
-
-		}
-
+		state.setScheme(getAuthenticationScheme(scheme));
 		state.setModules(repository.getModulesForScheme(state.getScheme()));
 
 		return state;
