@@ -220,7 +220,8 @@ public class RealmController extends ResourceController {
 						public Long getTotalCount(String searchPattern) throws UnauthorizedException {
 							return realmService.getPrincipalCount(
 									sessionUtils.getCurrentRealm(request),
-									PrincipalType.USER);
+									PrincipalType.USER,
+									searchPattern);
 						}
 					});
 		} finally {
@@ -259,7 +260,8 @@ public class RealmController extends ResourceController {
 						public Long getTotalCount(String searchPattern) throws UnauthorizedException {
 							return realmService.getPrincipalCount(
 									sessionUtils.getCurrentRealm(request),
-									PrincipalType.GROUP);
+									PrincipalType.GROUP,
+									searchPattern);
 						}
 					});
 		} finally {
@@ -329,6 +331,25 @@ public class RealmController extends ResourceController {
 		
 	}
 
+	@AuthenticationRequired
+	@RequestMapping(value = "group/template/{module}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<PropertyCategory> getGroupTemplate(HttpServletRequest request,
+			@PathVariable("module") String module)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<PropertyCategory>(realmService.getGroupPropertyTemplates(module));
+		} finally {
+			clearAuthenticatedContext();
+		}
+		
+	}
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "realm/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody

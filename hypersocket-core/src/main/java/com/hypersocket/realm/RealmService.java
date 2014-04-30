@@ -107,7 +107,7 @@ public interface RealmService extends AuthenticatedService {
 	List<?> getPrincipals(Realm realm, PrincipalType type, String searchPattern, int start,
 			int length, ColumnSort[] sorting);
 
-	Long getPrincipalCount(Realm realm, PrincipalType type);
+	Long getPrincipalCount(Realm realm, PrincipalType type, String searchPattern);
 
 	Collection<PropertyCategory> getRealmPropertyTemplates(String module)
 			throws AccessDeniedException;
@@ -124,5 +124,8 @@ public interface RealmService extends AuthenticatedService {
 			ColumnSort[] sorting) throws AccessDeniedException;
 
 	Long getRealmCount(String searchPattern) throws AccessDeniedException;
+
+	Collection<PropertyCategory> getGroupPropertyTemplates(String module)
+			throws AccessDeniedException;
 
 }

@@ -45,7 +45,7 @@ public abstract class UserEvent extends RealmEvent {
 	public UserEvent(Object source, String resourceKey, Throwable e,
 			Session session, String realmName, RealmProvider provider, String principalName, Map<String,String> properties, List<Principal> associatedPrincipals) {
 		super(source, resourceKey, e, session, realmName);
-		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
+		addAttribute(ATTR_PRINCIPAL_NAME, principalName);
 		addAssociatedPrincipals(associatedPrincipals);
 		for(String prop : properties.keySet()) {
 			addAttribute(I18NServiceImpl.tagForConversion(provider.getResourceBundle(), prop), properties.get(prop));

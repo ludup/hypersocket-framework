@@ -690,6 +690,17 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
+	public Collection<PropertyCategory> getGroupPropertyTemplates(String module)
+			throws AccessDeniedException {
+
+		assertPermission(RealmPermission.READ);
+
+		RealmProvider provider = getProviderForRealm(module);
+
+		return provider.getGroupProperties(null);
+	}
+	
+	@Override
 	public List<Principal> getAssociatedPrincipals(Principal principal) {
 
 		List<Principal> result = getProviderForRealm(principal.getRealm())
@@ -715,8 +726,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public Long getPrincipalCount(Realm realm, PrincipalType type) {
-		return getProviderForRealm(realm).getPrincipalCount(realm, type);
+	public Long getPrincipalCount(Realm realm, PrincipalType type, String searchPattern) {
+		return getProviderForRealm(realm).getPrincipalCount(realm, type, searchPattern);
 	}
 
 	@Override

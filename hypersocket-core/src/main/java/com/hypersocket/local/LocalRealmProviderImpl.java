@@ -34,7 +34,8 @@ import com.hypersocket.tables.ColumnSort;
 
 @Service
 @Transactional
-public class LocalRealmProviderImpl extends AbstractRealmProvider implements LocalRealmProvider {
+public class LocalRealmProviderImpl extends AbstractRealmProvider implements
+		LocalRealmProvider {
 
 	private static Logger log = LoggerFactory
 			.getLogger(LocalRealmProviderImpl.class);
@@ -46,7 +47,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements Loc
 	public final static String FIELD_FULLNAME = "user.fullname";
 	public final static String FIELD_EMAIL = "user.email";
 	public final static String FIELD_PASSWORD_ENCODING = "password.encoding";
-	
+
 	@Autowired
 	LocalUserRepository userRepository;
 
@@ -55,32 +56,23 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements Loc
 
 	@Autowired
 	RealmRepository realmRepository;
-	
+
 	@Autowired
 	PasswordEncryptionService encryptionService;
 
-	//Map<String, PropertyTemplate> propertyFields = new HashMap<String, PropertyTemplate>();
-
 	PropertyCategory userDetailsCategory;
-	
+
 	@PostConstruct
 	private void registerProvider() throws Exception {
 
 		realmService.registerRealmProvider(this);
-		
+
 		loadPropertyTemplates("localRealmTemplate.xml");
-		
+
 		userRepository.loadPropertyTemplates("localUserTemplate.xml");
-	
+
 	}
 
-//	protected void registerPropertyTemplate(PropertyCategory cat, String key,
-//			String meta, int weight, String defaultValue) {
-//		PropertyTemplate template = realmRepository.registerPropertyTemplate(cat,
-//				key, meta, weight, defaultValue);
-//		propertyFields.put(key, template);
-//	}
-	
 	@Override
 	public String getModule() {
 		return REALM_RESOURCE_CATEGORY;
@@ -180,7 +172,8 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements Loc
 
 	@Override
 	public Principal createUser(Realm realm, String username,
-			Map<String, String> properties, List<Principal> principals) throws ResourceCreationException {
+			Map<String, String> properties, List<Principal> principals)
+			throws ResourceCreationException {
 
 		try {
 			LocalUser user = new LocalUser();
@@ -188,19 +181,19 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements Loc
 			user.setResourceCategory(USER_RESOURCE_CATEGORY);
 			user.setRealm(realm);
 
-			if(principals!=null){
-				for(Principal p : principals) {
-					if(p instanceof LocalGroup) {
-						user.getGroups().add((LocalGroup)p);
+			if (principals != null) {
+				for (Principal p : principals) {
+					if (p instanceof LocalGroup) {
+						user.getGroups().add((LocalGroup) p);
 					}
 				}
 			}
-			
+
 			userRepository.saveUser(user, properties);
 
 			userRepository.flush();
 			userRepository.refresh(user);
-			
+
 			return user;
 		} catch (Exception e) {
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
@@ -211,8 +204,8 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements Loc
 
 	@Override
 	public Principal updateUser(Realm realm, Principal principal,
-			String username, Map<String, String> properties, List<Principal> principals)
-			throws ResourceChangeException {
+			String username, Map<String, String> properties,
+			List<Principal> principals) throws ResourceChangeException {
 
 		try {
 
@@ -225,17 +218,17 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements Loc
 			user.setName(username);
 			user.setRealm(realm);
 
-			for(Principal p : principals) {
-				if(p instanceof LocalGroup) {
-					user.getGroups().add((LocalGroup)p);
+			for (Principal p : principals) {
+				if (p instanceof LocalGroup) {
+					user.getGroups().add((LocalGroup) p);
 				}
 			}
-			
+
 			userRepository.saveUser(user, properties);
 
 			userRepository.flush();
 			userRepository.refresh(user);
-			
+
 			return user;
 		} catch (Exception e) {
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
@@ -264,8 +257,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements Loc
 		try {
 			byte[] salt = encryptionService.generateSalt();
 			PasswordEncryptionType passwordEncoding = PasswordEncryptionType
-					.valueOf(getValue(
-							principal.getRealm(), "password.encoding"));
+					.valueOf(getValue(principal.getRealm(), "password.encoding"));
 			byte[] encryptedPassword = encryptionService.getEncryptedPassword(
 					password, salt, passwordEncoding);
 
@@ -443,24 +435,24 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements Loc
 			PrincipalType type) {
 
 		List<Principal> result = new ArrayList<Principal>();
-		
+
 		switch (type) {
 		case GROUP:
 			if (principal instanceof LocalUser) {
 				LocalUser user = (LocalUser) principal;
 				result.addAll(user.getGroups());
-			} 
+			}
 			break;
 		case USER:
 			if (principal instanceof LocalGroup) {
 				LocalGroup group = (LocalGroup) principal;
 				result.addAll(group.getUsers());
-			} 
+			}
 			break;
 		default:
 			// Nothing
 		}
-		
+
 		return result;
 	}
 
@@ -471,27 +463,29 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements Loc
 	}
 
 	@Override
-	public Long getPrincipalCount(Realm realm, PrincipalType type) {
-		switch(type) {
+	public Long getPrincipalCount(Realm realm, PrincipalType type,
+			String searchPattern) {
+		switch (type) {
 		case USER:
-			return userRepository.countUsers(realm);
+			return userRepository.countUsers(realm, searchPattern);
 		case GROUP:
-			return userRepository.countGroups(realm);
+			return userRepository.countGroups(realm, searchPattern);
 		default:
 			return 0L;
 		}
 	}
 
 	@Override
-	public List<?> getPrincipals(Realm realm, PrincipalType type, String searchPattern, int start,
-			int length, ColumnSort[] sorting) {
+	public List<?> getPrincipals(Realm realm, PrincipalType type,
+			String searchPattern, int start, int length, ColumnSort[] sorting) {
 
 		switch (type) {
 		case USER:
-			return userRepository.getUsers(realm, searchPattern, start, length, sorting);
+			return userRepository.getUsers(realm, searchPattern, start, length,
+					sorting);
 		case GROUP:
-			return userRepository
-					.getGroups(realm, searchPattern, start, length, sorting);
+			return userRepository.getGroups(realm, searchPattern, start,
+					length, sorting);
 		default:
 			throw new IllegalArgumentException(
 					"Invalid principal type passed to AbstractRemoteRealmProviderImpl");
@@ -505,9 +499,15 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements Loc
 	}
 
 	@Override
+	public Collection<PropertyCategory> getGroupProperties(Principal principal) {
+		// TODO we need a way to get these from the repository - currently
+		// restricted to only one resource type per repositroy
+		return new ArrayList<PropertyCategory>();
+	}
+
+	@Override
 	public Collection<PropertyCategory> getRealmProperties(Realm realm) {
 		return getPropertyCategories(realm);
 	}
-
 
 }

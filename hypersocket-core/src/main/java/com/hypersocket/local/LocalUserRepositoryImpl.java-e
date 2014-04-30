@@ -224,21 +224,29 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	};
 	
 	@Override
-	public Long countUsers(final Realm realm) {
+	public Long countUsers(final Realm realm, final String searchPattern) {
 		return getCount(LocalUser.class, new CriteriaConfiguration() {
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("realm", realm));
+				criteria.add(Restrictions.eq("deleted", false));
+				if(!StringUtils.isEmpty(searchPattern)) {
+					criteria.add(Restrictions.like("name", searchPattern));
+				}
 			}
 		});
 	}
 
 	@Override
-	public Long countGroups(final Realm realm) {
+	public Long countGroups(final Realm realm, final String searchPattern) {
 		return getCount(LocalGroup.class, new CriteriaConfiguration() {
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("realm", realm));
+				criteria.add(Restrictions.eq("deleted", false));
+				if(!StringUtils.isEmpty(searchPattern)) {
+					criteria.add(Restrictions.like("name", searchPattern));
+				}
 			}
 		});
 	};
