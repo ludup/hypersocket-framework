@@ -46,19 +46,15 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "configuration", "fa-cog", "configuration",
 				100, ConfigurationPermission.READ, null,
 				ConfigurationPermission.UPDATE, null), "system");
-		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "certificates", "fa-certificate", "certificates",
-				200, CertificatePermission.CERTIFICATE_ADMINISTRATION, CertificatePermission.CERTIFICATE_ADMINISTRATION,
-				CertificatePermission.CERTIFICATE_ADMINISTRATION, CertificatePermission.CERTIFICATE_ADMINISTRATION),
-				"system");
-		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "shutdown", "fa-power-off", "shutdown",
-				Integer.MAX_VALUE, SystemPermission.SYSTEM_ADMINISTRATION, null,
-				SystemPermission.SYSTEM_ADMINISTRATION, null), "system");
-		
-		
 		
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "security", "", null, 200, null, null,
 				null, null));
 
+		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "certificates", "fa-certificate", "certificates",
+				200, CertificatePermission.CERTIFICATE_ADMINISTRATION, CertificatePermission.CERTIFICATE_ADMINISTRATION,
+				CertificatePermission.CERTIFICATE_ADMINISTRATION, CertificatePermission.CERTIFICATE_ADMINISTRATION),
+				"security");
+		
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "accessControl", "fa-unlock-alt", "accessControl",
 				200, AccessControlPermission.READ,
 				AccessControlPermission.CREATE,

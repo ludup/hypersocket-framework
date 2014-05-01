@@ -10,12 +10,16 @@ package com.hypersocket.realm;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.repository.AbstractRepositoryImpl;
+import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
+import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.resource.HiddenFilter;
 import com.hypersocket.tables.ColumnSort;
 
@@ -65,7 +69,13 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 	
 	@Override
 	public List<Realm> searchRealms(String searchPattern, int start, int length, ColumnSort[] sorting) {
-		return search(Realm.class, "name", searchPattern, start, length, sorting);
+		return search(Realm.class, "name", searchPattern, start, length, sorting, new CriteriaConfiguration() {
+			
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("hidden", false));
+			}
+		});
 	}
 	
 	@Override
