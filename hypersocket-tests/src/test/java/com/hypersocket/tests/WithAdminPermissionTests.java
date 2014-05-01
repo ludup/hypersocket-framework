@@ -160,7 +160,7 @@ public class WithAdminPermissionTests extends AbstractServerTest {
 	@Test
 	public void tryWithAdminPermissionUserTemplate()
 			throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/user/template/local");
+		doGet("/hypersocket/api/template/user/local");
 	}
 
 	@Test

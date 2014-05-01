@@ -225,12 +225,12 @@ public class NoPermissionTests extends AbstractServerTest {
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedUserTemplate() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/user/template/local");
+		doGet("/hypersocket/api/template/user/local");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedRealmTemplate() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/realm/template/local");
+		doGet("/hypersocket/api/template/realm/local");
 	}
 }

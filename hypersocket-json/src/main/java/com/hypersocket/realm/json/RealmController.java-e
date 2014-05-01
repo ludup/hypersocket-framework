@@ -294,7 +294,7 @@ public class RealmController extends ResourceController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "realm/template/{module}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "template/realm/{module}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<PropertyCategory> getRealmTemplate(HttpServletRequest request,
@@ -313,7 +313,7 @@ public class RealmController extends ResourceController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "user/template/{module}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "template/user/{module}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<PropertyCategory> getUserTemplate(HttpServletRequest request,
@@ -332,7 +332,7 @@ public class RealmController extends ResourceController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "group/template/{module}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "template/group/{module}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<PropertyCategory> getGroupTemplate(HttpServletRequest request,
@@ -347,7 +347,6 @@ public class RealmController extends ResourceController {
 		} finally {
 			clearAuthenticatedContext();
 		}
-		
 	}
 	
 	@AuthenticationRequired

@@ -34,6 +34,7 @@ import com.hypersocket.permissions.Permission;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.Role;
+import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -71,6 +72,24 @@ public class PermissionsController extends ResourceController {
 		return permissionService.getRoleById(id, session.getCurrentRealm());
 	}
 
+	@AuthenticationRequired
+	@RequestMapping(value = "template/role", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<PropertyCategory> getRoleTemplate(HttpServletRequest request)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			// TODO implement role properties
+			return new ResourceList<PropertyCategory>(new ArrayList<PropertyCategory>());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "role/{id}", method = RequestMethod.DELETE)
 	@ResponseBody
