@@ -144,6 +144,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 	public SSLContext getSSLContext(InetSocketAddress localAddress,
 			InetSocketAddress remoteAddress) {
+		// TODO lookup context based on localAddress / maybe even remote address????
 		return defaultSSLContext;
 	}
 

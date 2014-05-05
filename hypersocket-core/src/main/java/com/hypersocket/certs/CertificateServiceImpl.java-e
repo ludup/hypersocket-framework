@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.security.KeyPair;
@@ -274,7 +275,7 @@ public class CertificateServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public boolean updatePrivateKey(MultipartFile file, String passphrase)
+	public boolean updatePrivateKey(MultipartFile file, String passphrase, MultipartFile cert, MultipartFile bundle)
 			throws AccessDeniedException, InvalidPassphraseException,
 			FileFormatException {
 
@@ -291,6 +292,8 @@ public class CertificateServiceImpl extends AuthenticatedServiceImpl implements
 			CA_CERTS_BUNDLE_FILE.delete();
 			INSTALLED_CERT_FILE.delete();
 			SELF_SIGNED_CERT_FILE.delete();
+			
+			updateCertificate(file, bundle);
 			
 			return true;
 		} catch (InvalidPassphraseException ex) {
@@ -347,54 +350,29 @@ public class CertificateServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public boolean updateCertificate(MultipartFile file, MultipartFile bundle) throws AccessDeniedException, FileFormatException, CertificateExpiredException, CertificateNotYetValidException {
+	public boolean updateCertificate(MultipartFile file, MultipartFile bundle) throws AccessDeniedException, FileFormatException, MismatchedCertificateException, CertificateException, IOException, InvalidPassphraseException {
 		
 		assertAnyPermission(CertificatePermission.CERTIFICATE_ADMINISTRATION);
+	
+		X509Certificate cert = X509CertificateUtils.loadCertificateFromPEM(file.getInputStream());
 		
-		try {
-
-			X509Certificate cert = X509CertificateUtils.loadCertificateFromPEM(file.getInputStream());
-			
-			X509Certificate[] ca = X509CertificateUtils.loadCertificateChainFromPEM(bundle.getInputStream());
-			
-			X509CertificateUtils.validateChain(ca, cert);
-			
-			KeyPair pair = X509CertificateUtils.loadKeyPairFromPEM(new FileInputStream(PRIVATE_KEY_FILE), null);
-			
-			if(!pair.getPublic().equals(cert.getPublicKey())) {
-				throw new MismatchedCertificateException();
-			}
-			
-			X509CertificateUtils.saveCertificate(new X509Certificate[] {cert}, new FileOutputStream(INSTALLED_CERT_FILE));
-			X509CertificateUtils.saveCertificate(ca, new FileOutputStream(CA_CERTS_BUNDLE_FILE));
-
-			SELF_SIGNED_CERT_FILE.delete();
-			
-			return true;
-		} catch (FileFormatException ex) {
-			if (log.isInfoEnabled()) {
-				log.info("Failed to parse certificate, invalid format.");
-			}
-			throw ex;
-		} catch(CertificateExpiredException ex) {
-			if (log.isInfoEnabled()) {
-				log.info("Failed to validate certificate, expired.");
-			}
-			throw ex;
-		} catch(CertificateNotYetValidException ex) {
-			if (log.isInfoEnabled()) {
-				log.info("Failed to validate certificate, not yet valid.");
-			}
-			throw ex;
-		} catch (Exception ex) {
-			if (log.isErrorEnabled()) {
-				log.error(
-						"Failed to update private key from MultipartFile "
-								+ file.getOriginalFilename() + " size="
-								+ file.getSize(), ex);
-			}
-			return false;
+		X509Certificate[] ca = X509CertificateUtils.loadCertificateChainFromPEM(bundle.getInputStream());
+		
+		X509CertificateUtils.validateChain(ca, cert);
+		
+		KeyPair pair = X509CertificateUtils.loadKeyPairFromPEM(new FileInputStream(PRIVATE_KEY_FILE), null);
+		
+		if(!pair.getPublic().equals(cert.getPublicKey())) {
+			throw new MismatchedCertificateException();
 		}
+		
+		X509CertificateUtils.saveCertificate(new X509Certificate[] {cert}, new FileOutputStream(INSTALLED_CERT_FILE));
+		X509CertificateUtils.saveCertificate(ca, new FileOutputStream(CA_CERTS_BUNDLE_FILE));
+
+		SELF_SIGNED_CERT_FILE.delete();
+		
+		return true;
+ 
 	}
 
 	@Override
