@@ -8,7 +8,6 @@
 package com.hypersocket.certs;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -21,10 +20,13 @@ import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -85,7 +87,7 @@ public class X509CertificateUtils {
 	}
 
 	public static X509Certificate[] validateChain(
-			X509Certificate[] caRootAndInters, X509Certificate cert)
+			Certificate[] caRootAndInters, X509Certificate cert)
 			throws CertificateException {
 
 		if (log.isInfoEnabled()) {
@@ -106,8 +108,9 @@ public class X509CertificateUtils {
 		}
 
 		try {
-			for (X509Certificate c : caRootAndInters) {
+			for (Certificate cc : caRootAndInters) {
 
+				X509Certificate c = (X509Certificate)cc;
 				if (log.isInfoEnabled()) {
 					log.info("Checking validity of certificate "
 							+ c.getSubjectDN());
@@ -203,12 +206,12 @@ public class X509CertificateUtils {
 		}
 	}
 
-	public static void saveCertificate(X509Certificate[] certs,
+	public static void saveCertificate(Certificate[] certs,
 			OutputStream certfile) throws CertificateException {
 		PEMWriter writer = new PEMWriter(new OutputStreamWriter(certfile));
 
 		try {
-			for (X509Certificate c : certs) {
+			for (Certificate c : certs) {
 				writer.writeObject(c);
 			}
 			writer.flush();
@@ -218,7 +221,22 @@ public class X509CertificateUtils {
 		}
 
 	}
+	
 
+	public static KeyStore loadKeyStoreFromPFX(InputStream pfxfile,
+			char[] passphrase) throws KeyStoreException,
+			NoSuchAlgorithmException, CertificateException, IOException,
+			NoSuchProviderException, UnrecoverableKeyException {
+		
+		KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+		 
+	    keystore.load(pfxfile,
+	                passphrase);
+	    
+	    return keystore;
+	  }
+	
+	
 	public static KeyPair loadKeyPairFromPEM(InputStream keyfile,
 			char[] passphrase) throws InvalidPassphraseException,
 			CertificateException, FileFormatException {
@@ -408,11 +426,13 @@ public class X509CertificateUtils {
 
 		Security.addProvider(new BouncyCastleProvider());
 
-		X509CertificateUtils.validateChain(X509CertificateUtils
-				.loadCertificateChainFromPEM(new FileInputStream(
-						"/Users/lee/gd_bundle.crt")), X509CertificateUtils
-				.loadCertificateFromPEM(new FileInputStream(
-						"/Users/lee/javassh.com.crt")));
+//		X509CertificateUtils.validateChain(X509CertificateUtils
+//				.loadCertificateChainFromPEM(new FileInputStream(
+//						"/Users/lee/gd_bundle.crt")), X509CertificateUtils
+//				.loadCertificateFromPEM(new FileInputStream(
+//						"/Users/lee/javassh.com.crt")));
+//		
+//		X509CertificateUtils.loadKeyPairFromPFX(new FileInputStream("/home/lee//Dropbox/Company Files/Nervepoint Technologies Limited/Certificates/Domain Wildcard/nervepoint-www-wildcard.pfx"), "bluemars73".toCharArray());
 
 	}
 

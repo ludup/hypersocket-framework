@@ -123,28 +123,22 @@ public class CertificateController extends AuthenticatedController {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
-				if (certificateService.updatePrivateKey(key, passphrase, file, bundle)) {
+				certificateService.updatePrivateKey(key, passphrase, file, bundle);
 					status.setSuccess(true);
 					status.setMessage(I18N.getResource(
 							sessionUtils.getLocale(request),
 							CertificateService.RESOURCE_BUNDLE,
 							"info.keyUploaded"));
-				} else {
-					status.setMessage(I18N.getResource(
-							sessionUtils.getLocale(request),
-							CertificateService.RESOURCE_BUNDLE,
-							"error.generalError"));
-				}
 			} catch (InvalidPassphraseException e) {
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
 						CertificateService.RESOURCE_BUNDLE,
 						"error.invalidPassphrase"));
-			} catch (FileFormatException e) {
+			} catch (Exception e) {
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
 						CertificateService.RESOURCE_BUNDLE,
-						"error.invalidFormat"));
+						"error.generalError", e.getMessage()));
 			}
 
 			status.setInstalledCertificate(certificateService
@@ -159,6 +153,50 @@ public class CertificateController extends AuthenticatedController {
 		}
 	}
 
+	@AuthenticationRequired
+	@RequestMapping(value = "certificates/pfx", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public CertificateStatus uploadPfx(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestPart(value = "key") MultipartFile key,
+			@RequestParam(value = "passphrase") String passphrase)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request), certificateService);
+
+		try {
+			CertificateStatus status = new CertificateStatus();
+			status.setSuccess(false);
+			try {
+				certificateService.updatePrivateKey(key, passphrase);
+					status.setSuccess(true);
+					status.setMessage(I18N.getResource(
+							sessionUtils.getLocale(request),
+							CertificateService.RESOURCE_BUNDLE,
+							"info.keyUploaded"));
+			} catch (Exception e) {
+				status.setMessage(I18N.getResource(
+						sessionUtils.getLocale(request),
+						CertificateService.RESOURCE_BUNDLE,
+						"error.generalError", e.getMessage()));
+			}
+
+			status.setInstalledCertificate(certificateService
+					.hasInstalledCertificate());
+			status.setMatchingCertificate(certificateService
+					.hasWorkingCertificate());
+
+			return status;
+
+		} finally {
+			clearAuthenticatedContext(certificateService);
+		}
+	}
+	
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/cert", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)

@@ -10,6 +10,10 @@ package com.hypersocket.certs;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -31,11 +35,17 @@ public interface CertificateService extends AuthenticatedService {
 	
 	boolean resetPrivateKey() throws AccessDeniedException;
 
-	boolean updatePrivateKey(MultipartFile file, String passphrase, MultipartFile cert, MultipartFile bundle) throws AccessDeniedException, InvalidPassphraseException, FileFormatException;
+	void updatePrivateKey(MultipartFile file, String passphrase, MultipartFile cert, MultipartFile bundle) throws AccessDeniedException, InvalidPassphraseException, FileFormatException, CertificateException, IOException, MismatchedCertificateException;
 
-	boolean updateCertificate(MultipartFile file, MultipartFile bundle) throws AccessDeniedException, FileFormatException, CertificateExpiredException, CertificateNotYetValidException, MismatchedCertificateException, CertificateException, IOException, InvalidPassphraseException;
+	void updateCertificate(MultipartFile file, MultipartFile bundle) throws AccessDeniedException, FileFormatException, CertificateExpiredException, CertificateNotYetValidException, MismatchedCertificateException, CertificateException, IOException, InvalidPassphraseException;
 
 	String generateCSR(String cn, String ou, String o, String l, String s, String c) throws UnsupportedEncodingException, Exception;
+
+	void updatePrivateKey(MultipartFile pfx, String passphrase)
+			throws CertificateException, UnrecoverableKeyException,
+			KeyStoreException, NoSuchAlgorithmException,
+			NoSuchProviderException, IOException,
+			MismatchedCertificateException;
 
 
 }
