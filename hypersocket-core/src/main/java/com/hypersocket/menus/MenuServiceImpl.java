@@ -26,9 +26,7 @@ import com.hypersocket.config.ConfigurationPermission;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
-import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.AccessControlPermission;
-import com.hypersocket.realm.RealmPermission;
 
 @Service
 public class MenuServiceImpl extends AuthenticatedServiceImpl implements

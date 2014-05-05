@@ -15,14 +15,12 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.PrincipalColumns;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
@@ -30,7 +28,6 @@ import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DetachedCriteriaConfiguration;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.Sort;
 
 @Repository
 @Transactional
@@ -233,6 +230,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 				if(!StringUtils.isEmpty(searchPattern)) {
 					criteria.add(Restrictions.like("name", searchPattern));
 				}
+				
 			}
 		});
 	}
@@ -255,27 +253,15 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	@Override
 	public List<?> getUsers(final Realm realm, final String searchPattern, final int start,
 			final int length, final ColumnSort[] sorting) {
-		return allEntities(LocalUser.class, new CriteriaConfiguration() {
+		return search(LocalUser.class, "name", searchPattern, start, length, sorting, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("realm", realm));
-				if(!StringUtils.isEmpty(searchPattern)) {
-					criteria.add(Restrictions.like("name", searchPattern));
-				}
-				criteria.setFirstResult(start);
-				criteria.setMaxResults(length);
+				criteria.add(Restrictions.eq("deleted", false));
 				criteria.setFetchMode("groups", FetchMode.SELECT);
-				for (ColumnSort sort : sorting) {
-					PrincipalColumns col = (PrincipalColumns) sort.getColumn();
-					switch (col) {
-					case PRINCIPAL_NAME:
-						criteria.addOrder(sort.getSort() == Sort.ASC ? Order
-								.asc("name") : Order.desc("name"));
-						break;
-					default:
-					}
-				}
+				criteria.setFetchMode("roles", FetchMode.SELECT);
+				criteria.setFetchMode("properties", FetchMode.SELECT);
 			}
 		});
 	}
@@ -283,28 +269,17 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	@Override
 	public List<?> getGroups(final Realm realm, final String searchPattern, final int start,
 			final int length, final ColumnSort[] sorting) {
-		return allEntities(LocalGroup.class, new CriteriaConfiguration() {
+		
+		return search(LocalGroup.class, "name", searchPattern, start, length, sorting, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("realm", realm));
-				if(!StringUtils.isEmpty(searchPattern)) {
-					criteria.add(Restrictions.like("name", searchPattern));
-				}
-				criteria.setFirstResult(start);
-				criteria.setMaxResults(length);
+				criteria.add(Restrictions.eq("deleted", false));
 				criteria.setFetchMode("users", FetchMode.SELECT);
-				for (ColumnSort sort : sorting) {
-					PrincipalColumns col = (PrincipalColumns) sort.getColumn();
-					switch (col) {
-					case PRINCIPAL_NAME:
-						criteria.addOrder(sort.getSort() == Sort.ASC ? Order
-								.asc("name") : Order.desc("name"));
-						break;
-					default:
-					}
-				}
+				criteria.setFetchMode("roles", FetchMode.SELECT);
+				criteria.setFetchMode("properties", FetchMode.SELECT);
 			}
 		});
-	};
+	}
 }

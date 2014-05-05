@@ -19,7 +19,6 @@ import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
-import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.resource.HiddenFilter;
 import com.hypersocket.tables.ColumnSort;
 
@@ -74,6 +73,7 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("hidden", false));
+				criteria.add(Restrictions.eq("deleted", false));
 			}
 		});
 	}
