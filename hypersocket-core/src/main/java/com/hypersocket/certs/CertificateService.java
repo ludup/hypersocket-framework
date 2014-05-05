@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.certs;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
@@ -30,9 +31,9 @@ public interface CertificateService extends AuthenticatedService {
 	
 	boolean resetPrivateKey() throws AccessDeniedException;
 
-	boolean updatePrivateKey(MultipartFile file, String passphrase) throws AccessDeniedException, InvalidPassphraseException, FileFormatException;
+	boolean updatePrivateKey(MultipartFile file, String passphrase, MultipartFile cert, MultipartFile bundle) throws AccessDeniedException, InvalidPassphraseException, FileFormatException;
 
-	boolean updateCertificate(MultipartFile file, MultipartFile bundle) throws AccessDeniedException, FileFormatException, CertificateExpiredException, CertificateNotYetValidException;
+	boolean updateCertificate(MultipartFile file, MultipartFile bundle) throws AccessDeniedException, FileFormatException, CertificateExpiredException, CertificateNotYetValidException, MismatchedCertificateException, CertificateException, IOException, InvalidPassphraseException;
 
 	String generateCSR(String cn, String ou, String o, String l, String s, String c) throws UnsupportedEncodingException, Exception;
 

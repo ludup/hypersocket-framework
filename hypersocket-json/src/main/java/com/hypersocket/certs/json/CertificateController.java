@@ -110,6 +110,8 @@ public class CertificateController extends AuthenticatedController {
 	public CertificateStatus uploadKey(HttpServletRequest request,
 			HttpServletResponse response,
 			@RequestPart(value = "file") MultipartFile file,
+			@RequestPart(value = "bundle") MultipartFile bundle,
+			@RequestPart(value = "key") MultipartFile key,
 			@RequestParam(value = "passphrase") String passphrase)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
@@ -121,7 +123,7 @@ public class CertificateController extends AuthenticatedController {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
-				if (certificateService.updatePrivateKey(file, passphrase)) {
+				if (certificateService.updatePrivateKey(key, passphrase, file, bundle)) {
 					status.setSuccess(true);
 					status.setMessage(I18N.getResource(
 							sessionUtils.getLocale(request),
@@ -163,7 +165,7 @@ public class CertificateController extends AuthenticatedController {
 	@ResponseBody
 	public CertificateStatus uploadCertificate(HttpServletRequest request,
 			HttpServletResponse response,
-			@RequestPart(value = "file") MultipartFile[] file,
+			@RequestPart(value = "file") MultipartFile file,
 			@RequestPart(value = "bundle") MultipartFile bundle)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
@@ -175,18 +177,13 @@ public class CertificateController extends AuthenticatedController {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
-				if (certificateService.updateCertificate(file[0], bundle)) {
-					status.setSuccess(true);
-					status.setMessage(I18N.getResource(
-							sessionUtils.getLocale(request),
-							CertificateService.RESOURCE_BUNDLE,
-							"info.certUploaded"));
-				} else {
-					status.setMessage(I18N.getResource(
-							sessionUtils.getLocale(request),
-							CertificateService.RESOURCE_BUNDLE,
-							"error.generalError"));
-				}
+				certificateService.updateCertificate(file, bundle);
+				status.setSuccess(true);
+				status.setMessage(I18N.getResource(
+						sessionUtils.getLocale(request),
+						CertificateService.RESOURCE_BUNDLE,
+						"info.certUploaded"));
+				
 			} catch (FileFormatException e) {
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
@@ -201,6 +198,11 @@ public class CertificateController extends AuthenticatedController {
 						sessionUtils.getLocale(request),
 						CertificateService.RESOURCE_BUNDLE,
 						"error.certNotYetValid"));
+			} catch(Exception ex) {
+				status.setMessage(I18N.getResource(
+						sessionUtils.getLocale(request),
+						CertificateService.RESOURCE_BUNDLE,
+						"error.generalError", ex.getMessage()));
 			}
 
 			status.setInstalledCertificate(certificateService
