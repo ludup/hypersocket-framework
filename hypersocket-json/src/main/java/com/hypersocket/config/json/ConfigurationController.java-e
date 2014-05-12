@@ -69,11 +69,11 @@ public class ConfigurationController extends AuthenticatedController {
 	}
 	
 	@AuthenticationRequired
-	@RequestMapping(value = "configuration", method = RequestMethod.POST, produces = { "application/json" })
+	@RequestMapping(value = "configuration/{group}", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public RequestStatus updateItems(HttpServletRequest request,
-			HttpServletResponse response, @RequestBody PropertyItem[] items)
+			HttpServletResponse response, @RequestBody PropertyItem[] items, @PathVariable String group)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
