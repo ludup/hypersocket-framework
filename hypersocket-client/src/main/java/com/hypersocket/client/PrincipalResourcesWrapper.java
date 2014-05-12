@@ -10,7 +10,7 @@ package com.hypersocket.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.hypersocket.client.json.JsonPrincipal;
+import com.hypersocket.json.JsonPrincipal;
 
 public class PrincipalResourcesWrapper {
 

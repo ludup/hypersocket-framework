@@ -6,6 +6,7 @@ import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.tables.ColumnSort;
 
 public interface AbstractAssignableResourceService<T> extends AuthenticatedService {
 
@@ -20,12 +21,18 @@ public interface AbstractAssignableResourceService<T> extends AuthenticatedServi
 
 	List<T> getResources(Principal principal) throws AccessDeniedException;
 
-	void createResource(T resource) throws ResourceChangeException,
-			AccessDeniedException;
+	void createResource(T resource) throws 
+			AccessDeniedException, ResourceCreationException;
 
 	void updateResource(T resource) throws ResourceChangeException,
 			AccessDeniedException;
 
 	List<T> getResources();
+
+	List<T> searchResources(Realm realm, String search, int start, int length,
+			ColumnSort[] sorting) throws AccessDeniedException;
+
+	long getResourceCount(Realm realm, String search)
+			throws AccessDeniedException;
 
 }
