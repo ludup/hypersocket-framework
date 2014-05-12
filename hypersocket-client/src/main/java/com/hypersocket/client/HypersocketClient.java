@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hypersocket.client.i18n.I18N;
-import com.hypersocket.client.json.JsonPrincipal;
+import com.hypersocket.json.JsonPrincipal;
 
 public abstract class HypersocketClient<T> {
 

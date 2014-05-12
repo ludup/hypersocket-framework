@@ -11,6 +11,8 @@ import java.util.List;
 
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.repository.CriteriaConfiguration;
+import com.hypersocket.tables.ColumnSort;
 
 public interface AbstractAssignableResourceRepository<T extends AssignableResource>
 		extends AssignableResourceRepository {
@@ -32,6 +34,12 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	void saveResource(T resource);
 
 	List<T> getResources();
+
+	List<T> search(Realm realm, String searchPattern, int start, int length,
+			ColumnSort[] sorting, CriteriaConfiguration... configs);
+
+	long getResourceCount(Realm realm, String searchPattern,
+			CriteriaConfiguration... configs);
 
 	
 }

@@ -15,14 +15,18 @@ import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractRepositoryImpl;
+import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.session.Session;
+import com.hypersocket.tables.ColumnSort;
 
 @Repository
+@Transactional
 public abstract class AbstractAssignableResourceRepositoryImpl<T extends AssignableResource>
 		extends AbstractRepositoryImpl<Long> implements
 		AbstractAssignableResourceRepository<T> {
@@ -113,18 +117,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	public void deleteResource(T resource)
 			throws ResourceChangeException {
 		
-		T tmp;
-		int idx = 0;
-		do {
-			tmp = getResourceByName(resource.getName() + "[#" + (++idx) + " deleted]", true);
-		} while(tmp!=null);
-		
-		
-		resource.setDeleted(true);
-		resource.setName(resource.getName() + "[#" + idx + " deleted]");
-		
-		saveResource(resource);
-		
+		delete(resource);
 	}
 	
 	@Override
@@ -148,6 +141,16 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Override
 	public List<T> getResources() {
 		return getResources(null);
+	}
+	
+	@Override
+	public List<T> search(Realm realm, String searchPattern, int start, int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
+		return super.search(getResourceClass(), "name", searchPattern, start, length, sorting, configs);
+	}
+	
+	@Override
+	public long getResourceCount(Realm realm, String searchPattern, CriteriaConfiguration... configs) {
+		return getCount(getResourceClass(), "name", searchPattern, configs);
 	}
 	
 	protected abstract Class<T> getResourceClass();
