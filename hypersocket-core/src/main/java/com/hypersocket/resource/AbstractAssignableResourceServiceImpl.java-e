@@ -18,90 +18,107 @@ import com.hypersocket.tables.ColumnSort;
 
 @Repository
 public abstract class AbstractAssignableResourceServiceImpl<T extends AssignableResource>
-		extends AuthenticatedServiceImpl implements AbstractAssignableResourceService<T> {
+		extends AuthenticatedServiceImpl implements
+		AbstractAssignableResourceService<T> {
 
-	static Logger log = LoggerFactory.getLogger(AbstractAssignableResourceRepositoryImpl.class);
-	
+	static Logger log = LoggerFactory
+			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
+
 	static final String RESOURCE_BUNDLE = "AssignableResourceService";
-	
+
 	@Autowired
 	RealmService realmService;
-	
+
 	protected abstract AbstractAssignableResourceRepository<T> getRepository();
 
 	protected abstract String getResourceBundle();
 
 	public abstract Class<?> getPermissionType();
-	
+
 	protected PermissionType getUpdatePermission() {
 		return getPermission("UPDATE");
 	}
-	
+
 	protected PermissionType getCreatePermission() {
 		return getPermission("CREATE");
 	}
-	
+
 	protected PermissionType getDeletePermission() {
 		return getPermission("DELETE");
 	}
-	
+
 	protected PermissionType getReadPermission() {
 		return getPermission("READ");
 	}
-	
-	
+
 	protected PermissionType getPermission(String name) {
 		try {
 			Field f = getPermissionType().getField(name);
-			
-			return (PermissionType)f.get(null);
+
+			return (PermissionType) f.get(null);
 		} catch (Exception e) {
-			throw new IllegalStateException("Could not resolve update permission on PermissionType " + getPermissionType().getName());
+			throw new IllegalStateException(
+					"Could not resolve update permission on PermissionType "
+							+ getPermissionType().getName());
 		}
 	}
-	
+
 	@Override
-	public void createResource(T resource) throws ResourceCreationException, AccessDeniedException {
-		
+	public void createResource(T resource) throws ResourceCreationException,
+			AccessDeniedException {
+
 		assertPermission(getCreatePermission());
-		
+
 		try {
-			getRepository().saveResource(resource);
-			fireResourceCreationEvent(resource);
-		} catch (Throwable t) {
-			fireResourceCreationEvent(resource, t);
-			if(t instanceof ResourceCreationException) {
-				throw (ResourceCreationException)t;
-			} else {
-				throw new ResourceCreationException(RESOURCE_BUNDLE, "generic.create.error", t.getMessage());
+			getResourceByName(resource.getName());
+			ResourceCreationException ex = new ResourceCreationException(RESOURCE_BUNDLE,
+					"generic.alreadyExists.error", resource.getName());
+			fireResourceCreationEvent(resource, ex);
+			throw ex;
+		} catch (ResourceNotFoundException ex) {
+			try {
+				getRepository().saveResource(resource);
+				fireResourceCreationEvent(resource);
+			} catch (Throwable t) {
+				log.error("Failed to create resource", t);
+				fireResourceCreationEvent(resource, t);
+				if (t instanceof ResourceCreationException) {
+					throw (ResourceCreationException) t;
+				} else {
+					throw new ResourceCreationException(RESOURCE_BUNDLE,
+							"generic.create.error", t.getMessage());
+				}
 			}
 		}
+
 	}
-	
+
 	protected abstract void fireResourceCreationEvent(T resource);
-	
+
 	protected abstract void fireResourceCreationEvent(T resource, Throwable t);
-	
-	public void updateResource(T resource) throws ResourceChangeException, AccessDeniedException {
+
+	public void updateResource(T resource) throws ResourceChangeException,
+			AccessDeniedException {
 		assertPermission(getUpdatePermission());
-		
+
 		try {
 			getRepository().saveResource(resource);
 			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {
 			fireResourceUpdateEvent(resource, t);
-			if(t instanceof ResourceChangeException) {
-				throw (ResourceChangeException)t;
+			if (t instanceof ResourceChangeException) {
+				throw (ResourceChangeException) t;
 			} else {
-				throw new ResourceChangeException(RESOURCE_BUNDLE, "generic.update.error", t.getMessage());	
+				throw new ResourceChangeException(RESOURCE_BUNDLE,
+						"generic.update.error", t.getMessage());
 			}
 		}
 	}
-	
+
 	protected abstract void fireResourceUpdateEvent(T resource);
-	
+
 	protected abstract void fireResourceUpdateEvent(T resource, Throwable t);
-	
+
 	@Override
 	public void deleteResource(T resource) throws ResourceChangeException,
 			AccessDeniedException {
@@ -113,17 +130,18 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			fireResourceDeletionEvent(resource);
 		} catch (Throwable t) {
 			fireResourceDeletionEvent(resource, t);
-			if(t instanceof ResourceChangeException) {
-				throw (ResourceChangeException)t;
+			if (t instanceof ResourceChangeException) {
+				throw (ResourceChangeException) t;
 			} else {
-				throw new ResourceChangeException(RESOURCE_BUNDLE, "generic.delete.error", t.getMessage());
+				throw new ResourceChangeException(RESOURCE_BUNDLE,
+						"generic.delete.error", t.getMessage());
 			}
 		}
 
 	}
-	
+
 	protected abstract void fireResourceDeletionEvent(T resource);
-	
+
 	protected abstract void fireResourceDeletionEvent(T resource, Throwable t);
 
 	@Override
@@ -134,30 +152,30 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		return getRepository().getResources(realm);
 
 	}
-	
+
 	@Override
-	public List<T> searchResources(Realm realm, String search, int start, int length, ColumnSort[] sorting) throws AccessDeniedException {
-		
+	public List<T> searchResources(Realm realm, String search, int start,
+			int length, ColumnSort[] sorting) throws AccessDeniedException {
+
 		assertPermission(getReadPermission());
-		
+
 		return getRepository().search(realm, search, start, length, sorting);
 	}
-	
+
 	@Override
-	public long getResourceCount(Realm realm, String search) throws AccessDeniedException {
-		
+	public long getResourceCount(Realm realm, String search)
+			throws AccessDeniedException {
+
 		assertPermission(getReadPermission());
-		
+
 		return getRepository().getResourceCount(realm, search);
 	}
 
-	
-	
 	@Override
 	public List<T> getResources() {
 		return getRepository().getResources();
 	}
-	
+
 	@Override
 	public T getResourceByName(String name) throws ResourceNotFoundException {
 		T resource = getRepository().getResourceByName(name);
@@ -169,8 +187,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 
 	@Override
-	public T getResourceById(Long id)
-			throws ResourceNotFoundException {
+	public T getResourceById(Long id) throws ResourceNotFoundException {
 		T resource = getRepository().getResourceById(id);
 		if (resource == null) {
 			throw new ResourceNotFoundException(getResourceBundle(),
@@ -178,7 +195,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		}
 		return resource;
 	}
-	
+
 	@Override
 	public List<T> getResources(Principal principal)
 			throws AccessDeniedException {
@@ -191,18 +208,16 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		return getRepository().getAssignableResources(
 				realmService.getAssociatedPrincipals(principal));
 	}
-	
-	protected void assertResourceAssignment(Principal principal, 
+
+	protected void assertResourceAssignment(Principal principal,
 			Resource resource) throws AccessDeniedException {
-		
-		for(Resource r : getResources(principal)) {
-			if(r.equals(resource)) {
+
+		for (Resource r : getResources(principal)) {
+			if (r.equals(resource)) {
 				return;
 			}
 		}
-		throw new AccessDeniedException("Principal " 
-					+ principal.getName() 
-					+ " does not have access to " 
-					+ resource.getName());
+		throw new AccessDeniedException("Principal " + principal.getName()
+				+ " does not have access to " + resource.getName());
 	}
 }
