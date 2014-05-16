@@ -99,7 +99,9 @@ public class ClientServiceImpl implements ClientService,
 
 	protected void notifyGui(String msg, int type) {
 		try {
-			gui.notify(msg, type);
+			if(gui!=null) {
+				gui.notify(msg, type);
+			}
 		} catch (Throwable e) {
 			log.error("Failed to notify gui", e);
 		}

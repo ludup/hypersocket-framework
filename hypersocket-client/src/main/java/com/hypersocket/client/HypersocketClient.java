@@ -47,6 +47,9 @@ public abstract class HypersocketClient<T> {
 	Set<HypersocketClientListener<T>> listeners = new HashSet<HypersocketClientListener<T>>();
 	T attachment;
 	
+	boolean userDisconnect = false;
+	boolean isDisconnecting = false;
+	
 	protected HypersocketClient(HypersocketClientTransport transport, Locale currentLocale)
 			throws IOException {
 		this.transport = transport;
@@ -103,6 +106,8 @@ public abstract class HypersocketClient<T> {
 	public void connect(String hostname, int port, String path, Locale locale)
 			throws IOException, UnknownHostException {
 
+		this.userDisconnect = false;
+		this.isDisconnecting = false;
 		this.currentLocale = locale;
 
 		try {
@@ -144,7 +149,11 @@ public abstract class HypersocketClient<T> {
 
 	public void disconnect(boolean onError) {
 
+		isDisconnecting = true;
+		
 		if(!onError) {
+			
+			userDisconnect = true;
 			try {
 				String json = transport.get("logoff");
 				if (log.isDebugEnabled()) {
@@ -385,10 +394,14 @@ public abstract class HypersocketClient<T> {
 				} catch (InterruptedException e) {
 				}
 
-				try {
-					transport.get("touch", 10000L);
-				} catch (IOException e) {
-					disconnect(true);
+				if(!userDisconnect && !isDisconnecting) {
+					try {
+						transport.get("touch", 10000L);
+					} catch (IOException e) {
+						if(!userDisconnect && !isDisconnecting) {
+							disconnect(true);
+						}
+					}
 				}
 			}
 		}

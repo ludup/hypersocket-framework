@@ -152,18 +152,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 	}
 
 	private void showPopupMessage(final String message, final String title) {
-		try {
-			client.notify(
-					Gntp.notification(notif1, title)
-							.text(message)
-							.context(12345)
-							.header(Gntp.APP_SPECIFIC_HEADER_PREFIX
-									+ "Filename", "file.txt").build(), 5,
-					TimeUnit.SECONDS);
-		} catch (Throwable e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
 	}
 
 	private void connectToService() throws RemoteException, NotBoundException {
