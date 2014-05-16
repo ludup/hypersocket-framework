@@ -8,6 +8,6 @@ public interface HypersocketClientListener<T> {
 	
 	void connected(HypersocketClient<T> client);
 	
-	void disconnected(HypersocketClient<T> client);
+	void disconnected(HypersocketClient<T> client, boolean onError);
 
 }
