@@ -129,7 +129,7 @@ public class NettyClientTransport implements HypersocketClientTransport {
 	}
 
 	@Override
-	public void disconnect() {
+	public void disconnect(boolean onError) {
 
 		stopAllForwarding();
 		httpClient.disconnect();

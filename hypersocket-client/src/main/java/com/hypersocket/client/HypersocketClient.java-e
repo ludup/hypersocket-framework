@@ -42,7 +42,7 @@ public abstract class HypersocketClient<T> {
 	HypersocketClientTransport transport;
 	Map<String, String> staticHeaders = new HashMap<String, String>();
 	SessionKeepAliveThread keepAliveThread = null;
-	long keepAliveInterval = 60000L;
+	long keepAliveInterval = 10000L;
 	Locale currentLocale = Locale.getDefault();
 	Set<HypersocketClientListener<T>> listeners = new HashSet<HypersocketClientListener<T>>();
 	T attachment;
@@ -163,14 +163,14 @@ public abstract class HypersocketClient<T> {
 
 		onDisconnecting();
 		
-		transport.disconnect();
+		transport.disconnect(onError);
 
 		sessionId = null;
 		keepAliveThread = null;
 
 		for(HypersocketClientListener<T> l : listeners) {
 			try {
-				l.disconnected(this);
+				l.disconnected(this, onError);
 			} catch (Throwable t) {
 			}
 		}

@@ -68,8 +68,8 @@ public class ConnectionJob implements Job {
 			
 			client.addListener(new HypersocketClientAdapter<Connection>() {
 				@Override
-				public void disconnected(HypersocketClient<Connection> client) {
-					if(client.getAttachment().isStayConnected()) {
+				public void disconnected(HypersocketClient<Connection> client, boolean onError) {
+					if(client.getAttachment().isStayConnected() && onError) {
 						try {
 							service.connect(service.getConnectionService().getConnection(client.getAttachment().getId()));
 						} catch (RemoteException e) {

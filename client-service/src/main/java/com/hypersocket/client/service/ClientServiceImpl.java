@@ -296,7 +296,7 @@ public class ClientServiceImpl implements ClientService,
 	}
 
 	@Override
-	public void disconnected(HypersocketClient<Connection> client) {
+	public void disconnected(HypersocketClient<Connection> client, boolean onError) {
 		activeClients.remove(client.getAttachment());
 		connectingClients.remove(client.getAttachment());
 		

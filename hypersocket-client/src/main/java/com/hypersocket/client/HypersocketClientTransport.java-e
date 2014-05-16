@@ -27,7 +27,7 @@ public interface HypersocketClientTransport {
 
 	boolean isConnected();
 
-	void disconnect();
+	void disconnect(boolean onError);
 
 	void setHeader(String name, String value);
 

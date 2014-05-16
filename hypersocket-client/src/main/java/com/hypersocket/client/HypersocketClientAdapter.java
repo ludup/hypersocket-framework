@@ -18,7 +18,7 @@ public class HypersocketClientAdapter<T> implements HypersocketClientListener<T>
 	}
 
 	@Override
-	public void disconnected(HypersocketClient<T> client) {
+	public void disconnected(HypersocketClient<T> client, boolean onError) {
 		
 	}
 
