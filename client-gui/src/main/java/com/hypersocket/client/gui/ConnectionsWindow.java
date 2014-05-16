@@ -485,14 +485,14 @@ public class ConnectionsWindow extends ApplicationWindow {
 					if (!gui.getShell().isDisposed()) {
 						gui.getShell().getDisplay().syncExec(new Runnable() {
 							public void run() {
-								if(log.isInfoEnabled()) {
-									log.info("Getting status updates");
+								if(log.isDebugEnabled()) {
+									log.debug("Getting status updates");
 								}
 								synchronized (tableViewer) {
 									tableViewer.refresh();
 								}
-								if(log.isInfoEnabled()) {
-									log.info("Got status updates");
+								if(log.isDebugEnabled()) {
+									log.debug("Got status updates");
 								}
 							}
 						});

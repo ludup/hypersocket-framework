@@ -57,7 +57,7 @@ public class NettyClientTransport implements HypersocketClientTransport {
 	HttpClient httpClient;
 	String path;
 	String apiPath;
-	long requestTimeout = 60000L;
+	long requestTimeout = 30000L;
 
 	ExecutorService bossExecutor;
 	ExecutorService workerExecutor;
@@ -214,12 +214,17 @@ public class NettyClientTransport implements HypersocketClientTransport {
 
 	@Override
 	public String get(String uri) throws IOException {
+		return get(uri, requestTimeout);
+	}
+	
+	@Override
+	public String get(String uri, long timeout) throws IOException {
 
 		HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
 				HttpMethod.GET, apiPath + uri);
 
 		HttpHandlerResponse response = httpClient.sendRequest(request,
-				requestTimeout);
+				timeout);
 
 		if (response.getStatusCode() == 200) {
 			return response.getContent().toString(Charset.forName("UTF-8"));
@@ -232,6 +237,12 @@ public class NettyClientTransport implements HypersocketClientTransport {
 
 	@Override
 	public String post(String uri, Map<String, String> params)
+			throws IOException {
+		return post(uri, params, requestTimeout);
+	}
+	
+	@Override
+	public String post(String uri, Map<String, String> params, long timeout)
 			throws IOException {
 
 		HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
@@ -257,7 +268,7 @@ public class NettyClientTransport implements HypersocketClientTransport {
 		}
 
 		HttpHandlerResponse response = httpClient.sendRequest(request,
-				requestTimeout);
+				timeout);
 
 		if (response.getStatusCode() == 200) {
 			return response.getContent().toString(Charset.forName("UTF-8"));

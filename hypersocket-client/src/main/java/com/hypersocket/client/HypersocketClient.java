@@ -386,7 +386,7 @@ public abstract class HypersocketClient<T> {
 				}
 
 				try {
-					transport.get("touch");
+					transport.get("touch", 10000L);
 				} catch (IOException e) {
 					disconnect(true);
 				}

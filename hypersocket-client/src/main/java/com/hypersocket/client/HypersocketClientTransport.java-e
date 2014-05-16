@@ -41,4 +41,9 @@ public interface HypersocketClientTransport {
 
 	void stopAllForwarding();
 
+	String get(String uri, long timeout) throws IOException;
+
+	String post(String uri, Map<String, String> params, long timeout)
+			throws IOException;
+
 }

@@ -28,17 +28,15 @@ public class ConnectionJob implements Job {
 	}
 
 	@Override
-	public void execute(JobExecutionContext context)
+	public void execute(final JobExecutionContext context)
 			throws JobExecutionException {
 
 		JobDataMap data = context.getTrigger().getJobDataMap();
 
-		Connection c = (Connection) data.get("connection");
+		final Connection c = (Connection) data.get("connection");
 		ExecutorService boss = (ExecutorService) data.get("bossExecutor");
 		ExecutorService worker = (ExecutorService) data.get("workerExecutor");
 		Locale locale = (Locale) data.get("locale");
-		Integer reconnectSeconds = (Integer) data.get("reconnectSeconds");
-		
 		final ClientServiceImpl service = (ClientServiceImpl) data.get("service");
 		
 		String url = (String) data.get("url");
@@ -71,9 +69,8 @@ public class ConnectionJob implements Job {
 				public void disconnected(HypersocketClient<Connection> client, boolean onError) {
 					if(client.getAttachment().isStayConnected() && onError) {
 						try {
-							service.connect(service.getConnectionService().getConnection(client.getAttachment().getId()));
-						} catch (RemoteException e) {
-							log.error("Error attempting to restart 'stay connected' client", e);
+							service.scheduleConnect(c);
+						} catch (RemoteException e1) {
 						}
 					}
 				}
@@ -89,25 +86,9 @@ public class ConnectionJob implements Job {
 			}
 
 			if (c.isStayConnected()) {
-				if (log.isInfoEnabled()) {
-					log.info("Scheduling reconnect attempt in "
-							+ reconnectSeconds + " seconds to " + url);
-				}
 				try {
-
-					Trigger trigger = TriggerBuilder
-							.newTrigger()
-							.withIdentity("connecting" + c.getId())
-							.usingJobData(service.createJobData(c))
-							.startAt(
-									new Date(System.currentTimeMillis()
-											+ (1000 * reconnectSeconds)))
-							.build();
-
-					context.getScheduler().rescheduleJob(
-							context.getTrigger().getKey(), trigger);
-				} catch (Exception e1) {
-					log.error("Could not schedule job for url " + url, e1);
+					service.scheduleConnect(c);
+				} catch (RemoteException e1) {
 				}
 			}
 		}
