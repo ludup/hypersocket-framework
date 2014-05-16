@@ -3,6 +3,7 @@ package com.hypersocket.client.service;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
+import org.quartz.TriggerKey;
 import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,7 +140,41 @@ public class ClientServiceImpl implements ClientService,
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule connection", e);
 		}
+	}
+	
+	@Override
+	public void scheduleConnect(Connection c) throws RemoteException {
+		
+		if (log.isInfoEnabled()) {
+			log.info("Scheduling connect for connection id " + c.getId() + "/"
+					+ c.getHostname());
+		}
+		
+		try {
+			Integer reconnectSeconds = new Integer(configurationService.getValue(
+					"client.reconnectInSeconds", "30"));
+	
+			JobDetail connectingJob = JobBuilder.newJob(ConnectionJob.class)
+					.withIdentity("connecting" + c.getId()).build();
+	
+			Trigger trigger = TriggerBuilder.newTrigger()
+					.withIdentity("connecting" + c.getId())
+					.usingJobData(createJobData(c)).startAt(new Date(System.currentTimeMillis()
+							+ (1000 * reconnectSeconds))).build();
+	
+			if(scheduler.checkExists(trigger.getKey())) {
+				scheduler.rescheduleJob(trigger.getKey(), trigger);
+			} else {
+				scheduler.scheduleJob(connectingJob, trigger);
+			}
 
+		} catch(Throwable t) {
+			try {
+				Thread.sleep(5000L);
+			} catch (InterruptedException e) {
+			}
+			scheduleConnect(c);
+		}
 	}
 
 	JobDataMap createJobData(Connection c) throws RemoteException {

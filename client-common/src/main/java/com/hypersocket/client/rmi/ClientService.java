@@ -25,4 +25,6 @@ public interface ClientService extends Remote {
 	ConfigurationService getConfigurationService() throws RemoteException;
 
 	int getStatus(Connection con) throws RemoteException;
+
+	void scheduleConnect(Connection c) throws RemoteException;
 }
