@@ -196,6 +196,8 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			c.configure(criteria);
 		}
 
+		criteria.add(Restrictions.eq("deleted", false));
+		
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
 		criteria.setFirstResult(start);
 		criteria.setMaxResults(length);
