@@ -154,7 +154,7 @@ public class ClientServiceImpl implements ClientService,
 		
 		try {
 			Integer reconnectSeconds = new Integer(configurationService.getValue(
-					"client.reconnectInSeconds", "30"));
+					"client.reconnectInSeconds", "5"));
 	
 			JobDetail connectingJob = JobBuilder.newJob(ConnectionJob.class)
 					.withIdentity("connecting" + c.getId()).build();
