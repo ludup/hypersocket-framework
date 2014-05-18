@@ -38,7 +38,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> imple
 	DetachedCriteriaConfiguration JOIN_PERMISSIONS = new DetachedCriteriaConfiguration() {
 		@Override
 		public void configure(DetachedCriteria criteria) {
-			criteria.setFetchMode("permissions", FetchMode.JOIN);
+			criteria.setFetchMode("permissions", FetchMode.SELECT);
 			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);		
 		}		
 	};
@@ -46,8 +46,9 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> imple
 	DetachedCriteriaConfiguration JOIN_PRINCIPALS_PERMISSIONS = new DetachedCriteriaConfiguration() {
 		@Override
 		public void configure(DetachedCriteria criteria) {
-			criteria.setFetchMode("permissions", FetchMode.JOIN);
-			criteria.setFetchMode("principals", FetchMode.JOIN);
+			criteria.setFetchMode("permissions", FetchMode.SELECT);
+			criteria.setFetchMode("principals", FetchMode.SELECT);
+			criteria.setFetchMode("resources", FetchMode.SELECT);
 			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);		
 		}		
 	};
@@ -56,7 +57,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> imple
 	DetachedCriteriaConfiguration JOIN_ROLES = new DetachedCriteriaConfiguration() {
 		@Override
 		public void configure(DetachedCriteria criteria) {
-			criteria.setFetchMode("roles", FetchMode.JOIN);
+			criteria.setFetchMode("roles", FetchMode.SELECT);
 			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);		
 		}	
 	};
@@ -176,8 +177,13 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> imple
 	}
 
 	@Override
-	public List<Permission> getAllPermissions() {
-		return allEntities(Permission.class, JOIN_ROLES, new HiddenCriteria(false));
+	public List<Permission> getAllPermissions(final Set<Long> permissions) {
+		return allEntities(Permission.class, new DetachedCriteriaConfiguration() {
+			@Override
+			public void configure(DetachedCriteria criteria) {
+				criteria.add(Restrictions.in("id", permissions));
+			}
+		}, JOIN_ROLES, new HiddenCriteria(false));
 	}
 	
 	@Override
@@ -310,7 +316,9 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> imple
 			
 			@Override
 			public void configure(Criteria criteria) {
-				criteria.setFetchMode("permissions", FetchMode.JOIN);
+				criteria.setFetchMode("permissions", FetchMode.SELECT);
+				criteria.setFetchMode("principals", FetchMode.SELECT);
+				criteria.setFetchMode("resources", FetchMode.SELECT);
 				criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);		
 				criteria.add(Restrictions.or(Restrictions.eq("realm", realm), Restrictions.isNull("realm")));
 			}
@@ -323,7 +331,6 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> imple
 			
 			@Override
 			public void configure(Criteria criteria) {
-				criteria.setFetchMode("permissions", FetchMode.JOIN);
 				criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);		
 				criteria.add(Restrictions.or(Restrictions.eq("realm", realm), Restrictions.isNull("realm")));
 			}

@@ -55,6 +55,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	@Qualifier("transactionManager")
 	protected PlatformTransactionManager txManager;
 
+	Set<Long> registerPermissionIds = new HashSet<Long>();
 	CacheManager cacheManager;
 	Cache permissionsCache;
 
@@ -105,6 +106,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 		if (result == null) {
 			result = repository.createPermission(resourceKey, category, hidden);
 		}
+		registerPermissionIds.add(result.getId());
 		return result;
 	}
 
@@ -287,7 +289,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	@Override
 	public List<Permission> allPermissions() {
-		return repository.getAllPermissions();
+		return repository.getAllPermissions(registerPermissionIds);
 	}
 
 	private <T> Set<T> getEntitiesNotIn(Collection<T> source,

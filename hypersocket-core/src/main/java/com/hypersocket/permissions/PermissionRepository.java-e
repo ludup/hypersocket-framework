@@ -54,7 +54,7 @@ public interface PermissionRepository extends AbstractRepository<Long> {
 
 	public List<PermissionCategory> getAllCatgories();
 
-	public List<Permission> getAllPermissions();
+	public List<Permission> getAllPermissions(Set<Long> registered);
 
 	public void assignRole(Role role, Principal... principal);
 
