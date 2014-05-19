@@ -42,7 +42,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 		Criteria crit = sessionFactory.getCurrentSession().createCriteria(getResourceClass());
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-		crit.add(Restrictions.eq("deleted", false));
+
 		crit = crit.createCriteria("roles");
 		crit = crit.createCriteria("principals");
 		crit.add(Restrictions.in("id", ids));
