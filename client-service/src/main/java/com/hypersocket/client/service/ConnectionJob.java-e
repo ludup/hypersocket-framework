@@ -1,7 +1,6 @@
 package com.hypersocket.client.service;
 
 import java.rmi.RemoteException;
-import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 
@@ -10,8 +9,6 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
