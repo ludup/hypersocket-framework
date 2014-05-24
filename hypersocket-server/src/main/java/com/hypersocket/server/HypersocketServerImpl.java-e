@@ -75,6 +75,8 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	private DispatcherServlet dispatcherServlet;
 	private HypersocketServletConfig servletConfig;
 	
+	private List<String> controllerPackages = new ArrayList<String>();
+	
 	@Autowired
 	EventService eventService;
 	
@@ -101,7 +103,13 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	boolean stopping = false;
 	
 	public HypersocketServerImpl() {
-
+		controllerPackages.add("com.hypersocket.json.**");
+		controllerPackages.add("com.hypersocket.**.json");
+	}
+	
+	@Override
+	public void registerControllerPackage(String controllerPackage) {
+		controllerPackages.add(controllerPackage);
 	}
 	
 	@Override
@@ -227,8 +235,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		webappContext = new AnnotationConfigWebApplicationContext();
 		webappContext.setParent(applicationContext);
 		webappContext.register(DelegatingWebMvcConfiguration.class);
-		webappContext.scan("com.hypersocket.json.**",
-				"com.hypersocket.**.json");
+		webappContext.scan(controllerPackages.toArray(new String[0]));
 
 		webappContext.setServletConfig(servletConfig);
 		webappContext.refresh();

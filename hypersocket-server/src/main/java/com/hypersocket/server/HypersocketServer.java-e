@@ -96,4 +96,6 @@ public interface HypersocketServer {
 
 	int getActualHttpsPort();
 
+	void registerControllerPackage(String controllerPackage);
+
 }
