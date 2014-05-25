@@ -7,9 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.server.websocket;
 
-import com.hypersocket.bandwidth.BandwidthReporter;
 
-public interface WebsocketClient extends BandwidthReporter {
+public interface WebsocketClient {
 
 	void open();
 
