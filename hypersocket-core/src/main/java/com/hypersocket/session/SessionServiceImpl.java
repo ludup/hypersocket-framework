@@ -7,8 +7,12 @@
  ******************************************************************************/
 package com.hypersocket.session;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -31,6 +35,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.resource.Resource;
 import com.hypersocket.session.events.SessionClosedEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
 
@@ -57,6 +62,8 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 
 	UserAgentStringParser parser;
 
+	Map<Session,List<ResourceSession<?>>> resourceSessions = new HashMap<Session,List<ResourceSession<?>>>();
+	
 	@PostConstruct
 	private void registerConfiguration() throws AccessDeniedException {
 
@@ -165,6 +172,13 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 			throw new IllegalArgumentException(
 					"Attempting to close a session which is already closed!");
 		}
+		
+		if(resourceSessions.containsKey(session)) {
+			List<ResourceSession<?>> rs = resourceSessions.remove(session);
+			for(ResourceSession<?> s : rs) {
+				s.close();
+			}
+		}
 		session.setSignedOut(new Date());
 		repository.updateSession(session);
 		eventService.publishEvent(new SessionClosedEvent(this, session));
@@ -185,4 +199,36 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		repository.updateSession(session);
 	}
 
+	@Override
+	public void registerResourceSession(Session session, ResourceSession<?> resourceSession) {
+		
+		if(!resourceSessions.containsKey(session)) {
+			resourceSessions.put(session, new ArrayList<ResourceSession<?>>());
+		}
+		resourceSessions.get(session).add(resourceSession);
+	}
+	
+	@Override
+	public boolean hasResourceSession(Session session, Resource resource) {
+		if(resourceSessions.containsKey(session)) {
+			List<ResourceSession<?>> rs = resourceSessions.get(session);
+			for(ResourceSession<?> s : rs) {
+				if(s.getResource().equals(resource)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void unregisterResourceSession(Session session,
+			ResourceSession<?> resourceSession) {
+		
+		if(resourceSessions.containsKey(session)) {
+			resourceSessions.get(session).remove(resourceSession);
+		}
+	}
+	
+	
 }

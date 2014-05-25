@@ -73,31 +73,4 @@ public class SocketForwardingWebsocketClient implements WebsocketClient {
 		return totalBytesOut;
 	}
 
-	@Override
-	public long getIntervalBytesIn() {
-		try {
-			return intervalBytesIn;
-		} finally {
-			intervalBytesIn = 0;
-		}
-	}
-
-	@Override
-	public long getIntervalBytesOut() {
-		try {
-			return intervalBytesOut;
-		} finally {
-			intervalBytesOut = 0;
-		}
-	}
-
-	@Override
-	public String getResourceKey() {
-		return resourceKey;
-	}
-
-	@Override
-	public String getResourceBundle() {
-		return resourceBundle;
-	}
 }

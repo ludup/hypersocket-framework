@@ -12,6 +12,7 @@ import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.resource.Resource;
 
 public interface SessionService extends AuthenticatedService {
 
@@ -26,4 +27,12 @@ public interface SessionService extends AuthenticatedService {
 	void closeSession(Session session);
 
 	void switchRealm(Session session, Realm realm) throws AccessDeniedException;
+
+	void registerResourceSession(Session session,
+			ResourceSession<?> resourceSession);
+
+	boolean hasResourceSession(Session session, Resource resource);
+
+	void unregisterResourceSession(Session session,
+			ResourceSession<?> resourceSession);
 }
