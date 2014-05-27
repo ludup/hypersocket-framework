@@ -160,7 +160,7 @@ public class ClientServiceImpl implements ClientService,
 	
 			Trigger trigger = TriggerBuilder.newTrigger()
 					.withIdentity("connecting" + c.getId())
-					.usingJobData(createJobData(c)).startAt(new Date(System.currentTimeMillis()
+					.usingJobData(createJobData(connectionService.getConnection(c.getId()))).startAt(new Date(System.currentTimeMillis()
 							+ (1000 * reconnectSeconds))).build();
 	
 			if(scheduler.checkExists(trigger.getKey())) {
