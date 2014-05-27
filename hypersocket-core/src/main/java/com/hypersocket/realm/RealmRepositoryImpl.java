@@ -117,6 +117,13 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 
 	@Override
 	public Long countRealms(String searchPattern) {
-		return getCount(Realm.class, "name", searchPattern);
+		return getCount(Realm.class, "name", searchPattern, new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("hidden", false));
+				criteria.add(Restrictions.eq("deleted", false));
+			}
+		});
 	}
 }
