@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
@@ -23,7 +24,7 @@ import com.hypersocket.client.rmi.Connection;
 public class ConnectionDialog extends Dialog {
 
 	protected Object result;
-	protected Shell shell;
+	//protected Shell shell;
 	private Text txtHostname;
 	private Text txtPort;
 	private Text txtPath;
@@ -199,11 +200,14 @@ public class ConnectionDialog extends Dialog {
 		
 		if(invalid) {
 			// Error
-			
+			MessageBox mb = new MessageBox(swtGui.getShell(), SWT.OK | SWT.ICON_ERROR);
+	        mb.setText(I18N.getResource("error.addConnection.title"));
+	        mb.setMessage(I18N.getResource("error.minimumDetails"));
+	        mb.open();
 			return;
 		}
 		
-		if(btnConnectAtStartup.getSelection()) {
+		if(btnConnectAtStartup.getSelection() || btnStayConnected.getSelection()) {
 			invalid = StringUtils.isEmpty(txtRealm.getText());
 			invalid |= StringUtils.isEmpty(txtUsername.getText());
 			invalid |= StringUtils.isEmpty(txtPassword.getText());
@@ -211,7 +215,10 @@ public class ConnectionDialog extends Dialog {
 			if(invalid) {
 				
 				// Error we need a password in order to connect at startup
-				
+				MessageBox mb = new MessageBox(swtGui.getShell(), SWT.OK | SWT.ICON_ERROR);
+		        mb.setText(I18N.getResource("error.addConnection.title"));
+		        mb.setMessage(I18N.getResource("error.credentialsRequired"));
+		        mb.open();
 				return;
 			}
 		}
@@ -220,8 +227,11 @@ public class ConnectionDialog extends Dialog {
 			try {
 				connection = clientService.getConnectionService().createNew();
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				MessageBox mb = new MessageBox(swtGui.getShell(), SWT.OK | SWT.ICON_ERROR);
+		        mb.setText(I18N.getResource("error.addConnection.title"));
+		        mb.setMessage(I18N.getResource("error.rmiError", e.getMessage()));
+		        mb.open();
+		        return;
 			}
 		}
 		connection.setHostname(txtHostname.getText());
@@ -233,15 +243,24 @@ public class ConnectionDialog extends Dialog {
 		connection.setUsername(txtUsername.getText());
 		connection.setHashedPassword(txtPassword.getText());
 		
-		try {
-			connection = clientService.getConnectionService().save(connection);
-		} catch (RemoteException e) {
-			// Error
-			e.printStackTrace();
-			return;
-		}
+		Thread t = new Thread() {
+			public void run() {
+				try {
+					connection = clientService.getConnectionService().save(connection);
+					ConnectionDialog.super.okPressed();
+				} catch (RemoteException e) {
+					// Error
+					MessageBox mb = new MessageBox(swtGui.getShell(), SWT.OK | SWT.ICON_ERROR);
+			        mb.setText(I18N.getResource("error.addConnection.title"));
+			        mb.setMessage(I18N.getResource("error.rmiError", e.getMessage()));
+			        mb.open();
+					return;
+				}
+			}
+		};
 		
-		super.okPressed();
+		t.start();
+		
 	}
 	
 	public Connection getConnection() {
