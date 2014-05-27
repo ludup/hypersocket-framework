@@ -197,6 +197,9 @@ public class Main {
 
 		PropertyConfigurator.configureAndWatch("conf" + File.separator
 				+ "log4j.properties");
+		
+		System.setProperty("java.rmi.server.hostname", "localhost");
+		
 		BasicConfigurator.configure();
 		if (System.getSecurityManager() == null) {
 			System.setSecurityManager(new RMISecurityManager());
