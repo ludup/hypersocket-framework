@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.session;
 
+import java.util.List;
+
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.repository.AbstractRepository;
@@ -24,4 +26,6 @@ public interface SessionRepository extends AbstractRepository<String> {
 	public Session getSessionById(String id);
 	
 	public void updateSession(Session session);
+
+	public List<Session> getActiveSessions();
 }

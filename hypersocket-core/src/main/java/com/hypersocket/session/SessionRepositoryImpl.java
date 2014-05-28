@@ -7,11 +7,16 @@
  ******************************************************************************/
 package com.hypersocket.session;
 
+import java.util.List;
+
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.repository.AbstractRepositoryImpl;
+import com.hypersocket.repository.CriteriaConfiguration;
 
 @Repository
 public class SessionRepositoryImpl extends AbstractRepositoryImpl<String> implements SessionRepository {
@@ -45,6 +50,16 @@ public class SessionRepositoryImpl extends AbstractRepositoryImpl<String> implem
 	@Override
 	public Session getSessionById(String id) {
 		return get("id", id, Session.class);
+	}
+
+	@Override
+	public List<Session> getActiveSessions() {
+		return allEntities(Session.class, new CriteriaConfiguration() {
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.isNull("signedOut"));
+			}
+		});
 	}
 
 }

@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.session;
 
+import java.util.List;
+
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -35,4 +37,6 @@ public interface SessionService extends AuthenticatedService {
 
 	void unregisterResourceSession(Session session,
 			ResourceSession<?> resourceSession);
+
+	List<Session> getActiveSessions() throws AccessDeniedException;
 }
