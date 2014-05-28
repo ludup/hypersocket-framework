@@ -21,7 +21,8 @@ public interface SessionRepository extends AbstractRepository<String> {
 			String userAgent, 
 			String userAgentVersion, 
 			String os, 
-			String osVersion);
+			String osVersion,
+			int timeout);
 	
 	public Session getSessionById(String id);
 	

@@ -1,5 +1,7 @@
 package com.hypersocket.session;
 
+import java.util.List;
+
 import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +22,12 @@ public class SessionReaperJob extends TransactionalJob {
 		
 		
 		try {
-			for(Session session : sessionService.getActiveSessions()) {
+			List<Session> activeSessions = sessionService.getActiveSessions();
+			
+			if(log.isInfoEnabled()) {
+				log.info("There are " + activeSessions.size() + " users connected");
+			}
+			for(Session session : activeSessions) {
 				sessionService.isLoggedOn(session, false);
 			}
 		} catch (AccessDeniedException e) {

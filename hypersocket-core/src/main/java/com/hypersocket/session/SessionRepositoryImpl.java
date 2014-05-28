@@ -11,7 +11,10 @@ import java.util.List;
 
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.realm.Principal;
@@ -19,8 +22,11 @@ import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 
 @Repository
+@Transactional
 public class SessionRepositoryImpl extends AbstractRepositoryImpl<String> implements SessionRepository {
 
+	static Logger log = LoggerFactory.getLogger(SessionRepositoryImpl.class);
+	
 	@Override
 	public Session createSession(String remoteAddress, 
 			Principal principal, 
@@ -28,7 +34,8 @@ public class SessionRepositoryImpl extends AbstractRepositoryImpl<String> implem
 			String userAgent, 
 			String userAgentVersion,
 			String os,
-			String osVersion) {
+			String osVersion,
+			int timeout) {
 
 		Session session = new Session();
 		session.setPrincipal(principal);
@@ -38,12 +45,17 @@ public class SessionRepositoryImpl extends AbstractRepositoryImpl<String> implem
 		session.setOs(os);
 		session.setOsVersion(osVersion);
 		session.setAuthenticationScheme(scheme);
+		session.setTimeout(timeout);
 		save(session);
 		return session;
 	}
 
 	@Override
 	public void updateSession(Session session) {
+		
+		if(log.isDebugEnabled()) {
+			log.debug("Updating session " + session.getId() + " lastUpdated=" + session.getLastUpdated().getTime());
+		}
 		save(session);
 	}
 
