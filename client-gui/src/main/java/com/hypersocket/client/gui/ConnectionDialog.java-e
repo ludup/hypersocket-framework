@@ -12,6 +12,7 @@ import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -247,7 +248,13 @@ public class ConnectionDialog extends Dialog {
 			public void run() {
 				try {
 					connection = clientService.getConnectionService().save(connection);
-					ConnectionDialog.super.okPressed();
+					
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							ConnectionDialog.super.okPressed();
+						}
+					});
+					
 				} catch (RemoteException e) {
 					// Error
 					MessageBox mb = new MessageBox(swtGui.getShell(), SWT.OK | SWT.ICON_ERROR);

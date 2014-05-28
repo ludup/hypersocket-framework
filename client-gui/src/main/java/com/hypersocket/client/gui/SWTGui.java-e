@@ -127,6 +127,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 			public void run() {
 				trayItem.setImage(online ? onlineImage : offlineImage);
 				optionsItem.setEnabled(online);
+				connectionsItem.setEnabled(online);
 			}
 		});
 	}
@@ -330,6 +331,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 
 		connectionsItem = new MenuItem(trayMenu, SWT.PUSH);
 		connectionsItem.setText(I18N.getResource("connections.text"));
+		connectionsItem.setEnabled(false);
 		connectionsItem.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event e) {
 

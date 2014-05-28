@@ -22,6 +22,7 @@ public class ConnectionJob extends TimerTask {
 	Map<String,Object> data;
 	
 	public ConnectionJob(Map<String,Object> data) {
+		this.data = data;
 	}
 
 	@Override
