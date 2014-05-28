@@ -3,7 +3,6 @@ package com.hypersocket.client.service;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,17 +11,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.quartz.JobBuilder;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
-import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,15 +40,14 @@ public class ClientServiceImpl implements ClientService,
 
 	ExecutorService bossExecutor;
 	ExecutorService workerExecutor;
-	Scheduler scheduler;
+	Timer timer;
 
 	Map<Connection, HypersocketClient<Connection>> activeClients = new HashMap<Connection, HypersocketClient<Connection>>();
 	Map<Connection, HypersocketClient<Connection>> connectingClients = new HashMap<Connection, HypersocketClient<Connection>>();
 	Map<Connection, Set<ServicePlugin>> connectionPlugins = new HashMap<Connection, Set<ServicePlugin>>();
 
 	public ClientServiceImpl(ConnectionService connectionService,
-			ConfigurationService configurationService)
-			throws SchedulerException {
+			ConfigurationService configurationService) {
 
 		this.connectionService = connectionService;
 		this.configurationService = configurationService;
@@ -64,8 +55,7 @@ public class ClientServiceImpl implements ClientService,
 		bossExecutor = Executors.newCachedThreadPool();
 		workerExecutor = Executors.newCachedThreadPool();
 
-		scheduler = StdSchedulerFactory.getDefaultScheduler();
-		scheduler.start();
+		timer = new Timer(true);
 
 	}
 
@@ -98,7 +88,7 @@ public class ClientServiceImpl implements ClientService,
 
 	protected void notifyGui(String msg, int type) {
 		try {
-			if(gui!=null) {
+			if (gui != null) {
 				gui.notify(msg, type);
 			}
 		} catch (Throwable e) {
@@ -129,63 +119,35 @@ public class ClientServiceImpl implements ClientService,
 					+ c.getHostname());
 		}
 
-		JobDetail connectingJob = JobBuilder.newJob(ConnectionJob.class)
-				.withIdentity("connecting" + c.getId()).build();
+		timer.schedule(new ConnectionJob(createJobData(c)), 500);
 
-		Trigger trigger = TriggerBuilder.newTrigger()
-				.withIdentity("connecting" + c.getId())
-				.usingJobData(createJobData(c)).startNow().build();
-
-		try {
-			scheduler.scheduleJob(connectingJob, trigger);
-		} catch (SchedulerException e) {
-			log.error("Failed to schedule connection", e);
-		}
 	}
-	
+
 	@Override
 	public void scheduleConnect(Connection c) throws RemoteException {
-		
+
 		if (log.isInfoEnabled()) {
 			log.info("Scheduling connect for connection id " + c.getId() + "/"
 					+ c.getHostname());
 		}
-		
-		try {
-			Integer reconnectSeconds = new Integer(configurationService.getValue(
-					"client.reconnectInSeconds", "5"));
-	
-			JobDetail connectingJob = JobBuilder.newJob(ConnectionJob.class)
-					.withIdentity("connecting" + c.getId()).build();
-	
-			Trigger trigger = TriggerBuilder.newTrigger()
-					.withIdentity("connecting" + c.getId())
-					.usingJobData(createJobData(connectionService.getConnection(c.getId()))).startAt(new Date(System.currentTimeMillis()
-							+ (1000 * reconnectSeconds))).build();
-	
-			if(scheduler.checkExists(trigger.getKey())) {
-				scheduler.rescheduleJob(trigger.getKey(), trigger);
-			} else {
-				scheduler.scheduleJob(connectingJob, trigger);
-			}
 
-		} catch(Throwable t) {
-			try {
-				Thread.sleep(5000L);
-			} catch (InterruptedException e) {
-			}
-			scheduleConnect(c);
-		}
+		Integer reconnectSeconds = new Integer(configurationService.getValue(
+				"client.reconnectInSeconds", "5"));
+
+		timer.schedule(
+				new ConnectionJob(createJobData(connectionService
+						.getConnection(c.getId()))), reconnectSeconds * 1000);
+
 	}
 
-	JobDataMap createJobData(Connection c) throws RemoteException {
+	Map<String, Object> createJobData(Connection c) throws RemoteException {
 
 		Locale locale = new Locale(configurationService.getValue("ui.locale",
 				"en"));
 		Integer reconnectSeconds = new Integer(configurationService.getValue(
 				"client.reconnectInSeconds", "30"));
 
-		JobDataMap data = new JobDataMap();
+		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("connection", c);
 		data.put("service", this);
 		data.put("bossExecutor", bossExecutor);
@@ -204,19 +166,16 @@ public class ClientServiceImpl implements ClientService,
 
 	public void stopService() throws RemoteException {
 
-		try {
-			for (HypersocketClient<?> client : activeClients.values()) {
-				client.disconnect(false);
-			}
-
-			activeClients.clear();
-			bossExecutor.shutdown();
-			workerExecutor.shutdown();
-
-			scheduler.shutdown();
-		} catch (SchedulerException e) {
-			log.error("Failed to stop service", e);
+		for (HypersocketClient<?> client : activeClients.values()) {
+			client.disconnect(false);
 		}
+
+		activeClients.clear();
+		bossExecutor.shutdown();
+		workerExecutor.shutdown();
+
+		timer.cancel();
+
 	}
 
 	@Override
@@ -264,9 +223,10 @@ public class ClientServiceImpl implements ClientService,
 	}
 
 	protected void stopPlugins(HypersocketClient<Connection> client) {
-		
-		Set<ServicePlugin> plugins = connectionPlugins.get(client.getAttachment());
-		for(ServicePlugin plugin : plugins) {
+
+		Set<ServicePlugin> plugins = connectionPlugins.get(client
+				.getAttachment());
+		for (ServicePlugin plugin : plugins) {
 			try {
 				plugin.stop();
 			} catch (Throwable e) {
@@ -274,32 +234,33 @@ public class ClientServiceImpl implements ClientService,
 			}
 		}
 	}
-	
+
 	protected void startPlugins(HypersocketClient<Connection> client) {
 		Enumeration<URL> urls;
 
-		if(log.isInfoEnabled()) {
+		if (log.isInfoEnabled()) {
 			log.info("Starting plugins");
 		}
 		if (!connectionPlugins.containsKey(client.getAttachment())) {
-			connectionPlugins.put(client.getAttachment(), new HashSet<ServicePlugin>());
+			connectionPlugins.put(client.getAttachment(),
+					new HashSet<ServicePlugin>());
 		}
 		try {
 			urls = getClass().getClassLoader().getResources(
 					"service-plugin.properties");
-			
-			if(log.isInfoEnabled() && !urls.hasMoreElements()) {
+
+			if (log.isInfoEnabled() && !urls.hasMoreElements()) {
 				log.info("There are no plugins in classpath");
-				
+
 				urls = getClass().getClassLoader().getResources(
 						"/service-plugin.properties");
 			}
-			
+
 			while (urls.hasMoreElements()) {
-				
+
 				URL url = urls.nextElement();
-				
-				if(log.isInfoEnabled()) {
+
+				if (log.isInfoEnabled()) {
 					log.info("Found plugin at " + url.toExternalForm());
 				}
 				try {
@@ -333,12 +294,13 @@ public class ClientServiceImpl implements ClientService,
 	}
 
 	@Override
-	public void disconnected(HypersocketClient<Connection> client, boolean onError) {
+	public void disconnected(HypersocketClient<Connection> client,
+			boolean onError) {
 		activeClients.remove(client.getAttachment());
 		connectingClients.remove(client.getAttachment());
-		
+
 		stopPlugins(client);
-		
+
 		notifyGui(client.getHost() + " disconnected",
 				GUICallback.NOTIFY_DISCONNECT);
 	}
