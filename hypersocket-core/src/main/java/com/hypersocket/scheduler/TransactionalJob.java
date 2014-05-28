@@ -9,7 +9,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-public abstract class TransactionalJob implements Job {
+public abstract class TransactionalJob extends PermissionsAwareJob {
 
 	@Autowired
 	PlatformTransactionManager transactionManager;
@@ -18,7 +18,7 @@ public abstract class TransactionalJob implements Job {
 	}
 
 	@Override
-	public void execute(final JobExecutionContext context)
+	public void executeJob(final JobExecutionContext context)
 			throws JobExecutionException {
 		
 		try {

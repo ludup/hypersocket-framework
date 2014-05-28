@@ -20,6 +20,7 @@ import net.sf.uadetector.ReadableUserAgent;
 import net.sf.uadetector.UserAgentStringParser;
 import net.sf.uadetector.service.UADetectorServiceFactory;
 
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.Resource;
+import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.events.SessionClosedEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
 
@@ -53,6 +55,9 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 	@Autowired
 	ConfigurationService configurationService;
 
+	@Autowired
+	SchedulerService schedulerService;
+	
 	@Autowired
 	EventService eventService;
 	
@@ -77,6 +82,16 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		
 		eventService.registerEvent(SessionOpenEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionClosedEvent.class, RESOURCE_BUNDLE);
+		
+		if(log.isInfoEnabled()) {
+			log.info("Scheduling session reaper job");
+		}
+		
+		try {
+			schedulerService.scheduleIn(SessionReaperJob.class, null, 1, 60000);
+		} catch (SchedulerException e) {
+			log.error("Failed to schedule session reaper job", e);
+		}
 	}
 
 	@Override
@@ -228,6 +243,14 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		if(resourceSessions.containsKey(session)) {
 			resourceSessions.get(session).remove(resourceSession);
 		}
+	}
+
+	@Override
+	public List<Session> getActiveSessions() throws AccessDeniedException {
+
+		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
+		
+		return repository.getActiveSessions();
 	}
 	
 	
