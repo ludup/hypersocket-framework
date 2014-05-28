@@ -16,7 +16,6 @@ import java.util.Random;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.PropertyConfigurator;
-import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +41,7 @@ public class Main {
 		
 	}
 
-	void buildServices() throws RemoteException, SchedulerException {
+	void buildServices() throws RemoteException {
 
 		int attempts = 100;
 		while (attempts > 0) {

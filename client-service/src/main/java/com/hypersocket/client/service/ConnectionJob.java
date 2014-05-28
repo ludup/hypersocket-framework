@@ -2,13 +2,11 @@ package com.hypersocket.client.service;
 
 import java.rmi.RemoteException;
 import java.util.Locale;
+import java.util.Map;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.lang.StringUtils;
-import org.quartz.Job;
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,18 +15,17 @@ import com.hypersocket.client.HypersocketClientAdapter;
 import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.netty.NettyClientTransport;
 
-public class ConnectionJob implements Job {
+public class ConnectionJob extends TimerTask {
 
 	static Logger log = LoggerFactory.getLogger(ConnectionJob.class);
 
-	public ConnectionJob() {
+	Map<String,Object> data;
+	
+	public ConnectionJob(Map<String,Object> data) {
 	}
 
 	@Override
-	public void execute(final JobExecutionContext context)
-			throws JobExecutionException {
-
-		JobDataMap data = context.getTrigger().getJobDataMap();
+	public void run() {
 
 		final Connection c = (Connection) data.get("connection");
 		ExecutorService boss = (ExecutorService) data.get("bossExecutor");
