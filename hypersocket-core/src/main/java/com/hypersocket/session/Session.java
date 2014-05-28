@@ -73,8 +73,8 @@ public class Session extends AbstractEntity<String> {
 	@Column(name="os_version", nullable=false)
 	String osVersion;
 	
-	@Transient
-	int sessionTimeout;
+	@Column(name="timeout", nullable=true)
+	Integer sessionTimeout;
 	
 	@Override
 	public String getId() {
@@ -138,7 +138,7 @@ public class Session extends AbstractEntity<String> {
 	}
 	
 	public int getTimeout() {
-		return sessionTimeout;
+		return sessionTimeout==null ? 15 : sessionTimeout;
 	}
 	
 	public void setTimeout(int sessionTimeout) {

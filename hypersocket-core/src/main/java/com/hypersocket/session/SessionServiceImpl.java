@@ -42,7 +42,6 @@ import com.hypersocket.session.events.SessionClosedEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
 
 @Service
-@Transactional
 public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		SessionService {
 
@@ -107,8 +106,10 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		
 		Session session = repository.createSession(remoteAddress, principal,
 				completedScheme, ua.getFamily().getName(), ua.getVersionNumber().toVersionString(), 
-				ua.getOperatingSystem().getFamily().getName(), ua.getOperatingSystem().getVersionNumber().toVersionString());
-		session.setTimeout(configurationService.getIntValue(SESSION_TIMEOUT));
+				ua.getOperatingSystem().getFamily().getName(),
+				ua.getOperatingSystem().getVersionNumber().toVersionString(),
+				configurationService.getIntValue(SESSION_TIMEOUT));
+		
 		eventService.publishEvent(new SessionOpenEvent(this, session));
 		return session;
 	}
@@ -129,7 +130,7 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public boolean isLoggedOn(Session session, boolean touch) {
+	public synchronized boolean isLoggedOn(Session session, boolean touch) {
 		if (session == null)
 			return false;
 
@@ -163,6 +164,7 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 			}
 
 			if (touch) {
+				session.touch();
 				if(session.isReadyForUpdate()) {
 					repository.updateSession(session);
 					if(log.isDebugEnabled()) {
@@ -171,7 +173,7 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 								+ session.getId() + " state has been updated");
 					}
 				}
-				session.touch();
+				
 			}
 			return true;
 		} else {
