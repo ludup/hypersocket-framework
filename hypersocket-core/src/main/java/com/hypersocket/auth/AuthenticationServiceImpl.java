@@ -26,6 +26,8 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.input.FormTemplate;
+import com.hypersocket.menus.MenuRegistration;
+import com.hypersocket.menus.MenuService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Permission;
 import com.hypersocket.permissions.PermissionCategory;
@@ -46,7 +48,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 	public static final String DEFAULT_AUTHENTICATION_SCHEME = "Default";
 	public static final String HTTP_AUTHENTICATION_SCHEME = "HTTP";
-	
+
 	private static Logger log = LoggerFactory
 			.getLogger(AuthenticationServiceImpl.class);
 
@@ -71,6 +73,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	@Autowired
 	I18NService i18nService;
 
+	@Autowired
+	MenuService menuService;
+
+	// @Autowired
+	// IndexPageFilter indexPageFilter;
 	Map<String, Authenticator> authenticators = new HashMap<String, Authenticator>();
 
 	List<PostAuthenticationStep> postAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
@@ -92,6 +99,17 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				AuthenticationPermission.LOGON.toString(), authentication);
 
 		eventService.registerEvent(AuthenticationEvent.class, RESOURCE_BUNDLE);
+
+		menuService.registerMenu(new MenuRegistration(RESOURCE_BUNDLE,
+				"authentication", "fa-authentication", "authentication", 1,
+				SystemPermission.SYSTEM_ADMINISTRATION,
+				SystemPermission.SYSTEM_ADMINISTRATION,
+				SystemPermission.SYSTEM_ADMINISTRATION,
+				SystemPermission.SYSTEM_ADMINISTRATION), "system");
+
+		i18nService.registerBundle(RESOURCE_BUNDLE);
+
+		// indexPageFilter.addStyleSheet("${uiPath}/css/authenticator.css");
 	}
 
 	@Override
@@ -124,8 +142,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
-	public AuthenticationState createAuthenticationState(String scheme, String remoteAddress,
-			Map<String, String> environment, Locale locale)
+	public AuthenticationState createAuthenticationState(String scheme,
+			String remoteAddress, Map<String, String> environment, Locale locale)
 			throws AccessDeniedException {
 
 		AuthenticationState state = new AuthenticationState(remoteAddress,
@@ -377,4 +395,86 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	// return success;
 	// }
 
+	public List<AuthenticationScheme> getAuthenticationSchemes()
+			throws AccessDeniedException {
+		assertPermission(AuthenticationPermission.READ);
+		return repository.getAuthenticationSchemes();
+	}
+
+	public List<AuthenticationModule> getAuthenticationModules()
+			throws AccessDeniedException {
+		assertPermission(AuthenticationPermission.READ);
+		return repository.getAuthenticationModules();
+	}
+
+	public List<AuthenticationModule> getAuthenticationModulesByScheme(
+			AuthenticationScheme authenticationScheme)
+			throws AccessDeniedException {
+		assertPermission(AuthenticationPermission.READ);
+		return repository
+				.getAuthenticationModulesByScheme(authenticationScheme);
+	}
+
+	public List<Authenticator> getRegAuthenticators() {
+
+		return new ArrayList<Authenticator>(authenticators.values());
+	}
+
+	public AuthenticationModule getModuleById(Long id)
+			throws AccessDeniedException {
+		assertPermission(AuthenticationPermission.READ);
+		return repository.getModuleById(id);
+	}
+
+	public AuthenticationScheme getSchemeById(Long id)
+			throws AccessDeniedException {
+		assertPermission(AuthenticationPermission.READ);
+		return repository.getSchemeById(id);
+	}
+
+	public void updateSchemeModules(List<AuthenticationModule> moduleList)
+			throws AccessDeniedException {
+		assertPermission(AuthenticationPermission.CREATE,
+				AuthenticationPermission.DELETE);
+
+		deleteModulesByScheme(moduleList.get(0).getScheme());
+		for (AuthenticationModule module : moduleList) {
+
+			repository.createAuthenticationModule(module);
+
+		}
+	}
+
+	public AuthenticationModule createAuthenticationModule(
+			AuthenticationModule authenticationModule)
+			throws AccessDeniedException {
+		assertPermission(AuthenticationPermission.CREATE);
+
+		return repository.createAuthenticationModule(authenticationModule);
+	}
+
+	public AuthenticationModule updateAuthenticationModule(
+			AuthenticationModule authenticationModule)
+			throws AccessDeniedException {
+		assertPermission(AuthenticationPermission.UPDATE);
+
+		return repository.updateAuthenticationModule(authenticationModule);
+	}
+
+	public void deleteModule(AuthenticationModule authenticationModule)
+			throws AccessDeniedException {
+		assertPermission(AuthenticationPermission.DELETE);
+
+		repository.deleteModule(authenticationModule);
+	}
+
+	public void deleteModulesByScheme(AuthenticationScheme authenticationScheme)
+			throws AccessDeniedException {
+
+		List<AuthenticationModule> list = getAuthenticationModulesByScheme(authenticationScheme);
+		for (AuthenticationModule module : list) {
+			repository.deleteModule(module);
+		}
+
+	}
 }
