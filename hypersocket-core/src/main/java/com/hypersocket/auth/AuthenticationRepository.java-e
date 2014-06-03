@@ -9,15 +9,19 @@ package com.hypersocket.auth;
 
 import java.util.List;
 
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.repository.AbstractRepository;
 
 public interface AuthenticationRepository extends AbstractRepository<Long> {
 
-	public Credential createCredential(CredentialType type, Integer index, String resourceKey);
-	
-	public AuthenticationScheme createScheme(String name, List<String> modules, String resourceKey);
-	
-	public AuthenticationScheme createScheme(String name, List<String> modules, String resourceKey, boolean hidden);
+	public Credential createCredential(CredentialType type, Integer index,
+			String resourceKey);
+
+	public AuthenticationScheme createScheme(String name, List<String> modules,
+			String resourceKey);
+
+	public AuthenticationScheme createScheme(String name, List<String> modules,
+			String resourceKey, boolean hidden);
 
 	List<AuthenticationScheme> allSchemes();
 
@@ -25,5 +29,27 @@ public interface AuthenticationRepository extends AbstractRepository<Long> {
 			AuthenticationScheme scheme);
 
 	public AuthenticationScheme getScheme(String string);
-	
+
+	public List<AuthenticationScheme> getAuthenticationSchemes();
+
+	public List<AuthenticationModule> getAuthenticationModules();
+
+	public List<AuthenticationModule> getAuthenticationModulesByScheme(
+			AuthenticationScheme authenticationScheme);
+
+	public AuthenticationModule getModuleById(Long id);
+
+	public AuthenticationScheme getSchemeById(Long id);
+
+	public void updateSchemeModules(List<AuthenticationModule> moduleList);
+
+	public AuthenticationModule createAuthenticationModule(
+			AuthenticationModule authenticationModule);
+
+	public AuthenticationModule updateAuthenticationModule(
+			AuthenticationModule authenticationModule);
+
+	public void deleteModule(AuthenticationModule authenticationModule);
+
+	// public void deleteByTemplate(AuthenticationModule authenticationModule);
 }

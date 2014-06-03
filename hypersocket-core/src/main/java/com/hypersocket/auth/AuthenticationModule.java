@@ -19,52 +19,62 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.hypersocket.repository.AbstractEntity;
 
 @Entity
-@Table(name="auth_scheme_modules")
-@XmlRootElement(name="authenticationSchemeModules")
+@Table(name = "auth_scheme_modules")
+@XmlRootElement(name = "authenticationSchemeModules")
 public class AuthenticationModule extends AbstractEntity<Long> {
-	
+
 	@Id
 	@GeneratedValue
-	@Column(name="module_id")
+	@Column(name = "module_id")
 	Long id;
-	
-	@Column(name="template")
+
+	@Column(name = "template")
 	String template;
-	
+
 	@OneToOne
-	@JoinColumn(name="scheme_id")
+	@JoinColumn(name = "scheme_id")
 	AuthenticationScheme scheme;
-	
-	@Column(name="idx")
+
+	@Column(name = "idx")
 	Integer idx;
-	
+
+	public AuthenticationModule() {
+
+	}
+
+	public AuthenticationModule(String template, Integer idx) {
+		this.template = template;
+		this.idx = idx;
+	}
+
 	public Long getId() {
 		return id;
 	}
-	
+
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
+
 	public String getTemplate() {
 		return template;
 	}
-	
+
 	public void setTemplate(String template) {
 		this.template = template;
 	}
-	
+
 	public AuthenticationScheme getScheme() {
 		return scheme;
 	}
+
 	public void setScheme(AuthenticationScheme scheme) {
 		this.scheme = scheme;
 	}
-	
+
 	public Integer getIndex() {
 		return idx;
 	}
-	
+
 	public void setIndex(Integer idx) {
 		this.idx = idx;
 	}
