@@ -21,5 +21,4 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 		super.addInterceptors(registry);
 	}
 
-
 }

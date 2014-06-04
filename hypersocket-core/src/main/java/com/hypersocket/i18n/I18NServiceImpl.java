@@ -95,9 +95,10 @@ public class I18NServiceImpl implements I18NService, ApplicationListener<Configu
 	
 	private void buildBundleJson(String bundle, Locale locale, Map<String,String> resources) {
 		ResourceBundle b = I18N.getResourceBundle(locale, bundle);
+		
 		for(Enumeration<String> e = b.getKeys(); e.hasMoreElements();) {
 			String key = e.nextElement();
-			resources.put(key, b.getString(key));
+			resources.put(key, I18N.getResource(locale, bundle, key));
 		}
 	}
 
@@ -121,7 +122,7 @@ public class I18NServiceImpl implements I18NService, ApplicationListener<Configu
 		if(log.isWarnEnabled()) {
 			log.warn(locale + " is missing");
 		}
-		return Locale.getDefault();
+		return Locale.ENGLISH;
 	}
 	
 	public static String tagForConversion(String resourceBundle, String resourceKey) {
@@ -137,6 +138,25 @@ public class I18NServiceImpl implements I18NService, ApplicationListener<Configu
 		}
 	}
 	
+	@Override
+	public Map<String,Map<String,Message>> getTranslatableMessages() {
+		
+		Map<String,Map<String,Message>> messages = new HashMap<String,Map<String,Message>>();
+		
+		for(String bundle : bundles) {
+			ResourceBundle b = I18N.getResourceBundle(Locale.ENGLISH, bundle);
+			messages.put(bundle, new HashMap<String,Message>());
+			for(Enumeration<String> e = b.getKeys(); e.hasMoreElements();) {
+				String key = e.nextElement();
+				
+				String translated = I18N.getResource(Locale.ENGLISH, bundle, key);
+				String original = I18N.getResourceNoOveride(Locale.ENGLISH, bundle, key);
+				messages.get(bundle).put(key, new Message(bundle, key, original, original.equals(translated) ? "" : translated));
+			}
+		}
+		
+		return messages;
+	}
 	
 	@Override
 	public boolean hasUserLocales() {

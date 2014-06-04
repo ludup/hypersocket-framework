@@ -28,6 +28,7 @@ import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.i18n.I18N;
+import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -40,6 +41,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmColumns;
 import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.session.json.SessionTimeoutException;
@@ -368,7 +370,7 @@ public class RealmController extends ResourceController {
 		}
 
 	}
-
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "user/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
@@ -386,6 +388,56 @@ public class RealmController extends ResourceController {
 					PrincipalType.USER);
 			return new ResourceList<PropertyCategory>(
 					realmService.getUserPropertyTemplates(principal));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "user/profile", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<PropertyCategory> getUserProfile(HttpServletRequest request) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<PropertyCategory>(
+					realmService.getUserPropertyTemplates(sessionUtils.getPrincipal(request)));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "user/profile", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus setUserProperties(HttpServletRequest request,
+			@RequestBody PropertyItem[] items) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			Map<String,String> values=  new HashMap<String,String>();
+			for(PropertyItem item : items) {
+				values.put(item.getId(), item.getValue());
+			}
+
+			realmService.updateProfile(sessionUtils.getCurrentRealm(request),
+					sessionUtils.getPrincipal(request),
+					values);
+		
+
+			return new RequestStatus(true, I18N.getResource(
+					sessionUtils.getLocale(request), RealmServiceImpl.RESOURCE_BUNDLE,
+					"profile.saved"));
 		} finally {
 			clearAuthenticatedContext();
 		}
