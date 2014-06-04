@@ -21,6 +21,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.auth.InvalidAuthenticationContext;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
@@ -29,6 +30,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.events.GroupCreatedEvent;
 import com.hypersocket.realm.events.GroupDeletedEvent;
 import com.hypersocket.realm.events.GroupUpdatedEvent;
+import com.hypersocket.realm.events.ProfileUpdatedEvent;
 import com.hypersocket.realm.events.RealmCreatedEvent;
 import com.hypersocket.realm.events.RealmDeletedEvent;
 import com.hypersocket.realm.events.RealmUpdatedEvent;
@@ -71,6 +73,9 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 				"category.acl");
 
 		for (UserPermission p : UserPermission.values()) {
+			permissionService.registerPermission(p.getResourceKey(), cat);
+		}
+		for (ProfilePermission p : ProfilePermission.values()) {
 			permissionService.registerPermission(p.getResourceKey(), cat);
 		}
 		for (GroupPermission p : GroupPermission.values()) {
@@ -168,7 +173,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		try {
 
-			assertAnyPermission(UserPermission.CREATE);
+			assertPermission(UserPermission.CREATE);
 
 			Principal principal = provider.createUser(realm, username,
 					properties, principals);
@@ -607,7 +612,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		RealmProvider provider = getProviderForRealm(realm);
 
 		try {
-			assertPermission(UserPermission.DELETE);
+			assertPermission(GroupPermission.DELETE);
 
 			provider.deleteGroup(group);
 
@@ -671,7 +676,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Collection<PropertyCategory> getUserPropertyTemplates(
 			Principal principal) throws AccessDeniedException {
 
-		assertPermission(RealmPermission.READ);
+		
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ);
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
@@ -682,7 +688,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Collection<PropertyCategory> getUserPropertyTemplates(String module)
 			throws AccessDeniedException {
 
-		assertPermission(RealmPermission.READ);
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ);
 
 		RealmProvider provider = getProviderForRealm(module);
 
@@ -693,7 +699,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Collection<PropertyCategory> getGroupPropertyTemplates(String module)
 			throws AccessDeniedException {
 
-		assertPermission(RealmPermission.READ);
+		assertPermission(GroupPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(module);
 
@@ -778,6 +784,33 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		assertPermission(RealmPermission.READ);
 		
 		return realmRepository.countRealms(searchPattern);
+	}
+
+	@Override
+	public void updateProfile(Realm realm, Principal principal,
+			Map<String, String> properties) throws AccessDeniedException {
+		
+		assertPermission(ProfilePermission.UPDATE);
+		
+		RealmProvider provider = getProviderForRealm(realm);
+		
+		List<Principal> assosiated = provider.getAssociatedPrincipals(principal);
+		try {
+			principal = provider.updateUser(realm, principal, principal.getPrincipalName(),
+					properties, assosiated);
+
+			eventPublisher
+					.publishEvent(new ProfileUpdatedEvent(this,
+							getCurrentSession(), realm, provider, principal,
+							assosiated));
+		} catch (ResourceChangeException e) {
+			
+			eventPublisher
+			.publishEvent(new ProfileUpdatedEvent(this, e,
+					getCurrentSession(), realm, provider, principal.getPrincipalName(), properties,
+					assosiated));
+		} 
+	
 	}
 
 }

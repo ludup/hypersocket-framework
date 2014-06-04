@@ -27,6 +27,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.AccessControlPermission;
+import com.hypersocket.realm.ProfilePermission;
 
 @Service
 public class MenuServiceImpl extends AuthenticatedServiceImpl implements
@@ -39,8 +40,18 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 	@PostConstruct
 	private void postConstruct() {
 
+		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "personal", "", null, 0, null, null,
+				null, null));
+		
+		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "profile", "fa-tags", "profile",
+				200, ProfilePermission.READ, null,
+				ProfilePermission.UPDATE, 
+				null),
+				"personal");
+		
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "system", "", null, 100, null, null,
 				null, null));
+		
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "configuration", "fa-cog", "configuration",
 				100, ConfigurationPermission.READ, null,
 				ConfigurationPermission.UPDATE, null), "system");

@@ -21,7 +21,7 @@ import org.json.simple.JSONObject;
 public class I18N {
 
 	static JSONObject resources;
-	static Locale locale = Locale.getDefault();
+	static Locale locale = Locale.ENGLISH;
 
 	private I18N() {
 	}

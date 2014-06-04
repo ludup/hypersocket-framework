@@ -5,26 +5,27 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.hypersocket.i18n;
+package com.hypersocket.realm;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import com.hypersocket.permissions.PermissionType;
 
-public interface I18NService {
-
-	void registerBundle(String bundle);
-
-	Map<String,String> getResourceJson(Locale locale);
-
-	Locale getLocale(String locale);
+public enum ProfilePermission implements PermissionType {
 	
-	Locale getDefaultLocale();
+	READ("profile.read"),
+	UPDATE("profile.update");
+	
+	private final String val;
+	
+	private ProfilePermission(final String val) {
+		this.val = val;
+	}
+	
+	public String toString() {
+		return val;
+	}
 
-	boolean hasUserLocales();
-
-	List<Locale> getSupportedLocales();
-
-	Map<String, Map<String, Message>> getTranslatableMessages();
-
+	@Override
+	public String getResourceKey() {
+		return val;
+	}
 }

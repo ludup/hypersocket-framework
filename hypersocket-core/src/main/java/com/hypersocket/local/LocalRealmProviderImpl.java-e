@@ -501,7 +501,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	@Override
 	public Collection<PropertyCategory> getGroupProperties(Principal principal) {
 		// TODO we need a way to get these from the repository - currently
-		// restricted to only one resource type per repositroy
+		// restricted to only one resource type per repository
 		return new ArrayList<PropertyCategory>();
 	}
 

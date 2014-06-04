@@ -128,4 +128,7 @@ public interface RealmService extends AuthenticatedService {
 	Collection<PropertyCategory> getGroupPropertyTemplates(String module)
 			throws AccessDeniedException;
 
+	void updateProfile(Realm currentRealm, Principal principal,
+			Map<String, String> values) throws AccessDeniedException;
+
 }

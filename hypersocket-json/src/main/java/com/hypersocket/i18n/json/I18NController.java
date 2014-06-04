@@ -21,14 +21,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.i18n.I18NServiceImpl;
+import com.hypersocket.i18n.Message;
 import com.hypersocket.json.ResourceList;
+import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.json.SelectOption;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.session.json.SessionUtils;
@@ -81,4 +86,5 @@ public class I18NController {
 		}
 		return new ResourceList<SelectOption>(locales);
 	}
+	
 }
