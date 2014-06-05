@@ -194,9 +194,6 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public ServletInputStream getInputStream() throws IOException {
-//		System.out.println("--BEGIN--");
-//		System.out.println(request.getContent().toString(Charset.defaultCharset()));
-//		System.out.println("--END--");
 		return new ChannelBufferServletInputStream(request.getContent());
 	}
 

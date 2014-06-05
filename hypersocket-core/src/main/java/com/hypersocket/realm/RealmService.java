@@ -131,4 +131,8 @@ public interface RealmService extends AuthenticatedService {
 	void updateProfile(Realm currentRealm, Principal principal,
 			Map<String, String> values) throws AccessDeniedException;
 
+	RealmProvider getProviderForRealm(Realm realm);
+
+	RealmProvider getProviderForRealm(String module);
+
 }
