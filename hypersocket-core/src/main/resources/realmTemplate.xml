@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<propertyTemplates>
+<propertyTemplates context="realm">
 	<propertyCategory resourceKey="realm.options"
 		resourceBundle="RealmService" weight="999999">
 		<property resourceKey="realm.host" inputType="text"

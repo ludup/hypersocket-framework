@@ -9,6 +9,7 @@ package com.hypersocket.properties;
 
 import java.util.List;
 
+import com.hypersocket.attributes.AttributeCategory;
 import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.resource.AbstractResource;
@@ -55,4 +56,9 @@ public abstract class PropertyRepositoryImpl extends AbstractRepositoryImpl<Long
 			delete(p);
 		}
 	}
+	
+	public List<AttributeCategory> getAttributeCategories(String context) {
+		return list("context", context, AttributeCategory.class);
+	}
+	
 }

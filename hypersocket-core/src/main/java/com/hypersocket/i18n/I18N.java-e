@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 
 import com.hypersocket.util.FileUtils;
+import com.hypersocket.util.OverridePropertyPlaceholderConfigurer;
 
 public class I18N {
 
@@ -54,8 +55,16 @@ public class I18N {
 	public static void overrideMessage(Locale locale, Message message) {
 		
 		File overrideFile = getOverrideFile(locale, message.getBundle());
-		if (!overrideFile.exists()) {
+		if (!overideProperties.containsKey(overrideFile)) {
 			overideProperties.put(overrideFile, new Properties());
+			
+			if(overrideFile.exists()) {
+				Properties p = overideProperties.get(overrideFile);
+				try {
+					p.load(new FileInputStream(overrideFile));
+				} catch (IOException e) {
+				}
+			}
 		}
 		
 		Properties properties = overideProperties.get(overrideFile);
