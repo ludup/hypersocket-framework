@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<propertyTemplates>
+<propertyTemplates extends="userTemplate.xml">
 	<propertyCategory resourceKey="local.userDetails"
 		resourceBundle="LocalRealm" weight="0">
 		<property resourceKey="user.fullname" inputType="text" weight="0"
