@@ -21,7 +21,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
-import com.hypersocket.auth.InvalidAuthenticationContext;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
@@ -94,11 +93,13 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		return new ArrayList<RealmProvider>(providersByModule.values());
 	}
 
-	protected RealmProvider getProviderForRealm(Realm realm) {
+	@Override
+	public RealmProvider getProviderForRealm(Realm realm) {
 		return getProviderForRealm(realm.getResourceCategory());
 	}
 
-	protected RealmProvider getProviderForRealm(String module) {
+	@Override
+	public RealmProvider getProviderForRealm(String module) {
 		if (!providersByModule.containsKey(module))
 			throw new IllegalArgumentException(
 					"No provider available for realm module " + module);

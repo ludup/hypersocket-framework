@@ -137,6 +137,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 						.getChannel().getRemoteAddress(), false, server
 						.getServletConfig().getServletContext(), session);
 
+		Request.set(servletRequest);
+		
 		if (log.isDebugEnabled()) {
 			synchronized (log) {
 				log.debug("Begin Request <<<<<<<<<");
@@ -321,10 +323,12 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			if (log.isDebugEnabled()) {
 				log.debug("End Response >>>>>>");
 			}
+			
+			Request.remove();
 		}
 
 	}
-
+	
 	class CheckCloseStateListener implements ChannelFutureListener {
 
 		HttpResponseServletWrapper servletResponse;

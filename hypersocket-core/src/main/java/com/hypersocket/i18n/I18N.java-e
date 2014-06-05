@@ -67,7 +67,8 @@ public class I18N {
 		
 		for(File f : overideProperties.keySet()) {
 			Properties properties = overideProperties.get(f);
-			
+			f.getParentFile().mkdirs();
+			f.createNewFile();
 			FileOutputStream out = new FileOutputStream(f);
 			try {
 				properties.store(out, "Hypersocket message bundle override file");

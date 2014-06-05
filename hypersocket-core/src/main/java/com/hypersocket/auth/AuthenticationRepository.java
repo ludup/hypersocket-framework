@@ -9,7 +9,6 @@ package com.hypersocket.auth;
 
 import java.util.List;
 
-import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.repository.AbstractRepository;
 
 public interface AuthenticationRepository extends AbstractRepository<Long> {

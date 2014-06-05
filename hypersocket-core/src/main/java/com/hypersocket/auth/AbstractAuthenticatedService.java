@@ -45,6 +45,9 @@ public abstract class AbstractAuthenticatedService implements
 	}
 
 	public Principal getCurrentPrincipal() {
+		if(currentPrincipal.get()==null) {
+			throw new InvalidAuthenticationContext("No principal is attached to the current context!");
+		}
 		return currentPrincipal.get();
 	}
 	
