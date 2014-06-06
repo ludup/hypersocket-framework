@@ -100,13 +100,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 		eventService.registerEvent(AuthenticationEvent.class, RESOURCE_BUNDLE);
 
-		menuService.registerMenu(new MenuRegistration(RESOURCE_BUNDLE,
-				"authentication", "fa-authentication", "authentication", 1,
-				SystemPermission.SYSTEM_ADMINISTRATION,
-				SystemPermission.SYSTEM_ADMINISTRATION,
-				SystemPermission.SYSTEM_ADMINISTRATION,
-				SystemPermission.SYSTEM_ADMINISTRATION), "system");
-
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
 		// indexPageFilter.addStyleSheet("${uiPath}/css/authenticator.css");
