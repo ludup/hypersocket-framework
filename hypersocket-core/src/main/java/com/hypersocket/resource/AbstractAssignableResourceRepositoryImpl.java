@@ -11,8 +11,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +27,7 @@ import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.session.Session;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.tables.Sort;
 
 @Repository
 @Transactional
@@ -31,10 +35,16 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		extends AbstractRepositoryImpl<Long> implements
 		AbstractAssignableResourceRepository<T> {
 
+	@Override
+	public List<T> getAssigedResources(
+			List<Principal> principals) {
+		return getAssignedResources(principals.toArray(new Principal[0]));
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<T> getAssignableResources(
-			List<Principal> principals) {
+	public List<T> getAssignedResources(
+			Principal... principals) {
 
 		Set<Long> ids = new HashSet<Long>();
 		for (Principal p : principals) {
@@ -49,8 +59,87 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 		return (List<T>) crit.list();
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<T> searchAssignedResources( 
+			Principal principal,
+			final String searchPattern, 
+			final int start,
+			final int length, 
+			final ColumnSort[] sorting, 
+			CriteriaConfiguration... configs) {
+		
+		Criteria criteria = createCriteria(getResourceClass());
+		if(!StringUtils.isEmpty(searchPattern)) {
+			criteria.add(Restrictions.like("name", searchPattern));
+		}
 
+		for(CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		
+		for (ColumnSort sort : sorting) {
+			criteria.addOrder(sort.getSort() == Sort.ASC ? Order
+					.asc(sort.getColumn().getColumnName()) : Order.desc(sort.getColumn().getColumnName()));
+		}
+		
 
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
+		criteria.setFirstResult(start);
+		criteria.setMaxResults(length);
+		
+		criteria = criteria.createCriteria("roles");
+		criteria = criteria.createCriteria("principals");
+		criteria.add(Restrictions.in("id", new Long[] { principal.getId() }));
+		
+		List<T> res = (List<T>)criteria.list();
+		return res;
+	};
+	
+	@Override
+	public Long getAssignedResourceCount( 
+			Principal principal,
+			final String searchPattern, 
+			CriteriaConfiguration... configs) {
+		
+		Criteria criteria = createCriteria(getResourceClass());
+		if(!StringUtils.isEmpty(searchPattern)) {
+			criteria.add(Restrictions.like("name", searchPattern));
+		}
+
+		for(CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
+		criteria.setProjection(Projections.rowCount());
+		criteria = criteria.createCriteria("roles");
+		criteria = criteria.createCriteria("principals");
+		criteria.add(Restrictions.in("id", new Long[] { principal.getId() }));
+		
+		return (Long) criteria.uniqueResult();
+	}
+	
+	@Override
+	public Long getAssignableResourceCount(
+			Principal... principals) {
+
+		Set<Long> ids = new HashSet<Long>();
+		for (Principal p : principals) {
+			ids.add(p.getId());
+		}
+		Criteria crit = sessionFactory.getCurrentSession().createCriteria(getResourceClass());
+		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		crit.setProjection(Projections.rowCount());
+		crit = crit.createCriteria("roles");
+		crit = crit.createCriteria("principals");
+		crit.add(Restrictions.in("id", ids));
+
+		return (Long) crit.uniqueResult();
+	}
+
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<AssignableResource> getAllAssignableResources(

@@ -24,6 +24,7 @@ public class MenuRegistration {
 	String resourceKey;
 	String bundle;
 	Integer weight;
+	MenuEnablerService enablerService;
 	PermissionType readPermission;
 	PermissionType createPermission;
 	PermissionType updatePermission;
@@ -60,6 +61,25 @@ public class MenuRegistration {
 		this.additionalPermissions = additionalPermissions;
 	}
 
+	public MenuRegistration(String bundle, String resourceKey, String icon, String url, Integer weight,
+			MenuEnablerService enablerService) {
+		this.bundle = bundle;
+		this.resourceKey = resourceKey;
+		this.icon = icon;
+		this.resourceName = url;
+		this.weight = weight;
+		this.enablerService = enablerService;
+	}
+	
+	
+	public MenuEnablerService getEnablerService() {
+		return enablerService;
+	}
+	
+	public boolean hasEnablerService() {
+		return enablerService!=null;
+	}
+	
 	public String getId() {
 		return resourceKey;
 	}
@@ -106,10 +126,6 @@ public class MenuRegistration {
 	@JsonIgnore
 	public PermissionType getDeletePermission() {
 		return deletePermission;
-	}
-
-	protected boolean hasAccess(Principal principal) {
-		return true;
 	}
 
 }
