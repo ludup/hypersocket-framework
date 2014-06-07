@@ -35,4 +35,11 @@ public interface AbstractAssignableResourceService<T> extends AuthenticatedServi
 	long getResourceCount(Realm realm, String search)
 			throws AccessDeniedException;
 
+	List<T> searchPersonalResources(Principal principal, String search,
+			int start, int length, ColumnSort[] sorting)
+			throws AccessDeniedException;
+
+	long getPersonalResourceCount(Principal principal, String search)
+			throws AccessDeniedException;
+
 }
