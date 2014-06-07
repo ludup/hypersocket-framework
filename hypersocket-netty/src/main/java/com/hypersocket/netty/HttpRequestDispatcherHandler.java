@@ -125,7 +125,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 		HttpResponseServletWrapper nettyResponse = new HttpResponseServletWrapper(
 				new DefaultHttpResponse(HttpVersion.HTTP_1_1,
-						HttpResponseStatus.INTERNAL_SERVER_ERROR),
+						HttpResponseStatus.OK),
 				ctx.getChannel(), nettyRequest);
 
 		HypersocketSession session = server.setupHttpSession(
