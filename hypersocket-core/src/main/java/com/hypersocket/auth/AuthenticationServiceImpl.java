@@ -136,7 +136,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 	@Override
 	public AuthenticationState createAuthenticationState(String scheme,
-			String remoteAddress, Map<String, String> environment, Locale locale)
+			String remoteAddress, Map<String, Object> environment, Locale locale)
 			throws AccessDeniedException {
 
 		AuthenticationState state = new AuthenticationState(remoteAddress,
@@ -147,7 +147,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				.containsKey(BrowserEnvironment.AUTHORIZATION.toString())) {
 
 			String header = environment.get(BrowserEnvironment.AUTHORIZATION
-					.toString());
+					.toString()).toString();
 			if (header.toLowerCase().startsWith("basic")) {
 				header = new String(Base64.decode(header.substring(6)));
 				int idx = header.indexOf(':');
@@ -181,8 +181,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 				// If not can we determine the realm from the current
 				// information
-				String hostHeader = environment.get(BrowserEnvironment.HOST
-						.toString());
+				String hostHeader = environment.get(BrowserEnvironment.HOST.toString()).toString();
 				int idx;
 				if ((idx = hostHeader.indexOf(':')) > -1) {
 					hostHeader = hostHeader.substring(0, idx);
@@ -237,72 +236,101 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		} else {
 			Authenticator authenticator = authenticators.get(state
 					.getCurrentModule().getTemplate());
-			switch (authenticator.authenticate(state, parameterMap)) {
-			case INSUFFICIENT_DATA: {
-				if (!state.isNew()) {
-					state.setLastErrorMsg("error.insufficentData");
-					state.setLastErrorIsResourceKey(true);
-				}
-				break;
-			}
-			case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
-				state.setLastErrorMsg("error.genericLogonError");
-				state.setLastErrorIsResourceKey(true);
-				eventService.publishEvent(new AuthenticationEvent(this, state,
-						authenticator, "hint.badCredentials"));
-				break;
-			}
-			case AUTHENTICATION_FAILURE_INVALID_PRINCIPAL: {
+			
+			if(authenticator.containsSecret() && state.getPrincipal() instanceof AuthenticationState.FakePrincipal) {
 				state.setLastErrorMsg("error.genericLogonError");
 				state.setLastErrorIsResourceKey(true);
 				eventService.publishEvent(new AuthenticationEvent(this, state,
 						authenticator, "hint.invalidPrincipal"));
-			}
-			case AUTHENTICATION_FAILURE_INVALID_REALM: {
-				state.setLastErrorMsg("error.genericLogonError");
-				state.setLastErrorIsResourceKey(true);
-				eventService.publishEvent(new AuthenticationEvent(this, state,
-						authenticator, "hint.invalidRealm"));
-			}
-			case AUTHENTICATION_SUCCESS: {
-				try {
-					permissionService.verifyPermission(state.getPrincipal(),
-							PermissionStrategy.REQUIRE_ANY,
-							AuthenticationPermission.LOGON,
-							SystemPermission.SYSTEM_ADMINISTRATION);
-
-					eventService.publishEvent(new AuthenticationEvent(this,
-							state, authenticator));
-					state.setCurrentIndex(state.getCurrentIndex() + 1);
-
-					if (state.isAuthenticationComplete()) {
-
-						for (PostAuthenticationStep proc : postAuthenticationSteps) {
-							if (proc.requiresProcessing(state)) {
-								state.addPostAuthenticationStep(proc);
+			} else {
+				switch (authenticator.authenticate(state, parameterMap)) {
+				case INSUFFICIENT_DATA: {
+					if(!state.isNew()) {
+						state.setLastErrorMsg("error.insufficentData");
+						state.setLastErrorIsResourceKey(true);
+					}
+					break;
+				}
+				case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
+					
+					if(!authenticator.containsSecret() && state.hasNextStep()) {
+						state.fakeCredentials();
+						state.nextModule();
+					} else {
+						state.setLastErrorMsg("error.genericLogonError");
+						state.setLastErrorIsResourceKey(true);
+						eventService.publishEvent(new AuthenticationEvent(this, state,
+								authenticator, "hint.badCredentials"));
+					}
+					
+					break;
+				}
+				case AUTHENTICATION_FAILURE_INVALID_PRINCIPAL: {
+					
+					if(!authenticator.containsSecret() && state.hasNextStep()) {
+						state.fakeCredentials();
+						state.nextModule();
+					} else {
+						state.setLastErrorMsg("error.genericLogonError");
+						state.setLastErrorIsResourceKey(true);
+						eventService.publishEvent(new AuthenticationEvent(this, state,
+								authenticator, "hint.invalidPrincipal"));
+					}
+					break;
+				}
+				case AUTHENTICATION_FAILURE_INVALID_REALM: {
+					
+					if(!authenticator.containsSecret() && state.hasNextStep()) {
+						state.fakeCredentials();
+						state.nextModule();
+					} else {
+						state.setLastErrorMsg("error.genericLogonError");
+						state.setLastErrorIsResourceKey(true);
+						eventService.publishEvent(new AuthenticationEvent(this, state,
+								authenticator, "hint.invalidRealm"));
+					}
+					
+					break;
+				}
+				case AUTHENTICATION_SUCCESS: {
+					try {
+						permissionService.verifyPermission(state.getPrincipal(),
+								PermissionStrategy.REQUIRE_ANY,
+								AuthenticationPermission.LOGON,
+								SystemPermission.SYSTEM_ADMINISTRATION);
+	
+						eventService.publishEvent(new AuthenticationEvent(this,
+								state, authenticator));
+						
+						state.nextModule();
+						
+						if (state.isAuthenticationComplete()) {
+	
+							for (PostAuthenticationStep proc : postAuthenticationSteps) {
+								if (proc.requiresProcessing(state)) {
+									state.addPostAuthenticationStep(proc);
+								}
+							}
+							if (!state.hasPostAuthenticationStep()) {
+								state.setSession(completeLogon(state));
 							}
 						}
-						if (!state.hasPostAuthenticationStep()) {
-							state.setSession(completeLogon(state));
-						}
+					} catch (AccessDeniedException e) {
+	
+						eventService.publishEvent(new AuthenticationEvent(this,
+								state, authenticator, "hint.noPermission"));
+						// user does not have LOGON permission
+						state.setLastErrorMsg("error.noLogonPermission");
+						state.setLastErrorIsResourceKey(true);
 					}
-				} catch (AccessDeniedException e) {
-
-					eventService.publishEvent(new AuthenticationEvent(this,
-							state, authenticator, "hint.noPermission"));
-					// user does not have LOGON permission
-					state.setLastErrorMsg("error.noLogonPermission");
-					state.setLastErrorIsResourceKey(true);
+					break;
 				}
-				break;
+				}
 			}
 
-			}
+			if (!state.isAuthenticationComplete())
+				state.authAttempted();
 
-			if (!state.isNew() && !state.isAuthenticationComplete())
-				state.attempts++;
-
-			state.isNew = false;
 		}
 	}
 

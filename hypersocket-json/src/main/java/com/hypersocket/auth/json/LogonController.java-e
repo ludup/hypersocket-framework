@@ -71,6 +71,20 @@ public class LogonController extends AuthenticatedController {
 		}
 	}
 
+	@RequestMapping(value = "logon/reset", method = RequestMethod.GET, produces = "application/json")
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public AuthenticationResult resetLogon(HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException {
+		
+		
+		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, null);
+		
+		return logon(request, response);
+	}
+	
+	
 	@RequestMapping(value = "logon", method = { RequestMethod.GET,
 			RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
@@ -104,8 +118,10 @@ public class LogonController extends AuthenticatedController {
 			if (state == null) {
 				// We have not got login state so create
 				state = createAuthenticationState(request, response);
+			} else {
+				state.setNewSession(false);
 			}
-
+			
 			authenticationService.logon(state, request.getParameterMap());
 
 			if (state.isAuthenticationComplete()
@@ -133,7 +149,9 @@ public class LogonController extends AuthenticatedController {
 										request.getParameterMap())
 								: authenticationService
 										.nextPostAuthenticationStep(state),
-						i18nService.hasUserLocales());
+						i18nService.hasUserLocales(),
+						state.isNew(),
+						!state.hasNextStep());
 			}
 		} finally {
 			clearSystemContext();

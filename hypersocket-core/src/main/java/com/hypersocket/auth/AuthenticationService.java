@@ -26,7 +26,7 @@ public interface AuthenticationService extends AuthenticatedService {
 			Map<String, String> environment, Realm realm);
 
 	AuthenticationState createAuthenticationState(String scheme,
-			String remoteAddress, Map<String, String> environment, Locale locale)
+			String remoteAddress, Map<String, Object> environment, Locale locale)
 			throws AccessDeniedException;
 
 	@SuppressWarnings("rawtypes")

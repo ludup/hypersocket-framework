@@ -155,14 +155,18 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 	@Override
 	public List<T> searchPersonalResources(Principal principal, String search, int start,
-			int length, ColumnSort[] sorting) throws AccessDeniedException {
+			int length, ColumnSort[] sorting) {
 
 		return getRepository().searchAssignedResources(principal, search, start, length, sorting);
 	}
 	
 	@Override
-	public long getPersonalResourceCount(Principal principal, String search)
-			throws AccessDeniedException {
+	public List<T> getPersonalResources(Principal principal) {
+		return getRepository().getAssignedResources(principal);
+	}
+	
+	@Override
+	public long getPersonalResourceCount(Principal principal, String search) {
 
 		return getRepository().getAssignedResourceCount(principal, search);
 	}

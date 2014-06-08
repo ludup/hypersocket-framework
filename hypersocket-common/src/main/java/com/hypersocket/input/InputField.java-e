@@ -20,6 +20,7 @@ public class InputField {
 	String resourceKey;
 	String defaultValue;
 	boolean required;
+	String label;
 	List<Option> options = new ArrayList<Option>();
 	
 	public InputField() {
@@ -31,6 +32,22 @@ public class InputField {
 		this.resourceKey = resourceKey;
 		this.defaultValue = defaultValue;
 		this.required = required;
+	}
+
+	protected InputField(InputFieldType type, String resourceKey, String defaultValue, boolean required, String label) {
+		this.type = type;
+		this.resourceKey = resourceKey;
+		this.defaultValue = defaultValue;
+		this.required = required;
+		this.label = label;
+	}
+	
+	public String getLabel() {
+		return label;
+	}
+	
+	public void setLabel(String label) {
+		this.label = label;
 	}
 	
 	@XmlElement(name="option")

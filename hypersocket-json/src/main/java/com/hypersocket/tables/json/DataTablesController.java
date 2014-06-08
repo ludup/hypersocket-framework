@@ -18,17 +18,20 @@ import com.hypersocket.tables.Sort;
 public class DataTablesController extends AuthenticatedController {
 
 	Logger log = LoggerFactory.getLogger(DataTablesController.class);
-	
+
 	protected DataTablesResult processDataTablesRequest(
 			HttpServletRequest request, DataTablesPageProcessor processor)
-			throws NumberFormatException, UnauthorizedException, AccessDeniedException {
-		
-		Integer start = Integer.parseInt(request.getParameter("iDisplayStart"));
-		Integer length = Integer.parseInt(request
-				.getParameter("iDisplayLength"));
+			throws NumberFormatException, UnauthorizedException,
+			AccessDeniedException {
+
+		Integer start = (request.getParameter("iDisplayStart") == null ? 0
+				: Integer.parseInt(request.getParameter("iDisplayStart")));
+		Integer length = (request.getParameter("iDisplayLength") == null ? Integer.MAX_VALUE
+				: Integer.parseInt(request.getParameter("iDisplayLength")));
 
 		List<ColumnSort> sorting = new ArrayList<ColumnSort>();
-		int count = Integer.parseInt(request.getParameter("iSortingCols"));
+		int count = (request.getParameter("iSortingCols") == null ? 0 : Integer
+				.parseInt(request.getParameter("iSortingCols")));
 		for (int i = 0; i < count; i++) {
 			int col = Integer.parseInt(request.getParameter("iSortCol_" + i));
 			String sor = request.getParameter("sSortDir_" + i);
@@ -36,18 +39,20 @@ public class DataTablesController extends AuthenticatedController {
 					.valueOf(sor.toUpperCase())));
 		}
 
-		String searchPattern = request.getParameter("sSearch");
-		if(searchPattern.indexOf('*') >-1) {
+		String searchPattern = request.getParameter("sSearch") == null ? ""
+				: request.getParameter("sSearch");
+		if (searchPattern.indexOf('*') > -1) {
 			searchPattern = searchPattern.replace('*', '%');
 		}
-		
-		if(searchPattern.indexOf('%')==-1) {
+
+		if (searchPattern.indexOf('%') == -1) {
 			searchPattern += "%";
 		}
-		
-		return new DataTablesResult(processor.getPage(searchPattern, start, length,
-				sorting.toArray(new ColumnSort[0])),
-				processor.getTotalCount(searchPattern), Integer.parseInt(request
-						.getParameter("sEcho")));
+
+		return new DataTablesResult(processor.getPage(searchPattern, start,
+				length, sorting.toArray(new ColumnSort[0])),
+				processor.getTotalCount(searchPattern),
+				(request.getParameter("sEcho") == null ? 0 : Integer
+						.parseInt(request.getParameter("sEcho"))));
 	}
 }

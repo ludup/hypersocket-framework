@@ -36,10 +36,10 @@ public interface AbstractAssignableResourceService<T> extends AuthenticatedServi
 			throws AccessDeniedException;
 
 	List<T> searchPersonalResources(Principal principal, String search,
-			int start, int length, ColumnSort[] sorting)
-			throws AccessDeniedException;
+			int start, int length, ColumnSort[] sorting);
 
-	long getPersonalResourceCount(Principal principal, String search)
-			throws AccessDeniedException;
+	long getPersonalResourceCount(Principal principal, String search);
+
+	List<T> getPersonalResources(Principal principal);
 
 }

@@ -236,13 +236,11 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 							}
 						}
 						childMenu.getMenus().add(
-								new Menu(leaf, hasPermission(leaf
-										.getCreatePermission()),
-										hasPermission(leaf
-												.getUpdatePermission()),
-										hasPermission(leaf
-												.getDeletePermission()), leaf
-												.getIcon()));
+								new Menu(leaf, 
+										hasPermission(leaf.getCreatePermission()),
+										hasPermission(leaf.getUpdatePermission()),
+										hasPermission(leaf.getDeletePermission()), 
+										leaf.getIcon()));
 					}
 
 					if (childMenu.getResourceName() == null
