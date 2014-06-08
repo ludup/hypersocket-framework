@@ -24,4 +24,6 @@ public interface Authenticator {
 	public FormTemplate createTemplate(AuthenticationState state, Map params);
 
 	public String getResourceBundle();
+	
+	boolean containsSecret();
 }

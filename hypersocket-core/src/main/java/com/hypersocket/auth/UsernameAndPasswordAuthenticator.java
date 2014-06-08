@@ -147,4 +147,9 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 		return AuthenticationService.RESOURCE_BUNDLE;
 	}
 
+	@Override
+	public boolean containsSecret() {
+		return true;
+	}
+
 }

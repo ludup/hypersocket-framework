@@ -70,7 +70,7 @@ public class AuthenticatedController {
 	AuthenticationState createAuthenticationState(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException {
 
-		Map<String, String> environment = new HashMap<String, String>();
+		Map<String, Object> environment = new HashMap<String, Object>();
 		for (BrowserEnvironment env : BrowserEnvironment.values()) {
 			if (request.getHeader(env.toString()) != null) {
 				environment.put(env.toString(),
