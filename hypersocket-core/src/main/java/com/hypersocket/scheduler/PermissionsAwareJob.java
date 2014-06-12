@@ -35,9 +35,6 @@ public abstract class PermissionsAwareJob implements Job {
 				field.setAccessible(true);
 				Object inst = field.get(this);
 				if (inst instanceof AuthenticatedService) {
-					if(log.isInfoEnabled()) {
-						log.info("Found AuthenticatedService " + inst.getClass().getSimpleName());
-					}
 					AuthenticatedService service = (AuthenticatedService) inst;
 					service.setCurrentPrincipal(realmService
 							.getSystemPrincipal(), i18nService
