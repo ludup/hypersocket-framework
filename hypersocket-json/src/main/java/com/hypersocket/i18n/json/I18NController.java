@@ -26,15 +26,18 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.hypersocket.auth.json.AuthenticatedController;
+import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.i18n.Message;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.SelectOption;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.session.json.SessionUtils;
 
 @Controller
-public class I18NController {
+public class I18NController extends AuthenticatedController {
 
 	
 	@Autowired
@@ -66,7 +69,6 @@ public class I18NController {
 		return results;
 	}	
 	
-
 	@RequestMapping(value = "locales", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
