@@ -9,10 +9,7 @@ package com.hypersocket.input;
 
 public class TextInputField extends InputField {
 
-	public TextInputField(String resourceKey, String defaultValue, boolean required) {
-		super(InputFieldType.text, resourceKey, defaultValue, required);
-	}
-	
+
 	public TextInputField(String resourceKey, String defaultValue, boolean required, String label) {
 		super(InputFieldType.text, resourceKey, defaultValue, required, label);
 	}
