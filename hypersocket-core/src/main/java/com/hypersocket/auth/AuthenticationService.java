@@ -58,8 +58,6 @@ public interface AuthenticationService extends AuthenticatedService {
 			AuthenticationScheme authenticationScheme)
 			throws AccessDeniedException;
 
-	public List<Authenticator> getRegAuthenticators();
-
 	public AuthenticationModule getModuleById(Long id)
 			throws AccessDeniedException;
 
@@ -82,4 +80,6 @@ public interface AuthenticationService extends AuthenticatedService {
 
 	public void deleteModulesByScheme(AuthenticationScheme authenticationScheme)
 			throws AccessDeniedException;
+
+	public Map<String,Authenticator> getAuthenticators();
 }
