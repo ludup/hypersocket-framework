@@ -25,7 +25,7 @@ public interface Authenticator {
 
 	public String getResourceBundle();
 	
-	boolean containsSecret();
+	boolean isSecretModule();
 	
-	boolean containsIdentity();
+	boolean isIdentityModule();
 }

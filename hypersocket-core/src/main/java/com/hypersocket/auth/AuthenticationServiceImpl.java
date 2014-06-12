@@ -26,7 +26,6 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.input.FormTemplate;
-import com.hypersocket.menus.MenuRegistration;
 import com.hypersocket.menus.MenuService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Permission;
@@ -237,7 +236,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			Authenticator authenticator = authenticators.get(state
 					.getCurrentModule().getTemplate());
 			
-			if(authenticator.containsSecret() && state.getPrincipal() instanceof AuthenticationState.FakePrincipal) {
+			if(authenticator.isSecretModule() && state.getPrincipal() instanceof AuthenticationState.FakePrincipal) {
 				state.setLastErrorMsg("error.genericLogonError");
 				state.setLastErrorIsResourceKey(true);
 				eventService.publishEvent(new AuthenticationEvent(this, state,
@@ -253,7 +252,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				}
 				case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
 					
-					if(!authenticator.containsSecret() && state.hasNextStep()) {
+					if(!authenticator.isSecretModule() && state.hasNextStep()) {
 						state.fakeCredentials();
 						state.nextModule();
 					} else {
@@ -267,7 +266,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				}
 				case AUTHENTICATION_FAILURE_INVALID_PRINCIPAL: {
 					
-					if(!authenticator.containsSecret() && state.hasNextStep()) {
+					if(!authenticator.isSecretModule() && state.hasNextStep()) {
 						state.fakeCredentials();
 						state.nextModule();
 					} else {
@@ -280,7 +279,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				}
 				case AUTHENTICATION_FAILURE_INVALID_REALM: {
 					
-					if(!authenticator.containsSecret() && state.hasNextStep()) {
+					if(!authenticator.isSecretModule() && state.hasNextStep()) {
 						state.fakeCredentials();
 						state.nextModule();
 					} else {
@@ -426,6 +425,13 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			throws AccessDeniedException {
 		assertPermission(AuthenticationPermission.READ);
 		return repository.getAuthenticationModules();
+	}
+	
+	@Override
+	public Map<String,Authenticator> getAuthenticators() {
+		Map<String,Authenticator> tmp = new HashMap<String,Authenticator>();
+		tmp.putAll(authenticators);
+		return tmp;
 	}
 
 	public List<AuthenticationModule> getAuthenticationModulesByScheme(

@@ -152,12 +152,12 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 	}
 
 	@Override
-	public boolean containsSecret() {
+	public boolean isSecretModule() {
 		return true;
 	}
 
 	@Override
-	public boolean containsIdentity() {
+	public boolean isIdentityModule() {
 		return true;
 	}
 
