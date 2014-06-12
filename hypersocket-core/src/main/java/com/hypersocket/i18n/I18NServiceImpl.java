@@ -10,10 +10,12 @@ package com.hypersocket.i18n;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.certs.CertificateService;
 import com.hypersocket.config.ConfigurationChangedEvent;
@@ -35,11 +38,11 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.SessionService;
 
 @Service
-public class I18NServiceImpl implements I18NService, ApplicationListener<ConfigurationChangedEvent> {
+public class I18NServiceImpl extends AuthenticatedServiceImpl implements I18NService, ApplicationListener<ConfigurationChangedEvent> {
 
 	static Logger log = LoggerFactory.getLogger(I18NServiceImpl.class);
 	
-	List<String> bundles = new ArrayList<String>();
+	Set<String> bundles = new HashSet<String>();
 	
 	static final String RESOURCE_BUNDLE = "I18NService";
 	
@@ -49,6 +52,9 @@ public class I18NServiceImpl implements I18NService, ApplicationListener<Configu
 	Locale defaultLocale;
 	
 	List<Locale> supportedLocales = new ArrayList<Locale>();
+	
+	List<Message> allMessages;
+	
 	@PostConstruct
 	private void postConstruct() {
 		
@@ -138,6 +144,8 @@ public class I18NServiceImpl implements I18NService, ApplicationListener<Configu
 		}
 	}
 	
+
+	
 	@Override
 	public Map<String,Map<String,Message>> getTranslatableMessages() {
 		
@@ -177,6 +185,11 @@ public class I18NServiceImpl implements I18NService, ApplicationListener<Configu
 	@Override
 	public List<Locale> getSupportedLocales() {
 		return supportedLocales;
+	}
+
+	@Override
+	public Set<String> getBundles() {
+		return bundles;
 	}
 	
 }

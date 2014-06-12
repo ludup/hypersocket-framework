@@ -208,4 +208,48 @@ public class I18N {
 		}
 		return formatted.toArray(new Object[formatted.size()]);
 	}
+
+	public static boolean hasOveride(Locale locale, String resourceBundle,
+			String key) {
+		
+		if (key == null) {
+			throw new IllegalArgumentException("You must specify a key!");
+		}
+		if (resourceBundle == null) {
+			throw new IllegalArgumentException(
+					"You must specify a resource bundle for key " + key);
+		}
+
+		File overideFile = getOverrideFile(locale, resourceBundle);
+		
+
+		if (overideFile.exists()) {
+
+			if (!overideProperties.containsKey(overideFile)) {
+
+				Properties properties = new Properties();
+				try {
+					InputStream in = new FileInputStream(overideFile);
+					try {
+						properties.load(in);
+					} catch (IOException ex) {
+					} finally {
+						FileUtils.closeQuietly(in);
+					}
+					
+					overideProperties.put(overideFile, properties);
+				} catch (FileNotFoundException e) {
+					
+				}
+			}
+			
+			if(overideProperties.containsKey(overideFile)) {
+				Properties properties = overideProperties.get(overideFile);
+				
+				return properties.containsKey(key);
+			}
+		}
+		
+		return false;
+	}
 }

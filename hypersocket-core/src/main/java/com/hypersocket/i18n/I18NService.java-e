@@ -10,8 +10,11 @@ package com.hypersocket.i18n;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
-public interface I18NService {
+import com.hypersocket.auth.AuthenticatedService;
+
+public interface I18NService extends AuthenticatedService {
 
 	void registerBundle(String bundle);
 
@@ -26,5 +29,7 @@ public interface I18NService {
 	List<Locale> getSupportedLocales();
 
 	Map<String, Map<String, Message>> getTranslatableMessages();
+
+	Set<String> getBundles();
 
 }
