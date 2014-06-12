@@ -24,7 +24,14 @@ public class ChangePasswordTemplate extends FormTemplate {
 		fields.add(new ParagraphField(I18N.getResource(state.getLocale(),
 				AuthenticationService.RESOURCE_BUNDLE,
 				"info.passwordChangeRequired")));
-		fields.add(new PasswordInputField(PASSWORD_FIELD, "", true));
-		fields.add(new PasswordInputField(CONFIRM_PASSWORD_FIELD, "", true));
+		fields.add(new PasswordInputField(PASSWORD_FIELD, "", true, I18N
+				.getResource(state.getLocale(),
+						AuthenticationServiceImpl.RESOURCE_BUNDLE,
+						"password.label")));
+		fields.add(new PasswordInputField(CONFIRM_PASSWORD_FIELD, "", true,
+				I18N
+				.getResource(state.getLocale(),
+						AuthenticationServiceImpl.RESOURCE_BUNDLE,
+						"confirmPassword.label")));
 	}
 }

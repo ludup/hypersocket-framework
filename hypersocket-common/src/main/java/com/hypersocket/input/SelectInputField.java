@@ -13,8 +13,8 @@ public class SelectInputField extends InputField {
 	public SelectInputField() {	
 	}
 	
-	public SelectInputField(String resourceKey, String defaultValue, boolean required) {
-		super(InputFieldType.select, resourceKey, defaultValue, required);
+	public SelectInputField(String resourceKey, String defaultValue, boolean required, String label) {
+		super(InputFieldType.select, resourceKey, defaultValue, required, label);
 	}
 
 }
