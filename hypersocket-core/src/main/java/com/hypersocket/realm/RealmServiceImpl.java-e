@@ -10,6 +10,7 @@ package com.hypersocket.realm;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -258,6 +259,16 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		}
 		return getProviderForRealm(realm).getPrincipalByName(principalName,
 				realm, type);
+	}
+	
+	@Override
+	public Set<Principal> getPrincipalsByProperty(String propertyName, String propertyValue) {
+		
+		Set<Principal> ret = new HashSet<Principal>();
+		for(Realm r : allRealms()) {
+			ret.addAll(getProviderForRealm(r).getPrincipalsByProperty(propertyName, propertyValue));
+		}
+		return ret;
 	}
 
 	@Override

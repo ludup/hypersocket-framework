@@ -9,8 +9,10 @@ package com.hypersocket.local;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.auth.PasswordEncryptionType;
+import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
@@ -508,6 +511,18 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	@Override
 	public Collection<PropertyCategory> getRealmProperties(Realm realm) {
 		return getPropertyCategories(realm);
+	}
+
+	@Override
+	public Set<Principal> getPrincipalsByProperty(String propertyName,
+			String propertyValue) {
+		
+		Set<Principal> principals = new HashSet<Principal>();
+		List<DatabaseProperty> properties = userRepository.getPropertiesWithValue(propertyName, propertyValue);
+		for(DatabaseProperty property : properties) {
+			principals.add((Principal)property.getResource());
+		}
+		return principals;
 	}
 
 }

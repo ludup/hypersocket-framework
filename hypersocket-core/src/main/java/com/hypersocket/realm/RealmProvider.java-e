@@ -10,6 +10,7 @@ package com.hypersocket.realm;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
@@ -72,5 +73,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	Collection<PropertyCategory> getRealmProperties(Realm realm);
 
 	Collection<PropertyCategory> getGroupProperties(Principal principal);
+
+	Set<Principal> getPrincipalsByProperty(String propertyName, String propertyValue);
 
 }
