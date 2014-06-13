@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import com.hypersocket.resource.AbstractResource;
 
-public interface ResourceTemplateRepository {
+public interface ResourceTemplateRepository extends PropertyRepository {
 
 	void loadPropertyTemplates(String xmlResourcePath);
 	
