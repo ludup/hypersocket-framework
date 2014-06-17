@@ -10,16 +10,17 @@ package com.hypersocket.auth;
 import com.hypersocket.permissions.PermissionType;
 
 public enum AuthenticationPermission implements PermissionType {
-	
-	
-	LOGON("permission.logon");
-	
+
+	LOGON("permission.logon"), CREATE("permission.create"), READ(
+			"permission.read"), UPDATE("permission.update"), DELETE(
+			"permission.delete");
+
 	private final String val;
-	
+
 	private AuthenticationPermission(final String val) {
 		this.val = val;
 	}
-	
+
 	public String toString() {
 		return val;
 	}

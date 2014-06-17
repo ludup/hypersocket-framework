@@ -154,6 +154,24 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 
 	@Override
+	public List<T> searchPersonalResources(Principal principal, String search, int start,
+			int length, ColumnSort[] sorting) {
+
+		return getRepository().searchAssignedResources(principal, search, start, length, sorting);
+	}
+	
+	@Override
+	public List<T> getPersonalResources(Principal principal) {
+		return getRepository().getAssignedResources(principal);
+	}
+	
+	@Override
+	public long getPersonalResourceCount(Principal principal, String search) {
+
+		return getRepository().getAssignedResourceCount(principal, search);
+	}
+
+	@Override
 	public List<T> searchResources(Realm realm, String search, int start,
 			int length, ColumnSort[] sorting) throws AccessDeniedException {
 
@@ -205,7 +223,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 					+ principal.getRealm() + "/" + principal.getPrincipalName());
 		}
 
-		return getRepository().getAssignableResources(
+		return getRepository().getAssigedResources(
 				realmService.getAssociatedPrincipals(principal));
 	}
 

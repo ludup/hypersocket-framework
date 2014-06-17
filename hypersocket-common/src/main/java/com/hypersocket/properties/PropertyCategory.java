@@ -7,15 +7,20 @@
  ******************************************************************************/
 package com.hypersocket.properties;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PropertyCategory {
+public class PropertyCategory implements Serializable {
+
+	private static final long serialVersionUID = -9161050636516897409L;
 
 	String categoryKey;
 	String categoryGroup;
 	String bundle;
 	int weight;
+	boolean userCreated;
+	
 	List<AbstractPropertyTemplate> templates = new ArrayList<AbstractPropertyTemplate>();
 	
 	public PropertyCategory() {
@@ -52,6 +57,14 @@ public class PropertyCategory {
 	
 	public void setWeight(int weight) {
 		this.weight = weight;
+	}
+	
+	public void setUserCreated(boolean userCreated) {
+		this.userCreated = userCreated;
+	}
+	
+	public boolean isUserCreated() {
+		return userCreated;
 	}
 
 	public String getCategoryGroup() {

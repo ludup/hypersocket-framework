@@ -10,6 +10,6 @@ package com.hypersocket.input;
 public class HiddenInputField extends InputField {
 
 	public HiddenInputField(String resourceKey, String defaultValue) {
-		super(InputFieldType.hidden, resourceKey, defaultValue, true);
+		super(InputFieldType.hidden, resourceKey, defaultValue, true, "");
 	}
 }
