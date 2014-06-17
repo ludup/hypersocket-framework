@@ -5,6 +5,8 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,10 @@ public class EventServiceImpl implements EventService {
 	@Autowired
 	I18NService i18nService;
 
+	@PostConstruct
+	private void postConstruct() {
+		i18nService.registerBundle(RESOURCE_BUNDLE);
+	}
 	@Override
 	public void registerEvent(Class<? extends SystemEvent> eventClass,
 			String resourceBundle) {

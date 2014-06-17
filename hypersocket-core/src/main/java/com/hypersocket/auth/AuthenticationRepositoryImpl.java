@@ -17,7 +17,9 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 
 import com.hypersocket.repository.AbstractRepositoryImpl;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DetachedCriteriaConfiguration;
+import com.hypersocket.repository.DistinctRootEntity;
 
 @Repository
 public class AuthenticationRepositoryImpl extends AbstractRepositoryImpl<Long>
@@ -120,9 +122,71 @@ public class AuthenticationRepositoryImpl extends AbstractRepositoryImpl<Long>
 			String resourceKey) {
 		return createScheme(name, modules, resourceKey, false);
 	}
-	
+
 	public AuthenticationScheme getScheme(String name) {
 		return get("name", name, AuthenticationScheme.class);
+	}
+
+	public List<AuthenticationScheme> getAuthenticationSchemes() {
+
+		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
+				false), new DistinctRootEntity());
+
+	}
+
+	public List<AuthenticationModule> getAuthenticationModules() {
+		return allEntities(AuthenticationModule.class, new DeletedCriteria(
+				false), new DistinctRootEntity());
+	}
+
+	public List<AuthenticationModule> getAuthenticationModulesByScheme(
+			final AuthenticationScheme authenticationScheme) {
+		return allEntities(AuthenticationModule.class, new DeletedCriteria(
+				false), new DistinctRootEntity(),
+				new DetachedCriteriaConfiguration() {
+
+					@Override
+					public void configure(DetachedCriteria criteria) {
+						criteria.add(Restrictions.eq("scheme",
+								authenticationScheme));
+						criteria.addOrder(Order.asc("idx"));
+					}
+				});
+	}
+
+	@Override
+	public AuthenticationModule getModuleById(Long id) {
+		return get("id", id, AuthenticationModule.class);
+	}
+
+	@Override
+	public AuthenticationScheme getSchemeById(Long id) {
+		return get("id", id, AuthenticationScheme.class);
+	}
+
+	@Override
+	public void updateSchemeModules(List<AuthenticationModule> moduleList) {
+		for (AuthenticationModule module : moduleList) {
+			save(module);
+		}
+	}
+
+	public AuthenticationModule createAuthenticationModule(
+			AuthenticationModule authenticationModule) {
+		save(authenticationModule);
+
+		return authenticationModule;
+	}
+
+	public AuthenticationModule updateAuthenticationModule(
+			AuthenticationModule authenticationModule) {
+		save(authenticationModule);
+		return getModuleById(authenticationModule.getId());
+	}
+
+	public void deleteModule(AuthenticationModule authenticationModule) {
+		authenticationModule.setDeleted(true);
+		save(authenticationModule);
 	}
 
 }

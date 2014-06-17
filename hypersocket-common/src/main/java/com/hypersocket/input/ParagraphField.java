@@ -10,6 +10,6 @@ package com.hypersocket.input;
 public class ParagraphField extends InputField {
 
 	public ParagraphField(String defaultValue) {
-		super(InputFieldType.p, "paragraphField", defaultValue, false);
+		super(InputFieldType.p, "paragraphField", defaultValue, false, "");
 	}
 }

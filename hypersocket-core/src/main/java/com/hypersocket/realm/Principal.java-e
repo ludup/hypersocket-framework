@@ -54,7 +54,7 @@ public abstract class Principal extends Resource {
 	public Set<Role> getRoles() {
 		return roles;
 	}
-	
+
 	public abstract PrincipalType getType();
 
 	@XmlElement(name = "principalName")
@@ -63,6 +63,5 @@ public abstract class Principal extends Resource {
 	}
 
 	public abstract String getPrincipalDesc();
-
 
 }

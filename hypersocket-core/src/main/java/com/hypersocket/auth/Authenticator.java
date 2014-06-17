@@ -15,11 +15,17 @@ import com.hypersocket.permissions.AccessDeniedException;
 public interface Authenticator {
 
 	public String getResourceKey();
-	
-	public AuthenticatorResult authenticate(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException;
-	
+
+	public AuthenticatorResult authenticate(AuthenticationState state,
+			@SuppressWarnings("rawtypes") Map parameters)
+			throws AccessDeniedException;
+
 	@SuppressWarnings("rawtypes")
 	public FormTemplate createTemplate(AuthenticationState state, Map params);
 
 	public String getResourceBundle();
+	
+	boolean isSecretModule();
+	
+	boolean isIdentityModule();
 }

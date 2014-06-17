@@ -10,10 +10,12 @@ package com.hypersocket.i18n;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.certs.CertificateService;
 import com.hypersocket.config.ConfigurationChangedEvent;
@@ -35,11 +38,11 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.SessionService;
 
 @Service
-public class I18NServiceImpl implements I18NService, ApplicationListener<ConfigurationChangedEvent> {
+public class I18NServiceImpl extends AuthenticatedServiceImpl implements I18NService, ApplicationListener<ConfigurationChangedEvent> {
 
 	static Logger log = LoggerFactory.getLogger(I18NServiceImpl.class);
 	
-	List<String> bundles = new ArrayList<String>();
+	Set<String> bundles = new HashSet<String>();
 	
 	static final String RESOURCE_BUNDLE = "I18NService";
 	
@@ -49,6 +52,9 @@ public class I18NServiceImpl implements I18NService, ApplicationListener<Configu
 	Locale defaultLocale;
 	
 	List<Locale> supportedLocales = new ArrayList<Locale>();
+	
+	List<Message> allMessages;
+	
 	@PostConstruct
 	private void postConstruct() {
 		
@@ -95,9 +101,10 @@ public class I18NServiceImpl implements I18NService, ApplicationListener<Configu
 	
 	private void buildBundleJson(String bundle, Locale locale, Map<String,String> resources) {
 		ResourceBundle b = I18N.getResourceBundle(locale, bundle);
+		
 		for(Enumeration<String> e = b.getKeys(); e.hasMoreElements();) {
 			String key = e.nextElement();
-			resources.put(key, b.getString(key));
+			resources.put(key, I18N.getResource(locale, bundle, key));
 		}
 	}
 
@@ -121,7 +128,7 @@ public class I18NServiceImpl implements I18NService, ApplicationListener<Configu
 		if(log.isWarnEnabled()) {
 			log.warn(locale + " is missing");
 		}
-		return Locale.getDefault();
+		return Locale.ENGLISH;
 	}
 	
 	public static String tagForConversion(String resourceBundle, String resourceKey) {
@@ -137,6 +144,27 @@ public class I18NServiceImpl implements I18NService, ApplicationListener<Configu
 		}
 	}
 	
+
+	
+	@Override
+	public Map<String,Map<String,Message>> getTranslatableMessages() {
+		
+		Map<String,Map<String,Message>> messages = new HashMap<String,Map<String,Message>>();
+		
+		for(String bundle : bundles) {
+			ResourceBundle b = I18N.getResourceBundle(Locale.ENGLISH, bundle);
+			messages.put(bundle, new HashMap<String,Message>());
+			for(Enumeration<String> e = b.getKeys(); e.hasMoreElements();) {
+				String key = e.nextElement();
+				
+				String translated = I18N.getResource(Locale.ENGLISH, bundle, key);
+				String original = I18N.getResourceNoOveride(Locale.ENGLISH, bundle, key);
+				messages.get(bundle).put(key, new Message(bundle, key, original, original.equals(translated) ? "" : translated));
+			}
+		}
+		
+		return messages;
+	}
 	
 	@Override
 	public boolean hasUserLocales() {
@@ -157,6 +185,11 @@ public class I18NServiceImpl implements I18NService, ApplicationListener<Configu
 	@Override
 	public List<Locale> getSupportedLocales() {
 		return supportedLocales;
+	}
+
+	@Override
+	public Set<String> getBundles() {
+		return bundles;
 	}
 	
 }

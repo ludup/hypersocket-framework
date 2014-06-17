@@ -12,6 +12,7 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.hypersocket.i18n.I18N;
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.input.HiddenInputField;
 import com.hypersocket.input.Option;
@@ -36,7 +37,10 @@ public class UsernameAndPasswordTemplate extends FormTemplate {
 		if (showRealm) {
 			if (realms.size() > 1) {
 				SelectInputField select = new SelectInputField(REALM_FIELD,
-						 "", requiresRealm);
+						 "", requiresRealm,I18N
+							.getResource(state.getLocale(),
+									AuthenticationServiceImpl.RESOURCE_BUNDLE,
+									"realm.label"));
 				select.addOption(new Option("select.label", "", false, true));
 				for (Realm r : realms) {
 					select.addOption(new Option(r.getName(), r.getName(), r
@@ -51,7 +55,10 @@ public class UsernameAndPasswordTemplate extends FormTemplate {
 			}
 		}
 
-		TextInputField username = new TextInputField(USERNAME_FIELD, "", true);
+		TextInputField username = new TextInputField(USERNAME_FIELD, "", true, I18N
+				.getResource(state.getLocale(),
+						AuthenticationServiceImpl.RESOURCE_BUNDLE,
+						"username.label"));
 
 		if (state.getPrincipal() != null) {
 			username.setDefaultValue(state.getPrincipal().getName());
@@ -61,7 +68,7 @@ public class UsernameAndPasswordTemplate extends FormTemplate {
 		}
 
 		fields.add(username);
-		fields.add(new PasswordInputField(PASSWORD_FIELD, "", true));
+		fields.add(new PasswordInputField(PASSWORD_FIELD, "", true, "Password"));
 
 	}
 

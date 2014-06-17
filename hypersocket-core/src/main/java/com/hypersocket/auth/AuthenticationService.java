@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -25,7 +26,7 @@ public interface AuthenticationService extends AuthenticatedService {
 			Map<String, String> environment, Realm realm);
 
 	AuthenticationState createAuthenticationState(String scheme,
-			String remoteAddress, Map<String, String> environment, Locale locale)
+			String remoteAddress, Map<String, Object> environment, Locale locale)
 			throws AccessDeniedException;
 
 	@SuppressWarnings("rawtypes")
@@ -47,4 +48,38 @@ public interface AuthenticationService extends AuthenticatedService {
 	// boolean logon(String username, char[] password, InetSocketAddress
 	// remoteAddress) throws AccessDeniedException;
 
+	public List<AuthenticationScheme> getAuthenticationSchemes()
+			throws AccessDeniedException;
+
+	public List<AuthenticationModule> getAuthenticationModules()
+			throws AccessDeniedException;
+
+	public List<AuthenticationModule> getAuthenticationModulesByScheme(
+			AuthenticationScheme authenticationScheme)
+			throws AccessDeniedException;
+
+	public AuthenticationModule getModuleById(Long id)
+			throws AccessDeniedException;
+
+	public AuthenticationScheme getSchemeById(Long id)
+			throws AccessDeniedException;
+
+	public void updateSchemeModules(List<AuthenticationModule> moduleList)
+			throws AccessDeniedException;
+
+	public AuthenticationModule createAuthenticationModule(
+			AuthenticationModule authenticationModule)
+			throws AccessDeniedException;
+
+	public AuthenticationModule updateAuthenticationModule(
+			AuthenticationModule authenticationModule)
+			throws AccessDeniedException;
+
+	public void deleteModule(AuthenticationModule authenticationModule)
+			throws AccessDeniedException;
+
+	public void deleteModulesByScheme(AuthenticationScheme authenticationScheme)
+			throws AccessDeniedException;
+
+	public Map<String,Authenticator> getAuthenticators();
 }

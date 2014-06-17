@@ -233,9 +233,10 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			throw new AccessDeniedException();
 		}
 
-		Set<Permission> principalPermissions = getPrincipalPermissions(principal);
-
-		verifyPermission(principal, strategy, principalPermissions, permissions);
+		if(!hasSystemPermission(principal)) {
+			Set<Permission> principalPermissions = getPrincipalPermissions(principal);
+			verifyPermission(principal, strategy, principalPermissions, permissions);
+		}
 	}
 
 	@Override

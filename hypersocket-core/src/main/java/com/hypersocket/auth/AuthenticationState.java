@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 
@@ -31,12 +32,12 @@ public class AuthenticationState {
 	Realm realm;
 	Principal principal;
 	Session session;
-	boolean isNew = true;
 	int attempts = 0;
+	boolean isNew = true;
 	Locale locale;
 	Map<String, String> parameters = new HashMap<String, String>();
-	Map<String, String> environment = new HashMap<String, String>();
-	AuthenticationState(String remoteAddress, Locale locale, Map<String,String> environment) {
+	Map<String, Object> environment = new HashMap<String, Object>();
+	AuthenticationState(String remoteAddress, Locale locale, Map<String,Object> environment) {
 		this.remoteAddress = remoteAddress;
 		this.environment = environment;
 		this.locale = locale;
@@ -65,8 +66,8 @@ public class AuthenticationState {
 		return currentIndex >= modules.size();
 	}
 
-	void setCurrentIndex(Integer currentIndex) {
-		this.currentIndex = currentIndex;
+	void nextModule() {
+		this.currentIndex++;
 	}
 
 	public AuthenticationScheme getScheme() {
@@ -136,6 +137,10 @@ public class AuthenticationState {
 		return locale;
 	}
 
+	public boolean hasParameter(String name) {
+		return parameters.containsKey(name);
+	}
+	
 	public String getParameter(String name) {
 		return parameters.get(name);
 	}
@@ -188,8 +193,55 @@ public class AuthenticationState {
 	}
 
 	public String getUserAgent() {
-		return environment.get(BrowserEnvironment.USER_AGENT.toString());
+		return environment.get(BrowserEnvironment.USER_AGENT.toString()).toString();
+	}
+	
+	public void setEnvironmentVariable(String key, Object value) {
+		environment.put(key, value);
+	}
+	
+	public boolean hasEnvironmentVariable(String key) {
+		return environment.containsKey(key);
+	}
+	
+	public Object getEnvironmentVariable(String key){ 
+		return environment.get(key);
 	}
 
+	public void fakeCredentials() {
+		setPrincipal(new FakePrincipal(lastPrincipalName));
+		Realm realm = new Realm();
+		realm.setId(-1L);
+		realm.setName("Fake");
+	}
+	
+	public boolean hasNextStep() {
+		return currentIndex < modules.size() - 1;
+	}
+	
+	class FakePrincipal extends Principal {
 
+		FakePrincipal(String username) {
+			this.setId(-1L);
+			this.setName(username);
+		}
+		@Override
+		public PrincipalType getType() {
+			return PrincipalType.USER;
+		}
+
+		@Override
+		public String getPrincipalDesc() {
+			return "";
+		}
+		
+	}
+
+	public void authAttempted() {
+		attempts++;
+	}
+
+	public void setNewSession(boolean isNew) {
+		this.isNew = isNew;
+	}
 }

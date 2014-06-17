@@ -9,7 +9,7 @@ package com.hypersocket.input;
 
 public class PasswordInputField extends InputField {
 
-	public PasswordInputField(String resourceKey, String defaultValue, boolean required) {
-		super(InputFieldType.password, resourceKey, defaultValue, required);
+	public PasswordInputField(String resourceKey, String defaultValue, boolean required, String label) {
+		super(InputFieldType.password, resourceKey, defaultValue, required, label);
 	}
 }

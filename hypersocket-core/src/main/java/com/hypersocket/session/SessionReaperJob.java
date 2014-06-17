@@ -24,8 +24,8 @@ public class SessionReaperJob extends TransactionalJob {
 		try {
 			List<Session> activeSessions = sessionService.getActiveSessions();
 			
-			if(log.isInfoEnabled()) {
-				log.info("There are " + activeSessions.size() + " users connected");
+			if(log.isDebugEnabled()) {
+				log.debug("There are " + activeSessions.size() + " users connected");
 			}
 			for(Session session : activeSessions) {
 				sessionService.isLoggedOn(session, false);

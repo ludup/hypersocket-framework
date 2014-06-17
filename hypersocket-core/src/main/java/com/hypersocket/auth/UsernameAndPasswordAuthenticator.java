@@ -48,17 +48,21 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 		String password = AuthenticationUtils.getRequestParameter(parameters,
 				UsernameAndPasswordTemplate.PASSWORD_FIELD);
 
-		if (username == null) {
+		if (username == null || username.equals("")) {
 			username = state
 					.getParameter(UsernameAndPasswordTemplate.USERNAME_FIELD);
 		}
 
-		if (password == null) {
+		if (password == null || password.equals("")) {
 			password = state
 					.getParameter(UsernameAndPasswordTemplate.PASSWORD_FIELD);
 		}
 
-		if (username == null || password == null) {
+		if (username == null || username.equals("")) {
+			return AuthenticatorResult.INSUFFICIENT_DATA;
+		}
+		
+		if (password == null || password.equals("")) {
 			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}
 
@@ -145,6 +149,16 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 	@Override
 	public String getResourceBundle() {
 		return AuthenticationService.RESOURCE_BUNDLE;
+	}
+
+	@Override
+	public boolean isSecretModule() {
+		return true;
+	}
+
+	@Override
+	public boolean isIdentityModule() {
+		return true;
 	}
 
 }

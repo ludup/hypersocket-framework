@@ -9,16 +9,14 @@ package com.hypersocket.realm;
 
 import com.hypersocket.permissions.PermissionType;
 
-public enum AccessControlPermission implements PermissionType {
+public enum ProfilePermission implements PermissionType {
 	
-	CREATE("permission.acl.create"),
-	READ("permission.acl.read"),
-	UPDATE("permission.acl.update"),
-	DELETE("permission.acl.delete");
+	READ("profile.read"),
+	UPDATE("profile.update");
 	
 	private final String val;
 	
-	private AccessControlPermission(final String val) {
+	private ProfilePermission(final String val) {
 		this.val = val;
 	}
 	
