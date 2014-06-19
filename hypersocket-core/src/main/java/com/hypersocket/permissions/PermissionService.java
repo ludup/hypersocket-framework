@@ -65,4 +65,6 @@ public interface PermissionService extends AuthenticatedService {
 	public List<?> getRoles(String searchPattern, int start, int length,
 			ColumnSort[] sorting) throws AccessDeniedException;
 
+	Role getPersonalRole(Principal principal);
+
 }

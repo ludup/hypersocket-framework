@@ -116,7 +116,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 		assertPermission(RolePermission.CREATE);
 
-		return repository.createRole(name, realm);
+		return repository.createRole(name, realm, false);
 	}
 
 	@Override
@@ -390,4 +390,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 		return repository.searchRoles(getCurrentRealm(), searchPattern, start, length, sorting);
 	}
 
+	@Override
+	public Role getPersonalRole(Principal principal) {
+		return repository.getPersonalRole(principal);
+	}
 }

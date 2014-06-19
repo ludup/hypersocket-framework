@@ -56,6 +56,9 @@ public class Role extends Resource {
 	@Column(name="all_users", nullable=false)
 	boolean allUsers;
 	
+	@Column(name="personal_role", nullable=true)
+	Boolean personalRole = new Boolean(false);
+	
 	public Set<Permission> getPermissions() {
 		return permissions;
 	}
@@ -95,6 +98,14 @@ public class Role extends Resource {
 	
 	public void setAllUsers(boolean allUsers) {
 		this.allUsers = allUsers;
+	}
+	
+	public boolean isPersonalRole() {
+		return personalRole!=null && personalRole.booleanValue();
+	}
+	
+	public void setPersonalRole(boolean personalRole) {
+		this.personalRole = personalRole;
 	}
 
 	

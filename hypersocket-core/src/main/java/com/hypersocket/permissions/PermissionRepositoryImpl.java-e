@@ -8,6 +8,7 @@
 package com.hypersocket.permissions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -86,10 +87,16 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> imple
 	
 	@Override
 	public Role createRole(String name, Realm realm) {
+		return createRole(name, realm, false);
+	}
+	
+	@Override
+	public Role createRole(String name, Realm realm, boolean personalRole) {
 		
 		Role role = new Role();
 		role.setName(name);
 		role.setRealm(realm);
+		role.setPersonalRole(personalRole);
 		save(role);
 		return role;
 	}
@@ -307,7 +314,12 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> imple
 	
 	@Override
 	public List<Role> getRolesForRealm(Realm realm) {
-		return allEntities(Role.class, JOIN_PRINCIPALS_PERMISSIONS, new RealmOrGlobalRestriction(realm));
+		return allEntities(Role.class, JOIN_PRINCIPALS_PERMISSIONS, new RealmOrGlobalRestriction(realm), new DetachedCriteriaConfiguration() {
+			@Override
+			public void configure(DetachedCriteria criteria) {
+				criteria.add(Restrictions.eq("personalRole", false));
+			}
+		});
 	}
 	
 	@Override
@@ -316,6 +328,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> imple
 			
 			@Override
 			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("personalRole", false));
 				criteria.setFetchMode("permissions", FetchMode.SELECT);
 				criteria.setFetchMode("principals", FetchMode.SELECT);
 				criteria.setFetchMode("resources", FetchMode.SELECT);
@@ -331,7 +344,8 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> imple
 			
 			@Override
 			public void configure(Criteria criteria) {
-				criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);		
+				criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+				criteria.add(Restrictions.eq("personalRole", false));
 				criteria.add(Restrictions.or(Restrictions.eq("realm", realm), Restrictions.isNull("realm")));
 			}
 		});
@@ -347,6 +361,30 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> imple
 				
 			}
 		});
+	}
+	
+	private Role createPersonalRole(Principal principal) {
+		Role r = createRole(principal.getRealm().getName() + "/" + principal.getPrincipalName(), principal.getRealm(), true);
+		assignRole(r, principal);
+		return r;
+	}
+	
+	@Override
+	public Role getPersonalRole(Principal principal) {
+	
+		Criteria crit = sessionFactory.getCurrentSession().createCriteria(Role.class)
+				.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY)
+				.add(Restrictions.eq("personalRole", true))
+				.createCriteria("principals")
+				.add(Restrictions.in("id", Arrays.asList(principal.getId())));
+		
+		Set<Role> roles = new HashSet<Role>(crit.list());
+		
+		if(roles.isEmpty()) {
+			return createPersonalRole(principal);
+		} else {
+			return roles.iterator().next();
+		}
 	}
 
 }

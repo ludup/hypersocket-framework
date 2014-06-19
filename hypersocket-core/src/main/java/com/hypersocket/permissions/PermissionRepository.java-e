@@ -24,7 +24,7 @@ public interface PermissionRepository extends AbstractRepository<Long> {
 	public Permission createPermission(String resourceKey,
 			PermissionCategory category, boolean hidden);
 
-	public Role createRole(String name, Realm realm);
+	public Role createRole(String name, Realm realm, boolean personalRole);
 
 	public PermissionCategory getCategoryById(Long id);
 
@@ -81,5 +81,9 @@ public interface PermissionRepository extends AbstractRepository<Long> {
 			int length, ColumnSort[] sorting);
 
 	Long countRoles(Realm realm, String searchPattern);
+
+	Role getPersonalRole(Principal principal);
+
+	Role createRole(String name, Realm realm);
 
 }
