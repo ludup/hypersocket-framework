@@ -52,6 +52,5 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	List<T> searchAssignedResources(Principal principal, 
 			String searchPattern, int start, int length, ColumnSort[] sorting,
 			CriteriaConfiguration... configs);
-
 	
 }
