@@ -81,6 +81,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 	List<PostAuthenticationStep> postAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
 
+	List<AuthenticationServiceListener> listeners = new ArrayList<AuthenticationServiceListener>();
+	
 	Permission logonPermission;
 
 	@PostConstruct
@@ -100,8 +102,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		eventService.registerEvent(AuthenticationEvent.class, RESOURCE_BUNDLE);
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
-
-		// indexPageFilter.addStyleSheet("${uiPath}/css/authenticator.css");
+	}
+	
+	@Override
+	public void registerListener(AuthenticationServiceListener listener) {
+		listeners.add(listener);
 	}
 
 	@Override
@@ -145,8 +150,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		if (environment
 				.containsKey(BrowserEnvironment.AUTHORIZATION.toString())) {
 
-			String header = environment.get(BrowserEnvironment.AUTHORIZATION
-					.toString()).toString();
+			String header = environment.get(
+					BrowserEnvironment.AUTHORIZATION.toString()).toString();
 			if (header.toLowerCase().startsWith("basic")) {
 				header = new String(Base64.decode(header.substring(6)));
 				int idx = header.indexOf(':');
@@ -180,7 +185,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 				// If not can we determine the realm from the current
 				// information
-				String hostHeader = environment.get(BrowserEnvironment.HOST.toString()).toString();
+				String hostHeader = environment.get(
+						BrowserEnvironment.HOST.toString()).toString();
 				int idx;
 				if ((idx = hostHeader.indexOf(':')) > -1) {
 					hostHeader = hostHeader.substring(0, idx);
@@ -235,8 +241,9 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		} else {
 			Authenticator authenticator = authenticators.get(state
 					.getCurrentModule().getTemplate());
-			
-			if(authenticator.isSecretModule() && state.getPrincipal() instanceof AuthenticationState.FakePrincipal) {
+
+			if (authenticator.isSecretModule()
+					&& state.getPrincipal() instanceof AuthenticationState.FakePrincipal) {
 				state.setLastErrorMsg("error.genericLogonError");
 				state.setLastErrorIsResourceKey(true);
 				eventService.publishEvent(new AuthenticationEvent(this, state,
@@ -244,67 +251,68 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			} else {
 				switch (authenticator.authenticate(state, parameterMap)) {
 				case INSUFFICIENT_DATA: {
-					if(!state.isNew()) {
+					if (!state.isNew()) {
 						state.setLastErrorMsg("error.insufficentData");
 						state.setLastErrorIsResourceKey(true);
 					}
 					break;
 				}
 				case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
-					
-					if(!authenticator.isSecretModule() && state.hasNextStep()) {
+
+					if (!authenticator.isSecretModule() && state.hasNextStep()) {
 						state.fakeCredentials();
 						state.nextModule();
 					} else {
 						state.setLastErrorMsg("error.genericLogonError");
 						state.setLastErrorIsResourceKey(true);
-						eventService.publishEvent(new AuthenticationEvent(this, state,
-								authenticator, "hint.badCredentials"));
+						eventService.publishEvent(new AuthenticationEvent(this,
+								state, authenticator, "hint.badCredentials"));
 					}
-					
+
 					break;
 				}
 				case AUTHENTICATION_FAILURE_INVALID_PRINCIPAL: {
-					
-					if(!authenticator.isSecretModule() && state.hasNextStep()) {
+
+					if (!authenticator.isSecretModule() && state.hasNextStep()) {
 						state.fakeCredentials();
 						state.nextModule();
 					} else {
 						state.setLastErrorMsg("error.genericLogonError");
 						state.setLastErrorIsResourceKey(true);
-						eventService.publishEvent(new AuthenticationEvent(this, state,
-								authenticator, "hint.invalidPrincipal"));
+						eventService.publishEvent(new AuthenticationEvent(this,
+								state, authenticator, "hint.invalidPrincipal"));
 					}
 					break;
 				}
 				case AUTHENTICATION_FAILURE_INVALID_REALM: {
-					
-					if(!authenticator.isSecretModule() && state.hasNextStep()) {
+
+					if (!authenticator.isSecretModule() && state.hasNextStep()) {
 						state.fakeCredentials();
 						state.nextModule();
 					} else {
 						state.setLastErrorMsg("error.genericLogonError");
 						state.setLastErrorIsResourceKey(true);
-						eventService.publishEvent(new AuthenticationEvent(this, state,
-								authenticator, "hint.invalidRealm"));
+						eventService.publishEvent(new AuthenticationEvent(this,
+								state, authenticator, "hint.invalidRealm"));
 					}
-					
+
 					break;
 				}
 				case AUTHENTICATION_SUCCESS: {
 					try {
-						permissionService.verifyPermission(state.getPrincipal(),
+						permissionService.verifyPermission(
+								state.getPrincipal(),
 								PermissionStrategy.REQUIRE_ANY,
 								AuthenticationPermission.LOGON,
 								SystemPermission.SYSTEM_ADMINISTRATION);
-	
+
 						eventService.publishEvent(new AuthenticationEvent(this,
 								state, authenticator));
-						
+
 						state.nextModule();
-						
+
 						if (state.isAuthenticationComplete()) {
-	
+
 							for (PostAuthenticationStep proc : postAuthenticationSteps) {
 								if (proc.requiresProcessing(state)) {
 									state.addPostAuthenticationStep(proc);
@@ -315,7 +323,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 							}
 						}
 					} catch (AccessDeniedException e) {
-	
+
 						eventService.publishEvent(new AuthenticationEvent(this,
 								state, authenticator, "hint.noPermission"));
 						// user does not have LOGON permission
@@ -345,8 +353,17 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			throw new IllegalStateException(state.getCurrentModule()
 					.getTemplate() + " is not a valid authenticator");
 		}
-		return authenticators.get(state.getCurrentModule().getTemplate())
-				.createTemplate(state, params);
+		return modifyTemplate(state,
+				authenticators.get(state.getCurrentModule().getTemplate())
+						.createTemplate(state, params));
+	}
+
+	protected FormTemplate modifyTemplate(AuthenticationState state,
+			FormTemplate template) {
+		for(AuthenticationServiceListener l : listeners) {
+			l.modifyTemplate(state, template);
+		}
+		return template;
 	}
 
 	@Override
@@ -384,7 +401,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 	@Override
 	public void registerPostAuthenticationStep(
-			ChangePasswordAuthenticationStep postAuthenticationStep) {
+			PostAuthenticationStep postAuthenticationStep) {
 		postAuthenticationSteps.add(postAuthenticationStep);
 	}
 
@@ -426,10 +443,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		assertPermission(AuthenticationPermission.READ);
 		return repository.getAuthenticationModules();
 	}
-	
+
 	@Override
-	public Map<String,Authenticator> getAuthenticators() {
-		Map<String,Authenticator> tmp = new HashMap<String,Authenticator>();
+	public Map<String, Authenticator> getAuthenticators() {
+		Map<String, Authenticator> tmp = new HashMap<String, Authenticator>();
 		tmp.putAll(authenticators);
 		return tmp;
 	}

@@ -40,6 +40,8 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 
 	Map<String, MenuRegistration> rootMenus = new HashMap<String, MenuRegistration>();
 
+	Map<String, List<MenuRegistration>> pendingMenus = new HashMap<String, List<MenuRegistration>>();
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -112,6 +114,12 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public boolean registerMenu(MenuRegistration module, String parentModule) {
 
+		if(pendingMenus.containsKey(module.getResourceKey())) {
+			for(MenuRegistration m : pendingMenus.get(module.getResourceKey())) {
+				module.addMenu(m);
+			}
+			pendingMenus.remove(module.getResourceKey());
+		}
 		if (parentModule != null) {
 			if (rootMenus.containsKey(parentModule)) {
 				MenuRegistration parent = rootMenus.get(parentModule);
@@ -126,6 +134,12 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 						}
 					}
 				}
+				
+				if(!pendingMenus.containsKey(parentModule)) {
+					pendingMenus.put(parentModule, new ArrayList<MenuRegistration>());
+				}
+				
+				pendingMenus.get(parentModule).add(module);
 			}
 
 		} else {
@@ -293,6 +307,16 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 							.getWeight() == o2.getWeight() ? 0 : -1));
 				}
 			});
+			
+			for(Menu m2 : m.getMenus()) {
+				Collections.sort(m2.getMenus(), new Comparator<Menu>() {
+					@Override
+					public int compare(Menu o1, Menu o2) {
+						return (o1.getWeight() > o2.getWeight() ? 1 : (o1
+								.getWeight() == o2.getWeight() ? 0 : -1));
+					}
+				});
+			}
 		}
 		return userMenus;
 	}

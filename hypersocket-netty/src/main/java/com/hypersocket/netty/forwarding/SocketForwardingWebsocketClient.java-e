@@ -8,10 +8,13 @@
 package com.hypersocket.netty.forwarding;
 
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.hypersocket.server.websocket.WebsocketClient;
-
-public class SocketForwardingWebsocketClient implements WebsocketClient {
+public class SocketForwardingWebsocketClient implements NettyWebsocketClient {
+	
+	static Logger log = LoggerFactory.getLogger(SocketForwardingWebsocketClient.class);
 	
 	Channel socketChannel;
 	Channel websocketChannel;
@@ -19,12 +22,9 @@ public class SocketForwardingWebsocketClient implements WebsocketClient {
 	long totalBytesIn;
 	long intervalBytesOut;
 	long intervalBytesIn;
-	String resourceKey;
-	String resourceBundle;
-	public SocketForwardingWebsocketClient(Channel socketChannel, String resourceBundle, String resourceKey) {
+	
+	public SocketForwardingWebsocketClient(Channel socketChannel) {
 		this.socketChannel = socketChannel;
-		this.resourceKey = resourceKey;
-		this.resourceBundle = resourceBundle;
 	}
 	
 	public Channel getSocketChannel() {
@@ -37,6 +37,8 @@ public class SocketForwardingWebsocketClient implements WebsocketClient {
 	
 	public void setWebsocketChannel(Channel websocketChannel) {
 		this.websocketChannel = websocketChannel;
+		websocketChannel.setAttachment(socketChannel);
+		socketChannel.setAttachment(this);
 	}
 	
 	@Override
@@ -71,6 +73,31 @@ public class SocketForwardingWebsocketClient implements WebsocketClient {
 	@Override
 	public long getTotalBytesOut() {
 		return totalBytesOut;
+	}
+
+	@Override
+	public void frameReceived(WebSocketFrame msg) {
+	
+		if (socketChannel != null) {
+			if (socketChannel.isConnected()) {
+				if (log.isDebugEnabled()) {
+					log.debug("Forwarding frame to socket "
+							+ socketChannel.getRemoteAddress());
+				}
+
+				reportInputBytes(msg.getBinaryData()
+						.readableBytes());
+				socketChannel.write(msg.getBinaryData());
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Forwarding socket is no longer connected for "
+							+ socketChannel.getRemoteAddress());
+				}
+				close();
+			}
+		}
+
+		
 	}
 
 }

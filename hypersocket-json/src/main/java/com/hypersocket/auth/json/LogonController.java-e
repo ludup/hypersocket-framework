@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.hypersocket.auth.AuthenticationService;
+import com.hypersocket.auth.AuthenticationServiceImpl;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.AuthenticationRequiredResult;
@@ -77,13 +78,21 @@ public class LogonController extends AuthenticatedController {
 	public AuthenticationResult resetLogon(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException {
-		
-		
-		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, null);
-		
-		return logon(request, response);
+		AuthenticationState state = (AuthenticationState) request.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
+		return resetLogon(request, response, state.getScheme().getName());
 	}
 	
+	@RequestMapping(value = "logon/reset/{scheme}", method = RequestMethod.GET, produces = "application/json")
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public AuthenticationResult resetLogon(HttpServletRequest request,
+			HttpServletResponse response,
+		    @PathVariable String scheme) throws AccessDeniedException,
+			UnauthorizedException {
+		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, null);	
+		return logon(request, response, scheme);
+		
+	}
 	
 	@RequestMapping(value = "logon", method = { RequestMethod.GET,
 			RequestMethod.POST }, produces = { "application/json" })
@@ -91,6 +100,16 @@ public class LogonController extends AuthenticatedController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public AuthenticationResult logon(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException {
+		return logon(request, response, AuthenticationServiceImpl.DEFAULT_AUTHENTICATION_SCHEME);
+	}
+	
+	@RequestMapping(value = "logon/{scheme}", method = { RequestMethod.GET,
+			RequestMethod.POST }, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public AuthenticationResult logon(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String scheme) throws AccessDeniedException,
 			UnauthorizedException {
 
 		setupSystemContext();
@@ -117,7 +136,7 @@ public class LogonController extends AuthenticatedController {
 
 			if (state == null) {
 				// We have not got login state so create
-				state = createAuthenticationState(request, response);
+				state = createAuthenticationState(scheme, request, response);
 			} else {
 				state.setNewSession(false);
 			}

@@ -27,10 +27,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.hypersocket.auth.json.AuthenticatedController;
-import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.i18n.I18NService;
-import com.hypersocket.i18n.Message;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.SelectOption;
 import com.hypersocket.permissions.AccessDeniedException;

@@ -67,7 +67,8 @@ public class AuthenticatedController {
 	@Autowired
 	protected I18NService i18nService;
 
-	AuthenticationState createAuthenticationState(HttpServletRequest request,
+	AuthenticationState createAuthenticationState(String scheme, 
+			HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException {
 
 		Map<String, Object> environment = new HashMap<String, Object>();
@@ -77,10 +78,9 @@ public class AuthenticatedController {
 						request.getHeader(env.toString()));
 			}
 		}
-
+		
 		AuthenticationState state = authenticationService
-				.createAuthenticationState(
-						AuthenticationServiceImpl.DEFAULT_AUTHENTICATION_SCHEME,
+				.createAuthenticationState(scheme,
 						request.getRemoteAddr(), environment,
 						sessionUtils.getLocale(request));
 		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, state);

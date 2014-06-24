@@ -16,7 +16,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import com.hypersocket.permissions.PermissionType;
-import com.hypersocket.realm.Principal;
 
 @XmlRootElement(name = "menu")
 public class MenuRegistration {

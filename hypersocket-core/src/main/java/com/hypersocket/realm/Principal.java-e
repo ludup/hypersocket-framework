@@ -57,6 +57,8 @@ public abstract class Principal extends Resource {
 
 	public abstract PrincipalType getType();
 
+	public abstract String getAddress(MediaType type) throws MediaNotFoundException;
+	
 	@XmlElement(name = "principalName")
 	public String getPrincipalName() {
 		return getName();

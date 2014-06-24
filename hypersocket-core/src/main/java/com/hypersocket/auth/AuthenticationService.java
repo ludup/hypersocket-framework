@@ -43,10 +43,7 @@ public interface AuthenticationService extends AuthenticatedService {
 	FormTemplate nextPostAuthenticationStep(AuthenticationState state);
 
 	void registerPostAuthenticationStep(
-			ChangePasswordAuthenticationStep postAuthenticationStep);
-
-	// boolean logon(String username, char[] password, InetSocketAddress
-	// remoteAddress) throws AccessDeniedException;
+			PostAuthenticationStep postAuthenticationStep);
 
 	public List<AuthenticationScheme> getAuthenticationSchemes()
 			throws AccessDeniedException;
@@ -82,4 +79,6 @@ public interface AuthenticationService extends AuthenticatedService {
 			throws AccessDeniedException;
 
 	public Map<String,Authenticator> getAuthenticators();
+
+	void registerListener(AuthenticationServiceListener listener);
 }

@@ -26,7 +26,6 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 
 import com.hypersocket.util.FileUtils;
-import com.hypersocket.util.OverridePropertyPlaceholderConfigurer;
 
 public class I18N {
 

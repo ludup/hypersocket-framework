@@ -46,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.netty.forwarding.NettyWebsocketClient;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClient;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.server.handlers.HttpRequestHandler;
@@ -235,29 +236,9 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			// Close
 		}
 
-		SocketForwardingWebsocketClient socketClient = (SocketForwardingWebsocketClient) channel
-				.getAttachment();
-		Channel ch = socketClient.getSocketChannel();
-
-		if (ch != null) {
-			if (ch.isConnected()) {
-				if (log.isDebugEnabled()) {
-					log.debug("Forwarding frame to socket "
-							+ ch.getRemoteAddress());
-				}
-
-				socketClient.reportInputBytes(msg.getBinaryData()
-						.readableBytes());
-				ch.write(msg.getBinaryData());
-			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("Forwarding socket is no longer connected for "
-							+ ch.getRemoteAddress());
-				}
-				socketClient.close();
-			}
-		}
-
+		NettyWebsocketClient nettyClient = (NettyWebsocketClient) channel.getAttachment();
+		nettyClient.frameReceived(msg);
+		
 	}
 
 	public void sendResponse(final HttpRequestServletWrapper servletRequest,
@@ -525,15 +506,12 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 						+ websocketChannel.getRemoteAddress());
 			}
 
-			SocketForwardingWebsocketClient socketClient = (SocketForwardingWebsocketClient) client;
-			socketClient.setWebsocketChannel(websocketChannel);
-
-			websocketChannel.setAttachment(socketClient);
-			socketClient.getSocketChannel().setAttachment(socketClient);
+			NettyWebsocketClient websocketClient = (NettyWebsocketClient) client;
+			websocketClient.setWebsocketChannel(websocketChannel);
 
 			WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
 					getWebSocketLocation(request.getNettyRequest()), null,
-					false);
+					true);
 
 			WebSocketServerHandshaker handshaker = wsFactory
 					.newHandshaker(request.getNettyRequest());
@@ -576,16 +554,6 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		@Override
 		public void websocketClosed(WebsocketClient client) {
 			client.close();
-		}
-
-		@Override
-		public String getResourceBundle() {
-			return handler.getResourceBundle();
-		}
-
-		@Override
-		public String getResourceKey() {
-			return handler.getResourceKey();
 		}
 
 	}
