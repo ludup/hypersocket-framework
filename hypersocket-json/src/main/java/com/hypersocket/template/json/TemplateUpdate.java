@@ -1,10 +1,14 @@
 package com.hypersocket.template.json;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class TemplateUpdate {
 
 	Long id;
 	String name;
 	String type;
+	String subject;
 	String template;
 	
 	public Long getId() {
@@ -37,6 +41,14 @@ public class TemplateUpdate {
 	
 	public String getName() {
 		return name;
+	}
+
+	public String getSubject() {
+		return subject;
+	}
+
+	public void setSubject(String subject) {
+		this.subject = subject;
 	}
 	
 	

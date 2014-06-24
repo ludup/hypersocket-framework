@@ -133,12 +133,16 @@ public class TemplateController extends ResourceController {
 
 			if (t.getId() == null) {
 				template = templateService.createTemplate(t.getName(),
-						t.getTemplate(), t.getType());
+						t.getSubject(),
+						t.getTemplate(),
+						t.getType());
 			} else {
 				template = templateService.getResourceById(t.getId());
 
 				templateService.updateTemplate(template, t.getName(),
-						t.getTemplate(), t.getType());
+						t.getSubject(),
+						t.getTemplate(), 
+						t.getType());
 			}
 
 			return new ResourceStatus<Template>(template);

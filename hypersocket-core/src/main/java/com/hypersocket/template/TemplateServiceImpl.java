@@ -1,28 +1,37 @@
 package com.hypersocket.template;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
+import javax.mail.Message.RecipientType;
 
+import org.codemonkey.simplejavamail.Recipient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.menus.MenuRegistration;
 import com.hypersocket.menus.MenuService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.realm.MediaNotFoundException;
+import com.hypersocket.realm.MediaType;
+import com.hypersocket.realm.Principal;
+import com.hypersocket.replace.ReplacementUtils;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceNotFoundException;
 
 @Service
 public class TemplateServiceImpl extends AbstractResourceServiceImpl<Template>
 		implements TemplateService {
 
-	public static final String EMAIL_TEMPLATE = "template.email";
+	public static final String EMAIL_TEMPLATE = "email";
 
 	public static final String RESOURCE_BUNDLE = "TemplateService";
 
@@ -36,6 +45,9 @@ public class TemplateServiceImpl extends AbstractResourceServiceImpl<Template>
 
 	@Autowired
 	MenuService menuService;
+
+	@Autowired
+	EmailNotificationService emailService;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -67,6 +79,25 @@ public class TemplateServiceImpl extends AbstractResourceServiceImpl<Template>
 	@Override
 	protected String getResourceBundle() {
 		return RESOURCE_BUNDLE;
+	}
+
+	@Override
+	public void emailTemplate(String templateName, Principal principal,
+			Map<String, String> replacements) throws ResourceNotFoundException,
+			MediaNotFoundException {
+
+		Template t = getResourceByName(templateName);
+
+		String email = principal.getAddress(MediaType.EMAIL);
+		String subject = ReplacementUtils.processTokenReplacements(
+				t.getSubject(), replacements);
+		String text = ReplacementUtils.processTokenReplacements(
+				t.getTemplate(), replacements);
+
+		emailService.sendHtmlEmail(subject, text,
+				new Recipient[] { new Recipient(principal.getPrincipalDesc(),
+						email, RecipientType.TO) });
+
 	}
 
 	@Override
@@ -116,11 +147,12 @@ public class TemplateServiceImpl extends AbstractResourceServiceImpl<Template>
 	}
 
 	@Override
-	public Template createTemplate(String name, String template, String type)
+	public Template createTemplate(String name, String subject, String template, String type)
 			throws ResourceCreationException, AccessDeniedException {
 
 		Template t = new Template();
 		t.setName(name);
+		t.setSubject(subject);
 		t.setTemplate(template);
 		t.setType(type);
 
@@ -129,10 +161,11 @@ public class TemplateServiceImpl extends AbstractResourceServiceImpl<Template>
 	}
 
 	@Override
-	public void updateTemplate(Template t, String name, String template,
+	public void updateTemplate(Template t, String name, String subject, String template,
 			String type) throws ResourceChangeException, AccessDeniedException {
 
 		t.setName(name);
+		t.setSubject(subject);
 		t.setTemplate(template);
 		t.setType(type);
 
