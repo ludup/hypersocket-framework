@@ -15,7 +15,4 @@ public interface WebsocketClientCallback {
 
 	void websocketClosed(WebsocketClient client);
 
-	String getResourceBundle();
-
-	String getResourceKey();
 }

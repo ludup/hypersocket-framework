@@ -28,7 +28,7 @@ class ClientConnectCallbackImpl implements ChannelFutureListener {
 
 		if (future.isSuccess()) {
 			future.getChannel().setReadable(false);
-			client = createClient(future.getChannel(), callback.getResourceBundle(), callback.getResourceKey());
+			client = createClient(future.getChannel());
 			callback.websocketAccepted(client);
 			future.getChannel().getCloseFuture().addListener(new ChannelFutureListener() {
 
@@ -44,8 +44,8 @@ class ClientConnectCallbackImpl implements ChannelFutureListener {
 		}
 	}
 	
-	protected WebsocketClient createClient(Channel channel, String resourceBundle, String resourceKey) {
-		return new SocketForwardingWebsocketClient(channel, resourceBundle, resourceKey);
+	protected WebsocketClient createClient(Channel channel) {
+		return new SocketForwardingWebsocketClient(channel);
 	}
 
 }

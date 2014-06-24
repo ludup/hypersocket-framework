@@ -22,6 +22,8 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
+import com.hypersocket.realm.MediaNotFoundException;
+import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 
@@ -47,6 +49,11 @@ public class LocalGroup extends Principal {
 	
 	public String getPrincipalDesc() {
 		return "";
+	}
+
+	@Override
+	public String getAddress(MediaType type) throws MediaNotFoundException {
+		throw new MediaNotFoundException();
 	}
 
 }

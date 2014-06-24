@@ -21,9 +21,7 @@ public class ChangePasswordTemplate extends FormTemplate {
 
 		setResourceKey(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
 
-		fields.add(new ParagraphField(I18N.getResource(state.getLocale(),
-				AuthenticationService.RESOURCE_BUNDLE,
-				"info.passwordChangeRequired")));
+		fields.add(new ParagraphField("info.passwordChangeRequired", true));
 		fields.add(new PasswordInputField(PASSWORD_FIELD, "", true, I18N
 				.getResource(state.getLocale(),
 						AuthenticationServiceImpl.RESOURCE_BUNDLE,

@@ -22,8 +22,4 @@ public interface WebsocketHandler {
 			HttpServletResponse nettyResponse, 
 			WebsocketClientCallback callback, 
 			HttpResponseProcessor processor) throws UnauthorizedException, AccessDeniedException;
-
-	public String getResourceKey();
-
-	public String getResourceBundle();
 }
