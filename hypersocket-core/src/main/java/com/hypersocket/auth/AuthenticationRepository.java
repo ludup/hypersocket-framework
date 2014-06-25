@@ -49,6 +49,4 @@ public interface AuthenticationRepository extends AbstractRepository<Long> {
 			AuthenticationModule authenticationModule);
 
 	public void deleteModule(AuthenticationModule authenticationModule);
-
-	// public void deleteByTemplate(AuthenticationModule authenticationModule);
 }

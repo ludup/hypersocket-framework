@@ -160,9 +160,10 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public Realm getRealmById(Long id) throws AccessDeniedException {
-		
-		assertAnyPermission(RealmPermission.READ, SystemPermission.SYSTEM_ADMINISTRATION);
-		
+
+		assertAnyPermission(RealmPermission.READ,
+				SystemPermission.SYSTEM_ADMINISTRATION);
+
 		return realmRepository.getRealmById(id);
 	}
 
@@ -260,13 +261,15 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		return getProviderForRealm(realm).getPrincipalByName(principalName,
 				realm, type);
 	}
-	
+
 	@Override
-	public Set<Principal> getPrincipalsByProperty(String propertyName, String propertyValue) {
-		
+	public Set<Principal> getPrincipalsByProperty(String propertyName,
+			String propertyValue) {
+
 		Set<Principal> ret = new HashSet<Principal>();
-		for(Realm r : allRealms()) {
-			ret.addAll(getProviderForRealm(r).getPrincipalsByProperty(propertyName, propertyValue));
+		for (Realm r : allRealms()) {
+			ret.addAll(getProviderForRealm(r).getPrincipalsByProperty(
+					propertyName, propertyValue));
 		}
 		return ret;
 	}
@@ -688,7 +691,6 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Collection<PropertyCategory> getUserPropertyTemplates(
 			Principal principal) throws AccessDeniedException {
 
-		
 		assertAnyPermission(UserPermission.READ, ProfilePermission.READ);
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
@@ -717,7 +719,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		return provider.getGroupProperties(null);
 	}
-	
+
 	@Override
 	public List<Principal> getAssociatedPrincipals(Principal principal) {
 
@@ -744,8 +746,10 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public Long getPrincipalCount(Realm realm, PrincipalType type, String searchPattern) {
-		return getProviderForRealm(realm).getPrincipalCount(realm, type, searchPattern);
+	public Long getPrincipalCount(Realm realm, PrincipalType type,
+			String searchPattern) {
+		return getProviderForRealm(realm).getPrincipalCount(realm, type,
+				searchPattern);
 	}
 
 	@Override
@@ -783,46 +787,47 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public List<Realm> getRealms(String searchPattern, int start, int length,
 			ColumnSort[] sorting) throws AccessDeniedException {
-		
-		
+
 		assertPermission(RealmPermission.READ);
-		
-		return realmRepository.searchRealms(searchPattern, start, length, sorting);
+
+		return realmRepository.searchRealms(searchPattern, start, length,
+				sorting);
 	}
 
 	@Override
-	public Long getRealmCount(String searchPattern) throws AccessDeniedException {
-		
+	public Long getRealmCount(String searchPattern)
+			throws AccessDeniedException {
+
 		assertPermission(RealmPermission.READ);
-		
+
 		return realmRepository.countRealms(searchPattern);
 	}
 
 	@Override
 	public void updateProfile(Realm realm, Principal principal,
 			Map<String, String> properties) throws AccessDeniedException {
-		
+
 		assertPermission(ProfilePermission.UPDATE);
-		
+
 		RealmProvider provider = getProviderForRealm(realm);
-		
-		List<Principal> assosiated = provider.getAssociatedPrincipals(principal);
+
+		List<Principal> assosiated = provider
+				.getAssociatedPrincipals(principal);
 		try {
-			principal = provider.updateUser(realm, principal, principal.getPrincipalName(),
-					properties, assosiated);
+			principal = provider.updateUser(realm, principal,
+					principal.getPrincipalName(), properties, assosiated);
 
 			eventPublisher
 					.publishEvent(new ProfileUpdatedEvent(this,
 							getCurrentSession(), realm, provider, principal,
 							assosiated));
 		} catch (ResourceChangeException e) {
-			
-			eventPublisher
-			.publishEvent(new ProfileUpdatedEvent(this, e,
-					getCurrentSession(), realm, provider, principal.getPrincipalName(), properties,
-					assosiated));
-		} 
-	
+
+			eventPublisher.publishEvent(new ProfileUpdatedEvent(this, e,
+					getCurrentSession(), realm, provider, principal
+							.getPrincipalName(), properties, assosiated));
+		}
+
 	}
 
 }
