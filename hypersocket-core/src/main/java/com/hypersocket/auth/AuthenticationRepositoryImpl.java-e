@@ -188,5 +188,4 @@ public class AuthenticationRepositoryImpl extends AbstractRepositoryImpl<Long>
 		authenticationModule.setDeleted(true);
 		save(authenticationModule);
 	}
-
 }

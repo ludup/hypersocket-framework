@@ -81,6 +81,5 @@ public class ConfigurationRepositoryImpl extends PropertyRepositoryImpl implemen
 	public Collection<PropertyCategory> getPropertyCategories(String group) {
 		return repository.getPropertyCategories(group);
 	}
-
 	
 }
