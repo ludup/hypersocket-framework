@@ -60,7 +60,7 @@ public class TemplateServiceImpl extends AbstractResourceServiceImpl<Template>
 				"templates", "fa-file-code-o", "templates", 9999,
 				TemplatePermission.READ, TemplatePermission.CREATE,
 				TemplatePermission.UPDATE, TemplatePermission.DELETE),
-				MenuService.MENU_RESOURCES);
+				MenuService.MENU_CONFIGURATION);
 	}
 
 	public void registerTemplateType(String type) {

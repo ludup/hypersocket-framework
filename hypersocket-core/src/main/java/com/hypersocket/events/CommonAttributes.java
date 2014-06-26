@@ -9,5 +9,6 @@ public interface CommonAttributes {
 	public static final String ATTR_PRINCIPAL_REALM = "attr.principalRealm";
 	public static final String ATTR_HINT = "attr.hint";
 	public static final String ATTR_REALM_NAME = "attr.realmName";
+	public static final String ATTR_RESOURCE_NAME = "attr.resourceName";
 	
 }
