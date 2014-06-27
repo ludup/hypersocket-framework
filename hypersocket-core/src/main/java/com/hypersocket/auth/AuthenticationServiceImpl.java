@@ -82,7 +82,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	List<PostAuthenticationStep> postAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
 
 	List<AuthenticationServiceListener> listeners = new ArrayList<AuthenticationServiceListener>();
-	
+
 	Permission logonPermission;
 
 	@PostConstruct
@@ -103,7 +103,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}
-	
+
 	@Override
 	public void registerListener(AuthenticationServiceListener listener) {
 		listeners.add(listener);
@@ -360,7 +360,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 	protected FormTemplate modifyTemplate(AuthenticationState state,
 			FormTemplate template) {
-		for(AuthenticationServiceListener l : listeners) {
+		for (AuthenticationServiceListener l : listeners) {
 			l.modifyTemplate(state, template);
 		}
 		return template;
