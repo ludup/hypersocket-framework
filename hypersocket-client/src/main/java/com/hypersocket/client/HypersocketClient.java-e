@@ -8,6 +8,7 @@
 package com.hypersocket.client;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +44,7 @@ public abstract class HypersocketClient<T> {
 	Map<String, String> staticHeaders = new HashMap<String, String>();
 	SessionKeepAliveThread keepAliveThread = null;
 	long keepAliveInterval = 10000L;
-	Locale currentLocale = Locale.getDefault();
+	Locale currentLocale;
 	Set<HypersocketClientListener<T>> listeners = new HashSet<HypersocketClientListener<T>>();
 	T attachment;
 	
@@ -376,7 +377,7 @@ public abstract class HypersocketClient<T> {
 
 		return transport.get("realm/" + name);
 	}
-
+	
 	protected abstract Map<String, String> showLogin(List<Prompt> prompts);
 
 	public abstract void showWarning(String msg);

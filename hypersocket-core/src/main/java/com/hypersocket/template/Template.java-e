@@ -19,6 +19,9 @@ public class Template extends Resource {
 	@Column(name="template_type")
 	String type;
 	
+	@Column(name="template_editor")
+	TemplateEditor editor;
+	
 	@Column(name="name_is_resource_key")
 	boolean nameIsResourceKey;
 	
@@ -65,6 +68,12 @@ public class Template extends Resource {
 		this.hasSubject = hasSubject;
 	}
 	
+	public TemplateEditor getEditor() {
+		return editor;
+	}
 	
+	public void setEditor(TemplateEditor editor) {
+		this.editor = editor;
+	}
 	
 }
