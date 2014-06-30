@@ -24,4 +24,6 @@ public interface TemplateService extends AbstractResourceService<Template> {
 			Map<String, String> replacements) throws ResourceNotFoundException,
 			MediaNotFoundException;
 
+	void registerTemplateType(String type);
+
 }

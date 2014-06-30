@@ -8,6 +8,7 @@
 package com.hypersocket.client;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -53,5 +54,6 @@ public class EmbeddedClient extends HypersocketClient<Object> {
 	protected void onConnected() {
 		
 	}
+
 
 }
