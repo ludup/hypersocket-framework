@@ -63,6 +63,7 @@ public class TemplateServiceImpl extends AbstractResourceServiceImpl<Template>
 				MenuService.MENU_CONFIGURATION);
 	}
 
+	@Override
 	public void registerTemplateType(String type) {
 
 		if (templateTypes.contains(type)) {
