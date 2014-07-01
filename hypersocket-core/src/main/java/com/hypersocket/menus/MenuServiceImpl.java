@@ -66,11 +66,11 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 				"fa-cog", null, 100, null, null, null, null), "system");
 
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "settings",
-				"fa-cog", "settings", 200, ConfigurationPermission.READ, null,
+				"fa-cog", "settings", 0, ConfigurationPermission.READ, null,
 				ConfigurationPermission.UPDATE, null), "configuration");
 
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "certificates",
-				"fa-certificate", "certificates", 200,
+				"fa-certificate", "certificates", 1000,
 				CertificatePermission.CERTIFICATE_ADMINISTRATION,
 				CertificatePermission.CERTIFICATE_ADMINISTRATION,
 				CertificatePermission.CERTIFICATE_ADMINISTRATION,
@@ -84,21 +84,21 @@ public class MenuServiceImpl extends AuthenticatedServiceImpl implements
 				"fa-unlock-alt", null, 200, null, null, null, null), "security");
 
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "users", "fa-user",
-				"users", 100, UserPermission.READ, UserPermission.CREATE,
+				"users", 1000, UserPermission.READ, UserPermission.CREATE,
 				UserPermission.UPDATE, UserPermission.DELETE), "accessControl");
 
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "groups",
-				"fa-users", "groups", 200, GroupPermission.READ,
+				"fa-users", "groups", 2000, GroupPermission.READ,
 				GroupPermission.CREATE, GroupPermission.UPDATE,
 				GroupPermission.DELETE), "accessControl");
 
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "roles",
-				"fa-user-md", "roles", 200, RolePermission.READ,
+				"fa-user-md", "roles", 3000, RolePermission.READ,
 				RolePermission.CREATE, RolePermission.UPDATE,
 				RolePermission.DELETE), "accessControl");
 
 		registerMenu(new MenuRegistration(RESOURCE_BUNDLE, "realms",
-				"fa-database", "realms", 200, RealmPermission.READ,
+				"fa-database", "realms", 4000, RealmPermission.READ,
 				RealmPermission.CREATE, RealmPermission.UPDATE,
 				RealmPermission.DELETE), "accessControl");
 
