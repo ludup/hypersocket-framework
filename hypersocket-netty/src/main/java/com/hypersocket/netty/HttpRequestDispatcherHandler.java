@@ -47,7 +47,6 @@ import org.slf4j.LoggerFactory;
 
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.netty.forwarding.NettyWebsocketClient;
-import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClient;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.server.handlers.HttpRequestHandler;
 import com.hypersocket.server.handlers.HttpResponseProcessor;

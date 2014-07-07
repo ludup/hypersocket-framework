@@ -24,7 +24,6 @@ import com.hypersocket.realm.Realm;
 @XmlRootElement(name = "form")
 public class UsernameAndPasswordTemplate extends FormTemplate {
 
-	public static final String REALM_FIELD = "realm";
 	public static final String USERNAME_FIELD = "username";
 	public static final String PASSWORD_FIELD = "password";
 
@@ -34,26 +33,6 @@ public class UsernameAndPasswordTemplate extends FormTemplate {
 			AuthenticationState state, Map params) {
 
 		setResourceKey(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
-		if (showRealm) {
-			if (realms.size() > 1) {
-				SelectInputField select = new SelectInputField(REALM_FIELD,
-						 "", requiresRealm,I18N
-							.getResource(state.getLocale(),
-									AuthenticationServiceImpl.RESOURCE_BUNDLE,
-									"realm.label"));
-				select.addOption(new Option("select.label", "", false, true));
-				for (Realm r : realms) {
-					select.addOption(new Option(r.getName(), r.getName(), r
-							.equals(state.getRealm())
-							|| r.getName().equals(AuthenticationUtils.getRequestParameter(
-									params, UsernameAndPasswordTemplate.REALM_FIELD)), false));
-				}
-				fields.add(select);
-			} else {
-				fields.add(new HiddenInputField(REALM_FIELD, realms.get(0)
-						.getName()));
-			}
-		}
 
 		TextInputField username = new TextInputField(USERNAME_FIELD, "", true, I18N
 				.getResource(state.getLocale(),

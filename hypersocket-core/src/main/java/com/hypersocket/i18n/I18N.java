@@ -18,17 +18,23 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Vector;
+
+import org.apache.log4j.Logger;
 
 import com.hypersocket.util.FileUtils;
 
 public class I18N {
 
+	static Logger log = Logger.getLogger(I18N.class);
+	
 	static File overideDirector = new File(System.getProperty(
 			"hypersocket.conf", "conf"), "i18n");
 	static Map<File, Properties> overideProperties = new HashMap<File, Properties>();
@@ -42,12 +48,27 @@ public class I18N {
 			throw new IllegalArgumentException(
 					"You must specify a resource bundle");
 		}
-		if (!resourceBundle.startsWith("i18n/")) {
-			resourceBundle = "i18n/" + resourceBundle;
+		
+		String bundle = resourceBundle;
+		if (!bundle.startsWith("i18n/")) {
+			bundle = "i18n/" + resourceBundle;
 		}
 
-		return ResourceBundle.getBundle(resourceBundle, locale,
-				I18N.class.getClassLoader());
+		try {
+			return ResourceBundle.getBundle(bundle, locale,
+					I18N.class.getClassLoader());
+		} catch (MissingResourceException e) {
+			if(hasOverideBundle(locale, resourceBundle)) {
+				try {
+					return new OverrideResourceBundle(locale, resourceBundle);
+				} catch (IOException e1) {
+					log.error("Failed to load override file for bundle " + resourceBundle);
+				}
+			} 
+			
+			throw e;
+			
+		}
 
 	}
 	
@@ -208,6 +229,19 @@ public class I18N {
 		return formatted.toArray(new Object[formatted.size()]);
 	}
 
+	public static boolean hasOverideBundle(Locale locale, String resourceBundle) {
+		if (resourceBundle == null) {
+			throw new IllegalArgumentException(
+					"You must specify a resource bundle " + resourceBundle);
+		}
+
+		if(resourceBundle.startsWith("i18n/")) {
+			resourceBundle = resourceBundle.substring(5);
+		}
+		File overideFile = getOverrideFile(locale, resourceBundle);
+		return overideFile.exists();
+	}
+	
 	public static boolean hasOveride(Locale locale, String resourceBundle,
 			String key) {
 		
@@ -250,5 +284,31 @@ public class I18N {
 		}
 		
 		return false;
+	}
+	
+	static class OverrideResourceBundle extends ResourceBundle {
+
+		Properties props;
+		Vector<String> names;
+		
+		public OverrideResourceBundle(Locale locale, String resourceBundle) throws FileNotFoundException, IOException {
+			File overideFile = getOverrideFile(locale, resourceBundle);
+			props = new Properties();
+			props.load(new FileInputStream(overideFile));
+			names = new Vector<String>();
+			for(Object key : props.keySet()) {
+				names.add(key.toString());
+			}
+		}
+		@Override
+		protected Object handleGetObject(String key) {
+			return props.getProperty(key);
+		}
+
+		@Override
+		public Enumeration<String> getKeys() {
+			return names.elements();
+		}
+		
 	}
 }

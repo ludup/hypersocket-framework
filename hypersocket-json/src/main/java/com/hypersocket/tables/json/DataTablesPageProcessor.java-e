@@ -14,4 +14,5 @@ public interface DataTablesPageProcessor {
 	List<?> getPage(String searchPattern, int start, int length, ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException;
 	
 	Long getTotalCount(String searchPattern) throws UnauthorizedException, AccessDeniedException;
+
 }

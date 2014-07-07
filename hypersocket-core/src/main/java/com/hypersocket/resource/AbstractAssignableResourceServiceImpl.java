@@ -77,6 +77,13 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			throw ex;
 		} catch (ResourceNotFoundException ex) {
 			try {
+				// Make sure any resources in default realm
+				// (system) are available across all realms
+				if (getCurrentRealm().isSystem()) {
+					resource.setRealm(null);
+				} else {
+					resource.setRealm(getCurrentRealm());
+				}
 				getRepository().saveResource(resource);
 				fireResourceCreationEvent(resource);
 			} catch (Throwable t) {

@@ -16,7 +16,6 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -24,14 +23,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AssignableResource;
-import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name = "roles", uniqueConstraints = {@UniqueConstraint(columnNames={"name", "realm_id"})})
 @XmlRootElement(name="role")
-public class Role extends Resource {
+public class Role extends RealmResource {
 
 	@ManyToMany(fetch=FetchType.EAGER)
 	@JoinTable(name = "role_permissions", 
@@ -39,10 +37,6 @@ public class Role extends Resource {
 		inverseJoinColumns = {@JoinColumn(name="permission_id")})
 	private Set<Permission> permissions = new HashSet<Permission>();
 
-	@ManyToOne(optional=true)
-	@JoinColumn(name="realm_id")
-	Realm realm;
-	
 	@ManyToMany(fetch=FetchType.EAGER)
 	@JoinTable(name = "role_principals", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
 	Set<Principal> principals = new HashSet<Principal>();
@@ -67,18 +61,6 @@ public class Role extends Resource {
 		this.permissions = permissions;
 	}	
 	
-	public boolean isSystem() {
-		return realm==null;
-	}
-	
-	public Realm getRealm() {
-		return realm;
-	}
-	
-	void setRealm(Realm realm) {
-		this.realm = realm;
-	}
-
 	public Set<Principal> getPrincipals() {
 		return principals;
 	}

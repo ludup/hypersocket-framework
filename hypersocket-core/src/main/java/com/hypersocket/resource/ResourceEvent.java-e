@@ -6,7 +6,7 @@ import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.events.SessionEvent;
 
-public class ResourceEvent extends SessionEvent {
+public abstract class ResourceEvent extends SessionEvent {
 
 	private static final long serialVersionUID = -282443990103353325L;
 

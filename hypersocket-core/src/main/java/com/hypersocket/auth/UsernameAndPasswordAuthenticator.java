@@ -11,6 +11,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -61,39 +62,29 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 		if (username == null || username.equals("")) {
 			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}
-		
+
 		if (password == null || password.equals("")) {
 			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}
 
-		if (!parameters.containsKey(UsernameAndPasswordTemplate.REALM_FIELD)) {
-			// Can we extract realm from username?
-			int idx;
-			idx = username.indexOf('@');
+
+		Realm realm = state.getRealm();
+		
+		// Can we extract realm from username?
+		int idx;
+		idx = username.indexOf('@');
+		if (idx > -1) {
+			realmName = username.substring(idx + 1);
+		} else {
+			idx = username.indexOf('\\');
 			if (idx > -1) {
-				realmName = username.substring(idx + 1);
-			} else {
-				idx = username.indexOf('\\');
-				if (idx > -1) {
-					realmName = username.substring(0, idx);
-				}
+				realmName = username.substring(0, idx);
 			}
 		}
-
-		if (realmName == null) {
-			realmName = AuthenticationUtils.getRequestParameter(parameters,
-					UsernameAndPasswordTemplate.REALM_FIELD);
-			if (realmName == null) {
-				realmName = state
-						.getParameter(UsernameAndPasswordTemplate.REALM_FIELD);
-			}
-		}
-
-		Realm realm = null;
-
-		if (realmName != null) {
+		
+		if (realm==null && realmName != null) {
 			realm = realmService.getRealmByName(realmName);
-			if(realm==null) {
+			if (realm == null) {
 				return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_REALM;
 			}
 		}
@@ -108,9 +99,9 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 			}
 			realm = principal.getRealm();
 		} else {
-			principal = realmService.getPrincipalByName(realm, username);	
+			principal = realmService.getPrincipalByName(realm, username);
 		}
-		
+
 		if (principal == null) {
 			state.setLastPrincipalName(username);
 			state.setLastRealmName(realmName);
@@ -126,6 +117,7 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 		} else {
 			state.setLastPrincipalName(username);
 			state.setLastRealmName(realmName);
+			state.setRealm(null);
 		}
 
 		return result ? AuthenticatorResult.AUTHENTICATION_SUCCESS

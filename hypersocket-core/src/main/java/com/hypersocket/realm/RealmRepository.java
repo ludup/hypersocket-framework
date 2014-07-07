@@ -37,4 +37,6 @@ public interface RealmRepository extends AbstractRepository<Long> {
 			ColumnSort[] sorting);
 
 	public Long countRealms(String searchPattern);
+
+	Realm saveRealm(Realm realm);
 }

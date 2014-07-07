@@ -4,11 +4,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name="templates")
-public class Template extends Resource {
+public class Template extends RealmResource {
 
 	@Column(name="subject", length=512)
 	String subject;

@@ -321,7 +321,11 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 	@Override
 	public String resolvePath(String path) {
-		return getBasePath() + (!path.startsWith("/") ? "/" : "") + path;
+		if(path==null) {
+			return getBasePath();
+		} else {
+			return getBasePath() + (!path.startsWith("/") ? "/" : "") + path;
+		}
 	}
 	
 	@Override
