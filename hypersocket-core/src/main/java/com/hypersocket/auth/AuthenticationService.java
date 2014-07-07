@@ -45,39 +45,6 @@ public interface AuthenticationService extends AuthenticatedService {
 	void registerPostAuthenticationStep(
 			PostAuthenticationStep postAuthenticationStep);
 
-	public List<AuthenticationScheme> getAuthenticationSchemes()
-			throws AccessDeniedException;
-
-	public List<AuthenticationModule> getAuthenticationModules()
-			throws AccessDeniedException;
-
-	public List<AuthenticationModule> getAuthenticationModulesByScheme(
-			AuthenticationScheme authenticationScheme)
-			throws AccessDeniedException;
-
-	public AuthenticationModule getModuleById(Long id)
-			throws AccessDeniedException;
-
-	public AuthenticationScheme getSchemeById(Long id)
-			throws AccessDeniedException;
-
-	public void updateSchemeModules(List<AuthenticationModule> moduleList)
-			throws AccessDeniedException;
-
-	public AuthenticationModule createAuthenticationModule(
-			AuthenticationModule authenticationModule)
-			throws AccessDeniedException;
-
-	public AuthenticationModule updateAuthenticationModule(
-			AuthenticationModule authenticationModule)
-			throws AccessDeniedException;
-
-	public void deleteModule(AuthenticationModule authenticationModule)
-			throws AccessDeniedException;
-
-	public void deleteModulesByScheme(AuthenticationScheme authenticationScheme)
-			throws AccessDeniedException;
-
 	public Map<String,Authenticator> getAuthenticators();
 
 	void registerListener(AuthenticationServiceListener listener);

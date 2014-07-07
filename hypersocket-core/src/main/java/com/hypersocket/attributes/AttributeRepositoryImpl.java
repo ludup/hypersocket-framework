@@ -16,11 +16,6 @@ import com.hypersocket.repository.AbstractRepositoryImpl;
 public class AttributeRepositoryImpl extends
 		AbstractRepositoryImpl<Long> implements AttributeRepository {
 
-
-	public List<AttributeCategory> getCategories(String attributeContext) {
-		return null;
-	}
-
 	@Override
 	public void saveCategory(AttributeCategory cat) {
 		save(cat);

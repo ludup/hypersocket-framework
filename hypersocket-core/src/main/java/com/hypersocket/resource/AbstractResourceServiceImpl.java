@@ -16,9 +16,8 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
-public abstract class AbstractResourceServiceImpl<T extends Resource>
-		extends AuthenticatedServiceImpl implements
-		AbstractResourceService<T> {
+public abstract class AbstractResourceServiceImpl<T extends RealmResource>
+		extends AuthenticatedServiceImpl implements AbstractResourceService<T> {
 
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
@@ -70,12 +69,21 @@ public abstract class AbstractResourceServiceImpl<T extends Resource>
 
 		try {
 			getResourceByName(resource.getName());
-			ResourceCreationException ex = new ResourceCreationException(RESOURCE_BUNDLE,
-					"generic.alreadyExists.error", resource.getName());
+			ResourceCreationException ex = new ResourceCreationException(
+					RESOURCE_BUNDLE, "generic.alreadyExists.error",
+					resource.getName());
 			fireResourceCreationEvent(resource, ex);
 			throw ex;
 		} catch (ResourceNotFoundException ex) {
 			try {
+				// Make sure any resources in default realm
+				// (system) are available across all realms
+				if (getCurrentRealm().isSystem()) {
+					resource.setRealm(null);
+				} else {
+					resource.setRealm(getCurrentRealm());
+				}
+
 				getRepository().saveResource(resource);
 				fireResourceCreationEvent(resource);
 			} catch (Throwable t) {

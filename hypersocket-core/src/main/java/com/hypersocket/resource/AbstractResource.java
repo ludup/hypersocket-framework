@@ -16,6 +16,8 @@ import javax.persistence.InheritanceType;
 import javax.persistence.OneToMany;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.repository.AbstractEntity;
@@ -30,6 +32,7 @@ public abstract class AbstractResource extends AbstractEntity<Long> {
 	Long id;
 
 	@OneToMany(mappedBy = "resource", fetch = FetchType.EAGER)
+	@Fetch(FetchMode.SELECT)
 	protected Set<DatabaseProperty> properties;
 
 	public Long getId() {

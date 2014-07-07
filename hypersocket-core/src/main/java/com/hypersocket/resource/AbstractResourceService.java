@@ -7,7 +7,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tables.ColumnSort;
 
-public interface AbstractResourceService<T extends Resource> extends AuthenticatedService {
+public interface AbstractResourceService<T extends RealmResource> extends AuthenticatedService {
 
 	void createResource(T resource) throws ResourceCreationException,
 			AccessDeniedException;

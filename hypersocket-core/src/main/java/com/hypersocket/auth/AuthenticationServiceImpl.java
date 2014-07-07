@@ -26,7 +26,6 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.input.FormTemplate;
-import com.hypersocket.menus.MenuService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Permission;
 import com.hypersocket.permissions.PermissionCategory;
@@ -72,11 +71,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	@Autowired
 	I18NService i18nService;
 
-	@Autowired
-	MenuService menuService;
-
-	// @Autowired
-	// IndexPageFilter indexPageFilter;
 	Map<String, Authenticator> authenticators = new HashMap<String, Authenticator>();
 
 	List<PostAuthenticationStep> postAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
@@ -158,17 +152,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				if (idx > -1) {
 					String username = header.substring(0, idx);
 					String password = header.substring(idx + 1);
-					if ((idx = username.indexOf('@')) > -1) {
-						state.addParameter(
-								UsernameAndPasswordTemplate.REALM_FIELD,
-								username.substring(idx + 1));
-						username = username.substring(0, idx);
-					} else if ((idx = username.indexOf('\\')) > -1) {
-						state.addParameter(
-								UsernameAndPasswordTemplate.REALM_FIELD,
-								username.substring(0, idx));
-						username = username.substring(idx + 1);
-					}
 					state.addParameter(
 							UsernameAndPasswordTemplate.USERNAME_FIELD,
 							username);
@@ -405,45 +388,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		postAuthenticationSteps.add(postAuthenticationStep);
 	}
 
-	// @Override
-	// public boolean logon(String username, char[] password,
-	// InetSocketAddress remoteAddress) throws AccessDeniedException {
-	//
-	// String realm = "";
-	// int idx = username.indexOf('\\');
-	// if (idx > -1) {
-	// realm = username.substring(0, idx);
-	// username = username.substring(idx + 1);
-	// }
-	//
-	// Realm r = realmService.getRealmByName(realm);
-	// Principal principal = realmService.getPrincipalByName(r, username,
-	// PrincipalType.USER);
-	//
-	// boolean success = realmService.verifyPassword(principal, password);
-	//
-	// verifyPermission(principal, PermissionStrategy.REQUIRE_ANY,
-	// SystemPermission.SYSTEM_ADMINISTRATION,
-	// AuthenticationPermission.LOGON);
-	//
-	// sessionService.openSession(remoteAddress.getAddress()
-	// .getHostAddress(), principal, null);
-	//
-	// return success;
-	// }
-
-	public List<AuthenticationScheme> getAuthenticationSchemes()
-			throws AccessDeniedException {
-		assertPermission(AuthenticationPermission.READ);
-		return repository.getAuthenticationSchemes();
-	}
-
-	public List<AuthenticationModule> getAuthenticationModules()
-			throws AccessDeniedException {
-		assertPermission(AuthenticationPermission.READ);
-		return repository.getAuthenticationModules();
-	}
-
 	@Override
 	public Map<String, Authenticator> getAuthenticators() {
 		Map<String, Authenticator> tmp = new HashMap<String, Authenticator>();
@@ -451,75 +395,12 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		return tmp;
 	}
 
-	public List<AuthenticationModule> getAuthenticationModulesByScheme(
-			AuthenticationScheme authenticationScheme)
-			throws AccessDeniedException {
-		assertPermission(AuthenticationPermission.READ);
-		return repository
-				.getAuthenticationModulesByScheme(authenticationScheme);
-	}
-
 	public List<Authenticator> getRegAuthenticators() {
 
 		return new ArrayList<Authenticator>(authenticators.values());
 	}
 
-	public AuthenticationModule getModuleById(Long id)
-			throws AccessDeniedException {
-		assertPermission(AuthenticationPermission.READ);
-		return repository.getModuleById(id);
-	}
 
-	public AuthenticationScheme getSchemeById(Long id)
-			throws AccessDeniedException {
-		assertPermission(AuthenticationPermission.READ);
-		return repository.getSchemeById(id);
-	}
 
-	public void updateSchemeModules(List<AuthenticationModule> moduleList)
-			throws AccessDeniedException {
-		assertPermission(AuthenticationPermission.CREATE,
-				AuthenticationPermission.DELETE);
-
-		deleteModulesByScheme(moduleList.get(0).getScheme());
-		for (AuthenticationModule module : moduleList) {
-
-			repository.createAuthenticationModule(module);
-
-		}
-	}
-
-	public AuthenticationModule createAuthenticationModule(
-			AuthenticationModule authenticationModule)
-			throws AccessDeniedException {
-		assertPermission(AuthenticationPermission.CREATE);
-
-		return repository.createAuthenticationModule(authenticationModule);
-	}
-
-	public AuthenticationModule updateAuthenticationModule(
-			AuthenticationModule authenticationModule)
-			throws AccessDeniedException {
-		assertPermission(AuthenticationPermission.UPDATE);
-
-		return repository.updateAuthenticationModule(authenticationModule);
-	}
-
-	public void deleteModule(AuthenticationModule authenticationModule)
-			throws AccessDeniedException {
-		assertPermission(AuthenticationPermission.DELETE);
-
-		repository.deleteModule(authenticationModule);
-	}
-
-	public void deleteModulesByScheme(AuthenticationScheme authenticationScheme)
-			throws AccessDeniedException {
-
-		List<AuthenticationModule> list = getAuthenticationModulesByScheme(authenticationScheme);
-		for (AuthenticationModule module : list) {
-			repository.deleteModule(module);
-		}
-
-	}
 
 }

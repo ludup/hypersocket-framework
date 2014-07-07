@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -18,5 +19,20 @@ import com.hypersocket.resource.Resource;
 @Table(name="realms", uniqueConstraints = {@UniqueConstraint(columnNames={"name"})})
 @XmlRootElement(name="realm")
 public class Realm extends Resource {
+	
+	@Column(name="system", nullable=true)
+	Boolean system;
+	
+	public Boolean isSystem() {
+		return system!=null && system;
+	}
+	
+	public boolean isSystemResource() {
+		return isSystem();
+	}
+
+	public void setSystem(Boolean system) {
+		this.system = system;
+	}
 	
 }
