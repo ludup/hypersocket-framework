@@ -31,7 +31,7 @@ public abstract class GroupEvent extends RealmEvent {
 		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
 		addAssociatedPrincipals(associatedPrincipals);
 		for(DatabaseProperty prop : principal.getProperties().values()) {
-			addAttribute(I18NServiceImpl.tagForConversion(provider.getResourceBundle(), prop.getResourceKey()), prop.getValue());
+			addAttribute(prop.getResourceKey(), prop.getValue());
 		}
 	}
 

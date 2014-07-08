@@ -31,7 +31,7 @@ public class RealmEvent extends SessionEvent {
 	private void addAttributes() {
 		addAttribute(ATTR_REALM_NAME, realm.getName());
 		for(DatabaseProperty prop : realm.getProperties().values()) {
-			addAttribute(I18NServiceImpl.tagForConversion(realm.getResourceCategory(), prop.getResourceKey()), prop.getValue());
+			addAttribute(prop.getResourceKey(), prop.getValue());
 		}
 	}
 	
