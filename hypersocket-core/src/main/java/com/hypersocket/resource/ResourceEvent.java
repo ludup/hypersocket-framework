@@ -17,7 +17,7 @@ public abstract class ResourceEvent extends SessionEvent {
 		super(source, resourceKey, success, session);
 		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
 		for(DatabaseProperty prop : resource.getProperties().values()) {
-			addAttribute(I18NServiceImpl.tagForConversion(getResourceBundle(), prop.getResourceKey()), prop.getValue());
+			addAttribute(prop.getResourceKey(), prop.getValue());
 		}
 	}
 

@@ -32,7 +32,7 @@ public abstract class UserEvent extends RealmEvent {
 		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
 		addAssociatedPrincipals(associatedPrincipals);
 		for(DatabaseProperty prop : principal.getProperties().values()) {
-			addAttribute(I18NServiceImpl.tagForConversion(provider.getResourceBundle(), prop.getResourceKey()), prop.getValue());
+			addAttribute(prop.getResourceKey(), prop.getValue());
 		}
 	}
 
@@ -48,7 +48,7 @@ public abstract class UserEvent extends RealmEvent {
 		addAttribute(ATTR_PRINCIPAL_NAME, principalName);
 		addAssociatedPrincipals(associatedPrincipals);
 		for(String prop : properties.keySet()) {
-			addAttribute(I18NServiceImpl.tagForConversion(provider.getResourceBundle(), prop), properties.get(prop));
+			addAttribute(prop, properties.get(prop));
 		}
 	}
 	
