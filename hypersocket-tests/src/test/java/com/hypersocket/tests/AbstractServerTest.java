@@ -156,14 +156,13 @@ public class AbstractServerTest {
 		Assert.assertEquals("usernameAndPassword", resultWithForm
 				.getFormTemplate().getResourceKey());
 
-		// Check form has 3 elements, realm, username and password
-		Assert.assertEquals(3, resultWithForm.getFormTemplate()
+		// Check form has 2 elements, username and password
+		Assert.assertEquals(2, resultWithForm.getFormTemplate()
 				.getInputFields().size());
 
-		String logonJson = doPost("/hypersocket/api/logon",
-				new BasicNameValuePair("realm", realm), new BasicNameValuePair(
-						"username", username), new BasicNameValuePair(
-						"password", password));
+		String logonJson = doPost("/hypersocket/api/logon", 
+				new BasicNameValuePair("username", username), 
+				new BasicNameValuePair("password", password));
 
 		debugJSON(logonJson);
 
