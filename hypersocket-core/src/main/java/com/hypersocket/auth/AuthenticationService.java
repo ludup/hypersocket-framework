@@ -48,4 +48,8 @@ public interface AuthenticationService extends AuthenticatedService {
 	public Map<String,Authenticator> getAuthenticators();
 
 	void registerListener(AuthenticationServiceListener listener);
+
+	AuthenticationScheme getAuthenticationScheme(String scheme);
+
+	boolean isAuthenticatorInScheme(String scheme, String resourceKey);
 }
