@@ -30,7 +30,7 @@ public interface AuthenticationService extends AuthenticatedService {
 			throws AccessDeniedException;
 
 	@SuppressWarnings("rawtypes")
-	void logon(AuthenticationState state, Map parameterMap)
+	boolean logon(AuthenticationState state, Map parameterMap)
 			throws AccessDeniedException;
 
 	@SuppressWarnings("rawtypes")
