@@ -128,6 +128,18 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		return schemes.get(0);
 	}
 
+	@Override
+	public boolean isAuthenticatorInScheme(String scheme, String resourceKey) {
+		
+		AuthenticationScheme s = repository.getScheme(scheme);
+		for(AuthenticationModule m : repository.getAuthenticationModulesByScheme(s)) {
+			if(m.getTemplate().equals(resourceKey)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	@Override
 	public AuthenticationScheme getAuthenticationScheme(String scheme) {
 		return repository.getScheme(scheme);
 	}
@@ -401,13 +413,5 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		tmp.putAll(authenticators);
 		return tmp;
 	}
-
-	public List<Authenticator> getRegAuthenticators() {
-
-		return new ArrayList<Authenticator>(authenticators.values());
-	}
-
-
-
 
 }
