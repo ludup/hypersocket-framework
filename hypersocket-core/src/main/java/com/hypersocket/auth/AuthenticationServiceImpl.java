@@ -187,12 +187,14 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void logon(AuthenticationState state, Map parameterMap)
+	public boolean logon(AuthenticationState state, Map parameterMap)
 			throws AccessDeniedException {
 
 		state.setLastErrorMsg(null);
 		state.setLastErrorIsResourceKey(false);
 
+		boolean success = false;
+		
 		if (state.isAuthenticationComplete()) {
 
 			if (state.getCurrentPostAuthenticationStep() == null) {
@@ -208,10 +210,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				case AUTHENTICATION_SUCCESS: {
 
 					state.nextPostAuthenticationStep();
-
+					success = true;
 					if (!state.hasPostAuthenticationStep()) {
 						state.setSession(completeLogon(state));
 					}
+
 					break;
 				}
 				default: {
@@ -292,6 +295,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 						eventService.publishEvent(new AuthenticationEvent(this,
 								state, authenticator));
 
+						success = true;
+						
 						state.nextModule();
 
 						if (state.isAuthenticationComplete()) {
@@ -322,6 +327,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				state.authAttempted();
 
 		}
+		
+		return success;
 	}
 
 	@Override
