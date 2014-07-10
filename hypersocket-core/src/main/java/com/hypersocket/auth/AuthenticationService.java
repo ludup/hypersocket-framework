@@ -7,7 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -45,7 +44,7 @@ public interface AuthenticationService extends AuthenticatedService {
 	void registerPostAuthenticationStep(
 			PostAuthenticationStep postAuthenticationStep);
 
-	public Map<String,Authenticator> getAuthenticators();
+	public Map<String,Authenticator> getAuthenticators(String scheme);
 
 	void registerListener(AuthenticationServiceListener listener);
 

@@ -14,10 +14,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.input.FormTemplate;
-import com.hypersocket.input.HiddenInputField;
-import com.hypersocket.input.Option;
 import com.hypersocket.input.PasswordInputField;
-import com.hypersocket.input.SelectInputField;
 import com.hypersocket.input.TextInputField;
 import com.hypersocket.realm.Realm;
 

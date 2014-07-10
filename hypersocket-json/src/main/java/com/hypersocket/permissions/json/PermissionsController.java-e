@@ -40,7 +40,6 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmColumns;
 import com.hypersocket.realm.RealmPermission;
-import com.hypersocket.realm.RolePermission;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.Session;

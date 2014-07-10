@@ -1,7 +1,6 @@
 package com.hypersocket.resource;
 
 import com.hypersocket.events.CommonAttributes;
-import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.events.SessionEvent;

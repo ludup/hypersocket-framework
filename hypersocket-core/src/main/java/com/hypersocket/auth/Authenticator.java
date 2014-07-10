@@ -28,4 +28,6 @@ public interface Authenticator {
 	boolean isSecretModule();
 	
 	boolean isIdentityModule();
+	
+	String[] getAllowedSchemes();
 }

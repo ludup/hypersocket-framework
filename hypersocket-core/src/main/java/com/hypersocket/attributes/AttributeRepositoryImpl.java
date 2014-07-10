@@ -1,7 +1,6 @@
 package com.hypersocket.attributes;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Locale;
 
 import org.springframework.stereotype.Repository;

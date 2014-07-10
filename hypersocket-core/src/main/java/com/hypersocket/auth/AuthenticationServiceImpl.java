@@ -408,9 +408,16 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
-	public Map<String, Authenticator> getAuthenticators() {
+	public Map<String, Authenticator> getAuthenticators(String scheme) {
 		Map<String, Authenticator> tmp = new HashMap<String, Authenticator>();
-		tmp.putAll(authenticators);
+		for(Authenticator a : authenticators.values()) {
+			for(String s : a.getAllowedSchemes()) {
+				if(scheme.matches(s)) {
+					tmp.put(a.getResourceKey(), a);
+					break;
+				}
+			}
+		}
 		return tmp;
 	}
 

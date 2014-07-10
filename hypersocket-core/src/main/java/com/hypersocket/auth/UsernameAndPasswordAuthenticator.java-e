@@ -11,7 +11,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -151,6 +150,11 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 	@Override
 	public boolean isIdentityModule() {
 		return true;
+	}
+	
+	@Override
+	public String[] getAllowedSchemes() {
+		return new String[] { ".*" };
 	}
 
 }
