@@ -11,7 +11,7 @@ public class DatabasePropertyStore implements ResourcePropertyStore {
 
 	PropertyRepository repository;
 
-	Map<String, DatabaseProperty> cachedValues = new HashMap<String, DatabaseProperty>();
+	Map<String, String> cachedValues = new HashMap<String, String>();
 	Map<String, PropertyTemplate> templates = new HashMap<String, PropertyTemplate>();
 	Map<String, List<PropertyTemplate>> templatesByModule = new HashMap<String, List<PropertyTemplate>>();
 
@@ -36,18 +36,20 @@ public class DatabasePropertyStore implements ResourcePropertyStore {
 	@Override
 	public String getPropertyValue(PropertyTemplate template) {
 
-		Property c;
+		String c = null;
 		if (!cachedValues.containsKey(template.getResourceKey())) {
-			c = repository.getProperty(template.getResourceKey());
-			if (c == null) {
-				return template.getDefaultValue();
+			Property p = repository.getProperty(template.getResourceKey());
+			if (p == null) {
+				c = template.getDefaultValue();
+			} else {
+				c = p.getValue();
 			}
-			cachedValues.put(template.getResourceKey(), (DatabaseProperty) c);
+			cachedValues.put(template.getResourceKey(), c);
 		} else {
 			c = cachedValues.get(template.getResourceKey());
 		}
 
-		return c.getValue();
+		return c;
 	}
 
 	private String createCacheKey(String resourceKey, AbstractResource resource) {
@@ -89,19 +91,21 @@ public class DatabasePropertyStore implements ResourcePropertyStore {
 	@Override
 	public String getPropertyValue(AbstractPropertyTemplate template,
 			AbstractResource resource) {
-		Property c;
+		String c;
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
 		if (!cachedValues.containsKey(cacheKey)) {
-			c = repository.getProperty(template.getResourceKey(), resource);
-			if (c == null) {
-				return template.getDefaultValue();
+			Property p = repository.getProperty(template.getResourceKey(), resource);
+			if (p == null) {
+				c = template.getDefaultValue();
+			} else {
+				c = p.getValue();
 			}
-			cachedValues.put(cacheKey, (DatabaseProperty) c);
+			cachedValues.put(cacheKey, c);
 		} else {
 			c = cachedValues.get(cacheKey);
 		}
 
-		return c.getValue();
+		return c;
 	}
 
 	@Override

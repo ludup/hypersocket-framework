@@ -110,7 +110,7 @@ public class I18NServiceImpl extends AuthenticatedServiceImpl implements I18NSer
 	public synchronized Locale getDefaultLocale() {
 		if(defaultLocale==null) {
 			String locale = configurationService.getValue("current.locale");
-			return getLocale(locale);
+			return defaultLocale = getLocale(locale);
 		} else {
 			return defaultLocale;
 		}

@@ -41,11 +41,12 @@ public class LocalUser extends Principal implements UserPrincipal, Serializable 
 	@Column(name="type", nullable=false)
 	PrincipalType type = PrincipalType.USER;
 	
-	@ManyToMany(fetch=FetchType.EAGER)
+	@ManyToMany(fetch=FetchType.LAZY)
 	@Cascade({CascadeType.ALL})
 	@JoinTable(name = "local_user_groups", joinColumns={@JoinColumn(name="uuid")}, inverseJoinColumns={@JoinColumn(name="guid")})
 	private Set<LocalGroup> groups = new HashSet<LocalGroup>();
 
+	@JsonIgnore
 	public Set<LocalGroup> getGroups() {
 		return groups;
 	}

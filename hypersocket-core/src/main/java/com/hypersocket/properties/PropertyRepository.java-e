@@ -9,9 +9,10 @@ package com.hypersocket.properties;
 
 import java.util.List;
 
+import com.hypersocket.repository.AbstractRepository;
 import com.hypersocket.resource.AbstractResource;
 
-public interface PropertyRepository {
+public interface PropertyRepository extends AbstractRepository<Long> {
 
 	DatabaseProperty getProperty(String resourceKey);
 	

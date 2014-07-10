@@ -29,7 +29,7 @@ public class RealmEvent extends SessionEvent {
 	
 	private void addAttributes() {
 		addAttribute(ATTR_REALM_NAME, realm.getName());
-		for(DatabaseProperty prop : realm.getProperties().values()) {
+		for(DatabaseProperty prop : realm.getPropertiesMap().values()) {
 			addAttribute(prop.getResourceKey(), prop.getValue());
 		}
 	}

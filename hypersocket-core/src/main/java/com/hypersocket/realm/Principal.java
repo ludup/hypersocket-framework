@@ -34,7 +34,7 @@ public abstract class Principal extends RealmResource {
 	
 
 	@ManyToMany(fetch = FetchType.EAGER)
-	@Cascade({ CascadeType.SAVE_UPDATE })
+	@Cascade(CascadeType.PERSIST)
 	@JoinTable(name = "role_principals", joinColumns = { @JoinColumn(name = "principal_id") }, inverseJoinColumns = { @JoinColumn(name = "role_id") })
 	@Fetch(FetchMode.SELECT)
 	Set<Role> roles = new HashSet<Role>();
