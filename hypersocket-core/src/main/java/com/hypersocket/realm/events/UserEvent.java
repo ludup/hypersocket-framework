@@ -30,7 +30,7 @@ public abstract class UserEvent extends RealmEvent {
 		this.principal = principal;
 		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
 		addAssociatedPrincipals(associatedPrincipals);
-		for(DatabaseProperty prop : principal.getProperties().values()) {
+		for(DatabaseProperty prop : principal.getPropertiesMap().values()) {
 			addAttribute(prop.getResourceKey(), prop.getValue());
 		}
 	}
