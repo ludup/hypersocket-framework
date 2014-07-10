@@ -1,7 +1,6 @@
 package com.hypersocket.realm.events;
 
 import com.hypersocket.events.CommonAttributes;
-import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;

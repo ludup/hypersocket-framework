@@ -35,8 +35,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	DatabasePropertyStore configPropertyStore;
 
-	Map<String, PropertyCategory> activeCategories = new HashMap<String, PropertyCategory>();
-
+	Map<String, PropertyCategory> activeCategories = new HashMap<String, PropertyCategory>();	
+	List<PropertyTemplate> activeTemplates = new ArrayList<PropertyTemplate>();
+	
 	String resourceXmlPath;
 	
 	public void loadPropertyTemplates(String resourceXmlPath) {
@@ -252,11 +253,19 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		
 		propertyStore.registerTemplate(template, resourceXmlPath);
 		category.getTemplates().add(template);
+		activeTemplates.add(template);
 		
 		Collections.sort(category.getTemplates(), new Comparator<AbstractPropertyTemplate>() {
 			@Override
 			public int compare(AbstractPropertyTemplate cat1, AbstractPropertyTemplate cat2) {
 				return cat1.getWeight().compareTo(cat2.getWeight());
+			}
+		});
+		
+		Collections.sort(activeTemplates, new Comparator<AbstractPropertyTemplate>() {
+			@Override
+			public int compare(AbstractPropertyTemplate t1, AbstractPropertyTemplate t2) {
+				return t1.getResourceKey().compareTo(t2.getResourceKey());
 			}
 		});
 		
@@ -362,7 +371,12 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 		});
 		
-		return cats;
+		return Collections.unmodifiableCollection(cats);
+	}
+	
+	@Override
+	public Collection<PropertyTemplate> getPropertyTemplates() {
+		return Collections.unmodifiableCollection(activeTemplates);
 	}
 
 	@Override
