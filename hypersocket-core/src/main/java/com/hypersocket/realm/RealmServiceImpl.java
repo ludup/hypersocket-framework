@@ -232,9 +232,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 			assertPermission(UserPermission.UPDATE);
 
-			final Principal principal = provider.updateUser(realm, user, username,
+			Principal principal = provider.updateUser(realm, user, username,
 					properties, principals);
-
 
 			eventPublisher
 				.publishEvent(new UserUpdatedEvent(this,
