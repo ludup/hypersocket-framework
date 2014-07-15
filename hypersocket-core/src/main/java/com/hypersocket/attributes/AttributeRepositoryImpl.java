@@ -1,7 +1,6 @@
 package com.hypersocket.attributes;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Locale;
 
 import org.springframework.stereotype.Repository;
@@ -15,11 +14,6 @@ import com.hypersocket.repository.AbstractRepositoryImpl;
 @Transactional
 public class AttributeRepositoryImpl extends
 		AbstractRepositoryImpl<Long> implements AttributeRepository {
-
-
-	public List<AttributeCategory> getCategories(String attributeContext) {
-		return null;
-	}
 
 	@Override
 	public void saveCategory(AttributeCategory cat) {
