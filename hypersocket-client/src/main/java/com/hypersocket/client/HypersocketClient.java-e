@@ -8,7 +8,6 @@
 package com.hypersocket.client;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;

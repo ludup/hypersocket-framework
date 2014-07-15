@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.hypersocket.local.LocalRealmProviderImpl;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.resource.ResourceChangeException;
@@ -74,6 +77,10 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Collection<PropertyCategory> getGroupProperties(Principal principal);
 
-	Set<Principal> getPrincipalsByProperty(String propertyName, String propertyValue);
+//	Set<Principal> getPrincipalsByProperty(String propertyName, String propertyValue);
+	
+	String getAddress(Principal principal, MediaType type) throws MediaNotFoundException;
+
+	String getPrincipalDescription(Principal principal);
 
 }

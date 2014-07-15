@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
@@ -114,6 +115,11 @@ public class EventServiceImpl implements EventService {
 						+ ". Register your event with EventService to remove this message.");
 			}
 		}
+		
+		if(!event.isSuccess()) {
+			log.error(event.getResourceKey() + " failed", event.getException());
+		}
+		
 		eventPublisher.publishEvent(event);
 	}
 

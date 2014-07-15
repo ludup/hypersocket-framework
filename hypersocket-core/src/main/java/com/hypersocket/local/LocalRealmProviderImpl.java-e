@@ -16,6 +16,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,8 @@ import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.auth.PasswordEncryptionType;
 import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.MediaNotFoundException;
+import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -220,7 +223,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 			LocalUser user = (LocalUser) principal;
 			user.setName(username);
 			user.setRealm(realm);
-
+			
 			for (Principal p : principals) {
 				if (p instanceof LocalGroup) {
 					user.getGroups().add((LocalGroup) p);
@@ -419,11 +422,9 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 
 		List<Principal> result = new ArrayList<Principal>();
 		if (principal instanceof LocalUser) {
-			LocalUser user = (LocalUser) principal;
-			result.addAll(user.getGroups());
+			result.addAll(userRepository.getGroupsByUser((LocalUser) principal));
 		} else if (principal instanceof LocalGroup) {
-			LocalGroup group = (LocalGroup) principal;
-			result.addAll(group.getUsers());
+			result.addAll(userRepository.getUsersByGroup((LocalGroup) principal));
 		} else {
 			throw new IllegalStateException(
 					"Principal is not a LocalUser or LocalGroup!");
@@ -442,14 +443,12 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		switch (type) {
 		case GROUP:
 			if (principal instanceof LocalUser) {
-				LocalUser user = (LocalUser) principal;
-				result.addAll(user.getGroups());
+				result.addAll(userRepository.getGroupsByUser((LocalUser)principal));
 			}
 			break;
 		case USER:
 			if (principal instanceof LocalGroup) {
-				LocalGroup group = (LocalGroup) principal;
-				result.addAll(group.getUsers());
+				result.addAll(userRepository.getUsersByGroup((LocalGroup)principal));
 			}
 			break;
 		default:
@@ -513,16 +512,46 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		return getPropertyCategories(realm);
 	}
 
+//	@Override
+//	public Set<Principal> getPrincipalsByProperty(String propertyName,
+//			String propertyValue) {
+//
+//		Set<Principal> principals = new HashSet<Principal>();
+//		List<DatabaseProperty> properties = userRepository
+//				.getPropertiesWithValue(propertyName, propertyValue);
+//		for (DatabaseProperty property : properties) {
+//			principals.add((Principal) property.getResource());
+//		}
+//		return principals;
+//	}
+
 	@Override
-	public Set<Principal> getPrincipalsByProperty(String propertyName,
-			String propertyValue) {
-		
-		Set<Principal> principals = new HashSet<Principal>();
-		List<DatabaseProperty> properties = userRepository.getPropertiesWithValue(propertyName, propertyValue);
-		for(DatabaseProperty property : properties) {
-			principals.add((Principal)property.getResource());
+	public String getAddress(Principal principal, MediaType type)
+			throws MediaNotFoundException {
+
+		switch (type) {
+		case EMAIL:
+			String email = userRepository.getValue(principal,
+					LocalRealmProviderImpl.FIELD_EMAIL);
+			if (!StringUtils.isEmpty(email)) {
+				return email;
+			}
+			break;
+		case PHONE:
+			String phone = userRepository.getValue(principal,
+					LocalRealmProviderImpl.FIELD_EMAIL);
+			if (!StringUtils.isEmpty(phone)) {
+				return phone;
+			}
+			break;
 		}
-		return principals;
+
+		throw new MediaNotFoundException();
+	}
+
+	@Override
+	public String getPrincipalDescription(Principal principal) {
+		return getValue(principal, LocalRealmProviderImpl.FIELD_FULLNAME);
 	}
 
 }

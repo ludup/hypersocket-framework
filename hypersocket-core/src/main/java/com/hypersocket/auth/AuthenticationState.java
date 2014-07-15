@@ -231,17 +231,6 @@ public class AuthenticationState {
 		public PrincipalType getType() {
 			return PrincipalType.USER;
 		}
-
-		@Override
-		public String getPrincipalDesc() {
-			return "";
-		}
-		
-		@Override
-		public String getAddress(MediaType type) throws MediaNotFoundException {
-			throw new MediaNotFoundException();
-		}
-		
 	}
 
 	public void authAttempted() {

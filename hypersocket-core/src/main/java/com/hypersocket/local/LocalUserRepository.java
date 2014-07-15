@@ -70,4 +70,8 @@ public interface LocalUserRepository extends ResourceTemplateRepository, Abstrac
 	List<?> getGroups(Realm realm, String searchPattern, int start, int length, ColumnSort[] sorting);
 
 	List<?> getUsers(Realm realm, String searchPattern, int start, int length, ColumnSort[] sorting);
+
+	public Collection<? extends Principal> getGroupsByUser(LocalUser principal);
+
+	public Collection<? extends Principal> getUsersByGroup(LocalGroup principal);
 }

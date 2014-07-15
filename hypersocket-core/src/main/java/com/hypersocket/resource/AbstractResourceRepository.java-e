@@ -7,7 +7,7 @@ import com.hypersocket.repository.AbstractRepository;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.tables.ColumnSort;
 
-public interface AbstractResourceRepository<T extends RealmResource> extends AbstractRepository<Long> {
+public interface AbstractResourceRepository<T extends Resource> extends AbstractRepository<Long> {
 
 	T getResourceByName(String name);
 

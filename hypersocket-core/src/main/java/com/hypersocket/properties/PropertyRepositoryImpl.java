@@ -45,7 +45,7 @@ public abstract class PropertyRepositoryImpl extends AbstractRepositoryImpl<Long
 
 	@Override
 	public List<DatabaseProperty> getPropertiesForResource(AbstractResource resource) {
-		return list("resource", resource, DatabaseProperty.class);
+		return list("resource", resource.getId(), DatabaseProperty.class);
 	}
 
 	@Override

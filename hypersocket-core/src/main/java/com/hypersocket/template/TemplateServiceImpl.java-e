@@ -20,6 +20,7 @@ import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.replace.ReplacementUtils;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
@@ -45,6 +46,9 @@ public class TemplateServiceImpl extends AbstractResourceServiceImpl<Template>
 	@Autowired
 	EmailNotificationService emailService;
 
+	@Autowired
+	RealmService realmService; 
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -78,14 +82,14 @@ public class TemplateServiceImpl extends AbstractResourceServiceImpl<Template>
 
 		Template t = getResourceByName(templateName);
 
-		String email = principal.getAddress(MediaType.EMAIL);
+		String email = realmService.getPrincipalAddress(principal, MediaType.EMAIL);
 		String subject = ReplacementUtils.processTokenReplacements(
 				t.getSubject(), replacements);
 		String text = ReplacementUtils.processTokenReplacements(
 				t.getTemplate(), replacements);
 
 		emailService.sendHtmlEmail(subject, text,
-				new Recipient[] { new Recipient(principal.getPrincipalDesc(),
+				new Recipient[] { new Recipient(realmService.getPrincipalDescription(principal),
 						email, RecipientType.TO) });
 
 	}

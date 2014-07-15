@@ -1,6 +1,7 @@
 package com.hypersocket.properties;
 
 import java.util.Collection;
+import java.util.List;
 
 import com.hypersocket.resource.AbstractResource;
 

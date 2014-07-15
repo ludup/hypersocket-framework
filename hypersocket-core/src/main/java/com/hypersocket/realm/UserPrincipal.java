@@ -13,7 +13,5 @@ public interface UserPrincipal {
 
 	public String getPrincipalName();
 	
-	public String getPrincipalDesc();
-	
 	Set<Principal> getAssociatedPrincipals();
 }

@@ -27,6 +27,7 @@ import com.hypersocket.client.rmi.ConnectionService;
 import com.hypersocket.client.rmi.ConnectionStatus;
 import com.hypersocket.client.rmi.ConnectionStatusImpl;
 import com.hypersocket.client.rmi.GUICallback;
+import com.hypersocket.client.rmi.ResourceService;
 
 public class ClientServiceImpl implements ClientService,
 		HypersocketClientListener<Connection> {
@@ -37,7 +38,8 @@ public class ClientServiceImpl implements ClientService,
 
 	ConnectionService connectionService;
 	ConfigurationService configurationService;
-
+	ResourceService resourceService;
+	
 	ExecutorService bossExecutor;
 	ExecutorService workerExecutor;
 	Timer timer;
@@ -47,11 +49,13 @@ public class ClientServiceImpl implements ClientService,
 	Map<Connection, Set<ServicePlugin>> connectionPlugins = new HashMap<Connection, Set<ServicePlugin>>();
 
 	public ClientServiceImpl(ConnectionService connectionService,
-			ConfigurationService configurationService) {
+			ConfigurationService configurationService,
+			ResourceService resourceService) {
 
 		this.connectionService = connectionService;
 		this.configurationService = configurationService;
-
+		this.resourceService = resourceService;
+		
 		bossExecutor = Executors.newCachedThreadPool();
 		workerExecutor = Executors.newCachedThreadPool();
 

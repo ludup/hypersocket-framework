@@ -14,9 +14,9 @@ public class UserUpdatedEvent extends UserEvent {
 
 	public UserUpdatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
-			List<Principal> associatedPrincipals) {
+			List<Principal> associatedPrincipals, Map<String,String> properties) {
 		super(source, "event.userUpdated", session, realm, provider, principal,
-				associatedPrincipals);
+				associatedPrincipals, properties);
 	}
 
 	public UserUpdatedEvent(Object source, Throwable e, Session session,

@@ -136,7 +136,16 @@ public interface RealmService extends AuthenticatedService {
 
 	RealmProvider getProviderForRealm(String module);
 
-	Set<Principal> getPrincipalsByProperty(String propertyName,
-			String propertyValue);
+//	Set<Principal> getPrincipalsByProperty(String propertyName,
+//			String propertyValue);
+
+	String getRealmProperty(Realm realm, String resourceKey);
+
+	int getRealmPropertyInt(Realm realm, String resourceKey);
+
+	String getPrincipalAddress(Principal principal, MediaType type)
+			throws MediaNotFoundException;
+
+	String getPrincipalDescription(Principal principal);
 
 }

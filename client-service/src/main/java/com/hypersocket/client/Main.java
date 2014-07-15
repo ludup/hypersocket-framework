@@ -22,9 +22,11 @@ import org.slf4j.LoggerFactory;
 import com.hypersocket.client.rmi.ClientService;
 import com.hypersocket.client.rmi.ConfigurationService;
 import com.hypersocket.client.rmi.ConnectionService;
+import com.hypersocket.client.rmi.ResourceService;
 import com.hypersocket.client.service.ClientServiceImpl;
 import com.hypersocket.client.service.ConfigurationServiceImpl;
 import com.hypersocket.client.service.ConnectionServiceImpl;
+import com.hypersocket.client.service.ResourceServiceImpl;
 
 public class Main {
 
@@ -32,6 +34,7 @@ public class Main {
 
 	ConnectionServiceImpl connectionService;
 	ConfigurationServiceImpl configurationService;
+	ResourceService resourceService;
 	ClientServiceImpl clientService;
 	Properties properties = new Properties();
 	Registry registry;
@@ -98,11 +101,20 @@ public class Main {
 		configurationService = new ConfigurationServiceImpl();
 
 		if (log.isInfoEnabled()) {
+			log.info("Creating ResourceService");
+		}
+
+		resourceService = new ResourceServiceImpl();
+		
+		if (log.isInfoEnabled()) {
 			log.info("Creating ClientService");
 		}
 
 		clientService = new ClientServiceImpl(connectionService,
-				configurationService);
+				configurationService, resourceService);
+
+		
+	
 	}
 
 	public static int randInt(int min, int max) {
@@ -135,6 +147,13 @@ public class Main {
 		} catch (Exception e) {
 		}
 
+
+		try {
+			registry.unbind("resourceService");
+		} catch (Exception e) {
+		}
+
+		
 		try {
 			registry.unbind("configurationService");
 		} catch (Exception e) {
@@ -156,6 +175,7 @@ public class Main {
 		try {
 			publishService(ConnectionService.class, connectionService);
 			publishService(ConfigurationService.class, configurationService);
+			publishService(ResourceService.class, resourceService);
 			publishService(ClientService.class, clientService);
 			return true;
 		} catch (Exception e) {

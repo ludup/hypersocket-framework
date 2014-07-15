@@ -51,9 +51,4 @@ public class LocalGroup extends Principal {
 		return "";
 	}
 
-	@Override
-	public String getAddress(MediaType type) throws MediaNotFoundException {
-		throw new MediaNotFoundException();
-	}
-
 }

@@ -1,7 +1,6 @@
 package com.hypersocket.realm.events;
 
 import com.hypersocket.events.CommonAttributes;
-import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.events.SessionEvent;
@@ -17,21 +16,12 @@ public class RealmEvent extends SessionEvent {
 			Session session, Realm realm) {
 		super(source, resourceKey, success, session);
 		this.realm = realm;
-		addAttributes();
 	}
 
 	public RealmEvent(Object source, String resourceKey, Throwable e,
 			Session session, Realm realm) {
 		super(source, resourceKey, e, session);
 		this.realm = realm;
-		addAttributes();
-	}
-	
-	private void addAttributes() {
-		addAttribute(ATTR_REALM_NAME, realm.getName());
-		for(DatabaseProperty prop : realm.getPropertiesMap().values()) {
-			addAttribute(prop.getResourceKey(), prop.getValue());
-		}
 	}
 	
 	public RealmEvent(Object source, String resourceKey, boolean success,

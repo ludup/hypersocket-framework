@@ -34,12 +34,7 @@ import org.eclipse.swt.widgets.TrayItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.code.jgntp.Gntp;
-import com.google.code.jgntp.GntpApplicationInfo;
 import com.google.code.jgntp.GntpClient;
-import com.google.code.jgntp.GntpErrorStatus;
-import com.google.code.jgntp.GntpListener;
-import com.google.code.jgntp.GntpNotification;
 import com.google.code.jgntp.GntpNotificationInfo;
 import com.google.common.io.Closeables;
 import com.hypersocket.client.Prompt;
@@ -48,6 +43,7 @@ import com.hypersocket.client.rmi.ClientService;
 import com.hypersocket.client.rmi.ConfigurationService;
 import com.hypersocket.client.rmi.ConnectionService;
 import com.hypersocket.client.rmi.GUICallback;
+import com.hypersocket.client.rmi.ResourceService;
 
 public class SWTGui extends UnicastRemoteObject implements GUICallback {
 
@@ -70,6 +66,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 	MenuItem connectOrDisconnectItem;
 	MenuItem optionsItem;
 	MenuItem connectionsItem;
+	MenuItem resourcesItem;
 	MenuItem exitItem;
 
 	Image offlineImage;
@@ -78,19 +75,22 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 
 	ConnectionService connectionService;
 	ConfigurationService configurationService;
+	ResourceService resourceService;
+	
 	ClientService clientService;
 	ConnectionsWindow connectionsWindow;
+	FileTree resourcesWindow;
 
 	protected SWTGui(Display display, Shell shell) throws RemoteException {
 		super();
 		this.display = display;
 		this.shell = shell;
 
-		try {
-			configureGrowl();
-		} catch (Throwable e) {
-			log.error("Failed to start growl", e);
-		}
+//		try {
+//			configureGrowl();
+//		} catch (Throwable e) {
+//			log.error("Failed to start growl", e);
+//		}
 
 		setupSystemTray();
 
@@ -128,6 +128,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 				trayItem.setImage(online ? onlineImage : offlineImage);
 				optionsItem.setEnabled(online);
 				connectionsItem.setEnabled(online);
+				resourcesItem.setEnabled(online);
 			}
 		});
 	}
@@ -191,6 +192,9 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 			configurationService = (ConfigurationService) registry
 					.lookup("configurationService");
 
+			resourceService = (ResourceService) registry
+					.lookup("resourceService");
+			
 			clientService = (ClientService) registry.lookup("clientService");
 
 			clientService.registerGUI(this);
@@ -229,7 +233,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 		}
 	}
 
-	private void configureGrowl() throws IOException {
+	/*private void configureGrowl() throws IOException {
 		GntpApplicationInfo info = Gntp.appInfo("Test")
 				.icon(getImage(APPLICATION_ICON)).build();
 		notif1 = Gntp.notificationInfo(info, "Notify 1")
@@ -283,7 +287,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 
 		client.register();
 
-	}
+	}*/
 
 	private void setupSystemTray() {
 
@@ -343,6 +347,24 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 				}
 				connectionsWindow.getShell().setVisible(true);
 				connectionsWindow.getShell().setActive();
+			}
+		});
+		
+		
+		resourcesItem = new MenuItem(trayMenu, SWT.PUSH);
+		resourcesItem.setText(I18N.getResource("resources.text"));
+		resourcesItem.setEnabled(false);
+		resourcesItem.addListener(SWT.Selection, new Listener() {
+			public void handleEvent(Event e) {
+
+				if (resourcesWindow == null) {
+					resourcesWindow = new FileTree(SWTGui.this,
+							resourceService);
+					shell.pack();
+					resourcesWindow.open();
+				}
+				resourcesWindow.getShell().setVisible(true);
+				resourcesWindow.getShell().setActive();
 			}
 		});
 
