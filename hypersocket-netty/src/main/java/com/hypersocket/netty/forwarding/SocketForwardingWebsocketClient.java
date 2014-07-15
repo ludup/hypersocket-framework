@@ -37,7 +37,7 @@ public class SocketForwardingWebsocketClient implements NettyWebsocketClient {
 	
 	public void setWebsocketChannel(Channel websocketChannel) {
 		this.websocketChannel = websocketChannel;
-		websocketChannel.setAttachment(socketChannel);
+		websocketChannel.setAttachment(this);
 		socketChannel.setAttachment(this);
 	}
 	
