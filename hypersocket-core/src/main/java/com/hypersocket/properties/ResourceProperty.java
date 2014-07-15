@@ -4,5 +4,5 @@ import com.hypersocket.resource.AbstractResource;
 
 public interface ResourceProperty extends Property {
 
-	AbstractResource getResource();
+	Long getResourceId();
 }

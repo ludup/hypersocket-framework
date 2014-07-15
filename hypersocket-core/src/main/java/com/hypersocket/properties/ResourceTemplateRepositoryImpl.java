@@ -40,6 +40,10 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	
 	String resourceXmlPath;
 	
+	protected ResourcePropertyStore getPropertyStore() {
+		return configPropertyStore;
+	}
+	
 	public void loadPropertyTemplates(String resourceXmlPath) {
 		
 		this.resourceXmlPath = resourceXmlPath;
@@ -66,40 +70,12 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				throw new IllegalStateException("Property template s hierarchy must declare a context");
 			}
 			
-			loadAttributeTemplates(context);
-			
 			
 		} catch (IOException e) {
 			log.error("Failed to load propertyTemplate.xml resources", e);
 		}
 	}
 
-	private void loadAttributeTemplates(String context) {
-		
-		
-		for(AttributeCategory c : getAttributeCategories(context)) {
-			
-			PropertyCategory cat = registerPropertyCategory(
-					"attributeCategory" + String.valueOf(c.getId()),
-					"UserAttributes",
-					c.getWeight(),
-					true);
-			
-			for(Attribute attr : c.getAttributes()) {
-				registerPropertyItem(
-						cat,
-						configPropertyStore,
-						"attribute" + String.valueOf(attr.getId()),
-						attr.generateMetaData(),
-						attr.getWeight(),
-						false,
-						attr.getDefaultValue());
-			}
-		}
-		
-		
-		
-	}
 	private String loadPropertyTemplates(URL url) throws SAXException,
 			IOException, ParserConfigurationException {
 
@@ -177,7 +153,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				try {
 					registerPropertyItem(
 							cat,
-							configPropertyStore,
+							getPropertyStore(),
 							pnode.getAttribute("resourceKey"),
 							generateMetaData(pnode),
 							Integer.parseInt(pnode.getAttribute("weight")),
@@ -304,14 +280,14 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 		
 		
-		PropertyTemplate template = configPropertyStore.getPropertyTemplate(resourceKey);
+		PropertyTemplate template = getPropertyStore().getPropertyTemplate(resourceKey);
 
 		if (template == null) {
 			throw new IllegalStateException(resourceKey
 					+ " is not a registered configuration item");
 		}
 
-		return configPropertyStore.getPropertyValue(template, resource);
+		return getPropertyStore().getPropertyValue(template, resource);
 	}
 
 	@Override
@@ -327,14 +303,14 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public void setValue(AbstractResource resource, String resourceKey, String value) {
 
-		AbstractPropertyTemplate template = configPropertyStore.getPropertyTemplate(resourceKey);
+		AbstractPropertyTemplate template = getPropertyStore().getPropertyTemplate(resourceKey);
 
 		if (template == null) {
 			throw new IllegalStateException(resourceKey
 					+ " is not a registered configuration item");
 		}
 
-		configPropertyStore.setPropertyValue(template, resource, value);
+		getPropertyStore().setPropertyValue(template, resource, value);
 	}
 
 	@Override
@@ -359,7 +335,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			tmp.setWeight(c.getWeight());
 			tmp.setUserCreated(c.isUserCreated());
 			for(AbstractPropertyTemplate t : c.getTemplates()) {
-				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource, configPropertyStore)); 
+				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource, getPropertyStore())); 
 			}
 			cats.add(tmp);
 		}

@@ -84,18 +84,18 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 		}
 	}
 
-	@Override
-	public List<Property> getProperties(String module) {
-		
-		List<Property> props = new ArrayList<Property>();
-		for(PropertyTemplate template : templatesByModule.get(module)) {
-			if(properties.containsKey(template.getResourceKey())) {
-				props.add(new PropertiesFileProperty(template, 
-						(String) properties.get(template.getResourceKey())));
-			}
-		}
-		return props;
-	}
+//	@Override
+//	public List<Property> getProperties(String module) {
+//		
+//		List<Property> props = new ArrayList<Property>();
+//		for(PropertyTemplate template : templatesByModule.get(module)) {
+//			if(properties.containsKey(template.getResourceKey())) {
+//				props.add(new PropertiesFileProperty(template, 
+//						(String) properties.get(template.getResourceKey())));
+//			}
+//		}
+//		return props;
+//	}
 
 	@Override
 	public void registerTemplate(PropertyTemplate template, String module) {

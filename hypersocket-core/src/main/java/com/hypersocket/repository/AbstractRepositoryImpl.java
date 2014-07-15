@@ -75,6 +75,17 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	}
 
 	@SuppressWarnings("unchecked")
+	protected <T> List<T> list(Class<T> cls, boolean caseInsensitive, CriteriaConfiguration... configs) {
+		Criteria criteria = createCriteria(cls);
+		for(CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		@SuppressWarnings("rawtypes")
+		List results = criteria.list();
+		return results;
+	}
+	
+	@SuppressWarnings("unchecked")
 	protected <T> List<T> list(String column, Object value, Class<T> cls, boolean caseInsensitive, DetachedCriteriaConfiguration... configs) {
 		DetachedCriteria criteria = createDetachedCriteria(cls);
 		if(caseInsensitive) {

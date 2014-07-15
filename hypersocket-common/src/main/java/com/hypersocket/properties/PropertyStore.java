@@ -8,7 +8,7 @@ public interface PropertyStore {
 	
 	public void setProperty(PropertyTemplate property, String value);
 
-	public List<Property> getProperties(String module);
+//	public List<Property> getProperties(String module);
 
 	public void registerTemplate(PropertyTemplate template, String module);
 

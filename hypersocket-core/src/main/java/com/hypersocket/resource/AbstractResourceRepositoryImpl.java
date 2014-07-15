@@ -17,7 +17,7 @@ import com.hypersocket.tables.ColumnSort;
 
 @Repository
 @Transactional
-public abstract class AbstractResourceRepositoryImpl<T extends RealmResource>
+public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		extends AbstractRepositoryImpl<Long> implements
 		AbstractResourceRepository<T> {
 
@@ -47,6 +47,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends RealmResource>
 	public void saveResource(T resource) {
 		save(resource);
 	}
+
 
 	@SuppressWarnings("unchecked")
 	@Override

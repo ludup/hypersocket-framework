@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.local;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -279,6 +280,31 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 				criteria.setFetchMode("users", FetchMode.SELECT);
 				criteria.setFetchMode("roles", FetchMode.SELECT);
 				criteria.setFetchMode("properties", FetchMode.SELECT);
+			}
+		});
+	}
+	
+
+	@Override
+	public Collection<? extends Principal> getGroupsByUser(final LocalUser principal) {
+		return list(LocalGroup.class, false, new CriteriaConfiguration() {
+			
+			@Override
+			public void configure(Criteria criteria) {
+				criteria = criteria.createCriteria("users");
+				criteria.add(Restrictions.eq("id", principal.getId()));
+			}
+		});
+	}
+
+	@Override
+	public Collection<? extends Principal> getUsersByGroup(final LocalGroup principal) {
+		return list(LocalGroup.class, false, new CriteriaConfiguration() {
+			
+			@Override
+			public void configure(Criteria criteria) {
+				criteria = criteria.createCriteria("groups");
+				criteria.add(Restrictions.eq("id", principal.getId()));
 			}
 		});
 	}

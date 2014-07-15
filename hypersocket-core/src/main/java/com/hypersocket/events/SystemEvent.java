@@ -34,6 +34,10 @@ public abstract class SystemEvent extends ApplicationEvent {
 	
 	public abstract String getResourceBundle();
 
+	protected void buildAttributes() {
+		
+	}
+	
 	public Throwable getException() {
 		return exception;
 	}

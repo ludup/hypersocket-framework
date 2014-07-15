@@ -10,10 +10,11 @@ package com.hypersocket.realm;
 import java.util.List;
 import java.util.Map;
 
-import com.hypersocket.repository.AbstractRepository;
+import com.hypersocket.resource.AbstractResourceRepository;
+import com.hypersocket.resource.RealmResource;
 import com.hypersocket.tables.ColumnSort;
 
-public interface RealmRepository extends AbstractRepository<Long> {
+public interface RealmRepository extends AbstractResourceRepository<RealmResource> {
 	
 	public List<Realm> allRealms();
 	

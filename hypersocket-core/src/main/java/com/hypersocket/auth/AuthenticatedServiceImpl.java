@@ -8,6 +8,7 @@
 package com.hypersocket.auth;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
@@ -25,5 +26,5 @@ public abstract class AuthenticatedServiceImpl extends AbstractAuthenticatedServ
 			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException {
 		permissionService.verifyPermission(principal, strategy, permissions);
 	}
-
+	
 }

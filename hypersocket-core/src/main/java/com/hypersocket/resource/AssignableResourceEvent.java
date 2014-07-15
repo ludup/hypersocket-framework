@@ -1,5 +1,7 @@
 package com.hypersocket.resource;
 
+import java.util.Map;
+
 import org.springframework.util.StringUtils;
 
 import com.hypersocket.session.Session;

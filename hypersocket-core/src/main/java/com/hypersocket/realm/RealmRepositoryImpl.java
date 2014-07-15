@@ -15,16 +15,18 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hypersocket.repository.AbstractRepositoryImpl;
+import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
+import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.HiddenFilter;
+import com.hypersocket.resource.RealmResource;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
 @Transactional
-public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements RealmRepository {
+public class RealmRepositoryImpl extends AbstractResourceRepositoryImpl<RealmResource> implements RealmRepository {
 
 	
 	@Override
@@ -32,13 +34,19 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 		Realm realm = new Realm();
 		realm.setName(name);
 		realm.setResourceCategory(module);
+		
+		
+		
 		save(realm);
 		
 		if(!properties.isEmpty()) {
 			for (Map.Entry<String, String> e : properties.entrySet()) {
-				provider.setValue(realm, e.getKey(), e.getValue());
+				DatabaseProperty p = new DatabaseProperty();
+				p.setResourceId(realm.getId());
+				p.setResourceKey(e.getKey());
+				p.setValue(e.getValue());
+				saveObject(p);
 			}
-			refresh(realm);
 		}
 		
 		return realm;
@@ -133,5 +141,10 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 				criteria.add(Restrictions.eq("deleted", false));
 			}
 		});
+	}
+
+	@Override
+	protected Class<RealmResource> getResourceClass() {
+		return RealmResource.class;
 	}
 }

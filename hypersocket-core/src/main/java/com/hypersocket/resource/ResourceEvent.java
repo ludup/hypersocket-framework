@@ -1,7 +1,8 @@
 package com.hypersocket.resource;
 
+import java.util.Map;
+
 import com.hypersocket.events.CommonAttributes;
-import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.events.SessionEvent;
 
@@ -15,9 +16,6 @@ public abstract class ResourceEvent extends SessionEvent {
 			Session session, Resource resource) {
 		super(source, resourceKey, success, session);
 		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
-		for(DatabaseProperty prop : resource.getPropertiesMap().values()) {
-			addAttribute(prop.getResourceKey(), prop.getValue());
-		}
 	}
 
 	public ResourceEvent(Object source, String resourceKey, Resource resource, Throwable e,

@@ -20,13 +20,10 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
-import com.hypersocket.realm.MediaNotFoundException;
-import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.UserPrincipal;
@@ -41,11 +38,12 @@ public class LocalUser extends Principal implements UserPrincipal, Serializable 
 	@Column(name="type", nullable=false)
 	PrincipalType type = PrincipalType.USER;
 	
-	@ManyToMany(fetch=FetchType.EAGER)
+	@ManyToMany(fetch=FetchType.LAZY)
 	@Cascade({CascadeType.ALL})
 	@JoinTable(name = "local_user_groups", joinColumns={@JoinColumn(name="uuid")}, inverseJoinColumns={@JoinColumn(name="guid")})
 	private Set<LocalGroup> groups = new HashSet<LocalGroup>();
 
+	@JsonIgnore
 	public Set<LocalGroup> getGroups() {
 		return groups;
 	}
@@ -59,23 +57,9 @@ public class LocalUser extends Principal implements UserPrincipal, Serializable 
 		this.type = type;
 	}	
 	
-	public String getPrincipalDesc() {
-		return getProperty(LocalRealmProviderImpl.FIELD_FULLNAME);
-	}
-	
 	@JsonIgnore
 	public Set<Principal> getAssociatedPrincipals() {
 		return new HashSet<Principal>(groups);
-	}
-
-	@Override
-	public String getAddress(MediaType type) throws MediaNotFoundException {
-		
-		String email = getProperty(LocalRealmProviderImpl.FIELD_EMAIL);
-		if(!StringUtils.isEmpty(email)) {
-			return email;
-		}
-		throw new MediaNotFoundException();
 	}
 	
 }

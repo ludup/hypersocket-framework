@@ -3,6 +3,7 @@ package com.hypersocket.realm.events;
 import java.util.List;
 import java.util.Map;
 
+import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;
@@ -14,9 +15,9 @@ public class UserCreatedEvent extends UserEvent {
 
 	public UserCreatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
-			List<Principal> associatedPrincipals) {
+			List<Principal> associatedPrincipals, Map<String,String> properties) {
 		super(source, "event.userCreated", session, realm, provider, principal,
-				associatedPrincipals);
+				associatedPrincipals, properties);
 	}
 
 	public UserCreatedEvent(Object source, Throwable e, Session session,

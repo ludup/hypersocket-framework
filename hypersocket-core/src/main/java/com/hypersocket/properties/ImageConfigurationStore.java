@@ -80,16 +80,16 @@ public class ImageConfigurationStore implements XmlTemplatePropertyStore {
 
 	}
 
-	@Override
-	public List<Property> getProperties(String module) {
-		
-		List<Property> props = new ArrayList<Property>();
-		for(PropertyTemplate template : templatesByModule.get(module)) {
-			props.add(new ImageProperty(template.getResourceKey(), createURL(resourceKeyImages.getProperty(template.getResourceKey()))));
-		}
-		return props;
-	}
-	
+//	@Override
+//	public List<Property> getProperties(String module) {
+//		
+//		List<Property> props = new ArrayList<Property>();
+//		for(PropertyTemplate template : templatesByModule.get(module)) {
+//			props.add(new ImageProperty(template.getResourceKey(), createURL(resourceKeyImages.getProperty(template.getResourceKey()))));
+//		}
+//		return props;
+//	}
+//	
 	private String createURL(String filename) {
 		return System.getProperty("hypersocket.appPath", "/hypersocket") + "/"+ id + "/" + filename;
 	}
