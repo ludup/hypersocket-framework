@@ -74,10 +74,12 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 		idx = username.indexOf('@');
 		if (idx > -1) {
 			realmName = username.substring(idx + 1);
+			username = username.substring(0, idx);
 		} else {
 			idx = username.indexOf('\\');
 			if (idx > -1) {
 				realmName = username.substring(0, idx);
+				username = username.substring(idx+1);
 			}
 		}
 		
