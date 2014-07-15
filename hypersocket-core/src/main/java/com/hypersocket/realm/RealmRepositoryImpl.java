@@ -45,6 +45,14 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 	}
 	
 	@Override
+	public Realm saveRealm(Realm realm) {
+		save(realm);
+		flush();
+		refresh(realm);
+		return realm;
+	}
+	
+	@Override
 	public Realm saveRealm(Realm realm, Map<String,String> properties, RealmProvider provider) {
 		
 		boolean isNew = realm.getId()==null;

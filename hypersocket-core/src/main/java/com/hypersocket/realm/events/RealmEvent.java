@@ -1,7 +1,6 @@
 package com.hypersocket.realm.events;
 
 import com.hypersocket.events.CommonAttributes;
-import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
@@ -30,8 +29,8 @@ public class RealmEvent extends SessionEvent {
 	
 	private void addAttributes() {
 		addAttribute(ATTR_REALM_NAME, realm.getName());
-		for(DatabaseProperty prop : realm.getProperties().values()) {
-			addAttribute(I18NServiceImpl.tagForConversion(realm.getResourceCategory(), prop.getResourceKey()), prop.getValue());
+		for(DatabaseProperty prop : realm.getPropertiesMap().values()) {
+			addAttribute(prop.getResourceKey(), prop.getValue());
 		}
 	}
 	

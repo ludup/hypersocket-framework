@@ -127,15 +127,12 @@ public class PermissionsController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<Role> listRoles(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
-			UnauthorizedException {
+			UnauthorizedException, SessionTimeoutException {
 
-		Session session = sessionUtils.getActiveSession(request);
-
-		permissionService.verifyPermission(session.getPrincipal(),
-				PermissionStrategy.REQUIRE_ANY, RealmPermission.READ);
-
-		return new ResourceList<Role>(permissionService.allRoles(session
-				.getCurrentRealm()));
+			return new ResourceList<Role>(
+					permissionService.allRoles(sessionUtils
+							.getCurrentRealm(request)));
+		
 	}
 
 	@AuthenticationRequired

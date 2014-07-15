@@ -48,4 +48,5 @@ public abstract class Resource extends AbstractResource {
 	public void setResourceCategory(String resourceCategory) {
 		this.resourceCategory = resourceCategory;
 	}
+	
 }

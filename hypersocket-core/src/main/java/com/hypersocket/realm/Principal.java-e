@@ -15,39 +15,33 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import com.hypersocket.permissions.Role;
-import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.RealmResource;
 
 @Entity
 @XmlRootElement(name = "principal")
-public abstract class Principal extends Resource {
+public abstract class Principal extends RealmResource {
 
-	@ManyToOne
-	@JoinColumn(name = "realm_id")
-	protected Realm realm;
+	
 
 	@ManyToMany(fetch = FetchType.EAGER)
-	@Cascade({ CascadeType.SAVE_UPDATE })
+	@Cascade(CascadeType.PERSIST)
 	@JoinTable(name = "role_principals", joinColumns = { @JoinColumn(name = "principal_id") }, inverseJoinColumns = { @JoinColumn(name = "role_id") })
+	@Fetch(FetchMode.SELECT)
 	Set<Role> roles = new HashSet<Role>();
 
-	public void setRealm(Realm realm) {
-		this.realm = realm;
-	}
-
-	@XmlTransient
 	@JsonIgnore
 	public Realm getRealm() {
-		return realm;
+		return super.getRealm();
 	}
 
 	@JsonIgnore

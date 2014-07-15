@@ -17,24 +17,18 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToOne;
 
 import com.hypersocket.permissions.Role;
-import com.hypersocket.realm.Realm;
 
 @Entity
 @Inheritance(strategy=InheritanceType.JOINED)
-public abstract class AssignableResource extends Resource {
+public abstract class AssignableResource extends RealmResource {
 
 	@ManyToMany(fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_roles", joinColumns={@JoinColumn(name="resource_id")}, 
 			inverseJoinColumns={@JoinColumn(name="role_id")})
 	Set<Role> roles = new HashSet<Role>();
 
-	@OneToOne
-	@JoinColumn(name="realm_id")
-	Realm realm;
-	
 	public AssignableResource() {
 	}
 	
@@ -44,14 +38,6 @@ public abstract class AssignableResource extends Resource {
 
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
-	}
-
-	public Realm getRealm() {
-		return realm;
-	}
-
-	public void setRealm(Realm realm) {
-		this.realm = realm;
 	}
 	
 }

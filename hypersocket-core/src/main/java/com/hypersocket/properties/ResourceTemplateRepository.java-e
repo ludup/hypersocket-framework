@@ -26,4 +26,6 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 	
 	String[] getValues(AbstractResource resource, String name);
 
+	Collection<PropertyTemplate> getPropertyTemplates();
+
 }

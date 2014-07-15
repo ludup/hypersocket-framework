@@ -203,7 +203,7 @@ public class RealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			return processDataTablesRequest(request,
+			DataTablesResult r = processDataTablesRequest(request,
 					new DataTablesPageProcessor() {
 
 						@Override
@@ -226,6 +226,7 @@ public class RealmController extends ResourceController {
 									searchPattern);
 						}
 					});
+			return r;
 		} finally {
 			clearAuthenticatedContext();
 		}

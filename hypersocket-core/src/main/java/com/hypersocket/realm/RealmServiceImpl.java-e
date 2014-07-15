@@ -451,7 +451,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			eventPublisher.publishEvent(new RealmUpdatedEvent(this, t,
 					getCurrentSession(), name));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"deleteRole.unexpectedError", t);
+					"error.unexpectedError", t);
 		}
 		return realm;
 	}
@@ -505,7 +505,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			eventPublisher.publishEvent(new RealmDeletedEvent(this, t,
 					getCurrentSession(), realm.getName()));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"deleteRole.unexpectedError", t);
+					"error.unexpectedError", t);
 		}
 	}
 

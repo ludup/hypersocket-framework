@@ -79,4 +79,41 @@ public class DatabaseProperty extends AbstractEntity<Long> implements ResourcePr
 	public void setResourceKey(String resourceKey) {
 		this.resourceKey = resourceKey;
 	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
+		result = 47 * result + ((getResourceKey() == null) ? 0 : getResourceKey().hashCode());
+		result = 61 * result + ((getResource() == null) ? 0 : getResource().hashCode());
+		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DatabaseProperty other = (DatabaseProperty) obj;
+		if (getResourceKey() == null) {
+			if (other.getResourceKey() != null)
+				return false;
+		} else if (!getResourceKey().equals(other.getResourceKey())) {
+			return false;
+		} else { 
+			if(getResource()==null) {
+				if(other.getResource()!=null) {
+					return false;
+				}
+				return true;
+			} else if(!getResource().equals(other.getResource())) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

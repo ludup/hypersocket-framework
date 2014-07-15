@@ -185,7 +185,7 @@ public class AuthenticationState {
 	public String getLastRealmName() {
 		if(realm==null) {
 			if(lastRealmName==null) {
-				throw new IllegalStateException("Last realm name is not available. Did you forget to set it in your Authenticator?");
+				return "";
 			} else {
 				return lastRealmName;
 			}

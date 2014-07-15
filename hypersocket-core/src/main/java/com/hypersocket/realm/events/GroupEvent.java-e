@@ -3,7 +3,6 @@ package com.hypersocket.realm.events;
 import java.util.List;
 
 import com.hypersocket.events.CommonAttributes;
-import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -30,8 +29,8 @@ public abstract class GroupEvent extends RealmEvent {
 		this.principal = principal;
 		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
 		addAssociatedPrincipals(associatedPrincipals);
-		for(DatabaseProperty prop : principal.getProperties().values()) {
-			addAttribute(I18NServiceImpl.tagForConversion(provider.getResourceBundle(), prop.getResourceKey()), prop.getValue());
+		for(DatabaseProperty prop : principal.getPropertiesMap().values()) {
+			addAttribute(prop.getResourceKey(), prop.getValue());
 		}
 	}
 

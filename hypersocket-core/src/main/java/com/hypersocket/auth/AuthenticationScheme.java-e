@@ -9,26 +9,19 @@ package com.hypersocket.auth;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name = "auth_schemes")
-public class AuthenticationScheme extends Resource {
+public class AuthenticationScheme extends RealmResource {
 
 	@Column(name = "resourceKey")
 	String resourceKey;
 
 	@Column(name = "priority")
 	Integer priority;
-
-	@OneToOne
-	@JoinColumn(name = "realm_id")
-	Realm realm;
 
 	public String getResourceKey() {
 		return resourceKey;
@@ -46,11 +39,4 @@ public class AuthenticationScheme extends Resource {
 		this.priority = priority;
 	}
 
-	public Realm getRealm() {
-		return realm;
-	}
-
-	public void setRealm(Realm realm) {
-		this.realm = realm;
-	}
 }

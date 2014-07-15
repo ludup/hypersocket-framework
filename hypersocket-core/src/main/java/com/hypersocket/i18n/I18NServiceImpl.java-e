@@ -32,7 +32,6 @@ import com.hypersocket.config.ConfigurationChangedEvent;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.local.LocalRealmProvider;
-import com.hypersocket.menus.MenuService;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.SessionService;
@@ -67,7 +66,6 @@ public class I18NServiceImpl extends AuthenticatedServiceImpl implements I18NSer
 		registerBundle(PermissionService.RESOURCE_BUNDLE);
 		registerBundle(RealmService.RESOURCE_BUNDLE);
 		registerBundle(SessionService.RESOURCE_BUNDLE);
-		registerBundle(MenuService.RESOURCE_BUNDLE);
 		
 		supportedLocales.add(Locale.ENGLISH);
 		supportedLocales.add(getLocale("da"));
@@ -112,7 +110,7 @@ public class I18NServiceImpl extends AuthenticatedServiceImpl implements I18NSer
 	public synchronized Locale getDefaultLocale() {
 		if(defaultLocale==null) {
 			String locale = configurationService.getValue("current.locale");
-			return getLocale(locale);
+			return defaultLocale = getLocale(locale);
 		} else {
 			return defaultLocale;
 		}

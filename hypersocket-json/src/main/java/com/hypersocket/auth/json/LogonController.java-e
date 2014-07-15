@@ -121,9 +121,7 @@ public class LogonController extends AuthenticatedController {
 				session = sessionUtils.touchSession(request, response);
 
 				if (session != null) {
-					return getSuccessfulResult(session, I18N.getResource(
-							sessionUtils.getLocale(request), AuthenticationService.RESOURCE_BUNDLE,
-							"info.welcome"));
+					return getSuccessfulResult(session, "");
 				}
 			} catch (UnauthorizedException e) {
 				// We are already in login so just continue
@@ -154,9 +152,7 @@ public class LogonController extends AuthenticatedController {
 				sessionUtils.addAPISession(request, response,
 						state.getSession());
 
-				return getSuccessfulResult(state.getSession(),
-						I18N.getResource(state.getLocale(), AuthenticationService.RESOURCE_BUNDLE,
-								"info.welcome"));
+				return getSuccessfulResult(state.getSession(),"");
 			} else {
 
 				return new AuthenticationRequiredResult(

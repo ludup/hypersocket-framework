@@ -112,7 +112,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 						log.info("Module " + op.getModule() + "/" + op.getLanguage() + " is now at " + op.getVersion());
 					}
 					upgrade.setVersion(op.getVersion().toString());
-					sessionFactory.getCurrentSession().save(upgrade);
+					sessionFactory.getCurrentSession().saveOrUpdate(upgrade);
 				} else {
 					if(log.isInfoEnabled()) {
 						log.info("Module " + op.getModule() + "/" + op.getLanguage() + " is at version " + currentVersion

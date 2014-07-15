@@ -67,6 +67,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	
 	public void flush() {
 		hibernateTemplate.flush();
+		hibernateTemplate.clear();
 	}
 	
 	protected void delete(Object entity) {

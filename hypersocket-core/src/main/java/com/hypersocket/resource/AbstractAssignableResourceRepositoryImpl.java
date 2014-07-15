@@ -7,11 +7,11 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
@@ -218,9 +218,8 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 				getResourceClass());
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit.add(Restrictions.eq("deleted", false));
-		if (realm != null) {
-			crit.add(Restrictions.eq("realm", realm));
-		}
+		crit.add(Restrictions.or(Restrictions.eq("realm", realm), Restrictions.isNull("realm")));
+		
 		return (List<T>) crit.list();
 	}
 
@@ -233,13 +232,16 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	public List<T> search(Realm realm, String searchPattern, int start,
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		return super.search(getResourceClass(), "name", searchPattern, start,
-				length, sorting, configs);
+				length, sorting, ArrayUtils.addAll(configs,
+						new RealmAndDefaultRealmCriteria(realm)));
 	}
 
 	@Override
 	public long getResourceCount(Realm realm, String searchPattern,
 			CriteriaConfiguration... configs) {
-		return getCount(getResourceClass(), "name", searchPattern, configs);
+		return getCount(getResourceClass(), "name", searchPattern,
+				ArrayUtils.addAll(configs, new RealmAndDefaultRealmCriteria(
+						realm)));
 	}
 
 	protected abstract Class<T> getResourceClass();

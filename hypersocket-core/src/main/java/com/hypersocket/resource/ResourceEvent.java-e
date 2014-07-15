@@ -1,12 +1,11 @@
 package com.hypersocket.resource;
 
 import com.hypersocket.events.CommonAttributes;
-import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.events.SessionEvent;
 
-public class ResourceEvent extends SessionEvent {
+public abstract class ResourceEvent extends SessionEvent {
 
 	private static final long serialVersionUID = -282443990103353325L;
 
@@ -16,8 +15,8 @@ public class ResourceEvent extends SessionEvent {
 			Session session, Resource resource) {
 		super(source, resourceKey, success, session);
 		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
-		for(DatabaseProperty prop : resource.getProperties().values()) {
-			addAttribute(I18NServiceImpl.tagForConversion(getResourceBundle(), prop.getResourceKey()), prop.getValue());
+		for(DatabaseProperty prop : resource.getPropertiesMap().values()) {
+			addAttribute(prop.getResourceKey(), prop.getValue());
 		}
 	}
 

@@ -2,6 +2,7 @@ package com.hypersocket.resource;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,6 +17,10 @@ import javax.persistence.InheritanceType;
 import javax.persistence.OneToMany;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.repository.AbstractEntity;
@@ -30,7 +35,9 @@ public abstract class AbstractResource extends AbstractEntity<Long> {
 	Long id;
 
 	@OneToMany(mappedBy = "resource", fetch = FetchType.EAGER)
-	protected Set<DatabaseProperty> properties;
+	@Cascade({CascadeType.ALL})
+	@Fetch(FetchMode.SELECT)
+	protected Set<DatabaseProperty> properties = new HashSet<DatabaseProperty>();
 
 	public Long getId() {
 		return id;
@@ -40,8 +47,12 @@ public abstract class AbstractResource extends AbstractEntity<Long> {
 		this.id = id;
 	}
 	
+	public void setProperties(Set<DatabaseProperty> properties) {
+		this.properties = properties;
+	}
+	
 	@JsonIgnore
-	public Map<String, DatabaseProperty> getProperties() {
+	public Map<String, DatabaseProperty> getPropertiesMap() {
 		HashMap<String, DatabaseProperty> mappedProperties = new HashMap<String, DatabaseProperty>();
 		if (properties != null) {
 			for (DatabaseProperty p : properties) {
@@ -52,9 +63,14 @@ public abstract class AbstractResource extends AbstractEntity<Long> {
 		return Collections.unmodifiableMap(mappedProperties);
 	}
 
+	@JsonIgnore
+	public Set<DatabaseProperty> getProperties() {
+		return properties;
+	}
+	
 	public String getProperty(String resourceKey) {
 
-		Map<String, DatabaseProperty> properties = getProperties();
+		Map<String, DatabaseProperty> properties = getPropertiesMap();
 
 		if (properties != null && properties.containsKey(resourceKey)) {
 			return properties.get(resourceKey).getValue();

@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -42,11 +43,12 @@ public class TemplateController extends ResourceController {
 	TemplateService templateService;
 
 	@AuthenticationRequired
-	@RequestMapping(value = "templates/table", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "templates/table/{type}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public DataTablesResult getApplicationTable(
-			final HttpServletRequest request, HttpServletResponse response)
+			final HttpServletRequest request, HttpServletResponse response,
+			@PathVariable final String type)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
@@ -69,7 +71,7 @@ public class TemplateController extends ResourceController {
 								AccessDeniedException {
 							return templateService.searchResources(
 									sessionUtils.getCurrentRealm(request),
-									searchPattern, start, length, sorting);
+									searchPattern, type, start, length, sorting);
 						}
 
 						@Override
@@ -78,7 +80,7 @@ public class TemplateController extends ResourceController {
 								AccessDeniedException {
 							return templateService.getResourceCount(
 									sessionUtils.getCurrentRealm(request),
-									searchPattern);
+									searchPattern, type);
 						}
 					});
 		} finally {
