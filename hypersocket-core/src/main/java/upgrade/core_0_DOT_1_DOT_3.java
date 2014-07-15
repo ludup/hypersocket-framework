@@ -47,6 +47,7 @@ public class core_0_DOT_1_DOT_3 implements Runnable {
 			File conf = new File(System.getProperty("hypersocket.conf", "conf"));
 			File userAttributes = new File(conf, "i18n" + File.separator + "UserAttributes.properties");
 			if(!userAttributes.exists()) {
+				userAttributes.getParentFile().mkdirs();
 				userAttributes.createNewFile();
 			}
 			Realm realm = realmRepository.getRealmByName("Default");
