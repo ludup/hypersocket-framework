@@ -14,8 +14,9 @@ import org.eclipse.jface.viewers.LabelProviderChangedEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -25,10 +26,12 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TreeItem;
 
+import com.hypersocket.client.i18n.I18N;
+import com.hypersocket.client.rmi.Launchable;
 import com.hypersocket.client.rmi.Resource;
 import com.hypersocket.client.rmi.ResourceProtocol;
-import com.hypersocket.client.rmi.ResourceProtocolImpl;
 import com.hypersocket.client.rmi.ResourceRealm;
 import com.hypersocket.client.rmi.ResourceService;
 
@@ -36,22 +39,23 @@ import com.hypersocket.client.rmi.ResourceService;
  * This class demonstrates TreeViewer. It shows the drives, directories, and
  * files on the system.
  */
-public class FileTree extends ApplicationWindow {
+public class ResourcesTree extends AbstractWindow {
 
 	SWTGui gui;
 	ResourceService resourceService;
-
+	TreeViewer tv;
+	
 	/**
 	 * FileTree constructor
 	 */
-	public FileTree() {
+	public ResourcesTree() {
 		super(null);
 	}
 
 	/**
 	 * FileTree constructor
 	 */
-	public FileTree(SWTGui gui, ResourceService resourceService) {
+	public ResourcesTree(SWTGui gui, ResourceService resourceService) {
 		super(new Shell(gui.getShell()));
 		this.gui = gui;
 		this.resourceService = resourceService;
@@ -81,10 +85,11 @@ public class FileTree extends ApplicationWindow {
 		super.configureShell(shell);
 
 		// Set the title bar text and the size
-		shell.setText("File Tree");
-		shell.setSize(400, 400);
+		shell.setText(I18N.getResource("resources.text"));
+		shell.setSize(getWindowWidth(400), getWindowHeight(400));
 	}
 
+	
 	/**
 	 * Creates the main window's contents
 	 * 
@@ -97,7 +102,7 @@ public class FileTree extends ApplicationWindow {
 		composite.setLayout(new GridLayout(1, false));
 
 		// Create the tree viewer to display the file tree
-		final TreeViewer tv = new TreeViewer(composite);
+		tv = new TreeViewer(composite);
 		tv.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
 		tv.setContentProvider(new FileTreeContentProvider());
 		tv.setLabelProvider(new FileTreeLabelProvider());
@@ -106,15 +111,34 @@ public class FileTree extends ApplicationWindow {
 		final Menu menu = new Menu(tv.getTree());
 		
 		final MenuItem item = new MenuItem(menu, SWT.NONE);
-		item.setText("Launch");
+		item.setText(I18N.getResource("launch.text"));
 		tv.addSelectionChangedListener(new ISelectionChangedListener() {
 			
 			@Override
 			public void selectionChanged(SelectionChangedEvent change) {
-				item.setEnabled(tv.getTree().getSelection()[0].getData() instanceof ResourceProtocolImpl);
+				TreeItem[] selected = tv.getTree().getSelection();
+				if(selected!=null && selected.length > 0) {
+					if(selected[0].getData() instanceof Launchable) {
+						item.setEnabled(((Launchable)selected[0].getData()).isLaunchable());
+					} else {
+						item.setEnabled(false);
+					}
+				}
 			}
 		});
-	    tv.getTree().setMenu(menu);
+		item.addSelectionListener(new SelectionAdapter() {
+		      public void widgetSelected(SelectionEvent e) {
+		    	TreeItem[] selected = tv.getTree().getSelection();
+				if(selected!=null && selected.length > 0) {
+					if(selected[0].getData() instanceof Launchable) {
+						Launchable launchable = (Launchable)selected[0].getData();
+						launchable.getResourceLauncher().launch();
+					}
+				}
+		      }
+		});
+	    
+		tv.getTree().setMenu(menu);
 	    
 
 		
@@ -128,7 +152,7 @@ public class FileTree extends ApplicationWindow {
 	 *            the command line arguments
 	 */
 	public static void main(String[] args) {
-		new FileTree().run();
+		new ResourcesTree().run();
 	}
 
 	/**
@@ -196,7 +220,7 @@ public class FileTree extends ApplicationWindow {
 		 */
 		public Object[] getElements(Object arg0) {
 			try {
-				return FileTree.this.resourceService.getResourceRealms().toArray();
+				return ResourcesTree.this.resourceService.getResourceRealms().toArray();
 			} catch (RemoteException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -232,7 +256,7 @@ public class FileTree extends ApplicationWindow {
 
 	class FileTreeLabelProvider implements ILabelProvider {
 		// The listeners
-		private List listeners;
+		private List<ILabelProviderListener> listeners;
 
 		// Images for tree nodes
 		private Image file;
@@ -247,7 +271,7 @@ public class FileTree extends ApplicationWindow {
 		 */
 		public FileTreeLabelProvider() {
 			// Create the list to hold the listeners
-			listeners = new ArrayList();
+			listeners = new ArrayList<ILabelProviderListener>();
 
 			// Create the images
 			try {
@@ -273,8 +297,7 @@ public class FileTree extends ApplicationWindow {
 			LabelProviderChangedEvent event = new LabelProviderChangedEvent(
 					this);
 			for (int i = 0, n = listeners.size(); i < n; i++) {
-				ILabelProviderListener ilpl = (ILabelProviderListener) listeners
-						.get(i);
+				ILabelProviderListener ilpl = listeners.get(i);
 				ilpl.labelProviderChanged(event);
 			}
 		}
@@ -355,5 +378,9 @@ public class FileTree extends ApplicationWindow {
 		public void removeListener(ILabelProviderListener arg0) {
 			listeners.remove(arg0);
 		}
+	}
+
+	public void refresh() {
+		tv.refresh();
 	}
 }

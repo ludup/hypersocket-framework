@@ -2,7 +2,7 @@ package com.hypersocket.client.rmi;
 
 import java.util.List;
 
-public interface Resource {
+public interface Resource extends Launchable {
 
 	String getHostname();
 
@@ -11,5 +11,7 @@ public interface Resource {
 	void setResourceRealm(ResourceRealm realm);
 	
 	ResourceRealm getRealm();
+
+	String getName();
 
 }

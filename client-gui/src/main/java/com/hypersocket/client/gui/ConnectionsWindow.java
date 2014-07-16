@@ -50,7 +50,7 @@ import com.hypersocket.client.rmi.ClientService;
 import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.client.rmi.ConnectionStatus;
 
-public class ConnectionsWindow extends ApplicationWindow {
+public class ConnectionsWindow extends AbstractWindow {
 
 	static Logger log = LoggerFactory.getLogger(ConnectionsWindow.class);
 
@@ -75,7 +75,7 @@ public class ConnectionsWindow extends ApplicationWindow {
 	private Action connectAction;
 	private Action disconnectAction;
 
-	private Preferences prefs;
+	
 	
 	/**
 	 * @wbp.parser.constructor
@@ -92,7 +92,7 @@ public class ConnectionsWindow extends ApplicationWindow {
 		super(new Shell(gui.getShell()));
 		this.gui = gui;
 		this.clientService = clientService;
-		prefs = Preferences.userRoot().node(getClass().getName());
+		
 		setShellStyle(SWT.CLOSE | SWT.RESIZE);
 		createActions();
 		addToolBar(SWT.FLAT | SWT.WRAP);
@@ -100,45 +100,7 @@ public class ConnectionsWindow extends ApplicationWindow {
 		addStatusLine();
 	}
 
-	public ShellListener getShellListener() {
-		return new ShellListener() {
-
-			@Override
-			public void shellActivated(ShellEvent evt) {
-				getShell().setSize(prefs.getInt("window.width", 300),
-						prefs.getInt("window.height", 525));
-			}
-
-			@Override
-			public void shellClosed(ShellEvent evt) {
-				evt.doit = false;
-				saveSize();
-				getShell().setVisible(false);
-			}
-
-			@Override
-			public void shellDeactivated(ShellEvent evt) {
-				saveSize();
-			}
-
-			@Override
-			public void shellDeiconified(ShellEvent evt) {
-				getShell().setSize(prefs.getInt("window.width", 300),
-						prefs.getInt("window.height", 525));
-			}
-
-			@Override
-			public void shellIconified(ShellEvent evt) {
-				saveSize();
-			}
-			
-		};
-	}
 	
-	private void saveSize() {
-		prefs.put("window.width", String.valueOf(getShell().getBounds().width));
-		prefs.put("window.height", String.valueOf(getShell().getBounds().height));
-	}
 	/**
 	 * Create contents of the application window.
 	 * 
@@ -173,7 +135,7 @@ public class ConnectionsWindow extends ApplicationWindow {
 				new ConnectionLabelProvider());
 
 		table.setLinesVisible(true);
-		table.setBounds(0, 0, prefs.getInt("window.width", 300), prefs.getInt("window.height", 525));
+		table.setBounds(0, 0, getWindowWidth(300), getWindowHeight(525));
 		table.setHeaderVisible(false);
 		tableViewer.setContentProvider(new ClientListContentProvider());
 

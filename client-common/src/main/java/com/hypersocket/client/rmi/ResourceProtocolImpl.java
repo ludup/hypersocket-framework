@@ -9,6 +9,8 @@ public class ResourceProtocolImpl implements ResourceProtocol, Serializable {
 	Long id;
 	String name;
 	Resource group;
+	boolean launchable;
+	ResourceLauncher launcher;
 	
 	public ResourceProtocolImpl() {
 	}
@@ -36,5 +38,23 @@ public class ResourceProtocolImpl implements ResourceProtocol, Serializable {
 		return group;
 	}
 
+	@Override
+	public boolean isLaunchable() {
+		return launchable;
+	}
 	
+	@Override
+	public void setLaunchable(boolean launchable) {
+		this.launchable = launchable;
+	}
+	
+	@Override
+	public ResourceLauncher getResourceLauncher() {
+		return launcher;
+	}
+
+	@Override
+	public void setResourceLauncher(ResourceLauncher launcher) {
+		this.launcher = launcher;
+	}
 }
