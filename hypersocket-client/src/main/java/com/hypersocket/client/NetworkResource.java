@@ -7,7 +7,11 @@
  ******************************************************************************/
 package com.hypersocket.client;
 
-public class NetworkResource {
+import java.io.Serializable;
+
+public class NetworkResource implements Serializable {
+
+	private static final long serialVersionUID = -3525449561878862225L;
 
 	Long id;
 	String hostname;

@@ -156,6 +156,7 @@ public class ClientServiceImpl implements ClientService,
 		data.put("service", this);
 		data.put("bossExecutor", bossExecutor);
 		data.put("workerExecutor", workerExecutor);
+		data.put("resourceService", resourceService);
 		data.put("locale", locale);
 		data.put("reconnectSeconds", reconnectSeconds);
 		data.put("url", getUrl(c));
@@ -221,9 +222,9 @@ public class ClientServiceImpl implements ClientService,
 	public void connected(HypersocketClient<Connection> client) {
 		activeClients.put(client.getAttachment(), client);
 		connectingClients.remove(client.getAttachment());
-		notifyGui(client.getHost() + " connected", GUICallback.NOTIFY_CONNECT);
-
 		startPlugins(client);
+		
+		notifyGui(client.getHost() + " connected", GUICallback.NOTIFY_CONNECT);
 	}
 
 	protected void stopPlugins(HypersocketClient<Connection> client) {
@@ -284,7 +285,7 @@ public class ClientServiceImpl implements ClientService,
 							.forName(clz);
 
 					ServicePlugin plugin = pluginClz.newInstance();
-					plugin.start(client);
+					plugin.start(client, resourceService);
 
 					connectionPlugins.get(client.getAttachment()).add(plugin);
 				} catch (Throwable e) {

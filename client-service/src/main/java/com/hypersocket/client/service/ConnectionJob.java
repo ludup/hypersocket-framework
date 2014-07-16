@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.hypersocket.client.HypersocketClient;
 import com.hypersocket.client.HypersocketClientAdapter;
 import com.hypersocket.client.rmi.Connection;
+import com.hypersocket.client.rmi.ResourceService;
 import com.hypersocket.netty.NettyClientTransport;
 
 public class ConnectionJob extends TimerTask {
@@ -33,6 +34,7 @@ public class ConnectionJob extends TimerTask {
 		ExecutorService worker = (ExecutorService) data.get("workerExecutor");
 		Locale locale = (Locale) data.get("locale");
 		final ClientServiceImpl service = (ClientServiceImpl) data.get("service");
+		ResourceService resourceService = (ResourceService) data.get("resourceService");
 		
 		String url = (String) data.get("url");
 
@@ -42,7 +44,7 @@ public class ConnectionJob extends TimerTask {
 
 		try {
 			ServiceClient client = new ServiceClient(new NettyClientTransport(
-					boss, worker), locale, service, c);
+					boss, worker), locale, service, resourceService, c);
 
 			client.connect(c.getHostname(), c.getPort(), c.getPath(), locale);
 

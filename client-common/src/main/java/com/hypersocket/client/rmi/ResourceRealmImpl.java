@@ -33,4 +33,10 @@ public class ResourceRealmImpl implements ResourceRealm, Serializable {
 		return resources;
 	}
 
+	@Override
+	public void addResource(ResourceImpl res) {
+		res.setResourceRealm(this);
+		resources.add(res);
+	}
+
 }

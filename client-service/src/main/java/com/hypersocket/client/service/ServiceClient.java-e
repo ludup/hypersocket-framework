@@ -18,18 +18,22 @@ import com.hypersocket.client.HypersocketClientTransport;
 import com.hypersocket.client.Prompt;
 import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.client.rmi.GUICallback;
+import com.hypersocket.client.rmi.ResourceService;
 
 public class ServiceClient extends HypersocketClient<Connection> {
 
 	static Logger log = LoggerFactory.getLogger(ServiceClient.class);
 	
 	ClientServiceImpl service;
+	ResourceService resourceService;
+	
 	List<ServicePlugin> plugins = new ArrayList<ServicePlugin>();
 	
 	protected ServiceClient(HypersocketClientTransport transport,
-			Locale currentLocale, ClientServiceImpl service, Connection connection) throws IOException {
+			Locale currentLocale, ClientServiceImpl service, ResourceService resourceService, Connection connection) throws IOException {
 		super(transport, currentLocale, service);
 		this.service = service;
+		this.resourceService = resourceService;
 		setAttachment(connection);
 	}
 
@@ -69,7 +73,7 @@ public class ServiceClient extends HypersocketClient<Connection> {
 						log.info("Starting service plugin " + props.getProperty("plugin.name"));
 					}
 					ServicePlugin plugin = (ServicePlugin) Class.forName(props.getProperty("plugin.class")).newInstance();
-					if(plugin.start(this)) {
+					if(plugin.start(this, resourceService)) {
 						plugins.add(plugin);
 					}
 				} catch (Throwable e) {

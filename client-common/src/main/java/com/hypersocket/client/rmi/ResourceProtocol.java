@@ -1,6 +1,6 @@
 package com.hypersocket.client.rmi;
 
-public interface ResourceProtocol {
+public interface ResourceProtocol extends Launchable {
 
 	Long getId();
 	
@@ -9,5 +9,5 @@ public interface ResourceProtocol {
 	Resource getResource();
 
 	void setResource(Resource group);
-	
+
 }
