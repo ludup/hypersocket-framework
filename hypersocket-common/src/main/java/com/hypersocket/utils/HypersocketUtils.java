@@ -1,4 +1,4 @@
-package com.hypersocket;
+package com.hypersocket.utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
