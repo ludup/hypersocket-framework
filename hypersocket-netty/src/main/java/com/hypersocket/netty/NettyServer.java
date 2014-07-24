@@ -148,7 +148,8 @@ public class NettyServer extends HypersocketServerImpl {
 	@Override
 	public void connect(TCPForwardingClientCallback callback) {
 
-		clientBootstrap.connect(new InetSocketAddress(callback.getHostname(), callback.getPort())).addListener(
+		clientBootstrap.connect(
+				new InetSocketAddress(callback.getHostname(), callback.getPort())).addListener(
 				new ClientConnectCallbackImpl(callback));
 
 	}
