@@ -35,42 +35,6 @@ import com.hypersocket.session.json.SessionUtils;
 @Controller
 public class LogonController extends AuthenticatedController {
 
-	@RequestMapping(value = "session/touch", method = { RequestMethod.GET }, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public AuthenticationResult touch(HttpServletRequest request,
-			HttpServletResponse response) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException {
-
-		setupSystemContext();
-
-		try {
-			return getSuccessfulResult(
-					sessionUtils.touchSession(request, response));
-		} finally {
-			clearSystemContext();
-		}
-	}
-
-	@RequestMapping(value = "session/peek", method = { RequestMethod.GET }, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public AuthenticationResult peek(HttpServletRequest request,
-			HttpServletResponse response) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException {
-
-		setupSystemContext();
-
-		try {
-			try {
-				return getSuccessfulResult(sessionUtils.getSession(request));
-			} catch (UnauthorizedException e) {
-				return new AuthenticationRequiredResult();
-			}
-		} finally {
-			clearSystemContext();
-		}
-	}
 
 	@RequestMapping(value = "logon/reset", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
@@ -178,59 +142,7 @@ public class LogonController extends AuthenticatedController {
 
 	}
 
-	@AuthenticationRequired
-	@RequestMapping(value = "session/switchRealm/{id}", method = RequestMethod.GET, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public AuthenticationResult switchRealm(HttpServletRequest request,
-			HttpServletResponse response, @PathVariable("id") Long id)
-			throws UnauthorizedException, AccessDeniedException,
-			ResourceNotFoundException, SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			Session session = sessionUtils.getActiveSession(request);
-
-			Realm realm = realmService.getRealmById(id);
-
-			if (realm == null) {
-				throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE,
-						"error.invalidRealm", id);
-			}
-
-			sessionService.switchRealm(session, realm);
-
-			return getSuccessfulResult(session, I18N.getResource(
-					sessionUtils.getLocale(request), AuthenticationService.RESOURCE_BUNDLE,
-					"info.inRealm", realm.getName()), "");
-		} finally {
-			clearAuthenticatedContext();
-		}
-	}
-
-	@RequestMapping(value = "session/switchLanguage/{lang}", method = RequestMethod.GET, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public RequestStatus switchLanguage(HttpServletRequest request,
-			HttpServletResponse response, @PathVariable("lang") String locale)
-			throws UnauthorizedException, AccessDeniedException,
-			ResourceNotFoundException {
-		sessionUtils.setLocale(request, response, locale);
-		return new RequestStatus();
-	}
-
-	private AuthenticationResult getSuccessfulResult(Session session,
-			String info, String homePage) {
-		return new AuthenticationSuccessResult(info,
-				i18nService.hasUserLocales(), session, homePage);
-	}
 	
-	private AuthenticationResult getSuccessfulResult(Session session) {
-		return new AuthenticationSuccessResult("",
-				i18nService.hasUserLocales(), session, "");
-	}
 
 	@RequestMapping(value = "logoff")
 	@ResponseBody
@@ -251,6 +163,17 @@ public class LogonController extends AuthenticatedController {
 		} finally {
 			clearAuthenticatedContext();
 		}
+	}
+	
+	private AuthenticationResult getSuccessfulResult(Session session,
+			String info, String homePage) {
+		return new AuthenticationSuccessResult(info,
+				i18nService.hasUserLocales(), session, homePage);
+	}
+	
+	private AuthenticationResult getSuccessfulResult(Session session) {
+		return new AuthenticationSuccessResult("",
+				i18nService.hasUserLocales(), session, "");
 	}
 
 }

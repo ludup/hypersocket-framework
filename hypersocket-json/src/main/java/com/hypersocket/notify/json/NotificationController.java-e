@@ -31,7 +31,7 @@ public class NotificationController extends AuthenticatedController {
 	NotificationService notificationService;
 
 	@AuthenticationRequiredButDontTouchSession
-	@RequestMapping(value = "getNotifications/{context}", 
+	@RequestMapping(value = "notifications/notification/{context}", 
 					method = RequestMethod.GET, 
 					produces = { "application/json" })
 	@ResponseBody

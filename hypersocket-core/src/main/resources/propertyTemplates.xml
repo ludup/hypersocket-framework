@@ -12,7 +12,7 @@
 		<property resourceKey="smtp.port" inputType="number"
 			minValue="1" maxValue="65535" weight="100" defaultValue="25" />
 		<property resourceKey="smtp.protocol" inputType="select"
-			url="smtpProtocols" weight="200" defaultValue="0" nameIsResourceKey="true" />
+			url="emails/smtpProtocols" weight="200" defaultValue="0" nameIsResourceKey="true" />
 		<property resourceKey="smtp.username" inputType="text"
 			weight="300" defaultValue="" />
 		<property resourceKey="smtp.password" inputType="password"
@@ -27,7 +27,7 @@
 		<property resourceKey="user.locales" inputType="switch"
 			defaultValue="true" weight="0" />
 		<property resourceKey="current.locale" inputType="select"
-			url="locales" defaultValue="en" weight="100" nameIsResourceKey="true" />
+			url="i18n/locales" defaultValue="en" weight="100" nameIsResourceKey="true" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.sessions"
 		resourceBundle="SessionService" weight="800">

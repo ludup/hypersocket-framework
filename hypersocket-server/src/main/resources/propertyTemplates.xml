@@ -20,15 +20,15 @@
 		<property resourceKey="require.https" inputType="switch"
 			restart="false" defaultValue="true" weight="500" store="hypersocketServer" />
 		<property resourceKey="listening.interfaces" inputType="multipleSelect"
-			restart="false" url="networkInterfaces" selectAllIfEmpty="true"
+			restart="false" url="server/networkInterfaces" selectAllIfEmpty="true"
 			weight="600" store="hypersocketServer" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.ssl" resourceBundle="HypersocketServer" weight="200">
 	    <property resourceKey="ssl.protocols" inputType="multipleSelect"
-			restart="false" url="sslProtocols" selectAllIfEmpty="true"
+			restart="false" url="server/sslProtocols" selectAllIfEmpty="true"
 			weight="100"/>
 	    <property resourceKey="ssl.ciphers" inputType="multipleSelect"
-			restart="false" url="sslCiphers" selectAllIfEmpty="true"
+			restart="false" url="server/sslCiphers" selectAllIfEmpty="true"
 			weight="200"/>
 	</propertyCategory>
 </propertyTemplates>

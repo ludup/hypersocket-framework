@@ -74,31 +74,31 @@ public class NoPermissionTests extends AbstractServerTest {
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedRestart() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/restart/60");
+		doGet("/hypersocket/api/server/restart/60");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedShutdown() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/shutdown/60");
+		doGet("/hypersocket/api/server/shutdown/60");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedNetworkInterfaces()
 			throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/networkInterfaces");
+		doGet("/hypersocket/api/server/networkInterfaces");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedSslProtocols() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/sslProtocols");
+		doGet("/hypersocket/api/server/sslProtocols");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedSslCiphers() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/sslCiphers");
+		doGet("/hypersocket/api/serversslCiphers");
 	}
 
 	@Test(expected = ClientProtocolException.class)
