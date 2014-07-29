@@ -18,12 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.repository.AbstractRepositoryImpl;
+import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 
 @Repository
 @Transactional
-public class SessionRepositoryImpl extends AbstractRepositoryImpl<String> implements SessionRepository {
+public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,String> implements SessionRepository {
 
 	static Logger log = LoggerFactory.getLogger(SessionRepositoryImpl.class);
 	
@@ -72,6 +72,11 @@ public class SessionRepositoryImpl extends AbstractRepositoryImpl<String> implem
 				criteria.add(Restrictions.isNull("signedOut"));
 			}
 		});
+	}
+
+	@Override
+	protected Class<Session> getEntityClass() {
+		return Session.class;
 	}
 
 }

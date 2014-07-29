@@ -1,5 +1,8 @@
 package com.hypersocket.events;
 
+import java.util.Collection;
+import java.util.List;
+
 
 public interface EventService {
 
@@ -8,5 +11,7 @@ public interface EventService {
 	void publishEvent(SystemEvent event);
 
 	EventDefinition getEventDefinition(String resourceKey);
+
+	List<EventDefinition> getEvents();
 
 }

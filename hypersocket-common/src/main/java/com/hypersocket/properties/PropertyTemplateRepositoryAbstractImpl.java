@@ -75,6 +75,10 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		DocumentBuilder xmlBuilder = xmlFactory.newDocumentBuilder();
 		Document doc = xmlBuilder.parse(url.openStream());
 
+		if(log.isInfoEnabled()) {
+			log.info("Loading property template " + url.getPath());
+		}
+		
 		Element root = doc.getDocumentElement();
 		if (root.hasAttribute("extends")) {
 			String extendsTemplates = root.getAttribute("extends");
@@ -282,6 +286,10 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 	@Override
 	public String getValue(String resourceKey) {
 
+		if(!propertyStoresByResourceKey.containsKey(resourceKey)) {
+			throw new IllegalStateException("No store registerd for resource key " + resourceKey);
+		}
+		
 		PropertyStore store = propertyStoresByResourceKey.get(resourceKey);
 
 		PropertyTemplate template = store.getPropertyTemplate(resourceKey);

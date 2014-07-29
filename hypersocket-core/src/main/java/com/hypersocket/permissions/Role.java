@@ -21,13 +21,15 @@ import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
-@Table(name = "roles", uniqueConstraints = {@UniqueConstraint(columnNames={"name", "realm_id"})})
+@Table(name = "roles")
 @XmlRootElement(name="role")
 public class Role extends RealmResource {
 
@@ -38,10 +40,12 @@ public class Role extends RealmResource {
 	private Set<Permission> permissions = new HashSet<Permission>();
 
 	@ManyToMany(fetch=FetchType.EAGER)
+	@Cascade({CascadeType.SAVE_UPDATE})
 	@JoinTable(name = "role_principals", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
 	Set<Principal> principals = new HashSet<Principal>();
 	
 	@ManyToMany(fetch=FetchType.EAGER)
+	@Cascade({CascadeType.SAVE_UPDATE})
 	@JoinTable(name = "resource_roles", 
 		joinColumns = {@JoinColumn(name="role_id")}, 
 		inverseJoinColumns = {@JoinColumn(name="resource_id")})

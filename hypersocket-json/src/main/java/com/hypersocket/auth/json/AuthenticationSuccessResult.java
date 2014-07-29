@@ -13,19 +13,24 @@ import com.hypersocket.session.Session;
 public class AuthenticationSuccessResult extends AuthenticationResult {
 
 	Session session;
-
+	String homePage;
 	public AuthenticationSuccessResult() {
 
 	}
 
-	public AuthenticationSuccessResult(String bannerMsg, boolean showLocales, Session session) {
+	public AuthenticationSuccessResult(String bannerMsg, boolean showLocales, Session session, String homePage) {
 		super(bannerMsg, null, showLocales);
 		this.session = session;
+		this.homePage = homePage;
 		setSuccess(true);
 	}
 
 	public Session getSession() {
 		return session;
+	}
+	
+	public String getHomePage() {
+		return homePage;
 	}
 
 	public void setSession(Session session) {

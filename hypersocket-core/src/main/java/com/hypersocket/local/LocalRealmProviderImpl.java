@@ -224,6 +224,8 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 			user.setName(username);
 			user.setRealm(realm);
 			
+			user.getGroups().clear();
+			
 			for (Principal p : principals) {
 				if (p instanceof LocalGroup) {
 					user.getGroups().add((LocalGroup) p);

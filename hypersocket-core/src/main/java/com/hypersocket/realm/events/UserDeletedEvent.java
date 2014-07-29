@@ -9,6 +9,8 @@ public class UserDeletedEvent extends UserEvent {
 
 	private static final long serialVersionUID = 2300774900816788017L;
 
+	public static final String EVENT_RESOURCE_KEY = "event.userDeleted";
+	
 	public UserDeletedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal) {
 		super(source, "event.userDeleted", session, realm, provider, principal);

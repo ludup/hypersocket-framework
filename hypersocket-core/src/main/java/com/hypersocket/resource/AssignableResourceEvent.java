@@ -1,12 +1,11 @@
 package com.hypersocket.resource;
 
-import java.util.Map;
-
 import org.springframework.util.StringUtils;
 
+import com.hypersocket.realm.events.RealmResourceEvent;
 import com.hypersocket.session.Session;
 
-public abstract class AssignableResourceEvent extends ResourceEvent {
+public abstract class AssignableResourceEvent extends RealmResourceEvent {
 
 	private static final long serialVersionUID = -81919926673011642L;
 
@@ -20,7 +19,7 @@ public abstract class AssignableResourceEvent extends ResourceEvent {
 
 	public AssignableResourceEvent(Object source, String resourceKey,
 			AssignableResource resource, Throwable e, Session session) {
-		super(source, resourceKey, resource, e, session);
+		super(source, resourceKey, e, session, resource);
 		addRoleAttribute(resource);
 	}
 

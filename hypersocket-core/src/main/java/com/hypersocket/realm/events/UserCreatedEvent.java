@@ -13,6 +13,8 @@ public class UserCreatedEvent extends UserEvent {
 
 	private static final long serialVersionUID = 128120714278922129L;
 
+	public static final String EVENT_RESOURCE_KEY = "event.userCreated";
+	
 	public UserCreatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
 			List<Principal> associatedPrincipals, Map<String,String> properties) {

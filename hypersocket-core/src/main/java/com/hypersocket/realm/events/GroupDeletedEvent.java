@@ -11,6 +11,8 @@ public class GroupDeletedEvent extends GroupEvent {
 
 	private static final long serialVersionUID = 2338593199636073428L;
 
+	public static final String EVENT_RESOURCE_KEY = "event.groupDeleted";
+	
 	public GroupDeletedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal, Map<String,String> properties) {
 		super(source, "event.groupDeleted", session, realm, provider, principal, properties);

@@ -35,8 +35,9 @@ public class AuthenticationState {
 	Principal principal;
 	Session session;
 	int attempts = 0;
-	boolean isNew = true;
 	Locale locale;
+	String homePage = "";
+	
 	Map<String, String> parameters = new HashMap<String, String>();
 	Map<String, Object> environment = new HashMap<String, Object>();
 	AuthenticationState(String remoteAddress, Locale locale, Map<String,Object> environment) {
@@ -57,7 +58,7 @@ public class AuthenticationState {
 	}
 
 	public boolean isNew() {
-		return isNew;
+		return attempts <= 1;
 	}
 
 	public Integer getCurrentIndex() {
@@ -237,7 +238,15 @@ public class AuthenticationState {
 		attempts++;
 	}
 
-	public void setNewSession(boolean isNew) {
-		this.isNew = isNew;
+	public int getAttempts() {
+		return attempts;
+	}
+	
+	public void setHomePage(String homePage) {
+		this.homePage = homePage;
+	}
+	
+	public String getHomePage() {
+		return homePage;
 	}
 }

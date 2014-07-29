@@ -181,8 +181,7 @@ public class I18N {
 			messageFormat.setLocale(locale);
 			return messageFormat.format(formatParameters(arguments));
 		} catch (MissingResourceException mre) {
-			throw new IllegalArgumentException("Missing resource in "
-					+ resourceBundle + " for key " + key);
+			return "[i18n/" + resourceBundle + "/" + key + "]";
 		}
 	}
 	
@@ -212,8 +211,7 @@ public class I18N {
 			messageFormat.setLocale(locale);
 			return messageFormat.format(formatParameters(arguments));
 		} catch (MissingResourceException mre) {
-			throw new IllegalArgumentException("Missing resource in "
-					+ resourceBundle + " for key " + key);
+			return "[i18n/" + resourceBundle + "/" + key + "]";
 		}
 	}
 

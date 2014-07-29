@@ -48,7 +48,9 @@ public interface AuthenticationService extends AuthenticatedService {
 
 	void registerListener(AuthenticationServiceListener listener);
 
-	AuthenticationScheme getAuthenticationScheme(String scheme);
-
 	boolean isAuthenticatorInScheme(String scheme, String resourceKey);
+
+	AuthenticationScheme getSchemeByResourceKey(String resourceKey);
+
+	AuthenticationScheme getSchemeByName(String name);
 }

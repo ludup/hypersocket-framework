@@ -39,7 +39,6 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 
 	@Override
 	public void deleteResource(T resource) throws ResourceChangeException {
-
 		delete(resource);
 	}
 

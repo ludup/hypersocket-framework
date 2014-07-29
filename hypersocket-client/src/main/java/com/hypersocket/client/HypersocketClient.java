@@ -49,6 +49,8 @@ public abstract class HypersocketClient<T> {
 	
 	boolean userDisconnect = false;
 	boolean isDisconnecting = false;
+
+	String principalName;
 	
 	protected HypersocketClient(HypersocketClientTransport transport, Locale currentLocale)
 			throws IOException {
@@ -368,10 +370,15 @@ public abstract class HypersocketClient<T> {
 		} else {
 			JSONObject session = (JSONObject) result.get("session");
 			sessionId = (String) session.get("id");
+			principalName = (String) ((JSONObject)session.get("principal")).get("principalName");
 			return null;
 		}
 	}
 
+	public String getPrincipalName() {
+		return principalName;
+	}
+	
 	public String getRealm(String name) throws IOException {
 
 		return transport.get("realm/" + name);
@@ -396,7 +403,7 @@ public abstract class HypersocketClient<T> {
 
 				if(!userDisconnect && !isDisconnecting) {
 					try {
-						transport.get("touch", 10000L);
+						transport.get("session/touch", 10000L);
 					} catch (IOException e) {
 						if(!userDisconnect && !isDisconnecting) {
 							disconnect(true);

@@ -6,7 +6,7 @@ package com.hypersocket.utils;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
  
-public class IPAddressValidator{
+public class IPAddressValidator {
  
     private Pattern pattern;
     private Matcher matcher;
@@ -35,5 +35,12 @@ public class IPAddressValidator{
     public boolean validate(final String ip){		  
 	  matcher = pattern.matcher(ip);
 	  return matcher.matches();	    	    
+    }
+    
+    public String getGuaranteedHostname(String address) {
+    	if(validate(address)) {
+    		address = "host_" + address.replace(".", "_");
+    	}
+    	return address;
     }
 }
