@@ -19,16 +19,19 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
+import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.session.Session;
 
-@Entity
+@MappedSuperclass
 @Inheritance(strategy=InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="resource_type" , discriminatorType=DiscriminatorType.STRING)
+@Table(name="assignable_resource_sessions")
 public abstract class AssignableResourceSession<T extends AssignableResource> extends AbstractEntity<Long> {
 
 	@Id

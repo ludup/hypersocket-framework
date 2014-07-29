@@ -2,7 +2,11 @@ package com.hypersocket.events;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -12,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
@@ -36,6 +39,7 @@ public class EventServiceImpl implements EventService {
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}
+	
 	@Override
 	public void registerEvent(Class<? extends SystemEvent> eventClass,
 			String resourceBundle) {
@@ -87,6 +91,19 @@ public class EventServiceImpl implements EventService {
 
 	}
 
+	@Override
+	public List<EventDefinition> getEvents() {
+		List<EventDefinition> ret = new ArrayList<EventDefinition>(eventDefinitions.values());
+		Collections.sort(ret, new Comparator<EventDefinition>() {
+
+			@Override
+			public int compare(EventDefinition o1, EventDefinition o2) {
+				return o2.getResourceKey().compareTo(o1.getResourceKey());
+			}
+		});
+		return ret;
+	}
+	
 	private boolean checkResourceKey(String resourceKey, String resourceBundle) {
 		try {
 			I18N.getResource(i18nService.getDefaultLocale(), resourceBundle,

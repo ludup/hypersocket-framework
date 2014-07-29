@@ -15,6 +15,11 @@ import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+
 import com.hypersocket.auth.PasswordEncryptionType;
 import com.hypersocket.repository.AbstractEntity;
 
@@ -86,5 +91,14 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 	@Override
 	public Long getId() {
 		return id;
+	}
+	
+	protected void doHashCodeOnKeys(HashCodeBuilder builder) {
+		builder.append(user.getId());
+	}
+	
+	protected void doEqualsOnKeys(EqualsBuilder builder, Object obj) {
+		LocalUserCredentials creds = (LocalUserCredentials) obj;
+		builder.append(user.getId(), creds.getUser().getId());
 	}
 }

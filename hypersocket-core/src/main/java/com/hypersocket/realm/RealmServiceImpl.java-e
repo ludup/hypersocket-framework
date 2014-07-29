@@ -10,7 +10,6 @@ package com.hypersocket.realm;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,10 +17,10 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
@@ -55,8 +54,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	PermissionService permissionService;
 
 	@Autowired
-	ApplicationEventPublisher eventPublisher;
-
+	EventService eventService; 
+	
 	Principal systemPrincipal;
 
 	@PostConstruct
@@ -84,6 +83,18 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		for (RolePermission p : RolePermission.values()) {
 			permissionService.registerPermission(p.getResourceKey(), cat);
 		}
+		
+		eventService.registerEvent(RealmCreatedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(RealmUpdatedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(RealmDeletedEvent.class, RESOURCE_BUNDLE);
+		
+		eventService.registerEvent(UserCreatedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(UserUpdatedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(UserDeletedEvent.class, RESOURCE_BUNDLE);
+		
+		eventService.registerEvent(GroupCreatedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(GroupUpdatedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(GroupDeletedEvent.class, RESOURCE_BUNDLE);
 	}
 
 	@Override
@@ -193,7 +204,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			Principal principal = provider.createUser(realm, username,
 					properties, principals);
 
-			eventPublisher
+			eventService
 					.publishEvent(new UserCreatedEvent(this,
 							getCurrentSession(), realm, provider, principal,
 							principals,
@@ -201,17 +212,17 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 			return principal;
 		} catch (AccessDeniedException e) {
-			eventPublisher.publishEvent(new UserCreatedEvent(this, e,
+			eventService.publishEvent(new UserCreatedEvent(this, e,
 					getCurrentSession(), realm, provider, username, properties,
 					principals));
 			throw e;
 		} catch (ResourceCreationException e) {
-			eventPublisher.publishEvent(new UserCreatedEvent(this, e,
+			eventService.publishEvent(new UserCreatedEvent(this, e,
 					getCurrentSession(), realm, provider, username, properties,
 					principals));
 			throw e;
 		} catch (Exception e) {
-			eventPublisher.publishEvent(new UserCreatedEvent(this, e,
+			eventService.publishEvent(new UserCreatedEvent(this, e,
 					getCurrentSession(), realm, provider, username, properties,
 					principals));
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
@@ -235,7 +246,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			Principal principal = provider.updateUser(realm, user, username,
 					properties, principals);
 
-			eventPublisher
+			eventService
 				.publishEvent(new UserUpdatedEvent(this,
 						getCurrentSession(), realm, provider, principal,
 						principals,
@@ -244,17 +255,17 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 			return principal;
 		} catch (AccessDeniedException e) {
-			eventPublisher.publishEvent(new UserUpdatedEvent(this, e,
+			eventService.publishEvent(new UserUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, username, properties,
 					principals));
 			throw e;
 		} catch (ResourceChangeException e) {
-			eventPublisher.publishEvent(new UserUpdatedEvent(this, e,
+			eventService.publishEvent(new UserUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, username, properties,
 					principals));
 			throw e;
 		} catch (Exception e) {
-			eventPublisher.publishEvent(new UserUpdatedEvent(this, e,
+			eventService.publishEvent(new UserUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, username, properties,
 					principals));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
@@ -301,7 +312,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		if (realm == null) {
 			ResourceNotFoundException ex = new ResourceNotFoundException(
 					RESOURCE_BUNDLE, "error.invalidRealm", name);
-			eventPublisher.publishEvent(new RealmDeletedEvent(this, ex,
+			eventService.publishEvent(new RealmDeletedEvent(this, ex,
 					getCurrentSession(), name));
 			throw ex;
 		}
@@ -401,7 +412,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			if (realmRepository.getRealmByName(name) != null) {
 				ResourceCreationException ex = new ResourceCreationException(
 						RESOURCE_BUNDLE, "error.nameAlreadyExists", name);
-				eventPublisher.publishEvent(new RealmCreatedEvent(this, ex,
+				eventService.publishEvent(new RealmCreatedEvent(this, ex,
 						getCurrentSession(), name));
 				throw ex;
 			}
@@ -409,20 +420,20 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			Realm realm = realmRepository.createRealm(name, module, properties,
 					getProviderForRealm(module));
 
-			eventPublisher.publishEvent(new RealmCreatedEvent(this,
+			eventService.publishEvent(new RealmCreatedEvent(this,
 					getCurrentSession(), realm));
 
 			return realm;
 		} catch (AccessDeniedException e) {
-			eventPublisher.publishEvent(new RealmCreatedEvent(this, e,
+			eventService.publishEvent(new RealmCreatedEvent(this, e,
 					getCurrentSession(), name));
 			throw e;
 		} catch (ResourceCreationException e) {
-			eventPublisher.publishEvent(new RealmCreatedEvent(this, e,
+			eventService.publishEvent(new RealmCreatedEvent(this, e,
 					getCurrentSession(), name));
 			throw e;
 		} catch (Throwable t) {
-			eventPublisher.publishEvent(new RealmCreatedEvent(this, t,
+			eventService.publishEvent(new RealmCreatedEvent(this, t,
 					getCurrentSession(), name));
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
 					"error.genericError", name, t.getMessage());
@@ -452,19 +463,19 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			realm = realmRepository.saveRealm(realm, properties,
 					getProviderForRealm(realm));
 
-			eventPublisher.publishEvent(new RealmUpdatedEvent(this,
+			eventService.publishEvent(new RealmUpdatedEvent(this,
 					getCurrentSession(), oldName, realmRepository
 							.getRealmById(realm.getId())));
 		} catch (AccessDeniedException e) {
-			eventPublisher.publishEvent(new RealmUpdatedEvent(this, e,
+			eventService.publishEvent(new RealmUpdatedEvent(this, e,
 					getCurrentSession(), name));
 			throw e;
 		} catch (ResourceChangeException e) {
-			eventPublisher.publishEvent(new RealmUpdatedEvent(this, e,
+			eventService.publishEvent(new RealmUpdatedEvent(this, e,
 					getCurrentSession(), name));
 			throw e;
 		} catch (Throwable t) {
-			eventPublisher.publishEvent(new RealmUpdatedEvent(this, t,
+			eventService.publishEvent(new RealmUpdatedEvent(this, t,
 					getCurrentSession(), name));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
 					"error.unexpectedError", t);
@@ -506,19 +517,19 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 			realmRepository.delete(realm);
 
-			eventPublisher.publishEvent(new RealmDeletedEvent(this,
+			eventService.publishEvent(new RealmDeletedEvent(this,
 					getCurrentSession(), realm.getName()));
 
 		} catch (AccessDeniedException e) {
-			eventPublisher.publishEvent(new RealmDeletedEvent(this, e,
+			eventService.publishEvent(new RealmDeletedEvent(this, e,
 					getCurrentSession(), realm.getName()));
 			throw e;
 		} catch (ResourceChangeException e) {
-			eventPublisher.publishEvent(new RealmDeletedEvent(this, e,
+			eventService.publishEvent(new RealmDeletedEvent(this, e,
 					getCurrentSession(), realm.getName()));
 			throw e;
 		} catch (Throwable t) {
-			eventPublisher.publishEvent(new RealmDeletedEvent(this, t,
+			eventService.publishEvent(new RealmDeletedEvent(this, t,
 					getCurrentSession(), realm.getName()));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
 					"error.unexpectedError", t);
@@ -577,7 +588,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 			Principal principal = provider.createGroup(realm, name, principals);
 
-			eventPublisher
+			eventService
 					.publishEvent(new GroupCreatedEvent(this,
 							getCurrentSession(), realm, provider, principal,
 							principals,
@@ -585,15 +596,15 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 			return principal;
 		} catch (AccessDeniedException e) {
-			eventPublisher.publishEvent(new GroupCreatedEvent(this, e,
+			eventService.publishEvent(new GroupCreatedEvent(this, e,
 					getCurrentSession(), realm, provider, name, principals));
 			throw e;
 		} catch (ResourceCreationException e) {
-			eventPublisher.publishEvent(new GroupCreatedEvent(this, e,
+			eventService.publishEvent(new GroupCreatedEvent(this, e,
 					getCurrentSession(), realm, provider, name, principals));
 			throw e;
 		} catch (Exception e) {
-			eventPublisher.publishEvent(new GroupCreatedEvent(this, e,
+			eventService.publishEvent(new GroupCreatedEvent(this, e,
 					getCurrentSession(), realm, provider, name, principals));
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
 					"createGroup.unexpectedError", e.getMessage());
@@ -614,7 +625,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			Principal principal = provider.updateGroup(realm, group, name,
 					principals);
 
-			eventPublisher
+			eventService
 					.publishEvent(new GroupUpdatedEvent(this,
 							getCurrentSession(), realm, provider, principal,
 							principals,
@@ -622,15 +633,15 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 			return principal;
 		} catch (AccessDeniedException e) {
-			eventPublisher.publishEvent(new GroupUpdatedEvent(this, e,
+			eventService.publishEvent(new GroupUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, name, principals));
 			throw e;
 		} catch (ResourceChangeException e) {
-			eventPublisher.publishEvent(new GroupUpdatedEvent(this, e,
+			eventService.publishEvent(new GroupUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, name, principals));
 			throw e;
 		} catch (Exception e) {
-			eventPublisher.publishEvent(new GroupUpdatedEvent(this, e,
+			eventService.publishEvent(new GroupUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, name, principals));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
 					"groupUser.unexpectedError", e.getMessage());
@@ -649,21 +660,21 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 			provider.deleteGroup(group);
 
-			eventPublisher.publishEvent(new GroupDeletedEvent(this,
+			eventService.publishEvent(new GroupDeletedEvent(this,
 					getCurrentSession(), realm, provider, group, new HashMap<String,String>()));
 
 		} catch (AccessDeniedException e) {
-			eventPublisher.publishEvent(new GroupDeletedEvent(this, e,
+			eventService.publishEvent(new GroupDeletedEvent(this, e,
 					getCurrentSession(), realm, provider, group
 							.getPrincipalName()));
 			throw e;
 		} catch (ResourceChangeException e) {
-			eventPublisher.publishEvent(new GroupDeletedEvent(this, e,
+			eventService.publishEvent(new GroupDeletedEvent(this, e,
 					getCurrentSession(), realm, provider, group
 							.getPrincipalName()));
 			throw e;
 		} catch (Throwable e) {
-			eventPublisher.publishEvent(new GroupDeletedEvent(this, e,
+			eventService.publishEvent(new GroupDeletedEvent(this, e,
 					getCurrentSession(), realm, provider, group
 							.getPrincipalName()));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
@@ -682,21 +693,21 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 			provider.deleteUser(user);
 
-			eventPublisher.publishEvent(new UserDeletedEvent(this,
+			eventService.publishEvent(new UserDeletedEvent(this,
 					getCurrentSession(), realm, provider, user));
 
 		} catch (AccessDeniedException e) {
-			eventPublisher.publishEvent(new UserDeletedEvent(this, e,
+			eventService.publishEvent(new UserDeletedEvent(this, e,
 					getCurrentSession(), realm, provider, user
 							.getPrincipalName()));
 			throw e;
 		} catch (ResourceChangeException e) {
-			eventPublisher.publishEvent(new UserDeletedEvent(this, e,
+			eventService.publishEvent(new UserDeletedEvent(this, e,
 					getCurrentSession(), realm, provider, user
 							.getPrincipalName()));
 			throw e;
 		} catch (Throwable e) {
-			eventPublisher.publishEvent(new UserDeletedEvent(this, e,
+			eventService.publishEvent(new UserDeletedEvent(this, e,
 					getCurrentSession(), realm, provider, user
 							.getPrincipalName()));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
@@ -842,14 +853,14 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			principal = provider.updateUser(realm, principal,
 					principal.getPrincipalName(), properties, assosiated);
 
-			eventPublisher
+			eventService
 					.publishEvent(new ProfileUpdatedEvent(this,
 							getCurrentSession(), realm, provider, principal,
 							assosiated,
 							properties));
 		} catch (ResourceChangeException e) {
 
-			eventPublisher.publishEvent(new ProfileUpdatedEvent(this, e,
+			eventService.publishEvent(new ProfileUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, principal
 							.getPrincipalName(), properties, assosiated));
 		}

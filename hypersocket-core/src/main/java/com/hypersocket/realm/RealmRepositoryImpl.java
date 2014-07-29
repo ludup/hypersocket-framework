@@ -45,7 +45,7 @@ public class RealmRepositoryImpl extends AbstractResourceRepositoryImpl<RealmRes
 				p.setResourceId(realm.getId());
 				p.setResourceKey(e.getKey());
 				p.setValue(e.getValue());
-				saveObject(p);
+				save(p);
 			}
 		}
 		

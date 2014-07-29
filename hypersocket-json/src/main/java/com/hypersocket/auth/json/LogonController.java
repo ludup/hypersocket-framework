@@ -35,7 +35,7 @@ import com.hypersocket.session.json.SessionUtils;
 @Controller
 public class LogonController extends AuthenticatedController {
 
-	@RequestMapping(value = "touch", method = { RequestMethod.GET }, produces = { "application/json" })
+	@RequestMapping(value = "session/touch", method = { RequestMethod.GET }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public AuthenticationResult touch(HttpServletRequest request,
@@ -46,13 +46,13 @@ public class LogonController extends AuthenticatedController {
 
 		try {
 			return getSuccessfulResult(
-					sessionUtils.touchSession(request, response), "");
+					sessionUtils.touchSession(request, response));
 		} finally {
 			clearSystemContext();
 		}
 	}
 
-	@RequestMapping(value = "peek", method = { RequestMethod.GET }, produces = { "application/json" })
+	@RequestMapping(value = "session/peek", method = { RequestMethod.GET }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public AuthenticationResult peek(HttpServletRequest request,
@@ -63,7 +63,7 @@ public class LogonController extends AuthenticatedController {
 
 		try {
 			try {
-				return getSuccessfulResult(sessionUtils.getSession(request), "");
+				return getSuccessfulResult(sessionUtils.getSession(request));
 			} catch (UnauthorizedException e) {
 				return new AuthenticationRequiredResult();
 			}
@@ -94,6 +94,11 @@ public class LogonController extends AuthenticatedController {
 		
 	}
 	
+	public void resetAuthenticationState(HttpServletRequest request, HttpServletResponse response, String scheme) throws AccessDeniedException {
+		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, null);	
+		createAuthenticationState(scheme, request, response);
+	}
+	
 	@RequestMapping(value = "logon", method = { RequestMethod.GET,
 			RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
@@ -101,7 +106,7 @@ public class LogonController extends AuthenticatedController {
 	public AuthenticationResult logon(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException {
-		return logon(request, response, AuthenticationServiceImpl.DEFAULT_AUTHENTICATION_SCHEME);
+		return logon(request, response, AuthenticationServiceImpl.DEFAULT_AUTHENTICATION_RESOURCE_KEY);
 	}
 	
 	@RequestMapping(value = "logon/{scheme}", method = { RequestMethod.GET,
@@ -121,7 +126,7 @@ public class LogonController extends AuthenticatedController {
 				session = sessionUtils.touchSession(request, response);
 
 				if (session != null) {
-					return getSuccessfulResult(session, "");
+					return getSuccessfulResult(session);
 				}
 			} catch (UnauthorizedException e) {
 				// We are already in login so just continue
@@ -135,9 +140,7 @@ public class LogonController extends AuthenticatedController {
 			if (state == null) {
 				// We have not got login state so create
 				state = createAuthenticationState(scheme, request, response);
-			} else {
-				state.setNewSession(false);
-			}
+			} 
 			
 			authenticationService.logon(state, request.getParameterMap());
 
@@ -152,7 +155,7 @@ public class LogonController extends AuthenticatedController {
 				sessionUtils.addAPISession(request, response,
 						state.getSession());
 
-				return getSuccessfulResult(state.getSession(),"");
+				return getSuccessfulResult(state.getSession(),"", state.getHomePage());
 			} else {
 
 				return new AuthenticationRequiredResult(
@@ -176,7 +179,7 @@ public class LogonController extends AuthenticatedController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "switchRealm/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "session/switchRealm/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public AuthenticationResult switchRealm(HttpServletRequest request,
@@ -201,13 +204,13 @@ public class LogonController extends AuthenticatedController {
 
 			return getSuccessfulResult(session, I18N.getResource(
 					sessionUtils.getLocale(request), AuthenticationService.RESOURCE_BUNDLE,
-					"info.inRealm", realm.getName()));
+					"info.inRealm", realm.getName()), "");
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
 
-	@RequestMapping(value = "switchLanguage/{lang}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "session/switchLanguage/{lang}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public RequestStatus switchLanguage(HttpServletRequest request,
@@ -219,9 +222,14 @@ public class LogonController extends AuthenticatedController {
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session,
-			String info) {
+			String info, String homePage) {
 		return new AuthenticationSuccessResult(info,
-				i18nService.hasUserLocales(), session);
+				i18nService.hasUserLocales(), session, homePage);
+	}
+	
+	private AuthenticationResult getSuccessfulResult(Session session) {
+		return new AuthenticationSuccessResult("",
+				i18nService.hasUserLocales(), session, "");
 	}
 
 	@RequestMapping(value = "logoff")

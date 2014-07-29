@@ -8,12 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.Message;
-import com.hypersocket.repository.AbstractRepositoryImpl;
+import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 
 @Repository
 @Transactional
 public class AttributeRepositoryImpl extends
-		AbstractRepositoryImpl<Long> implements AttributeRepository {
+		AbstractEntityRepositoryImpl<Attribute,Long> implements AttributeRepository {
 
 	@Override
 	public void saveCategory(AttributeCategory cat) {
@@ -33,7 +33,7 @@ public class AttributeRepositoryImpl extends
 	
 	@Override
 	public void saveAttribute(Attribute attr) {
-		save(attr);
+		saveEntity(attr);
 		
 		I18N.overrideMessage(Locale.ENGLISH, new Message("UserAttributes", 
 				"attribute" + String.valueOf(attr.getId()),
@@ -50,6 +50,11 @@ public class AttributeRepositoryImpl extends
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	protected Class<Attribute> getEntityClass() {
+		return Attribute.class;
 	}
 
 }

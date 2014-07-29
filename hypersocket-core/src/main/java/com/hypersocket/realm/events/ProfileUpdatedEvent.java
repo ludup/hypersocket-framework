@@ -12,6 +12,8 @@ public class ProfileUpdatedEvent extends UserEvent {
 
 	private static final long serialVersionUID = 3984021807869214879L;
 
+	public static final String EVENT_RESOURCE_KEY = "event.profileUpdated";
+	
 	public ProfileUpdatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
 			List<Principal> associatedPrincipals, Map<String, String> properties) {

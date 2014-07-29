@@ -13,10 +13,13 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import com.hypersocket.resource.Resource;
 
 @Entity
-@Table(name="realms", uniqueConstraints = {@UniqueConstraint(columnNames={"name"})})
+@Table(name="realms")
 @XmlRootElement(name="realm")
 public class Realm extends Resource {
 	
@@ -35,4 +38,12 @@ public class Realm extends Resource {
 		this.system = system;
 	}
 	
+	protected void doHashCodeOnKeys(HashCodeBuilder builder) {
+		builder.append(getName());
+	}
+	
+	protected void doEqualsOnKeys(EqualsBuilder builder, Object obj) {
+		Realm r = (Realm) obj;
+		builder.append(getName(), r.getName());
+	}
 }

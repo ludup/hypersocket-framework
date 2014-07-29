@@ -33,7 +33,7 @@ import com.hypersocket.realm.PrincipalType;
 public class LocalGroup extends Principal {
 
 	@ManyToMany(fetch=FetchType.EAGER)
-	@Cascade({CascadeType.ALL})
+	@Cascade({CascadeType.SAVE_UPDATE})
 	@JoinTable(name = "local_user_groups", joinColumns={@JoinColumn(name="guid")}, inverseJoinColumns={@JoinColumn(name="uuid")})
 	private Set<LocalUser> users = new HashSet<LocalUser>();
 	

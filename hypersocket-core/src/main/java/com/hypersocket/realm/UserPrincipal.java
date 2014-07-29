@@ -7,11 +7,10 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
-import java.util.Set;
 
 public interface UserPrincipal {
 
 	public String getPrincipalName();
 	
-	Set<Principal> getAssociatedPrincipals();
+//	Set<Principal> getAssociatedPrincipals();
 }

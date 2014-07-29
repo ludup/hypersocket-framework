@@ -17,6 +17,7 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -39,10 +40,14 @@ public class LocalUser extends Principal implements UserPrincipal, Serializable 
 	PrincipalType type = PrincipalType.USER;
 	
 	@ManyToMany(fetch=FetchType.LAZY)
-	@Cascade({CascadeType.ALL})
+	@Cascade({CascadeType.SAVE_UPDATE})
 	@JoinTable(name = "local_user_groups", joinColumns={@JoinColumn(name="uuid")}, inverseJoinColumns={@JoinColumn(name="guid")})
 	private Set<LocalGroup> groups = new HashSet<LocalGroup>();
 
+	@OneToOne(mappedBy="user", optional=true)
+	@Cascade({CascadeType.DELETE})
+	LocalUserCredentials credentials;
+	
 	@JsonIgnore
 	public Set<LocalGroup> getGroups() {
 		return groups;

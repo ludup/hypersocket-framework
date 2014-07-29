@@ -17,9 +17,11 @@ import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
@@ -34,6 +36,9 @@ import com.hypersocket.tables.ColumnSort;
 @Transactional
 public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl implements LocalUserRepository {
 
+	@Autowired
+	PermissionService permissionService;
+	
 	final static DetachedCriteriaConfiguration JOIN_GROUPS = new DetachedCriteriaConfiguration() {
 		
 		@Override
@@ -105,7 +110,6 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 			throw new IllegalArgumentException("Cannot assign: user and group must both belong to the same realm!");
 		
 		user.getGroups().add(group);
-		
 		save(user);
 		flush();
 		
@@ -118,7 +122,6 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 			throw new IllegalArgumentException("Cannot unassign: user and group must both belong to the same realm!");
 		
 		user.getGroups().remove(group);
-		
 		save(user);
 		flush();
 
@@ -205,19 +208,15 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 
 	@Override
 	public void deleteGroup(LocalGroup group) {
-		
 		group.getUsers().clear();
 		group.setDeleted(true);
-		group.setName(group.getName() + " [#" + group.getId() + " deleted]");
 		save(group);
 	}
 
 	@Override
 	public void deleteUser(LocalUser usr) {
-		
 		usr.getGroups().clear();
 		usr.setDeleted(true);
-		usr.setName(usr.getName() + " [#" + usr.getId() + " deleted]");
 		save(usr);
 	};
 	
@@ -299,7 +298,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 
 	@Override
 	public Collection<? extends Principal> getUsersByGroup(final LocalGroup principal) {
-		return list(LocalGroup.class, false, new CriteriaConfiguration() {
+		return list(LocalUser.class, false, new CriteriaConfiguration() {
 			
 			@Override
 			public void configure(Criteria criteria) {

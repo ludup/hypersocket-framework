@@ -201,7 +201,6 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@Override
 	public void deleteResource(T resource) throws ResourceChangeException {
-
 		delete(resource);
 	}
 

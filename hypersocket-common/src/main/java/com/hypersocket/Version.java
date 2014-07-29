@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.hypersocket.upgrade;
+package com.hypersocket;
 
 
 public class Version implements Comparable<Version> {
@@ -19,10 +19,12 @@ public class Version implements Comparable<Version> {
     public void parseFromString(String versionString) {
         this.versionString = versionString;
         String[] stringElements = versionString.split("[^a-zA-Z0-9]+");
-        if (stringElements.length < 3 || stringElements.length > 4) {
+        if (stringElements.length < 2 || stringElements.length > 4) {
             throw new IllegalArgumentException("Version number be in the format <major>.<minor>.<release>[?TAG]");
         } else if (stringElements.length == 3) {
             stringElements = new String[] { stringElements[0], stringElements[1], stringElements[2], "base" };
+        } else if (stringElements.length == 2) {
+            stringElements = new String[] { stringElements[0], stringElements[1], "0", "base" };
         }
         elements = new int[stringElements.length];
         int idx = 0;

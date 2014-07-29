@@ -17,6 +17,7 @@ public class FormTemplate {
 
 	protected String resourceKey;
 	protected List<InputField> fields = new ArrayList<InputField>();
+	protected boolean showLogonButton = true;
 	
 	public FormTemplate() {
 	}
@@ -38,6 +39,9 @@ public class FormTemplate {
 		this.fields = fields;
 	}
 	
+	public boolean isShowLogonButton() {
+		return showLogonButton;
+	}
 	
 	
 	

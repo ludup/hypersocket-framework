@@ -46,11 +46,12 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		return DetachedCriteria.forClass(entityClass);
 	}
 	
-	protected void saveObject(Object entity) {
-		hibernateTemplate.save(entity);
-	}
+//	protected void saveObject(Object entity) {
+//		hibernateTemplate.save(entity);
+//	}
 	
 	protected void save(AbstractEntity<K> entity) {
+		
 		
 		entity.setLastModified(new Date());
 		

@@ -12,6 +12,8 @@ public class GroupUpdatedEvent extends GroupEvent {
 
 	private static final long serialVersionUID = 7661773189101981651L;
 
+	public static final String EVENT_RESOURCE_KEY = "event.groupUpdated";
+	
 	public GroupUpdatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
 			List<Principal> associatedPrincipals, Map<String,String> properties) {

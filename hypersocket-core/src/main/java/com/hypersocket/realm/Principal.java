@@ -11,6 +11,8 @@ import javax.persistence.Entity;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import com.hypersocket.resource.RealmResource;
@@ -19,23 +21,10 @@ import com.hypersocket.resource.RealmResource;
 @XmlRootElement(name = "principal")
 public abstract class Principal extends RealmResource {
 
-	
-
-//	@ManyToMany(fetch = FetchType.EAGER)
-//	@Cascade(CascadeType.PERSIST)
-//	@JoinTable(name = "role_principals", joinColumns = { @JoinColumn(name = "principal_id") }, inverseJoinColumns = { @JoinColumn(name = "role_id") })
-//	@Fetch(FetchMode.SELECT)
-//	Set<Role> roles = new HashSet<Role>();
-
 	@JsonIgnore
 	public Realm getRealm() {
 		return super.getRealm();
 	}
-
-//	@JsonIgnore
-//	public Set<Role> getRoles() {
-//		return roles;
-//	}
 
 	public abstract PrincipalType getType();
 
@@ -44,4 +33,14 @@ public abstract class Principal extends RealmResource {
 		return getName();
 	}
 
+	protected void doHashCodeOnKeys(HashCodeBuilder builder) {
+		builder.append(getRealm());
+		builder.append(getName());
+	}
+	
+	protected void doEqualsOnKeys(EqualsBuilder builder, Object obj) {
+		Principal r = (Principal) obj;
+		builder.append(getRealm(), r.getRealm());
+		builder.append(getName(), r.getName());
+	}
 }

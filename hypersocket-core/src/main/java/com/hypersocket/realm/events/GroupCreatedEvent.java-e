@@ -12,6 +12,8 @@ public class GroupCreatedEvent extends GroupEvent {
 
 	private static final long serialVersionUID = 4735780813485949894L;
 
+	public static final String EVENT_RESOURCE_KEY = "event.groupCreated";
+	
 	public GroupCreatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
 			List<Principal> associatedPrincipals,

@@ -9,27 +9,12 @@ package com.hypersocket.auth;
 
 import java.util.List;
 
-import com.hypersocket.repository.AbstractRepository;
+import com.hypersocket.repository.AbstractEntityRepository;
 
-public interface AuthenticationRepository extends AbstractRepository<Long> {
-
-	public Credential createCredential(CredentialType type, Integer index,
-			String resourceKey);
-
-	public AuthenticationScheme createScheme(String name, List<String> modules,
-			String resourceKey);
-
-	public AuthenticationScheme createScheme(String name, List<String> modules,
-			String resourceKey, boolean hidden);
-
-	List<AuthenticationScheme> allSchemes();
+public interface AuthenticationModuleRepository extends AbstractEntityRepository<AuthenticationModule,Long> {
 
 	public List<AuthenticationModule> getModulesForScheme(
 			AuthenticationScheme scheme);
-
-	public AuthenticationScheme getScheme(String string);
-
-	public List<AuthenticationScheme> getAuthenticationSchemes();
 
 	public List<AuthenticationModule> getAuthenticationModules();
 
@@ -37,8 +22,6 @@ public interface AuthenticationRepository extends AbstractRepository<Long> {
 			AuthenticationScheme authenticationScheme);
 
 	public AuthenticationModule getModuleById(Long id);
-
-	public AuthenticationScheme getSchemeById(Long id);
 
 	public void updateSchemeModules(List<AuthenticationModule> moduleList);
 
@@ -49,4 +32,5 @@ public interface AuthenticationRepository extends AbstractRepository<Long> {
 			AuthenticationModule authenticationModule);
 
 	public void deleteModule(AuthenticationModule authenticationModule);
+
 }

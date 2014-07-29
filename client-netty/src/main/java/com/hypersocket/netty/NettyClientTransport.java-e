@@ -303,8 +303,8 @@ public class NettyClientTransport implements HypersocketClientTransport {
 		NetworkResource resource = resourcesBySocketAddress.get(channel
 				.getLocalAddress());
 
-		return createWebsocket("tunnel?resourceId=" + resource.getId()
-				+ "&hostname=" + resource.getHostname()
+		return createWebsocket(resource.getUri() + "?resourceId=" + resource.getId()
+				+ "&hostname=" + resource.getDestinationHostname()
 				+ "&port=" + resource.getPort(), callback);
 
 	}

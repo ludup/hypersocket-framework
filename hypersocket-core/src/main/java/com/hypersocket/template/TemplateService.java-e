@@ -23,7 +23,7 @@ public interface TemplateService extends AbstractResourceService<Template> {
 	void updateTemplate(Template template, String name, String subject, String template2,
 			String type) throws ResourceChangeException, AccessDeniedException;
 
-	void emailTemplate(String templateName, Principal principal,
+	void emailTemplate(Template template, Principal principal,
 			Map<String, String> replacements) throws ResourceNotFoundException,
 			MediaNotFoundException;
 

@@ -9,6 +9,8 @@ public class RealmUpdatedEvent extends RealmEvent {
 
 	public static final String ATTR_OLD_REALM_NAME = "attr.oldRealmName";
 	
+	public static final String EVENT_RESOURCE_KEY = "event.realmUpdated";
+	
 	public RealmUpdatedEvent(Object source, Session session, String oldName, Realm realm) {
 		super(source, "event.realmUpdated", true, session, realm);
 		addAttribute(ATTR_OLD_REALM_NAME, oldName);

@@ -7,6 +7,8 @@ public class RealmCreatedEvent extends RealmEvent {
 
 	private static final long serialVersionUID = -237151176246845100L;
 
+	public static final String EVENT_RESOURCE_KEY = "event.realmCreated";
+	
 	public RealmCreatedEvent(Object source, Session session, Realm realm) {
 		super(source, "event.realmCreated", true, session, realm);
 	}

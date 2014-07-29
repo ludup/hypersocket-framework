@@ -24,8 +24,7 @@ public abstract class AbstractEntityRepositoryImpl<T extends AbstractEntity<K>,K
 
 	@Override
 	public void deleteEntity(T entity) {
-		entity.setDeleted(true);
-		saveEntity(entity);
+		delete(entity);
 	}
 
 }

@@ -37,6 +37,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 
+import com.hypersocket.Version;
+
 public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAware {
 
 	private final static Logger log = LoggerFactory.getLogger(UpgradeServiceImpl.class);

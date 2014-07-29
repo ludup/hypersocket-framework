@@ -45,8 +45,9 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		implements AuthenticationService {
 
 	public static final String DEFAULT_AUTHENTICATION_SCHEME = "Default";
-	public static final String HTTP_AUTHENTICATION_SCHEME = "HTTP";
 
+	public static final String DEFAULT_AUTHENTICATION_RESOURCE_KEY = "basic";
+	
 	private static Logger log = LoggerFactory
 			.getLogger(AuthenticationServiceImpl.class);
 
@@ -54,8 +55,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	PermissionService permissionService;
 
 	@Autowired
-	AuthenticationRepository repository;
+	AuthenticationModuleRepository repository;
 
+	@Autowired
+	AuthenticationSchemeRepository schemeRepository;
+	
 	@Autowired
 	SessionService sessionService;
 
@@ -121,7 +125,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	@Override
 	public AuthenticationScheme getDefaultScheme(String remoteAddress,
 			Map<String, String> environment, Realm realm) {
-		List<AuthenticationScheme> schemes = repository.allSchemes();
+		List<AuthenticationScheme> schemes = schemeRepository.allSchemes();
 		if (schemes.size() == 0)
 			throw new IllegalArgumentException(
 					"There are no authentication schemes configured!");
@@ -129,9 +133,9 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
-	public boolean isAuthenticatorInScheme(String scheme, String resourceKey) {
+	public boolean isAuthenticatorInScheme(String schemeResourceKey, String resourceKey) {
 		
-		AuthenticationScheme s = repository.getScheme(scheme);
+		AuthenticationScheme s = schemeRepository.getSchemeByResourceKey(schemeResourceKey);
 		for(AuthenticationModule m : repository.getAuthenticationModulesByScheme(s)) {
 			if(m.getTemplate().equals(resourceKey)) {
 				return true;
@@ -139,13 +143,19 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		}
 		return false;
 	}
+	
 	@Override
-	public AuthenticationScheme getAuthenticationScheme(String scheme) {
-		return repository.getScheme(scheme);
+	public AuthenticationScheme getSchemeByResourceKey(String resourceKey) {
+		return schemeRepository.getSchemeByResourceKey(resourceKey);
 	}
 
 	@Override
-	public AuthenticationState createAuthenticationState(String scheme,
+	public AuthenticationScheme getSchemeByName(String name) {
+		return schemeRepository.getSchemeByName(name);
+	}
+	
+	@Override
+	public AuthenticationState createAuthenticationState(String resourceKey,
 			String remoteAddress, Map<String, Object> environment, Locale locale)
 			throws AccessDeniedException {
 
@@ -191,7 +201,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			}
 		}
 
-		state.setScheme(getAuthenticationScheme(scheme));
+		state.setScheme(getSchemeByResourceKey(resourceKey));
 		state.setModules(repository.getModulesForScheme(state.getScheme()));
 
 		return state;
@@ -249,7 +259,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			} else {
 				switch (authenticator.authenticate(state, parameterMap)) {
 				case INSUFFICIENT_DATA: {
-					if (!state.isNew()) {
+					if (state.getAttempts() >= 1) {
 						state.setLastErrorMsg("error.insufficentData");
 						state.setLastErrorIsResourceKey(true);
 					}
@@ -408,11 +418,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
-	public Map<String, Authenticator> getAuthenticators(String scheme) {
+	public Map<String, Authenticator> getAuthenticators(String resourceKey) {
 		Map<String, Authenticator> tmp = new HashMap<String, Authenticator>();
 		for(Authenticator a : authenticators.values()) {
 			for(String s : a.getAllowedSchemes()) {
-				if(scheme.matches(s)) {
+				if(resourceKey.matches(s)) {
 					tmp.put(a.getResourceKey(), a);
 					break;
 				}

@@ -11,7 +11,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hypersocket.auth.AuthenticationRepository;
+import com.hypersocket.auth.AuthenticationModuleRepository;
 import com.hypersocket.local.LocalRealmProvider;
 import com.hypersocket.local.LocalUserRepository;
 import com.hypersocket.permissions.Permission;
@@ -31,7 +31,7 @@ public class core_0_DOT_0_DOT_5 implements Runnable {
 	PermissionRepository permissionRepository;
 
 	@Autowired
-	AuthenticationRepository authenticationRepository;
+	AuthenticationModuleRepository authenticationRepository;
 
 	@Autowired
 	LocalRealmProvider localRealmProvider;

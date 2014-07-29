@@ -76,17 +76,15 @@ public class TemplateServiceImpl extends AbstractResourceServiceImpl<Template>
 	}
 
 	@Override
-	public void emailTemplate(String templateName, Principal principal,
+	public void emailTemplate(Template template, Principal principal,
 			Map<String, String> replacements) throws ResourceNotFoundException,
 			MediaNotFoundException {
 
-		Template t = getResourceByName(templateName);
-
 		String email = realmService.getPrincipalAddress(principal, MediaType.EMAIL);
 		String subject = ReplacementUtils.processTokenReplacements(
-				t.getSubject(), replacements);
+				template.getSubject(), replacements);
 		String text = ReplacementUtils.processTokenReplacements(
-				t.getTemplate(), replacements);
+				template.getTemplate(), replacements);
 
 		emailService.sendHtmlEmail(subject, text,
 				new Recipient[] { new Recipient(realmService.getPrincipalDescription(principal),

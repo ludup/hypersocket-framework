@@ -13,7 +13,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hypersocket.auth.AuthenticationRepository;
+import com.hypersocket.auth.AuthenticationModuleRepository;
+import com.hypersocket.auth.AuthenticationSchemeRepository;
 import com.hypersocket.auth.UsernameAndPasswordAuthenticator;
 import com.hypersocket.local.LocalRealmProvider;
 import com.hypersocket.local.LocalUser;
@@ -39,8 +40,11 @@ public class core_0_DOT_0_DOT_1 implements Runnable {
 	PermissionRepository permissionRepository;
 
 	@Autowired
-	AuthenticationRepository authenticationRepository;
+	AuthenticationModuleRepository authenticationRepository;
 
+	@Autowired
+	AuthenticationSchemeRepository schemeRepository;
+	
 	@Autowired
 	LocalRealmProvider localRealmProvider;
 
@@ -74,7 +78,7 @@ public class core_0_DOT_0_DOT_1 implements Runnable {
 			List<String> modules = new ArrayList<String>();
 			modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
 
-			authenticationRepository.createScheme("Default", modules, "basic");
+			schemeRepository.createScheme("Default", modules, "basic");
 
 			realm = new Realm();
 			realm.setName("Default");
