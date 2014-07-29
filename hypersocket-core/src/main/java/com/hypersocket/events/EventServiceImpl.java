@@ -85,8 +85,7 @@ public class EventServiceImpl implements EventService {
 				}
 			}
 		} catch (Throwable t) {
-			log.error("Failed to register event class " + eventClass.getName(),
-					t);
+			throw new IllegalStateException("Failed to register event class " + eventClass.getName(), t);
 		}
 
 	}

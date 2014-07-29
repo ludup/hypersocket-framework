@@ -44,7 +44,7 @@ public class ServerController extends AuthenticatedController {
 	SessionUtils sessionUtils;
 
 	@AuthenticationRequired
-	@RequestMapping(value = "restart/{delay}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "server/restart/{delay}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public RequestStatus restartServer(HttpServletRequest request,
@@ -63,7 +63,7 @@ public class ServerController extends AuthenticatedController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "shutdown/{delay}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "server/shutdown/{delay}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public RequestStatus shutdownServer(HttpServletRequest request,
@@ -82,7 +82,7 @@ public class ServerController extends AuthenticatedController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "sslProtocols", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "server/sslProtocols", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<MultiselectElement> getSslProtocols(
@@ -103,7 +103,7 @@ public class ServerController extends AuthenticatedController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "sslCiphers", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "server/sslCiphers", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<MultiselectElement> getSslCiphers(
@@ -124,7 +124,7 @@ public class ServerController extends AuthenticatedController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "networkInterfaces", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "server/networkInterfaces", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<MultiselectElement> getCategories(
