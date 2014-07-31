@@ -57,7 +57,7 @@ public class PermissionsController extends ResourceController {
 
 	
 	@AuthenticationRequired
-	@RequestMapping(value = "permissions/permission/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "permissions/permission/{resourceKey}/", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<Permission> getPermission(HttpServletRequest request,

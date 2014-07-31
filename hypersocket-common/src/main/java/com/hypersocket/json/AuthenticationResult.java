@@ -19,6 +19,7 @@ public class AuthenticationResult {
 	boolean showLocales;
 	boolean success;
 	String version = HypersocketVersion.getVersion();
+	JsonResource principal;
 	
 	public AuthenticationResult() {	
 	}

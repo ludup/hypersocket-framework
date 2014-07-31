@@ -34,6 +34,8 @@ import org.junit.BeforeClass;
 import com.hypersocket.json.AuthenticationRequiredResult;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.JsonResourceStatus;
+import com.hypersocket.json.JsonRole;
+import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.netty.Main;
 import com.hypersocket.permissions.json.RoleUpdate;
 import com.hypersocket.properties.json.PropertyItem;
@@ -48,7 +50,8 @@ public class AbstractServerTest {
 	static Main main;
 	static BasicCookieStore cookieStore;
 	static ObjectMapper mapper = new ObjectMapper();
-
+	protected static Long adminId;
+	
 	@BeforeClass
 	public static void startup() throws Exception {
 
@@ -265,7 +268,7 @@ public class AbstractServerTest {
 		try {
 			if (response.getStatusLine().getStatusCode() != 200) {
 				throw new ClientProtocolException(
-						"Expected status code 200 for doGet");
+						"Expected status code 200 for doGet [" + response.getStatusLine().getStatusCode() + "]");
 			}
 
 			return IOUtils.toString(response.getEntity().getContent(), "UTF-8");
@@ -373,7 +376,7 @@ public class AbstractServerTest {
 		PropertyItem[] propArray = { propItem1, propItem2 };
 		x.setProperties(propArray);
 
-		String newUserJson = doPostJson("/hypersocket/api/user", x);
+		String newUserJson = doPostJson("/hypersocket/api/currentRealm/user", x);
 		debugJSON(newUserJson);
 
 		JsonResourceStatus newUserJsonResourceStatus = mapper.readValue(
@@ -392,7 +395,7 @@ public class AbstractServerTest {
 
 		credentialsUpdate.setPrincipalId(json.getResource().getId());
 
-		String changePasswordJson = doPostJson("/hypersocket/api/credentials",
+		String changePasswordJson = doPostJson("/hypersocket/api/currentRealm/user/credentials",
 				credentialsUpdate);
 		debugJSON(changePasswordJson);
 
@@ -404,7 +407,7 @@ public class AbstractServerTest {
 		group.setName(groupname);
 		group.setUsers(new Long[0]);
 
-		String newGroupJson = doPostJson("/hypersocket/api/group", group);
+		String newGroupJson = doPostJson("/hypersocket/api/currentRealm/group", group);
 
 		JsonResourceStatus newGroupJsonResourceStatus = mapper.readValue(
 				newGroupJson, JsonResourceStatus.class);
@@ -424,7 +427,7 @@ public class AbstractServerTest {
 		Long[] groupUsers = { jsonUser.getResource().getId() };
 		groupUpdate.setUsers(groupUsers);
 
-		String addUserToGroupJson = doPostJson("/hypersocket/api/group",
+		String addUserToGroupJson = doPostJson("/hypersocket/api/currentRealm/group",
 				groupUpdate);
 		debugJSON(addUserToGroupJson);
 
@@ -439,13 +442,26 @@ public class AbstractServerTest {
 
 		groupUpdate.setUsers(users);
 
-		String addUserToGroupJson = doPostJson("/hypersocket/api/group",
+		String addUserToGroupJson = doPostJson("/hypersocket/api/currentRealm/group",
 				groupUpdate);
 		debugJSON(addUserToGroupJson);
 
 	}
 
-	protected static JsonResourceStatus createRole(String rolename,
+	protected static long getPermissionId(String resourceKey) throws Exception {
+		
+		String permissionJson = doGet("/hypersocket/api/permissions/permission/" + resourceKey + "/");
+		
+		JsonResourceStatus status = mapper.readValue(permissionJson, JsonResourceStatus.class);
+		
+		if(!status.isSuccess()) {
+			throw new Exception("Cannot retrieve permission id for " + resourceKey);
+		}
+		
+		return status.getResource().getId();
+	}
+	
+	protected static JsonRoleResourceStatus createRole(String rolename,
 			Long[] permissions) throws Exception {
 		RoleUpdate role = new RoleUpdate();
 		role.setName(rolename);
@@ -454,74 +470,74 @@ public class AbstractServerTest {
 		role.setUsers(new Long[0]);
 		role.setGroups(new Long[0]);
 
-		String newRoleJson = doPostJson("/hypersocket/api/role", role);
-		JsonResourceStatus newRoleJsonResourceStatus = mapper.readValue(
-				newRoleJson, JsonResourceStatus.class);
+		String newRoleJson = doPostJson("/hypersocket/api/roles/role", role);
+		JsonRoleResourceStatus newRoleJsonResourceStatus = mapper.readValue(
+				newRoleJson, JsonRoleResourceStatus.class);
 		debugJSON(newRoleJson);
 		return newRoleJsonResourceStatus;
 
 	}
 
-	protected static void addUserToRole(JsonResourceStatus jsonRole,
+	protected static void addUserToRole(JsonRole jsonRole,
 			JsonResourceStatus jsonUser) throws Exception {
 
 		RoleUpdate roleUpdate = new RoleUpdate();
 
-		roleUpdate.setName(jsonRole.getResource().getName());
-		roleUpdate.setId(jsonRole.getResource().getId());
+		roleUpdate.setName(jsonRole.getName());
+		roleUpdate.setId(jsonRole.getId());
 		Long[] roleUsers = { jsonUser.getResource().getId() };
 		roleUpdate.setUsers(roleUsers);
 		roleUpdate.setGroups(new Long[0]);
-		Long[] permissions = new Long[jsonRole.getResource().getPermissions().length];
+		Long[] permissions = new Long[jsonRole.getPermissions().length];
 		for (int x = 0; x < permissions.length; x++) {
-			permissions[x] = jsonRole.getResource().getPermissions()[x].getId();
+			permissions[x] = jsonRole.getPermissions()[x].getId();
 		}
 		roleUpdate.setPermissions(permissions);
 
-		String addUserToRoledJson = doPostJson("/hypersocket/api/role",
+		String addUserToRoledJson = doPostJson("/hypersocket/api/roles/role",
 				roleUpdate);
 		debugJSON(addUserToRoledJson);
 
 	}
 
-	protected static void addUsersToRole(JsonResourceStatus jsonRole,
+	protected static void addUsersToRole(JsonRole jsonRole,
 			Long[] users) throws Exception {
 
 		RoleUpdate roleUpdate = new RoleUpdate();
 
-		roleUpdate.setName(jsonRole.getResource().getName());
-		roleUpdate.setId(jsonRole.getResource().getId());
+		roleUpdate.setName(jsonRole.getName());
+		roleUpdate.setId(jsonRole.getId());
 		roleUpdate.setUsers(users);
 		roleUpdate.setGroups(new Long[0]);
-		Long[] permissions = new Long[jsonRole.getResource().getPermissions().length];
+		Long[] permissions = new Long[jsonRole.getPermissions().length];
 		for (int x = 0; x < permissions.length; x++) {
-			permissions[x] = jsonRole.getResource().getPermissions()[x].getId();
+			permissions[x] = jsonRole.getPermissions()[x].getId();
 		}
 		roleUpdate.setPermissions(permissions);
 
-		String addUserToRoledJson = doPostJson("/hypersocket/api/role",
+		String addUserToRoledJson = doPostJson("/hypersocket/api/roles/role",
 				roleUpdate);
 		debugJSON(addUserToRoledJson);
 
 	}
 
-	protected static void addGroupToRole(JsonResourceStatus jsonRole,
+	protected static void addGroupToRole(JsonRole jsonRole,
 			JsonResourceStatus jsonGroup) throws Exception {
 
 		RoleUpdate roleUpdate = new RoleUpdate();
 
-		roleUpdate.setName(jsonRole.getResource().getName());
-		roleUpdate.setId(jsonRole.getResource().getId());
+		roleUpdate.setName(jsonRole.getName());
+		roleUpdate.setId(jsonRole.getId());
 		Long[] roleGroups = { jsonGroup.getResource().getId() };
 		roleUpdate.setGroups(roleGroups);
 		roleUpdate.setUsers(new Long[0]);
-		Long[] permissions = new Long[jsonRole.getResource().getPermissions().length];
+		Long[] permissions = new Long[jsonRole.getPermissions().length];
 		for (int x = 0; x < permissions.length; x++) {
-			permissions[x] = jsonRole.getResource().getPermissions()[x].getId();
+			permissions[x] = jsonRole.getPermissions()[x].getId();
 		}
 		roleUpdate.setPermissions(permissions);
 
-		String addGroupToRoledJson = doPostJson("/hypersocket/api/role",
+		String addGroupToRoledJson = doPostJson("/hypersocket/api/roles/role",
 				roleUpdate);
 		debugJSON(addGroupToRoledJson);
 
