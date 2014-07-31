@@ -68,18 +68,18 @@ public class I18NServiceImpl extends AuthenticatedServiceImpl implements I18NSer
 		registerBundle(SessionService.RESOURCE_BUNDLE);
 		
 		supportedLocales.add(Locale.ENGLISH);
-		supportedLocales.add(getLocale("da"));
-		supportedLocales.add(getLocale("nl"));
-		supportedLocales.add(getLocale("fi"));
-		supportedLocales.add(getLocale("fr"));
-		supportedLocales.add(getLocale("de"));
-		supportedLocales.add(getLocale("it"));
-		supportedLocales.add(getLocale("ja"));
-		supportedLocales.add(getLocale("no"));
-		supportedLocales.add(getLocale("pl"));
-		supportedLocales.add(getLocale("ru"));
-		supportedLocales.add(getLocale("es"));
-		supportedLocales.add(getLocale("sv"));
+//		supportedLocales.add(getLocale("da"));
+//		supportedLocales.add(getLocale("nl"));
+//		supportedLocales.add(getLocale("fi"));
+//		supportedLocales.add(getLocale("fr"));
+//		supportedLocales.add(getLocale("de"));
+//		supportedLocales.add(getLocale("it"));
+//		supportedLocales.add(getLocale("ja"));
+//		supportedLocales.add(getLocale("no"));
+//		supportedLocales.add(getLocale("pl"));
+//		supportedLocales.add(getLocale("ru"));
+//		supportedLocales.add(getLocale("es"));
+//		supportedLocales.add(getLocale("sv"));
 		
 	}
 	
