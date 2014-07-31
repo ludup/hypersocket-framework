@@ -122,10 +122,16 @@ public class RoleController extends ResourceController {
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
 			return new ResourceList<Role>(
 					permissionService.allRoles(sessionUtils
 							.getCurrentRealm(request)));
-		
+		} finally {
+			clearAuthenticatedContext();
+		}
 	}
 
 	@AuthenticationRequired

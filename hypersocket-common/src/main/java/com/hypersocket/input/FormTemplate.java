@@ -12,7 +12,9 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class FormTemplate {
 
 	protected String resourceKey;
@@ -41,6 +43,10 @@ public class FormTemplate {
 	
 	public boolean isShowLogonButton() {
 		return showLogonButton;
+	}
+	
+	public void setShowLogonButton(boolean showLogonButton) {
+		this.showLogonButton = showLogonButton;
 	}
 	
 	

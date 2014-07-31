@@ -22,11 +22,11 @@ public class LoginTests extends AbstractServerTest {
 		logoff();
 	}
 
-	@Test(expected = AssertionError.class)
-	public void loginWithBadRealm() throws Exception {
-		logon("InvalidRealm", "admin", "Password123?");
-		logoff();
-	}
+//	@Test(expected = AssertionError.class)
+//	public void loginWithBadRealm() throws Exception {
+//		logon("InvalidRealm", "admin", "Password123?");
+//		logoff();
+//	}
 	
 	@Test(expected = AssertionError.class)
 	public void loginWithBadUser() throws Exception {

@@ -776,7 +776,9 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public List<?> getPrincipals(Realm realm, PrincipalType type,
-			String searchPattern, int start, int length, ColumnSort[] sorting) {
+			String searchPattern, int start, int length, ColumnSort[] sorting) throws AccessDeniedException {
+		
+		assertAnyPermission(UserPermission.READ);
 		return getProviderForRealm(realm).getPrincipals(realm, type,
 				searchPattern, start, length, sorting);
 	}

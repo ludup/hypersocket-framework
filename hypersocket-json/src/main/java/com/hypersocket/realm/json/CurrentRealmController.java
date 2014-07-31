@@ -56,8 +56,9 @@ public class CurrentRealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			return new ResourceList<Principal>(realmService.allGroups(
-					sessionUtils.getCurrentRealm(request)));
+			return new ResourceList<Principal>(
+					realmService.allGroups(sessionUtils
+							.getCurrentRealm(request)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -101,13 +102,13 @@ public class CurrentRealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			return new ResourceList<Principal>(realmService.allUsers(
-					sessionUtils.getCurrentRealm(request)));
+			return new ResourceList<Principal>(
+					realmService.allUsers(sessionUtils.getCurrentRealm(request)));
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/users/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
@@ -129,18 +130,22 @@ public class CurrentRealmController extends ResourceController {
 						}
 
 						@Override
-						public List<?> getPage(String searchPattern, int start, int length,
-								ColumnSort[] sorting) throws UnauthorizedException {
-							return realmService.getPrincipals(sessionUtils.getCurrentRealm(request),
-									PrincipalType.USER, searchPattern, start, length, sorting);
+						public List<?> getPage(String searchPattern, int start,
+								int length, ColumnSort[] sorting)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							return realmService.getPrincipals(
+									sessionUtils.getCurrentRealm(request),
+									PrincipalType.USER, searchPattern, start,
+									length, sorting);
 						}
-						
+
 						@Override
-						public Long getTotalCount(String searchPattern) throws UnauthorizedException {
+						public Long getTotalCount(String searchPattern)
+								throws UnauthorizedException {
 							return realmService.getPrincipalCount(
 									sessionUtils.getCurrentRealm(request),
-									PrincipalType.USER,
-									searchPattern);
+									PrincipalType.USER, searchPattern);
 						}
 					});
 			return r;
@@ -148,7 +153,7 @@ public class CurrentRealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/groups/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
@@ -170,18 +175,22 @@ public class CurrentRealmController extends ResourceController {
 						}
 
 						@Override
-						public List<?> getPage(String searchPattern, int start, int length,
-								ColumnSort[] sorting) throws UnauthorizedException {
-							return realmService.getPrincipals(sessionUtils.getCurrentRealm(request),
-									PrincipalType.GROUP, searchPattern, start, length, sorting);
+						public List<?> getPage(String searchPattern, int start,
+								int length, ColumnSort[] sorting)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							return realmService.getPrincipals(
+									sessionUtils.getCurrentRealm(request),
+									PrincipalType.GROUP, searchPattern, start,
+									length, sorting);
 						}
-						
+
 						@Override
-						public Long getTotalCount(String searchPattern) throws UnauthorizedException {
+						public Long getTotalCount(String searchPattern)
+								throws UnauthorizedException {
 							return realmService.getPrincipalCount(
 									sessionUtils.getCurrentRealm(request),
-									PrincipalType.GROUP,
-									searchPattern);
+									PrincipalType.GROUP, searchPattern);
 						}
 					});
 		} finally {
@@ -212,51 +221,54 @@ public class CurrentRealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/user/template/{module}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<PropertyCategory> getUserTemplate(HttpServletRequest request,
-			@PathVariable("module") String module)
+	public ResourceList<PropertyCategory> getUserTemplate(
+			HttpServletRequest request, @PathVariable("module") String module)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
 		try {
-			return new ResourceList<PropertyCategory>(realmService.getUserPropertyTemplates(module));
+			return new ResourceList<PropertyCategory>(
+					realmService.getUserPropertyTemplates(module));
 		} finally {
 			clearAuthenticatedContext();
 		}
-		
+
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/group/template/{module}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<PropertyCategory> getGroupTemplate(HttpServletRequest request,
-			@PathVariable("module") String module)
+	public ResourceList<PropertyCategory> getGroupTemplate(
+			HttpServletRequest request, @PathVariable("module") String module)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
 		try {
-			return new ResourceList<PropertyCategory>(realmService.getGroupPropertyTemplates(module));
+			return new ResourceList<PropertyCategory>(
+					realmService.getGroupPropertyTemplates(module));
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/user/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<PropertyCategory> getUserProperties(HttpServletRequest request,
-			@PathVariable Long id) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException {
+	public ResourceList<PropertyCategory> getUserProperties(
+			HttpServletRequest request, @PathVariable Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
@@ -271,12 +283,13 @@ public class CurrentRealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/user/profile", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<PropertyCategory> getUserProfile(HttpServletRequest request) throws AccessDeniedException,
+	public ResourceList<PropertyCategory> getUserProfile(
+			HttpServletRequest request) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
@@ -284,12 +297,13 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return new ResourceList<PropertyCategory>(
-					realmService.getUserPropertyTemplates(sessionUtils.getPrincipal(request)));
+					realmService.getUserPropertyTemplates(sessionUtils
+							.getPrincipal(request)));
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/user/profile", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
@@ -299,29 +313,27 @@ public class CurrentRealmController extends ResourceController {
 			UnauthorizedException, SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
-		
+
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
 		try {
-			Map<String,String> values=  new HashMap<String,String>();
-			for(PropertyItem item : items) {
+			Map<String, String> values = new HashMap<String, String>();
+			for (PropertyItem item : items) {
 				values.put(item.getId(), item.getValue());
 			}
 
 			realmService.updateProfile(sessionUtils.getCurrentRealm(request),
-					sessionUtils.getPrincipal(request),
-					values);
-		
+					sessionUtils.getPrincipal(request), values);
 
 			return new RequestStatus(true, I18N.getResource(
-					sessionUtils.getLocale(request), RealmServiceImpl.RESOURCE_BUNDLE,
-					"profile.saved"));
+					sessionUtils.getLocale(request),
+					RealmServiceImpl.RESOURCE_BUNDLE, "profile.saved"));
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/group/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody

@@ -17,25 +17,25 @@ public class UnauthorizedTests extends AbstractServerTest {
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedUserList() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/users");
+		doGet("/hypersocket/api/currentRealm/users/list");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedGroupList() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/groups");
+		doGet("/hypersocket/api/currentRealm/groups/list");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedRoleList() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/roles");
+		doGet("/hypersocket/api/roles/list");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedRealmList() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/realms");
+		doGet("/hypersocket/api/realms/list");
 	}
 
 	// @Ignore
@@ -86,31 +86,31 @@ public class UnauthorizedTests extends AbstractServerTest {
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedRestart() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/restart/60");
+		doGet("/hypersocket/api/server/restart/60");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedShutdown() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/shutdown/60");
+		doGet("/hypersocket/api/server/shutdown/60");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedNetworkInterfaces()
 			throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/networkInterfaces");
+		doGet("/hypersocket/api/server/networkInterfaces");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedSslProtocols() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/sslProtocols");
+		doGet("/hypersocket/api/server/sslProtocols");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedSslCiphers() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/sslCiphers");
+		doGet("/hypersocket/api/server/sslCiphers");
 	}
 
 	@Test(expected = ClientProtocolException.class)
@@ -131,7 +131,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 		PropertyItem[] propArray = { propItem1, propItem2 };
 		user.setProperties(propArray);
 
-		doPostJson("/hypersocket/api/user", user);
+		doPostJson("/hypersocket/api/currentRealm/user", user);
 
 	}
 
@@ -146,44 +146,44 @@ public class UnauthorizedTests extends AbstractServerTest {
 
 		credentialsUpdate.setPrincipalId(new Long(6));
 
-		doPostJson("/hypersocket/api/credentials", credentialsUpdate);
+		doPostJson("/hypersocket/api/currentRealm/user/credentials", credentialsUpdate);
 
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedUserId() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/user/7");
+		doGet("/hypersocket/api/currentRealm/user/7");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedUsersGroupId() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/users/6");
+		doGet("/hypersocket/api/currentRealm/users/group/6");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedTableUsers() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/table/users");
+		doGet("/hypersocket/api/currentRealm/users/table");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedUserProperties() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/user/properties/7");
+		doGet("/hypersocket/api/currentRealm/user/properties/7");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedGroupsUserId() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/groups/7");
+		doGet("/hypersocket/api/currentRealm/groups/user/7");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedGroupId() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/group/6");
+		doGet("/hypersocket/api/currentRealm/group/6");
 	}
 
 	@Test(expected = ClientProtocolException.class)
@@ -193,14 +193,14 @@ public class UnauthorizedTests extends AbstractServerTest {
 		groupUpdate.setName("newgroup");
 		groupUpdate.setUsers(new Long[0]);
 
-		doPostJson("/hypersocket/api/group", groupUpdate);
+		doPostJson("/hypersocket/api/currentRealm/group", groupUpdate);
 
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedTableGroups() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/table/groups");
+		doGet("/hypersocket/api/currentRealm/groups/table");
 	}
 
 	@Test(expected = ClientProtocolException.class)
@@ -212,38 +212,38 @@ public class UnauthorizedTests extends AbstractServerTest {
 		realm.setHidden(false);
 		realm.setResourceCategory("");
 
-		doPostJson("/hypersocket/realm", realm);
+		doPostJson("/hypersocket/realms/realm", realm);
 
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedRealmId() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/realm/5");
+		doGet("/hypersocket/api/realms/realm/5");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedRealmPropertiesId()
 			throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/realm/properties/5");
+		doGet("/hypersocket/api/realms/realm/properties/5");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedRealmProviders() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/realm/providers");
+		doGet("/hypersocket/api/realms/providers");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedUserTemplate() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/template/user/local");
+		doGet("/hypersocket/api/currentRealm/user/template/local");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedRealmTemplate() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/template/realm/local");
+		doGet("/hypersocket/api/realms/template/local");
 	}
 	
 }

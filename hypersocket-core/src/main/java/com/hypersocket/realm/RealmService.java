@@ -106,7 +106,7 @@ public interface RealmService extends AuthenticatedService {
 	List<Realm> allRealms(Class<? extends RealmProvider> clz);
 
 	List<?> getPrincipals(Realm realm, PrincipalType type, String searchPattern, int start,
-			int length, ColumnSort[] sorting);
+			int length, ColumnSort[] sorting) throws AccessDeniedException;
 
 	Long getPrincipalCount(Realm realm, PrincipalType type, String searchPattern);
 

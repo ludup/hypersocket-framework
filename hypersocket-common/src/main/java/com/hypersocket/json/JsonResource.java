@@ -7,14 +7,6 @@ public class JsonResource {
 
 	Long id;
 	String name;
-	JsonResource[] permissions;
-	
-	public JsonResource[] getPermissions() {
-		return permissions;
-	}
-	public void setPermissions(JsonResource[] permissions) {
-		this.permissions = permissions;
-	}
 	
 	public Long getId() {
 		return id;
