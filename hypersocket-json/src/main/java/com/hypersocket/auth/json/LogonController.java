@@ -43,7 +43,7 @@ public class LogonController extends AuthenticatedController {
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException {
 		AuthenticationState state = (AuthenticationState) request.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
-		return resetLogon(request, response, state.getScheme().getName());
+		return resetLogon(request, response, state.getScheme().getResourceKey());
 	}
 	
 	@RequestMapping(value = "logon/reset/{scheme}", method = RequestMethod.GET, produces = "application/json")
