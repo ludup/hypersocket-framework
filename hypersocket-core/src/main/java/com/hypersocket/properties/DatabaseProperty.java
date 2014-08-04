@@ -12,17 +12,13 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.hibernate.annotations.Index;
 
 import com.hypersocket.repository.AbstractEntity;
-import com.hypersocket.resource.AbstractResource;
 
 @Entity
 @Table(name="properties", uniqueConstraints = {

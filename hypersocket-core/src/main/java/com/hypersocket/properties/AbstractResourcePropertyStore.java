@@ -49,20 +49,6 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		return key;
 	}
 
-//	@Override
-//	public List<Property> getProperties(String resourceXmlPath) {
-//		// This is a little inefficient but ensures we only get registered
-//		// properties
-//		List<Property> properties = new ArrayList<Property>();
-//		for (PropertyTemplate t : templatesByModule.get(resourceXmlPath)) {
-//			Property p = repository.getProperty(t.getResourceKey());
-//			if (p != null) {
-//				properties.add(p);
-//			}
-//		}
-//		return properties;
-//	}
-
 	@Override
 	public void registerTemplate(PropertyTemplate template, String module) {
 		templates.put(template.getResourceKey(), template);
@@ -82,9 +68,6 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 	@Override
 	public String getPropertyValue(AbstractPropertyTemplate template,
 			AbstractResource resource) {
-		if(resource==null) {
-			return template.getDefaultValue();
-		}
 		String c;
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
 		if (!cachedValues.containsKey(cacheKey)) {

@@ -12,20 +12,13 @@ import java.util.Map;
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyTemplateService;
-import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceChangeException;
 
 
-public interface ConfigurationService extends AuthenticatedService, PropertyTemplateService {
+public interface SystemConfigurationService extends AuthenticatedService, PropertyTemplateService {
 
 	public static final String RESOURCE_BUNDLE = "ConfigurationService";
 
 	void setValues(Map<String, String> values) throws AccessDeniedException, ResourceChangeException;
-
-	String getValue(Realm realm, String resourceKey);
-
-	Boolean getBooleanValue(Realm realm, String name);
-
-	Integer getIntValue(Realm realm, String name) throws NumberFormatException;
 
 }

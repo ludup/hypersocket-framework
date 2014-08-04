@@ -28,7 +28,11 @@ public class ResourceRestriction implements DetachedCriteriaConfiguration {
 	
 	@Override
 	public void configure(DetachedCriteria criteria) {
-		criteria.add(Restrictions.eq(column, resource==null ? null : resource.getId()));
+		if(resource==null) {
+			criteria.add(Restrictions.isNull(column));
+		} else {
+			criteria.add(Restrictions.eq(column, resource.getId()));
+		}
 	}
 
 }
