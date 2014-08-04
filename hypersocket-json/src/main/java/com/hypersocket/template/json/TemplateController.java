@@ -88,6 +88,7 @@ public class TemplateController extends ResourceController {
 		}
 	}
 
+	@AuthenticationRequired
 	@RequestMapping(value = "templates/types", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
