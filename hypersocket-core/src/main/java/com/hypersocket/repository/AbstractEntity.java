@@ -10,8 +10,6 @@ package com.hypersocket.repository;
 import java.util.Date;
 
 import javax.persistence.Column;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;

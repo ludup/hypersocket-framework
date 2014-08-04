@@ -10,11 +10,7 @@ package com.hypersocket.realm;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.hypersocket.local.LocalRealmProviderImpl;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.resource.ResourceChangeException;

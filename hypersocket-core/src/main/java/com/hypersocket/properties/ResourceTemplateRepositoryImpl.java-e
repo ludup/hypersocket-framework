@@ -25,8 +25,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.hypersocket.attributes.Attribute;
-import com.hypersocket.attributes.AttributeCategory;
 import com.hypersocket.resource.AbstractResource;
 
 public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryImpl implements ResourceTemplateRepository {
@@ -56,18 +54,13 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				throw new IllegalArgumentException(resourceXmlPath + " does not exist!");
 			}
 			
-			String context = null;
 			while (urls.hasMoreElements()) {
 				URL url = urls.nextElement();
 				try {
-					context = loadPropertyTemplates(url);
+					loadPropertyTemplates(url);
 				} catch (Exception e) {
 					log.error("Failed to process " + url.toExternalForm(), e);
 				}
-			}
-		
-			if(context==null) {
-				throw new IllegalStateException("Property template s hierarchy must declare a context");
 			}
 			
 			
@@ -76,7 +69,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		}
 	}
 
-	private String loadPropertyTemplates(URL url) throws SAXException,
+	private void loadPropertyTemplates(URL url) throws SAXException,
 			IOException, ParserConfigurationException {
 
 		DocumentBuilderFactory xmlFactory = DocumentBuilderFactory
@@ -84,7 +77,6 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		DocumentBuilder xmlBuilder = xmlFactory.newDocumentBuilder();
 		Document doc = xmlBuilder.parse(url.openStream());
 
-		String context = null;
 		Element root = doc.getDocumentElement();
 		if(root.hasAttribute("extends")) {
 			String extendsTemplates = root.getAttribute("extends");
@@ -94,16 +86,12 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				while(extendUrls.hasMoreElements()) {
 					URL extendUrl = extendUrls.nextElement();
 					try {
-						context = loadPropertyTemplates(extendUrl);
+						/*context =*/ loadPropertyTemplates(extendUrl);
 					} catch(Exception e) {
 						log.error("Failed to process " + extendUrl.toExternalForm(), e);
 					}
 				}
 			}
-		} else if(root.hasAttribute("context")) {
-			context = root.getAttribute("context");
-		} else {
-			throw new IllegalStateException("Property template must extend an existing template or define the context");
 		}
 		
 		if(log.isInfoEnabled()) {
@@ -111,8 +99,6 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		}
 		
 		loadPropertyCategories(doc);
-		
-		return context;
 	}
 
 	private void loadPropertyCategories(Document doc) throws IOException {
@@ -134,11 +120,17 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 						+ node.getAttribute("resourceKey") + " for bundle " + node.getAttribute("resourceBundle"));
 			}
 
+			String group = "system";
+			if(node.hasAttribute("group")) {
+				group = node.getAttribute("group");
+			}
+			
 			PropertyCategory cat = registerPropertyCategory(
 					node.getAttribute("resourceKey"),
 					node.getAttribute("resourceBundle"),
 					Integer.parseInt(node.getAttribute("weight")),
-					false);
+					false,
+					group);
 
 			NodeList properties = node.getElementsByTagName("property");
 
@@ -248,10 +240,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	private PropertyCategory registerPropertyCategory(String resourceKey,
-			String bundle, int weight, boolean userCreated) {
+			String bundle, int weight, boolean userCreated, String group) {
 
-		if (activeCategories.containsKey(resourceKey) 
-				/*&& !activeCategories.get(resourceKey).getBundle().equals(bundle)*/) {
+		if (activeCategories.containsKey(resourceKey)) {
 			throw new IllegalStateException(
 						"Cannot register "
 								+ resourceKey
@@ -268,6 +259,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		PropertyCategory category = new PropertyCategory();
 		category.setBundle(bundle);
 		category.setCategoryKey(resourceKey);
+		category.setCategoryGroup(group);
 		category.setWeight(weight);
 		category.setUserCreated(userCreated);
 		
@@ -329,6 +321,35 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		
 		List<PropertyCategory> cats = new ArrayList<PropertyCategory>();
 		for(PropertyCategory c : activeCategories.values()) {
+			PropertyCategory tmp = new PropertyCategory();
+			tmp.setBundle(c.getBundle());
+			tmp.setCategoryKey(c.getCategoryKey());
+			tmp.setWeight(c.getWeight());
+			tmp.setUserCreated(c.isUserCreated());
+			for(AbstractPropertyTemplate t : c.getTemplates()) {
+				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource, getPropertyStore())); 
+			}
+			cats.add(tmp);
+		}
+		
+		Collections.sort(cats, new Comparator<PropertyCategory>() {
+			@Override
+			public int compare(PropertyCategory cat1, PropertyCategory cat2) {
+				return cat1.getWeight().compareTo(cat2.getWeight());
+			}
+		});
+		
+		return Collections.unmodifiableCollection(cats);
+	}
+	
+	@Override
+	public Collection<PropertyCategory> getPropertyCategories(AbstractResource resource, String group) {
+
+		List<PropertyCategory> cats = new ArrayList<PropertyCategory>();
+		for(PropertyCategory c : activeCategories.values()) {
+			if(!c.getCategoryGroup().equals(group)) {
+				continue;
+			}
 			PropertyCategory tmp = new PropertyCategory();
 			tmp.setBundle(c.getBundle());
 			tmp.setCategoryKey(c.getCategoryKey());

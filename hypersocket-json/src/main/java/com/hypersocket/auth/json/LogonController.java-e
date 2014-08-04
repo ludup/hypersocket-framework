@@ -18,16 +18,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.AuthenticationServiceImpl;
 import com.hypersocket.auth.AuthenticationState;
-import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.AuthenticationRequiredResult;
 import com.hypersocket.json.AuthenticationResult;
-import com.hypersocket.json.RequestStatus;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.session.json.SessionUtils;
@@ -123,7 +118,7 @@ public class LogonController extends AuthenticatedController {
 			} else {
 
 				return new AuthenticationRequiredResult(
-						configurationService.getValue("logon.banner"),
+						configurationService.getValue(state.getRealm(), "logon.banner"),
 						state.getLastErrorMsg(),
 						state.getLastErrorIsResourceKey(),
 						!state.isAuthenticationComplete() ? authenticationService

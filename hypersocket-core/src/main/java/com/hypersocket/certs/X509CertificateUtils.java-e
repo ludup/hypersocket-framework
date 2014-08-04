@@ -74,15 +74,26 @@ public class X509CertificateUtils {
 
 	public static KeyStore loadKeystoreFromPEM(InputStream keyfile,
 			InputStream certfile, char[] keyPassphrase,
-			char[] keystorePassphrase) throws CertificateException,
-			IOException, NoSuchAlgorithmException, KeyStoreException,
-			InvalidPassphraseException, FileFormatException,
+			char[] keystorePassphrase, String keystoreAlias)
+			throws CertificateException, IOException, NoSuchAlgorithmException,
+			KeyStoreException, InvalidPassphraseException, FileFormatException,
 			MismatchedCertificateException {
 		KeyPair pair = loadKeyPairFromPEM(keyfile, keyPassphrase);
 		X509Certificate cert = loadCertificateFromPEM(certfile);
 
 		return createKeystore(pair, new X509Certificate[] { cert },
-				"importedPEM", keystorePassphrase);
+				keystoreAlias, keystorePassphrase);
+
+	}
+
+	public static KeyStore loadKeystoreFromPEM(InputStream keyfile,
+			InputStream certfile, char[] keyPassphrase,
+			char[] keystorePassphrase) throws CertificateException,
+			IOException, NoSuchAlgorithmException, KeyStoreException,
+			InvalidPassphraseException, FileFormatException,
+			MismatchedCertificateException {
+		return loadKeystoreFromPEM(keyfile, certfile, keyPassphrase,
+				keystorePassphrase, "importedPEM");
 
 	}
 
@@ -110,7 +121,7 @@ public class X509CertificateUtils {
 		try {
 			for (Certificate cc : caRootAndInters) {
 
-				X509Certificate c = (X509Certificate)cc;
+				X509Certificate c = (X509Certificate) cc;
 				if (log.isInfoEnabled()) {
 					log.info("Checking validity of certificate "
 							+ c.getSubjectDN());
@@ -221,22 +232,19 @@ public class X509CertificateUtils {
 		}
 
 	}
-	
 
 	public static KeyStore loadKeyStoreFromPFX(InputStream pfxfile,
 			char[] passphrase) throws KeyStoreException,
 			NoSuchAlgorithmException, CertificateException, IOException,
 			NoSuchProviderException, UnrecoverableKeyException {
-		
+
 		KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
-		 
-	    keystore.load(pfxfile,
-	                passphrase);
-	    
-	    return keystore;
-	  }
-	
-	
+
+		keystore.load(pfxfile, passphrase);
+
+		return keystore;
+	}
+
 	public static KeyPair loadKeyPairFromPEM(InputStream keyfile,
 			char[] passphrase) throws InvalidPassphraseException,
 			CertificateException, FileFormatException {
@@ -426,13 +434,15 @@ public class X509CertificateUtils {
 
 		Security.addProvider(new BouncyCastleProvider());
 
-//		X509CertificateUtils.validateChain(X509CertificateUtils
-//				.loadCertificateChainFromPEM(new FileInputStream(
-//						"/Users/lee/gd_bundle.crt")), X509CertificateUtils
-//				.loadCertificateFromPEM(new FileInputStream(
-//						"/Users/lee/javassh.com.crt")));
-//		
-//		X509CertificateUtils.loadKeyPairFromPFX(new FileInputStream("/home/lee//Dropbox/Company Files/Nervepoint Technologies Limited/Certificates/Domain Wildcard/nervepoint-www-wildcard.pfx"), "bluemars73".toCharArray());
+		// X509CertificateUtils.validateChain(X509CertificateUtils
+		// .loadCertificateChainFromPEM(new FileInputStream(
+		// "/Users/lee/gd_bundle.crt")), X509CertificateUtils
+		// .loadCertificateFromPEM(new FileInputStream(
+		// "/Users/lee/javassh.com.crt")));
+		//
+		// X509CertificateUtils.loadKeyPairFromPFX(new
+		// FileInputStream("/home/lee//Dropbox/Company Files/Nervepoint Technologies Limited/Certificates/Domain Wildcard/nervepoint-www-wildcard.pfx"),
+		// "bluemars73".toCharArray());
 
 	}
 

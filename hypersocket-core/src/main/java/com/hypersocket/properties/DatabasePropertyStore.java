@@ -1,11 +1,5 @@
 package com.hypersocket.properties;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.hibernate.hql.ast.tree.AbstractRestrictableStatement;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.resource.AbstractResource;
@@ -22,12 +16,19 @@ public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 	@Override
 	protected String lookupPropertyValue(AbstractPropertyTemplate template,
 			AbstractResource resource) {
+		// Look up property on resource
 		Property p = repository.getProperty(template.getResourceKey(), resource);
 		if (p == null) {
-			return template.getDefaultValue();
-		} else {
-			return p.getValue();
+			// No value for resource, look for overridden default setting
+			p = repository.getProperty(template.getResourceKey(), null);
+			if(p==null) {
+				// Return actual default
+				return template.getDefaultValue();
+			}
 		}
+		
+		return p.getValue();
+		
 	}
 
 	@Override
@@ -38,7 +39,9 @@ public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 		if (property == null) {
 			property = new DatabaseProperty();
 			property.setResourceKey(template.getResourceKey());
-			property.setResourceId(resource.getId());
+			if(resource!=null) {
+				property.setResourceId(resource.getId());
+			}
 		}
 		property.setValue(value);
 		repository.saveProperty(property);

@@ -3,6 +3,7 @@ package com.hypersocket.scheduler;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.auth.AuthenticatedService;
+import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.realm.RealmService;
 
@@ -25,6 +27,9 @@ public abstract class PermissionsAwareJob implements Job {
 	@Autowired
 	I18NService i18nService;
 
+	@Autowired
+	ConfigurationService configurationService;
+	
 	@Override
 	public void execute(JobExecutionContext context)
 			throws JobExecutionException {
@@ -36,10 +41,10 @@ public abstract class PermissionsAwareJob implements Job {
 				Object inst = field.get(this);
 				if (inst instanceof AuthenticatedService) {
 					AuthenticatedService service = (AuthenticatedService) inst;
-					service.setCurrentPrincipal(realmService
-							.getSystemPrincipal(), i18nService
-							.getDefaultLocale(), realmService
-							.getSystemPrincipal().getRealm());
+					service.setCurrentPrincipal(
+							realmService.getSystemPrincipal(), 
+							i18nService.getDefaultLocale(), 
+							realmService.getSystemPrincipal().getRealm());
 					services.add(service);
 				}
 			}

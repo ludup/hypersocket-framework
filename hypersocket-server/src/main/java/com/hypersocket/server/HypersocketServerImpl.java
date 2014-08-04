@@ -42,7 +42,7 @@ import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfigu
 
 import com.hypersocket.certs.CertificateService;
 import com.hypersocket.config.ConfigurationChangedEvent;
-import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
@@ -91,7 +91,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	ApplicationContext applicationContext;
 	
 	@Autowired
-	ConfigurationService configurationService;
+	SystemConfigurationService configurationService;
 	
 	@Autowired
 	SessionFactory sessionFactory;
@@ -103,6 +103,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	boolean stopping = false;
 	
 	public HypersocketServerImpl() {
+		Security.addProvider(new BouncyCastleProvider());
 		controllerPackages.add("com.hypersocket.json.**");
 		controllerPackages.add("com.hypersocket.**.json");
 	}
@@ -213,8 +214,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		
 		eventService.publishEvent(new ServerStartingEvent(this));
 		
-		Security.addProvider(new BouncyCastleProvider());
-
 		initializeSSL();
 		
 		registerConfiguration();

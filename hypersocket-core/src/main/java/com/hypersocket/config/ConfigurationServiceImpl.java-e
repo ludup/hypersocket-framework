@@ -24,6 +24,7 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceChangeException;
 
 @Transactional
@@ -31,10 +32,10 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 		implements ConfigurationService {
 
 	static Logger log = LoggerFactory.getLogger(ConfigurationServiceImpl.class);
-	
+
 	@Autowired
 	ConfigurationRepository repository;
-	
+
 	@Autowired
 	PermissionService permissionService;
 
@@ -54,72 +55,101 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 		repository.loadPropertyTemplates("propertyTemplates.xml");
 	}
 
-	protected void onValueChanged(PropertyTemplate template, String oldValue, String value) {
-		eventPublisher.publishEvent(new ConfigurationChangedEvent(this,
-				true, getCurrentSession(),
-				template, oldValue, value));
+	protected void onValueChanged(PropertyTemplate template, String oldValue,
+			String value) {
+		eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true,
+				getCurrentSession(), template, oldValue, value));
 	}
 
+	protected Realm getPropertyRealm() {
+		/**
+		 * Return the realm we should record against. We return null if the
+		 * realm is the default system realm since we want that realm to hold
+		 * all default settings.
+		 */
+		if (getCurrentRealm()==null || getCurrentRealm().isSystem()) {
+			return null;
+		} else {
+			return getCurrentRealm();
+		}
+	}
+
+	@Override
+	public String getValue(Realm realm, String resourceKey) {
+		return repository.getValue(realm, resourceKey);
+	}
+	
 	@Override
 	public String getValue(String resourceKey) {
-		return repository.getValue(resourceKey);
+		return repository.getValue(getPropertyRealm(), resourceKey);
 	}
 
+	@Override
+	public Integer getIntValue(Realm realm, String name) throws NumberFormatException {
+		return repository.getIntValue(realm, name);
+	}
+	
 	@Override
 	public Integer getIntValue(String name) throws NumberFormatException {
-		return repository.getIntValue(name);
+		return repository.getIntValue(getPropertyRealm(), name);
 	}
-
+	
+	@Override
+	public Boolean getBooleanValue(Realm realm, String name) {
+		return repository.getBooleanValue(realm, name);
+	}
+	
 	@Override
 	public Boolean getBooleanValue(String name) {
-		return repository.getBooleanValue(name);
+		return repository.getBooleanValue(getPropertyRealm(), name);
 	}
 
 	@Override
 	public void setValue(String resourceKey, String value)
 			throws AccessDeniedException {
 		assertPermission(ConfigurationPermission.UPDATE);
-		repository.setValue(resourceKey, value);
+		repository.setValue(getPropertyRealm(), resourceKey, value);
 	}
 
 	@Override
 	public void setValue(String resourceKey, Integer value)
 			throws AccessDeniedException {
 		assertPermission(ConfigurationPermission.UPDATE);
-		repository.setValue(resourceKey, value);
+		repository.setValue(getPropertyRealm(), resourceKey, value);
 	}
 
 	@Override
 	public void setValue(String name, Boolean value)
 			throws AccessDeniedException {
 		assertPermission(ConfigurationPermission.UPDATE);
-		repository.setValue(name, value);
+		repository.setValue(getPropertyRealm(), name, value);
 	}
 
 	@Override
 	public Collection<PropertyCategory> getPropertyCategories()
 			throws AccessDeniedException {
 		assertPermission(ConfigurationPermission.READ);
-		return repository.getPropertyCategories();
+		return repository.getPropertyCategories(getPropertyRealm());
 	}
 
 	@Override
 	public String[] getValues(String name) {
-		return repository.getValues(name);
+		return repository.getValues(getPropertyRealm(), name);
 	}
 
 	@Override
-	public void setValues(Map<String, String> values) throws AccessDeniedException, ResourceChangeException {
-		
+	public void setValues(Map<String, String> values)
+			throws AccessDeniedException, ResourceChangeException {
+
 		assertPermission(ConfigurationPermission.UPDATE);
-		repository.setValues(values);
-		
+		repository.setValues(getPropertyRealm(), values);
+
 	}
 
 	@Override
 	public Collection<PropertyCategory> getPropertyCategories(String group)
 			throws AccessDeniedException {
 		assertPermission(ConfigurationPermission.READ);
-		return repository.getPropertyCategories(group);
+		return repository.getPropertyCategories(getPropertyRealm(), group);
 	}
 }

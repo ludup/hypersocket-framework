@@ -1,7 +1,6 @@
 package com.hypersocket.properties;
 
 import java.util.Collection;
-import java.util.List;
 
 import com.hypersocket.resource.AbstractResource;
 
@@ -28,5 +27,8 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 	String[] getValues(AbstractResource resource, String name);
 
 	Collection<PropertyTemplate> getPropertyTemplates();
+
+	Collection<PropertyCategory> getPropertyCategories(
+			AbstractResource resource, String group);
 
 }
