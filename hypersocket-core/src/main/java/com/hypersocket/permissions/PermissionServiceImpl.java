@@ -31,7 +31,6 @@ import com.hypersocket.auth.AbstractAuthenticatedService;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmPermission;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
 import com.hypersocket.resource.ResourceNotFoundException;

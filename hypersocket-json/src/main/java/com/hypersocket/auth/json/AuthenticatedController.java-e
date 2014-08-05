@@ -21,7 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.BrowserEnvironment;
@@ -66,9 +65,9 @@ public class AuthenticatedController {
 	@Autowired
 	protected I18NService i18nService;
 
-	AuthenticationState createAuthenticationState(String scheme, 
-			HttpServletRequest request,
-			HttpServletResponse response) throws AccessDeniedException {
+	AuthenticationState createAuthenticationState(String scheme,
+			HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException {
 
 		Map<String, Object> environment = new HashMap<String, Object>();
 		for (BrowserEnvironment env : BrowserEnvironment.values()) {
@@ -77,11 +76,10 @@ public class AuthenticatedController {
 						request.getHeader(env.toString()));
 			}
 		}
-		
+
 		AuthenticationState state = authenticationService
-				.createAuthenticationState(scheme,
-						request.getRemoteAddr(), environment,
-						sessionUtils.getLocale(request));
+				.createAuthenticationState(scheme, request.getRemoteAddr(),
+						environment, sessionUtils.getLocale(request));
 		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, state);
 		return state;
 	}
@@ -131,39 +129,17 @@ public class AuthenticatedController {
 		clearAuthenticatedContext();
 	}
 
-	protected void setupAuthenticatedContext(Session pricipal, Locale locale,
-			AuthenticatedService... services) {
+	protected void setupAuthenticatedContext(Session pricipal, Locale locale) {
 		authenticationService.setCurrentSession(pricipal, locale);
-		sessionService.setCurrentSession(pricipal, locale);
-		realmService.setCurrentSession(pricipal, locale);
-		configurationService.setCurrentSession(pricipal, locale);
-		permissionService.setCurrentSession(pricipal, locale);
-		for (AuthenticatedService service : services) {
-			service.setCurrentSession(pricipal, locale);
-		}
 	}
 
 	protected void setupAuthenticatedContext(Principal principal,
-			Locale locale, Realm realm, AuthenticatedService... services) {
+			Locale locale, Realm realm) {
 		authenticationService.setCurrentPrincipal(principal, locale, realm);
-		sessionService.setCurrentPrincipal(principal, locale, realm);
-		realmService.setCurrentPrincipal(principal, locale, realm);
-		configurationService.setCurrentPrincipal(principal, locale, realm);
-		permissionService.setCurrentPrincipal(principal, locale, realm);
-		for (AuthenticatedService service : services) {
-			service.setCurrentPrincipal(principal, locale, realm);
-		}
 	}
 
-	protected void clearAuthenticatedContext(AuthenticatedService... services) {
-
+	protected void clearAuthenticatedContext() {
 		authenticationService.clearPrincipalContext();
-		sessionService.clearPrincipalContext();
-		realmService.clearPrincipalContext();
-		configurationService.clearPrincipalContext();
-		for (AuthenticatedService service : services) {
-			service.clearPrincipalContext();
-		}
 	}
 
 	@ExceptionHandler(Throwable.class)

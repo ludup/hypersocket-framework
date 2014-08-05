@@ -25,10 +25,10 @@ public abstract class AbstractAuthenticatedService implements
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAuthenticatedService.class);
 
-	ThreadLocal<Principal> currentPrincipal = new ThreadLocal<Principal>();
-	ThreadLocal<Session> currentSession = new ThreadLocal<Session>();
-	ThreadLocal<Realm> currentRealm = new ThreadLocal<Realm>();
-	ThreadLocal<Locale> currentLocale = new ThreadLocal<Locale>();
+	static ThreadLocal<Principal> currentPrincipal = new ThreadLocal<Principal>();
+	static ThreadLocal<Session> currentSession = new ThreadLocal<Session>();
+	static ThreadLocal<Realm> currentRealm = new ThreadLocal<Realm>();
+	static ThreadLocal<Locale> currentLocale = new ThreadLocal<Locale>();
 
 	public void setCurrentPrincipal(Principal principal, Locale locale,
 			Realm realm) {
@@ -69,8 +69,10 @@ public abstract class AbstractAuthenticatedService implements
 	public void clearPrincipalContext() {
 		currentLocale.set(null);
 		currentPrincipal.set(null);
+		currentSession.set(null);
+		currentRealm.set(null);
 	}
-
+	
 	public boolean hasAuthenticatedContext() {
 		return currentPrincipal.get() != null;
 	}
