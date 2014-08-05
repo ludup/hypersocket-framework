@@ -20,7 +20,7 @@
 		<property resourceKey="smtp.fromAddress" inputType="text"
 			weight="500" defaultValue="admin@localhost" />
 		<property resourceKey="smtp.fromName" inputType="text"
-			weight="600" defaultValue="Hypersocket Admin" />
+			weight="600" defaultValue="Server Administrator" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.localization"
 		resourceBundle="I18NService" weight="700">
