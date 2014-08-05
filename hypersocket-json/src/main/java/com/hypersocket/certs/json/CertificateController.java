@@ -49,7 +49,7 @@ public class CertificateController extends AuthenticatedController {
 			AccessDeniedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request), certificateService);
+				sessionUtils.getLocale(request));
 		try {
 
 			CertificateStatus status = new CertificateStatus();
@@ -62,7 +62,7 @@ public class CertificateController extends AuthenticatedController {
 
 			return status;
 		} finally {
-			clearAuthenticatedContext(certificateService);
+			clearAuthenticatedContext();
 		}
 	}
 
@@ -75,7 +75,7 @@ public class CertificateController extends AuthenticatedController {
 			UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request), certificateService);
+				sessionUtils.getLocale(request));
 
 		try {
 			CertificateStatus status = new CertificateStatus();
@@ -99,7 +99,7 @@ public class CertificateController extends AuthenticatedController {
 
 			return status;
 		} finally {
-			clearAuthenticatedContext(certificateService);
+			clearAuthenticatedContext();
 		}
 	}
 
@@ -117,18 +117,18 @@ public class CertificateController extends AuthenticatedController {
 			SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request), certificateService);
+				sessionUtils.getLocale(request));
 
 		try {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
-				certificateService.updatePrivateKey(key, passphrase, file, bundle);
-					status.setSuccess(true);
-					status.setMessage(I18N.getResource(
-							sessionUtils.getLocale(request),
-							CertificateService.RESOURCE_BUNDLE,
-							"info.keyUploaded"));
+				certificateService.updatePrivateKey(key, passphrase, file,
+						bundle);
+				status.setSuccess(true);
+				status.setMessage(I18N.getResource(
+						sessionUtils.getLocale(request),
+						CertificateService.RESOURCE_BUNDLE, "info.keyUploaded"));
 			} catch (InvalidPassphraseException e) {
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
@@ -149,7 +149,7 @@ public class CertificateController extends AuthenticatedController {
 			return status;
 
 		} finally {
-			clearAuthenticatedContext(certificateService);
+			clearAuthenticatedContext();
 		}
 	}
 
@@ -165,18 +165,17 @@ public class CertificateController extends AuthenticatedController {
 			SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request), certificateService);
+				sessionUtils.getLocale(request));
 
 		try {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
 				certificateService.updatePrivateKey(key, passphrase);
-					status.setSuccess(true);
-					status.setMessage(I18N.getResource(
-							sessionUtils.getLocale(request),
-							CertificateService.RESOURCE_BUNDLE,
-							"info.keyUploaded"));
+				status.setSuccess(true);
+				status.setMessage(I18N.getResource(
+						sessionUtils.getLocale(request),
+						CertificateService.RESOURCE_BUNDLE, "info.keyUploaded"));
 			} catch (Exception e) {
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
@@ -192,11 +191,10 @@ public class CertificateController extends AuthenticatedController {
 			return status;
 
 		} finally {
-			clearAuthenticatedContext(certificateService);
+			clearAuthenticatedContext();
 		}
 	}
-	
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/cert", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
@@ -209,7 +207,7 @@ public class CertificateController extends AuthenticatedController {
 			SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request), certificateService);
+				sessionUtils.getLocale(request));
 
 		try {
 			CertificateStatus status = new CertificateStatus();
@@ -219,9 +217,8 @@ public class CertificateController extends AuthenticatedController {
 				status.setSuccess(true);
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
-						CertificateService.RESOURCE_BUNDLE,
-						"info.certUploaded"));
-				
+						CertificateService.RESOURCE_BUNDLE, "info.certUploaded"));
+
 			} catch (FileFormatException e) {
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
@@ -236,7 +233,7 @@ public class CertificateController extends AuthenticatedController {
 						sessionUtils.getLocale(request),
 						CertificateService.RESOURCE_BUNDLE,
 						"error.certNotYetValid"));
-			} catch(Exception ex) {
+			} catch (Exception ex) {
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
 						CertificateService.RESOURCE_BUNDLE,
@@ -251,7 +248,7 @@ public class CertificateController extends AuthenticatedController {
 			return status;
 
 		} finally {
-			clearAuthenticatedContext(certificateService);
+			clearAuthenticatedContext();
 		}
 	}
 
@@ -270,7 +267,7 @@ public class CertificateController extends AuthenticatedController {
 			UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request), certificateService);
+				sessionUtils.getLocale(request));
 
 		try {
 			CertificateStatus status = new CertificateStatus();
@@ -294,7 +291,7 @@ public class CertificateController extends AuthenticatedController {
 			return status;
 
 		} finally {
-			clearAuthenticatedContext(certificateService);
+			clearAuthenticatedContext();
 		}
 	}
 

@@ -29,9 +29,7 @@ import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.config.ConfigurationService;
-import com.hypersocket.config.ConfigurationServiceImpl;
 import com.hypersocket.config.SystemConfigurationService;
-import com.hypersocket.config.SystemConfigurationServiceImpl;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
@@ -188,12 +186,12 @@ public class ConfigurationController extends AuthenticatedController {
 			throws UnauthorizedException, AccessDeniedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request), systemConfigurationService);
+				sessionUtils.getLocale(request));
 		try {
 			return new ResourceList<PropertyCategory>(
 					systemConfigurationService.getPropertyCategories(group));
 		} finally {
-			clearAuthenticatedContext(systemConfigurationService);
+			clearAuthenticatedContext();
 		}
 
 	}

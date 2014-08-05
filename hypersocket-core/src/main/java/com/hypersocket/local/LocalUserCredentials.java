@@ -17,8 +17,6 @@ import javax.persistence.Table;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 
 import com.hypersocket.auth.PasswordEncryptionType;
 import com.hypersocket.repository.AbstractEntity;

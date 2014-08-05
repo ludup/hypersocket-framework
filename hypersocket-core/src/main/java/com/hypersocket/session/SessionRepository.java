@@ -12,7 +12,6 @@ import java.util.List;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.repository.AbstractEntityRepository;
-import com.hypersocket.repository.AbstractRepository;
 
 public interface SessionRepository extends AbstractEntityRepository<Session,String> {
 

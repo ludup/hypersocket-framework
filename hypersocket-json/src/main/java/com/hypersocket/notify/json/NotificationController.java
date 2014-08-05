@@ -42,8 +42,7 @@ public class NotificationController extends AuthenticatedController {
 			UnauthorizedException, SessionTimeoutException {
 		
 		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request), 
-				notificationService);
+				sessionUtils.getLocale(request));
 		try {
 			
 			List<Notification> available = notificationService.getNotifications(context);
@@ -56,7 +55,7 @@ public class NotificationController extends AuthenticatedController {
 			}
 			return new ResourceStatus<List<Notification>>(results);
 		} finally {
-			clearAuthenticatedContext(notificationService);
+			clearAuthenticatedContext();
 		}
 	}
 
