@@ -147,4 +147,6 @@ public interface RealmService extends AuthenticatedService {
 
 	String getPrincipalDescription(Principal principal);
 
+	boolean isReadOnly(Realm realm);
+
 }
