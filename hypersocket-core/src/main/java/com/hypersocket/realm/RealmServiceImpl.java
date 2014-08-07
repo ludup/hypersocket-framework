@@ -390,6 +390,13 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		provider.setPassword(principal, password.toCharArray(),
 				forceChangeAtNextLogon);
 	}
+	
+	@Override
+	public boolean isReadOnly(Realm realm) {
+		
+		RealmProvider provider = getProviderForRealm(realm);
+		return provider.isReadOnly();
+	}
 
 	@Override
 	public Principal getSystemPrincipal() {

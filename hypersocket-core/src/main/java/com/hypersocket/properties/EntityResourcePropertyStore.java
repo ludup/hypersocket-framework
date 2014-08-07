@@ -23,6 +23,9 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	protected String lookupPropertyValue(AbstractPropertyTemplate template,
 			AbstractResource resource) {
 		
+		if(resource==null) {
+			return template.getDefaultValue();
+		}
 		Throwable t;
 		String methodName = "get" + StringUtils.capitalize(template.getResourceKey());
 		try {
