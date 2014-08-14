@@ -56,6 +56,7 @@ public class core_0_DOT_0_DOT_1 implements Runnable {
 			Realm realm = new Realm();
 			realm.setName("System");
 			realm.setResourceCategory("local");
+			realm.setDefaultRealm(false);
 			realm.setHidden(true);
 			realm.setSystem(true);
 			
@@ -77,14 +78,11 @@ public class core_0_DOT_0_DOT_1 implements Runnable {
 			systemRole.setHidden(true);
 			permissionRepository.saveRole(systemRole);
 
-			List<String> modules = new ArrayList<String>();
-			modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
-
-			schemeRepository.createScheme("Default", modules, "basic");
-
 			realm = new Realm();
 			realm.setName("Default");
 			realm.setResourceCategory("local");
+			realm.setDefaultRealm(true);
+			realm.setSystem(true);
 			realmRepository.saveRealm(realm, new HashMap<String,String>(), localRealmProvider);
 
 			
@@ -98,7 +96,7 @@ public class core_0_DOT_0_DOT_1 implements Runnable {
 					null, groups, "admin", true);
 
 			Role rAdmin = permissionRepository.createRole(
-					"System Administrator", null);
+					"System Administrator", realm, false, false, true, true);
 			Permission pAdmin = permissionRepository
 					.getPermissionByResourceKey(SystemPermission.SYSTEM_ADMINISTRATION
 							.getResourceKey());

@@ -67,4 +67,6 @@ public interface PermissionService extends AuthenticatedService {
 
 	Role getPersonalRole(Principal principal);
 
+	Set<Role> getPrincipalRoles(Principal principal);
+
 }

@@ -53,6 +53,9 @@ public class Role extends RealmResource {
 	@Column(name="all_users", nullable=false)
 	boolean allUsers;
 	
+	@Column(name="all_permissions", nullable=false)
+	boolean allPermissions;
+	
 	@Column(name="personal_role", nullable=true)
 	Boolean personalRole = new Boolean(false);
 	
@@ -93,5 +96,18 @@ public class Role extends RealmResource {
 		this.personalRole = personalRole;
 	}
 
+	public boolean isAllPermissions() {
+		return allPermissions;
+	}
+
+	public void setAllPermissions(boolean allPermissions) {
+		this.allPermissions = allPermissions;
+	}
+
+	public void setPersonalRole(Boolean personalRole) {
+		this.personalRole = personalRole;
+	}
+
+	
 	
 }

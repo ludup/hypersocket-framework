@@ -147,4 +147,27 @@ public class RealmRepositoryImpl extends AbstractResourceRepositoryImpl<RealmRes
 	protected Class<RealmResource> getResourceClass() {
 		return RealmResource.class;
 	}
+
+	@Override
+	public Realm getDefaultRealm() {
+		return get("defaultRealm", true, Realm.class);
+	}
+
+	@Override
+	public Realm setDefaultRealm(Realm realm) {
+		
+		realm.setDefaultRealm(true);
+		
+		for(Realm r : allRealms()) {
+			if(!r.equals(realm)) {
+				r.setDefaultRealm(false);
+			}
+			save(r);
+		}
+		save(realm);
+		flush();
+		refresh(realm);
+		
+		return realm;
+	}
 }

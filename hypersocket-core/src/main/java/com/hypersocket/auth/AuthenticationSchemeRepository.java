@@ -9,25 +9,26 @@ package com.hypersocket.auth;
 
 import java.util.List;
 
+import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntityRepository;
 
 public interface AuthenticationSchemeRepository extends AbstractEntityRepository<AuthenticationScheme,Long> {
 
-	public AuthenticationScheme createScheme(String name, List<String> modules,
+	public AuthenticationScheme createScheme(Realm realm, String name, List<String> modules,
 			String resourceKey);
 
-	public AuthenticationScheme createScheme(String name, List<String> modules,
+	public AuthenticationScheme createScheme(Realm realm, String name, List<String> modules,
 			String resourceKey, boolean hidden);
 
-	List<AuthenticationScheme> allSchemes();
+	List<AuthenticationScheme> allSchemes(Realm realm);
 
-	public AuthenticationScheme getSchemeByResourceKey(String resourceKey);
+	public AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey);
 
-	public List<AuthenticationScheme> getAuthenticationSchemes();
+	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm);
 
 	public AuthenticationScheme getSchemeById(Long id);
 
 	public void saveScheme(AuthenticationScheme s);
 
-	public AuthenticationScheme getSchemeByName(String name);
+	public AuthenticationScheme getSchemeByName(Realm realm, String name);
 }

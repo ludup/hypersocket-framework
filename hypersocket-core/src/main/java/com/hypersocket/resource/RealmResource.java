@@ -21,9 +21,5 @@ public abstract class RealmResource extends Resource {
 	public void setRealm(Realm realm) {
 		this.realm = realm;
 	}
-	
-	public Boolean isSystemResource() {
-		return realm==null;
-	}
 
 }

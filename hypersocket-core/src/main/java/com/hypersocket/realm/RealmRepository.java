@@ -40,4 +40,8 @@ public interface RealmRepository extends AbstractResourceRepository<RealmResourc
 	public Long countRealms(String searchPattern);
 
 	Realm saveRealm(Realm realm);
+
+	public Realm getDefaultRealm();
+
+	public Realm setDefaultRealm(Realm realm);
 }

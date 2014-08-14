@@ -16,6 +16,8 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,8 +47,12 @@ import com.hypersocket.tables.ColumnSort;
 public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		RealmService {
 
+	static Logger log = LoggerFactory.getLogger(RealmServiceImpl.class);
+	
 	Map<String, RealmProvider> providersByModule = new HashMap<String, RealmProvider>();
 
+	List<RealmListener> realmListeners = new ArrayList<RealmListener>();
+	
 	@Autowired
 	RealmRepository realmRepository;
 
@@ -183,7 +189,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 				}
 			}
 		}
-		return null;
+		return getDefaultRealm();
 	}
 
 	@Override
@@ -334,29 +340,35 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public List<Realm> allRealms() {
-		return filterRealms(null);
+		return filterRealms(null, false);
+	}
+	
+	@Override
+	public List<Realm> allRealms(boolean ignoreMissingProvider) {
+		return filterRealms(null, ignoreMissingProvider);
 	}
 
-	private List<Realm> filterRealms(Class<? extends RealmProvider> clz) {
+	private List<Realm> filterRealms(Class<? extends RealmProvider> clz, boolean ignoreMissingProvider) {
 
 		List<Realm> realms = realmRepository.allRealms();
 		List<Realm> ret = new ArrayList<Realm>(realms);
 		for (Realm r : realms) {
-			if (!hasProviderForRealm(r)) {
-				ret.remove(r);
+			if (!ignoreMissingProvider) {
+				if(!hasProviderForRealm(r)) {
+					ret.remove(r);
+				}
+				if (clz != null
+						&& !clz.isAssignableFrom(getProviderForRealm(r).getClass())) {
+					ret.remove(r);
+				}
 			}
-			if (clz != null
-					&& !clz.isAssignableFrom(getProviderForRealm(r).getClass())) {
-				ret.remove(r);
-			}
-			;
 		}
 		return ret;
 	}
 
 	@Override
 	public List<Realm> allRealms(Class<? extends RealmProvider> clz) {
-		return filterRealms(clz);
+		return filterRealms(clz, false);
 	}
 
 	@Override
@@ -435,6 +447,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			Realm realm = realmRepository.createRealm(name, module, properties,
 					getProviderForRealm(module));
 
+			fireRealmCreate(realm);
+			
 			eventService.publishEvent(new RealmCreatedEvent(this,
 					getCurrentSession(), realm));
 
@@ -478,9 +492,12 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			realm = realmRepository.saveRealm(realm, properties,
 					getProviderForRealm(realm));
 
+			fireRealmUpdate(realm);
+			
 			eventService.publishEvent(new RealmUpdatedEvent(this,
 					getCurrentSession(), oldName, realmRepository
 							.getRealmById(realm.getId())));
+			
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(new RealmUpdatedEvent(this, e,
 					getCurrentSession(), name));
@@ -498,6 +515,38 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		return realm;
 	}
 
+	private void fireRealmUpdate(Realm realm) {
+		
+		for(RealmListener l : realmListeners) {
+			try {
+				l.onUpdateRealm(realm);
+			} catch(Throwable t) {
+				log.error("Caught error in RealmListener", t);
+			}
+		}
+	}
+
+	private void fireRealmCreate(Realm realm) {
+		
+		for(RealmListener l : realmListeners) {
+			try {
+				l.onCreateRealm(realm);
+			} catch(Throwable t) {
+				log.error("Caught error in RealmListener", t);
+			}
+		}
+	}
+
+	private void fireRealmDelete(Realm realm) {
+		
+		for(RealmListener l : realmListeners) {
+			try {
+				l.onDeleteRealm(realm);
+			} catch(Throwable t) {
+				log.error("Caught error in RealmListener", t);
+			}
+		}
+	}
 	@Override
 	public void deleteRealm(Realm realm) throws AccessDeniedException,
 			ResourceChangeException {
@@ -529,6 +578,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 							"error.zeroSysAdmins", realm.getName());
 				}
 			}
+			
+			fireRealmDelete(realm);
 
 			realmRepository.delete(realm);
 
@@ -551,6 +602,13 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		}
 	}
 
+	@Override
+	public Realm setDefaultRealm(Realm realm) throws AccessDeniedException {
+		assertPermission(SystemPermission.SYSTEM_ADMINISTRATION);
+		
+		return realmRepository.setDefaultRealm(realm);
+	}
+	
 	@Override
 	public Collection<PropertyCategory> getRealmPropertyTemplates(Realm realm)
 			throws AccessDeniedException {
@@ -937,6 +995,16 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
 		return provider.unlockAccount(principal);
+	}
+
+	@Override
+	public void registerRealmListener(RealmListener listener) {
+		realmListeners.add(listener);
+	}
+
+	@Override
+	public Realm getDefaultRealm() {
+		return realmRepository.getDefaultRealm();
 	}
 
 

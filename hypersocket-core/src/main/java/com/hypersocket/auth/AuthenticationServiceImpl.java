@@ -35,6 +35,7 @@ import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
@@ -44,10 +45,11 @@ import com.hypersocket.session.SessionService;
 public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		implements AuthenticationService {
 
-	public static final String DEFAULT_AUTHENTICATION_SCHEME = "Default";
+	public static final String BROWSER_AUTHENTICATION_SCHEME = "Browser";
+	public static final String CLIENT_AUTHENTICATION_SCHEME = "Client";
+	public static final String BROWSER_AUTHENTICATION_RESOURCE_KEY = "basic";
+	public static final String CLIENT_AUTHENTICATION_RESOURCE_KEY = "client";
 
-	public static final String DEFAULT_AUTHENTICATION_RESOURCE_KEY = "basic";
-	
 	private static Logger log = LoggerFactory
 			.getLogger(AuthenticationServiceImpl.class);
 
@@ -59,7 +61,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 	@Autowired
 	AuthenticationSchemeRepository schemeRepository;
-	
+
 	@Autowired
 	SessionService sessionService;
 
@@ -95,11 +97,56 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 						"category.authentication");
 
 		logonPermission = permissionService.registerPermission(
-				AuthenticationPermission.LOGON.toString(), AuthenticationPermission.LOGON.isSystem(), authentication);
+				AuthenticationPermission.LOGON.toString(),
+				AuthenticationPermission.LOGON.isSystem(), authentication);
 
 		eventService.registerEvent(AuthenticationEvent.class, RESOURCE_BUNDLE);
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
+
+		setupRealms();
+	}
+
+	private void setupRealms() {
+		for (Realm realm : realmService.allRealms(true)) {
+			if (schemeRepository.getSchemeByResourceKey(realm,
+					BROWSER_AUTHENTICATION_RESOURCE_KEY) == null) {
+				List<String> modules = new ArrayList<String>();
+				modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
+				schemeRepository.createScheme(realm,
+						BROWSER_AUTHENTICATION_SCHEME, modules,
+						BROWSER_AUTHENTICATION_RESOURCE_KEY, true);
+				schemeRepository.createScheme(realm,
+						CLIENT_AUTHENTICATION_SCHEME, modules,
+						CLIENT_AUTHENTICATION_RESOURCE_KEY, true);
+			}
+		}
+
+ 		realmService.registerRealmListener(new RealmAdapter() {
+			public void onCreateRealm(Realm realm) {
+
+				if (log.isInfoEnabled()) {
+					log.info("Creating " + BROWSER_AUTHENTICATION_SCHEME
+							+ " authentication scheme for realm "
+							+ realm.getName());
+				}
+				List<String> modules = new ArrayList<String>();
+				modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
+				schemeRepository.createScheme(realm,
+						BROWSER_AUTHENTICATION_SCHEME, modules,
+						BROWSER_AUTHENTICATION_RESOURCE_KEY, true);
+				
+				if (log.isInfoEnabled()) {
+					log.info("Creating " + CLIENT_AUTHENTICATION_SCHEME
+							+ " authentication scheme for realm "
+							+ realm.getName());
+				}
+				schemeRepository.createScheme(realm,
+						CLIENT_AUTHENTICATION_SCHEME, modules,
+						CLIENT_AUTHENTICATION_RESOURCE_KEY, true);
+			}
+		});
+
 	}
 
 	@Override
@@ -125,7 +172,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	@Override
 	public AuthenticationScheme getDefaultScheme(String remoteAddress,
 			Map<String, String> environment, Realm realm) {
-		List<AuthenticationScheme> schemes = schemeRepository.allSchemes();
+		List<AuthenticationScheme> schemes = schemeRepository.allSchemes(realm);
 		if (schemes.size() == 0)
 			throw new IllegalArgumentException(
 					"There are no authentication schemes configured!");
@@ -133,27 +180,31 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
-	public boolean isAuthenticatorInScheme(String schemeResourceKey, String resourceKey) {
-		
-		AuthenticationScheme s = schemeRepository.getSchemeByResourceKey(schemeResourceKey);
-		for(AuthenticationModule m : repository.getAuthenticationModulesByScheme(s)) {
-			if(m.getTemplate().equals(resourceKey)) {
+	public boolean isAuthenticatorInScheme(Realm realm,
+			String schemeResourceKey, String resourceKey) {
+
+		AuthenticationScheme s = schemeRepository.getSchemeByResourceKey(
+				realm, schemeResourceKey);
+		for (AuthenticationModule m : repository
+				.getAuthenticationModulesByScheme(s)) {
+			if (m.getTemplate().equals(resourceKey)) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
-	@Override
-	public AuthenticationScheme getSchemeByResourceKey(String resourceKey) {
-		return schemeRepository.getSchemeByResourceKey(resourceKey);
-	}
 
 	@Override
-	public AuthenticationScheme getSchemeByName(String name) {
-		return schemeRepository.getSchemeByName(name);
+	public AuthenticationScheme getSchemeByResourceKey(Realm realm,
+			String resourceKey) {
+		return schemeRepository.getSchemeByResourceKey(realm, resourceKey);
 	}
-	
+
+	// @Override
+	// public AuthenticationScheme getSchemeByName(String name) {
+	// return schemeRepository.getSchemeByName(getCurrentRealm(), name);
+	// }
+
 	@Override
 	public AuthenticationState createAuthenticationState(String resourceKey,
 			String remoteAddress, Map<String, Object> environment, Locale locale)
@@ -201,7 +252,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			}
 		}
 
-		state.setScheme(getSchemeByResourceKey(resourceKey));
+		if (state.getRealm() == null) {
+			state.setRealm(realmService.getDefaultRealm());
+		}
+
+		state.setScheme(getSchemeByResourceKey(state.getRealm(), resourceKey));
 		state.setModules(repository.getModulesForScheme(state.getScheme()));
 
 		return state;
@@ -216,7 +271,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		state.setLastErrorIsResourceKey(false);
 
 		boolean success = false;
-		
+
 		if (state.isAuthenticationComplete()) {
 
 			if (state.getCurrentPostAuthenticationStep() == null) {
@@ -318,7 +373,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 								state, authenticator));
 
 						success = true;
-						
+
 						state.nextModule();
 
 						if (state.isAuthenticationComplete()) {
@@ -349,7 +404,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				state.authAttempted();
 
 		}
-		
+
 		return success;
 	}
 
@@ -420,9 +475,9 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	@Override
 	public Map<String, Authenticator> getAuthenticators(String resourceKey) {
 		Map<String, Authenticator> tmp = new HashMap<String, Authenticator>();
-		for(Authenticator a : authenticators.values()) {
-			for(String s : a.getAllowedSchemes()) {
-				if(resourceKey.matches(s)) {
+		for (Authenticator a : authenticators.values()) {
+			for (String s : a.getAllowedSchemes()) {
+				if (resourceKey.matches(s)) {
 					tmp.put(a.getResourceKey(), a);
 					break;
 				}

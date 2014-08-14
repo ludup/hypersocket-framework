@@ -169,4 +169,12 @@ public interface RealmService extends AuthenticatedService {
 
 	Realm getSystemRealm();
 
+	void registerRealmListener(RealmListener listener);
+
+	Realm getDefaultRealm();
+
+	List<Realm> allRealms(boolean ignoreMissingProvider);
+
+	Realm setDefaultRealm(Realm realm) throws AccessDeniedException;
+
 }

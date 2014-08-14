@@ -22,21 +22,17 @@ import com.hypersocket.resource.Resource;
 @XmlRootElement(name="realm")
 public class Realm extends Resource {
 	
-	@Column(name="system", nullable=true)
-	Boolean system;
+	@Column(name="default_realm")
+	boolean defaultRealm = false;
 	
-	public Boolean isSystem() {
-		return system!=null && system;
-	}
-	
-	public boolean isSystemResource() {
-		return isSystem();
+	public boolean isDefaultRealm() {
+		return defaultRealm;
 	}
 
-	public void setSystem(Boolean system) {
-		this.system = system;
+	public void setDefaultRealm(boolean defaultRealm) {
+		this.defaultRealm = defaultRealm;
 	}
-	
+
 	protected void doHashCodeOnKeys(HashCodeBuilder builder) {
 		builder.append(getName());
 	}
