@@ -18,19 +18,23 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hypersocket.auth.AbstractAuthenticatedService;
+import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.ProfilePermission;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -39,6 +43,8 @@ import com.hypersocket.tables.ColumnSort;
 @Service
 public class PermissionServiceImpl extends AbstractAuthenticatedService
 		implements PermissionService {
+
+	static Logger log = LoggerFactory.getLogger(PermissionServiceImpl.class);
 
 	@Autowired
 	PermissionRepository repository;
@@ -51,8 +57,10 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	protected PlatformTransactionManager txManager;
 
 	Set<Long> registerPermissionIds = new HashSet<Long>();
+	Set<Long> nonSystemPermissionIds = new HashSet<Long>();
 	CacheManager cacheManager;
 	Cache permissionsCache;
+	Cache roleCache;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -65,11 +73,10 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 						RESOURCE_BUNDLE, "category.permissions");
 				registerPermission(
 						SystemPermission.SYSTEM_ADMINISTRATION.getResourceKey(),
-						SystemPermission.SYSTEM_ADMINISTRATION.isSystem(), 
-						cat, false);
+						SystemPermission.SYSTEM_ADMINISTRATION.isSystem(), cat,
+						false);
 				registerPermission(SystemPermission.SYSTEM.getResourceKey(),
-						SystemPermission.SYSTEM.isSystem(),
-						cat, true);
+						SystemPermission.SYSTEM.isSystem(), cat, true);
 			}
 		});
 
@@ -77,6 +84,43 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 		permissionsCache = new Cache("permissionsCache", 5000, false, false,
 				60 * 60, 60 * 60);
 		cacheManager.addCache(permissionsCache);
+
+		roleCache = new Cache("roleCache", 5000, false, false, 60 * 60, 60 * 60);
+		cacheManager.addCache(roleCache);
+
+		realmService.registerRealmListener(new RealmAdapter() {
+
+			@Override
+			public void onCreateRealm(Realm realm) {
+
+				if (log.isInfoEnabled()) {
+					log.info("Creating Administrator role for realm "
+							+ realm.getName());
+				}
+
+				repository.createRole("Administrator", realm, false, false,
+						true, true);
+
+				if (log.isInfoEnabled()) {
+					log.info("Creating Everyone role for realm "
+							+ realm.getName());
+				}
+
+				Role r = repository.createRole("Everyone", realm, false, true,
+						false, true);
+				Set<Permission> perms = new HashSet<Permission>();
+				perms.add(getPermission(AuthenticationPermission.LOGON
+						.getResourceKey()));
+				perms.add(getPermission(ProfilePermission.READ.getResourceKey()));
+				perms.add(getPermission(ProfilePermission.UPDATE
+						.getResourceKey()));
+				r.setAllUsers(true);
+				r.setPermissions(perms);
+				repository.saveRole(r);
+
+			}
+
+		});
 	}
 
 	@Override
@@ -91,20 +135,23 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
-	public Permission registerPermission(String resourceKey,
-			boolean system, PermissionCategory category) {
+	public Permission registerPermission(String resourceKey, boolean system,
+			PermissionCategory category) {
 		return registerPermission(resourceKey, system, category, false);
 	}
 
 	@Override
-	public Permission registerPermission(String resourceKey,
-			boolean system, PermissionCategory category, boolean hidden) {
+	public Permission registerPermission(String resourceKey, boolean system,
+			PermissionCategory category, boolean hidden) {
 		Permission result = repository.getPermissionByResourceKey(resourceKey);
 		if (result == null) {
 			repository.createPermission(resourceKey, system, category, hidden);
 			result = repository.getPermissionByResourceKey(resourceKey);
 		}
 		registerPermissionIds.add(result.getId());
+		if (!system) {
+			nonSystemPermissionIds.add(result.getId());
+		}
 		return result;
 	}
 
@@ -114,7 +161,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 		assertPermission(RolePermission.CREATE);
 
-		return repository.createRole(name, realm, false);
+		return repository.createRole(name, realm, false, false, false, false);
 	}
 
 	@Override
@@ -126,9 +173,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 		Role role = new Role();
 		role.setName(name);
-		if(!getCurrentRealm().isSystem()) {
-			role.setRealm(realm);
-		}
+		role.setRealm(realm);
 
 		repository.saveRole(role);
 
@@ -164,15 +209,47 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	public Set<Permission> getPrincipalPermissions(Principal principal) {
 
 		if (!permissionsCache.isElementInMemory(principal)
-				|| (permissionsCache.get(principal) == null 
-				|| permissionsCache.isExpired(permissionsCache.get(principal)))) {
-			permissionsCache.put(new Element(principal, repository
-					.getPrincipalPermissions(realmService
-							.getAssociatedPrincipals(principal))));
+				|| (permissionsCache.get(principal) == null || permissionsCache
+						.isExpired(permissionsCache.get(principal)))) {
+
+			List<Principal> principals = realmService
+					.getAssociatedPrincipals(principal);
+			Set<Permission> principalPermissions = repository
+					.getPrincipalPermissions(principals);
+
+			Set<Role> roles = repository.getAllUserRoles(principal.getRealm());
+			for (Role r : roles) {
+				principalPermissions.addAll(r.getPermissions());
+			}
+			
+			roles = repository.getRolesForPrincipal(principals);
+			for (Role r : roles) {
+				if (r.isAllPermissions()) {
+					principalPermissions.addAll(repository.getAllPermissions(
+							registerPermissionIds, false));
+				}
+			}
+
+			permissionsCache.put(new Element(principal, principalPermissions));
 		}
 
 		return (Set<Permission>) permissionsCache.get(principal)
 				.getObjectValue();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Set<Role> getPrincipalRoles(Principal principal) {
+
+		if (!roleCache.isElementInMemory(principal)
+				|| (roleCache.get(principal) == null || roleCache
+						.isExpired(roleCache.get(principal)))) {
+			roleCache.put(new Element(principal, repository
+					.getRolesForPrincipal(realmService
+							.getAssociatedPrincipals(principal))));
+		}
+
+		return (Set<Role>) roleCache.get(principal).getObjectValue();
 	}
 
 	protected void verifyPermission(Principal principal,
@@ -233,9 +310,10 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			throw new AccessDeniedException();
 		}
 
-		if(!hasSystemPermission(principal)) {
+		if (!hasSystemPermission(principal)) {
 			Set<Permission> principalPermissions = getPrincipalPermissions(principal);
-			verifyPermission(principal, strategy, principalPermissions, permissions);
+			verifyPermission(principal, strategy, principalPermissions,
+					permissions);
 		}
 	}
 
@@ -290,7 +368,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	@Override
 	public List<Permission> allPermissions() {
-		return repository.getAllPermissions(registerPermissionIds, getCurrentRealm().isSystem());
+		return repository.getAllPermissions(registerPermissionIds,
+				getCurrentRealm().isSystem());
 	}
 
 	private <T> Set<T> getEntitiesNotIn(Collection<T> source,
@@ -378,7 +457,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	@Override
 	public Long getRoleCount(String searchPattern) throws AccessDeniedException {
 		assertPermission(RolePermission.READ);
-		
+
 		return repository.countRoles(getCurrentRealm(), searchPattern);
 	}
 
@@ -387,7 +466,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			ColumnSort[] sorting) throws AccessDeniedException {
 		assertPermission(RolePermission.READ);
 
-		return repository.searchRoles(getCurrentRealm(), searchPattern, start, length, sorting);
+		return repository.searchRoles(getCurrentRealm(), searchPattern, start,
+				length, sorting);
 	}
 
 	@Override

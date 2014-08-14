@@ -27,6 +27,17 @@ public abstract class Resource extends AbstractResource {
 	@Column(name="resource_category", nullable=true)
 	String resourceCategory;
 	
+	@Column(name="system", nullable=false)
+	boolean system = false;
+	
+	public boolean isSystem() {
+		return system;
+	}
+
+	public void setSystem(boolean system) {
+		this.system = system;
+	}
+	
 	public String getName() {
 		return name;
 	}

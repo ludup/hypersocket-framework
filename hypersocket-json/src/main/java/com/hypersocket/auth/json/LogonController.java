@@ -65,7 +65,7 @@ public class LogonController extends AuthenticatedController {
 	public AuthenticationResult logon(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException {
-		return logon(request, response, AuthenticationServiceImpl.DEFAULT_AUTHENTICATION_RESOURCE_KEY);
+		return logon(request, response, AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY);
 	}
 	
 	@RequestMapping(value = "logon/{scheme}", method = { RequestMethod.GET,

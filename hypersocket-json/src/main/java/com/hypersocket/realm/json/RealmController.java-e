@@ -36,6 +36,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmColumns;
 import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.session.json.SessionTimeoutException;
@@ -67,6 +68,30 @@ public class RealmController extends ResourceController {
 	}
 
 	@AuthenticationRequired
+	@RequestMapping(value = "realms/default/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Realm> setDefaultRealm(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable("id") Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			Realm realm = realmService.setDefaultRealm(realmService
+					.getRealmById(id));
+			return new ResourceStatus<Realm>(realm, I18N.getResource(
+					sessionUtils.getLocale(request),
+					RealmServiceImpl.RESOURCE_BUNDLE, "realm.madeDefault",
+					realm.getName()));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
 	@RequestMapping(value = "realms/list", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -84,8 +109,6 @@ public class RealmController extends ResourceController {
 		}
 
 	}
-
-	
 
 	@AuthenticationRequired
 	@RequestMapping(value = "realms/table", method = RequestMethod.GET, produces = { "application/json" })
@@ -108,13 +131,18 @@ public class RealmController extends ResourceController {
 						}
 
 						@Override
-						public List<?> getPage(String searchPattern, int start, int length,
-								ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
-							return realmService.getRealms(searchPattern, start, length, sorting);
+						public List<?> getPage(String searchPattern, int start,
+								int length, ColumnSort[] sorting)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							return realmService.getRealms(searchPattern, start,
+									length, sorting);
 						}
-						
+
 						@Override
-						public Long getTotalCount(String searchPattern) throws UnauthorizedException, AccessDeniedException {
+						public Long getTotalCount(String searchPattern)
+								throws UnauthorizedException,
+								AccessDeniedException {
 							return realmService.getRealmCount(searchPattern);
 						}
 					});
@@ -122,37 +150,35 @@ public class RealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
-	
-	
 
 	@AuthenticationRequired
 	@RequestMapping(value = "realms/template/{module}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<PropertyCategory> getRealmTemplate(HttpServletRequest request,
-			@PathVariable("module") String module)
+	public ResourceList<PropertyCategory> getRealmTemplate(
+			HttpServletRequest request, @PathVariable("module") String module)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
 		try {
-			return new ResourceList<PropertyCategory>(realmService.getRealmPropertyTemplates(module));
+			return new ResourceList<PropertyCategory>(
+					realmService.getRealmPropertyTemplates(module));
 		} finally {
 			clearAuthenticatedContext();
 		}
-		
+
 	}
 
-	
-	
 	@AuthenticationRequired
 	@RequestMapping(value = "realms/realm/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<PropertyCategory> getRealmPropertiesJson(HttpServletRequest request,
-			@PathVariable("id") Long module) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException {
+	public ResourceList<PropertyCategory> getRealmPropertiesJson(
+			HttpServletRequest request, @PathVariable("id") Long module)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
@@ -165,8 +191,6 @@ public class RealmController extends ResourceController {
 		}
 
 	}
-	
-	
 
 	@AuthenticationRequired
 	@RequestMapping(value = "realms/realm", method = RequestMethod.POST, produces = { "application/json" })
@@ -267,5 +291,4 @@ public class RealmController extends ResourceController {
 		}
 	}
 
-	
 }

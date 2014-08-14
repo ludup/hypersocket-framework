@@ -16,6 +16,8 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DetachedCriteriaConfiguration;
@@ -35,11 +37,12 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	};
 
 	@Override
-	public AuthenticationScheme createScheme(String name,
+	public AuthenticationScheme createScheme(Realm realm, String name,
 			List<String> templates, String resourceKey, boolean hidden) {
 
 		AuthenticationScheme scheme = new AuthenticationScheme();
 		scheme.setName(name);
+		scheme.setRealm(realm);
 		scheme.setResourceKey(resourceKey);
 		scheme.setHidden(hidden);
 		saveEntity(scheme);
@@ -57,8 +60,8 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	}
 
 	@Override
-	public List<AuthenticationScheme> allSchemes() {
-		return allEntities(AuthenticationScheme.class, ORDER_BY_PRIORITY);
+	public List<AuthenticationScheme> allSchemes(Realm realm) {
+		return allEntities(AuthenticationScheme.class, ORDER_BY_PRIORITY, new RealmRestriction(realm));
 	}
 
 	class SchemeRestriction implements DetachedCriteriaConfiguration {
@@ -77,19 +80,21 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	}
 
 	@Override
-	public AuthenticationScheme createScheme(String name, List<String> modules,
+	public AuthenticationScheme createScheme(Realm realm, String name, List<String> modules,
 			String resourceKey) {
-		return createScheme(name, modules, resourceKey, false);
+		return createScheme(realm, name, modules, resourceKey, false);
 	}
 
-	public AuthenticationScheme getSchemeByResourceKey(String resourceKey) {
-		return get("resourceKey", resourceKey, AuthenticationScheme.class);
+	@Override
+	public AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey) {
+		return get("resourceKey", resourceKey, AuthenticationScheme.class, new RealmRestriction(realm));
 	}
 
-	public List<AuthenticationScheme> getAuthenticationSchemes() {
+	@Override
+	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm) {
 
 		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
-				false), new DistinctRootEntity());
+				false), new DistinctRootEntity(), new RealmRestriction(realm));
 
 	}
 
@@ -104,8 +109,8 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	}
 
 	@Override
-	public AuthenticationScheme getSchemeByName(String name) {
-		return get("name", name, AuthenticationScheme.class);
+	public AuthenticationScheme getSchemeByName(Realm realm, String name) {
+		return get("name", name, AuthenticationScheme.class, new RealmRestriction(realm));
 	}
 
 	@Override

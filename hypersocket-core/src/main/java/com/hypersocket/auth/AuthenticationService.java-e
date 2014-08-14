@@ -49,10 +49,10 @@ public interface AuthenticationService extends AuthenticatedService {
 
 	void registerListener(AuthenticationServiceListener listener);
 
-	boolean isAuthenticatorInScheme(String scheme, String resourceKey);
+	boolean isAuthenticatorInScheme(Realm realm, String schemeResourceKey, String resourceKey);
 
-	AuthenticationScheme getSchemeByResourceKey(String resourceKey);
+	AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey);
 
-	AuthenticationScheme getSchemeByName(String name);
+//	AuthenticationScheme getSchemeByName(String name);
 
 }
