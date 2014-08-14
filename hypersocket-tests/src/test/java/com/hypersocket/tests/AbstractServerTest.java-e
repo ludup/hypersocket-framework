@@ -179,7 +179,7 @@ public class AbstractServerTest {
 			JsonLogonResult logon = mapper.readValue(logonJson,JsonLogonResult.class); 
 			session=logon.getSession();
 		}else{
-			session=null;
+			session=null; 
 		}
         
         
