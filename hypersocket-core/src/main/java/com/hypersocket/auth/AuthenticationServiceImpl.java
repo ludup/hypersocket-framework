@@ -95,7 +95,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 						"category.authentication");
 
 		logonPermission = permissionService.registerPermission(
-				AuthenticationPermission.LOGON.toString(), authentication);
+				AuthenticationPermission.LOGON.toString(), AuthenticationPermission.LOGON.isSystem(), authentication);
 
 		eventService.registerEvent(AuthenticationEvent.class, RESOURCE_BUNDLE);
 

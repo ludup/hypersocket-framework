@@ -10,11 +10,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.session.SessionServiceImpl;
 
 @Service
-public class EmailNotificationServiceImpl implements EmailNotificationService {
+public class EmailNotificationServiceImpl extends AuthenticatedServiceImpl implements EmailNotificationService {
 
 	@Autowired
 	ConfigurationService configurationService;

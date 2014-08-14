@@ -47,6 +47,7 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.server.events.ServerStartedEvent;
 import com.hypersocket.server.events.ServerStartingEvent;
@@ -92,6 +93,9 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	
 	@Autowired
 	SystemConfigurationService configurationService;
+	
+	@Autowired 
+	RealmService realmService;
 	
 	@Autowired
 	SessionFactory sessionFactory;
@@ -212,7 +216,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		eventService.registerEvent(ServerStoppedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(WebappCreatedEvent.class, RESOURCE_BUNDLE);
 		
-		eventService.publishEvent(new ServerStartingEvent(this));
+		eventService.publishEvent(new ServerStartingEvent(this, realmService.getSystemPrincipal().getRealm()));
 		
 		initializeSSL();
 		
@@ -245,7 +249,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 		registerHttpHandler(new APIRequestHandler(dispatcherServlet, this, 100));
 
-		eventService.publishEvent(new WebappCreatedEvent(this, true));
+		eventService.publishEvent(new WebappCreatedEvent(this, true, realmService.getSystemRealm()));
 
 	}
 
@@ -360,7 +364,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		System.setProperty("hypersocket.appPath", getBasePath());
 		System.setProperty("hypersocket.uiPath", getUiPath());
 		
-		eventService.publishEvent(new ServerStartedEvent(this));
+		eventService.publishEvent(new ServerStartedEvent(this, realmService.getSystemRealm()));
 
 	}
 
@@ -376,7 +380,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 		stopping = true;
 		
-		eventService.publishEvent(new ServerStoppingEvent(this));
+		eventService.publishEvent(new ServerStoppingEvent(this, realmService.getSystemRealm()));
 		
 		if (log.isInfoEnabled())
 			log.info("Stopping server");
@@ -386,7 +390,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		if (log.isInfoEnabled())
 			log.info("Server stopped");
 		
-		eventService.publishEvent(new ServerStoppedEvent(this));
+		eventService.publishEvent(new ServerStoppedEvent(this, realmService.getSystemRealm()));
 		
 	}
 	

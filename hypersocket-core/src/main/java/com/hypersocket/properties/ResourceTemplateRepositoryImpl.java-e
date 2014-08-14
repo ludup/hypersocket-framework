@@ -130,7 +130,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 					node.getAttribute("resourceBundle"),
 					Integer.parseInt(node.getAttribute("weight")),
 					false,
-					group);
+					group,
+					node.getAttribute("displayMode"));
 
 			NodeList properties = node.getElementsByTagName("property");
 
@@ -148,9 +149,13 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 							getPropertyStore(),
 							pnode.getAttribute("resourceKey"),
 							generateMetaData(pnode),
+							pnode.getAttribute("mapping"),
 							Integer.parseInt(pnode.getAttribute("weight")),
 							pnode.hasAttribute("hidden")
 									&& pnode.getAttribute("hidden")
+											.equalsIgnoreCase("true"),
+							pnode.hasAttribute("readOnly")
+									&& pnode.getAttribute("readOnly")
 											.equalsIgnoreCase("true"),
 									Boolean.getBoolean("hypersocket.development") && pnode.hasAttribute("developmentValue") ? pnode.getAttribute("developmentValue") : pnode.getAttribute("defaultValue"));
 				} catch (Throwable e) {
@@ -200,7 +205,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	
 	private void registerPropertyItem(PropertyCategory category,
 			PropertyStore propertyStore, String resourceKey, String metaData,
-			int weight, boolean hidden, String defaultValue) {
+			String mapping, int weight, boolean hidden, boolean readOnly, String defaultValue) {
 
 		if(log.isInfoEnabled()) {
 			log.info("Registering property " + resourceKey);
@@ -216,6 +221,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		template.setDefaultValue(defaultValue);
 		template.setWeight(weight);
 		template.setHidden(hidden);
+		template.setReadOnly(readOnly);
+		template.setMapping(mapping);
 		template.setCategory(category);
 		template.setPropertyStore(propertyStore);
 		
@@ -240,7 +247,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	private PropertyCategory registerPropertyCategory(String resourceKey,
-			String bundle, int weight, boolean userCreated, String group) {
+			String bundle, int weight, boolean userCreated, String group, String displayMode) {
 
 		if (activeCategories.containsKey(resourceKey)) {
 			throw new IllegalStateException(
@@ -260,6 +267,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		category.setBundle(bundle);
 		category.setCategoryKey(resourceKey);
 		category.setCategoryGroup(group);
+		category.setDisplayMode(displayMode);
 		category.setWeight(weight);
 		category.setUserCreated(userCreated);
 		
@@ -302,6 +310,10 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 					+ " is not a registered configuration item");
 		}
 
+		if(template.isReadOnly()) {
+			return;
+		}
+		
 		getPropertyStore().setPropertyValue(template, resource, value);
 	}
 
@@ -325,6 +337,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			tmp.setBundle(c.getBundle());
 			tmp.setCategoryKey(c.getCategoryKey());
 			tmp.setWeight(c.getWeight());
+			tmp.setDisplayMode(c.getDisplayMode());
 			tmp.setUserCreated(c.isUserCreated());
 			for(AbstractPropertyTemplate t : c.getTemplates()) {
 				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource, getPropertyStore())); 
@@ -355,6 +368,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			tmp.setCategoryKey(c.getCategoryKey());
 			tmp.setWeight(c.getWeight());
 			tmp.setUserCreated(c.isUserCreated());
+			tmp.setDisplayMode(c.getDisplayMode());
 			for(AbstractPropertyTemplate t : c.getTemplates()) {
 				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource, getPropertyStore())); 
 			}

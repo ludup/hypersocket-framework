@@ -21,9 +21,11 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 		this.resourceKey = t.getResourceKey();
 		this.defaultValue = t.getDefaultValue();
 		this.metaData = t.getMetaData();
+		this.mapping = t.getMapping();
 		this.weight = t.getWeight();
 		this.category = t.getCategory();
 		this.hidden = t.isHidden();
+		this.readOnly = t.isReadOnly();
 		this.resource = resource;
 		this.propertyStore = propertyStore;
 	}

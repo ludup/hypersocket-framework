@@ -169,13 +169,14 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
-	public boolean isReadOnly() {
+	public boolean isReadOnly(Realm realm) {
 		return false;
 	}
 
 	@Override
 	public Principal createUser(Realm realm, String username,
-			Map<String, String> properties, List<Principal> principals)
+			Map<String, String> properties, List<Principal> principals,
+			String password, boolean forceChange)
 			throws ResourceCreationException {
 
 		try {
@@ -197,6 +198,8 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 			userRepository.flush();
 			userRepository.refresh(user);
 
+			setPassword(user, password, forceChange);
+			
 			return user;
 		} catch (Exception e) {
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
@@ -220,9 +223,9 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 			LocalUser user = (LocalUser) principal;
 			user.setName(username);
 			user.setRealm(realm);
-			
+
 			user.getGroups().clear();
-			
+
 			for (Principal p : principals) {
 				if (p instanceof LocalGroup) {
 					user.getGroups().add((LocalGroup) p);
@@ -423,7 +426,8 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		if (principal instanceof LocalUser) {
 			result.addAll(userRepository.getGroupsByUser((LocalUser) principal));
 		} else if (principal instanceof LocalGroup) {
-			result.addAll(userRepository.getUsersByGroup((LocalGroup) principal));
+			result.addAll(userRepository
+					.getUsersByGroup((LocalGroup) principal));
 		} else {
 			throw new IllegalStateException(
 					"Principal is not a LocalUser or LocalGroup!");
@@ -442,12 +446,14 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		switch (type) {
 		case GROUP:
 			if (principal instanceof LocalUser) {
-				result.addAll(userRepository.getGroupsByUser((LocalUser)principal));
+				result.addAll(userRepository
+						.getGroupsByUser((LocalUser) principal));
 			}
 			break;
 		case USER:
 			if (principal instanceof LocalGroup) {
-				result.addAll(userRepository.getUsersByGroup((LocalGroup)principal));
+				result.addAll(userRepository
+						.getUsersByGroup((LocalGroup) principal));
 			}
 			break;
 		default:
@@ -455,12 +461,6 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		}
 
 		return result;
-	}
-
-	@Override
-	public Principal createUser(Realm realm, String username,
-			Map<String, String> properties) throws ResourceCreationException {
-		return createUser(realm, username, properties, null);
 	}
 
 	@Override
@@ -511,18 +511,18 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		return getPropertyCategories(realm);
 	}
 
-//	@Override
-//	public Set<Principal> getPrincipalsByProperty(String propertyName,
-//			String propertyValue) {
-//
-//		Set<Principal> principals = new HashSet<Principal>();
-//		List<DatabaseProperty> properties = userRepository
-//				.getPropertiesWithValue(propertyName, propertyValue);
-//		for (DatabaseProperty property : properties) {
-//			principals.add((Principal) property.getResource());
-//		}
-//		return principals;
-//	}
+	// @Override
+	// public Set<Principal> getPrincipalsByProperty(String propertyName,
+	// String propertyValue) {
+	//
+	// Set<Principal> principals = new HashSet<Principal>();
+	// List<DatabaseProperty> properties = userRepository
+	// .getPropertiesWithValue(propertyName, propertyValue);
+	// for (DatabaseProperty property : properties) {
+	// principals.add((Principal) property.getResource());
+	// }
+	// return principals;
+	// }
 
 	@Override
 	public String getAddress(Principal principal, MediaType type)
@@ -551,6 +551,34 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	@Override
 	public String getPrincipalDescription(Principal principal) {
 		return getValue(principal, LocalRealmProviderImpl.FIELD_FULLNAME);
+	}
+
+	@Override
+	public boolean supportsAccountUnlock(Realm realm) {
+		return false;
+	}
+
+	@Override
+	public boolean supportsAccountDisable(Realm realm) {
+		return false;
+	}
+
+	@Override
+	public Principal disableAccount(Principal principal)
+			throws ResourceChangeException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Principal enableAccount(Principal principal)
+			throws ResourceChangeException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Principal unlockAccount(Principal principal)
+			throws ResourceChangeException {
+		throw new UnsupportedOperationException();
 	}
 
 }

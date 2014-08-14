@@ -9,7 +9,9 @@ public abstract class AbstractPropertyTemplate {
 	String metaData;
 	int weight;
 	boolean hidden;
+	boolean readOnly;
 	PropertyCategory category;
+	String mapping;
 	
 	public String getResourceKey() {
 		return resourceKey;
@@ -56,6 +58,14 @@ public abstract class AbstractPropertyTemplate {
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
 	}
+
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
 	
 	@JsonIgnore
 	public PropertyCategory getCategory() {
@@ -65,4 +75,14 @@ public abstract class AbstractPropertyTemplate {
 	public void setCategory(PropertyCategory category) {
 		this.category = category;
 	}
+
+	public String getMapping() {
+		return mapping;
+	}
+
+	public void setMapping(String mapping) {
+		this.mapping = mapping;
+	}
+	
+	
 }

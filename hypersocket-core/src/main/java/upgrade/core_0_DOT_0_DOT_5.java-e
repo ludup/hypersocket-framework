@@ -50,7 +50,7 @@ public class core_0_DOT_0_DOT_5 implements Runnable {
 			removePermission(permissionRepository
 					.getPermissionByResourceKey("cert.delete"));
 			removePermission(permissionRepository
-					.getPermissionByResourceKey("permission.realm.admin"));
+					.getPermissionByResourceKey("realm.admin"));
 			removePermission(permissionRepository
 					.getPermissionByResourceKey("role.create"));
 			removePermission(permissionRepository

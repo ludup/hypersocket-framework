@@ -23,10 +23,10 @@ public interface PermissionService extends AuthenticatedService {
 	
 	public PermissionCategory registerPermissionCategory(String resourceBundle, String resourceKey);
 
-	public Permission registerPermission(String resourceKey, PermissionCategory category);
+	public Permission registerPermission(String resourceKey, boolean system, PermissionCategory category);
 
 	public Permission registerPermission(String resourceKey,
-			PermissionCategory category, boolean hidden);
+			boolean system, PermissionCategory category, boolean hidden);
 	
 	public Permission getPermission(String resourceKey);
 	

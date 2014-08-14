@@ -11,10 +11,10 @@ import com.hypersocket.permissions.PermissionType;
 
 public enum RealmPermission implements PermissionType {
 
-	CREATE("permission.realm.create"),
-	READ("permission.realm.read"),
-	UPDATE("permission.realm.update"),
-	DELETE("permission.realm.delete");
+	CREATE("realm.create"),
+	READ("realm.read"),
+	UPDATE("realm.update"),
+	DELETE("realm.delete");
 	
 	private final String val;
 	
@@ -29,5 +29,10 @@ public enum RealmPermission implements PermissionType {
 	@Override
 	public String getResourceKey() {
 		return val;
+	}
+	
+	@Override
+	public boolean isSystem() {
+		return true;
 	}
 }

@@ -75,13 +75,16 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> imple
 	}
 
 	@Override
-	public Permission createPermission(String name, PermissionCategory category, boolean hidden) {
+	public Permission createPermission(String name, boolean system, PermissionCategory category, boolean hidden) {
 		
 		Permission permission = new Permission();
 		permission.setResourceKey(name);
 		permission.setCategory(category);
 		permission.setHidden(hidden);
+		permission.setSystem(system);
 		save(permission);
+		flush();
+		refresh(permission);
 		return permission;
 	}
 	
@@ -184,10 +187,13 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long> imple
 	}
 
 	@Override
-	public List<Permission> getAllPermissions(final Set<Long> permissions) {
+	public List<Permission> getAllPermissions(final Set<Long> permissions, final boolean includeSystem) {
 		return allEntities(Permission.class, new DetachedCriteriaConfiguration() {
 			@Override
 			public void configure(DetachedCriteria criteria) {
+				if(!includeSystem) {
+					criteria.add(Restrictions.eq("system", false));
+				}
 				criteria.add(Restrictions.in("id", permissions));
 			}
 		}, JOIN_ROLES, new HiddenCriteria(false));

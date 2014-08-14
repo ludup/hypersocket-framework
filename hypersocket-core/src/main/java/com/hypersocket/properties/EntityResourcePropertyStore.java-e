@@ -4,9 +4,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 import com.hypersocket.resource.AbstractResource;
 
+@Component
 public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 
 	@Override
@@ -32,6 +34,9 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 			
 			Method m = resource.getClass().getMethod(methodName, null);
 			Object obj = m.invoke(resource, null);
+			if(obj==null) {
+				return "";
+			}
 			return obj.toString();
 		} catch (NoSuchMethodException e) {
 			t = e;

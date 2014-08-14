@@ -90,7 +90,6 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
 		cachedValues.remove(cacheKey);
 		cachedValues.put(cacheKey, value);
-
 	}
 
 }

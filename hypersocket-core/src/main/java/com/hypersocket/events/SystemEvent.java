@@ -6,6 +6,8 @@ import java.util.Map;
 
 import org.springframework.context.ApplicationEvent;
 
+import com.hypersocket.realm.Realm;
+
 public abstract class SystemEvent extends ApplicationEvent {
 
 	private static final long serialVersionUID = -2862861933633430347L;
@@ -15,21 +17,28 @@ public abstract class SystemEvent extends ApplicationEvent {
 	String resourceKey;
 	boolean success;
 	Throwable exception;
+	Realm currentRealm;
 	
 	Map<String,String> attributes = new HashMap<String,String>();
 	
-	public SystemEvent(Object source, String resourceKey, boolean success) {
+	public SystemEvent(Object source, String resourceKey, boolean success, Realm currentRealm) {
 		super(source);
 		this.success = success;
 		this.resourceKey = resourceKey;
+		this.currentRealm = currentRealm;
 	}
 	
-	public SystemEvent(Object source, String resourceKey, Throwable e) {
+	public SystemEvent(Object source, String resourceKey, Throwable e, Realm currentRealm) {
 		super(source);
 		this.success = false;
 		this.resourceKey = resourceKey;
 		this.exception = e;
+		this.currentRealm = currentRealm;
 		addAttribute(ATTR_EXCEPTION_TEXT, e.getMessage());
+	}
+	
+	public Realm getCurrentRealm() {
+		return currentRealm;
 	}
 	
 	public abstract String getResourceBundle();

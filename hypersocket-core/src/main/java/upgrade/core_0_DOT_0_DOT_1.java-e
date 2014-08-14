@@ -57,6 +57,8 @@ public class core_0_DOT_0_DOT_1 implements Runnable {
 			realm.setName("System");
 			realm.setResourceCategory("local");
 			realm.setHidden(true);
+			realm.setSystem(true);
+			
 			realmRepository.saveRealm(realm, new HashMap<String,String>(), localRealmProvider);
 
 			LocalUser system = new LocalUser();
@@ -93,9 +95,7 @@ public class core_0_DOT_0_DOT_1 implements Runnable {
 			groups.add(group);
 
 			Principal admin = localRealmProvider.createUser(realm, "admin",
-					null, groups);
-
-			localRealmProvider.setPassword(admin, "admin", true);
+					null, groups, "admin", true);
 
 			Role rAdmin = permissionRepository.createRole(
 					"System Administrator", null);

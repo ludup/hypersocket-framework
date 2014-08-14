@@ -43,13 +43,14 @@ public interface RealmService extends AuthenticatedService {
 	Realm getRealmById(Long id) throws AccessDeniedException;
 
 	Principal createUser(Realm realm, String username,
-			Map<String, String> properties, List<Principal> principals)
+			Map<String, String> properties, List<Principal> principals,
+			String password, boolean forceChange)
 			throws ResourceCreationException, AccessDeniedException;
 
 	Principal updateUser(Realm realm, Principal user, String username,
 			Map<String, String> properties, List<Principal> principals)
 			throws ResourceChangeException, AccessDeniedException;
-	
+
 	Principal getPrincipalByName(Realm realm, String principalName,
 			PrincipalType... type);
 
@@ -84,19 +85,21 @@ public interface RealmService extends AuthenticatedService {
 			throws ResourceCreationException, AccessDeniedException;
 
 	Principal updateGroup(Realm realm, Principal principal, String name,
-			List<Principal> principals) throws ResourceChangeException, AccessDeniedException;
+			List<Principal> principals) throws ResourceChangeException,
+			AccessDeniedException;
 
 	void deleteGroup(Realm realm, Principal group)
 			throws ResourceChangeException, AccessDeniedException;
 
-	void deleteUser(Realm realm, Principal user) throws ResourceChangeException, AccessDeniedException;
+	void deleteUser(Realm realm, Principal user)
+			throws ResourceChangeException, AccessDeniedException;
 
-	Collection<PropertyCategory> getUserPropertyTemplates(Principal principalById)
-			throws AccessDeniedException;
+	Collection<PropertyCategory> getUserPropertyTemplates(
+			Principal principalById) throws AccessDeniedException;
 
 	Collection<PropertyCategory> getUserPropertyTemplates(String module)
 			throws AccessDeniedException;
-	
+
 	List<Principal> getAssociatedPrincipals(Principal principal);
 
 	List<Principal> getAssociatedPrincipals(Principal principal,
@@ -104,8 +107,9 @@ public interface RealmService extends AuthenticatedService {
 
 	List<Realm> allRealms(Class<? extends RealmProvider> clz);
 
-	List<?> getPrincipals(Realm realm, PrincipalType type, String searchPattern, int start,
-			int length, ColumnSort[] sorting) throws AccessDeniedException;
+	List<?> getPrincipals(Realm realm, PrincipalType type,
+			String searchPattern, int start, int length, ColumnSort[] sorting)
+			throws AccessDeniedException;
 
 	Long getPrincipalCount(Realm realm, PrincipalType type, String searchPattern);
 
@@ -114,7 +118,8 @@ public interface RealmService extends AuthenticatedService {
 
 	boolean findUniquePrincipal(String user);
 
-	Principal getUniquePrincipal(String username) throws ResourceNotFoundException;
+	Principal getUniquePrincipal(String username)
+			throws ResourceNotFoundException;
 
 	List<Principal> allUsers(Realm realm) throws AccessDeniedException;
 
@@ -135,8 +140,8 @@ public interface RealmService extends AuthenticatedService {
 
 	RealmProvider getProviderForRealm(String module);
 
-//	Set<Principal> getPrincipalsByProperty(String propertyName,
-//			String propertyValue);
+	// Set<Principal> getPrincipalsByProperty(String propertyName,
+	// String propertyValue);
 
 	String getRealmProperty(Realm realm, String resourceKey);
 
@@ -148,5 +153,20 @@ public interface RealmService extends AuthenticatedService {
 	String getPrincipalDescription(Principal principal);
 
 	boolean isReadOnly(Realm realm);
+
+	boolean supportsAccountUnlock(Realm realm);
+
+	boolean supportsAccountDisable(Realm realm);
+
+	Principal disableAccount(Principal principal) throws ResourceChangeException,
+			AccessDeniedException;
+
+	Principal enableAccount(Principal principal) throws ResourceChangeException,
+			AccessDeniedException;
+
+	Principal unlockAccount(Principal principal) throws ResourceChangeException,
+			AccessDeniedException;
+
+	Realm getSystemRealm();
 
 }
