@@ -31,17 +31,21 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
+import com.hypersocket.auth.json.AuthenticationSuccessResult;
 import com.hypersocket.json.AuthenticationRequiredResult;
 import com.hypersocket.json.AuthenticationResult;
+import com.hypersocket.json.JsonLogonResult;
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.JsonRole;
 import com.hypersocket.json.JsonRoleResourceStatus;
+import com.hypersocket.json.JsonSession;
 import com.hypersocket.netty.Main;
 import com.hypersocket.permissions.json.RoleUpdate;
 import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.json.CredentialsUpdate;
 import com.hypersocket.realm.json.GroupUpdate;
 import com.hypersocket.realm.json.UserUpdate;
+import com.hypersocket.session.Session;
 import com.hypersocket.util.OverridePropertyPlaceholderConfigurer;
 
 public class AbstractServerTest {
@@ -51,16 +55,15 @@ public class AbstractServerTest {
 	static BasicCookieStore cookieStore;
 	static ObjectMapper mapper = new ObjectMapper();
 	protected static Long adminId;
+	protected static JsonSession session;
 	
 	@BeforeClass
 	public static void startup() throws Exception {
 
 		tmp = Files.createTempDirectory("hypersocket").toFile();
 		tmp.mkdirs();
-
-		File conf = new File(tmp, "conf");
-
-		File data = new File(tmp, "data");
+      	File conf = new File(tmp, "conf");
+      	File data = new File(tmp, "data");
 
 		FileUtils.copyDirectory(new File("default-conf"), conf);
 
@@ -73,7 +76,7 @@ public class AbstractServerTest {
 				buf.toString());
 
 		buf.setLength(0);
-
+		
 		buf.append("jdbc.driver.className=org.apache.derby.jdbc.EmbeddedDriver\r\n");
 		buf.append("jdbc.url=jdbc:derby:" + data.getAbsolutePath()
 				+ ";create=true\r\n");
@@ -145,10 +148,11 @@ public class AbstractServerTest {
 
 		String json = doGet("/hypersocket/api/logon");
 		debugJSON(json);
-
-		AuthenticationResult result = mapper.readValue(json,
+     	AuthenticationResult result = mapper.readValue(json,
 				AuthenticationResult.class);
-
+		
+		
+		
 		// We should not already be logged in
 		Assert.assertFalse(result.getSuccess());
 
@@ -171,21 +175,30 @@ public class AbstractServerTest {
 
 		AuthenticationResult logonResult = mapper.readValue(logonJson,
 				AuthenticationResult.class);
-
-		if (expectChangePassword) {
+		if(logonResult.getSuccess()){
+			JsonLogonResult logon = mapper.readValue(logonJson,JsonLogonResult.class); 
+			session=logon.getSession();
+		}else{
+			session=null;
+		}
+        
+        
+        if (expectChangePassword) {
 			// We should now be logged on
 			Assert.assertFalse(
 					"The authentication should have failed because password change was expected",
 					logonResult.getSuccess());
-
+			           
 			logonJson = doPost("/hypersocket/api/logon",
 					new BasicNameValuePair("password", newPassword),
 					new BasicNameValuePair("confirmPassword", newPassword));
 
 			debugJSON(logonJson);
-
-			logonResult = mapper.readValue(logonJson,
-					AuthenticationResult.class);
+			logonResult = mapper.readValue(logonJson,AuthenticationResult.class);
+			if(logonResult.getSuccess()){
+				JsonLogonResult logon = mapper.readValue(logonJson,JsonLogonResult.class); 
+				session=logon.getSession();
+			}
 
 		}
 
@@ -542,4 +555,10 @@ public class AbstractServerTest {
 		debugJSON(addGroupToRoledJson);
 
 	}
+
+	public static JsonSession getSession() {
+		return session;
+	}
+	
+	
 }
