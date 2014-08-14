@@ -20,20 +20,15 @@ import com.hypersocket.resource.ResourceCreationException;
 public abstract class AbstractReadOnlyRealmProvider extends ResourceTemplateRepositoryImpl implements RealmProvider {
 
 	@Override
-	public final boolean isReadOnly() {
+	public final boolean isReadOnly(Realm realm) {
 		return true;
 	}
 
 	@Override
 	public final Principal createUser(Realm realm, String username,
-			Map<String, String> properties, List<Principal> principals)
+			Map<String, String> properties, List<Principal> principals,
+			String password, boolean forceChange)
 			throws ResourceCreationException {
-		throw new UnsupportedOperationException("Cannot create user because realm is read only!");
-	}
-
-	@Override
-	public final Principal createUser(Realm realm, String username,
-			Map<String, String> properties) throws ResourceCreationException {
 		throw new UnsupportedOperationException("Cannot create user because realm is read only!");
 	}
 

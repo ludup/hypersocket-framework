@@ -69,7 +69,7 @@ public class CertificateServiceImpl extends AuthenticatedServiceImpl implements
 				RESOURCE_BUNDLE, "category.certificate");
 
 		for (CertificatePermission p : CertificatePermission.values()) {
-			permissionService.registerPermission(p.getResourceKey(), cat);
+			permissionService.registerPermission(p.getResourceKey(), p.isSystem(), cat);
 		}
 	}
 

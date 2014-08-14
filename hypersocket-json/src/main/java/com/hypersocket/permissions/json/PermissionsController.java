@@ -42,8 +42,18 @@ public class PermissionsController extends ResourceController {
 			HttpServletResponse response, @PathVariable String resourceKey)
 			throws AccessDeniedException, UnauthorizedException {
 
-		return new ResourceStatus<Permission>(
-				permissionService.getPermission(resourceKey));
+		permissionService.setCurrentSession(
+				sessionUtils.getActiveSession(request),
+				sessionUtils.getLocale(request));
+		try {
+		
+			return new ResourceStatus<Permission>(
+					permissionService.getPermission(resourceKey));
+		
+		} finally {
+			permissionService.clearPrincipalContext();
+		}
+		
 	}
 
 	@AuthenticationRequired
@@ -53,7 +63,17 @@ public class PermissionsController extends ResourceController {
 	public PermissionList listPermissions(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException {
-		return new PermissionList(permissionService.allPermissions());
+		
+		permissionService.setCurrentSession(
+				sessionUtils.getActiveSession(request),
+				sessionUtils.getLocale(request));
+		try {
+		
+			return new PermissionList(permissionService.allPermissions());
+		
+		} finally {
+			permissionService.clearPrincipalContext();
+		}
 	}
 
 }

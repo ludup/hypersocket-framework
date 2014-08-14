@@ -532,7 +532,8 @@ public class CurrentRealmController extends ResourceController {
 						user.getName(), properties, principals);
 			} else {
 				principal = realmService.createUser(realm, user.getName(),
-						properties, principals);
+						properties, principals, user.getPassword(),
+						user.isForceChange());
 			}
 			return new ResourceStatus<Principal>(principal, I18N.getResource(
 					sessionUtils.getLocale(request),
@@ -588,4 +589,5 @@ public class CurrentRealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+
 }

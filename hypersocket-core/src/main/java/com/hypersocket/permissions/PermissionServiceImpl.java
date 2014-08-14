@@ -37,13 +37,8 @@ import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
 
 @Service
-@Transactional
 public class PermissionServiceImpl extends AbstractAuthenticatedService
 		implements PermissionService {
-
-	public static final int ROLE_FLAG_DISABLE_USERS = 0x01;
-	public static final int ROLE_FLAG_DISABLE_GROUPS = 0x02;
-	public static final int ROLE_FLAG_DISABLE_PERMISSIONS = 0x04;
 
 	@Autowired
 	PermissionRepository repository;
@@ -70,8 +65,10 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 						RESOURCE_BUNDLE, "category.permissions");
 				registerPermission(
 						SystemPermission.SYSTEM_ADMINISTRATION.getResourceKey(),
+						SystemPermission.SYSTEM_ADMINISTRATION.isSystem(), 
 						cat, false);
 				registerPermission(SystemPermission.SYSTEM.getResourceKey(),
+						SystemPermission.SYSTEM.isSystem(),
 						cat, true);
 			}
 		});
@@ -95,16 +92,17 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	@Override
 	public Permission registerPermission(String resourceKey,
-			PermissionCategory category) {
-		return registerPermission(resourceKey, category, false);
+			boolean system, PermissionCategory category) {
+		return registerPermission(resourceKey, system, category, false);
 	}
 
 	@Override
 	public Permission registerPermission(String resourceKey,
-			PermissionCategory category, boolean hidden) {
+			boolean system, PermissionCategory category, boolean hidden) {
 		Permission result = repository.getPermissionByResourceKey(resourceKey);
 		if (result == null) {
-			result = repository.createPermission(resourceKey, category, hidden);
+			repository.createPermission(resourceKey, system, category, hidden);
+			result = repository.getPermissionByResourceKey(resourceKey);
 		}
 		registerPermissionIds.add(result.getId());
 		return result;
@@ -128,7 +126,9 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 		Role role = new Role();
 		role.setName(name);
-		role.setRealm(realm);
+		if(!getCurrentRealm().isSystem()) {
+			role.setRealm(realm);
+		}
 
 		repository.saveRole(role);
 
@@ -290,7 +290,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	@Override
 	public List<Permission> allPermissions() {
-		return repository.getAllPermissions(registerPermissionIds);
+		return repository.getAllPermissions(registerPermissionIds, getCurrentRealm().isSystem());
 	}
 
 	private <T> Set<T> getEntitiesNotIn(Collection<T> source,

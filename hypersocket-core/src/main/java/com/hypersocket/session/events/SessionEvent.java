@@ -19,7 +19,7 @@ public abstract class SessionEvent extends SystemEvent {
 	
 	public SessionEvent(Object source, String resourceKey, boolean success,
 			Session session) {
-		super(source, resourceKey, success);
+		super(source, resourceKey, success, session.getPrincipal().getRealm());
 		this.session = session;
 		addAttribute(ATTR_UUID, session.getId());
 		addAttribute(ATTR_PRINCIPAL_NAME, session.getPrincipal().getPrincipalName());
@@ -29,7 +29,7 @@ public abstract class SessionEvent extends SystemEvent {
 	
 	public SessionEvent(Object source, String resourceKey, Throwable e,
 			Session session) {
-		super(source, resourceKey, e);
+		super(source, resourceKey, e, session.getPrincipal().getRealm());
 		this.session = session;
 	}
 	

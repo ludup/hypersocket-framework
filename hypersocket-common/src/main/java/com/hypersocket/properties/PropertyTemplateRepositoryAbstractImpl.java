@@ -127,7 +127,8 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 					node.getAttribute("resourceKey"),
 					node.hasAttribute("group") ? node.getAttribute("group") : SYSTEM_GROUP,
 					node.getAttribute("resourceBundle"),
-					Integer.parseInt(node.getAttribute("weight")));
+					Integer.parseInt(node.getAttribute("weight")),
+					node.getAttribute("displayMode"));
 
 			NodeList properties = node.getElementsByTagName("property");
 
@@ -151,11 +152,15 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 							store,
 							pnode.getAttribute("resourceKey"),
 							generateMetaData(pnode),
+							pnode.getAttribute("mapping"),
 							pnode.hasAttribute("weight") ? Integer
 									.parseInt(pnode.getAttribute("weight"))
 									: Integer.MAX_VALUE,
 							pnode.hasAttribute("hidden")
 									&& pnode.getAttribute("hidden")
+											.equalsIgnoreCase("true"),
+							pnode.hasAttribute("readOnly")
+									&& pnode.getAttribute("readOnly")
 											.equalsIgnoreCase("true"),
 							Boolean.getBoolean("hypersocket.development")
 									&& pnode.hasAttribute("developmentValue") ? pnode
@@ -231,7 +236,8 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 	private void registerPropertyItem(PropertyCategory category,
 			PropertyStore propertyStore, String resourceKey, String metaData,
-			int weight, boolean hidden, String defaultValue) {
+			String mapping, int weight, boolean hidden, boolean readOnly, 
+				String defaultValue) {
 
 		PropertyTemplate template = propertyStore
 				.getPropertyTemplate(resourceKey);
@@ -244,7 +250,9 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		template.setDefaultValue(defaultValue);
 		template.setWeight(weight);
 		template.setHidden(hidden);
+		template.setReadOnly(readOnly);
 		template.setCategory(category);
+		template.setMapping(mapping);
 		template.setPropertyStore(propertyStore);
 
 		propertyStore.registerTemplate(template, resourceXmlPath);
@@ -264,7 +272,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 	}
 
 	private PropertyCategory registerPropertyCategory(String categoryKey, String categoryGroup,
-			String bundle, int weight) {
+			String bundle, int weight, String displayMode) {
 
 		if (activeCategories.containsKey(categoryKey)) {
 			throw new IllegalStateException("Cannot register " + categoryKey
@@ -277,6 +285,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		category.setBundle(bundle);
 		category.setCategoryKey(categoryKey);
 		category.setCategoryGroup(categoryGroup);
+		category.setDisplayMode(displayMode);
 		category.setWeight(weight);
 
 		activeCategories.put(category.getCategoryKey(), category);

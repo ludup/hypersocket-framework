@@ -3,6 +3,7 @@ package com.hypersocket.auth;
 import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NServiceImpl;
+import com.hypersocket.realm.Realm;
 
 public class AuthenticationEvent extends SystemEvent {
 
@@ -28,9 +29,10 @@ public class AuthenticationEvent extends SystemEvent {
 						AuthenticationService.RESOURCE_BUNDLE, 
 						resourceKey));
 	}
+	
 	private AuthenticationEvent(Object source,
 			boolean success, AuthenticationState state, Authenticator authenticator) {
-		super(source, EVENT_RESOURCE_KEY, success);
+		super(source, EVENT_RESOURCE_KEY, success, state.getRealm());
 		addAttribute(AuthenticationEvent.ATTR_IP_ADDRESS, 
 				state.getRemoteAddress());
 		addAttribute(AuthenticationEvent.ATTR_SCHEME, 
@@ -45,8 +47,8 @@ public class AuthenticationEvent extends SystemEvent {
 				state.getLastRealmName());
 	}
 
-	public AuthenticationEvent(Object source, String resourceKey, Throwable e) {
-		super(source, resourceKey, e);
+	public AuthenticationEvent(Object source, String resourceKey, Throwable e, Realm currentRealm) {
+		super(source, resourceKey, e, currentRealm);
 	}
 	
 	public String getResourceBundle() {

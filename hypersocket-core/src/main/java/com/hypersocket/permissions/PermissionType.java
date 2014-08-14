@@ -10,4 +10,6 @@ package com.hypersocket.permissions;
 public interface PermissionType {
 
 	String getResourceKey();
+	
+	boolean isSystem();
 }
