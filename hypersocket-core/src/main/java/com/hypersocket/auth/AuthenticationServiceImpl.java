@@ -46,9 +46,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		implements AuthenticationService {
 
 	public static final String BROWSER_AUTHENTICATION_SCHEME = "Browser";
-	public static final String CLIENT_AUTHENTICATION_SCHEME = "Client";
 	public static final String BROWSER_AUTHENTICATION_RESOURCE_KEY = "basic";
-	public static final String CLIENT_AUTHENTICATION_RESOURCE_KEY = "client";
 
 	private static Logger log = LoggerFactory
 			.getLogger(AuthenticationServiceImpl.class);
@@ -116,9 +114,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				schemeRepository.createScheme(realm,
 						BROWSER_AUTHENTICATION_SCHEME, modules,
 						BROWSER_AUTHENTICATION_RESOURCE_KEY, true);
-				schemeRepository.createScheme(realm,
-						CLIENT_AUTHENTICATION_SCHEME, modules,
-						CLIENT_AUTHENTICATION_RESOURCE_KEY, true);
 			}
 		}
 
@@ -135,15 +130,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				schemeRepository.createScheme(realm,
 						BROWSER_AUTHENTICATION_SCHEME, modules,
 						BROWSER_AUTHENTICATION_RESOURCE_KEY, true);
-				
-				if (log.isInfoEnabled()) {
-					log.info("Creating " + CLIENT_AUTHENTICATION_SCHEME
-							+ " authentication scheme for realm "
-							+ realm.getName());
-				}
-				schemeRepository.createScheme(realm,
-						CLIENT_AUTHENTICATION_SCHEME, modules,
-						CLIENT_AUTHENTICATION_RESOURCE_KEY, true);
 			}
 		});
 
