@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.input.AnchorField;
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Permission;
@@ -413,6 +414,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 	protected FormTemplate modifyTemplate(AuthenticationState state,
 			FormTemplate template) {
+		
 		for (AuthenticationServiceListener l : listeners) {
 			l.modifyTemplate(state, template);
 		}
