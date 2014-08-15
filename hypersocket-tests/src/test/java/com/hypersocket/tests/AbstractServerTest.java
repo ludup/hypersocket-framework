@@ -198,6 +198,8 @@ public class AbstractServerTest {
 			if(logonResult.getSuccess()){
 				JsonLogonResult logon = mapper.readValue(logonJson,JsonLogonResult.class); 
 				session=logon.getSession();
+			}else{
+				session=null; 
 			}
 
 		}
@@ -223,6 +225,7 @@ public class AbstractServerTest {
 
 		// Will throw an exception if user is not logged on
 		doGet("/hypersocket/api/logoff");
+		session=null;
 	}
 
 	protected static String doPost(String url, NameValuePair... postVariables)
@@ -266,8 +269,7 @@ public class AbstractServerTest {
 		if (!url.startsWith("/")) {
 			url = "/" + url;
 		}
-
-		HttpGet httpget = new HttpGet("http://localhost:"
+       	HttpGet httpget = new HttpGet("http://localhost:"
 				+ main.getServer().getActualHttpPort() + url);
 
 		System.out.println("Executing request " + httpget.getRequestLine());
@@ -371,16 +373,21 @@ public class AbstractServerTest {
 			}
 		}
 
-	protected static JsonResourceStatus createUser(String realm, String username)
+	protected static JsonResourceStatus createUser(String realm,String username,String password,boolean forceChange) throws Exception{
+		return createUser(realm,username,password,forceChange,new Long[0]);
+	}
+	
+	
+	protected static JsonResourceStatus createUser(String realm,String username,String password,boolean forceChange,Long[] groups)
 			throws Exception {
 		UserUpdate x = new UserUpdate();
-		// x.setId(id); // do not set
 		x.setName(username);
-		x.setGroups(new Long[0]);
-
+		x.setGroups(groups);
+        x.setForceChange(forceChange);
+		x.setPassword(password);
 		PropertyItem propItem1 = new PropertyItem();
 		propItem1.setId("user.fullname");
-		propItem1.setValue("user");
+		propItem1.setValue(username);
 
 		PropertyItem propItem2 = new PropertyItem();
 		propItem2.setId("user.email");
