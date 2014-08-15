@@ -3,7 +3,6 @@ package com.hypersocket.realm.events;
 import java.util.List;
 import java.util.Map;
 
-import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;

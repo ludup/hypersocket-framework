@@ -31,7 +31,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
-import com.hypersocket.auth.json.AuthenticationSuccessResult;
 import com.hypersocket.json.AuthenticationRequiredResult;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.JsonLogonResult;
@@ -45,7 +44,6 @@ import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.json.CredentialsUpdate;
 import com.hypersocket.realm.json.GroupUpdate;
 import com.hypersocket.realm.json.UserUpdate;
-import com.hypersocket.session.Session;
 import com.hypersocket.util.OverridePropertyPlaceholderConfigurer;
 
 public class AbstractServerTest {
