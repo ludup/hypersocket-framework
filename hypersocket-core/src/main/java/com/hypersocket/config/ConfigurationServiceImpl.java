@@ -152,4 +152,9 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 		assertPermission(ConfigurationPermission.READ);
 		return repository.getPropertyCategories(getPropertyRealm(), group);
 	}
+
+	@Override
+	public String[] getValues(Realm realm, String name) {
+		return repository.getValues(realm, name);
+	}
 }

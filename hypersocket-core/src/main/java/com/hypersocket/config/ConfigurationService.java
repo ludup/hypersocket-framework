@@ -28,4 +28,6 @@ public interface ConfigurationService extends AuthenticatedService, PropertyTemp
 
 	Integer getIntValue(Realm realm, String name) throws NumberFormatException;
 
+	String[] getValues(Realm realm, String string);
+
 }
