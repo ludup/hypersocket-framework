@@ -1,27 +1,5 @@
 package com.hypersocket.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-
-import org.apache.http.client.ClientProtocolException;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import com.hypersocket.json.JsonResource;
-import com.hypersocket.json.JsonResourceList;
-import com.hypersocket.json.JsonResourceStatus;
-import com.hypersocket.json.JsonRoleResourceStatus;
-import com.hypersocket.properties.json.PropertyItem;
-import com.hypersocket.realm.json.CredentialsUpdate;
-import com.hypersocket.realm.json.GroupUpdate;
-import com.hypersocket.realm.json.RealmUpdate;
-import com.hypersocket.realm.json.UserUpdate;
 
 public class WithAdminPermissionTests extends AbstractServerTest {
 
