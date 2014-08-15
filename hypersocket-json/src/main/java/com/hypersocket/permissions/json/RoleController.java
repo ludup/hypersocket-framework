@@ -66,6 +66,23 @@ public class RoleController extends ResourceController {
 	}
 
 	@AuthenticationRequired
+	@RequestMapping(value = "roles/byName/{name}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public Role getRole(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable("name") String name)
+			throws AccessDeniedException, UnauthorizedException,
+			ResourceNotFoundException {
+
+		Session session = sessionUtils.getActiveSession(request);
+
+		permissionService.verifyPermission(session.getPrincipal(),
+				PermissionStrategy.REQUIRE_ANY, RealmPermission.READ);
+
+		return permissionService.getRole(name, session.getCurrentRealm());
+	}
+	
+	@AuthenticationRequired
 	@RequestMapping(value = "roles/template", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
