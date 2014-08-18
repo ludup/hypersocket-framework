@@ -1,0 +1,103 @@
+package com.hypersocket.tests.realms;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import org.apache.http.client.ClientProtocolException;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.hypersocket.json.JsonResourceStatus;
+import com.hypersocket.json.JsonRoleResourceStatus;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.tests.AbstractServerTest;
+
+public class NoPermissionTests extends AbstractServerTest {
+
+	@BeforeClass
+	public static void logOn() throws Exception {
+
+		logon("Default", "admin", "Password123?");
+		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
+				"user", false);
+		changePassword("user", jsonCreateUser);
+		Long[] permissions = { getPermissionId("permission.logon") };
+		JsonRoleResourceStatus jsonCreateRole = createRole("newrole",
+				permissions);
+		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
+		logoff();
+		logon("Default", "user", "user");
+	}
+
+	@AfterClass
+	public static void logOff() throws JsonParseException,
+			JsonMappingException, IOException {
+		logoff();
+	}
+
+	@Test(expected = ClientProtocolException.class)
+	public void tryNoPermissionRealmId() throws ClientProtocolException,
+			IOException {
+		doGet("/hypersocket/api/realms/realm/"
+				+ getSession().getCurrentRealm().getId());
+	}
+
+	@Test
+	public void tryNoPermissionRealmList() throws ClientProtocolException,
+			IOException {
+		/**
+		 * This is a special case, realms can be listed and actually must be
+		 * able to be listed since the logon screen shows these
+		 */
+		doGet("/hypersocket/api/realms/list");
+	}
+
+	@Test(expected = ClientProtocolException.class)
+	public void tryNoPermissionRealmsTable() throws ClientProtocolException,
+			IOException {
+
+		doGet("/hypersocket/api/realms/table");
+	}
+
+	@Test(expected = ClientProtocolException.class)
+	public void tryNoPermissionRealmsTemplate() throws ClientProtocolException,
+			IOException {
+		doGet("/hypersocket/api/realms/template/local");
+	}
+
+	@Test(expected = ClientProtocolException.class)
+	public void tryNoPermissionRealmPropertiesId()
+			throws ClientProtocolException, IOException {
+		doGet("/hypersocket/api/realms/realm/properties/"
+				+ getSession().getCurrentRealm().getId());
+	}
+
+	@Test(expected = ClientProtocolException.class)
+	public void tryNoPermissionRealmPost() throws ClientProtocolException,
+			IOException, IllegalStateException, URISyntaxException {
+		Realm realm = new Realm();
+		realm.setName("newrealm");
+		realm.setDeleted(false);
+		realm.setHidden(false);
+		realm.setResourceCategory("");
+
+		doPostJson("/hypersocket/realms/realm", realm);
+
+	}
+
+	@Test(expected = ClientProtocolException.class)
+	public void tryNoPermissionRealmProviders() throws ClientProtocolException,
+			IOException {
+		doGet("/hypersocket/api/realms/providers");
+	}
+
+	@Test(expected = ClientProtocolException.class)
+	public void tryNoPermissionRealmDeleteId() throws ClientProtocolException,
+			IOException {
+		doDelete("/hypersocket/api/realms/realm/"
+				+ getSession().getCurrentRealm().getId());
+	}
+}
