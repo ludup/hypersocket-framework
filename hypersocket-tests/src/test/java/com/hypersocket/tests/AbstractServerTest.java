@@ -12,6 +12,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -53,15 +54,20 @@ public class AbstractServerTest {
 	static BasicCookieStore cookieStore;
 	static ObjectMapper mapper = new ObjectMapper();
 	protected static Long adminId;
+
 	protected static JsonSession session;
-	
+
+	protected static JsonRole systemAdminRole;
+
 	@BeforeClass
 	public static void startup() throws Exception {
 
 		tmp = Files.createTempDirectory("hypersocket").toFile();
 		tmp.mkdirs();
-      	File conf = new File(tmp, "conf");
-      	File data = new File(tmp, "data");
+
+		File conf = new File(tmp, "conf");
+
+		File data = new File(tmp, "data");
 
 		FileUtils.copyDirectory(new File("default-conf"), conf);
 
@@ -74,15 +80,14 @@ public class AbstractServerTest {
 				buf.toString());
 
 		buf.setLength(0);
-		
+
 		buf.append("jdbc.driver.className=org.apache.derby.jdbc.EmbeddedDriver\r\n");
-		String dbPath=data.getAbsolutePath();
-		String strep="\\\\\\\\";
-		if(dbPath.indexOf("\\")>0){
-			dbPath=dbPath.replaceAll("\\\\",strep);
+		String dbPath = data.getAbsolutePath();
+		String strep = "\\\\\\\\";
+		if (dbPath.indexOf("\\") > 0) {
+			dbPath = dbPath.replaceAll("\\\\", strep);
 		}
-		buf.append("jdbc.url=jdbc:derby:" + dbPath
-				+ ";create=true\r\n");
+		buf.append("jdbc.url=jdbc:derby:" + dbPath + ";create=true\r\n");
 		buf.append("jdbc.username=hypersocket\r\n");
 		buf.append("jdbc.password=hypersocket\r\n");
 		buf.append("jdbc.hibernate.dialect=com.hypersocket.derby.DefaultClobDerbyDialect\r\n");
@@ -136,13 +141,15 @@ public class AbstractServerTest {
 		if (main != null) {
 			main.shutdownServer();
 		}
-		try{//wait to close db connection before delete folder
+		try {// wait to close db connection before delete folder
 			new Thread().wait(1000);
-		}catch(Exception e){}
+		} catch (Exception e) {
+		}
 		if (tmp != null && tmp.exists()) {
-			try{
+			try {
 				FileUtils.deleteDirectory(tmp);
-			}catch(Exception e){}
+			} catch (Exception e) {
+			}
 		}
 	}
 
@@ -154,13 +161,13 @@ public class AbstractServerTest {
 	protected static void logon(String realm, String username, String password,
 			boolean expectChangePassword, String newPassword) throws Exception {
 
+		// main.getServer().
 		String json = doGet("/hypersocket/api/logon");
 		debugJSON(json);
-     	AuthenticationResult result = mapper.readValue(json,
+
+		AuthenticationResult result = mapper.readValue(json,
 				AuthenticationResult.class);
-		
-		
-		
+
 		// We should not already be logged in
 		Assert.assertFalse(result.getSuccess());
 
@@ -175,39 +182,48 @@ public class AbstractServerTest {
 		Assert.assertEquals(2, resultWithForm.getFormTemplate()
 				.getInputFields().size());
 
-		String logonJson = doPost("/hypersocket/api/logon", 
-				new BasicNameValuePair("username", username), 
+		String logonJson = doPost("/hypersocket/api/logon",
+				new BasicNameValuePair("username", username),
 				new BasicNameValuePair("password", password));
 
 		debugJSON(logonJson);
 
 		AuthenticationResult logonResult = mapper.readValue(logonJson,
 				AuthenticationResult.class);
-		if(logonResult.getSuccess()){
-			JsonLogonResult logon = mapper.readValue(logonJson,JsonLogonResult.class); 
-			session=logon.getSession();
-		}else{
-			session=null; 
+		if (logonResult.getSuccess()) {
+			JsonLogonResult logon = mapper.readValue(logonJson,
+					JsonLogonResult.class);
+			session = logon.getSession();
+		} else {
+			session = null;
 		}
-        
-        
-        if (expectChangePassword) {
+		if (expectChangePassword) {
 			// We should now be logged on
 			Assert.assertFalse(
 					"The authentication should have failed because password change was expected",
 					logonResult.getSuccess());
-			           
+
 			logonJson = doPost("/hypersocket/api/logon",
 					new BasicNameValuePair("password", newPassword),
 					new BasicNameValuePair("confirmPassword", newPassword));
 
 			debugJSON(logonJson);
-			logonResult = mapper.readValue(logonJson,AuthenticationResult.class);
-			if(logonResult.getSuccess()){
-				JsonLogonResult logon = mapper.readValue(logonJson,JsonLogonResult.class); 
-				session=logon.getSession();
-			}else{
-				session=null; 
+
+			logonResult = mapper.readValue(logonJson,
+					AuthenticationResult.class);
+			if (logonResult.getSuccess()) {
+				JsonLogonResult logon = mapper.readValue(logonJson,
+						JsonLogonResult.class);
+				session = logon.getSession();
+			} else {
+				session = null;
+			}
+
+			if (getSystemAdminRole() == null) {
+				systemAdminRole = mapper
+						.readValue(
+								doGet("/hypersocket/api/roles/byName/System%20Administrator"),
+								JsonRole.class);
 			}
 
 		}
@@ -221,11 +237,11 @@ public class AbstractServerTest {
 	protected static String debugJSON(String json) throws JsonParseException,
 			JsonMappingException, IOException {
 		Object obj = mapper.readValue(json, Object.class);
-		String ret = mapper.defaultPrettyPrintingWriter()
-				.writeValueAsString(obj);
+		String ret = mapper.defaultPrettyPrintingWriter().writeValueAsString(
+				obj);
 		System.out.println(ret);
 		return ret;
-		
+
 	}
 
 	protected static void logoff() throws JsonParseException,
@@ -233,7 +249,7 @@ public class AbstractServerTest {
 
 		// Will throw an exception if user is not logged on
 		doGet("/hypersocket/api/logoff");
-		session=null;
+		session = null;
 	}
 
 	protected static String doPost(String url, NameValuePair... postVariables)
@@ -254,9 +270,9 @@ public class AbstractServerTest {
 		CloseableHttpClient httpClient = (CloseableHttpClient) getHttpClient();
 		CloseableHttpResponse response = (CloseableHttpResponse) httpClient
 				.execute(login);
-		
+
 		System.out.println("Response: " + response.getStatusLine().toString());
-		
+
 		if (response.getStatusLine().getStatusCode() != 200) {
 			throw new ClientProtocolException(
 					"Expected status code 200 for doPost");
@@ -277,7 +293,8 @@ public class AbstractServerTest {
 		if (!url.startsWith("/")) {
 			url = "/" + url;
 		}
-       	HttpGet httpget = new HttpGet("http://localhost:"
+
+		HttpGet httpget = new HttpGet("http://localhost:"
 				+ main.getServer().getActualHttpPort() + url);
 
 		System.out.println("Executing request " + httpget.getRequestLine());
@@ -287,11 +304,46 @@ public class AbstractServerTest {
 				.execute(httpget);
 
 		System.out.println("Response: " + response.getStatusLine().toString());
-		
+
 		try {
 			if (response.getStatusLine().getStatusCode() != 200) {
 				throw new ClientProtocolException(
-						"Expected status code 200 for doGet [" + response.getStatusLine().getStatusCode() + "]");
+						"Expected status code 200 for doGet ["
+								+ response.getStatusLine().getStatusCode()
+								+ "]");
+			}
+
+			return IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+		} finally {
+			response.close();
+			httpClient.close();
+		}
+	}
+
+	protected static String doDelete(String url)
+			throws ClientProtocolException, IOException {
+
+		if (!url.startsWith("/")) {
+			url = "/" + url;
+		}
+
+		HttpDelete httpdelete = new HttpDelete("http://localhost:"
+				+ main.getServer().getActualHttpPort() + url);
+
+		System.out.println("Executing request " + httpdelete.getRequestLine());
+
+		CloseableHttpClient httpClient = (CloseableHttpClient) getHttpClient();
+		CloseableHttpResponse response = (CloseableHttpResponse) httpClient
+				.execute(httpdelete);
+
+		System.out.println("Response: " + response.getStatusLine().toString());
+
+		try {
+			if (response.getStatusLine().getStatusCode() != 200) {
+				throw new ClientProtocolException(
+						"Expected status code 200 for doGet ["
+								+ response.getStatusLine().getStatusCode()
+								+ "]");
 			}
 
 			return IOUtils.toString(response.getEntity().getContent(), "UTF-8");
@@ -327,7 +379,7 @@ public class AbstractServerTest {
 				.execute(postMethod);
 
 		System.out.println("Response: " + response.getStatusLine().toString());
-		
+
 		if (response.getStatusLine().getStatusCode() != 200) {
 			throw new ClientProtocolException(
 					"Expected status code 200 for doPost");
@@ -343,55 +395,57 @@ public class AbstractServerTest {
 	}
 
 	protected static String doPostJson(String url, Object jsonObject)
-				throws URISyntaxException, IllegalStateException, IOException {
-	
-			if (!url.startsWith("/")) {
-				url = "/" + url;
-			}
-	
-			String json = mapper.writeValueAsString(jsonObject);
-	
-			StringEntity requestEntity = new StringEntity(json,
-					ContentType.APPLICATION_JSON);
-	
-			HttpUriRequest request = RequestBuilder
-					.post()
-					.setUri(new URI("http://localhost:"
-							+ main.getServer().getActualHttpPort() + url))
-					.setEntity(requestEntity).build();
-	
-			System.out.println("Executing request " + request.getRequestLine());
-	
-			CloseableHttpClient httpClient = (CloseableHttpClient) getHttpClient();
-			CloseableHttpResponse response = (CloseableHttpResponse) httpClient
-					.execute(request);
-			
-			System.out.println("Response: " + response.getStatusLine().toString());
-			
-			if (response.getStatusLine().getStatusCode() != 200) {
-				
-				throw new ClientProtocolException(
-						"Expected status code 200 for doPost");
-			}
-			try {
-				return IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-			} finally {
-				response.close();
-				httpClient.close();
-			}
+			throws URISyntaxException, IllegalStateException, IOException {
+
+		if (!url.startsWith("/")) {
+			url = "/" + url;
 		}
 
-	protected static JsonResourceStatus createUser(String realm,String username,String password,boolean forceChange) throws Exception{
-		return createUser(realm,username,password,forceChange,new Long[0]);
+		String json = mapper.writeValueAsString(jsonObject);
+
+		StringEntity requestEntity = new StringEntity(json,
+				ContentType.APPLICATION_JSON);
+
+		HttpUriRequest request = RequestBuilder
+				.post()
+				.setUri(new URI("http://localhost:"
+						+ main.getServer().getActualHttpPort() + url))
+				.setEntity(requestEntity).build();
+
+		System.out.println("Executing request " + request.getRequestLine());
+
+		CloseableHttpClient httpClient = (CloseableHttpClient) getHttpClient();
+		CloseableHttpResponse response = (CloseableHttpResponse) httpClient
+				.execute(request);
+
+		System.out.println("Response: " + response.getStatusLine().toString());
+
+		if (response.getStatusLine().getStatusCode() != 200) {
+
+			throw new ClientProtocolException(
+					"Expected status code 200 for doPost");
+		}
+		try {
+			return IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+		} finally {
+			response.close();
+			httpClient.close();
+		}
 	}
-	
-	
-	protected static JsonResourceStatus createUser(String realm,String username,String password,boolean forceChange,Long[] groups)
+
+	protected static JsonResourceStatus createUser(String realm,
+			String username, String password, boolean forceChange)
+			throws Exception {
+		return createUser(realm, username, password, forceChange, new Long[0]);
+	}
+
+	protected static JsonResourceStatus createUser(String realm,
+			String username, String password, boolean forceChange, Long[] groups)
 			throws Exception {
 		UserUpdate x = new UserUpdate();
 		x.setName(username);
 		x.setGroups(groups);
-        x.setForceChange(forceChange);
+		x.setForceChange(forceChange);
 		x.setPassword(password);
 		PropertyItem propItem1 = new PropertyItem();
 		propItem1.setId("user.fullname");
@@ -423,7 +477,8 @@ public class AbstractServerTest {
 
 		credentialsUpdate.setPrincipalId(json.getResource().getId());
 
-		String changePasswordJson = doPostJson("/hypersocket/api/currentRealm/user/credentials",
+		String changePasswordJson = doPostJson(
+				"/hypersocket/api/currentRealm/user/credentials",
 				credentialsUpdate);
 		debugJSON(changePasswordJson);
 
@@ -435,7 +490,8 @@ public class AbstractServerTest {
 		group.setName(groupname);
 		group.setUsers(new Long[0]);
 
-		String newGroupJson = doPostJson("/hypersocket/api/currentRealm/group", group);
+		String newGroupJson = doPostJson("/hypersocket/api/currentRealm/group",
+				group);
 
 		JsonResourceStatus newGroupJsonResourceStatus = mapper.readValue(
 				newGroupJson, JsonResourceStatus.class);
@@ -455,8 +511,8 @@ public class AbstractServerTest {
 		Long[] groupUsers = { jsonUser.getResource().getId() };
 		groupUpdate.setUsers(groupUsers);
 
-		String addUserToGroupJson = doPostJson("/hypersocket/api/currentRealm/group",
-				groupUpdate);
+		String addUserToGroupJson = doPostJson(
+				"/hypersocket/api/currentRealm/group", groupUpdate);
 		debugJSON(addUserToGroupJson);
 
 	}
@@ -470,25 +526,28 @@ public class AbstractServerTest {
 
 		groupUpdate.setUsers(users);
 
-		String addUserToGroupJson = doPostJson("/hypersocket/api/currentRealm/group",
-				groupUpdate);
+		String addUserToGroupJson = doPostJson(
+				"/hypersocket/api/currentRealm/group", groupUpdate);
 		debugJSON(addUserToGroupJson);
 
 	}
 
 	protected static long getPermissionId(String resourceKey) throws Exception {
-		
-		String permissionJson = doGet("/hypersocket/api/permissions/permission/" + resourceKey + "/");
-		
-		JsonResourceStatus status = mapper.readValue(permissionJson, JsonResourceStatus.class);
-		
-		if(!status.isSuccess()) {
-			throw new Exception("Cannot retrieve permission id for " + resourceKey);
+
+		String permissionJson = doGet("/hypersocket/api/permissions/permission/"
+				+ resourceKey + "/");
+
+		JsonResourceStatus status = mapper.readValue(permissionJson,
+				JsonResourceStatus.class);
+
+		if (!status.isSuccess()) {
+			throw new Exception("Cannot retrieve permission id for "
+					+ resourceKey);
 		}
-		
+
 		return status.getResource().getId();
 	}
-	
+
 	protected static JsonRoleResourceStatus createRole(String rolename,
 			Long[] permissions) throws Exception {
 		RoleUpdate role = new RoleUpdate();
@@ -528,8 +587,8 @@ public class AbstractServerTest {
 
 	}
 
-	protected static void addUsersToRole(JsonRole jsonRole,
-			Long[] users) throws Exception {
+	protected static void addUsersToRole(JsonRole jsonRole, Long[] users)
+			throws Exception {
 
 		RoleUpdate roleUpdate = new RoleUpdate();
 
@@ -574,6 +633,12 @@ public class AbstractServerTest {
 	public static JsonSession getSession() {
 		return session;
 	}
-	
-	
+
+	public static JsonRole getSystemAdminRole() {
+		return systemAdminRole;
+	}
+
+	public static ObjectMapper getMapper() {
+		return mapper;
+	}
 }
