@@ -13,23 +13,32 @@ import com.hypersocket.json.JsonPrincipal;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonSession {
-	
+
 	String id;
 	JsonPrincipal principal;
-	
+	JsonResource currentRealm;
+
 	public String getId() {
 		return id;
 	}
+
 	public void setId(String id) {
 		this.id = id;
 	}
+
 	public JsonPrincipal getPrincipal() {
 		return principal;
 	}
+
 	public void setPrincipal(JsonPrincipal principal) {
 		this.principal = principal;
 	}
-	
-	
-   
+
+	public JsonResource getCurrentRealm() {
+		return currentRealm;
+	}
+
+	public void setCurrentRealm(JsonResource currentRealm) {
+		this.currentRealm = currentRealm;
+	}
 }
