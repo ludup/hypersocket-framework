@@ -76,7 +76,12 @@ public class AbstractServerTest {
 		buf.setLength(0);
 		
 		buf.append("jdbc.driver.className=org.apache.derby.jdbc.EmbeddedDriver\r\n");
-		buf.append("jdbc.url=jdbc:derby:" + data.getAbsolutePath()
+		String dbPath=data.getAbsolutePath();
+		String strep="\\\\\\\\";
+		if(dbPath.indexOf("\\")>0){
+			dbPath=dbPath.replaceAll("\\\\",strep);
+		}
+		buf.append("jdbc.url=jdbc:derby:" + dbPath
 				+ ";create=true\r\n");
 		buf.append("jdbc.username=hypersocket\r\n");
 		buf.append("jdbc.password=hypersocket\r\n");
@@ -131,8 +136,13 @@ public class AbstractServerTest {
 		if (main != null) {
 			main.shutdownServer();
 		}
+		try{//wait to close db connection before delete folder
+			new Thread().wait(1000);
+		}catch(Exception e){}
 		if (tmp != null && tmp.exists()) {
-			FileUtils.deleteDirectory(tmp);
+			try{
+				FileUtils.deleteDirectory(tmp);
+			}catch(Exception e){}
 		}
 	}
 
