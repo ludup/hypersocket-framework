@@ -17,7 +17,7 @@ import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.json.RealmUpdate;
 import com.hypersocket.tests.AbstractServerTest;
 
-public class WithDelegatedPermissionTest extends AbstractServerTest {
+public class WithDelegatedPermissionTests extends AbstractServerTest {
 	@BeforeClass
 	public static void LogOn() throws Exception {
 		logon("Default", "admin", "Password123?");
