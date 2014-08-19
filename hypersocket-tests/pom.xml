@@ -16,9 +16,15 @@
 	</parent>
 
 	<dependencies>
-		<dependency>
+		<!--<dependency>
 			<groupId>com.hypersocket</groupId>
 			<artifactId>hypersocket-ui-bootstrap</artifactId>
+			<version>${project.version}</version>
+		</dependency>-->
+
+		<dependency>
+			<groupId>com.hypersocket</groupId>
+			<artifactId>x-hypersocket-translate</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
