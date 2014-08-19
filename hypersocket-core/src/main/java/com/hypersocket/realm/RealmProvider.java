@@ -84,9 +84,6 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Collection<PropertyCategory> getGroupProperties(Principal principal);
 
-	// Set<Principal> getPrincipalsByProperty(String propertyName, String
-	// propertyValue);
-
 	String getAddress(Principal principal, MediaType type)
 			throws MediaNotFoundException;
 

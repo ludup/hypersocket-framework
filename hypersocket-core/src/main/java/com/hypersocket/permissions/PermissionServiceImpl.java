@@ -206,7 +206,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Set<Permission> getPrincipalPermissions(Principal principal) {
+	public Set<Permission> getPrincipalPermissions(Principal principal) throws AccessDeniedException {
 
 		if (!permissionsCache.isElementInMemory(principal)
 				|| (permissionsCache.get(principal) == null || permissionsCache
@@ -239,7 +239,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Set<Role> getPrincipalRoles(Principal principal) {
+	public Set<Role> getPrincipalRoles(Principal principal) throws AccessDeniedException {
 
 		if (!roleCache.isElementInMemory(principal)
 				|| (roleCache.get(principal) == null || roleCache
@@ -307,6 +307,9 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			PermissionStrategy strategy, PermissionType... permissions)
 			throws AccessDeniedException {
 		if (principal == null) {
+			if(log.isInfoEnabled()) {
+				log.info("Denying permission because principal is null");
+			}
 			throw new AccessDeniedException();
 		}
 
@@ -319,7 +322,11 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	@Override
 	public boolean hasSystemPermission(Principal principal) {
-		return hasSystemPrincipal(getPrincipalPermissions(principal));
+		try {
+			return hasSystemPrincipal(getPrincipalPermissions(principal));
+		} catch (AccessDeniedException e) {
+			return false;
+		}
 	}
 
 	protected boolean hasSystemPrincipal(Set<Permission> principalPermissions) {

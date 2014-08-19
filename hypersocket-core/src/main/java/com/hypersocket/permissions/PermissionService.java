@@ -56,7 +56,7 @@ public interface PermissionService extends AuthenticatedService {
 
 	public Permission getPermissionById(Long perm);
 
-	Set<Permission> getPrincipalPermissions(Principal principal);
+	Set<Permission> getPrincipalPermissions(Principal principal) throws AccessDeniedException;
 
 	boolean hasSystemPermission(Principal principal);
 
@@ -67,6 +67,6 @@ public interface PermissionService extends AuthenticatedService {
 
 	Role getPersonalRole(Principal principal);
 
-	Set<Role> getPrincipalRoles(Principal principal);
+	Set<Role> getPrincipalRoles(Principal principal) throws AccessDeniedException;
 
 }
