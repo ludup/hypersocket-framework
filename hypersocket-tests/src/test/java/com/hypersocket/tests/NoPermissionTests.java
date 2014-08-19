@@ -23,10 +23,12 @@ public class NoPermissionTests extends AbstractServerTest {
 	@BeforeClass
 	public static void createUser() throws Exception {
 		logon("Default", "admin", "Password123?");
-		JsonResourceStatus jsonCreateUser = createUser("Default", "user");
+		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
+				"user", false);
 		changePassword("user", jsonCreateUser);
-		Long[] permissions = {getPermissionId("permission.logon") };
-		JsonRoleResourceStatus jsonCreateRole = createRole("newrole", permissions);
+		Long[] permissions = { getPermissionId("permission.logon") };
+		JsonRoleResourceStatus jsonCreateRole = createRole("newrole",
+				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
 		logoff();
 		logon("Default", "user", "user");
@@ -49,26 +51,28 @@ public class NoPermissionTests extends AbstractServerTest {
 			IOException {
 		doGet("/hypersocket/api/currentRealm/groups/list");
 	}
+
 	/**
-	 * Currently disabled because we need changes to the framework to support implies
-	 * permissions so that UserPermission.READ could imply RolePermission.READ (we 
-	 * also do not have RolePermission implemented yet either!
+	 * Currently disabled because we need changes to the framework to support
+	 * implies permissions so that UserPermission.READ could imply
+	 * RolePermission.READ (we also do not have RolePermission implemented yet
+	 * either!
 	 * 
 	 * @throws ClientProtocolException
 	 * @throws IOException
 	 */
-//	@Test(expected = ClientProtocolException.class)
-//	public void tryUnauthorizedRoleList() throws ClientProtocolException,
-//			IOException {
-//		doGet("/hypersocket/api/roles/list");
-//	}
+	// @Test(expected = ClientProtocolException.class)
+	// public void tryUnauthorizedRoleList() throws ClientProtocolException,
+	// IOException {
+	// doGet("/hypersocket/api/roles/list");
+	// }
 
 	@Test
 	public void tryUnauthorizedRealmList() throws ClientProtocolException,
 			IOException {
 		/**
-		 * This is a special case, realms can be listed and actually must
-		 * be able to be listed since the logon screen shows these
+		 * This is a special case, realms can be listed and actually must be
+		 * able to be listed since the logon screen shows these
 		 */
 		doGet("/hypersocket/api/realms/list");
 	}
@@ -142,7 +146,8 @@ public class NoPermissionTests extends AbstractServerTest {
 
 		credentialsUpdate.setPrincipalId(new Long(6));
 
-		doPostJson("/hypersocket/api/currentRealm/user/credentials", credentialsUpdate);
+		doPostJson("/hypersocket/api/currentRealm/user/credentials",
+				credentialsUpdate);
 
 	}
 
