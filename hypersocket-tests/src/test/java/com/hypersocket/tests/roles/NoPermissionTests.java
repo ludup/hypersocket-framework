@@ -50,13 +50,13 @@ public class NoPermissionTests extends AbstractServerTest {
 		doGet("/hypersocket/api/roles/byName/System%20Administrator");
 	}
 
-	@Test
+	@Test(expected = ClientProtocolException.class)
 	public void tryNoPermissionRoleTemplate() throws ClientProtocolException,
 			IOException {
 		doGet("/hypersocket/api/roles/template");
 	}
 
-	@Test
+	@Test(expected = ClientProtocolException.class)
 	public void tryNoPermissionRoleList() throws ClientProtocolException,
 			IOException {
 		doGet("/hypersocket/api/roles/list");
