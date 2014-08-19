@@ -100,10 +100,10 @@ public interface RealmService extends AuthenticatedService {
 	Collection<PropertyCategory> getUserPropertyTemplates(String module)
 			throws AccessDeniedException;
 
-	List<Principal> getAssociatedPrincipals(Principal principal);
+	List<Principal> getAssociatedPrincipals(Principal principal) throws AccessDeniedException;
 
 	List<Principal> getAssociatedPrincipals(Principal principal,
-			PrincipalType type);
+			PrincipalType type) throws AccessDeniedException;
 
 	List<Realm> allRealms(Class<? extends RealmProvider> clz);
 
@@ -111,7 +111,8 @@ public interface RealmService extends AuthenticatedService {
 			String searchPattern, int start, int length, ColumnSort[] sorting)
 			throws AccessDeniedException;
 
-	Long getPrincipalCount(Realm realm, PrincipalType type, String searchPattern);
+	Long getPrincipalCount(Realm realm, PrincipalType type, String searchPattern)
+			throws AccessDeniedException;
 
 	Collection<PropertyCategory> getRealmPropertyTemplates(String module)
 			throws AccessDeniedException;
@@ -139,9 +140,6 @@ public interface RealmService extends AuthenticatedService {
 	RealmProvider getProviderForRealm(Realm realm);
 
 	RealmProvider getProviderForRealm(String module);
-
-	// Set<Principal> getPrincipalsByProperty(String propertyName,
-	// String propertyValue);
 
 	String getRealmProperty(Realm realm, String resourceKey);
 

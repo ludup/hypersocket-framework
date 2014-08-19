@@ -136,7 +136,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public List<Principal> allUsers(Realm realm) throws AccessDeniedException {
 
-		assertPermission(UserPermission.READ);
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
 
 		return allPrincipals(realm, PrincipalType.USER);
 	}
@@ -144,7 +144,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public List<Principal> allGroups(Realm realm) throws AccessDeniedException {
 
-		assertPermission(GroupPermission.READ);
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
 
 		return allPrincipals(realm, PrincipalType.GROUP);
 	}
@@ -195,8 +195,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public Realm getRealmById(Long id) throws AccessDeniedException {
 
-		assertAnyPermission(RealmPermission.READ,
-				SystemPermission.SYSTEM_ADMINISTRATION);
+		assertPermission(RealmPermission.READ);
 
 		return realmRepository.getRealmById(id);
 	}
@@ -211,7 +210,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		try {
 
-			assertPermission(UserPermission.CREATE);
+			assertAnyPermission(UserPermission.CREATE, RealmPermission.CREATE);
 
 			Principal principal = provider.createUser(realm, username,
 					properties, principals, password, forceChange);
@@ -250,7 +249,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		try {
 
-			assertPermission(UserPermission.UPDATE);
+			assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
 
 			Principal principal = provider.updateUser(realm, user, username,
 					properties, principals);
@@ -294,18 +293,6 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		return getProviderForRealm(realm).getPrincipalByName(principalName,
 				realm, type);
 	}
-
-	// @Override
-	// public Set<Principal> getPrincipalsByProperty(String propertyName,
-	// String propertyValue) {
-	//
-	// Set<Principal> ret = new HashSet<Principal>();
-	// for (Realm r : allRealms()) {
-	// ret.addAll(getProviderForRealm(r).getPrincipalsByProperty(
-	// propertyName, propertyValue));
-	// }
-	// return ret;
-	// }
 
 	@Override
 	public void deleteRealm(String name) throws ResourceChangeException,
@@ -624,6 +611,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public Collection<PropertyCategory> getRealmPropertyTemplates(String module)
 			throws AccessDeniedException {
+		
 		assertPermission(RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(module);
@@ -635,7 +623,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Principal getPrincipalById(Realm realm, Long id,
 			PrincipalType... type) throws AccessDeniedException {
 
-		assertPermission(RealmPermission.READ);
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
 
 		if (type.length == 0) {
 			type = PrincipalType.ALL_TYPES;
@@ -657,7 +645,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		try {
 
-			assertAnyPermission(GroupPermission.CREATE);
+			assertAnyPermission(GroupPermission.CREATE, RealmPermission.CREATE);
 
 			Principal principal = provider.createGroup(realm, name, principals);
 
@@ -691,7 +679,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		try {
 
-			assertPermission(GroupPermission.UPDATE);
+			assertAnyPermission(GroupPermission.UPDATE, RealmPermission.UPDATE);
 
 			Principal principal = provider.updateGroup(realm, group, name,
 					principals);
@@ -725,7 +713,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		RealmProvider provider = getProviderForRealm(realm);
 
 		try {
-			assertPermission(GroupPermission.DELETE);
+			assertAnyPermission(GroupPermission.DELETE, RealmPermission.DELETE);
 
 			provider.deleteGroup(group);
 
@@ -759,7 +747,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		RealmProvider provider = getProviderForRealm(realm);
 
 		try {
-			assertPermission(UserPermission.DELETE);
+			assertAnyPermission(UserPermission.DELETE, RealmPermission.DELETE);
 
 			provider.deleteUser(user);
 
@@ -798,7 +786,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Collection<PropertyCategory> getUserPropertyTemplates(
 			Principal principal) throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ, ProfilePermission.READ);
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
@@ -809,7 +797,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Collection<PropertyCategory> getUserPropertyTemplates(String module)
 			throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ, ProfilePermission.READ);
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(module);
 
@@ -820,7 +808,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Collection<PropertyCategory> getGroupPropertyTemplates(String module)
 			throws AccessDeniedException {
 
-		assertPermission(GroupPermission.READ);
+		assertAnyPermission(GroupPermission.READ, RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(module);
 
@@ -829,7 +817,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public List<Principal> getAssociatedPrincipals(Principal principal) {
-
+		
 		List<Principal> result = getProviderForRealm(principal.getRealm())
 				.getAssociatedPrincipals(principal);
 		if (!result.contains(principal)) {
@@ -841,6 +829,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public List<Principal> getAssociatedPrincipals(Principal principal,
 			PrincipalType type) {
+		
 		return getProviderForRealm(principal.getRealm())
 				.getAssociatedPrincipals(principal, type);
 	}
@@ -850,14 +839,18 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			String searchPattern, int start, int length, ColumnSort[] sorting)
 			throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ);
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
+		
 		return getProviderForRealm(realm).getPrincipals(realm, type,
 				searchPattern, start, length, sorting);
 	}
 
 	@Override
 	public Long getPrincipalCount(Realm realm, PrincipalType type,
-			String searchPattern) {
+			String searchPattern) throws AccessDeniedException {
+		
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
+		
 		return getProviderForRealm(realm).getPrincipalCount(realm, type,
 				searchPattern);
 	}
@@ -917,7 +910,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public void updateProfile(Realm realm, Principal principal,
 			Map<String, String> properties) throws AccessDeniedException {
 
-		assertPermission(ProfilePermission.UPDATE);
+		assertAnyPermission(ProfilePermission.UPDATE, RealmPermission.UPDATE, UserPermission.UPDATE);
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -967,7 +960,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Principal disableAccount(Principal principal) throws ResourceChangeException,
 			AccessDeniedException {
 		
-		assertPermission(UserPermission.UPDATE);
+		assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
@@ -979,7 +972,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Principal enableAccount(Principal principal) throws ResourceChangeException,
 			AccessDeniedException {
 
-		assertPermission(UserPermission.UPDATE);
+		assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
@@ -990,7 +983,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Principal unlockAccount(Principal principal) throws ResourceChangeException,
 			AccessDeniedException {
 
-		assertPermission(UserPermission.UPDATE);
+		assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 

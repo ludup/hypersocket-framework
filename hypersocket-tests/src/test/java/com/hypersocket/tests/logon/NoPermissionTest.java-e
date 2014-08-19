@@ -2,12 +2,10 @@ package com.hypersocket.tests.logon;
 
 
 import org.apache.http.client.ClientProtocolException;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.hypersocket.json.JsonResourceStatus;
-import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.tests.AbstractServerTest;
 
 public class NoPermissionTest extends AbstractServerTest{

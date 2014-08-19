@@ -142,7 +142,7 @@ public class CurrentRealmController extends ResourceController {
 
 						@Override
 						public Long getTotalCount(String searchPattern)
-								throws UnauthorizedException {
+								throws UnauthorizedException, AccessDeniedException {
 							return realmService.getPrincipalCount(
 									sessionUtils.getCurrentRealm(request),
 									PrincipalType.USER, searchPattern);
@@ -187,7 +187,7 @@ public class CurrentRealmController extends ResourceController {
 
 						@Override
 						public Long getTotalCount(String searchPattern)
-								throws UnauthorizedException {
+								throws UnauthorizedException, AccessDeniedException {
 							return realmService.getPrincipalCount(
 									sessionUtils.getCurrentRealm(request),
 									PrincipalType.GROUP, searchPattern);
