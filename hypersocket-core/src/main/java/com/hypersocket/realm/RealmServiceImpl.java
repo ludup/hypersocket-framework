@@ -73,26 +73,26 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 				RESOURCE_BUNDLE, "category.realms");
 
 		for (RealmPermission p : RealmPermission.values()) {
-			permissionService.registerPermission(p.getResourceKey(), p.isSystem(), cat);
+			permissionService.registerPermission(p,cat);
 		}
 
 		cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE,
 				"category.acl");
 
 		for (UserPermission p : UserPermission.values()) {
-			permissionService.registerPermission(p.getResourceKey(), p.isSystem(), cat);
+			permissionService.registerPermission(p,cat);
 		}
 		
 		for (ProfilePermission p : ProfilePermission.values()) {
-			permissionService.registerPermission(p.getResourceKey(), p.isSystem(), cat);
+			permissionService.registerPermission(p,cat);
 		}
 		
 		for (GroupPermission p : GroupPermission.values()) {
-			permissionService.registerPermission(p.getResourceKey(), p.isSystem(), cat);
+			permissionService.registerPermission(p,cat);
 		}
 		
 		for (RolePermission p : RolePermission.values()) {
-			permissionService.registerPermission(p.getResourceKey(), p.isSystem(), cat);
+			permissionService.registerPermission(p,cat);
 		}
 
 		eventService.registerEvent(RealmCreatedEvent.class, RESOURCE_BUNDLE);
@@ -839,7 +839,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			String searchPattern, int start, int length, ColumnSort[] sorting)
 			throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ, 
+				ProfilePermission.READ, RealmPermission.READ);
 		
 		return getProviderForRealm(realm).getPrincipals(realm, type,
 				searchPattern, start, length, sorting);
@@ -849,7 +850,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Long getPrincipalCount(Realm realm, PrincipalType type,
 			String searchPattern) throws AccessDeniedException {
 		
-		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ,
+				ProfilePermission.READ, RealmPermission.READ);
 		
 		return getProviderForRealm(realm).getPrincipalCount(realm, type,
 				searchPattern);

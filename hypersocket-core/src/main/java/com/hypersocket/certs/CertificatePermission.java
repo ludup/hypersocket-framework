@@ -15,8 +15,16 @@ public enum CertificatePermission implements PermissionType {
 	
 	private final String val;
 	
-	private CertificatePermission(final String val) {
+	private PermissionType[] implies;
+	
+	private CertificatePermission(final String val, PermissionType... implies) {
 		this.val = val;
+		this.implies = implies;
+	}
+
+	@Override
+	public PermissionType[] impliesPermissions() {
+		return implies;
 	}
 	
 	public String toString() {
@@ -31,5 +39,10 @@ public enum CertificatePermission implements PermissionType {
 	@Override
 	public boolean isSystem() {
 		return true;
+	}
+	
+	@Override
+	public boolean isHidden() {
+		return false;
 	}
 }

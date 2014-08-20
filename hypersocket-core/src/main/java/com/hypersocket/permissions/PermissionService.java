@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.hypersocket.auth.AuthenticatedService;
+import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceChangeException;
@@ -23,11 +24,6 @@ public interface PermissionService extends AuthenticatedService {
 	
 	public PermissionCategory registerPermissionCategory(String resourceBundle, String resourceKey);
 
-	public Permission registerPermission(String resourceKey, boolean system, PermissionCategory category);
-
-	public Permission registerPermission(String resourceKey,
-			boolean system, PermissionCategory category, boolean hidden);
-	
 	public Permission getPermission(String resourceKey);
 	
 	public Role createRole(String name, Realm realm) throws AccessDeniedException;
@@ -68,5 +64,10 @@ public interface PermissionService extends AuthenticatedService {
 	Role getPersonalRole(Principal principal);
 
 	Set<Role> getPrincipalRoles(Principal principal) throws AccessDeniedException;
+
+	List<PropertyCategory> getRoleTemplates() throws AccessDeniedException;
+
+	Permission registerPermission(PermissionType type,
+			PermissionCategory category);
 
 }

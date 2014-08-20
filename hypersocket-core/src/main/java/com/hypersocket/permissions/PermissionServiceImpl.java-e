@@ -7,9 +7,12 @@
  ******************************************************************************/
 package com.hypersocket.permissions;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -31,6 +34,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import com.hypersocket.auth.AbstractAuthenticatedService;
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.i18n.I18N;
+import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.ProfilePermission;
 import com.hypersocket.realm.Realm;
@@ -58,6 +62,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	Set<Long> registerPermissionIds = new HashSet<Long>();
 	Set<Long> nonSystemPermissionIds = new HashSet<Long>();
+	Map<String,PermissionType> registeredPermissions = new HashMap<String,PermissionType>();
+	
 	CacheManager cacheManager;
 	Cache permissionsCache;
 	Cache roleCache;
@@ -71,12 +77,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			protected void doInTransactionWithoutResult(TransactionStatus status) {
 				PermissionCategory cat = registerPermissionCategory(
 						RESOURCE_BUNDLE, "category.permissions");
-				registerPermission(
-						SystemPermission.SYSTEM_ADMINISTRATION.getResourceKey(),
-						SystemPermission.SYSTEM_ADMINISTRATION.isSystem(), cat,
-						false);
-				registerPermission(SystemPermission.SYSTEM.getResourceKey(),
-						SystemPermission.SYSTEM.isSystem(), cat, true);
+				registerPermission(SystemPermission.SYSTEM_ADMINISTRATION, cat);
+				registerPermission(SystemPermission.SYSTEM, cat);
 			}
 		});
 
@@ -134,14 +136,13 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 		return result;
 	}
 
-	@Override
-	public Permission registerPermission(String resourceKey, boolean system,
-			PermissionCategory category) {
-		return registerPermission(resourceKey, system, category, false);
+	@Override 
+	public Permission registerPermission(PermissionType type, PermissionCategory category) {
+		registeredPermissions.put(type.getResourceKey(), type);
+		return registerPermission(type.getResourceKey(), type.isSystem(), category, type.isHidden());
 	}
-
-	@Override
-	public Permission registerPermission(String resourceKey, boolean system,
+	
+	protected Permission registerPermission(String resourceKey, boolean system,
 			PermissionCategory category, boolean hidden) {
 		Permission result = repository.getPermissionByResourceKey(resourceKey);
 		if (result == null) {
@@ -252,6 +253,19 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 		return (Set<Role>) roleCache.get(principal).getObjectValue();
 	}
 
+	private void recurseImpliedPermissions(PermissionType t, Set<PermissionType> derivedPermissions) {
+		
+		if(!derivedPermissions.contains(t)) {
+			log.info("REMOVEME: " + t.getResourceKey());
+			derivedPermissions.add(t);
+			if(t.impliesPermissions()!=null) {
+				for(PermissionType t2 : t.impliesPermissions()) {
+					recurseImpliedPermissions(t2, derivedPermissions);
+				}
+			}
+		}
+	}
+	
 	protected void verifyPermission(Principal principal,
 			PermissionStrategy strategy, Set<Permission> principalPermissions,
 			PermissionType... permissions) throws AccessDeniedException {
@@ -262,11 +276,17 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 		if (!hasSystemPermission(principal)) {
 
+			Set<PermissionType> derivedPrincipalPermissions = new HashSet<PermissionType>();
+			for(Permission t : principalPermissions) {
+				recurseImpliedPermissions(registeredPermissions.get(t.getResourceKey()), 
+						derivedPrincipalPermissions);
+			}
+			
 			switch (strategy) {
 			case REQUIRE_ALL_PERMISSIONS: {
 				for (PermissionType t : permissions) {
 					boolean found = false;
-					for (Permission p : principalPermissions) {
+					for (PermissionType p : derivedPrincipalPermissions) {
 						if (t.getResourceKey().equals(p.getResourceKey())) {
 							found = true;
 							break;
@@ -283,10 +303,10 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			}
 			case REQUIRE_ANY: {
 				for (PermissionType t : permissions) {
-					for (Permission p : principalPermissions) {
+					for (PermissionType p : derivedPrincipalPermissions) {
 						if (t.getResourceKey().equals(p.getResourceKey())) {
 							return;
-						}
+						} 
 					}
 				}
 
@@ -480,5 +500,13 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	@Override
 	public Role getPersonalRole(Principal principal) {
 		return repository.getPersonalRole(principal);
+	}
+
+	@Override
+	public List<PropertyCategory> getRoleTemplates() throws AccessDeniedException {
+		
+		assertPermission(RolePermission.READ);
+		
+		return new ArrayList<PropertyCategory>();
 	}
 }

@@ -49,7 +49,7 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 				RESOURCE_BUNDLE, "category.configuration");
 
 		for (ConfigurationPermission p : ConfigurationPermission.values()) {
-			permissionService.registerPermission(p.getResourceKey(), p.isSystem(), cat);
+			permissionService.registerPermission(p,cat);
 		}
 
 		repository.loadPropertyTemplates("propertyTemplates.xml");

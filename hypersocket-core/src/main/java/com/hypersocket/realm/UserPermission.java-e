@@ -18,9 +18,17 @@ public enum UserPermission implements PermissionType {
 	
 	private final String val;
 	
-	private UserPermission(final String val) {
+	private PermissionType[] implies;
+	
+	private UserPermission(final String val, PermissionType... implies) {
 		this.val = val;
+		this.implies = implies;
 	}
+
+	@Override
+	public PermissionType[] impliesPermissions() {
+		return implies;
+	}	
 	
 	public String toString() {
 		return val;
@@ -35,4 +43,10 @@ public enum UserPermission implements PermissionType {
 	public boolean isSystem() {
 		return false;
 	}
+
+	@Override
+	public boolean isHidden() {
+		return false;
+	}
+
 }

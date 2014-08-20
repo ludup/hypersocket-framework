@@ -16,8 +16,16 @@ public enum ProfilePermission implements PermissionType {
 	
 	private final String val;
 	
-	private ProfilePermission(final String val) {
+	private PermissionType[] implies;
+	
+	private ProfilePermission(final String val, PermissionType... implies) {
 		this.val = val;
+		this.implies = implies;
+	}
+
+	@Override
+	public PermissionType[] impliesPermissions() {
+		return implies;
 	}
 	
 	public String toString() {
@@ -31,6 +39,11 @@ public enum ProfilePermission implements PermissionType {
 	
 	@Override
 	public boolean isSystem() {
+		return false;
+	}
+
+	@Override
+	public boolean isHidden() {
 		return false;
 	}
 }

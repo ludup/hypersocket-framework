@@ -93,8 +93,7 @@ public class RoleController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			// TODO implement role properties
-			return new ResourceList<PropertyCategory>(new ArrayList<PropertyCategory>());
+			return new ResourceList<PropertyCategory>(permissionService.getRoleTemplates());
 		} finally {
 			clearAuthenticatedContext();
 		}
