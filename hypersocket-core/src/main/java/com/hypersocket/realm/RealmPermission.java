@@ -18,8 +18,16 @@ public enum RealmPermission implements PermissionType {
 	
 	private final String val;
 	
-	private RealmPermission(final String val) {
+	private PermissionType[] implies;
+	
+	private RealmPermission(final String val, PermissionType... implies) {
 		this.val = val;
+		this.implies = implies;
+	}
+
+	@Override
+	public PermissionType[] impliesPermissions() {
+		return implies;
 	}
 	
 	public String toString() {
@@ -34,5 +42,10 @@ public enum RealmPermission implements PermissionType {
 	@Override
 	public boolean isSystem() {
 		return true;
+	}
+
+	@Override
+	public boolean isHidden() {
+		return false;
 	}
 }

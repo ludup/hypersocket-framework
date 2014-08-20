@@ -12,4 +12,8 @@ public interface PermissionType {
 	String getResourceKey();
 	
 	boolean isSystem();
+	
+	PermissionType[] impliesPermissions();
+
+	boolean isHidden();
 }

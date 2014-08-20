@@ -9,13 +9,21 @@ package com.hypersocket.permissions;
 
 public enum SystemPermission implements PermissionType {
 
-	SYSTEM_ADMINISTRATION("system.administration"),
-	SYSTEM("system.permission");
+	SYSTEM_ADMINISTRATION("system.administration", false),
+	SYSTEM("system.permission", true);
 	
 	private final String val;
+	private boolean hidden;
+	private PermissionType[] implies;
 	
-	private SystemPermission(final String val) {
+	private SystemPermission(final String val, boolean hidden, PermissionType... implies) {
 		this.val = val;
+		this.implies = implies;
+	}
+
+	@Override
+	public PermissionType[] impliesPermissions() {
+		return implies;
 	}
 	
 	public String toString() {
@@ -30,5 +38,10 @@ public enum SystemPermission implements PermissionType {
 	@Override
 	public boolean isSystem() {
 		return true;
+	}
+
+	@Override
+	public boolean isHidden() {
+		return hidden;
 	}
 }
