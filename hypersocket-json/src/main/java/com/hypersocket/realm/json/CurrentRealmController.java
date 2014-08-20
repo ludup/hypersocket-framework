@@ -539,7 +539,7 @@ public class CurrentRealmController extends ResourceController {
 					sessionUtils.getLocale(request),
 					RealmService.RESOURCE_BUNDLE,
 					user.getId() != null ? "info.user.updated"
-							: "info.group.created", principal
+							: "info.user.created", principal
 							.getPrincipalName()));
 
 		} catch (ResourceChangeException e) {
