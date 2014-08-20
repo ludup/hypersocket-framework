@@ -37,25 +37,25 @@ public class NoPermissionTests extends AbstractServerTest {
 		logoff();
 	}
 
-	@Test(expected = ClientProtocolException.class)
+	@Test
 	public void tryNoPermissioni18n() throws ClientProtocolException,
 			IOException {
 		doGet("/hypersocket/api/i18n");
 	}
 
-	@Test(expected = ClientProtocolException.class)
+	@Test
 	public void tryNoPermissioni18nLocale() throws ClientProtocolException,
 			IOException {
 		doGet("/hypersocket/api/i18n/en");
 	}
 
-	@Test(expected = ClientProtocolException.class)
+	@Test
 	public void tryNoPermissioni18nLocales() throws ClientProtocolException,
 			IOException {
 		doGet("/hypersocket/api/i18n/locales");
 	}
 
-	@Test(expected = ClientProtocolException.class)
+	@Test
 	public void tryNoPermissioni18nPostMessages() throws Exception {
 		Message message = new Message();
 
@@ -68,19 +68,19 @@ public class NoPermissionTests extends AbstractServerTest {
 		doPostJson("/hypersocket/api/i18n/messages", messages);
 	}
 
-	@Test(expected = ClientProtocolException.class)
+	@Test
 	public void tryNoPermissioni18nSearchPattern() throws Exception {
 
 		doGet("/hypersocket/api/i18n/search/proxy");
 	}
 
-	@Test(expected = ClientProtocolException.class)
+	@Test
 	public void tryNoPermissioni18nSearch() throws Exception {
 
 		doGet("/hypersocket/api/i18n/search");
 	}
 
-	@Test(expected = ClientProtocolException.class)
+	@Test
 	public void tryNoPermissioni18nStats() throws Exception {
 
 		doGet("/hypersocket/api/i18n/stats");
