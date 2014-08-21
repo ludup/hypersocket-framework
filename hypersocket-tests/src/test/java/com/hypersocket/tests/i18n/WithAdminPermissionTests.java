@@ -65,7 +65,7 @@ public class WithAdminPermissionTests extends AbstractServerTest {
 	@Test
 	public void tryWithAdminPermissioni18nSearchPattern() throws Exception {
 
-		doGet("/hypersocket/api/i18n/search/proxy");
+		doGet("/hypersocket/api/i18n/search/template.create.title");
 	}
 
 	@Test
