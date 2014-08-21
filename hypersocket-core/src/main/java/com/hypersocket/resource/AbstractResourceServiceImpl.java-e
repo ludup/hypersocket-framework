@@ -2,6 +2,7 @@ package com.hypersocket.resource;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +63,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 
 	@Override
-	public void createResource(T resource) throws ResourceCreationException,
+	public void createResource(T resource, Map<String,String> properties) throws ResourceCreationException,
 			AccessDeniedException {
 
 		assertPermission(getCreatePermission());
@@ -84,7 +85,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 					resource.setRealm(getCurrentRealm());
 				}
 
-				getRepository().saveResource(resource);
+				getRepository().saveResource(resource, properties);
 				fireResourceCreationEvent(resource);
 			} catch (Throwable t) {
 				log.error("Failed to create resource", t);
@@ -104,12 +105,12 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	protected abstract void fireResourceCreationEvent(T resource, Throwable t);
 
-	public void updateResource(T resource) throws ResourceChangeException,
+	public void updateResource(T resource, Map<String,String> properties) throws ResourceChangeException,
 			AccessDeniedException {
 		assertPermission(getUpdatePermission());
 
 		try {
-			getRepository().saveResource(resource);
+			getRepository().saveResource(resource, properties);
 			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {
 			fireResourceUpdateEvent(resource, t);

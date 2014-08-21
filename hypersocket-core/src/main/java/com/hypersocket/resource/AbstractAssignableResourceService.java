@@ -1,6 +1,7 @@
 package com.hypersocket.resource;
 
 import java.util.List;
+import java.util.Map;
 
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -21,10 +22,10 @@ public interface AbstractAssignableResourceService<T> extends AuthenticatedServi
 
 	List<T> getResources(Principal principal) throws AccessDeniedException;
 
-	void createResource(T resource) throws 
+	void createResource(T resource, Map<String,String> properties) throws 
 			AccessDeniedException, ResourceCreationException;
 
-	void updateResource(T resource) throws ResourceChangeException,
+	void updateResource(T resource, Map<String,String> properties) throws ResourceChangeException,
 			AccessDeniedException;
 
 	List<T> getResources();

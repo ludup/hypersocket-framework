@@ -14,9 +14,18 @@ public class UserUpdate {
 	String name;
 	Long id;
 	Long[] groups;
-	PropertyItem[] properties;
+	
 	String password;
 	boolean forceChange;
+	PropertyItem[] properties;
+
+	public PropertyItem[] getProperties() {
+		return properties;
+	}
+
+	public void setProperties(PropertyItem[] properties) {
+		this.properties = properties;
+	}
 	
 	public UserUpdate() {
 		
@@ -28,14 +37,6 @@ public class UserUpdate {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public PropertyItem[] getProperties() {
-		return properties;
-	}
-
-	public void setProperties(PropertyItem[] properties) {
-		this.properties = properties;
 	}
 
 	public Long getId() {
