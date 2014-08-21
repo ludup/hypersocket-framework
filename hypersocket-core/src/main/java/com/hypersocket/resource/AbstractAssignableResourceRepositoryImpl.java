@@ -9,6 +9,7 @@ package com.hypersocket.resource;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -18,12 +19,15 @@ import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.properties.EntityResourcePropertyStore;
+import com.hypersocket.properties.ResourcePropertyStore;
+import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.session.Session;
@@ -33,14 +37,22 @@ import com.hypersocket.tables.Sort;
 @Repository
 @Transactional
 public abstract class AbstractAssignableResourceRepositoryImpl<T extends AssignableResource>
-		extends AbstractRepositoryImpl<Long> implements
+		extends ResourceTemplateRepositoryImpl implements
 		AbstractAssignableResourceRepository<T> {
 
+	@Autowired
+	EntityResourcePropertyStore entityPropertyStore;
+	
 	@Override
 	public List<T> getAssigedResources(List<Principal> principals) {
 		return getAssignedResources(principals.toArray(new Principal[0]));
 	}
 
+	@Override
+	protected ResourcePropertyStore getPropertyStore() {
+		return entityPropertyStore;
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<T> getAssignedResources(Principal... principals) {
@@ -205,7 +217,11 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 
 	@Override
-	public void saveResource(T resource) {
+	public void saveResource(T resource, Map<String,String> properties) {
+		
+		for(Map.Entry<String,String> e : properties.entrySet()) {
+			setValue(resource, e.getKey(), e.getValue());
+		}
 		save(resource);
 	}
 

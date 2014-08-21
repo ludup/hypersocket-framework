@@ -1,5 +1,6 @@
 package com.hypersocket.template;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -148,7 +149,7 @@ public class TemplateServiceImpl extends AbstractResourceServiceImpl<Template>
 		t.setTemplate(template);
 		t.setType(type);
 
-		createResource(t);
+		createResource(t, new HashMap<String,String>());
 		return t;
 	}
 
@@ -161,7 +162,7 @@ public class TemplateServiceImpl extends AbstractResourceServiceImpl<Template>
 		t.setTemplate(template);
 		t.setType(type);
 
-		updateResource(t);
+		updateResource(t, new HashMap<String,String>());
 
 	}
 

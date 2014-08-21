@@ -1,6 +1,7 @@
 package com.hypersocket.resource;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.hibernate.Criteria;
@@ -9,8 +10,8 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.tables.ColumnSort;
@@ -18,7 +19,7 @@ import com.hypersocket.tables.ColumnSort;
 @Repository
 @Transactional
 public abstract class AbstractResourceRepositoryImpl<T extends Resource>
-		extends AbstractRepositoryImpl<Long> implements
+		extends ResourceTemplateRepositoryImpl implements
 		AbstractResourceRepository<T> {
 
 	@Override
@@ -43,7 +44,11 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	}
 
 	@Override
-	public void saveResource(T resource) {
+	public void saveResource(T resource, Map<String,String> properties) {
+		
+		for(Map.Entry<String,String> e : properties.entrySet()) {
+			setValue(resource, e.getKey(), e.getValue());
+		}
 		save(resource);
 	}
 

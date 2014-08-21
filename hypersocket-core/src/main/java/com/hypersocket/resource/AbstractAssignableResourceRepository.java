@@ -8,6 +8,7 @@
 package com.hypersocket.resource;
 
 import java.util.List;
+import java.util.Map;
 
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -31,7 +32,7 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	List<T> getResources(Realm realm);
 
-	void saveResource(T resource);
+	void saveResource(T resource, Map<String,String> properties);
 
 	List<T> getResources();
 

@@ -1,16 +1,21 @@
 package com.hypersocket.resource;
 
 import java.util.List;
+import java.util.Map;
 
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tables.ColumnSort;
 
-public interface AbstractResourceService<T extends RealmResource> extends AuthenticatedService {
+public interface AbstractResourceService<T extends RealmResource> extends
+		AuthenticatedService {
 
-	void createResource(T resource) throws ResourceCreationException,
-			AccessDeniedException;
+	void createResource(T resource, Map<String, String> properties)
+			throws ResourceCreationException, AccessDeniedException;
+
+	void updateResource(T resource, Map<String, String> properties)
+			throws ResourceChangeException, AccessDeniedException;
 
 	void deleteResource(T resource) throws ResourceChangeException,
 			AccessDeniedException;
