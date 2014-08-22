@@ -35,13 +35,14 @@ public class SessionController extends AuthenticatedController {
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupSystemContext();
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
 
 		try {
 			return getSuccessfulResult(
 					sessionUtils.touchSession(request, response));
 		} finally {
-			clearSystemContext();
+			clearAuthenticatedContext();
 		}
 	}
 
@@ -52,16 +53,13 @@ public class SessionController extends AuthenticatedController {
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupSystemContext();
-
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		
 		try {
-			try {
-				return getSuccessfulResult(sessionUtils.getSession(request));
-			} catch (UnauthorizedException e) {
-				return new AuthenticationRequiredResult();
-			}
+			return getSuccessfulResult(sessionUtils.getSession(request));
 		} finally {
-			clearSystemContext();
+			clearAuthenticatedContext();
 		}
 	}
 	
