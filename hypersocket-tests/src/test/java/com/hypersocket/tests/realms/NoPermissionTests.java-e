@@ -12,7 +12,8 @@ import org.junit.Test;
 
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.JsonRoleResourceStatus;
-import com.hypersocket.realm.Realm;
+import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.realm.json.RealmUpdate;
 import com.hypersocket.tests.AbstractServerTest;
 
 public class NoPermissionTests extends AbstractServerTest {
@@ -78,11 +79,10 @@ public class NoPermissionTests extends AbstractServerTest {
 	@Test(expected = ClientProtocolException.class)
 	public void tryNoPermissionRealmPost() throws ClientProtocolException,
 			IOException, IllegalStateException, URISyntaxException {
-		Realm realm = new Realm();
+		RealmUpdate realm = new RealmUpdate();
 		realm.setName("newrealm");
-		realm.setDeleted(false);
-		realm.setHidden(false);
-		realm.setResourceCategory("");
+		realm.setProperties(new PropertyItem[0]);
+		realm.setType("local");
 
 		doPostJson("/hypersocket/realms/realm", realm);
 

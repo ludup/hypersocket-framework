@@ -10,7 +10,8 @@ import org.junit.Test;
 
 import com.hypersocket.json.JsonLogonResult;
 import com.hypersocket.json.JsonSession;
-import com.hypersocket.realm.Realm;
+import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.realm.json.RealmUpdate;
 import com.hypersocket.tests.AbstractServerTest;
 
 public class UnauthorizedTests extends AbstractServerTest {
@@ -65,11 +66,10 @@ public class UnauthorizedTests extends AbstractServerTest {
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedRealmPost() throws ClientProtocolException,
 			IOException, IllegalStateException, URISyntaxException {
-		Realm realm = new Realm();
+		RealmUpdate realm = new RealmUpdate();
 		realm.setName("newrealm");
-		realm.setDeleted(false);
-		realm.setHidden(false);
-		realm.setResourceCategory("");
+		realm.setProperties(new PropertyItem[0]);
+		realm.setType("local");
 
 		doPostJson("/hypersocket/realms/realm", realm);
 
