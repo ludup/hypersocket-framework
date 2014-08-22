@@ -1,14 +1,13 @@
-package com.hypersocket.tests.configuration;
+package com.hypersocket.tests.server;
 
 import java.io.IOException;
 
+import org.apache.http.client.ClientProtocolException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonResourceStatus;
@@ -16,18 +15,18 @@ import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.tests.AbstractServerTest;
 
-public class WithDelegatedPermissionTest extends AbstractServerTest {
+public class WithDelegatedPermissionTests extends AbstractServerTest {
 
 	@BeforeClass
 	public static void logOn() throws Exception {
-
 		logon("Default", "admin", "Password123?");
 		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
 				"user", false);
 		changePassword("user", jsonCreateUser);
 		Long[] permissions = {
 				getPermissionId(AuthenticationPermission.LOGON.getResourceKey()),
-				getPermissionId(SystemPermission.SYSTEM.getResourceKey()) };
+				getPermissionId(SystemPermission.SYSTEM_ADMINISTRATION
+						.getResourceKey()) };
 		JsonRoleResourceStatus jsonCreateRole = createRole("newrole",
 				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
@@ -42,27 +41,33 @@ public class WithDelegatedPermissionTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void testGetConfiguration() throws Exception {
-		String json = doGet("/hypersocket/api/configuration");
-		assertNotNull(json);
+	public void tryWithAdminPermissionServerRestart()
+			throws ClientProtocolException, IOException {
+		doGet("/hypersocket/api/server/restart/5");
 	}
 
 	@Test
-	public void testGetSystemConfiguration() throws Exception {
-		String json = doGet("/hypersocket/api/configuration/system");
-		assertNotNull(json);
+	public void tryWithAdminPermissionServerShutdown()
+			throws ClientProtocolException, IOException {
+		doGet("/hypersocket/api/server/shutdown/5");
 	}
 
 	@Test
-	public void testSystemGroupConfiguration() throws Exception {
-		String json = doGet("/hypersocket/api/configuration/system/extensions");
-		assertNotNull(json);
+	public void tryWithAdminPermissionServerSslProtocols()
+			throws ClientProtocolException, IOException {
+		doGet("/hypersocket/api/server/sslProtocols");
 	}
 
 	@Test
-	public void testSystemRealmConfiguration() throws Exception {
-		String json = doGet("/hypersocket/api/configuration/realm/system");
-		debugJSON(json);
-		assertNotNull(json);
+	public void tryWithAdminPermissionServerSslCiphers()
+			throws ClientProtocolException, IOException {
+		doGet("/hypersocket/api/server/sslCiphers");
+	}
+
+	@Test
+	public void tryWithAdminPermissionServerNetworkInterfaces()
+			throws ClientProtocolException, IOException {
+		doGet("/hypersocket/api/server/networkInterfaces");
+
 	}
 }

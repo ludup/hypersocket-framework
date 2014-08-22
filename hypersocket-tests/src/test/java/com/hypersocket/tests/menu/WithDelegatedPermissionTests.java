@@ -1,12 +1,15 @@
 package com.hypersocket.tests.menu;
 
 import static org.junit.Assert.*;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonMenu;
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.JsonRoleResourceStatus;
+import com.hypersocket.realm.UserPermission;
 import com.hypersocket.tests.AbstractServerTest;
 
 public class WithDelegatedPermissionTests extends AbstractServerTest {
@@ -17,25 +20,28 @@ public class WithDelegatedPermissionTests extends AbstractServerTest {
 		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
 				"user", false);
 		changePassword("user", jsonCreateUser);
-		Long[] permissions = { getPermissionId("permission.logon"),
-				getPermissionId("user.create"), getPermissionId("user.read"),
-				getPermissionId("user.update"), getPermissionId("user.delete") };
+		Long[] permissions = {
+				getPermissionId(AuthenticationPermission.LOGON.getResourceKey()),
+				getPermissionId(UserPermission.CREATE.getResourceKey()),
+				getPermissionId(UserPermission.READ.getResourceKey()),
+				getPermissionId(UserPermission.UPDATE.getResourceKey()),
+				getPermissionId(UserPermission.DELETE.getResourceKey()) };
 		JsonRoleResourceStatus jsonCreateRole = createRole("newrole",
 				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
 		logoff();
 		logon("Default", "user", "user");
 	}
-	
+
 	@Test
-	public void testAccessMenuAvailability() throws Exception{
-		String json=doGet("/hypersocket/api/menus");
+	public void testAccessMenuAvailability() throws Exception {
+		String json = doGet("/hypersocket/api/menus");
 		debugJSON(json);
-		JsonMenu menus=getMapper().readValue(json,JsonMenu.class);
+		JsonMenu menus = getMapper().readValue(json, JsonMenu.class);
 		assertNotNull(menus);
-		JsonMenu SystemMenu=menus.getMenus()[0];
-		assertEquals(SystemMenu.getId(),"system");
-		assertEquals(SystemMenu.getMenus()[0].getId(),"accessControl");
+		JsonMenu SystemMenu = menus.getMenus()[0];
+		assertEquals(SystemMenu.getId(), "system");
+		assertEquals(SystemMenu.getMenus()[0].getId(), "accessControl");
 	}
-	
+
 }

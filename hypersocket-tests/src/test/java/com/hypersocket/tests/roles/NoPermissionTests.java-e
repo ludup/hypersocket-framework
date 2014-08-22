@@ -9,6 +9,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.permissions.json.RoleUpdate;
@@ -23,7 +24,8 @@ public class NoPermissionTests extends AbstractServerTest {
 		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
 				"user", false);
 		changePassword("user", jsonCreateUser);
-		Long[] permissions = { getPermissionId("permission.logon") };
+		Long[] permissions = { getPermissionId(AuthenticationPermission.LOGON
+				.getResourceKey()) };
 		JsonRoleResourceStatus jsonCreateRole = createRole("newrole",
 				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
@@ -73,7 +75,8 @@ public class NoPermissionTests extends AbstractServerTest {
 		RoleUpdate role = new RoleUpdate();
 		role.setName("rolename");
 		role.setPermissions(new Long[0]);
-		Long[] permissions = { getPermissionId("permission.logon") };
+		Long[] permissions = { getPermissionId(AuthenticationPermission.LOGON
+				.getResourceKey()) };
 
 		role.setPermissions(permissions);
 		role.setUsers(new Long[0]);

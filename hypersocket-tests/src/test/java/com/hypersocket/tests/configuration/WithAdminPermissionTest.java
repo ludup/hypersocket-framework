@@ -16,43 +16,39 @@ import com.hypersocket.tests.AbstractServerTest;
 public class WithAdminPermissionTest extends AbstractServerTest {
 
 	@BeforeClass
-	public static void LogOn() throws Exception {
+	public static void logOn() throws Exception {
 		logon("Default", "admin", "Password123?");
 	}
-	
+
 	@AfterClass
 	public static void logOff() throws JsonParseException,
 			JsonMappingException, IOException {
 		logoff();
 	}
-	
+
 	@Test
-	public void testGetConfiguration() throws Exception{
-		String json=doGet("/hypersocket/api/configuration");
+	public void testGetConfiguration() throws Exception {
+		String json = doGet("/hypersocket/api/configuration");
 		assertNotNull(json);
 	}
-	
+
 	@Test
-	public void testGetSystemConfiguration() throws Exception{
-		String json=doGet("/hypersocket/api/configuration/system");
+	public void testGetSystemConfiguration() throws Exception {
+		String json = doGet("/hypersocket/api/configuration/system");
 		assertNotNull(json);
 	}
-	
+
 	@Test
-	public void testSystemGroupConfiguration() throws Exception{
-		String json=doGet("/hypersocket/api/configuration/system/extensions");
+	public void testSystemGroupConfiguration() throws Exception {
+		String json = doGet("/hypersocket/api/configuration/system/extensions");
 		assertNotNull(json);
 	}
-	
+
 	@Test
-	public void testSystemRealmConfiguration() throws Exception{
-		String json=doGet("/hypersocket/api/configuration/realm/system");
+	public void testSystemRealmConfiguration() throws Exception {
+		String json = doGet("/hypersocket/api/configuration/realm/system");
 		debugJSON(json);
 		assertNotNull(json);
 	}
-	
-	
-	
-	
-	
+
 }

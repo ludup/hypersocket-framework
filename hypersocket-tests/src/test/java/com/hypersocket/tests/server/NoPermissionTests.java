@@ -1,4 +1,4 @@
-package com.hypersocket.tests.roles;
+package com.hypersocket.tests.server;
 
 import java.io.IOException;
 
@@ -12,7 +12,6 @@ import org.junit.Test;
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.JsonRoleResourceStatus;
-import com.hypersocket.permissions.json.RoleUpdate;
 import com.hypersocket.tests.AbstractServerTest;
 
 public class NoPermissionTests extends AbstractServerTest {
@@ -40,55 +39,33 @@ public class NoPermissionTests extends AbstractServerTest {
 	}
 
 	@Test(expected = ClientProtocolException.class)
-	public void tryNoPermissionRoleId() throws ClientProtocolException,
+	public void tryNoPermissionServerRestart() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/roles/role/" + getSystemAdminRole().getId());
+		doGet("/hypersocket/api/server/restart/5");
 	}
 
 	@Test(expected = ClientProtocolException.class)
-	public void tryNoPermissionRoleByName() throws ClientProtocolException,
+	public void tryNoPermissionServerShutdown() throws ClientProtocolException,
 			IOException {
-
-		doGet("/hypersocket/api/roles/byName/System%20Administrator");
+		doGet("/hypersocket/api/server/shutdown/5");
 	}
 
 	@Test(expected = ClientProtocolException.class)
-	public void tryNoPermissionRoleTemplate() throws ClientProtocolException,
-			IOException {
-		doGet("/hypersocket/api/roles/template");
+	public void tryNoPermissionServerSslProtocols()
+			throws ClientProtocolException, IOException {
+		doGet("/hypersocket/api/server/sslProtocols");
 	}
 
 	@Test(expected = ClientProtocolException.class)
-	public void tryNoPermissionRoleList() throws ClientProtocolException,
-			IOException {
-		doGet("/hypersocket/api/roles/list");
+	public void tryNoPermissionServerSslCiphers()
+			throws ClientProtocolException, IOException {
+		doGet("/hypersocket/api/server/sslCiphers");
 	}
 
 	@Test(expected = ClientProtocolException.class)
-	public void tryNoPermissionRoleTable() throws ClientProtocolException,
-			IOException {
-		doGet("/hypersocket/api/roles/table");
-	}
+	public void tryNoPermissionServerNetworkInterfaces()
+			throws ClientProtocolException, IOException {
+		doGet("/hypersocket/api/server/networkInterfaces");
 
-	@Test(expected = ClientProtocolException.class)
-	public void tryUnauthorizedNetworkInterfaces() throws Exception {
-		RoleUpdate role = new RoleUpdate();
-		role.setName("rolename");
-		role.setPermissions(new Long[0]);
-		Long[] permissions = { getPermissionId(AuthenticationPermission.LOGON
-				.getResourceKey()) };
-
-		role.setPermissions(permissions);
-		role.setUsers(new Long[0]);
-		role.setGroups(new Long[0]);
-
-		doPostJson("/hypersocket/api/roles/role", role);
-
-	}
-
-	@Test(expected = ClientProtocolException.class)
-	public void tryNoPermissionDeleteRoleId() throws ClientProtocolException,
-			IOException {
-		doDelete("/hypersocket/api/roles/role/" + getSystemAdminRole().getId());
 	}
 }
