@@ -1,4 +1,4 @@
-package com.hypersocket.tests.session;
+package com.hypersocket.tests.server;
 
 import java.io.IOException;
 
@@ -25,28 +25,34 @@ public class WithAdminPermissionTests extends AbstractServerTest {
 	}
 
 	@Test
-	public void tryWithAdminPermissionSessionTouch()
+	public void tryWithAdminPermissionServerRestart()
 			throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/session/touch");
+		doGet("/hypersocket/api/server/restart/5");
 	}
 
 	@Test
-	public void tryWithAdminPermissionSessionPeek()
+	public void tryWithAdminPermissionServerShutdown()
 			throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/session/peek");
+		doGet("/hypersocket/api/server/shutdown/5");
 	}
 
 	@Test
-	public void tryWithAdminPermissionSessionSwitchRealm()
+	public void tryWithAdminPermissionServerSslProtocols()
 			throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/session/switchRealm/"
-				+ getSession().getCurrentRealm().getId());
+		doGet("/hypersocket/api/server/sslProtocols");
 	}
 
 	@Test
-	public void tryWithAdminPermissionSessionswitchLanguage()
+	public void tryWithAdminPermissionServerSslCiphers()
 			throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/session/switchLanguage/en");
+		doGet("/hypersocket/api/server/sslCiphers");
+	}
+
+	@Test
+	public void tryWithAdminPermissionServerNetworkInterfaces()
+			throws ClientProtocolException, IOException {
+		doGet("/hypersocket/api/server/networkInterfaces");
+
 	}
 
 }
