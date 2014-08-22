@@ -11,6 +11,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.tests.AbstractServerTest;
@@ -24,7 +25,8 @@ public class NoPermissionTest extends AbstractServerTest {
 		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
 				"user", false);
 		changePassword("user", jsonCreateUser);
-		Long[] permissions = { getPermissionId("permission.logon") };
+		Long[] permissions = { getPermissionId(AuthenticationPermission.LOGON
+				.getResourceKey()) };
 		JsonRoleResourceStatus jsonCreateRole = createRole("newrole",
 				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
@@ -37,26 +39,26 @@ public class NoPermissionTest extends AbstractServerTest {
 			JsonMappingException, IOException {
 		logoff();
 	}
-	
-	@Test(expected=ClientProtocolException.class)
-	public void testgetConfiguationWithoutLogon() throws Exception{
-		String json=doGet("/hypersocket/api/configuration");
+
+	@Test(expected = ClientProtocolException.class)
+	public void testgetConfiguationWithoutLogon() throws Exception {
+		String json = doGet("/hypersocket/api/configuration");
 	}
-	
-	@Test(expected=ClientProtocolException.class)
-	public void testGetSystemConfigurationWithoutLogon() throws Exception{
+
+	@Test(expected = ClientProtocolException.class)
+	public void testGetSystemConfigurationWithoutLogon() throws Exception {
 		doGet("/hypersocket/api/configuration/system");
 	}
-	
-	@Test(expected=ClientProtocolException.class)
-	public void testSystemGroupConfigurationWithoutLogon() throws Exception{
-		String json=doGet("/hypersocket/api/configuration/system/extensions");
-		
+
+	@Test(expected = ClientProtocolException.class)
+	public void testSystemGroupConfigurationWithoutLogon() throws Exception {
+		String json = doGet("/hypersocket/api/configuration/system/extensions");
+
 	}
-	
-	@Test(expected=ClientProtocolException.class)
-	public void testSystemRealmConfigurationWithoutLogon() throws Exception{
-		String json=doGet("/hypersocket/api/configuration/realm/system");
-		
+
+	@Test(expected = ClientProtocolException.class)
+	public void testSystemRealmConfigurationWithoutLogon() throws Exception {
+		String json = doGet("/hypersocket/api/configuration/realm/system");
+
 	}
 }
