@@ -96,7 +96,7 @@ public class LogonController extends AuthenticatedController {
 			AuthenticationState state = (AuthenticationState) request
 					.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
 
-			if (state == null) {
+			if (state == null || !state.getScheme().getResourceKey().equals(scheme)) {
 				// We have not got login state so create
 				state = createAuthenticationState(scheme, request, response);
 			} 
