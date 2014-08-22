@@ -46,13 +46,9 @@ public class NoPermissionTests extends AbstractServerTest {
 				+ getSession().getCurrentRealm().getId());
 	}
 
-	@Test
+	@Test(expected = ClientProtocolException.class)
 	public void tryNoPermissionRealmList() throws ClientProtocolException,
 			IOException {
-		/**
-		 * This is a special case, realms can be listed and actually must be
-		 * able to be listed since the logon screen shows these
-		 */
 		doGet("/hypersocket/api/realms/list");
 	}
 

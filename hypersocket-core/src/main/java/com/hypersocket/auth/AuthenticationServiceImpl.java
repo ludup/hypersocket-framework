@@ -36,6 +36,7 @@ import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
+import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
@@ -64,8 +65,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	SessionService sessionService;
 
 	@Autowired
-	RealmService realmService;
+	RealmRepository realmRepository;
 
+	@Autowired
+	RealmService realmService;
+	
 	@Autowired
 	ConfigurationService configurationService;
 
@@ -105,7 +109,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	private void setupRealms() {
-		for (Realm realm : realmService.allRealms(true)) {
+		for (Realm realm : realmRepository.allRealms()) {
 			if (schemeRepository.getSchemeByResourceKey(realm,
 					BROWSER_AUTHENTICATION_RESOURCE_KEY) == null) {
 				List<String> modules = new ArrayList<String>();

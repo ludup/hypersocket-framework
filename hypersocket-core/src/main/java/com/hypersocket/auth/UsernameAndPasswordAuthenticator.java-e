@@ -130,8 +130,7 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 	@SuppressWarnings("rawtypes")
 	public FormTemplate createTemplate(AuthenticationState state, Map params) {
 
-		return new UsernameAndPasswordTemplate(true, true,
-				realmService.allRealms(), state, params);
+		return new UsernameAndPasswordTemplate(state, params);
 	}
 
 	@Override

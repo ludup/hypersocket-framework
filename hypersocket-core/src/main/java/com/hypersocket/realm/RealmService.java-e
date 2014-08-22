@@ -34,7 +34,7 @@ public interface RealmService extends AuthenticatedService {
 	void deleteRealm(String name) throws ResourceChangeException,
 			ResourceNotFoundException, AccessDeniedException;
 
-	List<Realm> allRealms();
+	List<Realm> allRealms() throws AccessDeniedException;
 
 	Realm getRealmByName(String realm) throws AccessDeniedException;
 
@@ -171,7 +171,7 @@ public interface RealmService extends AuthenticatedService {
 
 	Realm getDefaultRealm();
 
-	List<Realm> allRealms(boolean ignoreMissingProvider);
+	List<Realm> allRealms(boolean ignoreMissingProvider) throws AccessDeniedException;
 
 	Realm setDefaultRealm(Realm realm) throws AccessDeniedException;
 
