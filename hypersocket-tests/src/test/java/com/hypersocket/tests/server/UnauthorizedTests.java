@@ -12,13 +12,13 @@ public class UnauthorizedTests extends AbstractServerTest {
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedServerRestart() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/server/restart/60");
+		doGet("/hypersocket/api/server/restart/5");
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedServerShutdown() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/server/shutdown/60");
+		doGet("/hypersocket/api/server/shutdown/5");
 	}
 
 	@Test(expected = ClientProtocolException.class)

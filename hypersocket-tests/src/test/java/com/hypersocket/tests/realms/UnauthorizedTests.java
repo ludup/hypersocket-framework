@@ -19,7 +19,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 	private static JsonSession auxSession;
 
 	@BeforeClass
-	public static void LogOn() throws Exception {
+	public static void logOn() throws Exception {
 		String logonJson = doPost("/hypersocket/api/logon",
 				new BasicNameValuePair("username", "admin"),
 				new BasicNameValuePair("password", "Password123?"));

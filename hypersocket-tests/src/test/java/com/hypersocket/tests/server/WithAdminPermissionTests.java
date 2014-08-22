@@ -27,13 +27,13 @@ public class WithAdminPermissionTests extends AbstractServerTest {
 	@Test
 	public void tryWithAdminPermissionServerRestart()
 			throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/server/restart/60");
+		doGet("/hypersocket/api/server/restart/5");
 	}
 
 	@Test
 	public void tryWithAdminPermissionServerShutdown()
 			throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/server/shutdown/60");
+		doGet("/hypersocket/api/server/shutdown/5");
 	}
 
 	@Test
