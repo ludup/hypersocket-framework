@@ -180,7 +180,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public Realm getRealmByHost(String host) {
-		for (Realm r : allRealms()) {
+		for (Realm r : internalAllRealms()) {
 			RealmProvider provider = getProviderForRealm(r);
 			String realmHost = provider.getValue(r, "realm.host");
 			if (realmHost != null && !"".equals(realmHost)) {
@@ -326,13 +326,20 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public List<Realm> allRealms() {
+	public List<Realm> allRealms() throws AccessDeniedException {
+		assertPermission(RealmPermission.READ);
+		
 		return filterRealms(null, false);
 	}
 	
 	@Override
-	public List<Realm> allRealms(boolean ignoreMissingProvider) {
+	public List<Realm> allRealms(boolean ignoreMissingProvider) throws AccessDeniedException {
+		assertPermission(RealmPermission.READ);
 		return filterRealms(null, ignoreMissingProvider);
+	}
+	
+	private List<Realm> internalAllRealms() {
+		return filterRealms(null, false);
 	}
 
 	private List<Realm> filterRealms(Class<? extends RealmProvider> clz, boolean ignoreMissingProvider) {
@@ -861,7 +868,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public boolean findUniquePrincipal(String user) {
 
 		int found = 0;
-		for (Realm r : allRealms()) {
+		for (Realm r : internalAllRealms()) {
 			Principal p = getPrincipalByName(r, user, PrincipalType.USER);
 			if (p != null) {
 				found++;
@@ -875,7 +882,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			throws ResourceNotFoundException {
 		int found = 0;
 		Principal ret = null;
-		for (Realm r : allRealms()) {
+		for (Realm r : internalAllRealms()) {
 			Principal p = getPrincipalByName(r, username, PrincipalType.USER);
 			if (p != null) {
 				ret = p;
