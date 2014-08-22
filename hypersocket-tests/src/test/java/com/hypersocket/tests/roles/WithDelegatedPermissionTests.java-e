@@ -10,9 +10,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.util.Assert;
 
+import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.permissions.json.RoleUpdate;
+import com.hypersocket.realm.RolePermission;
 import com.hypersocket.tests.AbstractServerTest;
 
 public class WithDelegatedPermissionTests extends AbstractServerTest {
@@ -23,9 +25,12 @@ public class WithDelegatedPermissionTests extends AbstractServerTest {
 		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
 				"user", false);
 		changePassword("user", jsonCreateUser);
-		Long[] permissions = { getPermissionId("permission.logon"),
-				getPermissionId("role.create"), getPermissionId("role.read"),
-				getPermissionId("role.update"), getPermissionId("role.delete") };
+		Long[] permissions = {
+				getPermissionId(AuthenticationPermission.LOGON.getResourceKey()),
+				getPermissionId(RolePermission.CREATE.getResourceKey()),
+				getPermissionId(RolePermission.READ.getResourceKey()),
+				getPermissionId(RolePermission.UPDATE.getResourceKey()),
+				getPermissionId(RolePermission.DELETE.getResourceKey()) };
 		JsonRoleResourceStatus jsonCreateRole = createRole("newrole",
 				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
@@ -75,7 +80,8 @@ public class WithDelegatedPermissionTests extends AbstractServerTest {
 		RoleUpdate role = new RoleUpdate();
 		role.setName("rolename");
 		role.setPermissions(new Long[0]);
-		Long[] permissions = { getPermissionId("permission.logon") };
+		Long[] permissions = { getPermissionId(AuthenticationPermission.LOGON
+				.getResourceKey()) };
 
 		role.setPermissions(permissions);
 		role.setUsers(new Long[0]);

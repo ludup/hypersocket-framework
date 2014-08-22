@@ -13,10 +13,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.util.Assert;
 
+import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonResourceList;
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.realm.GroupPermission;
+import com.hypersocket.realm.UserPermission;
 import com.hypersocket.realm.json.CredentialsUpdate;
 import com.hypersocket.realm.json.GroupUpdate;
 import com.hypersocket.realm.json.UserUpdate;
@@ -29,13 +32,16 @@ public class WithDelegatedPermissionTests extends AbstractServerTest {
 		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
 				"user", false);
 		changePassword("user", jsonCreateUser);
-		Long[] permissions = { getPermissionId("permission.logon"),
-				getPermissionId("user.create"), getPermissionId("user.read"),
-				getPermissionId("user.update"),
-				getPermissionId("user.delete"),
-				getPermissionId("group.create"), getPermissionId("group.read"),
-				getPermissionId("group.update"),
-				getPermissionId("group.delete") };
+		Long[] permissions = {
+				getPermissionId(AuthenticationPermission.LOGON.getResourceKey()),
+				getPermissionId(UserPermission.CREATE.getResourceKey()),
+				getPermissionId(UserPermission.READ.getResourceKey()),
+				getPermissionId(UserPermission.UPDATE.getResourceKey()),
+				getPermissionId(UserPermission.DELETE.getResourceKey()),
+				getPermissionId(GroupPermission.CREATE.getResourceKey()),
+				getPermissionId(GroupPermission.READ.getResourceKey()),
+				getPermissionId(GroupPermission.UPDATE.getResourceKey()),
+				getPermissionId(GroupPermission.DELETE.getResourceKey()) };
 		JsonRoleResourceStatus jsonCreateRole = createRole("newrole",
 				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);

@@ -10,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.util.Assert;
 
+import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.permissions.json.RoleUpdate;
 import com.hypersocket.tests.AbstractServerTest;
@@ -63,7 +64,8 @@ public class WithAdminPermissionTests extends AbstractServerTest {
 		RoleUpdate role = new RoleUpdate();
 		role.setName("rolename");
 		role.setPermissions(new Long[0]);
-		Long[] permissions = { getPermissionId("permission.logon") };
+		Long[] permissions = { getPermissionId(AuthenticationPermission.LOGON
+				.getResourceKey()) };
 
 		role.setPermissions(permissions);
 		role.setUsers(new Long[0]);

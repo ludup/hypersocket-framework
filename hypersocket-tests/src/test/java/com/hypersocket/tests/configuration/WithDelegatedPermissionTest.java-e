@@ -10,8 +10,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.JsonRoleResourceStatus;
+import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.tests.AbstractServerTest;
 
 public class WithDelegatedPermissionTest extends AbstractServerTest {
@@ -23,7 +25,9 @@ public class WithDelegatedPermissionTest extends AbstractServerTest {
 		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
 				"user", false);
 		changePassword("user", jsonCreateUser);
-		Long[] permissions = { getPermissionId("permission.logon"),getPermissionId("system.permission") };
+		Long[] permissions = {
+				getPermissionId(AuthenticationPermission.LOGON.getResourceKey()),
+				getPermissionId(SystemPermission.SYSTEM.getResourceKey()) };
 		JsonRoleResourceStatus jsonCreateRole = createRole("newrole",
 				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
@@ -36,28 +40,28 @@ public class WithDelegatedPermissionTest extends AbstractServerTest {
 			JsonMappingException, IOException {
 		logoff();
 	}
-	
+
 	@Test
-	public void testGetConfiguration() throws Exception{
-		String json=doGet("/hypersocket/api/configuration");
+	public void testGetConfiguration() throws Exception {
+		String json = doGet("/hypersocket/api/configuration");
 		assertNotNull(json);
 	}
-	
+
 	@Test
-	public void testGetSystemConfiguration() throws Exception{
-		String json=doGet("/hypersocket/api/configuration/system");
+	public void testGetSystemConfiguration() throws Exception {
+		String json = doGet("/hypersocket/api/configuration/system");
 		assertNotNull(json);
 	}
-	
+
 	@Test
-	public void testSystemGroupConfiguration() throws Exception{
-		String json=doGet("/hypersocket/api/configuration/system/extensions");
+	public void testSystemGroupConfiguration() throws Exception {
+		String json = doGet("/hypersocket/api/configuration/system/extensions");
 		assertNotNull(json);
 	}
-	
+
 	@Test
-	public void testSystemRealmConfiguration() throws Exception{
-		String json=doGet("/hypersocket/api/configuration/realm/system");
+	public void testSystemRealmConfiguration() throws Exception {
+		String json = doGet("/hypersocket/api/configuration/realm/system");
 		debugJSON(json);
 		assertNotNull(json);
 	}
