@@ -14,7 +14,7 @@ import com.hypersocket.tests.AbstractServerTest;
 public class WithAdminPermissionTests extends AbstractServerTest {
 
 	@BeforeClass
-	public static void LogOn() throws Exception {
+	public static void logOn() throws Exception {
 		logon("Default", "admin", "Password123?");
 	}
 
