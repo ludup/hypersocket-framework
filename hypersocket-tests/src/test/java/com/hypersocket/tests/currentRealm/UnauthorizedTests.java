@@ -4,13 +4,9 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.message.BasicNameValuePair;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.hypersocket.json.JsonLogonResult;
 import com.hypersocket.json.JsonResourceList;
-import com.hypersocket.json.JsonSession;
 import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.json.CredentialsUpdate;
 import com.hypersocket.realm.json.GroupUpdate;
@@ -18,20 +14,6 @@ import com.hypersocket.realm.json.UserUpdate;
 import com.hypersocket.tests.AbstractServerTest;
 
 public class UnauthorizedTests extends AbstractServerTest {
-
-	private static JsonSession auxSession;
-
-	@BeforeClass
-	public static void logOn() throws Exception {
-		String logonJson = doPost("/hypersocket/api/logon",
-				new BasicNameValuePair("username", "admin"),
-				new BasicNameValuePair("password", "Password123?"));
-
-		JsonLogonResult logon = getMapper().readValue(logonJson,
-				JsonLogonResult.class);
-		auxSession = logon.getSession();
-		logoff();
-	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedCurrentRealmGroupList()
@@ -43,7 +25,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 	public void tryUnauthorizedCurrentRealmGroupsUser()
 			throws ClientProtocolException, IOException {
 		doGet("/hypersocket/api/currentRealm/groups/user/"
-				+ auxSession.getPrincipal().getId());
+				+ getAuxSession().getPrincipal().getId());
 	}
 
 	@Test(expected = ClientProtocolException.class)
@@ -92,7 +74,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 	public void tryUnauthorizedCurrentRealmUserProperties()
 			throws ClientProtocolException, IOException {
 		doGet("/hypersocket/api/currentRealm/user/properties/"
-				+ auxSession.getPrincipal().getId());
+				+ getAuxSession().getPrincipal().getId());
 	}
 
 	@Test(expected = ClientProtocolException.class)
@@ -126,7 +108,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 	public void tryUnauthorizedCurrentRealmUserId()
 			throws ClientProtocolException, IOException {
 		doGet("/hypersocket/api/currentRealm/user/"
-				+ auxSession.getPrincipal().getId());
+				+ getAuxSession().getPrincipal().getId());
 	}
 
 	@Test(expected = ClientProtocolException.class)
@@ -134,7 +116,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 
 		GroupUpdate group = new GroupUpdate();
 		group.setName("newgroup");
-		Long[] users = { auxSession.getPrincipal().getId() };
+		Long[] users = { getAuxSession().getPrincipal().getId() };
 		group.setUsers(users);
 		doPostJson("/hypersocket/api/currentRealm/group", group);
 	}
@@ -155,7 +137,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 	public void tryUnauthorizedCurrentRealmDeleteUser()
 			throws ClientProtocolException, IOException {
 		doDelete("/hypersocket/api/currentRealm/user/"
-				+ auxSession.getPrincipal().getId());
+				+ getAuxSession().getPrincipal().getId());
 	}
 
 	@Test(expected = ClientProtocolException.class)
@@ -180,7 +162,8 @@ public class UnauthorizedTests extends AbstractServerTest {
 		credentialsUpdate.setForceChange(false);
 		credentialsUpdate.setPassword("newpass");
 
-		credentialsUpdate.setPrincipalId(auxSession.getPrincipal().getId());
+		credentialsUpdate
+				.setPrincipalId(getAuxSession().getPrincipal().getId());
 
 		doPostJson("/hypersocket/api/currentRealm/user/credentials",
 				credentialsUpdate);

@@ -4,37 +4,19 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.message.BasicNameValuePair;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.hypersocket.json.JsonLogonResult;
-import com.hypersocket.json.JsonSession;
 import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.json.RealmUpdate;
 import com.hypersocket.tests.AbstractServerTest;
 
 public class UnauthorizedTests extends AbstractServerTest {
 
-	private static JsonSession auxSession;
-
-	@BeforeClass
-	public static void logOn() throws Exception {
-		String logonJson = doPost("/hypersocket/api/logon",
-				new BasicNameValuePair("username", "admin"),
-				new BasicNameValuePair("password", "Password123?"));
-
-		JsonLogonResult logon = getMapper().readValue(logonJson,
-				JsonLogonResult.class);
-		auxSession = logon.getSession();
-		logoff();
-	}
-
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedRealmId() throws ClientProtocolException,
 			IOException {
 		doGet("/hypersocket/api/realms/realm/"
-				+ auxSession.getCurrentRealm().getId());
+				+ getAuxSession().getCurrentRealm().getId());
 	}
 
 	@Test(expected = ClientProtocolException.class)
@@ -60,7 +42,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 	public void tryUnauthorizedRealmPropertiesId()
 			throws ClientProtocolException, IOException {
 		doGet("/hypersocket/api/realms/realm/properties/"
-				+ auxSession.getCurrentRealm().getId());
+				+ getAuxSession().getCurrentRealm().getId());
 	}
 
 	@Test(expected = ClientProtocolException.class)
@@ -85,6 +67,6 @@ public class UnauthorizedTests extends AbstractServerTest {
 	public void tryUnauthorizedRealmDeleteId() throws ClientProtocolException,
 			IOException {
 		doDelete("/hypersocket/api/realms/realm/"
-				+ auxSession.getCurrentRealm().getId());
+				+ getAuxSession().getCurrentRealm().getId());
 	}
 }

@@ -13,30 +13,21 @@ import org.springframework.util.Assert;
 
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonResourceStatus;
-import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.RealmPermission;
 import com.hypersocket.realm.json.RealmUpdate;
 import com.hypersocket.tests.AbstractServerTest;
 
 public class WithDelegatedPermissionTests extends AbstractServerTest {
+
 	@BeforeClass
 	public static void logOn() throws Exception {
-		logon("Default", "admin", "Password123?");
-		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
-				"user", false);
-		changePassword("user", jsonCreateUser);
-		Long[] permissions = {
-				getPermissionId(AuthenticationPermission.LOGON.getResourceKey()),
-				getPermissionId(RealmPermission.CREATE.getResourceKey()),
-				getPermissionId(RealmPermission.READ.getResourceKey()),
-				getPermissionId(RealmPermission.UPDATE.getResourceKey()),
-				getPermissionId(RealmPermission.DELETE.getResourceKey()) };
-		JsonRoleResourceStatus jsonCreateRole = createRole("newrole",
-				permissions);
-		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
-		logoff();
-		logon("Default", "user", "user");
+		logOnNewUser(new String[] {
+				AuthenticationPermission.LOGON.getResourceKey(),
+				RealmPermission.CREATE.getResourceKey(),
+				RealmPermission.READ.getResourceKey(),
+				RealmPermission.UPDATE.getResourceKey(),
+				RealmPermission.DELETE.getResourceKey() });
 	}
 
 	@AfterClass

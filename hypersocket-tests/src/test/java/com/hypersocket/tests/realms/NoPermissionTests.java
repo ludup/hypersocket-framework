@@ -11,8 +11,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.hypersocket.auth.AuthenticationPermission;
-import com.hypersocket.json.JsonResourceStatus;
-import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.json.RealmUpdate;
 import com.hypersocket.tests.AbstractServerTest;
@@ -22,17 +20,8 @@ public class NoPermissionTests extends AbstractServerTest {
 	@BeforeClass
 	public static void logOn() throws Exception {
 
-		logon("Default", "admin", "Password123?");
-		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
-				"user", false);
-		changePassword("user", jsonCreateUser);
-		Long[] permissions = { getPermissionId(AuthenticationPermission.LOGON
-				.getResourceKey()) };
-		JsonRoleResourceStatus jsonCreateRole = createRole("newrole",
-				permissions);
-		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
-		logoff();
-		logon("Default", "user", "user");
+		logOnNewUser(new String[] { AuthenticationPermission.LOGON
+				.getResourceKey() });
 	}
 
 	@AfterClass
