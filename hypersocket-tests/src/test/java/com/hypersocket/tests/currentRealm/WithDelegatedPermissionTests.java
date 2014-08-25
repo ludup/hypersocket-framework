@@ -16,7 +16,6 @@ import org.springframework.util.Assert;
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonResourceList;
 import com.hypersocket.json.JsonResourceStatus;
-import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.GroupPermission;
 import com.hypersocket.realm.UserPermission;
@@ -28,25 +27,17 @@ import com.hypersocket.tests.AbstractServerTest;
 public class WithDelegatedPermissionTests extends AbstractServerTest {
 	@BeforeClass
 	public static void logOn() throws Exception {
-		logon("Default", "admin", "Password123?");
-		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
-				"user", false);
-		changePassword("user", jsonCreateUser);
-		Long[] permissions = {
-				getPermissionId(AuthenticationPermission.LOGON.getResourceKey()),
-				getPermissionId(UserPermission.CREATE.getResourceKey()),
-				getPermissionId(UserPermission.READ.getResourceKey()),
-				getPermissionId(UserPermission.UPDATE.getResourceKey()),
-				getPermissionId(UserPermission.DELETE.getResourceKey()),
-				getPermissionId(GroupPermission.CREATE.getResourceKey()),
-				getPermissionId(GroupPermission.READ.getResourceKey()),
-				getPermissionId(GroupPermission.UPDATE.getResourceKey()),
-				getPermissionId(GroupPermission.DELETE.getResourceKey()) };
-		JsonRoleResourceStatus jsonCreateRole = createRole("newrole",
-				permissions);
-		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
-		logoff();
-		logon("Default", "user", "user");
+
+		logOnNewUser(new String[] {
+				AuthenticationPermission.LOGON.getResourceKey(),
+				UserPermission.CREATE.getResourceKey(),
+				UserPermission.READ.getResourceKey(),
+				UserPermission.UPDATE.getResourceKey(),
+				UserPermission.DELETE.getResourceKey(),
+				GroupPermission.CREATE.getResourceKey(),
+				GroupPermission.READ.getResourceKey(),
+				GroupPermission.UPDATE.getResourceKey(),
+				GroupPermission.DELETE.getResourceKey() });
 	}
 
 	@AfterClass

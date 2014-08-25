@@ -32,6 +32,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
+import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.AuthenticationRequiredResult;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.JsonLogonResult;
@@ -42,6 +43,7 @@ import com.hypersocket.json.JsonSession;
 import com.hypersocket.netty.Main;
 import com.hypersocket.permissions.json.RoleUpdate;
 import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.realm.RealmPermission;
 import com.hypersocket.realm.json.CredentialsUpdate;
 import com.hypersocket.realm.json.GroupUpdate;
 import com.hypersocket.realm.json.RealmUpdate;
@@ -57,6 +59,7 @@ public class AbstractServerTest {
 	protected static Long adminId;
 
 	protected static JsonSession session;
+	private static JsonSession auxSession;
 
 	protected static JsonRole systemAdminRole;
 
@@ -195,6 +198,7 @@ public class AbstractServerTest {
 			JsonLogonResult logon = mapper.readValue(logonJson,
 					JsonLogonResult.class);
 			session = logon.getSession();
+			auxSession = logon.getSession();
 		} else {
 			session = null;
 		}
@@ -216,6 +220,7 @@ public class AbstractServerTest {
 				JsonLogonResult logon = mapper.readValue(logonJson,
 						JsonLogonResult.class);
 				session = logon.getSession();
+				auxSession = logon.getSession();
 			} else {
 				session = null;
 			}
@@ -645,8 +650,30 @@ public class AbstractServerTest {
 
 	}
 
+	protected static void logOnNewUser(String[] strPermissions)
+			throws Exception {
+		logon("Default", "admin", "Password123?");
+		Long[] permissions = new Long[strPermissions.length];
+		for (int x = 0; x < permissions.length; x++) {
+			permissions[x] = getPermissionId(strPermissions[x]);
+		}
+		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
+				"user", false);
+		changePassword("user", jsonCreateUser);
+		JsonRoleResourceStatus jsonCreateRole = createRole("newRole",
+				permissions);
+		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
+		logoff();
+		logon("Default", "user", "user");
+
+	}
+
 	public static JsonSession getSession() {
 		return session;
+	}
+
+	public static JsonSession getAuxSession() {
+		return auxSession;
 	}
 
 	public static JsonRole getSystemAdminRole() {
