@@ -62,7 +62,7 @@ public class NoPermissionTests extends AbstractServerTest {
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedNetworkInterfaces() throws Exception {
 		RoleUpdate role = new RoleUpdate();
-		role.setName("rolename");
+		role.setName("newRole");
 		role.setPermissions(new Long[0]);
 		Long[] permissions = { getPermissionId(AuthenticationPermission.LOGON
 				.getResourceKey()) };

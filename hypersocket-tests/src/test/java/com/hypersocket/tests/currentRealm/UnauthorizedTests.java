@@ -115,7 +115,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 	public void tryUnauthorizedCurrentRealmGroupPost() throws Exception {
 
 		GroupUpdate group = new GroupUpdate();
-		group.setName("newgroup");
+		group.setName("newGroup");
 		Long[] users = { getAuxSession().getPrincipal().getId() };
 		group.setUsers(users);
 		doPostJson("/hypersocket/api/currentRealm/group", group);
@@ -144,8 +144,8 @@ public class UnauthorizedTests extends AbstractServerTest {
 	public void tryUnauthorizedCurrentRealmUserPost() throws Exception {
 
 		UserUpdate user = new UserUpdate();
-		user.setName("newuser");
-		user.setPassword("newuserpass");
+		user.setName("newUser");
+		user.setPassword("newUserPass");
 		user.setProperties(new PropertyItem[0]);
 		user.setGroups(new Long[0]);
 
@@ -160,7 +160,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 		CredentialsUpdate credentialsUpdate = new CredentialsUpdate();
 
 		credentialsUpdate.setForceChange(false);
-		credentialsUpdate.setPassword("newpass");
+		credentialsUpdate.setPassword("newPass");
 
 		credentialsUpdate
 				.setPrincipalId(getAuxSession().getPrincipal().getId());

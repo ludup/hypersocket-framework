@@ -45,7 +45,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedRolePost() throws Exception {
 		RoleUpdate role = new RoleUpdate();
-		role.setName("rolename");
+		role.setName("newRole");
 		role.setPermissions(new Long[0]);
 		Long[] permissions = { getPermissionId(AuthenticationPermission.LOGON
 				.getResourceKey()) };
