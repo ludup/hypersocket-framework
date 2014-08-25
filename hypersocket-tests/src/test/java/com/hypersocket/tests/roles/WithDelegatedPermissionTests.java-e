@@ -1,5 +1,8 @@
 package com.hypersocket.tests.roles;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 
 import org.apache.http.client.ClientProtocolException;
@@ -12,6 +15,7 @@ import org.springframework.util.Assert;
 
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonResourceStatus;
+import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.permissions.json.RoleUpdate;
 import com.hypersocket.realm.RolePermission;
 import com.hypersocket.tests.AbstractServerTest;
@@ -69,7 +73,7 @@ public class WithDelegatedPermissionTests extends AbstractServerTest {
 	@Test
 	public void tryWithDelegatedPermissionCreateRolePost() throws Exception {
 		RoleUpdate role = new RoleUpdate();
-		role.setName("rolename");
+		role.setName("newRole");
 		role.setPermissions(new Long[0]);
 		Long[] permissions = { getPermissionId(AuthenticationPermission.LOGON
 				.getResourceKey()) };
@@ -81,12 +85,17 @@ public class WithDelegatedPermissionTests extends AbstractServerTest {
 		JsonResourceStatus json = getMapper().readValue(
 				doPostJson("/hypersocket/api/roles/role", role),
 				JsonResourceStatus.class);
+		assertTrue(json.isSuccess());
 		Assert.notNull(json.getResource().getId());
+		assertEquals("newRole", json.getResource().getName());
 	}
 
 	@Test
-	public void tryWithDelegatedPermissionDeleteRoleId()
-			throws ClientProtocolException, IOException {
-		doDelete("/hypersocket/api/roles/role/" + getSystemAdminRole().getId());
+	public void tryWithDelegatedPermissionDeleteRoleId() throws Exception {
+		JsonRoleResourceStatus jsonRole = createRole("roleName",
+				new Long[] { getPermissionId(AuthenticationPermission.LOGON
+						.getResourceKey()) });
+		doDelete("/hypersocket/api/roles/role/"
+				+ jsonRole.getResource().getId());
 	}
 }

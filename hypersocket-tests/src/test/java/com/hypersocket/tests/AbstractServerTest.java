@@ -636,10 +636,10 @@ public class AbstractServerTest {
 
 	}
 
-	protected static JsonResourceStatus createRealm(String rolename)
+	protected static JsonResourceStatus createRealm(String realmName)
 			throws Exception {
 		RealmUpdate realm = new RealmUpdate();
-		realm.setName("newrealm");
+		realm.setName(realmName);
 		realm.setProperties(new PropertyItem[0]);
 		realm.setType("local");
 

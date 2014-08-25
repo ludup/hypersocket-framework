@@ -1,5 +1,8 @@
 package com.hypersocket.tests.realms;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -68,14 +71,16 @@ public class WithAdminPermissionTests extends AbstractServerTest {
 			throws ClientProtocolException, IOException, IllegalStateException,
 			URISyntaxException {
 		RealmUpdate realm = new RealmUpdate();
-		realm.setName("newrealm");
+		realm.setName("newRealm");
 		realm.setProperties(new PropertyItem[0]);
 		realm.setType("local");
 
 		JsonResourceStatus json = getMapper().readValue(
 				doPostJson("/hypersocket/api/realms/realm", realm),
 				JsonResourceStatus.class);
+		assertTrue(json.isSuccess());
 		Assert.notNull(json.getResource().getId());
+		assertEquals("newRealm", json.getResource().getName());
 
 	}
 
@@ -86,9 +91,9 @@ public class WithAdminPermissionTests extends AbstractServerTest {
 	}
 
 	@Test
-	public void tryWithAdminPermissionRealmDeleteId()
-			throws ClientProtocolException, IOException {
-		doDelete("/hypersocket/api/realms/realm/"
-				+ getSession().getCurrentRealm().getId());
+	public void tryWithAdminPermissionRealmDeleteId() throws Exception {
+		JsonResourceStatus json = createRealm("realmName");
+
+		doDelete("/hypersocket/api/realms/realm/" + json.getResource().getId());
 	}
 }

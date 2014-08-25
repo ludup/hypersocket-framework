@@ -1,5 +1,6 @@
 package com.hypersocket.tests.currentRealm;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -110,7 +111,13 @@ public class WithAdminPermissionTests extends AbstractServerTest {
 		item.setId("user.phone");
 		item.setValue("666");
 		PropertyItem[] items = { item };
-		doPostJson("/hypersocket/api/currentRealm/user/profile", items);
+
+		JsonResourceStatus json = getMapper()
+				.readValue(
+						doPostJson(
+								"/hypersocket/api/currentRealm/user/profile",
+								items), JsonResourceStatus.class);
+		assertTrue(json.isSuccess());
 	}
 
 	@Test
@@ -135,44 +142,52 @@ public class WithAdminPermissionTests extends AbstractServerTest {
 	public void tryWithAdminPermissionCurrentRealmGroupPost() throws Exception {
 
 		GroupUpdate group = new GroupUpdate();
-		group.setName("newgroup");
+		group.setName("newGroup");
 		Long[] users = { getSession().getPrincipal().getId() };
 		group.setUsers(users);
-		doPostJson("/hypersocket/api/currentRealm/group", group);
+
+		JsonResourceStatus json = getMapper().readValue(
+				doPostJson("/hypersocket/api/currentRealm/group", group),
+				JsonResourceStatus.class);
+		assertTrue(json.isSuccess());
+		Assert.notNull(json.getResource().getId());
+		assertEquals("newGroup", json.getResource().getName());
 	}
 
 	@Test
 	public void tryWithAdminPermissionCurrentRealmGroupDelete()
-			throws ClientProtocolException, IOException {
+			throws Exception {
 
-		JsonResourceList json = getMapper().readValue(
-				doGet("/hypersocket/api/currentRealm/groups/list"),
-				JsonResourceList.class);
+		JsonResourceStatus jsonGroup = createGroup("groupName");
 
 		doDelete("/hypersocket/api/currentRealm/group/"
-				+ json.getResources()[0].getId());
+				+ jsonGroup.getResource().getId());
 	}
 
 	@Test
-	public void tryWithAdminPermissionCurrentRealmDeleteUser()
-			throws ClientProtocolException, IOException {
+	public void tryWithAdminPermissionCurrentRealmDeleteUser() throws Exception {
+		JsonResourceStatus json = createUser(getSession().getCurrentRealm()
+				.getName(), "userName", "password", false);
+
 		doDelete("/hypersocket/api/currentRealm/user/"
-				+ getSession().getPrincipal().getId());
+				+ json.getResource().getId());
 	}
 
 	@Test
 	public void tryWithAdminPermissionCurrentRealmUserPost() throws Exception {
 
 		UserUpdate user = new UserUpdate();
-		user.setName("newuser");
-		user.setPassword("newuserpass");
+		user.setName("newUser");
+		user.setPassword("newUserPass");
 		user.setProperties(new PropertyItem[0]);
 		user.setGroups(new Long[0]);
 
 		JsonResourceStatus json = getMapper().readValue(
 				doPostJson("/hypersocket/api/currentRealm/user", user),
 				JsonResourceStatus.class);
+		assertTrue(json.isSuccess());
 		Assert.notNull(json.getResource().getId());
+		assertEquals("newUser", json.getResource().getName());
 	}
 
 	@Test
@@ -182,7 +197,7 @@ public class WithAdminPermissionTests extends AbstractServerTest {
 		CredentialsUpdate credentialsUpdate = new CredentialsUpdate();
 
 		credentialsUpdate.setForceChange(false);
-		credentialsUpdate.setPassword("newpass");
+		credentialsUpdate.setPassword("newPass");
 
 		credentialsUpdate.setPrincipalId(getSession().getPrincipal().getId());
 

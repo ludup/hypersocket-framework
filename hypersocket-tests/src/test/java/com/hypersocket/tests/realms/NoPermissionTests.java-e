@@ -67,7 +67,7 @@ public class NoPermissionTests extends AbstractServerTest {
 	public void tryNoPermissionRealmPost() throws ClientProtocolException,
 			IOException, IllegalStateException, URISyntaxException {
 		RealmUpdate realm = new RealmUpdate();
-		realm.setName("newrealm");
+		realm.setName("newRealm");
 		realm.setProperties(new PropertyItem[0]);
 		realm.setType("local");
 

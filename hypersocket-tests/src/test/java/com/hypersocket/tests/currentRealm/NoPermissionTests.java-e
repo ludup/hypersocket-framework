@@ -133,7 +133,7 @@ public class NoPermissionTests extends AbstractServerTest {
 	public void tryNoPermissionCurrentRealmGroupPost() throws Exception {
 
 		GroupUpdate group = new GroupUpdate();
-		group.setName("newgroup");
+		group.setName("newGroup");
 		Long[] users = { getSession().getPrincipal().getId() };
 		group.setUsers(users);
 		doPostJson("/hypersocket/api/currentRealm/group", group);
@@ -162,8 +162,8 @@ public class NoPermissionTests extends AbstractServerTest {
 	public void tryNoPermissionCurrentRealmUserPost() throws Exception {
 
 		UserUpdate user = new UserUpdate();
-		user.setName("newuser");
-		user.setPassword("newuserpass");
+		user.setName("newUser");
+		user.setPassword("newUserPass");
 		user.setProperties(new PropertyItem[0]);
 		user.setGroups(new Long[0]);
 
@@ -178,7 +178,7 @@ public class NoPermissionTests extends AbstractServerTest {
 		CredentialsUpdate credentialsUpdate = new CredentialsUpdate();
 
 		credentialsUpdate.setForceChange(false);
-		credentialsUpdate.setPassword("newpass");
+		credentialsUpdate.setPassword("newPass");
 
 		credentialsUpdate.setPrincipalId(getSession().getPrincipal().getId());
 
