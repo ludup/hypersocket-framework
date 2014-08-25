@@ -44,6 +44,7 @@ import com.hypersocket.permissions.json.RoleUpdate;
 import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.json.CredentialsUpdate;
 import com.hypersocket.realm.json.GroupUpdate;
+import com.hypersocket.realm.json.RealmUpdate;
 import com.hypersocket.realm.json.UserUpdate;
 import com.hypersocket.util.OverridePropertyPlaceholderConfigurer;
 
@@ -627,6 +628,20 @@ public class AbstractServerTest {
 		String addGroupToRoledJson = doPostJson("/hypersocket/api/roles/role",
 				roleUpdate);
 		debugJSON(addGroupToRoledJson);
+
+	}
+
+	protected static JsonResourceStatus createRealm(String rolename)
+			throws Exception {
+		RealmUpdate realm = new RealmUpdate();
+		realm.setName("newrealm");
+		realm.setProperties(new PropertyItem[0]);
+		realm.setType("local");
+
+		JsonResourceStatus json = getMapper().readValue(
+				doPostJson("/hypersocket/api/realms/realm", realm),
+				JsonResourceStatus.class);
+		return json;
 
 	}
 

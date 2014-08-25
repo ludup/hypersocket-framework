@@ -9,6 +9,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.tests.AbstractServerTest;
 
 public class WithAdminPermissionTests extends AbstractServerTest {
@@ -37,10 +38,10 @@ public class WithAdminPermissionTests extends AbstractServerTest {
 	}
 
 	@Test
-	public void tryWithAdminPermissionSessionSwitchRealm()
-			throws ClientProtocolException, IOException {
+	public void tryWithAdminPermissionSessionSwitchRealm() throws Exception {
+		JsonResourceStatus json = createRealm("newRealm");
 		doGet("/hypersocket/api/session/switchRealm/"
-				+ getSession().getCurrentRealm().getId());
+				+ json.getResource().getId());
 	}
 
 	@Test
