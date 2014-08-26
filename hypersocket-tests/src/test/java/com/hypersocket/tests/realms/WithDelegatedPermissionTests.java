@@ -1,27 +1,16 @@
 package com.hypersocket.tests.realms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
-import java.net.URISyntaxException;
 
-import org.apache.http.client.ClientProtocolException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
-import org.springframework.util.Assert;
 
 import com.hypersocket.auth.AuthenticationPermission;
-import com.hypersocket.json.JsonResourceStatus;
-import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.RealmPermission;
-import com.hypersocket.realm.json.RealmUpdate;
-import com.hypersocket.tests.AbstractServerTest;
 
-public class WithDelegatedPermissionTests extends AbstractServerTest {
+public class WithDelegatedPermissionTests extends AbstractPermissionsTest {
 
 	@BeforeClass
 	public static void logOn() throws Exception {
@@ -37,70 +26,5 @@ public class WithDelegatedPermissionTests extends AbstractServerTest {
 	public static void logOff() throws JsonParseException,
 			JsonMappingException, IOException {
 		logoff();
-	}
-
-	@Test
-	public void tryWithDelegatedPermissionRealmId()
-			throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/realms/realm/"
-				+ getSession().getCurrentRealm().getId());
-	}
-
-	@Test
-	public void tryWithDelegatedPermissionRealmList()
-			throws ClientProtocolException, IOException {
-
-		doGet("/hypersocket/api/realms/list");
-	}
-
-	@Test
-	public void tryWithDelegatedPermissionRealmsTable()
-			throws ClientProtocolException, IOException {
-
-		doGet("/hypersocket/api/realms/table");
-	}
-
-	@Test
-	public void tryWithDelegatedPermissionRealmsTemplate()
-			throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/realms/template/local");
-	}
-
-	@Test
-	public void tryWithDelegatedPermissionRealmPropertiesId()
-			throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/realms/realm/properties/"
-				+ getSession().getCurrentRealm().getId());
-	}
-
-	@Test
-	public void tryWithDelegatedPermissionRealmPost()
-			throws ClientProtocolException, IOException, IllegalStateException,
-			URISyntaxException {
-		RealmUpdate realm = new RealmUpdate();
-		realm.setName("newRealm");
-		realm.setProperties(new PropertyItem[0]);
-		realm.setType("local");
-
-		JsonResourceStatus json = getMapper().readValue(
-				doPostJson("/hypersocket/api/realms/realm", realm),
-				JsonResourceStatus.class);
-		assertTrue(json.isSuccess());
-		Assert.notNull(json.getResource().getId());
-		assertEquals("newRealm", json.getResource().getName());
-
-	}
-
-	@Test
-	public void tryWithDelegatedPermissionRealmProviders()
-			throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/realms/providers");
-	}
-
-	@Test
-	public void tryWithDelegatedPermissionRealmDeleteId() throws Exception {
-		JsonResourceStatus json = createRealm("realmName");
-
-		doDelete("/hypersocket/api/realms/realm/" + json.getResource().getId());
 	}
 }
