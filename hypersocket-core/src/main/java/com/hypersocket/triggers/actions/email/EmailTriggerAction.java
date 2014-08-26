@@ -61,12 +61,13 @@ public class EmailTriggerAction extends AbstractAction implements
 
 	@Autowired
 	EventService eventService;
-	
+
 	@PostConstruct
 	private void postConstruct() {
 		triggerService.registerActionProvider(this);
-		
-		eventService.registerEvent(EmailActionResult.class, TriggerResourceServiceImpl.RESOURCE_BUNDLE);
+
+		eventService.registerEvent(EmailActionResult.class,
+				TriggerResourceServiceImpl.RESOURCE_BUNDLE);
 	}
 
 	@Override
@@ -78,12 +79,13 @@ public class EmailTriggerAction extends AbstractAction implements
 	public Collection<PropertyCategory> getPropertyTemplate() {
 		return repository.getPropertyCategories(null);
 	}
-	
+
 	@Override
-	public Collection<PropertyCategory> getPropertiesForAction(TriggerAction action) {
+	public Collection<PropertyCategory> getPropertiesForAction(
+			TriggerAction action) {
 		return repository.getPropertyCategories(action);
 	}
-	
+
 	@Override
 	public String[] getResourceKeys() {
 		return new String[] { "emailAction" };
@@ -163,35 +165,45 @@ public class EmailTriggerAction extends AbstractAction implements
 				repository.getValue(action, ATTR_BODY), event);
 		List<Recipient> recipients = new ArrayList<Recipient>();
 
-		populateEmailList(action, ATTR_TO_ADDRESSES, recipients,
+		String to = populateEmailList(action, ATTR_TO_ADDRESSES, recipients,
 				RecipientType.TO, event);
-		populateEmailList(action, ATTR_CC_ADDRESSES, recipients,
+		String cc = populateEmailList(action, ATTR_CC_ADDRESSES, recipients,
 				RecipientType.TO, event);
-		populateEmailList(action, ATTR_BCC_ADDRESSES, recipients,
+		String bcc = populateEmailList(action, ATTR_BCC_ADDRESSES, recipients,
 				RecipientType.TO, event);
 
 		try {
 			emailService.sendPlainEmail(subject, body,
-						recipients.toArray(new Recipient[0]));
+					recipients.toArray(new Recipient[0]));
 
-			return new EmailActionResult(this, action.getTrigger().getRealm());
+			return new EmailActionResult(this, action.getTrigger().getRealm(),
+					action.getName(), action.getTrigger().getName(), subject, body, to, cc, bcc);
 
 		} catch (Exception ex) {
 			log.error("Failed to send email", ex);
-			return new EmailActionResult(this, ex, action.getTrigger().getRealm());
+			return new EmailActionResult(this, ex, action.getTrigger()
+					.getRealm(), action.getName(), action.getTrigger().getName(), subject, body, to, cc, bcc);
 		}
 	}
 
-	private void populateEmailList(TriggerAction action, String attributeName,
-			List<Recipient> recipients, RecipientType type, SystemEvent event)
+	private String populateEmailList(TriggerAction action,
+			String attributeName, List<Recipient> recipients,
+			RecipientType type, SystemEvent event)
 			throws TriggerValidationException {
 
+		StringBuffer ret = new StringBuffer();
 		String[] emails = repository.explodeValues(processTokenReplacements(
 				repository.getValue(action, attributeName), event));
 		for (String email : emails) {
+			if (ret.length() > 0) {
+				ret.append(", ");
+			}
+			ret.append(email);
 			String[] rec = getEmailName(email);
 			recipients.add(new Recipient(rec[0], rec[1], type));
 		}
+
+		return ret.toString();
 	}
 
 	private String[] getEmailName(String val) throws TriggerValidationException {
@@ -206,7 +218,8 @@ public class EmailTriggerAction extends AbstractAction implements
 			if (Pattern.matches(EMAIL_PATTERN, email)) {
 				return new String[] { name, email };
 			} else {
-				throw new TriggerValidationException(email + " is not a valid email address");
+				throw new TriggerValidationException(email
+						+ " is not a valid email address");
 			}
 		}
 
@@ -214,7 +227,8 @@ public class EmailTriggerAction extends AbstractAction implements
 			return new String[] { "", val };
 		}
 
-		throw new TriggerValidationException(val + " is not a valid email address");
+		throw new TriggerValidationException(val
+				+ " is not a valid email address");
 	}
 
 	@Override

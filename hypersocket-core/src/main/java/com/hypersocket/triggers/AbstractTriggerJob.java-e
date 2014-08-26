@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.auth.AuthenticationService;
+import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.realm.Principal;
@@ -25,6 +26,9 @@ public class AbstractTriggerJob implements Job {
 	
 	@Autowired
 	I18NService i18nService; 
+	
+	@Autowired
+	EventService eventService; 
 	
 	static Logger log = LoggerFactory.getLogger(AbstractTriggerJob.class);
 
@@ -141,9 +145,15 @@ public class AbstractTriggerJob implements Job {
 		}
 
 		ActionResult outputEvent = provider.execute(action, event);
+
+		if(outputEvent.isPublishable()) {
+			eventService.publishEvent(outputEvent);
+		}
+		
 		if (action.getPostExecutionTrigger() != null
 				&& checkConditions(action.getTrigger(), outputEvent)) {
 			processEventTrigger(action.getPostExecutionTrigger(), outputEvent);
-		}
+		} 
+		
 	}
 }
