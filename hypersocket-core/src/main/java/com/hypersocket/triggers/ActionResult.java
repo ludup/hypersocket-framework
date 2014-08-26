@@ -14,6 +14,8 @@ public abstract class ActionResult extends SystemEvent {
 	public ActionResult(Object source, String resourceKey, Throwable e, Realm currentRealm) {
 		super(source, resourceKey, e, currentRealm);
 	}
+	
+	public abstract boolean isPublishable();
 
 	@Override
 	public abstract String getResourceBundle();
