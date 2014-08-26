@@ -22,7 +22,7 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
-import com.hypersocket.triggers.AbstractAction;
+import com.hypersocket.triggers.AbstractActionProvider;
 import com.hypersocket.triggers.ActionResult;
 import com.hypersocket.triggers.TriggerAction;
 import com.hypersocket.triggers.TriggerActionProvider;
@@ -32,7 +32,7 @@ import com.hypersocket.triggers.TriggerValidationError;
 import com.hypersocket.triggers.TriggerValidationException;
 
 @Component
-public class EmailTriggerAction extends AbstractAction implements
+public class EmailTriggerAction extends AbstractActionProvider implements
 		TriggerActionProvider {
 
 	private static Logger log = LoggerFactory

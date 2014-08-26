@@ -1,5 +1,6 @@
 package com.hypersocket.triggers;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,11 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
+import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.RealmService;
 
-public class AbstractAction {
+public abstract class AbstractActionProvider implements TriggerActionProvider {
 
-	static Logger log = LoggerFactory.getLogger(AbstractAction.class);
+	static Logger log = LoggerFactory.getLogger(AbstractActionProvider.class);
 	
 	@Autowired
 	EventService eventService;
@@ -27,8 +29,6 @@ public class AbstractAction {
 	TriggerResourceService triggerService;
 	
 	protected String processTokenReplacements(String value, SystemEvent event) {
-		
-		EventDefinition def = eventService.getEventDefinition(event.getResourceKey());
 		
 		Pattern pattern = Pattern.compile("\\$\\{(.*?)\\}");
 		Matcher matcher = pattern.matcher(value);
@@ -61,5 +61,14 @@ public class AbstractAction {
 		return builder.toString();
 	}
 	
-	
+	@Override
+	public Collection<PropertyCategory> getPropertyTemplate() {
+		return getRepository().getPropertyCategories(null);
+	}
+
+	@Override
+	public Collection<PropertyCategory> getPropertiesForAction(
+			TriggerAction action) {
+		return getRepository().getPropertyCategories(action);
+	}
 }

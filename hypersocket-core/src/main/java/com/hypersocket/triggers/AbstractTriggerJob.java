@@ -52,6 +52,8 @@ public class AbstractTriggerJob implements Job {
 				processEventTrigger(trigger, event);
 
 				// TODO successful event
+				
+				
 			} catch (TriggerValidationException e) {
 
 				// TDOO failure event
