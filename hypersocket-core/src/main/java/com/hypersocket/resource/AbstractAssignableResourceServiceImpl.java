@@ -3,6 +3,7 @@ package com.hypersocket.resource;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Principal;
@@ -20,7 +22,7 @@ import com.hypersocket.tables.ColumnSort;
 @Repository
 public abstract class AbstractAssignableResourceServiceImpl<T extends AssignableResource>
 		extends AuthenticatedServiceImpl implements
-		AbstractAssignableResourceService<T> {
+		AbstractAssignableResourceService<T>, EventPropertyCollector {
 
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
@@ -62,6 +64,11 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 					"Could not resolve update permission on PermissionType "
 							+ getPermissionType().getName());
 		}
+	}
+	
+	@Override
+	public Set<String> getPropertyNames(String resourceKey, Realm realm) {
+		return getRepository().getPropertyNames();
 	}
 
 	@Override

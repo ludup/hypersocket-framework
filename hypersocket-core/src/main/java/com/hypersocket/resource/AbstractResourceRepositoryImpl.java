@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.tables.ColumnSort;
@@ -23,13 +24,13 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		AbstractResourceRepository<T> {
 
 	@Override
-	public T getResourceByName(String name) {
+	public T getResourceByName(String name, Realm realm) {
 		return get("name", name, getResourceClass(), new DeletedCriteria(false));
 	}
 
 	@Override
-	public T getResourceByName(String name, boolean deleted) {
-		return get("name", name, getResourceClass(), new DeletedCriteria(
+	public T getResourceByName(String name, Realm realm, boolean deleted) {
+		return get("name", name, getResourceClass(), new RealmRestriction(realm), new DeletedCriteria(
 				deleted));
 	}
 
@@ -45,6 +46,15 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 
 	@Override
 	public void saveResource(T resource, Map<String,String> properties) {
+		
+		for(Map.Entry<String,String> e : properties.entrySet()) {
+			setValue(resource, e.getKey(), e.getValue());
+		}
+		save(resource);
+	}
+	
+	@Override
+	public void updateResource(T resource, Map<String,String> properties) {
 		
 		for(Map.Entry<String,String> e : properties.entrySet()) {
 			setValue(resource, e.getKey(), e.getValue());

@@ -3,6 +3,7 @@ package com.hypersocket.resource;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Realm;
@@ -18,7 +20,8 @@ import com.hypersocket.tables.ColumnSort;
 
 @Repository
 public abstract class AbstractResourceServiceImpl<T extends RealmResource>
-		extends AuthenticatedServiceImpl implements AbstractResourceService<T> {
+		extends AuthenticatedServiceImpl implements AbstractResourceService<T>,
+			EventPropertyCollector {
 
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
@@ -63,6 +66,11 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 
 	@Override
+	public Set<String> getPropertyNames(String resourceKey, Realm realm) {
+		return getRepository().getPropertyNames();
+	}
+	
+	@Override
 	public void createResource(T resource, Map<String,String> properties) throws ResourceCreationException,
 			AccessDeniedException {
 
@@ -77,14 +85,6 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			throw ex;
 		} catch (ResourceNotFoundException ex) {
 			try {
-				// Make sure any resources in default realm
-				// (system) are available across all realms
-				if (getCurrentRealm().isSystem()) {
-					resource.setRealm(null);
-				} else {
-					resource.setRealm(getCurrentRealm());
-				}
-
 				getRepository().saveResource(resource, properties);
 				fireResourceCreationEvent(resource);
 			} catch (Throwable t) {
@@ -110,7 +110,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		assertPermission(getUpdatePermission());
 
 		try {
-			getRepository().saveResource(resource, properties);
+			getRepository().updateResource(resource, properties);
 			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {
 			fireResourceUpdateEvent(resource, t);
@@ -186,7 +186,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	@Override
 	public T getResourceByName(String name) throws ResourceNotFoundException {
-		T resource = getRepository().getResourceByName(name);
+		T resource = getRepository().getResourceByName(name, getCurrentRealm());
 		if (resource == null) {
 			throw new ResourceNotFoundException(getResourceBundle(),
 					"error.invalidResourceName", name);

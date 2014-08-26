@@ -97,10 +97,14 @@ public interface RealmService extends AuthenticatedService {
 	Collection<PropertyCategory> getUserPropertyTemplates(
 			Principal principalById) throws AccessDeniedException;
 
+	Collection<PropertyCategory> getUserPropertyTemplates()
+			throws AccessDeniedException;
+
 	Collection<PropertyCategory> getUserPropertyTemplates(String module)
 			throws AccessDeniedException;
 
-	List<Principal> getAssociatedPrincipals(Principal principal) throws AccessDeniedException;
+	List<Principal> getAssociatedPrincipals(Principal principal)
+			throws AccessDeniedException;
 
 	List<Principal> getAssociatedPrincipals(Principal principal,
 			PrincipalType type) throws AccessDeniedException;
@@ -156,14 +160,14 @@ public interface RealmService extends AuthenticatedService {
 
 	boolean supportsAccountDisable(Realm realm);
 
-	Principal disableAccount(Principal principal) throws ResourceChangeException,
-			AccessDeniedException;
+	Principal disableAccount(Principal principal)
+			throws ResourceChangeException, AccessDeniedException;
 
-	Principal enableAccount(Principal principal) throws ResourceChangeException,
-			AccessDeniedException;
+	Principal enableAccount(Principal principal)
+			throws ResourceChangeException, AccessDeniedException;
 
-	Principal unlockAccount(Principal principal) throws ResourceChangeException,
-			AccessDeniedException;
+	Principal unlockAccount(Principal principal)
+			throws ResourceChangeException, AccessDeniedException;
 
 	Realm getSystemRealm();
 
@@ -171,7 +175,8 @@ public interface RealmService extends AuthenticatedService {
 
 	Realm getDefaultRealm();
 
-	List<Realm> allRealms(boolean ignoreMissingProvider) throws AccessDeniedException;
+	List<Realm> allRealms(boolean ignoreMissingProvider)
+			throws AccessDeniedException;
 
 	Realm setDefaultRealm(Realm realm) throws AccessDeniedException;
 

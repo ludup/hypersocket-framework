@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
@@ -42,10 +43,12 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.upgrade.UpgradeService;
+import com.hypersocket.upgrade.UpgradeServiceListener;
 
 @Service
 public class RealmServiceImpl extends AuthenticatedServiceImpl implements
-		RealmService {
+		RealmService, UpgradeServiceListener {
 
 	static Logger log = LoggerFactory.getLogger(RealmServiceImpl.class);
 	
@@ -66,6 +69,9 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	Realm systemRealm;
 
+	@Autowired
+	UpgradeService upgradeService;
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -95,17 +101,31 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			permissionService.registerPermission(p,cat);
 		}
 
-		eventService.registerEvent(RealmCreatedEvent.class, RESOURCE_BUNDLE);
-		eventService.registerEvent(RealmUpdatedEvent.class, RESOURCE_BUNDLE);
-		eventService.registerEvent(RealmDeletedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(RealmCreatedEvent.class, RESOURCE_BUNDLE, new RealmPropertyCollector());
+		eventService.registerEvent(RealmUpdatedEvent.class, RESOURCE_BUNDLE, new RealmPropertyCollector());
+		eventService.registerEvent(RealmDeletedEvent.class, RESOURCE_BUNDLE, new RealmPropertyCollector());
 
-		eventService.registerEvent(UserCreatedEvent.class, RESOURCE_BUNDLE);
-		eventService.registerEvent(UserUpdatedEvent.class, RESOURCE_BUNDLE);
-		eventService.registerEvent(UserDeletedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(UserCreatedEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
+		eventService.registerEvent(UserUpdatedEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
+		eventService.registerEvent(UserDeletedEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
 
-		eventService.registerEvent(GroupCreatedEvent.class, RESOURCE_BUNDLE);
-		eventService.registerEvent(GroupUpdatedEvent.class, RESOURCE_BUNDLE);
-		eventService.registerEvent(GroupDeletedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(GroupCreatedEvent.class, RESOURCE_BUNDLE, new GroupPropertyCollector());
+		eventService.registerEvent(GroupUpdatedEvent.class, RESOURCE_BUNDLE, new GroupPropertyCollector());
+		eventService.registerEvent(GroupDeletedEvent.class, RESOURCE_BUNDLE, new GroupPropertyCollector());
+		
+		upgradeService.registerListener(this);
+	}
+	
+	@Override
+	public void onUpgradeComplete() {
+		
+		for(Realm realm : realmRepository.allRealms()) {
+			for(RealmListener listener : realmListeners) {
+				if(!listener.hasCreatedDefaultResources(realm)) {
+					listener.onCreateRealm(realm);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -810,6 +830,17 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		return provider.getUserProperties(null);
 	}
+	
+	@Override
+	public Collection<PropertyCategory> getUserPropertyTemplates()
+			throws AccessDeniedException {
+
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
+
+		RealmProvider provider = getProviderForRealm(getCurrentRealm() );
+
+		return provider.getUserProperties(null);
+	}
 
 	@Override
 	public Collection<PropertyCategory> getGroupPropertyTemplates(String module)
@@ -1009,5 +1040,33 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		return realmRepository.getDefaultRealm();
 	}
 
+	class RealmPropertyCollector implements EventPropertyCollector {
+
+		@Override
+		public Set<String> getPropertyNames(String resourceKey, Realm realm) {
+			RealmProvider provider = getProviderForRealm(realm);
+			return provider.getPropertyNames();
+		}
+		
+	}
+	
+	class UserPropertyCollector implements EventPropertyCollector {
+
+		@Override
+		public Set<String> getPropertyNames(String resourceKey, Realm realm) {	
+			RealmProvider provider = getProviderForRealm(realm);
+			return provider.getUserPropertyNames();
+		}	
+	}
+	
+	class GroupPropertyCollector implements EventPropertyCollector {
+
+		@Override
+		public Set<String> getPropertyNames(String resourceKey, Realm realm) {	
+			RealmProvider provider = getProviderForRealm(realm);
+			return provider.getGroupPropertyNames();
+		}
+		
+	}
 
 }

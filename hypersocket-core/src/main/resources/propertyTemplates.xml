@@ -4,6 +4,8 @@
 		resourceBundle="AuthenticationService" weight="500">
 		<property resourceKey="logon.banner" inputType="textarea"
 			rows="5" maxlength="1024" defaultValue="" weight="0" />
+		<property resourceKey="logon.banner2" inputType="editor"
+			rows="5" maxlength="1024" defaultValue="" weight="0" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email"
 		resourceBundle="EmailService" weight="600">
