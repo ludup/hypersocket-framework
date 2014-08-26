@@ -1,6 +1,7 @@
 package com.hypersocket.properties;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,6 +19,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.lf5.util.StreamUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -217,6 +220,20 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 		if(log.isInfoEnabled()) {
 			log.info("Registering property " + resourceKey);
+		}
+		
+		if(defaultValue.startsWith("classpath:")) {
+				String url = defaultValue.substring(10);
+				InputStream in = getClass().getResourceAsStream(url);
+				if(in!=null) {
+					try {
+						defaultValue = IOUtils.toString(in);
+					} catch (IOException e) {
+						log.error("Failed to load default value classpath resource " + defaultValue, e);
+					}
+				} else {
+					log.error("Failed to load default value classpath resource " + url);
+				}
 		}
 		
 		propertyNames.add(resourceKey);

@@ -39,7 +39,7 @@ public class AbstractAction {
 		while (matcher.find()) {
 			String attributeName = matcher.group(1);
 			String replacement;
-			if(def.getAttributeNames().contains(attributeName)) {
+			if(event.getAttributes().containsKey(attributeName)) {
 				replacement = event.getAttribute(attributeName);
 			} else if(defaultAttributes.contains(attributeName)) {
 				replacement = triggerService.getDefaultVariableValue(attributeName);

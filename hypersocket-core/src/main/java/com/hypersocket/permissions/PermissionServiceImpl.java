@@ -468,8 +468,10 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	@Override
 	public Role getRoleById(Long id, Realm realm)
-			throws ResourceNotFoundException {
+			throws ResourceNotFoundException, AccessDeniedException {
 
+		assertPermission(RolePermission.READ);
+		
 		Role role = repository.getRoleById(id);
 		if (role.getRealm() != null && !role.getRealm().equals(realm)) {
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE,

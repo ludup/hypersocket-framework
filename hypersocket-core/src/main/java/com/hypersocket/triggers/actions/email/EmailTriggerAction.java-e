@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.email.EmailNotificationService;
+import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
@@ -58,9 +59,14 @@ public class EmailTriggerAction extends AbstractAction implements
 	@Autowired
 	EmailTriggerActionRepository repository;
 
+	@Autowired
+	EventService eventService;
+	
 	@PostConstruct
 	private void postConstruct() {
 		triggerService.registerActionProvider(this);
+		
+		eventService.registerEvent(EmailActionResult.class, TriggerResourceServiceImpl.RESOURCE_BUNDLE);
 	}
 
 	@Override
@@ -197,10 +203,10 @@ public class EmailTriggerAction extends AbstractAction implements
 			String name = m.group(1).replaceAll("[\\n\\r]+", "");
 			String email = m.group(2).replaceAll("[\\n\\r]+", "");
 
-			if (Pattern.matches(EMAIL_PATTERN, val)) {
+			if (Pattern.matches(EMAIL_PATTERN, email)) {
 				return new String[] { name, email };
 			} else {
-				throw new TriggerValidationException("");
+				throw new TriggerValidationException(email + " is not a valid email address");
 			}
 		}
 
@@ -208,7 +214,7 @@ public class EmailTriggerAction extends AbstractAction implements
 			return new String[] { "", val };
 		}
 
-		throw new TriggerValidationException("");
+		throw new TriggerValidationException(val + " is not a valid email address");
 	}
 
 	@Override

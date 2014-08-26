@@ -48,7 +48,7 @@ public interface PermissionService extends AuthenticatedService {
 	Role updateRole(Role role, String name,
 			List<Principal> principals, List<Permission> permissions) throws AccessDeniedException;
 
-	public Role getRoleById(Long id, Realm realm) throws ResourceNotFoundException;
+	public Role getRoleById(Long id, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
 
 	public Permission getPermissionById(Long perm);
 
