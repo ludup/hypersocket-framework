@@ -33,6 +33,7 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmColumns;
 import com.hypersocket.realm.RealmPermission;
+import com.hypersocket.realm.RolePermission;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.Session;
@@ -60,7 +61,7 @@ public class RoleController extends ResourceController {
 		Session session = sessionUtils.getActiveSession(request);
 
 		permissionService.verifyPermission(session.getPrincipal(),
-				PermissionStrategy.REQUIRE_ANY, RealmPermission.READ);
+				PermissionStrategy.REQUIRE_ANY, RolePermission.READ);
 
 		return permissionService.getRoleById(id, session.getCurrentRealm());
 	}
@@ -77,7 +78,7 @@ public class RoleController extends ResourceController {
 		Session session = sessionUtils.getActiveSession(request);
 
 		permissionService.verifyPermission(session.getPrincipal(),
-				PermissionStrategy.REQUIRE_ANY, RealmPermission.READ);
+				PermissionStrategy.REQUIRE_ANY, RolePermission.READ);
 
 		return permissionService.getRole(name, session.getCurrentRealm());
 	}
