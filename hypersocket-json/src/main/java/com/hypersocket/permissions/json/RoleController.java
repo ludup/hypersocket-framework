@@ -77,9 +77,6 @@ public class RoleController extends ResourceController {
 
 		Session session = sessionUtils.getActiveSession(request);
 
-		permissionService.verifyPermission(session.getPrincipal(),
-				PermissionStrategy.REQUIRE_ANY, RolePermission.READ);
-
 		return permissionService.getRole(name, session.getCurrentRealm());
 	}
 	

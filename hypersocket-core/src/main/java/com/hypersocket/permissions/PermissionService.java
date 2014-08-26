@@ -34,11 +34,11 @@ public interface PermissionService extends AuthenticatedService {
 
 	Set<Principal> getUsersWithPermissions(PermissionType permissions);
 
-	Role getRole(String name, Realm realm) throws ResourceNotFoundException;
+	Role getRole(String name, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
 
 	void deleteRole(Role name) throws ResourceChangeException, AccessDeniedException;
 
-	List<Role> allRoles(Realm realm);
+	List<Role> allRoles(Realm realm) throws AccessDeniedException;
 
 	public List<Permission> allPermissions();
 
