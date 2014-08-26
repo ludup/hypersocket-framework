@@ -10,9 +10,9 @@ import com.hypersocket.tables.ColumnSort;
 
 public interface AbstractResourceRepository<T extends Resource> extends ResourceTemplateRepository {
 
-	T getResourceByName(String name);
+	T getResourceByName(String name, Realm realm);
 
-	T getResourceByName(String name, boolean deleted);
+	T getResourceByName(String name, Realm realm, boolean deleted);
 
 	T getResourceById(Long id);
 
@@ -20,6 +20,8 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 
 	void saveResource(T resource, Map<String,String> properties);
 
+	void updateResource(T resource, Map<String,String> properties);
+	
 	List<T> getResources(Realm realm);
 
 	List<T> getResources();

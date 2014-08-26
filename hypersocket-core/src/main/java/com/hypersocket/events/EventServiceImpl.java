@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -17,11 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
 
 @Service
-public class EventServiceImpl implements EventService {
+public class EventServiceImpl extends AuthenticatedServiceImpl implements EventService {
 
 	static Logger log = LoggerFactory.getLogger(EventServiceImpl.class);
 
@@ -39,10 +42,17 @@ public class EventServiceImpl implements EventService {
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}
-	
+
 	@Override
 	public void registerEvent(Class<? extends SystemEvent> eventClass,
 			String resourceBundle) {
+		registerEvent(eventClass, resourceBundle, null);
+	}
+
+	@Override
+	public void registerEvent(Class<? extends SystemEvent> eventClass,
+			String resourceBundle,
+			EventPropertyCollector propertyCollector) {
 
 		if (log.isInfoEnabled()) {
 			log.info("Registering event class " + eventClass.getName());
@@ -61,7 +71,8 @@ public class EventServiceImpl implements EventService {
 			checkResourceKey(resourceKey + ".failure", resourceBundle);
 
 			eventDefinitions.put(resourceKey, new EventDefinition(
-					resourceBundle, resourceKey));
+					resourceBundle, resourceKey, propertyCollector));
+
 			for (Field field : eventClass.getFields()) {
 				if ((field.getModifiers() & Modifier.STATIC) == Modifier.STATIC
 						&& (field.getModifiers() & Modifier.FINAL) == Modifier.FINAL) {
@@ -85,24 +96,12 @@ public class EventServiceImpl implements EventService {
 				}
 			}
 		} catch (Throwable t) {
-			throw new IllegalStateException("Failed to register event class " + eventClass.getName(), t);
+			throw new IllegalStateException("Failed to register event class "
+					+ eventClass.getName(), t);
 		}
 
 	}
 
-	@Override
-	public List<EventDefinition> getEvents() {
-		List<EventDefinition> ret = new ArrayList<EventDefinition>(eventDefinitions.values());
-		Collections.sort(ret, new Comparator<EventDefinition>() {
-
-			@Override
-			public int compare(EventDefinition o1, EventDefinition o2) {
-				return o2.getResourceKey().compareTo(o1.getResourceKey());
-			}
-		});
-		return ret;
-	}
-	
 	private boolean checkResourceKey(String resourceKey, String resourceBundle) {
 		try {
 			I18N.getResource(i18nService.getDefaultLocale(), resourceBundle,
@@ -131,16 +130,21 @@ public class EventServiceImpl implements EventService {
 						+ ". Register your event with EventService to remove this message.");
 			}
 		}
-		
-		if(!event.isSuccess()) {
+
+		if (!event.isSuccess()) {
 			log.error(event.getResourceKey() + " failed", event.getException());
 		}
-		
+
 		eventPublisher.publishEvent(event);
 	}
 
 	@Override
 	public EventDefinition getEventDefinition(String resourceKey) {
 		return eventDefinitions.get(resourceKey);
+	}
+
+	@Override
+	public List<EventDefinition> getEvents() {
+		return new ArrayList<EventDefinition>(eventDefinitions.values());
 	}
 }

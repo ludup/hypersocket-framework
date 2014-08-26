@@ -8,8 +8,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -35,11 +37,17 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	Map<String, PropertyCategory> activeCategories = new HashMap<String, PropertyCategory>();	
 	List<PropertyTemplate> activeTemplates = new ArrayList<PropertyTemplate>();
+	Set<String> propertyNames = new HashSet<String>();
 	
 	String resourceXmlPath;
 	
 	protected ResourcePropertyStore getPropertyStore() {
 		return configPropertyStore;
+	}
+	
+	@Override
+	public Set<String> getPropertyNames() {
+		return propertyNames;
 	}
 	
 	public void loadPropertyTemplates(String resourceXmlPath) {
@@ -211,6 +219,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			log.info("Registering property " + resourceKey);
 		}
 		
+		propertyNames.add(resourceKey);
+		
 		PropertyTemplate template = propertyStore.getPropertyTemplate(resourceKey);
 		if (template == null) {
 			template = new PropertyTemplate();
@@ -278,8 +288,6 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public String getValue(AbstractResource resource, String resourceKey) {
 
-		
-		
 		PropertyTemplate template = getPropertyStore().getPropertyTemplate(resourceKey);
 
 		if (template == null) {

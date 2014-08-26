@@ -1,0 +1,23 @@
+package com.hypersocket.triggers;
+
+import java.util.List;
+import java.util.Map;
+
+import com.hypersocket.events.SystemEvent;
+import com.hypersocket.resource.AbstractResourceRepository;
+
+
+public interface TriggerResourceRepository extends
+		AbstractResourceRepository<TriggerResource> {
+
+	void registerActionRepository(TriggerActionProvider action);
+
+	List<TriggerResource> getTriggersForEvent(SystemEvent event);
+
+	TriggerAction getActionById(Long id);
+
+	TriggerCondition getConditionById(Long id);
+
+	void updateResource(TriggerResource resource, Map<String, String> properties);
+
+}

@@ -9,8 +9,10 @@ package com.hypersocket.local;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -579,6 +581,16 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	public Principal unlockAccount(Principal principal)
 			throws ResourceChangeException {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Set<String> getUserPropertyNames() {
+		return userRepository.getPropertyNames();
+	}
+
+	@Override
+	public Set<String> getGroupPropertyNames() {
+		return new HashSet<String>();
 	}
 
 }

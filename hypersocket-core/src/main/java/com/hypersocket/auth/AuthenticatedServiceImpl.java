@@ -20,6 +20,7 @@ public abstract class AuthenticatedServiceImpl extends AbstractAuthenticatedServ
 	@Autowired
 	protected PermissionService permissionService;
 	
+	
 	@Override
 	protected void verifyPermission(Principal principal,
 			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException {

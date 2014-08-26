@@ -48,10 +48,17 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	private ApplicationContext springContext;
 	private SessionFactory sessionFactory;
 	
+	List<UpgradeServiceListener> listeners = new ArrayList<UpgradeServiceListener>();
+	
 	public UpgradeServiceImpl() {
 		manager = new ScriptEngineManager();
 	}
 
+	@Override
+	public void registerListener(UpgradeServiceListener listener) {
+		listeners.add(listener);
+	}
+	
 	@Autowired
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;

@@ -10,6 +10,7 @@ package com.hypersocket.realm;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
@@ -98,4 +99,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Principal unlockAccount(Principal principal) throws ResourceChangeException;
 
+	Set<String> getUserPropertyNames();
+	
+	Set<String> getGroupPropertyNames();
 }

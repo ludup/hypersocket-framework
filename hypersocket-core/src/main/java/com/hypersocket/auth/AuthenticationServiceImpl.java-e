@@ -109,18 +109,13 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	private void setupRealms() {
-		for (Realm realm : realmRepository.allRealms()) {
-			if (schemeRepository.getSchemeByResourceKey(realm,
-					BROWSER_AUTHENTICATION_RESOURCE_KEY) == null) {
-				List<String> modules = new ArrayList<String>();
-				modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
-				schemeRepository.createScheme(realm,
-						BROWSER_AUTHENTICATION_SCHEME, modules,
-						BROWSER_AUTHENTICATION_RESOURCE_KEY, true);
-			}
-		}
 
  		realmService.registerRealmListener(new RealmAdapter() {
+ 			
+ 			public boolean hasCreatedDefaultResources(Realm realm) {
+ 				return schemeRepository.getSchemeByResourceKey(realm,
+ 						BROWSER_AUTHENTICATION_RESOURCE_KEY) != null;
+ 			}
 			public void onCreateRealm(Realm realm) {
 
 				if (log.isInfoEnabled()) {

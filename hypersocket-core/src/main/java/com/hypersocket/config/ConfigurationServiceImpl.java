@@ -15,10 +15,10 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
@@ -40,7 +40,7 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 	PermissionService permissionService;
 
 	@Autowired
-	ApplicationEventPublisher eventPublisher;
+	EventService eventPublisher;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -53,6 +53,8 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 		}
 
 		repository.loadPropertyTemplates("propertyTemplates.xml");
+		
+		eventPublisher.registerEvent(ConfigurationChangedEvent.class, RESOURCE_BUNDLE);
 	}
 
 	protected void onValueChanged(PropertyTemplate template, String oldValue,
