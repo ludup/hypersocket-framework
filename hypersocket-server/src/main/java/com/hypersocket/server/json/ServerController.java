@@ -29,6 +29,7 @@ import com.hypersocket.json.MultiselectElement;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.server.HypersocketServer;
@@ -43,6 +44,9 @@ public class ServerController extends AuthenticatedController {
 	@Autowired
 	SessionUtils sessionUtils;
 
+	@Autowired
+	PermissionService permissionService;
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "server/restart/{delay}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody

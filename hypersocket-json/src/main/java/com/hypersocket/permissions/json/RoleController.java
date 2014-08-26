@@ -56,14 +56,16 @@ public class RoleController extends ResourceController {
 	public Role getRole(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("id") Long id)
 			throws AccessDeniedException, UnauthorizedException,
-			ResourceNotFoundException {
+			ResourceNotFoundException, SessionTimeoutException {
 
-		Session session = sessionUtils.getActiveSession(request);
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
 
-		permissionService.verifyPermission(session.getPrincipal(),
-				PermissionStrategy.REQUIRE_ANY, RolePermission.READ);
-
-		return permissionService.getRoleById(id, session.getCurrentRealm());
+		try {
+			return permissionService.getRoleById(id, sessionUtils.getCurrentRealm(request));
+		} finally {
+			clearAuthenticatedContext();
+		}
 	}
 
 	@AuthenticationRequired
@@ -73,11 +75,16 @@ public class RoleController extends ResourceController {
 	public Role getRole(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("name") String name)
 			throws AccessDeniedException, UnauthorizedException,
-			ResourceNotFoundException {
+			ResourceNotFoundException, SessionTimeoutException {
 
-		Session session = sessionUtils.getActiveSession(request);
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
 
-		return permissionService.getRole(name, session.getCurrentRealm());
+		try {
+			return permissionService.getRole(name, sessionUtils.getCurrentRealm(request));
+		} finally {
+			clearAuthenticatedContext();
+		}
 	}
 	
 	@AuthenticationRequired
