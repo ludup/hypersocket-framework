@@ -1,11 +1,14 @@
 package com.hypersocket.tests.menu;
 
 import org.junit.AfterClass;
+
 import static org.junit.Assert.*;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.hypersocket.json.JsonMenu;
+import com.hypersocket.json.JsonUserResources;
 import com.hypersocket.tests.AbstractServerTest;
  
 
@@ -26,14 +29,18 @@ public class WithAdminPermissionTest extends AbstractServerTest {
 		String json=doGet("/hypersocket/api/menus");
 		debugJSON(json);
 		JsonMenu menus=getMapper().readValue(json,JsonMenu.class);
-		assertTrue(menus.getMenus().length>0);
+		JsonMenu personalMenu=menus.getMenus()[0];
+		assertTrue(personalMenu.getId().equals("personal"));
+		JsonMenu systemMenu=menus.getMenus()[1];
+		assertTrue(systemMenu.getId().equals("system"));
 	}
 	
 	@Test
 	public void testAccess() throws Exception{
 		String json=doGet("/hypersocket/api/menus/tableActions/userActions");
 		debugJSON(json);
-		assertNotNull(json);
+		JsonUserResources resources=getMapper().readValue(json,JsonUserResources.class); 
+		assertTrue(resources.getResources()[0].getResourceKey().equals("setPassword"));
 	}
 	
 	
