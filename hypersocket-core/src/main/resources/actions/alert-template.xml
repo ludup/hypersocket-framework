@@ -3,8 +3,8 @@
 	<propertyCategory resourceKey="category.thresholds"
 		resourceBundle="TriggerResourceService" weight="1000" group="generateAlertAction">
 		<property resourceKey="alert.threshold" inputType="slider"
-			weight="0" defaultValue="5" minValue="1" maxValue="100" labelResourceKey="alert.threshold.label" />
-<!-- 		<property resourceKey="alert.timeout" inputType="slider"  -->
-<!-- 			minValue="1" maxValue="100" weight="100"  labelResourceKey="alert.timeout.label"/> -->
+			weight="0" defaultValue="5" minValue="1" maxValue="100" stepValue="1" labelResourceKey="alert.threshold.label" />
+		<property resourceKey="alert.timeout" inputType="slider" 
+			minValue="1" maxValue="1440" defaultValue="10" stepValue="1" weight="100" labelResourceKey="alert.timeout.label"/>
 	</propertyCategory>
 </propertyTemplates>
