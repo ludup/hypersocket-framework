@@ -32,7 +32,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
-import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.AuthenticationRequiredResult;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.JsonLogonResult;
@@ -43,7 +42,6 @@ import com.hypersocket.json.JsonSession;
 import com.hypersocket.netty.Main;
 import com.hypersocket.permissions.json.RoleUpdate;
 import com.hypersocket.properties.json.PropertyItem;
-import com.hypersocket.realm.RealmPermission;
 import com.hypersocket.realm.json.CredentialsUpdate;
 import com.hypersocket.realm.json.GroupUpdate;
 import com.hypersocket.realm.json.RealmUpdate;
