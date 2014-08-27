@@ -7,9 +7,12 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.properties.EntityResourcePropertyStore;
+import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
@@ -23,6 +26,13 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		extends ResourceTemplateRepositoryImpl implements
 		AbstractResourceRepository<T> {
 
+	@Autowired
+	EntityResourcePropertyStore entityPropertyStore;
+	
+	protected ResourcePropertyStore getPropertyStore() {
+		return entityPropertyStore;
+	}
+	
 	@Override
 	public T getResourceByName(String name, Realm realm) {
 		return get("name", name, getResourceClass(), new DeletedCriteria(false));
