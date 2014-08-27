@@ -8,6 +8,7 @@ import java.nio.file.Files;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -19,6 +20,9 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -135,6 +139,7 @@ public class AbstractServerTest {
 
 	public static HttpClient getHttpClient() {
 		return HttpClients.custom().setDefaultCookieStore(cookieStore).build();
+		
 	}
 
 	@AfterClass
@@ -268,7 +273,7 @@ public class AbstractServerTest {
 				.setUri(new URI("http://localhost:"
 						+ main.getServer().getActualHttpPort() + url))
 				.addParameters(postVariables).build();
-
+		
 		System.out.println("Executing request " + login.getRequestLine());
 
 		CloseableHttpClient httpClient = (CloseableHttpClient) getHttpClient();
@@ -356,6 +361,44 @@ public class AbstractServerTest {
 			httpClient.close();
 		}
 	}
+	
+	protected static String doPostMultiparts(String url,PropertyObject[] properties,MultipartObject... files)throws ClientProtocolException, IOException{
+		if (!url.startsWith("/")) {
+			url = "/" + url;
+		}
+		HttpPost postMethod = new HttpPost("http://localhost:"+ main.getServer().getActualHttpPort() + url);
+		MultipartEntityBuilder builder=MultipartEntityBuilder.create();
+		if(properties !=null && properties.length>0){
+			for(PropertyObject property:properties){
+				builder.addPart(property.getProertyName(), new StringBody(property.getPropertyValue()));
+			}
+		}
+		for(MultipartObject file:files){
+			builder.addPart(file.getProperty(), new FileBody(file.getFile()));
+		}
+		HttpEntity reqEntity =builder.build();
+		postMethod.setEntity(reqEntity);
+		System.out.println("Executing request " + postMethod.getRequestLine());
+		CloseableHttpClient httpClient = (CloseableHttpClient) getHttpClient();
+		CloseableHttpResponse response = (CloseableHttpResponse) httpClient
+				.execute(postMethod);
+
+		System.out.println("Response: " + response.getStatusLine().toString());
+
+		if (response.getStatusLine().getStatusCode() != 200) {
+			throw new ClientProtocolException(
+					"Expected status code 200 for doPost");
+		}
+
+		try {
+			return IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+		} finally {
+			response.close();
+			httpClient.close();
+		}
+	}
+	
+	
 
 	protected static <T> T doGet(String url, Class<T> clz)
 			throws ClientProtocolException, IOException {
@@ -681,4 +724,5 @@ public class AbstractServerTest {
 	public static ObjectMapper getMapper() {
 		return mapper;
 	}
+
 }
