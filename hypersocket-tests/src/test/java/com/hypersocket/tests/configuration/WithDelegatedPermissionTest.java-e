@@ -11,46 +11,56 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import com.hypersocket.auth.AuthenticationPermission;
+import com.hypersocket.json.JsonConfiguration;
+import com.hypersocket.json.JsonConfigurationTemplate;
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.tests.AbstractServerTest;
+import com.hypersocket.tests.configuration.AbstractConfigurationTest.Resources;
 
-public class WithDelegatedPermissionTest extends AbstractServerTest {
-
-	@BeforeClass
-	public static void logOn() throws Exception {
-
-		logon("Default", "admin", "Password123?");
-		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
-				"user", false);
-		changePassword("user", jsonCreateUser);
-		Long[] permissions = {
-				getPermissionId(AuthenticationPermission.LOGON.getResourceKey()),
-				getPermissionId(SystemPermission.SYSTEM.getResourceKey()) };
-		JsonRoleResourceStatus jsonCreateRole = createRole("newrole",
-				permissions);
-		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
-		logoff();
-		logon("Default", "user", "user");
-	}
-
-	@AfterClass
-	public static void logOff() throws JsonParseException,
-			JsonMappingException, IOException {
-		logoff();
-	}
+public class WithDelegatedPermissionTest extends AbstractConfigurationTest {
 
 	@Test
 	public void testGetConfiguration() throws Exception {
 		String json = doGet("/hypersocket/api/configuration");
 		assertNotNull(json);
+		debugJSON(json);
+		Resources resources=getMapper().readValue(json, Resources.class);
+		//test AuthenticationService contains categorykey category.security
+		JsonConfiguration authConfig=null;
+		for(JsonConfiguration conf:resources.getResources()){
+			if(conf.getBundle().equals("AuthenticationService")){
+				authConfig=conf;
+				break;
+			}
+		}
+		assertNotNull(authConfig);
+		assertEquals("category.security", authConfig.getCategoryKey());
 	}
 
 	@Test
 	public void testGetSystemConfiguration() throws Exception {
 		String json = doGet("/hypersocket/api/configuration/system");
 		assertNotNull(json);
+		Resources resources=getMapper().readValue(json, Resources.class);
+		//Test HypersocketServer bundle contains template for application name with value Hypersocket
+		JsonConfiguration serverConfig=null;
+		for(JsonConfiguration conf:resources.getResources()){
+			if(conf.getBundle().equals("HypersocketServer")){
+				serverConfig=conf;
+				break;
+			}
+		}
+		assertNotNull(serverConfig);
+		JsonConfigurationTemplate applicationTemp=null;
+		for(JsonConfigurationTemplate template:serverConfig.getTemplates()){
+			if(template.getResourceKey().equals("application.name")){
+				applicationTemp=template;
+			}
+		}
+		assertNotNull(applicationTemp);
+		assertEquals("Hypersocket", applicationTemp.getValue());
 	}
 
 	@Test
@@ -64,5 +74,15 @@ public class WithDelegatedPermissionTest extends AbstractServerTest {
 		String json = doGet("/hypersocket/api/configuration/realm/system");
 		debugJSON(json);
 		assertNotNull(json);
+		Resources resources=getMapper().readValue(json, Resources.class);
+		//Test to exist of I18NService
+		JsonConfiguration I18NServiceConfig=null;
+		for(JsonConfiguration conf:resources.getResources()){
+			if(conf.getBundle().equals("I18NService")){
+				I18NServiceConfig=conf;
+				break;
+			}
+		}
+		assertNotNull(I18NServiceConfig);
 	}
 }
