@@ -16,33 +16,11 @@ import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.tests.AbstractServerTest;
 
-public class NoPermissionTest extends AbstractServerTest {
-
-	@BeforeClass
-	public static void logOn() throws Exception {
-
-		logon("Default", "admin", "Password123?");
-		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
-				"user", false);
-		changePassword("user", jsonCreateUser);
-		Long[] permissions = { getPermissionId(AuthenticationPermission.LOGON
-				.getResourceKey()) };
-		JsonRoleResourceStatus jsonCreateRole = createRole("newrole",
-				permissions);
-		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
-		logoff();
-		logon("Default", "user", "user");
-	}
-
-	@AfterClass
-	public static void logOff() throws JsonParseException,
-			JsonMappingException, IOException {
-		logoff();
-	}
+public class NoPermissionTest extends AbstractConfigurationTest {
 
 	@Test(expected = ClientProtocolException.class)
 	public void testgetConfiguationWithoutLogon() throws Exception {
-		String json = doGet("/hypersocket/api/configuration");
+		doGet("/hypersocket/api/configuration");
 	}
 
 	@Test(expected = ClientProtocolException.class)
@@ -52,13 +30,13 @@ public class NoPermissionTest extends AbstractServerTest {
 
 	@Test(expected = ClientProtocolException.class)
 	public void testSystemGroupConfigurationWithoutLogon() throws Exception {
-		String json = doGet("/hypersocket/api/configuration/system/extensions");
+		doGet("/hypersocket/api/configuration/system/extensions");
 
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void testSystemRealmConfigurationWithoutLogon() throws Exception {
-		String json = doGet("/hypersocket/api/configuration/realm/system");
+		doGet("/hypersocket/api/configuration/realm/system");
 
 	}
 }

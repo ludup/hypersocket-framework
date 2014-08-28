@@ -15,7 +15,7 @@ public class UnauthorizedTest extends AbstractServerTest {
 		
 	@Test(expected=ClientProtocolException.class)
 	public void testgetConfiguationWithoutLogon() throws Exception{
-		String json=doGet("/hypersocket/api/configuration");
+		doGet("/hypersocket/api/configuration");
 	}
 	
 	@Test(expected=ClientProtocolException.class)
@@ -25,13 +25,13 @@ public class UnauthorizedTest extends AbstractServerTest {
 	
 	@Test(expected=ClientProtocolException.class)
 	public void testSystemGroupConfigurationWithoutLogon() throws Exception{
-		String json=doGet("/hypersocket/api/configuration/system/extensions");
+		doGet("/hypersocket/api/configuration/system/extensions");
 		
 	}
 	
 	@Test(expected=ClientProtocolException.class)
 	public void testSystemRealmConfigurationWithoutLogon() throws Exception{
-		String json=doGet("/hypersocket/api/configuration/realm/system");
+		doGet("/hypersocket/api/configuration/realm/system");
 		
 	}
 	
