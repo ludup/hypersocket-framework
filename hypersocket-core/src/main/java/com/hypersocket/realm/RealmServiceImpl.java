@@ -408,28 +408,29 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			ResourceChangeException {
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
-		
+
 		try {
 			if (provider.isReadOnly(principal.getRealm())) {
 				throw new ResourceCreationException(RESOURCE_BUNDLE,
 						"error.realmIsReadOnly");
 			}
-	
+
 			if (!verifyPassword(principal, oldPassword.toCharArray())) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE,
 						"error.invalidPassword");
 			}
-	
+
 			provider.changePassword(principal, oldPassword.toCharArray(),
 					newPassword.toCharArray());
-	
+
 			eventService.publishEvent(new ChangePasswordEvent(this,
 					getCurrentSession(), getCurrentRealm(), provider));
-		
-		} catch(ResourceException ex) {
-			eventService.publishEvent(new ChangePasswordEvent(this, ex,
-					getCurrentSession(), getCurrentRealm().getName(),
-					provider));
+
+		} catch (ResourceException ex) {
+			eventService
+					.publishEvent(new ChangePasswordEvent(this, ex,
+							getCurrentSession(), getCurrentRealm().getName(),
+							provider));
 			throw ex;
 		}
 	}
@@ -457,8 +458,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		} catch (ResourceCreationException ex) {
 			eventService.publishEvent(new SetPasswordEvent(this, ex,
-					getCurrentSession(), getCurrentRealm().getName(),
-					provider, principal.getPrincipalName()));
+					getCurrentSession(), getCurrentRealm().getName(), provider,
+					principal.getPrincipalName()));
 			throw ex;
 		}
 
@@ -825,6 +826,11 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		try {
 			assertAnyPermission(UserPermission.DELETE, RealmPermission.DELETE);
 
+			if (permissionService.hasSystemPermission(user)) {
+				throw new ResourceChangeException(RESOURCE_BUNDLE,
+						"error.cannotDeleteSystemAdmin", user.getPrincipalName());
+			}
+			
 			provider.deleteUser(user);
 
 			eventService.publishEvent(new UserDeletedEvent(this,
@@ -845,7 +851,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 					getCurrentSession(), realm, provider, user
 							.getPrincipalName()));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"deleteUser.unexpectedError", e.getMessage());
+					"error.unexpectedError", e.getMessage());
 		}
 
 	}
