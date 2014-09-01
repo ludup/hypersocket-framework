@@ -8,7 +8,6 @@ import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.terracotta.quartz.wrappers.TriggerWrapper;
 
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.events.EventService;
