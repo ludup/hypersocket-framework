@@ -8,6 +8,7 @@ import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.terracotta.quartz.wrappers.TriggerWrapper;
 
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.events.EventService;
@@ -15,6 +16,7 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.triggers.events.TriggerExecutedEvent;
 
 public class AbstractTriggerJob implements Job {
 
@@ -51,14 +53,13 @@ public class AbstractTriggerJob implements Job {
 			try {
 				processEventTrigger(trigger, event);
 
-				// TODO successful event
+				if(trigger.getFireEvent()) {
+					eventService.publishEvent(new TriggerExecutedEvent(this, trigger));
+				}
 				
-				
-			} catch (TriggerValidationException e) {
-
-				// TDOO failure event
-				e.printStackTrace();
-			}
+			} catch (Throwable e) {
+				eventService.publishEvent(new TriggerExecutedEvent(this, trigger, e));
+			} 
 		} finally {
 			authenticationService.clearPrincipalContext();
 		}
@@ -148,14 +149,16 @@ public class AbstractTriggerJob implements Job {
 
 		ActionResult outputEvent = provider.execute(action, event);
 
-		if(outputEvent.isPublishable()) {
-			eventService.publishEvent(outputEvent);
+		if(outputEvent!=null) {
+			if(outputEvent.isPublishable()) {
+				eventService.publishEvent(outputEvent);
+			}
+			
+			if (action.getPostExecutionTrigger() != null
+					&& checkConditions(action.getTrigger(), outputEvent)) {
+				processEventTrigger(action.getPostExecutionTrigger(), outputEvent);
+			} 
 		}
-		
-		if (action.getPostExecutionTrigger() != null
-				&& checkConditions(action.getTrigger(), outputEvent)) {
-			processEventTrigger(action.getPostExecutionTrigger(), outputEvent);
-		} 
 		
 	}
 }

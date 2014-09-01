@@ -29,6 +29,7 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.events.ChangePasswordEvent;
 import com.hypersocket.realm.events.GroupCreatedEvent;
 import com.hypersocket.realm.events.GroupDeletedEvent;
 import com.hypersocket.realm.events.GroupUpdatedEvent;
@@ -36,11 +37,13 @@ import com.hypersocket.realm.events.ProfileUpdatedEvent;
 import com.hypersocket.realm.events.RealmCreatedEvent;
 import com.hypersocket.realm.events.RealmDeletedEvent;
 import com.hypersocket.realm.events.RealmUpdatedEvent;
+import com.hypersocket.realm.events.SetPasswordEvent;
 import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.upgrade.UpgradeService;
@@ -51,11 +54,11 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		RealmService, UpgradeServiceListener {
 
 	static Logger log = LoggerFactory.getLogger(RealmServiceImpl.class);
-	
+
 	Map<String, RealmProvider> providersByModule = new HashMap<String, RealmProvider>();
 
 	List<RealmListener> realmListeners = new ArrayList<RealmListener>();
-	
+
 	@Autowired
 	RealmRepository realmRepository;
 
@@ -71,7 +74,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Autowired
 	UpgradeService upgradeService;
-	
+
 	@PostConstruct
 	private void postConstruct() {
 
@@ -79,49 +82,58 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 				RESOURCE_BUNDLE, "category.realms");
 
 		for (RealmPermission p : RealmPermission.values()) {
-			permissionService.registerPermission(p,cat);
+			permissionService.registerPermission(p, cat);
 		}
 
 		cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE,
 				"category.acl");
 
 		for (UserPermission p : UserPermission.values()) {
-			permissionService.registerPermission(p,cat);
+			permissionService.registerPermission(p, cat);
 		}
-		
+
 		for (ProfilePermission p : ProfilePermission.values()) {
-			permissionService.registerPermission(p,cat);
+			permissionService.registerPermission(p, cat);
 		}
-		
+
 		for (GroupPermission p : GroupPermission.values()) {
-			permissionService.registerPermission(p,cat);
+			permissionService.registerPermission(p, cat);
 		}
-		
+
 		for (RolePermission p : RolePermission.values()) {
-			permissionService.registerPermission(p,cat);
+			permissionService.registerPermission(p, cat);
 		}
 
-		eventService.registerEvent(RealmCreatedEvent.class, RESOURCE_BUNDLE, new RealmPropertyCollector());
-		eventService.registerEvent(RealmUpdatedEvent.class, RESOURCE_BUNDLE, new RealmPropertyCollector());
-		eventService.registerEvent(RealmDeletedEvent.class, RESOURCE_BUNDLE, new RealmPropertyCollector());
+		eventService.registerEvent(RealmCreatedEvent.class, RESOURCE_BUNDLE,
+				new RealmPropertyCollector());
+		eventService.registerEvent(RealmUpdatedEvent.class, RESOURCE_BUNDLE,
+				new RealmPropertyCollector());
+		eventService.registerEvent(RealmDeletedEvent.class, RESOURCE_BUNDLE,
+				new RealmPropertyCollector());
 
-		eventService.registerEvent(UserCreatedEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
-		eventService.registerEvent(UserUpdatedEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
-		eventService.registerEvent(UserDeletedEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
+		eventService.registerEvent(UserCreatedEvent.class, RESOURCE_BUNDLE,
+				new UserPropertyCollector());
+		eventService.registerEvent(UserUpdatedEvent.class, RESOURCE_BUNDLE,
+				new UserPropertyCollector());
+		eventService.registerEvent(UserDeletedEvent.class, RESOURCE_BUNDLE,
+				new UserPropertyCollector());
 
-		eventService.registerEvent(GroupCreatedEvent.class, RESOURCE_BUNDLE, new GroupPropertyCollector());
-		eventService.registerEvent(GroupUpdatedEvent.class, RESOURCE_BUNDLE, new GroupPropertyCollector());
-		eventService.registerEvent(GroupDeletedEvent.class, RESOURCE_BUNDLE, new GroupPropertyCollector());
-		
+		eventService.registerEvent(GroupCreatedEvent.class, RESOURCE_BUNDLE,
+				new GroupPropertyCollector());
+		eventService.registerEvent(GroupUpdatedEvent.class, RESOURCE_BUNDLE,
+				new GroupPropertyCollector());
+		eventService.registerEvent(GroupDeletedEvent.class, RESOURCE_BUNDLE,
+				new GroupPropertyCollector());
+
 		upgradeService.registerListener(this);
 	}
-	
+
 	@Override
 	public void onUpgradeComplete() {
-		
-		for(Realm realm : realmRepository.allRealms()) {
-			for(RealmListener listener : realmListeners) {
-				if(!listener.hasCreatedDefaultResources(realm)) {
+
+		for (Realm realm : realmRepository.allRealms()) {
+			for (RealmListener listener : realmListeners) {
+				if (!listener.hasCreatedDefaultResources(realm)) {
 					listener.onCreateRealm(realm);
 				}
 			}
@@ -156,7 +168,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public List<Principal> allUsers(Realm realm) throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ,
+				RealmPermission.READ);
 
 		return allPrincipals(realm, PrincipalType.USER);
 	}
@@ -164,7 +177,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public List<Principal> allGroups(Realm realm) throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ,
+				RealmPermission.READ);
 
 		return allPrincipals(realm, PrincipalType.GROUP);
 	}
@@ -348,31 +362,34 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public List<Realm> allRealms() throws AccessDeniedException {
 		assertPermission(RealmPermission.READ);
-		
+
 		return filterRealms(null, false);
 	}
-	
+
 	@Override
-	public List<Realm> allRealms(boolean ignoreMissingProvider) throws AccessDeniedException {
+	public List<Realm> allRealms(boolean ignoreMissingProvider)
+			throws AccessDeniedException {
 		assertPermission(RealmPermission.READ);
 		return filterRealms(null, ignoreMissingProvider);
 	}
-	
+
 	private List<Realm> internalAllRealms() {
 		return filterRealms(null, false);
 	}
 
-	private List<Realm> filterRealms(Class<? extends RealmProvider> clz, boolean ignoreMissingProvider) {
+	private List<Realm> filterRealms(Class<? extends RealmProvider> clz,
+			boolean ignoreMissingProvider) {
 
 		List<Realm> realms = realmRepository.allRealms();
 		List<Realm> ret = new ArrayList<Realm>(realms);
 		for (Realm r : realms) {
 			if (!ignoreMissingProvider) {
-				if(!hasProviderForRealm(r)) {
+				if (!hasProviderForRealm(r)) {
 					ret.remove(r);
 				}
 				if (clz != null
-						&& !clz.isAssignableFrom(getProviderForRealm(r).getClass())) {
+						&& !clz.isAssignableFrom(getProviderForRealm(r)
+								.getClass())) {
 					ret.remove(r);
 				}
 			}
@@ -391,16 +408,30 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			ResourceChangeException {
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
-		if (provider.isReadOnly(principal.getRealm())) {
-			throw new ResourceCreationException(RESOURCE_BUNDLE,
-					"error.realmIsReadOnly");
+		
+		try {
+			if (provider.isReadOnly(principal.getRealm())) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE,
+						"error.realmIsReadOnly");
+			}
+	
+			if (!verifyPassword(principal, oldPassword.toCharArray())) {
+				throw new ResourceChangeException(RESOURCE_BUNDLE,
+						"error.invalidPassword");
+			}
+	
+			provider.changePassword(principal, oldPassword.toCharArray(),
+					newPassword.toCharArray());
+	
+			eventService.publishEvent(new ChangePasswordEvent(this,
+					getCurrentSession(), getCurrentRealm(), provider));
+		
+		} catch(ResourceException ex) {
+			eventService.publishEvent(new ChangePasswordEvent(this, ex,
+					getCurrentSession(), getCurrentRealm().getName(),
+					provider));
+			throw ex;
 		}
-
-		if (!verifyPassword(principal, oldPassword.toCharArray())) {
-			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"error.invalidPassword");
-		}
-		provider.setPassword(principal, newPassword.toCharArray(), false);
 	}
 
 	@Override
@@ -408,13 +439,29 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			boolean forceChangeAtNextLogon) throws ResourceCreationException {
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
-		if (provider.isReadOnly(principal.getRealm())) {
-			throw new ResourceCreationException(RESOURCE_BUNDLE,
-					"error.realmIsReadOnly");
+
+		try {
+
+			if (provider.isReadOnly(principal.getRealm())) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE,
+						"error.realmIsReadOnly");
+			}
+
+			provider.setPassword(principal, password.toCharArray(),
+					forceChangeAtNextLogon);
+
+			eventService
+					.publishEvent(new SetPasswordEvent(this,
+							getCurrentSession(), getCurrentRealm(), provider,
+							principal));
+
+		} catch (ResourceCreationException ex) {
+			eventService.publishEvent(new SetPasswordEvent(this, ex,
+					getCurrentSession(), getCurrentRealm().getName(),
+					provider, principal.getPrincipalName()));
+			throw ex;
 		}
 
-		provider.setPassword(principal, password.toCharArray(),
-				forceChangeAtNextLogon);
 	}
 
 	@Override
@@ -423,10 +470,10 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		RealmProvider provider = getProviderForRealm(realm);
 		return provider.isReadOnly(realm);
 	}
-	
+
 	@Override
 	public Realm getSystemRealm() {
-		if(systemRealm == null) {
+		if (systemRealm == null) {
 			systemRealm = realmRepository.getRealmByName(SYSTEM_REALM);
 		}
 		return systemRealm;
@@ -462,7 +509,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 					getProviderForRealm(module));
 
 			fireRealmCreate(realm);
-			
+
 			eventService.publishEvent(new RealmCreatedEvent(this,
 					getCurrentSession(), realm));
 
@@ -507,11 +554,11 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 					getProviderForRealm(realm));
 
 			fireRealmUpdate(realm);
-			
+
 			eventService.publishEvent(new RealmUpdatedEvent(this,
 					getCurrentSession(), oldName, realmRepository
 							.getRealmById(realm.getId())));
-			
+
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(new RealmUpdatedEvent(this, e,
 					getCurrentSession(), name));
@@ -530,37 +577,38 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	private void fireRealmUpdate(Realm realm) {
-		
-		for(RealmListener l : realmListeners) {
+
+		for (RealmListener l : realmListeners) {
 			try {
 				l.onUpdateRealm(realm);
-			} catch(Throwable t) {
+			} catch (Throwable t) {
 				log.error("Caught error in RealmListener", t);
 			}
 		}
 	}
 
 	private void fireRealmCreate(Realm realm) {
-		
-		for(RealmListener l : realmListeners) {
+
+		for (RealmListener l : realmListeners) {
 			try {
 				l.onCreateRealm(realm);
-			} catch(Throwable t) {
+			} catch (Throwable t) {
 				log.error("Caught error in RealmListener", t);
 			}
 		}
 	}
 
 	private void fireRealmDelete(Realm realm) {
-		
-		for(RealmListener l : realmListeners) {
+
+		for (RealmListener l : realmListeners) {
 			try {
 				l.onDeleteRealm(realm);
-			} catch(Throwable t) {
+			} catch (Throwable t) {
 				log.error("Caught error in RealmListener", t);
 			}
 		}
 	}
+
 	@Override
 	public void deleteRealm(Realm realm) throws AccessDeniedException,
 			ResourceChangeException {
@@ -592,7 +640,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 							"error.zeroSysAdmins", realm.getName());
 				}
 			}
-			
+
 			fireRealmDelete(realm);
 
 			realmRepository.delete(realm);
@@ -619,10 +667,10 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public Realm setDefaultRealm(Realm realm) throws AccessDeniedException {
 		assertPermission(SystemPermission.SYSTEM_ADMINISTRATION);
-		
+
 		return realmRepository.setDefaultRealm(realm);
 	}
-	
+
 	@Override
 	public Collection<PropertyCategory> getRealmPropertyTemplates(Realm realm)
 			throws AccessDeniedException {
@@ -638,7 +686,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public Collection<PropertyCategory> getRealmPropertyTemplates(String module)
 			throws AccessDeniedException {
-		
+
 		assertPermission(RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(module);
@@ -650,7 +698,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Principal getPrincipalById(Realm realm, Long id,
 			PrincipalType... type) throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ,
+				RealmPermission.READ);
 
 		if (type.length == 0) {
 			type = PrincipalType.ALL_TYPES;
@@ -813,7 +862,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Collection<PropertyCategory> getUserPropertyTemplates(
 			Principal principal) throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ,
+				RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
@@ -824,20 +874,22 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Collection<PropertyCategory> getUserPropertyTemplates(String module)
 			throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ,
+				RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(module);
 
 		return provider.getUserProperties(null);
 	}
-	
+
 	@Override
 	public Collection<PropertyCategory> getUserPropertyTemplates()
 			throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ,
+				RealmPermission.READ);
 
-		RealmProvider provider = getProviderForRealm(getCurrentRealm() );
+		RealmProvider provider = getProviderForRealm(getCurrentRealm());
 
 		return provider.getUserProperties(null);
 	}
@@ -855,7 +907,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public List<Principal> getAssociatedPrincipals(Principal principal) {
-		
+
 		List<Principal> result = getProviderForRealm(principal.getRealm())
 				.getAssociatedPrincipals(principal);
 		if (!result.contains(principal)) {
@@ -867,7 +919,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public List<Principal> getAssociatedPrincipals(Principal principal,
 			PrincipalType type) {
-		
+
 		return getProviderForRealm(principal.getRealm())
 				.getAssociatedPrincipals(principal, type);
 	}
@@ -877,9 +929,9 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			String searchPattern, int start, int length, ColumnSort[] sorting)
 			throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ, GroupPermission.READ, 
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ,
 				ProfilePermission.READ, RealmPermission.READ);
-		
+
 		return getProviderForRealm(realm).getPrincipals(realm, type,
 				searchPattern, start, length, sorting);
 	}
@@ -887,10 +939,10 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public Long getPrincipalCount(Realm realm, PrincipalType type,
 			String searchPattern) throws AccessDeniedException {
-		
+
 		assertAnyPermission(UserPermission.READ, GroupPermission.READ,
 				ProfilePermission.READ, RealmPermission.READ);
-		
+
 		return getProviderForRealm(realm).getPrincipalCount(realm, type,
 				searchPattern);
 	}
@@ -950,7 +1002,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public void updateProfile(Realm realm, Principal principal,
 			Map<String, String> properties) throws AccessDeniedException {
 
-		assertAnyPermission(ProfilePermission.UPDATE, RealmPermission.UPDATE, UserPermission.UPDATE);
+		assertAnyPermission(ProfilePermission.UPDATE, RealmPermission.UPDATE,
+				UserPermission.UPDATE);
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -997,9 +1050,9 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public Principal disableAccount(Principal principal) throws ResourceChangeException,
-			AccessDeniedException {
-		
+	public Principal disableAccount(Principal principal)
+			throws ResourceChangeException, AccessDeniedException {
+
 		assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
@@ -1009,8 +1062,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public Principal enableAccount(Principal principal) throws ResourceChangeException,
-			AccessDeniedException {
+	public Principal enableAccount(Principal principal)
+			throws ResourceChangeException, AccessDeniedException {
 
 		assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
 
@@ -1020,8 +1073,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public Principal unlockAccount(Principal principal) throws ResourceChangeException,
-			AccessDeniedException {
+	public Principal unlockAccount(Principal principal)
+			throws ResourceChangeException, AccessDeniedException {
 
 		assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
 
@@ -1047,26 +1100,26 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			RealmProvider provider = getProviderForRealm(realm);
 			return provider.getPropertyNames();
 		}
-		
+
 	}
-	
+
 	class UserPropertyCollector implements EventPropertyCollector {
 
 		@Override
-		public Set<String> getPropertyNames(String resourceKey, Realm realm) {	
+		public Set<String> getPropertyNames(String resourceKey, Realm realm) {
 			RealmProvider provider = getProviderForRealm(realm);
 			return provider.getUserPropertyNames();
-		}	
+		}
 	}
-	
+
 	class GroupPropertyCollector implements EventPropertyCollector {
 
 		@Override
-		public Set<String> getPropertyNames(String resourceKey, Realm realm) {	
+		public Set<String> getPropertyNames(String resourceKey, Realm realm) {
 			RealmProvider provider = getProviderForRealm(realm);
 			return provider.getGroupPropertyNames();
 		}
-		
+
 	}
 
 }

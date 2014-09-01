@@ -1,6 +1,5 @@
 package com.hypersocket.attributes;
 
-import java.io.IOException;
 import java.util.Locale;
 
 import org.springframework.stereotype.Repository;
@@ -23,12 +22,8 @@ public class AttributeRepositoryImpl extends
 				"attributeCategory" + String.valueOf(cat.getId()) + ".label",
 				"",
 				cat.getName()));
-		
-		try {
-			I18N.flushOverrides();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		I18N.flushOverrides();
+
 	}
 	
 	@Override
@@ -45,11 +40,8 @@ public class AttributeRepositoryImpl extends
 				"",
 				attr.getDescription()));
 		
-		try {
-			I18N.flushOverrides();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+
+		I18N.flushOverrides();
 	}
 
 	@Override
