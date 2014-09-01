@@ -9,13 +9,12 @@ import com.hypersocket.config.ConfigurationPermission;
 import com.hypersocket.json.JsonConfiguration;
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.JsonRoleResourceStatus;
-import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.tests.AbstractServerTest;
 
 public class AbstractConfigurationTest extends AbstractServerTest {
 
 	@BeforeClass
-	public static void init() throws Exception{
+	public static void init() throws Exception {
 		logon("Default", "admin", "Password123?");
 		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
 				"user", false);
@@ -29,16 +28,16 @@ public class AbstractConfigurationTest extends AbstractServerTest {
 		logoff();
 		logon("Default", "user", "user");
 	}
-	
+
 	@AfterClass
-	public static void clean() throws Exception{
+	public static void clean() throws Exception {
 		logoff();
 	}
-	
-	
-	//Inner Class for use configuration testing on WithAdminPermission and Delegate permission testings  
-	@JsonIgnoreProperties(ignoreUnknown=true)
-	static class Resources{
+
+	// Inner Class for use configuration testing on WithAdminPermission and
+	// Delegate permission testings
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	static class Resources {
 		JsonConfiguration[] resources;
 
 		public JsonConfiguration[] getResources() {
@@ -48,7 +47,6 @@ public class AbstractConfigurationTest extends AbstractServerTest {
 		public void setResources(JsonConfiguration[] resources) {
 			this.resources = resources;
 		}
-		
-		
+
 	}
 }
