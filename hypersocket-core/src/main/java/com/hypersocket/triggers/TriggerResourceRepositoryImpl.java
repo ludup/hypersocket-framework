@@ -1,5 +1,6 @@
 package com.hypersocket.triggers;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +33,14 @@ public class TriggerResourceRepositoryImpl extends
 		// updating first.
 		for (TriggerAction action : resource.getActions()) {
 
-			TriggerActionProvider provider = resourceService
-					.getActionProvider(action.getResourceKey());
-			for (Map.Entry<String, String> e : action.getProperties()
-					.entrySet()) {
-				provider.getRepository().setValue(action, e.getKey(),
-						e.getValue());
+			if(action.getProperties()!=null) {
+				TriggerActionProvider provider = resourceService
+						.getActionProvider(action.getResourceKey());
+				for (Map.Entry<String, String> e : action.getProperties()
+						.entrySet()) {
+					provider.getRepository().setValue(action, e.getKey(),
+							e.getValue());
+				}
 			}
 		}
 
@@ -53,12 +56,15 @@ public class TriggerResourceRepositoryImpl extends
 
 		for (TriggerAction action : resource.getActions()) {
 
-			TriggerActionProvider provider = resourceService
-					.getActionProvider(action.getResourceKey());
-			for (Map.Entry<String, String> e : action.getProperties()
-					.entrySet()) {
-				provider.getRepository().setValue(action, e.getKey(),
-						e.getValue());
+			if(action.getProperties()!=null) {
+				TriggerActionProvider provider = resourceService
+						.getActionProvider(action.getResourceKey());
+				
+				for (Map.Entry<String, String> e : action.getProperties()
+						.entrySet()) {
+					provider.getRepository().setValue(action, e.getKey(),
+							e.getValue());
+				}
 			}
 		}
 	}
@@ -84,14 +90,22 @@ public class TriggerResourceRepositoryImpl extends
 
 			@Override
 			public void configure(Criteria criteria) {
-				if (event.isSuccess()) {
-					criteria.add(Restrictions.or(Restrictions.eq("result",
-							TriggerResultType.EVENT_SUCCESS), Restrictions.eq(
-							"result", TriggerResultType.EVENT_ANY_RESULT)));
-				} else {
+				switch(event.getStatus()) {
+				case FAILURE:
 					criteria.add(Restrictions.or(Restrictions.eq("result",
 							TriggerResultType.EVENT_FAILURE), Restrictions.eq(
 							"result", TriggerResultType.EVENT_ANY_RESULT)));
+					break;
+				case WARNING:
+					criteria.add(Restrictions.or(Restrictions.eq("result",
+							TriggerResultType.EVENT_WARNING), Restrictions.eq(
+							"result", TriggerResultType.EVENT_ANY_RESULT)));
+					break;
+				default:
+					criteria.add(Restrictions.or(Restrictions.eq("result",
+							TriggerResultType.EVENT_SUCCESS), Restrictions.eq(
+							"result", TriggerResultType.EVENT_ANY_RESULT)));
+					break;
 				}
 
 				criteria.add(Restrictions.eq("event", event.getResourceKey()));
@@ -130,6 +144,17 @@ public class TriggerResourceRepositoryImpl extends
 	@Override
 	public TriggerCondition getConditionById(Long id) {
 		return get("id", id, TriggerCondition.class);
+	}
+
+	@Override
+	public Collection<TriggerAction> getActionsByResourceKey(final String resourceKey) {
+		return list(TriggerAction.class, true, new CriteriaConfiguration() {
+			
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("resourceKey", resourceKey));
+			}
+		});
 	}
 
 }

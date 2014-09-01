@@ -15,7 +15,7 @@ public abstract class SystemEvent extends ApplicationEvent {
 	public static final String ATTR_EXCEPTION_TEXT = "attr.exception";
 	
 	String resourceKey;
-	boolean success;
+	SystemEventStatus status;
 	Throwable exception;
 	Realm currentRealm;
 	
@@ -23,14 +23,21 @@ public abstract class SystemEvent extends ApplicationEvent {
 	
 	public SystemEvent(Object source, String resourceKey, boolean success, Realm currentRealm) {
 		super(source);
-		this.success = success;
+		this.status = success ? SystemEventStatus.SUCCESS : SystemEventStatus.FAILURE;
+		this.resourceKey = resourceKey;
+		this.currentRealm = currentRealm;
+	}
+	
+	public SystemEvent(Object source, String resourceKey, SystemEventStatus status, Realm currentRealm) {
+		super(source);
+		this.status = status;
 		this.resourceKey = resourceKey;
 		this.currentRealm = currentRealm;
 	}
 	
 	public SystemEvent(Object source, String resourceKey, Throwable e, Realm currentRealm) {
 		super(source);
-		this.success = false;
+		this.status = SystemEventStatus.FAILURE;
 		this.resourceKey = resourceKey;
 		this.exception = e;
 		this.currentRealm = currentRealm;
@@ -56,7 +63,16 @@ public abstract class SystemEvent extends ApplicationEvent {
 	}
 	
 	public boolean isSuccess() {
-		return success;
+		return status==SystemEventStatus.SUCCESS;
+	}
+	
+	public SystemEventStatus getStatus() {
+		return status;
+	}
+	
+	public SystemEvent addAllAttributes(Map<String,String> attributes) {
+		this.attributes.putAll(attributes);
+		return this;
 	}
 	
 	public SystemEvent addAttribute(String name, String value) {

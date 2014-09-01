@@ -30,6 +30,7 @@ public class TriggerResource extends RealmResource {
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="trigger", fetch=FetchType.EAGER)
 	Set<TriggerAction> actions  = new HashSet<TriggerAction>();
 
+	Boolean fireEvent;
 	
 	public TriggerResultType getResult() {
 		return result;
@@ -51,6 +52,14 @@ public class TriggerResource extends RealmResource {
 		return actions;
 	}
 	
+	public Boolean getFireEvent() {
+		return fireEvent;
+	}
+
+	public void setFireEvent(Boolean fireEvent) {
+		this.fireEvent = fireEvent;
+	}
+
 	@JsonIgnore
 	public Set<TriggerCondition> getConditions() {
 		return conditions;

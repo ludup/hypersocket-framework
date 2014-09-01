@@ -26,4 +26,10 @@ public interface TriggerActionProvider {
 	Collection<PropertyCategory> getPropertyTemplate();
 
 	Collection<PropertyCategory> getPropertiesForAction(TriggerAction action);
+	
+	void actionCreated(TriggerAction action);
+	
+	void actionUpdated(TriggerAction action);
+	
+	void actionDeleted(TriggerAction action);
 }
