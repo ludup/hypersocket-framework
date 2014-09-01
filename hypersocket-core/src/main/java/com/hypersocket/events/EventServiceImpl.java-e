@@ -50,6 +50,16 @@ public class EventServiceImpl extends AuthenticatedServiceImpl implements EventS
 	}
 
 	@Override
+	public void registerEventDefinition(EventDefinition def) {
+		
+		if (log.isInfoEnabled()) {
+			log.info("Registering event definition " + def.getResourceKey());
+		}
+		
+		eventDefinitions.put(def.getResourceKey(), def);
+	}
+	
+	@Override
 	public void registerEvent(Class<? extends SystemEvent> eventClass,
 			String resourceBundle,
 			EventPropertyCollector propertyCollector) {

@@ -102,4 +102,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	Set<String> getUserPropertyNames();
 	
 	Set<String> getGroupPropertyNames();
+
+	void changePassword(Principal principal, char[] charArray, char[] charArray2)
+			throws ResourceChangeException, ResourceCreationException;
 }

@@ -93,6 +93,16 @@ public class ConfigurationController extends AuthenticatedController {
 	}
 	
 	@AuthenticationRequired
+	@RequestMapping(value = "configuration/system", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus updateSystemItems(HttpServletRequest request,
+			HttpServletResponse response, @RequestBody PropertyItem[] items)
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+		return updateSystemItems(request, response, items, "system");
+		
+	}
+	@AuthenticationRequired
 	@RequestMapping(value = "configuration/system/{group}", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)

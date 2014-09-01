@@ -258,32 +258,33 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 		if (state.isAuthenticationComplete()) {
 
-			if (state.getCurrentPostAuthenticationStep() == null) {
-				state.setSession(completeLogon(state));
-			} else {
-				switch (state.getCurrentPostAuthenticationStep().process(state,
-						parameterMap)) {
-				case INSUFFICIENT_DATA: {
-					state.setLastErrorMsg("error.insufficentData");
-					state.setLastErrorIsResourceKey(true);
-					break;
-				}
-				case AUTHENTICATION_SUCCESS: {
-
-					state.nextPostAuthenticationStep();
-					success = true;
-					if (!state.hasPostAuthenticationStep()) {
-						state.setSession(completeLogon(state));
+			setCurrentSession(state.getSession(), state.getLocale());
+			
+			try {
+				if (state.getCurrentPostAuthenticationStep() != null) {
+					
+					switch (state.getCurrentPostAuthenticationStep().process(state,
+							parameterMap)) {
+					case INSUFFICIENT_DATA: {
+						state.setLastErrorMsg("error.insufficentData");
+						state.setLastErrorIsResourceKey(true);
+						break;
 					}
-
-					break;
+					case AUTHENTICATION_SUCCESS: {
+	
+						state.nextPostAuthenticationStep();
+						success = true;
+						break;
+					}
+					default: {
+						state.setLastErrorMsg("error.genericLogonError");
+						state.setLastErrorIsResourceKey(true);
+						break;
+					}
+					}
 				}
-				default: {
-					state.setLastErrorMsg("error.genericLogonError");
-					state.setLastErrorIsResourceKey(true);
-					break;
-				}
-				}
+			} finally {
+				clearPrincipalContext();
 			}
 		} else {
 			Authenticator authenticator = authenticators.get(state
@@ -367,9 +368,9 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 									state.addPostAuthenticationStep(proc);
 								}
 							}
-							if (!state.hasPostAuthenticationStep()) {
-								state.setSession(completeLogon(state));
-							}
+							
+							state.setSession(completeLogon(state));
+							
 						}
 					} catch (AccessDeniedException e) {
 

@@ -2,6 +2,8 @@ package com.hypersocket.triggers.json;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
+import com.hypersocket.properties.json.PropertyItem;
+
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class TriggerResourceUpdate {
 
@@ -12,6 +14,7 @@ public class TriggerResourceUpdate {
 	TriggerActionUpdate[] actions;
 	TriggerConditionUpdate[] allConditions;
 	TriggerConditionUpdate[] anyConditions;
+	PropertyItem[] properties;
 	
 	public TriggerResourceUpdate() {
 		
@@ -71,6 +74,14 @@ public class TriggerResourceUpdate {
 
 	public void setResult(String result) {
 		this.result = result;
+	}
+
+	public PropertyItem[] getProperties() {
+		return properties;
+	}
+
+	public void setProperties(PropertyItem[] properties) {
+		this.properties = properties;
 	}
 	
 	
