@@ -1,6 +1,8 @@
 package com.hypersocket.triggers;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.hypersocket.events.EventDefinition;
@@ -13,12 +15,17 @@ import com.hypersocket.resource.ResourceCreationException;
 public interface TriggerResourceService extends
 		AbstractResourceService<TriggerResource> {
 
-	TriggerResource updateResource(TriggerResource resourceById, String name, String event, TriggerResultType result,
-			List<TriggerCondition> allConditions, List<TriggerCondition> anyConditions, List<TriggerAction> actions)
+	TriggerResource updateResource(TriggerResource resourceById, String name,
+			String event, TriggerResultType result,
+			Map<String, String> properties,
+			List<TriggerCondition> allConditions,
+			List<TriggerCondition> anyConditions, List<TriggerAction> actions)
 			throws ResourceChangeException, AccessDeniedException;
 
-	TriggerResource createResource(String name, String event, TriggerResultType result, Realm realm,
-			List<TriggerCondition> allConditions, List<TriggerCondition> anyConditions, List<TriggerAction> actions)
+	TriggerResource createResource(String name, String event,
+			TriggerResultType result, Map<String, String> properties,
+			Realm realm, List<TriggerCondition> allConditions,
+			List<TriggerCondition> anyConditions, List<TriggerAction> actions)
 			throws ResourceCreationException, AccessDeniedException;
 
 	void registerActionProvider(TriggerActionProvider action);
@@ -42,5 +49,9 @@ public interface TriggerResourceService extends
 	String getDefaultVariableValue(String variableName);
 
 	List<EventDefinition> getTriggerEvents();
+
+	Collection<String> getEventAttributes(String resourceKey);
+
+	Collection<TriggerAction> getActionsByResourceKey(String actionGenerateAlert);
 
 }

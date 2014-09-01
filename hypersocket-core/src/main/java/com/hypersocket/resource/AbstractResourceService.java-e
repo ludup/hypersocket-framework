@@ -1,10 +1,12 @@
 package com.hypersocket.resource;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tables.ColumnSort;
 
@@ -33,5 +35,15 @@ public interface AbstractResourceService<T extends RealmResource> extends
 	T getResourceByName(String name) throws ResourceNotFoundException;
 
 	T getResourceById(Long id) throws ResourceNotFoundException;
+
+	Collection<PropertyCategory> getResourceTemplate();
+
+	Collection<PropertyCategory> getResourceProperties(T resource);
+
+	String getResourceProperty(T resource, String resourceKey);
+
+	boolean getResourceBooleanProperty(T resource, String resourceKey);
+
+	int getResourceIntProperty(T resource, String resourceKey);
 
 }

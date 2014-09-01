@@ -249,6 +249,17 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	public void changePassword(Principal principal, char[] oldPassword,
+			char[] newPassword) throws ResourceChangeException,
+			ResourceCreationException {
+		if(!verifyPassword(principal, oldPassword)) {
+			throw new ResourceChangeException(RESOURCE_BUNDLE, "invalid.password");
+		}
+		
+		setPassword(principal, newPassword, false);
+	}
+	
+	@Override
 	public void setPassword(Principal principal, char[] password,
 			boolean forceChangeAtNextLogon) throws ResourceCreationException {
 
@@ -592,5 +603,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	public Set<String> getGroupPropertyNames() {
 		return new HashSet<String>();
 	}
+
+
 
 }

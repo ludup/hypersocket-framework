@@ -19,4 +19,6 @@ public interface EventService extends AuthenticatedService {
 
 	List<EventDefinition> getEvents();
 
+	void registerEventDefinition(EventDefinition def);
+
 }

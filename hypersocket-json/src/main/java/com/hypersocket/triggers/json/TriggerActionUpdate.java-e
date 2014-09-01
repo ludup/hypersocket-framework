@@ -8,6 +8,7 @@ import com.hypersocket.properties.json.PropertyItem;
 public class TriggerActionUpdate {
 
 	Long id;
+	boolean newAction;
 	String name;
 	String resourceKey;
 	PropertyItem[] properties;
@@ -41,6 +42,14 @@ public class TriggerActionUpdate {
 	
 	public void setResourceKey(String resourceKey) {
 		this.resourceKey = resourceKey;
+	}
+
+	public boolean isNewAction() {
+		return newAction;
+	}
+
+	public void setNewAction(boolean newAction) {
+		this.newAction = newAction;
 	}
 	
 	

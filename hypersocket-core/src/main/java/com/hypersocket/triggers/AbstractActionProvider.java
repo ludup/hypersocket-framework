@@ -71,4 +71,19 @@ public abstract class AbstractActionProvider implements TriggerActionProvider {
 			TriggerAction action) {
 		return getRepository().getPropertyCategories(action);
 	}
+	
+	@Override
+	public void actionCreated(TriggerAction action) {
+		
+	}
+	
+	@Override
+	public void actionUpdated(TriggerAction action) {
+		
+	}
+	
+	@Override
+	public void actionDeleted(TriggerAction action) {
+		getRepository().deletePropertiesForResource(action);
+	}
 }

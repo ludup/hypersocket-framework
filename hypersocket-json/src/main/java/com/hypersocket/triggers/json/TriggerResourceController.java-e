@@ -114,7 +114,28 @@ public class TriggerResourceController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			return new ResourceList<PropertyCategory>();
+			return new ResourceList<PropertyCategory>(
+					resourceService.getResourceTemplate());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "triggers/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<PropertyCategory> getResourceProperties(
+			HttpServletRequest request, @PathVariable Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException, ResourceNotFoundException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<PropertyCategory>(
+					resourceService.getResourceProperties(resourceService
+							.getResourceById(id)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -132,6 +153,23 @@ public class TriggerResourceController extends ResourceController {
 		try {
 			return new ResourceList<EventDefinition>(
 					resourceService.getTriggerEvents());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "triggers/eventAttributes/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<String> getEventAttributes(HttpServletRequest request,
+			@PathVariable String resourceKey) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			return new ResourceList<String>(
+					resourceService.getEventAttributes(resourceKey));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -253,18 +291,20 @@ public class TriggerResourceController extends ResourceController {
 
 			for (TriggerActionUpdate a : resource.getActions()) {
 				TriggerAction action;
-				if (isNew || a.getId() == null) {
+				if (a.isNewAction()) {
 					action = new TriggerAction();
 				} else {
 					action = resourceService.getActionById(a.getId());
 				}
 				action.setName(a.getName());
 				action.setResourceKey(a.getResourceKey());
-				Map<String, String> properties = new HashMap<String, String>();
-				for (PropertyItem prop : a.getProperties()) {
-					properties.put(prop.getId(), prop.getValue());
+				if (a.getProperties() != null) {
+					Map<String, String> properties = new HashMap<String, String>();
+					for (PropertyItem prop : a.getProperties()) {
+						properties.put(prop.getId(), prop.getValue());
+					}
+					action.setProperties(properties);
 				}
-				action.setProperties(properties);
 				actions.add(action);
 
 			}
@@ -294,18 +334,24 @@ public class TriggerResourceController extends ResourceController {
 				cond.setConditionValue(c.getConditionValue());
 				anyConditions.add(cond);
 			}
+			
+			Map<String, String> properties = new HashMap<String, String>();
+			for (PropertyItem i : resource.getProperties()) {
+				properties.put(i.getId(), i.getValue());
+			}
 
 			if (resource.getId() != null) {
 				newResource = resourceService.updateResource(
 						resourceService.getResourceById(resource.getId()),
 						resource.getName(), resource.getEvent(),
 						TriggerResultType.valueOf(resource.getResult()),
+						properties,
 						allConditions, anyConditions, actions);
 			} else {
 				newResource = resourceService.createResource(
 						resource.getName(), resource.getEvent(),
-						TriggerResultType.valueOf(resource.getResult()),
-						realm, allConditions, anyConditions, actions);
+						TriggerResultType.valueOf(resource.getResult()), properties, realm,
+						allConditions, anyConditions, actions);
 			}
 			return new ResourceStatus<TriggerResource>(newResource,
 					I18N.getResource(sessionUtils.getLocale(request),
@@ -379,8 +425,7 @@ public class TriggerResourceController extends ResourceController {
 		List<SelectOption> results = new ArrayList<SelectOption>();
 
 		for (TriggerResultType t : TriggerResultType.values()) {
-			results.add(new SelectOption(t.name(), t.name()
-					.toLowerCase()));
+			results.add(new SelectOption(t.name(), t.name().toLowerCase()));
 		}
 
 		return new ResourceList<SelectOption>(results);

@@ -1,6 +1,7 @@
 package com.hypersocket.resource;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,6 +15,7 @@ import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.tables.ColumnSort;
@@ -203,4 +205,30 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		}
 		return resource;
 	}
+	
+	@Override
+	public Collection<PropertyCategory> getResourceTemplate() {
+		return getRepository().getPropertyCategories(null);
+	}
+	
+	@Override
+	public Collection<PropertyCategory> getResourceProperties(T resource) {
+		return getRepository().getPropertyCategories(resource);
+	}
+	
+	@Override
+	public String getResourceProperty(T resource, String resourceKey) {
+		return getRepository().getValue(resource, resourceKey);
+	}
+	
+	@Override
+	public boolean getResourceBooleanProperty(T resource, String resourceKey) {
+		return getRepository().getBooleanValue(resource, resourceKey);
+	}
+	
+	@Override
+	public int getResourceIntProperty(T resource, String resourceKey) {
+		return getRepository().getIntValue(resource, resourceKey);
+	}
+
 }
