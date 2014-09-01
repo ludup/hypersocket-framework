@@ -1,23 +1,12 @@
 package com.hypersocket.tests.configuration;
 
-import java.io.IOException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonConfiguration;
 import com.hypersocket.json.JsonConfigurationTemplate;
-import com.hypersocket.json.JsonResourceStatus;
-import com.hypersocket.json.JsonRoleResourceStatus;
-import com.hypersocket.permissions.SystemPermission;
-import com.hypersocket.tests.AbstractServerTest;
-import com.hypersocket.tests.configuration.AbstractConfigurationTest.Resources;
 
 public class WithDelegatedPermissionTest extends AbstractConfigurationTest {
 
@@ -26,12 +15,12 @@ public class WithDelegatedPermissionTest extends AbstractConfigurationTest {
 		String json = doGet("/hypersocket/api/configuration");
 		assertNotNull(json);
 		debugJSON(json);
-		Resources resources=getMapper().readValue(json, Resources.class);
-		//test AuthenticationService contains categorykey category.security
-		JsonConfiguration authConfig=null;
-		for(JsonConfiguration conf:resources.getResources()){
-			if(conf.getBundle().equals("AuthenticationService")){
-				authConfig=conf;
+		Resources resources = getMapper().readValue(json, Resources.class);
+		// test AuthenticationService contains categorykey category.security
+		JsonConfiguration authConfig = null;
+		for (JsonConfiguration conf : resources.getResources()) {
+			if (conf.getBundle().equals("AuthenticationService")) {
+				authConfig = conf;
 				break;
 			}
 		}
@@ -43,20 +32,21 @@ public class WithDelegatedPermissionTest extends AbstractConfigurationTest {
 	public void testGetSystemConfiguration() throws Exception {
 		String json = doGet("/hypersocket/api/configuration/system");
 		assertNotNull(json);
-		Resources resources=getMapper().readValue(json, Resources.class);
-		//Test HypersocketServer bundle contains template for application name with value Hypersocket
-		JsonConfiguration serverConfig=null;
-		for(JsonConfiguration conf:resources.getResources()){
-			if(conf.getBundle().equals("HypersocketServer")){
-				serverConfig=conf;
+		Resources resources = getMapper().readValue(json, Resources.class);
+		// Test HypersocketServer bundle contains template for application name
+		// with value Hypersocket
+		JsonConfiguration serverConfig = null;
+		for (JsonConfiguration conf : resources.getResources()) {
+			if (conf.getBundle().equals("HypersocketServer")) {
+				serverConfig = conf;
 				break;
 			}
 		}
 		assertNotNull(serverConfig);
-		JsonConfigurationTemplate applicationTemp=null;
-		for(JsonConfigurationTemplate template:serverConfig.getTemplates()){
-			if(template.getResourceKey().equals("application.name")){
-				applicationTemp=template;
+		JsonConfigurationTemplate applicationTemp = null;
+		for (JsonConfigurationTemplate template : serverConfig.getTemplates()) {
+			if (template.getResourceKey().equals("application.name")) {
+				applicationTemp = template;
 			}
 		}
 		assertNotNull(applicationTemp);
@@ -74,12 +64,12 @@ public class WithDelegatedPermissionTest extends AbstractConfigurationTest {
 		String json = doGet("/hypersocket/api/configuration/realm/system");
 		debugJSON(json);
 		assertNotNull(json);
-		Resources resources=getMapper().readValue(json, Resources.class);
-		//Test to exist of I18NService
-		JsonConfiguration I18NServiceConfig=null;
-		for(JsonConfiguration conf:resources.getResources()){
-			if(conf.getBundle().equals("I18NService")){
-				I18NServiceConfig=conf;
+		Resources resources = getMapper().readValue(json, Resources.class);
+		// Test to exist of I18NService
+		JsonConfiguration I18NServiceConfig = null;
+		for (JsonConfiguration conf : resources.getResources()) {
+			if (conf.getBundle().equals("I18NService")) {
+				I18NServiceConfig = conf;
 				break;
 			}
 		}
