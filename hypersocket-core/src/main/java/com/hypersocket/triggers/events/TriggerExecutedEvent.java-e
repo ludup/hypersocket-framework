@@ -1,7 +1,6 @@
 package com.hypersocket.triggers.events;
 
 import com.hypersocket.events.SystemEvent;
-import com.hypersocket.session.Session;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 
