@@ -1,23 +1,16 @@
 package com.hypersocket.tests.certificates;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import org.apache.http.client.ClientProtocolException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.config.ConfigurationPermission;
 import com.hypersocket.json.JsonResourceStatus;
-import com.hypersocket.json.JsonResponse;
 import com.hypersocket.json.JsonRoleResourceStatus;
-import com.hypersocket.tests.AbstractServerTest;
 
 public class NoPermissionTest extends AbstractCertificateTest {
 	@BeforeClass
-	public static void init() throws Exception{
+	public static void init() throws Exception {
 		logon("Default", "admin", "Password123?");
 		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
 				"user", false);
@@ -31,11 +24,10 @@ public class NoPermissionTest extends AbstractCertificateTest {
 		logoff();
 		logon("Default", "user", "user");
 	}
-	
+
 	@AfterClass
-	static public void clean() throws Exception{
+	static public void clean() throws Exception {
 		logoff();
 	}
-	
-	
+
 }
