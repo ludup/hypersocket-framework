@@ -66,6 +66,7 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 	UserAgentStringParser parser;
 
 	Map<Session,List<ResourceSession<?>>> resourceSessions = new HashMap<Session,List<ResourceSession<?>>>();
+	Map<String,SessionResourceToken<?>> sessionTokens = new HashMap<String,SessionResourceToken<?>>();
 	
 	@PostConstruct
 	private void registerConfiguration() throws AccessDeniedException {
@@ -252,6 +253,30 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
 		
 		return repository.getActiveSessions();
+	}
+	
+	@Override
+	public <T> SessionResourceToken<T> createSessionToken(T resource) {
+		
+		SessionResourceToken<T> token = new SessionResourceToken<T>(getCurrentSession(), resource);
+		sessionTokens.put(token.getShortCode(), token);
+		return token;
+	}
+	
+	@Override
+	public <T> SessionResourceToken<T> getSessionToken(String shortCode, Class<T> resourceClz) {
+		
+		if(sessionTokens.containsKey(shortCode)) {
+			
+			@SuppressWarnings("unchecked")
+			SessionResourceToken<T> token = (SessionResourceToken<T>) sessionTokens.remove(shortCode);
+			
+			if(isLoggedOn(token.getSession(), true)) {
+				return token;
+			}
+		}
+		
+		return null;
 	}
 	
 	
