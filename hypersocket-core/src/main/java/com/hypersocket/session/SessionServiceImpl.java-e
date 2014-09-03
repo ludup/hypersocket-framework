@@ -196,6 +196,7 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 				s.close();
 			}
 		}
+
 		session.setSignedOut(new Date());
 		repository.updateSession(session);
 		eventService.publishEvent(new SessionClosedEvent(this, session));
@@ -269,7 +270,7 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		if(sessionTokens.containsKey(shortCode)) {
 			
 			@SuppressWarnings("unchecked")
-			SessionResourceToken<T> token = (SessionResourceToken<T>) sessionTokens.remove(shortCode);
+			SessionResourceToken<T> token = (SessionResourceToken<T>) sessionTokens.get(shortCode);
 			
 			if(isLoggedOn(token.getSession(), true)) {
 				return token;

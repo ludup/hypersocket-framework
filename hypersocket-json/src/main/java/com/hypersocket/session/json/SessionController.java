@@ -98,16 +98,6 @@ public class SessionController extends AuthenticatedController {
 		}
 	}
 
-	@RequestMapping(value = "session/resource/{shortCode}", produces = { "application/json" })
-	public void lookupShortcode(HttpServletRequest request,
-			HttpServletResponse response, @PathVariable String shortCode)
-			throws UnauthorizedException, AccessDeniedException,
-			ResourceNotFoundException, SessionTimeoutException, IOException {
-
-		SessionResourceToken<URL> urlSession = sessionUtils.authenticateSessionToken(request, response, shortCode, URL.class);
-		response.sendRedirect(urlSession.getResource().toExternalForm());
-	}
-	
 	@RequestMapping(value = "session/switchLanguage/{lang}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
