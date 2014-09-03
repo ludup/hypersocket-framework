@@ -39,4 +39,9 @@ public interface SessionService extends AuthenticatedService {
 			ResourceSession<?> resourceSession);
 
 	List<Session> getActiveSessions() throws AccessDeniedException;
+
+	<T> SessionResourceToken<T> createSessionToken(T resource);
+
+	<T> SessionResourceToken<T> getSessionToken(String shortCode,
+			Class<T> resourceClz);
 }
