@@ -1,5 +1,8 @@
 package com.hypersocket.session.json;
 
+import java.io.IOException;
+import java.net.URL;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -23,6 +26,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.Session;
+import com.hypersocket.session.SessionResourceToken;
 
 @Controller
 public class SessionController extends AuthenticatedController {
@@ -94,6 +98,16 @@ public class SessionController extends AuthenticatedController {
 		}
 	}
 
+	@RequestMapping(value = "session/resource/{shortCode}", produces = { "application/json" })
+	public void lookupShortcode(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String shortCode)
+			throws UnauthorizedException, AccessDeniedException,
+			ResourceNotFoundException, SessionTimeoutException, IOException {
+
+		SessionResourceToken<URL> urlSession = sessionUtils.authenticateSessionToken(request, response, shortCode, URL.class);
+		response.sendRedirect(urlSession.getResource().toExternalForm());
+	}
+	
 	@RequestMapping(value = "session/switchLanguage/{lang}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
