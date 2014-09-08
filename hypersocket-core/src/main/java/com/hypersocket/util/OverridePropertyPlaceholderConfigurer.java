@@ -17,6 +17,7 @@ public class OverridePropertyPlaceholderConfigurer extends
 	public static void setOverrideFile(File override) {
 		OverridePropertyPlaceholderConfigurer.override = override;
 	}
+	
 	@Override
 	public void setLocation(Resource location) {
 		if(override==null) {
