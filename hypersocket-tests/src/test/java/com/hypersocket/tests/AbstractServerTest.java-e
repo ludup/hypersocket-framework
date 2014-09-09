@@ -370,7 +370,10 @@ public class AbstractServerTest {
 		MultipartEntityBuilder builder=MultipartEntityBuilder.create();
 		if(properties !=null && properties.length>0){
 			for(PropertyObject property:properties){
-				builder.addPart(property.getProertyName(), new StringBody(property.getPropertyValue()));
+				/**
+				 * I've changed this because of deprecation warning. This may break the test.
+				 */
+				builder.addPart(property.getProertyName(), new StringBody(property.getPropertyValue(), ContentType.APPLICATION_FORM_URLENCODED));
 			}
 		}
 		for(MultipartObject file:files){
