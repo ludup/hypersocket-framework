@@ -18,13 +18,13 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.hypersocket</groupId>
-			<artifactId>hypersocket-ui-bootstrap</artifactId>
+			<artifactId>hypersocket-json</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.hypersocket</groupId>
-			<artifactId>x-hypersocket-translate</artifactId>
+			<artifactId>hypersocket-netty</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

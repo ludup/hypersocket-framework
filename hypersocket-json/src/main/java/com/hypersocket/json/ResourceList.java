@@ -10,7 +10,6 @@ package com.hypersocket.json;
 import java.util.Collection;
 import java.util.Map;
 
-import org.codehaus.jackson.annotate.JsonWriteNullProperties;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 
