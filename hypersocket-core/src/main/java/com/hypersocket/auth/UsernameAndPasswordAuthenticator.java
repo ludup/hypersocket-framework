@@ -113,6 +113,7 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 				password.toCharArray());
 
 		if (result) {
+			state.addParameter("password", password);
 			state.setRealm(realm);
 			state.setPrincipal(principal);
 		} else {

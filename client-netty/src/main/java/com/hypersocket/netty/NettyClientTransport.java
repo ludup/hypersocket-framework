@@ -17,9 +17,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,12 +34,9 @@ import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpVersion;
-import org.jboss.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hypersocket.client.EmbeddedClient;
 import com.hypersocket.client.HypersocketClientTransport;
 import com.hypersocket.client.NetworkResource;
 import com.hypersocket.netty.websocket.WebSocket;
@@ -309,55 +304,58 @@ public class NettyClientTransport implements HypersocketClientTransport {
 
 	}
 
-	public static void main(String[] args) throws UnknownHostException,
-			IOException {
-
-		//BasicConfigurator.configure();
-
-		NettyClientTransport c = new NettyClientTransport();
-		EmbeddedClient client = new EmbeddedClient(c);
-
-		client.connect("localhost", 8443, "/hypersocket",
-				Locale.getDefault());
-
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("realm", "Default");
-		params.put("username", "admin");
-		params.put("password", "admin");
-
-		client.loginHttp("Default", "admin", "admin");
-
-		final WebSocket ws = c.createWebsocket("bind?id=12345", new WebSocketListener() {
-			
-			Random r = new Random();
-			@Override
-			public void onMessage(WebSocket client, WebSocketFrame frame) {
-				System.out.println("Channel: " + frame.getRsv() + " " + frame.getBinaryData().toString("UTF-8"));
-				client.send(new BinaryWebSocketFrame(true, r.nextInt(100), ChannelBuffers.copiedBuffer("echo\n", "UTF-8")));
-			}
-			
-			@Override
-			public void onError(Throwable t) {
-				t.printStackTrace();
-			}
-			
-			@Override
-			public void onDisconnect(WebSocket client) {
-				System.out.println("Disconnected");
-			}
-			
-			@Override
-			public void onConnect(WebSocket client) {
-				System.out.println("Connected");
-				client.send(new BinaryWebSocketFrame(true, r.nextInt(100), ChannelBuffers.copiedBuffer("echo\n", "UTF-8")));
-			}
-		});
-		
-		System.out.println("Connecting");
-		ws.connect().awaitUninterruptibly();
-		System.out.println("Waiting for bind");
-		
-	}
+	/**
+	 * For testing purposes. Commented out, please leave for now.
+	 */
+//	public static void main(String[] args) throws UnknownHostException,
+//			IOException {
+//
+//		//BasicConfigurator.configure();
+//
+//		NettyClientTransport c = new NettyClientTransport();
+//		EmbeddedClient client = new EmbeddedClient(c);
+//
+//		client.connect("localhost", 8443, "/hypersocket",
+//				Locale.getDefault());
+//
+//		Map<String, String> params = new HashMap<String, String>();
+//		params.put("realm", "Default");
+//		params.put("username", "admin");
+//		params.put("password", "admin");
+//
+//		client.loginHttp("Default", "admin", "admin");
+//
+//		final WebSocket ws = c.createWebsocket("bind?id=12345", new WebSocketListener() {
+//			
+//			Random r = new Random();
+//			@Override
+//			public void onMessage(WebSocket client, WebSocketFrame frame) {
+//				System.out.println("Channel: " + frame.getRsv() + " " + frame.getBinaryData().toString("UTF-8"));
+//				client.send(new BinaryWebSocketFrame(true, r.nextInt(100), ChannelBuffers.copiedBuffer("echo\n", "UTF-8")));
+//			}
+//			
+//			@Override
+//			public void onError(Throwable t) {
+//				t.printStackTrace();
+//			}
+//			
+//			@Override
+//			public void onDisconnect(WebSocket client) {
+//				System.out.println("Disconnected");
+//			}
+//			
+//			@Override
+//			public void onConnect(WebSocket client) {
+//				System.out.println("Connected");
+//				client.send(new BinaryWebSocketFrame(true, r.nextInt(100), ChannelBuffers.copiedBuffer("echo\n", "UTF-8")));
+//			}
+//		});
+//		
+//		System.out.println("Connecting");
+//		ws.connect().awaitUninterruptibly();
+//		System.out.println("Waiting for bind");
+//		
+//	}
 
 	@Override
 	public String getHost() {

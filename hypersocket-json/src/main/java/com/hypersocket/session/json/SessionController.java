@@ -1,8 +1,5 @@
 package com.hypersocket.session.json;
 
-import java.io.IOException;
-import java.net.URL;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -26,7 +23,6 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.Session;
-import com.hypersocket.session.SessionResourceToken;
 
 @Controller
 public class SessionController extends AuthenticatedController {
