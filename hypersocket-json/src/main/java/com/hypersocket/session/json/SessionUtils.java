@@ -199,16 +199,18 @@ public class SessionUtils {
 		SessionResourceToken<T> token = sessionService.getSessionToken(
 				shortCode, resourceClz);
 
-		if (request.getRemoteAddr().equals(
-				token.getSession().getRemoteAddress())) {
-			
-			// Preserve the session for future lookups in this request and session
-			request.setAttribute(AUTHENTICATED_SESSION, token.getSession());
-			request.getSession().setAttribute(AUTHENTICATED_SESSION, token.getSession());
-
-			addAPISession(request, response, token.getSession());
-			
-			return token;
+		if(token!=null) {
+			if (request.getRemoteAddr().equals(
+					token.getSession().getRemoteAddress())) {
+				
+				// Preserve the session for future lookups in this request and session
+				request.setAttribute(AUTHENTICATED_SESSION, token.getSession());
+				request.getSession().setAttribute(AUTHENTICATED_SESSION, token.getSession());
+	
+				addAPISession(request, response, token.getSession());
+				
+				return token;
+			}
 		}
 
 		throw new UnauthorizedException();
