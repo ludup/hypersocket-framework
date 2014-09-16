@@ -1,6 +1,7 @@
 package com.hypersocket.properties;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import com.hypersocket.resource.AbstractResource;
@@ -33,5 +34,7 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 			AbstractResource resource, String group);
 
 	Set<String> getPropertyNames();
+	
+	Map<String,String> getProperties(AbstractResource resource);
 
 }

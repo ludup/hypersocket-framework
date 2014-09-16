@@ -15,16 +15,12 @@ public class AlertEvent extends ActionResult {
 	
 	public static final String ATTR_THRESHOLD = "attr.threshold";
 	public static final String ATTR_TIMEOUT = "attr.timeout";
-	public static final String ATTR_TRIGGER_NAME = "attr.triggerName";
-	public static final String ATTR_ACTION_NAME = "attr.actionName";
 	
 	public AlertEvent(Object source, String resourceKey, boolean success,
 			Realm currentRealm, int threshold, int timeout, TriggerAction action, SystemEvent alertEvent) {
-		super(source, resourceKey + "." + action.getId(), SystemEventStatus.WARNING, currentRealm);
+		super(source, resourceKey + "." + action.getId(), SystemEventStatus.WARNING, currentRealm, action);
 		addAttribute(ATTR_THRESHOLD, threshold);
 		addAttribute(ATTR_TIMEOUT, timeout);
-		addAttribute(ATTR_ACTION_NAME, action.getName());
-		addAttribute(ATTR_TRIGGER_NAME, action.getTrigger().getName());
 		
 		addAllAttributes(alertEvent.getAttributes());
 	}

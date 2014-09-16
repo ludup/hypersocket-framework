@@ -177,12 +177,12 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 					recipients.toArray(new Recipient[0]));
 
 			return new EmailActionResult(this, action.getTrigger().getRealm(),
-					action.getName(), action.getTrigger().getName(), subject, body, to, cc, bcc);
+					action, subject, body, to, cc, bcc);
 
 		} catch (Exception ex) {
 			log.error("Failed to send email", ex);
 			return new EmailActionResult(this, ex, action.getTrigger()
-					.getRealm(), action.getName(), action.getTrigger().getName(), subject, body, to, cc, bcc);
+					.getRealm(), action, subject, body, to, cc, bcc);
 		}
 	}
 

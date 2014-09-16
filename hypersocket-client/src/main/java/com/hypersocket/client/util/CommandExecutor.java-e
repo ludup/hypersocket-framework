@@ -49,6 +49,9 @@ public class CommandExecutor {
 	}
 	
 	public int execute() throws IOException {
+		return execute(null);
+	}
+ 	public int execute(CommandInputGenerator input) throws IOException {
 		
 		if(log.isInfoEnabled()) {
 			StringBuilder builder = new StringBuilder();
@@ -64,13 +67,22 @@ public class CommandExecutor {
 		if(pwd!=null) {
 			pb.directory(pwd.getCanonicalFile());
 		}
+		
+		pb.environment().put("PATH", "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin");
+
 		pb.redirectErrorStream(true);
 		
 		Process p = pb.start();
+		if(input!=null) {
+			input.commandStarted(p);
+		}
 		
 		int r;
 		while((r = p.getInputStream().read()) > -1) {
 			buffer.append((char)r);
+			if(input!=null) {
+				input.commandOutput(p, (char)r);
+			}
 		}
 		
 		int exitCode;
