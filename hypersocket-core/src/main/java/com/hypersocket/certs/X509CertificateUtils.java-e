@@ -42,6 +42,7 @@ import java.util.List;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.DSAParameter;
@@ -278,6 +279,10 @@ public class X509CertificateUtils {
 				return loadKeyPair((PEMKeyPair) privatekey);
 			} else if (privatekey instanceof RSAPrivateCrtKey) {
 				return loadKeyPair((RSAPrivateCrtKey) privatekey);
+			} else if(privatekey instanceof PrivateKeyInfo){
+				PrivateKeyInfo i = (PrivateKeyInfo) privatekey;
+				i.g
+				return null;
 			} else {
 				throw new FileFormatException(
 						"The file doesn't seem to have any supported key types obj="
@@ -342,10 +347,10 @@ public class X509CertificateUtils {
 		}
 	}
 
-	public static KeyPair generatePrivateKey(int bits)
+	public static KeyPair generatePrivateKey(String algorithm, int bits)
 			throws CertificateException {
 		try {
-			KeyPairGenerator kpGen = KeyPairGenerator.getInstance("RSA");
+			KeyPairGenerator kpGen = KeyPairGenerator.getInstance(algorithm, "BC");
 			kpGen.initialize(bits, new SecureRandom());
 			return kpGen.generateKeyPair();
 		} catch (Throwable t) {
@@ -354,13 +359,15 @@ public class X509CertificateUtils {
 	}
 
 	public static X509Certificate generateSelfSignedCertificate(
-			String hostname, KeyPair pair) {
+			String cn, String ou, String o, String l, String s, String c, KeyPair pair) {
 		try {
 			// Generate self-signed certificate
 			X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
-			builder.addRDN(BCStyle.OU, "Hypersocket");
-			builder.addRDN(BCStyle.O, "Hypersocket");
-			builder.addRDN(BCStyle.CN, hostname);
+			builder.addRDN(BCStyle.OU, ou);
+			builder.addRDN(BCStyle.O, o);
+			builder.addRDN(BCStyle.L, l);
+			builder.addRDN(BCStyle.ST, s);
+			builder.addRDN(BCStyle.CN, cn);
 
 			Date notBefore = new Date(System.currentTimeMillis() - 1000L * 60
 					* 60 * 24 * 30);
@@ -373,7 +380,7 @@ public class X509CertificateUtils {
 					builder.build(), serial, notBefore, notAfter,
 					builder.build(), pair.getPublic());
 			ContentSigner sigGen = new JcaContentSignerBuilder(
-					"SHA256WithRSAEncryption").setProvider(BC).build(
+					"SHA1WithRSAEncryption").setProvider(BC).build(
 					pair.getPrivate());
 			X509Certificate cert = new JcaX509CertificateConverter()
 					.setProvider(BC).getCertificate(certGen.build(sigGen));
@@ -443,7 +450,17 @@ public class X509CertificateUtils {
 		// X509CertificateUtils.loadKeyPairFromPFX(new
 		// FileInputStream("/home/lee//Dropbox/Company Files/Nervepoint Technologies Limited/Certificates/Domain Wildcard/nervepoint-www-wildcard.pfx"),
 		// "bluemars73".toCharArray());
+		
+//		X509CertificateUtils.generatePrivateKey("RSA", 1024);
+//		X509CertificateUtils.generatePrivateKey("RSA", 2048);
+//		X509CertificateUtils.generatePrivateKey("RSA", 4096);
+//		X509CertificateUtils.generatePrivateKey("RSA", 8192);
 
+//		X509CertificateUtils.generatePrivateKey("DSA", 1024);
+//		X509CertificateUtils.generatePrivateKey("DSA", 2048);
+//		X509CertificateUtils.generatePrivateKey("DSA", 4096);
+//		X509CertificateUtils.generatePrivateKey("DSA", 8192);
+		
 	}
 
 }
