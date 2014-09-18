@@ -20,7 +20,7 @@ public class AlertEvent extends ActionResult {
 	
 	public AlertEvent(Object source, String resourceKey, boolean success,
 			Realm currentRealm, int threshold, int timeout, TriggerAction action, SystemEvent alertEvent) {
-		super(source, resourceKey + "." + action.getId(), SystemEventStatus.WARNING, currentRealm);
+		super(source, resourceKey + "." + action.getId(), SystemEventStatus.WARNING, currentRealm, action);
 		addAttribute(ATTR_THRESHOLD, threshold);
 		addAttribute(ATTR_TIMEOUT, timeout);
 		addAttribute(ATTR_ACTION_NAME, action.getName());
