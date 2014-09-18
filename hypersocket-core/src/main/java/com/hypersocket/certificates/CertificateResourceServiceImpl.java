@@ -5,18 +5,34 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +70,8 @@ public class CertificateResourceServiceImpl extends
 
 	public static final String RESOURCE_BUNDLE = "CertificateResourceService";
 
+	public static final String DEFAULT_CERTIFICATE_NAME = "Default SSL Certificate";
+	
 	@Autowired
 	CertificateResourceRepository repository;
 
@@ -207,12 +225,13 @@ public class CertificateResourceServiceImpl extends
 
 	@Override
 	public CertificateResource createResource(String name, Realm realm,
-			Map<String, String> properties) throws ResourceCreationException,
+			Map<String, String> properties, boolean system) throws ResourceCreationException,
 			AccessDeniedException {
 
 		CertificateResource resource = new CertificateResource();
 		resource.setName(name);
 		resource.setRealm(realm);
+		resource.setSystem(system);
 
 		CertificateType type = CertificateType.valueOf(properties
 				.get("certType"));
@@ -295,7 +314,7 @@ public class CertificateResourceServiceImpl extends
 
 		CertificateResource resource;
 		try {
-			resource = getResourceByName("default");
+			resource = getResourceByName(DEFAULT_CERTIFICATE_NAME);
 		} catch (ResourceNotFoundException e) {
 			Map<String, String> properties = new HashMap<String, String>();
 			properties.put("certType", "RSA_2048");
@@ -306,8 +325,9 @@ public class CertificateResourceServiceImpl extends
 			properties.put("state", "Unknown");
 			properties.put("country", "US");
 
-			resource = createResource("default",
-					realmService.getDefaultRealm(), properties);
+			resource = createResource(DEFAULT_CERTIFICATE_NAME,
+					realmService.getDefaultRealm(), properties, true);
+			
 		}
 
 		try {
@@ -461,7 +481,12 @@ public class CertificateResourceServiceImpl extends
 		
 			CertificateResource resource = new CertificateResource();
 			
-			resource.setName(cert.getSubjectDN().getName());
+			X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
+			RDN cn = x500name.getRDNs(BCStyle.CN)[0];
+			
+			resource.setName(IETFUtils.valueToString(cn.getFirst().getValue()));
+			resource.setCommonName(IETFUtils.valueToString(cn.getFirst().getValue()));
+			
 			resource.setPrivateKey(new String(privateKeyFile.toByteArray(),	"UTF-8"));
 			resource.setCertificate(new String(certStream.toByteArray(), "UTF-8"));
 			resource.setBundle(new String(caStream.toByteArray(), "UTF-8"));
@@ -476,6 +501,74 @@ public class CertificateResourceServiceImpl extends
 					"error.certificateError", e.getMessage());
 		}
 		
+	}
+
+	@Override
+	public void importPfx(MultipartFile pfx, String passphrase) throws ResourceCreationException, AccessDeniedException {
+		try {
+			
+			CertificateResource resource = new CertificateResource();
+			
+			KeyStore keystore = X509CertificateUtils.loadKeyStoreFromPFX(
+					pfx.getInputStream(), passphrase.toCharArray());
+
+			Enumeration<String> aliases = keystore.aliases();
+			while (aliases.hasMoreElements()) {
+				String alias = aliases.nextElement();
+				if (keystore.isKeyEntry(alias)) {
+
+					Key key = keystore.getKey(alias, passphrase.toCharArray());
+					if (key instanceof PrivateKey) {
+						X509Certificate cert = (X509Certificate) keystore
+								.getCertificate(alias);
+
+						Certificate[] chain = keystore.getCertificateChain(alias);
+
+						PublicKey publicKey = cert.getPublicKey();
+						KeyPair pair = new KeyPair(publicKey, (PrivateKey) key);
+
+						ByteArrayOutputStream privateKeyFile = new ByteArrayOutputStream();
+						X509CertificateUtils.saveKeyPair(pair, privateKeyFile);
+						resource.setPrivateKey(new String(privateKeyFile.toByteArray(),	"UTF-8"));
+						
+						List<Certificate> bundle = new ArrayList<Certificate>(
+								Arrays.asList(chain));
+						if (bundle.size() > 1) {
+							bundle.remove(0);
+						}
+
+						Certificate[] rootAndInters = bundle
+								.toArray(new Certificate[0]);
+						X509CertificateUtils.validateChain(rootAndInters, cert);
+
+						if (!pair.getPublic().equals(cert.getPublicKey())) {
+							throw new MismatchedCertificateException();
+						}
+
+						ByteArrayOutputStream caStream = new ByteArrayOutputStream();
+						X509CertificateUtils.saveCertificate(rootAndInters, caStream);
+						resource.setBundle(new String(caStream.toByteArray(), "UTF-8"));
+						
+						ByteArrayOutputStream certStream = new ByteArrayOutputStream();
+						X509CertificateUtils.saveCertificate(new Certificate[] { cert }, certStream);
+						resource.setCertificate(new String(certStream.toByteArray(), "UTF-8"));
+						
+						X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
+						RDN cn = x500name.getRDNs(BCStyle.CN)[0];
+						
+						resource.setName(IETFUtils.valueToString(cn.getFirst().getValue()));
+						resource.setCommonName(IETFUtils.valueToString(cn.getFirst().getValue()));
+					
+						createResource(resource, new HashMap<String,String>());
+					}
+				}
+			}
+			
+		} catch (IOException | CertificateException | UnrecoverableKeyException
+				| KeyStoreException | NoSuchAlgorithmException
+				| NoSuchProviderException | MismatchedCertificateException e) {
+			e.printStackTrace();
+		} 
 	}
 
 }

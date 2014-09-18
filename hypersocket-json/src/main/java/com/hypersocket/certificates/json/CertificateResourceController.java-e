@@ -192,7 +192,8 @@ public class CertificateResourceController extends ResourceController {
 				newResource = resourceService.createResource(
 						resource.getName(),
 						realm,
-						properties);
+						properties,
+						false);
 			}
 			return new ResourceStatus<CertificateResource>(newResource,
 					I18N.getResource(sessionUtils.getLocale(request),
@@ -373,4 +374,45 @@ public class CertificateResourceController extends ResourceController {
 		}
 	}
 
+	@AuthenticationRequired
+	@RequestMapping(value = "certificates/pfx", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public CertificateStatus uploadPfx(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestPart(value = "key") MultipartFile key,
+			@RequestParam(value = "passphrase") String passphrase)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			CertificateStatus status = new CertificateStatus();
+			status.setSuccess(false);
+			try {
+				resourceService.importPfx(key, passphrase);
+				status.setSuccess(true);
+				status.setMessage(I18N.getResource(
+						sessionUtils.getLocale(request),
+						CertificateService.RESOURCE_BUNDLE, "info.keyUploaded"));
+//			} catch (InvalidPassphraseException e) {
+//				status.setMessage(I18N.getResource(
+//						sessionUtils.getLocale(request),
+//						CertificateService.RESOURCE_BUNDLE,
+//						"error.invalidPassphrase"));
+			} catch (Exception e) {
+				status.setMessage(I18N.getResource(
+						sessionUtils.getLocale(request),
+						CertificateService.RESOURCE_BUNDLE,
+						"error.generalError", e.getMessage()));
+			}
+
+			return status;
+
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 }
