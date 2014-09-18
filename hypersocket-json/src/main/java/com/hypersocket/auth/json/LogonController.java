@@ -10,6 +10,7 @@ package com.hypersocket.auth.json;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,9 +54,9 @@ public class LogonController extends AuthenticatedController {
 		
 	}
 	
-	public void resetAuthenticationState(HttpServletRequest request, HttpServletResponse response, String scheme) throws AccessDeniedException {
+	public AuthenticationState resetAuthenticationState(HttpServletRequest request, HttpServletResponse response, String scheme) throws AccessDeniedException {
 		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, null);	
-		createAuthenticationState(scheme, request, response);
+		return createAuthenticationState(scheme, request, response);
 	}
 	
 	@RequestMapping(value = "logon", method = { RequestMethod.GET,
@@ -65,7 +66,7 @@ public class LogonController extends AuthenticatedController {
 	public AuthenticationResult logon(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException {
-		return logon(request, response, AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY);
+		return logon(request, response, null);
 	}
 	
 	@RequestMapping(value = "logon/{scheme}", method = { RequestMethod.GET,
@@ -96,9 +97,13 @@ public class LogonController extends AuthenticatedController {
 			AuthenticationState state = (AuthenticationState) request
 					.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
 
-			if (state == null || !state.getScheme().getResourceKey().equals(scheme)) {
+			if (state == null || 
+					(!StringUtils.isEmpty(scheme) 
+							&& !state.getScheme().getResourceKey().equals(scheme))) {
 				// We have not got login state so create
-				state = createAuthenticationState(scheme, request, response);
+				state = createAuthenticationState(scheme==null ? 
+						AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY : scheme, 
+						request, response);
 			} 
 			
 			authenticationService.logon(state, request.getParameterMap());

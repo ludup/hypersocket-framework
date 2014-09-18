@@ -15,7 +15,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.events.EventService;
@@ -25,7 +25,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.resource.ResourceChangeException;
 
-@Transactional
+@Service
 public class SystemConfigurationServiceImpl extends AuthenticatedServiceImpl
 		implements SystemConfigurationService {
 

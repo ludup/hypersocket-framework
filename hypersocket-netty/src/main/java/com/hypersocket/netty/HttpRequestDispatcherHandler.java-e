@@ -134,7 +134,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		HttpRequestServletWrapper servletRequest = new HttpRequestServletWrapper(
 				nettyRequest, (InetSocketAddress) ctx.getChannel()
 						.getLocalAddress(), (InetSocketAddress) ctx
-						.getChannel().getRemoteAddress(), false, server
+						.getChannel().getRemoteAddress(), 
+						!server.isPlainPort((InetSocketAddress) ctx.getChannel().getLocalAddress()) , server
 						.getServletConfig().getServletContext(), session);
 
 		Request.set(servletRequest);

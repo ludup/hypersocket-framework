@@ -212,7 +212,7 @@ public class CertificateServiceImpl extends AuthenticatedServiceImpl implements
 			log.info("Generating private key");
 		}
 		try {
-			KeyPair pair = X509CertificateUtils.generatePrivateKey(bits);
+			KeyPair pair = X509CertificateUtils.generatePrivateKey("RSA", bits);
 			if (save) {
 				X509CertificateUtils.saveKeyPair(pair, new FileOutputStream(
 						PRIVATE_KEY_FILE));
@@ -236,7 +236,7 @@ public class CertificateServiceImpl extends AuthenticatedServiceImpl implements
 		}
 		try {
 			X509Certificate cert = X509CertificateUtils
-					.generateSelfSignedCertificate(hostname, getPrivateKey());
+					.generateSelfSignedCertificate(hostname, "Hypersocket", "Hypersocket", "Unknown", "Unknown", "US", getPrivateKey());
 			if (save) {
 				X509CertificateUtils.saveCertificate(
 						new X509Certificate[] { cert }, new FileOutputStream(
@@ -460,5 +460,6 @@ public class CertificateServiceImpl extends AuthenticatedServiceImpl implements
 				"UTF-8");
 
 	}
+	
 
 }

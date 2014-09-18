@@ -227,6 +227,12 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
+	public String getRealmHostname(Realm realm) {
+		RealmProvider provder = getProviderForRealm(realm);
+		return provder.getValue(realm, "realm.host");
+	}
+	
+	@Override
 	public Realm getRealmById(Long id) throws AccessDeniedException {
 
 		assertPermission(RealmPermission.READ);

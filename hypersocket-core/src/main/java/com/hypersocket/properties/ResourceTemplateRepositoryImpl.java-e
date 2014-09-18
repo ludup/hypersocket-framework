@@ -430,4 +430,14 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		String values = getValue(resource, name);
 		return explodeValues(values);
 	}
+	
+	@Override
+	public Map<String,String> getProperties(AbstractResource resource) {
+		
+		Map<String,String> properties = new HashMap<String,String>();
+		for(String name : getPropertyNames()) {
+			properties.put(name, getValue(resource, name));
+		}
+		return properties;
+	}
 }

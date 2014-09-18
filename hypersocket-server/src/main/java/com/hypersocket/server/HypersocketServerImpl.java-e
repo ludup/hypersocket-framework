@@ -40,7 +40,7 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 
-import com.hypersocket.certs.CertificateService;
+import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.config.ConfigurationChangedEvent;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.events.EventService;
@@ -474,8 +474,8 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 	public void initializeSSL() throws FileNotFoundException, IOException {
 
-		CertificateService certificateService = (CertificateService) applicationContext
-				.getBean("certificateServiceImpl");
+		CertificateResourceService certificateService = (CertificateResourceService) applicationContext
+				.getBean("certificateResourceServiceImpl");
 		RealmService realmService = (RealmService) applicationContext
 				.getBean("realmServiceImpl");
 
