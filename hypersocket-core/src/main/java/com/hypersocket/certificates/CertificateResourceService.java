@@ -18,20 +18,25 @@ import com.hypersocket.resource.ResourceCreationException;
 public interface CertificateResourceService extends
 		AbstractResourceService<CertificateResource> {
 
-	CertificateResource updateResource(CertificateResource resourceById, String name, Map<String,String> properties)
+	CertificateResource updateResource(CertificateResource resourceById,
+			String name, Map<String, String> properties)
 			throws ResourceChangeException, AccessDeniedException;
 
-	CertificateResource createResource(String name, Realm realm, Map<String,String> properties)
+	CertificateResource createResource(String name, Realm realm,
+			Map<String, String> properties, boolean system)
 			throws ResourceCreationException, AccessDeniedException;
 
-	Collection<PropertyCategory> getPropertyTemplate() throws AccessDeniedException;
-
-	Collection<PropertyCategory> getPropertyTemplate(CertificateResource resource)
+	Collection<PropertyCategory> getPropertyTemplate()
 			throws AccessDeniedException;
 
-	KeyStore getDefaultCertificate() throws ResourceCreationException, AccessDeniedException;
+	Collection<PropertyCategory> getPropertyTemplate(
+			CertificateResource resource) throws AccessDeniedException;
 
-	String generateCSR(CertificateResource resourceById) throws UnsupportedEncodingException, Exception;
+	KeyStore getDefaultCertificate() throws ResourceCreationException,
+			AccessDeniedException;
+
+	String generateCSR(CertificateResource resourceById)
+			throws UnsupportedEncodingException, Exception;
 
 	void updateCertificate(CertificateResource resource, MultipartFile file,
 			MultipartFile bundle) throws ResourceChangeException;
@@ -39,5 +44,7 @@ public interface CertificateResourceService extends
 	void importPrivateKey(MultipartFile key, String passphrase,
 			MultipartFile file, MultipartFile bundle)
 			throws ResourceCreationException, InvalidPassphraseException;
+
+	void importPfx(MultipartFile key, String passphrase) throws ResourceCreationException, AccessDeniedException;
 
 }
