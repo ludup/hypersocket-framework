@@ -180,4 +180,6 @@ public interface RealmService extends AuthenticatedService {
 
 	Realm setDefaultRealm(Realm realm) throws AccessDeniedException;
 
+	String getRealmHostname(Realm realm);
+
 }
