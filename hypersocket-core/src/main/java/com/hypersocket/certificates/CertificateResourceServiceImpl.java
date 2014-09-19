@@ -68,8 +68,6 @@ public class CertificateResourceServiceImpl extends
 	static Logger log = LoggerFactory
 			.getLogger(CertificateResourceServiceImpl.class);
 
-	public static final String RESOURCE_BUNDLE = "CertificateResourceService";
-
 	public static final String DEFAULT_CERTIFICATE_NAME = "Default SSL Certificate";
 	
 	@Autowired
@@ -192,7 +190,7 @@ public class CertificateResourceServiceImpl extends
 			KeyPair pair = X509CertificateUtils.loadKeyPairFromPEM(
 					new ByteArrayInputStream(resource.getPrivateKey().getBytes(
 							"UTF-8")), null);
-			Certificate cert = populateCertificate(properties, pair);
+			Certificate cert = populateCertificate(properties, pair, resource.getSignatureAlgorithm());
 
 			ByteArrayOutputStream certFile = new ByteArrayOutputStream();
 			X509CertificateUtils.saveCertificate(new Certificate[] { cert },
@@ -237,25 +235,30 @@ public class CertificateResourceServiceImpl extends
 				.get("certType"));
 
 		KeyPair pair = null;
-
+		String signatureAlgorithm = null; 
 		try {
 			switch (type) {
 			case RSA_1024:
 				pair = X509CertificateUtils.generatePrivateKey("RSA", 1024);
+				signatureAlgorithm = "SHA1WithRSAEncryption";
 				break;
 			case RSA_2048:
 				pair = X509CertificateUtils.generatePrivateKey("RSA", 2048);
+				signatureAlgorithm = "SHA1WithRSAEncryption";
 				break;
 			case DSA_1024:
 				pair = X509CertificateUtils.generatePrivateKey("DSA", 1024);
+				signatureAlgorithm = "SHA1WithDSA";
 				break;
 			default:
 				throw new ResourceCreationException(RESOURCE_BUNDLE,
 						"error.unsupportedType");
 			}
 
-			Certificate cert = populateCertificate(properties, pair);
-
+			
+			Certificate cert = populateCertificate(properties, pair, signatureAlgorithm);
+			resource.setSignatureAlgorithm(signatureAlgorithm);
+			
 			ByteArrayOutputStream privateKeyFile = new ByteArrayOutputStream();
 			X509CertificateUtils.saveKeyPair(pair, privateKeyFile);
 
@@ -281,13 +284,30 @@ public class CertificateResourceServiceImpl extends
 		}
 	}
 
+	@Override
+	public CertificateResource createResource(String name, Realm realm,
+			CertificateType type, String cn, String ou, String o, String l, String s, String c,
+			boolean system) throws ResourceCreationException, AccessDeniedException {
+		
+		Map<String,String> properties = new HashMap<String,String>();
+		
+		properties.put("certType", type.toString());
+		properties.put("commonName", cn);
+		properties.put("organizationalUnit", ou);
+		properties.put("organization", o);
+		properties.put("location", l);
+		properties.put("state", s);
+		properties.put("country", c);
+		
+		return createResource(name, realm, properties, system);
+	}
 	private Certificate populateCertificate(Map<String, String> properties,
-			KeyPair pair) {
+			KeyPair pair, String signatureType) {
 		return X509CertificateUtils.generateSelfSignedCertificate(
 				properties.get("commonName"),
 				properties.get("organizationalUnit"),
 				properties.get("organization"), properties.get("location"),
-				properties.get("state"), properties.get("country"), pair);
+				properties.get("state"), properties.get("country"), pair, signatureType);
 	}
 
 	@Override
@@ -330,38 +350,11 @@ public class CertificateResourceServiceImpl extends
 			
 		}
 
-		try {
-			ByteArrayInputStream keyStream = new ByteArrayInputStream(resource
-					.getPrivateKey().getBytes("UTF-8"));
-			ByteArrayInputStream certStream = new ByteArrayInputStream(resource
-					.getCertificate().getBytes("UTF-8"));
-			ByteArrayInputStream caStream = null;
-
-			if (!StringUtils.isEmpty(resource.getBundle())) {
-				caStream = new ByteArrayInputStream(resource.getBundle()
-						.getBytes("UTF-8"));
-			}
-
-			return loadPEMCertificate(keyStream, certStream, caStream, null,
-					"changeit".toCharArray());
-
-		} catch (UnsupportedEncodingException e) {
-			log.error("Failed to encode certificate", e);
-			throw new ResourceCreationException(RESOURCE_BUNDLE,
-					"error.certificateError", e.getMessage());
-		} catch (CertificateException e) {
-			log.error("Failed to generate certificate", e);
-			throw new ResourceCreationException(RESOURCE_BUNDLE,
-					"error.certificateError", e.getMessage());
-		} catch (MismatchedCertificateException e) {
-			log.error("Failed to load certificate", e);
-			throw new ResourceCreationException(RESOURCE_BUNDLE,
-					"error.certificateError", e.getMessage());
-		}
+		return getResourceKeystore(resource, "hypersocket", "changeit");
 	}
 
 	protected KeyStore loadPEMCertificate(InputStream keyStream,
-			InputStream certStream, InputStream caStream, char[] keyPassphrase,
+			InputStream certStream, InputStream caStream, String alias, char[] keyPassphrase,
 			char[] keystorePassphrase) throws CertificateException,
 			MismatchedCertificateException {
 
@@ -373,13 +366,13 @@ public class CertificateResourceServiceImpl extends
 								.loadCertificateChainFromPEM(caStream),
 								X509CertificateUtils
 										.loadCertificateFromPEM(certStream)),
-						"hypersocket", keystorePassphrase);
+										alias, keystorePassphrase);
 			} else {
 				return X509CertificateUtils.createKeystore(X509CertificateUtils
 						.loadKeyPairFromPEM(keyStream, keyPassphrase),
 						new X509Certificate[] { X509CertificateUtils
 								.loadCertificateFromPEM(certStream) },
-						"hypersocket", keystorePassphrase);
+								alias, keystorePassphrase);
 			}
 		} catch (MismatchedCertificateException ex) {
 			throw ex;
@@ -569,6 +562,41 @@ public class CertificateResourceServiceImpl extends
 				| NoSuchProviderException | MismatchedCertificateException e) {
 			e.printStackTrace();
 		} 
+	}
+
+	@Override
+	public KeyStore getResourceKeystore(CertificateResource resource,
+			String alias, String password) throws ResourceCreationException {
+		
+		try {
+			ByteArrayInputStream keyStream = new ByteArrayInputStream(resource
+					.getPrivateKey().getBytes("UTF-8"));
+			ByteArrayInputStream certStream = new ByteArrayInputStream(resource
+					.getCertificate().getBytes("UTF-8"));
+			ByteArrayInputStream caStream = null;
+
+			if (!StringUtils.isEmpty(resource.getBundle())) {
+				caStream = new ByteArrayInputStream(resource.getBundle()
+						.getBytes("UTF-8"));
+			}
+
+			return loadPEMCertificate(keyStream, certStream, caStream, alias, null,
+					password.toCharArray());
+
+		} catch (UnsupportedEncodingException e) {
+			log.error("Failed to encode certificate", e);
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"error.certificateError", e.getMessage());
+		} catch (CertificateException e) {
+			log.error("Failed to generate certificate", e);
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"error.certificateError", e.getMessage());
+		} catch (MismatchedCertificateException e) {
+			log.error("Failed to load certificate", e);
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"error.certificateError", e.getMessage());
+		}
+
 	}
 
 }

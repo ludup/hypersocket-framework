@@ -40,6 +40,9 @@ public class CertificateResource extends RealmResource {
 	@Column(name="bundle", nullable=true, length=8000 /*SQL server limit */)
 	String bundle;
 	
+	@Column(name="signature_type")
+	String signatureAlgorithm;
+	
 	public CertificateType getCertType() {
 		return type;
 	}
@@ -128,6 +131,12 @@ public class CertificateResource extends RealmResource {
 		this.bundle = bundle;
 	}
 
-	
+	public String getSignatureAlgorithm() {
+		return signatureAlgorithm;
+	}
+
+	public void setSignatureAlgorithm(String signatureAlgorithm) {
+		this.signatureAlgorithm = signatureAlgorithm;
+	}
 	
 }
