@@ -94,6 +94,10 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 		doOps(ops, beans, "sql");
 		
 		doOps(ops, beans, "js", "class");
+		
+		for(UpgradeServiceListener listener : listeners) {
+			listener.onUpgradeComplete();
+		}
 	}
 
 	protected void doOps(List<UpgradeOp> ops, Map<String, Object> beans, String... languages) throws ScriptException, IOException {

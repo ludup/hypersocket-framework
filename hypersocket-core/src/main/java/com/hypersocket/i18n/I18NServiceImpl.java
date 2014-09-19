@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationService;
-import com.hypersocket.certs.CertificateService;
+import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.config.ConfigurationChangedEvent;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.EmailNotificationService;
@@ -58,7 +58,7 @@ public class I18NServiceImpl extends AuthenticatedServiceImpl implements I18NSer
 		registerBundle(RESOURCE_BUNDLE);
 		registerBundle(ConfigurationService.RESOURCE_BUNDLE);
 		registerBundle(AuthenticationService.RESOURCE_BUNDLE);
-		registerBundle(CertificateService.RESOURCE_BUNDLE);
+		registerBundle(CertificateResourceService.RESOURCE_BUNDLE);
 		registerBundle(EmailNotificationService.RESOURCE_BUNDLE);
 		registerBundle(LocalRealmProvider.RESOURCE_BUNDLE);
 		registerBundle(PermissionService.RESOURCE_BUNDLE);

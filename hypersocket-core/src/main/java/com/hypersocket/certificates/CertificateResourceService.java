@@ -17,7 +17,9 @@ import com.hypersocket.resource.ResourceCreationException;
 
 public interface CertificateResourceService extends
 		AbstractResourceService<CertificateResource> {
-
+	
+	static final String RESOURCE_BUNDLE = "CertificateResourceService";
+	
 	CertificateResource updateResource(CertificateResource resourceById,
 			String name, Map<String, String> properties)
 			throws ResourceChangeException, AccessDeniedException;
@@ -46,5 +48,13 @@ public interface CertificateResourceService extends
 			throws ResourceCreationException, InvalidPassphraseException;
 
 	void importPfx(MultipartFile key, String passphrase) throws ResourceCreationException, AccessDeniedException;
+
+	CertificateResource createResource(String name, Realm realm,
+			CertificateType type, String cn, String ou, String o, String l,
+			String s, String c, boolean system)
+			throws ResourceCreationException, AccessDeniedException;
+
+	KeyStore getResourceKeystore(CertificateResource resourceByName,
+			String string, String string2) throws ResourceCreationException;
 
 }

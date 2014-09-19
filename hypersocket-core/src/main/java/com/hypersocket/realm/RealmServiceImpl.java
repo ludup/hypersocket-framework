@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -131,12 +132,19 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public void onUpgradeComplete() {
 
-		for (Realm realm : realmRepository.allRealms()) {
-			for (RealmListener listener : realmListeners) {
-				if (!listener.hasCreatedDefaultResources(realm)) {
-					listener.onCreateRealm(realm);
+		setCurrentPrincipal(getSystemPrincipal(), Locale.getDefault(),
+				getSystemPrincipal().getRealm());
+		
+		try {
+			for (Realm realm : realmRepository.allRealms()) {
+				for (RealmListener listener : realmListeners) {
+					if (!listener.hasCreatedDefaultResources(realm)) {
+						listener.onCreateRealm(realm);
+					}
 				}
 			}
+		} finally {
+			clearPrincipalContext();
 		}
 	}
 
@@ -1012,9 +1020,10 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public void updateProfile(Realm realm, Principal principal,
-			Map<String, String> properties) throws AccessDeniedException {
+			Map<String, String> properties) throws AccessDeniedException, ResourceChangeException {
 
-		assertAnyPermission(ProfilePermission.UPDATE, RealmPermission.UPDATE,
+		assertAnyPermission(ProfilePermission.UPDATE, 
+				RealmPermission.UPDATE,
 				UserPermission.UPDATE);
 
 		RealmProvider provider = getProviderForRealm(realm);
@@ -1029,10 +1038,10 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 					getCurrentSession(), realm, provider, principal,
 					assosiated, properties));
 		} catch (ResourceChangeException e) {
-
 			eventService.publishEvent(new ProfileUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, principal
 							.getPrincipalName(), properties, assosiated));
+			throw e;
 		}
 
 	}

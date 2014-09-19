@@ -349,6 +349,10 @@ public class CurrentRealmController extends ResourceController {
 			return new RequestStatus(true, I18N.getResource(
 					sessionUtils.getLocale(request),
 					RealmServiceImpl.RESOURCE_BUNDLE, "profile.saved"));
+		} catch (ResourceChangeException e) {
+			return new RequestStatus(false, I18N.getResource(
+					sessionUtils.getLocale(request),
+					e.getBundle(), e.getResourceKey(), e.getArgs()));
 		} finally {
 			clearAuthenticatedContext();
 		}

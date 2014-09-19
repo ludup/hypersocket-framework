@@ -139,7 +139,7 @@ public interface RealmService extends AuthenticatedService {
 			throws AccessDeniedException;
 
 	void updateProfile(Realm currentRealm, Principal principal,
-			Map<String, String> values) throws AccessDeniedException;
+			Map<String, String> values) throws AccessDeniedException, ResourceChangeException;
 
 	RealmProvider getProviderForRealm(Realm realm);
 

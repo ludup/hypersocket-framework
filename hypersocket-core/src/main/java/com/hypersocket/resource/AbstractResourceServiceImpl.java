@@ -195,6 +195,16 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		}
 		return resource;
 	}
+	
+	@Override
+	public T getResourceByNameAndRealm(String name, Realm realm) throws ResourceNotFoundException {
+		T resource = getRepository().getResourceByName(name, realm);
+		if (resource == null) {
+			throw new ResourceNotFoundException(getResourceBundle(),
+					"error.invalidResourceName", name);
+		}
+		return resource;
+	}
 
 	@Override
 	public T getResourceById(Long id) throws ResourceNotFoundException {

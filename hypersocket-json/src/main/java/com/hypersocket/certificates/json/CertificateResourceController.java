@@ -28,7 +28,6 @@ import com.hypersocket.certificates.CertificateResource;
 import com.hypersocket.certificates.CertificateResourceColumns;
 import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.certificates.CertificateResourceServiceImpl;
-import com.hypersocket.certs.CertificateService;
 import com.hypersocket.certs.InvalidPassphraseException;
 import com.hypersocket.certs.json.CertificateStatus;
 import com.hypersocket.i18n.I18N;
@@ -290,6 +289,38 @@ public class CertificateResourceController extends ResourceController {
 	}
 	
 	@AuthenticationRequired
+	@RequestMapping(value = "certificates/downloadCertificate/{id}", method = RequestMethod.GET, produces = { "text/plain" })
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public String downloadCertificate(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			CertificateStatus status = new CertificateStatus();
+			status.setSuccess(false);
+			try {
+				
+				CertificateResource resource = resourceService.getResourceById(id);
+				String csr = resource.getCertificate();
+				response.setHeader("Content-Disposition", "attachment; filename=\"" + resource.getName().replace(' ', '_') + ".crt\"");
+				return csr;
+			} catch (Exception e) {
+				try {
+					response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.ordinal());
+				} catch (IOException e1) {
+				}
+				return null;
+			}
+
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	@AuthenticationRequired
 	@RequestMapping(value = "certificates/cert/{id}", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
@@ -313,12 +344,12 @@ public class CertificateResourceController extends ResourceController {
 				status.setSuccess(true);
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
-						CertificateService.RESOURCE_BUNDLE, "info.certUploaded"));
+						CertificateResourceServiceImpl.RESOURCE_BUNDLE, "info.certUploaded"));
 
 			} catch (Exception ex) {
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
-						CertificateService.RESOURCE_BUNDLE,
+						CertificateResourceServiceImpl.RESOURCE_BUNDLE,
 						"error.generalError", ex.getMessage()));
 			}
 
@@ -354,16 +385,16 @@ public class CertificateResourceController extends ResourceController {
 				status.setSuccess(true);
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
-						CertificateService.RESOURCE_BUNDLE, "info.keyUploaded"));
+						CertificateResourceServiceImpl.RESOURCE_BUNDLE, "info.keyUploaded"));
 			} catch (InvalidPassphraseException e) {
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
-						CertificateService.RESOURCE_BUNDLE,
+						CertificateResourceServiceImpl.RESOURCE_BUNDLE,
 						"error.invalidPassphrase"));
 			} catch (Exception e) {
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
-						CertificateService.RESOURCE_BUNDLE,
+						CertificateResourceServiceImpl.RESOURCE_BUNDLE,
 						"error.generalError", e.getMessage()));
 			}
 
@@ -396,7 +427,7 @@ public class CertificateResourceController extends ResourceController {
 				status.setSuccess(true);
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
-						CertificateService.RESOURCE_BUNDLE, "info.keyUploaded"));
+						CertificateResourceServiceImpl.RESOURCE_BUNDLE, "info.keyUploaded"));
 //			} catch (InvalidPassphraseException e) {
 //				status.setMessage(I18N.getResource(
 //						sessionUtils.getLocale(request),
@@ -405,7 +436,7 @@ public class CertificateResourceController extends ResourceController {
 			} catch (Exception e) {
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
-						CertificateService.RESOURCE_BUNDLE,
+						CertificateResourceServiceImpl.RESOURCE_BUNDLE,
 						"error.generalError", e.getMessage()));
 			}
 

@@ -222,7 +222,8 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 						"principal is not of type LocalUser");
 			}
 
-			LocalUser user = (LocalUser) principal;
+			// Get again so we have it within a transaction so lazy loading works.
+			LocalUser user = (LocalUser) userRepository.getUserById(principal.getId(), principal.getRealm());
 			user.setName(username);
 			user.setRealm(realm);
 

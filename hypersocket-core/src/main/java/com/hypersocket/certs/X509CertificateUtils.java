@@ -358,7 +358,7 @@ public class X509CertificateUtils {
 	}
 
 	public static X509Certificate generateSelfSignedCertificate(
-			String cn, String ou, String o, String l, String s, String c, KeyPair pair) {
+			String cn, String ou, String o, String l, String s, String c, KeyPair pair, String signatureType) {
 		try {
 			// Generate self-signed certificate
 			X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
@@ -379,7 +379,7 @@ public class X509CertificateUtils {
 					builder.build(), serial, notBefore, notAfter,
 					builder.build(), pair.getPublic());
 			ContentSigner sigGen = new JcaContentSignerBuilder(
-					"SHA1WithRSAEncryption").setProvider(BC).build(
+					signatureType).setProvider(BC).build(
 					pair.getPrivate());
 			X509Certificate cert = new JcaX509CertificateConverter()
 					.setProvider(BC).getCertificate(certGen.build(sigGen));
