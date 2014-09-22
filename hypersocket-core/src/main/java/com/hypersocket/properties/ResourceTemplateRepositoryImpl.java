@@ -29,6 +29,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.hypersocket.attributes.Attribute;
+import com.hypersocket.attributes.AttributeCategory;
 import com.hypersocket.resource.AbstractResource;
 
 public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryImpl implements ResourceTemplateRepository {
@@ -57,6 +59,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		this.resourceXmlPath = resourceXmlPath;
 		configPropertyStore = new DatabasePropertyStore(this);
 		
+		String context = null;
 		try {
 			Enumeration<URL> urls = getClass().getClassLoader().getResources(
 					resourceXmlPath);
@@ -64,10 +67,11 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				throw new IllegalArgumentException(resourceXmlPath + " does not exist!");
 			}
 			
+			
 			while (urls.hasMoreElements()) {
 				URL url = urls.nextElement();
 				try {
-					loadPropertyTemplates(url);
+					context = loadPropertyTemplates(url);
 				} catch (Exception e) {
 					log.error("Failed to process " + url.toExternalForm(), e);
 				}
@@ -77,9 +81,15 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		} catch (IOException e) {
 			log.error("Failed to load propertyTemplate.xml resources", e);
 		}
+		
+		
+		if(context!=null) {
+			loadAttributeTemplates(context);
+		}
+
 	}
 
-	private void loadPropertyTemplates(URL url) throws SAXException,
+	private String loadPropertyTemplates(URL url) throws SAXException,
 			IOException, ParserConfigurationException {
 
 		DocumentBuilderFactory xmlFactory = DocumentBuilderFactory
@@ -88,6 +98,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		Document doc = xmlBuilder.parse(url.openStream());
 
 		Element root = doc.getDocumentElement();
+		String context = null;
+		
 		if(root.hasAttribute("extends")) {
 			String extendsTemplates = root.getAttribute("extends");
 			StringTokenizer t = new StringTokenizer(extendsTemplates, ",");
@@ -96,19 +108,54 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				while(extendUrls.hasMoreElements()) {
 					URL extendUrl = extendUrls.nextElement();
 					try {
-						/*context =*/ loadPropertyTemplates(extendUrl);
+						context = loadPropertyTemplates(extendUrl);
 					} catch(Exception e) {
 						log.error("Failed to process " + extendUrl.toExternalForm(), e);
 					}
 				}
 			}
-		}
+		} else if(root.hasAttribute("context")) {
+			context = root.getAttribute("context");
+		} 
 		
 		if(log.isInfoEnabled()) {
 			log.info("Loading property template resource " + url.toExternalForm());
 		}
 		
 		loadPropertyCategories(doc);
+		
+		return context;
+	}
+	
+	private void loadAttributeTemplates(String context) {
+		
+		
+		for(AttributeCategory c : getAttributeCategories(context)) {
+			
+			PropertyCategory cat = registerPropertyCategory(
+					"attributeCategory" + String.valueOf(c.getId()),
+					"UserAttributes",
+					c.getWeight(),
+					true,
+					context,
+					"");
+			
+			for(Attribute attr : c.getAttributes()) {
+				registerPropertyItem(
+						cat,
+						configPropertyStore,
+						"attribute" + String.valueOf(attr.getId()),
+						attr.generateMetaData(),
+						"",
+						attr.getWeight(),
+						attr.getHidden(),
+						attr.getReadOnly(),
+						attr.getDefaultValue());
+			}
+		}
+		
+		
+		
 	}
 
 	private void loadPropertyCategories(Document doc) throws IOException {

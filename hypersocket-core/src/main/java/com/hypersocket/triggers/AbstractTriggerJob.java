@@ -52,7 +52,7 @@ public class AbstractTriggerJob implements Job {
 			try {
 				processEventTrigger(trigger, event);
 
-				if(trigger.getFireEvent()) {
+				if(trigger.getFireEvent()!=null && trigger.getFireEvent()) {
 					eventService.publishEvent(new TriggerExecutedEvent(this, trigger));
 				}
 				

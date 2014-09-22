@@ -560,7 +560,10 @@ public class CertificateResourceServiceImpl extends
 		} catch (IOException | CertificateException | UnrecoverableKeyException
 				| KeyStoreException | NoSuchAlgorithmException
 				| NoSuchProviderException | MismatchedCertificateException e) {
-			e.printStackTrace();
+			throw new ResourceCreationException(
+					CertificateResourceServiceImpl.RESOURCE_BUNDLE,
+					"error.genericError", e.getMessage());
+			
 		} 
 	}
 

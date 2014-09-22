@@ -101,7 +101,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		logonPermission = permissionService.registerPermission(
 				AuthenticationPermission.LOGON, authentication);
 
-		eventService.registerEvent(AuthenticationEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(AuthenticationAttemptEvent.class, RESOURCE_BUNDLE);
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
@@ -294,7 +294,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 					&& state.getPrincipal() instanceof AuthenticationState.FakePrincipal) {
 				state.setLastErrorMsg("error.genericLogonError");
 				state.setLastErrorIsResourceKey(true);
-				eventService.publishEvent(new AuthenticationEvent(this, state,
+				eventService.publishEvent(new AuthenticationAttemptEvent(this, state,
 						authenticator, "hint.invalidPrincipal"));
 			} else {
 				switch (authenticator.authenticate(state, parameterMap)) {
@@ -313,7 +313,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 					} else {
 						state.setLastErrorMsg("error.genericLogonError");
 						state.setLastErrorIsResourceKey(true);
-						eventService.publishEvent(new AuthenticationEvent(this,
+						eventService.publishEvent(new AuthenticationAttemptEvent(this,
 								state, authenticator, "hint.badCredentials"));
 					}
 
@@ -327,7 +327,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 					} else {
 						state.setLastErrorMsg("error.genericLogonError");
 						state.setLastErrorIsResourceKey(true);
-						eventService.publishEvent(new AuthenticationEvent(this,
+						eventService.publishEvent(new AuthenticationAttemptEvent(this,
 								state, authenticator, "hint.invalidPrincipal"));
 					}
 					break;
@@ -340,7 +340,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 					} else {
 						state.setLastErrorMsg("error.genericLogonError");
 						state.setLastErrorIsResourceKey(true);
-						eventService.publishEvent(new AuthenticationEvent(this,
+						eventService.publishEvent(new AuthenticationAttemptEvent(this,
 								state, authenticator, "hint.invalidRealm"));
 					}
 
@@ -354,7 +354,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 								AuthenticationPermission.LOGON,
 								SystemPermission.SYSTEM_ADMINISTRATION);
 
-						eventService.publishEvent(new AuthenticationEvent(this,
+						eventService.publishEvent(new AuthenticationAttemptEvent(this,
 								state, authenticator));
 
 						success = true;
@@ -374,7 +374,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 						}
 					} catch (AccessDeniedException e) {
 
-						eventService.publishEvent(new AuthenticationEvent(this,
+						eventService.publishEvent(new AuthenticationAttemptEvent(this,
 								state, authenticator, "hint.noPermission"));
 						// user does not have LOGON permission
 						state.setLastErrorMsg("error.noLogonPermission");

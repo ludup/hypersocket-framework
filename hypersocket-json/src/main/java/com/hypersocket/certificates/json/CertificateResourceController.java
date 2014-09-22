@@ -1,15 +1,26 @@
 package com.hypersocket.certificates.json;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,6 +40,7 @@ import com.hypersocket.certificates.CertificateResourceColumns;
 import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.certificates.CertificateResourceServiceImpl;
 import com.hypersocket.certs.InvalidPassphraseException;
+import com.hypersocket.certs.X509CertificateUtils;
 import com.hypersocket.certs.json.CertificateStatus;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.ResourceList;
@@ -320,6 +332,114 @@ public class CertificateResourceController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "certificates/exportPfx/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public byte[] exportPfx(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			CertificateStatus status = new CertificateStatus();
+			status.setSuccess(false);
+			try {
+				
+				CertificateResource resource = resourceService.getResourceById(id);
+				
+				List<X509Certificate> certChain = new ArrayList<X509Certificate>();
+				X509Certificate[] arr = X509CertificateUtils.loadCertificateChainFromPEM(new ByteArrayInputStream(resource.getCertificate().getBytes("UTF-8")));
+				for(X509Certificate cert : arr) {
+					certChain.add(cert);
+				}
+				if(StringUtils.isNotEmpty(resource.getBundle()))
+				arr = X509CertificateUtils.loadCertificateChainFromPEM(new ByteArrayInputStream(resource.getBundle().getBytes("UTF-8")));
+				for(X509Certificate cert : arr) {
+					certChain.add(cert);
+				}
+				
+				KeyStore keystore = X509CertificateUtils.createPKCS12Keystore(
+						X509CertificateUtils.loadKeyPairFromPEM(new ByteArrayInputStream(resource.getPrivateKey().getBytes("UTF-8")), "changeit".toCharArray()), 
+						certChain.toArray(new X509Certificate[0]),
+						"hypersocket", 
+						"changeit".toCharArray());
+				
+				response.setHeader("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(resource.getName().replace(' ', '_'), "UTF-8") + ".pfx\"");
+				
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				keystore.store(out, "changeit".toCharArray());
+				
+				return out.toByteArray();
+			} catch (Exception e) {
+				try {
+					response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.ordinal());
+				} catch (IOException e1) {
+				}
+				return null;
+			}
+
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "certificates/exportPem/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public byte[] exportPem(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			CertificateStatus status = new CertificateStatus();
+			status.setSuccess(false);
+			try {
+				
+				CertificateResource resource = resourceService.getResourceById(id);
+				
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				ZipOutputStream zip = new ZipOutputStream(new BufferedOutputStream(out));
+				
+				zip.putNextEntry(new ZipEntry("certificate.pem"));
+				zip.write(resource.getCertificate().getBytes("UTF-8"));
+				zip.closeEntry();
+				
+				if(StringUtils.isNotEmpty(resource.getBundle())) {
+					zip.putNextEntry(new ZipEntry("ca-bundle.pem"));
+					zip.write(resource.getBundle().getBytes("UTF-8"));
+					zip.closeEntry();	
+				}
+				
+				zip.putNextEntry(new ZipEntry("key.pem"));
+				zip.write(resource.getPrivateKey().getBytes("UTF-8"));
+				zip.closeEntry();
+				
+				zip.close();
+				
+				response.setHeader("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(resource.getName().replace(' ', '_'), "UTF-8") + ".zip\"");
+				return out.toByteArray();
+				
+			} catch (Exception e) {
+				try {
+					response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.ordinal());
+				} catch (IOException e1) {
+				}
+				return null;
+			}
+
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/cert/{id}", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)

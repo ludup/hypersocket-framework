@@ -84,9 +84,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	}
 
 	public void upgrade() throws IOException, ScriptException {
-		if(log.isInfoEnabled()) {
-			log.info("Starting upgrade");
-		}
+
 		List<UpgradeOp> ops = buildUpgradeOps();
 		Map<String, Object> beans = new HashMap<String, Object>();
 		
