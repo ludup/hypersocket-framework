@@ -5,7 +5,7 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.realm.Realm;
 
-public class AuthenticationEvent extends SystemEvent {
+public class AuthenticationAttemptEvent extends SystemEvent {
 
 	private static final long serialVersionUID = -1557924699852329686L;
 	
@@ -18,36 +18,36 @@ public class AuthenticationEvent extends SystemEvent {
 	
 	public static final String EVENT_RESOURCE_KEY = "event.auth";
 	
-	public AuthenticationEvent(Object source, AuthenticationState state, Authenticator authenticator) {
+	public AuthenticationAttemptEvent(Object source, AuthenticationState state, Authenticator authenticator) {
 		this(source, true, state, authenticator);
 	}
 	
-	public AuthenticationEvent(Object source, AuthenticationState state, Authenticator authenticator, String resourceKey) {
+	public AuthenticationAttemptEvent(Object source, AuthenticationState state, Authenticator authenticator, String resourceKey) {
 		this(source, false, state, authenticator);
-		addAttribute(AuthenticationEvent.ATTR_HINT, 
+		addAttribute(AuthenticationAttemptEvent.ATTR_HINT, 
 				I18NServiceImpl.tagForConversion(
 						AuthenticationService.RESOURCE_BUNDLE, 
 						resourceKey));
 	}
 	
-	private AuthenticationEvent(Object source,
+	private AuthenticationAttemptEvent(Object source,
 			boolean success, AuthenticationState state, Authenticator authenticator) {
 		super(source, EVENT_RESOURCE_KEY, success, state.getRealm());
-		addAttribute(AuthenticationEvent.ATTR_IP_ADDRESS, 
+		addAttribute(AuthenticationAttemptEvent.ATTR_IP_ADDRESS, 
 				state.getRemoteAddress());
-		addAttribute(AuthenticationEvent.ATTR_SCHEME, 
+		addAttribute(AuthenticationAttemptEvent.ATTR_SCHEME, 
 				state.getScheme().getName());
-		addAttribute(AuthenticationEvent.ATTR_MODULE, 
+		addAttribute(AuthenticationAttemptEvent.ATTR_MODULE, 
 				I18NServiceImpl.tagForConversion(
 				authenticator.getResourceBundle(),  
 				authenticator.getResourceKey()));
-		addAttribute(AuthenticationEvent.ATTR_PRINCIPAL_NAME, 
+		addAttribute(AuthenticationAttemptEvent.ATTR_PRINCIPAL_NAME, 
 				state.getLastPrincipalName());
-		addAttribute(AuthenticationEvent.ATTR_PRINCIPAL_REALM, 
+		addAttribute(AuthenticationAttemptEvent.ATTR_PRINCIPAL_REALM, 
 				state.getLastRealmName());
 	}
 
-	public AuthenticationEvent(Object source, String resourceKey, Throwable e, Realm currentRealm) {
+	public AuthenticationAttemptEvent(Object source, String resourceKey, Throwable e, Realm currentRealm) {
 		super(source, resourceKey, e, currentRealm);
 	}
 	
