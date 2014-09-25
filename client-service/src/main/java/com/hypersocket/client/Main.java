@@ -3,6 +3,7 @@ package com.hypersocket.client;
 import java.beans.Introspector;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.rmi.AccessException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RMISecurityManager;
@@ -40,8 +41,14 @@ public class Main {
 	Registry registry;
 	int port;
 
-	Main() {
-		
+	Runnable restartCallback;
+	Runnable shutdownCallback;
+	ClassLoader classLoader;
+	static Main instance;
+
+	public Main(Runnable restartCallback, Runnable shutdownCallback) {
+		this.restartCallback = restartCallback;
+		this.shutdownCallback = shutdownCallback;
 	}
 
 	void buildServices() throws RemoteException {
@@ -209,7 +216,7 @@ public class Main {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public void run() {
 
 		File logs = new File("logs");
 		logs.mkdirs();
@@ -224,21 +231,20 @@ public class Main {
 			System.setSecurityManager(new RMISecurityManager());
 		}
 
-		Main main = new Main();
 
 		while(true) {
 			try {
-				main.buildServices();
+				buildServices();
 	
-				if (!main.publishServices()) {
+				if (!publishServices()) {
 					System.exit(1);
 				}
 	
-				if (!main.start()) {
+				if (!start()) {
 					System.exit(2);
 				}
 				
-				main.poll();
+				poll();
 			} catch (Exception e) {
 				log.error("Failed to start", e);
 				try {
@@ -247,6 +253,62 @@ public class Main {
 				}
 			}
 		}
+	}
+	
+	public static Main getInstance() {
+		return instance;
+	}
+	
+	public void restart() {
+		restartCallback.run();
+	}
+	
+	public void shutdown() {
+		shutdownCallback.run();
+	}
+	
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+
+		instance = new Main(new DefaultRestartCallback(), new DefaultShutdownCallback())
+		instance.run();
+	}
+	
+	public static void runApplication(Runnable restartCallback,
+			Runnable shutdownCallback) throws IOException {
+
+		new Main(restartCallback, shutdownCallback).run();
+
+	}
+	
+	static class DefaultRestartCallback implements Runnable {
+
+		@Override
+		public void run() {
+			
+			if(log.isInfoEnabled()) {
+				log.info("There is no restart mechanism available. Shutting down");
+			}
+			
+			System.exit(0);
+		}
+		
+	}
+	
+	static class DefaultShutdownCallback implements Runnable {
+
+		@Override
+		public void run() {
+			
+			if(log.isInfoEnabled()) {
+				log.info("Shutting down using default shutdown mechanism");
+			}
+			
+			System.exit(0);
+		}
+		
 	}
 
 }
