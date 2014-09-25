@@ -31,8 +31,7 @@ import com.hypersocket.HypersocketVersion;
 
 @Service
 public class PasswordEncryptionService {
-	
-		
+
 	public boolean authenticate(char[] attemptedPassword,
 			byte[] encryptedPassword, byte[] salt, PasswordEncryptionType type)
 			throws NoSuchAlgorithmException, InvalidKeySpecException {
@@ -46,10 +45,12 @@ public class PasswordEncryptionService {
 		return Arrays.equals(encryptedPassword, encryptedAttemptedPassword);
 	}
 
-	public byte[] getEncryptedPassword(char[] password, byte[] salt, PasswordEncryptionType type)
-			throws NoSuchAlgorithmException, InvalidKeySpecException {
+	public byte[] getEncryptedPassword(char[] password, byte[] salt,
+			PasswordEncryptionType type) throws NoSuchAlgorithmException,
+			InvalidKeySpecException {
 
-		KeySpec spec = new PBEKeySpec(password, salt, type.getIterations(), type.getKeyLength());
+		KeySpec spec = new PBEKeySpec(password, salt, type.getIterations(),
+				type.getKeyLength());
 
 		SecretKeyFactory f = SecretKeyFactory.getInstance(type.toString());
 
@@ -66,36 +67,44 @@ public class PasswordEncryptionService {
 
 		return salt;
 	}
-	
-	public String encrypt(String property,byte[] salt) throws GeneralSecurityException, UnsupportedEncodingException {
-        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
-        SecretKey key = keyFactory.generateSecret(new PBEKeySpec(getPassword()));
-        Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES");
-        pbeCipher.init(Cipher.ENCRYPT_MODE, key, new PBEParameterSpec(salt, 20));
-        return base64Encode(pbeCipher.doFinal(property.getBytes("UTF-8")));
-    }
-	
-	public String decrypt(String property,byte[] salt) throws GeneralSecurityException, IOException {
-        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
-        SecretKey key = keyFactory.generateSecret(new PBEKeySpec(getPassword()));
-        Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES");
-        pbeCipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(salt, 20));
-        return new String(pbeCipher.doFinal(base64Decode(property)), "UTF-8");
-    }
-	
+
+	public String encrypt(String property, byte[] salt)
+			throws GeneralSecurityException, UnsupportedEncodingException {
+		SecretKeyFactory keyFactory = SecretKeyFactory
+				.getInstance("PBEWithMD5AndDES");
+		SecretKey key = keyFactory
+				.generateSecret(new PBEKeySpec(getPassword()));
+		Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES");
+		pbeCipher
+				.init(Cipher.ENCRYPT_MODE, key, new PBEParameterSpec(salt, 20));
+		return base64Encode(pbeCipher.doFinal(property.getBytes("UTF-8")));
+	}
+
+	public String decrypt(String property, byte[] salt)
+			throws GeneralSecurityException, IOException {
+		SecretKeyFactory keyFactory = SecretKeyFactory
+				.getInstance("PBEWithMD5AndDES");
+		SecretKey key = keyFactory
+				.generateSecret(new PBEKeySpec(getPassword()));
+		Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES");
+		pbeCipher
+				.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(salt, 20));
+		return new String(pbeCipher.doFinal(base64Decode(property)), "UTF-8");
+	}
+
 	private String base64Encode(byte[] bytes) {
-    	return Base64.encodeBase64String(bytes);
-    }
-	
+		return Base64.encodeBase64String(bytes);
+	}
+
 	private byte[] base64Decode(String property) throws IOException {
-        return Base64.decodeBase64(property);
-    }
-	
-	private char[] getPassword() { 
-		String serial=HypersocketVersion.getSerial();
-		byte[] shaBytes=DigestUtils.sha(serial.getBytes());
+		return Base64.decodeBase64(property);
+	}
+
+	private char[] getPassword() {
+		String serial = HypersocketVersion.getSerial();
+		byte[] shaBytes = DigestUtils.sha(serial.getBytes());
 		return new String(shaBytes).toCharArray();
-		
+
 	}
 
 }
