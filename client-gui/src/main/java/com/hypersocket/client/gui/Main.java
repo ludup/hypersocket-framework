@@ -14,8 +14,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hypersocket.client.Main;
-
 public class Main {
 
 	static Logger log = LoggerFactory.getLogger(Main.class);

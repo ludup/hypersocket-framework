@@ -272,7 +272,7 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
-		instance = new Main(new DefaultRestartCallback(), new DefaultShutdownCallback())
+		instance = new Main(new DefaultRestartCallback(), new DefaultShutdownCallback());
 		instance.run();
 	}
 	
