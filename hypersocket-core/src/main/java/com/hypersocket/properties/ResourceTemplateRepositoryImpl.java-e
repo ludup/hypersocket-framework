@@ -365,6 +365,11 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	public Integer getIntValue(AbstractResource resource, String name) throws NumberFormatException {
 		return Integer.parseInt(getValue(resource, name));
 	}
+	
+	@Override
+	public Long getLongValue(AbstractResource resource, String name) throws NumberFormatException {
+		return Long.parseLong(getValue(resource, name));
+	}
 
 	@Override
 	public Boolean getBooleanValue(AbstractResource resource, String name) {
