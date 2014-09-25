@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="systemTriggerAction">
+	<propertyCategory resourceKey="category.delay"
+		resourceBundle="TriggerResourceService" weight="1000" group="systemTriggerAction">
+		<property resourceKey="operation.delay" inputType="slider" 
+			minValue="0" maxValue="900" defaultValue="30" stepValue="1" weight="100" labelResourceKey="operation.delay.label"/>
+	</propertyCategory>
+</propertyTemplates>
