@@ -6,5 +6,7 @@
 			defaultValue="" />
 		<property resourceKey="user.email" inputType="text" weight="10"
 			defaultValue="" />
+		<property resourceKey="user.mobile" inputType="text" weight="20"
+			defaultValue="" />
 	</propertyCategory>
 </propertyTemplates>
