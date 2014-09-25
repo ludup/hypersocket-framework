@@ -54,6 +54,7 @@
 		<module>hypersocket-server</module>
 		<module>hypersocket-json</module>
 		<module>hypersocket-netty</module>
+		<module>hypersocket-trigger-actions</module>
 		<module>hypersocket-tests</module>
 	</modules>
 
