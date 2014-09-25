@@ -5,21 +5,26 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.hypersocket.client.util.CommandExecutor;
 import com.hypersocket.replace.ReplacementUtils;
 
 public class ApplicationLauncher implements ResourceLauncher, Serializable {
 
+	static Logger log = LoggerFactory.getLogger(ApplicationLauncher.class);
+	
 	private static final long serialVersionUID = 4922604914995232181L;
 
 	String[] ALLOWED_SYSTEM_PROPERTIES = { "user.name", "user.home", "user.dir" };
 	
-	NetworkResourceTemplate template;
+	String hostname;
 	ApplicationLauncherTemplate launcher;
 	String username;
-	public ApplicationLauncher(String username, NetworkResourceTemplate template, ApplicationLauncherTemplate launcher) {
+	public ApplicationLauncher(String username, String hostname, ApplicationLauncherTemplate launcher) {
 		this.username = username;
-		this.template = template;
+		this.hostname = hostname;
 		this.launcher = launcher;
 	}
 	
@@ -29,7 +34,7 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 		Map<String,String> env = System.getenv();
 		Map<String,String> properties = new HashMap<String,String>();
 		
-		properties.put("hostname", template.getHostname());
+		properties.put("hostname", hostname);
 		properties.put("username", username);
 		
 		for(String prop : ALLOWED_SYSTEM_PROPERTIES) {
@@ -52,8 +57,7 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 				try {
 					cmd.execute();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.error("Failed to launch application", e);
 				}
 			}
 		};
