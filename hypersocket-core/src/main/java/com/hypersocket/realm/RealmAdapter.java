@@ -19,7 +19,7 @@ public class RealmAdapter implements RealmListener {
 
 	@Override
 	public boolean hasCreatedDefaultResources(Realm realm) {
-		return false;
+		return true;
 	}
 
 }

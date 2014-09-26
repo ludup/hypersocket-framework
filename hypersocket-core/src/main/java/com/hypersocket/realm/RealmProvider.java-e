@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,8 @@ import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.tables.ColumnSort;
 
 public interface RealmProvider extends ResourceTemplateRepository {
+
+	void testConnection(Map<String, String> properties) throws IOException;
 
 	List<Principal> allPrincipals(Realm realm, PrincipalType... types);
 
@@ -100,7 +103,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	Principal unlockAccount(Principal principal) throws ResourceChangeException;
 
 	Set<String> getUserPropertyNames();
-	
+
 	Set<String> getGroupPropertyNames();
 
 	void changePassword(Principal principal, char[] charArray, char[] charArray2)

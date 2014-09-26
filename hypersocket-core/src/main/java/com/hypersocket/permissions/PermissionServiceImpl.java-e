@@ -50,6 +50,9 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	static Logger log = LoggerFactory.getLogger(PermissionServiceImpl.class);
 
+	static final String ROLE_ADMINISTRATOR = "Administrator";
+	static final String ROLE_EVERYONE = "Everyone";
+	
 	@Autowired
 	PermissionRepository repository;
 
@@ -93,6 +96,11 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 		realmService.registerRealmListener(new RealmAdapter() {
 
 			@Override
+			public boolean hasCreatedDefaultResources(Realm realm) {
+				return realm.isSystem() || repository.getRoleByName(ROLE_ADMINISTRATOR, realm)!=null;
+			}
+
+			@Override
 			public void onCreateRealm(Realm realm) {
 
 				if (log.isInfoEnabled()) {
@@ -100,7 +108,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 							+ realm.getName());
 				}
 
-				repository.createRole("Administrator", realm, false, false,
+				repository.createRole(ROLE_ADMINISTRATOR, realm, false, false,
 						true, true);
 
 				if (log.isInfoEnabled()) {
@@ -108,7 +116,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 							+ realm.getName());
 				}
 
-				Role r = repository.createRole("Everyone", realm, false, true,
+				Role r = repository.createRole(ROLE_EVERYONE, realm, false, true,
 						false, true);
 				Set<Permission> perms = new HashSet<Permission>();
 				perms.add(getPermission(AuthenticationPermission.LOGON

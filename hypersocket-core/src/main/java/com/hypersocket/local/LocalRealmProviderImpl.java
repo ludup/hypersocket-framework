@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.local;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -603,6 +604,12 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	@Override
 	public Set<String> getGroupPropertyNames() {
 		return new HashSet<String>();
+	}
+
+	@Override
+	public void testConnection(Map<String, String> properties)
+			throws IOException {
+		
 	}
 
 
