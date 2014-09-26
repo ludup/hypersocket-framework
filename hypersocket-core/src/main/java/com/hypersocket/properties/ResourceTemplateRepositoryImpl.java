@@ -39,7 +39,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	DatabasePropertyStore configPropertyStore;
 
-	Map<String, PropertyCategory> activeCategories = new HashMap<String, PropertyCategory>();	
+	Map<String, PropertyCategory> activeCategories = new HashMap<String, PropertyCategory>();
+	Map<String, PropertyTemplate> propertyTemplates = new HashMap<String, PropertyTemplate>();
+	
 	List<PropertyTemplate> activeTemplates = new ArrayList<PropertyTemplate>();
 	Set<String> propertyNames = new HashSet<String>();
 	
@@ -259,6 +261,10 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		return buf.toString();
 	}
 
+	@Override
+	public PropertyTemplate getPropertyTemplate(String resourceKey) {
+		return propertyTemplates.get(resourceKey);
+	}
 	
 	private void registerPropertyItem(PropertyCategory category,
 			PropertyStore propertyStore, String resourceKey, String metaData,
@@ -302,6 +308,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		propertyStore.registerTemplate(template, resourceXmlPath);
 		category.getTemplates().add(template);
 		activeTemplates.add(template);
+		propertyTemplates.put(resourceKey, template);
 		
 		Collections.sort(category.getTemplates(), new Comparator<AbstractPropertyTemplate>() {
 			@Override

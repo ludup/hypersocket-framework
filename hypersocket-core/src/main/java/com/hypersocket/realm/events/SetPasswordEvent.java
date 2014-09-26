@@ -17,7 +17,7 @@ public class SetPasswordEvent extends UserEvent {
 	}
 
 	public SetPasswordEvent(Object source, Throwable t, Session session,
-			String realm, RealmProvider provider, String principal) {
+			Realm realm, RealmProvider provider, String principal) {
 		super(source, EVENT_RESOURCE_KEY, t, session, realm, provider,
 				principal);
 	}

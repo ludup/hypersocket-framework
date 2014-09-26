@@ -38,14 +38,14 @@ public abstract class GroupEvent extends RealmEvent {
 	}
 
 	public GroupEvent(Object source, String resourceKey, Throwable e,
-			Session session, String realmName, RealmProvider provider,
+			Session session, Realm realmName, RealmProvider provider,
 			String principalName) {
 		super(source, resourceKey, e, session, realmName);
 		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
 	}
 
 	public GroupEvent(Object source, String resourceKey, Throwable e,
-			Session session, String realmName, RealmProvider provider,
+			Session session, Realm realmName, RealmProvider provider,
 			String principalName, List<Principal> associatedPrincipals) {
 		super(source, resourceKey, e, session, realmName);
 		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());

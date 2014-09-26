@@ -25,7 +25,7 @@ public class GroupCreatedEvent extends GroupEvent {
 	public GroupCreatedEvent(Object source, Throwable e, Session session,
 			Realm realm, RealmProvider provider, String principalName,
 			List<Principal> associatedPrincipals) {
-		super(source, "event.groupCreated", e, session, realm.getName(),
+		super(source, "event.groupCreated", e, session, realm,
 				provider, principalName, associatedPrincipals);
 	}
 
