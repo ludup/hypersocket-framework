@@ -520,8 +520,12 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 				throw ex;
 			}
 
+			RealmProvider realmProvider = getProviderForRealm(module);
+			
+			realmProvider.testConnection(properties);
+			
 			Realm realm = realmRepository.createRealm(name, module, properties,
-					getProviderForRealm(module));
+					realmProvider);
 
 			fireRealmCreate(realm);
 
