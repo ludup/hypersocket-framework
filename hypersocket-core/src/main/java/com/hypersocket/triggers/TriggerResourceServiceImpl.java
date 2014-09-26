@@ -338,7 +338,11 @@ public class TriggerResourceServiceImpl extends
 
 	@Override
 	public void onApplicationEvent(SystemEvent event) {
-		processEventTriggers(event);
+		try {
+			processEventTriggers(event);
+		} catch (Throwable t) {
+			log.error("Failed to process triggers", t);
+		}
 	}
 
 	private void processEventTriggers(SystemEvent event) {
@@ -346,7 +350,9 @@ public class TriggerResourceServiceImpl extends
 		// TODO cache triggers to prevent constant database lookup
 
 		if (log.isInfoEnabled()) {
-			log.info("Looking for triggers for event " + event.getResourceKey());
+			log.info("Looking for triggers for event " 
+						+ event.getResourceKey() + " " 
+						+ event.getStatus().toString());
 		}
 
 		List<TriggerResource> triggers = repository.getTriggersForEvent(event);
