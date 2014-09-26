@@ -9,7 +9,7 @@ public class ChangePasswordEvent extends UserEvent {
 
 	private static final long serialVersionUID = -3803820258071069690L;
 
-	public static final String EVENT_RESOURCE_KEY = "event.setPassword";
+	public static final String EVENT_RESOURCE_KEY = "event.changePassword";
 
 	public ChangePasswordEvent(Object source, Session session, Realm realm,
 			RealmProvider provider) {

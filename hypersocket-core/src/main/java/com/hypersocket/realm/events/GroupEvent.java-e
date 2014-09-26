@@ -3,7 +3,6 @@ package com.hypersocket.realm.events;
 import java.util.List;
 import java.util.Map;
 
-import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;
@@ -13,7 +12,7 @@ public abstract class GroupEvent extends RealmEvent {
 
 	private static final long serialVersionUID = 7696093164958120790L;
 
-	public static final String ATTR_PRINCIPAL_NAME = CommonAttributes.ATTR_PRINCIPAL_NAME;
+	public static final String ATTR_SUBJECT_NAME = "attr.subjectName";
 	public static final String ATTR_ASSOCIATED_PRINCIPALS = "attr.associatedPrincipals";
 
 	private Principal principal;
@@ -22,7 +21,7 @@ public abstract class GroupEvent extends RealmEvent {
 			Realm realm, RealmProvider provider, Principal principal, Map<String,String> properties) {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
-		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
+		addAttribute(ATTR_SUBJECT_NAME, principal.getName());
 	}
 
 	public GroupEvent(Object source, String resourceKey, Session session,
@@ -30,7 +29,7 @@ public abstract class GroupEvent extends RealmEvent {
 			List<Principal> associatedPrincipals, Map<String, String> properties) {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
-		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
+		addAttribute(ATTR_SUBJECT_NAME, principal.getName());
 		addAssociatedPrincipals(associatedPrincipals);
 		for (String prop : properties.keySet()) {
 			addAttribute(prop, properties.get(prop));
@@ -41,7 +40,7 @@ public abstract class GroupEvent extends RealmEvent {
 			Session session, Realm realmName, RealmProvider provider,
 			String principalName) {
 		super(source, resourceKey, e, session, realmName);
-		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
+		addAttribute(ATTR_SUBJECT_NAME, principal.getName());
 	}
 
 	public GroupEvent(Object source, String resourceKey, Throwable e,
