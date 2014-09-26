@@ -8,6 +8,7 @@
 package com.hypersocket.config;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -73,23 +74,29 @@ public class SystemConfigurationServiceImpl extends AuthenticatedServiceImpl
 
 	@Override
 	public void setValue(String resourceKey, String value)
-			throws AccessDeniedException {
-		assertPermission(ConfigurationPermission.UPDATE);
-		repository.setValue(resourceKey, value);
+			throws AccessDeniedException, ResourceChangeException {
+		try {
+			assertPermission(ConfigurationPermission.UPDATE);
+			repository.setValue(resourceKey, value);
+		} catch (AccessDeniedException e) {
+			fireChangeEvent(resourceKey, e);
+			throw e;
+		} catch (Throwable t) {
+			fireChangeEvent(resourceKey, t);
+			throw new ResourceChangeException(ConfigurationService.RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
+		}
 	}
 
 	@Override
 	public void setValue(String resourceKey, Integer value)
 			throws AccessDeniedException {
-		assertPermission(ConfigurationPermission.UPDATE);
-		repository.setValue(resourceKey, value);
+		setValue(resourceKey, value);
 	}
 
 	@Override
 	public void setValue(String name, Boolean value)
 			throws AccessDeniedException {
-		assertPermission(ConfigurationPermission.UPDATE);
-		repository.setValue(name, value);
+		setValue(name, value);
 	}
 
 	@Override
@@ -108,9 +115,39 @@ public class SystemConfigurationServiceImpl extends AuthenticatedServiceImpl
 	public void setValues(Map<String, String> values)
 			throws AccessDeniedException, ResourceChangeException {
 
-		assertPermission(ConfigurationPermission.UPDATE);
-		repository.setValues(values);
+		try {
+			assertPermission(ConfigurationPermission.UPDATE);
+			
+			Map<String,String> oldValues = new HashMap<String,String>();
+			for(String resourceKey : values.keySet()) {
+				oldValues.put(resourceKey, getValue(resourceKey));
+			}
+			repository.setValues(values);
+			
+			for(String resourceKey : values.keySet()) {
+				fireChangeEvent(resourceKey, oldValues.get(resourceKey), values.get(resourceKey));
+			}
+		} catch (AccessDeniedException e) {
+			for(String resourceKey : values.keySet()) {
+				fireChangeEvent(resourceKey, e);
+			}
+			throw e;
+		} catch (Throwable t) {
+			for(String resourceKey : values.keySet()) {
+				fireChangeEvent(resourceKey, t);
+			}
+			throw new ResourceChangeException(ConfigurationService.RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
+		}
+	}
+	
+	private void fireChangeEvent(String resourceKey, String oldValue, String newValue) {
+		eventService.publishEvent(new ConfigurationChangedEvent(this, true,
+				getCurrentSession(), repository.getPropertyTemplate(resourceKey), oldValue, newValue));
+	}
 
+	private void fireChangeEvent(String resourceKey, Throwable t) {
+		eventService.publishEvent(new ConfigurationChangedEvent(this, resourceKey, t,
+				getCurrentSession()));
 	}
 
 	@Override

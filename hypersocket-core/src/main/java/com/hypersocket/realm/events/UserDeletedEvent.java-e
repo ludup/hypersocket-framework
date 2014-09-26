@@ -18,7 +18,7 @@ public class UserDeletedEvent extends UserEvent {
 
 	public UserDeletedEvent(Object source, Throwable e, Session session,
 			Realm realm, RealmProvider provider, String principalName) {
-		super(source, "event.userDeleted", e, session, realm.getName(), provider,
+		super(source, "event.userDeleted", e, session, realm, provider,
 				principalName);
 	}
 

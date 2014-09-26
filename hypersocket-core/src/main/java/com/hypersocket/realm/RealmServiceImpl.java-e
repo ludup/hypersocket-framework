@@ -351,11 +351,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		Realm realm = getRealmByName(name);
 
 		if (realm == null) {
-			ResourceNotFoundException ex = new ResourceNotFoundException(
+			throw new ResourceNotFoundException(
 					RESOURCE_BUNDLE, "error.invalidRealm", name);
-			eventService.publishEvent(new RealmDeletedEvent(this, ex,
-					getCurrentSession(), name));
-			throw ex;
 		}
 
 		deleteRealm(realm);
@@ -443,7 +440,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		} catch (ResourceException ex) {
 			eventService
 					.publishEvent(new ChangePasswordEvent(this, ex,
-							getCurrentSession(), getCurrentRealm().getName(),
+							getCurrentSession(), getCurrentRealm(),
 							provider));
 			throw ex;
 		}
@@ -472,7 +469,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		} catch (ResourceCreationException ex) {
 			eventService.publishEvent(new SetPasswordEvent(this, ex,
-					getCurrentSession(), getCurrentRealm().getName(), provider,
+					getCurrentSession(), getCurrentRealm(), provider,
 					principal.getPrincipalName()));
 			throw ex;
 		}
@@ -516,7 +513,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 				ResourceCreationException ex = new ResourceCreationException(
 						RESOURCE_BUNDLE, "error.nameAlreadyExists", name);
 				eventService.publishEvent(new RealmCreatedEvent(this, ex,
-						getCurrentSession(), name));
+						getCurrentSession(), name, module));
 				throw ex;
 			}
 
@@ -535,15 +532,15 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			return realm;
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(new RealmCreatedEvent(this, e,
-					getCurrentSession(), name));
+					getCurrentSession(), name, module));
 			throw e;
 		} catch (ResourceCreationException e) {
 			eventService.publishEvent(new RealmCreatedEvent(this, e,
-					getCurrentSession(), name));
+					getCurrentSession(), name, module));
 			throw e;
 		} catch (Throwable t) {
 			eventService.publishEvent(new RealmCreatedEvent(this, t,
-					getCurrentSession(), name));
+					getCurrentSession(), name, module));
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
 					"error.genericError", name, t.getMessage());
 		}
@@ -565,6 +562,10 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 				}
 			}
 
+			
+			RealmProvider realmProvider = getProviderForRealm(realm.getResourceCategory());
+			
+			realmProvider.testConnection(properties);
 			String oldName = realm.getName();
 
 			realm.setName(name);
@@ -580,15 +581,15 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(new RealmUpdatedEvent(this, e,
-					getCurrentSession(), name));
+					getCurrentSession(), realm));
 			throw e;
 		} catch (ResourceChangeException e) {
 			eventService.publishEvent(new RealmUpdatedEvent(this, e,
-					getCurrentSession(), name));
+					getCurrentSession(), realm));
 			throw e;
 		} catch (Throwable t) {
 			eventService.publishEvent(new RealmUpdatedEvent(this, t,
-					getCurrentSession(), name));
+					getCurrentSession(), realm));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
 					"error.unexpectedError", t);
 		}
@@ -665,19 +666,19 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			realmRepository.delete(realm);
 
 			eventService.publishEvent(new RealmDeletedEvent(this,
-					getCurrentSession(), realm.getName()));
+					getCurrentSession(), realm));
 
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(new RealmDeletedEvent(this, e,
-					getCurrentSession(), realm.getName()));
+					getCurrentSession(), realm));
 			throw e;
 		} catch (ResourceChangeException e) {
 			eventService.publishEvent(new RealmDeletedEvent(this, e,
-					getCurrentSession(), realm.getName()));
+					getCurrentSession(), realm));
 			throw e;
 		} catch (Throwable t) {
 			eventService.publishEvent(new RealmDeletedEvent(this, t,
-					getCurrentSession(), realm.getName()));
+					getCurrentSession(), realm));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
 					"error.unexpectedError", t);
 		}

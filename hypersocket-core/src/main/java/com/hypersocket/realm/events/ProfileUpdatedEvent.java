@@ -24,7 +24,7 @@ public class ProfileUpdatedEvent extends UserEvent {
 	public ProfileUpdatedEvent(Object source, Throwable e, Session session,
 			Realm realm, RealmProvider provider, String principalName,
 			Map<String, String> properties, List<Principal> associatedPrincipals) {
-		super(source, "event.profileUpdated", e, session, realm.getName(), provider,
+		super(source, "event.profileUpdated", e, session, realm, provider,
 				principalName, properties, associatedPrincipals);
 	}
 

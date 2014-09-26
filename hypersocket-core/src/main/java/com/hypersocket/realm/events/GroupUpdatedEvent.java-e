@@ -24,7 +24,7 @@ public class GroupUpdatedEvent extends GroupEvent {
 	public GroupUpdatedEvent(Object source, Throwable e, Session session,
 			Realm realm, RealmProvider provider, String principalName, 
 			List<Principal> associatedPrincipals) {
-		super(source, "event.groupUpdated", e, session, realm.getName(), provider,
+		super(source, "event.groupUpdated", e, session, realm, provider,
 				principalName, associatedPrincipals);
 	}
 

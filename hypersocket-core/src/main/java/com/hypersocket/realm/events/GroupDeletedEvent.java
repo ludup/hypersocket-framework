@@ -20,7 +20,7 @@ public class GroupDeletedEvent extends GroupEvent {
 
 	public GroupDeletedEvent(Object source, Throwable e, Session session,
 			Realm realm, RealmProvider provider, String principalName) {
-		super(source, "event.groupDeleted", e, session, realm.getName(), provider,
+		super(source, "event.groupDeleted", e, session, realm, provider,
 				principalName);
 	}
 

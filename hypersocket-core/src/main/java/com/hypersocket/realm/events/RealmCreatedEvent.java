@@ -14,8 +14,8 @@ public class RealmCreatedEvent extends RealmEvent {
 	}
 
 	public RealmCreatedEvent(Object source, Throwable e,
-			Session session, String realmName) {
-		super(source, "event.realmCreated", e, session, realmName);
+			Session session, String realmName, String realmType) {
+		super(source, "event.realmCreated", e, session, realmName, realmType);
 	}
 
 }

@@ -17,7 +17,7 @@ public class ChangePasswordEvent extends UserEvent {
 	}
 
 	public ChangePasswordEvent(Object source, Throwable t, Session session,
-			String realm, RealmProvider provider) {
+			Realm realm, RealmProvider provider) {
 		super(source, EVENT_RESOURCE_KEY, t, session, realm, provider,
 				session.getPrincipal().getPrincipalName());
 	}

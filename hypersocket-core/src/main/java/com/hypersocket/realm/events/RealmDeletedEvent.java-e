@@ -1,5 +1,6 @@
 package com.hypersocket.realm.events;
 
+import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 
 public class RealmDeletedEvent extends RealmEvent {
@@ -8,13 +9,13 @@ public class RealmDeletedEvent extends RealmEvent {
 
 	public static final String EVENT_RESOURCE_KEY = "event.realmDeleted";
 	
-	public RealmDeletedEvent(Object source, Session session, String realmName) {
-		super(source, "event.realmDeleted", true, session, realmName);
+	public RealmDeletedEvent(Object source, Session session, Realm realm) {
+		super(source, "event.realmDeleted", true, session, realm);
 	}
 
 	public RealmDeletedEvent(Object source, Throwable e,
-			Session session, String realmName) {
-		super(source, "event.realmDeleted", e, session, realmName);
+			Session session, Realm realm) {
+		super(source, "event.realmDeleted", e, session, realm);
 	}
 
 }

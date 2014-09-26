@@ -27,4 +27,6 @@ public interface PropertyTemplateRepository {
 	
 	void setValues(Map<String,String> values);
 
+	PropertyTemplate getPropertyTemplate(String resourceKey);
+
 }

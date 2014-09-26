@@ -17,7 +17,7 @@ public class RealmUpdatedEvent extends RealmEvent {
 	}
 
 	public RealmUpdatedEvent(Object source, Throwable e,
-			Session session, String realmName) {
+			Session session, Realm realmName) {
 		super(source, "event.realmUpdated", e, session, realmName);
 	}
 

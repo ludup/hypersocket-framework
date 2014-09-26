@@ -404,4 +404,9 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		}
 		
 	}
+
+	@Override
+	public PropertyTemplate getPropertyTemplate(String resourceKey) {
+		return propertyStoresByResourceKey.get(resourceKey).getPropertyTemplate(resourceKey);
+	}
 }

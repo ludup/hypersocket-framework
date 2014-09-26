@@ -39,5 +39,7 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	Long getLongValue(AbstractResource resource, String name)
 			throws NumberFormatException;
+	
+	PropertyTemplate getPropertyTemplate(String resourceKey);
 
 }

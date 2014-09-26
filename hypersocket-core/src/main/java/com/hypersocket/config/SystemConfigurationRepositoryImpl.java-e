@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hypersocket.properties.DatabasePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyRepositoryImpl;
+import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.PropertyTemplateRepository;
 import com.hypersocket.properties.PropertyTemplateRepositoryAbstractImpl;
 
@@ -72,14 +73,17 @@ public class SystemConfigurationRepositoryImpl extends PropertyRepositoryImpl im
 
 	@Override
 	public void setValues(Map<String, String> values) {
-
 		repository.setValues(values);
-
 	}
 
 	@Override
 	public Collection<PropertyCategory> getPropertyCategories(String group) {
 		return repository.getPropertyCategories(group);
+	}
+
+	@Override
+	public PropertyTemplate getPropertyTemplate(String resourceKey) {
+		return repository.getPropertyTemplate(resourceKey);
 	}
 	
 }

@@ -39,14 +39,14 @@ public abstract class UserEvent extends RealmEvent {
 	}
 
 	public UserEvent(Object source, String resourceKey, Throwable e,
-			Session session, String realmName, RealmProvider provider,
+			Session session, Realm realmName, RealmProvider provider,
 			String principalName) {
 		super(source, resourceKey, e, session, realmName);
 		addAttribute(ATTR_PRINCIPAL_NAME, principalName);
 	}
 
 	public UserEvent(Object source, String resourceKey, Throwable e,
-			Session session, String realmName, RealmProvider provider,
+			Session session, Realm realmName, RealmProvider provider,
 			String principalName, Map<String, String> properties,
 			List<Principal> associatedPrincipals) {
 		super(source, resourceKey, e, session, realmName);
