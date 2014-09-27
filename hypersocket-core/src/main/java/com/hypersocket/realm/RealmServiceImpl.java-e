@@ -519,7 +519,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 			RealmProvider realmProvider = getProviderForRealm(module);
 			
-			realmProvider.testConnection(properties);
+			realmProvider.testConnection(properties, true);
 			
 			Realm realm = realmRepository.createRealm(name, module, properties,
 					realmProvider);
@@ -565,7 +565,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			
 			RealmProvider realmProvider = getProviderForRealm(realm.getResourceCategory());
 			
-			realmProvider.testConnection(properties);
+			realmProvider.testConnection(properties, false);
 			String oldName = realm.getName();
 
 			realm.setName(name);

@@ -21,7 +21,7 @@ import com.hypersocket.tables.ColumnSort;
 
 public interface RealmProvider extends ResourceTemplateRepository {
 
-	void testConnection(Map<String, String> properties) throws IOException;
+	void testConnection(Map<String, String> properties, boolean createMode) throws IOException;
 
 	List<Principal> allPrincipals(Realm realm, PrincipalType... types);
 
