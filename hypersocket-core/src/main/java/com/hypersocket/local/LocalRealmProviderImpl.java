@@ -608,7 +608,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
-	public void testConnection(Map<String, String> properties)
+	public void testConnection(Map<String, String> properties, boolean createMode)
 			throws IOException {
 		
 	}
