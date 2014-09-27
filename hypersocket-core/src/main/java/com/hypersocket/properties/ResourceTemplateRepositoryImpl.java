@@ -202,7 +202,20 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 					throw new IOException("store attribute not supported for resource templates!");
 				}
 
+				if(!pnode.hasAttribute("resourceKey")) {
+					throw new IOException("property must have a resourceKey attribute");
+				}
 				try {
+					
+					PropertyTemplate t = getPropertyTemplate(pnode.getAttribute("resourceKey"));
+					if(t!=null) {
+						if(log.isInfoEnabled()) {
+							log.info("Overriding default value of " + t.getResourceKey() + " to " + pnode.getAttribute("defaultValue"));
+						}
+						t.setDefaultValue(pnode.getAttribute("defaultValue"));
+						continue;
+					}
+					
 					registerPropertyItem(
 							cat,
 							getPropertyStore(),
@@ -330,6 +343,10 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			String bundle, int weight, boolean userCreated, String group, String displayMode) {
 
 		if (activeCategories.containsKey(resourceKey)) {
+			PropertyCategory cat = activeCategories.get(resourceKey);
+			if(cat.getBundle().equals(bundle)) {
+				return cat;
+			}
 			throw new IllegalStateException(
 						"Cannot register "
 								+ resourceKey
@@ -435,7 +452,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 		});
 		
-		return Collections.unmodifiableCollection(cats);
+		return cats;
 	}
 	
 	@Override
@@ -465,7 +482,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 		});
 		
-		return Collections.unmodifiableCollection(cats);
+		return cats;
 	}
 	
 	@Override

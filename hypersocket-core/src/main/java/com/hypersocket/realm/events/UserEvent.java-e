@@ -31,7 +31,9 @@ public abstract class UserEvent extends RealmEvent {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
 		addAttribute(ATTR_SUBJECT_NAME, principal.getName());
-		addAssociatedPrincipals(associatedPrincipals);
+		if(associatedPrincipals!=null) {
+			addAssociatedPrincipals(associatedPrincipals);
+		}
 		for (String prop : properties.keySet()) {
 			addAttribute(prop, properties.get(prop));
 		}
@@ -50,7 +52,9 @@ public abstract class UserEvent extends RealmEvent {
 			List<Principal> associatedPrincipals) {
 		super(source, resourceKey, e, session, realmName);
 		addAttribute(ATTR_SUBJECT_NAME, principalName);
-		addAssociatedPrincipals(associatedPrincipals);
+		if(associatedPrincipals!=null) {
+			addAssociatedPrincipals(associatedPrincipals);
+		}
 		for (String prop : properties.keySet()) {
 			addAttribute(prop, properties.get(prop));
 		}

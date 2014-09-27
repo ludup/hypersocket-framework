@@ -1,6 +1,5 @@
 package com.hypersocket.realm.events;
 
-import java.util.List;
 import java.util.Map;
 
 import com.hypersocket.realm.Principal;
@@ -16,16 +15,16 @@ public class ProfileUpdatedEvent extends UserEvent {
 	
 	public ProfileUpdatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
-			List<Principal> associatedPrincipals, Map<String, String> properties) {
+			Map<String, String> properties) {
 		super(source, "event.profileUpdated", session, realm, provider, principal,
-				associatedPrincipals, properties);
+				null, properties);
 	}
 
 	public ProfileUpdatedEvent(Object source, Throwable e, Session session,
 			Realm realm, RealmProvider provider, String principalName,
-			Map<String, String> properties, List<Principal> associatedPrincipals) {
+			Map<String, String> properties) {
 		super(source, "event.profileUpdated", e, session, realm, provider,
-				principalName, properties, associatedPrincipals);
+				principalName, properties, null);
 	}
 
 }

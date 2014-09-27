@@ -8,8 +8,10 @@
 package com.hypersocket.realm;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -29,6 +31,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.SystemPermission;
+import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.events.ChangePasswordEvent;
 import com.hypersocket.realm.events.GroupCreatedEvent;
@@ -134,7 +137,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		setCurrentPrincipal(getSystemPrincipal(), Locale.getDefault(),
 				getSystemPrincipal().getRealm());
-		
+
 		try {
 			for (Realm realm : realmRepository.allRealms()) {
 				for (RealmListener listener : realmListeners) {
@@ -209,6 +212,11 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
+	public String[] getRealmPropertyArray(Realm realm, String resourceKey) {
+		return getRealmProperty(realm, resourceKey).split("\\]\\|\\[");
+	}
+
+	@Override
 	public String getRealmProperty(Realm realm, String resourceKey) {
 
 		RealmProvider provider = getProviderForRealm(realm);
@@ -239,7 +247,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		RealmProvider provder = getProviderForRealm(realm);
 		return provder.getValue(realm, "realm.host");
 	}
-	
+
 	@Override
 	public Realm getRealmById(Long id) throws AccessDeniedException {
 
@@ -351,8 +359,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		Realm realm = getRealmByName(name);
 
 		if (realm == null) {
-			throw new ResourceNotFoundException(
-					RESOURCE_BUNDLE, "error.invalidRealm", name);
+			throw new ResourceNotFoundException(RESOURCE_BUNDLE,
+					"error.invalidRealm", name);
 		}
 
 		deleteRealm(realm);
@@ -438,10 +446,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 					getCurrentSession(), getCurrentRealm(), provider));
 
 		} catch (ResourceException ex) {
-			eventService
-					.publishEvent(new ChangePasswordEvent(this, ex,
-							getCurrentSession(), getCurrentRealm(),
-							provider));
+			eventService.publishEvent(new ChangePasswordEvent(this, ex,
+					getCurrentSession(), getCurrentRealm(), provider));
 			throw ex;
 		}
 	}
@@ -469,8 +475,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		} catch (ResourceCreationException ex) {
 			eventService.publishEvent(new SetPasswordEvent(this, ex,
-					getCurrentSession(), getCurrentRealm(), provider,
-					principal.getPrincipalName()));
+					getCurrentSession(), getCurrentRealm(), provider, principal
+							.getPrincipalName()));
 			throw ex;
 		}
 
@@ -518,9 +524,9 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			}
 
 			RealmProvider realmProvider = getProviderForRealm(module);
-			
+
 			realmProvider.testConnection(properties, true);
-			
+
 			Realm realm = realmRepository.createRealm(name, module, properties,
 					realmProvider);
 
@@ -562,9 +568,9 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 				}
 			}
 
-			
-			RealmProvider realmProvider = getProviderForRealm(realm.getResourceCategory());
-			
+			RealmProvider realmProvider = getProviderForRealm(realm
+					.getResourceCategory());
+
 			realmProvider.testConnection(properties, false);
 			String oldName = realm.getName();
 
@@ -847,9 +853,10 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 			if (permissionService.hasSystemPermission(user)) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE,
-						"error.cannotDeleteSystemAdmin", user.getPrincipalName());
+						"error.cannotDeleteSystemAdmin",
+						user.getPrincipalName());
 			}
-			
+
 			provider.deleteUser(user);
 
 			eventService.publishEvent(new UserDeletedEvent(this,
@@ -896,6 +903,51 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
+	public Collection<PropertyCategory> getUserProfileTemplates(
+			Principal principal) throws AccessDeniedException {
+
+		assertAnyPermission(ProfilePermission.READ);
+
+		RealmProvider provider = getProviderForRealm(principal.getRealm());
+
+		Collection<PropertyCategory> ret = provider
+				.getUserProperties(principal);
+
+		Set<String> editable = new HashSet<String>(
+				Arrays.asList(getRealmPropertyArray(principal.getRealm(),
+						"realm.userEditableProperties")));
+		Set<String> restricted = new HashSet<String>(
+				Arrays.asList(getRealmPropertyArray(principal.getRealm(),
+						"realm.userRestrictedProperties")));
+		
+		/**
+		 * Filter the properties down to read only and editable as defined
+		 * by the realm configuration.
+		 */
+		for (PropertyCategory c : ret) {
+
+			List<AbstractPropertyTemplate> tmp = new ArrayList<AbstractPropertyTemplate>();
+			for (AbstractPropertyTemplate t : c.getTemplates()) {
+				if(restricted.contains(t.getResourceKey())) {
+					tmp.add(t);
+					continue;
+				}
+				if(!editable.contains(t.getResourceKey()) && !t.isReadOnly()) {
+					t.setReadOnly(true);
+					continue;
+				}
+				if(provider.isReadOnly(principal.getRealm())) {
+					t.setReadOnly(true);
+				}
+			}
+
+			c.getTemplates().removeAll(tmp);
+		}
+		
+		return ret;
+	}
+
+	@Override
 	public Collection<PropertyCategory> getUserPropertyTemplates(String module)
 			throws AccessDeniedException {
 
@@ -917,6 +969,18 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		RealmProvider provider = getProviderForRealm(getCurrentRealm());
 
 		return provider.getUserProperties(null);
+	}
+
+	@Override
+	public Collection<String> getUserPropertyNames()
+			throws AccessDeniedException {
+
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ,
+				RealmPermission.READ);
+
+		RealmProvider provider = getProviderForRealm(getCurrentRealm());
+
+		return provider.getUserPropertyNames();
 	}
 
 	@Override
@@ -1025,27 +1089,45 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public void updateProfile(Realm realm, Principal principal,
-			Map<String, String> properties) throws AccessDeniedException, ResourceChangeException {
-
-		assertAnyPermission(ProfilePermission.UPDATE, 
-				RealmPermission.UPDATE,
-				UserPermission.UPDATE);
+			Map<String, String> properties) throws AccessDeniedException,
+			ResourceChangeException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
-		List<Principal> assosiated = provider
-				.getAssociatedPrincipals(principal);
+		/**
+		 * This ensures we only ever update those properties that are allowed
+		 */
+		String[] editableProperties = getRealmPropertyArray(realm,
+				"realm.userEditableProperties");
+
+		HashMap<String, String> filteredProperties = new HashMap<String, String>();
+		for (String allowed : editableProperties) {
+			filteredProperties.put(allowed, properties.get(allowed));
+		}
+
 		try {
+			assertAnyPermission(ProfilePermission.UPDATE,
+					RealmPermission.UPDATE, UserPermission.UPDATE);
+
+			List<Principal> assosiated = provider
+					.getAssociatedPrincipals(principal);
+
 			principal = provider.updateUser(realm, principal,
-					principal.getPrincipalName(), properties, assosiated);
+					principal.getPrincipalName(), filteredProperties,
+					assosiated);
 
 			eventService.publishEvent(new ProfileUpdatedEvent(this,
 					getCurrentSession(), realm, provider, principal,
-					assosiated, properties));
+					filteredProperties));
+		} catch (AccessDeniedException e) {
+			eventService.publishEvent(new ProfileUpdatedEvent(this, e,
+					getCurrentSession(), realm, provider, principal
+							.getPrincipalName(), filteredProperties));
+			throw e;
 		} catch (ResourceChangeException e) {
 			eventService.publishEvent(new ProfileUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, principal
-							.getPrincipalName(), properties, assosiated));
+							.getPrincipalName(), filteredProperties));
 			throw e;
 		}
 
