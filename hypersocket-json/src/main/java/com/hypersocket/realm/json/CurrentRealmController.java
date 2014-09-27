@@ -243,7 +243,7 @@ public class CurrentRealmController extends ResourceController {
 	}
 	
 	@AuthenticationRequired
-	@RequestMapping(value = "currentRealm/user/template}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "currentRealm/user/template", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<PropertyCategory> getUserTemplate(
@@ -256,6 +256,26 @@ public class CurrentRealmController extends ResourceController {
 		try {
 			return new ResourceList<PropertyCategory>(
 					realmService.getUserPropertyTemplates());
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/user/templateNames", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<String> getUserPropertyNames(
+			HttpServletRequest request)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<String>(
+					realmService.getUserPropertyNames());
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -317,7 +337,7 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return new ResourceList<PropertyCategory>(
-					realmService.getUserPropertyTemplates(sessionUtils
+					realmService.getUserProfileTemplates(sessionUtils
 							.getPrincipal(request)));
 		} finally {
 			clearAuthenticatedContext();

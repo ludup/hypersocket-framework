@@ -182,4 +182,11 @@ public interface RealmService extends AuthenticatedService {
 
 	String getRealmHostname(Realm realm);
 
+	Collection<String> getUserPropertyNames() throws AccessDeniedException;
+
+	String[] getRealmPropertyArray(Realm realm, String resourceKey);
+
+	Collection<PropertyCategory> getUserProfileTemplates(Principal principal)
+			throws AccessDeniedException;
+
 }
