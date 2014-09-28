@@ -11,10 +11,10 @@ import com.hypersocket.permissions.PermissionType;
 
 public enum TriggerPermission implements PermissionType {
 	
-	CREATE("trigger.create"),
 	READ("trigger.read"),
-	UPDATE("trigger.update"),
-	DELETE("trigger.delete");
+	CREATE("trigger.create", READ),
+	UPDATE("trigger.update", READ),
+	DELETE("trigger.delete", READ);
 	
 	private final String val;
 	

@@ -11,10 +11,10 @@ import com.hypersocket.permissions.PermissionType;
 
 public enum RealmPermission implements PermissionType {
 
-	CREATE("realm.create"),
 	READ("realm.read"),
-	UPDATE("realm.update"),
-	DELETE("realm.delete");
+	CREATE("realm.create", READ),
+	UPDATE("realm.update", READ),
+	DELETE("realm.delete", READ);
 	
 	private final String val;
 	
