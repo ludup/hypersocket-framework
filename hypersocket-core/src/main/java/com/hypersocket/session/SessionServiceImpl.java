@@ -87,7 +87,7 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		}
 		
 		try {
-			schedulerService.scheduleIn(SessionReaperJob.class, null, 1, 60000);
+			schedulerService.scheduleIn(SessionReaperJob.class, null, 60000, 60000);
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule session reaper job", e);
 		}
@@ -105,10 +105,12 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		ReadableUserAgent ua = parser.parse(userAgent);
 		
 		Session session = repository.createSession(remoteAddress, principal,
-				completedScheme, ua.getFamily().getName(), ua.getVersionNumber().toVersionString(), 
+				completedScheme, 
+				ua.getFamily().getName(), 
+				ua.getVersionNumber().toVersionString(), 
 				ua.getOperatingSystem().getFamily().getName(),
 				ua.getOperatingSystem().getVersionNumber().toVersionString(),
-				configurationService.getIntValue(SESSION_TIMEOUT));
+				configurationService.getIntValue(principal.getRealm(), SESSION_TIMEOUT));
 		
 		eventService.publishEvent(new SessionOpenEvent(this, session));
 		return session;
@@ -116,17 +118,7 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public Session getSession(String id) {
-		Session session = repository.getSessionById(id);
-
-		// Check for a null last updated indicating transient info needs setting
-		if (session!=null && !session.hasLastUpdated()) {
-			session.setTimeout(configurationService
-					.getIntValue(SESSION_TIMEOUT));
-
-			// We don't set last updated, let the session service work out if
-			// its timed out from last modified.
-		}
-		return session;
+		return repository.getSessionById(id);
 	}
 
 	@Override
