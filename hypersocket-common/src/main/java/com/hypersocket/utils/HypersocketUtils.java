@@ -1,5 +1,11 @@
 package com.hypersocket.utils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +15,8 @@ public class HypersocketUtils {
 
 	static ThreadLocal<Long> times = new ThreadLocal<Long>();
 
+	static Map<String,SimpleDateFormat> dateFormats = new HashMap<String,SimpleDateFormat>();
+	
 	public static void resetInterval() {
 		times.set(System.currentTimeMillis());
 	}
@@ -45,5 +53,41 @@ public class HypersocketUtils {
 		}
 		return result;
 	}
+	
+	/**
+	 * Format a date with a given format. Formats are cached to prevent excessive use of 
+	 * DateFormat.
+	 * @param date
+	 * @param format
+	 * @return
+	 */
+	public static String formatDate(Date date, String format) {
+		
+		if(!dateFormats.containsKey(format)) {
+			dateFormats.put(format, new SimpleDateFormat(format));
+		}
+		
+		return dateFormats.get(format).format(date);
+	}
+	
+	public static String formatDate(Date date) {
+		return formatDate(date, "EEE, d MMM yyyy HH:mm:ss");
+	}
+	
+	/**
+	 * Parse a date on a given format. 
+	 * @param date
+	 * @param format
+	 * @return
+	 * @throws ParseException
+	 */
+	public static Date parseDate(String date, String format) throws ParseException {
+		if(!dateFormats.containsKey(format)) {
+			dateFormats.put(format, new SimpleDateFormat(format));
+		}
+		
+		return dateFormats.get(format).parse(date);
+	}
+	
 
 }
