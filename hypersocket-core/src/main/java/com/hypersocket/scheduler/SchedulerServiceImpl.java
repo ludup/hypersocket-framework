@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.utils.HypersocketUtils;
+
 @Service
 public class SchedulerServiceImpl implements SchedulerService {
 
@@ -86,39 +88,39 @@ public class SchedulerServiceImpl implements SchedulerService {
 
 	@Override
 	public String scheduleIn(Class<? extends Job> clz, JobDataMap data,
-			int minutes) throws SchedulerException {
-		return scheduleIn(clz, data, minutes, 0,
+			int millis) throws SchedulerException {
+		return scheduleIn(clz, data, millis, 0,
 				SimpleTrigger.REPEAT_INDEFINITELY);
 	}
 
 	@Override
 	public String scheduleIn(Class<? extends Job> clz, JobDataMap data,
-			int minutes, int interval) throws SchedulerException {
-		return schedule(clz, data, DateBuilder.futureDate(minutes,
-				DateBuilder.IntervalUnit.MINUTE), interval,
+			int millis, int interval) throws SchedulerException {
+		return schedule(clz, data, DateBuilder.futureDate(millis,
+				DateBuilder.IntervalUnit.MILLISECOND), interval,
 				SimpleTrigger.REPEAT_INDEFINITELY);
 	}
 
 	@Override
 	public String scheduleIn(Class<? extends Job> clz, JobDataMap data,
-			int minutes, int interval, int repeat) throws SchedulerException {
-		return scheduleAt(clz, data, DateBuilder.futureDate(minutes,
-				DateBuilder.IntervalUnit.MINUTE), interval, repeat);
+			int millis, int interval, int repeat) throws SchedulerException {
+		return scheduleAt(clz, data, DateBuilder.futureDate(millis,
+				DateBuilder.IntervalUnit.MILLISECOND), interval, repeat);
 	}
 
 	@Override
-	public void rescheduleIn(String scheduleId, int minutes, int interval, int repeat) throws SchedulerException {
-		reschedule(scheduleId, DateBuilder.futureDate(minutes, DateBuilder.IntervalUnit.MINUTE), interval, repeat);
+	public void rescheduleIn(String scheduleId, int millis, int interval, int repeat) throws SchedulerException {
+		reschedule(scheduleId, DateBuilder.futureDate(millis, DateBuilder.IntervalUnit.MILLISECOND), interval, repeat);
 	}
 	
 	@Override
-	public void rescheduleIn(String scheduleId, int minutes, int interval) throws SchedulerException {
-		reschedule(scheduleId, DateBuilder.futureDate(minutes, DateBuilder.IntervalUnit.MINUTE), interval, 0);
+	public void rescheduleIn(String scheduleId, int millis, int interval) throws SchedulerException {
+		reschedule(scheduleId, DateBuilder.futureDate(millis, DateBuilder.IntervalUnit.MILLISECOND), interval, 0);
 	}
 	
 	@Override
-	public void rescheduleIn(String scheduleId, int minutes) throws SchedulerException {
-		reschedule(scheduleId, DateBuilder.futureDate(minutes, DateBuilder.IntervalUnit.MINUTE), 0, 0);
+	public void rescheduleIn(String scheduleId, int millis) throws SchedulerException {
+		reschedule(scheduleId, DateBuilder.futureDate(millis, DateBuilder.IntervalUnit.MILLISECOND), 0, 0);
 	}
 
 	@Override
@@ -156,6 +158,10 @@ public class SchedulerServiceImpl implements SchedulerService {
 
 		String uuid = UUID.randomUUID().toString();
 
+		if(log.isInfoEnabled()) {
+			log.info("Scheduling job with id " + uuid + " to start " + (start==null ? "now" : "at " + HypersocketUtils.formatDate(start))
+					 + " with interval of " + (interval/60000) + " minutes and repeat " + (repeat >= 0 ? (repeat/60000) + " time(s)" : "indefinately"));
+		}
 		JobDetail job = JobBuilder.newJob(clz).build();
 		jobKeys.put(uuid, job.getKey());
 
@@ -194,6 +200,10 @@ public class SchedulerServiceImpl implements SchedulerService {
 	protected void reschedule(String id, Date start, int interval, int repeat)
 			throws SchedulerException {
 
+		if(log.isInfoEnabled()) {
+			log.info("Rescheduling job with id " + id + " to start at " + HypersocketUtils.formatDate(start)
+					 + " with interval of " + interval + " and repeat " + (repeat >= 0 ? repeat : "indefinatley"));
+		}
 		TriggerKey triggerKey = triggerKeys.get(id);
 
 		Trigger trigger = createTrigger(scheduler.getTrigger(triggerKey)
@@ -213,6 +223,20 @@ public class SchedulerServiceImpl implements SchedulerService {
 		if(scheduler.checkExists(jobKey)) {
 			scheduler.deleteJob(jobKey);
 		}
+	}
+	
+	@Override
+	public Date getNextSchedule(String id) throws SchedulerException {
+		
+		Trigger trigger = scheduler.getTrigger(triggerKeys.get(id));
+		return trigger.getNextFireTime();
+	}
+	
+	@Override
+	public Date getPreviousSchedule(String id) throws SchedulerException {
+		
+		Trigger trigger = scheduler.getTrigger(triggerKeys.get(id));
+		return trigger.getPreviousFireTime();
 	}
 
 }

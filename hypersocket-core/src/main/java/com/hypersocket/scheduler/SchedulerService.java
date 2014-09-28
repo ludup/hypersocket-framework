@@ -25,22 +25,22 @@ public interface SchedulerService {
 	String scheduleAt(Class<? extends Job> clz, JobDataMap data, Date start, int interval, int repeat)
 			throws SchedulerException;
 
-	String scheduleIn(Class<? extends Job> clz, JobDataMap data, int minutes)
+	String scheduleIn(Class<? extends Job> clz, JobDataMap data, int millis)
 			throws SchedulerException;
 
-	String scheduleIn(Class<? extends Job> clz, JobDataMap data, int minutes,
+	String scheduleIn(Class<? extends Job> clz, JobDataMap data, int millis,
 			int interval) throws SchedulerException;
 
-	String scheduleIn(Class<? extends Job> clz, JobDataMap data, int minutes,
+	String scheduleIn(Class<? extends Job> clz, JobDataMap data, int millis,
 			int interval, int repeat) throws SchedulerException;
 
-	void rescheduleIn(String scheduleId, int minutes, int interval, int repeat)
+	void rescheduleIn(String scheduleId, int millis, int interval, int repeat)
 			throws SchedulerException;
 
-	void rescheduleIn(String scheduleId, int minutes, int interval)
+	void rescheduleIn(String scheduleId, int millis, int interval)
 			throws SchedulerException;
 
-	void rescheduleIn(String scheduleId, int minutes) throws SchedulerException;
+	void rescheduleIn(String scheduleId, int millis) throws SchedulerException;
 
 	void rescheduleAt(String scheduleId, Date time, int interval, int repeat)
 			throws SchedulerException;
@@ -59,5 +59,9 @@ public interface SchedulerService {
 			throws SchedulerException;
 
 	void cancelNow(String scheduleId) throws SchedulerException;
+
+	Date getNextSchedule(String string) throws SchedulerException;
+
+	Date getPreviousSchedule(String string) throws SchedulerException;
 
 }
