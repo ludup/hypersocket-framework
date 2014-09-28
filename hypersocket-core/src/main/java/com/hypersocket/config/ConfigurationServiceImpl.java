@@ -57,19 +57,6 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 		eventPublisher.registerEvent(ConfigurationChangedEvent.class, RESOURCE_BUNDLE);
 	}
 
-	protected Realm getPropertyRealm() {
-		/**
-		 * Return the realm we should record against. We return null if the
-		 * realm is the default system realm since we want that realm to hold
-		 * all default settings.
-		 */
-		if (getCurrentRealm()==null || getCurrentRealm().isSystem()) {
-			return null;
-		} else {
-			return getCurrentRealm();
-		}
-	}
-
 	@Override
 	public String getValue(Realm realm, String resourceKey) {
 		return repository.getValue(realm, resourceKey);
@@ -77,7 +64,7 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 	
 	@Override
 	public String getValue(String resourceKey) {
-		return repository.getValue(getPropertyRealm(), resourceKey);
+		return repository.getValue(getCurrentRealm(), resourceKey);
 	}
 
 	@Override
@@ -87,7 +74,7 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 	
 	@Override
 	public Integer getIntValue(String name) throws NumberFormatException {
-		return repository.getIntValue(getPropertyRealm(), name);
+		return repository.getIntValue(getCurrentRealm(), name);
 	}
 	
 	@Override
@@ -97,7 +84,7 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 	
 	@Override
 	public Boolean getBooleanValue(String name) {
-		return repository.getBooleanValue(getPropertyRealm(), name);
+		return repository.getBooleanValue(getCurrentRealm(), name);
 	}
 
 	@Override
@@ -105,7 +92,7 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 			throws AccessDeniedException, ResourceChangeException {
 		try {
 			assertPermission(ConfigurationPermission.UPDATE);
-			repository.setValue(getPropertyRealm(), resourceKey, value);
+			repository.setValue(getCurrentRealm(), resourceKey, value);
 		} catch (AccessDeniedException e) {
 			fireChangeEvent(resourceKey, e);
 			throw e;
@@ -132,12 +119,12 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 	public Collection<PropertyCategory> getPropertyCategories()
 			throws AccessDeniedException {
 		assertPermission(ConfigurationPermission.READ);
-		return repository.getPropertyCategories(getPropertyRealm());
+		return repository.getPropertyCategories(getCurrentRealm());
 	}
 
 	@Override
 	public String[] getValues(String name) {
-		return repository.getValues(getPropertyRealm(), name);
+		return repository.getValues(getCurrentRealm(), name);
 	}
 
 	@Override
@@ -151,7 +138,7 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 			for(String resourceKey : values.keySet()) {
 				oldValues.put(resourceKey, getValue(resourceKey));
 			}
-			repository.setValues(getPropertyRealm(), values);
+			repository.setValues(getCurrentRealm(), values);
 			
 			for(String resourceKey : values.keySet()) {
 				fireChangeEvent(resourceKey, oldValues.get(resourceKey), values.get(resourceKey));
@@ -183,7 +170,7 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 	public Collection<PropertyCategory> getPropertyCategories(String group)
 			throws AccessDeniedException {
 		assertPermission(ConfigurationPermission.READ);
-		return repository.getPropertyCategories(getPropertyRealm(), group);
+		return repository.getPropertyCategories(getCurrentRealm(), group);
 	}
 
 	@Override
