@@ -12,7 +12,7 @@ import com.hypersocket.permissions.PermissionType;
 public enum ConfigurationPermission implements PermissionType {
 
 	READ("config.read"),
-	UPDATE("config.update");
+	UPDATE("config.update", READ);
 	
 	private final String val;
 	

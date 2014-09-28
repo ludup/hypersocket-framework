@@ -12,10 +12,10 @@ import com.hypersocket.permissions.PermissionType;
 
 public enum CertificateResourcePermission implements PermissionType {
 	
-	CREATE("create"),
 	READ("read"),
-	UPDATE("update"),
-	DELETE("delete");
+	CREATE("create", READ),
+	UPDATE("update", READ),
+	DELETE("delete", READ);
 	
 	private final String val;
 	

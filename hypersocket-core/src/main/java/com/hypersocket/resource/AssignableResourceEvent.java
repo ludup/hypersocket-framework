@@ -1,7 +1,6 @@
 package com.hypersocket.resource;
 
-import org.springframework.util.StringUtils;
-
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.events.RealmResourceEvent;
 import com.hypersocket.session.Session;
 
@@ -25,7 +24,7 @@ public abstract class AssignableResourceEvent extends RealmResourceEvent {
 
 	private void addRoleAttribute(AssignableResource resource) {
 		addAttribute(ATTR_ROLES,
-				StringUtils.collectionToCommaDelimitedString(resource
-						.getRoles()));
+				ResourceUtils.createCommaSeparatedString(
+						resource.getRoles()));
 	}
 }

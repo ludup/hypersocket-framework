@@ -11,10 +11,10 @@ import com.hypersocket.permissions.PermissionType;
 
 public enum RolePermission implements PermissionType {
 	
-	CREATE("role.create"),
 	READ("role.read"),
-	UPDATE("role.update"),
-	DELETE("role.delete");
+	CREATE("role.create", READ),
+	UPDATE("role.update", READ),
+	DELETE("role.delete", READ);
 	
 	private final String val;
 	
