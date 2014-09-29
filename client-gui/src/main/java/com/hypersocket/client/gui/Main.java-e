@@ -86,7 +86,7 @@ public class Main {
 			dir.mkdirs();
 			
 			PropertyConfigurator.configure("conf" + File.separator + "log4j-gui.properties");
-			BasicConfigurator.configure();
+
 		} catch (Exception e) {
 			BasicConfigurator.configure();
 		}
