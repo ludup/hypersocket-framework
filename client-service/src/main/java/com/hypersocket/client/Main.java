@@ -226,11 +226,9 @@ public class Main {
 		
 		System.setProperty("java.rmi.server.hostname", "localhost");
 		
-		BasicConfigurator.configure();
 		if (System.getSecurityManager() == null) {
 			System.setSecurityManager(new RMISecurityManager());
 		}
-
 
 		while(true) {
 			try {
