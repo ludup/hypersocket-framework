@@ -15,6 +15,7 @@ import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -31,14 +32,17 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	static final String RESOURCE_BUNDLE = "AssignableResourceService";
 
 	@Autowired
-	RealmService realmService;
+	RealmService realm;
 
+	@Autowired
+	EntityResourcePropertyStore entityPropertyStore;
+	
 	protected abstract AbstractResourceRepository<T> getRepository();
 
 	protected abstract String getResourceBundle();
 
 	public abstract Class<? extends PermissionType> getPermissionType();
-
+	
 	protected PermissionType getUpdatePermission() {
 		return getPermission("UPDATE");
 	}
@@ -183,7 +187,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	@Override
 	public List<T> getResources() {
-		return getRepository().getResources();
+		return getRepository().getResources(getCurrentRealm());
 	}
 
 	@Override

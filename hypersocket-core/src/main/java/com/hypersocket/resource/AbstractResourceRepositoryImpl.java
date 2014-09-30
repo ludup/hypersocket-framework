@@ -88,11 +88,6 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	}
 
 	@Override
-	public List<T> getResources() {
-		return getResources(null);
-	}
-
-	@Override
 	public List<T> search(Realm realm, String searchPattern, int start,
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		return super.search(getResourceClass(), "name", searchPattern, start,

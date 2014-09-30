@@ -77,22 +77,17 @@ public abstract class AbstractAuthenticatedService implements
 		return currentPrincipal.get() != null;
 	}
 
-	protected void assertPermission(PermissionType... permission)
+	protected void assertPermission(PermissionType permission)
 			throws AccessDeniedException {
-		assertPermission(PermissionStrategy.REQUIRE_ALL_PERMISSIONS, permission);
-	}
-
-	protected void assertAllPermission(PermissionType... permission)
-			throws AccessDeniedException {
-		assertPermission(PermissionStrategy.REQUIRE_ALL_PERMISSIONS, permission);
+		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, permission);
 	}
 
 	protected void assertAnyPermission(PermissionType... permission)
 			throws AccessDeniedException {
-		assertPermission(PermissionStrategy.REQUIRE_ANY, permission);
+		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, permission);
 	}
 
-	protected void assertPermission(PermissionStrategy strategy,
+	protected void assertAnyPermission(PermissionStrategy strategy,
 			PermissionType... permissions) throws AccessDeniedException {
 
 		if (log.isWarnEnabled() && !hasAuthenticatedContext()) {

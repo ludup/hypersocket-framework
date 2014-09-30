@@ -2,15 +2,46 @@ package com.hypersocket.properties;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.resource.AbstractAssignableResourceService;
 import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.AbstractResourceService;
 
 @Component
 public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 
+	static Logger log = LoggerFactory.getLogger(EntityResourcePropertyStore.class);
+	
+	Map<Class<?>,AbstractResourceService<?>> resourceServices = new HashMap<Class<?>,AbstractResourceService<?>>();
+	Map<Class<?>,AbstractAssignableResourceService<?>> assignableServices = new HashMap<Class<?>,AbstractAssignableResourceService<?>>();
+	Map<Class<?>, PrimitiveParser<?>> primitiveParsers = new HashMap<Class<?>,PrimitiveParser<?>>();
+	
+	@PostConstruct
+	private void postConstruct() {
+		primitiveParsers.put(String.class, new StringValue());
+		primitiveParsers.put(Boolean.class, new BooleanValue());
+		primitiveParsers.put(Integer.class, new IntegerValue());
+		primitiveParsers.put(Long.class, new LongValue());
+		primitiveParsers.put(Double.class, new DoubleValue());
+	}
+	
+	public void registerResourceService(Class<?> clz, AbstractResourceService<?> service) {
+		resourceServices.put(clz, service);
+	}
+	
+	public void registerResourceService(Class<?> clz, AbstractAssignableResourceService<?> service) {
+		assignableServices.put(clz, service);
+	}
+	
 	@Override
 	protected String lookupPropertyValue(PropertyTemplate template) {
 		throw new UnsupportedOperationException("Entity resource property store requires an entity resource to lookup property value");
@@ -56,75 +87,78 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	protected void doSetProperty(AbstractPropertyTemplate template,
 			AbstractResource resource, String value) {
 		
-		if(!doSetProperty(template, resource, String.class, new StringValue(value))) {
-			if(!doSetProperty(template, resource, Boolean.class, new BooleanValue(value))) {
-				if(!doSetProperty(template, resource, Integer.class, new IntegerValue(value))) {
-					if(!doSetProperty(template, resource, Long.class, new LongValue(value))) {
-						throw new IllegalStateException("set" + StringUtils.capitalize(template.getResourceKey()) + " not found"); 
-					}
-				}
-			}
-		}
-	}
-	
-	private <T> boolean doSetProperty(AbstractPropertyTemplate template,
-			AbstractResource resource, Class<T> clz, ReturnValue<T> value) {
+		Method[] methods = resource.getClass().getMethods();
 		
 		String methodName = "set" + StringUtils.capitalize(template.getResourceKey());
-		try {
-			Method m = resource.getClass().getMethod(methodName, new Class<?>[]{ clz });
-			m.invoke(resource, value.getValue());
-			return true;
-		} catch (Throwable e) {
-			return false;
+		for(Method m : methods) {
+			if(m.getName().equals(methodName)) {
+				Class<?> clz = m.getParameterTypes()[0];
+				if(primitiveParsers.containsKey(clz)) {
+					try {
+						m.invoke(resource, primitiveParsers.get(clz).parseValue(value));
+					} catch (Exception e) {
+						log.error("Could not set " + template.getResourceKey() + " primitive value " + value + " for resource " + resource.getClass().getName(), e);
+						throw new IllegalStateException("Could not set " + template.getResourceKey() + " primitive value " + value + " for resource " + resource.getClass().getName(), e);
+					}
+					return;
+				}
+				if(resourceServices.containsKey(clz)) {
+					try {
+						m.invoke(resource, resourceServices.get(clz).getResourceById(Long.parseLong(value)));
+					} catch (Exception e) {
+						log.error("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
+						throw new IllegalStateException("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
+					}
+					return;
+				}
+				if(assignableServices.containsKey(clz)) {
+					try {
+						m.invoke(resource, assignableServices.get(clz).getResourceById(Long.parseLong(value)));
+					} catch (Exception e) {
+						log.error("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
+						throw new IllegalStateException("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
+					}
+					return;
+				}
+				
+			}
 		}
-	}
-	
-	interface ReturnValue<T> {
-		T getValue();
-	}
-	
-	class StringValue implements ReturnValue<String> {
 		
-		String value;
-		StringValue(String value) {
-			this.value = value;
-		}
-		public String getValue() {
+		throw new IllegalStateException("Could not set " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName());
+	}
+
+	
+	interface PrimitiveParser<T> {
+		T parseValue(String value);
+	}
+	
+	class StringValue implements PrimitiveParser<String> {
+		public String parseValue(String value) {
 			return value;
 		}
 	}
 	
-	class BooleanValue implements ReturnValue<Boolean> {
-		
-		String value;
-		BooleanValue(String value) {
-			this.value = value;
-		}
-		public Boolean getValue() {
+	class BooleanValue implements PrimitiveParser<Boolean> {
+		public Boolean parseValue(String value) {
 			return Boolean.valueOf(value);
 		}
 	}
 	
-	class IntegerValue implements ReturnValue<Integer> {
-		
-		String value;
-		IntegerValue(String value) {
-			this.value = value;
-		}
-		public Integer getValue() {
+	class IntegerValue implements PrimitiveParser<Integer> {
+		public Integer parseValue(String value) {
 			return Integer.valueOf(value);
 		}
 	}
 	
-	class LongValue implements ReturnValue<Long> {
-		
-		String value;
-		LongValue(String value) {
-			this.value = value;
-		}
-		public Long getValue() {
+	class LongValue implements PrimitiveParser<Long> {
+		public Long parseValue(String value) {
 			return Long.valueOf(value);
+		}
+	}
+	
+	class DoubleValue implements PrimitiveParser<Double> {
+		public Double parseValue(String value) {
+			return Double.valueOf(value);
 		}
 	}
 
