@@ -350,7 +350,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 					try {
 						permissionService.verifyPermission(
 								state.getPrincipal(),
-								PermissionStrategy.REQUIRE_ANY,
+								PermissionStrategy.INCLUDE_IMPLIED,
 								AuthenticationPermission.LOGON,
 								SystemPermission.SYSTEM_ADMINISTRATION);
 

@@ -15,7 +15,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Properties;
 import java.util.Random;
 
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

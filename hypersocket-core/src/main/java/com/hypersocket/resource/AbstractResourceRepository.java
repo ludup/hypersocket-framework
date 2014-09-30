@@ -24,8 +24,6 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 	
 	List<T> getResources(Realm realm);
 
-	List<T> getResources();
-
 	List<T> search(Realm realm, String searchPattern, int start, int length,
 			ColumnSort[] sorting, CriteriaConfiguration... configs);
 

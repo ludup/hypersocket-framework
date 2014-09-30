@@ -56,7 +56,7 @@ public class ServerController extends AuthenticatedController {
 			throws AccessDeniedException, UnauthorizedException {
 
 		permissionService.verifyPermission(sessionUtils.getPrincipal(request),
-				PermissionStrategy.REQUIRE_ANY,
+				PermissionStrategy.INCLUDE_IMPLIED,
 				SystemPermission.SYSTEM_ADMINISTRATION);
 
 		server.restart(delay);
@@ -75,7 +75,7 @@ public class ServerController extends AuthenticatedController {
 			throws AccessDeniedException, UnauthorizedException {
 
 		permissionService.verifyPermission(sessionUtils.getPrincipal(request),
-				PermissionStrategy.REQUIRE_ANY,
+				PermissionStrategy.INCLUDE_IMPLIED,
 				SystemPermission.SYSTEM_ADMINISTRATION);
 
 		server.shutdown(delay);
@@ -95,7 +95,7 @@ public class ServerController extends AuthenticatedController {
 
 		permissionService.verifyPermission(
 				getSessionUtils().getPrincipal(request),
-				PermissionStrategy.REQUIRE_ALL_PERMISSIONS,
+				PermissionStrategy.INCLUDE_IMPLIED,
 				ConfigurationPermission.READ);
 
 		List<MultiselectElement> protocols = new ArrayList<MultiselectElement>();
@@ -116,7 +116,7 @@ public class ServerController extends AuthenticatedController {
 
 		permissionService.verifyPermission(
 				getSessionUtils().getPrincipal(request),
-				PermissionStrategy.REQUIRE_ALL_PERMISSIONS,
+				PermissionStrategy.INCLUDE_IMPLIED,
 				ConfigurationPermission.READ);
 		
 		List<MultiselectElement> ciphers = new ArrayList<MultiselectElement>();
@@ -137,7 +137,7 @@ public class ServerController extends AuthenticatedController {
 
 		permissionService.verifyPermission(
 				getSessionUtils().getPrincipal(request),
-				PermissionStrategy.REQUIRE_ALL_PERMISSIONS,
+				PermissionStrategy.INCLUDE_IMPLIED,
 				ConfigurationPermission.READ);
 		
 		List<MultiselectElement> interfaces = new ArrayList<MultiselectElement>();

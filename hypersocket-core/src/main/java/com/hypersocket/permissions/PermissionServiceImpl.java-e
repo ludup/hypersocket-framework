@@ -52,7 +52,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	static final String ROLE_ADMINISTRATOR = "Administrator";
 	static final String ROLE_EVERYONE = "Everyone";
-	
+
 	@Autowired
 	PermissionRepository repository;
 
@@ -65,8 +65,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	Set<Long> registerPermissionIds = new HashSet<Long>();
 	Set<Long> nonSystemPermissionIds = new HashSet<Long>();
-	Map<String,PermissionType> registeredPermissions = new HashMap<String,PermissionType>();
-	
+	Map<String, PermissionType> registeredPermissions = new HashMap<String, PermissionType>();
+
 	CacheManager cacheManager;
 	Cache permissionsCache;
 	Cache roleCache;
@@ -97,7 +97,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 			@Override
 			public boolean hasCreatedDefaultResources(Realm realm) {
-				return realm.isSystem() || repository.getRoleByName(ROLE_ADMINISTRATOR, realm)!=null;
+				return realm.isSystem()
+						|| repository.getRoleByName(ROLE_ADMINISTRATOR, realm) != null;
 			}
 
 			@Override
@@ -116,8 +117,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 							+ realm.getName());
 				}
 
-				Role r = repository.createRole(ROLE_EVERYONE, realm, false, true,
-						false, true);
+				Role r = repository.createRole(ROLE_EVERYONE, realm, false,
+						true, false, true);
 				Set<Permission> perms = new HashSet<Permission>();
 				perms.add(getPermission(AuthenticationPermission.LOGON
 						.getResourceKey()));
@@ -144,12 +145,14 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 		return result;
 	}
 
-	@Override 
-	public Permission registerPermission(PermissionType type, PermissionCategory category) {
+	@Override
+	public Permission registerPermission(PermissionType type,
+			PermissionCategory category) {
 		registeredPermissions.put(type.getResourceKey(), type);
-		return registerPermission(type.getResourceKey(), type.isSystem(), category, type.isHidden());
+		return registerPermission(type.getResourceKey(), type.isSystem(),
+				category, type.isHidden());
 	}
-	
+
 	protected Permission registerPermission(String resourceKey, boolean system,
 			PermissionCategory category, boolean hidden) {
 		Permission result = repository.getPermissionByResourceKey(resourceKey);
@@ -205,7 +208,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	public void assignRole(Role role, Principal principal)
 			throws AccessDeniedException {
 
-		assertPermission(PermissionStrategy.REQUIRE_ANY, RolePermission.CREATE,
+		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, RolePermission.CREATE,
 				RolePermission.UPDATE);
 
 		repository.assignRole(role, principal);
@@ -215,7 +218,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Set<Permission> getPrincipalPermissions(Principal principal) throws AccessDeniedException {
+	public Set<Permission> getPrincipalPermissions(Principal principal)
+			throws AccessDeniedException {
 
 		if (!permissionsCache.isElementInMemory(principal)
 				|| (permissionsCache.get(principal) == null || permissionsCache
@@ -230,7 +234,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			for (Role r : roles) {
 				principalPermissions.addAll(r.getPermissions());
 			}
-			
+
 			roles = repository.getRolesForPrincipal(principals);
 			for (Role r : roles) {
 				if (r.isAllPermissions()) {
@@ -248,7 +252,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Set<Role> getPrincipalRoles(Principal principal) throws AccessDeniedException {
+	public Set<Role> getPrincipalRoles(Principal principal)
+			throws AccessDeniedException {
 
 		if (!roleCache.isElementInMemory(principal)
 				|| (roleCache.get(principal) == null || roleCache
@@ -261,19 +266,20 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 		return (Set<Role>) roleCache.get(principal).getObjectValue();
 	}
 
-	private void recurseImpliedPermissions(PermissionType t, Set<PermissionType> derivedPermissions) {
-		
-		if(!derivedPermissions.contains(t)) {
+	private void recurseImpliedPermissions(PermissionType t,
+			Set<PermissionType> derivedPermissions) {
+
+		if (!derivedPermissions.contains(t)) {
 			log.info("REMOVEME: " + t.getResourceKey());
 			derivedPermissions.add(t);
-			if(t.impliesPermissions()!=null) {
-				for(PermissionType t2 : t.impliesPermissions()) {
+			if (t.impliesPermissions() != null) {
+				for (PermissionType t2 : t.impliesPermissions()) {
 					recurseImpliedPermissions(t2, derivedPermissions);
 				}
 			}
 		}
 	}
-	
+
 	protected void verifyPermission(Principal principal,
 			PermissionStrategy strategy, Set<Permission> principalPermissions,
 			PermissionType... permissions) throws AccessDeniedException {
@@ -285,48 +291,58 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 		if (!hasSystemPermission(principal)) {
 
 			Set<PermissionType> derivedPrincipalPermissions = new HashSet<PermissionType>();
-			for(Permission t : principalPermissions) {
-				recurseImpliedPermissions(registeredPermissions.get(t.getResourceKey()), 
-						derivedPrincipalPermissions);
-			}
-			
-			switch (strategy) {
-			case REQUIRE_ALL_PERMISSIONS: {
-				for (PermissionType t : permissions) {
-					boolean found = false;
-					for (PermissionType p : derivedPrincipalPermissions) {
-						if (t.getResourceKey().equals(p.getResourceKey())) {
-							found = true;
-							break;
-						}
-					}
-					if (!found) {
-						throw new AccessDeniedException(I18N.getResource(
-								getCurrentLocale(),
-								PermissionService.RESOURCE_BUNDLE,
-								"error.accessDenied"));
-					}
-				}
-				break;
-			}
-			case REQUIRE_ANY: {
-				for (PermissionType t : permissions) {
-					for (PermissionType p : derivedPrincipalPermissions) {
-						if (t.getResourceKey().equals(p.getResourceKey())) {
-							return;
-						} 
-					}
+			for (Permission t : principalPermissions) {
+				switch (strategy) {
+				case INCLUDE_IMPLIED:
+					recurseImpliedPermissions(
+							registeredPermissions.get(t.getResourceKey()),
+							derivedPrincipalPermissions);
+					break;
+				case EXCLUDE_IMPLIED:
+					derivedPrincipalPermissions.add(registeredPermissions.get(t
+							.getResourceKey()));
+					break;
 				}
 
-				throw new AccessDeniedException(I18N.getResource(
-						getCurrentLocale(), PermissionService.RESOURCE_BUNDLE,
-						"error.accessDenied"));
 			}
-			default: {
-				throw new IllegalStateException(
-						"Missing PermissionStrategy type! Did you add a new strategy without changing PermissionServiceImpl.verifyPermission?");
+
+			// switch (strategy) {
+			// case REQUIRE_ALL_PERMISSIONS: {
+			// for (PermissionType t : permissions) {
+			// boolean found = false;
+			// for (PermissionType p : derivedPrincipalPermissions) {
+			// if (t.getResourceKey().equals(p.getResourceKey())) {
+			// found = true;
+			// break;
+			// }
+			// }
+			// if (!found) {
+			// throw new AccessDeniedException(I18N.getResource(
+			// getCurrentLocale(),
+			// PermissionService.RESOURCE_BUNDLE,
+			// "error.accessDenied"));
+			// }
+			// }
+			// break;
+			// }
+			// case REQUIRE_ANY: {
+			for (PermissionType t : permissions) {
+				for (PermissionType p : derivedPrincipalPermissions) {
+					if (t.getResourceKey().equals(p.getResourceKey())) {
+						return;
+					}
+				}
 			}
-			}
+
+			throw new AccessDeniedException(I18N.getResource(
+					getCurrentLocale(), PermissionService.RESOURCE_BUNDLE,
+					"error.accessDenied"));
+			// }
+			// default: {
+			// throw new IllegalStateException(
+			// "Missing PermissionStrategy type! Did you add a new strategy without changing PermissionServiceImpl.verifyPermission?");
+			// }
+			// }
 		}
 	}
 
@@ -335,7 +351,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			PermissionStrategy strategy, PermissionType... permissions)
 			throws AccessDeniedException {
 		if (principal == null) {
-			if(log.isInfoEnabled()) {
+			if (log.isInfoEnabled()) {
 				log.info("Denying permission because principal is null");
 			}
 			throw new AccessDeniedException();
@@ -378,9 +394,9 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	@Override
 	public Role getRole(String name, Realm realm)
 			throws ResourceNotFoundException, AccessDeniedException {
-		
+
 		assertAnyPermission(RolePermission.READ);
-		
+
 		Role role = repository.getRoleByName(name, realm);
 		if (role == null) {
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE,
@@ -401,9 +417,9 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	@Override
 	public List<Role> allRoles(Realm realm) throws AccessDeniedException {
-		
+
 		assertAnyPermission(RolePermission.READ);
-		
+
 		return repository.getRolesForRealm(realm);
 	}
 
@@ -479,7 +495,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			throws ResourceNotFoundException, AccessDeniedException {
 
 		assertPermission(RolePermission.READ);
-		
+
 		Role role = repository.getRoleById(id);
 		if (role.getRealm() != null && !role.getRealm().equals(realm)) {
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE,
@@ -519,10 +535,11 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
-	public List<PropertyCategory> getRoleTemplates() throws AccessDeniedException {
-		
+	public List<PropertyCategory> getRoleTemplates()
+			throws AccessDeniedException {
+
 		assertPermission(RolePermission.READ);
-		
+
 		return new ArrayList<PropertyCategory>();
 	}
 }
