@@ -163,8 +163,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 
 	@Override
-	public List<T> getResources() throws AccessDeniedException {
-		return getResources(getCurrentRealm());
+	public List<T> getResources() {
+		return getRepository().getResources(getCurrentRealm());
 	}
 	
 	@Override
