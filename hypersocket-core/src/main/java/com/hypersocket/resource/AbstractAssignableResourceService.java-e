@@ -16,7 +16,7 @@ public interface AbstractAssignableResourceService<T> extends AuthenticatedServi
 
 	List<T> getResources(Realm realm) throws AccessDeniedException;
 
-	List<T> getResources() throws AccessDeniedException;
+	List<T> getResources();
 	
 	T getResourceByName(String name) throws ResourceNotFoundException;
 	
