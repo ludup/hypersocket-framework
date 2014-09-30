@@ -18,17 +18,16 @@ public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 			AbstractResource resource) {
 		// Look up property on resource
 		Property p = repository.getProperty(template.getResourceKey(), resource);
-		if (p == null) {
+		if (p == null || p.getValue()==null) {
 			// No value for resource, look for overridden default setting
 			p = repository.getProperty(template.getResourceKey(), null);
 			if(p==null) {
 				// Return actual default
 				return template.getDefaultValue();
-			}
+			}		
 		}
 		
 		return p.getValue();
-		
 	}
 
 	@Override
