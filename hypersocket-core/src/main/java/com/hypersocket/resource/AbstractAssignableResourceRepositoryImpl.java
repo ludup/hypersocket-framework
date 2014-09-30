@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.derby.impl.sql.compile.GetCurrentConnectionNode;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
@@ -236,11 +237,6 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		crit.add(Restrictions.eq("realm", realm));
 		
 		return (List<T>) crit.list();
-	}
-
-	@Override
-	public List<T> getResources() {
-		return getResources(null);
 	}
 
 	@Override

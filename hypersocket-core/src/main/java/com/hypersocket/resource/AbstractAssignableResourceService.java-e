@@ -16,6 +16,8 @@ public interface AbstractAssignableResourceService<T> extends AuthenticatedServi
 
 	List<T> getResources(Realm realm) throws AccessDeniedException;
 
+	List<T> getResources() throws AccessDeniedException;
+	
 	T getResourceByName(String name) throws ResourceNotFoundException;
 	
 	T getResourceById(Long id) throws ResourceNotFoundException;
@@ -27,8 +29,6 @@ public interface AbstractAssignableResourceService<T> extends AuthenticatedServi
 
 	void updateResource(T resource, Map<String,String> properties) throws ResourceChangeException,
 			AccessDeniedException;
-
-	List<T> getResources();
 
 	List<T> searchResources(Realm realm, String search, int start, int length,
 			ColumnSort[] sorting) throws AccessDeniedException;

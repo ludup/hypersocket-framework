@@ -34,8 +34,6 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	void saveResource(T resource, Map<String,String> properties);
 
-	List<T> getResources();
-
 	List<T> search(Realm realm, String searchPattern, int start, int length,
 			ColumnSort[] sorting, CriteriaConfiguration... configs);
 
