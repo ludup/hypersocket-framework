@@ -233,7 +233,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 				getResourceClass());
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit.add(Restrictions.eq("deleted", false));
-		crit.add(Restrictions.or(Restrictions.eq("realm", realm), Restrictions.isNull("realm")));
+		crit.add(Restrictions.eq("realm", realm));
 		
 		return (List<T>) crit.list();
 	}
