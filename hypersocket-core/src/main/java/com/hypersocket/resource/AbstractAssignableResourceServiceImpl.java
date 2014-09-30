@@ -8,7 +8,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.events.EventPropertyCollector;
@@ -19,7 +19,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.tables.ColumnSort;
 
-@Repository
+@Service
 public abstract class AbstractAssignableResourceServiceImpl<T extends AssignableResource>
 		extends AuthenticatedServiceImpl implements
 		AbstractAssignableResourceService<T>, EventPropertyCollector {
@@ -85,13 +85,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			throw ex;
 		} catch (ResourceNotFoundException ex) {
 			try {
-				// Make sure any resources in default realm
-				// (system) are available across all realms
-				if (getCurrentRealm().isSystem()) {
-					resource.setRealm(null);
-				} else {
-					resource.setRealm(getCurrentRealm());
-				}
+				resource.setRealm(getCurrentRealm());
 				getRepository().saveResource(resource, properties);
 				fireResourceCreationEvent(resource);
 			} catch (Throwable t) {
