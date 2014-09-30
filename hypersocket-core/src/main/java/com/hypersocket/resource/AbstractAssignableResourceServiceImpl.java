@@ -163,6 +163,11 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 
 	@Override
+	public List<T> getResources() throws AccessDeniedException {
+		return getResources(getCurrentRealm());
+	}
+	
+	@Override
 	public List<T> searchPersonalResources(Principal principal, String search, int start,
 			int length, ColumnSort[] sorting) {
 
@@ -196,11 +201,6 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		assertPermission(getReadPermission());
 
 		return getRepository().getResourceCount(realm, search);
-	}
-
-	@Override
-	public List<T> getResources() {
-		return getRepository().getResources();
 	}
 
 	@Override
