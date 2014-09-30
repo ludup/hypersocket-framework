@@ -111,6 +111,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		assertPermission(getUpdatePermission());
 
 		try {
+			resource.setRealm(getCurrentRealm());
 			getRepository().saveResource(resource, properties);
 			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {

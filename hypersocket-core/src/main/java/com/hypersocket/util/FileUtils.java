@@ -47,10 +47,12 @@ public class FileUtils {
 
 	public static String stripParentPath(String rootPath, String path)
 			throws IOException {
+		path = checkEndsWithSlash(path);
+		rootPath = checkEndsWithSlash(rootPath);
 		if (!path.startsWith(rootPath)) {
 			throw new IOException(path + " is not a child path of " + rootPath);
 		} else {
-			return path.substring(checkEndsWithSlash(rootPath).length());
+			return path.substring(rootPath.length());
 		}
 	}
 

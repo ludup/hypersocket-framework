@@ -15,6 +15,7 @@ import java.util.Set;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
@@ -232,6 +233,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		Criteria crit = sessionFactory.getCurrentSession().createCriteria(
 				getResourceClass());
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		crit.setFetchMode("roles", FetchMode.SELECT);
 		crit.add(Restrictions.eq("deleted", false));
 		crit.add(Restrictions.eq("realm", realm));
 		
@@ -243,6 +245,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		return super.search(getResourceClass(), "name", searchPattern, start,
 				length, sorting, ArrayUtils.addAll(configs,
+						new RoleSelectMode(),
 						new RealmAndDefaultRealmCriteria(realm)));
 	}
 
@@ -250,10 +253,19 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	public long getResourceCount(Realm realm, String searchPattern,
 			CriteriaConfiguration... configs) {
 		return getCount(getResourceClass(), "name", searchPattern,
-				ArrayUtils.addAll(configs, new RealmAndDefaultRealmCriteria(
-						realm)));
+				ArrayUtils.addAll(configs, 
+						new RoleSelectMode(),
+						new RealmAndDefaultRealmCriteria(realm)));
 	}
 
 	protected abstract Class<T> getResourceClass();
+	
+	class RoleSelectMode implements CriteriaConfiguration {
+
+		@Override
+		public void configure(Criteria criteria) {
+			criteria.setFetchMode("roles", FetchMode.SELECT);
+		}
+	}
 
 }
