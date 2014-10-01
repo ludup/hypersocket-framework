@@ -172,6 +172,10 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		return getRepository().getResources(getCurrentRealm());
 	}
 	
+	public List<T> allResources() {
+		return getRepository().allResources();
+	}
+	
 	@Override
 	public List<T> searchPersonalResources(Principal principal, String search, int start,
 			int length, ColumnSort[] sorting) {
