@@ -43,11 +43,11 @@ public interface CertificateResourceService extends
 	void updateCertificate(CertificateResource resource, MultipartFile file,
 			MultipartFile bundle) throws ResourceChangeException;
 
-	void importPrivateKey(MultipartFile key, String passphrase,
+	CertificateResource importPrivateKey(MultipartFile key, String passphrase,
 			MultipartFile file, MultipartFile bundle)
 			throws ResourceCreationException, InvalidPassphraseException;
 
-	void importPfx(MultipartFile key, String passphrase) throws ResourceCreationException, AccessDeniedException;
+	CertificateResource importPfx(MultipartFile key, String passphrase) throws ResourceCreationException, AccessDeniedException;
 
 	CertificateResource createResource(String name, Realm realm,
 			CertificateType type, String cn, String ou, String o, String l,
@@ -56,5 +56,11 @@ public interface CertificateResourceService extends
 
 	KeyStore getResourceKeystore(CertificateResource resourceByName,
 			String string, String string2) throws ResourceCreationException;
+
+	CertificateResource replacePfx(CertificateResource resource, MultipartFile key,
+			String passphrase) throws AccessDeniedException, ResourceChangeException;
+
+	CertificateResource replacePrivateKey(CertificateResource resourceById, MultipartFile key,
+			String passphrase, MultipartFile file, MultipartFile bundle) throws InvalidPassphraseException, ResourceChangeException;
 
 }

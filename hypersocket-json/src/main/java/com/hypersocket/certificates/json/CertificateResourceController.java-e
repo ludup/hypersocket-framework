@@ -493,6 +493,24 @@ public class CertificateResourceController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
+		return replaceKey(request, response, file, bundle, key, passphrase, null);
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "certificates/pem/{id}", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public CertificateStatus replaceKey(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestPart(value = "file") MultipartFile file,
+			@RequestPart(value = "bundle") MultipartFile bundle,
+			@RequestPart(value = "key") MultipartFile key,
+			@RequestParam(value = "passphrase") String passphrase,
+			@PathVariable Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
@@ -500,8 +518,21 @@ public class CertificateResourceController extends ResourceController {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
-				resourceService.importPrivateKey(key, passphrase, file,
-						bundle);
+				
+				if(id==null) {
+					status.setResource(resourceService.importPrivateKey(
+							key, 
+							passphrase, 
+							file,
+							bundle));
+				} else {
+					status.setResource(resourceService.replacePrivateKey(
+							resourceService.getResourceById(id), 
+							key, 
+							passphrase, 
+							file, 
+							bundle));
+				}
 				status.setSuccess(true);
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
@@ -535,6 +566,21 @@ public class CertificateResourceController extends ResourceController {
 			@RequestParam(value = "passphrase") String passphrase)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
+		return replacePfx(request, response, key, passphrase, null);
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "certificates/pfx/{id}", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public CertificateStatus replacePfx(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestPart(value = "key") MultipartFile key,
+			@RequestParam(value = "passphrase") String passphrase,
+			@PathVariable Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
@@ -543,7 +589,12 @@ public class CertificateResourceController extends ResourceController {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
-				resourceService.importPfx(key, passphrase);
+				if(id==null) {
+					status.setResource(resourceService.importPfx(key, passphrase));
+				} else {
+					CertificateResource resource = resourceService.getResourceById(id);
+					status.setResource(resourceService.replacePfx(resource, key, passphrase));
+				}
 				status.setSuccess(true);
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
