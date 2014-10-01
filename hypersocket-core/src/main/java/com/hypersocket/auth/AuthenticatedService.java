@@ -18,6 +18,8 @@ public interface AuthenticatedService {
 	
 	Principal getCurrentPrincipal();
 	
+	Session getCurrentSession();
+	
 	void setCurrentSession(Session session, Locale locale);
 	
 	void setCurrentPrincipal(Principal principal, Locale locale, Realm realm);
