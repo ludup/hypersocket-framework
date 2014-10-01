@@ -14,6 +14,8 @@ public interface AbstractAssignableResourceService<T> extends AuthenticatedServi
 	void deleteResource(T resource) throws ResourceChangeException,
 			AccessDeniedException;
 
+	List<T> allResources();
+	
 	List<T> getResources(Realm realm) throws AccessDeniedException;
 
 	List<T> getResources();

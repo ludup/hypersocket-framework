@@ -241,6 +241,19 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
+	public List<T> allResources() {
+		
+		Criteria crit = sessionFactory.getCurrentSession().createCriteria(
+				getResourceClass());
+		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		crit.setFetchMode("roles", FetchMode.SELECT);
+		crit.add(Restrictions.eq("deleted", false));
+		
+		return (List<T>) crit.list();
+	}
+	
+	@Override
 	public List<T> search(Realm realm, String searchPattern, int start,
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		return super.search(getResourceClass(), "name", searchPattern, start,
