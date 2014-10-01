@@ -28,6 +28,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -69,7 +70,7 @@ public class CertificateResourceServiceImpl extends
 			.getLogger(CertificateResourceServiceImpl.class);
 
 	public static final String DEFAULT_CERTIFICATE_NAME = "Default SSL Certificate";
-	
+
 	@Autowired
 	CertificateResourceRepository repository;
 
@@ -190,7 +191,8 @@ public class CertificateResourceServiceImpl extends
 			KeyPair pair = X509CertificateUtils.loadKeyPairFromPEM(
 					new ByteArrayInputStream(resource.getPrivateKey().getBytes(
 							"UTF-8")), null);
-			Certificate cert = populateCertificate(properties, pair, resource.getSignatureAlgorithm());
+			Certificate cert = populateCertificate(properties, pair,
+					resource.getSignatureAlgorithm());
 
 			ByteArrayOutputStream certFile = new ByteArrayOutputStream();
 			X509CertificateUtils.saveCertificate(new Certificate[] { cert },
@@ -223,8 +225,8 @@ public class CertificateResourceServiceImpl extends
 
 	@Override
 	public CertificateResource createResource(String name, Realm realm,
-			Map<String, String> properties, boolean system) throws ResourceCreationException,
-			AccessDeniedException {
+			Map<String, String> properties, boolean system)
+			throws ResourceCreationException, AccessDeniedException {
 
 		CertificateResource resource = new CertificateResource();
 		resource.setName(name);
@@ -235,7 +237,7 @@ public class CertificateResourceServiceImpl extends
 				.get("certType"));
 
 		KeyPair pair = null;
-		String signatureAlgorithm = null; 
+		String signatureAlgorithm = null;
 		try {
 			switch (type) {
 			case RSA_1024:
@@ -255,10 +257,10 @@ public class CertificateResourceServiceImpl extends
 						"error.unsupportedType");
 			}
 
-			
-			Certificate cert = populateCertificate(properties, pair, signatureAlgorithm);
+			Certificate cert = populateCertificate(properties, pair,
+					signatureAlgorithm);
 			resource.setSignatureAlgorithm(signatureAlgorithm);
-			
+
 			ByteArrayOutputStream privateKeyFile = new ByteArrayOutputStream();
 			X509CertificateUtils.saveKeyPair(pair, privateKeyFile);
 
@@ -286,11 +288,12 @@ public class CertificateResourceServiceImpl extends
 
 	@Override
 	public CertificateResource createResource(String name, Realm realm,
-			CertificateType type, String cn, String ou, String o, String l, String s, String c,
-			boolean system) throws ResourceCreationException, AccessDeniedException {
-		
-		Map<String,String> properties = new HashMap<String,String>();
-		
+			CertificateType type, String cn, String ou, String o, String l,
+			String s, String c, boolean system)
+			throws ResourceCreationException, AccessDeniedException {
+
+		Map<String, String> properties = new HashMap<String, String>();
+
 		properties.put("certType", type.toString());
 		properties.put("commonName", cn);
 		properties.put("organizationalUnit", ou);
@@ -298,16 +301,18 @@ public class CertificateResourceServiceImpl extends
 		properties.put("location", l);
 		properties.put("state", s);
 		properties.put("country", c);
-		
+
 		return createResource(name, realm, properties, system);
 	}
+
 	private Certificate populateCertificate(Map<String, String> properties,
 			KeyPair pair, String signatureType) {
 		return X509CertificateUtils.generateSelfSignedCertificate(
 				properties.get("commonName"),
 				properties.get("organizationalUnit"),
 				properties.get("organization"), properties.get("location"),
-				properties.get("state"), properties.get("country"), pair, signatureType);
+				properties.get("state"), properties.get("country"), pair,
+				signatureType);
 	}
 
 	@Override
@@ -347,16 +352,16 @@ public class CertificateResourceServiceImpl extends
 
 			resource = createResource(DEFAULT_CERTIFICATE_NAME,
 					realmService.getDefaultRealm(), properties, true);
-			
+
 		}
 
 		return getResourceKeystore(resource, "hypersocket", "changeit");
 	}
 
 	protected KeyStore loadPEMCertificate(InputStream keyStream,
-			InputStream certStream, InputStream caStream, String alias, char[] keyPassphrase,
-			char[] keystorePassphrase) throws CertificateException,
-			MismatchedCertificateException {
+			InputStream certStream, InputStream caStream, String alias,
+			char[] keyPassphrase, char[] keystorePassphrase)
+			throws CertificateException, MismatchedCertificateException {
 
 		try {
 			if (caStream != null) {
@@ -366,13 +371,13 @@ public class CertificateResourceServiceImpl extends
 								.loadCertificateChainFromPEM(caStream),
 								X509CertificateUtils
 										.loadCertificateFromPEM(certStream)),
-										alias, keystorePassphrase);
+						alias, keystorePassphrase);
 			} else {
 				return X509CertificateUtils.createKeystore(X509CertificateUtils
 						.loadKeyPairFromPEM(keyStream, keyPassphrase),
 						new X509Certificate[] { X509CertificateUtils
-								.loadCertificateFromPEM(certStream) },
-								alias, keystorePassphrase);
+								.loadCertificateFromPEM(certStream) }, alias,
+						keystorePassphrase);
 			}
 		} catch (MismatchedCertificateException ex) {
 			throw ex;
@@ -382,7 +387,7 @@ public class CertificateResourceServiceImpl extends
 		}
 
 	}
-	
+
 	private KeyPair loadKeyPair(CertificateResource resource)
 			throws CertificateException, UnsupportedEncodingException,
 			InvalidPassphraseException, FileFormatException {
@@ -392,12 +397,13 @@ public class CertificateResourceServiceImpl extends
 	}
 
 	@Override
-	public String generateCSR(CertificateResource resource) throws UnsupportedEncodingException, Exception {
+	public String generateCSR(CertificateResource resource)
+			throws UnsupportedEncodingException, Exception {
 
 		KeyPair pair = loadKeyPair(resource);
 
-		return new String(X509CertificateUtils.generatePKCS10(pair.getPrivate(),
-				pair.getPublic(), resource.getCommonName(),
+		return new String(X509CertificateUtils.generatePKCS10(
+				pair.getPrivate(), pair.getPublic(), resource.getCommonName(),
 				resource.getOrganizationalUnit(), resource.getOrganization(),
 				resource.getLocation(), resource.getState(),
 				resource.getCountry()), "UTF-8");
@@ -405,12 +411,12 @@ public class CertificateResourceServiceImpl extends
 
 	@Override
 	public void updateCertificate(CertificateResource resource,
-			MultipartFile file, MultipartFile bundle) throws ResourceChangeException {
-		
-		
+			MultipartFile file, MultipartFile bundle)
+			throws ResourceChangeException {
+
 		try {
-			X509Certificate cert = X509CertificateUtils.loadCertificateFromPEM(file
-					.getInputStream());
+			X509Certificate cert = X509CertificateUtils
+					.loadCertificateFromPEM(file.getInputStream());
 
 			X509Certificate[] ca = X509CertificateUtils
 					.loadCertificateChainFromPEM(bundle.getInputStream());
@@ -420,20 +426,23 @@ public class CertificateResourceServiceImpl extends
 			KeyPair pair = loadKeyPair(resource);
 
 			if (!pair.getPublic().equals(cert.getPublicKey())) {
-				throw new MismatchedCertificateException("The certificate does not match the private key.");
+				throw new MismatchedCertificateException(
+						"The certificate does not match the private key.");
 			}
 
 			ByteArrayOutputStream certStream = new ByteArrayOutputStream();
-			X509CertificateUtils.saveCertificate(new Certificate[] { cert }, certStream);
-			
+			X509CertificateUtils.saveCertificate(new Certificate[] { cert },
+					certStream);
+
 			ByteArrayOutputStream caStream = new ByteArrayOutputStream();
 			X509CertificateUtils.saveCertificate(ca, caStream);
-			
-			resource.setCertificate(new String(certStream.toByteArray(), "UTF-8"));
+
+			resource.setCertificate(new String(certStream.toByteArray(),
+					"UTF-8"));
 			resource.setBundle(new String(caStream.toByteArray(), "UTF-8"));
 
-			updateResource(resource, new HashMap<String,String>());
-			
+			updateResource(resource, new HashMap<String, String>());
+
 		} catch (CertificateException | ResourceChangeException | IOException
 				| FileFormatException | InvalidPassphraseException
 				| MismatchedCertificateException | AccessDeniedException e) {
@@ -441,136 +450,227 @@ public class CertificateResourceServiceImpl extends
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
 					"error.certificateError", e.getMessage());
 		}
-		
+
 	}
 
 	@Override
-	public void importPrivateKey(MultipartFile key, String passphrase,
-			MultipartFile file, MultipartFile bundle) throws ResourceCreationException, InvalidPassphraseException {
-		
+	public CertificateResource importPrivateKey(MultipartFile key, String passphrase,
+			MultipartFile file, MultipartFile bundle)
+			throws ResourceCreationException, InvalidPassphraseException {
+
+		CertificateResource resource = new CertificateResource();
+
 		try {
-			X509Certificate cert = X509CertificateUtils.loadCertificateFromPEM(file
-					.getInputStream());
-
-			X509Certificate[] ca = X509CertificateUtils
-					.loadCertificateChainFromPEM(bundle.getInputStream());
-
-			X509CertificateUtils.validateChain(ca, cert);
-
-			KeyPair pair = X509CertificateUtils.loadKeyPairFromPEM(key.getInputStream(), passphrase.toCharArray());
 			
-			if (!pair.getPublic().equals(cert.getPublicKey())) {
-				throw new MismatchedCertificateException("The certificate does not match the private key.");
-			}
-			
-			ByteArrayOutputStream privateKeyFile = new ByteArrayOutputStream();
-			X509CertificateUtils.saveKeyPair(pair, privateKeyFile);
-			
-			ByteArrayOutputStream certStream = new ByteArrayOutputStream();
-			X509CertificateUtils.saveCertificate(new Certificate[] { cert }, certStream);
-			
-			ByteArrayOutputStream caStream = new ByteArrayOutputStream();
-			X509CertificateUtils.saveCertificate(ca, caStream);
-		
-			CertificateResource resource = new CertificateResource();
-			
-			X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
-			RDN cn = x500name.getRDNs(BCStyle.CN)[0];
-			
-			resource.setName(IETFUtils.valueToString(cn.getFirst().getValue()));
-			resource.setCommonName(IETFUtils.valueToString(cn.getFirst().getValue()));
-			
-			resource.setPrivateKey(new String(privateKeyFile.toByteArray(),	"UTF-8"));
-			resource.setCertificate(new String(certStream.toByteArray(), "UTF-8"));
-			resource.setBundle(new String(caStream.toByteArray(), "UTF-8"));
-
-			createResource(resource, new HashMap<String,String>());
-			
-		} catch (CertificateException | IOException
-				| FileFormatException
+			doInternalPrivateKey(resource, key, passphrase, file, bundle);
+			createResource(resource, new HashMap<String, String>());
+			return resource;
+		} catch (CertificateException | IOException | FileFormatException
 				| MismatchedCertificateException | AccessDeniedException e) {
 			log.error("Failed to generate certificate", e);
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
 					"error.certificateError", e.getMessage());
 		}
-		
+
 	}
 
 	@Override
-	public void importPfx(MultipartFile pfx, String passphrase) throws ResourceCreationException, AccessDeniedException {
+	public CertificateResource replacePrivateKey(CertificateResource resource,
+			MultipartFile key, String passphrase, MultipartFile file,
+			MultipartFile bundle) throws ResourceChangeException,
+			InvalidPassphraseException {
+
 		try {
 			
-			CertificateResource resource = new CertificateResource();
-			
-			KeyStore keystore = X509CertificateUtils.loadKeyStoreFromPFX(
-					pfx.getInputStream(), passphrase.toCharArray());
+			doInternalPrivateKey(resource, key, passphrase, file, bundle);
+			updateResource(resource, new HashMap<String, String>());
+			return resource;
+		} catch (CertificateException | IOException | FileFormatException
+				| MismatchedCertificateException | AccessDeniedException e) {
+			log.error("Failed to replace certificate", e);
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"error.certificateError", e.getMessage());
+		}
+	}
 
-			Enumeration<String> aliases = keystore.aliases();
-			while (aliases.hasMoreElements()) {
-				String alias = aliases.nextElement();
-				if (keystore.isKeyEntry(alias)) {
+	private void doInternalPrivateKey(CertificateResource resource,
+			MultipartFile key, String passphrase, MultipartFile file,
+			MultipartFile bundle) throws InvalidPassphraseException,
+			CertificateException, IOException, FileFormatException,
+			MismatchedCertificateException {
 
-					Key key = keystore.getKey(alias, passphrase.toCharArray());
-					if (key instanceof PrivateKey) {
-						X509Certificate cert = (X509Certificate) keystore
-								.getCertificate(alias);
+		X509Certificate cert = X509CertificateUtils.loadCertificateFromPEM(file
+				.getInputStream());
 
-						Certificate[] chain = keystore.getCertificateChain(alias);
+		X509Certificate[] ca = X509CertificateUtils
+				.loadCertificateChainFromPEM(bundle.getInputStream());
 
-						PublicKey publicKey = cert.getPublicKey();
-						KeyPair pair = new KeyPair(publicKey, (PrivateKey) key);
+		X509CertificateUtils.validateChain(ca, cert);
 
-						ByteArrayOutputStream privateKeyFile = new ByteArrayOutputStream();
-						X509CertificateUtils.saveKeyPair(pair, privateKeyFile);
-						resource.setPrivateKey(new String(privateKeyFile.toByteArray(),	"UTF-8"));
-						
-						List<Certificate> bundle = new ArrayList<Certificate>(
-								Arrays.asList(chain));
-						if (bundle.size() > 1) {
-							bundle.remove(0);
-						}
+		KeyPair pair = X509CertificateUtils.loadKeyPairFromPEM(
+				key.getInputStream(), passphrase.toCharArray());
 
-						Certificate[] rootAndInters = bundle
-								.toArray(new Certificate[0]);
-						X509CertificateUtils.validateChain(rootAndInters, cert);
+		if (!pair.getPublic().equals(cert.getPublicKey())) {
+			throw new MismatchedCertificateException(
+					"The certificate does not match the private key.");
+		}
 
-						if (!pair.getPublic().equals(cert.getPublicKey())) {
-							throw new MismatchedCertificateException();
-						}
+		ByteArrayOutputStream privateKeyFile = new ByteArrayOutputStream();
+		X509CertificateUtils.saveKeyPair(pair, privateKeyFile);
 
-						ByteArrayOutputStream caStream = new ByteArrayOutputStream();
-						X509CertificateUtils.saveCertificate(rootAndInters, caStream);
-						resource.setBundle(new String(caStream.toByteArray(), "UTF-8"));
-						
-						ByteArrayOutputStream certStream = new ByteArrayOutputStream();
-						X509CertificateUtils.saveCertificate(new Certificate[] { cert }, certStream);
-						resource.setCertificate(new String(certStream.toByteArray(), "UTF-8"));
-						
-						X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
-						RDN cn = x500name.getRDNs(BCStyle.CN)[0];
-						
-						resource.setName(IETFUtils.valueToString(cn.getFirst().getValue()));
-						resource.setCommonName(IETFUtils.valueToString(cn.getFirst().getValue()));
-					
-						createResource(resource, new HashMap<String,String>());
-					}
-				}
+		ByteArrayOutputStream certStream = new ByteArrayOutputStream();
+		X509CertificateUtils.saveCertificate(new Certificate[] { cert },
+				certStream);
+
+		ByteArrayOutputStream caStream = new ByteArrayOutputStream();
+		X509CertificateUtils.saveCertificate(ca, caStream);
+
+		X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
+		RDN cn = x500name.getRDNs(BCStyle.CN)[0];
+		for(RDN rdn : x500name.getRDNs()) {
+			for(AttributeTypeAndValue v : rdn.getTypesAndValues()) {
+				log.info(v.getType().toString() + ": " + IETFUtils.valueToString(v.getValue()));
 			}
-			
+		}
+		if(!resource.getName().equals(DEFAULT_CERTIFICATE_NAME)) {
+			resource.setName(IETFUtils.valueToString(cn.getFirst().getValue()));
+		}
+		resource.setCommonName(IETFUtils.valueToString(cn.getFirst().getValue()));
+		resource.setCountry("");
+		resource.setLocation("");
+		resource.setOrganization("");
+		resource.setOrganizationalUnit("");
+		resource.setState("");
+		resource.setPrivateKey(new String(privateKeyFile.toByteArray(), "UTF-8"));
+		resource.setCertificate(new String(certStream.toByteArray(), "UTF-8"));
+		resource.setBundle(new String(caStream.toByteArray(), "UTF-8"));
+
+	}
+
+	@Override
+	public CertificateResource importPfx(MultipartFile pfx, String passphrase)
+			throws ResourceCreationException, AccessDeniedException {
+
+		CertificateResource resource = new CertificateResource();
+
+		try {
+			internalDoPfx(resource, pfx, passphrase);
+			createResource(resource, new HashMap<String, String>());
+			return resource;
 		} catch (IOException | CertificateException | UnrecoverableKeyException
 				| KeyStoreException | NoSuchAlgorithmException
 				| NoSuchProviderException | MismatchedCertificateException e) {
 			throw new ResourceCreationException(
 					CertificateResourceServiceImpl.RESOURCE_BUNDLE,
 					"error.genericError", e.getMessage());
-			
-		} 
+
+		}
+
+	}
+
+	@Override
+	public CertificateResource replacePfx(CertificateResource resource, MultipartFile pfx,
+			String passphrase) throws AccessDeniedException,
+			ResourceChangeException {
+
+		try {
+			internalDoPfx(resource, pfx, passphrase);
+			updateResource(resource, new HashMap<String, String>());
+			return resource;
+		} catch (IOException | CertificateException | UnrecoverableKeyException
+				| KeyStoreException | NoSuchAlgorithmException
+				| NoSuchProviderException | MismatchedCertificateException e) {
+			throw new ResourceChangeException(
+					CertificateResourceServiceImpl.RESOURCE_BUNDLE,
+					"error.genericError", e.getMessage());
+
+		}
+	}
+
+	private void internalDoPfx(CertificateResource resource, MultipartFile pfx,
+			String passphrase) throws AccessDeniedException,
+			UnrecoverableKeyException, KeyStoreException,
+			NoSuchAlgorithmException, CertificateException,
+			NoSuchProviderException, IOException,
+			MismatchedCertificateException {
+
+		KeyStore keystore = X509CertificateUtils.loadKeyStoreFromPFX(
+				pfx.getInputStream(), passphrase.toCharArray());
+
+		Enumeration<String> aliases = keystore.aliases();
+		while (aliases.hasMoreElements()) {
+			String alias = aliases.nextElement();
+			if (keystore.isKeyEntry(alias)) {
+
+				Key key = keystore.getKey(alias, passphrase.toCharArray());
+				if (key instanceof PrivateKey) {
+					X509Certificate cert = (X509Certificate) keystore
+							.getCertificate(alias);
+
+					Certificate[] chain = keystore.getCertificateChain(alias);
+
+					PublicKey publicKey = cert.getPublicKey();
+					KeyPair pair = new KeyPair(publicKey, (PrivateKey) key);
+
+					ByteArrayOutputStream privateKeyFile = new ByteArrayOutputStream();
+					X509CertificateUtils.saveKeyPair(pair, privateKeyFile);
+					resource.setPrivateKey(new String(privateKeyFile
+							.toByteArray(), "UTF-8"));
+
+					List<Certificate> bundle = new ArrayList<Certificate>(
+							Arrays.asList(chain));
+					if (bundle.size() > 1) {
+						bundle.remove(0);
+					}
+
+					Certificate[] rootAndInters = bundle
+							.toArray(new Certificate[0]);
+					X509CertificateUtils.validateChain(rootAndInters, cert);
+
+					if (!pair.getPublic().equals(cert.getPublicKey())) {
+						throw new MismatchedCertificateException();
+					}
+
+					ByteArrayOutputStream caStream = new ByteArrayOutputStream();
+					X509CertificateUtils.saveCertificate(rootAndInters,
+							caStream);
+					resource.setBundle(new String(caStream.toByteArray(),
+							"UTF-8"));
+
+					ByteArrayOutputStream certStream = new ByteArrayOutputStream();
+					X509CertificateUtils.saveCertificate(
+							new Certificate[] { cert }, certStream);
+					resource.setCertificate(new String(
+							certStream.toByteArray(), "UTF-8"));
+
+					X500Name x500name = new JcaX509CertificateHolder(cert)
+							.getSubject();
+					RDN cn = x500name.getRDNs(BCStyle.CN)[0];
+					for(RDN rdn : x500name.getRDNs()) {
+						for(AttributeTypeAndValue v : rdn.getTypesAndValues()) {
+							log.info(v.getType().toString() + ": " + IETFUtils.valueToString(v.getValue()));
+						}
+					}
+					if(!resource.getName().equals(DEFAULT_CERTIFICATE_NAME)) {
+						resource.setName(IETFUtils.valueToString(cn.getFirst().getValue()));
+					}
+					resource.setCommonName(IETFUtils.valueToString(cn.getFirst().getValue()));
+					resource.setCountry("");
+					resource.setLocation("");
+					resource.setOrganization("");
+					resource.setOrganizationalUnit("");
+					resource.setState("");
+
+				}
+			}
+		}
+
 	}
 
 	@Override
 	public KeyStore getResourceKeystore(CertificateResource resource,
 			String alias, String password) throws ResourceCreationException {
-		
+
 		try {
 			ByteArrayInputStream keyStream = new ByteArrayInputStream(resource
 					.getPrivateKey().getBytes("UTF-8"));
@@ -583,8 +683,8 @@ public class CertificateResourceServiceImpl extends
 						.getBytes("UTF-8"));
 			}
 
-			return loadPEMCertificate(keyStream, certStream, caStream, alias, null,
-					password.toCharArray());
+			return loadPEMCertificate(keyStream, certStream, caStream, alias,
+					null, password.toCharArray());
 
 		} catch (UnsupportedEncodingException e) {
 			log.error("Failed to encode certificate", e);

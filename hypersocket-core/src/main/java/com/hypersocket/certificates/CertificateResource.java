@@ -4,6 +4,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
 import com.hypersocket.resource.RealmResource;
 
 @Entity
@@ -107,6 +109,7 @@ public class CertificateResource extends RealmResource {
 		this.country = country;
 	}
 
+	@JsonIgnore
 	public String getPrivateKey() {
 		return privateKey;
 	}
