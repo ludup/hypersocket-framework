@@ -85,7 +85,9 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			throw ex;
 		} catch (ResourceNotFoundException ex) {
 			try {
-				resource.setRealm(getCurrentRealm());
+				if(resource.getRealm()==null) {
+					resource.setRealm(getCurrentRealm());
+				}
 				getRepository().saveResource(resource, properties);
 				fireResourceCreationEvent(resource);
 			} catch (Throwable t) {
@@ -111,7 +113,9 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		assertPermission(getUpdatePermission());
 
 		try {
-			resource.setRealm(getCurrentRealm());
+			if(resource.getRealm()==null) {
+				resource.setRealm(getCurrentRealm());
+			}
 			getRepository().saveResource(resource, properties);
 			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {
