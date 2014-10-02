@@ -291,8 +291,9 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 			if(!isLoggedOn(session, true)) {
 				throw new AccessDeniedException();
 			}
+			return session;
 		}
-		return session;
+		throw new AccessDeniedException();
 	}
 
 	@Override
