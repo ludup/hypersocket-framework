@@ -68,6 +68,8 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 	Map<Session,List<ResourceSession<?>>> resourceSessions = new HashMap<Session,List<ResourceSession<?>>>();
 	Map<String,SessionResourceToken<?>> sessionTokens = new HashMap<String,SessionResourceToken<?>>();
 	
+	Map<String,Session> nonCookieSessions = new HashMap<String,Session>();
+	
 	@PostConstruct
 	private void registerConfiguration() throws AccessDeniedException {
 
@@ -182,6 +184,10 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 					"Attempting to close a session which is already closed!");
 		}
 		
+		if(nonCookieSessions.containsKey(session.getNonCookieKey())) {
+			nonCookieSessions.remove(session.getNonCookieKey());
+		}
+		
 		if(resourceSessions.containsKey(session)) {
 			List<ResourceSession<?>> rs = resourceSessions.remove(session);
 			for(ResourceSession<?> s : rs) {
@@ -190,6 +196,7 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		}
 
 		session.setSignedOut(new Date());
+		session.setNonCookieKey(null);
 		repository.updateSession(session);
 		eventService.publishEvent(new SessionClosedEvent(this, session));
 
@@ -271,6 +278,46 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		
 		return null;
 	}
+
+	@Override
+	public Session getNonCookieSession(String remoteAddr, String requestHeader,
+			String authenticationSchemeResourceKey) throws AccessDeniedException {
+		Session session = nonCookieSessions.get(createNonCookieSessionKey(
+				remoteAddr, 
+				requestHeader, 
+				authenticationSchemeResourceKey));
+		
+		if(session!=null) {
+			if(!isLoggedOn(session, true)) {
+				throw new AccessDeniedException();
+			}
+		}
+		return session;
+	}
+
+	@Override
+	public void registerNonCookieSession(String remoteAddr,
+			String requestHeader, String authenticationSchemeResourceKey,
+			Session session) {
+		
+		String key = createNonCookieSessionKey(
+				remoteAddr, 
+				requestHeader, 
+				authenticationSchemeResourceKey);
+		
+		session.setNonCookieKey(key);
+		nonCookieSessions.put(key, session);
+	}
 	
+	private String createNonCookieSessionKey(String remoteAddr, String requestHeader,
+			String authenticationSchemeResourceKey) {
+		StringBuffer buf = new StringBuffer();
+		buf.append(remoteAddr);
+		buf.append("|");
+		buf.append(requestHeader);
+		buf.append("|");
+		buf.append(authenticationSchemeResourceKey);
+		return buf.toString();
+	}
 	
 }
