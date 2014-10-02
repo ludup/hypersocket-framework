@@ -44,4 +44,10 @@ public interface SessionService extends AuthenticatedService {
 
 	<T> SessionResourceToken<T> getSessionToken(String shortCode,
 			Class<T> resourceClz);
+
+	Session getNonCookieSession(String remoteAddr, String requestHeader,
+			String authenticationSchemeResourceKey) throws AccessDeniedException;
+	
+	void registerNonCookieSession(String remoteAddr, String requestHeader,
+			String authenticationSchemeResourceKey, Session session);
 }

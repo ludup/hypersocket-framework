@@ -76,6 +76,9 @@ public class Session extends AbstractEntity<String> {
 	@Column(name="timeout", nullable=true)
 	Integer sessionTimeout;
 	
+	@Column(name="non_cookie_key")
+	String nonCookieKey;
+	
 	@Override
 	public String getId() {
 		return id;
@@ -190,6 +193,14 @@ public class Session extends AbstractEntity<String> {
 
 	public void setOsVersion(String osVersion) {
 		this.osVersion = osVersion;
+	}
+
+	public void setNonCookieKey(String nonCookieKey) {
+		this.nonCookieKey = nonCookieKey;
+	}
+	
+	public String getNonCookieKey() {
+		return nonCookieKey;
 	}
 
 }
