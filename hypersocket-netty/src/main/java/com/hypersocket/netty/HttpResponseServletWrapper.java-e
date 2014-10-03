@@ -176,9 +176,9 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 			cookieHeader.append("; Secure");
 		}
 
-		if(!response.containsHeader("Set-Cookie")){
-			addHeader("P3P", "CP=\"IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR IND CNT\"");
-		}
+//		if(!response.containsHeader("Set-Cookie")){
+//			addHeader("P3P", "CP=\"IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR IND CNT\"");
+//		}
 
 		addHeader("Set-Cookie", cookieHeader.toString());
 		
