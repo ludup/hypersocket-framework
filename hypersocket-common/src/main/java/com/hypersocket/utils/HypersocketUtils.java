@@ -90,4 +90,16 @@ public class HypersocketUtils {
 	}
 	
 
+	/**
+	 * Strip the port from a host header.
+	 * @param hostHeader
+	 * @return
+	 */
+	public static String stripPort(String hostHeader) {
+		int idx = hostHeader.indexOf(':');
+		if(idx > -1) {
+			return hostHeader.substring(0, idx);
+		}
+		return hostHeader;
+	}
 }

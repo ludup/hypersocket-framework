@@ -54,6 +54,7 @@ import com.hypersocket.server.handlers.WebsocketHandler;
 import com.hypersocket.server.websocket.WebsocketClient;
 import com.hypersocket.server.websocket.WebsocketClientCallback;
 import com.hypersocket.servlet.HypersocketSession;
+import com.hypersocket.utils.HypersocketUtils;
 
 public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		implements HttpResponseProcessor {
@@ -129,7 +130,9 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				ctx.getChannel(), nettyRequest);
 
 		HypersocketSession session = server.setupHttpSession(
-				nettyRequest.getHeaders("Cookie"), nettyResponse);
+				nettyRequest.getHeaders("Cookie"), 
+				HypersocketUtils.stripPort(nettyRequest.getHeader("Host")),
+				nettyResponse);
 
 		HttpRequestServletWrapper servletRequest = new HttpRequestServletWrapper(
 				nettyRequest, (InetSocketAddress) ctx.getChannel()
