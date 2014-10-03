@@ -13,6 +13,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,7 +153,7 @@ public class SessionUtils {
 		cookie.setMaxAge(60 * session.getTimeout());
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
 		cookie.setPath("/");
-		cookie.setDomain(request.getServerName());
+		//cookie.setDomain(request.getServerName());
 		response.addCookie(cookie);
 	}
 
@@ -181,7 +182,9 @@ public class SessionUtils {
 
 		Cookie cookie = new Cookie(HYPERSOCKET_LOCALE, locale);
 		cookie.setMaxAge(Integer.MAX_VALUE);
+		cookie.setPath("/");
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
+		cookie.setDomain(request.getServerName());
 		response.addCookie(cookie);
 
 	}
