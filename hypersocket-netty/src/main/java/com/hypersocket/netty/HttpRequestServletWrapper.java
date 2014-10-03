@@ -228,7 +228,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public String getProtocol() {
-		return request.getProtocolVersion().getText();
+		return url.startsWith("https") ? "https" : "http";
 	}
 
 	@Override
