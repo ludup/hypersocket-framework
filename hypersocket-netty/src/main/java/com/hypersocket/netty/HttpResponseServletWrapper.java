@@ -160,6 +160,9 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 		if (cookie.getMaxAge() > 0) {
 			cookieHeader.append("; Max-Age=");
 			cookieHeader.append(cookie.getMaxAge());
+			/**
+			 * This breaks IE when date of server and browser do not match
+			 */
 			cookieHeader.append("; Expires=");
 			if (cookie.getMaxAge() == 0) {
 				cookieHeader.append(DateUtils.formatDate(new Date(10000)));
@@ -168,6 +171,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 						.currentTimeMillis() + cookie.getMaxAge() * 1000L)));
 			}
 		}
+		
 		if (cookie.getSecure()) {
 			cookieHeader.append("; Secure");
 		}
