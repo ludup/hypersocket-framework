@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -611,6 +612,41 @@ public class CurrentRealmController extends ResourceController {
 					e.getResourceKey(), e.getArgs()));
 		} finally {
 			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/user/changePassword", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus setUserProperties(HttpServletRequest request,
+			 HttpServletResponse response,
+	            @RequestParam(value = "oldPassword") String oldPassword,
+	            @RequestParam(value = "newPassword") String newPassword
+	            ) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+		try {
+			Principal principal = sessionUtils.getSession(request).getPrincipal();
+			setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+			realmService.changePassword(principal, oldPassword, newPassword);
+			return new RequestStatus(true, I18N.getResource(
+				sessionUtils.getLocale(request),
+				RealmServiceImpl.RESOURCE_BUNDLE, "password.change.success"));
+		}catch(ResourceChangeException re){
+			if(re.getMessage().equals("Invalid password")){
+				return new RequestStatus(false, I18N.getResource(
+						sessionUtils.getLocale(request),
+						RealmServiceImpl.RESOURCE_BUNDLE, "password.change.incorrectPassword"));
+			}else{
+				return new RequestStatus(false, I18N.getResource(
+						sessionUtils.getLocale(request),
+						RealmServiceImpl.RESOURCE_BUNDLE, "password.change.failed"));
+			}
+		}catch(Exception e){
+			return new RequestStatus(false, I18N.getResource(
+					sessionUtils.getLocale(request),
+					RealmServiceImpl.RESOURCE_BUNDLE, "password.change.failed"));
 		}
 	}
 
