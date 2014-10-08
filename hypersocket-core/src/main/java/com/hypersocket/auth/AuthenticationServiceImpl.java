@@ -266,7 +266,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 					switch (state.getCurrentPostAuthenticationStep().process(state,
 							parameterMap)) {
 					case INSUFFICIENT_DATA: {
-						state.setLastErrorMsg("error.insufficentData");
 						state.setLastErrorIsResourceKey(true);
 						break;
 					}
