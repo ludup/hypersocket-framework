@@ -30,7 +30,6 @@ import com.hypersocket.permissions.Role;
 public class AssignableResource extends RealmResource {
 
 	@ManyToMany(fetch=FetchType.EAGER)
-	@Cascade({CascadeType.ALL})
 	@JoinTable(name = "resource_roles", joinColumns={@JoinColumn(name="resource_id")}, 
 			inverseJoinColumns={@JoinColumn(name="role_id")})
 	Set<Role> roles = new HashSet<Role>();
