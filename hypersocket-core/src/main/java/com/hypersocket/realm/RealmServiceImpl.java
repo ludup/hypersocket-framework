@@ -107,7 +107,14 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		for (RolePermission p : RolePermission.values()) {
 			permissionService.registerPermission(p, cat);
 		}
-
+		
+		cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE,
+				"category.password");
+		
+		for (PasswordPermission p : PasswordPermission.values()) {
+			permissionService.registerPermission(p, cat);
+		}
+		
 		eventService.registerEvent(RealmCreatedEvent.class, RESOURCE_BUNDLE,
 				new RealmPropertyCollector());
 		eventService.registerEvent(RealmUpdatedEvent.class, RESOURCE_BUNDLE,
@@ -424,8 +431,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public void changePassword(Principal principal, String oldPassword,
 			String newPassword) throws ResourceCreationException,
-			ResourceChangeException {
-
+			ResourceChangeException,AccessDeniedException {
+        //assertPermission(PasswordPermission.UPDATE);  
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
 		try {
