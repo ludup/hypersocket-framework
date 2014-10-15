@@ -122,7 +122,10 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		if(Boolean.getBoolean("hypersocket.development")) {
 			return localAddress.getPort() == 8080;
 		} else {
-			return localAddress.getPort() == configurationService.getIntValue("http.port");
+			if(configurationService.getIntValue("http.port") > 0) {
+				return localAddress.getPort() == configurationService.getIntValue("http.port");
+			}
+			return true;
 		}
 	}
 
@@ -422,7 +425,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	}
 
 	public HypersocketSession setupHttpSession(List<String> cookies,
-			String domain,
+			boolean secure,
 			HttpServletResponse servletResponse) {
 
 		HypersocketSession session = null;
@@ -456,11 +459,9 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		}
 
 		Cookie cookie = new Cookie(sessionCookieName, session.getId());
-		cookie.setSecure(false);
 		cookie.setMaxAge(60 * 15);
 		cookie.setPath("/");
-		//cookie.setDomain(domain);
-		cookie.setSecure(true);
+		cookie.setSecure(secure);
 		servletResponse.addCookie(cookie);
 
 		return session;

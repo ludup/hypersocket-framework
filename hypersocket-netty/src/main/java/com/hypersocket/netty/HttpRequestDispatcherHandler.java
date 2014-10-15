@@ -131,7 +131,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 		HypersocketSession session = server.setupHttpSession(
 				nettyRequest.getHeaders("Cookie"), 
-				HypersocketUtils.stripPort(nettyRequest.getHeader("Host")),
+				!server.isPlainPort((InetSocketAddress) ctx.getChannel().getLocalAddress()),
 				nettyResponse);
 
 		HttpRequestServletWrapper servletRequest = new HttpRequestServletWrapper(
