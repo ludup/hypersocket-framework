@@ -165,6 +165,26 @@ public class LogonController extends AuthenticatedController {
 		}
 	}
 	
+	@RequestMapping(value = "logoff/{id}")
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public void logoffSession(HttpServletRequest request, HttpServletResponse response,
+			@PathVariable String id)
+			throws UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			Session session = sessionService.getSession(id);
+			if (session != null && sessionService.isLoggedOn(session, false)) {
+				sessionService.closeSession(session);
+			}
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
 	private AuthenticationResult getSuccessfulResult(Session session,
 			String info, String homePage) {
 		return new AuthenticationSuccessResult(info,
