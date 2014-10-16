@@ -143,7 +143,8 @@ public class CurrentRealmController extends ResourceController {
 
 						@Override
 						public Long getTotalCount(String searchPattern)
-								throws UnauthorizedException, AccessDeniedException {
+								throws UnauthorizedException,
+								AccessDeniedException {
 							return realmService.getPrincipalCount(
 									sessionUtils.getCurrentRealm(request),
 									PrincipalType.USER, searchPattern);
@@ -188,7 +189,8 @@ public class CurrentRealmController extends ResourceController {
 
 						@Override
 						public Long getTotalCount(String searchPattern)
-								throws UnauthorizedException, AccessDeniedException {
+								throws UnauthorizedException,
+								AccessDeniedException {
 							return realmService.getPrincipalCount(
 									sessionUtils.getCurrentRealm(request),
 									PrincipalType.GROUP, searchPattern);
@@ -242,15 +244,14 @@ public class CurrentRealmController extends ResourceController {
 		}
 
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/user/template", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<PropertyCategory> getUserTemplate(
-			HttpServletRequest request)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
+			HttpServletRequest request) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
@@ -352,8 +353,8 @@ public class CurrentRealmController extends ResourceController {
 					RealmServiceImpl.RESOURCE_BUNDLE, "profile.saved"));
 		} catch (ResourceChangeException e) {
 			return new RequestStatus(false, I18N.getResource(
-					sessionUtils.getLocale(request),
-					e.getBundle(), e.getResourceKey(), e.getArgs()));
+					sessionUtils.getLocale(request), e.getBundle(),
+					e.getResourceKey(), e.getArgs()));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -560,12 +561,12 @@ public class CurrentRealmController extends ResourceController {
 						properties, principals, user.getPassword(),
 						user.isForceChange());
 			}
-			return new ResourceStatus<Principal>(principal, I18N.getResource(
-					sessionUtils.getLocale(request),
-					RealmService.RESOURCE_BUNDLE,
-					user.getId() != null ? "info.user.updated"
-							: "info.user.created", principal
-							.getPrincipalName()));
+			return new ResourceStatus<Principal>(principal,
+					I18N.getResource(sessionUtils.getLocale(request),
+							RealmService.RESOURCE_BUNDLE,
+							user.getId() != null ? "info.user.updated"
+									: "info.user.created", principal
+									.getPrincipalName()));
 
 		} catch (ResourceChangeException e) {
 			return new ResourceStatus<Principal>(false, I18N.getResource(
@@ -614,39 +615,46 @@ public class CurrentRealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/user/changePassword", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public RequestStatus setUserProperties(HttpServletRequest request,
-			 HttpServletResponse response,
-	            @RequestParam(value = "oldPassword") String oldPassword,
-	            @RequestParam(value = "newPassword") String newPassword
-	            ) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException {
-		try {
-			Principal principal = sessionUtils.getSession(request).getPrincipal();
-			setupAuthenticatedContext(sessionUtils.getSession(request),
+	public RequestStatus changePassword(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestParam(value = "oldPassword") String oldPassword,
+			@RequestParam(value = "newPassword") String newPassword)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
+		try {
+			Principal principal = sessionUtils.getSession(request)
+					.getPrincipal();
+
 			realmService.changePassword(principal, oldPassword, newPassword);
-			return new RequestStatus(true, I18N.getResource(
-				sessionUtils.getLocale(request),
-				RealmServiceImpl.RESOURCE_BUNDLE, "password.change.success"));
-		}catch(ResourceChangeException re){
-			if(re.getMessage().equals("Invalid password")){
+			return new RequestStatus(true,
+					I18N.getResource(sessionUtils.getLocale(request),
+							RealmServiceImpl.RESOURCE_BUNDLE,
+							"password.change.success"));
+		} catch (ResourceChangeException re) {
+			if (re.getMessage().equals("Invalid password")) {
 				return new RequestStatus(false, I18N.getResource(
 						sessionUtils.getLocale(request),
-						RealmServiceImpl.RESOURCE_BUNDLE, "password.change.incorrectPassword"));
-			}else{
+						RealmServiceImpl.RESOURCE_BUNDLE,
+						"password.change.incorrectPassword"));
+			} else {
 				return new RequestStatus(false, I18N.getResource(
 						sessionUtils.getLocale(request),
-						RealmServiceImpl.RESOURCE_BUNDLE, "password.change.failed"));
+						RealmServiceImpl.RESOURCE_BUNDLE,
+						"password.change.failed"));
 			}
-		}catch(Exception e){
+		} catch (Exception e) {
 			return new RequestStatus(false, I18N.getResource(
 					sessionUtils.getLocale(request),
 					RealmServiceImpl.RESOURCE_BUNDLE, "password.change.failed"));
+		} finally {
+			clearAuthenticatedContext();
 		}
 	}
 
