@@ -432,7 +432,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public void changePassword(Principal principal, String oldPassword,
 			String newPassword) throws ResourceCreationException,
 			ResourceChangeException,AccessDeniedException {
-        //assertPermission(PasswordPermission.UPDATE);  
+        assertPermission(PasswordPermission.UPDATE);  
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
 		try {
