@@ -401,6 +401,11 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	@Override
+	public boolean hasPropertyTemplate(String key) {
+		return propertyTemplates.containsKey(key);
+	}
+	
+	@Override
 	public void setValue(AbstractResource resource, String resourceKey, String value) {
 
 		AbstractPropertyTemplate template = getPropertyStore().getPropertyTemplate(resourceKey);

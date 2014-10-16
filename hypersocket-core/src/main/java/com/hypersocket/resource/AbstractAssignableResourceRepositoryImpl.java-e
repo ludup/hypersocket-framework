@@ -221,7 +221,9 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	public void saveResource(T resource, Map<String,String> properties) {
 		
 		for(Map.Entry<String,String> e : properties.entrySet()) {
-			setValue(resource, e.getKey(), e.getValue());
+			if(hasPropertyTemplate(e.getKey())) {
+				setValue(resource, e.getKey(), e.getValue());
+			}
 		}
 		save(resource);
 	}
