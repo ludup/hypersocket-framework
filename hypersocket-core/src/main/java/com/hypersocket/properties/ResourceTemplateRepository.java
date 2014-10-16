@@ -42,4 +42,6 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 	
 	PropertyTemplate getPropertyTemplate(String resourceKey);
 
+	boolean hasPropertyTemplate(String key);
+
 }
