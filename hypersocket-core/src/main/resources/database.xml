@@ -39,7 +39,7 @@
 	</bean>
 	
 	<bean id="sessionFactory"
-		class="com.hypersocket.util.MyAnnotationSessionFactoryBean">
+		class="com.hypersocket.util.HypersocketAnnotationSessionFactoryBean">
 		<property name="dataSource">
 			<ref bean="dataSource" />
 		</property>
