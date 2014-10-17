@@ -484,15 +484,16 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		RealmService realmService = (RealmService) applicationContext
 				.getBean("realmServiceImpl");
 
+		
+		certificateService.setCurrentPrincipal(realmService
+				.getSystemPrincipal(), Locale.getDefault(),
+				realmService.getSystemPrincipal().getRealm());
+		
 		try {
 
 			if (log.isInfoEnabled()) {
 				log.info("Initializing SSL contexts");
 			}
-
-			certificateService.setCurrentPrincipal(realmService
-					.getSystemPrincipal(), Locale.getDefault(),
-					realmService.getSystemPrincipal().getRealm());
 
 			KeyStore ks = certificateService.getDefaultCertificate();
 
