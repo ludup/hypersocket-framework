@@ -35,7 +35,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	
 	@Override
 	public T getResourceByName(String name, Realm realm) {
-		return get("name", name, getResourceClass(), new DeletedCriteria(false));
+		return getResourceByName(name, realm, false);
 	}
 
 	@Override
