@@ -351,7 +351,7 @@ public class CertificateResourceServiceImpl extends
 			properties.put("country", "US");
 
 			resource = createResource(DEFAULT_CERTIFICATE_NAME,
-					realmService.getDefaultRealm(), properties, true);
+					realmService.getSystemRealm(), properties, true);
 
 		}
 
@@ -463,6 +463,7 @@ public class CertificateResourceServiceImpl extends
 		try {
 			
 			doInternalPrivateKey(resource, key, passphrase, file, bundle);
+			resource.setRealm(getCurrentRealm());
 			createResource(resource, new HashMap<String, String>());
 			return resource;
 		} catch (CertificateException | IOException | FileFormatException
@@ -555,6 +556,7 @@ public class CertificateResourceServiceImpl extends
 
 		try {
 			internalDoPfx(resource, pfx, passphrase);
+			resource.setRealm(getCurrentRealm());
 			createResource(resource, new HashMap<String, String>());
 			return resource;
 		} catch (IOException | CertificateException | UnrecoverableKeyException

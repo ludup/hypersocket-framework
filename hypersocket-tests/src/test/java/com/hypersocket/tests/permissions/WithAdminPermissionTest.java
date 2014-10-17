@@ -19,7 +19,7 @@ public class WithAdminPermissionTest extends AbstractServerTest {
 	
 	@BeforeClass
 	public static void init()throws Exception{
-		logon("Default", "admin", "Password123?");
+		logon("System", "admin", "Password123?");
 		String permissionJson = doGet("/hypersocket/api/permissions/list");
 		allPermisssions = mapper.readValue(permissionJson,JsonPermissionList.class);
 	}

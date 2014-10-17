@@ -11,8 +11,8 @@ import com.hypersocket.json.JsonRoleResourceStatus;
 public class NoPermissionTest extends AbstractCertificateTest {
 	@BeforeClass
 	public static void init() throws Exception {
-		logon("Default", "admin", "Password123?");
-		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
+		logon("System", "admin", "Password123?");
+		JsonResourceStatus jsonCreateUser = createUser("System", "user",
 				"user", false);
 		changePassword("user", jsonCreateUser);
 		Long[] permissions = {
@@ -22,7 +22,7 @@ public class NoPermissionTest extends AbstractCertificateTest {
 				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
 		logoff();
-		logon("Default", "user", "user");
+		logon("System", "user", "user");
 	}
 
 	@AfterClass

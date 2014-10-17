@@ -10,15 +10,15 @@ public class NoPermissionTest extends AbstractServerTest {
 
 	@BeforeClass
 	public static void init() throws Exception {
-		logon("Default", "admin", "Password123?");
-		createUser("Default", "user1", "password1", false);
+		logon("System", "admin", "Password123?");
+		createUser("System", "user1", "password1", false);
 		logoff();
 
 	}
 
 	@Test(expected = AssertionError.class)
 	public void testLogin() throws Exception {
-		logon("Default", "user1", "password1");
+		logon("System", "user1", "password1");
 	}
 
 	@Test(expected = ClientProtocolException.class)

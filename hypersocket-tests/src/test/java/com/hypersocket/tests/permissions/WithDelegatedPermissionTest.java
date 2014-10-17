@@ -14,8 +14,8 @@ public class WithDelegatedPermissionTest extends AbstractServerTest {
 
 	@BeforeClass
 	public static void init() throws Exception {
-		logon("Default", "admin", "Password123?");
-		JsonResourceStatus jsonCreateUser = createUser("Default", "user1",
+		logon("System", "admin", "Password123?");
+		JsonResourceStatus jsonCreateUser = createUser("System", "user1",
 				"password1", false);
 		Long[] permissions = {
 				getPermissionId(AuthenticationPermission.LOGON.getResourceKey()),
@@ -24,7 +24,7 @@ public class WithDelegatedPermissionTest extends AbstractServerTest {
 				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
 		logoff();
-		logon("Default", "user1", "password1");
+		logon("System", "user1", "password1");
 	}
 
 	@AfterClass

@@ -12,8 +12,8 @@ public class UnauthorizedTest extends AbstractServerTest {
 
 	@BeforeClass
 	public static void init() throws Exception {
-		logon("Default", "admin", "Password123?");
-		JsonResourceStatus jsonCreateUser = createUser("Default", "user1",
+		logon("System", "admin", "Password123?");
+		JsonResourceStatus jsonCreateUser = createUser("System", "user1",
 				"password1", false);
 		Long[] permissions = { getPermissionId(AuthenticationPermission.LOGON
 				.getResourceKey()) };
@@ -25,12 +25,12 @@ public class UnauthorizedTest extends AbstractServerTest {
 
 	@Test(expected = AssertionError.class)
 	public void testLoginAdminWithIncorrectPassword() throws Exception {
-		logon("Default", "admin", "123");
+		logon("System", "admin", "123");
 	}
 
 	@Test(expected = AssertionError.class)
 	public void testUserLoginWithIncorrectPassword() throws Exception {
-		logon("Default", "user1", "password");
+		logon("System", "user1", "password");
 	}
 
 }

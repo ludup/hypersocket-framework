@@ -12,13 +12,13 @@ public class LoginTests extends AbstractServerTest {
 
 	@Test
 	public void loginAndLogout() throws Exception {
-		logon("Default", "admin", "Password123?");
+		logon("System", "admin", "Password123?");
 		logoff();
 	}
 
 	@Test(expected = AssertionError.class)
 	public void loginWithBadPassword() throws Exception {
-		logon("Default", "admin", "badPassword");
+		logon("System", "admin", "badPassword");
 		logoff();
 	}
 
@@ -30,7 +30,7 @@ public class LoginTests extends AbstractServerTest {
 	
 	@Test(expected = AssertionError.class)
 	public void loginWithBadUser() throws Exception {
-		logon("Default", "userDoesNotExist", "password");
+		logon("System", "userDoesNotExist", "password");
 		logoff();
 	}
 }
