@@ -62,7 +62,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for (Principal p : principals) {
 			ids.add(p.getId());
 		}
-		Criteria crit = sessionFactory.getCurrentSession().createCriteria(
+		Criteria crit = createCriteria(
 				getResourceClass());
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 
@@ -135,7 +135,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for (Principal p : principals) {
 			ids.add(p.getId());
 		}
-		Criteria crit = sessionFactory.getCurrentSession().createCriteria(
+		Criteria crit = createCriteria(
 				getResourceClass());
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit.setProjection(Projections.rowCount());
@@ -156,7 +156,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for (Principal p : principals) {
 			ids.add(p.getId());
 		}
-		Criteria crit = sessionFactory.getCurrentSession().createCriteria(
+		Criteria crit = createCriteria(
 				AssignableResource.class);
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit = crit.createCriteria("roles");
@@ -175,7 +175,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for (Principal p : principals) {
 			ids.add(p.getId());
 		}
-		Criteria crit = sessionFactory.getCurrentSession().createCriteria(
+		Criteria crit = createCriteria(
 				getResourceClass());
 		crit.add(Restrictions.eq("id", resourceId));
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
@@ -233,7 +233,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Override
 	public List<T> getResources(Realm realm) {
 
-		Criteria crit = sessionFactory.getCurrentSession().createCriteria(
+		Criteria crit = createCriteria(
 				getResourceClass());
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit.setFetchMode("roles", FetchMode.SELECT);
@@ -247,7 +247,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@SuppressWarnings("unchecked")
 	public List<T> allResources() {
 		
-		Criteria crit = sessionFactory.getCurrentSession().createCriteria(
+		Criteria crit = createCriteria(
 				getResourceClass());
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit.setFetchMode("roles", FetchMode.SELECT);

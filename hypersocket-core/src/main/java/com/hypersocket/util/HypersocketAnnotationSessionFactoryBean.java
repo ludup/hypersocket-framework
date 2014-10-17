@@ -24,7 +24,7 @@ public class HypersocketAnnotationSessionFactoryBean extends
 		ArrayList<String> finalPackages = new ArrayList<String>(Arrays.asList(packagesToScan));
 		
 		try {
-			Resource[] packages = matcher.getResources("classpath*:*hibernate.properties");
+			Resource[] packages = matcher.getResources("classpath*:hibernate-ext.properties");
 		
 			for(Resource r : packages) {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(r.getInputStream()));
@@ -33,7 +33,7 @@ public class HypersocketAnnotationSessionFactoryBean extends
 					String line;
 					
 					if(log.isInfoEnabled()) {
-						log.info("Processing hibernate.properties from " + r.getURI().toASCIIString());
+						log.info("Processing hibernate-ext.properties from " + r.getURI().toASCIIString());
 					}
 					while((line = reader.readLine())!=null) {
 						line = line.trim();
