@@ -143,7 +143,8 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		crit = crit.createCriteria("principals");
 		crit.add(Restrictions.in("id", ids));
 
-		return (Long) crit.uniqueResult();
+		Long count = (Long) crit.uniqueResult();
+		return count == null ? 0L : count;
 	}
 
 	@SuppressWarnings("unchecked")
