@@ -28,22 +28,27 @@ public class HypersocketAnnotationSessionFactoryBean extends
 		
 			for(Resource r : packages) {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(r.getInputStream()));
-				String line;
 				
-				if(log.isInfoEnabled()) {
-					log.info("Processing hibernate.properties from " + r.getURI().toASCIIString());
-				}
-				while((line = reader.readLine())!=null) {
-					line = line.trim();
-					if(!line.startsWith("#")) {
-						if(line.startsWith("scanPackage=")) {
-							String pkgName = line.substring(12);
-							if(log.isInfoEnabled()) {
-								log.info("Will scan package " + pkgName);
+				try {
+					String line;
+					
+					if(log.isInfoEnabled()) {
+						log.info("Processing hibernate.properties from " + r.getURI().toASCIIString());
+					}
+					while((line = reader.readLine())!=null) {
+						line = line.trim();
+						if(!line.startsWith("#")) {
+							if(line.startsWith("scanPackage=")) {
+								String pkgName = line.substring(12);
+								if(log.isInfoEnabled()) {
+									log.info("Will scan package " + pkgName);
+								}
+								finalPackages.add(pkgName + ".**");
 							}
-							finalPackages.add(pkgName + ".**");
 						}
 					}
+				} finally {
+					reader.close();
 				}
 				
 			}

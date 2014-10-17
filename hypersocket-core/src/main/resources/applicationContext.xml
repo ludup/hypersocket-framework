@@ -15,7 +15,7 @@
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context-3.1.xsd
            http://www.springframework.org/schema/cache
-    http://www.springframework.org/schema/cache/spring-cache.xsd
+    	   http://www.springframework.org/schema/cache/spring-cache.xsd
            http://www.springframework.org/schema/aop
            http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
            http://www.springframework.org/schema/tx 
