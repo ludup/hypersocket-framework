@@ -46,7 +46,7 @@ public interface AbstractResourceService<T extends RealmResource> extends
 
 	int getResourceIntProperty(T resource, String resourceKey);
 
-	T getResourceByNameAndRealm(String name, Realm realm)
+	T getResourceByName(String name, Realm realm)
 			throws ResourceNotFoundException;
 
 }

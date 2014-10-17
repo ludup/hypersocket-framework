@@ -18,7 +18,7 @@ public class WithAdminPermissionTests extends AbstractServerTest {
 
 	@BeforeClass
 	public static void logOn() throws Exception {
-		logon("Default", "admin", "Password123?");
+		logon("System", "admin", "Password123?");
 	}
 
 	@AfterClass

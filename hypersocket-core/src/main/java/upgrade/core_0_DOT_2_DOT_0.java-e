@@ -93,7 +93,7 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 			userAttributes.getParentFile().mkdirs();
 			userAttributes.createNewFile();
 		}
-		Realm realm = realmRepository.getRealmByName("Default");
+		Realm realm = realmRepository.getRealmByName("System");
 		if(realm!=null) {
 			realm.setSystem(true);
 			realmRepository.saveRealm(realm);
@@ -108,8 +108,8 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 		Realm realm = new Realm();
 		realm.setName("System");
 		realm.setResourceCategory("local");
-		realm.setDefaultRealm(false);
-		realm.setHidden(true);
+		realm.setDefaultRealm(true);
+		realm.setHidden(false);
 		realm.setSystem(true);
 		
 		realmRepository.saveRealm(realm, new HashMap<String,String>(), localRealmProvider);
@@ -120,7 +120,8 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 		system.setType(PrincipalType.SYSTEM);
 		system.setRealm(realm);
 		system.setSystem(true);
-
+		system.setHidden(true);
+		
 		userRepository.saveUser(system, new HashMap<String,String>());
 
 		// Create a system role
@@ -133,13 +134,6 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 		systemRole.setHidden(true);
 		permissionRepository.saveRole(systemRole);
 
-		// Create Default realm
-		realm = new Realm();
-		realm.setName("Default");
-		realm.setResourceCategory("local");
-		realm.setDefaultRealm(true);
-		realm.setSystem(true);
-		realmRepository.saveRealm(realm, new HashMap<String,String>(), localRealmProvider);
 
 		// Setup Default realm schemes
 		List<String> modules = new ArrayList<String>();

@@ -264,7 +264,7 @@ public class TriggerResourceServiceImpl extends
 			throws ResourceCreationException, AccessDeniedException {
 
 		TriggerResource resource = new TriggerResource();
-
+		
 		populateTrigger(name, event, result, realm, resource, allConditions,
 				anyConditions, actions);
 

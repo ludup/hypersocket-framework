@@ -128,7 +128,7 @@ public class AbstractServerTest {
 		System.out
 				.println("Integration test server is running. Changing admin password to Password123?");
 
-		logon("Default", "admin", "admin", true, "Password123?");
+		logon("System", "admin", "admin", true, "Password123?");
 
 		System.out.println("Logging out");
 
@@ -696,19 +696,19 @@ public class AbstractServerTest {
 
 	protected static void logOnNewUser(String[] strPermissions)
 			throws Exception {
-		logon("Default", "admin", "Password123?");
+		logon("System", "admin", "Password123?");
 		Long[] permissions = new Long[strPermissions.length];
 		for (int x = 0; x < permissions.length; x++) {
 			permissions[x] = getPermissionId(strPermissions[x]);
 		}
-		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
+		JsonResourceStatus jsonCreateUser = createUser("System", "user",
 				"user", false);
 		changePassword("user", jsonCreateUser);
 		JsonRoleResourceStatus jsonCreateRole = createRole("newRole",
 				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
 		logoff();
-		logon("Default", "user", "user");
+		logon("System", "user", "user");
 
 	}
 

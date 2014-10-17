@@ -14,7 +14,7 @@ public class WithAdminDeleteKeyTest extends AbstractServerTest {
 
 	@BeforeClass
 	public static void init() throws Exception {
-		logon("Default", "admin", "Password123?");
+		logon("System", "admin", "Password123?");
 	}
 
 	@Test

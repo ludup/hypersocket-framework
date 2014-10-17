@@ -27,8 +27,8 @@ import com.hypersocket.tests.PropertyObject;
 public class WithDelegatePermissionTest extends AbstractServerTest {
 	@BeforeClass
 	public static void init() throws Exception {
-		logon("Default", "admin", "Password123?");
-		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
+		logon("System", "admin", "Password123?");
+		JsonResourceStatus jsonCreateUser = createUser("System", "user",
 				"user", false);
 		changePassword("user", jsonCreateUser);
 		Long[] permissions = {
@@ -38,7 +38,7 @@ public class WithDelegatePermissionTest extends AbstractServerTest {
 				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
 		logoff();
-		logon("Default", "user", "user");
+		logon("System", "user", "user");
 		removeCryptographyRestrictions();
 	}
 

@@ -17,7 +17,7 @@ public class WithAdminPermissionTest extends AbstractServerTest{
 		
 	@Test
 	public void testAdminLogin()throws Exception{
-		logon("Default","admin" ,"Password123?");
+		logon("System","admin" ,"Password123?");
 	    JsonSession session=getSession();
 	    assertNotNull(session);
 	    assertEquals("admin", session.getPrincipal().getPrincipalName());
@@ -26,7 +26,7 @@ public class WithAdminPermissionTest extends AbstractServerTest{
 	
 	@Test
 	public void testLoginAndLogout() throws Exception {
-		logon("Default", "admin", "Password123?");
+		logon("System", "admin", "Password123?");
 		logoff();
 		assertNull(getSession());
 	}

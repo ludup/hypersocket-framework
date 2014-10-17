@@ -22,8 +22,8 @@ public class NoPermissionTests extends AbstractServerTest {
 
 	@BeforeClass
 	public static void createUser() throws Exception {
-		logon("Default", "admin", "Password123?");
-		JsonResourceStatus jsonCreateUser = createUser("Default", "user",
+		logon("System", "admin", "Password123?");
+		JsonResourceStatus jsonCreateUser = createUser("System", "user",
 				"user", false);
 		changePassword("user", jsonCreateUser);
 		Long[] permissions = { getPermissionId("permission.logon") };
@@ -31,7 +31,7 @@ public class NoPermissionTests extends AbstractServerTest {
 				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
 		logoff();
-		logon("Default", "user", "user");
+		logon("System", "user", "user");
 	}
 
 	@AfterClass

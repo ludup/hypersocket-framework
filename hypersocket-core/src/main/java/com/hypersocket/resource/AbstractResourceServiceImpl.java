@@ -82,8 +82,13 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 		assertPermission(getCreatePermission());
 
+		if(resource.getRealm()==null) {
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"generic.create.error", "Calling method should set realm");
+		}
+		
 		try {
-			getResourceByName(resource.getName());
+			getResourceByName(resource.getName(), resource.getRealm());
 			ResourceCreationException ex = new ResourceCreationException(
 					RESOURCE_BUNDLE, "generic.alreadyExists.error",
 					resource.getName());
@@ -91,9 +96,6 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			throw ex;
 		} catch (ResourceNotFoundException ex) {
 			try {
-				if(resource.getRealm()==null) {
-					resource.setRealm(getCurrentRealm());
-				}
 				getRepository().saveResource(resource, properties);
 				fireResourceCreationEvent(resource);
 			} catch (Throwable t) {
@@ -207,7 +209,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 	
 	@Override
-	public T getResourceByNameAndRealm(String name, Realm realm) throws ResourceNotFoundException {
+	public T getResourceByName(String name, Realm realm) throws ResourceNotFoundException {
 		T resource = getRepository().getResourceByName(name, realm);
 		if (resource == null) {
 			throw new ResourceNotFoundException(getResourceBundle(),
