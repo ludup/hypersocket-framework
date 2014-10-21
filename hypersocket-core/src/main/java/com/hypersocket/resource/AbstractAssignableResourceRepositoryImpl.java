@@ -64,6 +64,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 		Criteria crit = createCriteria(
 				getResourceClass());
+		
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 
 		crit = crit.createCriteria("roles");
@@ -119,13 +120,15 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			c.configure(criteria);
 		}
 
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-		criteria.setProjection(Projections.rowCount());
 		criteria = criteria.createCriteria("roles");
 		criteria = criteria.createCriteria("principals");
 		criteria.add(Restrictions.in("id", new Long[] { principal.getId() }));
-
-		return (Long) criteria.uniqueResult();
+		
+		criteria.setFetchMode("principals", FetchMode.SELECT);
+		criteria.setFetchMode("roles", FetchMode.SELECT);
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		
+		return (long) criteria.list().size();
 	}
 
 	@Override
@@ -137,14 +140,19 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 		Criteria crit = createCriteria(
 				getResourceClass());
-		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+
 		crit.setProjection(Projections.rowCount());
 		crit = crit.createCriteria("roles");
 		crit = crit.createCriteria("principals");
 		crit.add(Restrictions.in("id", ids));
-
-		Long count = (Long) crit.uniqueResult();
-		return count == null ? 0L : count;
+		
+		crit.setFetchMode("principals", FetchMode.SELECT);
+		crit.setFetchMode("roles", FetchMode.SELECT);
+		
+		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		crit.setProjection(Projections.rowCount());
+		
+		return (long) crit.list().size();
 	}
 
 	@SuppressWarnings("unchecked")
