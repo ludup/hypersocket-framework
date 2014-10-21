@@ -61,7 +61,7 @@ public interface RealmService extends AuthenticatedService {
 
 	void changePassword(Principal principal, String oldPassword,
 			String newPassword) throws ResourceCreationException,
-			ResourceChangeException;
+			ResourceChangeException, AccessDeniedException;
 
 	Principal getSystemPrincipal();
 
@@ -139,7 +139,8 @@ public interface RealmService extends AuthenticatedService {
 			throws AccessDeniedException;
 
 	void updateProfile(Realm currentRealm, Principal principal,
-			Map<String, String> values) throws AccessDeniedException, ResourceChangeException;
+			Map<String, String> values) throws AccessDeniedException,
+			ResourceChangeException;
 
 	RealmProvider getProviderForRealm(Realm realm);
 
@@ -182,13 +183,15 @@ public interface RealmService extends AuthenticatedService {
 
 	String getRealmHostname(Realm realm);
 
-	Collection<String> getUserPropertyNames(Realm realm) throws AccessDeniedException;
+	Collection<String> getUserPropertyNames(Realm realm)
+			throws AccessDeniedException;
 
 	String[] getRealmPropertyArray(Realm realm, String resourceKey);
 
 	Collection<PropertyCategory> getUserProfileTemplates(Principal principal)
 			throws AccessDeniedException;
 
-	Collection<String> getUserPropertyNames(String id) throws AccessDeniedException;
+	Collection<String> getUserPropertyNames(String id)
+			throws AccessDeniedException;
 
 }
