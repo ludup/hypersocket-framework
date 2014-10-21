@@ -108,6 +108,13 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			permissionService.registerPermission(p, cat);
 		}
 
+		cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE,
+				"category.password");
+
+		for (PasswordPermission p : PasswordPermission.values()) {
+			permissionService.registerPermission(p, cat);
+		}
+
 		eventService.registerEvent(RealmCreatedEvent.class, RESOURCE_BUNDLE,
 				new RealmPropertyCollector());
 		eventService.registerEvent(RealmUpdatedEvent.class, RESOURCE_BUNDLE,
@@ -131,7 +138,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		eventService.registerEvent(ChangePasswordEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SetPasswordEvent.class, RESOURCE_BUNDLE);
-		
+
 		upgradeService.registerListener(this);
 	}
 
@@ -427,8 +434,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public void changePassword(Principal principal, String oldPassword,
 			String newPassword) throws ResourceCreationException,
-			ResourceChangeException {
-
+			ResourceChangeException, AccessDeniedException {
+		assertPermission(PasswordPermission.CHANGE);
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
 		try {
@@ -452,6 +459,11 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			eventService.publishEvent(new ChangePasswordEvent(this, ex,
 					getCurrentSession(), getCurrentRealm(), provider));
 			throw ex;
+		} catch (Throwable t) {
+			eventService.publishEvent(new ChangePasswordEvent(this, t,
+					getCurrentSession(), getCurrentRealm(), provider));
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"error.unexpectedError", t.getMessage());
 		}
 	}
 
@@ -922,31 +934,31 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		Set<String> restricted = new HashSet<String>(
 				Arrays.asList(getRealmPropertyArray(principal.getRealm(),
 						"realm.userRestrictedProperties")));
-		
+
 		/**
-		 * Filter the properties down to read only and editable as defined
-		 * by the realm configuration.
+		 * Filter the properties down to read only and editable as defined by
+		 * the realm configuration.
 		 */
 		for (PropertyCategory c : ret) {
 
 			List<AbstractPropertyTemplate> tmp = new ArrayList<AbstractPropertyTemplate>();
 			for (AbstractPropertyTemplate t : c.getTemplates()) {
-				if(restricted.contains(t.getResourceKey())) {
+				if (restricted.contains(t.getResourceKey())) {
 					tmp.add(t);
 					continue;
 				}
-				if(!editable.contains(t.getResourceKey()) && !t.isReadOnly()) {
+				if (!editable.contains(t.getResourceKey()) && !t.isReadOnly()) {
 					t.setReadOnly(true);
 					continue;
 				}
-				if(provider.isReadOnly(principal.getRealm())) {
+				if (provider.isReadOnly(principal.getRealm())) {
 					t.setReadOnly(true);
 				}
 			}
 
 			c.getTemplates().removeAll(tmp);
 		}
-		
+
 		return ret;
 	}
 
@@ -978,20 +990,18 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Collection<String> getUserPropertyNames(Realm realm)
 			throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ,
-				RealmPermission.READ);
+		assertAnyPermission(UserPermission.READ, RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(realm);
 
 		return provider.getUserPropertyNames();
 	}
-	
+
 	@Override
 	public Collection<String> getUserPropertyNames(String module)
 			throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ,
-				RealmPermission.READ);
+		assertAnyPermission(UserPermission.READ, RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(module);
 

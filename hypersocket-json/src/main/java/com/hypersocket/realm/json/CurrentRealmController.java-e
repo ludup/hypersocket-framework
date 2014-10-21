@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -35,6 +36,7 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
@@ -142,7 +144,8 @@ public class CurrentRealmController extends ResourceController {
 
 						@Override
 						public Long getTotalCount(String searchPattern)
-								throws UnauthorizedException, AccessDeniedException {
+								throws UnauthorizedException,
+								AccessDeniedException {
 							return realmService.getPrincipalCount(
 									sessionUtils.getCurrentRealm(request),
 									PrincipalType.USER, searchPattern);
@@ -187,7 +190,8 @@ public class CurrentRealmController extends ResourceController {
 
 						@Override
 						public Long getTotalCount(String searchPattern)
-								throws UnauthorizedException, AccessDeniedException {
+								throws UnauthorizedException,
+								AccessDeniedException {
 							return realmService.getPrincipalCount(
 									sessionUtils.getCurrentRealm(request),
 									PrincipalType.GROUP, searchPattern);
@@ -241,15 +245,14 @@ public class CurrentRealmController extends ResourceController {
 		}
 
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/user/template", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<PropertyCategory> getUserTemplate(
-			HttpServletRequest request)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
+			HttpServletRequest request) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
@@ -351,8 +354,8 @@ public class CurrentRealmController extends ResourceController {
 					RealmServiceImpl.RESOURCE_BUNDLE, "profile.saved"));
 		} catch (ResourceChangeException e) {
 			return new RequestStatus(false, I18N.getResource(
-					sessionUtils.getLocale(request),
-					e.getBundle(), e.getResourceKey(), e.getArgs()));
+					sessionUtils.getLocale(request), e.getBundle(),
+					e.getResourceKey(), e.getArgs()));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -559,12 +562,12 @@ public class CurrentRealmController extends ResourceController {
 						properties, principals, user.getPassword(),
 						user.isForceChange());
 			}
-			return new ResourceStatus<Principal>(principal, I18N.getResource(
-					sessionUtils.getLocale(request),
-					RealmService.RESOURCE_BUNDLE,
-					user.getId() != null ? "info.user.updated"
-							: "info.user.created", principal
-							.getPrincipalName()));
+			return new ResourceStatus<Principal>(principal,
+					I18N.getResource(sessionUtils.getLocale(request),
+							RealmService.RESOURCE_BUNDLE,
+							user.getId() != null ? "info.user.updated"
+									: "info.user.created", principal
+									.getPrincipalName()));
 
 		} catch (ResourceChangeException e) {
 			return new ResourceStatus<Principal>(false, I18N.getResource(
@@ -609,6 +612,39 @@ public class CurrentRealmController extends ResourceController {
 			return new CredentialsStatus(false, I18N.getResource(
 					sessionUtils.getLocale(request), e.getBundle(),
 					e.getResourceKey(), e.getArgs()));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/user/changePassword", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus changePassword(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestParam(value = "oldPassword") String oldPassword,
+			@RequestParam(value = "newPassword") String newPassword)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Principal principal = sessionUtils.getSession(request)
+					.getPrincipal();
+
+			realmService.changePassword(principal, oldPassword, newPassword);
+			
+			return new RequestStatus(true,
+					I18N.getResource(sessionUtils.getLocale(request),
+							RealmServiceImpl.RESOURCE_BUNDLE,
+							"password.change.success"));
+		} catch (ResourceException re) {
+			return new RequestStatus(false, I18N.getResource(
+						sessionUtils.getLocale(request),
+						re.getBundle(),
+						re.getResourceKey()));
+			
 		} finally {
 			clearAuthenticatedContext();
 		}
