@@ -124,10 +124,10 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria = criteria.createCriteria("principals");
 		criteria.add(Restrictions.in("id", new Long[] { principal.getId() }));
 		
-		criteria.setFetchMode("principals", FetchMode.SELECT);
-		criteria.setFetchMode("roles", FetchMode.SELECT);
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+//		criteria.setProjection(Projections.rowCount());
 		
+//		return (Long) criteria.uniqueResult();
 		return (long) criteria.list().size();
 	}
 
@@ -141,17 +141,15 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		Criteria crit = createCriteria(
 				getResourceClass());
 
-		crit.setProjection(Projections.rowCount());
 		crit = crit.createCriteria("roles");
 		crit = crit.createCriteria("principals");
 		crit.add(Restrictions.in("id", ids));
 		
-		crit.setFetchMode("principals", FetchMode.SELECT);
-		crit.setFetchMode("roles", FetchMode.SELECT);
-		
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-		crit.setProjection(Projections.rowCount());
+//		crit.setProjection(Projections.rowCount());
 		
+//		Long count = (Long) crit.uniqueResult();
+//		return count == null ? 0L : count;
 		return (long) crit.list().size();
 	}
 
