@@ -30,6 +30,7 @@ import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DetachedCriteriaConfiguration;
 import com.hypersocket.repository.DistinctRootEntity;
+import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
@@ -130,12 +131,12 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 
 	@Override
 	public List<LocalUser> allUsers(Realm realm) {
-		return allEntities(LocalUser.class, JOIN_GROUPS, new DistinctRootEntity(), new RealmRestriction(realm));
+		return allEntities(LocalUser.class, JOIN_GROUPS, new DistinctRootEntity(), new RealmRestriction(realm), new HiddenCriteria(false));
 	}
 
 	@Override
 	public List<LocalGroup> allGroups(Realm realm) {
-		return allEntities(LocalGroup.class, new DistinctRootEntity(), new RealmRestriction(realm));
+		return allEntities(LocalGroup.class, new DistinctRootEntity(), new RealmRestriction(realm), new HiddenCriteria(false));
 	}
 	
 	@Override
@@ -227,6 +228,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("realm", realm));
 				criteria.add(Restrictions.eq("deleted", false));
+				criteria.add(Restrictions.eq("hidden", false));
 				if(!StringUtils.isEmpty(searchPattern)) {
 					criteria.add(Restrictions.like("name", searchPattern));
 				}
@@ -242,6 +244,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("realm", realm));
 				criteria.add(Restrictions.eq("deleted", false));
+				criteria.add(Restrictions.eq("hidden", false));
 				if(!StringUtils.isEmpty(searchPattern)) {
 					criteria.add(Restrictions.like("name", searchPattern));
 				}
@@ -259,6 +262,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("realm", realm));
 				criteria.add(Restrictions.eq("deleted", false));
+				criteria.add(Restrictions.eq("hidden", false));
 				criteria.setFetchMode("groups", FetchMode.SELECT);
 				criteria.setFetchMode("roles", FetchMode.SELECT);
 				criteria.setFetchMode("properties", FetchMode.SELECT);
@@ -276,6 +280,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("realm", realm));
 				criteria.add(Restrictions.eq("deleted", false));
+				criteria.add(Restrictions.eq("hidden", false));
 				criteria.setFetchMode("users", FetchMode.SELECT);
 				criteria.setFetchMode("roles", FetchMode.SELECT);
 				criteria.setFetchMode("properties", FetchMode.SELECT);
