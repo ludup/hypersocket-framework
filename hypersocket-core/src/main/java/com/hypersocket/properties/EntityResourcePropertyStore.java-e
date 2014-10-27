@@ -1,5 +1,6 @@
 package com.hypersocket.properties;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.w3c.dom.Element;
 
 import com.hypersocket.resource.AbstractAssignableResourceService;
 import com.hypersocket.resource.AbstractResource;
@@ -160,6 +162,11 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		public Double parseValue(String value) {
 			return Double.valueOf(value);
 		}
+	}
+
+	@Override
+	public void init(Element element) throws IOException {
+		
 	}
 
 }

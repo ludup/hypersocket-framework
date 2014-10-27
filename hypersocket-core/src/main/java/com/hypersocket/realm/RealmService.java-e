@@ -194,4 +194,6 @@ public interface RealmService extends AuthenticatedService {
 	Collection<String> getUserPropertyNames(String id)
 			throws AccessDeniedException;
 
+	boolean isRealmStrictedToHost(Realm realm);
+
 }

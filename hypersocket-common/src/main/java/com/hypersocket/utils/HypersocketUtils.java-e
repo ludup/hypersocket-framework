@@ -102,4 +102,5 @@ public class HypersocketUtils {
 		}
 		return hostHeader;
 	}
+
 }

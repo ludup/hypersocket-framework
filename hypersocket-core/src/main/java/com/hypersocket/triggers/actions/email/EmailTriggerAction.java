@@ -22,6 +22,7 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.triggers.AbstractActionProvider;
 import com.hypersocket.triggers.ActionResult;
 import com.hypersocket.triggers.TriggerAction;
@@ -108,7 +109,7 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 			invalidAttributes
 					.add(new TriggerValidationError(ATTR_TO_ADDRESSES));
 		} else {
-			String[] emails = repository.explodeValues(parameters
+			String[] emails = ResourceUtils.explodeValues(parameters
 					.get(ATTR_TO_ADDRESSES));
 			for (String email : emails) {
 				if (!validateEmailAddress(email)) {
@@ -118,7 +119,7 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 			}
 		}
 
-		String[] emails = repository.explodeValues(parameters
+		String[] emails = ResourceUtils.explodeValues(parameters
 				.get(ATTR_CC_ADDRESSES));
 		for (String email : emails) {
 			if (!validateEmailAddress(email)) {
@@ -127,7 +128,7 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 			}
 		}
 
-		emails = repository.explodeValues(parameters.get(ATTR_BCC_ADDRESSES));
+		emails = ResourceUtils.explodeValues(parameters.get(ATTR_BCC_ADDRESSES));
 		for (String email : emails) {
 			if (!validateEmailAddress(email)) {
 				invalidAttributes.add(new TriggerValidationError(
@@ -192,7 +193,7 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 			throws TriggerValidationException {
 
 		StringBuffer ret = new StringBuffer();
-		String[] emails = repository.explodeValues(processTokenReplacements(
+		String[] emails = ResourceUtils.explodeValues(processTokenReplacements(
 				repository.getValue(action, attributeName), event));
 		for (String email : emails) {
 			if (ret.length() > 0) {

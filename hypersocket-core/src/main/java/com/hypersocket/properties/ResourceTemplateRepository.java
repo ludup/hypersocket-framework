@@ -23,8 +23,6 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 	void setValue(AbstractResource resource, String name, Boolean value);
 
 	Collection<PropertyCategory> getPropertyCategories(AbstractResource resource);
-
-	String[] explodeValues(String values);
 	
 	String[] getValues(AbstractResource resource, String name);
 

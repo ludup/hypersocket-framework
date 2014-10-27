@@ -52,6 +52,8 @@ public interface AuthenticationService extends AuthenticatedService {
 
 	AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey);
 
+	Realm resolveRealm(AuthenticationState state, String username) throws AccessDeniedException;
+
 //	AuthenticationScheme getSchemeByName(String name);
 
 }

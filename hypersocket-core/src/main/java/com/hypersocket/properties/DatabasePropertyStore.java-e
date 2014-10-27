@@ -1,6 +1,9 @@
 package com.hypersocket.properties;
 
+import java.io.IOException;
+
 import org.springframework.transaction.annotation.Transactional;
+import org.w3c.dom.Element;
 
 import com.hypersocket.resource.AbstractResource;
 
@@ -69,6 +72,11 @@ public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 		}
 		property.setValue(value);
 		repository.saveProperty(property);
+		
+	}
+
+	@Override
+	public void init(Element element) throws IOException {
 		
 	}
 

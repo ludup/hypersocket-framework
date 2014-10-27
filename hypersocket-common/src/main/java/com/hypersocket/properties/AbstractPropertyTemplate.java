@@ -12,6 +12,7 @@ public abstract class AbstractPropertyTemplate {
 	boolean readOnly;
 	PropertyCategory category;
 	String mapping;
+	PropertyStore propertyStore;
 	
 	public String getResourceKey() {
 		return resourceKey;
@@ -84,5 +85,13 @@ public abstract class AbstractPropertyTemplate {
 		this.mapping = mapping;
 	}
 	
+	public void setPropertyStore(PropertyStore propertyStore) {
+		this.propertyStore = propertyStore;
+	}
+	
+	@JsonIgnore
+	public PropertyStore getPropertyStore() {
+		return propertyStore;
+	}
 	
 }

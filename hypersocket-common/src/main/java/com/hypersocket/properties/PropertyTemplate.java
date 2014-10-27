@@ -8,14 +8,8 @@
 package com.hypersocket.properties;
 
 
+
 public class PropertyTemplate extends AbstractPropertyTemplate {
-
-	PropertyStore propertyStore;
-	
-
-	public void setPropertyStore(PropertyStore propertyStore) {
-		this.propertyStore = propertyStore;
-	}
 
 	@Override
 	public String getValue() {

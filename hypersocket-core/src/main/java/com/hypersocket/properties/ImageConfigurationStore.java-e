@@ -17,7 +17,9 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-public class ImageConfigurationStore implements XmlTemplatePropertyStore {
+import com.hypersocket.resource.AbstractResource;
+
+public class ImageConfigurationStore implements ResourcePropertyStore {
 
 	static Logger log = Logger.getLogger(ImageConfigurationStore.class);
 
@@ -129,6 +131,60 @@ public class ImageConfigurationStore implements XmlTemplatePropertyStore {
 		if(resourceKeyImagesFile.exists()) {
 			resourceKeyImages.load(new FileInputStream(resourceKeyImagesFile));
 		}
+		
+	}
+
+	@Override
+	public String getPropertyValue(AbstractPropertyTemplate template,
+			AbstractResource resource) {
+		
+		String key = resource.getId() + File.separator + template.getResourceKey();
+		
+		if(!resourceKeyImages.containsKey(key)) {
+			return null;
+		}
+		File val = new File(imageResources, resourceKeyImages.getProperty(key));
+		if (!val.exists()) {
+			return null;
+		}
+		return createURL(resourceKeyImages.getProperty(key));
+	}
+
+	@Override
+	public void setPropertyValue(AbstractPropertyTemplate template,
+			AbstractResource resource, String value) {
+		
+		String key = resource.getId() + File.separator + template.getResourceKey();
+		String filename = key;
+		int idx;
+		if((idx = value.indexOf(';')) > -1) {
+			filename = resource.getId() + File.separator + value.substring(0, idx);
+			value = value.substring(idx+1);
+		}
+		
+		resourceKeyImages.put(key, filename);
+		try {
+			resourceKeyImages.store(new FileOutputStream(resourceKeyImagesFile), "");
+		} catch (IOException e1) {
+			throw new IllegalStateException("Failed to save image.properties", e1);
+		}
+		
+		File imageFile = new File(imageResources, filename);
+		imageFile.getParentFile().mkdirs();
+		
+		FileOutputStream out;
+		try {
+			out = new FileOutputStream(imageFile);
+			IOUtils.copy(
+					new ByteArrayInputStream(Base64.decodeBase64(value
+							.getBytes("UTF-8"))), out);
+		} catch (Exception e) {
+			log.error(
+					"Failed to write image for resource "
+							+ template.getResourceKey(), e);
+			throw new IllegalStateException("");
+		} 
+
 		
 	}
 
