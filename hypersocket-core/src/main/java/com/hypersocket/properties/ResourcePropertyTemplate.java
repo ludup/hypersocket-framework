@@ -15,7 +15,6 @@ import com.hypersocket.resource.AbstractResource;
 public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 
 	AbstractResource resource;
-	ResourcePropertyStore propertyStore;
 	
 	public ResourcePropertyTemplate(AbstractPropertyTemplate t, AbstractResource resource, ResourcePropertyStore propertyStore) {
 		this.resourceKey = t.getResourceKey();
@@ -35,7 +34,7 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 	}
 	
 	public String getValue() {
-		return propertyStore.getPropertyValue(this, resource);
+		return ((ResourcePropertyStore)propertyStore).getPropertyValue(this, resource);
 	}
 	
 	public void setResource(AbstractResource resource) {

@@ -2,7 +2,9 @@
 <propertyTemplates context="realm">
 	<propertyCategory resourceKey="realm.options"
 		resourceBundle="RealmService" weight="99999">
-		<property resourceKey="realm.host" inputType="text"
+		<property resourceKey="realm.hostRestriction" inputType="switch"
+			defaultValue="false" weight="0" />
+		<property resourceKey="realm.host" inputType="multipleTextInput"
 			defaultValue="" weight="0" />
 	</propertyCategory>
 	<propertyCategory resourceKey="realm.userProfiles"

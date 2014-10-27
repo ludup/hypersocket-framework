@@ -19,6 +19,10 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Element;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +83,9 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Autowired
 	UpgradeService upgradeService;
 
+	CacheManager cacheManager;
+	Cache realmCache;
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -140,6 +147,11 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		eventService.registerEvent(SetPasswordEvent.class, RESOURCE_BUNDLE);
 
 		upgradeService.registerListener(this);
+		
+		cacheManager = CacheManager.newInstance();
+		realmCache = new Cache("realmCache", 5000, false, false,
+				60 * 60, 60 * 60);
+		cacheManager.addCache(realmCache);
 	}
 
 	@Override
@@ -240,22 +252,37 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public Realm getRealmByHost(String host) {
-		for (Realm r : internalAllRealms()) {
-			RealmProvider provider = getProviderForRealm(r);
-			String realmHost = provider.getValue(r, "realm.host");
-			if (realmHost != null && !"".equals(realmHost)) {
-				if (realmHost.equalsIgnoreCase(host)) {
-					return r;
+		
+		if (!realmCache.isElementInMemory(host)
+				|| (realmCache.get(host) == null || realmCache
+						.isExpired(realmCache.get(host)))) {
+			for (Realm r : internalAllRealms()) {
+				RealmProvider provider = getProviderForRealm(r);
+				String[] realmHosts = provider.getValues(r, "realm.host");
+				for(String realmHost : realmHosts) {
+					if (realmHost != null && !"".equals(realmHost)) {
+						if (realmHost.equalsIgnoreCase(host)) {
+							realmCache.put(new Element(host, r));
+							return r;
+						}
+					}
 				}
 			}
+			realmCache.put(new Element(host, getDefaultRealm()));
+			return getDefaultRealm();
 		}
-		return getDefaultRealm();
+		
+		return (Realm) realmCache.get(host).getObjectValue();
 	}
 
 	@Override
 	public String getRealmHostname(Realm realm) {
 		RealmProvider provder = getProviderForRealm(realm);
-		return provder.getValue(realm, "realm.host");
+		String[] names = provder.getValues(realm, "realm.host");
+		if(names.length > 0) {
+			return names[0];
+		}
+		return "";
 	}
 
 	@Override
@@ -373,6 +400,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 					"error.invalidRealm", name);
 		}
 
+		clearCache(realm);
+		
 		deleteRealm(realm);
 	}
 
@@ -567,6 +596,16 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		}
 	}
 
+	private void clearCache(Realm realm) {
+		RealmProvider realmProvider = getProviderForRealm(realm
+				.getResourceCategory());
+		
+		String[] hosts = realmProvider.getValues(realm, "realm.host");
+		for(String host : hosts) {
+			realmCache.remove(host);
+		}
+	}
+	
 	@Override
 	public Realm updateRealm(Realm realm, String name,
 			Map<String, String> properties) throws AccessDeniedException,
@@ -589,6 +628,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			realmProvider.testConnection(properties, false);
 			String oldName = realm.getName();
 
+			clearCache(realm);
+			
 			realm.setName(name);
 
 			realm = realmRepository.saveRealm(realm, properties,
@@ -1253,6 +1294,14 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			return provider.getGroupPropertyNames();
 		}
 
+	}
+
+	@Override
+	public boolean isRealmStrictedToHost(Realm realm) {
+		
+		RealmProvider realmProvider = getProviderForRealm(realm);
+		return realmProvider.getBooleanValue(realm, "realm.hostRestriction");
+		
 	}
 
 }

@@ -41,6 +41,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	Map<String, PropertyCategory> activeCategories = new HashMap<String, PropertyCategory>();
 	Map<String, PropertyTemplate> propertyTemplates = new HashMap<String, PropertyTemplate>();
+	Map<String, PropertyStore> propertyStoresByResourceKey = new HashMap<String, PropertyStore>();
+	Map<String, PropertyStore> propertyStoresById = new HashMap<String, PropertyStore>();
+	Set<PropertyStore> propertyStores = new HashSet<PropertyStore>();
 	
 	List<PropertyTemplate> activeTemplates = new ArrayList<PropertyTemplate>();
 	Set<String> propertyNames = new HashSet<String>();
@@ -91,6 +94,28 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	}
 
+	private void loadPropertyStores(Document doc) {
+
+		NodeList list = doc.getElementsByTagName("propertyStore");
+
+		for (int i = 0; i < list.getLength(); i++) {
+			Element node = (Element) list.item(i);
+			try {
+				@SuppressWarnings("unchecked")
+				Class<? extends XmlTemplatePropertyStore> clz = (Class<? extends XmlTemplatePropertyStore>) Class
+						.forName(node.getAttribute("type"));
+
+				XmlTemplatePropertyStore store = clz.newInstance();
+				store.init(node);
+
+				propertyStoresById.put(node.getAttribute("id"), store);
+				propertyStores.add(store);
+			} catch (Throwable e) {
+				log.error("Failed to parse remote extension definition", e);
+			}
+		}
+
+	}
 	private String loadPropertyTemplates(URL url) throws SAXException,
 			IOException, ParserConfigurationException {
 
@@ -123,6 +148,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		if(log.isInfoEnabled()) {
 			log.info("Loading property template resource " + url.toExternalForm());
 		}
+		
+		loadPropertyStores(doc);
 		
 		loadPropertyCategories(doc);
 		
@@ -198,10 +225,6 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 				Element pnode = (Element) properties.item(x);
 
-				if (pnode.hasAttribute("store")) {
-					throw new IOException("store attribute not supported for resource templates!");
-				}
-
 				if(!pnode.hasAttribute("resourceKey")) {
 					throw new IOException("property must have a resourceKey attribute");
 				}
@@ -216,9 +239,19 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 						continue;
 					}
 					
+					PropertyStore store = getPropertyStore();
+					if (pnode.hasAttribute("store")) {
+						store = propertyStoresById.get(pnode.getAttribute("store"));
+						if (store == null) {
+							throw new IOException("PropertyStore "
+									+ pnode.getAttribute("store")
+									+ " does not exist!");
+						}
+					}
+					
 					registerPropertyItem(
 							cat,
-							getPropertyStore(),
+							store,
 							pnode.getAttribute("resourceKey"),
 							generateMetaData(pnode),
 							pnode.getAttribute("mapping"),
@@ -290,14 +323,18 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		if(defaultValue.startsWith("classpath:")) {
 				String url = defaultValue.substring(10);
 				InputStream in = getClass().getResourceAsStream(url);
-				if(in!=null) {
-					try {
-						defaultValue = IOUtils.toString(in);
-					} catch (IOException e) {
-						log.error("Failed to load default value classpath resource " + defaultValue, e);
+				try {
+					if(in!=null) {
+						try {
+							defaultValue = IOUtils.toString(in);
+						} catch (IOException e) {
+							log.error("Failed to load default value classpath resource " + defaultValue, e);
+						}
+					} else {
+						log.error("Failed to load default value classpath resource " + url);
 					}
-				} else {
-					log.error("Failed to load default value classpath resource " + url);
+				} finally {
+					IOUtils.closeQuietly(in);
 				}
 		}
 		
@@ -375,14 +412,14 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public String getValue(AbstractResource resource, String resourceKey) {
 
-		PropertyTemplate template = getPropertyStore().getPropertyTemplate(resourceKey);
+		PropertyTemplate template =  propertyTemplates.get(resourceKey);
 
 		if (template == null) {
 			throw new IllegalStateException(resourceKey
 					+ " is not a registered configuration item");
 		}
 
-		return getPropertyStore().getPropertyValue(template, resource);
+		return ((ResourcePropertyStore)template.getPropertyStore()).getPropertyValue(template, resource);
 	}
 
 	@Override
@@ -408,7 +445,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public void setValue(AbstractResource resource, String resourceKey, String value) {
 
-		AbstractPropertyTemplate template = getPropertyStore().getPropertyTemplate(resourceKey);
+		PropertyTemplate template = propertyTemplates.get(resourceKey);
 
 		if (template == null) {
 			throw new IllegalStateException(resourceKey
@@ -419,7 +456,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			return;
 		}
 		
-		getPropertyStore().setPropertyValue(template, resource, value);
+		((ResourcePropertyStore)template.getPropertyStore()).setPropertyValue(template, resource, value);
 	}
 
 	@Override
@@ -475,7 +512,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			tmp.setUserCreated(c.isUserCreated());
 			tmp.setDisplayMode(c.getDisplayMode());
 			for(AbstractPropertyTemplate t : c.getTemplates()) {
-				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource, getPropertyStore())); 
+				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource, (ResourcePropertyStore) t.getPropertyStore())); 
 			}
 			cats.add(tmp);
 		}
@@ -494,22 +531,12 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	public Collection<PropertyTemplate> getPropertyTemplates() {
 		return Collections.unmodifiableCollection(activeTemplates);
 	}
-
-	@Override
-	public String[] explodeValues(String values) {
-		StringTokenizer t = new StringTokenizer(values, "]|[");
-		List<String> ret = new ArrayList<String>();
-		while (t.hasMoreTokens()) {
-			ret.add(t.nextToken());
-		}
-		return ret.toArray(new String[0]);
-	}
 	
 	@Override
 	public String[] getValues(AbstractResource resource, String name) {
 
 		String values = getValue(resource, name);
-		return explodeValues(values);
+		return ResourceUtils.explodeValues(values);
 	}
 	
 	@Override

@@ -190,7 +190,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	// }
 
 	@Override
-	public AuthenticationState createAuthenticationState(String resourceKey,
+	public AuthenticationState createAuthenticationState(String schemeResourceKey,
 			String remoteAddress, Map<String, Object> environment, Locale locale)
 			throws AccessDeniedException {
 
@@ -240,7 +240,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			state.setRealm(realmService.getDefaultRealm());
 		}
 
-		state.setScheme(getSchemeByResourceKey(state.getRealm(), resourceKey));
+		state.setScheme(getSchemeByResourceKey(state.getRealm(), schemeResourceKey));
 		state.setModules(repository.getModulesForScheme(state.getScheme()));
 
 		return state;
@@ -472,6 +472,41 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			}
 		}
 		return tmp;
+	}
+
+	@Override
+	public Realm resolveRealm(AuthenticationState state, String username) throws AccessDeniedException {
+		
+		Realm realm = state.getRealm();
+		String realmName = realm.getName();
+		
+		// Set before we manipulate it
+		state.setLastPrincipalName(username);
+		
+		if(!realmService.isRealmStrictedToHost(realm))  {
+			
+			// Can we extract realm from username?
+			int idx;
+			idx = username.indexOf('\\');
+			if (idx > -1) {
+				realmName = username.substring(0, idx);
+				username = username.substring(idx+1);
+			} else {
+				idx = username.indexOf('@');
+				if (idx > -1) {
+					realmName = username.substring(idx + 1);
+					username = username.substring(0, idx);
+				}
+			}
+			
+			if (realmName != null) {
+				realm = realmService.getRealmByName(realmName);
+			}
+		}
+		
+		state.setLastRealmName(realmName);
+		
+		return realm;
 	}
 
 }

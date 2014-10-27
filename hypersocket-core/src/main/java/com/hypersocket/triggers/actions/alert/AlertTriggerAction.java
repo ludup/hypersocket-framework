@@ -15,6 +15,7 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.Message;
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.triggers.AbstractActionProvider;
 import com.hypersocket.triggers.ActionResult;
 import com.hypersocket.triggers.TriggerAction;
@@ -78,7 +79,7 @@ public class AlertTriggerAction extends AbstractActionProvider implements
 
 		StringBuffer key = new StringBuffer();
 
-		for (String attr : repository.explodeValues(repository.getValue(action,
+		for (String attr : ResourceUtils.explodeValues(repository.getValue(action,
 				ATTR_KEY))) {
 			if (key.length() > 0) {
 				key.append("|");
