@@ -23,6 +23,7 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1166,9 +1167,15 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		String[] editableProperties = getRealmPropertyArray(realm,
 				"realm.userEditableProperties");
 
-		HashMap<String, String> filteredProperties = new HashMap<String, String>();
+		Map<String,String> currentProperties = provider.getProperties(principal);
+		Map<String, String> filteredProperties = new HashMap<String, String>();
 		for (String allowed : editableProperties) {
-			filteredProperties.put(allowed, properties.get(allowed));
+			String value = properties.get(allowed);
+			if(StringUtils.isNotBlank(value)) {
+				filteredProperties.put(allowed, properties.get(allowed));
+			} else if(currentProperties.containsKey(allowed)) {
+				filteredProperties.put(allowed, currentProperties.get(allowed));
+			}
 		}
 
 		try {
