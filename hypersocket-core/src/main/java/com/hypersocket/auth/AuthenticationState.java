@@ -247,4 +247,8 @@ public class AuthenticationState {
 	public String getHomePage() {
 		return homePage;
 	}
+
+	public Map<String,String> getParameters() {
+		return parameters;
+	}
 }

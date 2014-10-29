@@ -73,6 +73,24 @@ public abstract class AbstractAuthenticatedService implements
 		currentRealm.set(null);
 	}
 	
+	@Override
+	public String getCurrentUsername() {
+		if(currentPrincipal.get()==null) {
+			throw new IllegalStateException("Cannot determine current principal for getCurrentUsername");
+		}
+		return currentPrincipal.get().getPrincipalName();
+	}
+	
+	@Override
+	public String getCurrentPassword() {
+		if(currentSession.get()==null) {
+			throw new IllegalStateException("Cannot determine current session for getCurrentPassword");
+		}
+		Session session = currentSession.get();
+		// TODO get parameter from session, needs backend support for serialized properties within session itself
+		return null;
+	}
+	
 	public boolean hasAuthenticatedContext() {
 		return currentPrincipal.get() != null;
 	}
