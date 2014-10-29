@@ -54,7 +54,6 @@ import com.hypersocket.server.handlers.WebsocketHandler;
 import com.hypersocket.server.websocket.WebsocketClient;
 import com.hypersocket.server.websocket.WebsocketClientCallback;
 import com.hypersocket.servlet.HypersocketSession;
-import com.hypersocket.utils.HypersocketUtils;
 
 public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		implements HttpResponseProcessor {

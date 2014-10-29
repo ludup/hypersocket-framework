@@ -8,6 +8,7 @@
 package com.hypersocket.session;
 
 import java.util.List;
+import java.util.Map;
 
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.auth.AuthenticationScheme;
@@ -19,12 +20,14 @@ import com.hypersocket.resource.Resource;
 public interface SessionService extends AuthenticatedService {
 
 	static final String RESOURCE_BUNDLE = "SessionService";
-	
+
 	boolean isLoggedOn(Session session, boolean touch);
 
 	Session getSession(String id);
 
-	Session openSession(String remoteAddress, Principal principal, AuthenticationScheme completedScheme, String userAgent);
+	Session openSession(String remoteAddress, Principal principal,
+			AuthenticationScheme completedScheme, String userAgent,
+			Map<String, String> parameters);
 
 	void closeSession(Session session);
 
@@ -46,8 +49,9 @@ public interface SessionService extends AuthenticatedService {
 			Class<T> resourceClz);
 
 	Session getNonCookieSession(String remoteAddr, String requestHeader,
-			String authenticationSchemeResourceKey) throws AccessDeniedException;
-	
+			String authenticationSchemeResourceKey)
+			throws AccessDeniedException;
+
 	void registerNonCookieSession(String remoteAddr, String requestHeader,
 			String authenticationSchemeResourceKey, Session session);
 }

@@ -19,7 +19,6 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.resource.ResourceNotFoundException;
 
 @Component
 public class UsernameAndPasswordAuthenticator implements Authenticator {

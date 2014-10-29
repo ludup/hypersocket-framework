@@ -99,7 +99,8 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 	public Session openSession(String remoteAddress, 
 			Principal principal,
 			AuthenticationScheme completedScheme, 
-			String userAgent) {
+			String userAgent,
+			Map<String,String> parameters) {
 		
 		if(userAgent==null) {
 			userAgent = "Unknown";

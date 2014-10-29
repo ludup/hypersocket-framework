@@ -27,4 +27,8 @@ public interface AuthenticatedService {
 	void clearPrincipalContext();
 	
 	boolean hasAuthenticatedContext();
+
+	String getCurrentUsername();
+
+	String getCurrentPassword();
 }

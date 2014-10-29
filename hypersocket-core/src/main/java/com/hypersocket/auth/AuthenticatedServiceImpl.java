@@ -27,4 +27,5 @@ public abstract class AuthenticatedServiceImpl extends AbstractAuthenticatedServ
 		permissionService.verifyPermission(principal, strategy, permissions);
 	}
 	
+	
 }

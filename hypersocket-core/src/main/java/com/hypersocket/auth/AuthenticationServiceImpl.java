@@ -431,7 +431,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		}
 
 		Session session = sessionService.openSession(state.getRemoteAddress(),
-				state.getPrincipal(), state.getScheme(), state.getUserAgent());
+				state.getPrincipal(), state.getScheme(), state.getUserAgent(), state.getParameters());
 
 		return session;
 	}

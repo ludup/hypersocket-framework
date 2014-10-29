@@ -27,7 +27,6 @@ import javax.net.ssl.SSLEngine;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
