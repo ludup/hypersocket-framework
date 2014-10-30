@@ -215,7 +215,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 	@Override
 	public T getResourceByName(String name) throws ResourceNotFoundException {
-		T resource = getRepository().getResourceByName(name);
+		T resource = getRepository().getResourceByName(name, getCurrentRealm());
 		if (resource == null) {
 			throw new ResourceNotFoundException(getResourceBundle(),
 					"error.invalidResourceName", name);

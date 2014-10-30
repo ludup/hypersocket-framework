@@ -306,26 +306,6 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 			}
 
-			// switch (strategy) {
-			// case REQUIRE_ALL_PERMISSIONS: {
-			// for (PermissionType t : permissions) {
-			// boolean found = false;
-			// for (PermissionType p : derivedPrincipalPermissions) {
-			// if (t.getResourceKey().equals(p.getResourceKey())) {
-			// found = true;
-			// break;
-			// }
-			// }
-			// if (!found) {
-			// throw new AccessDeniedException(I18N.getResource(
-			// getCurrentLocale(),
-			// PermissionService.RESOURCE_BUNDLE,
-			// "error.accessDenied"));
-			// }
-			// }
-			// break;
-			// }
-			// case REQUIRE_ANY: {
 			for (PermissionType t : permissions) {
 				for (PermissionType p : derivedPrincipalPermissions) {
 					if (t.getResourceKey().equals(p.getResourceKey())) {
@@ -337,12 +317,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			throw new AccessDeniedException(I18N.getResource(
 					getCurrentLocale(), PermissionService.RESOURCE_BUNDLE,
 					"error.accessDenied"));
-			// }
-			// default: {
-			// throw new IllegalStateException(
-			// "Missing PermissionStrategy type! Did you add a new strategy without changing PermissionServiceImpl.verifyPermission?");
-			// }
-			// }
+
 		}
 	}
 
