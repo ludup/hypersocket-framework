@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -42,13 +43,13 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	List<T> getAssignedResources(Principal... principals);
 
-	Long getAssignableResourceCount(Principal... principals);
+	Long getAssignableResourceCount(Principal principal);
 
 	Long getAssignedResourceCount(Principal principal, 
 			String searchPattern,
 			CriteriaConfiguration... configs);
 
-	List<T> searchAssignedResources(Principal principal, 
+	Collection<T> searchAssignedResources(Principal principal, 
 			String searchPattern, int start, int length, ColumnSort[] sorting,
 			CriteriaConfiguration... configs);
 

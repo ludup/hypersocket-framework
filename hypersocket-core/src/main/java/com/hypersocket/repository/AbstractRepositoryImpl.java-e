@@ -174,7 +174,6 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 		Criteria criteria = createCriteria(clz);
 		
-		criteria.setProjection(Projections.rowCount());
 		for(CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
@@ -185,7 +184,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
 		
-		return (Long) criteria.uniqueResult();
+		return (long) criteria.list().size();
 	}
 	
 	@SuppressWarnings("unchecked")
