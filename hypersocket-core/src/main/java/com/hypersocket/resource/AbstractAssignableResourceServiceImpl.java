@@ -1,6 +1,7 @@
 package com.hypersocket.resource;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -177,7 +178,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	@Override
-	public List<T> searchPersonalResources(Principal principal, String search, int start,
+	public Collection<T> searchPersonalResources(Principal principal, String search, int start,
 			int length, ColumnSort[] sorting) {
 
 		return getRepository().searchAssignedResources(principal, search, start, length, sorting);

@@ -1,5 +1,6 @@
 package com.hypersocket.tables.json;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.hypersocket.auth.json.UnauthorizedException;
@@ -11,7 +12,7 @@ public interface DataTablesPageProcessor {
 
 	Column getColumn(int col);
 	
-	List<?> getPage(String searchPattern, int start, int length, ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException;
+	Collection<?> getPage(String searchPattern, int start, int length, ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException;
 	
 	Long getTotalCount(String searchPattern) throws UnauthorizedException, AccessDeniedException;
 

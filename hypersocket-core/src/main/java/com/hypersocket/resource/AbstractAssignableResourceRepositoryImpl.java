@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -42,7 +44,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@Autowired
 	EntityResourcePropertyStore entityPropertyStore;
-	
+
 	@Override
 	public List<T> getAssigedResources(List<Principal> principals) {
 		return getAssignedResources(principals.toArray(new Principal[0]));
@@ -52,7 +54,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	protected ResourcePropertyStore getPropertyStore() {
 		return entityPropertyStore;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<T> getAssignedResources(Principal... principals) {
@@ -61,9 +63,8 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for (Principal p : principals) {
 			ids.add(p.getId());
 		}
-		Criteria crit = createCriteria(
-				getResourceClass());
-		
+		Criteria crit = createCriteria(getResourceClass());
+
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 
 		crit = crit.createCriteria("roles");
@@ -75,12 +76,14 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<T> searchAssignedResources(Principal principal,
+	public Collection<T> searchAssignedResources(Principal principal,
 			final String searchPattern, final int start, final int length,
 			final ColumnSort[] sorting, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(getResourceClass());
-		if (!StringUtils.isEmpty(searchPattern)) {
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		
+		if (StringUtils.isNotBlank(searchPattern)) {
 			criteria.add(Restrictions.like("name", searchPattern));
 		}
 
@@ -88,22 +91,41 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			c.configure(criteria);
 		}
 
+		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria = criteria.createCriteria("roles");
+		criteria.add(Restrictions.eq("allUsers", true));
+		
+		Set<T> everyone = new HashSet<T>(criteria.list());
+		
+		criteria = createCriteria(getResourceClass());
+		
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		criteria.setFirstResult(start);
+		criteria.setMaxResults(length);
+		
+		if (StringUtils.isNotBlank(searchPattern)) {
+			criteria.add(Restrictions.like("name", searchPattern));
+		}
+
+		for (CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		
 		for (ColumnSort sort : sorting) {
 			criteria.addOrder(sort.getSort() == Sort.ASC ? Order.asc(sort
 					.getColumn().getColumnName()) : Order.desc(sort.getColumn()
 					.getColumnName()));
 		}
-
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-		criteria.setFirstResult(start);
-		criteria.setMaxResults(length);
+		
+		criteria.add(Restrictions.eq("realm", principal.getRealm()));
 
 		criteria = criteria.createCriteria("roles");
+		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
 		criteria.add(Restrictions.in("id", new Long[] { principal.getId() }));
-
-		List<T> res = (List<T>) criteria.list();
-		return res;
+		
+		everyone.addAll((List<T>) criteria.list());
+		return everyone;
 	};
 
 	@Override
@@ -111,7 +133,9 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			final String searchPattern, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(getResourceClass());
-		if (!StringUtils.isEmpty(searchPattern)) {
+		criteria.setProjection(Projections.property("id"));
+		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+		if (StringUtils.isNotBlank(searchPattern)) {
 			criteria.add(Restrictions.like("name", searchPattern));
 		}
 
@@ -119,37 +143,40 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			c.configure(criteria);
 		}
 
+		criteria.add(Restrictions.eq("realm", principal.getRealm()));
 		criteria = criteria.createCriteria("roles");
+		criteria.add(Restrictions.eq("allUsers", true));
+		
+		List<?> ids = criteria.list();
+		
+		criteria = createCriteria(getResourceClass());
+		criteria.setProjection(Projections.countDistinct("name"));
+		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+		if (StringUtils.isNotBlank(searchPattern)) {
+			criteria.add(Restrictions.like("name", searchPattern));
+		}
+
+		for (CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		
+		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		if(ids.size() > 0) {
+			criteria.add(Restrictions.not(Restrictions.in("id", ids)));
+		}
+		criteria = criteria.createCriteria("roles");
+		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
 		criteria.add(Restrictions.in("id", new Long[] { principal.getId() }));
 		
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-//		criteria.setProjection(Projections.rowCount());
-		
-//		return (Long) criteria.uniqueResult();
-		return (long) criteria.list().size();
+		Long count = (Long) criteria.uniqueResult();
+		return count + ids.size();
+
 	}
 
 	@Override
-	public Long getAssignableResourceCount(Principal... principals) {
-
-		Set<Long> ids = new HashSet<Long>();
-		for (Principal p : principals) {
-			ids.add(p.getId());
-		}
-		Criteria crit = createCriteria(
-				getResourceClass());
-
-		crit = crit.createCriteria("roles");
-		crit = crit.createCriteria("principals");
-		crit.add(Restrictions.in("id", ids));
-		
-		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-//		crit.setProjection(Projections.rowCount());
-		
-//		Long count = (Long) crit.uniqueResult();
-//		return count == null ? 0L : count;
-		return (long) crit.list().size();
+	public Long getAssignableResourceCount(Principal principal) {
+		return getAssignedResourceCount(principal, "");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -161,8 +188,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for (Principal p : principals) {
 			ids.add(p.getId());
 		}
-		Criteria crit = createCriteria(
-				AssignableResource.class);
+		Criteria crit = createCriteria(AssignableResource.class);
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit = crit.createCriteria("roles");
 		crit = crit.createCriteria("principals");
@@ -180,8 +206,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for (Principal p : principals) {
 			ids.add(p.getId());
 		}
-		Criteria crit = createCriteria(
-				getResourceClass());
+		Criteria crit = createCriteria(getResourceClass());
 		crit.add(Restrictions.eq("id", resourceId));
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit = crit.createCriteria("roles");
@@ -224,10 +249,10 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 
 	@Override
-	public void saveResource(T resource, Map<String,String> properties) {
-		
-		for(Map.Entry<String,String> e : properties.entrySet()) {
-			if(hasPropertyTemplate(e.getKey())) {
+	public void saveResource(T resource, Map<String, String> properties) {
+
+		for (Map.Entry<String, String> e : properties.entrySet()) {
+			if (hasPropertyTemplate(e.getKey())) {
 				setValue(resource, e.getKey(), e.getValue());
 			}
 		}
@@ -238,49 +263,46 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Override
 	public List<T> getResources(Realm realm) {
 
-		Criteria crit = createCriteria(
-				getResourceClass());
+		Criteria crit = createCriteria(getResourceClass());
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit.setFetchMode("roles", FetchMode.SELECT);
 		crit.add(Restrictions.eq("deleted", false));
 		crit.add(Restrictions.eq("realm", realm));
-		
+
 		return (List<T>) crit.list();
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public List<T> allResources() {
-		
-		Criteria crit = createCriteria(
-				getResourceClass());
+
+		Criteria crit = createCriteria(getResourceClass());
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit.setFetchMode("roles", FetchMode.SELECT);
 		crit.add(Restrictions.eq("deleted", false));
-		
+
 		return (List<T>) crit.list();
 	}
-	
+
 	@Override
 	public List<T> search(Realm realm, String searchPattern, int start,
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		return super.search(getResourceClass(), "name", searchPattern, start,
 				length, sorting, ArrayUtils.addAll(configs,
-						new RoleSelectMode(),
-						new RealmAndDefaultRealmCriteria(realm)));
+						new RoleSelectMode(), new RealmAndDefaultRealmCriteria(
+								realm)));
 	}
 
 	@Override
 	public long getResourceCount(Realm realm, String searchPattern,
 			CriteriaConfiguration... configs) {
 		return getCount(getResourceClass(), "name", searchPattern,
-				ArrayUtils.addAll(configs, 
-						new RoleSelectMode(),
+				ArrayUtils.addAll(configs, new RoleSelectMode(),
 						new RealmAndDefaultRealmCriteria(realm)));
 	}
 
 	protected abstract Class<T> getResourceClass();
-	
+
 	class RoleSelectMode implements CriteriaConfiguration {
 
 		@Override
