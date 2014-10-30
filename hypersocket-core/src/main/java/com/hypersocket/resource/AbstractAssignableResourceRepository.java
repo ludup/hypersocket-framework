@@ -23,9 +23,9 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	
 	T getResourceByIdAndPrincipals(Long resourceId, List<Principal> principals);
 
-	T getResourceByName(String name);
+	T getResourceByName(String name, Realm realm);
 
-	T getResourceByName(String name, boolean deleted);
+	T getResourceByName(String name, Realm realm, boolean deleted);
 
 	T getResourceById(Long id);
 

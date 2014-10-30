@@ -30,6 +30,7 @@ import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.session.Session;
@@ -228,14 +229,14 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 
 	@Override
-	public T getResourceByName(String name) {
-		return get("name", name, getResourceClass(), new DeletedCriteria(false));
+	public T getResourceByName(String name, Realm realm) {
+		return get("name", name, getResourceClass(), new DeletedCriteria(false), new RealmRestriction(realm));
 	}
 
 	@Override
-	public T getResourceByName(String name, boolean deleted) {
+	public T getResourceByName(String name, Realm realm, boolean deleted) {
 		return get("name", name, getResourceClass(), new DeletedCriteria(
-				deleted));
+				deleted), new RealmRestriction(realm));
 	}
 
 	@Override
