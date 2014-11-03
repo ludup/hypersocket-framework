@@ -185,8 +185,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	@Override
-	public List<T> getPersonalResources(Principal principal) {
-		return getRepository().getAssignedResources(principal);
+	public Collection<T> getPersonalResources(Principal principal) throws AccessDeniedException {
+		return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(principal));
 	}
 	
 	@Override
@@ -234,7 +234,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 
 	@Override
-	public List<T> getResources(Principal principal)
+	public Collection<T> getResources(Principal principal)
 			throws AccessDeniedException {
 
 		if (log.isDebugEnabled()) {
@@ -242,7 +242,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 					+ principal.getRealm() + "/" + principal.getPrincipalName());
 		}
 
-		return getRepository().getAssigedResources(
+		return getRepository().getAssignedResources(
 				realmService.getAssociatedPrincipals(principal));
 	}
 

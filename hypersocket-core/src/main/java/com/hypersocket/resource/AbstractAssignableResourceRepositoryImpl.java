@@ -47,7 +47,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	EntityResourcePropertyStore entityPropertyStore;
 
 	@Override
-	public List<T> getAssigedResources(List<Principal> principals) {
+	public Collection<T> getAssignedResources(List<Principal> principals) {
 		return getAssignedResources(principals.toArray(new Principal[0]));
 	}
 
@@ -58,21 +58,37 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<T> getAssignedResources(Principal... principals) {
+	public Collection<T> getAssignedResources(Principal... principals) {
 
+		
+		Criteria criteria = createCriteria(getResourceClass());
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		
+		criteria.add(Restrictions.eq("realm", principals[0].getRealm()));
+		
+		criteria = criteria.createCriteria("roles");
+		criteria.add(Restrictions.eq("allUsers", true));
+		
+		Set<T> everyone = new HashSet<T>(criteria.list());
+		
 		Set<Long> ids = new HashSet<Long>();
 		for (Principal p : principals) {
 			ids.add(p.getId());
 		}
-		Criteria crit = createCriteria(getResourceClass());
 
-		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		criteria = createCriteria(getResourceClass());
+		
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		
+		criteria.add(Restrictions.eq("realm", principals[0].getRealm()));
 
-		crit = crit.createCriteria("roles");
-		crit = crit.createCriteria("principals");
-		crit.add(Restrictions.in("id", ids));
-
-		return (List<T>) crit.list();
+		criteria = criteria.createCriteria("roles");
+		criteria.add(Restrictions.eq("allUsers", false));
+		criteria = criteria.createCriteria("principals");
+		criteria.add(Restrictions.in("id", ids));
+		
+		everyone.addAll((List<T>) criteria.list());
+		return everyone;
 	}
 
 	@SuppressWarnings("unchecked")

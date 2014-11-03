@@ -9,8 +9,10 @@ package com.hypersocket.auth;
 
 import java.util.Locale;
 
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionStrategy;
@@ -22,6 +24,9 @@ import com.hypersocket.session.Session;
 public abstract class AbstractAuthenticatedService implements
 		AuthenticatedService {
 
+	@Autowired
+	PasswordEncryptionService encryptionService; 
+	
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAuthenticatedService.class);
 
@@ -87,8 +92,37 @@ public abstract class AbstractAuthenticatedService implements
 			throw new IllegalStateException("Cannot determine current session for getCurrentPassword");
 		}
 		Session session = currentSession.get();
-		// TODO get parameter from session, needs backend support for serialized properties within session itself
-		return null;
+		try {
+			return encryptionService.decrypt(
+					session.getStateParameter("password"),
+					Base64.decodeBase64(session.getStateParameter("ss")));
+		} catch (Exception e) {
+			return "";
+		}
+	}
+	
+	@Override
+	public void setCurrentPassword(String password) {
+		if(currentSession.get()==null) {
+			throw new IllegalStateException("Cannot determine current session for setCurrentPassword");
+		}
+		setCurrentPassword(currentSession.get(), password);
+	}
+	
+	public void setCurrentPassword(Session session, String password) {
+		
+		try {
+			byte[] salt = encryptionService.generateSalt();
+			
+			session.setStateParameter("password", 
+					encryptionService.encrypt(
+							password,
+							salt));
+			
+			session.setStateParameter("ss", Base64.encodeBase64String(salt));
+		} catch (Exception e) {
+			
+		}
 	}
 	
 	public boolean hasAuthenticatedContext() {

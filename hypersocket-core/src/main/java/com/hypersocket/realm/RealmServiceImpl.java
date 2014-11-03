@@ -482,6 +482,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			provider.changePassword(principal, oldPassword.toCharArray(),
 					newPassword.toCharArray());
 
+			setCurrentPassword(newPassword);
+			
 			eventService.publishEvent(new ChangePasswordEvent(this,
 					getCurrentSession(), getCurrentRealm(), provider));
 
