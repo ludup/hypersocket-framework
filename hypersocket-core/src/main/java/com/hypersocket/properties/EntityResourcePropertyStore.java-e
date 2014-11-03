@@ -3,6 +3,10 @@ package com.hypersocket.properties;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +21,7 @@ import org.w3c.dom.Element;
 import com.hypersocket.resource.AbstractAssignableResourceService;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.AbstractResourceService;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Component
 public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
@@ -34,6 +39,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		primitiveParsers.put(Integer.class, new IntegerValue());
 		primitiveParsers.put(Long.class, new LongValue());
 		primitiveParsers.put(Double.class, new DoubleValue());
+		primitiveParsers.put(Date.class, new DateValue());
 	}
 	
 	public void registerResourceService(Class<?> clz, AbstractResourceService<?> service) {
@@ -162,6 +168,20 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		public Double parseValue(String value) {
 			return Double.valueOf(value);
 		}
+	}
+	
+	class DateValue implements PrimitiveParser<Date> {
+
+		@Override
+		public Date parseValue(String value) {
+			try {
+				return HypersocketUtils.parseDate(value, "yyyy-MM-dd");
+			} catch (ParseException e) {
+				log.warn("Faield to parse date value " + value);
+				return null;
+			}
+		}
+		
 	}
 
 	@Override
