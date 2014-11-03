@@ -7,7 +7,14 @@
  ******************************************************************************/
 package com.hypersocket.session;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,6 +26,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 
+import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.GenericGenerator;
@@ -78,6 +86,12 @@ public class Session extends AbstractEntity<String> {
 	
 	@Column(name="non_cookie_key")
 	String nonCookieKey;
+	
+	@Column(name="state", length=8000)
+	String state;
+	
+	@Transient
+	Map<String,String> stateParameters;
 	
 	@Override
 	public String getId() {
@@ -202,5 +216,46 @@ public class Session extends AbstractEntity<String> {
 	public String getNonCookieKey() {
 		return nonCookieKey;
 	}
+	
+	public void setStateParameters(Map<String,String> stateParameters) {
+		this.stateParameters = stateParameters;
+		writeState();
+	}
+	
+	private void writeState() {
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			ObjectOutputStream obj = new ObjectOutputStream(out);
+			obj.writeObject(stateParameters);
+			this.state =  Base64.encodeBase64String(out.toByteArray());
+		} catch (IOException e) {
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public String getStateParameter(String name) {
+		if(stateParameters==null) {
+			if(state!=null) {
+				ObjectInputStream obj;
+				try {
+					obj = new ObjectInputStream(new ByteArrayInputStream(Base64.decodeBase64(state)));
+					stateParameters = (Map<String,String>) obj.readObject();
+				} catch (Exception e) {
+				}
+			}
+			
+			if(stateParameters==null) {
+				stateParameters = new HashMap<String,String>();
+			}
+		}
+		return stateParameters.get(name);
+	}
 
+	public void setStateParameter(String name, String value) {
+		if(stateParameters==null) {
+			stateParameters = new HashMap<String,String>();
+		}
+		stateParameters.put(name, value);
+		writeState();
+	}
 }

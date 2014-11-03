@@ -74,7 +74,16 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 		Principal principal =  realmService.getPrincipalByName(realm, username);
 
 		if (principal == null) {
-			return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
+
+			if(username.indexOf('@') > -1) {
+				username = username.substring(0, username.indexOf('@'));
+			}
+			
+			principal = realmService.getPrincipalByName(realm, username);
+			
+			if(principal==null) {
+				return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
+			}
 		}
 
 		boolean result = realmService.verifyPassword(principal,

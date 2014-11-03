@@ -19,7 +19,7 @@ import com.hypersocket.tables.ColumnSort;
 public interface AbstractAssignableResourceRepository<T extends AssignableResource>
 		extends AssignableResourceRepository {
 
-	List<T> getAssigedResources(List<Principal> principals);
+	Collection<T> getAssignedResources(List<Principal> principals);
 	
 	T getResourceByIdAndPrincipals(Long resourceId, List<Principal> principals);
 
@@ -41,7 +41,7 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	long getResourceCount(Realm realm, String searchPattern,
 			CriteriaConfiguration... configs);
 
-	List<T> getAssignedResources(Principal... principals);
+	Collection<T> getAssignedResources(Principal... principals);
 
 	Long getAssignableResourceCount(Principal principal);
 

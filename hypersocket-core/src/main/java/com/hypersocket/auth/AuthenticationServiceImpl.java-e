@@ -432,7 +432,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 		Session session = sessionService.openSession(state.getRemoteAddress(),
 				state.getPrincipal(), state.getScheme(), state.getUserAgent(), state.getParameters());
-
+		
+		if(state.hasParameter("password")) {
+			sessionService.setCurrentPassword(session, state.getParameter("password"));
+		}
 		return session;
 	}
 

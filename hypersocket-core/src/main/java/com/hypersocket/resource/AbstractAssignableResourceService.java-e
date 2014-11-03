@@ -25,7 +25,7 @@ public interface AbstractAssignableResourceService<T> extends AuthenticatedServi
 	
 	T getResourceById(Long id) throws ResourceNotFoundException;
 
-	List<T> getResources(Principal principal) throws AccessDeniedException;
+	Collection<T> getResources(Principal principal) throws AccessDeniedException;
 
 	void createResource(T resource, Map<String,String> properties) throws 
 			AccessDeniedException, ResourceCreationException;
@@ -44,6 +44,6 @@ public interface AbstractAssignableResourceService<T> extends AuthenticatedServi
 
 	long getPersonalResourceCount(Principal principal, String search);
 
-	List<T> getPersonalResources(Principal principal);
+	Collection<T> getPersonalResources(Principal principal) throws AccessDeniedException;
 
 }

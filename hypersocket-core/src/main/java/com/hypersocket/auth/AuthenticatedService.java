@@ -31,4 +31,8 @@ public interface AuthenticatedService {
 	String getCurrentUsername();
 
 	String getCurrentPassword();
+
+	void setCurrentPassword(String password);
+	
+	void setCurrentPassword(Session session, String password);
 }
