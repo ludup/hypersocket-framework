@@ -221,6 +221,27 @@ public class RealmController extends ResourceController {
 	}
 
 	@AuthenticationRequired
+	@RequestMapping(value = "realms/realm/userVariables/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<String> getUserVariableNames(
+			HttpServletRequest request,
+			@PathVariable Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<String>(
+				realmService.getUserVariableNames(realmService.getRealmById(id)));
+
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
+	@AuthenticationRequired
 	@RequestMapping(value = "realms/realm", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)

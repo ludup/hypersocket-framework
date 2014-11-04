@@ -42,4 +42,6 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	boolean hasPropertyTemplate(String key);
 
+	Set<String> getVariableNames();
+
 }
