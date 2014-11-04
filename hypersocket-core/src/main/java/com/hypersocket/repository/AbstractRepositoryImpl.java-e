@@ -124,6 +124,24 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		return (T)results.get(0);
 	}
 	
+	@SuppressWarnings("unchecked")
+	protected <T> T get(Class<T> cls, DetachedCriteriaConfiguration... configs) {
+		DetachedCriteria criteria = createDetachedCriteria(cls);
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+
+		for(DetachedCriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		@SuppressWarnings("rawtypes")
+		List results = hibernateTemplate.findByCriteria(criteria);
+		if(results.isEmpty()) {
+			return null;
+		} else if(results.size() > 1) {
+			throw new IllegalStateException("Too many results returned in get request class=" + cls.getName());
+		}
+		return (T)results.get(0);
+	}
+	
 	protected <T> T get(String column, Object value, Class<T> cls, DetachedCriteriaConfiguration... configs) {
 		return get(column, value, cls, false, configs);
 	}
