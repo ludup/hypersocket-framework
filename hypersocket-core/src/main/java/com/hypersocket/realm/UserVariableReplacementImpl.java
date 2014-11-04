@@ -29,6 +29,9 @@ public class UserVariableReplacementImpl extends
 	@Override
 	protected boolean hasVariable(Principal source, String name) {
 
+		if (name.equals("password")) {
+			return true;
+		} 
 		RealmProvider provider = realmService.getProviderForRealm(source
 				.getRealm());
 		return defaultReplacements.contains(name)
