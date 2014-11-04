@@ -613,6 +613,14 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		
 	}
 
+	@Override
+	public String getUserPropertyValue(Principal principal, String name) {
+		return userRepository.getValue(principal, name);
+	}
 
+	@Override
+	public Set<String> getUserVariableNames() {
+		return userRepository.getVariableNames();
+	}
 
 }

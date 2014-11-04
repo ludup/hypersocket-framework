@@ -196,4 +196,6 @@ public interface RealmService extends AuthenticatedService {
 
 	boolean isRealmStrictedToHost(Realm realm);
 
+	Collection<String> getUserVariableNames(Realm realmById);
+
 }

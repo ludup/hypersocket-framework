@@ -47,6 +47,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	
 	List<PropertyTemplate> activeTemplates = new ArrayList<PropertyTemplate>();
 	Set<String> propertyNames = new HashSet<String>();
+	Set<String> variableNames = new HashSet<String>();
 	
 	String resourceXmlPath;
 	
@@ -57,6 +58,11 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public Set<String> getPropertyNames() {
 		return propertyNames;
+	}
+	
+	@Override
+	public Set<String> getVariableNames() {
+		return variableNames;
 	}
 	
 	public void loadPropertyTemplates(String resourceXmlPath) {
@@ -179,7 +185,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 						attr.getWeight(),
 						attr.getHidden(),
 						attr.getReadOnly(),
-						attr.getDefaultValue());
+						attr.getDefaultValue(),
+						true);
 			}
 		}
 		
@@ -262,7 +269,10 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 							pnode.hasAttribute("readOnly")
 									&& pnode.getAttribute("readOnly")
 											.equalsIgnoreCase("true"),
-									Boolean.getBoolean("hypersocket.development") && pnode.hasAttribute("developmentValue") ? pnode.getAttribute("developmentValue") : pnode.getAttribute("defaultValue"));
+									Boolean.getBoolean("hypersocket.development") && pnode.hasAttribute("developmentValue") ? pnode.getAttribute("developmentValue") : pnode.getAttribute("defaultValue"),
+							pnode.hasAttribute("variable")
+									&& pnode.getAttribute("variable")
+											.equalsIgnoreCase("true"));
 				} catch (Throwable e) {
 					log.error("Failed to register property item", e);
 				}
@@ -314,7 +324,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	
 	private void registerPropertyItem(PropertyCategory category,
 			PropertyStore propertyStore, String resourceKey, String metaData,
-			String mapping, int weight, boolean hidden, boolean readOnly, String defaultValue) {
+			String mapping, int weight, boolean hidden, boolean readOnly, String defaultValue,
+			boolean isVariable) {
 
 		if(log.isInfoEnabled()) {
 			log.info("Registering property " + resourceKey);
@@ -340,6 +351,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		
 		propertyNames.add(resourceKey);
 		
+		if(isVariable) {
+			variableNames.add(resourceKey);
+		}
 		PropertyTemplate template = propertyStore.getPropertyTemplate(resourceKey);
 		if (template == null) {
 			template = new PropertyTemplate();

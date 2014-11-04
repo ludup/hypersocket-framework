@@ -1034,11 +1034,12 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Collection<String> getUserPropertyNames(Realm realm)
 			throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ, RealmPermission.READ);
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(realm);
 
 		return provider.getUserPropertyNames();
+
 	}
 
 	@Override
@@ -1313,4 +1314,17 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		
 	}
 
+	@Override
+	public Collection<String> getUserVariableNames(Realm realm) {
+		
+		RealmProvider provider = getProviderForRealm(realm);
+		
+		Set<String> tmp = new HashSet<String>(UserVariableReplacementImpl.getDefaultReplacements());
+		tmp.addAll(provider.getUserVariableNames());
+		return tmp;
+
+	}
+
+
+	
 }
