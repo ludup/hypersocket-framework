@@ -103,4 +103,12 @@ public class HypersocketUtils {
 		return hostHeader;
 	}
 
+	public static String before(String value, String string) {
+		int idx = value.indexOf(string);
+		if(idx > -1) {
+			return value.substring(0,idx);
+		}
+		return value;
+	}
+
 }
