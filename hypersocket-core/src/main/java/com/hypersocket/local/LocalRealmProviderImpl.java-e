@@ -202,8 +202,9 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 			userRepository.flush();
 			userRepository.refresh(user);
 
-			setPassword(user, password, forceChange);
-			
+			if(password!=null) {
+				setPassword(user, password, forceChange);
+			}
 			return user;
 		} catch (Exception e) {
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
