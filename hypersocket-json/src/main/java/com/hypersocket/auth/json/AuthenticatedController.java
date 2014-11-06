@@ -124,11 +124,25 @@ public class AuthenticatedController {
 		setupAuthenticatedContext(getSystemPrincipal(),
 				i18nService.getDefaultLocale(), getSystemPrincipal().getRealm());
 	}
+	
+	protected void setupAnonymousContext(String remoteAddress, String serverName, String userAgent, Map<String,String> parameters) {
+		
+		Session session = authenticationService.logonAnonymous(remoteAddress, userAgent, parameters);
+		Realm realm = realmService.getRealmByHost(serverName);
+		session.setCurrentRealm(realm);
+		setupAuthenticatedContext(session, i18nService.getDefaultLocale());
+
+	}
 
 	protected void clearSystemContext() {
 		clearAuthenticatedContext();
 	}
 
+	protected void clearAnonymousContext() {
+		sessionService.closeSession(authenticationService.getCurrentSession());
+		clearAuthenticatedContext();
+	}
+	
 	protected void setupAuthenticatedContext(Session pricipal, Locale locale) {
 		authenticationService.setCurrentSession(pricipal, locale);
 	}
