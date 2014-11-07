@@ -289,7 +289,6 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 				requestHeader, 
 				authenticationSchemeResourceKey);
 		
-		log.info("REMOVEME: getting non-cookie session with key " + key);
 		Session session = nonCookieSessions.get(key);
 		
 		if(session!=null) {
@@ -310,8 +309,7 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 				remoteAddr, 
 				requestHeader, 
 				authenticationSchemeResourceKey);
-		
-		log.info("REMOVEME: registering non-cookie session with key " + key);
+
 		session.setNonCookieKey(key);
 		nonCookieSessions.put(key, session);
 	}

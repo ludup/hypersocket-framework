@@ -398,9 +398,6 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			servletResponse.setHeader("Connection", "close");
 			servletResponse.setCloseOnComplete(true);
 		}
-		// else {
-		// servletResponse.setHeader("Connection", "keep-alive");
-		// }
 
 		servletResponse.setHeader("Date",
 				DateUtils.formatDate(new Date(System.currentTimeMillis())));
@@ -443,14 +440,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					+ e.getChannel().getLocalAddress(), e.getCause());
 		}
 
-		// if(ctx.getChannel().isOpen()) {
-		// if(log.isInfoEnabled()) {
-		// log.info("Closing channel due to earlier exception remoteAddress="
-		// + e.getChannel().getRemoteAddress() + " localAddress="
-		// + e.getChannel().getLocalAddress());
-		// }
 		ctx.getChannel().close();
-		// }
 	}
 
 	@Override

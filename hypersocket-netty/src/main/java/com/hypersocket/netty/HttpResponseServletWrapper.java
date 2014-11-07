@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
@@ -176,10 +177,14 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 			cookieHeader.append("; Secure");
 		}
 
-//		if(!response.containsHeader("Set-Cookie")){
-//			addHeader("P3P", "CP=\"IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR IND CNT\"");
-//		}
-
+		/**
+		 * Make sure we are not adding duplicate cookies
+		 */
+		for(Entry<String,String> entry : response.getHeaders()) {
+			if(entry.getKey().equals("Set-Cookie") && entry.getValue().equals(cookieHeader.toString())) {
+				return;
+			}
+		}
 		addHeader("Set-Cookie", cookieHeader.toString());
 		
 	}
@@ -232,7 +237,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public void addDateHeader(String name, long date) {
-		response.addHeader(name, DateUtils.formatDate(new Date(date)));
+		response.setHeader(name, DateUtils.formatDate(new Date(date)));
 
 	}
 
@@ -247,7 +252,11 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public void addHeader(String name, String value) {
-		response.addHeader(name, value);
+		if(name.equalsIgnoreCase("content-type") && response.containsHeader("Content-Type")) {
+			setHeader(name, value);
+		} else {
+			response.addHeader(name, value);
+		}
 	}
 
 	@Override

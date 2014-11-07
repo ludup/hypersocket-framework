@@ -270,7 +270,6 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			Set<PermissionType> derivedPermissions) {
 
 		if (!derivedPermissions.contains(t)) {
-			log.info("REMOVEME: " + t.getResourceKey());
 			derivedPermissions.add(t);
 			if (t.impliesPermissions() != null) {
 				for (PermissionType t2 : t.impliesPermissions()) {
