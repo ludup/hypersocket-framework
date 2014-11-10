@@ -35,6 +35,7 @@ import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntity;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Entity
 @Table(name = "sessions")
@@ -227,7 +228,7 @@ public class Session extends AbstractEntity<String> {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			ObjectOutputStream obj = new ObjectOutputStream(out);
 			obj.writeObject(stateParameters);
-			this.state =  Base64.encodeBase64String(out.toByteArray());
+			this.state =  HypersocketUtils.base64Encode(out.toByteArray());
 		} catch (IOException e) {
 		}
 	}
@@ -238,7 +239,7 @@ public class Session extends AbstractEntity<String> {
 			if(state!=null) {
 				ObjectInputStream obj;
 				try {
-					obj = new ObjectInputStream(new ByteArrayInputStream(Base64.decodeBase64(state)));
+					obj = new ObjectInputStream(new ByteArrayInputStream(HypersocketUtils.base64Decode(state)));
 					stateParameters = (Map<String,String>) obj.readObject();
 				} catch (Exception e) {
 				}
