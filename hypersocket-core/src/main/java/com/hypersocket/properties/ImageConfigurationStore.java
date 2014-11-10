@@ -18,6 +18,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.utils.HypersocketUtils;
 
 public class ImageConfigurationStore implements ResourcePropertyStore {
 
@@ -71,8 +72,7 @@ public class ImageConfigurationStore implements ResourcePropertyStore {
 		try {
 			out = new FileOutputStream(val);
 			IOUtils.copy(
-					new ByteArrayInputStream(Base64.decodeBase64(value
-							.getBytes("UTF-8"))), out);
+					new ByteArrayInputStream(HypersocketUtils.base64Decode(value)), out);
 		} catch (Exception e) {
 			log.error(
 					"Failed to write image for resource "
@@ -176,8 +176,7 @@ public class ImageConfigurationStore implements ResourcePropertyStore {
 		try {
 			out = new FileOutputStream(imageFile);
 			IOUtils.copy(
-					new ByteArrayInputStream(Base64.decodeBase64(value
-							.getBytes("UTF-8"))), out);
+					new ByteArrayInputStream(HypersocketUtils.base64Decode(value)), out);
 		} catch (Exception e) {
 			log.error(
 					"Failed to write image for resource "

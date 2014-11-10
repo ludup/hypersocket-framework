@@ -9,7 +9,6 @@ package com.hypersocket.auth;
 
 import java.util.Locale;
 
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +19,7 @@ import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
+import com.hypersocket.utils.HypersocketUtils;
 
 public abstract class AbstractAuthenticatedService implements
 		AuthenticatedService {
@@ -95,7 +95,7 @@ public abstract class AbstractAuthenticatedService implements
 		try {
 			return encryptionService.decrypt(
 					session.getStateParameter("password"),
-					Base64.decodeBase64(session.getStateParameter("ss")));
+					HypersocketUtils.base64Decode(session.getStateParameter("ss")));
 		} catch (Exception e) {
 			return "";
 		}
@@ -119,7 +119,7 @@ public abstract class AbstractAuthenticatedService implements
 							password,
 							salt));
 			
-			session.setStateParameter("ss", Base64.encodeBase64String(salt));
+			session.setStateParameter("ss", HypersocketUtils.base64Encode(salt));
 		} catch (Exception e) {
 			
 		}

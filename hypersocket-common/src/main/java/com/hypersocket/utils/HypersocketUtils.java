@@ -1,11 +1,14 @@
 package com.hypersocket.utils;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,5 +113,18 @@ public class HypersocketUtils {
 		}
 		return value;
 	}
+	
+	public static String base64Encode(byte[] bytes) {
+		try {
+			return new String(Base64.encodeBase64(bytes), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException("System does not support UTF-8 encoding!");
+		}
+	}
+
+	public static byte[] base64Decode(String property) throws IOException {
+		return Base64.decodeBase64(property.getBytes("UTF-8"));
+	}
+
 
 }
