@@ -4,6 +4,8 @@ import java.beans.Introspector;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.rmi.AccessException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RMISecurityManager;
@@ -21,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.hypersocket.client.rmi.ClientService;
 import com.hypersocket.client.rmi.ConfigurationService;
+import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.client.rmi.ConnectionService;
 import com.hypersocket.client.rmi.ResourceService;
 import com.hypersocket.client.service.ClientServiceImpl;
@@ -39,15 +42,17 @@ public class Main {
 	Properties properties = new Properties();
 	Registry registry;
 	int port;
+	String[] args;
 
 	Runnable restartCallback;
 	Runnable shutdownCallback;
 	ClassLoader classLoader;
 	static Main instance;
 
-	public Main(Runnable restartCallback, Runnable shutdownCallback) {
+	public Main(Runnable restartCallback, Runnable shutdownCallback, String[] args) {
 		this.restartCallback = restartCallback;
 		this.shutdownCallback = shutdownCallback;
+		this.args = args;
 	}
 
 	void buildServices() throws RemoteException {
@@ -116,11 +121,52 @@ public class Main {
 			log.info("Creating ClientService");
 		}
 
+		buildDefaultConnections();
+		
 		clientService = new ClientServiceImpl(connectionService,
 				configurationService, resourceService);
 
 		
 	
+	}
+	
+	private void buildDefaultConnections() {
+		
+		for(String arg : args) {
+			
+			if(arg.startsWith("url=")) {
+				try {
+					URL url = new URL(arg.substring(4));
+					
+					Connection con = connectionService.getConnection(url.getHost());
+					if(con==null) {
+						con = connectionService.createNew();
+						con.setStayConnected(true);
+						
+						con.setConnectAtStartup(false);
+						con.setHostname(url.getHost());
+						con.setPort(url.getPort() <= 0 ? 443 : url.getPort());
+						
+						String path = url.getPath();
+						if(path.equals("") || path.equals("/")) {
+							path = "/hypersocket";
+						} else if(path.indexOf('/', 1) > -1) {
+							path = path.substring(0, path.indexOf('/', 1));
+						}
+						con.setPath(path);
+						
+						// Prompt for authentication
+						con.setUsername("");
+						con.setHashedPassword("");
+						con.setRealm("");
+						
+						connectionService.save(con);
+					}
+				} catch (Exception e) {
+					log.error("Failed to process url app parameter", e);
+				}
+			}
+		}
 	}
 
 	public static int randInt(int min, int max) {
@@ -269,14 +315,14 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
-		instance = new Main(new DefaultRestartCallback(), new DefaultShutdownCallback());
+		instance = new Main(new DefaultRestartCallback(), new DefaultShutdownCallback(), args);
 		instance.run();
 	}
 	
 	public static void runApplication(Runnable restartCallback,
-			Runnable shutdownCallback) throws IOException {
+			Runnable shutdownCallback, String[] args) throws IOException {
 
-		new Main(restartCallback, shutdownCallback).run();
+		new Main(restartCallback, shutdownCallback, args).run();
 
 	}
 	

@@ -15,5 +15,7 @@ public interface ConnectionService extends Remote {
 	public void delete(Connection con) throws RemoteException;
 
 	public Connection getConnection(Long id) throws RemoteException;
+
+	Connection getConnection(String server) throws RemoteException;
 	
 }
