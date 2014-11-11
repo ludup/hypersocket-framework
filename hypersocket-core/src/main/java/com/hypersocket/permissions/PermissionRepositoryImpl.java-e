@@ -341,6 +341,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 					@Override
 					public void configure(DetachedCriteria criteria) {
 						criteria.add(Restrictions.eq("personalRole", false));
+						criteria.add(Restrictions.eq("hidden", false));
 					}
 				});
 	}
@@ -354,6 +355,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 					@Override
 					public void configure(Criteria criteria) {
 						criteria.add(Restrictions.eq("personalRole", false));
+						criteria.add(Restrictions.eq("hidden", false));
 						criteria.setFetchMode("permissions", FetchMode.SELECT);
 						criteria.setFetchMode("principals", FetchMode.SELECT);
 						criteria.setFetchMode("resources", FetchMode.SELECT);
@@ -372,6 +374,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 					public void configure(Criteria criteria) {
 						criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 						criteria.add(Restrictions.eq("personalRole", false));
+						criteria.add(Restrictions.eq("hidden", false));
 						criteria.add(Restrictions.or(
 								Restrictions.eq("realm", realm),
 								Restrictions.isNull("realm")));
