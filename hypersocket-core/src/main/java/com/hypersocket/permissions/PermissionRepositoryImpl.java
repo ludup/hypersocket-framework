@@ -202,9 +202,10 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 					@Override
 					public void configure(DetachedCriteria criteria) {
 						if (!includeSystem) {
-							criteria.add(Restrictions.eq("system", false));
+							criteria.add(Restrictions.and(Restrictions.eq("system", false), Restrictions.in("id", permissions)));
+						} else {
+							criteria.add(Restrictions.in("id", permissions));
 						}
-						criteria.add(Restrictions.in("id", permissions));
 					}
 				}, JOIN_ROLES, new HiddenCriteria(false));
 	}
