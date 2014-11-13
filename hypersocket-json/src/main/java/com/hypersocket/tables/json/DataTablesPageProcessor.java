@@ -1,7 +1,6 @@
 package com.hypersocket.tables.json;
 
 import java.util.Collection;
-import java.util.List;
 
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.permissions.AccessDeniedException;

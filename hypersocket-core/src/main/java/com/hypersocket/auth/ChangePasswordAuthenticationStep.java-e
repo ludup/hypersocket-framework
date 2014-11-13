@@ -83,4 +83,9 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 		return new ChangePasswordTemplate(state);
 	}
 
+	@Override
+	public int getOrderPriority() {
+		return 0;
+	}
+
 }
