@@ -16,6 +16,8 @@ public interface PostAuthenticationStep {
 
 	public boolean requiresProcessing(AuthenticationState state);
 	
+	public int getOrderPriority();
+	
 	public String getResourceKey();
 	
 	public AuthenticatorResult process(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException;

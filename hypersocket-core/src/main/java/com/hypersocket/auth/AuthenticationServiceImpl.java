@@ -8,6 +8,8 @@
 package com.hypersocket.auth;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -478,6 +480,14 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	public void registerPostAuthenticationStep(
 			PostAuthenticationStep postAuthenticationStep) {
 		postAuthenticationSteps.add(postAuthenticationStep);
+		
+		Collections.sort(postAuthenticationSteps, new Comparator<PostAuthenticationStep>() {
+			@Override
+			public int compare(PostAuthenticationStep o1,
+					PostAuthenticationStep o2) {
+				return new Integer(o1.getOrderPriority()).compareTo(o2.getOrderPriority());
+			}
+		});
 	}
 
 	@Override
