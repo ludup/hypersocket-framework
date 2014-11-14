@@ -55,6 +55,15 @@ public class FileUtils {
 			return path.substring(rootPath.length());
 		}
 	}
+	
+	public static String stripFirstPathElement(String path){
+		int idx;
+		if ((idx = path.indexOf('/',1)) > -1) {
+			return path.substring(idx);
+		} else {
+			return path;
+		}
+	}
 
 	public static String firstPathElement(String mountPath) {
 		int idx;
