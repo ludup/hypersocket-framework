@@ -23,4 +23,5 @@ public interface GUICallback extends Serializable, Remote {
 	void notify(String msg, int type) throws RemoteException;
 
 	Map<String, String> showPrompts(List<Prompt> prompts) throws RemoteException;
+	
 }

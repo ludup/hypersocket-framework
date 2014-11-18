@@ -10,8 +10,8 @@
 	<propertyCategory resourceKey="realm.userProfiles"
 		resourceBundle="RealmService" weight="999999">
 		<property resourceKey="realm.userEditableProperties" inputType="multipleSelect"
-		    url="realms/realm/templateNames/{id}" valuesIsObjectList="false" nameAttrIsResourceKey="true" weight="100"/>
+		    url="realms/realm/templateNames/{id}" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>
 		<property resourceKey="realm.userRestrictedProperties" inputType="multipleSelect"
-		    url="realms/realm/templateNames/{id}" valuesIsObjectList="false" nameAttrIsResourceKey="true" weight="100"/>
+		    url="realms/realm/templateNames/{id}" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>
 	</propertyCategory>
 </propertyTemplates>
