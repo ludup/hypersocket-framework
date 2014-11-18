@@ -16,12 +16,14 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 
+import com.hypersocket.annotation.HypersocketExtension;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DetachedCriteriaConfiguration;
 import com.hypersocket.repository.DistinctRootEntity;
+import com.hypersocket.repository.HiddenCriteria;
 
 @Repository
 public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepositoryImpl<AuthenticationScheme,Long>
@@ -61,7 +63,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 
 	@Override
 	public List<AuthenticationScheme> allSchemes(Realm realm) {
-		return allEntities(AuthenticationScheme.class, ORDER_BY_PRIORITY, new RealmRestriction(realm));
+		return allEntities(AuthenticationScheme.class, ORDER_BY_PRIORITY, new HiddenCriteria(false), new RealmRestriction(realm));
 	}
 
 	class SchemeRestriction implements DetachedCriteriaConfiguration {
@@ -75,7 +77,6 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 		@Override
 		public void configure(DetachedCriteria criteria) {
 			criteria.add(Restrictions.eq("scheme", scheme));
-
 		}
 	}
 
@@ -86,6 +87,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	}
 
 	@Override
+	@HypersocketExtension
 	public AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey) {
 		return get("resourceKey", resourceKey, AuthenticationScheme.class, new RealmRestriction(realm));
 	}
@@ -94,7 +96,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm) {
 
 		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
-				false), new DistinctRootEntity(), new RealmRestriction(realm));
+				false), new HiddenCriteria(false), new DistinctRootEntity(), new RealmRestriction(realm));
 
 	}
 

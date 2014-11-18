@@ -26,7 +26,7 @@
 	<aop:config>
 		<aop:aspect ref="annotationService">
 			<aop:pointcut id="profiledMethods"
-				expression="@annotation(com.hypersocket.annotation.HypersocketAnnotation)" />
+				expression="@annotation(com.hypersocket.annotation.HypersocketExtension)" />
 			<aop:around pointcut-ref="profiledMethods" method="process" />
 		</aop:aspect>
 	</aop:config>
@@ -44,6 +44,8 @@
 			expression="com.hypersocket.repository.AbstractEntity" />
 		<context:exclude-filter type="regex"
 			expression="com.hypersocket.server.*" />
+		<context:exclude-filter type="regex"
+			expression="com.hypersocket.annotation.*" />
 	</context:component-scan>
 
 	<import resource="database.xml" />
