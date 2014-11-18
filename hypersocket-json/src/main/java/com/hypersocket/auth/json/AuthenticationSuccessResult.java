@@ -14,6 +14,7 @@ public class AuthenticationSuccessResult extends AuthenticationResult {
 
 	Session session;
 	String homePage;
+	
 	public AuthenticationSuccessResult() {
 
 	}

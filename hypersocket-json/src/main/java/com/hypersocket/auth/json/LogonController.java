@@ -82,11 +82,14 @@ public class LogonController extends AuthenticatedController {
 		try {
 			Session session;
 
+			String flash = (String) request.getSession().getAttribute("flash");
+			request.getSession().removeAttribute("flash");
+			
 			try {
 				session = sessionUtils.touchSession(request, response);
 
 				if (session != null) {
-					return getSuccessfulResult(session);
+					return getSuccessfulResult(session, flash);
 				}
 			} catch (UnauthorizedException e) {
 				// We are already in login so just continue
@@ -119,7 +122,7 @@ public class LogonController extends AuthenticatedController {
 				sessionUtils.addAPISession(request, response,
 						state.getSession());
 
-				return getSuccessfulResult(state.getSession(),"", state.getHomePage());
+				return getSuccessfulResult(state.getSession(), flash, state.getHomePage());
 			} else {
 
 				return new AuthenticationRequiredResult(
@@ -191,8 +194,8 @@ public class LogonController extends AuthenticatedController {
 				i18nService.hasUserLocales(), session, homePage);
 	}
 	
-	private AuthenticationResult getSuccessfulResult(Session session) {
-		return new AuthenticationSuccessResult("",
+	private AuthenticationResult getSuccessfulResult(Session session, String info) {
+		return new AuthenticationSuccessResult(info,
 				i18nService.hasUserLocales(), session, "");
 	}
 

@@ -205,6 +205,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	@Override
 	public void unregisterHttpHandler(HttpRequestHandler handler) {
 		httpHandlers.remove(handler);
+		Collections.sort(httpHandlers);
 	}
 	
 	public void init(ApplicationContext applicationContext)

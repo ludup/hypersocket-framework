@@ -135,14 +135,6 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 		permissionRepository.saveRole(systemRole);
 
 
-		// Setup Default realm schemes
-		List<String> modules = new ArrayList<String>();
-		modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
-		
-		schemeRepository.createScheme(realm,
-				AuthenticationServiceImpl.BROWSER_AUTHENTICATION_SCHEME, modules,
-				AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY, true);
-		
 		// Create Administrators group for Default realm
 		Principal group = localRealmProvider.createGroup(realm,
 				"Administrators");

@@ -86,7 +86,7 @@ public class SessionController extends AuthenticatedController {
 
 			sessionService.switchRealm(session, realm);
 
-			return getSuccessfulResult(session, I18N.getResource(
+			return getSuccessfulResult(session, "info=" + I18N.getResource(
 					sessionUtils.getLocale(request), AuthenticationService.RESOURCE_BUNDLE,
 					"info.inRealm", realm.getName()), "");
 		} finally {
@@ -115,4 +115,16 @@ public class SessionController extends AuthenticatedController {
 		return new AuthenticationSuccessResult("",
 				i18nService.hasUserLocales(), session, "");
 	}
+	
+	@RequestMapping(value = "session/flash/{type}/{msg}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus flashMessage(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String type, @PathVariable String msg)
+			throws UnauthorizedException, AccessDeniedException,
+			ResourceNotFoundException {
+		request.getSession().setAttribute("flash", type + "=" + msg);
+		return new RequestStatus();
+	}
+
 }

@@ -89,6 +89,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 				if(resource.getRealm()==null) {
 					resource.setRealm(getCurrentRealm());
 				}
+				onCreateResource(resource, properties);
 				getRepository().saveResource(resource, properties);
 				fireResourceCreationEvent(resource);
 			} catch (Throwable t) {
@@ -105,6 +106,10 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 	}
 
+	protected void onCreateResource(T resource, Map<String,String> properties) throws ResourceCreationException {
+		
+	}
+	
 	protected abstract void fireResourceCreationEvent(T resource);
 
 	protected abstract void fireResourceCreationEvent(T resource, Throwable t);
@@ -117,6 +122,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			if(resource.getRealm()==null) {
 				resource.setRealm(getCurrentRealm());
 			}
+			onUpdateResource(resource, properties);
 			getRepository().saveResource(resource, properties);
 			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {
@@ -130,6 +136,10 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		}
 	}
 
+	protected void onUpdateResource(T resource, Map<String,String> properties) throws ResourceChangeException {
+		
+	}
+	
 	protected abstract void fireResourceUpdateEvent(T resource);
 
 	protected abstract void fireResourceUpdateEvent(T resource, Throwable t);

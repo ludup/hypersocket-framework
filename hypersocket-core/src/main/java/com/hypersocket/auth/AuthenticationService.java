@@ -50,7 +50,7 @@ public interface AuthenticationService extends AuthenticatedService {
 
 	boolean isAuthenticatorInScheme(Realm realm, String schemeResourceKey, String resourceKey);
 
-	AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey);
+	AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey) throws AccessDeniedException;
 
 	Realm resolveRealm(AuthenticationState state, String username) throws AccessDeniedException;
 

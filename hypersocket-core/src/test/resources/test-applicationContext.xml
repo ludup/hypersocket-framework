@@ -26,7 +26,7 @@
 	<aop:config>
 		<aop:aspect ref="annotationService">
 			<aop:pointcut id="profiledMethods"
-				expression="@annotation(com.hypersocket.annotation.HypersocketAnnotation)" />
+				expression="@annotation(com.hypersocket.annotation.HypersocketExtension)" />
 			<aop:around pointcut-ref="profiledMethods" method="process" />
 		</aop:aspect>
 	</aop:config>
