@@ -499,6 +499,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource, getPropertyStore())); 
 			}
 			cats.add(tmp);
+			
 		}
 		
 		Collections.sort(cats, new Comparator<PropertyCategory>() {
