@@ -12,7 +12,6 @@ import java.util.Map;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.stereotype.Service;
 
 public class AnnotationServiceImpl implements AnnotationService {
 

@@ -18,8 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.attributes.AttributeRepository;
 import com.hypersocket.auth.AuthenticationModuleRepository;
 import com.hypersocket.auth.AuthenticationSchemeRepository;
-import com.hypersocket.auth.AuthenticationServiceImpl;
-import com.hypersocket.auth.UsernameAndPasswordAuthenticator;
 import com.hypersocket.local.LocalRealmProvider;
 import com.hypersocket.local.LocalUser;
 import com.hypersocket.local.LocalUserRepository;

@@ -14,7 +14,6 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 
-import com.hypersocket.annotation.HypersocketExtension;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DetachedCriteriaConfiguration;
