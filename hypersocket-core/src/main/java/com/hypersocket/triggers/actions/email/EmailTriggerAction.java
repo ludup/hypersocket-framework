@@ -169,9 +169,9 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 		String to = populateEmailList(action, ATTR_TO_ADDRESSES, recipients,
 				RecipientType.TO, event);
 		String cc = populateEmailList(action, ATTR_CC_ADDRESSES, recipients,
-				RecipientType.TO, event);
+				RecipientType.CC, event);
 		String bcc = populateEmailList(action, ATTR_BCC_ADDRESSES, recipients,
-				RecipientType.TO, event);
+				RecipientType.BCC, event);
 
 		try {
 			emailService.sendPlainEmail(subject, body,

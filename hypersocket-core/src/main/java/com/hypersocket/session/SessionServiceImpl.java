@@ -242,6 +242,7 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		}
 		
 		session.setImpersonatedPrincipal(principal);
+		setCurrentSession(session, getCurrentLocale());
 		repository.updateSession(session);
 	}
 
