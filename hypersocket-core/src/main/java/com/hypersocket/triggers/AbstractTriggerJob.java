@@ -37,10 +37,15 @@ public class AbstractTriggerJob implements Job {
 	public void execute(JobExecutionContext context)
 			throws JobExecutionException {
 
+		
 		SystemEvent event = (SystemEvent) context.getTrigger().getJobDataMap().get("event");
 		Principal principal = (Principal) context.getTrigger().getJobDataMap().get("principal");
 		Locale locale = (Locale) context.getTrigger().getJobDataMap().get("locale");
 		Realm realm = (Realm) context.getTrigger().getJobDataMap().get("realm");
+		
+		if(log.isInfoEnabled()) {
+			log.info("Starting trigger job for event " + event.getResourceKey());
+		}
 		
 		authenticationService.setCurrentPrincipal(principal, locale, realm);
 		
@@ -67,8 +72,8 @@ public class AbstractTriggerJob implements Job {
 
 	protected void processEventTrigger(TriggerResource trigger,
 			SystemEvent event) throws TriggerValidationException {
-		if (log.isDebugEnabled()) {
-			log.debug("Processing trigger " + trigger.getName());
+		if (log.isInfoEnabled()) {
+			log.info("Processing trigger " + trigger.getName());
 		}
 
 		if (checkConditions(trigger, event)) {
@@ -76,8 +81,8 @@ public class AbstractTriggerJob implements Job {
 				executeAction(action, event);
 			}
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Finished processing trigger " + trigger.getName());
+		if (log.isInfoEnabled()) {
+			log.info("Finished processing trigger " + trigger.getName());
 		}
 
 	}
