@@ -230,9 +230,14 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION, SystemPermission.SYSTEM);
 		
 	}
-	
 	@Override
 	public void switchPrincipal(Session session, Principal principal)
+			throws AccessDeniedException {
+		switchPrincipal(session, principal, false);
+	}
+	
+	@Override
+	public void switchPrincipal(Session session, Principal principal, boolean inheritPermissions)
 			throws AccessDeniedException {
 
 		assertImpersonationPermission();
@@ -242,6 +247,8 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		}
 		
 		session.setImpersonatedPrincipal(principal);
+		session.setInheritPermissions(inheritPermissions);
+		
 		setCurrentSession(session, getCurrentLocale());
 		repository.updateSession(session);
 	}
