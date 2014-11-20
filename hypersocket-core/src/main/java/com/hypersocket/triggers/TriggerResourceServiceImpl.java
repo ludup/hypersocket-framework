@@ -357,6 +357,10 @@ public class TriggerResourceServiceImpl extends
 
 		List<TriggerResource> triggers = repository.getTriggersForEvent(event);
 		for (TriggerResource trigger : triggers) {
+			
+			if(log.isInfoEnabled()) {
+				log.info("Found trigger " + trigger.getName());
+			}
 			JobDataMap data = new JobDataMap();
 			data.put("event", event);
 			data.put("trigger", trigger);
@@ -364,6 +368,7 @@ public class TriggerResourceServiceImpl extends
 			data.put("locale", getCurrentLocale());
 			data.put("realm", getCurrentRealm());
 
+			
 			try {
 				schedulerService.scheduleNow(ProcessEventTriggersJob.class,
 						data);
