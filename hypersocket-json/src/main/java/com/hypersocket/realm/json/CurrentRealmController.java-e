@@ -631,7 +631,7 @@ public class CurrentRealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 			Principal principal = sessionUtils.getSession(request)
-					.getPrincipal();
+					.getCurrentPrincipal();
 
 			realmService.changePassword(principal, oldPassword, newPassword);
 			

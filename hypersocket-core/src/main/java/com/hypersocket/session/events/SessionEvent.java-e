@@ -22,14 +22,14 @@ public abstract class SessionEvent extends SystemEvent {
 		super(source, resourceKey, success, session.getCurrentRealm());
 		this.session = session;
 		addAttribute(ATTR_UUID, session.getId());
-		addAttribute(ATTR_PRINCIPAL_NAME, session.getPrincipal().getPrincipalName());
+		addAttribute(ATTR_PRINCIPAL_NAME, session.getCurrentPrincipal().getPrincipalName());
 		addAttribute(ATTR_PRINCIPAL_REALM, session.getCurrentRealm().getName());
 		addAttribute(ATTR_IP_ADDRESS, session.getRemoteAddress());
 	}
 	
 	public SessionEvent(Object source, String resourceKey, Throwable e,
 			Session session) {
-		super(source, resourceKey, e, session.getPrincipal().getRealm());
+		super(source, resourceKey, e, session.getCurrentPrincipal().getRealm());
 		this.session = session;
 	}
 	
@@ -42,7 +42,7 @@ public abstract class SessionEvent extends SystemEvent {
 	}
 
 	public Principal getPrincipal() {
-		return session.getPrincipal();
+		return session.getCurrentPrincipal();
 	}
 
 }

@@ -62,6 +62,10 @@ public class Session extends AbstractEntity<String> {
 	Principal principal;
 
 	@OneToOne
+	@JoinColumn(name="impersonating_principal_id", insertable=true, updatable=true)
+	Principal impersonatedPrincipal;
+	
+	@OneToOne
 	@JoinColumn(name="realm_id")
 	Realm currentRealm;
 	
@@ -118,14 +122,34 @@ public class Session extends AbstractEntity<String> {
 		this.signedOut = signedOut;
 	}
 	
-	public Principal getPrincipal() {
+	Principal getPrincipal() {
 		return principal;
 	}
 	
-	public void setPrincipal(Principal principal) {
+	void setPrincipal(Principal principal) {
 		this.principal = principal;
 	}
 	
+	public Principal getCurrentPrincipal() {
+		if(!isImpersonating()) {
+			return getPrincipal();
+		} else {
+			return getImpersonatedPrincipal();
+		}
+	}
+	
+	public Principal getImpersonatedPrincipal() {
+		return impersonatedPrincipal;
+	}
+
+	public void setImpersonatedPrincipal(Principal impersonatedPrincipal) {
+		if(this.principal.equals(impersonatedPrincipal)) {
+			this.impersonatedPrincipal = null;
+		} else {
+			this.impersonatedPrincipal = impersonatedPrincipal;
+		}
+	}
+
 	public Realm getCurrentRealm() {
 		if(currentRealm==null) {
 			return principal.getRealm();
@@ -257,5 +281,9 @@ public class Session extends AbstractEntity<String> {
 		}
 		stateParameters.put(name, value);
 		writeState();
+	}
+
+	public boolean isImpersonating() {
+		return impersonatedPrincipal!=null;
 	}
 }

@@ -54,4 +54,7 @@ public interface SessionService extends AuthenticatedService {
 
 	void registerNonCookieSession(String remoteAddr, String requestHeader,
 			String authenticationSchemeResourceKey, Session session);
+
+	void switchPrincipal(Session session, Principal principal)
+			throws AccessDeniedException;
 }
