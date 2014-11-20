@@ -65,8 +65,8 @@ public class Session extends AbstractEntity<String> {
 	@JoinColumn(name="impersonating_principal_id", insertable=true, updatable=true)
 	Principal impersonatedPrincipal;
 	
-	@Column(name="inherit")
-	boolean inheritPermissions;
+	@Column(name="inherit", nullable=true)
+	Boolean inheritPermissions;
 	
 	@OneToOne
 	@JoinColumn(name="realm_id")
@@ -154,11 +154,11 @@ public class Session extends AbstractEntity<String> {
 	}
 
 	public boolean isInheritPermissions() {
-		return inheritPermissions;
+		return inheritPermissions == null ? false : inheritPermissions;
 	}
 
-	public void setInheritPermissions(boolean inheritPermissions) {
-		this.inheritPermissions = inheritPermissions;
+	public void setInheritPermissions(Boolean inheritPermissions) {
+		this.inheritPermissions = inheritPermissions==null ? false : inheritPermissions;
 	}
 
 	public Realm getCurrentRealm() {
