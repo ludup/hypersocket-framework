@@ -152,6 +152,13 @@ public abstract class AbstractAuthenticatedService implements
 					+ " is being asserted without a principal in context");
 		}
 
+		if(hasSessionContext()) {
+			if(getCurrentSession().isImpersonating() && getCurrentSession().isInheritPermissions()) {
+				verifyPermission(getCurrentSession().getInheritedPrincipal(), strategy, permissions);
+				return;
+			}
+		}
+		
 		verifyPermission(getCurrentPrincipal(), strategy, permissions);
 	}
 
