@@ -32,6 +32,7 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -214,6 +215,33 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		}
 		
 		session.setCurrentRealm(realm);
+		repository.updateSession(session);
+	}
+	
+	protected void assertImpersonationPermission() throws AccessDeniedException {
+		if(hasSessionContext()) {
+			if(getCurrentSession().isImpersonating()) {
+				verifyPermission(getCurrentSession().getPrincipal(), PermissionStrategy.EXCLUDE_IMPLIED, 
+						SystemPermission.SYSTEM_ADMINISTRATION, SystemPermission.SYSTEM);
+				return;
+			}
+		} 
+		
+		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION, SystemPermission.SYSTEM);
+		
+	}
+	
+	@Override
+	public void switchPrincipal(Session session, Principal principal)
+			throws AccessDeniedException {
+
+		assertImpersonationPermission();
+
+		if(log.isInfoEnabled()) {
+			log.info("Switching " + session.getPrincipal().getName() + " to " + principal.getName());
+		}
+		
+		session.setImpersonatedPrincipal(principal);
 		repository.updateSession(session);
 	}
 

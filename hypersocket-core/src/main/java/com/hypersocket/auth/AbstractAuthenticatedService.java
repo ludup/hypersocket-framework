@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
@@ -43,7 +44,7 @@ public abstract class AbstractAuthenticatedService implements
 	}
 	
 	public void setCurrentSession(Session session, Locale locale) {
-		currentPrincipal.set(session.getPrincipal());
+		currentPrincipal.set(session.getCurrentPrincipal());
 		currentSession.set(session);
 		currentRealm.set(session.getCurrentRealm());
 		currentLocale.set(locale);
@@ -127,6 +128,10 @@ public abstract class AbstractAuthenticatedService implements
 	
 	public boolean hasAuthenticatedContext() {
 		return currentPrincipal.get() != null;
+	}
+	
+	public boolean hasSessionContext() {
+		return currentSession.get() != null;
 	}
 
 	protected void assertPermission(PermissionType permission)
