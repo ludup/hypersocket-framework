@@ -28,6 +28,7 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DetachedCriteriaConfiguration;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
@@ -89,7 +90,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 	
 	protected LocalUser getUser(String column, Object value, Realm realm, PrincipalType type) {
-		return get(column, value, LocalUser.class, JOIN_GROUPS, new RealmRestriction(realm), new PrincipalTypeRestriction(type));
+		return get(column, value, LocalUser.class, JOIN_GROUPS, new RealmRestriction(realm), new DeletedCriteria(false), new PrincipalTypeRestriction(type));
 	}
 	
 	public LocalUser getUserByName(String username, Realm realm) {
@@ -97,7 +98,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 	
 	protected LocalGroup getGroup(String column, Object value, Realm realm) {
-		return get(column, value, LocalGroup.class, JOIN_USERS, new RealmRestriction(realm));
+		return get(column, value, LocalGroup.class, JOIN_USERS, new DeletedCriteria(false), new RealmRestriction(realm));
 	}
 	
 	public LocalGroup getGroupByName(String name, Realm realm) {
