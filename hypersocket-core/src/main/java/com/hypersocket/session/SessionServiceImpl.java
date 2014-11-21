@@ -208,7 +208,7 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 	public void switchRealm(Session session, Realm realm)
 			throws AccessDeniedException {
 
-		assertPermission(SystemPermission.SYSTEM_ADMINISTRATION);
+		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION, SystemPermission.SYSTEM);
 
 		if(log.isInfoEnabled()) {
 			log.info("Switching " + session.getPrincipal().getName() + " to " + realm.getName() + " realm");

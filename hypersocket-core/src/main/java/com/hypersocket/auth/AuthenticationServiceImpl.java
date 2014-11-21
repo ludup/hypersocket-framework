@@ -542,13 +542,14 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
-	public Session logonAnonymous(String remoteAddress, Realm realm,
-			String userAgent, Map<String, String> parameters) {
+	public Session logonAnonymous(String remoteAddress,
+			String userAgent, Map<String, String> parameters) throws AccessDeniedException {
 
-		return sessionService.openSession(remoteAddress, realmService
+		Session session = sessionService.openSession(remoteAddress, realmService
 				.getSystemPrincipal(), schemeRepository.getSchemeByResourceKey(
-				realm,
+				realmService.getSystemRealm(),
 				ANONYMOUS_AUTHENTICATION_RESOURCE_KEY), userAgent, parameters);
+		return session;
 	}
 
 }

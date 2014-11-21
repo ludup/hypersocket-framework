@@ -125,16 +125,22 @@ public class AuthenticatedController {
 				i18nService.getDefaultLocale(), getSystemPrincipal().getRealm());
 	}
 	
-	protected void setupAnonymousContext(String remoteAddress, String serverName, String userAgent, Map<String,String> parameters) {
+	protected void setupAnonymousContext(String remoteAddress,
+			String serverName, String userAgent, Map<String, String> parameters)
+			throws AccessDeniedException {
 		
 		Realm realm = realmService.getRealmByHost(serverName);
 		
 		if(log.isInfoEnabled()) {
-			log.info("Logging anonymous onto the " + realm.getName() + realm + " [" + serverName + "]");
+			log.info("Logging anonymous onto the " + realm.getName() + " realm [" + serverName + "]");
 		}
 		
-		Session session = authenticationService.logonAnonymous(remoteAddress, realm, userAgent, parameters);
+		Session session = authenticationService.logonAnonymous(remoteAddress, userAgent, parameters);
 		setupAuthenticatedContext(session, i18nService.getDefaultLocale());
+		
+		if(!session.getCurrentRealm().equals(realm)) {
+			sessionService.switchRealm(session, realm);
+		}
 
 	}
 
