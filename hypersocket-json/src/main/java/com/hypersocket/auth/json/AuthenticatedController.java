@@ -127,9 +127,13 @@ public class AuthenticatedController {
 	
 	protected void setupAnonymousContext(String remoteAddress, String serverName, String userAgent, Map<String,String> parameters) {
 		
-		Session session = authenticationService.logonAnonymous(remoteAddress, userAgent, parameters);
 		Realm realm = realmService.getRealmByHost(serverName);
-		session.setCurrentRealm(realm);
+		
+		if(log.isInfoEnabled()) {
+			log.info("Logging anonymous onto the " + realm.getName() + realm + " [" + serverName + "]");
+		}
+		
+		Session session = authenticationService.logonAnonymous(remoteAddress, realm, userAgent, parameters);
 		setupAuthenticatedContext(session, i18nService.getDefaultLocale());
 
 	}
