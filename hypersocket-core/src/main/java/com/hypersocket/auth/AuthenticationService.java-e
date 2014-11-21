@@ -54,8 +54,8 @@ public interface AuthenticationService extends AuthenticatedService {
 
 	Realm resolveRealm(AuthenticationState state, String username) throws AccessDeniedException;
 
-	Session logonAnonymous(String remoteAddress, Realm realm,
-			String userAgent, Map<String, String> parameters);
+	Session logonAnonymous(String remoteAddress,
+			String userAgent, Map<String, String> parameters) throws AccessDeniedException;
 
 
 }
