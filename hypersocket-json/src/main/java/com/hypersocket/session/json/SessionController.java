@@ -20,9 +20,11 @@ import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.Session;
+import com.hypersocket.session.SessionService;
 
 @Controller
 public class SessionController extends AuthenticatedController {
@@ -127,4 +129,64 @@ public class SessionController extends AuthenticatedController {
 		return new RequestStatus();
 	}
 
+	@AuthenticationRequired
+	@RequestMapping(value = "session/impersonate/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus impersonateUser(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable("id") Long id)
+			throws UnauthorizedException, AccessDeniedException,
+			ResourceNotFoundException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			Session session = sessionUtils.getActiveSession(request);
+
+			Principal principal = realmService.getPrincipalById(sessionUtils.getCurrentRealm(request), id);
+
+			if (principal == null) {
+				throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE,
+						"error.invalidPrincipal", id);
+			}
+
+			sessionService.switchPrincipal(session, principal);
+
+			request.getSession().setAttribute("flash", "success=" + I18N.getResource(
+					sessionUtils.getLocale(request), SessionService.RESOURCE_BUNDLE,
+					"info.impersonatingPrincipal", principal.getName()));
+			
+			return new RequestStatus();
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "session/revert", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus impersonateEnd(HttpServletRequest request,
+			HttpServletResponse response)
+			throws UnauthorizedException, AccessDeniedException,
+			ResourceNotFoundException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			Session session = sessionUtils.getActiveSession(request);
+
+			sessionService.revertPrincipal(session);
+
+			request.getSession().setAttribute("flash", "success=" + I18N.getResource(
+					sessionUtils.getLocale(request), SessionService.RESOURCE_BUNDLE,
+					"info.revertedPrincipal", session.getCurrentPrincipal().getName()));
+			
+			return new RequestStatus();
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 }
