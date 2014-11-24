@@ -57,6 +57,9 @@ public interface SessionService extends AuthenticatedService {
 
 	void switchPrincipal(Session session, Principal principal)
 			throws AccessDeniedException;
+	
+	void revertPrincipal(Session session)
+			throws AccessDeniedException;
 
 	void switchPrincipal(Session session, Principal principal,
 			boolean inheritPermissions) throws AccessDeniedException;

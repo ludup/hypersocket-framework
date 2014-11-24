@@ -360,5 +360,22 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		buf.append(authenticationSchemeResourceKey);
 		return buf.toString();
 	}
+
+	@Override
+	public void revertPrincipal(Session session)
+			throws AccessDeniedException {
+		
+		assertImpersonationPermission();
+		
+		if(log.isInfoEnabled()) {
+			log.info("Switching " + session.getCurrentPrincipal().getName() + " to " + session.getPrincipal().getName());
+		}
+		
+		session.setImpersonatedPrincipal(null);
+		session.setInheritPermissions(false);
+		
+		setCurrentSession(session, getCurrentLocale());
+		repository.updateSession(session);
+	}
 	
 }
