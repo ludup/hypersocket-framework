@@ -9,6 +9,7 @@ package com.hypersocket.auth;
 
 import java.util.List;
 
+import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.DetachedCriteria;
@@ -20,6 +21,7 @@ import com.hypersocket.annotation.HypersocketExtension;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
+import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DetachedCriteriaConfiguration;
 import com.hypersocket.repository.DistinctRootEntity;
@@ -90,6 +92,17 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	@HypersocketExtension
 	public AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey) {
 		return get("resourceKey", resourceKey, AuthenticationScheme.class, new RealmRestriction(realm));
+	}
+	
+	@Override
+	public Long getSchemeByResourceKeyCount(final Realm realm, String resourceKey) {
+		return getCount(AuthenticationScheme.class, "resourceKey", resourceKey, new CriteriaConfiguration() {
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("realm", realm));
+				
+			}
+		});
 	}
 
 	@Override

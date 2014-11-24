@@ -31,4 +31,6 @@ public interface AuthenticationSchemeRepository extends AbstractEntityRepository
 	public void saveScheme(AuthenticationScheme s);
 
 	public AuthenticationScheme getSchemeByName(Realm realm, String name);
+
+	Long getSchemeByResourceKeyCount(Realm realm, String resourceKey);
 }
