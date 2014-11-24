@@ -118,11 +118,13 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 		realmService.registerRealmListener(new RealmAdapter() {
 
+			@Override
 			public boolean hasCreatedDefaultResources(Realm realm) {
-				return schemeRepository.getSchemeByResourceKey(realm,
-						BROWSER_AUTHENTICATION_RESOURCE_KEY) != null;
+				return schemeRepository.getSchemeByResourceKeyCount(realm,
+						BROWSER_AUTHENTICATION_RESOURCE_KEY) > 0;
 			}
 
+			@Override
 			public void onCreateRealm(Realm realm) {
 
 				if (log.isInfoEnabled()) {
@@ -131,8 +133,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 							+ realm.getName());
 				}
 				List<String> modules = new ArrayList<String>();
-				schemeRepository.createScheme(realm, "anonymous", modules,
-						"anonymous", true);
+				schemeRepository.createScheme(realm, ANONYMOUS_AUTHENTICATION_SCHEME, modules,
+						ANONYMOUS_AUTHENTICATION_RESOURCE_KEY, true);
 
 				modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
 				schemeRepository.createScheme(realm,

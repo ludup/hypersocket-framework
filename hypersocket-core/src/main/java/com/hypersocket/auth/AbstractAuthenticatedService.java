@@ -44,6 +44,9 @@ public abstract class AbstractAuthenticatedService implements
 	}
 	
 	public void setCurrentSession(Session session, Locale locale) {
+		if(log.isDebugEnabled()) {
+			log.debug("Setting current session context " + session.getId());
+		}
 		currentPrincipal.set(session.getCurrentPrincipal());
 		currentSession.set(session);
 		currentRealm.set(session.getCurrentRealm());
@@ -73,6 +76,9 @@ public abstract class AbstractAuthenticatedService implements
 	}
 
 	public void clearPrincipalContext() {
+		if(log.isDebugEnabled()) {
+			log.debug("Clearing authenticated context.");
+		}
 		currentLocale.set(null);
 		currentPrincipal.set(null);
 		currentSession.set(null);
