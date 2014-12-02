@@ -13,6 +13,10 @@ public class FileUtils {
 	static SimpleDateFormat dateFormat = new SimpleDateFormat(
 			"dd MMM yyyy HH:mm");
 
+	public static String convertBackslashToForwardSlash(String str) {
+		return str.replace('\\', '/');
+	}
+	
 	public static String checkStartsWithSlash(String str) {
 		if (str.startsWith("/")) {
 			return str;
