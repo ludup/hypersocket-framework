@@ -9,9 +9,11 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="realm.userProfiles"
 		resourceBundle="RealmService" weight="999999">
-		<property resourceKey="realm.userEditableProperties" inputType="multipleSelect"
+		<property resourceKey="realm.userEditableProperties" inputType="multipleSelect" 
+			includedLabelResourceKey="text.editable" excludedLabelResourceKey="text.notEditable"
 		    url="realms/realm/templateNames/{id}" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>
-		<property resourceKey="realm.userRestrictedProperties" inputType="multipleSelect"
+		<property resourceKey="realm.userVisibleProperties" inputType="multipleSelect" 
+			includedLabelResourceKey="text.restricted" excludedLabelResourceKey="text.notRestricted"
 		    url="realms/realm/templateNames/{id}" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>
 	</propertyCategory>
 </propertyTemplates>
