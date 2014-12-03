@@ -13,7 +13,7 @@
 			includedLabelResourceKey="text.editable" excludedLabelResourceKey="text.notEditable"
 		    url="realms/realm/templateNames/{id}" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>
 		<property resourceKey="realm.userVisibleProperties" inputType="multipleSelect" 
-			includedLabelResourceKey="text.restricted" excludedLabelResourceKey="text.notRestricted"
+			includedLabelResourceKey="text.visible" excludedLabelResourceKey="text.notVisible"
 		    url="realms/realm/templateNames/{id}" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>
 	</propertyCategory>
 </propertyTemplates>

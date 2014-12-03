@@ -9,5 +9,6 @@
 	<propertyCategory resourceKey="realm.userProfiles"
 		resourceBundle="RealmService" weight="999999">
 		<property resourceKey="realm.userEditableProperties" defaultValue="user.email]|[user.mobile]|[user.fullname"/>
+		<property resourceKey="realm.userVisibleProperties" defaultValue="user.email]|[user.mobile]|[user.fullname"/>
 	</propertyCategory>
 </propertyTemplates>

@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -172,10 +174,7 @@ public class AuthenticationState {
 	
 	public String getLastPrincipalName() {
 		if(principal==null) {
-			if(lastPrincipalName==null) {
-				throw new IllegalStateException("Last principal name is not available. Did you forget to set it in your Authenticator?");
-			}
-			return lastPrincipalName;
+			return StringUtils.defaultString(lastPrincipalName);
 		} else {
 			return principal.getPrincipalName();
 		}
