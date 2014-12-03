@@ -133,7 +133,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 							+ realm.getName());
 				}
 				List<String> modules = new ArrayList<String>();
-				schemeRepository.createScheme(realm, ANONYMOUS_AUTHENTICATION_SCHEME, modules,
+				schemeRepository.createScheme(realm,
+						ANONYMOUS_AUTHENTICATION_SCHEME, modules,
 						ANONYMOUS_AUTHENTICATION_RESOURCE_KEY, true);
 
 				modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
@@ -191,7 +192,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		return false;
 	}
 
-	
 	@Override
 	public AuthenticationScheme getSchemeByResourceKey(Realm realm,
 			String resourceKey) throws AccessDeniedException {
@@ -367,14 +367,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				}
 				case AUTHENTICATION_SUCCESS: {
 					try {
-						permissionService.verifyPermission(
-								state.getPrincipal(),
-								PermissionStrategy.INCLUDE_IMPLIED,
-								AuthenticationPermission.LOGON,
-								SystemPermission.SYSTEM_ADMINISTRATION);
 
-						eventService
-								.publishEvent(new AuthenticationAttemptEvent(
+						eventService.publishEvent(new AuthenticationAttemptEvent(
 										this, state, authenticator));
 
 						success = true;
@@ -383,6 +377,12 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 						if (state.isAuthenticationComplete()) {
 
+							permissionService.verifyPermission(
+										state.getPrincipal(),
+										PermissionStrategy.INCLUDE_IMPLIED,
+										AuthenticationPermission.LOGON,
+										SystemPermission.SYSTEM_ADMINISTRATION);
+							
 							for (PostAuthenticationStep proc : postAuthenticationSteps) {
 								if (proc.requiresProcessing(state)) {
 									state.addPostAuthenticationStep(proc);
@@ -483,14 +483,16 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	public void registerPostAuthenticationStep(
 			PostAuthenticationStep postAuthenticationStep) {
 		postAuthenticationSteps.add(postAuthenticationStep);
-		
-		Collections.sort(postAuthenticationSteps, new Comparator<PostAuthenticationStep>() {
-			@Override
-			public int compare(PostAuthenticationStep o1,
-					PostAuthenticationStep o2) {
-				return new Integer(o1.getOrderPriority()).compareTo(o2.getOrderPriority());
-			}
-		});
+
+		Collections.sort(postAuthenticationSteps,
+				new Comparator<PostAuthenticationStep>() {
+					@Override
+					public int compare(PostAuthenticationStep o1,
+							PostAuthenticationStep o2) {
+						return new Integer(o1.getOrderPriority()).compareTo(o2
+								.getOrderPriority());
+					}
+				});
 	}
 
 	@Override
@@ -544,13 +546,14 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
-	public Session logonAnonymous(String remoteAddress,
-			String userAgent, Map<String, String> parameters) throws AccessDeniedException {
+	public Session logonAnonymous(String remoteAddress, String userAgent,
+			Map<String, String> parameters) throws AccessDeniedException {
 
-		Session session = sessionService.openSession(remoteAddress, realmService
-				.getSystemPrincipal(), schemeRepository.getSchemeByResourceKey(
-				realmService.getSystemRealm(),
-				ANONYMOUS_AUTHENTICATION_RESOURCE_KEY), userAgent, parameters);
+		Session session = sessionService.openSession(remoteAddress,
+				realmService.getSystemPrincipal(), schemeRepository
+						.getSchemeByResourceKey(realmService.getSystemRealm(),
+								ANONYMOUS_AUTHENTICATION_RESOURCE_KEY),
+				userAgent, parameters);
 		return session;
 	}
 
