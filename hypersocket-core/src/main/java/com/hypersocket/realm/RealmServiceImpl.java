@@ -975,9 +975,9 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		Set<String> editable = new HashSet<String>(
 				Arrays.asList(getRealmPropertyArray(principal.getRealm(),
 						"realm.userEditableProperties")));
-		Set<String> restricted = new HashSet<String>(
+		Set<String> visible = new HashSet<String>(
 				Arrays.asList(getRealmPropertyArray(principal.getRealm(),
-						"realm.userRestrictedProperties")));
+						"realm.userVisibleProperties")));
 
 		/**
 		 * Filter the properties down to read only and editable as defined by
@@ -987,16 +987,18 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 			List<AbstractPropertyTemplate> tmp = new ArrayList<AbstractPropertyTemplate>();
 			for (AbstractPropertyTemplate t : c.getTemplates()) {
-				if (restricted.contains(t.getResourceKey())) {
-					tmp.add(t);
-					continue;
-				}
+				
 				if (!editable.contains(t.getResourceKey()) && !t.isReadOnly()) {
+					if (!visible.contains(t.getResourceKey())) {
+						tmp.add(t);
+						continue;
+					} 
 					t.setReadOnly(true);
 					continue;
-				}
+				} 
 				if (provider.isReadOnly(principal.getRealm())) {
 					t.setReadOnly(true);
+					continue;
 				}
 			}
 
