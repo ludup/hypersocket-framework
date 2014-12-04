@@ -107,10 +107,8 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 
 	@Override
 	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm) {
-
 		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
 				false), new HiddenCriteria(false), new DistinctRootEntity(), new RealmRestriction(realm));
-
 	}
 
 	@Override
