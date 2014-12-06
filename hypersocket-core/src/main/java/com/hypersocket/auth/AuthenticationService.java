@@ -57,5 +57,7 @@ public interface AuthenticationService extends AuthenticatedService {
 	Session logonAnonymous(String remoteAddress,
 			String userAgent, Map<String, String> parameters) throws AccessDeniedException;
 
+	Authenticator getAuthenticator(String resourceKey);
+
 
 }

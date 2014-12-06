@@ -168,6 +168,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
+	public Authenticator getAuthenticator(String resourceKey) {
+		return authenticators.get(resourceKey);
+	}
+	
+	@Override
 	public AuthenticationScheme getDefaultScheme(String remoteAddress,
 			Map<String, String> environment, Realm realm) {
 		List<AuthenticationScheme> schemes = schemeRepository.allSchemes(realm);
@@ -496,11 +501,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
-	public Map<String, Authenticator> getAuthenticators(String resourceKey) {
+	public Map<String, Authenticator> getAuthenticators(String schemeResourceKey) {
 		Map<String, Authenticator> tmp = new HashMap<String, Authenticator>();
 		for (Authenticator a : authenticators.values()) {
 			for (String s : a.getAllowedSchemes()) {
-				if (resourceKey.matches(s)) {
+				if (schemeResourceKey.matches(s)) {
 					tmp.put(a.getResourceKey(), a);
 					break;
 				}
