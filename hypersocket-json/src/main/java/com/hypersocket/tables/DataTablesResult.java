@@ -40,7 +40,7 @@ public class DataTablesResult {
 	public void setiTotalDisplayRecords(String iTotalDisplayRecords) {
 		this.iTotalDisplayRecords = iTotalDisplayRecords;
 	}
-
+	
 	public Collection<?> getAaData() {
 		return aaData;
 	}
