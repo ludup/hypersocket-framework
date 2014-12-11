@@ -370,7 +370,7 @@ public abstract class HypersocketClient<T> {
 		} else {
 			JSONObject session = (JSONObject) result.get("session");
 			sessionId = (String) session.get("id");
-			principalName = (String) ((JSONObject)session.get("principal")).get("principalName");
+			principalName = (String) ((JSONObject)session.get("currentPrincipal")).get("principalName");
 			return null;
 		}
 	}
