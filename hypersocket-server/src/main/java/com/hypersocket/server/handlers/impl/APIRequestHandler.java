@@ -10,7 +10,6 @@ package com.hypersocket.server.handlers.impl;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletRequest;
 
-import com.hypersocket.server.HypersocketServer;
 import com.hypersocket.server.HypersocketServerImpl;
 
 public class APIRequestHandler extends ServletRequestHandler {
