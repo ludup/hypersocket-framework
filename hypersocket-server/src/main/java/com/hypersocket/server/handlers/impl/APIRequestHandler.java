@@ -15,12 +15,12 @@ import com.hypersocket.server.HypersocketServerImpl;
 
 public class APIRequestHandler extends ServletRequestHandler {
 
-	HypersocketServer server;
-
-	public APIRequestHandler(Servlet servlet, HypersocketServer server,
+	public APIRequestHandler(Servlet servlet,
 			int priority) {
 		super("api", servlet, priority);
-		this.server = server;
+	}
+	
+	protected void registered() {
 		server.addCompressablePath(server.resolvePath(server.getAttribute(
 				HypersocketServerImpl.API_PATH, HypersocketServerImpl.API_PATH)));
 	}

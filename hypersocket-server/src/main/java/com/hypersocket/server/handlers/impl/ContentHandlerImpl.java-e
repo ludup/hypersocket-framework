@@ -45,9 +45,6 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	
 	String basePath;
 	
-	@Autowired
-	protected HypersocketServer server;
-	
 	public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
     public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
     public static final int HTTP_CACHE_SECONDS = 60;
@@ -68,10 +65,6 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	
 	public void setBasePath(String basePath) {
 		this.basePath = basePath;
-	}
-	
-	public void setServer(HypersocketServer server) {
-		this.server = server;
 	}
 
 	@Override
