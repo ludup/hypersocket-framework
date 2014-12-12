@@ -15,16 +15,22 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 	boolean lastErrorIsResourceKey;
 	boolean isNew;
 	boolean isLast;
+	boolean lastResultSuccessful;
+
 	public AuthenticationRequiredResult() {
-		
+
 	}
-	
-	public AuthenticationRequiredResult(String bannerMsg, String errorMsg, boolean lastErrorIsResourceKey, FormTemplate formTemplate, boolean showLocales, boolean isNew, boolean isLast) {
+
+	public AuthenticationRequiredResult(String bannerMsg, String errorMsg,
+			boolean lastErrorIsResourceKey, FormTemplate formTemplate,
+			boolean showLocales, boolean isNew, boolean isLast,
+			boolean lastResultSuccessful) {
 		super(bannerMsg, errorMsg, showLocales);
 		this.formTemplate = formTemplate;
 		this.lastErrorIsResourceKey = lastErrorIsResourceKey;
 		this.isNew = isNew;
 		this.isLast = isLast;
+		this.lastResultSuccessful = lastResultSuccessful;
 	}
 
 	public FormTemplate getFormTemplate() {
@@ -34,18 +40,21 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 	public void setFormTemplate(FormTemplate template) {
 		this.formTemplate = template;
 	}
-	
+
 	public boolean getLastErrorIsResourceKey() {
 		return lastErrorIsResourceKey;
 	}
-	
+
+	public boolean isLastResultSuccessfull() {
+		return lastResultSuccessful;
+	}
+
 	public boolean isNewSession() {
 		return isNew;
 	}
-	
+
 	public boolean isLast() {
 		return isLast;
 	}
-	
-	
+
 }
