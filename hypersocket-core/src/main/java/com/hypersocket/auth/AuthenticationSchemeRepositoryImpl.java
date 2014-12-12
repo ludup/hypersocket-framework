@@ -42,13 +42,17 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 
 	@Override
 	public AuthenticationScheme createScheme(Realm realm, String name,
-			List<String> templates, String resourceKey, boolean hidden) {
+			List<String> templates, String resourceKey, boolean hidden,
+			Integer maximumModules, AuthenticationModuleType type) {
 
 		AuthenticationScheme scheme = new AuthenticationScheme();
 		scheme.setName(name);
 		scheme.setRealm(realm);
 		scheme.setResourceKey(resourceKey);
 		scheme.setHidden(hidden);
+		scheme.setType(type);
+		scheme.setMaximumModules(maximumModules);
+		
 		saveEntity(scheme);
 
 		int idx = 0;
@@ -80,12 +84,6 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 		public void configure(DetachedCriteria criteria) {
 			criteria.add(Restrictions.eq("scheme", scheme));
 		}
-	}
-
-	@Override
-	public AuthenticationScheme createScheme(Realm realm, String name, List<String> modules,
-			String resourceKey) {
-		return createScheme(realm, name, modules, resourceKey, false);
 	}
 
 	@Override

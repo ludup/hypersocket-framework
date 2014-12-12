@@ -131,5 +131,10 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 	public String[] getAllowedSchemes() {
 		return new String[] { ".*" };
 	}
+	
+	@Override
+	public AuthenticationModuleType getType() {
+		return AuthenticationModuleType.BASIC;
+	}
 
 }

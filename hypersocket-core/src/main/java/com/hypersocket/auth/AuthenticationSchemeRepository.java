@@ -15,10 +15,7 @@ import com.hypersocket.repository.AbstractEntityRepository;
 public interface AuthenticationSchemeRepository extends AbstractEntityRepository<AuthenticationScheme,Long> {
 
 	public AuthenticationScheme createScheme(Realm realm, String name, List<String> modules,
-			String resourceKey);
-
-	public AuthenticationScheme createScheme(Realm realm, String name, List<String> modules,
-			String resourceKey, boolean hidden);
+			String resourceKey, boolean hidden, Integer maximum, AuthenticationModuleType type);
 
 	List<AuthenticationScheme> allSchemes(Realm realm);
 

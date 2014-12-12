@@ -143,9 +143,9 @@
 
 		<!-- Jackson -->
 		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-mapper-asl</artifactId>
-			<version>1.7.9</version>
+			<artifactId>jackson-databind</artifactId>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<version>2.3.2</version>
 		</dependency>
 
 		<!-- JAXB -->
