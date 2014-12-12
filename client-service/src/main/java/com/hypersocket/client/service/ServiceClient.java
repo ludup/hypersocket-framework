@@ -43,12 +43,14 @@ public class ServiceClient extends HypersocketClient<Connection> {
 	}
 
 	// @Override
-	protected Map<String, String> showLogin(List<Prompt> prompts) {
+	protected Map<String, String> showLogin(List<Prompt> prompts) throws IOException {
 		if(service.getGUI()!=null) {
 			try {
 				return service.getGUI().showPrompts(prompts);
 			} catch(RemoteException e) {
 				log.error("Failed to show prompts", e);
+				disconnect(true);
+				throw new IOException(e);
 			}
 		}
 		return null;
