@@ -12,12 +12,12 @@ import java.security.PermissionCollection;
 import java.util.Map;
 
 import org.apache.http.message.BasicNameValuePair;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.hypersocket.json.JsonResponse;
 import com.hypersocket.tests.AbstractServerTest;
 import com.hypersocket.tests.MultipartObject;

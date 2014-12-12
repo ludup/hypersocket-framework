@@ -2,10 +2,11 @@ package com.hypersocket.tests.realms;
 
 import java.io.IOException;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 public class WithAdminPermissionTests extends AbstractPermissionsTest {
 
