@@ -553,6 +553,10 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 			}
 		});
 
-		return results;
+		if(results.size() > 0) { 
+			return results;
+		} else {
+			return null;
+		}
 	}
 }

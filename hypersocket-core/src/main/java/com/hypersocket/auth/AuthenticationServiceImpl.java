@@ -171,7 +171,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	public Authenticator getAuthenticator(String resourceKey) {
 		return authenticators.get(resourceKey);
 	}
-	
+
 	@Override
 	public AuthenticationScheme getDefaultScheme(String remoteAddress,
 			Map<String, String> environment, Realm realm) {
@@ -255,8 +255,18 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			state.setRealm(realmService.getDefaultRealm());
 		}
 
-		state.setScheme(getSchemeByResourceKey(state.getRealm(),
-				schemeResourceKey));
+		AuthenticationScheme scheme = getSchemeByResourceKey(state.getRealm(),
+				schemeResourceKey);
+		if (scheme == null) {
+			if (log.isWarnEnabled()) {
+				log.warn(schemeResourceKey
+						+ " is not a valid authentication scheme");
+			}
+			scheme = getSchemeByResourceKey(
+					state.getRealm(),
+					AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY);
+		}
+		state.setScheme(scheme);
 		state.setModules(repository.getModulesForScheme(state.getScheme()));
 
 		return state;
@@ -373,7 +383,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				case AUTHENTICATION_SUCCESS: {
 					try {
 
-						eventService.publishEvent(new AuthenticationAttemptEvent(
+						eventService
+								.publishEvent(new AuthenticationAttemptEvent(
 										this, state, authenticator));
 
 						success = true;
@@ -383,11 +394,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 						if (state.isAuthenticationComplete()) {
 
 							permissionService.verifyPermission(
-										state.getPrincipal(),
-										PermissionStrategy.INCLUDE_IMPLIED,
-										AuthenticationPermission.LOGON,
-										SystemPermission.SYSTEM_ADMINISTRATION);
-							
+									state.getPrincipal(),
+									PermissionStrategy.INCLUDE_IMPLIED,
+									AuthenticationPermission.LOGON,
+									SystemPermission.SYSTEM_ADMINISTRATION);
+
 							for (PostAuthenticationStep proc : postAuthenticationSteps) {
 								if (proc.requiresProcessing(state)) {
 									state.addPostAuthenticationStep(proc);

@@ -39,7 +39,9 @@ public class LogonController extends AuthenticatedController {
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException {
 		AuthenticationState state = (AuthenticationState) request.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
-		return resetLogon(request, response, state.getScheme().getResourceKey());
+		return resetLogon(request, response, state==null ?
+				AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY 
+				: state.getScheme().getResourceKey());
 	}
 	
 	@RequestMapping(value = "logon/reset/{scheme}", method = RequestMethod.GET, produces = "application/json")
@@ -109,7 +111,7 @@ public class LogonController extends AuthenticatedController {
 						request, response);
 			} 
 			
-			authenticationService.logon(state, request.getParameterMap());
+			boolean success = authenticationService.logon(state, request.getParameterMap());
 
 			if (state.isAuthenticationComplete()
 					&& !state.hasPostAuthenticationStep()) {
@@ -136,7 +138,8 @@ public class LogonController extends AuthenticatedController {
 										.nextPostAuthenticationStep(state),
 						i18nService.hasUserLocales(),
 						state.isNew(),
-						!state.hasNextStep());
+						!state.hasNextStep(),
+						success || state.isNew());
 			}
 		} finally {
 			clearSystemContext();
