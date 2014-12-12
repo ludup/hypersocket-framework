@@ -241,8 +241,13 @@ public abstract class HypersocketClient<T> {
 		
 		int attempts = 3;
 		List<Prompt> prompts = new ArrayList<Prompt>();
-		while (!isLoggedOn() && attempts > 0) {
+		while (!isLoggedOn()) {
 
+			if(attempts==0) {
+				disconnect(false);
+				throw new IOException("Too many failed authentication attempts");
+			}
+			
 			String json = transport.post("logon", params);
 			params.clear();
 			boolean success = processLogon(json, params, prompts);
@@ -375,7 +380,7 @@ public abstract class HypersocketClient<T> {
 
 			}
 
-			return lastResultSuccessfull;
+			return lastResultSuccessfull == null ? true : lastResultSuccessfull;
 		} else {
 			JSONObject session = (JSONObject) result.get("session");
 			sessionId = (String) session.get("id");
