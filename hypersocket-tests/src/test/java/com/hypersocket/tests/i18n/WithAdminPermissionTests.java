@@ -3,13 +3,13 @@ package com.hypersocket.tests.i18n;
 import java.io.IOException;
 
 import org.apache.http.client.ClientProtocolException;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.util.Assert;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.hypersocket.i18n.Message;
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.tests.AbstractServerTest;
