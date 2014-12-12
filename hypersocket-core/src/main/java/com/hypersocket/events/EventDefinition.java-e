@@ -3,7 +3,7 @@ package com.hypersocket.events;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class EventDefinition {
 

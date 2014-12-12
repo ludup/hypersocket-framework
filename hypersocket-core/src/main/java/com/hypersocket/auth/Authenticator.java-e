@@ -29,5 +29,7 @@ public interface Authenticator {
 	
 	boolean isIdentityModule();
 	
+	AuthenticationModuleType getType();
+	 
 	String[] getAllowedSchemes();
 }

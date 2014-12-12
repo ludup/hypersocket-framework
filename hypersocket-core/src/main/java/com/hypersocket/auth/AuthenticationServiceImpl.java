@@ -53,7 +53,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 	public static final String ANONYMOUS_AUTHENTICATION_SCHEME = "Anonymous";
 	public static final String ANONYMOUS_AUTHENTICATION_RESOURCE_KEY = "anonymous";
-
+	
 	private static Logger log = LoggerFactory
 			.getLogger(AuthenticationServiceImpl.class);
 
@@ -128,19 +128,28 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			public void onCreateRealm(Realm realm) {
 
 				if (log.isInfoEnabled()) {
+					log.info("Creating " + ANONYMOUS_AUTHENTICATION_SCHEME
+							+ " authentication scheme for realm "
+							+ realm.getName());
+				}
+				
+				List<String> modules = new ArrayList<String>();
+				schemeRepository.createScheme(realm,
+						ANONYMOUS_AUTHENTICATION_SCHEME, modules,
+						ANONYMOUS_AUTHENTICATION_RESOURCE_KEY, true,
+						0, AuthenticationModuleType.HIDDEN);
+
+				if (log.isInfoEnabled()) {
 					log.info("Creating " + BROWSER_AUTHENTICATION_SCHEME
 							+ " authentication scheme for realm "
 							+ realm.getName());
 				}
-				List<String> modules = new ArrayList<String>();
-				schemeRepository.createScheme(realm,
-						ANONYMOUS_AUTHENTICATION_SCHEME, modules,
-						ANONYMOUS_AUTHENTICATION_RESOURCE_KEY, true);
-
+				
 				modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
 				schemeRepository.createScheme(realm,
 						BROWSER_AUTHENTICATION_SCHEME, modules,
-						BROWSER_AUTHENTICATION_RESOURCE_KEY);
+						BROWSER_AUTHENTICATION_RESOURCE_KEY, false,
+						10, AuthenticationModuleType.HTML);
 
 			}
 		});
@@ -284,8 +293,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 		if (state.isAuthenticationComplete()) {
 
-			setCurrentSession(state.getSession(), state.getLocale());
-
+			if(state.getSession()!=null) {
+				setCurrentSession(state.getSession(), state.getLocale());
+			}
+			
 			try {
 				if (state.getCurrentPostAuthenticationStep() != null) {
 
@@ -301,6 +312,17 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 					case AUTHENTICATION_SUCCESS: {
 
 						state.nextPostAuthenticationStep();
+						
+						if(state.canCreateSession()) {
+							state.setSession(completeLogon(state));
+						}
+						
+						if(state.hasPostAuthenticationStep()) {
+							PostAuthenticationStep step = state.getCurrentPostAuthenticationStep();
+							if(!step.requiresUserInput(state)) {
+								success = logon(state, parameterMap);
+							}
+						}
 						success = true;
 						break;
 					}
@@ -317,7 +339,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		} else {
 			Authenticator authenticator = authenticators.get(state
 					.getCurrentModule().getTemplate());
-
+			
 			if (authenticator.isSecretModule()
 					&& state.getPrincipal() instanceof AuthenticationState.FakePrincipal) {
 				state.setLastErrorMsg("error.genericLogonError");
@@ -401,12 +423,20 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 							for (PostAuthenticationStep proc : postAuthenticationSteps) {
 								if (proc.requiresProcessing(state)) {
-									state.addPostAuthenticationStep(proc);
+										state.addPostAuthenticationStep(proc);
 								}
 							}
 
-							state.setSession(completeLogon(state));
-
+							if(state.canCreateSession()) {
+								state.setSession(completeLogon(state));
+							}
+							
+							if(state.hasPostAuthenticationStep()) {
+								PostAuthenticationStep step = state.getCurrentPostAuthenticationStep();
+								if(!step.requiresUserInput(state)) {
+									success = logon(state, parameterMap);
+								}
+							}
 						}
 					} catch (AccessDeniedException e) {
 
@@ -423,8 +453,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				}
 			}
 
-			if (!state.isAuthenticationComplete())
-				state.authAttempted();
+			state.authAttempted();
 
 		}
 
