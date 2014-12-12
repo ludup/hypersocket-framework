@@ -82,7 +82,7 @@ public class ConnectionJob extends TimerTask {
 
 		} catch (Throwable e) {
 			if (log.isErrorEnabled()) {
-				log.error("Failed to connect " + url);
+				log.error("Failed to connect " + url, e);
 			}
 
 			if (StringUtils.isNotBlank(c.getUsername())

@@ -192,6 +192,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	 */
 	@Override
 	public void registerHttpHandler(HttpRequestHandler handler) {
+		handler.setServer(this);
 		httpHandlers.add(handler);
 		Collections.sort(httpHandlers);
 	}
@@ -250,7 +251,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		dispatcherServlet = new NonRestrictedDispatcherServlet(webappContext);
 		dispatcherServlet.init(servletConfig);
 
-		registerHttpHandler(new APIRequestHandler(dispatcherServlet, this, 100));
+		registerHttpHandler(new APIRequestHandler(dispatcherServlet, 100));
 
 		eventService.publishEvent(new WebappCreatedEvent(this, true, realmService.getSystemRealm()));
 
