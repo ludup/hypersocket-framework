@@ -7,8 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.json;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.hypersocket.HypersocketVersion;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
