@@ -153,7 +153,7 @@ public abstract class HypersocketClient<T> {
 
 		isDisconnecting = true;
 		
-		if(!onError) {
+		if(!onError && isLoggedOn()) {
 			
 			userDisconnect = true;
 			try {
@@ -219,7 +219,7 @@ public abstract class HypersocketClient<T> {
 		transport.setHeader("Authorization", authorization);
 
 		String json = transport.post("logon", params);
-		processLogon(json, params);
+		boolean success = processLogon(json, params, new ArrayList<Prompt>());
 
 		if (!isLoggedOn()) {
 			disconnect(false);
@@ -234,12 +234,21 @@ public abstract class HypersocketClient<T> {
 
 		Map<String, String> params = new HashMap<String, String>();
 
-		while (!isLoggedOn()) {
+		/**
+		 * Reset authentication with client scheme
+		 */
+//		String json = transport.post("logon", params);
+		
+		int attempts = 3;
+		List<Prompt> prompts = new ArrayList<Prompt>();
+		while (!isLoggedOn() && attempts > 0) {
 
 			String json = transport.post("logon", params);
 			params.clear();
-			List<Prompt> prompts = processLogon(json, params);
-
+			boolean success = processLogon(json, params, prompts);
+			if(!success) {
+				attempts--;
+			}
 			if (prompts != null) {
 				Map<String, String> results = showLogin(prompts);
 
@@ -278,11 +287,11 @@ public abstract class HypersocketClient<T> {
 		}
 	}
 
-	protected List<Prompt> processLogon(String json, Map<String, String> params)
+	protected boolean processLogon(String json, Map<String, String> params, List<Prompt> prompts)
 			throws IOException {
 
 		try {
-			return parseLogonJSON(json, params);
+			return parseLogonJSON(json, params, prompts);
 		} catch (ParseException e) {
 			throw new IOException("Failed to parse logon request", e);
 		}
@@ -313,17 +322,17 @@ public abstract class HypersocketClient<T> {
 		return wrapper.getResources();
 	}
 
-	protected List<Prompt> parseLogonJSON(String json,
-			Map<String, String> params) throws ParseException, IOException {
+	protected boolean parseLogonJSON(String json,
+			Map<String, String> params, List<Prompt> prompts) throws ParseException, IOException {
 
 		JSONParser parser = new JSONParser();
-		List<Prompt> prompts = new ArrayList<Prompt>();
+		prompts.clear();
 
 		JSONObject result = (JSONObject) parser.parse(json);
 		if (!(Boolean) result.get("success")) {
 			JSONObject template = (JSONObject) result.get("formTemplate");
 			JSONArray fields = (JSONArray) template.get("inputFields");
-
+			Boolean lastResultSuccessfull = (Boolean) result.get("lastResultSuccessfull");
 			@SuppressWarnings("unchecked")
 			Iterator<JSONObject> it = (Iterator<JSONObject>) fields.iterator();
 			while (it.hasNext()) {
@@ -366,12 +375,12 @@ public abstract class HypersocketClient<T> {
 
 			}
 
-			return prompts;
+			return lastResultSuccessfull;
 		} else {
 			JSONObject session = (JSONObject) result.get("session");
 			sessionId = (String) session.get("id");
 			principalName = (String) ((JSONObject)session.get("currentPrincipal")).get("principalName");
-			return null;
+			return true;
 		}
 	}
 
@@ -384,7 +393,7 @@ public abstract class HypersocketClient<T> {
 		return transport.get("realm/" + name);
 	}
 	
-	protected abstract Map<String, String> showLogin(List<Prompt> prompts);
+	protected abstract Map<String, String> showLogin(List<Prompt> prompts) throws IOException;
 
 	public abstract void showWarning(String msg);
 
