@@ -1,12 +1,12 @@
 package com.hypersocket.tests.permissions;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.json.JsonPermission;
 import com.hypersocket.json.JsonPermissionList;
 import com.hypersocket.json.JsonResourceStatus;

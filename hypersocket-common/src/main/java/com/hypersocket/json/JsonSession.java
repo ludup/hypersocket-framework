@@ -7,9 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.json;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-
-import com.hypersocket.json.JsonPrincipal;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonSession {

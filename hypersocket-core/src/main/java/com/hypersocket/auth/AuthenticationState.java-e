@@ -26,7 +26,8 @@ public class AuthenticationState {
 	String remoteAddress;
 	Integer currentIndex = new Integer(0);
 	List<AuthenticationModule> modules;
-	List<PostAuthenticationStep> postAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
+	List<PostAuthenticationStep> sessionPostAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
+	List<PostAuthenticationStep> nonSessionPostAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
 	String lastErrorMsg;
 	boolean lastErrorIsResourceKey;
 	String lastPrincipalName;
@@ -118,22 +119,38 @@ public class AuthenticationState {
 	}
 
 	public void addPostAuthenticationStep(PostAuthenticationStep proc) {
-		postAuthenticationSteps.add(proc);
+		if(proc.requiresSession(this)) {
+			sessionPostAuthenticationSteps.add(proc);
+		} else {
+			nonSessionPostAuthenticationSteps.add(proc);
+		}
 	}
 
 	public boolean hasPostAuthenticationStep() {
-		return postAuthenticationSteps.size() > 0;
+		return (sessionPostAuthenticationSteps.size() + nonSessionPostAuthenticationSteps.size()) > 0;
+	}
+	
+	public boolean canCreateSession() {
+		return isAuthenticationComplete() && nonSessionPostAuthenticationSteps.isEmpty() && session==null;
 	}
 
 	public PostAuthenticationStep getCurrentPostAuthenticationStep() {
 		if (!hasPostAuthenticationStep()) {
 			return null;
 		}
-		return postAuthenticationSteps.get(0);
+		if(nonSessionPostAuthenticationSteps.size() > 0) {
+			return nonSessionPostAuthenticationSteps.get(0);
+		} else {
+			return sessionPostAuthenticationSteps.get(0);
+		}
 	}
 
 	public void nextPostAuthenticationStep() {
-		postAuthenticationSteps.remove(0);
+		if(nonSessionPostAuthenticationSteps.size() > 0) {
+			nonSessionPostAuthenticationSteps.remove(0);
+		} else {
+			sessionPostAuthenticationSteps.remove(0);
+		}
 	}
 
 	public Locale getLocale() {

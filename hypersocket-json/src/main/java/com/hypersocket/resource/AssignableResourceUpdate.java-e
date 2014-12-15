@@ -1,7 +1,6 @@
 package com.hypersocket.resource;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.hypersocket.properties.json.PropertyItem;
 
 @JsonIgnoreProperties(ignoreUnknown=true)

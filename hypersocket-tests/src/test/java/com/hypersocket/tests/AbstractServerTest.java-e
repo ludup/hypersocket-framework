@@ -29,13 +29,13 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.json.AuthenticationRequiredResult;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.JsonLogonResult;
@@ -246,7 +246,7 @@ public class AbstractServerTest {
 	protected static String debugJSON(String json) throws JsonParseException,
 			JsonMappingException, IOException {
 		Object obj = mapper.readValue(json, Object.class);
-		String ret = mapper.defaultPrettyPrintingWriter().writeValueAsString(
+		String ret = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(
 				obj);
 		System.out.println(ret);
 		return ret;

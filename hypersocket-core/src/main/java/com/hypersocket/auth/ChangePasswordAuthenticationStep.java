@@ -88,4 +88,14 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 		return 0;
 	}
 
+	@Override
+	public boolean requiresUserInput(AuthenticationState state) {
+		return true;
+	}
+
+	@Override
+	public boolean requiresSession(AuthenticationState state) {
+		return true;
+	}
+
 }

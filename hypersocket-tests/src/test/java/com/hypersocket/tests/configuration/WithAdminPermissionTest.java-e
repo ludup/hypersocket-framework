@@ -6,12 +6,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.hypersocket.json.JsonConfiguration;
 import com.hypersocket.json.JsonConfigurationTemplate;
 import com.hypersocket.json.JsonResourceStatus;
