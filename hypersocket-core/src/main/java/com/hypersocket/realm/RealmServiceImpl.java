@@ -226,12 +226,30 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public void registerRealmProvider(RealmProvider provider) {
+		
+		if(log.isInfoEnabled()) {
+			log.info("Registering " + provider.getModule() + " realm provider");
+		}
 		providersByModule.put(provider.getModule(), provider);
+	}
+	
+	@Override
+	public void unregisterRealmProvider(RealmProvider provider) {
+		
+		if(log.isInfoEnabled()) {
+			log.info("Unregistering " + provider.getModule() + " realm provider");
+		}
+		providersByModule.remove(provider.getModule());
 	}
 
 	@Override
 	public Realm getRealmByName(String realm) throws AccessDeniedException {
 		return realmRepository.getRealmByName(realm);
+	}
+	
+	@Override
+	public boolean isRegistered(RealmProvider provider) {
+		return providersByModule.containsKey(provider.getModule());
 	}
 
 	@Override

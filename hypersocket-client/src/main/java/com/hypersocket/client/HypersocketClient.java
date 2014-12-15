@@ -20,9 +20,6 @@ import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -30,6 +27,9 @@ import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.client.i18n.I18N;
 import com.hypersocket.json.JsonPrincipal;
 
@@ -241,8 +241,13 @@ public abstract class HypersocketClient<T> {
 		
 		int attempts = 3;
 		List<Prompt> prompts = new ArrayList<Prompt>();
-		while (!isLoggedOn() && attempts > 0) {
+		while (!isLoggedOn()) {
 
+			if(attempts==0) {
+				disconnect(false);
+				throw new IOException("Too many failed authentication attempts");
+			}
+			
 			String json = transport.post("logon", params);
 			params.clear();
 			boolean success = processLogon(json, params, prompts);
@@ -375,7 +380,7 @@ public abstract class HypersocketClient<T> {
 
 			}
 
-			return lastResultSuccessfull;
+			return lastResultSuccessfull == null ? true : lastResultSuccessfull;
 		} else {
 			JSONObject session = (JSONObject) result.get("session");
 			sessionId = (String) session.get("id");

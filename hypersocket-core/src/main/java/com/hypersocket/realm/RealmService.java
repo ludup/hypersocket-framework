@@ -198,4 +198,8 @@ public interface RealmService extends AuthenticatedService {
 
 	Collection<String> getUserVariableNames(Realm realmById);
 
+	void unregisterRealmProvider(RealmProvider provider);
+
+	boolean isRegistered(RealmProvider provider);
+
 }

@@ -50,7 +50,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	
 	@Override
 	protected String lookupPropertyValue(PropertyTemplate template) {
-		throw new UnsupportedOperationException("Entity resource property store requires an entity resource to lookup property value");
+		return template.getDefaultValue();
 	}
 
 	@Override

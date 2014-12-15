@@ -1,9 +1,9 @@
 package com.hypersocket.tests.configuration;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.config.ConfigurationPermission;
 import com.hypersocket.json.JsonConfiguration;

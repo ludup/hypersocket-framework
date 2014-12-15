@@ -23,4 +23,8 @@ public interface PostAuthenticationStep {
 	public AuthenticatorResult process(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException;
 	
 	public FormTemplate createTemplate(AuthenticationState state);
+
+	boolean requiresUserInput(AuthenticationState state);
+
+	boolean requiresSession(AuthenticationState state);
 }
