@@ -1,7 +1,6 @@
 package com.hypersocket.upload;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -91,15 +90,11 @@ public class FileUploadServiceImpl extends
 				fileOuputStream = new FileOutputStream(UPLOAD_PATH
 						+ realm.getId() + "/" + uuid);
 				fileOuputStream.write(file.getBytes());
+				String md5 = DigestUtils.md5Hex(file.getBytes());
+				fileUpload.setMd5Sum(md5);
 			} finally {
 				fileOuputStream.close();
 			}
-
-			FileInputStream fileInputStream = new FileInputStream(f);
-			String md5 = DigestUtils.md5Hex(fileInputStream);
-			fileInputStream.close();
-
-			fileUpload.setMd5Sum(md5);
 
 			createResource(fileUpload, new HashMap<String, String>());
 
