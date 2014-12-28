@@ -2,6 +2,7 @@ package com.hypersocket.upload;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -91,15 +92,11 @@ public class FileUploadServiceImpl extends
 				fileOuputStream = new FileOutputStream(UPLOAD_PATH
 						+ realm.getId() + "/" + uuid);
 				fileOuputStream.write(file.getBytes());
+				String md5 = DigestUtils.md5Hex(file.getBytes());
+				fileUpload.setMd5Sum(md5);
 			} finally {
 				fileOuputStream.close();
 			}
-
-			FileInputStream fileInputStream = new FileInputStream(f);
-			String md5 = DigestUtils.md5Hex(fileInputStream);
-			fileInputStream.close();
-
-			fileUpload.setMd5Sum(md5);
 
 			createResource(fileUpload, new HashMap<String, String>());
 
@@ -135,6 +132,24 @@ public class FileUploadServiceImpl extends
 			fireResourceDeletionEvent(fileUpload, e);
 			throw e;
 		}
+
+	}
+
+	public FileInputStream downloadFile(String uuid) {
+		FileUpload fileUpload = getFileByUuid(uuid);
+		File file = new File(UPLOAD_PATH + "/" + fileUpload.getRealm().getId()
+				+ "/" + fileUpload.getName());
+
+		File renamedFile = new File(fileUpload.getFileName());
+		file.renameTo(renamedFile);
+		FileInputStream fis = null;
+		try {
+			fis = new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return fis;
 
 	}
 

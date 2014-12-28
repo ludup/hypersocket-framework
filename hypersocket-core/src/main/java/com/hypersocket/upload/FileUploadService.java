@@ -1,5 +1,6 @@
 package com.hypersocket.upload;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -20,4 +21,6 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 
 	public void deleteFile(FileUpload fileUpload)
 			throws ResourceChangeException, AccessDeniedException;
+
+	public FileInputStream downloadFile(String uuid);
 }
