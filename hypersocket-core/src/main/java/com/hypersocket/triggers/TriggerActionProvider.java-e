@@ -14,10 +14,10 @@ public interface TriggerActionProvider {
 	String[] getResourceKeys();
 
 	void validate(TriggerAction action, Map<String, String> parameters)
-			throws TriggerValidationException;
+			throws ValidationException;
 
 	ActionResult execute(TriggerAction action, SystemEvent event)
-			throws TriggerValidationException;
+			throws ValidationException;
 	
 	ResourceTemplateRepository getRepository();
 

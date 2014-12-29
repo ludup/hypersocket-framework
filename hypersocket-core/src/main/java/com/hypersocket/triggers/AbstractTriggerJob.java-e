@@ -71,7 +71,7 @@ public class AbstractTriggerJob implements Job {
 	}
 
 	protected void processEventTrigger(TriggerResource trigger,
-			SystemEvent event) throws TriggerValidationException {
+			SystemEvent event) throws ValidationException {
 		if (log.isInfoEnabled()) {
 			log.info("Processing trigger " + trigger.getName());
 		}
@@ -88,7 +88,7 @@ public class AbstractTriggerJob implements Job {
 	}
 
 	protected boolean checkConditions(TriggerResource trigger, SystemEvent event)
-			throws TriggerValidationException {
+			throws ValidationException {
 
 		for (TriggerCondition condition : trigger.getAllConditions()) {
 			if (!checkCondition(condition, trigger, event)) {
@@ -126,13 +126,13 @@ public class AbstractTriggerJob implements Job {
 
 	private boolean checkCondition(TriggerCondition condition,
 			TriggerResource trigger, SystemEvent event)
-			throws TriggerValidationException {
+			throws ValidationException {
 
 		TriggerConditionProvider provider = triggerService
 				.getConditionProvider(condition);
 
 		if (provider == null) {
-			throw new TriggerValidationException(
+			throw new ValidationException(
 					"Failed to check condition because provider "
 							+ condition.getConditionKey() + " is not available");
 		}
@@ -141,12 +141,12 @@ public class AbstractTriggerJob implements Job {
 	}
 
 	protected void executeAction(TriggerAction action, SystemEvent event)
-			throws TriggerValidationException {
+			throws ValidationException {
 
 		TriggerActionProvider provider = triggerService
 				.getActionProvider(action.getResourceKey());
 		if (provider == null) {
-			throw new TriggerValidationException(
+			throw new ValidationException(
 					"Failed to execute action because provider "
 							+ action.getResourceKey() + " is not available");
 		}

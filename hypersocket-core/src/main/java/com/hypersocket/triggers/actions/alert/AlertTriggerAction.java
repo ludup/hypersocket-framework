@@ -22,7 +22,7 @@ import com.hypersocket.triggers.TriggerAction;
 import com.hypersocket.triggers.TriggerActionProvider;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
-import com.hypersocket.triggers.TriggerValidationException;
+import com.hypersocket.triggers.ValidationException;
 
 @Component
 public class AlertTriggerAction extends AbstractActionProvider implements
@@ -69,13 +69,13 @@ public class AlertTriggerAction extends AbstractActionProvider implements
 
 	@Override
 	public void validate(TriggerAction action, Map<String, String> parameters)
-			throws TriggerValidationException {
+			throws ValidationException {
 
 	}
 
 	@Override
 	public ActionResult execute(TriggerAction action, SystemEvent event)
-			throws TriggerValidationException {
+			throws ValidationException {
 
 		StringBuffer key = new StringBuffer();
 

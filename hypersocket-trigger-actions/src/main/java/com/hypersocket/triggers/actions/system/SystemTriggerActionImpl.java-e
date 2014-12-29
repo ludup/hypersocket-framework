@@ -17,7 +17,7 @@ import com.hypersocket.triggers.TriggerAction;
 import com.hypersocket.triggers.TriggerActionProvider;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
-import com.hypersocket.triggers.TriggerValidationException;
+import com.hypersocket.triggers.ValidationException;
 
 @Component
 public class SystemTriggerActionImpl extends AbstractActionProvider implements TriggerActionProvider {
@@ -58,13 +58,13 @@ public class SystemTriggerActionImpl extends AbstractActionProvider implements T
 
 	@Override
 	public void validate(TriggerAction action, Map<String, String> parameters)
-			throws TriggerValidationException {
+			throws ValidationException {
 		
 	}
 
 	@Override
 	public ActionResult execute(TriggerAction action, SystemEvent event)
-			throws TriggerValidationException {
+			throws ValidationException {
 
 		Long delay = repository.getLongValue(action, "operation.delay");
 		
@@ -73,7 +73,7 @@ public class SystemTriggerActionImpl extends AbstractActionProvider implements T
 		} else if(action.getResourceKey().equals(ACTION_RESTART)) {		
 			server.restart(delay);
 		} else {
-			throw new TriggerValidationException("Invalid resource key for system trigger action");
+			throw new ValidationException("Invalid resource key for system trigger action");
 		}
 		
  		return null;

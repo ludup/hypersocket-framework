@@ -96,8 +96,9 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			throw ex;
 		} catch (ResourceNotFoundException ex) {
 			try {
-				onCreateResource(resource, properties);
+				beforeCreateResource(resource, properties);
 				getRepository().saveResource(resource, properties);
+				afterCreateResource(resource, properties);
 				fireResourceCreationEvent(resource);
 			} catch (Throwable t) {
 				log.error("Failed to create resource", t);
@@ -113,11 +114,19 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	}
 
-	protected void onCreateResource(T resource, Map<String,String> properties) throws ResourceCreationException {
+	protected void beforeCreateResource(T resource, Map<String,String> properties) throws ResourceCreationException {
 		
 	}
 	
-	protected void onUpdateResource(T resource, Map<String,String> properties) throws ResourceChangeException {
+	protected void afterCreateResource(T resource, Map<String,String> properties) throws ResourceCreationException {
+		
+	}
+	
+	protected void beforeUpdateResource(T resource, Map<String,String> properties) throws ResourceChangeException {
+		
+	}
+	
+	protected void afterUpdateResource(T resource, Map<String,String> properties) throws ResourceChangeException {
 		
 	}
 	
@@ -133,8 +142,9 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			if(resource.getRealm()==null) {
 				resource.setRealm(getCurrentRealm());
 			}
-			onUpdateResource(resource, properties);
+			beforeUpdateResource(resource, properties);
 			getRepository().updateResource(resource, properties);
+			afterUpdateResource(resource, properties);
 			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {
 			fireResourceUpdateEvent(resource, t);

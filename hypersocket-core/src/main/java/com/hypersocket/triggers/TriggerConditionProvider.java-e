@@ -9,6 +9,6 @@ public interface TriggerConditionProvider {
 	String[] getResourceKeys();
 
 	boolean checkCondition(TriggerCondition condition, TriggerResource trigger,
-			SystemEvent event) throws TriggerValidationException;
+			SystemEvent event) throws ValidationException;
 
 }

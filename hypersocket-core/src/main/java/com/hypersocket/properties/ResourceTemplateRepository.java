@@ -44,4 +44,7 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	Set<String> getVariableNames();
 
+	void setValues(AbstractResource resource,
+			Map<String, String> properties);
+
 }
