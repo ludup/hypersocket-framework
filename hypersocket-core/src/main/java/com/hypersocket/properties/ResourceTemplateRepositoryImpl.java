@@ -457,6 +457,14 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 	
 	@Override
+	public void setValues(AbstractResource resource, Map<String,String> properties) {
+		
+		for(String resourceKey : getPropertyNames()) {
+			setValue(resource, resourceKey, properties.get(resourceKey));
+		}
+	}
+	
+	@Override
 	public void setValue(AbstractResource resource, String resourceKey, String value) {
 
 		PropertyTemplate template = propertyTemplates.get(resourceKey);

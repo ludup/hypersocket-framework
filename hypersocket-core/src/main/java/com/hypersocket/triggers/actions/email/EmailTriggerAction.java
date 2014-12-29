@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.email.EmailNotificationService;
+import com.hypersocket.email.EmailNotificationServiceImpl;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.PropertyCategory;
@@ -30,7 +31,7 @@ import com.hypersocket.triggers.TriggerActionProvider;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.TriggerValidationError;
-import com.hypersocket.triggers.TriggerValidationException;
+import com.hypersocket.triggers.ValidationException;
 
 @Component
 public class EmailTriggerAction extends AbstractActionProvider implements
@@ -47,9 +48,6 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 	public static final String ATTR_SUBJECT = "email.subject";
 	public static final String ATTR_FORMAT = "email.format";
 	public static final String ATTR_BODY = "email.body";
-
-	private static final String EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
-			+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
 	@Autowired
 	TriggerResourceService triggerService;
@@ -100,7 +98,7 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 
 	@Override
 	public void validate(TriggerAction action, Map<String, String> parameters)
-			throws TriggerValidationException {
+			throws ValidationException {
 
 		List<TriggerValidationError> invalidAttributes = new ArrayList<TriggerValidationError>();
 
@@ -112,7 +110,7 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 			String[] emails = ResourceUtils.explodeValues(parameters
 					.get(ATTR_TO_ADDRESSES));
 			for (String email : emails) {
-				if (!validateEmailAddress(email)) {
+				if (!emailService.validateEmailAddress(email)) {
 					invalidAttributes.add(new TriggerValidationError(
 							ATTR_TO_ADDRESSES, email));
 				}
@@ -122,7 +120,7 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 		String[] emails = ResourceUtils.explodeValues(parameters
 				.get(ATTR_CC_ADDRESSES));
 		for (String email : emails) {
-			if (!validateEmailAddress(email)) {
+			if (!emailService.validateEmailAddress(email)) {
 				invalidAttributes.add(new TriggerValidationError(
 						ATTR_CC_ADDRESSES, email));
 			}
@@ -130,7 +128,7 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 
 		emails = ResourceUtils.explodeValues(parameters.get(ATTR_BCC_ADDRESSES));
 		for (String email : emails) {
-			if (!validateEmailAddress(email)) {
+			if (!emailService.validateEmailAddress(email)) {
 				invalidAttributes.add(new TriggerValidationError(
 						ATTR_BCC_ADDRESSES, email));
 			}
@@ -152,13 +150,9 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 		}
 	}
 
-	private boolean validateEmailAddress(String email) {
-		return true;
-	}
-
 	@Override
 	public ActionResult execute(TriggerAction action, SystemEvent event)
-			throws TriggerValidationException {
+			throws ValidationException {
 
 		String subject = processTokenReplacements(
 				repository.getValue(action, ATTR_SUBJECT), event);
@@ -190,47 +184,14 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 	private String populateEmailList(TriggerAction action,
 			String attributeName, List<Recipient> recipients,
 			RecipientType type, SystemEvent event)
-			throws TriggerValidationException {
+			throws ValidationException {
 
-		StringBuffer ret = new StringBuffer();
 		String[] emails = ResourceUtils.explodeValues(processTokenReplacements(
 				repository.getValue(action, attributeName), event));
-		for (String email : emails) {
-			if (ret.length() > 0) {
-				ret.append(", ");
-			}
-			ret.append(email);
-			String[] rec = getEmailName(email);
-			recipients.add(new Recipient(rec[0], rec[1], type));
-		}
-
-		return ret.toString();
+		return emailService.populateEmailList(emails, recipients, type);
 	}
 
-	private String[] getEmailName(String val) throws TriggerValidationException {
-		Pattern p = Pattern.compile("(.*?)<([^>]+)>\\s*,?");
-
-		Matcher m = p.matcher(val);
-
-		if (m.find()) {
-			String name = m.group(1).replaceAll("[\\n\\r]+", "");
-			String email = m.group(2).replaceAll("[\\n\\r]+", "");
-
-			if (Pattern.matches(EMAIL_PATTERN, email)) {
-				return new String[] { name, email };
-			} else {
-				throw new TriggerValidationException(email
-						+ " is not a valid email address");
-			}
-		}
-
-		if (Pattern.matches(EMAIL_PATTERN, val)) {
-			return new String[] { "", val };
-		}
-
-		throw new TriggerValidationException(val
-				+ " is not a valid email address");
-	}
+	
 
 	@Override
 	public ResourceTemplateRepository getRepository() {

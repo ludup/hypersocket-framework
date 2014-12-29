@@ -140,6 +140,7 @@ public class FileUploadController extends ResourceController {
 		try {
 			FileInputStream fis = service.downloadFile(uuid);
 
+			
 			org.apache.commons.io.IOUtils.copy(fis, response.getOutputStream());
 			response.flushBuffer();
 		} catch (IOException ex) {
