@@ -6,8 +6,7 @@ public enum AutomationRepeatType {
 	SECONDS,
 	MINUTES,
 	HOURS,
-	DAYS,
-	MONTHS;
+	DAYS;
 
 }
 

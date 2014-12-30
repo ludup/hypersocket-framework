@@ -230,7 +230,7 @@ public abstract class HypersocketClient<T> {
 
 	}
 
-	public void login() throws IOException {
+	public void login() throws IOException, UserCancelledException {
 
 		Map<String, String> params = new HashMap<String, String>();
 
@@ -261,7 +261,7 @@ public abstract class HypersocketClient<T> {
 					params.putAll(results);
 				} else {
 					disconnect(false);
-					throw new IOException("User has cancelled authentication");
+					throw new UserCancelledException("User has cancelled authentication");
 				}
 			}
 		}

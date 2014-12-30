@@ -91,12 +91,6 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 	}
 
 	@Override
-	public String[] getRequiredAttributes() {
-		return new String[] { ATTR_TO_ADDRESSES, ATTR_SUBJECT, ATTR_BODY,
-				ATTR_FORMAT };
-	}
-
-	@Override
 	public void validate(TriggerAction action, Map<String, String> parameters)
 			throws ValidationException {
 

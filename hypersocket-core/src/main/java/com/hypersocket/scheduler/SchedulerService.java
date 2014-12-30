@@ -45,6 +45,9 @@ public interface SchedulerService {
 	void rescheduleAt(String scheduleId, Date time, int interval, int repeat)
 			throws SchedulerException;
 
+	void rescheduleAt(String scheduleId, Date time, int interval, int repeat, Date end)
+			throws SchedulerException;
+	
 	void rescheduleAt(String scheduleId, Date time, int interval)
 			throws SchedulerException;
 
@@ -63,5 +66,17 @@ public interface SchedulerService {
 	Date getNextSchedule(String string) throws SchedulerException;
 
 	Date getPreviousSchedule(String string) throws SchedulerException;
+
+	void rescheduleNow(String scheduleId, int interval, int repeat, Date end)
+			throws SchedulerException;
+
+	String scheduleIn(Class<? extends Job> clz, JobDataMap data, int millis,
+			int interval, Date ends) throws SchedulerException;
+
+	String scheduleNow(Class<? extends Job> clz, JobDataMap data, int interval,
+			int repeat, Date ends) throws SchedulerException;
+
+	String scheduleAt(Class<? extends Job> clz, JobDataMap data, Date start,
+			int interval, int repeat, Date ends) throws SchedulerException;
 
 }

@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
@@ -32,7 +33,6 @@ import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
-import com.hypersocket.events.SystemEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.SystemPermission;
@@ -45,7 +45,7 @@ import com.hypersocket.session.events.SessionOpenEvent;
 
 @Service
 public class SessionServiceImpl extends AuthenticatedServiceImpl implements
-		SessionService, ApplicationListener<SystemEvent> {
+		SessionService, ApplicationListener<ContextStartedEvent> {
 
 	@Autowired
 	SessionRepository repository;
@@ -372,19 +372,19 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public void onApplicationEvent(SystemEvent event) {
+	public void onApplicationEvent(ContextStartedEvent event) {
 		
-		if(event.getResourceKey().equals("event.webappCreated")) {
-			if(log.isInfoEnabled()) {
-				log.info("Scheduling session reaper job");
-			}
-			
-			try {
-				schedulerService.scheduleIn(SessionReaperJob.class, null, 60000, 60000);
-			} catch (SchedulerException e) {
-				log.error("Failed to schedule session reaper job", e);
-			}
+
+		if(log.isInfoEnabled()) {
+			log.info("Scheduling session reaper job");
 		}
+		
+		try {
+			schedulerService.scheduleIn(SessionReaperJob.class, null, 60000, 60000);
+		} catch (SchedulerException e) {
+			log.error("Failed to schedule session reaper job", e);
+		}
+		
 		
 	}
 	

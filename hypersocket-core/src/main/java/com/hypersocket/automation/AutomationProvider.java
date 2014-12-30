@@ -8,7 +8,7 @@ public interface AutomationProvider {
 	
 	ResourceTemplateRepository getRepository();
 	
-	void performTask();
+	void performTask(AutomationResource resource);
 
 
 }

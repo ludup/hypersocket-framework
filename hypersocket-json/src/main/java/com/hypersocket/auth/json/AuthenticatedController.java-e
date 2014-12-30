@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.auth.json;
 
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -80,6 +81,13 @@ public class AuthenticatedController {
 		AuthenticationState state = authenticationService
 				.createAuthenticationState(scheme, request.getRemoteAddr(),
 						environment, sessionUtils.getLocale(request));
+		
+		Enumeration<?> names = request.getParameterNames();
+		while(names.hasMoreElements()) {
+			String name = (String) names.nextElement();
+			state.addParameter(name, request.getParameter(name));
+		}
+		
 		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, state);
 		return state;
 	}

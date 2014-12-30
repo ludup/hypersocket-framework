@@ -33,4 +33,7 @@ public interface AutomationResourceService extends
 
 	Collection<String> getTasks() throws AccessDeniedException;
 
+	AutomationProvider getAutomationProvider(AutomationResource resource);
+
+
 }

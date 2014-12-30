@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="blockIPTriggerAction">
+	<propertyCategory resourceKey="category.blocl"
+		resourceBundle="TriggerResourceService" weight="1000" group="blockIPTriggerAction">
+		<property resourceKey="block.length" inputType="slider" 
+			min="0" max="900" defaultValue="30" step="1" weight="100" labelResourceKey="block.length.label"/>
+	</propertyCategory>
+</propertyTemplates>

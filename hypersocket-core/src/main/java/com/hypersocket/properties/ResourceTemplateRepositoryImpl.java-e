@@ -331,7 +331,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			log.info("Registering property " + resourceKey);
 		}
 		
-		if(defaultValue.startsWith("classpath:")) {
+		if(defaultValue != null && defaultValue.startsWith("classpath:")) {
 				String url = defaultValue.substring(10);
 				InputStream in = getClass().getResourceAsStream(url);
 				try {

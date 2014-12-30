@@ -118,11 +118,6 @@ public class AlertTriggerAction extends AbstractActionProvider implements
 		return repository;
 	}
 
-	@Override
-	public String[] getRequiredAttributes() {
-		return new String[] {};
-	}
-
 	private void registerDynamicEvent(TriggerAction action) {
 		EventDefinition sourceEvent = eventService.getEventDefinition(action
 				.getTrigger().getEvent());

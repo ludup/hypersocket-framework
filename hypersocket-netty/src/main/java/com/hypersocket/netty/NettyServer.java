@@ -8,7 +8,13 @@
 package com.hypersocket.netty;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -17,11 +23,18 @@ import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelException;
+import org.jboss.netty.channel.ChannelHandler;
+import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.ipfilter.IpFilterRuleHandler;
+import org.jboss.netty.handler.ipfilter.IpSubnetFilterRule;
+import org.jboss.netty.handler.ipfilter.IpV4SubnetFilterRule;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
@@ -44,6 +57,11 @@ public class NettyServer extends HypersocketServerImpl {
 	
 	ExecutorService bossExecutor;
 	ExecutorService workerExecutors;
+	
+	IpFilterRuleHandler ipFilterHandler =  new IpFilterRuleHandler();
+	MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
+	
+	Map<InetAddress,List<Channel>> channelsByIPAddress = new HashMap<InetAddress,List<Channel>>();
 	
 	public NettyServer() {
 
@@ -88,6 +106,8 @@ public class NettyServer extends HypersocketServerImpl {
 				if(Boolean.getBoolean("hypersocket.netty.debug")) {
 					pipeline.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
 				}
+				pipeline.addLast("ipFilter", ipFilterHandler);
+				pipeline.addLast("channelMonitor", monitorChannelHandler);
 				pipeline.addLast("switcherA", new SSLSwitchingHandler(
 						NettyServer.this, getHttpPort(), getHttpsPort()));
 				return pipeline;
@@ -217,4 +237,61 @@ public class NettyServer extends HypersocketServerImpl {
 		
 	}
 
+	public ChannelHandler getIpFilter() {
+		return ipFilterHandler;
+	}
+
+	@Override
+	public void blockAddress(InetAddress addr) throws UnknownHostException {
+		ipFilterHandler.add(new IpSubnetFilterRule(false, addr, 0));
+		synchronized (channelsByIPAddress) {
+			for(Channel c : channelsByIPAddress.get(addr)) {
+				c.close();
+			}
+		}
+	}
+
+	@Override
+	public void unblockAddress(InetAddress addr) throws UnknownHostException {
+		ipFilterHandler.remove(new IpSubnetFilterRule(false, addr, 0));
+	}
+
+	class MonitorChannelHandler extends SimpleChannelHandler {
+
+		@Override
+		public void channelBound(ChannelHandlerContext ctx, ChannelStateEvent e)
+				throws Exception {
+			InetAddress addr = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getAddress();
+			
+			if(log.isInfoEnabled()) {
+				log.info("REMOVEME: Opening channel from " + addr.toString());
+			}
+			
+			synchronized (channelsByIPAddress) {
+				if(!channelsByIPAddress.containsKey(addr)) {
+					channelsByIPAddress.put(addr, new ArrayList<Channel>());
+				}
+				channelsByIPAddress.get(addr).add(ctx.getChannel());				
+			}
+
+		}
+
+		@Override
+		public void channelUnbound(ChannelHandlerContext ctx,
+				ChannelStateEvent e) throws Exception {
+			InetAddress addr = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getAddress();
+			
+			if(log.isInfoEnabled()) {
+				log.info("REMOVEME: Closing channel from " + addr.toString());
+			}
+			
+			synchronized (channelsByIPAddress) {
+				channelsByIPAddress.get(addr).remove(ctx.getChannel());
+				if(channelsByIPAddress.get(addr).isEmpty()) {
+					channelsByIPAddress.remove(addr);
+				}
+			}
+			
+		}
+	}
 }

@@ -83,11 +83,5 @@ public class SystemTriggerActionImpl extends AbstractActionProvider implements T
 	public ResourceTemplateRepository getRepository() {
 		return repository;
 	}
-
-	@Override
-	public String[] getRequiredAttributes() {
-		return new String[] { "operation.delay"};
-	}
-
 	
 }
