@@ -1,5 +1,6 @@
 package com.hypersocket.automation;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -8,9 +9,11 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.resource.RealmResource;
 import com.hypersocket.utils.HypersocketUtils;
-import com.mysql.jdbc.StringUtils;
 
 @Entity
 @Table(name="automations")
@@ -112,6 +115,44 @@ public class AutomationResource extends RealmResource {
 
 	public void setEndTime(String endTime) {
 		this.endTime = endTime;
+	}
+
+	@JsonIgnore
+	public Date calculateStartDateTime() {
+		
+		Calendar c = Calendar.getInstance();
+		
+		if(taskStarts!=null) {
+			c.setTime(taskStarts);
+		}
+		
+		if(!StringUtils.isEmpty(startTime)) {
+			int idx = startTime.indexOf(':');				
+			c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(startTime.substring(0, idx)));
+			c.set(Calendar.MINUTE, Integer.parseInt(startTime.substring(idx++)));
+		}
+		
+		return c.getTime();
+	}
+	
+	@JsonIgnore
+	public Date calculateEndDateTime() {
+		
+		Calendar c = Calendar.getInstance();
+		
+		if(taskEnds!=null) {
+			c.setTime(taskEnds);
+		} else {
+			return null;
+		}
+		
+		if(!StringUtils.isEmpty(endTime)) {
+			int idx = endTime.indexOf(':');				
+			c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(endTime.substring(0, idx)));
+			c.set(Calendar.MINUTE, Integer.parseInt(endTime.substring(idx++)));
+		}
+		
+		return c.getTime();
 	}
 	
 	

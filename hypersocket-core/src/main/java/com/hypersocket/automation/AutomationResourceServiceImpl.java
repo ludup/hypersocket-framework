@@ -1,13 +1,19 @@
 package com.hypersocket.automation;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.quartz.JobDataMap;
+import org.quartz.SchedulerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.automation.events.AutomationResourceCreatedEvent;
@@ -25,15 +31,19 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.scheduler.SchedulerService;
 
 @Service
 public class AutomationResourceServiceImpl extends
 		AbstractResourceServiceImpl<AutomationResource> implements
-		AutomationResourceService {
+		AutomationResourceService, ApplicationListener<ContextStartedEvent> {
 
+	private static Logger log = LoggerFactory.getLogger(AutomationResourceServiceImpl.class);
+	
 	public static final String RESOURCE_BUNDLE = "AutomationResourceService";
 
 	private Map<String,AutomationProvider> providers = new HashMap<String,AutomationProvider>();
+	private Map<Long,String> scheduleIdsByResource = new HashMap<Long,String>();
 	
 	@Autowired
 	AutomationResourceRepository repository;
@@ -49,6 +59,9 @@ public class AutomationResourceServiceImpl extends
 
 	@Autowired
 	EntityResourcePropertyStore entityPropertyStore; 
+	
+	@Autowired
+	SchedulerService schedulerService; 
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -159,6 +172,8 @@ public class AutomationResourceServiceImpl extends
 
 		updateResource(resource, properties);
 
+		schedule(resource);
+		
 		return resource;
 	}
 
@@ -171,6 +186,68 @@ public class AutomationResourceServiceImpl extends
 		AutomationProvider provider = getAutomationProvider(resource);
 		provider.getRepository().setValues(resource, properties);
 	}
+	
+	protected void schedule(AutomationResource resource) {
+		
+		Date start = resource.calculateStartDateTime();
+		Date end = resource.calculateEndDateTime();
+		
+		int interval = 0;
+		int repeat = 0; 
+		
+		if(resource.getRepeatValue() > 0) {
+			
+			switch(resource.getRepeatType()) {
+			case DAYS:
+				interval = resource.getRepeatValue() * (60000 * 60 * 24);
+				break;
+			case HOURS:
+				interval = resource.getRepeatValue() * (60000 * 60);
+				break;
+			case MINUTES:
+				interval = resource.getRepeatValue() * 60000;
+				break;
+			case SECONDS:
+				interval = resource.getRepeatValue() * 1000;
+				break;
+			case NEVER:
+			default:	
+				interval = 0;
+				repeat = 0;
+				break;
+			}
+		}
+		
+		JobDataMap data = new JobDataMap();
+		data.put("resourceId", resource.getId());
+		
+		try {
+			
+			String scheduleId;
+			
+			if(scheduleIdsByResource.containsKey(resource.getId())) {
+				
+				scheduleId = scheduleIdsByResource.get(resource.getId());
+				
+				if(start.before(new Date())) {
+					schedulerService.rescheduleNow(scheduleId, interval, repeat, end);
+				} else {
+					schedulerService.rescheduleAt(scheduleId, start, interval, repeat, end);
+				}
+				
+			} else {
+				if(start.before(new Date())) {
+					scheduleId = schedulerService.scheduleNow(AutomationJob.class, data, interval, repeat, end);
+				} else {
+					scheduleId = schedulerService.scheduleAt(AutomationJob.class, data, start, interval, repeat, end);
+				}
+				
+				scheduleIdsByResource.put(resource.getId(), scheduleId);
+			}
+		} catch (SchedulerException e) {
+			log.error("Failed to schedule automation task " + resource.getName(), e);
+		}
+	}
 
 	@Override
 	public AutomationResource createResource(String name, Realm realm,
@@ -180,15 +257,11 @@ public class AutomationResourceServiceImpl extends
 		AutomationResource resource = new AutomationResource();
 		resource.setName(name);
 		resource.setRealm(realm);
-		/**
-		 * Set any additional fields on your resource here before calling
-		 * createResource.
-		 * 
-		 * Remember to fill in the fire*Event methods to ensure events are fired
-		 * for all operations.
-		 */
+
 		createResource(resource, properties);
 
+		schedule(resource);
+		
 		return resource;
 	}
 
@@ -223,7 +296,8 @@ public class AutomationResourceServiceImpl extends
 		return results;
 	}
 
-	private AutomationProvider getAutomationProvider(AutomationResource resource) {
+	@Override
+	public AutomationProvider getAutomationProvider(AutomationResource resource) {
 		return getAutomationProvider(resource.getResourceKey());
 	}
 
@@ -246,5 +320,13 @@ public class AutomationResourceServiceImpl extends
 		assertPermission(AutomationResourcePermission.READ);
 		
 		return providers.keySet();
+	}
+
+	@Override
+	public void onApplicationEvent(ContextStartedEvent event) {
+		
+		for(AutomationResource resource: repository.getResources(null)) {
+			schedule(resource);
+		}
 	}
 }

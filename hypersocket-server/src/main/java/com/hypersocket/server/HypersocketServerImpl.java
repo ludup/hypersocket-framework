@@ -9,7 +9,9 @@ package com.hypersocket.server;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.Security;
 import java.util.ArrayList;
@@ -239,6 +241,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		servletConfig = new HypersocketServletConfig("default",
 				resolvePath(API_PATH));
 		
+		
 		webappContext = new AnnotationConfigWebApplicationContext();
 		webappContext.setParent(applicationContext);
 		webappContext.register(DelegatingWebMvcConfiguration.class);
@@ -246,7 +249,8 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 		webappContext.setServletConfig(servletConfig);
 		webappContext.refresh();
-
+		webappContext.start();
+		
 		// We use a custom implementation of DispatcherServlet so it does not restrict the HTTP methods
 		dispatcherServlet = new NonRestrictedDispatcherServlet(webappContext);
 		dispatcherServlet.init(servletConfig);
@@ -632,5 +636,11 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		}
 		return false;
 	}
+	
+	@Override
+	public abstract void blockAddress(InetAddress addr) throws UnknownHostException;
+	
+	@Override
+	public abstract void unblockAddress(InetAddress addr) throws UnknownHostException;
 
 }

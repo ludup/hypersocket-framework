@@ -21,8 +21,6 @@ public interface TriggerActionProvider {
 	
 	ResourceTemplateRepository getRepository();
 
-	String[] getRequiredAttributes();
-
 	Collection<PropertyCategory> getPropertyTemplate();
 
 	Collection<PropertyCategory> getPropertiesForAction(TriggerAction action);
