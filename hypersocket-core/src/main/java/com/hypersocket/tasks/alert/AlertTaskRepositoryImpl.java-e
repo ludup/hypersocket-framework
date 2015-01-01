@@ -1,0 +1,52 @@
+package com.hypersocket.tasks.alert;
+
+import java.util.Date;
+
+import javax.annotation.PostConstruct;
+
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
+import com.hypersocket.repository.CriteriaConfiguration;
+import com.hypersocket.tasks.Task;
+
+@Repository
+@Transactional
+public class AlertTaskRepositoryImpl extends
+		ResourceTemplateRepositoryImpl implements AlertTaskRepository {
+
+	@PostConstruct
+	private void postConstruct() {
+		loadPropertyTemplates("actions/alert-template.xml");
+	}
+
+	@Override
+	public long getKeyCount(final Task task, final String key,
+			final Date since) {
+
+		return getCount(AlertKey.class, new CriteriaConfiguration() {
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("key", key));
+				criteria.add(Restrictions.eq("task", task));
+				criteria.add(Restrictions.gt("triggered", since));
+			}
+		});
+	}
+
+	@Override
+	public void saveKey(AlertKey ak) {
+		hibernateTemplate.save(ak);
+	}
+
+	@Override
+	public void deleteKeys(Task task, String key) {
+		String hql = "delete from AlertKey a where a.task = :task and a.key = :key";
+		sessionFactory.getCurrentSession().createQuery(hql)
+				.setParameter("task", task).setParameter("key", key)
+				.executeUpdate();
+	}
+}

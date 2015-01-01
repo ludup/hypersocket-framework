@@ -10,11 +10,12 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hypersocket.resource.Resource;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.tasks.Task;
 
 @Entity
 @Table(name="trigger_actions")
-public class TriggerAction extends Resource {
+public class TriggerAction extends Task {
 
 	@OneToOne
 	@JoinColumn(name="trigger_id")
@@ -61,8 +62,5 @@ public class TriggerAction extends Resource {
 
 	public void setProperties(Map<String, String> properties) {
 		this.properties = properties;
-	}
-	
-	
-	
+	}	
 }

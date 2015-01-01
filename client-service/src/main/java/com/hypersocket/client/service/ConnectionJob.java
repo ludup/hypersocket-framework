@@ -46,6 +46,7 @@ public class ConnectionJob extends TimerTask {
 		}
 
 		try {
+			
 			ServiceClient client = new ServiceClient(new NettyClientTransport(
 					boss, worker), locale, service, resourceService, c);
 

@@ -15,16 +15,18 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
+import com.hypersocket.tasks.TaskProvider;
+import com.hypersocket.tasks.TaskProviderService;
 
 @Repository
 @Transactional
 public class TriggerResourceRepositoryImpl extends
 		AbstractResourceRepositoryImpl<TriggerResource> implements
 		TriggerResourceRepository {
-
+	
 	@Autowired
-	TriggerResourceService resourceService;
-
+	TaskProviderService taskService; 
+	
 	@Override
 	public void updateResource(TriggerResource resource,
 			Map<String, String> properties) {
@@ -34,7 +36,7 @@ public class TriggerResourceRepositoryImpl extends
 		for (TriggerAction action : resource.getActions()) {
 
 			if(action.getProperties()!=null) {
-				TriggerActionProvider provider = resourceService
+				TaskProvider provider = taskService
 						.getActionProvider(action.getResourceKey());
 				for (Map.Entry<String, String> e : action.getProperties()
 						.entrySet()) {
@@ -57,7 +59,7 @@ public class TriggerResourceRepositoryImpl extends
 		for (TriggerAction action : resource.getActions()) {
 
 			if(action.getProperties()!=null) {
-				TriggerActionProvider provider = resourceService
+				TaskProvider provider = taskService
 						.getActionProvider(action.getResourceKey());
 				
 				for (Map.Entry<String, String> e : action.getProperties()
@@ -77,7 +79,7 @@ public class TriggerResourceRepositoryImpl extends
 	Map<String, ResourceTemplateRepository> registeredRepository = new HashMap<String, ResourceTemplateRepository>();
 
 	@Override
-	public void registerActionRepository(TriggerActionProvider action) {
+	public void registerActionRepository(TaskProvider action) {
 		for (String resourceKey : action.getResourceKeys()) {
 			registeredRepository.put(resourceKey, action.getRepository());
 		}

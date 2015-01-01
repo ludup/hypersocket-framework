@@ -19,16 +19,17 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.server.HypersocketServer;
-import com.hypersocket.triggers.AbstractActionProvider;
-import com.hypersocket.triggers.ActionResult;
-import com.hypersocket.triggers.TriggerAction;
-import com.hypersocket.triggers.TriggerActionProvider;
+import com.hypersocket.tasks.AbstractTaskProvider;
+import com.hypersocket.tasks.Task;
+import com.hypersocket.tasks.TaskProvider;
+import com.hypersocket.tasks.TaskProviderService;
+import com.hypersocket.triggers.TaskResult;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.ValidationException;
 
 @Component
-public class BlockIPTriggerAction extends AbstractActionProvider implements
-		TriggerActionProvider {
+public class BlockIPTriggerAction extends AbstractTaskProvider implements
+		TaskProvider {
 
 	static Logger log = LoggerFactory.getLogger(BlockIPTriggerAction.class);
 	
@@ -51,11 +52,14 @@ public class BlockIPTriggerAction extends AbstractActionProvider implements
 	@Autowired
 	SchedulerService schedulerService; 
 	
+	@Autowired
+	TaskProviderService taskService; 
+	
 	@PostConstruct
 	private void postConstruct() {
 	
 		i18nService.registerBundle(RESOURCE_BUNDLE);
-		triggerService.registerActionProvider(this);
+		taskService.registerActionProvider(this);
 	}
 	
 	@Override
@@ -69,7 +73,7 @@ public class BlockIPTriggerAction extends AbstractActionProvider implements
 	}
 
 	@Override
-	public void validate(TriggerAction action, Map<String, String> parameters)
+	public void validate(Task task, Map<String, String> parameters)
 			throws ValidationException {
 		if(parameters.containsKey("block.ip")) {
 			throw new ValidationException("IP address required");
@@ -77,7 +81,7 @@ public class BlockIPTriggerAction extends AbstractActionProvider implements
 	}
 
 	@Override
-	public ActionResult execute(TriggerAction action, SystemEvent event)
+	public TaskResult execute(Task task, SystemEvent event)
 			throws ValidationException {
 		
 		String ipAddress = event.getAttribute(CommonAttributes.ATTR_IP_ADDRESS);
@@ -97,7 +101,7 @@ public class BlockIPTriggerAction extends AbstractActionProvider implements
 			
 			int val = 0;
 			
-			if((val = repository.getIntValue(action, "block.length")) > 0) {
+			if((val = repository.getIntValue(task, "block.length")) > 0) {
 				
 				if(log.isInfoEnabled()) {
 					log.info("Scheduling unblock for IP address " + ipAddress + " in " + val + " minutes");
@@ -108,16 +112,21 @@ public class BlockIPTriggerAction extends AbstractActionProvider implements
 				
 				schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000);
 			}
-			return new BlockedIPResult(this, event.getCurrentRealm(), action, ipAddress);
+			return new BlockedIPResult(this, event.getCurrentRealm(), task, ipAddress);
 		} catch (UnknownHostException | SchedulerException e) {
 			log.error("Failed to fully process block IP request for " + ipAddress, e);
-			return new BlockedIPResult(this, e, event.getCurrentRealm(), action, ipAddress);
+			return new BlockedIPResult(this, e, event.getCurrentRealm(), task, ipAddress);
 		}
 	}
 
 	@Override
 	public ResourceTemplateRepository getRepository() {
 		return repository;
+	}
+
+	@Override
+	public boolean supportsAutomation() {
+		return true;
 	}
 
 }

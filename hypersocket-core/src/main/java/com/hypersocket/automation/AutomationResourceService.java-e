@@ -24,16 +24,10 @@ public interface AutomationResourceService extends
 	Collection<PropertyCategory> getPropertyTemplate(AutomationResource resource)
 			throws AccessDeniedException;
 
-	void registerProvider(AutomationProvider provider);
-
-	void unregisterProvider(AutomationProvider provider);
-
 	Collection<PropertyCategory> getPropertyTemplate(String resourceKey)
 			throws AccessDeniedException;
 
 	Collection<String> getTasks() throws AccessDeniedException;
-
-	AutomationProvider getAutomationProvider(AutomationResource resource);
 
 
 }

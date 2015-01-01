@@ -51,6 +51,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	
 	String resourceXmlPath;
 	
+	static Set<String> propertyContexts = new HashSet<String>();
+	
 	protected ResourcePropertyStore getPropertyStore() {
 		return configPropertyStore;
 	}
@@ -63,6 +65,10 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public Set<String> getVariableNames() {
 		return variableNames;
+	}
+	
+	public static Set<String> getContextNames() {
+		return propertyContexts;
 	}
 	
 	public void loadPropertyTemplates(String resourceXmlPath) {
@@ -95,6 +101,11 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		
 		
 		if(context!=null) {
+			
+			if(log.isInfoEnabled()) {
+				log.info("Loading attributes for context " + context);
+			}
+			propertyContexts.add(context);
 			loadAttributeTemplates(context);
 		}
 

@@ -12,12 +12,12 @@ import javax.persistence.TemporalType;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hypersocket.resource.RealmResource;
+import com.hypersocket.tasks.Task;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Entity
 @Table(name="automations")
-public class AutomationResource extends RealmResource {
+public class AutomationResource extends Task {
 
 	@Column(name="resource_key")
 	String resourceKey;

@@ -40,6 +40,7 @@ import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.DataTablesResult;
 import com.hypersocket.tables.json.DataTablesPageProcessor;
+import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.TriggerAction;
 import com.hypersocket.triggers.TriggerCondition;
 import com.hypersocket.triggers.TriggerResource;
@@ -57,6 +58,9 @@ public class TriggerResourceController extends ResourceController {
 	@Autowired
 	EventService eventService;
 
+	@Autowired
+	TaskProviderService taskService; 
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
@@ -185,7 +189,7 @@ public class TriggerResourceController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 
-			return new ResourceList<String>(resourceService.getActions());
+			return new ResourceList<String>(taskService.getActions());
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -202,7 +206,7 @@ public class TriggerResourceController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			return new ResourceList<PropertyCategory>(resourceService
+			return new ResourceList<PropertyCategory>(taskService
 					.getActionProvider(action).getPropertyTemplate());
 		} finally {
 			clearAuthenticatedContext();
@@ -221,9 +225,9 @@ public class TriggerResourceController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 			TriggerAction action = resourceService.getActionById(id);
-			return new ResourceList<PropertyCategory>(resourceService
+			return new ResourceList<PropertyCategory>(taskService
 					.getActionProvider(action.getResourceKey())
-					.getPropertiesForAction(action));
+					.getProperties(action));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -296,6 +300,7 @@ public class TriggerResourceController extends ResourceController {
 					action = resourceService.getActionById(a.getId());
 				}
 				action.setName(a.getName());
+				action.setRealm(realm);
 				action.setResourceKey(a.getResourceKey());
 				if (a.getProperties() != null) {
 					Map<String, String> properties = new HashMap<String, String>();
