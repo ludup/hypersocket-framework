@@ -1,11 +1,11 @@
-package com.hypersocket.triggers.actions.email;
+package com.hypersocket.tasks.email;
 
 import com.hypersocket.realm.Realm;
-import com.hypersocket.triggers.ActionResult;
-import com.hypersocket.triggers.TriggerAction;
+import com.hypersocket.tasks.Task;
+import com.hypersocket.triggers.TaskResult;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 
-public class EmailActionResult extends ActionResult {
+public class EmailTaskResult extends TaskResult {
 
 	private static final long serialVersionUID = -5374654828955586879L;
 
@@ -17,10 +17,10 @@ public class EmailActionResult extends ActionResult {
 	public static final String ATTR_CC = "attr.cc";
 	public static final String ATTR_BCC = "attr.bcc";
 
-	public EmailActionResult(Object source, Realm currentRealm,
-			TriggerAction action, String subject, String body, String to,
+	public EmailTaskResult(Object source, Realm currentRealm,
+			Task task, String subject, String body, String to,
 			String cc, String bcc) {
-		super(source, EVENT_RESOURCE_KEY, true, currentRealm, action);
+		super(source, EVENT_RESOURCE_KEY, true, currentRealm, task);
 		addAttributes(subject, body, to, cc, bcc);
 	}
 
@@ -34,10 +34,10 @@ public class EmailActionResult extends ActionResult {
 
 	}
 
-	public EmailActionResult(Object source, Throwable e, Realm currentRealm,
-			TriggerAction action, String subject, String body, String to,
+	public EmailTaskResult(Object source, Throwable e, Realm currentRealm,
+			Task task, String subject, String body, String to,
 			String cc, String bcc) {
-		super(source, EVENT_RESOURCE_KEY, e, currentRealm, action);
+		super(source, EVENT_RESOURCE_KEY, e, currentRealm, task);
 		addAttributes(subject, body, to, cc, bcc);
 	}
 

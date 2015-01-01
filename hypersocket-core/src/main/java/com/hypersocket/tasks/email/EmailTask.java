@@ -1,11 +1,9 @@
-package com.hypersocket.triggers.actions.email;
+package com.hypersocket.tasks.email;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 import javax.mail.Message.RecipientType;
@@ -18,27 +16,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.email.EmailNotificationService;
-import com.hypersocket.email.EmailNotificationServiceImpl;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
-import com.hypersocket.triggers.AbstractActionProvider;
-import com.hypersocket.triggers.ActionResult;
-import com.hypersocket.triggers.TriggerAction;
-import com.hypersocket.triggers.TriggerActionProvider;
+import com.hypersocket.tasks.AbstractTaskProvider;
+import com.hypersocket.tasks.Task;
+import com.hypersocket.tasks.TaskProvider;
+import com.hypersocket.tasks.TaskProviderService;
+import com.hypersocket.tasks.TaskProviderServiceImpl;
+import com.hypersocket.triggers.TaskResult;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.TriggerValidationError;
 import com.hypersocket.triggers.ValidationException;
 
 @Component
-public class EmailTriggerAction extends AbstractActionProvider implements
-		TriggerActionProvider {
+public class EmailTask extends AbstractTaskProvider implements
+		TaskProvider {
 
 	private static Logger log = LoggerFactory
-			.getLogger(EmailTriggerAction.class);
+			.getLogger(EmailTask.class);
 
 	public static final String ACTION_RESOURCE_KEY = "emailAction";
 
@@ -56,17 +55,19 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 	EmailNotificationService emailService;
 
 	@Autowired
-	EmailTriggerActionRepository repository;
+	EmailTaskRepository repository;
 
 	@Autowired
 	EventService eventService;
 
+	@Autowired
+	TaskProviderService taskService; 
 	@PostConstruct
 	private void postConstruct() {
-		triggerService.registerActionProvider(this);
+		taskService.registerActionProvider(this);
 
-		eventService.registerEvent(EmailActionResult.class,
-				TriggerResourceServiceImpl.RESOURCE_BUNDLE);
+		eventService.registerEvent(EmailTaskResult.class,
+				TaskProviderServiceImpl.RESOURCE_BUNDLE);
 	}
 
 	@Override
@@ -80,9 +81,9 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 	}
 
 	@Override
-	public Collection<PropertyCategory> getPropertiesForAction(
-			TriggerAction action) {
-		return repository.getPropertyCategories(action);
+	public Collection<PropertyCategory> getProperties(
+			Task task) {
+		return repository.getPropertyCategories(task);
 	}
 
 	@Override
@@ -91,7 +92,7 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 	}
 
 	@Override
-	public void validate(TriggerAction action, Map<String, String> parameters)
+	public void validate(Task task, Map<String, String> parameters)
 			throws ValidationException {
 
 		List<TriggerValidationError> invalidAttributes = new ArrayList<TriggerValidationError>();
@@ -145,43 +146,43 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 	}
 
 	@Override
-	public ActionResult execute(TriggerAction action, SystemEvent event)
+	public TaskResult execute(Task task, SystemEvent event)
 			throws ValidationException {
 
 		String subject = processTokenReplacements(
-				repository.getValue(action, ATTR_SUBJECT), event);
+				repository.getValue(task, ATTR_SUBJECT), event);
 		String body = processTokenReplacements(
-				repository.getValue(action, ATTR_BODY), event);
+				repository.getValue(task, ATTR_BODY), event);
 		List<Recipient> recipients = new ArrayList<Recipient>();
 
-		String to = populateEmailList(action, ATTR_TO_ADDRESSES, recipients,
+		String to = populateEmailList(task, ATTR_TO_ADDRESSES, recipients,
 				RecipientType.TO, event);
-		String cc = populateEmailList(action, ATTR_CC_ADDRESSES, recipients,
+		String cc = populateEmailList(task, ATTR_CC_ADDRESSES, recipients,
 				RecipientType.CC, event);
-		String bcc = populateEmailList(action, ATTR_BCC_ADDRESSES, recipients,
+		String bcc = populateEmailList(task, ATTR_BCC_ADDRESSES, recipients,
 				RecipientType.BCC, event);
 
 		try {
 			emailService.sendPlainEmail(subject, body,
 					recipients.toArray(new Recipient[0]));
 
-			return new EmailActionResult(this, action.getTrigger().getRealm(),
-					action, subject, body, to, cc, bcc);
+			return new EmailTaskResult(this, task.getRealm(),
+					task, subject, body, to, cc, bcc);
 
 		} catch (Exception ex) {
 			log.error("Failed to send email", ex);
-			return new EmailActionResult(this, ex, action.getTrigger()
-					.getRealm(), action, subject, body, to, cc, bcc);
+			return new EmailTaskResult(this, ex, task
+					.getRealm(), task, subject, body, to, cc, bcc);
 		}
 	}
 
-	private String populateEmailList(TriggerAction action,
+	private String populateEmailList(Task task,
 			String attributeName, List<Recipient> recipients,
 			RecipientType type, SystemEvent event)
 			throws ValidationException {
 
 		String[] emails = ResourceUtils.explodeValues(processTokenReplacements(
-				repository.getValue(action, attributeName), event));
+				repository.getValue(task, attributeName), event));
 		return emailService.populateEmailList(emails, recipients, type);
 	}
 
@@ -190,6 +191,11 @@ public class EmailTriggerAction extends AbstractActionProvider implements
 	@Override
 	public ResourceTemplateRepository getRepository() {
 		return repository;
+	}
+
+	@Override
+	public boolean supportsAutomation() {
+		return true;
 	}
 
 }

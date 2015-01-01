@@ -6,12 +6,13 @@ import java.util.Map;
 
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.resource.AbstractResourceRepository;
+import com.hypersocket.tasks.TaskProvider;
 
 
 public interface TriggerResourceRepository extends
 		AbstractResourceRepository<TriggerResource> {
 
-	void registerActionRepository(TriggerActionProvider action);
+	void registerActionRepository(TaskProvider action);
 
 	List<TriggerResource> getTriggersForEvent(SystemEvent event);
 

@@ -1,4 +1,4 @@
-package com.hypersocket.triggers.actions.alert;
+package com.hypersocket.tasks.alert;
 
 import java.util.Date;
 
@@ -12,6 +12,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import com.hypersocket.tasks.Task;
 import com.hypersocket.triggers.TriggerAction;
 
 @Entity
@@ -24,7 +25,7 @@ public class AlertKey {
 	Long id;
 
 	@OneToOne
-	TriggerAction action;
+	Task task;
 	
 	@Column(name="alert_key")
 	String key;
@@ -42,12 +43,12 @@ public class AlertKey {
 		this.id = id;
 	}
 	
-	public TriggerAction getAction() {
-		return action;
+	public Task getTask() {
+		return task;
 	}
 
-	public void setAction(TriggerAction action) {
-		this.action = action;
+	public void setTask(Task task) {
+		this.task = task;
 	}
 
 	public String getKey() {

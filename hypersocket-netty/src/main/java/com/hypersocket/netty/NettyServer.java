@@ -263,8 +263,8 @@ public class NettyServer extends HypersocketServerImpl {
 				throws Exception {
 			InetAddress addr = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getAddress();
 			
-			if(log.isInfoEnabled()) {
-				log.info("REMOVEME: Opening channel from " + addr.toString());
+			if(log.isDebugEnabled()) {
+				log.debug("Opening channel from " + addr.toString());
 			}
 			
 			synchronized (channelsByIPAddress) {
@@ -281,8 +281,8 @@ public class NettyServer extends HypersocketServerImpl {
 				ChannelStateEvent e) throws Exception {
 			InetAddress addr = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getAddress();
 			
-			if(log.isInfoEnabled()) {
-				log.info("REMOVEME: Closing channel from " + addr.toString());
+			if(log.isDebugEnabled()) {
+				log.debug("Closing channel from " + addr.toString());
 			}
 			
 			synchronized (channelsByIPAddress) {

@@ -15,6 +15,8 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.tasks.TaskProvider;
+import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.events.TriggerExecutedEvent;
 
 public class AbstractTriggerJob implements Job {
@@ -30,6 +32,9 @@ public class AbstractTriggerJob implements Job {
 	
 	@Autowired
 	EventService eventService; 
+	
+	@Autowired
+	TaskProviderService taskService; 
 	
 	static Logger log = LoggerFactory.getLogger(AbstractTriggerJob.class);
 
@@ -143,7 +148,7 @@ public class AbstractTriggerJob implements Job {
 	protected void executeAction(TriggerAction action, SystemEvent event)
 			throws ValidationException {
 
-		TriggerActionProvider provider = triggerService
+		TaskProvider provider = taskService
 				.getActionProvider(action.getResourceKey());
 		if (provider == null) {
 			throw new ValidationException(
@@ -151,7 +156,7 @@ public class AbstractTriggerJob implements Job {
 							+ action.getResourceKey() + " is not available");
 		}
 
-		ActionResult outputEvent = provider.execute(action, event);
+		TaskResult outputEvent = provider.execute(action, event);
 
 		if(outputEvent!=null) {
 			if(outputEvent.isPublishable()) {

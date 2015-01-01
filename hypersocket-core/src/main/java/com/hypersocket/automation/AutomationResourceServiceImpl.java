@@ -32,6 +32,8 @@ import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.tasks.TaskProvider;
+import com.hypersocket.tasks.TaskProviderService;
 
 @Service
 public class AutomationResourceServiceImpl extends
@@ -42,7 +44,6 @@ public class AutomationResourceServiceImpl extends
 	
 	public static final String RESOURCE_BUNDLE = "AutomationResourceService";
 
-	private Map<String,AutomationProvider> providers = new HashMap<String,AutomationProvider>();
 	private Map<Long,String> scheduleIdsByResource = new HashMap<Long,String>();
 	
 	@Autowired
@@ -62,6 +63,9 @@ public class AutomationResourceServiceImpl extends
 	
 	@Autowired
 	SchedulerService schedulerService; 
+	
+	@Autowired
+	TaskProviderService taskService; 
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -93,20 +97,6 @@ public class AutomationResourceServiceImpl extends
 				this);
 
 		entityPropertyStore.registerResourceService(AutomationResource.class, this);
-	}
-
-	@Override
-	public void registerProvider(AutomationProvider provider) {
-		for(String resourceKey : provider.getResourceKeys()) {
-			providers.put(resourceKey, provider);
-		}
-	}
-	
-	@Override
-	public void unregisterProvider(AutomationProvider provider) {
-		for(String resourceKey : provider.getResourceKeys()) {
-			providers.remove(resourceKey);
-		}
 	}
 	
 	@Override
@@ -178,12 +168,12 @@ public class AutomationResourceServiceImpl extends
 	}
 
 	protected void afterCreateResource(AutomationResource resource, Map<String,String> properties) throws ResourceCreationException {
-		AutomationProvider provider = getAutomationProvider(resource);
+		TaskProvider provider = taskService.getActionProvider(resource);
 		provider.getRepository().setValues(resource, properties);
 	}
 	
 	protected void afterUpdateResource(AutomationResource resource, Map<String,String> properties) throws ResourceChangeException {
-		AutomationProvider provider = getAutomationProvider(resource);
+		TaskProvider provider = taskService.getActionProvider(resource);
 		provider.getRepository().setValues(resource, properties);
 	}
 	
@@ -220,6 +210,7 @@ public class AutomationResourceServiceImpl extends
 		
 		JobDataMap data = new JobDataMap();
 		data.put("resourceId", resource.getId());
+		data.put("realm", resource.getRealm());
 		
 		try {
 			
@@ -273,7 +264,7 @@ public class AutomationResourceServiceImpl extends
 
 		Collection<PropertyCategory> results = repository.getPropertyCategories(null);
 		
-		AutomationProvider provider = getAutomationProvider(resourceKey);
+		TaskProvider provider = taskService.getActionProvider(resourceKey);
 		
 		results.addAll(provider.getRepository().getPropertyCategories(null));
 		
@@ -289,23 +280,11 @@ public class AutomationResourceServiceImpl extends
 
 		Collection<PropertyCategory> results = repository.getPropertyCategories(resource);
 		
-		AutomationProvider provider = getAutomationProvider(resource);
+		TaskProvider provider = taskService.getActionProvider(resource);
 		
 		results.addAll(provider.getRepository().getPropertyCategories(resource));
 		
 		return results;
-	}
-
-	@Override
-	public AutomationProvider getAutomationProvider(AutomationResource resource) {
-		return getAutomationProvider(resource.getResourceKey());
-	}
-
-	private AutomationProvider getAutomationProvider(String resourceKey) {
-		if(!providers.containsKey(resourceKey)) {
-			throw new IllegalStateException("AutomationProvider not available for resource key " + resourceKey);
-		}
-		return providers.get(resourceKey);
 	}
 
 	@Override
@@ -319,7 +298,7 @@ public class AutomationResourceServiceImpl extends
 		
 		assertPermission(AutomationResourcePermission.READ);
 		
-		return providers.keySet();
+		return taskService.getActions();
 	}
 
 	@Override

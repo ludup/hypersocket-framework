@@ -113,18 +113,21 @@ public abstract class HypersocketClient<T> {
 		this.currentLocale = locale;
 
 		try {
-		for(HypersocketClientListener<T> l : listeners) {
-			try {
-				l.connectStarted(this);
-			} catch (Throwable t) {
+			for(HypersocketClientListener<T> l : listeners) {
+				try {
+					l.connectStarted(this);
+				} catch (Throwable t) {
+				}
 			}
-		}
-		
-		transport.connect(hostname, port, path);
-
-		loadResources();
+			
+			transport.connect(hostname, port, path);
+	
+			loadResources();
 		
 		} catch(IOException ex) {
+			
+			transport.disconnect(true);
+			
 			for(HypersocketClientListener<T> l : listeners) {
 				try {
 					l.connectFailed(this);
@@ -172,22 +175,24 @@ public abstract class HypersocketClient<T> {
 			keepAliveThread.interrupt();
 		}
 
-		onDisconnecting();
-		
-		transport.disconnect(onError);
-
-		sessionId = null;
-		keepAliveThread = null;
-
-		for(HypersocketClientListener<T> l : listeners) {
-			try {
-				l.disconnected(this, onError);
-			} catch (Throwable t) {
+		if(transport.isConnected()) {
+			onDisconnecting();
+			
+			transport.disconnect(onError);
+	
+			sessionId = null;
+			keepAliveThread = null;
+	
+			for(HypersocketClientListener<T> l : listeners) {
+				try {
+					l.disconnected(this, onError);
+				} catch (Throwable t) {
+				}
 			}
-		}
-		try {
-			onDisconnect();
-		} catch (Throwable e) {
+			try {
+				onDisconnect();
+			} catch (Throwable e) {
+			}
 		}
 	}
 
