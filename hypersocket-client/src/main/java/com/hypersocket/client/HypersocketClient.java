@@ -259,7 +259,7 @@ public abstract class HypersocketClient<T> {
 			if(!success) {
 				attempts--;
 			}
-			if (prompts != null) {
+			if (!isLoggedOn() && prompts.size() > 0) {
 				Map<String, String> results = showLogin(prompts);
 
 				if (results != null) {
@@ -269,6 +269,7 @@ public abstract class HypersocketClient<T> {
 					throw new UserCancelledException("User has cancelled authentication");
 				}
 			}
+			
 		}
 
 		if (log.isInfoEnabled()) {
