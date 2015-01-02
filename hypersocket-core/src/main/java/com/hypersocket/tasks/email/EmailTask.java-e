@@ -33,8 +33,7 @@ import com.hypersocket.triggers.TriggerValidationError;
 import com.hypersocket.triggers.ValidationException;
 
 @Component
-public class EmailTask extends AbstractTaskProvider implements
-		TaskProvider {
+public class EmailTask extends AbstractTaskProvider {
 
 	private static Logger log = LoggerFactory
 			.getLogger(EmailTask.class);
@@ -191,11 +190,6 @@ public class EmailTask extends AbstractTaskProvider implements
 	@Override
 	public ResourceTemplateRepository getRepository() {
 		return repository;
-	}
-
-	@Override
-	public boolean supportsAutomation() {
-		return true;
 	}
 
 }

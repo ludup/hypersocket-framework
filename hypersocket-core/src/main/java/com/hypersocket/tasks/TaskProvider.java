@@ -34,4 +34,6 @@ public interface TaskProvider {
 	void taskDeleted(Task task);
 	
 	boolean supportsAutomation();
+	
+	boolean supportsTriggers();
 }

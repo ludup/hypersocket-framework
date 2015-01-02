@@ -35,7 +35,6 @@ import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
-@Transactional
 public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl implements LocalUserRepository {
 
 	@Autowired
@@ -60,6 +59,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	};
 	
 	@Override
+	@Transactional
 	public LocalUser createUser(String username, Realm realm) {
 		
 		LocalUser user = new LocalUser();
@@ -80,6 +80,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		}
 	}
 	
+	@Transactional
 	public LocalGroup createGroup(String name, Realm realm) {
 		
 		LocalGroup group = new LocalGroup();
@@ -93,6 +94,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		return get(column, value, LocalUser.class, JOIN_GROUPS, new RealmRestriction(realm), new DeletedCriteria(false), new PrincipalTypeRestriction(type));
 	}
 	
+	@Transactional(readOnly=true)
 	public LocalUser getUserByName(String username, Realm realm) {
 		return getUser("name", username, realm, PrincipalType.USER);
 	}
@@ -101,11 +103,13 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		return get(column, value, LocalGroup.class, JOIN_USERS, new DeletedCriteria(false), new RealmRestriction(realm));
 	}
 	
+	@Transactional(readOnly=true)
 	public LocalGroup getGroupByName(String name, Realm realm) {
 		return getGroup("name", name, realm);
 	}
 
 	@Override
+	@Transactional
 	public void assign(LocalUser user, LocalGroup group) {
 		
 		if(!user.getRealm().equals(group.getRealm()))
@@ -118,6 +122,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 
 	@Override
+	@Transactional
 	public void unassign(LocalUser user, LocalGroup group) {
 		
 		if(!user.getRealm().equals(group.getRealm()))
@@ -131,21 +136,25 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<LocalUser> allUsers(Realm realm) {
 		return allEntities(LocalUser.class, JOIN_GROUPS, new DistinctRootEntity(), new RealmRestriction(realm), new HiddenCriteria(false));
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<LocalGroup> allGroups(Realm realm) {
 		return allEntities(LocalGroup.class, new DistinctRootEntity(), new RealmRestriction(realm), new HiddenCriteria(false));
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public LocalUserCredentials getCredentials(LocalUser user) {
 		return get("user", user, LocalUserCredentials.class, new DistinctRootEntity());
 	}
 	
 	@Override
+	@Transactional
 	public void saveGroup(LocalGroup group) {
 		
 		if(group.getRealm()==null) {
@@ -157,6 +166,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 
 	@Override
+	@Transactional
 	public void saveUser(LocalUser user, Map<String,String> properties) {
 		
 		if(user.getRealm()==null) {
@@ -176,6 +186,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 
 	@Override
+	@Transactional
 	public void saveCredentials(LocalUserCredentials creds) {
 		
 		if(creds.getUser()==null) {
@@ -187,28 +198,33 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Principal getUserByNameAndType(String principalName, Realm realm,
 			PrincipalType type) {
 		return getUser("name", principalName, realm, type);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Principal getUserById(Long id, Realm realm) {
 		return getUser("id", id, realm, PrincipalType.USER);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Principal getGroupById(Long id, Realm realm) {
 		return getGroup("id", id, realm);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Principal getUserByIdAndType(Long id, Realm realm,
 			PrincipalType type) {
 		return getUser("id", id, realm, type);
 	}
 
 	@Override
+	@Transactional
 	public void deleteGroup(LocalGroup group) {
 		group.getUsers().clear();
 		group.setDeleted(true);
@@ -216,6 +232,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 
 	@Override
+	@Transactional
 	public void deleteUser(LocalUser usr) {
 		usr.getGroups().clear();
 		usr.setDeleted(true);
@@ -223,6 +240,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	};
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Long countUsers(final Realm realm, final String searchPattern) {
 		return getCount(LocalUser.class, new CriteriaConfiguration() {
 			@Override
@@ -239,6 +257,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Long countGroups(final Realm realm, final String searchPattern) {
 		return getCount(LocalGroup.class, new CriteriaConfiguration() {
 			@Override
@@ -255,6 +274,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<?> getUsers(final Realm realm, final String searchPattern, final int start,
 			final int length, final ColumnSort[] sorting) {
 		return search(LocalUser.class, "name", searchPattern, start, length, sorting, new CriteriaConfiguration() {
@@ -272,6 +292,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<?> getGroups(final Realm realm, final String searchPattern, final int start,
 			final int length, final ColumnSort[] sorting) {
 		
@@ -291,6 +312,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	
 
 	@Override
+	@Transactional(readOnly=true)
 	public Collection<? extends Principal> getGroupsByUser(final LocalUser principal) {
 		return list(LocalGroup.class, false, new CriteriaConfiguration() {
 			
@@ -303,6 +325,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Collection<? extends Principal> getUsersByGroup(final LocalGroup principal) {
 		return list(LocalUser.class, false, new CriteriaConfiguration() {
 			

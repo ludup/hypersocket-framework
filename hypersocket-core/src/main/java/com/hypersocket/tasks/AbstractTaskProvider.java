@@ -86,4 +86,14 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	public void taskDeleted(Task task) {
 		getRepository().deletePropertiesForResource(task);
 	}
+
+	@Override
+	public boolean supportsAutomation() {
+		return true;
+	}
+	
+	@Override
+	public boolean supportsTriggers() {
+		return true;
+	}
 }

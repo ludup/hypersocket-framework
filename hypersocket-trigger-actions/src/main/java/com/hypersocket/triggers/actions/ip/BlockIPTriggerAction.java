@@ -28,8 +28,7 @@ import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.ValidationException;
 
 @Component
-public class BlockIPTriggerAction extends AbstractTaskProvider implements
-		TaskProvider {
+public class BlockIPTriggerAction extends AbstractTaskProvider {
 
 	static Logger log = LoggerFactory.getLogger(BlockIPTriggerAction.class);
 	
@@ -122,11 +121,6 @@ public class BlockIPTriggerAction extends AbstractTaskProvider implements
 	@Override
 	public ResourceTemplateRepository getRepository() {
 		return repository;
-	}
-
-	@Override
-	public boolean supportsAutomation() {
-		return true;
 	}
 
 }

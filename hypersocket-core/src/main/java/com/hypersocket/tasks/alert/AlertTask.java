@@ -28,8 +28,7 @@ import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.ValidationException;
 
 @Component
-public class AlertTask extends AbstractTaskProvider implements
-		TaskProvider {
+public class AlertTask extends AbstractTaskProvider {
 
 	public static final String ACTION_GENERATE_ALERT = "generateAlert";
 
@@ -166,6 +165,11 @@ public class AlertTask extends AbstractTaskProvider implements
 	@Override
 	public boolean supportsAutomation() {
 		return false;
+	}
+	
+	@Override
+	public boolean supportsTriggers() {
+		return true;
 	}
 
 }
