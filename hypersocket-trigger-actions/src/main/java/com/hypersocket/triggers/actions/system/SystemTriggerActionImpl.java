@@ -21,7 +21,7 @@ import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.ValidationException;
 
 @Component
-public class SystemTriggerActionImpl extends AbstractTaskProvider implements TaskProvider {
+public class SystemTriggerActionImpl extends AbstractTaskProvider {
 
 	public static final String RESOURCE_BUNDLE = "SystemTriggerAction";
 	
@@ -85,11 +85,6 @@ public class SystemTriggerActionImpl extends AbstractTaskProvider implements Tas
 	@Override
 	public ResourceTemplateRepository getRepository() {
 		return repository;
-	}
-	
-	@Override
-	public boolean supportsAutomation() {
-		return true;
 	}
 	
 }
