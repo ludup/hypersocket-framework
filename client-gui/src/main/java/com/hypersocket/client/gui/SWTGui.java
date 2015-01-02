@@ -139,9 +139,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 	}
 
 	public void notify(String msg, int type) {
-		
 
-		
 		switch (type) {
 		case NOTIFY_CONNECT:
 		case NOTIFY_DISCONNECT:
