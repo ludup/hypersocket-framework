@@ -1,19 +1,16 @@
 package com.hypersocket.triggers.actions.ip;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.ResourceTemplateRepository;
@@ -21,29 +18,28 @@ import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.server.HypersocketServer;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
-import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.TaskResult;
-import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.ValidationException;
 
 @Component
-public class BlockIPTriggerAction extends AbstractTaskProvider {
+public class UnblockIPTask extends AbstractTaskProvider {
 
-	static Logger log = LoggerFactory.getLogger(BlockIPTriggerAction.class);
+	static Logger log = LoggerFactory.getLogger(UnblockIPTask.class);
 	
-	public static final String RESOURCE_BUNDLE = "BlockIPTriggerAction";
+	public static final String RESOURCE_BUNDLE = "BlockIPTask";
 	
-	public static final String RESOURCE_KEY = "blockIP";
+	public static final String RESOURCE_KEY = "unblockIP";
+	
 	
 	@Autowired
-	BlockIPTriggerActionRepository repository; 
+	BlockIPTask blockTask; 
+	
+	@Autowired
+	UnblockIPTaskRepository repository; 
 	
 	@Autowired
 	HypersocketServer server;
-	
-	@Autowired
-	TriggerResourceService triggerService; 
 	
 	@Autowired
 	I18NService i18nService;
@@ -74,7 +70,7 @@ public class BlockIPTriggerAction extends AbstractTaskProvider {
 	@Override
 	public void validate(Task task, Map<String, String> parameters)
 			throws ValidationException {
-		if(parameters.containsKey("block.ip")) {
+		if(parameters.containsKey("unblock.ip")) {
 			throw new ValidationException("IP address required");
 		}
 	}
@@ -83,38 +79,21 @@ public class BlockIPTriggerAction extends AbstractTaskProvider {
 	public TaskResult execute(Task task, SystemEvent event)
 			throws ValidationException {
 		
-		String ipAddress = event.getAttribute(CommonAttributes.ATTR_IP_ADDRESS);
+		String ipAddress = repository.getValue(task, "unblock.ip");
 		try {
 			
 			if(log.isInfoEnabled()) {
-				log.info("Blocking IP address "  + ipAddress);
+				log.info("Unblocking IP address "  + ipAddress);
 			}
 			
-			InetAddress addr = InetAddress.getByName(event.getAttribute(CommonAttributes.ATTR_IP_ADDRESS));
+			server.unblockAddress(ipAddress);
 			
-			server.blockAddress(addr);
+			blockTask.notifyUnblock(ipAddress, false);
 			
-			if(log.isInfoEnabled()) {
-				log.info("Blocked IP address " + ipAddress);
-			}
-			
-			int val = 0;
-			
-			if((val = repository.getIntValue(task, "block.length")) > 0) {
-				
-				if(log.isInfoEnabled()) {
-					log.info("Scheduling unblock for IP address " + ipAddress + " in " + val + " minutes");
-				}
-				
-				JobDataMap data = new JobDataMap();
-				data.put("addr", addr);
-				
-				schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000);
-			}
-			return new BlockedIPResult(this, event.getCurrentRealm(), task, ipAddress);
-		} catch (UnknownHostException | SchedulerException e) {
+			return new UnblockedIPResult(this, event.getCurrentRealm(), task, ipAddress);
+		} catch (UnknownHostException e) {
 			log.error("Failed to fully process block IP request for " + ipAddress, e);
-			return new BlockedIPResult(this, e, event.getCurrentRealm(), task, ipAddress);
+			return new UnblockedIPResult(this, e, event.getCurrentRealm(), task, ipAddress);
 		}
 	}
 
@@ -122,5 +101,4 @@ public class BlockIPTriggerAction extends AbstractTaskProvider {
 	public ResourceTemplateRepository getRepository() {
 		return repository;
 	}
-
 }

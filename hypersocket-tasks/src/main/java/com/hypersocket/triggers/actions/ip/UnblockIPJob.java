@@ -1,6 +1,5 @@
 package com.hypersocket.triggers.actions.ip;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.quartz.JobExecutionContext;
@@ -19,6 +18,9 @@ public class UnblockIPJob extends PermissionsAwareJob {
 	@Autowired
 	HypersocketServer server;
 	
+	@Autowired
+	BlockIPTask blockIPTask;
+	
 	public UnblockIPJob() {
 	}
 
@@ -26,7 +28,7 @@ public class UnblockIPJob extends PermissionsAwareJob {
 	protected void executeJob(JobExecutionContext context)
 			throws JobExecutionException {
 	
-		InetAddress addr = (InetAddress) context.getTrigger().getJobDataMap().get("addr");
+		String addr = (String) context.getTrigger().getJobDataMap().get("addr");
 		
 		if(addr==null) {
 			throw new JobExecutionException("UblockIP job requires InetAddress parameter addr!");
@@ -38,6 +40,8 @@ public class UnblockIPJob extends PermissionsAwareJob {
 			}
 			
 			server.unblockAddress(addr);
+			
+			blockIPTask.notifyUnblock(addr, true);
 			
 			if(log.isInfoEnabled()) {
 				log.info("Unblocked IP address " + addr.toString());

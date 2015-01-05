@@ -7,12 +7,12 @@ import org.springframework.stereotype.Repository;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 
 @Repository
-public class BlockIPTriggerActionRepositoryImpl extends
-		ResourceTemplateRepositoryImpl implements BlockIPTriggerActionRepository {
+public class BlockIPTaskRepositoryImpl extends
+		ResourceTemplateRepositoryImpl implements BlockIPTaskRepository {
 
 	@PostConstruct
 	private void postConstruct() {
-		loadPropertyTemplates("actions/blockIP.xml");
+		loadPropertyTemplates("tasks/blockIP.xml");
 	}
 }
 
