@@ -9,6 +9,6 @@ public class SystemTriggerActionRepositoryImpl extends
 	
 	@PostConstruct
 	private void postConstruct() {
-		loadPropertyTemplates("actions/system-template.xml");
+		loadPropertyTemplates("tasks/systemRestart.xml");
 	}
 }

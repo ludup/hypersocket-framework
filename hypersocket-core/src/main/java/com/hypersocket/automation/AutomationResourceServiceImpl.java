@@ -7,7 +7,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +30,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
@@ -208,9 +208,8 @@ public class AutomationResourceServiceImpl extends
 			}
 		}
 		
-		JobDataMap data = new JobDataMap();
+		PermissionsAwareJobData data = new PermissionsAwareJobData(resource.getRealm());
 		data.put("resourceId", resource.getId());
-		data.put("realm", resource.getRealm());
 		
 		try {
 			

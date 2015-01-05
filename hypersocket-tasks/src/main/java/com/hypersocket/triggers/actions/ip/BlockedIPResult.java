@@ -1,11 +1,9 @@
 package com.hypersocket.triggers.actions.ip;
 
-import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEventStatus;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.triggers.TaskResult;
-import com.hypersocket.triggers.TriggerAction;
 
 public class BlockedIPResult extends TaskResult {
 
@@ -13,14 +11,14 @@ public class BlockedIPResult extends TaskResult {
 
 	public BlockedIPResult(Object source, Realm currentRealm, Task task, String ipAddress) {
 		super(source, "blocked.ip", SystemEventStatus.SUCCESS, currentRealm, task);
-		addAttribute(CommonAttributes.ATTR_IP_ADDRESS, ipAddress);
+		addAttribute("block.ip", ipAddress);
 	}
 
 	
 	public BlockedIPResult(Object source, Throwable e,
 			Realm currentRealm, Task task, String ipAddress) {
 		super(source, "blocked.ip", e, currentRealm, task);
-		addAttribute(CommonAttributes.ATTR_IP_ADDRESS, ipAddress);
+		addAttribute("block.ip", ipAddress);
 	}
 
 
@@ -31,7 +29,7 @@ public class BlockedIPResult extends TaskResult {
 
 	@Override
 	public String getResourceBundle() {
-		return BlockIPTriggerAction.RESOURCE_BUNDLE;
+		return BlockIPTask.RESOURCE_BUNDLE;
 	}
 
 }
