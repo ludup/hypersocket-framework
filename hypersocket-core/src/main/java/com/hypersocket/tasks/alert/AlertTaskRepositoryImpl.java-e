@@ -20,7 +20,7 @@ public class AlertTaskRepositoryImpl extends
 
 	@PostConstruct
 	private void postConstruct() {
-		loadPropertyTemplates("actions/alert-template.xml");
+		loadPropertyTemplates("tasks/generateAlert.xml");
 	}
 
 	@Override

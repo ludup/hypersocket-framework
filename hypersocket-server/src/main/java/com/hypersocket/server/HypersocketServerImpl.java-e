@@ -636,11 +636,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		}
 		return false;
 	}
-	
-	@Override
-	public abstract void blockAddress(InetAddress addr) throws UnknownHostException;
-	
-	@Override
-	public abstract void unblockAddress(InetAddress addr) throws UnknownHostException;
+
 
 }

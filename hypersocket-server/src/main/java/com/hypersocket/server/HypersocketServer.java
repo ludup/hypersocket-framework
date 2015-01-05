@@ -100,8 +100,8 @@ public interface HypersocketServer {
 
 	void registerControllerPackage(String controllerPackage);
 
-	void blockAddress(InetAddress addr) throws UnknownHostException;
+	void unblockAddress(String addr) throws UnknownHostException;
 
-	void unblockAddress(InetAddress addr) throws UnknownHostException;
+	void blockAddress(String addr) throws UnknownHostException;
 
 }

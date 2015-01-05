@@ -242,8 +242,11 @@ public class NettyServer extends HypersocketServerImpl {
 	}
 
 	@Override
-	public void blockAddress(InetAddress addr) throws UnknownHostException {
-		ipFilterHandler.add(new IpSubnetFilterRule(false, addr, 0));
+	public void blockAddress(String addr) throws UnknownHostException {
+		if(addr.indexOf('/')==-1) {
+			addr += "/0";
+		}
+		ipFilterHandler.add(new IpSubnetFilterRule(false, addr));
 		synchronized (channelsByIPAddress) {
 			for(Channel c : channelsByIPAddress.get(addr)) {
 				c.close();
@@ -252,8 +255,11 @@ public class NettyServer extends HypersocketServerImpl {
 	}
 
 	@Override
-	public void unblockAddress(InetAddress addr) throws UnknownHostException {
-		ipFilterHandler.remove(new IpSubnetFilterRule(false, addr, 0));
+	public void unblockAddress(String addr) throws UnknownHostException {
+		if(addr.indexOf('/')==-1) {
+			addr += "/0";
+		}
+		ipFilterHandler.remove(new IpSubnetFilterRule(false, addr));
 	}
 
 	class MonitorChannelHandler extends SimpleChannelHandler {
