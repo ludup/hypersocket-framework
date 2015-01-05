@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 
@@ -58,6 +59,8 @@ public interface AuthenticationService extends AuthenticatedService {
 			String userAgent, Map<String, String> parameters) throws AccessDeniedException;
 
 	Authenticator getAuthenticator(String resourceKey);
+
+	Collection<PostAuthenticationStep> getPostAuthenticationSteps();
 
 
 }

@@ -8,6 +8,7 @@
 package com.hypersocket.auth;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource.AuthenticationType;
 
 import org.bouncycastle.util.encoders.Base64;
 import org.slf4j.Logger;
@@ -600,6 +602,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 								ANONYMOUS_AUTHENTICATION_RESOURCE_KEY),
 				userAgent, parameters);
 		return session;
+	}
+
+	@Override
+	public Collection<PostAuthenticationStep> getPostAuthenticationSteps() {
+		return new ArrayList<PostAuthenticationStep>(postAuthenticationSteps);
 	}
 
 }

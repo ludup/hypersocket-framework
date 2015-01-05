@@ -3,15 +3,15 @@ package com.hypersocket.triggers.conditions;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.triggers.TriggerCondition;
 import com.hypersocket.triggers.TriggerResource;
-import com.hypersocket.triggers.TriggerValidationException;
+import com.hypersocket.triggers.ValidationException;
 
 public class NotEqualsCondition implements Condition {
 
 	@Override
 	public boolean checkCondition(TriggerCondition condition, TriggerResource trigger,
-			SystemEvent event) throws TriggerValidationException {
+			SystemEvent event) throws ValidationException {
 		if (event.hasAttribute(condition.getAttributeKey())) {
-			throw new TriggerValidationException("Event "
+			throw new ValidationException("Event "
 					+ event.getResourceKey()
 					+ " does not have an attribute named "
 					+ condition.getAttributeKey());

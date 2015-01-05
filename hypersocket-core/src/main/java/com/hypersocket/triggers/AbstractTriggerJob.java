@@ -15,6 +15,8 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.tasks.TaskProvider;
+import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.events.TriggerExecutedEvent;
 
 public class AbstractTriggerJob implements Job {
@@ -30,6 +32,9 @@ public class AbstractTriggerJob implements Job {
 	
 	@Autowired
 	EventService eventService; 
+	
+	@Autowired
+	TaskProviderService taskService; 
 	
 	static Logger log = LoggerFactory.getLogger(AbstractTriggerJob.class);
 
@@ -71,7 +76,7 @@ public class AbstractTriggerJob implements Job {
 	}
 
 	protected void processEventTrigger(TriggerResource trigger,
-			SystemEvent event) throws TriggerValidationException {
+			SystemEvent event) throws ValidationException {
 		if (log.isInfoEnabled()) {
 			log.info("Processing trigger " + trigger.getName());
 		}
@@ -88,7 +93,7 @@ public class AbstractTriggerJob implements Job {
 	}
 
 	protected boolean checkConditions(TriggerResource trigger, SystemEvent event)
-			throws TriggerValidationException {
+			throws ValidationException {
 
 		for (TriggerCondition condition : trigger.getAllConditions()) {
 			if (!checkCondition(condition, trigger, event)) {
@@ -126,13 +131,13 @@ public class AbstractTriggerJob implements Job {
 
 	private boolean checkCondition(TriggerCondition condition,
 			TriggerResource trigger, SystemEvent event)
-			throws TriggerValidationException {
+			throws ValidationException {
 
 		TriggerConditionProvider provider = triggerService
 				.getConditionProvider(condition);
 
 		if (provider == null) {
-			throw new TriggerValidationException(
+			throw new ValidationException(
 					"Failed to check condition because provider "
 							+ condition.getConditionKey() + " is not available");
 		}
@@ -141,17 +146,17 @@ public class AbstractTriggerJob implements Job {
 	}
 
 	protected void executeAction(TriggerAction action, SystemEvent event)
-			throws TriggerValidationException {
+			throws ValidationException {
 
-		TriggerActionProvider provider = triggerService
+		TaskProvider provider = taskService
 				.getActionProvider(action.getResourceKey());
 		if (provider == null) {
-			throw new TriggerValidationException(
+			throw new ValidationException(
 					"Failed to execute action because provider "
 							+ action.getResourceKey() + " is not available");
 		}
 
-		ActionResult outputEvent = provider.execute(action, event);
+		TaskResult outputEvent = provider.execute(action, event);
 
 		if(outputEvent!=null) {
 			if(outputEvent.isPublishable()) {

@@ -51,6 +51,7 @@ public class CommandExecutor {
 	public int execute() throws IOException {
 		return execute(null);
 	}
+	
  	public int execute(CommandInputGenerator input) throws IOException {
 		
 		if(log.isInfoEnabled()) {

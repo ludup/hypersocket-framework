@@ -24,6 +24,8 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
@@ -43,7 +45,7 @@ import com.hypersocket.session.events.SessionOpenEvent;
 
 @Service
 public class SessionServiceImpl extends AuthenticatedServiceImpl implements
-		SessionService {
+		SessionService, ApplicationListener<ContextStartedEvent> {
 
 	@Autowired
 	SessionRepository repository;
@@ -85,15 +87,6 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		eventService.registerEvent(SessionOpenEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionClosedEvent.class, RESOURCE_BUNDLE);
 		
-		if(log.isInfoEnabled()) {
-			log.info("Scheduling session reaper job");
-		}
-		
-		try {
-			schedulerService.scheduleIn(SessionReaperJob.class, null, 60000, 60000);
-		} catch (SchedulerException e) {
-			log.error("Failed to schedule session reaper job", e);
-		}
 	}
 
 	@Override
@@ -376,6 +369,23 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		
 		setCurrentSession(session, getCurrentLocale());
 		repository.updateSession(session);
+	}
+
+	@Override
+	public void onApplicationEvent(ContextStartedEvent event) {
+		
+
+		if(log.isInfoEnabled()) {
+			log.info("Scheduling session reaper job");
+		}
+		
+		try {
+			schedulerService.scheduleIn(SessionReaperJob.class, null, 60000, 60000);
+		} catch (SchedulerException e) {
+			log.error("Failed to schedule session reaper job", e);
+		}
+		
+		
 	}
 	
 }

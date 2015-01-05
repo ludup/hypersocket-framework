@@ -14,7 +14,7 @@ import com.hypersocket.triggers.TriggerConditionProvider;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
-import com.hypersocket.triggers.TriggerValidationException;
+import com.hypersocket.triggers.ValidationException;
 
 @Component
 public class ComparisonConditionProvider implements TriggerConditionProvider {
@@ -49,9 +49,9 @@ public class ComparisonConditionProvider implements TriggerConditionProvider {
 
 	@Override
 	public boolean checkCondition(TriggerCondition condition, TriggerResource trigger,
-			SystemEvent event) throws TriggerValidationException {
+			SystemEvent event) throws ValidationException {
 		if(!supportedConditions.containsKey(condition.getConditionKey()))
-			throw new TriggerValidationException("ComparisonConditionProvider does not support the condition key " + condition.getConditionKey());
+			throw new ValidationException("ComparisonConditionProvider does not support the condition key " + condition.getConditionKey());
 		return supportedConditions.get(condition.getConditionKey()).checkCondition(condition, trigger, event);
 	}
 

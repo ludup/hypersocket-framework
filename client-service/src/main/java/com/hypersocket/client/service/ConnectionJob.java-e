@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.hypersocket.client.HypersocketClient;
 import com.hypersocket.client.HypersocketClientAdapter;
+import com.hypersocket.client.UserCancelledException;
 import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.client.rmi.ResourceService;
 import com.hypersocket.netty.NettyClientTransport;
@@ -45,6 +46,7 @@ public class ConnectionJob extends TimerTask {
 		}
 
 		try {
+			
 			ServiceClient client = new ServiceClient(new NettyClientTransport(
 					boss, worker), locale, service, resourceService, c);
 
@@ -85,12 +87,14 @@ public class ConnectionJob extends TimerTask {
 				log.error("Failed to connect " + url, e);
 			}
 
-			if (StringUtils.isNotBlank(c.getUsername())
-					&& StringUtils.isNotBlank(c.getHashedPassword())) {
-				if (c.isStayConnected()) {
-					try {
-						service.scheduleConnect(c);
-					} catch (RemoteException e1) {
+			if(!(e instanceof UserCancelledException)) {
+				if (StringUtils.isNotBlank(c.getUsername())
+						&& StringUtils.isNotBlank(c.getHashedPassword())) {
+					if (c.isStayConnected()) {
+						try {
+							service.scheduleConnect(c);
+						} catch (RemoteException e1) {
+						}
 					}
 				}
 			}
