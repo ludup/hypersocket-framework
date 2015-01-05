@@ -15,7 +15,7 @@ public class EmailTaskRepositoryImpl extends ResourceTemplateRepositoryImpl
 	
 	@PostConstruct
 	private void postConstruct() {
-		loadPropertyTemplates("actions/email-template.xml");
+		loadPropertyTemplates("tasks/sendEmail.xml");
 	}
 
 }

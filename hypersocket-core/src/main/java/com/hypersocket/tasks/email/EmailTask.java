@@ -38,7 +38,7 @@ public class EmailTask extends AbstractTaskProvider {
 	private static Logger log = LoggerFactory
 			.getLogger(EmailTask.class);
 
-	public static final String ACTION_RESOURCE_KEY = "emailAction";
+	public static final String ACTION_RESOURCE_KEY = "sendEmail";
 
 	public static final String ATTR_TO_ADDRESSES = "email.to";
 	public static final String ATTR_CC_ADDRESSES = "email.cc";
@@ -87,7 +87,7 @@ public class EmailTask extends AbstractTaskProvider {
 
 	@Override
 	public String[] getResourceKeys() {
-		return new String[] { "emailAction" };
+		return new String[] { "sendEmail" };
 	}
 
 	@Override
