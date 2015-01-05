@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="blockIPTask">
+	<propertyCategory resourceKey="category.block"
+		resourceBundle="TriggerResourceService" weight="1000" group="blockIPTask">
+		<property resourceKey="block.ip" inputType="text" 
+			defaultValue="" weight="0"/>
+		<property resourceKey="block.length" inputType="slider" 
+			min="0" max="900" defaultValue="30" step="1" weight="100" labelResourceKey="block.length.label"/>
+	</propertyCategory>
+</propertyTemplates>

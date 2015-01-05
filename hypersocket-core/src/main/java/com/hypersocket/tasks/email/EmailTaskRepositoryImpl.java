@@ -1,4 +1,4 @@
-package com.hypersocket.triggers.actions.email;
+package com.hypersocket.tasks.email;
 
 import javax.annotation.PostConstruct;
 
@@ -9,8 +9,8 @@ import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 
 @Repository
 @Transactional
-public class EmailTriggerActionRepositoryImpl extends ResourceTemplateRepositoryImpl
-		implements EmailTriggerActionRepository {
+public class EmailTaskRepositoryImpl extends ResourceTemplateRepositoryImpl
+		implements EmailTaskRepository {
 
 	
 	@PostConstruct

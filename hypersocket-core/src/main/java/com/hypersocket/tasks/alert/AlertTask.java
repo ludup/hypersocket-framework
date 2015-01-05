@@ -1,4 +1,4 @@
-package com.hypersocket.triggers.actions.alert;
+package com.hypersocket.tasks.alert;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -16,17 +16,19 @@ import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.Message;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
-import com.hypersocket.triggers.AbstractActionProvider;
-import com.hypersocket.triggers.ActionResult;
+import com.hypersocket.tasks.AbstractTaskProvider;
+import com.hypersocket.tasks.Task;
+import com.hypersocket.tasks.TaskProvider;
+import com.hypersocket.tasks.TaskProviderService;
+import com.hypersocket.tasks.TaskProviderServiceImpl;
+import com.hypersocket.triggers.TaskResult;
 import com.hypersocket.triggers.TriggerAction;
-import com.hypersocket.triggers.TriggerActionProvider;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
-import com.hypersocket.triggers.TriggerValidationException;
+import com.hypersocket.triggers.ValidationException;
 
 @Component
-public class AlertTriggerAction extends AbstractActionProvider implements
-		TriggerActionProvider {
+public class AlertTask extends AbstractTaskProvider {
 
 	public static final String ACTION_GENERATE_ALERT = "generateAlert";
 
@@ -36,7 +38,7 @@ public class AlertTriggerAction extends AbstractActionProvider implements
 	public static final String ATTR_ALERT_ID = "alert.id";
 
 	@Autowired
-	AlertTriggerActionRepository repository;
+	AlertTaskRepository repository;
 
 	@Autowired
 	TriggerResourceService triggerService;
@@ -44,12 +46,15 @@ public class AlertTriggerAction extends AbstractActionProvider implements
 	@Autowired
 	EventService eventService;
 
+	@Autowired
+	TaskProviderService taskService; 
+	
 	@PostConstruct
 	private void postConstruct() {
-		triggerService.registerActionProvider(this);
+		taskService.registerActionProvider(this);
 
 		eventService.registerEvent(AlertEvent.class,
-				TriggerResourceServiceImpl.RESOURCE_BUNDLE);
+				TaskProviderServiceImpl.RESOURCE_BUNDLE);
 
 		for (TriggerAction action : triggerService
 				.getActionsByResourceKey(ACTION_GENERATE_ALERT)) {
@@ -68,18 +73,18 @@ public class AlertTriggerAction extends AbstractActionProvider implements
 	}
 
 	@Override
-	public void validate(TriggerAction action, Map<String, String> parameters)
-			throws TriggerValidationException {
+	public void validate(Task task, Map<String, String> parameters)
+			throws ValidationException {
 
 	}
 
 	@Override
-	public ActionResult execute(TriggerAction action, SystemEvent event)
-			throws TriggerValidationException {
+	public TaskResult execute(Task task, SystemEvent event)
+			throws ValidationException {
 
 		StringBuffer key = new StringBuffer();
 
-		for (String attr : ResourceUtils.explodeValues(repository.getValue(action,
+		for (String attr : ResourceUtils.explodeValues(repository.getValue(task,
 				ATTR_KEY))) {
 			if (key.length() > 0) {
 				key.append("|");
@@ -87,11 +92,11 @@ public class AlertTriggerAction extends AbstractActionProvider implements
 			key.append(event.getAttribute(attr));
 		}
 
-		int threshold = repository.getIntValue(action, ATTR_THRESHOLD);
-		int timeout = repository.getIntValue(action, ATTR_TIMEOUT);
+		int threshold = repository.getIntValue(task, ATTR_THRESHOLD);
+		int timeout = repository.getIntValue(task, ATTR_TIMEOUT);
 
 		AlertKey ak = new AlertKey();
-		ak.setAction(action);
+		ak.setTask(task);
 		ak.setKey(key.toString());
 
 		Calendar c = Calendar.getInstance();
@@ -101,14 +106,14 @@ public class AlertTriggerAction extends AbstractActionProvider implements
 
 		c.add(Calendar.MINUTE, -timeout);
 		long count = repository
-				.getKeyCount(action, key.toString(), c.getTime());
+				.getKeyCount(task, key.toString(), c.getTime());
 
 		if (count >= threshold) {
 
-			repository.deleteKeys(action, key.toString());
+			repository.deleteKeys(task, key.toString());
 
 			return new AlertEvent(this, "event.alert", true,
-					event.getCurrentRealm(), threshold, timeout, action, event);
+					event.getCurrentRealm(), threshold, timeout, task, event);
 		}
 		return null;
 	}
@@ -116,11 +121,6 @@ public class AlertTriggerAction extends AbstractActionProvider implements
 	@Override
 	public ResourceTemplateRepository getRepository() {
 		return repository;
-	}
-
-	@Override
-	public String[] getRequiredAttributes() {
-		return new String[] {};
 	}
 
 	private void registerDynamicEvent(TriggerAction action) {
@@ -148,18 +148,28 @@ public class AlertTriggerAction extends AbstractActionProvider implements
 	}
 
 	@Override
-	public void actionCreated(TriggerAction action) {
-		registerDynamicEvent(action);
+	public void taskCreated(Task task) {
+		registerDynamicEvent((TriggerAction)task);
 	}
 
 	@Override
-	public void actionUpdated(TriggerAction action) {
-		super.actionUpdated(action);
+	public void taskUpdated(Task task) {
+		super.taskUpdated(task);
 	}
 
 	@Override
-	public void actionDeleted(TriggerAction action) {
-		super.actionDeleted(action);
+	public void taskDeleted(Task task) {
+		super.taskDeleted(task);
+	}
+
+	@Override
+	public boolean supportsAutomation() {
+		return false;
+	}
+	
+	@Override
+	public boolean supportsTriggers() {
+		return true;
 	}
 
 }

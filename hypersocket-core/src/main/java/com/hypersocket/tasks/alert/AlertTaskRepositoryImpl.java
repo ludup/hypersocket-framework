@@ -1,4 +1,4 @@
-package com.hypersocket.triggers.actions.alert;
+package com.hypersocket.tasks.alert;
 
 import java.util.Date;
 
@@ -11,12 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
-import com.hypersocket.triggers.TriggerAction;
+import com.hypersocket.tasks.Task;
 
 @Repository
 @Transactional
-public class AlertTriggerActionRepositoryImpl extends
-		ResourceTemplateRepositoryImpl implements AlertTriggerActionRepository {
+public class AlertTaskRepositoryImpl extends
+		ResourceTemplateRepositoryImpl implements AlertTaskRepository {
 
 	@PostConstruct
 	private void postConstruct() {
@@ -24,14 +24,14 @@ public class AlertTriggerActionRepositoryImpl extends
 	}
 
 	@Override
-	public long getKeyCount(final TriggerAction action, final String key,
+	public long getKeyCount(final Task task, final String key,
 			final Date since) {
 
 		return getCount(AlertKey.class, new CriteriaConfiguration() {
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("key", key));
-				criteria.add(Restrictions.eq("action", action));
+				criteria.add(Restrictions.eq("task", task));
 				criteria.add(Restrictions.gt("triggered", since));
 			}
 		});
@@ -43,10 +43,10 @@ public class AlertTriggerActionRepositoryImpl extends
 	}
 
 	@Override
-	public void deleteKeys(TriggerAction action, String key) {
-		String hql = "delete from AlertKey a where a.action = :action and a.key = :key";
+	public void deleteKeys(Task task, String key) {
+		String hql = "delete from AlertKey a where a.task = :task and a.key = :key";
 		sessionFactory.getCurrentSession().createQuery(hql)
-				.setParameter("action", action).setParameter("key", key)
+				.setParameter("task", task).setParameter("key", key)
 				.executeUpdate();
 	}
 }

@@ -8,8 +8,6 @@
 package com.hypersocket.netty;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
 
@@ -22,7 +20,7 @@ import org.jboss.netty.handler.codec.frame.FrameDecoder;
 import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
+import org.jboss.netty.handler.ipfilter.IpFilterRuleHandler;
 import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 import org.slf4j.Logger;
@@ -30,16 +28,9 @@ import org.slf4j.LoggerFactory;
 
 public class SSLSwitchingHandler extends FrameDecoder {
 
-	static OrderedMemoryAwareThreadPoolExecutor executor = new OrderedMemoryAwareThreadPoolExecutor(
-			200, 1048576, 1073741824, 100, TimeUnit.MILLISECONDS,
-			Executors.defaultThreadFactory());
-
-	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
-			throws Exception {
-		e.getCause().printStackTrace();
-		super.exceptionCaught(ctx, e);
-	}
+//	static OrderedMemoryAwareThreadPoolExecutor executor = new OrderedMemoryAwareThreadPoolExecutor(
+//			200, 1048576, 1073741824, 100, TimeUnit.MILLISECONDS,
+//			Executors.defaultThreadFactory());
 
 	static Logger log = LoggerFactory.getLogger(SSLSwitchingHandler.class);
 
@@ -52,7 +43,14 @@ public class SSLSwitchingHandler extends FrameDecoder {
 		this.httpPort = httpPort;
 		this.httpsPort = httpsPort;
 	}
-
+	
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+			throws Exception {
+		e.getCause().printStackTrace();
+		super.exceptionCaught(ctx, e);
+	}
+	
 	@Override
 	protected Object decode(ChannelHandlerContext ctx, Channel channel,
 			ChannelBuffer buffer) throws Exception {

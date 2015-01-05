@@ -11,5 +11,4 @@ package com.hypersocket.realm;
 public interface UserPrincipal {
 
 	public String getPrincipalName();
-
 }

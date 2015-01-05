@@ -36,6 +36,8 @@ import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.tasks.TaskProvider;
+import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.events.TriggerExecutedEvent;
 import com.hypersocket.triggers.events.TriggerResourceCreatedEvent;
 import com.hypersocket.triggers.events.TriggerResourceDeletedEvent;
@@ -68,8 +70,11 @@ public class TriggerResourceServiceImpl extends
 
 	@Autowired
 	RealmService realmService;
-
-	Map<String, TriggerActionProvider> registeredActions = new HashMap<String, TriggerActionProvider>();
+	
+	@Autowired
+	TaskProviderService taskService; 
+	
+	
 	Map<String, TriggerConditionProvider> registeredConditions = new HashMap<String, TriggerConditionProvider>();
 
 	Map<String, ReplacementVariableProvider> replacementVariables = new HashMap<String, ReplacementVariableProvider>();
@@ -248,9 +253,9 @@ public class TriggerResourceServiceImpl extends
 		updateResource(resource, properties);
 
 		for (TriggerAction action : resource.getActions()) {
-			TriggerActionProvider provider = getActionProvider(action
+			TaskProvider provider = taskService.getActionProvider(action
 					.getResourceKey());
-			provider.actionUpdated(action);
+			provider.taskUpdated(action);
 		}
 
 		return resource;
@@ -271,9 +276,9 @@ public class TriggerResourceServiceImpl extends
 		createResource(resource, properties);
 
 		for (TriggerAction action : resource.getActions()) {
-			TriggerActionProvider provider = getActionProvider(action
+			TaskProvider provider = taskService.getActionProvider(action
 					.getResourceKey());
-			provider.actionCreated(action);
+			provider.taskCreated(action);
 		}
 
 		return resource;
@@ -284,9 +289,9 @@ public class TriggerResourceServiceImpl extends
 			throws ResourceChangeException, AccessDeniedException {
 
 		for (TriggerAction action : resource.getActions()) {
-			TriggerActionProvider provider = getActionProvider(action
+			TaskProvider provider = taskService.getActionProvider(action
 					.getResourceKey());
-			provider.actionDeleted(action);
+			provider.taskDeleted(action);
 		}
 
 		super.deleteResource(resource);
@@ -319,14 +324,6 @@ public class TriggerResourceServiceImpl extends
 			resource.getActions().add(a);
 		}
 
-	}
-
-	@Override
-	public void registerActionProvider(TriggerActionProvider action) {
-		repository.registerActionRepository(action);
-		for (String resourceKey : action.getResourceKeys()) {
-			registeredActions.put(resourceKey, action);
-		}
 	}
 
 	@Override
@@ -367,7 +364,6 @@ public class TriggerResourceServiceImpl extends
 			data.put("principal", getCurrentPrincipal());
 			data.put("locale", getCurrentLocale());
 			data.put("realm", getCurrentRealm());
-
 			
 			try {
 				schedulerService.scheduleNow(ProcessEventTriggersJob.class,
@@ -385,15 +381,7 @@ public class TriggerResourceServiceImpl extends
 		return registeredConditions.get(condition.getConditionKey());
 	}
 
-	@Override
-	public TriggerActionProvider getActionProvider(String resourceKey) {
-		return registeredActions.get(resourceKey);
-	}
 
-	@Override
-	public List<String> getActions() {
-		return new ArrayList<String>(registeredActions.keySet());
-	}
 
 	@Override
 	public TriggerAction getActionById(Long id) throws AccessDeniedException {

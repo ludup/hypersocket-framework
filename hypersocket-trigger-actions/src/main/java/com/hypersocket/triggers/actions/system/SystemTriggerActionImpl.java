@@ -11,16 +11,17 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.server.HypersocketServer;
-import com.hypersocket.triggers.AbstractActionProvider;
-import com.hypersocket.triggers.ActionResult;
-import com.hypersocket.triggers.TriggerAction;
-import com.hypersocket.triggers.TriggerActionProvider;
+import com.hypersocket.tasks.AbstractTaskProvider;
+import com.hypersocket.tasks.Task;
+import com.hypersocket.tasks.TaskProvider;
+import com.hypersocket.tasks.TaskProviderService;
+import com.hypersocket.triggers.TaskResult;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
-import com.hypersocket.triggers.TriggerValidationException;
+import com.hypersocket.triggers.ValidationException;
 
 @Component
-public class SystemTriggerActionImpl extends AbstractActionProvider implements TriggerActionProvider {
+public class SystemTriggerActionImpl extends AbstractTaskProvider {
 
 	public static final String RESOURCE_BUNDLE = "SystemTriggerAction";
 	
@@ -39,11 +40,13 @@ public class SystemTriggerActionImpl extends AbstractActionProvider implements T
 	@Autowired
 	I18NService i18nService;
 	
+	@Autowired
+	TaskProviderService taskService; 
 	@PostConstruct
 	private void postConstruct() {
 	
 		i18nService.registerBundle(RESOURCE_BUNDLE);
-		triggerService.registerActionProvider(this);
+		taskService.registerActionProvider(this);
 	}
 	
 	@Override
@@ -57,23 +60,23 @@ public class SystemTriggerActionImpl extends AbstractActionProvider implements T
 	}
 
 	@Override
-	public void validate(TriggerAction action, Map<String, String> parameters)
-			throws TriggerValidationException {
+	public void validate(Task task, Map<String, String> parameters)
+			throws ValidationException {
 		
 	}
 
 	@Override
-	public ActionResult execute(TriggerAction action, SystemEvent event)
-			throws TriggerValidationException {
+	public TaskResult execute(Task task, SystemEvent event)
+			throws ValidationException {
 
-		Long delay = repository.getLongValue(action, "operation.delay");
+		Long delay = repository.getLongValue(task, "operation.delay");
 		
-		if(action.getResourceKey().equals(ACTION_SHUTDOWN)) {		
+		if(task.getResourceKey().equals(ACTION_SHUTDOWN)) {		
 			server.shutdown(delay);
-		} else if(action.getResourceKey().equals(ACTION_RESTART)) {		
+		} else if(task.getResourceKey().equals(ACTION_RESTART)) {		
 			server.restart(delay);
 		} else {
-			throw new TriggerValidationException("Invalid resource key for system trigger action");
+			throw new ValidationException("Invalid resource key for system trigger action");
 		}
 		
  		return null;
@@ -83,11 +86,5 @@ public class SystemTriggerActionImpl extends AbstractActionProvider implements T
 	public ResourceTemplateRepository getRepository() {
 		return repository;
 	}
-
-	@Override
-	public String[] getRequiredAttributes() {
-		return new String[] { "operation.delay"};
-	}
-
 	
 }

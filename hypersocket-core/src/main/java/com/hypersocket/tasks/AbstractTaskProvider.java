@@ -1,4 +1,4 @@
-package com.hypersocket.triggers;
+package com.hypersocket.tasks;
 
 import java.util.Collection;
 import java.util.Set;
@@ -13,10 +13,11 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.triggers.TriggerResourceService;
 
-public abstract class AbstractActionProvider implements TriggerActionProvider {
+public abstract class AbstractTaskProvider implements TaskProvider {
 
-	static Logger log = LoggerFactory.getLogger(AbstractActionProvider.class);
+	static Logger log = LoggerFactory.getLogger(AbstractTaskProvider.class);
 	
 	@Autowired
 	EventService eventService;
@@ -66,23 +67,33 @@ public abstract class AbstractActionProvider implements TriggerActionProvider {
 	}
 
 	@Override
-	public Collection<PropertyCategory> getPropertiesForAction(
-			TriggerAction action) {
-		return getRepository().getPropertyCategories(action);
+	public Collection<PropertyCategory> getProperties(
+			Task task) {
+		return getRepository().getPropertyCategories(task);
 	}
 	
 	@Override
-	public void actionCreated(TriggerAction action) {
+	public void taskCreated(Task task) {
 		
 	}
 	
 	@Override
-	public void actionUpdated(TriggerAction action) {
+	public void taskUpdated(Task task) {
 		
 	}
 	
 	@Override
-	public void actionDeleted(TriggerAction action) {
-		getRepository().deletePropertiesForResource(action);
+	public void taskDeleted(Task task) {
+		getRepository().deletePropertiesForResource(task);
+	}
+
+	@Override
+	public boolean supportsAutomation() {
+		return true;
+	}
+	
+	@Override
+	public boolean supportsTriggers() {
+		return true;
 	}
 }

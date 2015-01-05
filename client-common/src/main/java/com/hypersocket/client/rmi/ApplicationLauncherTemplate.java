@@ -12,6 +12,11 @@ public class ApplicationLauncherTemplate implements Serializable {
 	String exe;
 	String[] args = { };
 	
+	public ApplicationLauncherTemplate(String name, String exe, String... args) {
+		this.name = name;
+		this.exe = exe;
+		this.args = args;
+	}
 	
 	public ApplicationLauncherTemplate(String name, String exe, String args) {
 		this.name = name;
