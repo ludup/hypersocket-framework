@@ -269,7 +269,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	private void recurseImpliedPermissions(PermissionType t,
 			Set<PermissionType> derivedPermissions) {
 
-		if (!derivedPermissions.contains(t)) {
+		if (t!=null && !derivedPermissions.contains(t)) {
 			derivedPermissions.add(t);
 			if (t.impliesPermissions() != null) {
 				for (PermissionType t2 : t.impliesPermissions()) {
@@ -291,6 +291,9 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 			Set<PermissionType> derivedPrincipalPermissions = new HashSet<PermissionType>();
 			for (Permission t : principalPermissions) {
+				if(!registeredPermissions.containsKey(t.getResourceKey())) {
+					continue;
+				}
 				switch (strategy) {
 				case INCLUDE_IMPLIED:
 					recurseImpliedPermissions(
