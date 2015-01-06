@@ -116,44 +116,12 @@ public class AutomationResource extends Task {
 	public void setEndTime(String endTime) {
 		this.endTime = endTime;
 	}
-
-	@JsonIgnore
-	public Date calculateStartDateTime() {
-		
-		Calendar c = Calendar.getInstance();
-		
-		if(taskStarts!=null) {
-			c.setTime(taskStarts);
-		}
-		
-		if(!StringUtils.isEmpty(startTime)) {
-			int idx = startTime.indexOf(':');				
-			c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(startTime.substring(0, idx)));
-			c.set(Calendar.MINUTE, Integer.parseInt(startTime.substring(idx++)));
-		}
-		
-		return c.getTime();
+	
+	public Date getStartDate() {
+		return taskStarts;
 	}
 	
-	@JsonIgnore
-	public Date calculateEndDateTime() {
-		
-		Calendar c = Calendar.getInstance();
-		
-		if(taskEnds!=null) {
-			c.setTime(taskEnds);
-		} else {
-			return null;
-		}
-		
-		if(!StringUtils.isEmpty(endTime)) {
-			int idx = endTime.indexOf(':');				
-			c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(endTime.substring(0, idx)));
-			c.set(Calendar.MINUTE, Integer.parseInt(endTime.substring(idx++)));
-		}
-		
-		return c.getTime();
+	public Date getEndDate() {
+		return taskEnds;
 	}
-	
-	
 }
