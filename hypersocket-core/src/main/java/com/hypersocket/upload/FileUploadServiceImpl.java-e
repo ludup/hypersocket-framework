@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Realm;
@@ -57,6 +58,13 @@ public class FileUploadServiceImpl extends
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
+		PermissionCategory cat = permissionService.registerPermissionCategory(
+				RESOURCE_BUNDLE, "category.fileUpload");
+
+		for (FileUploadPermission p : FileUploadPermission.values()) {
+			permissionService.registerPermission(p, cat);
+		}
+
 		eventService.registerEvent(FileUploadCreatedEvent.class,
 				RESOURCE_BUNDLE, this);
 		eventService.registerEvent(FileUploadDeletedEvent.class,
@@ -68,41 +76,47 @@ public class FileUploadServiceImpl extends
 	public FileUpload createFile(final MultipartFile file, final Realm realm)
 			throws ResourceCreationException, AccessDeniedException,
 			IOException {
+		assertPermission(FileUploadPermission.CREATE);
+
 		return createFile(file, realm, true, new FileUploadStore() {
-			public long writeFile(String uuid, InputStream in) throws IOException {
-				
+			public long writeFile(String uuid, InputStream in)
+					throws IOException {
+
 				File f = new File("conf/uploads/" + realm.getId() + "/" + uuid);
 				f.getParentFile().mkdirs();
 				f.createNewFile();
 
 				OutputStream out = new FileOutputStream(UPLOAD_PATH
 						+ realm.getId() + "/" + uuid);
-				
+
 				try {
 					IOUtils.copyLarge(in, out);
 				} finally {
 					IOUtils.closeQuietly(out);
 					IOUtils.closeQuietly(in);
 				}
-				
+
 				return f.length();
 			}
 		});
 	}
-	
-	@Override
-	public FileUpload createFile(MultipartFile file, Realm realm, boolean persist, FileUploadStore uploadStore)
-			throws ResourceCreationException, AccessDeniedException,
-			IOException {
-		return createFile(file.getInputStream(), file.getOriginalFilename(), realm, persist, uploadStore);
-	}
-	
-	@Override
-	public FileUpload createFile(InputStream in, String filename, Realm realm, boolean persist, FileUploadStore uploadStore)
-			throws ResourceCreationException, AccessDeniedException,
-			IOException {
 
-		
+	@Override
+	public FileUpload createFile(MultipartFile file, Realm realm,
+			boolean persist, FileUploadStore uploadStore)
+			throws ResourceCreationException, AccessDeniedException,
+			IOException {
+		assertPermission(FileUploadPermission.CREATE);
+
+		return createFile(file.getInputStream(), file.getOriginalFilename(),
+				realm, persist, uploadStore);
+	}
+
+	@Override
+	public FileUpload createFile(InputStream in, String filename, Realm realm,
+			boolean persist, FileUploadStore uploadStore)
+			throws ResourceCreationException, AccessDeniedException,
+			IOException {
 
 		String uuid = UUID.randomUUID().toString();
 		FileUpload fileUpload = new FileUpload();
@@ -111,17 +125,17 @@ public class FileUploadServiceImpl extends
 		fileUpload.setName(uuid);
 
 		try {
-			
+
 			MessageDigest md5 = MessageDigest.getInstance("MD5");
 			DigestInputStream din = null;
 			OutputStream out = null;
 
 			try {
-				
+
 				din = new DigestInputStream(in, md5);
 
 				fileUpload.setFileSize(uploadStore.writeFile(uuid, din));
-				
+
 				String md5String = Hex.encodeHexString(md5.digest());
 				fileUpload.setMd5Sum(md5String);
 			} finally {
@@ -130,20 +144,24 @@ public class FileUploadServiceImpl extends
 				IOUtils.closeQuietly(in);
 			}
 
-			if(persist) {
+			if (persist) {
 				createResource(fileUpload, new HashMap<String, String>());
 			}
-			
+
 			return fileUpload;
 		} catch (Throwable e) {
 			fireResourceCreationEvent(fileUpload, e);
-			throw new ResourceCreationException(FileUploadServiceImpl.RESOURCE_BUNDLE, "error.genericError", e.getMessage());
+			throw new ResourceCreationException(
+					FileUploadServiceImpl.RESOURCE_BUNDLE,
+					"error.genericError", e.getMessage());
 		}
 
 	}
 
 	@Override
 	public FileUpload getFileByUuid(String uuid) {
+		// assertPermission(FileUploadPermission.READ);
+
 		return repository.getFileByUuid(uuid);
 	}
 
@@ -198,7 +216,7 @@ public class FileUploadServiceImpl extends
 
 	@Override
 	public Class<? extends PermissionType> getPermissionType() {
-		return null;
+		return FileUploadPermission.class;
 	}
 
 	@Override
