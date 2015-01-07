@@ -12,7 +12,7 @@ public class SessionResourceToken<T> {
 	public SessionResourceToken(Session session, T resource) {
 		this.session = session;
 		this.resource = resource;
-		this.shortCode = RandomStringUtils.randomAlphanumeric(16);
+		this.shortCode = SessionServiceImpl.TOKEN_PREFIX + RandomStringUtils.randomAlphanumeric(16);
 	}
 	
 	public Session getSession() {

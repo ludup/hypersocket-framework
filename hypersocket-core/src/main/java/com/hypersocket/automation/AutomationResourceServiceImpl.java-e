@@ -1,5 +1,6 @@
 package com.hypersocket.automation;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -7,6 +8,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +17,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.automation.events.AutomationResourceCreatedEvent;
 import com.hypersocket.automation.events.AutomationResourceDeletedEvent;
 import com.hypersocket.automation.events.AutomationResourceUpdatedEvent;
@@ -166,21 +169,54 @@ public class AutomationResourceServiceImpl extends
 		
 		return resource;
 	}
+	
+	@Override
+	protected void beforeCreateResource(AutomationResource resource,
+			Map<String, String> properties) throws ResourceCreationException {
+		super.beforeCreateResource(resource, properties);
+	}
 
+	@Override
+	protected void beforeUpdateResource(AutomationResource resource,
+			Map<String, String> properties) throws ResourceChangeException {
+		super.beforeUpdateResource(resource, properties);
+	}
+
+	@Override
 	protected void afterCreateResource(AutomationResource resource, Map<String,String> properties) throws ResourceCreationException {
 		TaskProvider provider = taskService.getActionProvider(resource);
 		provider.getRepository().setValues(resource, properties);
 	}
 	
+	@Override
 	protected void afterUpdateResource(AutomationResource resource, Map<String,String> properties) throws ResourceChangeException {
 		TaskProvider provider = taskService.getActionProvider(resource);
 		provider.getRepository().setValues(resource, properties);
 	}
 	
+
+	protected Date calculateDateTime(Date from, String time) {
+		
+		Calendar c = Calendar.getInstance();
+		
+		if(from!=null) {
+			c.setTime(from);
+		}
+		
+		if(!StringUtils.isEmpty(time)) {
+			int idx = time.indexOf(':');				
+			c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(time.substring(0, idx)));
+			c.set(Calendar.MINUTE, Integer.parseInt(time.substring(idx++)));
+		}
+		
+		return c.getTime();
+	}	
+	
+	
 	protected void schedule(AutomationResource resource) {
 		
-		Date start = resource.calculateStartDateTime();
-		Date end = resource.calculateEndDateTime();
+		Date start = calculateDateTime(resource.getStartDate(), resource.getStartTime());
+		Date end = calculateDateTime(resource.getEndDate(), resource.getEndTime());
 		
 		int interval = 0;
 		int repeat = 0; 

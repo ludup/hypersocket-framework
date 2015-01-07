@@ -66,6 +66,8 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 
 	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
 
+	public static String TOKEN_PREFIX = "_TOK";
+
 	UserAgentStringParser parser;
 
 	Map<Session,List<ResourceSession<?>>> resourceSessions = new HashMap<Session,List<ResourceSession<?>>>();
@@ -309,6 +311,22 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		return null;
 	}
 
+	@Override
+	public <T> T getSessionTokenResource(String shortCode, Class<T> resourceClz) {
+		
+		if(sessionTokens.containsKey(shortCode)) {
+			
+			@SuppressWarnings("unchecked")
+			SessionResourceToken<T> token = (SessionResourceToken<T>) sessionTokens.get(shortCode);
+			
+			if(isLoggedOn(token.getSession(), true)) {
+				return token.getResource();
+			}
+		}
+		
+		return null;
+	}
+	
 	@Override
 	public Session getNonCookieSession(String remoteAddr, String requestHeader,
 			String authenticationSchemeResourceKey) throws AccessDeniedException {
