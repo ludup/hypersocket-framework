@@ -406,11 +406,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				}
 				case AUTHENTICATION_SUCCESS: {
 					try {
-
-						eventService
-								.publishEvent(new AuthenticationAttemptEvent(
-										this, state, authenticator));
-
 						success = true;
 
 						state.nextModule();
@@ -423,20 +418,37 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 									AuthenticationPermission.LOGON,
 									SystemPermission.SYSTEM_ADMINISTRATION);
 
-							for (PostAuthenticationStep proc : postAuthenticationSteps) {
-								if (proc.requiresProcessing(state)) {
-										state.addPostAuthenticationStep(proc);
-								}
-							}
+							if(!realmService.verifyPrincipal(state.getPrincipal())) {
+								
+								eventService.publishEvent(new AuthenticationAttemptEvent(
+										this, state, authenticator,
+										"hint.accountSuspended"));
+								
+								// Principal is currently suspended from logon
+								state.setLastErrorMsg("error.accountSuspended");
+								state.setLastErrorIsResourceKey(true);
+								success = false;
+							} else {
+								
 
-							if(state.canCreateSession()) {
-								state.setSession(completeLogon(state));
-							}
-							
-							if(state.hasPostAuthenticationStep()) {
-								PostAuthenticationStep step = state.getCurrentPostAuthenticationStep();
-								if(!step.requiresUserInput(state)) {
-									success = logon(state, parameterMap);
+								eventService.publishEvent(new AuthenticationAttemptEvent(
+										this, state, authenticator));
+								
+								for (PostAuthenticationStep proc : postAuthenticationSteps) {
+									if (proc.requiresProcessing(state)) {
+											state.addPostAuthenticationStep(proc);
+									}
+								}
+	
+								if(state.canCreateSession()) {
+									state.setSession(completeLogon(state));
+								}
+								
+								if(state.hasPostAuthenticationStep()) {
+									PostAuthenticationStep step = state.getCurrentPostAuthenticationStep();
+									if(!step.requiresUserInput(state)) {
+										success = logon(state, parameterMap);
+									}
 								}
 							}
 						}
@@ -545,11 +557,23 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	@Override
 	public Map<String, Authenticator> getAuthenticators(String schemeResourceKey) {
 		Map<String, Authenticator> tmp = new HashMap<String, Authenticator>();
+		AuthenticationScheme scheme =schemeRepository.getSchemeByResourceKey(getCurrentRealm(), schemeResourceKey);
+		
 		for (Authenticator a : authenticators.values()) {
-			for (String s : a.getAllowedSchemes()) {
-				if (schemeResourceKey.matches(s)) {
+			
+			if(scheme.getType()!=AuthenticationModuleType.CUSTOM) {
+				if(scheme.getType().ordinal() >= a.getType().ordinal()) {
 					tmp.put(a.getResourceKey(), a);
-					break;
+				}
+			} else {
+				if(scheme.getAllowedModules()==null) {
+					throw new IllegalStateException("CUSTOM authentication scheme type must declare allowed modules");
+				}
+				for (String s : scheme.getAllowedModules().split(",")) {
+					if (a.getResourceKey().matches(s)) {
+						tmp.put(a.getResourceKey(), a);
+						break;
+					}
 				}
 			}
 		}
