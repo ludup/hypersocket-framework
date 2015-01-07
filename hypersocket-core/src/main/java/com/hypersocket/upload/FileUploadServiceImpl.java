@@ -4,8 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -196,43 +194,17 @@ public class FileUploadServiceImpl extends
 			throws IOException, AccessDeniedException {
 
 		FileUpload fileUpload = getFileByUuid(uuid);
-		FileReader fr = null;
-		FileWriter fw = null;
-		try {
-			fr = new FileReader(UPLOAD_PATH + "/"
-					+ fileUpload.getRealm().getId() + "/"
-					+ fileUpload.getName());
-			fw = new FileWriter(UPLOAD_PATH + "/"
-					+ fileUpload.getRealm().getId() + "/"
-					+ fileUpload.getFileName());
-			int c = fr.read();
-			while (c != -1) {
-				fw.write(c);
-				c = fr.read();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				fr.close();
-				fw.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-		}
 
 		File file = new File(UPLOAD_PATH + "/" + fileUpload.getRealm().getId()
-				+ "/" + fileUpload.getFileName());
+				+ "/" + fileUpload.getName());
 		InputStream in = new BufferedInputStream(new FileInputStream(file));
 		try {
-			
 
 			response.setContentType(mimeTypesMap.getContentType(file
 					.getAbsolutePath()));
 
 			response.setHeader("Content-disposition", "attachment; filename="
-					+ file.getName());
+					+ fileUpload.getFileName());
 
 			if (file.length() >= 1024000) {
 
@@ -252,12 +224,11 @@ public class FileUploadServiceImpl extends
 						response.getOutputStream());
 			}
 			response.flushBuffer();
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
-		}finally{
+		} finally {
 			in.close();
-			file.delete();
 		}
 
 	}
