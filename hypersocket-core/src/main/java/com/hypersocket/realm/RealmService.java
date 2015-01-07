@@ -202,4 +202,6 @@ public interface RealmService extends AuthenticatedService {
 
 	boolean isRegistered(RealmProvider provider);
 
+	boolean verifyPrincipal(Principal principal);
+
 }

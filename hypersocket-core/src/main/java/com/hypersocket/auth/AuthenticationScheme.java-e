@@ -29,6 +29,9 @@ public class AuthenticationScheme extends RealmResource {
 	@Column(name = "type", nullable=true)
 	AuthenticationModuleType type;
 	
+	@Column(name = "allowed_modules")
+	String allowedModules;
+	
 	public String getResourceKey() {
 		return resourceKey;
 	}
@@ -68,6 +71,15 @@ public class AuthenticationScheme extends RealmResource {
 			this.type = type;
 		}
 	}
+
+	public String getAllowedModules() {
+		return allowedModules;
+	}
+	
+	public void setAllowedModules(String allowedModules) {
+		this.allowedModules = allowedModules;
+	}
+	
 	
 	
 
