@@ -1,7 +1,6 @@
 package com.hypersocket.upload.json;
 
 import java.io.IOException;
-import java.net.URLDecoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -129,28 +128,6 @@ public class FileUploadController extends ResourceController {
 		}
 	}
 
-	// @AuthenticationRequired
-	// @RequestMapping(value = "fileUpload/file/{uuid}", method =
-	// RequestMethod.GET, produces = { "application/octet-stream" })
-	// @ResponseBody
-	// @ResponseStatus(value = HttpStatus.OK)
-	// public void download(final HttpServletRequest request,
-	// HttpServletResponse response, @PathVariable String uuid)
-	// throws AccessDeniedException, UnauthorizedException,
-	// SessionTimeoutException {
-	// try {
-	// FileInputStream fis = service.downloadFile(uuid);
-	//
-	//
-	// org.apache.commons.io.IOUtils.copy(fis, response.getOutputStream());
-	// response.flushBuffer();
-	// } catch (IOException ex) {
-	//
-	// throw new RuntimeException("IOError writing file to output stream");
-	// }
-	//
-	// }
-
 	@AuthenticationRequired
 	@RequestMapping(value = "fileUpload/file/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
@@ -163,20 +140,10 @@ public class FileUploadController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 
-			String uri = URLDecoder.decode(request.getRequestURI(), "UTF-8");
-			service.downloadURIFile(request.getHeader("Host"),
-					"api/fs/download", uri, new HttpDownloadProcessor(request,
-							response, 0, Long.MAX_VALUE, HTTP_PROTOCOL,
-							sessionUtils.getActiveSession(request)),
-					HTTP_PROTOCOL);
+			service.downloadURIFile(uuid, response);
 
 		} catch (Exception e) {
-			try {
-				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			} catch (IOException e1) {
-			}
-		} finally {
-			clearAuthenticatedContext();
+			throw new RuntimeException("IOError writing file to output stream");
 		}
 	}
 }
