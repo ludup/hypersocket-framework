@@ -253,7 +253,7 @@ public abstract class HypersocketClient<T> {
 				throw new IOException("Too many failed authentication attempts");
 			}
 			
-			String json = transport.post("logon", params);
+			String json = transport.post("logon/hypersocketClient", params);
 			params.clear();
 			boolean success = processLogon(json, params, prompts);
 			if(!success) {

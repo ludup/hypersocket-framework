@@ -54,6 +54,8 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.session.SessionService;
+import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.upgrade.UpgradeService;
 import com.hypersocket.upgrade.UpgradeServiceListener;
@@ -83,6 +85,9 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Autowired
 	UpgradeService upgradeService;
+	
+	@Autowired
+	SessionService sessionService;
 
 	CacheManager cacheManager;
 	Cache realmCache;
@@ -392,8 +397,20 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public boolean verifyPassword(Principal principal, char[] password) {
-		return getProviderForRealm(principal.getRealm()).verifyPassword(
+		
+		/**
+		 * Adds support for session tokens. These can be created and used instead
+		 * of passwords where we may not have, or want to distribute the password
+		 * to an external service.
+		 */
+		String pwd = new String(password);
+		if(pwd.startsWith(SessionServiceImpl.TOKEN_PREFIX)) {
+			Principal tokenPrincipal = sessionService.getSessionTokenResource(pwd, Principal.class);
+			return tokenPrincipal.equals(principal);
+		} else {
+			return getProviderForRealm(principal.getRealm()).verifyPassword(
 				principal, password);
+		}
 	}
 
 	@Override
