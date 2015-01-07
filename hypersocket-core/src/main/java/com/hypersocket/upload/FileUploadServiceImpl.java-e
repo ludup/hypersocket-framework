@@ -1,9 +1,11 @@
 package com.hypersocket.upload;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -12,7 +14,9 @@ import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.UUID;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
@@ -40,6 +44,7 @@ public class FileUploadServiceImpl extends
 
 	public static final String RESOURCE_BUNDLE = "FileUploadService";
 	public static final String UPLOAD_PATH = "conf/uploads/";
+	static MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
 
 	@Autowired
 	FileUploadRepository repository;
@@ -186,21 +191,74 @@ public class FileUploadServiceImpl extends
 
 	}
 
-	public FileInputStream downloadFile(String uuid) {
-		FileUpload fileUpload = getFileByUuid(uuid);
-		File file = new File(UPLOAD_PATH + "/" + fileUpload.getRealm().getId()
-				+ "/" + fileUpload.getName());
+	@Override
+	public void downloadURIFile(String uuid, HttpServletResponse response)
+			throws IOException, AccessDeniedException {
 
-		File renamedFile = new File(fileUpload.getFileName());
-		file.renameTo(renamedFile);
-		FileInputStream fis = null;
+		FileUpload fileUpload = getFileByUuid(uuid);
+		FileReader fr = null;
+		FileWriter fw = null;
 		try {
-			fis = new FileInputStream(file);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			fr = new FileReader(UPLOAD_PATH + "/"
+					+ fileUpload.getRealm().getId() + "/"
+					+ fileUpload.getName());
+			fw = new FileWriter(UPLOAD_PATH + "/"
+					+ fileUpload.getRealm().getId() + "/"
+					+ fileUpload.getFileName());
+			int c = fr.read();
+			while (c != -1) {
+				fw.write(c);
+				c = fr.read();
+			}
+		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				fr.close();
+				fw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
 		}
-		return fis;
+
+		File file = new File(UPLOAD_PATH + "/" + fileUpload.getRealm().getId()
+				+ "/" + fileUpload.getFileName());
+		InputStream in = new BufferedInputStream(new FileInputStream(file));
+		try {
+			
+
+			response.setContentType(mimeTypesMap.getContentType(file
+					.getAbsolutePath()));
+
+			response.setHeader("Content-disposition", "attachment; filename="
+					+ file.getName());
+
+			if (file.length() >= 1024000) {
+
+				byte[] buf = new byte[65535];
+				int r;
+				long remaining = file.length();
+				while ((r = in.read(buf, 0,
+						(int) Math.min(buf.length, remaining))) > -1
+						&& remaining > 0) {
+					response.getOutputStream().write(buf, 0, r);
+					remaining -= r;
+				}
+
+			} else {
+
+				org.apache.commons.io.IOUtils.copy(in,
+						response.getOutputStream());
+			}
+			response.flushBuffer();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}finally{
+			in.close();
+			file.delete();
+		}
 
 	}
 
