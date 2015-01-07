@@ -396,6 +396,11 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
+	public boolean verifyPrincipal(Principal principal) {
+		return false;
+	}
+	
+	@Override
 	public boolean verifyPassword(Principal principal, char[] password) {
 		
 		/**
