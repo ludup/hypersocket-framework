@@ -3,7 +3,7 @@
 	<propertyCategory resourceKey="category.security"
 		resourceBundle="AuthenticationService" weight="500">
 		<property resourceKey="logon.banner" inputType="textarea"
-			rows="5" maxlength="1024" defaultValue="" weight="0" />
+			rows="5" maxLength="8000" defaultValue="" weight="0" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email"
 		resourceBundle="EmailService" weight="600">
@@ -18,7 +18,7 @@
 		<property resourceKey="smtp.password" inputType="password"
 			weight="400" defaultValue="" />
 		<property resourceKey="smtp.fromAddress" inputType="text"
-			weight="500" defaultValue="admin@localhost" />
+			weight="500" defaultValue="admin@localhost.com" regex="^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$"/>
 		<property resourceKey="smtp.fromName" inputType="text"
 			weight="600" defaultValue="Server Administrator" />
 	</propertyCategory>

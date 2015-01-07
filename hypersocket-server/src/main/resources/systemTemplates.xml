@@ -6,7 +6,7 @@
 	</propertyStore>
 	<propertyCategory resourceKey="category.server" resourceBundle="HypersocketServer" weight="100">
 		<property resourceKey="application.name" inputType="text"
-			restart="true" defaultValue="Hypersocket" weight="0" />
+			restart="true" defaultValue="Hypersocket" weight="0" alphaNumericSpacesOnly="true"/>
 		<property resourceKey="application.path" inputType="text"
 			restart="true" defaultValue="hypersocket" weight="100" />
 		<property resourceKey="ui.path" inputType="text" restart="true"
