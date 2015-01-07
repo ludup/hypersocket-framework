@@ -397,7 +397,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public boolean verifyPrincipal(Principal principal) {
-		return false;
+		return true;
 	}
 	
 	@Override
