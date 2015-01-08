@@ -55,7 +55,14 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 		Thread t = new Thread() {
 			public void run() {
 				try {
-					cmd.execute();
+					int exitCode = cmd.execute();
+					
+					if(log.isInfoEnabled()) {
+						log.info("Command exited with exit code " + exitCode);
+						log.info("---BEGIN CMD OUTPUT----");
+						log.info(cmd.getCommandOutput());
+						log.info("---END CMD OUTPUT----");
+					}
 				} catch (IOException e) {
 					log.error("Failed to launch application", e);
 				}
