@@ -167,16 +167,19 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					.getLocalAddress()) && server.isHttpsRequired()) {
 				// Redirect the plain port to SSL
 				String host = nettyRequest.getHeader(HttpHeaders.HOST);
-				int idx;
-				if ((idx = host.indexOf(':')) > -1) {
-					host = host.substring(0, idx);
+				if(host==null) {
+					nettyResponse.sendError(400, "No Host Header");
+				} else {
+					int idx;
+					if ((idx = host.indexOf(':')) > -1) {
+						host = host.substring(0, idx);
+					}
+					nettyResponse.sendRedirect("https://"
+							+ host
+							+ (server.getHttpsPort() != 443 ? ":"
+									+ String.valueOf(server.getHttpsPort()) : "")
+							+ nettyRequest.getUri());
 				}
-				nettyResponse.sendRedirect("https://"
-						+ host
-						+ (server.getHttpsPort() != 443 ? ":"
-								+ String.valueOf(server.getHttpsPort()) : "")
-						+ nettyRequest.getUri());
-
 				sendResponse(servletRequest, nettyResponse, false);
 				return;
 			}
