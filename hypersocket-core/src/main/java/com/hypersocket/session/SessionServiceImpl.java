@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -191,7 +193,20 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 				s.close();
 			}
 		}
-
+		
+		synchronized (sessionTokens) {
+			Set<String> tokens = new HashSet<String>();
+			for(SessionResourceToken<?> token : sessionTokens.values()) {
+				if(token.getSession().equals(session)) {
+					tokens.add(token.getShortCode());
+				}
+			}
+			
+			for(String t : tokens) {
+				sessionTokens.remove(t);
+			}
+		}
+		
 		session.setSignedOut(new Date());
 		session.setNonCookieKey(null);
 		repository.updateSession(session);
