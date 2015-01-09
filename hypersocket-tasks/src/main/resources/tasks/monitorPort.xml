@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="monitorPortTask">
+	<propertyCategory resourceKey="category.monitorPort"
+		resourceBundle="MonitorPortTask" weight="1000">
+		<property resourceKey="monitorPort.ip" inputType="text" 
+			defaultValue="" weight="0"/>
+		<property resourceKey="monitorPort.port" inputType="number" weight="1"
+			defaultValue="22" minValue="0" maxValue="65535" />
+		<property resourceKey="monitorPort.timeout" inputType="number" weight="1"
+			defaultValue="60" minValue="0" maxValue="65535" />	
+	</propertyCategory>
+</propertyTemplates>
