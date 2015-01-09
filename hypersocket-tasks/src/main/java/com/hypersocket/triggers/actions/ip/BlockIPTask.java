@@ -32,7 +32,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 
 	static Logger log = LoggerFactory.getLogger(BlockIPTask.class);
 	
-	public static final String RESOURCE_BUNDLE = "BlockIPTaskBlockIPTaskRepositoryImpl.java";
+	public static final String RESOURCE_BUNDLE = "BlockIPTask";
 	
 	public static final String RESOURCE_KEY = "blockIP";
 	
@@ -73,7 +73,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 	public String[] getResourceKeys() {
 		return new String[] { RESOURCE_KEY };
 	}
-
+ 
 	@Override
 	public void validate(Task task, Map<String, String> parameters)
 			throws ValidationException {
