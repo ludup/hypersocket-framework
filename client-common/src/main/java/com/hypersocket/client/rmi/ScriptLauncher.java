@@ -33,7 +33,7 @@ public class ScriptLauncher implements ResourceLauncher, Serializable {
 	}
 	
 	@Override
-	public void launch() {
+	public int launch() {
 		
 		Map<String,String> env = System.getenv();
 		Map<String,String> properties = new HashMap<String,String>();
@@ -57,7 +57,7 @@ public class ScriptLauncher implements ResourceLauncher, Serializable {
 		} catch(IOException ex) { 
 			log.error("Failed to create temporary script file", ex);
 			scriptFile.delete();
-			return;
+			return Integer.MIN_VALUE;
 		} finally {
 			IOUtils.closeQuietly(out);
 		}
@@ -72,17 +72,22 @@ public class ScriptLauncher implements ResourceLauncher, Serializable {
 		}
 		
 		
-		Thread t = new Thread() {
-			public void run() {
-				try {
-					cmd.execute();
-				} catch (IOException e) {
-					log.error("Failed to launch application", e);
-				} 
+		try {
+			int exitCode = cmd.execute();
+			
+			if(log.isInfoEnabled()) {
+				log.info("Command exited with exit code " + exitCode);
+				log.info("---BEGIN CMD OUTPUT----");
+				log.info(cmd.getCommandOutput());
+				log.info("---END CMD OUTPUT----");
 			}
-		};
-		
-		t.start();
+			
+			return exitCode;
+		} catch (IOException e) {
+			log.error("Failed to execute script", e);
+			return Integer.MIN_VALUE;
+		}
+				
 	}
 
 	private CommandExecutor executeBashScript(File scriptFile) {
@@ -90,7 +95,7 @@ public class ScriptLauncher implements ResourceLauncher, Serializable {
 	}
 
 	private CommandExecutor executeWindowsScript(File scriptFile) {
-		return new CommandExecutor("/usr/bin/sh", scriptFile.getAbsolutePath());
+		return new CommandExecutor("/bin/sh", scriptFile.getAbsolutePath());
 	}
 
 	private String getScriptSuffix() {

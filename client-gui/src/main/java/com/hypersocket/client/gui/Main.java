@@ -46,6 +46,9 @@ public class Main {
 			shell.addListener(SWT.CLOSE, new Listener() {
 				public void handleEvent(Event event) {
 					event.doit = false;
+					if(log.isInfoEnabled()) {
+						log.info("Main shell is trying to close...");
+					}
 				}
 			});
 			

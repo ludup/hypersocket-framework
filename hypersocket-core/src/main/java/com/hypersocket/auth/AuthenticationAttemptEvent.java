@@ -1,5 +1,7 @@
 package com.hypersocket.auth;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NServiceImpl;
@@ -55,4 +57,7 @@ public class AuthenticationAttemptEvent extends SystemEvent {
 		return AuthenticationService.RESOURCE_BUNDLE;
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }

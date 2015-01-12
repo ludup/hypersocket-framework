@@ -1,5 +1,7 @@
 package com.hypersocket.session.events;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.realm.Principal;
@@ -10,6 +12,8 @@ public abstract class SessionEvent extends SystemEvent {
 
 	private static final long serialVersionUID = 4343611840171821823L;
 
+	public static final String EVENT_RESOURCE_KEY = "session.event";
+	
 	public static final String ATTR_UUID = "attr.uuid";
 	public static final String ATTR_PRINCIPAL_NAME = CommonAttributes.ATTR_PRINCIPAL_NAME;
 	public static final String ATTR_PRINCIPAL_REALM = CommonAttributes.ATTR_PRINCIPAL_REALM;
@@ -43,6 +47,10 @@ public abstract class SessionEvent extends SystemEvent {
 
 	public Principal getPrincipal() {
 		return session.getCurrentPrincipal();
+	}
+	
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
 	}
 
 }

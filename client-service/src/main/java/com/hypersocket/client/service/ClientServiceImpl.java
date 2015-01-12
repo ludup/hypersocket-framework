@@ -285,7 +285,7 @@ public class ClientServiceImpl implements ClientService,
 							.forName(clz);
 
 					ServicePlugin plugin = pluginClz.newInstance();
-					plugin.start(client, resourceService);
+					plugin.start(client, resourceService, gui);
 
 					connectionPlugins.get(client.getAttachment()).add(plugin);
 				} catch (Throwable e) {
