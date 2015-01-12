@@ -1,6 +1,5 @@
 package com.hypersocket.automation;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -11,7 +10,6 @@ import javax.persistence.TemporalType;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.utils.HypersocketUtils;
 
@@ -123,5 +121,9 @@ public class AutomationResource extends Task {
 	
 	public Date getEndDate() {
 		return taskEnds;
+	}
+
+	public boolean isDailyJob() {
+		return getStartDate()==null && getEndDate()==null && StringUtils.isNotEmpty(startTime);
 	}
 }

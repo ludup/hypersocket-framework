@@ -3,6 +3,8 @@ package com.hypersocket.realm.events;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;
@@ -28,4 +30,7 @@ public class GroupUpdatedEvent extends GroupEvent {
 				principalName, associatedPrincipals);
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }

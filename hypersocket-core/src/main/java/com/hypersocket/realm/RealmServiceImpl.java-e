@@ -41,14 +41,18 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.events.ChangePasswordEvent;
 import com.hypersocket.realm.events.GroupCreatedEvent;
 import com.hypersocket.realm.events.GroupDeletedEvent;
+import com.hypersocket.realm.events.GroupEvent;
 import com.hypersocket.realm.events.GroupUpdatedEvent;
+import com.hypersocket.realm.events.PrincipalEvent;
 import com.hypersocket.realm.events.ProfileUpdatedEvent;
 import com.hypersocket.realm.events.RealmCreatedEvent;
 import com.hypersocket.realm.events.RealmDeletedEvent;
+import com.hypersocket.realm.events.RealmEvent;
 import com.hypersocket.realm.events.RealmUpdatedEvent;
 import com.hypersocket.realm.events.SetPasswordEvent;
 import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserDeletedEvent;
+import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
@@ -85,13 +89,13 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Autowired
 	UpgradeService upgradeService;
-	
+
 	@Autowired
 	SessionService sessionService;
 
 	CacheManager cacheManager;
 	Cache realmCache;
-	
+
 	@PostConstruct
 	private void postConstruct() {
 
@@ -128,6 +132,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			permissionService.registerPermission(p, cat);
 		}
 
+		eventService.registerEvent(RealmEvent.class, RESOURCE_BUNDLE,
+				new RealmPropertyCollector());
 		eventService.registerEvent(RealmCreatedEvent.class, RESOURCE_BUNDLE,
 				new RealmPropertyCollector());
 		eventService.registerEvent(RealmUpdatedEvent.class, RESOURCE_BUNDLE,
@@ -135,6 +141,10 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		eventService.registerEvent(RealmDeletedEvent.class, RESOURCE_BUNDLE,
 				new RealmPropertyCollector());
 
+		eventService.registerEvent(PrincipalEvent.class, RESOURCE_BUNDLE);
+		
+		eventService.registerEvent(UserEvent.class, RESOURCE_BUNDLE,
+				new UserPropertyCollector());
 		eventService.registerEvent(UserCreatedEvent.class, RESOURCE_BUNDLE,
 				new UserPropertyCollector());
 		eventService.registerEvent(UserUpdatedEvent.class, RESOURCE_BUNDLE,
@@ -142,6 +152,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		eventService.registerEvent(UserDeletedEvent.class, RESOURCE_BUNDLE,
 				new UserPropertyCollector());
 
+		eventService.registerEvent(GroupEvent.class, RESOURCE_BUNDLE,
+				new GroupPropertyCollector());
 		eventService.registerEvent(GroupCreatedEvent.class, RESOURCE_BUNDLE,
 				new GroupPropertyCollector());
 		eventService.registerEvent(GroupUpdatedEvent.class, RESOURCE_BUNDLE,
@@ -153,10 +165,10 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		eventService.registerEvent(SetPasswordEvent.class, RESOURCE_BUNDLE);
 
 		upgradeService.registerListener(this);
-		
+
 		cacheManager = CacheManager.newInstance();
-		realmCache = new Cache("realmCache", 5000, false, false,
-				60 * 60, 60 * 60);
+		realmCache = new Cache("realmCache", 5000, false, false, 60 * 60,
+				60 * 60);
 		cacheManager.addCache(realmCache);
 	}
 
@@ -231,18 +243,19 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public void registerRealmProvider(RealmProvider provider) {
-		
-		if(log.isInfoEnabled()) {
+
+		if (log.isInfoEnabled()) {
 			log.info("Registering " + provider.getModule() + " realm provider");
 		}
 		providersByModule.put(provider.getModule(), provider);
 	}
-	
+
 	@Override
 	public void unregisterRealmProvider(RealmProvider provider) {
-		
-		if(log.isInfoEnabled()) {
-			log.info("Unregistering " + provider.getModule() + " realm provider");
+
+		if (log.isInfoEnabled()) {
+			log.info("Unregistering " + provider.getModule()
+					+ " realm provider");
 		}
 		providersByModule.remove(provider.getModule());
 	}
@@ -251,7 +264,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Realm getRealmByName(String realm) throws AccessDeniedException {
 		return realmRepository.getRealmByName(realm);
 	}
-	
+
 	@Override
 	public boolean isRegistered(RealmProvider provider) {
 		return providersByModule.containsKey(provider.getModule());
@@ -276,14 +289,14 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public Realm getRealmByHost(String host) {
-		
+
 		if (!realmCache.isElementInMemory(host)
 				|| (realmCache.get(host) == null || realmCache
 						.isExpired(realmCache.get(host)))) {
 			for (Realm r : internalAllRealms()) {
 				RealmProvider provider = getProviderForRealm(r);
 				String[] realmHosts = provider.getValues(r, "realm.host");
-				for(String realmHost : realmHosts) {
+				for (String realmHost : realmHosts) {
 					if (realmHost != null && !"".equals(realmHost)) {
 						if (realmHost.equalsIgnoreCase(host)) {
 							realmCache.put(new Element(host, r));
@@ -295,7 +308,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			realmCache.put(new Element(host, getDefaultRealm()));
 			return getDefaultRealm();
 		}
-		
+
 		return (Realm) realmCache.get(host).getObjectValue();
 	}
 
@@ -303,7 +316,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public String getRealmHostname(Realm realm) {
 		RealmProvider provder = getProviderForRealm(realm);
 		String[] names = provder.getValues(realm, "realm.host");
-		if(names.length > 0) {
+		if (names.length > 0) {
 			return names[0];
 		}
 		return "";
@@ -399,22 +412,23 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public boolean verifyPrincipal(Principal principal) {
 		return true;
 	}
-	
+
 	@Override
 	public boolean verifyPassword(Principal principal, char[] password) {
-		
+
 		/**
-		 * Adds support for session tokens. These can be created and used instead
-		 * of passwords where we may not have, or want to distribute the password
-		 * to an external service.
+		 * Adds support for session tokens. These can be created and used
+		 * instead of passwords where we may not have, or want to distribute the
+		 * password to an external service.
 		 */
 		String pwd = new String(password);
-		if(pwd.startsWith(SessionServiceImpl.TOKEN_PREFIX)) {
-			Principal tokenPrincipal = sessionService.getSessionTokenResource(pwd, Principal.class);
+		if (pwd.startsWith(SessionServiceImpl.TOKEN_PREFIX)) {
+			Principal tokenPrincipal = sessionService.getSessionTokenResource(
+					pwd, Principal.class);
 			return tokenPrincipal.equals(principal);
 		} else {
 			return getProviderForRealm(principal.getRealm()).verifyPassword(
-				principal, password);
+					principal, password);
 		}
 	}
 
@@ -442,7 +456,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		}
 
 		clearCache(realm);
-		
+
 		deleteRealm(realm);
 	}
 
@@ -523,7 +537,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 					newPassword.toCharArray());
 
 			setCurrentPassword(newPassword);
-			
+
 			eventService.publishEvent(new ChangePasswordEvent(this,
 					getCurrentSession(), getCurrentRealm(), provider));
 
@@ -642,13 +656,13 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	private void clearCache(Realm realm) {
 		RealmProvider realmProvider = getProviderForRealm(realm
 				.getResourceCategory());
-		
+
 		String[] hosts = realmProvider.getValues(realm, "realm.host");
-		for(String host : hosts) {
+		for (String host : hosts) {
 			realmCache.remove(host);
 		}
 	}
-	
+
 	@Override
 	public Realm updateRealm(Realm realm, String name,
 			Map<String, String> properties) throws AccessDeniedException,
@@ -672,7 +686,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			String oldName = realm.getName();
 
 			clearCache(realm);
-			
+
 			realm.setName(name);
 
 			realm = realmRepository.saveRealm(realm, properties,
@@ -1027,15 +1041,15 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 			List<AbstractPropertyTemplate> tmp = new ArrayList<AbstractPropertyTemplate>();
 			for (AbstractPropertyTemplate t : c.getTemplates()) {
-				
+
 				if (!editable.contains(t.getResourceKey()) && !t.isReadOnly()) {
 					if (!visible.contains(t.getResourceKey())) {
 						tmp.add(t);
 						continue;
-					} 
+					}
 					t.setReadOnly(true);
 					continue;
-				} 
+				}
 				if (provider.isReadOnly(principal.getRealm())) {
 					t.setReadOnly(true);
 					continue;
@@ -1076,7 +1090,8 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	public Collection<String> getUserPropertyNames(Realm realm)
 			throws AccessDeniedException {
 
-		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ,
+				RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -1212,13 +1227,14 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		String[] editableProperties = getRealmPropertyArray(realm,
 				"realm.userEditableProperties");
 
-		Map<String,String> currentProperties = provider.getProperties(principal);
+		Map<String, String> currentProperties = provider
+				.getProperties(principal);
 		Map<String, String> filteredProperties = new HashMap<String, String>();
 		for (String allowed : editableProperties) {
 			String value = properties.get(allowed);
-			if(StringUtils.isNotBlank(value)) {
+			if (StringUtils.isNotBlank(value)) {
 				filteredProperties.put(allowed, properties.get(allowed));
-			} else if(currentProperties.containsKey(allowed)) {
+			} else if (currentProperties.containsKey(allowed)) {
 				filteredProperties.put(allowed, currentProperties.get(allowed));
 			}
 		}
@@ -1350,23 +1366,22 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public boolean isRealmStrictedToHost(Realm realm) {
-		
+
 		RealmProvider realmProvider = getProviderForRealm(realm);
 		return realmProvider.getBooleanValue(realm, "realm.hostRestriction");
-		
+
 	}
 
 	@Override
 	public Collection<String> getUserVariableNames(Realm realm) {
-		
+
 		RealmProvider provider = getProviderForRealm(realm);
-		
-		Set<String> tmp = new HashSet<String>(UserVariableReplacementImpl.getDefaultReplacements());
+
+		Set<String> tmp = new HashSet<String>(
+				UserVariableReplacementImpl.getDefaultReplacements());
 		tmp.addAll(provider.getUserVariableNames());
 		return tmp;
 
 	}
 
-
-	
 }

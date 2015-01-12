@@ -1,5 +1,7 @@
 package com.hypersocket.certificates.events;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.certificates.CertificateResource;
 import com.hypersocket.session.Session;
 
@@ -22,4 +24,7 @@ public class CertificateResourceCreatedEvent extends
 		super(source, EVENT_RESOURCE_KEY, resource, e, session);
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }

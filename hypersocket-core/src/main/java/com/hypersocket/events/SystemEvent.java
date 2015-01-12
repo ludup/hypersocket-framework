@@ -4,14 +4,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.context.ApplicationEvent;
 
 import com.hypersocket.realm.Realm;
+import com.mysql.jdbc.Field;
 
-public abstract class SystemEvent extends ApplicationEvent {
+public abstract class SystemEvent extends AbstractEvent {
 
 	private static final long serialVersionUID = -2862861933633430347L;
 
+	public static final String EVENT_RESOURCE_KEY = "system.event";
+	
 	public static final String ATTR_EXCEPTION_TEXT = "attr.exception";
 	
 	String resourceKey;
@@ -97,5 +101,8 @@ public abstract class SystemEvent extends ApplicationEvent {
 		return Collections.unmodifiableMap(attributes);
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }
 

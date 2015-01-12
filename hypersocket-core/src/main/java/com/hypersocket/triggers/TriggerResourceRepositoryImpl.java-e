@@ -110,7 +110,7 @@ public class TriggerResourceRepositoryImpl extends
 					break;
 				}
 
-				criteria.add(Restrictions.eq("event", event.getResourceKey()));
+				criteria.add(Restrictions.in("event", event.getResourceKeys()));
 			}
 		});
 

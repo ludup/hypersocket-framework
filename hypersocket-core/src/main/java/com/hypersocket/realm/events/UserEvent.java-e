@@ -3,15 +3,19 @@ package com.hypersocket.realm.events;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.session.Session;
 
-public abstract class UserEvent extends RealmEvent {
+public abstract class UserEvent extends PrincipalEvent {
 
 	private static final long serialVersionUID = -4273120819815237950L;
 
+	public static final String EVENT_RESOURCE_KEY = "user.event";
+	
 	public static final String ATTR_SUBJECT_NAME = "attr.subjectName";
 	public static final String ATTR_ASSOCIATED_PRINCIPALS = "attr.associatedPrincipals";
 
@@ -75,4 +79,7 @@ public abstract class UserEvent extends RealmEvent {
 		return principal;
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }

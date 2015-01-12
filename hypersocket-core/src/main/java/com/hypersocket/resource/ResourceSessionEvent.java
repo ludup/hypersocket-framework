@@ -1,5 +1,7 @@
 package com.hypersocket.resource;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.events.SessionEvent;
@@ -7,6 +9,8 @@ import com.hypersocket.session.events.SessionEvent;
 public class ResourceSessionEvent extends SessionEvent {
 
 	private static final long serialVersionUID = 5416406167471742408L;
+	
+	public static final String EVENT_RESOURCE_KEY = "resourceSession.event";
 	
 	public static final String ATTR_RESOURCE_NAME = CommonAttributes.ATTR_RESOURCE_NAME;
 	
@@ -22,5 +26,8 @@ public class ResourceSessionEvent extends SessionEvent {
 		addAttribute(ATTR_RESOURCE_NAME, resourceName);
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 	
 }

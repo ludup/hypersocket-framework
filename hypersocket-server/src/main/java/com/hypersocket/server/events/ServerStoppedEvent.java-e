@@ -1,5 +1,7 @@
 package com.hypersocket.server.events;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.realm.Realm;
 
 public class ServerStoppedEvent extends HypersocketServerEvent {
@@ -10,5 +12,9 @@ public class ServerStoppedEvent extends HypersocketServerEvent {
 
 	public ServerStoppedEvent(Object source, Realm currentRealm) {
 		super(source, EVENT_RESOURCE_KEY, true, currentRealm);
+	}
+
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
 	}
 }

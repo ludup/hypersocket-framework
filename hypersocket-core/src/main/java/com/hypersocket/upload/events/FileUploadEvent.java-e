@@ -1,10 +1,10 @@
 package com.hypersocket.upload.events;
 
-import com.hypersocket.realm.events.RealmResourceEvent;
+import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.session.Session;
 import com.hypersocket.upload.FileUpload;
 
-public class FileUploadEvent extends RealmResourceEvent {
+public class FileUploadEvent extends ResourceEvent {
 
 	public static final String ATTR_NAME = "attr.fileName";
 	public static final String ATTR_MD5 = "attr.md5Sum";

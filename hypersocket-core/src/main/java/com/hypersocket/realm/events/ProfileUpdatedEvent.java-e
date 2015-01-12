@@ -2,6 +2,8 @@ package com.hypersocket.realm.events;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;
@@ -27,4 +29,7 @@ public class ProfileUpdatedEvent extends UserEvent {
 				principalName, properties, null);
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }
