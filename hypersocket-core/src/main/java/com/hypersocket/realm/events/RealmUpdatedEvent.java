@@ -1,5 +1,7 @@
 package com.hypersocket.realm.events;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 
@@ -21,4 +23,7 @@ public class RealmUpdatedEvent extends RealmEvent {
 		super(source, "event.realmUpdated", e, session, realmName);
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }

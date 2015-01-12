@@ -75,7 +75,7 @@ public class ServiceClient extends HypersocketClient<Connection> {
 						log.info("Starting service plugin " + props.getProperty("plugin.name"));
 					}
 					ServicePlugin plugin = (ServicePlugin) Class.forName(props.getProperty("plugin.class")).newInstance();
-					if(plugin.start(this, resourceService)) {
+					if(plugin.start(this, resourceService, service.getGUI())) {
 						plugins.add(plugin);
 					}
 				} catch (Throwable e) {
