@@ -1,5 +1,7 @@
 package com.hypersocket.triggers.events;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
@@ -28,4 +30,7 @@ public class TriggerExecutedEvent extends SystemEvent {
 		return TriggerResourceServiceImpl.RESOURCE_BUNDLE;
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }

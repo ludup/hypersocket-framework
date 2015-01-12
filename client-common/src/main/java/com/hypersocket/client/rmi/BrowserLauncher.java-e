@@ -21,7 +21,7 @@ public class BrowserLauncher implements ResourceLauncher, Serializable {
 	}
 
 	@Override
-	public void launch() {
+	public int launch() {
 		
 		if(log.isInfoEnabled()) {
 			log.info("Launching website " + launchUrl);
@@ -31,10 +31,13 @@ public class BrowserLauncher implements ResourceLauncher, Serializable {
 	    if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
 	        try {
 	            desktop.browse(new URI(launchUrl));
+	            return 0;
 	        } catch (Exception e) {
 	           log.error("Failed to launch website", e);
+	           return Integer.MIN_VALUE;
 	        }
 	    }
+	    return -1;
 	}
 
 }

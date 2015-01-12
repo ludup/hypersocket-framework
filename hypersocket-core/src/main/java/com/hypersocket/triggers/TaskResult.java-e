@@ -1,5 +1,7 @@
 package com.hypersocket.triggers;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.events.SystemEventStatus;
 import com.hypersocket.realm.Realm;
@@ -9,6 +11,8 @@ public abstract class TaskResult extends SystemEvent {
 
 	private static final long serialVersionUID = 5664474659342093254L;
 
+	public static final String EVENT_RESOURCE_KEY = "task.event";
+	
 	public static final String ATTR_TASK_NAME = "attr.taskName";
 	
 	public TaskResult(Object source, String resourceKey, boolean success,
@@ -34,4 +38,7 @@ public abstract class TaskResult extends SystemEvent {
 	@Override
 	public abstract String getResourceBundle();
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }

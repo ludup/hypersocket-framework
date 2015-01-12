@@ -1,5 +1,7 @@
 package com.hypersocket.session.events;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.session.Session;
 
 public class SessionOpenEvent extends SessionEvent {
@@ -19,6 +21,10 @@ public class SessionOpenEvent extends SessionEvent {
 		addAttribute(ATTR_USER_AGENT_VERSION, session.getUserAgentVersion());
 		addAttribute(ATTR_OS, session.getOs());
 		addAttribute(ATTR_OS_VERSION, session.getOsVersion());
+	}
+	
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
 	}
 
 }

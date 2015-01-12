@@ -40,6 +40,8 @@ import com.google.code.jgntp.GntpNotificationInfo;
 import com.google.common.io.Closeables;
 import com.hypersocket.client.Prompt;
 import com.hypersocket.client.i18n.I18N;
+import com.hypersocket.client.rmi.ApplicationLauncher;
+import com.hypersocket.client.rmi.ApplicationLauncherTemplate;
 import com.hypersocket.client.rmi.ClientService;
 import com.hypersocket.client.rmi.ConfigurationService;
 import com.hypersocket.client.rmi.ConnectionService;
@@ -556,5 +558,12 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 		} else {
 			return null;
 		}
+	}
+
+	@Override
+	public int executeAsUser(ApplicationLauncherTemplate launcherTemplate, String clientUsername, String connectedHostname) {
+		
+		ApplicationLauncher launcher = new ApplicationLauncher(clientUsername, connectedHostname, launcherTemplate);
+		return launcher.launch();
 	}
 }

@@ -1,5 +1,7 @@
 package com.hypersocket.realm.events;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
@@ -9,6 +11,8 @@ public class RealmEvent extends SessionEvent {
 
 	private static final long serialVersionUID = 1767418948626283958L;
 	Realm realm;
+	
+	public static final String EVENT_RESOURCE_KEY = "realm.event";
 	
 	public static final String ATTR_REALM_NAME = CommonAttributes.ATTR_REALM_NAME;
 	public static final String ATTR_REALM_TYPE = "attr.realmType";
@@ -47,4 +51,7 @@ public class RealmEvent extends SessionEvent {
 		return realm;
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }

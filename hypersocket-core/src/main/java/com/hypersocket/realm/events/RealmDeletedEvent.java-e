@@ -1,5 +1,7 @@
 package com.hypersocket.realm.events;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 
@@ -18,4 +20,7 @@ public class RealmDeletedEvent extends RealmEvent {
 		super(source, "event.realmDeleted", e, session, realm);
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }

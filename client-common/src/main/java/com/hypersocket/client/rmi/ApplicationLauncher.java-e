@@ -29,7 +29,7 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 	}
 	
 	@Override
-	public void launch() {
+	public int launch() {
 		
 		Map<String,String> env = System.getenv();
 		Map<String,String> properties = new HashMap<String,String>();
@@ -52,24 +52,24 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 			cmd.addArg(arg);
 		}
 		
-		Thread t = new Thread() {
-			public void run() {
-				try {
-					int exitCode = cmd.execute();
-					
-					if(log.isInfoEnabled()) {
-						log.info("Command exited with exit code " + exitCode);
-						log.info("---BEGIN CMD OUTPUT----");
-						log.info(cmd.getCommandOutput());
-						log.info("---END CMD OUTPUT----");
-					}
-				} catch (IOException e) {
-					log.error("Failed to launch application", e);
-				}
+
+		try {
+			int exitCode = cmd.execute();
+			
+			if(log.isInfoEnabled()) {
+				log.info("Command exited with exit code " + exitCode);
+				log.info("---BEGIN CMD OUTPUT----");
+				log.info(cmd.getCommandOutput());
+				log.info("---END CMD OUTPUT----");
 			}
-		};
+			
+			return exitCode;
+		} catch (IOException e) {
+			log.error("Failed to launch application", e);
+			return Integer.MIN_VALUE;
+		}
+
 		
-		t.start();
 	}
 
 }

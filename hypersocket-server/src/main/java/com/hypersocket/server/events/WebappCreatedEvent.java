@@ -1,5 +1,7 @@
 package com.hypersocket.server.events;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.realm.Realm;
 
 public class WebappCreatedEvent extends HypersocketServerEvent {
@@ -13,5 +15,8 @@ public class WebappCreatedEvent extends HypersocketServerEvent {
 		super(source, EVENT_RESOURCE_KEY, success, currentRealm);
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 	
 }

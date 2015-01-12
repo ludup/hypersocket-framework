@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -41,6 +42,7 @@ import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.events.TriggerExecutedEvent;
 import com.hypersocket.triggers.events.TriggerResourceCreatedEvent;
 import com.hypersocket.triggers.events.TriggerResourceDeletedEvent;
+import com.hypersocket.triggers.events.TriggerResourceEvent;
 import com.hypersocket.triggers.events.TriggerResourceUpdatedEvent;
 
 @Service
@@ -99,6 +101,8 @@ public class TriggerResourceServiceImpl extends
 		 * Register the events. All events have to be registered so the system
 		 * knows about them.
 		 */
+		eventService.registerEvent(TriggerResourceEvent.class,
+				RESOURCE_BUNDLE, this);
 		eventService.registerEvent(TriggerResourceCreatedEvent.class,
 				RESOURCE_BUNDLE, this);
 		eventService.registerEvent(TriggerResourceUpdatedEvent.class,
@@ -345,10 +349,11 @@ public class TriggerResourceServiceImpl extends
 	private void processEventTriggers(SystemEvent event) {
 
 		// TODO cache triggers to prevent constant database lookup
-
+		
+		
 		if (log.isInfoEnabled()) {
-			log.info("Looking for triggers for event " 
-						+ event.getResourceKey() + " " 
+			log.info("Looking for triggers for events " 
+						+ StringUtils.join(event.getResourceKeys(), ",") + " " 
 						+ event.getStatus().toString());
 		}
 
@@ -361,9 +366,9 @@ public class TriggerResourceServiceImpl extends
 			JobDataMap data = new JobDataMap();
 			data.put("event", event);
 			data.put("trigger", trigger);
-			data.put("principal", getCurrentPrincipal());
-			data.put("locale", getCurrentLocale());
-			data.put("realm", getCurrentRealm());
+			data.put("principal", hasAuthenticatedContext() ? getCurrentPrincipal() : realmService.getSystemPrincipal());
+			data.put("locale", hasAuthenticatedContext() ? getCurrentLocale() : i18nService.getDefaultLocale());
+			data.put("realm", event.getCurrentRealm());
 			
 			try {
 				schedulerService.scheduleNow(ProcessEventTriggersJob.class,

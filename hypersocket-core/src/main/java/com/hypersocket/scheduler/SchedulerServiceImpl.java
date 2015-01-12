@@ -191,7 +191,8 @@ public class SchedulerServiceImpl implements SchedulerService {
 
 		if(log.isInfoEnabled()) {
 			log.info("Scheduling job with id " + uuid + " to start " + (start==null ? "now" : "at " + HypersocketUtils.formatDate(start))
-					 + " with interval of " + (interval/60000) + " minutes and repeat " + (repeat >= 0 ? (repeat/60000) + " time(s)" : "indefinately"));
+					 + " with interval of " + (interval/60000) + " minutes and repeat " + (repeat >= 0 ? (repeat/60000) + " time(s)" : "indefinately")
+					 + (end != null ? " until " + HypersocketUtils.formatDate(end) : ""));
 		}
 		JobDetail job = JobBuilder.newJob(clz).build();
 		jobKeys.put(uuid, job.getKey());
@@ -237,7 +238,8 @@ public class SchedulerServiceImpl implements SchedulerService {
 
 		if(log.isInfoEnabled()) {
 			log.info("Rescheduling job with id " + id + " to start at " + HypersocketUtils.formatDate(start)
-					 + " with interval of " + interval + " and repeat " + (repeat >= 0 ? repeat : "indefinatley"));
+					 + " with interval of " + interval + " and repeat " + (repeat >= 0 ? repeat : "indefinatley")
+					 + (end != null ? " until " + HypersocketUtils.formatDate(end) : ""));
 		}
 		TriggerKey triggerKey = triggerKeys.get(id);
 

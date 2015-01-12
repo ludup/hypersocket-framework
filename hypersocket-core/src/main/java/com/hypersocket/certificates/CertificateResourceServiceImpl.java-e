@@ -1,5 +1,7 @@
 package com.hypersocket.certificates;
 
+import static com.hypersocket.certificates.CertificateResourceService.RESOURCE_BUNDLE;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -42,6 +44,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.hypersocket.certificates.events.CertificateResourceCreatedEvent;
 import com.hypersocket.certificates.events.CertificateResourceDeletedEvent;
+import com.hypersocket.certificates.events.CertificateResourceEvent;
 import com.hypersocket.certificates.events.CertificateResourceUpdatedEvent;
 import com.hypersocket.certs.FileFormatException;
 import com.hypersocket.certs.InvalidPassphraseException;
@@ -105,6 +108,8 @@ public class CertificateResourceServiceImpl extends
 		 * Register the events. All events have to be registerd so the system
 		 * knows about them.
 		 */
+		eventService.registerEvent(CertificateResourceEvent.class,
+				RESOURCE_BUNDLE, this);
 		eventService.registerEvent(CertificateResourceCreatedEvent.class,
 				RESOURCE_BUNDLE, this);
 		eventService.registerEvent(CertificateResourceUpdatedEvent.class,

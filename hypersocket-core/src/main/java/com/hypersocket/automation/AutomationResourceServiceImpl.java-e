@@ -10,6 +10,8 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.quartz.TriggerKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +19,9 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.automation.events.AutomationResourceCreatedEvent;
 import com.hypersocket.automation.events.AutomationResourceDeletedEvent;
+import com.hypersocket.automation.events.AutomationResourceEvent;
 import com.hypersocket.automation.events.AutomationResourceUpdatedEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
@@ -89,6 +91,9 @@ public class AutomationResourceServiceImpl extends
 		 * Register the events. All events have to be registerd so the system
 		 * knows about them.
 		 */
+		eventService.registerEvent(
+				AutomationResourceEvent.class, RESOURCE_BUNDLE,
+				this);
 		eventService.registerEvent(
 				AutomationResourceCreatedEvent.class, RESOURCE_BUNDLE,
 				this);
@@ -219,7 +224,7 @@ public class AutomationResourceServiceImpl extends
 		Date end = calculateDateTime(resource.getEndDate(), resource.getEndTime());
 		
 		int interval = 0;
-		int repeat = 0; 
+		int repeat = -1; 
 		
 		if(resource.getRepeatValue() > 0) {
 			
@@ -339,8 +344,42 @@ public class AutomationResourceServiceImpl extends
 	@Override
 	public void onApplicationEvent(ContextStartedEvent event) {
 		
-		for(AutomationResource resource: repository.getResources(null)) {
-			schedule(resource);
+		if(log.isInfoEnabled()) {
+			log.info("Scheduling one time only or repetitive automation resources");
 		}
+		
+		for(AutomationResource resource: repository.getResources(null)) {
+			if(!resource.isDailyJob()) {
+				schedule(resource);
+			}
+		}
+		
+		scheduleDailyJobs();
+	}
+
+	@Override
+	public void scheduleDailyJobs() {
+		
+		if(log.isInfoEnabled()) {
+			log.info("Scheduling daily automation resources");
+		}
+		
+		for(AutomationResource resource: repository.getResources(null)) {
+			if(resource.isDailyJob()) {
+				schedule(resource);
+			}
+		}
+		
+		Calendar c = Calendar.getInstance();
+		c.set(Calendar.HOUR, 0);
+		c.set(Calendar.MINUTE, 0);
+		c.add(Calendar.DAY_OF_MONTH, 1);
+		
+		try {
+			schedulerService.scheduleAt(DailySchedulerJob.class, null, c.getTime());
+		} catch (SchedulerException e) {
+			log.error("Failed to schedule daily automation jobs", e);
+		}
+		
 	}
 }
