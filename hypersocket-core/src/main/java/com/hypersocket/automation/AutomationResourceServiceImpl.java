@@ -10,6 +10,8 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.quartz.TriggerKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -222,7 +224,7 @@ public class AutomationResourceServiceImpl extends
 		Date end = calculateDateTime(resource.getEndDate(), resource.getEndTime());
 		
 		int interval = 0;
-		int repeat = 0; 
+		int repeat = -1; 
 		
 		if(resource.getRepeatValue() > 0) {
 			
