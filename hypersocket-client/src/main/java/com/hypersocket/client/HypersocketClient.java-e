@@ -52,6 +52,9 @@ public abstract class HypersocketClient<T> {
 
 	String principalName;
 	
+	String cachedUsername;
+	String cachedPassword;
+	
 	protected HypersocketClient(HypersocketClientTransport transport, Locale currentLocale)
 			throws IOException {
 		this.transport = transport;
@@ -245,7 +248,15 @@ public abstract class HypersocketClient<T> {
 //		String json = transport.post("logon", params);
 		
 		int attempts = 3;
+		boolean attemptedCached = false;
 		List<Prompt> prompts = new ArrayList<Prompt>();
+		
+		if(cachedUsername!=null && cachedPassword!=null) {
+			params.put("username", cachedUsername);
+			params.put("password", cachedPassword);
+			attemptedCached = true;
+		}
+		
 		while (!isLoggedOn()) {
 
 			if(attempts==0) {
@@ -254,14 +265,19 @@ public abstract class HypersocketClient<T> {
 			}
 			
 			String json = transport.post("logon/hypersocketClient", params);
+			
 			params.clear();
 			boolean success = processLogon(json, params, prompts);
 			if(!success) {
-				attempts--;
+				if(!attemptedCached) {
+					attempts--;
+				}
+				attemptedCached = false;
 			}
 			if (!isLoggedOn() && prompts.size() > 0) {
-				Map<String, String> results = showLogin(prompts);
-
+				
+				Map<String, String> results  = showLogin(prompts);
+				
 				if (results != null) {
 					params.putAll(results);
 				} else {
@@ -269,7 +285,13 @@ public abstract class HypersocketClient<T> {
 					throw new UserCancelledException("User has cancelled authentication");
 				}
 			}
-			
+		}
+		
+		if(params.containsKey("username")) {
+			cachedUsername = params.get("username");
+		}
+		if(params.containsKey("password")) {
+			cachedPassword = params.get("password");
 		}
 
 		if (log.isInfoEnabled()) {

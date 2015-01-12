@@ -206,7 +206,7 @@ public class AutomationResourceServiceImpl extends
 		if(!StringUtils.isEmpty(time)) {
 			int idx = time.indexOf(':');				
 			c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(time.substring(0, idx)));
-			c.set(Calendar.MINUTE, Integer.parseInt(time.substring(idx++)));
+			c.set(Calendar.MINUTE, Integer.parseInt(time.substring(idx+1)));
 		}
 		
 		return c.getTime();
