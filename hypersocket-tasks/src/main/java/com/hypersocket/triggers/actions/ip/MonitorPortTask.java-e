@@ -76,6 +76,7 @@ static Logger log = LoggerFactory.getLogger(BlockIPTask.class);
 	@Override
 	public void validate(Task task, Map<String, String> parameters)
 			throws ValidationException {
+		System.out.println("Call monitor validation");
 		if(parameters.containsKey("block.ip")) {
 			throw new ValidationException("IP address required");
 		}
@@ -85,7 +86,11 @@ static Logger log = LoggerFactory.getLogger(BlockIPTask.class);
 	@Override
 	public TaskResult execute(Task task, SystemEvent event)
 			throws ValidationException {
-		// TODO Auto-generated method stub
+		System.out.println("Call TCP monitor execution");
+		String ipAddress = repository.getValue(task, "monitorPort.ip");
+		String port = repository.getValue(task, "monitorPort.port");
+		String timeout = repository.getValue(task, "monitorPort.timeout");
+		
 		return null;
 	}
 
