@@ -3,11 +3,8 @@ package com.hypersocket.triggers.actions.ip;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -39,9 +36,6 @@ public class MonitorPortTask extends AbstractTaskProvider {
 	public static final String ATTR_IP = "monitorPort.ip";
 	public static final String ATTR_PORT = "monitorPort.port";
 	public static final String ATTR_TIMEOUT = "monitorPort.timeout";
-
-	Map<String, String> blockedIPUnblockSchedules = new HashMap<String, String>();
-	Set<String> blockedIps = new HashSet<String>();
 
 	@Autowired
 	MonitorPortTaskRepository repository;
