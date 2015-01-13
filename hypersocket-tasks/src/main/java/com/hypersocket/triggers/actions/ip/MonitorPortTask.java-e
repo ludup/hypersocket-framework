@@ -32,7 +32,7 @@ import com.hypersocket.triggers.ValidationException;
 @Component
 public class MonitorPortTask extends AbstractTaskProvider {
 
-	static Logger log = LoggerFactory.getLogger(BlockIPTask.class);
+	static Logger log = LoggerFactory.getLogger(MonitorPortTask.class);
 
 	public static final String RESOURCE_BUNDLE = "MonitorPortTask";
 	public static final String TASK_RESOURCE_KEY = "monitorPort";
