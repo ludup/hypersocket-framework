@@ -8,10 +8,12 @@ public interface TaskProviderService extends AuthenticatedService {
 
 	TaskProvider getActionProvider(String resourceKey);
 
-	List<String> getActions();
-
 	void registerActionProvider(TaskProvider action);
 
 	TaskProvider getActionProvider(Task task);
+
+	List<String> getTriggerTasks();
+
+	List<String> getAutomationTasks();
 
 }

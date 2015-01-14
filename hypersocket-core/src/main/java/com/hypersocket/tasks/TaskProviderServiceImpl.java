@@ -19,12 +19,20 @@ public class TaskProviderServiceImpl extends AuthenticatedServiceImpl implements
 	TriggerResourceRepository repository;
 	
 	Map<String, TaskProvider> registeredTasks = new HashMap<String, TaskProvider>();
+	List<String> triggerTasks = new ArrayList<String>();
+	List<String> automationTasks = new ArrayList<String>();
 	
 	@Override
 	public void registerActionProvider(TaskProvider action) {
 		repository.registerActionRepository(action);
 		for (String resourceKey : action.getResourceKeys()) {
 			registeredTasks.put(resourceKey, action);
+			if(action.supportsAutomation()) {
+				automationTasks.add(resourceKey);
+			}
+			if(action.supportsTriggers()) {
+				triggerTasks.add(resourceKey);
+			}
 		}
 	}
 	@Override
@@ -32,11 +40,16 @@ public class TaskProviderServiceImpl extends AuthenticatedServiceImpl implements
 		return registeredTasks.get(resourceKey);
 	}
 
+
 	@Override
-	public List<String> getActions() {
-		return new ArrayList<String>(registeredTasks.keySet());
+	public List<String> getTriggerTasks() {
+		return triggerTasks;
 	}
 	
+	@Override
+	public List<String> getAutomationTasks() {
+		return automationTasks;
+	}
 	@Override
 	public TaskProvider getActionProvider(Task task) {
 		return getActionProvider(task.getResourceKey());
