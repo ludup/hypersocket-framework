@@ -189,7 +189,7 @@ public class TriggerResourceController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 
-			return new ResourceList<String>(taskService.getActions());
+			return new ResourceList<String>(taskService.getTriggerTasks());
 		} finally {
 			clearAuthenticatedContext();
 		}

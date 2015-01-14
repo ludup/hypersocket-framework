@@ -338,7 +338,7 @@ public class AutomationResourceServiceImpl extends
 		
 		assertPermission(AutomationResourcePermission.READ);
 		
-		return taskService.getActions();
+		return taskService.getAutomationTasks();
 	}
 
 	@Override
