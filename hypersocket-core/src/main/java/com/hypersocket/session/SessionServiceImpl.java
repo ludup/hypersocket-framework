@@ -43,6 +43,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.events.SessionClosedEvent;
+import com.hypersocket.session.events.SessionEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
 
 @Service
@@ -88,6 +89,7 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 			log.info("Loaded User Agent database");
 		}
 		
+		eventService.registerEvent(SessionEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionOpenEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionClosedEvent.class, RESOURCE_BUNDLE);
 		
