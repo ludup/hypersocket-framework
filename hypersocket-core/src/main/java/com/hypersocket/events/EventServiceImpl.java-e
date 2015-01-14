@@ -5,6 +5,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -18,6 +19,9 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.i18n.Message;
+import com.hypersocket.realm.events.ResourceEvent;
+import com.hypersocket.resource.AssignableResourceEvent;
 
 @Service
 public class EventServiceImpl extends AuthenticatedServiceImpl implements EventService {
@@ -37,6 +41,9 @@ public class EventServiceImpl extends AuthenticatedServiceImpl implements EventS
 	@PostConstruct
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
+		
+		registerEvent(ResourceEvent.class, RESOURCE_BUNDLE);
+		registerEvent(AssignableResourceEvent.class, RESOURCE_BUNDLE);
 	}
 
 	@Override
@@ -73,8 +80,10 @@ public class EventServiceImpl extends AuthenticatedServiceImpl implements EventS
 			}
 
 			checkResourceKey(resourceKey, resourceBundle);
-			checkResourceKey(resourceKey + ".success", resourceBundle);
-			checkResourceKey(resourceKey + ".failure", resourceBundle);
+			if(!resourceKey.endsWith(".event")) {
+				checkResourceKey(resourceKey + ".success", resourceBundle);
+				checkResourceKey(resourceKey + ".failure", resourceBundle);
+			}
 
 			eventDefinitions.put(resourceKey, new EventDefinition(
 					resourceBundle, resourceKey, propertyCollector));
@@ -88,8 +97,6 @@ public class EventServiceImpl extends AuthenticatedServiceImpl implements EventS
 						try {
 							String attributeName = (String) field.get(null);
 							checkResourceKey(attributeName, resourceBundle);
-							checkResourceKey(attributeName + ".info",
-									resourceBundle);
 							eventDefinitions.get(resourceKey)
 									.getAttributeNames().add(attributeName);
 							if (log.isInfoEnabled()) {
@@ -104,26 +111,53 @@ public class EventServiceImpl extends AuthenticatedServiceImpl implements EventS
 		} catch (Throwable t) {
 			throw new IllegalStateException("Failed to register event class "
 					+ eventClass.getName(), t);
+		} finally {
+			if(Boolean.getBoolean("hypersocket.development")) {
+				I18N.flushOverrides();
+			}
 		}
 
 	}
 
 	private boolean checkResourceKey(String resourceKey, String resourceBundle) {
-		try {
-			I18N.getResource(i18nService.getDefaultLocale(), resourceBundle,
-					resourceKey);
-			return true;
-		} catch (Exception e) {
 
-			try {
-				I18N.getResource(i18nService.getDefaultLocale(),
-						RESOURCE_BUNDLE, resourceKey);
-				return true;
-			} catch (Exception e2) {
-				log.error("Missing resource key " + resourceBundle + "/"
-						+ resourceKey);
-				return false;
+		String res = I18N.getResourceNoOveride(
+				Locale.ENGLISH, 
+				resourceBundle,
+				resourceKey);
+		
+		if(res.startsWith("[i18n")) {
+			if(Boolean.getBoolean("hypersocket.development")) {
+				
+				if(resourceKey.startsWith("attr.")) {
+					res = I18N.getResourceNoOveride(Locale.ENGLISH, RESOURCE_BUNDLE, resourceKey);
+					if(!res.startsWith("[i18n")) {
+						// Default attribute of the event service.
+						return true;
+					}
+				}
+				I18N.overrideMessage(
+						Locale.ENGLISH, 
+						new Message(resourceBundle,
+								resourceKey, 
+								"", 
+								""));
 			}
+			log.error("Missing resource key " + resourceBundle + "/"
+					+ resourceKey);
+			return false;
+
+		} else {
+			
+			if(Boolean.getBoolean("hypersocket.development")) {
+				I18N.removeOverrideMessage(
+						Locale.ENGLISH, 
+						new Message(resourceBundle,
+								resourceKey, 
+								"", 
+								""));
+			}
+			return true;
 		}
 	}
 

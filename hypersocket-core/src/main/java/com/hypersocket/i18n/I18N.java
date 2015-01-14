@@ -97,6 +97,26 @@ public class I18N {
 
 	}
 	
+	public static void removeOverrideMessage(Locale locale, Message message) {
+		
+		File overrideFile = getOverrideFile(locale, message.getBundle());
+		if (!overideProperties.containsKey(overrideFile)) {
+			overideProperties.put(overrideFile, new Properties());
+			
+			if(overrideFile.exists()) {
+				Properties p = overideProperties.get(overrideFile);
+				try {
+					p.load(new FileInputStream(overrideFile));
+				} catch (IOException e) {
+				}
+			}
+		}
+		
+		Properties properties = overideProperties.get(overrideFile);
+		properties.remove(message.getId());
+
+	}
+
 	public static void flushOverrides() {
 		
 		for(File f : overideProperties.keySet()) {
