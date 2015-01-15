@@ -14,6 +14,7 @@ import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.PermissionsAwareJob;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
+import com.hypersocket.triggers.TaskResult;
 import com.hypersocket.triggers.ValidationException;
 
 public class AutomationJob extends PermissionsAwareJob {
@@ -59,7 +60,11 @@ public class AutomationJob extends PermissionsAwareJob {
 			
 			eventService.publishEvent(event);
 			
-			provider.execute(resource, event);
+			TaskResult result = provider.execute(resource, event);
+			
+			if(result!=null && result.isPublishable()) {
+				eventService.publishEvent(result);
+			}
 			
 			eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource));
 		} catch (ValidationException e) {
