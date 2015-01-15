@@ -499,6 +499,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			if (!ignoreMissingProvider) {
 				if (!hasProviderForRealm(r)) {
 					ret.remove(r);
+					continue;
 				}
 				if (clz != null
 						&& !clz.isAssignableFrom(getProviderForRealm(r)
