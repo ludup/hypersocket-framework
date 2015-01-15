@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
@@ -43,11 +44,14 @@ public class MonitorPortTask extends AbstractTaskProvider {
 	@Autowired
 	TaskProviderService taskService;
 
+	@Autowired
+	EventService eventService;
+
 	@PostConstruct
 	private void postConstruct() {
-
 		i18nService.registerBundle(RESOURCE_BUNDLE);
-		taskService.registerActionProvider(this);
+		taskService.registerTaskProvider(this);
+		eventService.registerEvent(MonitorPortResult.class, RESOURCE_BUNDLE);
 	}
 
 	@Override
