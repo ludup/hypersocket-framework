@@ -5,6 +5,9 @@ import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import antlr.CommonASTWithHiddenTokens;
+
+import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;
@@ -15,7 +18,7 @@ public abstract class GroupEvent extends PrincipalEvent {
 	private static final long serialVersionUID = 7696093164958120790L;
 
 	public static final String EVENT_RESOURCE_KEY = "group.event";
-	
+
 	public static final String ATTR_SUBJECT_NAME = "attr.subjectName";
 	public static final String ATTR_ASSOCIATED_PRINCIPALS = "attr.associatedPrincipals";
 
@@ -51,7 +54,7 @@ public abstract class GroupEvent extends PrincipalEvent {
 			Session session, Realm realmName, RealmProvider provider,
 			String principalName, List<Principal> associatedPrincipals) {
 		super(source, resourceKey, e, session, realmName);
-		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
+		addAttribute(ATTR_SUBJECT_NAME, principal.getName());
 		addAssociatedPrincipals(associatedPrincipals);
 	}
 
