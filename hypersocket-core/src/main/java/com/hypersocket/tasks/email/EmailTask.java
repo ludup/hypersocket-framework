@@ -61,6 +61,7 @@ public class EmailTask extends AbstractTaskProvider {
 
 	@Autowired
 	TaskProviderService taskService; 
+	
 	@PostConstruct
 	private void postConstruct() {
 		taskService.registerTaskProvider(this);
