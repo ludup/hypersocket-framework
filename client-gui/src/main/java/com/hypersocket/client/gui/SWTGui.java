@@ -561,7 +561,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 	}
 
 	@Override
-	public int executeAsUser(ApplicationLauncherTemplate launcherTemplate, String clientUsername, String connectedHostname) {
+	public int executeAsUser(ApplicationLauncherTemplate launcherTemplate, String clientUsername, String connectedHostname) throws RemoteException {
 		
 		ApplicationLauncher launcher = new ApplicationLauncher(clientUsername, connectedHostname, launcherTemplate);
 		return launcher.launch();
