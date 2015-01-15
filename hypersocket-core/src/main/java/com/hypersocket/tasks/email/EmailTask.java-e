@@ -63,7 +63,7 @@ public class EmailTask extends AbstractTaskProvider {
 	TaskProviderService taskService; 
 	@PostConstruct
 	private void postConstruct() {
-		taskService.registerActionProvider(this);
+		taskService.registerTaskProvider(this);
 
 		eventService.registerEvent(EmailTaskResult.class,
 				TaskProviderServiceImpl.RESOURCE_BUNDLE);

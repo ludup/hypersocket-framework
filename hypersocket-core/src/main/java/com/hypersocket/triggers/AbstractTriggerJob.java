@@ -149,7 +149,7 @@ public class AbstractTriggerJob implements Job {
 			throws ValidationException {
 
 		TaskProvider provider = taskService
-				.getActionProvider(action.getResourceKey());
+				.getTaskProvider(action.getResourceKey());
 		if (provider == null) {
 			throw new ValidationException(
 					"Failed to execute action because provider "

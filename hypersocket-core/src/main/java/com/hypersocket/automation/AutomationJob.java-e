@@ -53,7 +53,7 @@ public class AutomationJob extends PermissionsAwareJob {
 		try {
 			
 			
-			TaskProvider provider = taskService.getActionProvider(resource);
+			TaskProvider provider = taskService.getTaskProvider(resource);
 			
 			AutomationTaskStartedEvent event = new AutomationTaskStartedEvent(this, resource);
 			

@@ -189,13 +189,13 @@ public class AutomationResourceServiceImpl extends
 
 	@Override
 	protected void afterCreateResource(AutomationResource resource, Map<String,String> properties) throws ResourceCreationException {
-		TaskProvider provider = taskService.getActionProvider(resource);
+		TaskProvider provider = taskService.getTaskProvider(resource);
 		provider.getRepository().setValues(resource, properties);
 	}
 	
 	@Override
 	protected void afterUpdateResource(AutomationResource resource, Map<String,String> properties) throws ResourceChangeException {
-		TaskProvider provider = taskService.getActionProvider(resource);
+		TaskProvider provider = taskService.getTaskProvider(resource);
 		provider.getRepository().setValues(resource, properties);
 	}
 	
@@ -304,7 +304,7 @@ public class AutomationResourceServiceImpl extends
 
 		Collection<PropertyCategory> results = repository.getPropertyCategories(null);
 		
-		TaskProvider provider = taskService.getActionProvider(resourceKey);
+		TaskProvider provider = taskService.getTaskProvider(resourceKey);
 		
 		results.addAll(provider.getRepository().getPropertyCategories(null));
 		
@@ -320,7 +320,7 @@ public class AutomationResourceServiceImpl extends
 
 		Collection<PropertyCategory> results = repository.getPropertyCategories(resource);
 		
-		TaskProvider provider = taskService.getActionProvider(resource);
+		TaskProvider provider = taskService.getTaskProvider(resource);
 		
 		results.addAll(provider.getRepository().getPropertyCategories(resource));
 		

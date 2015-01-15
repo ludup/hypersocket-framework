@@ -61,7 +61,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 	private void postConstruct() {
 	
 		i18nService.registerBundle(RESOURCE_BUNDLE);
-		taskService.registerActionProvider(this);
+		taskService.registerTaskProvider(this);
 	}
 	
 	@Override

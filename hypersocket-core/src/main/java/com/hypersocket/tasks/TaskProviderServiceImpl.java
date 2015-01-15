@@ -5,25 +5,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.i18n.I18NService;
 import com.hypersocket.triggers.TriggerResourceRepository;
 
 @Service
 public class TaskProviderServiceImpl extends AuthenticatedServiceImpl implements TaskProviderService {
 
 	public static final String RESOURCE_BUNDLE = "TaskProviderService";
+	
 	@Autowired
 	TriggerResourceRepository repository;
+	
+	@Autowired
+	I18NService i18nService; 
 	
 	Map<String, TaskProvider> registeredTasks = new HashMap<String, TaskProvider>();
 	List<String> triggerTasks = new ArrayList<String>();
 	List<String> automationTasks = new ArrayList<String>();
 	
+	@PostConstruct
+	private void postConstruct() {
+		i18nService.registerBundle(RESOURCE_BUNDLE);
+	}
+	
 	@Override
-	public void registerActionProvider(TaskProvider action) {
+	public void registerTaskProvider(TaskProvider action) {
 		repository.registerActionRepository(action);
 		for (String resourceKey : action.getResourceKeys()) {
 			registeredTasks.put(resourceKey, action);
@@ -36,7 +48,7 @@ public class TaskProviderServiceImpl extends AuthenticatedServiceImpl implements
 		}
 	}
 	@Override
-	public TaskProvider getActionProvider(String resourceKey) {
+	public TaskProvider getTaskProvider(String resourceKey) {
 		return registeredTasks.get(resourceKey);
 	}
 
@@ -50,9 +62,10 @@ public class TaskProviderServiceImpl extends AuthenticatedServiceImpl implements
 	public List<String> getAutomationTasks() {
 		return automationTasks;
 	}
+	
 	@Override
-	public TaskProvider getActionProvider(Task task) {
-		return getActionProvider(task.getResourceKey());
+	public TaskProvider getTaskProvider(Task task) {
+		return getTaskProvider(task.getResourceKey());
 	}
 
 }
