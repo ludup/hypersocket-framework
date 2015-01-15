@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="executeCommand">
+	<propertyCategory resourceKey="category.command"
+		resourceBundle="TaskProviderService" weight="1000">
+		<property resourceKey="command.exe" inputType="text"
+			weight="80" defaultValue="" size="50" />
+		<property resourceKey="command.args" inputType="multipleTextInput" 
+			cdefaultValue="" weight="100" />
+	</propertyCategory>
+</propertyTemplates>
