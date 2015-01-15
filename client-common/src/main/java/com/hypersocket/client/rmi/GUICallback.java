@@ -25,6 +25,6 @@ public interface GUICallback extends Serializable, Remote {
 	Map<String, String> showPrompts(List<Prompt> prompts) throws RemoteException;
 
 	int executeAsUser(ApplicationLauncherTemplate launcherTemplate,
-			String clientUsername, String connectedHostname);
+			String clientUsername, String connectedHostname) throws RemoteException;
 	
 }
