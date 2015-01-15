@@ -207,7 +207,7 @@ public class TriggerResourceController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 			return new ResourceList<PropertyCategory>(taskService
-					.getActionProvider(action).getPropertyTemplate());
+					.getTaskProvider(action).getPropertyTemplate());
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -226,7 +226,7 @@ public class TriggerResourceController extends ResourceController {
 		try {
 			TriggerAction action = resourceService.getActionById(id);
 			return new ResourceList<PropertyCategory>(taskService
-					.getActionProvider(action.getResourceKey())
+					.getTaskProvider(action.getResourceKey())
 					.getProperties(action));
 		} finally {
 			clearAuthenticatedContext();
