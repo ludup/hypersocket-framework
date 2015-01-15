@@ -2,9 +2,11 @@
 <propertyTemplates context="httpFormTask">
 	<propertyCategory resourceKey="category.httpForm"
 		resourceBundle="TriggerResourceService" weight="1000">
-		<property resourceKey="httpForm.method" inputType="text" 
-			defaultValue="" weight="0"/>
-		<property resourceKey="block.length" inputType="slider" 
-			min="0" max="900" defaultValue="30" step="1" weight="100" labelResourceKey="block.length.label"/>
+		<property resourceKey="httpForm.method" inputType="select"
+			options="GET, POST" weight="100" />
+		<property resourceKey="httpForm.url" inputType="text"
+			defaultValue="" weight="200" />
+		<property resourceKey="httpForm.variables" inputType="namePairs"
+			weight="300" />
 	</propertyCategory>
 </propertyTemplates>
