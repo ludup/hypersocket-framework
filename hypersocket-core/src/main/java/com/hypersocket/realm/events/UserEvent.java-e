@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;

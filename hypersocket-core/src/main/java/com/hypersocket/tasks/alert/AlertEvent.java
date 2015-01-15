@@ -17,14 +17,14 @@ public class AlertEvent extends TaskResult {
 	public static final String ATTR_THRESHOLD = "attr.threshold";
 	public static final String ATTR_TIMEOUT = "attr.timeout";
 	public static final String ATTR_TRIGGER_NAME = "attr.triggerName";
-	public static final String ATTR_ACTION_NAME = "attr.actionName";
+	public static final String ATTR_TASK_NAME = "attr.taskName";
 	
 	public AlertEvent(Object source, String resourceKey, boolean success,
 			Realm currentRealm, int threshold, int timeout,  Task task, SystemEvent alertEvent) {
 		super(source, resourceKey + "." + task.getId(), SystemEventStatus.WARNING, currentRealm, task);
 		addAttribute(ATTR_THRESHOLD, threshold);
 		addAttribute(ATTR_TIMEOUT, timeout);
-		addAttribute(ATTR_ACTION_NAME, task.getName());
+		addAttribute(ATTR_TASK_NAME, task.getName());
 		
 		addAllAttributes(alertEvent.getAttributes());
 	}

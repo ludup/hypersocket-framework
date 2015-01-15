@@ -124,6 +124,10 @@ public class AutomationResource extends Task {
 	}
 
 	public boolean isDailyJob() {
-		return getStartDate()==null && getEndDate()==null && StringUtils.isNotEmpty(startTime);
+		return getStartDate()==null 
+				&& getEndDate()==null 
+				&& StringUtils.isNotEmpty(startTime)
+				&& StringUtils.isNotEmpty(endTime) 
+				&& !endTime.equals("0:00");
 	}
 }
