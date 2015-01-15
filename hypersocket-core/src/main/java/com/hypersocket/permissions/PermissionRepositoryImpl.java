@@ -20,6 +20,7 @@ import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.properties.ResourceKeyRestriction;
 import com.hypersocket.realm.Principal;
@@ -63,6 +64,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	};
 
 	@Override
+	@Transactional
 	public PermissionCategory createCategory(String resourceBundle,
 			String resourceKey) {
 
@@ -74,6 +76,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	}
 
 	@Override
+	@Transactional
 	public Permission createPermission(String name, boolean system,
 			PermissionCategory category, boolean hidden) {
 
@@ -89,11 +92,13 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	}
 
 	@Override
+	@Transactional
 	public Role createRole(String name, Realm realm) {
 		return createRole(name, realm, false, false, false, false);
 	}
 
 	@Override
+	@Transactional
 	public Role createRole(String name, Realm realm, boolean personalRole,
 			boolean allUsers, boolean allPermissions, boolean system) {
 
@@ -109,6 +114,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public PermissionCategory getCategoryByKey(String resourceBundle,
 			String resourceKey) {
 		return get("resourceBundle", resourceBundle, PermissionCategory.class,
@@ -117,6 +123,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public PermissionCategory getCategoryById(Long id) {
 		return getCategory("id", id);
 	}
@@ -126,11 +133,13 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Permission getPermissionByResourceKey(String name) {
 		return getPermission("resourceKey", name);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Permission getPermissionById(Long id) {
 		return getPermission("id", id);
 	}
@@ -140,61 +149,72 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Role getRoleByName(String name, Realm realm) {
 		return get("name", name, Role.class, JOIN_PRINCIPALS_PERMISSIONS,
 				new RealmRestriction(realm));
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Role getRoleById(Long id) {
 		return get("id", id, Role.class, JOIN_PRINCIPALS_PERMISSIONS);
 	}
 
 	@Override
+	@Transactional
 	public void grantPermission(Role role, Permission permission) {
 		role.getPermissions().add(permission);
 		save(role);
 	}
 
 	@Override
+	@Transactional
 	public void revokePermission(Role role, Permission permission) {
 		role.getPermissions().remove(permission);
 		save(role);
 	}
 
 	@Override
+	@Transactional
 	public void grantPermissions(Role role, Collection<Permission> permissions) {
 		role.getPermissions().addAll(permissions);
 		save(role);
 	}
 
 	@Override
+	@Transactional
 	public void revokePermission(Role role, Collection<Permission> permissions) {
 		role.getPermissions().removeAll(permissions);
 		save(role);
 	}
 
 	@Override
+	@Transactional
 	public void deleteCategory(PermissionCategory category) {
 		delete(category);
 	}
 
 	@Override
+	@Transactional
 	public void deletePermission(Permission permission) {
 		delete(permission);
 	}
 
 	@Override
+	@Transactional
 	public void deleteRole(Role role) {
 		delete(role);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<PermissionCategory> getAllCatgories() {
 		return allEntities(PermissionCategory.class, JOIN_PERMISSIONS);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<Permission> getAllPermissions(final Set<Long> permissions,
 			final boolean includeSystem) {
 		return allEntities(Permission.class,
@@ -211,11 +231,13 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	}
 
 	@Override
+	@Transactional
 	public void saveRole(Role role) {
 		save(role);
 	}
 
 	@Override
+	@Transactional
 	public void assignRole(Role role, Principal... principals) {
 
 		for (Principal p : principals) {
@@ -227,6 +249,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	}
 
 	@Override
+	@Transactional
 	public void unassignRole(Role role, Principal... principals) {
 		for (Principal p : principals) {
 			role.getPrincipals().remove(p);
@@ -238,6 +261,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly=true)
 	public Set<Permission> getPrincipalPermissions(
 			Collection<Principal> principals, PermissionType... permissionTypes) {
 
@@ -274,6 +298,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly=true)
 	public Set<Principal> getPrincipalsWithPermissions(PermissionType permission) {
 
 		Criteria crit = sessionFactory
@@ -290,6 +315,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly=true)
 	public Set<Role> getRolesWithPermissions(PermissionType permission) {
 
 		Criteria crit = sessionFactory
@@ -305,6 +331,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly=true)
 	public Set<Role> getRolesWithPermissions(Permission permission) {
 
 		Criteria crit = sessionFactory
@@ -320,6 +347,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly=true)
 	public Set<Principal> getPrincipalsWithPermissions(Permission permission) {
 
 		Criteria crit = sessionFactory
@@ -335,6 +363,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<Role> getRolesForRealm(Realm realm) {
 		return allEntities(Role.class, JOIN_PRINCIPALS_PERMISSIONS,
 				new RealmRestriction(realm),
@@ -348,6 +377,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<Role> searchRoles(final Realm realm, String searchPattern,
 			int start, int length, ColumnSort[] sorting) {
 		return search(Role.class, "name", searchPattern, start, length,
@@ -367,6 +397,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Long countRoles(final Realm realm, String searchPattern) {
 		return getCount(Role.class, "name", searchPattern,
 				new CriteriaConfiguration() {
@@ -384,6 +415,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<Permission> getPermissionsByCategory(
 			final PermissionCategory category) {
 		return allEntities(Permission.class, JOIN_ROLES,
@@ -408,6 +440,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly=true)
 	public Role getPersonalRole(Principal principal) {
 
 		Criteria crit = sessionFactory
@@ -430,6 +463,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly=true)
 	public Set<Role> getRolesForPrincipal(List<Principal> principals) {
 		
 		if (principals == null) {
@@ -454,6 +488,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Set<Role> getAllUserRoles(Realm realm) {
 
 		return new HashSet<Role>(allEntities(Role.class, JOIN_PRINCIPALS_PERMISSIONS,
