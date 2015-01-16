@@ -70,6 +70,18 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.isNull("signedOut"));
+				criteria.add(Restrictions.eq("system", false));
+			}
+		});
+	}
+	
+	@Override
+	public List<Session> getSystemSessions() {
+		return allEntities(Session.class, new CriteriaConfiguration() {
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.isNull("signedOut"));
+				criteria.add(Restrictions.eq("system", true));
 			}
 		});
 	}

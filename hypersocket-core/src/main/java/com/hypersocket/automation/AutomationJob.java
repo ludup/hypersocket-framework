@@ -44,7 +44,7 @@ public class AutomationJob extends PermissionsAwareJob {
 		AutomationResource resource;
 		
 		try {
-		resource = automationService.getResourceById(resourceId);
+			resource = automationService.getResourceById(resourceId);
 		} catch (ResourceNotFoundException e) {
 			log.error("Could not find resource id " + resourceId + " to execute job", e);
 			eventService.publishEvent(new AutomationTaskStartedEvent(this, realm, e));
