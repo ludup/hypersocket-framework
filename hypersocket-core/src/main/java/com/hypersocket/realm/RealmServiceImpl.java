@@ -10,6 +10,7 @@ package com.hypersocket.realm;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -142,7 +143,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 				new RealmPropertyCollector());
 
 		eventService.registerEvent(PrincipalEvent.class, RESOURCE_BUNDLE);
-		
+
 		eventService.registerEvent(UserEvent.class, RESOURCE_BUNDLE,
 				new UserPropertyCollector());
 		eventService.registerEvent(UserCreatedEvent.class, RESOURCE_BUNDLE,
@@ -410,6 +411,11 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public boolean verifyPrincipal(Principal principal) {
+		PrincipalSuspension suspension = realmRepository
+				.getSuspension(principal);
+		if (suspension != null) {
+			return false;
+		}
 		return true;
 	}
 
@@ -1383,6 +1389,38 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		tmp.addAll(provider.getUserVariableNames());
 		return tmp;
 
+	}
+
+	@Override
+	public PrincipalSuspension createPrincipalSuspension(Principal principal,
+			Date startDate, Long duration) throws ResourceNotFoundException,
+			ResourceCreationException {
+
+		PrincipalSuspension principalSuspension = new PrincipalSuspension();
+		principalSuspension.setPrincipal(principal);
+		principalSuspension.setName(principal.getPrincipalName());
+		principalSuspension.setRealm(principal.getRealm());
+		principalSuspension.setStartTime(startDate);
+		principalSuspension.setDuration(duration);
+
+		if (verifyPrincipal(principal)) {
+			realmRepository.createPrincipalSuspension(principalSuspension);
+		} else {
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"error.realmIsReadOnly");
+		}
+
+		return principalSuspension;
+	}
+
+	@Override
+	public PrincipalSuspension deletePrincipalSuspension(Principal principal) {
+		PrincipalSuspension suspension = realmRepository
+				.getSuspension(principal);
+
+		realmRepository.deletePrincipalSuspension(suspension);
+		
+		return suspension;
 	}
 
 }

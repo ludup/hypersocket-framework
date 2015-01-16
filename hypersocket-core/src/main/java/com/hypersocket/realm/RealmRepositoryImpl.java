@@ -25,21 +25,21 @@ import com.hypersocket.resource.RealmResource;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
-public class RealmRepositoryImpl extends AbstractResourceRepositoryImpl<RealmResource> implements RealmRepository {
+public class RealmRepositoryImpl extends
+		AbstractResourceRepositoryImpl<RealmResource> implements
+		RealmRepository {
 
-	
 	@Override
 	@Transactional
-	public Realm createRealm(String name, String module, Map<String,String> properties, RealmProvider provider) {
+	public Realm createRealm(String name, String module,
+			Map<String, String> properties, RealmProvider provider) {
 		Realm realm = new Realm();
 		realm.setName(name);
 		realm.setResourceCategory(module);
-		
-		
-		
+
 		save(realm);
-		
-		if(!properties.isEmpty()) {
+
+		if (!properties.isEmpty()) {
 			for (Map.Entry<String, String> e : properties.entrySet()) {
 				DatabaseProperty p = new DatabaseProperty();
 				p.setResourceId(realm.getId());
@@ -48,10 +48,10 @@ public class RealmRepositoryImpl extends AbstractResourceRepositoryImpl<RealmRes
 				save(p);
 			}
 		}
-		
+
 		return realm;
 	}
-	
+
 	@Override
 	@Transactional
 	public Realm saveRealm(Realm realm) {
@@ -60,74 +60,80 @@ public class RealmRepositoryImpl extends AbstractResourceRepositoryImpl<RealmRes
 		refresh(realm);
 		return realm;
 	}
-	
+
 	@Override
 	@Transactional
-	public Realm saveRealm(Realm realm, Map<String,String> properties, RealmProvider provider) {
-		
-		boolean isNew = realm.getId()==null;
+	public Realm saveRealm(Realm realm, Map<String, String> properties,
+			RealmProvider provider) {
+
+		boolean isNew = realm.getId() == null;
 		save(realm);
-		
+
 		for (Map.Entry<String, String> e : properties.entrySet()) {
 			provider.setValue(realm, e.getKey(), e.getValue());
 		}
-		
-		if(!isNew) {
+
+		if (!isNew) {
 			refresh(realm);
 		}
-		
+
 		return realm;
 	}
-	
+
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	public List<Realm> allRealms() {
-		return allEntities(Realm.class, new HiddenFilter(), new DeletedCriteria(false), new DistinctRootEntity());
+		return allEntities(Realm.class, new HiddenFilter(),
+				new DeletedCriteria(false), new DistinctRootEntity());
 	}
-	
+
 	@Override
-	@Transactional(readOnly=true)
-	public List<Realm> searchRealms(String searchPattern, int start, int length, ColumnSort[] sorting) {
-		return search(Realm.class, "name", searchPattern, start, length, sorting, new CriteriaConfiguration() {
-			
-			@Override
-			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.eq("hidden", false));
-				criteria.add(Restrictions.eq("deleted", false));
-			}
-		});
+	@Transactional(readOnly = true)
+	public List<Realm> searchRealms(String searchPattern, int start,
+			int length, ColumnSort[] sorting) {
+		return search(Realm.class, "name", searchPattern, start, length,
+				sorting, new CriteriaConfiguration() {
+
+					@Override
+					public void configure(Criteria criteria) {
+						criteria.add(Restrictions.eq("hidden", false));
+						criteria.add(Restrictions.eq("deleted", false));
+					}
+				});
 	}
-	
+
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	public List<Realm> allRealms(String resourceKey) {
-		return list("resourceCategory", resourceKey, Realm.class, new HiddenFilter(), new DeletedCriteria(false), new DistinctRootEntity());
+		return list("resourceCategory", resourceKey, Realm.class,
+				new HiddenFilter(), new DeletedCriteria(false),
+				new DistinctRootEntity());
 	}
-	
+
 	protected Realm getRealm(String column, Object value) {
 		return get(column, value, Realm.class, true);
 	}
-	
+
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	public Realm getRealmById(Long id) {
 		return get("id", id, Realm.class);
 	}
-	
+
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	public Realm getRealmByName(String name) {
 		return getRealm("name", name);
 	}
-	
+
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	public Realm getRealmByName(String name, boolean deleted) {
 		return get("name", name, Realm.class, new DeletedCriteria(deleted));
 	}
 
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	public Realm getRealmByHost(String host) {
 		return getRealm("host", host);
 	}
@@ -137,21 +143,22 @@ public class RealmRepositoryImpl extends AbstractResourceRepositoryImpl<RealmRes
 	public void delete(Realm realm) {
 		realm.setDeleted(true);
 		realm.setName(realm.getName() + "[#" + realm.getId() + " deleted]");
-		
+
 		save(realm);
 	}
 
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	public Long countRealms(String searchPattern) {
-		return getCount(Realm.class, "name", searchPattern, new CriteriaConfiguration() {
+		return getCount(Realm.class, "name", searchPattern,
+				new CriteriaConfiguration() {
 
-			@Override
-			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.eq("hidden", false));
-				criteria.add(Restrictions.eq("deleted", false));
-			}
-		});
+					@Override
+					public void configure(Criteria criteria) {
+						criteria.add(Restrictions.eq("hidden", false));
+						criteria.add(Restrictions.eq("deleted", false));
+					}
+				});
 	}
 
 	@Override
@@ -160,7 +167,7 @@ public class RealmRepositoryImpl extends AbstractResourceRepositoryImpl<RealmRes
 	}
 
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	public Realm getDefaultRealm() {
 		return get("defaultRealm", true, Realm.class);
 	}
@@ -168,11 +175,11 @@ public class RealmRepositoryImpl extends AbstractResourceRepositoryImpl<RealmRes
 	@Override
 	@Transactional
 	public Realm setDefaultRealm(Realm realm) {
-		
+
 		realm.setDefaultRealm(true);
-		
-		for(Realm r : allRealms()) {
-			if(!r.equals(realm)) {
+
+		for (Realm r : allRealms()) {
+			if (!r.equals(realm)) {
 				r.setDefaultRealm(false);
 			}
 			save(r);
@@ -180,7 +187,24 @@ public class RealmRepositoryImpl extends AbstractResourceRepositoryImpl<RealmRes
 		save(realm);
 		flush();
 		refresh(realm);
-		
+
 		return realm;
+	}
+
+	@Override
+	public void createPrincipalSuspension(
+			PrincipalSuspension principalSuspension) {
+		save(principalSuspension);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public PrincipalSuspension getSuspension(Principal principal) {
+		return get("principal", principal, PrincipalSuspension.class);
+	}
+
+	@Override
+	public void deletePrincipalSuspension(PrincipalSuspension suspension) {
+		delete(suspension);
 	}
 }

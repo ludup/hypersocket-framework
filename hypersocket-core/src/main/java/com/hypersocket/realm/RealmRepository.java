@@ -14,21 +14,24 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.RealmResource;
 import com.hypersocket.tables.ColumnSort;
 
-public interface RealmRepository extends AbstractResourceRepository<RealmResource> {
-	
+public interface RealmRepository extends
+		AbstractResourceRepository<RealmResource> {
+
 	public List<Realm> allRealms();
-	
+
 	public Realm getRealmById(Long id);
-	
+
 	public Realm getRealmByName(String name);
 
 	public Realm getRealmByHost(String host);
-	
+
 	public void delete(Realm realm);
 
-	Realm saveRealm(Realm realm, Map<String,String> properties, RealmProvider provider);
+	Realm saveRealm(Realm realm, Map<String, String> properties,
+			RealmProvider provider);
 
-	Realm createRealm(String name, String module, Map<String,String> properties, RealmProvider provider);
+	Realm createRealm(String name, String module,
+			Map<String, String> properties, RealmProvider provider);
 
 	Realm getRealmByName(String name, boolean deleted);
 
@@ -44,4 +47,11 @@ public interface RealmRepository extends AbstractResourceRepository<RealmResourc
 	public Realm getDefaultRealm();
 
 	public Realm setDefaultRealm(Realm realm);
+
+	public void createPrincipalSuspension(
+			PrincipalSuspension principalSuspension);
+
+	public PrincipalSuspension getSuspension(Principal principal);
+
+	public void deletePrincipalSuspension(PrincipalSuspension suspension);
 }
