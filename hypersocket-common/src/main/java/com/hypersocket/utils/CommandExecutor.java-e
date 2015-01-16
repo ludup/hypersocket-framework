@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.hypersocket.client.util;
+package com.hypersocket.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,10 +49,6 @@ public class CommandExecutor {
 	}
 	
 	public int execute() throws IOException {
-		return execute(null);
-	}
-	
- 	public int execute(CommandInputGenerator input) throws IOException {
 		
 		if(log.isInfoEnabled()) {
 			StringBuilder builder = new StringBuilder();
@@ -74,16 +70,10 @@ public class CommandExecutor {
 		pb.redirectErrorStream(true);
 		
 		Process p = pb.start();
-		if(input!=null) {
-			input.commandStarted(p);
-		}
 		
 		int r;
 		while((r = p.getInputStream().read()) > -1) {
 			buffer.append((char)r);
-			if(input!=null) {
-				input.commandOutput(p, (char)r);
-			}
 		}
 		
 		int exitCode;

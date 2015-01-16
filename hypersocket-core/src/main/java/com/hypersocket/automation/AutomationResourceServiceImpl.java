@@ -10,8 +10,6 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import org.quartz.TriggerKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +21,8 @@ import com.hypersocket.automation.events.AutomationResourceCreatedEvent;
 import com.hypersocket.automation.events.AutomationResourceDeletedEvent;
 import com.hypersocket.automation.events.AutomationResourceEvent;
 import com.hypersocket.automation.events.AutomationResourceUpdatedEvent;
+import com.hypersocket.automation.events.AutomationTaskFinishedEvent;
+import com.hypersocket.automation.events.AutomationTaskStartedEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -31,6 +31,7 @@ import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
@@ -45,12 +46,13 @@ public class AutomationResourceServiceImpl extends
 		AbstractResourceServiceImpl<AutomationResource> implements
 		AutomationResourceService, ApplicationListener<ContextStartedEvent> {
 
-	private static Logger log = LoggerFactory.getLogger(AutomationResourceServiceImpl.class);
-	
+	private static Logger log = LoggerFactory
+			.getLogger(AutomationResourceServiceImpl.class);
+
 	public static final String RESOURCE_BUNDLE = "AutomationResourceService";
 
-	private Map<Long,String> scheduleIdsByResource = new HashMap<Long,String>();
-	
+	private Map<Long, String> scheduleIdsByResource = new HashMap<Long, String>();
+
 	@Autowired
 	AutomationResourceRepository repository;
 
@@ -64,14 +66,17 @@ public class AutomationResourceServiceImpl extends
 	EventService eventService;
 
 	@Autowired
-	EntityResourcePropertyStore entityPropertyStore; 
-	
+	EntityResourcePropertyStore entityPropertyStore;
+
 	@Autowired
-	SchedulerService schedulerService; 
-	
+	SchedulerService schedulerService;
+
 	@Autowired
-	TaskProviderService taskService; 
-	
+	TaskProviderService taskService;
+
+	@Autowired
+	RealmRepository realmRepository;
+
 	@PostConstruct
 	private void postConstruct() {
 
@@ -80,33 +85,33 @@ public class AutomationResourceServiceImpl extends
 		PermissionCategory cat = permissionService.registerPermissionCategory(
 				RESOURCE_BUNDLE, "category.automation");
 
-		for (AutomationResourcePermission p : AutomationResourcePermission.values()) {
+		for (AutomationResourcePermission p : AutomationResourcePermission
+				.values()) {
 			permissionService.registerPermission(p, cat);
 		}
 
 		repository.loadPropertyTemplates("automationTemplate.xml");
 
-
 		/**
 		 * Register the events. All events have to be registerd so the system
 		 * knows about them.
 		 */
-		eventService.registerEvent(
-				AutomationResourceEvent.class, RESOURCE_BUNDLE,
+		eventService.registerEvent(AutomationResourceEvent.class,
+				RESOURCE_BUNDLE, this);
+		eventService.registerEvent(AutomationResourceCreatedEvent.class,
+				RESOURCE_BUNDLE, this);
+		eventService.registerEvent(AutomationResourceUpdatedEvent.class,
+				RESOURCE_BUNDLE, this);
+		eventService.registerEvent(AutomationResourceDeletedEvent.class,
+				RESOURCE_BUNDLE, this);
+		eventService.registerEvent(AutomationTaskStartedEvent.class,
+				RESOURCE_BUNDLE);
+		eventService.registerEvent(AutomationTaskFinishedEvent.class,
+				RESOURCE_BUNDLE);
+		entityPropertyStore.registerResourceService(AutomationResource.class,
 				this);
-		eventService.registerEvent(
-				AutomationResourceCreatedEvent.class, RESOURCE_BUNDLE,
-				this);
-		eventService.registerEvent(
-				AutomationResourceUpdatedEvent.class, RESOURCE_BUNDLE,
-				this);
-		eventService.registerEvent(
-				AutomationResourceDeletedEvent.class, RESOURCE_BUNDLE,
-				this);
-
-		entityPropertyStore.registerResourceService(AutomationResource.class, this);
 	}
-	
+
 	@Override
 	protected AbstractResourceRepository<AutomationResource> getRepository() {
 		return repository;
@@ -171,10 +176,10 @@ public class AutomationResourceServiceImpl extends
 		updateResource(resource, properties);
 
 		schedule(resource);
-		
+
 		return resource;
 	}
-	
+
 	@Override
 	protected void beforeCreateResource(AutomationResource resource,
 			Map<String, String> properties) throws ResourceCreationException {
@@ -188,47 +193,50 @@ public class AutomationResourceServiceImpl extends
 	}
 
 	@Override
-	protected void afterCreateResource(AutomationResource resource, Map<String,String> properties) throws ResourceCreationException {
+	protected void afterCreateResource(AutomationResource resource,
+			Map<String, String> properties) throws ResourceCreationException {
 		TaskProvider provider = taskService.getTaskProvider(resource);
 		provider.getRepository().setValues(resource, properties);
 	}
-	
+
 	@Override
-	protected void afterUpdateResource(AutomationResource resource, Map<String,String> properties) throws ResourceChangeException {
+	protected void afterUpdateResource(AutomationResource resource,
+			Map<String, String> properties) throws ResourceChangeException {
 		TaskProvider provider = taskService.getTaskProvider(resource);
 		provider.getRepository().setValues(resource, properties);
 	}
-	
 
 	protected Date calculateDateTime(Date from, String time) {
-		
+
 		Calendar c = Calendar.getInstance();
-		
-		if(from!=null) {
+
+		if (from != null) {
 			c.setTime(from);
 		}
-		
-		if(!StringUtils.isEmpty(time)) {
-			int idx = time.indexOf(':');				
-			c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(time.substring(0, idx)));
-			c.set(Calendar.MINUTE, Integer.parseInt(time.substring(idx+1)));
+
+		if (!StringUtils.isEmpty(time)) {
+			int idx = time.indexOf(':');
+			c.set(Calendar.HOUR_OF_DAY,
+					Integer.parseInt(time.substring(0, idx)));
+			c.set(Calendar.MINUTE, Integer.parseInt(time.substring(idx + 1)));
 		}
-		
+
 		return c.getTime();
-	}	
-	
-	
+	}
+
 	protected void schedule(AutomationResource resource) {
-		
-		Date start = calculateDateTime(resource.getStartDate(), resource.getStartTime());
-		Date end = calculateDateTime(resource.getEndDate(), resource.getEndTime());
-		
+
+		Date start = calculateDateTime(resource.getStartDate(),
+				resource.getStartTime());
+		Date end = calculateDateTime(resource.getEndDate(),
+				resource.getEndTime());
+
 		int interval = 0;
-		int repeat = -1; 
-		
-		if(resource.getRepeatValue() > 0) {
-			
-			switch(resource.getRepeatType()) {
+		int repeat = -1;
+
+		if (resource.getRepeatValue() > 0) {
+
+			switch (resource.getRepeatType()) {
 			case DAYS:
 				interval = resource.getRepeatValue() * (60000 * 60 * 24);
 				break;
@@ -242,41 +250,49 @@ public class AutomationResourceServiceImpl extends
 				interval = resource.getRepeatValue() * 1000;
 				break;
 			case NEVER:
-			default:	
+			default:
 				interval = 0;
 				repeat = 0;
 				break;
 			}
 		}
-		
-		PermissionsAwareJobData data = new PermissionsAwareJobData(resource.getRealm());
+
+		PermissionsAwareJobData data = new PermissionsAwareJobData(
+				resource.getRealm());
 		data.put("resourceId", resource.getId());
-		
+
 		try {
-			
+
 			String scheduleId;
-			
-			if(scheduleIdsByResource.containsKey(resource.getId())) {
-				
+
+			if (scheduleIdsByResource.containsKey(resource.getId())) {
+
 				scheduleId = scheduleIdsByResource.get(resource.getId());
-				
-				if(start.before(new Date())) {
-					schedulerService.rescheduleNow(scheduleId, interval, repeat, end);
+
+				if (start.before(new Date())) {
+					schedulerService.rescheduleNow(scheduleId, interval,
+							repeat, end);
 				} else {
-					schedulerService.rescheduleAt(scheduleId, start, interval, repeat, end);
+					schedulerService.rescheduleAt(scheduleId, start, interval,
+							repeat, end);
 				}
-				
+
 			} else {
-				if(start.before(new Date())) {
-					scheduleId = schedulerService.scheduleNow(AutomationJob.class, data, interval, repeat, end);
+				if (start.before(new Date())) {
+					scheduleId = schedulerService.scheduleNow(
+							AutomationJob.class, data, interval, repeat, end);
 				} else {
-					scheduleId = schedulerService.scheduleAt(AutomationJob.class, data, start, interval, repeat, end);
+					scheduleId = schedulerService.scheduleAt(
+							AutomationJob.class, data, start, interval, repeat,
+							end);
 				}
-				
+
 				scheduleIdsByResource.put(resource.getId(), scheduleId);
 			}
 		} catch (SchedulerException e) {
-			log.error("Failed to schedule automation task " + resource.getName(), e);
+			log.error(
+					"Failed to schedule automation task " + resource.getName(),
+					e);
 		}
 	}
 
@@ -292,7 +308,7 @@ public class AutomationResourceServiceImpl extends
 		createResource(resource, properties);
 
 		schedule(resource);
-		
+
 		return resource;
 	}
 
@@ -302,84 +318,91 @@ public class AutomationResourceServiceImpl extends
 
 		assertPermission(AutomationResourcePermission.READ);
 
-		Collection<PropertyCategory> results = repository.getPropertyCategories(null);
-		
+		Collection<PropertyCategory> results = repository
+				.getPropertyCategories(null);
+
 		TaskProvider provider = taskService.getTaskProvider(resourceKey);
-		
+
 		results.addAll(provider.getRepository().getPropertyCategories(null));
-		
+
 		return results;
 	}
 
-	
 	@Override
 	public Collection<PropertyCategory> getPropertyTemplate(
 			AutomationResource resource) throws AccessDeniedException {
-	
+
 		assertPermission(AutomationResourcePermission.READ);
 
-		Collection<PropertyCategory> results = repository.getPropertyCategories(resource);
-		
+		Collection<PropertyCategory> results = repository
+				.getPropertyCategories(resource);
+
 		TaskProvider provider = taskService.getTaskProvider(resource);
-		
+
 		results.addAll(provider.getRepository().getPropertyCategories(resource));
-		
+
 		return results;
 	}
 
 	@Override
 	public Collection<PropertyCategory> getPropertyTemplate()
 			throws AccessDeniedException {
-		throw new IllegalStateException("AutomationResource needs provider resource key to return property templates");
+		throw new IllegalStateException(
+				"AutomationResource needs provider resource key to return property templates");
 	}
 
 	@Override
 	public Collection<String> getTasks() throws AccessDeniedException {
-		
+
 		assertPermission(AutomationResourcePermission.READ);
-		
+
 		return taskService.getAutomationTasks();
 	}
 
 	@Override
 	public void onApplicationEvent(ContextStartedEvent event) {
-		
-		if(log.isInfoEnabled()) {
+
+		if (log.isInfoEnabled()) {
 			log.info("Scheduling one time only or repetitive automation resources");
 		}
-		
-		for(AutomationResource resource: repository.getResources(null)) {
-			if(!resource.isDailyJob()) {
-				schedule(resource);
+
+		for (Realm realm : realmRepository.allRealms()) {
+			for (AutomationResource resource : repository.getResources(realm)) {
+				if (!resource.isDailyJob()) {
+					schedule(resource);
+				}
 			}
 		}
-		
+
 		scheduleDailyJobs();
 	}
 
 	@Override
 	public void scheduleDailyJobs() {
-		
-		if(log.isInfoEnabled()) {
+
+		if (log.isInfoEnabled()) {
 			log.info("Scheduling daily automation resources");
 		}
-		
-		for(AutomationResource resource: repository.getResources(null)) {
-			if(resource.isDailyJob()) {
-				schedule(resource);
+
+		for (Realm realm : realmRepository.allRealms()) {
+			for (AutomationResource resource : repository.getResources(realm)) {
+				if (resource.isDailyJob()) {
+					schedule(resource);
+				}
 			}
 		}
-		
+
 		Calendar c = Calendar.getInstance();
 		c.set(Calendar.HOUR, 0);
 		c.set(Calendar.MINUTE, 0);
 		c.add(Calendar.DAY_OF_MONTH, 1);
-		
+
 		try {
-			schedulerService.scheduleAt(DailySchedulerJob.class, null, c.getTime());
+			schedulerService.scheduleAt(DailySchedulerJob.class, null,
+					c.getTime());
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule daily automation jobs", e);
 		}
-		
+
 	}
 }
