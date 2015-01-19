@@ -101,7 +101,7 @@ public class Session extends AbstractEntity<String> {
 	Map<String,String> stateParameters;
 	
 	@Column(name="system")
-	boolean system = false;
+	Boolean system;
 	
 	@Override
 	public String getId() {
@@ -307,6 +307,6 @@ public class Session extends AbstractEntity<String> {
 	}
 	
 	public boolean isSystem() {
-		return system;
+		return system!=null && system;
 	}
 }

@@ -130,57 +130,58 @@ public class SchedulerServiceImpl implements SchedulerService {
 	}
 
 	@Override
-	public void rescheduleIn(String scheduleId, int millis, int interval, int repeat) throws SchedulerException {
+	public void rescheduleIn(String scheduleId, int millis, int interval,
+			int repeat) throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, DateBuilder.futureDate(millis, DateBuilder.IntervalUnit.MILLISECOND), interval, repeat, null);
 	}
 	
 	@Override
-	public void rescheduleIn(String scheduleId, int millis, int interval) throws SchedulerException {
+	public void rescheduleIn(String scheduleId, int millis, int interval) throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, DateBuilder.futureDate(millis, DateBuilder.IntervalUnit.MILLISECOND), interval, 0, null);
 	}
 	
 	@Override
-	public void rescheduleIn(String scheduleId, int millis) throws SchedulerException {
+	public void rescheduleIn(String scheduleId, int millis) throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, DateBuilder.futureDate(millis, DateBuilder.IntervalUnit.MILLISECOND), 0, 0, null);
 	}
 
 	@Override
-	public void rescheduleAt(String scheduleId, Date time, int interval, int repeat) throws SchedulerException {
+	public void rescheduleAt(String scheduleId, Date time, int interval, int repeat) throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, time, interval, repeat, null);
 	}
 	
 	@Override
-	public void rescheduleAt(String scheduleId, Date time, int interval, int repeat, Date end) throws SchedulerException {
+	public void rescheduleAt(String scheduleId, Date time, int interval, int repeat, Date end) throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, time, interval, repeat, end);
 	}
 	
 	@Override
-	public void rescheduleAt(String scheduleId, Date time, int interval) throws SchedulerException {
+	public void rescheduleAt(String scheduleId, Date time, int interval) throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, time, interval, SimpleTrigger.REPEAT_INDEFINITELY, null);
 	}
 	
 	@Override
-	public void rescheduleAt(String scheduleId, Date time) throws SchedulerException {
+	public void rescheduleAt(String scheduleId, Date time) throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, time, 0, 0, null);
 	}
 	
 	@Override
-	public void rescheduleNow(String scheduleId) throws SchedulerException {
+	public void rescheduleNow(String scheduleId) throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, null, 0, 0, null);
 	}
 	
 	@Override
-	public void rescheduleNow(String scheduleId, int interval) throws SchedulerException {
+	public void rescheduleNow(String scheduleId, int interval) throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, null, interval, SimpleTrigger.REPEAT_INDEFINITELY, null);
 	}
 	
 	@Override
-	public void rescheduleNow(String scheduleId, int interval, int repeat) throws SchedulerException {
+	public void rescheduleNow(String scheduleId, int interval, int repeat) throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, null, interval, repeat, null);
 	}
 	
 	@Override
-	public void rescheduleNow(String scheduleId, int interval, int repeat, Date end) throws SchedulerException {
+	public void rescheduleNow(String scheduleId, int interval, int repeat, Date end) throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, null, interval, repeat, end);
 	}
 	
@@ -234,7 +235,7 @@ public class SchedulerServiceImpl implements SchedulerService {
 	}
 
 	protected void reschedule(String id, Date start, int interval, int repeat, Date end)
-			throws SchedulerException {
+			throws SchedulerException, NotScheduledException {
 
 		if(log.isInfoEnabled()) {
 			log.info("Rescheduling job with id " + id + " to start at " + HypersocketUtils.formatDate(start)
@@ -242,13 +243,19 @@ public class SchedulerServiceImpl implements SchedulerService {
 					 + (end != null ? " until " + HypersocketUtils.formatDate(end) : ""));
 		}
 		TriggerKey triggerKey = triggerKeys.get(id);
-
-		Trigger trigger = createTrigger(scheduler.getTrigger(triggerKey)
-				.getJobDataMap(), start, interval, repeat, end);
-
-		scheduler.rescheduleJob(triggerKey, trigger);
-
-		triggerKeys.put(id, trigger.getKey());
+		
+		if(scheduler.checkExists(triggerKey)) {
+		
+			Trigger oldTrigger = scheduler.getTrigger(triggerKey);
+			Trigger trigger = createTrigger(oldTrigger.getJobDataMap(), 
+					start, interval, repeat, end);
+			scheduler.rescheduleJob(triggerKey, trigger);
+			triggerKeys.put(id, trigger.getKey());
+			
+		} else {
+			cancelNow(id);
+			throw new NotScheduledException();
+		}
 	}
 
 	@Override
