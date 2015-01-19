@@ -1,5 +1,6 @@
 package com.hypersocket.tasks.command;
 
+import java.io.IOException;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -17,22 +18,22 @@ import com.hypersocket.tasks.TaskProviderServiceImpl;
 import com.hypersocket.tasks.email.EmailTaskResult;
 import com.hypersocket.triggers.TaskResult;
 import com.hypersocket.triggers.ValidationException;
+import com.hypersocket.utils.CommandExecutor;
 
 @Component
 public class ExecuteCommandTask extends AbstractTaskProvider {
 
-	
 	public static final String EXECUTE_COMMAND_TASK = "executeCommand";
-	
+
 	@Autowired
-	ExecuteCommandRepository repository; 
-	
+	ExecuteCommandRepository repository;
+
 	@Autowired
-	TaskProviderService taskService; 
-	
+	TaskProviderService taskService;
+
 	@Autowired
-	EventService eventService; 
-	
+	EventService eventService;
+
 	public ExecuteCommandTask() {
 	}
 
@@ -64,7 +65,22 @@ public class ExecuteCommandTask extends AbstractTaskProvider {
 	public TaskResult execute(Task task, SystemEvent event)
 			throws ValidationException {
 
-		return null;
+		String command = repository.getValue(task,
+				"command.exe");
+		String[] args = repository.getValues(task, "command.args");
+		CommandExecutor exe = new CommandExecutor(command);
+		exe.addArgs(args);
+
+		try {
+			int result = exe.execute();
+
+			return new ExecuteCommandResult(this, "command.executed",
+					result == 0, event.getCurrentRealm(), task,
+					exe.getCommandOutput(), result, command, args);
+		} catch (IOException e) {
+			return new ExecuteCommandResult(this, "command.executed", e,
+					event.getCurrentRealm(), task, exe.getCommandOutput(), command, args);
+		}
 	}
 
 	@Override

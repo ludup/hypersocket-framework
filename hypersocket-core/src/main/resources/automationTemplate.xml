@@ -8,11 +8,11 @@
 		<property inputType="date" resourceKey="taskStarts"
 			defaultValue="" weight="0" />
 		<property resourceKey="startTime" inputType="time" 
-			defaultValue="" weight="100" defaultTime="false"/>
+			defaultValue="" weight="100"/>
 		<property inputType="date" resourceKey="taskEnds"
 			defaultValue="" weight="200" />
 		<property resourceKey="endTime" inputType="time" 
-			defaultValue="" weight="300" defaultTime="false"/>
+			defaultValue="" weight="300"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.interval"
 		resourceBundle="AutomationResourceService" weight="99991" group="automation">

@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.client.util;
 
+import com.hypersocket.utils.CommandExecutor;
+
 public class BashSilentSudoCommand extends CommandExecutor {
 
 	char[] password;

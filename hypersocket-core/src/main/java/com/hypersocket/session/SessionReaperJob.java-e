@@ -28,7 +28,9 @@ public class SessionReaperJob extends TransactionalJob {
 				log.debug("There are " + activeSessions.size() + " users connected");
 			}
 			for(Session session : activeSessions) {
-				sessionService.isLoggedOn(session, false);
+				if(!session.system) {
+					sessionService.isLoggedOn(session, false);
+				}
 			}
 		} catch (AccessDeniedException e) {
 			log.error("Access Denied", e);

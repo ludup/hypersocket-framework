@@ -440,7 +440,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 
 	@SuppressWarnings("unchecked")
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional
 	public Role getPersonalRole(Principal principal) {
 
 		Criteria crit = sessionFactory

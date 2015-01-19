@@ -371,7 +371,7 @@ public class TriggerResourceServiceImpl extends
 			data.put("realm", event.getCurrentRealm());
 			
 			try {
-				schedulerService.scheduleNow(ProcessEventTriggersJob.class,
+				schedulerService.scheduleNow(TriggerJob.class,
 						data);
 			} catch (SchedulerException e) {
 				log.error("Failed to schedule event trigger job", e);
