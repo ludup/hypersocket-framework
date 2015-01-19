@@ -1407,7 +1407,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			realmRepository.createPrincipalSuspension(principalSuspension);
 		} else {
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
-					"error.realmIsReadOnly");
+					"error.suspendUser.userSuspended");
 		}
 
 		return principalSuspension;
