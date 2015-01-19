@@ -1,40 +1,47 @@
 package com.hypersocket.tasks.command;
 
-import com.hypersocket.events.SystemEventStatus;
+import org.springframework.util.StringUtils;
+
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
+import com.hypersocket.tasks.TaskProviderServiceImpl;
 import com.hypersocket.triggers.TaskResult;
 
 public class ExecuteCommandResult extends TaskResult {
 
-	public ExecuteCommandResult(Object source, String resourceKey,
-			boolean success, Realm currentRealm, Task task) {
-		super(source, resourceKey, success, currentRealm, task);
-		// TODO Auto-generated constructor stub
-	}
+	private static final long serialVersionUID = -7350055708830738608L;
 
+	public static final String ATTR_COMMAND = "attr.command";
+	public static final String ATTR_ARGS = "attr.args";
+	public static final String ATTR_EXIT_CODE = "attr.exitCode";
+	public static final String ATTR_OUTPUT = "attr.output";
+	
 	public ExecuteCommandResult(Object source, String resourceKey,
-			SystemEventStatus status, Realm currentRealm, Task task) {
-		super(source, resourceKey, status, currentRealm, task);
-		// TODO Auto-generated constructor stub
+			boolean success, Realm currentRealm, Task task, String output, int exitCode, String command, String[] args) {
+		super(source, resourceKey, success, currentRealm, task);
+		addAttribute(ATTR_EXIT_CODE, String.valueOf(exitCode));
+		addAttribute(ATTR_OUTPUT, output);
+		addAttribute(ATTR_COMMAND, command);
+		addAttribute(ATTR_ARGS, StringUtils.arrayToDelimitedString(args, " "));
 	}
 
 	public ExecuteCommandResult(Object source, String resourceKey, Throwable e,
-			Realm currentRealm, Task task) {
+			Realm currentRealm, Task task, String output, String command, String[] args) {
 		super(source, resourceKey, e, currentRealm, task);
-		// TODO Auto-generated constructor stub
+		addAttribute(ATTR_EXIT_CODE, String.valueOf(-1));
+		addAttribute(ATTR_OUTPUT, output);
+		addAttribute(ATTR_COMMAND, command);
+		addAttribute(ATTR_ARGS, StringUtils.arrayToDelimitedString(args, " "));
 	}
 
 	@Override
 	public boolean isPublishable() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public String getResourceBundle() {
-		// TODO Auto-generated method stub
-		return null;
+		return TaskProviderServiceImpl.RESOURCE_BUNDLE;
 	}
 
 }
