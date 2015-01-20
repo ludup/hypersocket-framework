@@ -14,6 +14,7 @@ import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.PermissionsAwareJob;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
+import com.hypersocket.triggers.TaskResult;
 import com.hypersocket.triggers.ValidationException;
 
 public class AutomationJob extends PermissionsAwareJob {
@@ -43,7 +44,7 @@ public class AutomationJob extends PermissionsAwareJob {
 		AutomationResource resource;
 		
 		try {
-		resource = automationService.getResourceById(resourceId);
+			resource = automationService.getResourceById(resourceId);
 		} catch (ResourceNotFoundException e) {
 			log.error("Could not find resource id " + resourceId + " to execute job", e);
 			eventService.publishEvent(new AutomationTaskStartedEvent(this, realm, e));
@@ -53,13 +54,17 @@ public class AutomationJob extends PermissionsAwareJob {
 		try {
 			
 			
-			TaskProvider provider = taskService.getActionProvider(resource);
+			TaskProvider provider = taskService.getTaskProvider(resource);
 			
 			AutomationTaskStartedEvent event = new AutomationTaskStartedEvent(this, resource);
 			
 			eventService.publishEvent(event);
 			
-			provider.execute(resource, event);
+			TaskResult result = provider.execute(resource, event);
+			
+			if(result!=null && result.isPublishable()) {
+				eventService.publishEvent(result);
+			}
 			
 			eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource));
 		} catch (ValidationException e) {

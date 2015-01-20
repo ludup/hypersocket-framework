@@ -6,12 +6,14 @@ import com.hypersocket.auth.AuthenticatedService;
 
 public interface TaskProviderService extends AuthenticatedService {
 
-	TaskProvider getActionProvider(String resourceKey);
+	TaskProvider getTaskProvider(String resourceKey);
 
-	List<String> getActions();
+	void registerTaskProvider(TaskProvider action);
 
-	void registerActionProvider(TaskProvider action);
+	TaskProvider getTaskProvider(Task task);
 
-	TaskProvider getActionProvider(Task task);
+	List<String> getTriggerTasks();
+
+	List<String> getAutomationTasks();
 
 }

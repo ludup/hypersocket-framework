@@ -257,7 +257,7 @@ public class TriggerResourceServiceImpl extends
 		updateResource(resource, properties);
 
 		for (TriggerAction action : resource.getActions()) {
-			TaskProvider provider = taskService.getActionProvider(action
+			TaskProvider provider = taskService.getTaskProvider(action
 					.getResourceKey());
 			provider.taskUpdated(action);
 		}
@@ -280,7 +280,7 @@ public class TriggerResourceServiceImpl extends
 		createResource(resource, properties);
 
 		for (TriggerAction action : resource.getActions()) {
-			TaskProvider provider = taskService.getActionProvider(action
+			TaskProvider provider = taskService.getTaskProvider(action
 					.getResourceKey());
 			provider.taskCreated(action);
 		}
@@ -293,7 +293,7 @@ public class TriggerResourceServiceImpl extends
 			throws ResourceChangeException, AccessDeniedException {
 
 		for (TriggerAction action : resource.getActions()) {
-			TaskProvider provider = taskService.getActionProvider(action
+			TaskProvider provider = taskService.getTaskProvider(action
 					.getResourceKey());
 			provider.taskDeleted(action);
 		}
@@ -371,7 +371,7 @@ public class TriggerResourceServiceImpl extends
 			data.put("realm", event.getCurrentRealm());
 			
 			try {
-				schedulerService.scheduleNow(ProcessEventTriggersJob.class,
+				schedulerService.scheduleNow(TriggerJob.class,
 						data);
 			} catch (SchedulerException e) {
 				log.error("Failed to schedule event trigger job", e);

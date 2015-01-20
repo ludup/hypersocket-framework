@@ -51,7 +51,7 @@ public class AlertTask extends AbstractTaskProvider {
 	
 	@PostConstruct
 	private void postConstruct() {
-		taskService.registerActionProvider(this);
+		taskService.registerTaskProvider(this);
 
 		eventService.registerEvent(AlertEvent.class,
 				TaskProviderServiceImpl.RESOURCE_BUNDLE);

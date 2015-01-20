@@ -37,7 +37,7 @@ public class TriggerResourceRepositoryImpl extends
 
 			if(action.getProperties()!=null) {
 				TaskProvider provider = taskService
-						.getActionProvider(action.getResourceKey());
+						.getTaskProvider(action.getResourceKey());
 				for (Map.Entry<String, String> e : action.getProperties()
 						.entrySet()) {
 					provider.getRepository().setValue(action, e.getKey(),
@@ -60,7 +60,7 @@ public class TriggerResourceRepositoryImpl extends
 
 			if(action.getProperties()!=null) {
 				TaskProvider provider = taskService
-						.getActionProvider(action.getResourceKey());
+						.getTaskProvider(action.getResourceKey());
 				
 				for (Map.Entry<String, String> e : action.getProperties()
 						.entrySet()) {
