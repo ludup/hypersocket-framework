@@ -19,10 +19,22 @@ public class HttpFormTaskResult extends TaskResult {
 
 	public HttpFormTaskResult(Object source, Throwable e, Realm currentRealm,
 			Task task, String method, String url, String[] variables) {
-		super(source, "blocked.ip", e, currentRealm, task);
+		super(source, "httpForm", e, currentRealm, task);
 		addAttribute("httpForm.method", method);
 		addAttribute("httpForm.url", url);
 		addAttribute("httpForm.variables", variables);
+
+	}
+
+	public HttpFormTaskResult(Object source, Throwable e, Realm currentRealm,
+			Task task, String method, String url, String[] variables,
+			String responseCode, String content) {
+		super(source, "httpForm", e, currentRealm, task);
+		addAttribute("httpForm.method", method);
+		addAttribute("httpForm.url", url);
+		addAttribute("httpForm.variables", variables);
+		addAttribute("httpForm.responseCode", responseCode);
+		addAttribute("httpForm.content", content);
 	}
 
 	@Override
