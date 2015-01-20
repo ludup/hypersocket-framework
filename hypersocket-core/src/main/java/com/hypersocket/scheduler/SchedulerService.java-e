@@ -35,31 +35,31 @@ public interface SchedulerService {
 			int interval, int repeat) throws SchedulerException;
 
 	void rescheduleIn(String scheduleId, int millis, int interval, int repeat)
-			throws SchedulerException;
+			throws SchedulerException, NotScheduledException;
 
 	void rescheduleIn(String scheduleId, int millis, int interval)
-			throws SchedulerException;
+			throws SchedulerException, NotScheduledException;
 
-	void rescheduleIn(String scheduleId, int millis) throws SchedulerException;
+	void rescheduleIn(String scheduleId, int millis) throws SchedulerException, NotScheduledException;
 
 	void rescheduleAt(String scheduleId, Date time, int interval, int repeat)
-			throws SchedulerException;
+			throws SchedulerException, NotScheduledException;
 
 	void rescheduleAt(String scheduleId, Date time, int interval, int repeat, Date end)
-			throws SchedulerException;
+			throws SchedulerException, NotScheduledException;
 	
 	void rescheduleAt(String scheduleId, Date time, int interval)
-			throws SchedulerException;
+			throws SchedulerException, NotScheduledException;
 
-	void rescheduleAt(String scheduleId, Date time) throws SchedulerException;
+	void rescheduleAt(String scheduleId, Date time) throws SchedulerException, NotScheduledException;
 
-	void rescheduleNow(String scheduleId) throws SchedulerException;
+	void rescheduleNow(String scheduleId) throws SchedulerException, NotScheduledException;
 
 	void rescheduleNow(String scheduleId, int interval)
-			throws SchedulerException;
+			throws SchedulerException, NotScheduledException;
 
 	void rescheduleNow(String scheduleId, int interval, int repeat)
-			throws SchedulerException;
+			throws SchedulerException, NotScheduledException;
 
 	void cancelNow(String scheduleId) throws SchedulerException;
 
@@ -68,7 +68,7 @@ public interface SchedulerService {
 	Date getPreviousSchedule(String string) throws SchedulerException;
 
 	void rescheduleNow(String scheduleId, int interval, int repeat, Date end)
-			throws SchedulerException;
+			throws SchedulerException, NotScheduledException;
 
 	String scheduleIn(Class<? extends Job> clz, JobDataMap data, int millis,
 			int interval, Date ends) throws SchedulerException;

@@ -36,6 +36,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.scheduler.NotScheduledException;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.TaskProvider;
@@ -269,26 +270,35 @@ public class AutomationResourceServiceImpl extends
 
 				scheduleId = scheduleIdsByResource.get(resource.getId());
 
-				if (start.before(new Date())) {
-					schedulerService.rescheduleNow(scheduleId, interval,
-							repeat, end);
-				} else {
-					schedulerService.rescheduleAt(scheduleId, start, interval,
-							repeat, end);
+				try {
+					if (start.before(new Date())) {
+						schedulerService.rescheduleNow(scheduleId, interval,
+								repeat, end);
+					} else {
+						schedulerService.rescheduleAt(scheduleId, start,
+								interval, repeat, end);
+					}
+					return;
+				} catch (NotScheduledException e) {
+					if(log.isInfoEnabled()) {
+						log.info("Attempted to reschedule job but it was not scheduled.");
+					}
+					scheduleIdsByResource.remove(resource.getId());
 				}
 
+			} 
+		
+			if (start.before(new Date())) {
+				scheduleId = schedulerService.scheduleNow(
+						AutomationJob.class, data, interval, repeat, end);
 			} else {
-				if (start.before(new Date())) {
-					scheduleId = schedulerService.scheduleNow(
-							AutomationJob.class, data, interval, repeat, end);
-				} else {
-					scheduleId = schedulerService.scheduleAt(
-							AutomationJob.class, data, start, interval, repeat,
-							end);
-				}
-
-				scheduleIdsByResource.put(resource.getId(), scheduleId);
+				scheduleId = schedulerService.scheduleAt(
+						AutomationJob.class, data, start, interval, repeat,
+						end);
 			}
+
+			scheduleIdsByResource.put(resource.getId(), scheduleId);
+			
 		} catch (SchedulerException e) {
 			log.error(
 					"Failed to schedule automation task " + resource.getName(),
