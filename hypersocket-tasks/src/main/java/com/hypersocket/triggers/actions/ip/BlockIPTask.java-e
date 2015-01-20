@@ -92,7 +92,8 @@ public class BlockIPTask extends AbstractTaskProvider {
 	public TaskResult execute(Task task, SystemEvent event)
 			throws ValidationException {
 		
-		String ipAddress = repository.getValue(task, "block.ip");
+		String ipAddress = processTokenReplacements(repository.getValue(task, "block.ip"), event);
+		int val = repository.getIntValue(task, "block.length");
 		try {
 			
 			if(log.isInfoEnabled()) {
@@ -126,9 +127,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 			
 			blockedIps.add(ipAddress);
 			
-			int val = 0;
-			
-			if((val = repository.getIntValue(task, "block.length")) > 0) {
+			if(val > 0) {
 				
 				if(log.isInfoEnabled()) {
 					log.info("Scheduling unblock for IP address " + ipAddress + " in " + val + " minutes");
@@ -141,10 +140,10 @@ public class BlockIPTask extends AbstractTaskProvider {
 				
 				blockedIPUnblockSchedules.put(ipAddress, scheduleId);
 			}
-			return new BlockedIPResult(this, event.getCurrentRealm(), task, ipAddress);
+			return new BlockedIPResult(this, event.getCurrentRealm(), task, ipAddress, val);
 		} catch (UnknownHostException | SchedulerException e) {
 			log.error("Failed to fully process block IP request for " + ipAddress, e);
-			return new BlockedIPResult(this, e, event.getCurrentRealm(), task, ipAddress);
+			return new BlockedIPResult(this, e, event.getCurrentRealm(), task, ipAddress, val);
 		}
 	}
 

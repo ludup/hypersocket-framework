@@ -1,5 +1,7 @@
 package com.hypersocket.triggers.actions.ip;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.events.SystemEventStatus;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
@@ -8,17 +10,21 @@ import com.hypersocket.triggers.TaskResult;
 public class UnblockedIPResult extends TaskResult {
 
 	private static final long serialVersionUID = 5303654508133707273L;
-
+	
+	public static final String EVENT_RESOURCE_KEY = "unblocked.ip";
+	
+	public static final String ATTR_BLOCKED_IP = "attr.blockedIp";
+	
 	public UnblockedIPResult(Object source, Realm currentRealm, Task task, String ipAddress) {
-		super(source, "unblocked.ip", SystemEventStatus.SUCCESS, currentRealm, task);
-		addAttribute("unblock.ip", ipAddress);
+		super(source, EVENT_RESOURCE_KEY, SystemEventStatus.SUCCESS, currentRealm, task);
+		addAttribute(ATTR_BLOCKED_IP, ipAddress);
 	}
 
 	
 	public UnblockedIPResult(Object source, Throwable e,
 			Realm currentRealm, Task task, String ipAddress) {
-		super(source, "unblocked.ip", e, currentRealm, task);
-		addAttribute("unblock.ip", ipAddress);
+		super(source, EVENT_RESOURCE_KEY, e, currentRealm, task);
+		addAttribute(ATTR_BLOCKED_IP, ipAddress);
 	}
 
 
@@ -32,4 +38,7 @@ public class UnblockedIPResult extends TaskResult {
 		return BlockIPTask.RESOURCE_BUNDLE;
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }
