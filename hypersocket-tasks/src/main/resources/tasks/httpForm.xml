@@ -5,8 +5,15 @@
 		<property resourceKey="httpForm.method" inputType="select"
 			options="GET, POST" weight="100" />
 		<property resourceKey="httpForm.url" inputType="text"
-			defaultValue="" weight="200" />
+			defaultValue="" weight="200" regex="^(https?|ftp|file)://[-a-zA-Z0-9+@#/%?=_|!:,.;]*[-a-zA-Z0-9+@#/%=_|]"/>
+		<property resourceKey="httpForm.certificate" inputType="switch"
+			defaultValue="" weight="300" />
 		<property resourceKey="httpForm.variables" inputType="namePairs"
-			weight="300" />
+			weight="400" />
+	</propertyCategory>
+	<propertyCategory resourceKey="category.responses"
+		resourceBundle="TriggerResourceService" weight="2000">
+		<property resourceKey="httpForm.responseList" inputType="multipleTextInput"
+			weight="100" />
 	</propertyCategory>
 </propertyTemplates>

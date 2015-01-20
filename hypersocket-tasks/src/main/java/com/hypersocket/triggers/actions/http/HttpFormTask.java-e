@@ -1,22 +1,29 @@
 package com.hypersocket.triggers.actions.http;
 
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +51,7 @@ public class HttpFormTask extends AbstractTaskProvider {
 	public static final String METHOD_GET = "GET";
 	public static final String METHOD_POST = "POST";
 	public static final String USER_AGENT = "Mozilla/5.0";
-	
+
 	static BasicCookieStore cookieStore;
 
 	@Autowired
@@ -79,8 +86,11 @@ public class HttpFormTask extends AbstractTaskProvider {
 	@Override
 	public void validate(Task task, Map<String, String> parameters)
 			throws ValidationException {
-		if (parameters.containsKey("block.ip")) {
-			throw new ValidationException("IP address required");
+		if (parameters.containsKey("httpForm.url")) {
+			throw new ValidationException("URL required");
+		}
+		if (parameters.containsKey("httpForm.responseList")) {
+			throw new ValidationException("Correct response codes required");
 		}
 	}
 
@@ -91,24 +101,24 @@ public class HttpFormTask extends AbstractTaskProvider {
 		String method = repository.getValue(task, "httpForm.method");
 		String url = repository.getValue(task, "httpForm.url");
 		String[] variables = repository.getValues(task, "httpForm.variables");
+		String[] responses = repository
+				.getValues(task, "httpForm.responseList");
+		boolean checkCertificate = repository.getBooleanValue(task,
+				"httpForm.certificate");
 
-		if (!url.startsWith("www")) {
-			if (!url.startsWith("/")) {
-				url = "/" + url;
-			}
-			url = "https://localhost:8443" + url;
-		} else if (!url.startsWith("http://") && !url.startsWith("https://")) {
-			url = "https://" + url;
-		}
 		if (log.isInfoEnabled()) {
 			log.info("Method " + method);
 			log.info("URL " + url);
 			log.info("variables " + variables.toString());
 		}
-//		HttpClient client = HttpClientBuilder.create().build();
-		CloseableHttpClient client = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
+		CloseableHttpClient client = HttpClients.custom()
+				.setDefaultCookieStore(cookieStore).build();
+
 		HttpResponse response;
 		try {
+			if (!checkCertificate) {
+				client = createHttpClient();
+			}
 			if (METHOD_GET.equals(method)) {
 				url = url + "?";
 				for (int x = 0; x < variables.length; x++) {
@@ -136,15 +146,18 @@ public class HttpFormTask extends AbstractTaskProvider {
 
 			}
 
-			if (response.getStatusLine().getStatusCode() != 200) {
-				throw new ClientProtocolException("Expected status code 200 ["
-						+ response.getStatusLine().getStatusCode() + "]");
+			if (Arrays.asList(responses).contains(
+					Integer.toString(response.getStatusLine().getStatusCode()))) {
+				return new HttpFormTaskResult(this, event.getCurrentRealm(),
+						task, method, url, variables);
+			} else {
+				HttpEntity entity = response.getEntity();
+				String content = EntityUtils.toString(entity);
+				return new HttpFormTaskResult(this, new ClientProtocolException(
+						"Status code " + response.getStatusLine().getStatusCode() + " not expected."), event.getCurrentRealm(),
+						task, method, url, variables, Integer.toString(response.getStatusLine().getStatusCode()), content);
 			}
-			// HttpEntity entity = response.getEntity();
-			// String content = EntityUtils.toString(entity);
 
-			return new HttpFormTaskResult(this, event.getCurrentRealm(), task,
-					method, url, variables);
 		} catch (Exception e) {
 			log.error("Failed to fully process " + method + " method for "
 					+ url + "variables: " + variables, e);
@@ -156,6 +169,20 @@ public class HttpFormTask extends AbstractTaskProvider {
 	@Override
 	public ResourceTemplateRepository getRepository() {
 		return repository;
+	}
+
+	public CloseableHttpClient createHttpClient()
+			throws NoSuchAlgorithmException, KeyStoreException,
+			KeyManagementException {
+		CloseableHttpClient httpclient = null;
+
+		SSLContextBuilder builder = new SSLContextBuilder();
+		builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+		SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+				builder.build(),
+				SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+		httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
+		return httpclient;
 	}
 
 }
