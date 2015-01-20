@@ -100,6 +100,9 @@ public class Session extends AbstractEntity<String> {
 	@Transient
 	Map<String,String> stateParameters;
 	
+	@Column(name="system")
+	Boolean system;
+	
 	@Override
 	public String getId() {
 		return id;
@@ -301,5 +304,9 @@ public class Session extends AbstractEntity<String> {
 	@JsonIgnore
 	public Principal getInheritedPrincipal() {
 		return getPrincipal();
+	}
+	
+	public boolean isSystem() {
+		return system!=null && system;
 	}
 }

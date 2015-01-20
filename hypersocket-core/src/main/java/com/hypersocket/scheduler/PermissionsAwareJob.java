@@ -1,5 +1,7 @@
 package com.hypersocket.scheduler;
 
+import java.util.Locale;
+
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -13,6 +15,7 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.session.SessionService;
 
 public abstract class PermissionsAwareJob implements Job {
 
@@ -30,13 +33,17 @@ public abstract class PermissionsAwareJob implements Job {
 	@Autowired
 	AuthenticationService authenticationService;
 
+	@Autowired
+	SessionService sessionService;
+	
 	@Override
 	public void execute(JobExecutionContext context)
 			throws JobExecutionException {
 
 		Realm realm = realmService.getSystemRealm();
 		Principal principal = realmService.getSystemPrincipal();
-
+		Locale locale = i18nService.getDefaultLocale();
+		
 		if (context.getTrigger().getJobDataMap() instanceof PermissionsAwareJobData) {
 			PermissionsAwareJobData data = (PermissionsAwareJobData) context
 					.getTrigger().getJobDataMap();
@@ -44,8 +51,12 @@ public abstract class PermissionsAwareJob implements Job {
 			if (data.getCurrentPrincipal() != null) {
 				principal = data.getCurrentPrincipal();
 			}
+			if(data.getLocale() != null) {
+				locale = data.getLocale();
+			}
 		}
 
+		
 		try {
 
 			if (log.isDebugEnabled()) {
@@ -53,8 +64,10 @@ public abstract class PermissionsAwareJob implements Job {
 						+ realm.getName() + "/" + principal.getName());
 			}
 
+			authenticationService.setCurrentSession(sessionService.getSystemSession(), 
+					locale);
 			authenticationService.setCurrentPrincipal(principal,
-					i18nService.getDefaultLocale(), realm);
+					locale, realm);
 
 			try {
 				executeJob(context);

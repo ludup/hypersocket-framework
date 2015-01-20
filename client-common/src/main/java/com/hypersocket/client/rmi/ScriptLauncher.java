@@ -11,8 +11,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hypersocket.client.util.CommandExecutor;
 import com.hypersocket.replace.ReplacementUtils;
+import com.hypersocket.utils.CommandExecutor;
 
 public class ScriptLauncher implements ResourceLauncher, Serializable {
 

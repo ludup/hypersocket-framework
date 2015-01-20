@@ -61,6 +61,7 @@ public class Main {
 			display.dispose();
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.error("Failed to start client", e);
 			System.exit(1);
 		}

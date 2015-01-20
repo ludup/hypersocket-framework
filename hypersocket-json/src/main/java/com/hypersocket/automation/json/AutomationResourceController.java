@@ -194,7 +194,7 @@ public class AutomationResourceController extends ResourceController {
 	@RequestMapping(value = "automations/automation", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceStatus<AutomationResource> createOrUpdateNetworkResource(
+	public ResourceStatus<AutomationResource> createOrUpdateResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestBody ResourceUpdate resource)
 			throws AccessDeniedException, UnauthorizedException,

@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
@@ -40,9 +41,11 @@ import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.events.SessionClosedEvent;
+import com.hypersocket.session.events.SessionEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
 
 @Service
@@ -62,6 +65,9 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 	SchedulerService schedulerService;
 	
 	@Autowired
+	RealmService realmService;
+	 
+	@Autowired
 	EventService eventService;
 	
 	static final String SESSION_TIMEOUT = "session.timeout";
@@ -77,6 +83,8 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 	
 	Map<String,Session> nonCookieSessions = new HashMap<String,Session>();
 	
+	Session systemSession;
+	
 	@PostConstruct
 	private void registerConfiguration() throws AccessDeniedException {
 
@@ -88,11 +96,33 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 			log.info("Loaded User Agent database");
 		}
 		
+		eventService.registerEvent(SessionEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionOpenEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionClosedEvent.class, RESOURCE_BUNDLE);
 		
 	}
 
+	private Session createSystemSession() {
+		Session session = new Session();
+		session.setId(UUID.randomUUID().toString());
+		session.setCurrentRealm(realmService.getSystemRealm());
+		session.setOs(System.getProperty("os.name"));
+		session.setOsVersion(System.getProperty("os.version"));
+		session.setPrincipal(realmService.getSystemPrincipal());
+		session.setUserAgent("N/A");
+		session.setUserAgentVersion("N/A");
+		session.setRemoteAddress("N/A");
+		session.system = true;
+		
+		repository.saveEntity(session);
+		return session;
+	}
+	
+	@Override
+	public Session getSystemSession() {
+		return systemSession;
+	}
+	
 	@Override
 	public Session openSession(String remoteAddress, 
 			Principal principal,
@@ -210,8 +240,10 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		session.setSignedOut(new Date());
 		session.setNonCookieKey(null);
 		repository.updateSession(session);
-		eventService.publishEvent(new SessionClosedEvent(this, session));
-
+		
+		if(!session.isSystem()) {
+			eventService.publishEvent(new SessionClosedEvent(this, session));
+		}
 	}
 
 	@Override
@@ -411,6 +443,12 @@ public class SessionServiceImpl extends AuthenticatedServiceImpl implements
 		if(log.isInfoEnabled()) {
 			log.info("Scheduling session reaper job");
 		}
+		
+		for(Session session : repository.getSystemSessions()) {
+			closeSession(session);
+		}
+		
+		systemSession = createSystemSession();
 		
 		try {
 			schedulerService.scheduleIn(SessionReaperJob.class, null, 60000, 60000);
