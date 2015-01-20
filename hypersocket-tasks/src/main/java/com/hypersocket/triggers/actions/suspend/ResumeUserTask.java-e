@@ -86,8 +86,8 @@ public class ResumeUserTask extends AbstractTaskProvider {
 			}
 			Principal principal = service.getUniquePrincipal(name);
 			service.deletePrincipalSuspension(principal);
-
-			suspendUserTask.notifyResume(name, false);
+			
+			service.notifyResume(principal.getPrincipalName(), false);
 
 			return new ResumeUserResult(this, event.getCurrentRealm(), task,
 					name);

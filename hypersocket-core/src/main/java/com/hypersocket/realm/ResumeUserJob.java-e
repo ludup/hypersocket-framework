@@ -1,4 +1,4 @@
-package com.hypersocket.triggers.actions.suspend;
+package com.hypersocket.realm;
 
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -16,9 +16,6 @@ public class ResumeUserJob extends PermissionsAwareJob {
 
 	@Autowired
 	RealmService service;
-
-	@Autowired
-	SuspendUserTask suspendUserTask;
 
 	public ResumeUserJob() {
 	}
@@ -41,7 +38,7 @@ public class ResumeUserJob extends PermissionsAwareJob {
 
 			service.deletePrincipalSuspension(service.getUniquePrincipal(name));
 
-			suspendUserTask.notifyResume(name, true);
+			service.notifyResume(name, true);
 
 			if (log.isInfoEnabled()) {
 				log.info("Resumed user " + name.toString());

@@ -689,6 +689,7 @@ public class CurrentRealmController extends ResourceController {
 			return new ResourceStatus<PrincipalSuspension>(false,
 					I18N.getResource(sessionUtils.getLocale(request),
 							e.getBundle(), e.getResourceKey(), e.getArgs()));
+
 		} finally {
 			clearAuthenticatedContext();
 		}

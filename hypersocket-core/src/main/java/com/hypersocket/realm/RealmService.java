@@ -205,10 +205,11 @@ public interface RealmService extends AuthenticatedService {
 
 	boolean verifyPrincipal(Principal principal);
 
-	PrincipalSuspension createPrincipalSuspension(Principal principal, Date startDate,
-			Long duration) throws ResourceNotFoundException,
+	PrincipalSuspension createPrincipalSuspension(Principal principal,
+			Date startDate, Long duration) throws ResourceNotFoundException,
 			ResourceCreationException;
 
 	PrincipalSuspension deletePrincipalSuspension(Principal principal);
 
+	public void notifyResume(String name, boolean onSchedule);
 }

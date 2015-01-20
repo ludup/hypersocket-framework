@@ -25,6 +25,7 @@ import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 
 import org.apache.commons.lang3.StringUtils;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,8 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.scheduler.PermissionsAwareJobData;
+import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.tables.ColumnSort;
@@ -72,6 +75,9 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	static Logger log = LoggerFactory.getLogger(RealmServiceImpl.class);
 
 	Map<String, RealmProvider> providersByModule = new HashMap<String, RealmProvider>();
+
+	Map<String, String> suspendedUserResumeSchedules = new HashMap<String, String>();
+	Set<String> suspendedUsers = new HashSet<String>();
 
 	List<RealmListener> realmListeners = new ArrayList<RealmListener>();
 
@@ -93,6 +99,9 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Autowired
 	SessionService sessionService;
+
+	@Autowired
+	SchedulerService schedulerService;
 
 	CacheManager cacheManager;
 	Cache realmCache;
@@ -1396,18 +1405,68 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			Date startDate, Long duration) throws ResourceNotFoundException,
 			ResourceCreationException {
 
+		String name = principal.getPrincipalName();
+
 		PrincipalSuspension principalSuspension = new PrincipalSuspension();
 		principalSuspension.setPrincipal(principal);
-		principalSuspension.setName(principal.getPrincipalName());
+		principalSuspension.setName(name);
 		principalSuspension.setRealm(principal.getRealm());
 		principalSuspension.setStartTime(startDate);
 		principalSuspension.setDuration(duration);
 
+		if (suspendedUsers.contains(name)
+				&& suspendedUserResumeSchedules.containsKey(name)) {
+			if (log.isInfoEnabled()) {
+				log.info(name
+						+ " is already suspended. Rescheduling to new parameters");
+			}
+
+			String scheduleId = suspendedUserResumeSchedules.get(name);
+
+			if (log.isInfoEnabled()) {
+				log.info("Cancelling existing schedule for " + name);
+			}
+
+			try {
+				schedulerService.cancelNow(scheduleId);
+			} catch (Exception e) {
+				log.error("Failed to cancel suspend schedule for " + name, e);
+			}
+
+		}
+
 		if (verifyPrincipal(principal)) {
 			realmRepository.createPrincipalSuspension(principalSuspension);
 		} else {
-			throw new ResourceCreationException(RESOURCE_BUNDLE,
-					"error.suspendUser.userSuspended");
+			PrincipalSuspension suspension = realmRepository
+					.getSuspension(principal);
+			principalSuspension.setId(suspension.getId());
+			realmRepository.createPrincipalSuspension(principalSuspension);
+		}
+
+		suspendedUsers.add(name);
+
+		if (duration > 0) {
+
+			if (log.isInfoEnabled()) {
+				log.info("Scheduling resume account for account " + name
+						+ " in " + duration + " minutes");
+			}
+
+			PermissionsAwareJobData data = new PermissionsAwareJobData(
+					getCurrentRealm());
+			data.put("name", name);
+
+			String scheduleId;
+			try {
+				scheduleId = schedulerService.scheduleIn(ResumeUserJob.class,
+						data, (int) (duration * 60000));
+			} catch (SchedulerException e) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE,
+						"error.suspendUser.schedule", e.getMessage());
+			}
+
+			suspendedUserResumeSchedules.put(name, scheduleId);
 		}
 
 		return principalSuspension;
@@ -1419,8 +1478,25 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 				.getSuspension(principal);
 
 		realmRepository.deletePrincipalSuspension(suspension);
-		
+
 		return suspension;
+	}
+
+	public void notifyResume(String name, boolean onSchedule) {
+
+		suspendedUsers.remove(name);
+		String scheduleId = suspendedUserResumeSchedules.remove(name);
+
+		if (!onSchedule && scheduleId != null) {
+			try {
+				schedulerService.cancelNow(scheduleId);
+			} catch (SchedulerException e) {
+				log.error(
+						"Failed to cancel resume job for user "
+								+ name.toString(), e);
+			}
+		}
+
 	}
 
 }

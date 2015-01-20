@@ -2,14 +2,10 @@ package com.hypersocket.triggers.actions.suspend;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
-import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +20,6 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
@@ -42,14 +37,11 @@ public class SuspendUserTask extends AbstractTaskProvider {
 
 	public static final String RESOURCE_KEY = "suspendUser";
 
-	Map<String, String> suspendedUserResumeSchedules = new HashMap<String, String>();
-	Set<String> suspendedUsers = new HashSet<String>();
-
 	@Autowired
 	SuspendUserTaskRepository repository;
 
 	@Autowired
-	RealmService realmService;
+	RealmService service;
 
 	@Autowired
 	TriggerResourceService triggerService;
@@ -119,59 +111,15 @@ public class SuspendUserTask extends AbstractTaskProvider {
 				log.info("Suspending account " + name);
 			}
 
-			if (suspendedUsers.contains(name)
-					&& suspendedUserResumeSchedules.containsKey(name)) {
-				if (log.isInfoEnabled()) {
-					log.info(name
-							+ " is already suspended. Rescheduling to new parameters");
-				}
-
-				String scheduleId = suspendedUserResumeSchedules.get(name);
-
-				if (log.isInfoEnabled()) {
-					log.info("Cancelling existing schedule for " + name);
-				}
-
-				try {
-					schedulerService.cancelNow(scheduleId);
-				} catch (Exception e) {
-					log.error("Failed to cancel suspend schedule for " + name,
-							e);
-				}
-
-			}
-			Principal principal = realmService.getUniquePrincipal(name);
-			realmService.createPrincipalSuspension(principal, startDate,
-					duration);
+			Principal principal = service.getUniquePrincipal(name);
+			service.createPrincipalSuspension(principal, startDate, duration);
 
 			if (log.isInfoEnabled()) {
 				log.info("Suspended account " + name);
 			}
 
-			suspendedUsers.add(name);
-
-			if (duration > 0) {
-
-				if (log.isInfoEnabled()) {
-					log.info("Scheduling resume account for account " + name
-							+ " in " + duration + " minutes");
-				}
-
-				PermissionsAwareJobData data = new PermissionsAwareJobData(
-						event.getCurrentRealm());
-				data.put("name", name);
-
-				String scheduleId = schedulerService.scheduleIn(
-						ResumeUserJob.class, data, (int) (duration * 60000));
-
-				suspendedUserResumeSchedules.put(name, scheduleId);
-			}
 			return new SuspendUserResult(this, event.getCurrentRealm(), task,
 					name, startDate, duration);
-		} catch (SchedulerException e) {
-			log.error("Failed to fully process suspend request for " + name, e);
-			return new SuspendUserResult(this, e, event.getCurrentRealm(),
-					task, name, startDate, duration);
 		} catch (ResourceNotFoundException e) {
 			log.error("Failed to fully process suspend request for " + name, e);
 			return new SuspendUserResult(this, e, event.getCurrentRealm(),
@@ -186,23 +134,6 @@ public class SuspendUserTask extends AbstractTaskProvider {
 	@Override
 	public ResourceTemplateRepository getRepository() {
 		return repository;
-	}
-
-	public void notifyResume(String name, boolean onSchedule) {
-
-		suspendedUsers.remove(name);
-		String scheduleId = suspendedUserResumeSchedules.remove(name);
-
-		if (!onSchedule && scheduleId != null) {
-			try {
-				schedulerService.cancelNow(scheduleId);
-			} catch (SchedulerException e) {
-				log.error(
-						"Failed to cancel resume job for user "
-								+ name.toString(), e);
-			}
-		}
-
 	}
 
 }
