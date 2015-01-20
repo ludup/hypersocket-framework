@@ -79,7 +79,7 @@ public class UnblockIPTask extends AbstractTaskProvider {
 	public TaskResult execute(Task task, SystemEvent event)
 			throws ValidationException {
 		
-		String ipAddress = repository.getValue(task, "unblock.ip");
+		String ipAddress = processTokenReplacements(repository.getValue(task, "unblock.ip"), event);
 		try {
 			
 			if(log.isInfoEnabled()) {
