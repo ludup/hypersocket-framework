@@ -332,12 +332,11 @@ public class AutomationResourceServiceImpl extends
 
 		assertPermission(AutomationResourcePermission.READ);
 
-		Collection<PropertyCategory> results = repository
-				.getPropertyCategories(null);
-
 		TaskProvider provider = taskService.getTaskProvider(resourceKey);
+		Collection<PropertyCategory> results = provider.getRepository().getPropertyCategories(null);
 
-		results.addAll(provider.getRepository().getPropertyCategories(null));
+		results.addAll(repository
+				.getPropertyCategories(null));
 
 		return results;
 	}
@@ -348,12 +347,11 @@ public class AutomationResourceServiceImpl extends
 
 		assertPermission(AutomationResourcePermission.READ);
 
-		Collection<PropertyCategory> results = repository
-				.getPropertyCategories(resource);
-
 		TaskProvider provider = taskService.getTaskProvider(resource);
+		Collection<PropertyCategory> results = provider.getRepository().getPropertyCategories(resource);
 
-		results.addAll(provider.getRepository().getPropertyCategories(resource));
+		results.addAll(repository
+				.getPropertyCategories(resource));
 
 		return results;
 	}
