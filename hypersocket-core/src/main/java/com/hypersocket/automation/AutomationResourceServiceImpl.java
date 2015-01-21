@@ -211,8 +211,11 @@ public class AutomationResourceServiceImpl extends
 
 		Calendar c = Calendar.getInstance();
 
+		Date ret = null;
+		
 		if (from != null) {
 			c.setTime(from);
+			ret = c.getTime();
 		}
 
 		if (!StringUtils.isEmpty(time)) {
@@ -220,9 +223,10 @@ public class AutomationResourceServiceImpl extends
 			c.set(Calendar.HOUR_OF_DAY,
 					Integer.parseInt(time.substring(0, idx)));
 			c.set(Calendar.MINUTE, Integer.parseInt(time.substring(idx + 1)));
-		}
-
-		return c.getTime();
+			ret = c.getTime();
+		} 
+		
+		return ret;
 	}
 
 	protected void schedule(AutomationResource resource) {
@@ -271,7 +275,7 @@ public class AutomationResourceServiceImpl extends
 				scheduleId = scheduleIdsByResource.get(resource.getId());
 
 				try {
-					if (start.before(new Date())) {
+					if (start==null || start.before(new Date())) {
 						schedulerService.rescheduleNow(scheduleId, interval,
 								repeat, end);
 					} else {
@@ -288,7 +292,7 @@ public class AutomationResourceServiceImpl extends
 
 			} 
 		
-			if (start.before(new Date())) {
+			if (start==null || start.before(new Date())) {
 				scheduleId = schedulerService.scheduleNow(
 						AutomationJob.class, data, interval, repeat, end);
 			} else {
