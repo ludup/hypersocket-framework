@@ -67,7 +67,15 @@ public class TriggerJob extends PermissionsAwareJob {
 		}
 
 		if (checkConditions(trigger, event)) {
+			
+			if(log.isInfoEnabled()) {
+				log.info("There are " + trigger.getActions().size() + " tasks to perform");
+			}
 			for (TriggerAction action : trigger.getActions()) {
+				
+				if(log.isInfoEnabled()) {
+					log.info("Performing task " + action.getName());
+				}
 				executeAction(action, event);
 			}
 		}

@@ -104,4 +104,6 @@ public interface HypersocketServer {
 
 	void blockAddress(String addr) throws UnknownHostException;
 
+	boolean canConnect(InetAddress addr);
+
 }
