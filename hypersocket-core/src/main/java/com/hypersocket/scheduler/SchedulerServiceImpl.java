@@ -238,7 +238,7 @@ public class SchedulerServiceImpl implements SchedulerService {
 			throws SchedulerException, NotScheduledException {
 
 		if(log.isInfoEnabled()) {
-			log.info("Rescheduling job with id " + id + " to start at " + HypersocketUtils.formatDate(start)
+			log.info("Rescheduling job with id " + id + " to start " + (start==null ? "now" : "at " + HypersocketUtils.formatDate(start))
 					 + " with interval of " + interval + " and repeat " + (repeat >= 0 ? repeat : "indefinatley")
 					 + (end != null ? " until " + HypersocketUtils.formatDate(end) : ""));
 		}
