@@ -248,8 +248,10 @@ public class NettyServer extends HypersocketServerImpl {
 		}
 		ipFilterHandler.add(new IpSubnetFilterRule(false, addr));
 		synchronized (channelsByIPAddress) {
-			for(Channel c : channelsByIPAddress.get(addr)) {
-				c.close();
+			if(channelsByIPAddress.containsKey(addr)) {
+				for(Channel c : channelsByIPAddress.get(addr)) {
+					c.close();
+				}
 			}
 		}
 	}
