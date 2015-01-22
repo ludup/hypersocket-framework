@@ -1,5 +1,7 @@
 package com.hypersocket.tasks.alert;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.events.SystemEventStatus;
 import com.hypersocket.realm.Realm;
@@ -37,6 +39,10 @@ public class AlertEvent extends TaskResult {
 	@Override
 	public String getResourceBundle() {
 		return TriggerResourceServiceImpl.RESOURCE_BUNDLE;
+	}
+	
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), getResourceKey());
 	}
 
 }

@@ -5,7 +5,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +78,7 @@ public class UnblockIPTask extends AbstractTaskProvider {
 	public TaskResult execute(Task task, SystemEvent event)
 			throws ValidationException {
 		
-		String ipAddress = repository.getValue(task, "unblock.ip");
+		String ipAddress = processTokenReplacements(repository.getValue(task, "unblock.ip"), event);
 		try {
 			
 			if(log.isInfoEnabled()) {

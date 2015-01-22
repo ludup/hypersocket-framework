@@ -33,7 +33,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 
 	static Logger log = LoggerFactory.getLogger(BlockIPTask.class);
 	
-	public static final String RESOURCE_BUNDLE = "BlockIPTaskBlockIPTaskRepositoryImpl.java";
+	public static final String RESOURCE_BUNDLE = "BlockIPTask";
 	
 	public static final String RESOURCE_KEY = "blockIP";
 	
@@ -79,7 +79,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 	public String[] getResourceKeys() {
 		return new String[] { RESOURCE_KEY };
 	}
-
+ 
 	@Override
 	public void validate(Task task, Map<String, String> parameters)
 			throws ValidationException {
@@ -92,7 +92,8 @@ public class BlockIPTask extends AbstractTaskProvider {
 	public TaskResult execute(Task task, SystemEvent event)
 			throws ValidationException {
 		
-		String ipAddress = repository.getValue(task, "block.ip");
+		String ipAddress = processTokenReplacements(repository.getValue(task, "block.ip"), event);
+		int val = repository.getIntValue(task, "block.length");
 		try {
 			
 			if(log.isInfoEnabled()) {
@@ -126,9 +127,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 			
 			blockedIps.add(ipAddress);
 			
-			int val = 0;
-			
-			if((val = repository.getIntValue(task, "block.length")) > 0) {
+			if(val > 0) {
 				
 				if(log.isInfoEnabled()) {
 					log.info("Scheduling unblock for IP address " + ipAddress + " in " + val + " minutes");
@@ -141,10 +140,10 @@ public class BlockIPTask extends AbstractTaskProvider {
 				
 				blockedIPUnblockSchedules.put(ipAddress, scheduleId);
 			}
-			return new BlockedIPResult(this, event.getCurrentRealm(), task, ipAddress);
+			return new BlockedIPResult(this, event.getCurrentRealm(), task, ipAddress, val);
 		} catch (UnknownHostException | SchedulerException e) {
 			log.error("Failed to fully process block IP request for " + ipAddress, e);
-			return new BlockedIPResult(this, e, event.getCurrentRealm(), task, ipAddress);
+			return new BlockedIPResult(this, e, event.getCurrentRealm(), task, ipAddress, val);
 		}
 	}
 

@@ -13,8 +13,10 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -32,9 +34,9 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.ipfilter.IpFilterRule;
 import org.jboss.netty.handler.ipfilter.IpFilterRuleHandler;
 import org.jboss.netty.handler.ipfilter.IpSubnetFilterRule;
-import org.jboss.netty.handler.ipfilter.IpV4SubnetFilterRule;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
@@ -60,7 +62,7 @@ public class NettyServer extends HypersocketServerImpl {
 	
 	IpFilterRuleHandler ipFilterHandler =  new IpFilterRuleHandler();
 	MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
-	
+	Set<IpFilterRule> ipRules = new HashSet<IpFilterRule>();
 	Map<InetAddress,List<Channel>> channelsByIPAddress = new HashMap<InetAddress,List<Channel>>();
 	
 	public NettyServer() {
@@ -240,16 +242,32 @@ public class NettyServer extends HypersocketServerImpl {
 	public ChannelHandler getIpFilter() {
 		return ipFilterHandler;
 	}
+	
+	@Override
+	public boolean canConnect(InetAddress addr) {
+		for(IpFilterRule rule : ipRules) {
+			if(rule.contains(addr)) {
+				return false;
+			}
+		} 
+		return true;
+	}
 
 	@Override
 	public void blockAddress(String addr) throws UnknownHostException {
 		if(addr.indexOf('/')==-1) {
 			addr += "/0";
 		}
-		ipFilterHandler.add(new IpSubnetFilterRule(false, addr));
+		
+		IpFilterRule rule = new IpSubnetFilterRule(false, addr);
+		ipFilterHandler.add(rule);
+		ipRules.add(rule);
+		
 		synchronized (channelsByIPAddress) {
-			for(Channel c : channelsByIPAddress.get(addr)) {
-				c.close();
+			if(channelsByIPAddress.containsKey(addr)) {
+				for(Channel c : channelsByIPAddress.get(addr)) {
+					c.close();
+				}
 			}
 		}
 	}
@@ -259,7 +277,10 @@ public class NettyServer extends HypersocketServerImpl {
 		if(addr.indexOf('/')==-1) {
 			addr += "/0";
 		}
-		ipFilterHandler.remove(new IpSubnetFilterRule(false, addr));
+		
+		IpFilterRule rule = new IpSubnetFilterRule(false, addr);
+		ipFilterHandler.remove(rule);
+		ipRules.remove(rule);
 	}
 
 	class MonitorChannelHandler extends SimpleChannelHandler {

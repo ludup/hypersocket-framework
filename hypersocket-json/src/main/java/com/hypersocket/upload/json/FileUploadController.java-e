@@ -1,6 +1,5 @@
 package com.hypersocket.upload.json;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +37,7 @@ public class FileUploadController extends ResourceController {
 	FileUploadService service;
 
 	@AuthenticationRequired
-	@RequestMapping(value = "fileUpload/file/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "fileUpload/metainfo/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public FileUpload getFile(final HttpServletRequest request,
@@ -130,23 +129,21 @@ public class FileUploadController extends ResourceController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "fileUpload/download/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
-	@ResponseBody
+	@RequestMapping(value = "fileUpload/file/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
-	public void download(final HttpServletRequest request,
+	public void downloadFile(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String uuid)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
 		try {
-			FileInputStream fis = service.downloadFile(uuid);
 
-			
-			org.apache.commons.io.IOUtils.copy(fis, response.getOutputStream());
-			response.flushBuffer();
-		} catch (IOException ex) {
+			service.downloadURIFile(uuid, response);
 
+		} catch (Exception e) {
 			throw new RuntimeException("IOError writing file to output stream");
 		}
-
 	}
 }

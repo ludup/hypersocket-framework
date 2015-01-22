@@ -14,6 +14,7 @@ public class AutomationTaskStartedEvent extends
 	private static final long serialVersionUID = -3063880990945502517L;
 
 	public static final String EVENT_RESOURCE_KEY = "automation.started";
+	
 	public static final String ATTR_RESOURCE_NAME = CommonAttributes.ATTR_RESOURCE_NAME;
 	
 	public AutomationTaskStartedEvent(Object source,
