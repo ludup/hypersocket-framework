@@ -11,7 +11,6 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
-import com.hypersocket.tasks.TaskProvider;
 
 public interface TriggerResourceService extends
 		AbstractResourceService<TriggerResource> {

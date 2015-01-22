@@ -13,7 +13,6 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.hypersocket.tasks.Task;
-import com.hypersocket.triggers.TriggerAction;
 
 @Entity
 @Table(name="alert_key")

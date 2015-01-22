@@ -18,7 +18,6 @@ import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
-import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskProviderServiceImpl;
 import com.hypersocket.triggers.TaskResult;

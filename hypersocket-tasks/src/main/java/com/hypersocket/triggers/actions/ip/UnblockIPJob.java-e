@@ -2,7 +2,6 @@ package com.hypersocket.triggers.actions.ip;
 
 import java.net.UnknownHostException;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;

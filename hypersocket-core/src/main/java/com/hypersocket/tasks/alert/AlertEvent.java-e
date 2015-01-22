@@ -7,7 +7,6 @@ import com.hypersocket.events.SystemEventStatus;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.triggers.TaskResult;
-import com.hypersocket.triggers.TriggerAction;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 
 public class AlertEvent extends TaskResult {

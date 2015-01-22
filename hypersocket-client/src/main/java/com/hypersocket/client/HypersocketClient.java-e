@@ -227,7 +227,7 @@ public abstract class HypersocketClient<T> {
 		transport.setHeader("Authorization", authorization);
 
 		String json = transport.post("logon", params);
-		boolean success = processLogon(json, params, new ArrayList<Prompt>());
+		processLogon(json, params, new ArrayList<Prompt>());
 
 		if (!isLoggedOn()) {
 			disconnect(false);
