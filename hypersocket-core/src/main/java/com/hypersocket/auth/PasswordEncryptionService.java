@@ -92,6 +92,7 @@ public class PasswordEncryptionService {
 	}
 
 
+	@SuppressWarnings("deprecation")
 	private char[] getPassword() {
 		String serial = HypersocketVersion.getSerial();
 		byte[] shaBytes = DigestUtils.sha(serial.getBytes());

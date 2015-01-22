@@ -1,7 +1,5 @@
 package com.hypersocket.certificates;
 
-import static com.hypersocket.certificates.CertificateResourceService.RESOURCE_BUNDLE;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
