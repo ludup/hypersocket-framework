@@ -197,7 +197,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 						attr.getHidden(),
 						attr.getReadOnly(),
 						attr.getDefaultValue(),
-						true);
+						true,
+						attr.getEncrypted());
 			}
 		}
 		
@@ -283,6 +284,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 									Boolean.getBoolean("hypersocket.development") && pnode.hasAttribute("developmentValue") ? pnode.getAttribute("developmentValue") : pnode.getAttribute("defaultValue"),
 							pnode.hasAttribute("variable")
 									&& pnode.getAttribute("variable")
+											.equalsIgnoreCase("true"),
+							pnode.hasAttribute("encrypted")
+									&& pnode.getAttribute("encrypted")
 											.equalsIgnoreCase("true"));
 				} catch (Throwable e) {
 					log.error("Failed to register property item", e);
@@ -336,7 +340,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	private void registerPropertyItem(PropertyCategory category,
 			PropertyStore propertyStore, String resourceKey, String metaData,
 			String mapping, int weight, boolean hidden, boolean readOnly, String defaultValue,
-			boolean isVariable) {
+			boolean isVariable, boolean encrypted) {
 
 		if(log.isInfoEnabled()) {
 			log.info("Registering property " + resourceKey);
