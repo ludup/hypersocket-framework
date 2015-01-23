@@ -17,7 +17,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource.AuthenticationType;
 
 import org.bouncycastle.util.encoders.Base64;
 import org.slf4j.Logger;

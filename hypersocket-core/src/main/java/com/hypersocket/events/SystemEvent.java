@@ -5,10 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.context.ApplicationEvent;
 
 import com.hypersocket.realm.Realm;
-import com.mysql.jdbc.Field;
 
 public abstract class SystemEvent extends AbstractEvent {
 
