@@ -10,6 +10,7 @@ public abstract class AbstractPropertyTemplate {
 	int weight;
 	boolean hidden;
 	boolean readOnly;
+	boolean encrypted;
 	PropertyCategory category;
 	String mapping;
 	PropertyStore propertyStore;
@@ -92,6 +93,14 @@ public abstract class AbstractPropertyTemplate {
 	@JsonIgnore
 	public PropertyStore getPropertyStore() {
 		return propertyStore;
+	}
+	
+	public void setEncrypted(boolean encrypted) {
+		this.encrypted = encrypted;
+	}
+	
+	public boolean isEncrypted() {
+		return encrypted;
 	}
 	
 }

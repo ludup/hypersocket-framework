@@ -38,6 +38,9 @@ public class Attribute extends AbstractEntity<Long>  {
 	@Column(name="read_only")
 	Boolean readOnly = false;
 	
+	@Column(name="encrypted")
+	Boolean encrypted = false;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
 	@Column(name="attribute_id")
@@ -117,6 +120,13 @@ public class Attribute extends AbstractEntity<Long>  {
 
 	public void setReadOnly(Boolean readOnly) {
 		this.readOnly = readOnly==null ? false : readOnly;
+	}
+
+	public void setEncrypted(boolean encrypted) {
+		this.encrypted = encrypted;
+	}
+	public boolean getEncrypted() {
+		return encrypted!=null && encrypted;
 	}
 
 	
