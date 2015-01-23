@@ -7,18 +7,13 @@
  ******************************************************************************/
 package upgrade;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hypersocket.attributes.Attribute;
-import com.hypersocket.attributes.AttributeCategory;
 import com.hypersocket.attributes.AttributeRepository;
-import com.hypersocket.attributes.AttributeType;
 import com.hypersocket.auth.AuthenticationModuleRepository;
 import com.hypersocket.auth.AuthenticationSchemeRepository;
 import com.hypersocket.local.LocalRealmProvider;
@@ -70,38 +65,39 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 		}
 	}
 	
-	private void doAttributeSetup() throws IOException {
-		
-		AttributeCategory cat = new AttributeCategory();
-		cat.setName("Custom Attributes");
-		cat.setContext("user");
-		cat.setWeight(Integer.MAX_VALUE);
-		
-		attributeRepository.saveCategory(cat);
-		
-		Attribute attr = new Attribute();
-		attr.setCategory(cat);
-		attr.setName("My Workstation");
-		attr.setDescription("Enter the name of your workstation here.");
-		attr.setType(AttributeType.TEXT);
-		attr.setWeight(0);
-		
-		attributeRepository.saveAttribute(attr);
-		
-		File conf = new File(System.getProperty("hypersocket.conf", "conf"));
-		File userAttributes = new File(conf, "i18n" + File.separator + "UserAttributes.properties");
-		if(!userAttributes.exists()) {
-			userAttributes.getParentFile().mkdirs();
-			userAttributes.createNewFile();
-		}
-		Realm realm = realmRepository.getRealmByName("System");
-		if(realm!=null) {
-			realm.setSystem(true);
-			realmRepository.saveRealm(realm);
-		}
-		
-		
-	}
+	/**
+	 * Keep this commented.
+	 */
+//	private void doAttributeSetup() throws IOException {
+//		
+//		AttributeCategory cat = new AttributeCategory();
+//		cat.setName("Custom Attributes");
+//		cat.setContext("user");
+//		cat.setWeight(Integer.MAX_VALUE);
+//		
+//		attributeRepository.saveCategory(cat);
+//		
+//		Attribute attr = new Attribute();
+//		attr.setCategory(cat);
+//		attr.setName("My Workstation");
+//		attr.setDescription("Enter the name of your workstation here.");
+//		attr.setType(AttributeType.TEXT);
+//		attr.setWeight(0);
+//		
+//		attributeRepository.saveAttribute(attr);
+//		
+//		File conf = new File(System.getProperty("hypersocket.conf", "conf"));
+//		File userAttributes = new File(conf, "i18n" + File.separator + "UserAttributes.properties");
+//		if(!userAttributes.exists()) {
+//			userAttributes.getParentFile().mkdirs();
+//			userAttributes.createNewFile();
+//		}
+//		Realm realm = realmRepository.getRealmByName("System");
+//		if(realm!=null) {
+//			realm.setSystem(true);
+//			realmRepository.saveRealm(realm);
+//		}
+//	}
 
 	private void doCoreSetup() throws ResourceCreationException {
 		
