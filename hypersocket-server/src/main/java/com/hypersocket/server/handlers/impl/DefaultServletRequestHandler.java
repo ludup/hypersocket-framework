@@ -8,12 +8,17 @@ import com.hypersocket.server.HypersocketServer;
 
 public class DefaultServletRequestHandler extends ServletRequestHandler {
 
-	HypersocketServer server;
 	public DefaultServletRequestHandler(String path, Servlet servlet,
 			int priority, HypersocketServer server) throws ServletException {
 		super(path, servlet, priority);
-		this.server = server;
-		servlet.init(server.getServletConfig());
+	}
+	
+	protected void registered() {
+		try {
+			servlet.init(server.getServletConfig());
+		} catch (ServletException e) {
+			log.error("Failed to init servlet", e);
+		}
 	}
 
 	@Override

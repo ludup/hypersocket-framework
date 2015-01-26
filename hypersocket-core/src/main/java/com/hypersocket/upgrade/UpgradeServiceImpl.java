@@ -37,6 +37,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 
+import com.hypersocket.Version;
+
 public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAware {
 
 	private final static Logger log = LoggerFactory.getLogger(UpgradeServiceImpl.class);
@@ -46,10 +48,17 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	private ApplicationContext springContext;
 	private SessionFactory sessionFactory;
 	
+	List<UpgradeServiceListener> listeners = new ArrayList<UpgradeServiceListener>();
+	
 	public UpgradeServiceImpl() {
 		manager = new ScriptEngineManager();
 	}
 
+	@Override
+	public void registerListener(UpgradeServiceListener listener) {
+		listeners.add(listener);
+	}
+	
 	@Autowired
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
@@ -75,9 +84,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	}
 
 	public void upgrade() throws IOException, ScriptException {
-		if(log.isInfoEnabled()) {
-			log.info("Starting upgrade");
-		}
+
 		List<UpgradeOp> ops = buildUpgradeOps();
 		Map<String, Object> beans = new HashMap<String, Object>();
 		
@@ -85,6 +92,10 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 		doOps(ops, beans, "sql");
 		
 		doOps(ops, beans, "js", "class");
+		
+		for(UpgradeServiceListener listener : listeners) {
+			listener.onUpgradeComplete();
+		}
 	}
 
 	protected void doOps(List<UpgradeOp> ops, Map<String, Object> beans, String... languages) throws ScriptException, IOException {

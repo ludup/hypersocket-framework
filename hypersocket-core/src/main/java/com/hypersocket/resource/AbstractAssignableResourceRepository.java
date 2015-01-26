@@ -7,7 +7,9 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -17,13 +19,13 @@ import com.hypersocket.tables.ColumnSort;
 public interface AbstractAssignableResourceRepository<T extends AssignableResource>
 		extends AssignableResourceRepository {
 
-	List<T> getAssigedResources(List<Principal> principals);
+	Collection<T> getAssignedResources(List<Principal> principals);
 	
 	T getResourceByIdAndPrincipals(Long resourceId, List<Principal> principals);
 
-	T getResourceByName(String name);
+	T getResourceByName(String name, Realm realm);
 
-	T getResourceByName(String name, boolean deleted);
+	T getResourceByName(String name, Realm realm, boolean deleted);
 
 	T getResourceById(Long id);
 
@@ -31,9 +33,7 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	List<T> getResources(Realm realm);
 
-	void saveResource(T resource);
-
-	List<T> getResources();
+	void saveResource(T resource, Map<String,String> properties);
 
 	List<T> search(Realm realm, String searchPattern, int start, int length,
 			ColumnSort[] sorting, CriteriaConfiguration... configs);
@@ -41,16 +41,18 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	long getResourceCount(Realm realm, String searchPattern,
 			CriteriaConfiguration... configs);
 
-	List<T> getAssignedResources(Principal... principals);
+	Collection<T> getAssignedResources(Principal... principals);
 
-	Long getAssignableResourceCount(Principal... principals);
+	Long getAssignableResourceCount(Principal principal);
 
 	Long getAssignedResourceCount(Principal principal, 
 			String searchPattern,
 			CriteriaConfiguration... configs);
 
-	List<T> searchAssignedResources(Principal principal, 
+	Collection<T> searchAssignedResources(Principal principal, 
 			String searchPattern, int start, int length, ColumnSort[] sorting,
 			CriteriaConfiguration... configs);
+
+	List<T> allResources();
 	
 }

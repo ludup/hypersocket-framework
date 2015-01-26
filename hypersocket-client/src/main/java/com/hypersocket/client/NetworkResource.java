@@ -7,18 +7,29 @@
  ******************************************************************************/
 package com.hypersocket.client;
 
-public class NetworkResource {
+import java.io.Serializable;
+
+import com.hypersocket.utils.IPAddressValidator;
+
+public class NetworkResource implements Serializable {
+
+	private static final long serialVersionUID = -3525449561878862225L;
 
 	Long id;
 	String hostname;
+	String desintationHostname;
 	int port;
 	String alias;
 	int actualPort;
+	String uri;
 
-	public NetworkResource(Long id, String hostname, int port) {
+	public NetworkResource(Long id, String hostname, String destinationHostname, int port, String uri) {
 		this.id = id;
-		this.hostname = hostname;
+		this.hostname = IPAddressValidator.getInstance().getGuaranteedHostname(
+				hostname);
+		this.desintationHostname = destinationHostname;
 		this.port = port;
+		this.uri = uri;
 	}
 
 	public Long getId() {
@@ -29,6 +40,10 @@ public class NetworkResource {
 		return hostname;
 	}
 
+	public String getDestinationHostname() {
+		return desintationHostname;
+	}
+	
 	public int getPort() {
 		return port;
 	}
@@ -47,6 +62,10 @@ public class NetworkResource {
 
 	public String getLocalInterface() {
 		return alias;
+	}
+
+	public String getUri() {
+		return uri;
 	}
 
 }

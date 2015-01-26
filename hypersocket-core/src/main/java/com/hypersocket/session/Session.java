@@ -7,7 +7,14 @@
  ******************************************************************************/
 package com.hypersocket.session;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,14 +26,15 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.GenericGenerator;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntity;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Entity
 @Table(name = "sessions")
@@ -54,6 +62,13 @@ public class Session extends AbstractEntity<String> {
 	Principal principal;
 
 	@OneToOne
+	@JoinColumn(name="impersonating_principal_id", insertable=true, updatable=true)
+	Principal impersonatedPrincipal;
+	
+	@Column(name="inherit", nullable=true)
+	Boolean inheritPermissions;
+	
+	@OneToOne
 	@JoinColumn(name="realm_id")
 	Realm currentRealm;
 	
@@ -75,6 +90,18 @@ public class Session extends AbstractEntity<String> {
 	
 	@Column(name="timeout", nullable=true)
 	Integer sessionTimeout;
+	
+	@Column(name="non_cookie_key")
+	String nonCookieKey;
+	
+	@Column(name="state", length=8000)
+	String state;
+	
+	@Transient
+	Map<String,String> stateParameters;
+	
+	@Column(name="system")
+	Boolean system;
 	
 	@Override
 	public String getId() {
@@ -101,14 +128,42 @@ public class Session extends AbstractEntity<String> {
 		this.signedOut = signedOut;
 	}
 	
-	public Principal getPrincipal() {
+	Principal getPrincipal() {
 		return principal;
 	}
 	
-	public void setPrincipal(Principal principal) {
+	void setPrincipal(Principal principal) {
 		this.principal = principal;
 	}
 	
+	public Principal getCurrentPrincipal() {
+		if(!isImpersonating()) {
+			return getPrincipal();
+		} else {
+			return getImpersonatedPrincipal();
+		}
+	}
+	
+	public Principal getImpersonatedPrincipal() {
+		return impersonatedPrincipal;
+	}
+
+	public void setImpersonatedPrincipal(Principal impersonatedPrincipal) {
+		if(this.principal.equals(impersonatedPrincipal)) {
+			this.impersonatedPrincipal = null;
+		} else {
+			this.impersonatedPrincipal = impersonatedPrincipal;
+		}
+	}
+
+	public boolean isInheritPermissions() {
+		return inheritPermissions == null ? false : inheritPermissions;
+	}
+
+	public void setInheritPermissions(Boolean inheritPermissions) {
+		this.inheritPermissions = inheritPermissions==null ? false : inheritPermissions;
+	}
+
 	public Realm getCurrentRealm() {
 		if(currentRealm==null) {
 			return principal.getRealm();
@@ -192,4 +247,66 @@ public class Session extends AbstractEntity<String> {
 		this.osVersion = osVersion;
 	}
 
+	public void setNonCookieKey(String nonCookieKey) {
+		this.nonCookieKey = nonCookieKey;
+	}
+	
+	public String getNonCookieKey() {
+		return nonCookieKey;
+	}
+	
+	public void setStateParameters(Map<String,String> stateParameters) {
+		this.stateParameters = stateParameters;
+		writeState();
+	}
+	
+	private void writeState() {
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			ObjectOutputStream obj = new ObjectOutputStream(out);
+			obj.writeObject(stateParameters);
+			this.state =  HypersocketUtils.base64Encode(out.toByteArray());
+		} catch (IOException e) {
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public String getStateParameter(String name) {
+		if(stateParameters==null) {
+			if(state!=null) {
+				ObjectInputStream obj;
+				try {
+					obj = new ObjectInputStream(new ByteArrayInputStream(HypersocketUtils.base64Decode(state)));
+					stateParameters = (Map<String,String>) obj.readObject();
+				} catch (Exception e) {
+				}
+			}
+			
+			if(stateParameters==null) {
+				stateParameters = new HashMap<String,String>();
+			}
+		}
+		return stateParameters.get(name);
+	}
+
+	public void setStateParameter(String name, String value) {
+		if(stateParameters==null) {
+			stateParameters = new HashMap<String,String>();
+		}
+		stateParameters.put(name, value);
+		writeState();
+	}
+
+	public boolean isImpersonating() {
+		return impersonatedPrincipal!=null;
+	}
+
+	@JsonIgnore
+	public Principal getInheritedPrincipal() {
+		return getPrincipal();
+	}
+	
+	public boolean isSystem() {
+		return system!=null && system;
+	}
 }

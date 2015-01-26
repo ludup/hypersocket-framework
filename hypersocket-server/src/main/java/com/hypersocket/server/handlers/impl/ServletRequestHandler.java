@@ -24,7 +24,7 @@ public abstract class ServletRequestHandler extends HttpRequestHandler {
 
 	static Logger log = LoggerFactory.getLogger(ServletRequestHandler.class);
 	
-    private Servlet servlet;
+    protected Servlet servlet;
     
     public ServletRequestHandler(String name, Servlet servlet, int priority) {
     	super(name, priority);

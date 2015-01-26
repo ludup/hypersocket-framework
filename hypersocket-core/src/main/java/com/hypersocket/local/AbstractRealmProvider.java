@@ -8,9 +8,10 @@
 package com.hypersocket.local;
 
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
+import com.hypersocket.realm.RealmProvider;
 
 
-public abstract class AbstractRealmProvider extends ResourceTemplateRepositoryImpl {
+public abstract class AbstractRealmProvider extends ResourceTemplateRepositoryImpl implements RealmProvider {
 
-	
+		
 }

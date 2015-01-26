@@ -4,7 +4,9 @@
 		resourceBundle="LocalRealm" weight="0">
 		<property resourceKey="user.fullname" inputType="text" weight="0"
 			defaultValue="" />
-		<property resourceKey="user.email" inputType="text" weight="10"
+		<property resourceKey="user.email" inputType="text" weight="10" regex="^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$"
+			defaultValue="" />
+		<property resourceKey="user.mobile" inputType="text" weight="20"
 			defaultValue="" />
 	</propertyCategory>
 </propertyTemplates>

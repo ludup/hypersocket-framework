@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="generateAlert">
+	<propertyCategory resourceKey="category.thresholds"
+		resourceBundle="TriggerResourceService" weight="1000">
+		<property resourceKey="alert.threshold" inputType="slider"
+			weight="0" defaultValue="5" min="1" max="100" step="1" labelResourceKey="alert.threshold.label" />
+		<property resourceKey="alert.timeout" inputType="slider" 
+			min="1" max="1440" defaultValue="10" step="1" weight="100" labelResourceKey="alert.timeout.label"/>
+	</propertyCategory>
+	<propertyCategory resourceKey="category.key"
+		resourceBundle="TriggerResourceService" weight="2000">
+		<property resourceKey="alert.key" inputType="multipleSelect" nameIsResourceKey="true"
+			useVariablesAsValues="true" selectAllIfEmpty="false" weight="200"/>		
+	</propertyCategory>
+	<propertyCategory resourceKey="category.warning"
+		resourceBundle="TriggerResourceService" weight="3000">
+		<property resourceKey="alert.text" inputType="text"
+			weight="100" defaultValue="" />
+	</propertyCategory>
+</propertyTemplates>

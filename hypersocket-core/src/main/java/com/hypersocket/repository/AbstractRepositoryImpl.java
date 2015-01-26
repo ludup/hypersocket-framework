@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.repository;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -16,7 +17,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -46,11 +46,8 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		return DetachedCriteria.forClass(entityClass);
 	}
 	
-	protected void saveObject(Object entity) {
-		hibernateTemplate.save(entity);
-	}
-	
 	protected void save(AbstractEntity<K> entity) {
+		
 		
 		entity.setLastModified(new Date());
 		
@@ -74,6 +71,28 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		hibernateTemplate.delete(entity);
 	}
 
+	@SuppressWarnings("unchecked")
+	protected <T> List<T> list(Class<T> cls, boolean caseInsensitive, CriteriaConfiguration... configs) {
+		Criteria criteria = createCriteria(cls);
+		for(CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		@SuppressWarnings("rawtypes")
+		List results = criteria.list();
+		return results;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected <T> Collection<T> list(Class<T> cls, CriteriaConfiguration... configs) {
+		Criteria criteria = createCriteria(cls);
+		for(CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		@SuppressWarnings("rawtypes")
+		List results = criteria.list();
+		return results;
+	}
+	
 	@SuppressWarnings("unchecked")
 	protected <T> List<T> list(String column, Object value, Class<T> cls, boolean caseInsensitive, DetachedCriteriaConfiguration... configs) {
 		DetachedCriteria criteria = createDetachedCriteria(cls);
@@ -116,6 +135,24 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		return (T)results.get(0);
 	}
 	
+	@SuppressWarnings("unchecked")
+	protected <T> T get(Class<T> cls, DetachedCriteriaConfiguration... configs) {
+		DetachedCriteria criteria = createDetachedCriteria(cls);
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+
+		for(DetachedCriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		@SuppressWarnings("rawtypes")
+		List results = hibernateTemplate.findByCriteria(criteria);
+		if(results.isEmpty()) {
+			return null;
+		} else if(results.size() > 1) {
+			throw new IllegalStateException("Too many results returned in get request class=" + cls.getName());
+		}
+		return (T)results.get(0);
+	}
+	
 	protected <T> T get(String column, Object value, Class<T> cls, DetachedCriteriaConfiguration... configs) {
 		return get(column, value, cls, false, configs);
 	}
@@ -124,6 +161,8 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	@SuppressWarnings("unchecked")
 	protected <T> List<T> allEntities(Class<T> cls, DetachedCriteriaConfiguration... configs) {
 		DetachedCriteria criteria = createDetachedCriteria(cls);
+		
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		criteria.add(Restrictions.eq("deleted", false));
 		for(DetachedCriteriaConfiguration c : configs) {
 			c.configure(criteria);
@@ -166,7 +205,6 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 		Criteria criteria = createCriteria(clz);
 		
-		criteria.setProjection(Projections.rowCount());
 		for(CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
@@ -177,7 +215,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
 		
-		return (Long) criteria.uniqueResult();
+		return (long) criteria.list().size();
 	}
 	
 	@SuppressWarnings("unchecked")

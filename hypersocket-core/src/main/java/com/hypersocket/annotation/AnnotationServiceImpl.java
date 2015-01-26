@@ -7,17 +7,41 @@
  ******************************************************************************/
 package com.hypersocket.annotation;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.reflect.MethodSignature;
 
 public class AnnotationServiceImpl implements AnnotationService {
 
+	Map<String,HypersocketExtensionPoint> extensionPoints = new HashMap<String,HypersocketExtensionPoint>();
+	
 	public AnnotationServiceImpl() {
 		
 	}
+	
+	@Override
+	public void registerExtensionPoint(String id, HypersocketExtensionPoint ext) {
+		extensionPoints.put(id, ext);
+	}
+	
 	@Override
 	public Object process(ProceedingJoinPoint pjp) throws Throwable {
+		MethodSignature sig = (MethodSignature) pjp.getSignature();
+		String id = sig.getDeclaringType().getName() + "/" + sig.getName();
+		
+		
+		if(extensionPoints.containsKey(id)) {
+			HypersocketExtensionPoint ext = extensionPoints.get(id);
+			if(ext.isExtending(pjp)) {
+				return extensionPoints.get(id).invoke(pjp);
+			}
+		} 
 		
 		return pjp.proceed();
+		
 	}
 
+	
 }

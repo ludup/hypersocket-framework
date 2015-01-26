@@ -42,6 +42,7 @@ import java.util.List;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.DSAParameter;
@@ -74,15 +75,26 @@ public class X509CertificateUtils {
 
 	public static KeyStore loadKeystoreFromPEM(InputStream keyfile,
 			InputStream certfile, char[] keyPassphrase,
-			char[] keystorePassphrase) throws CertificateException,
-			IOException, NoSuchAlgorithmException, KeyStoreException,
-			InvalidPassphraseException, FileFormatException,
+			char[] keystorePassphrase, String keystoreAlias)
+			throws CertificateException, IOException, NoSuchAlgorithmException,
+			KeyStoreException, InvalidPassphraseException, FileFormatException,
 			MismatchedCertificateException {
 		KeyPair pair = loadKeyPairFromPEM(keyfile, keyPassphrase);
 		X509Certificate cert = loadCertificateFromPEM(certfile);
 
 		return createKeystore(pair, new X509Certificate[] { cert },
-				"importedPEM", keystorePassphrase);
+				keystoreAlias, keystorePassphrase);
+
+	}
+
+	public static KeyStore loadKeystoreFromPEM(InputStream keyfile,
+			InputStream certfile, char[] keyPassphrase,
+			char[] keystorePassphrase) throws CertificateException,
+			IOException, NoSuchAlgorithmException, KeyStoreException,
+			InvalidPassphraseException, FileFormatException,
+			MismatchedCertificateException {
+		return loadKeystoreFromPEM(keyfile, certfile, keyPassphrase,
+				keystorePassphrase, "importedPEM");
 
 	}
 
@@ -110,7 +122,7 @@ public class X509CertificateUtils {
 		try {
 			for (Certificate cc : caRootAndInters) {
 
-				X509Certificate c = (X509Certificate)cc;
+				X509Certificate c = (X509Certificate) cc;
 				if (log.isInfoEnabled()) {
 					log.info("Checking validity of certificate "
 							+ c.getSubjectDN());
@@ -221,22 +233,19 @@ public class X509CertificateUtils {
 		}
 
 	}
-	
 
 	public static KeyStore loadKeyStoreFromPFX(InputStream pfxfile,
 			char[] passphrase) throws KeyStoreException,
 			NoSuchAlgorithmException, CertificateException, IOException,
 			NoSuchProviderException, UnrecoverableKeyException {
-		
+
 		KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
-		 
-	    keystore.load(pfxfile,
-	                passphrase);
-	    
-	    return keystore;
-	  }
-	
-	
+
+		keystore.load(pfxfile, passphrase);
+
+		return keystore;
+	}
+
 	public static KeyPair loadKeyPairFromPEM(InputStream keyfile,
 			char[] passphrase) throws InvalidPassphraseException,
 			CertificateException, FileFormatException {
@@ -270,6 +279,14 @@ public class X509CertificateUtils {
 				return loadKeyPair((PEMKeyPair) privatekey);
 			} else if (privatekey instanceof RSAPrivateCrtKey) {
 				return loadKeyPair((RSAPrivateCrtKey) privatekey);
+			} else if(privatekey instanceof PrivateKeyInfo){
+				PrivateKeyInfo i = (PrivateKeyInfo) privatekey;
+				PrivateKey prv = converter.getPrivateKey(i);
+				if(prv instanceof RSAPrivateCrtKey) {
+					return loadKeyPair((RSAPrivateCrtKey)prv);
+				} else {
+					throw new FileFormatException("Unsupported private key type");
+				}
 			} else {
 				throw new FileFormatException(
 						"The file doesn't seem to have any supported key types obj="
@@ -334,10 +351,10 @@ public class X509CertificateUtils {
 		}
 	}
 
-	public static KeyPair generatePrivateKey(int bits)
+	public static KeyPair generatePrivateKey(String algorithm, int bits)
 			throws CertificateException {
 		try {
-			KeyPairGenerator kpGen = KeyPairGenerator.getInstance("RSA");
+			KeyPairGenerator kpGen = KeyPairGenerator.getInstance(algorithm, "BC");
 			kpGen.initialize(bits, new SecureRandom());
 			return kpGen.generateKeyPair();
 		} catch (Throwable t) {
@@ -346,13 +363,15 @@ public class X509CertificateUtils {
 	}
 
 	public static X509Certificate generateSelfSignedCertificate(
-			String hostname, KeyPair pair) {
+			String cn, String ou, String o, String l, String s, String c, KeyPair pair, String signatureType) {
 		try {
 			// Generate self-signed certificate
 			X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
-			builder.addRDN(BCStyle.OU, "Hypersocket");
-			builder.addRDN(BCStyle.O, "Hypersocket");
-			builder.addRDN(BCStyle.CN, hostname);
+			builder.addRDN(BCStyle.OU, ou);
+			builder.addRDN(BCStyle.O, o);
+			builder.addRDN(BCStyle.L, l);
+			builder.addRDN(BCStyle.ST, s);
+			builder.addRDN(BCStyle.CN, cn);
 
 			Date notBefore = new Date(System.currentTimeMillis() - 1000L * 60
 					* 60 * 24 * 30);
@@ -365,7 +384,7 @@ public class X509CertificateUtils {
 					builder.build(), serial, notBefore, notAfter,
 					builder.build(), pair.getPublic());
 			ContentSigner sigGen = new JcaContentSignerBuilder(
-					"SHA256WithRSAEncryption").setProvider(BC).build(
+					signatureType).setProvider(BC).build(
 					pair.getPrivate());
 			X509Certificate cert = new JcaX509CertificateConverter()
 					.setProvider(BC).getCertificate(certGen.build(sigGen));
@@ -384,7 +403,21 @@ public class X509CertificateUtils {
 			String alias, char[] keystorePassphrase) throws KeyStoreException,
 			NoSuchAlgorithmException, CertificateException, IOException,
 			MismatchedCertificateException {
-		KeyStore store = KeyStore.getInstance("JKS");
+		return createKeystore(pair, cert, alias, keystorePassphrase, "JKS");
+	}
+	
+	public static KeyStore createPKCS12Keystore(KeyPair pair, X509Certificate[] cert,
+			String alias, char[] keystorePassphrase) throws KeyStoreException,
+			NoSuchAlgorithmException, CertificateException, IOException,
+			MismatchedCertificateException {
+		return createKeystore(pair, cert, alias, keystorePassphrase, "PKCS12");
+	}
+	
+	public static KeyStore createKeystore(KeyPair pair, X509Certificate[] cert,
+			String alias, char[] keystorePassphrase, String keystoreType) throws KeyStoreException,
+			NoSuchAlgorithmException, CertificateException, IOException,
+			MismatchedCertificateException {
+		KeyStore store = KeyStore.getInstance(keystoreType);
 		store.load(null);
 
 		if (!pair.getPublic().equals(cert[0].getPublicKey())) {
@@ -426,14 +459,26 @@ public class X509CertificateUtils {
 
 		Security.addProvider(new BouncyCastleProvider());
 
-//		X509CertificateUtils.validateChain(X509CertificateUtils
-//				.loadCertificateChainFromPEM(new FileInputStream(
-//						"/Users/lee/gd_bundle.crt")), X509CertificateUtils
-//				.loadCertificateFromPEM(new FileInputStream(
-//						"/Users/lee/javassh.com.crt")));
-//		
-//		X509CertificateUtils.loadKeyPairFromPFX(new FileInputStream("/home/lee//Dropbox/Company Files/Nervepoint Technologies Limited/Certificates/Domain Wildcard/nervepoint-www-wildcard.pfx"), "bluemars73".toCharArray());
+		// X509CertificateUtils.validateChain(X509CertificateUtils
+		// .loadCertificateChainFromPEM(new FileInputStream(
+		// "/Users/lee/gd_bundle.crt")), X509CertificateUtils
+		// .loadCertificateFromPEM(new FileInputStream(
+		// "/Users/lee/javassh.com.crt")));
+		//
+		// X509CertificateUtils.loadKeyPairFromPFX(new
+		// FileInputStream("/home/lee//Dropbox/Company Files/Nervepoint Technologies Limited/Certificates/Domain Wildcard/nervepoint-www-wildcard.pfx"),
+		// "bluemars73".toCharArray());
+		
+//		X509CertificateUtils.generatePrivateKey("RSA", 1024);
+//		X509CertificateUtils.generatePrivateKey("RSA", 2048);
+//		X509CertificateUtils.generatePrivateKey("RSA", 4096);
+//		X509CertificateUtils.generatePrivateKey("RSA", 8192);
 
+//		X509CertificateUtils.generatePrivateKey("DSA", 1024);
+//		X509CertificateUtils.generatePrivateKey("DSA", 2048);
+//		X509CertificateUtils.generatePrivateKey("DSA", 4096);
+//		X509CertificateUtils.generatePrivateKey("DSA", 8192);
+		
 	}
 
 }

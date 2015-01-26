@@ -27,6 +27,7 @@ import com.hypersocket.client.rmi.ConnectionService;
 import com.hypersocket.client.rmi.ConnectionStatus;
 import com.hypersocket.client.rmi.ConnectionStatusImpl;
 import com.hypersocket.client.rmi.GUICallback;
+import com.hypersocket.client.rmi.ResourceService;
 
 public class ClientServiceImpl implements ClientService,
 		HypersocketClientListener<Connection> {
@@ -37,7 +38,8 @@ public class ClientServiceImpl implements ClientService,
 
 	ConnectionService connectionService;
 	ConfigurationService configurationService;
-
+	ResourceService resourceService;
+	
 	ExecutorService bossExecutor;
 	ExecutorService workerExecutor;
 	Timer timer;
@@ -47,11 +49,13 @@ public class ClientServiceImpl implements ClientService,
 	Map<Connection, Set<ServicePlugin>> connectionPlugins = new HashMap<Connection, Set<ServicePlugin>>();
 
 	public ClientServiceImpl(ConnectionService connectionService,
-			ConfigurationService configurationService) {
+			ConfigurationService configurationService,
+			ResourceService resourceService) {
 
 		this.connectionService = connectionService;
 		this.configurationService = configurationService;
-
+		this.resourceService = resourceService;
+		
 		bossExecutor = Executors.newCachedThreadPool();
 		workerExecutor = Executors.newCachedThreadPool();
 
@@ -152,6 +156,7 @@ public class ClientServiceImpl implements ClientService,
 		data.put("service", this);
 		data.put("bossExecutor", bossExecutor);
 		data.put("workerExecutor", workerExecutor);
+		data.put("resourceService", resourceService);
 		data.put("locale", locale);
 		data.put("reconnectSeconds", reconnectSeconds);
 		data.put("url", getUrl(c));
@@ -217,9 +222,9 @@ public class ClientServiceImpl implements ClientService,
 	public void connected(HypersocketClient<Connection> client) {
 		activeClients.put(client.getAttachment(), client);
 		connectingClients.remove(client.getAttachment());
-		notifyGui(client.getHost() + " connected", GUICallback.NOTIFY_CONNECT);
-
 		startPlugins(client);
+		
+		notifyGui(client.getHost() + " connected", GUICallback.NOTIFY_CONNECT);
 	}
 
 	protected void stopPlugins(HypersocketClient<Connection> client) {
@@ -280,7 +285,7 @@ public class ClientServiceImpl implements ClientService,
 							.forName(clz);
 
 					ServicePlugin plugin = pluginClz.newInstance();
-					plugin.start(client);
+					plugin.start(client, resourceService, gui);
 
 					connectionPlugins.get(client.getAttachment()).add(plugin);
 				} catch (Throwable e) {

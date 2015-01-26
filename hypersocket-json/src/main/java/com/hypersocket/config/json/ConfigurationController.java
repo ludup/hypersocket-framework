@@ -29,6 +29,7 @@ import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
@@ -46,6 +47,9 @@ public class ConfigurationController extends AuthenticatedController {
 	@Autowired
 	ConfigurationService configurationService;
 
+	@Autowired
+	SystemConfigurationService systemConfigurationService; 
+	
 	final static String RESOURCE_KEY = "ConfigurationController";
 
 	@AuthenticationRequired
@@ -59,7 +63,27 @@ public class ConfigurationController extends AuthenticatedController {
 	}
 	
 	@AuthenticationRequired
-	@RequestMapping(value = "configuration/{group}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "configuration/system", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<PropertyCategory> getSystemCategories(HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+		return getSystemCategories(request, "system");
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "configuration/system/{group}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<PropertyCategory> getSystemCategoriesByGroup(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String group) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+		return getSystemCategories(request, group);
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "configuration/realm/{group}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<PropertyCategory> getCategories(HttpServletRequest request,
@@ -69,10 +93,51 @@ public class ConfigurationController extends AuthenticatedController {
 	}
 	
 	@AuthenticationRequired
-	@RequestMapping(value = "configuration/{group}", method = RequestMethod.POST, produces = { "application/json" })
+	@RequestMapping(value = "configuration/system", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public RequestStatus updateItems(HttpServletRequest request,
+	public RequestStatus updateSystemItems(HttpServletRequest request,
+			HttpServletResponse response, @RequestBody PropertyItem[] items)
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+		return updateSystemItems(request, response, items, "system");
+		
+	}
+	@AuthenticationRequired
+	@RequestMapping(value = "configuration/system/{group}", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus updateSystemItems(HttpServletRequest request,
+			HttpServletResponse response, @RequestBody PropertyItem[] items, @PathVariable String group)
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			
+			Map<String,String> values=  new HashMap<String,String>();
+			for(PropertyItem item : items) {
+				values.put(item.getId(), item.getValue());
+			}
+			
+			systemConfigurationService.setValues(values);
+			
+			return new RequestStatus(true, I18N.getResource(
+					sessionUtils.getLocale(request), RESOURCE_KEY,
+					"message.saved"));
+		} catch (ResourceChangeException e) {
+			return new RequestStatus(false, I18N.getResource(
+					sessionUtils.getLocale(request), e.getBundle(),
+					e.getResourceKey()));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "configuration/realm/{group}", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus updateRealmItems(HttpServletRequest request,
 			HttpServletResponse response, @RequestBody PropertyItem[] items, @PathVariable String group)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
@@ -126,4 +191,19 @@ public class ConfigurationController extends AuthenticatedController {
 		}
 
 	}
+	
+	private ResourceList<PropertyCategory> getSystemCategories(HttpServletRequest request, String group)
+			throws UnauthorizedException, AccessDeniedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			return new ResourceList<PropertyCategory>(
+					systemConfigurationService.getPropertyCategories(group));
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
 }
+

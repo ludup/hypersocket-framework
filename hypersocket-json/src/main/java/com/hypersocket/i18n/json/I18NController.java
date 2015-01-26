@@ -67,7 +67,7 @@ public class I18NController extends AuthenticatedController {
 		return results;
 	}	
 	
-	@RequestMapping(value = "locales", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "i18n/locales", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<SelectOption> getLocales(

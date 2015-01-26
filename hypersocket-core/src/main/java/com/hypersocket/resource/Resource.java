@@ -11,9 +11,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.Table;
 
 @Entity
-@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
+@Inheritance(strategy=InheritanceType.JOINED)
+@Table(name="resources")
 public abstract class Resource extends AbstractResource {
 	
 	@Column(name="name", nullable=false)
@@ -24,6 +26,17 @@ public abstract class Resource extends AbstractResource {
 	
 	@Column(name="resource_category", nullable=true)
 	String resourceCategory;
+	
+	@Column(name="system", nullable=false)
+	boolean system = false;
+	
+	public boolean isSystem() {
+		return system;
+	}
+
+	public void setSystem(boolean system) {
+		this.system = system;
+	}
 	
 	public String getName() {
 		return name;
@@ -48,5 +61,5 @@ public abstract class Resource extends AbstractResource {
 	public void setResourceCategory(String resourceCategory) {
 		this.resourceCategory = resourceCategory;
 	}
-	
+
 }

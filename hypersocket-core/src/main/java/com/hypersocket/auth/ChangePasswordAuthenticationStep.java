@@ -52,15 +52,16 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 		String password = AuthenticationUtils.getRequestParameter(parameters, ChangePasswordTemplate.PASSWORD_FIELD);
 		String confirmPassword = AuthenticationUtils.getRequestParameter(parameters, ChangePasswordTemplate.CONFIRM_PASSWORD_FIELD);
 		
-		if(password==null || confirmPassword==null) { 
-			state.setLastErrorMsg("error.insufficentData");
+		if(password==null || password.trim().equals("")) { 
+			state.setLastErrorMsg("error.emptyPassword");
 			state.setLastErrorIsResourceKey(true);
 			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}
 		
 		if(!password.equals(confirmPassword)) {
 			state.setLastErrorMsg("error.passwordsMustMatch");
-			return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_CREDENTIALS;
+			state.setLastErrorIsResourceKey(true);
+			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}
 		
 		try {
@@ -80,6 +81,21 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 	@Override
 	public FormTemplate createTemplate(AuthenticationState state) {
 		return new ChangePasswordTemplate(state);
+	}
+
+	@Override
+	public int getOrderPriority() {
+		return 0;
+	}
+
+	@Override
+	public boolean requiresUserInput(AuthenticationState state) {
+		return true;
+	}
+
+	@Override
+	public boolean requiresSession(AuthenticationState state) {
+		return true;
 	}
 
 }

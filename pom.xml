@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.hypersocket</groupId>
 	<artifactId>hypersocket-framework</artifactId>
-	<version>0.1.3</version>
+	<version>0.2.0</version>
 	<url>http://www.hypersocket.com/</url>
 	<packaging>pom</packaging>
 	<name>Hypersocket Framework</name>
@@ -22,13 +22,13 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	
+
 	<scm>
 		<url>http://github.com/ludup/hypersocket-framework</url>
 		<connection>scm:git:https://github.com/ludup/hypersocket-framework</connection>
 		<developerConnection>scm:git:https://github.com/ludup/hypersocket-framework</developerConnection>
 	</scm>
-	
+
 	<developers>
 		<developer>
 			<id>lee</id>
@@ -36,7 +36,7 @@
 			<email>lee@hypersocket.com</email>
 		</developer>
 	</developers>
-	
+
 	<properties>
 		<org.springframework.version>3.1.4.RELEASE</org.springframework.version>
 		<aspectj.version>1.6.12</aspectj.version>
@@ -44,16 +44,17 @@
 	</properties>
 
 	<modules>
-	    <module>client-common</module>
-	    <module>hypersocket-client</module>
-	    <module>client-service</module>
-	    <module>client-netty</module>
-	    <module>client-gui</module>
+		<module>client-common</module>
+		<module>hypersocket-client</module>
+		<module>client-service</module>
+		<module>client-netty</module>
+		<module>client-gui</module>
 		<module>hypersocket-common</module>
 		<module>hypersocket-core</module>
 		<module>hypersocket-server</module>
 		<module>hypersocket-json</module>
 		<module>hypersocket-netty</module>
+		<module>hypersocket-tasks</module>
 		<module>hypersocket-tests</module>
 	</modules>
 
@@ -80,6 +81,7 @@
 	</dependencies>
 
 	<build>
+		<directory>target</directory>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -103,18 +105,18 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>com.nervepoint</groupId>
-				<artifactId>google-translate-v2-java-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>translate</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+			<!-- <plugin> -->
+			<!-- <groupId>com.nervepoint</groupId> -->
+			<!-- <artifactId>google-translate-v2-java-maven-plugin</artifactId> -->
+			<!-- <executions> -->
+			<!-- <execution> -->
+			<!-- <phase>process-resources</phase> -->
+			<!-- <goals> -->
+			<!-- <goal>translate</goal> -->
+			<!-- </goals> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -156,33 +158,6 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>exec-maven-plugin</artifactId>
-				</plugin>
-				<plugin>
-					<groupId>com.nervepoint</groupId>
-					<artifactId>google-translate-v2-java-maven-plugin</artifactId>
-					<version>0.0.3</version>
-
-					<configuration>
-						<apikey>${googleAPIKey}</apikey>
-						<cacheTag>alpha</cacheTag>
-						<sourceDirectory>${basedir}/src/main/resources/i18n</sourceDirectory>
-						<targetDirectory>${basedir}/target/classes/i18n</targetDirectory>
-						<languages>da,nl,fi,fr,de,it,no,pl,ru,sv,es,ja</languages>
-						<failOnMissingSourceDir>false</failOnMissingSourceDir>
-					</configuration>
-					<executions>
-						<execution>
-							<goals>
-								<goal>translate</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
-				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
 					<version>1.0.0</version>
@@ -191,25 +166,75 @@
 							<pluginExecutions>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>com.nervepoint</groupId>
-										<artifactId>
-											google-translate-v2-java-maven-plugin
-										</artifactId>
-										<versionRange>
-											[0.0.3,)
-										</versionRange>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-enforcer-plugin</artifactId>
+										<versionRange>[1.0.0,)</versionRange>
 										<goals>
-											<goal>translate</goal>
+											<goal>enforce</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+				</plugin>
+				<!-- <plugin> -->
+				<!-- <groupId>com.nervepoint</groupId> -->
+				<!-- <artifactId>google-translate-v2-java-maven-plugin</artifactId> -->
+				<!-- <version>0.0.3</version> -->
+				<!-- <configuration> -->
+				<!-- <apikey>${googleAPIKey}</apikey> -->
+				<!-- <cacheTag>alpha</cacheTag> -->
+				<!-- <sourceDirectory>${basedir}/src/main/resources/i18n</sourceDirectory> -->
+				<!-- <targetDirectory>${basedir}/target/classes/i18n</targetDirectory> -->
+				<!-- <languages>da,nl,fi,fr,de,it,no,pl,ru,sv,es,ja</languages> -->
+				<!-- <failOnMissingSourceDir>false</failOnMissingSourceDir> -->
+				<!-- </configuration> -->
+				<!-- <executions> -->
+				<!-- <execution> -->
+				<!-- <goals> -->
+				<!-- <goal>translate</goal> -->
+				<!-- </goals> -->
+				<!-- </execution> -->
+				<!-- </executions> -->
+				<!-- </plugin> -->
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<!-- <plugin> -->
+				<!-- <groupId>org.eclipse.m2e</groupId> -->
+				<!-- <artifactId>lifecycle-mapping</artifactId> -->
+				<!-- <version>1.0.0</version> -->
+				<!-- <configuration> -->
+				<!-- <lifecycleMappingMetadata> -->
+				<!-- <pluginExecutions> -->
+				<!-- <pluginExecution> -->
+				<!-- <pluginExecutionFilter> -->
+				<!-- <groupId>com.nervepoint</groupId> -->
+				<!-- <artifactId> -->
+				<!-- google-translate-v2-java-maven-plugin -->
+				<!-- </artifactId> -->
+				<!-- <versionRange> -->
+				<!-- [0.0.3,) -->
+				<!-- </versionRange> -->
+				<!-- <goals> -->
+				<!-- <goal>translate</goal> -->
+				<!-- </goals> -->
+				<!-- </pluginExecutionFilter> -->
+				<!-- <action> -->
+				<!-- <ignore></ignore> -->
+				<!-- </action> -->
+				<!-- </pluginExecution> -->
+				<!-- </pluginExecutions> -->
+				<!-- </lifecycleMappingMetadata> -->
+				<!-- </configuration> -->
+				<!-- </plugin> -->
 			</plugins>
 		</pluginManagement>
 	</build>

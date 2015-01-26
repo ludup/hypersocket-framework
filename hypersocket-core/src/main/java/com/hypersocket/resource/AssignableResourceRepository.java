@@ -9,9 +9,10 @@ package com.hypersocket.resource;
 
 import java.util.List;
 
+import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
 
-public interface AssignableResourceRepository {
+public interface AssignableResourceRepository extends ResourceTemplateRepository {
 
 	List<AssignableResource> getAllAssignableResources(List<Principal> principals);
 

@@ -1,5 +1,7 @@
 package com.hypersocket.config;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.session.Session;
@@ -33,4 +35,7 @@ public class ConfigurationChangedEvent extends SessionEvent {
 		super(source, resourceKey, e, session);
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }

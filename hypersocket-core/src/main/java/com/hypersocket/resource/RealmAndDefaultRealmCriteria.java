@@ -15,7 +15,7 @@ public class RealmAndDefaultRealmCriteria implements CriteriaConfiguration {
 	
 	@Override
 	public void configure(Criteria criteria) {
-		criteria.add(Restrictions.or(Restrictions.eq("realm", realm), Restrictions.isNull("realm")));
+		criteria.add(Restrictions.eq("realm", realm));
 	}
 
 }

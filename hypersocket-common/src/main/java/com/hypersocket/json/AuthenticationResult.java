@@ -7,8 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.json;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.hypersocket.HypersocketVersion;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
@@ -19,6 +18,7 @@ public class AuthenticationResult {
 	boolean showLocales;
 	boolean success;
 	String version = HypersocketVersion.getVersion();
+	JsonResource principal;
 	
 	public AuthenticationResult() {	
 	}

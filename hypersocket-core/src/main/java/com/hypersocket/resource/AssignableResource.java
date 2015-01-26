@@ -17,12 +17,14 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.Table;
 
 import com.hypersocket.permissions.Role;
 
 @Entity
 @Inheritance(strategy=InheritanceType.JOINED)
-public abstract class AssignableResource extends RealmResource {
+@Table(name="assignable_resources")
+public class AssignableResource extends RealmResource {
 
 	@ManyToMany(fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_roles", joinColumns={@JoinColumn(name="resource_id")}, 

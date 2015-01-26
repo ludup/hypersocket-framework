@@ -12,16 +12,18 @@ import org.slf4j.LoggerFactory;
 
 import com.hypersocket.client.HypersocketClient;
 import com.hypersocket.client.HypersocketClientAdapter;
+import com.hypersocket.client.UserCancelledException;
 import com.hypersocket.client.rmi.Connection;
+import com.hypersocket.client.rmi.ResourceService;
 import com.hypersocket.netty.NettyClientTransport;
 
 public class ConnectionJob extends TimerTask {
 
 	static Logger log = LoggerFactory.getLogger(ConnectionJob.class);
 
-	Map<String,Object> data;
-	
-	public ConnectionJob(Map<String,Object> data) {
+	Map<String, Object> data;
+
+	public ConnectionJob(Map<String, Object> data) {
 		this.data = data;
 	}
 
@@ -32,8 +34,11 @@ public class ConnectionJob extends TimerTask {
 		ExecutorService boss = (ExecutorService) data.get("bossExecutor");
 		ExecutorService worker = (ExecutorService) data.get("workerExecutor");
 		Locale locale = (Locale) data.get("locale");
-		final ClientServiceImpl service = (ClientServiceImpl) data.get("service");
-		
+		final ClientServiceImpl service = (ClientServiceImpl) data
+				.get("service");
+		ResourceService resourceService = (ResourceService) data
+				.get("resourceService");
+
 		String url = (String) data.get("url");
 
 		if (log.isInfoEnabled()) {
@@ -41,28 +46,30 @@ public class ConnectionJob extends TimerTask {
 		}
 
 		try {
+			
 			ServiceClient client = new ServiceClient(new NettyClientTransport(
-					boss, worker), locale, service, c);
+					boss, worker), locale, service, resourceService, c);
 
 			client.connect(c.getHostname(), c.getPort(), c.getPath(), locale);
 
-			if(log.isInfoEnabled()) {
+			if (log.isInfoEnabled()) {
 				log.info("Connected to " + url);
 			}
-			
+
 			if (StringUtils.isBlank(c.getUsername())
 					|| StringUtils.isBlank(c.getHashedPassword())) {
 				client.login();
-				
+
 			} else {
 				client.loginHttp(c.getRealm(), c.getUsername(),
 						c.getHashedPassword(), true);
 			}
-			
+
 			client.addListener(new HypersocketClientAdapter<Connection>() {
 				@Override
-				public void disconnected(HypersocketClient<Connection> client, boolean onError) {
-					if(client.getAttachment().isStayConnected() && onError) {
+				public void disconnected(HypersocketClient<Connection> client,
+						boolean onError) {
+					if (client.getAttachment().isStayConnected() && onError) {
 						try {
 							service.scheduleConnect(c);
 						} catch (RemoteException e1) {
@@ -70,20 +77,25 @@ public class ConnectionJob extends TimerTask {
 					}
 				}
 			});
-			
+
 			if (log.isInfoEnabled()) {
 				log.info("Logged into " + url);
 			}
 
 		} catch (Throwable e) {
 			if (log.isErrorEnabled()) {
-				log.error("Failed to connect " + url);
+				log.error("Failed to connect " + url, e);
 			}
 
-			if (c.isStayConnected()) {
-				try {
-					service.scheduleConnect(c);
-				} catch (RemoteException e1) {
+			if(!(e instanceof UserCancelledException)) {
+				if (StringUtils.isNotBlank(c.getUsername())
+						&& StringUtils.isNotBlank(c.getHashedPassword())) {
+					if (c.isStayConnected()) {
+						try {
+							service.scheduleConnect(c);
+						} catch (RemoteException e1) {
+						}
+					}
 				}
 			}
 		}

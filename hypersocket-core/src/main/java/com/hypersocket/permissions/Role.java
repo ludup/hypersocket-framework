@@ -17,17 +17,18 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
-@Table(name = "roles", uniqueConstraints = {@UniqueConstraint(columnNames={"name", "realm_id"})})
+@Table(name = "roles")
 @XmlRootElement(name="role")
 public class Role extends RealmResource {
 
@@ -38,10 +39,12 @@ public class Role extends RealmResource {
 	private Set<Permission> permissions = new HashSet<Permission>();
 
 	@ManyToMany(fetch=FetchType.EAGER)
+	@Cascade({CascadeType.SAVE_UPDATE})
 	@JoinTable(name = "role_principals", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
 	Set<Principal> principals = new HashSet<Principal>();
 	
 	@ManyToMany(fetch=FetchType.EAGER)
+	@Cascade({CascadeType.SAVE_UPDATE})
 	@JoinTable(name = "resource_roles", 
 		joinColumns = {@JoinColumn(name="role_id")}, 
 		inverseJoinColumns = {@JoinColumn(name="resource_id")})
@@ -49,6 +52,9 @@ public class Role extends RealmResource {
 	
 	@Column(name="all_users", nullable=false)
 	boolean allUsers;
+	
+	@Column(name="all_permissions", nullable=false)
+	boolean allPermissions;
 	
 	@Column(name="personal_role", nullable=true)
 	Boolean personalRole = new Boolean(false);
@@ -90,5 +96,18 @@ public class Role extends RealmResource {
 		this.personalRole = personalRole;
 	}
 
+	public boolean isAllPermissions() {
+		return allPermissions;
+	}
+
+	public void setAllPermissions(boolean allPermissions) {
+		this.allPermissions = allPermissions;
+	}
+
+	public void setPersonalRole(Boolean personalRole) {
+		this.personalRole = personalRole;
+	}
+
+	
 	
 }

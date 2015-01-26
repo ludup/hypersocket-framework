@@ -15,8 +15,16 @@ public enum AuthenticationPermission implements PermissionType {
 
 	private final String val;
 
-	private AuthenticationPermission(final String val) {
+	private PermissionType[] implies;
+	
+	private AuthenticationPermission(final String val, PermissionType... implies) {
 		this.val = val;
+		this.implies = implies;
+	}
+
+	@Override
+	public PermissionType[] impliesPermissions() {
+		return implies;
 	}
 
 	public String toString() {
@@ -26,6 +34,16 @@ public enum AuthenticationPermission implements PermissionType {
 	@Override
 	public String getResourceKey() {
 		return val;
+	}
+	
+	@Override
+	public boolean isSystem() {
+		return false;
+	}
+
+	@Override
+	public boolean isHidden() {
+		return false;
 	}
 
 }

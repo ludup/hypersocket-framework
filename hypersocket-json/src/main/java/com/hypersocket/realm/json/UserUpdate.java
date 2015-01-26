@@ -7,17 +7,25 @@
  ******************************************************************************/
 package com.hypersocket.realm.json;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
 import com.hypersocket.properties.json.PropertyItem;
 
-@XmlRootElement(name="user")
 public class UserUpdate {
 
 	String name;
 	Long id;
 	Long[] groups;
+	
+	String password;
+	boolean forceChange;
 	PropertyItem[] properties;
+
+	public PropertyItem[] getProperties() {
+		return properties;
+	}
+
+	public void setProperties(PropertyItem[] properties) {
+		this.properties = properties;
+	}
 	
 	public UserUpdate() {
 		
@@ -29,14 +37,6 @@ public class UserUpdate {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public PropertyItem[] getProperties() {
-		return properties;
-	}
-
-	public void setProperties(PropertyItem[] properties) {
-		this.properties = properties;
 	}
 
 	public Long getId() {
@@ -53,6 +53,22 @@ public class UserUpdate {
 	
 	public Long[] getGroups() {
 		return groups;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public boolean isForceChange() {
+		return forceChange;
+	}
+
+	public void setForceChange(boolean forceChange) {
+		this.forceChange = forceChange;
 	}
 
 	

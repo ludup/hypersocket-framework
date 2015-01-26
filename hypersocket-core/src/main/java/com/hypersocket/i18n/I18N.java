@@ -20,11 +20,13 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -42,7 +44,7 @@ public class I18N {
 	private I18N() {
 	}
 
-	public static ResourceBundle getResourceBundle(Locale locale,
+	public static Set<String> getResourceKeys(Locale locale,
 			String resourceBundle) {
 		if (resourceBundle == null) {
 			throw new IllegalArgumentException(
@@ -54,22 +56,25 @@ public class I18N {
 			bundle = "i18n/" + resourceBundle;
 		}
 
+		Set<String> keys = new HashSet<String>();
 		try {
-			return ResourceBundle.getBundle(bundle, locale,
+			ResourceBundle rb = ResourceBundle.getBundle(bundle, locale,
 					I18N.class.getClassLoader());
+			keys.addAll(rb.keySet());
 		} catch (MissingResourceException e) {
-			if(hasOverideBundle(locale, resourceBundle)) {
-				try {
-					return new OverrideResourceBundle(locale, resourceBundle);
-				} catch (IOException e1) {
-					log.error("Failed to load override file for bundle " + resourceBundle);
-				}
-			} 
-			
-			throw e;
-			
+				
 		}
+		
+		if(hasOverideBundle(locale, resourceBundle)) {
+			try {
+				ResourceBundle rb = new OverrideResourceBundle(locale, resourceBundle);
+				keys.addAll(rb.keySet());
+			} catch (IOException e1) {
+				log.error("Failed to load override file for bundle " + resourceBundle);
+			}
+		} 
 
+		return keys;
 	}
 	
 	public static void overrideMessage(Locale locale, Message message) {
@@ -92,17 +97,41 @@ public class I18N {
 
 	}
 	
-	public static void flushOverrides() throws IOException {
+	public static void removeOverrideMessage(Locale locale, Message message) {
+		
+		File overrideFile = getOverrideFile(locale, message.getBundle());
+		if (!overideProperties.containsKey(overrideFile)) {
+			overideProperties.put(overrideFile, new Properties());
+			
+			if(overrideFile.exists()) {
+				Properties p = overideProperties.get(overrideFile);
+				try {
+					p.load(new FileInputStream(overrideFile));
+				} catch (IOException e) {
+				}
+			}
+		}
+		
+		Properties properties = overideProperties.get(overrideFile);
+		properties.remove(message.getId());
+
+	}
+
+	public static void flushOverrides() {
 		
 		for(File f : overideProperties.keySet()) {
-			Properties properties = overideProperties.get(f);
-			f.getParentFile().mkdirs();
-			f.createNewFile();
-			FileOutputStream out = new FileOutputStream(f);
 			try {
-				properties.store(out, "Hypersocket message bundle override file");
-			} finally {
-				FileUtils.closeQuietly(out);
+				Properties properties = overideProperties.get(f);
+				f.getParentFile().mkdirs();
+				f.createNewFile();
+				FileOutputStream out = new FileOutputStream(f);
+				try {
+					properties.store(out, "Hypersocket message bundle override file");
+				} finally {
+					FileUtils.closeQuietly(out);
+				}
+			} catch (IOException e) {
+				log.error("Failed to flush override file " + f.getName(), e);
 			}
 		}
 	}
@@ -181,8 +210,7 @@ public class I18N {
 			messageFormat.setLocale(locale);
 			return messageFormat.format(formatParameters(arguments));
 		} catch (MissingResourceException mre) {
-			throw new IllegalArgumentException("Missing resource in "
-					+ resourceBundle + " for key " + key);
+			return "[i18n/" + resourceBundle + "/" + key + "]";
 		}
 	}
 	
@@ -212,8 +240,7 @@ public class I18N {
 			messageFormat.setLocale(locale);
 			return messageFormat.format(formatParameters(arguments));
 		} catch (MissingResourceException mre) {
-			throw new IllegalArgumentException("Missing resource in "
-					+ resourceBundle + " for key " + key);
+			return "[i18n/" + resourceBundle + "/" + key + "]";
 		}
 	}
 

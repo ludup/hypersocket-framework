@@ -11,9 +11,9 @@ import java.util.List;
 
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.repository.AbstractRepository;
+import com.hypersocket.repository.AbstractEntityRepository;
 
-public interface SessionRepository extends AbstractRepository<String> {
+public interface SessionRepository extends AbstractEntityRepository<Session,String> {
 
 	public Session createSession(String remoteAddress, 
 			Principal principal, 
@@ -29,4 +29,6 @@ public interface SessionRepository extends AbstractRepository<String> {
 	public void updateSession(Session session);
 
 	public List<Session> getActiveSessions();
+
+	List<Session> getSystemSessions();
 }

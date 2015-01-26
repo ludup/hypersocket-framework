@@ -8,7 +8,15 @@
 package com.hypersocket.netty;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -17,11 +25,18 @@ import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelException;
+import org.jboss.netty.channel.ChannelHandler;
+import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.ipfilter.IpFilterRule;
+import org.jboss.netty.handler.ipfilter.IpFilterRuleHandler;
+import org.jboss.netty.handler.ipfilter.IpSubnetFilterRule;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
@@ -44,6 +59,11 @@ public class NettyServer extends HypersocketServerImpl {
 	
 	ExecutorService bossExecutor;
 	ExecutorService workerExecutors;
+	
+	IpFilterRuleHandler ipFilterHandler =  new IpFilterRuleHandler();
+	MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
+	Set<IpFilterRule> ipRules = new HashSet<IpFilterRule>();
+	Map<InetAddress,List<Channel>> channelsByIPAddress = new HashMap<InetAddress,List<Channel>>();
 	
 	public NettyServer() {
 
@@ -88,6 +108,8 @@ public class NettyServer extends HypersocketServerImpl {
 				if(Boolean.getBoolean("hypersocket.netty.debug")) {
 					pipeline.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
 				}
+				pipeline.addLast("ipFilter", ipFilterHandler);
+				pipeline.addLast("channelMonitor", monitorChannelHandler);
 				pipeline.addLast("switcherA", new SSLSwitchingHandler(
 						NettyServer.this, getHttpPort(), getHttpsPort()));
 				return pipeline;
@@ -148,7 +170,8 @@ public class NettyServer extends HypersocketServerImpl {
 	@Override
 	public void connect(TCPForwardingClientCallback callback) {
 
-		clientBootstrap.connect(new InetSocketAddress(callback.getHostname(), callback.getPort())).addListener(
+		clientBootstrap.connect(
+				new InetSocketAddress(callback.getHostname(), callback.getPort())).addListener(
 				new ClientConnectCallbackImpl(callback));
 
 	}
@@ -216,4 +239,86 @@ public class NettyServer extends HypersocketServerImpl {
 		
 	}
 
+	public ChannelHandler getIpFilter() {
+		return ipFilterHandler;
+	}
+	
+	@Override
+	public boolean canConnect(InetAddress addr) {
+		for(IpFilterRule rule : ipRules) {
+			if(rule.contains(addr)) {
+				return false;
+			}
+		} 
+		return true;
+	}
+
+	@Override
+	public void blockAddress(String addr) throws UnknownHostException {
+		if(addr.indexOf('/')==-1) {
+			addr += "/0";
+		}
+		
+		IpFilterRule rule = new IpSubnetFilterRule(false, addr);
+		ipFilterHandler.add(rule);
+		ipRules.add(rule);
+		
+		synchronized (channelsByIPAddress) {
+			if(channelsByIPAddress.containsKey(addr)) {
+				for(Channel c : channelsByIPAddress.get(addr)) {
+					c.close();
+				}
+			}
+		}
+	}
+
+	@Override
+	public void unblockAddress(String addr) throws UnknownHostException {
+		if(addr.indexOf('/')==-1) {
+			addr += "/0";
+		}
+		
+		IpFilterRule rule = new IpSubnetFilterRule(false, addr);
+		ipFilterHandler.remove(rule);
+		ipRules.remove(rule);
+	}
+
+	class MonitorChannelHandler extends SimpleChannelHandler {
+
+		@Override
+		public void channelBound(ChannelHandlerContext ctx, ChannelStateEvent e)
+				throws Exception {
+			InetAddress addr = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getAddress();
+			
+			if(log.isDebugEnabled()) {
+				log.debug("Opening channel from " + addr.toString());
+			}
+			
+			synchronized (channelsByIPAddress) {
+				if(!channelsByIPAddress.containsKey(addr)) {
+					channelsByIPAddress.put(addr, new ArrayList<Channel>());
+				}
+				channelsByIPAddress.get(addr).add(ctx.getChannel());				
+			}
+
+		}
+
+		@Override
+		public void channelUnbound(ChannelHandlerContext ctx,
+				ChannelStateEvent e) throws Exception {
+			InetAddress addr = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getAddress();
+			
+			if(log.isDebugEnabled()) {
+				log.debug("Closing channel from " + addr.toString());
+			}
+			
+			synchronized (channelsByIPAddress) {
+				channelsByIPAddress.get(addr).remove(ctx.getChannel());
+				if(channelsByIPAddress.get(addr).isEmpty()) {
+					channelsByIPAddress.remove(addr);
+				}
+			}
+			
+		}
+	}
 }

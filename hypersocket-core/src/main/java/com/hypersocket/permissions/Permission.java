@@ -23,8 +23,7 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.repository.AbstractEntity;
 
 @Entity
@@ -46,6 +45,9 @@ public class Permission extends AbstractEntity<Long> {
 
 	@Column(name="hidden", nullable=false)
 	boolean hidden;
+	
+	@Column(name="system", nullable=false)
+	boolean system;
 	
 	@ManyToMany(fetch=FetchType.EAGER)
 	@JoinTable(name = "role_permissions", joinColumns={@JoinColumn(name="permission_id")}, inverseJoinColumns={@JoinColumn(name="role_id")})
@@ -88,6 +90,14 @@ public class Permission extends AbstractEntity<Long> {
 	@JsonIgnore
 	public Set<Role> getRoles() {
 		return roles;
+	}
+
+	public void setSystem(boolean system) {
+		this.system = system;
+	}
+	
+	public boolean isSystem() {
+		return system;
 	}
 	
 }

@@ -8,6 +8,9 @@
 package com.hypersocket.auth;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -35,6 +38,8 @@ import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
+import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
@@ -44,9 +49,12 @@ import com.hypersocket.session.SessionService;
 public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		implements AuthenticationService {
 
-	public static final String DEFAULT_AUTHENTICATION_SCHEME = "Default";
-	public static final String HTTP_AUTHENTICATION_SCHEME = "HTTP";
+	public static final String BROWSER_AUTHENTICATION_SCHEME = "Browser";
+	public static final String BROWSER_AUTHENTICATION_RESOURCE_KEY = "basic";
 
+	public static final String ANONYMOUS_AUTHENTICATION_SCHEME = "Anonymous";
+	public static final String ANONYMOUS_AUTHENTICATION_RESOURCE_KEY = "anonymous";
+	
 	private static Logger log = LoggerFactory
 			.getLogger(AuthenticationServiceImpl.class);
 
@@ -54,10 +62,16 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	PermissionService permissionService;
 
 	@Autowired
-	AuthenticationRepository repository;
+	AuthenticationModuleRepository repository;
+
+	@Autowired
+	AuthenticationSchemeRepository schemeRepository;
 
 	@Autowired
 	SessionService sessionService;
+
+	@Autowired
+	RealmRepository realmRepository;
 
 	@Autowired
 	RealmService realmService;
@@ -91,11 +105,56 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 						"category.authentication");
 
 		logonPermission = permissionService.registerPermission(
-				AuthenticationPermission.LOGON.toString(), authentication);
+				AuthenticationPermission.LOGON, authentication);
 
-		eventService.registerEvent(AuthenticationEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(AuthenticationAttemptEvent.class,
+				RESOURCE_BUNDLE);
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
+
+		setupRealms();
+	}
+
+	private void setupRealms() {
+
+		realmService.registerRealmListener(new RealmAdapter() {
+
+			@Override
+			public boolean hasCreatedDefaultResources(Realm realm) {
+				return schemeRepository.getSchemeByResourceKeyCount(realm,
+						BROWSER_AUTHENTICATION_RESOURCE_KEY) > 0;
+			}
+
+			@Override
+			public void onCreateRealm(Realm realm) {
+
+				if (log.isInfoEnabled()) {
+					log.info("Creating " + ANONYMOUS_AUTHENTICATION_SCHEME
+							+ " authentication scheme for realm "
+							+ realm.getName());
+				}
+				
+				List<String> modules = new ArrayList<String>();
+				schemeRepository.createScheme(realm,
+						ANONYMOUS_AUTHENTICATION_SCHEME, modules,
+						ANONYMOUS_AUTHENTICATION_RESOURCE_KEY, true,
+						0, AuthenticationModuleType.HIDDEN);
+
+				if (log.isInfoEnabled()) {
+					log.info("Creating " + BROWSER_AUTHENTICATION_SCHEME
+							+ " authentication scheme for realm "
+							+ realm.getName());
+				}
+				
+				modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
+				schemeRepository.createScheme(realm,
+						BROWSER_AUTHENTICATION_SCHEME, modules,
+						BROWSER_AUTHENTICATION_RESOURCE_KEY, false,
+						10, AuthenticationModuleType.HTML);
+
+			}
+		});
+
 	}
 
 	@Override
@@ -119,9 +178,14 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
+	public Authenticator getAuthenticator(String resourceKey) {
+		return authenticators.get(resourceKey);
+	}
+
+	@Override
 	public AuthenticationScheme getDefaultScheme(String remoteAddress,
 			Map<String, String> environment, Realm realm) {
-		List<AuthenticationScheme> schemes = repository.allSchemes();
+		List<AuthenticationScheme> schemes = schemeRepository.allSchemes(realm);
 		if (schemes.size() == 0)
 			throw new IllegalArgumentException(
 					"There are no authentication schemes configured!");
@@ -129,24 +193,30 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
-	public boolean isAuthenticatorInScheme(String scheme, String resourceKey) {
-		
-		AuthenticationScheme s = repository.getScheme(scheme);
-		for(AuthenticationModule m : repository.getAuthenticationModulesByScheme(s)) {
-			if(m.getTemplate().equals(resourceKey)) {
+	public boolean isAuthenticatorInScheme(Realm realm,
+			String schemeResourceKey, String resourceKey) {
+
+		AuthenticationScheme s = schemeRepository.getSchemeByResourceKey(realm,
+				schemeResourceKey);
+		for (AuthenticationModule m : repository
+				.getAuthenticationModulesByScheme(s)) {
+			if (m.getTemplate().equals(resourceKey)) {
 				return true;
 			}
 		}
 		return false;
 	}
+
 	@Override
-	public AuthenticationScheme getAuthenticationScheme(String scheme) {
-		return repository.getScheme(scheme);
+	public AuthenticationScheme getSchemeByResourceKey(Realm realm,
+			String resourceKey) throws AccessDeniedException {
+		return schemeRepository.getSchemeByResourceKey(realm, resourceKey);
 	}
 
 	@Override
-	public AuthenticationState createAuthenticationState(String scheme,
-			String remoteAddress, Map<String, Object> environment, Locale locale)
+	public AuthenticationState createAuthenticationState(
+			String schemeResourceKey, String remoteAddress,
+			Map<String, Object> environment, Locale locale)
 			throws AccessDeniedException {
 
 		AuthenticationState state = new AuthenticationState(remoteAddress,
@@ -191,7 +261,22 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 			}
 		}
 
-		state.setScheme(getAuthenticationScheme(scheme));
+		if (state.getRealm() == null) {
+			state.setRealm(realmService.getDefaultRealm());
+		}
+
+		AuthenticationScheme scheme = getSchemeByResourceKey(state.getRealm(),
+				schemeResourceKey);
+		if (scheme == null) {
+			if (log.isWarnEnabled()) {
+				log.warn(schemeResourceKey
+						+ " is not a valid authentication scheme");
+			}
+			scheme = getSchemeByResourceKey(
+					state.getRealm(),
+					AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY);
+		}
+		state.setScheme(scheme);
 		state.setModules(repository.getModulesForScheme(state.getScheme()));
 
 		return state;
@@ -206,50 +291,66 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		state.setLastErrorIsResourceKey(false);
 
 		boolean success = false;
-		
+
 		if (state.isAuthenticationComplete()) {
 
-			if (state.getCurrentPostAuthenticationStep() == null) {
-				state.setSession(completeLogon(state));
-			} else {
-				switch (state.getCurrentPostAuthenticationStep().process(state,
-						parameterMap)) {
-				case INSUFFICIENT_DATA: {
-					state.setLastErrorMsg("error.insufficentData");
-					state.setLastErrorIsResourceKey(true);
-					break;
-				}
-				case AUTHENTICATION_SUCCESS: {
+			if(state.getSession()!=null) {
+				setCurrentSession(state.getSession(), state.getLocale());
+			}
+			
+			try {
+				if (state.getCurrentPostAuthenticationStep() != null) {
 
-					state.nextPostAuthenticationStep();
-					success = true;
-					if (!state.hasPostAuthenticationStep()) {
-						state.setSession(completeLogon(state));
+					switch (state.getCurrentPostAuthenticationStep().process(
+							state, parameterMap)) {
+					case INSUFFICIENT_DATA: {
+						if (state.getLastErrorMsg() == null) {
+							state.setLastErrorMsg("error.insufficentData");
+							state.setLastErrorIsResourceKey(true);
+						}
+						break;
 					}
+					case AUTHENTICATION_SUCCESS: {
 
-					break;
+						state.nextPostAuthenticationStep();
+						
+						if(state.canCreateSession()) {
+							state.setSession(completeLogon(state));
+						}
+						
+						if(state.hasPostAuthenticationStep()) {
+							PostAuthenticationStep step = state.getCurrentPostAuthenticationStep();
+							if(!step.requiresUserInput(state)) {
+								success = logon(state, parameterMap);
+							}
+						}
+						success = true;
+						break;
+					}
+					default: {
+						state.setLastErrorMsg("error.genericLogonError");
+						state.setLastErrorIsResourceKey(true);
+						break;
+					}
+					}
 				}
-				default: {
-					state.setLastErrorMsg("error.genericLogonError");
-					state.setLastErrorIsResourceKey(true);
-					break;
-				}
-				}
+			} finally {
+				clearPrincipalContext();
 			}
 		} else {
 			Authenticator authenticator = authenticators.get(state
 					.getCurrentModule().getTemplate());
-
+			
 			if (authenticator.isSecretModule()
 					&& state.getPrincipal() instanceof AuthenticationState.FakePrincipal) {
 				state.setLastErrorMsg("error.genericLogonError");
 				state.setLastErrorIsResourceKey(true);
-				eventService.publishEvent(new AuthenticationEvent(this, state,
-						authenticator, "hint.invalidPrincipal"));
+				eventService.publishEvent(new AuthenticationAttemptEvent(this,
+						state, authenticator, "hint.invalidPrincipal"));
 			} else {
 				switch (authenticator.authenticate(state, parameterMap)) {
 				case INSUFFICIENT_DATA: {
-					if (!state.isNew()) {
+					if (state.getAttempts() >= 1) {
 						state.setLastErrorMsg("error.insufficentData");
 						state.setLastErrorIsResourceKey(true);
 					}
@@ -263,8 +364,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 					} else {
 						state.setLastErrorMsg("error.genericLogonError");
 						state.setLastErrorIsResourceKey(true);
-						eventService.publishEvent(new AuthenticationEvent(this,
-								state, authenticator, "hint.badCredentials"));
+						eventService
+								.publishEvent(new AuthenticationAttemptEvent(
+										this, state, authenticator,
+										"hint.badCredentials"));
 					}
 
 					break;
@@ -277,8 +380,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 					} else {
 						state.setLastErrorMsg("error.genericLogonError");
 						state.setLastErrorIsResourceKey(true);
-						eventService.publishEvent(new AuthenticationEvent(this,
-								state, authenticator, "hint.invalidPrincipal"));
+						eventService
+								.publishEvent(new AuthenticationAttemptEvent(
+										this, state, authenticator,
+										"hint.invalidPrincipal"));
 					}
 					break;
 				}
@@ -290,42 +395,68 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 					} else {
 						state.setLastErrorMsg("error.genericLogonError");
 						state.setLastErrorIsResourceKey(true);
-						eventService.publishEvent(new AuthenticationEvent(this,
-								state, authenticator, "hint.invalidRealm"));
+						eventService
+								.publishEvent(new AuthenticationAttemptEvent(
+										this, state, authenticator,
+										"hint.invalidRealm"));
 					}
 
 					break;
 				}
 				case AUTHENTICATION_SUCCESS: {
 					try {
-						permissionService.verifyPermission(
-								state.getPrincipal(),
-								PermissionStrategy.REQUIRE_ANY,
-								AuthenticationPermission.LOGON,
-								SystemPermission.SYSTEM_ADMINISTRATION);
-
-						eventService.publishEvent(new AuthenticationEvent(this,
-								state, authenticator));
-
 						success = true;
-						
+
 						state.nextModule();
 
 						if (state.isAuthenticationComplete()) {
 
-							for (PostAuthenticationStep proc : postAuthenticationSteps) {
-								if (proc.requiresProcessing(state)) {
-									state.addPostAuthenticationStep(proc);
+							permissionService.verifyPermission(
+									state.getPrincipal(),
+									PermissionStrategy.INCLUDE_IMPLIED,
+									AuthenticationPermission.LOGON,
+									SystemPermission.SYSTEM_ADMINISTRATION);
+
+							if(!realmService.verifyPrincipal(state.getPrincipal())) {
+								
+								eventService.publishEvent(new AuthenticationAttemptEvent(
+										this, state, authenticator,
+										"hint.accountSuspended"));
+								
+								// Principal is currently suspended from logon
+								state.setLastErrorMsg("error.accountSuspended");
+								state.setLastErrorIsResourceKey(true);
+								success = false;
+							} else {
+								
+
+								eventService.publishEvent(new AuthenticationAttemptEvent(
+										this, state, authenticator));
+								
+								for (PostAuthenticationStep proc : postAuthenticationSteps) {
+									if (proc.requiresProcessing(state)) {
+											state.addPostAuthenticationStep(proc);
+									}
 								}
-							}
-							if (!state.hasPostAuthenticationStep()) {
-								state.setSession(completeLogon(state));
+	
+								if(state.canCreateSession()) {
+									state.setSession(completeLogon(state));
+								}
+								
+								if(state.hasPostAuthenticationStep()) {
+									PostAuthenticationStep step = state.getCurrentPostAuthenticationStep();
+									if(!step.requiresUserInput(state)) {
+										success = logon(state, parameterMap);
+									}
+								}
 							}
 						}
 					} catch (AccessDeniedException e) {
 
-						eventService.publishEvent(new AuthenticationEvent(this,
-								state, authenticator, "hint.noPermission"));
+						eventService
+								.publishEvent(new AuthenticationAttemptEvent(
+										this, state, authenticator,
+										"hint.noPermission"));
 						// user does not have LOGON permission
 						state.setLastErrorMsg("error.noLogonPermission");
 						state.setLastErrorIsResourceKey(true);
@@ -335,11 +466,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 				}
 			}
 
-			if (!state.isAuthenticationComplete())
-				state.authAttempted();
+			state.authAttempted();
 
 		}
-		
+
 		return success;
 	}
 
@@ -362,6 +492,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 
 	protected FormTemplate modifyTemplate(AuthenticationState state,
 			FormTemplate template) {
+
 		for (AuthenticationServiceListener l : listeners) {
 			l.modifyTemplate(state, template);
 		}
@@ -378,8 +509,13 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 		}
 
 		Session session = sessionService.openSession(state.getRemoteAddress(),
-				state.getPrincipal(), state.getScheme(), state.getUserAgent());
+				state.getPrincipal(), state.getScheme(), state.getUserAgent(),
+				state.getParameters());
 
+		if (state.hasParameter("password")) {
+			sessionService.setCurrentPassword(session,
+					state.getParameter("password"));
+		}
 		return session;
 	}
 
@@ -405,20 +541,95 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	public void registerPostAuthenticationStep(
 			PostAuthenticationStep postAuthenticationStep) {
 		postAuthenticationSteps.add(postAuthenticationStep);
+
+		Collections.sort(postAuthenticationSteps,
+				new Comparator<PostAuthenticationStep>() {
+					@Override
+					public int compare(PostAuthenticationStep o1,
+							PostAuthenticationStep o2) {
+						return new Integer(o1.getOrderPriority()).compareTo(o2
+								.getOrderPriority());
+					}
+				});
 	}
 
 	@Override
-	public Map<String, Authenticator> getAuthenticators(String scheme) {
+	public Map<String, Authenticator> getAuthenticators(String schemeResourceKey) {
 		Map<String, Authenticator> tmp = new HashMap<String, Authenticator>();
-		for(Authenticator a : authenticators.values()) {
-			for(String s : a.getAllowedSchemes()) {
-				if(scheme.matches(s)) {
+		AuthenticationScheme scheme =schemeRepository.getSchemeByResourceKey(getCurrentRealm(), schemeResourceKey);
+		
+		for (Authenticator a : authenticators.values()) {
+			
+			if(scheme.getType()!=AuthenticationModuleType.CUSTOM) {
+				if(scheme.getType().ordinal() >= a.getType().ordinal()) {
 					tmp.put(a.getResourceKey(), a);
-					break;
+				}
+			} else {
+				if(scheme.getAllowedModules()==null) {
+					throw new IllegalStateException("CUSTOM authentication scheme type must declare allowed modules");
+				}
+				for (String s : scheme.getAllowedModules().split(",")) {
+					if (a.getResourceKey().matches(s)) {
+						tmp.put(a.getResourceKey(), a);
+						break;
+					}
 				}
 			}
 		}
 		return tmp;
+	}
+
+	@Override
+	public Realm resolveRealm(AuthenticationState state, String username)
+			throws AccessDeniedException {
+
+		Realm realm = state.getRealm();
+		String realmName = realm.getName();
+
+		// Set before we manipulate it
+		state.setLastPrincipalName(username);
+
+		if (!realmService.isRealmStrictedToHost(realm)) {
+
+			// Can we extract realm from username?
+			int idx;
+			idx = username.indexOf('\\');
+			if (idx > -1) {
+				realmName = username.substring(0, idx);
+				username = username.substring(idx + 1);
+			} else {
+				idx = username.indexOf('@');
+				if (idx > -1) {
+					realmName = username.substring(idx + 1);
+					username = username.substring(0, idx);
+				}
+			}
+
+			if (realmName != null) {
+				realm = realmService.getRealmByName(realmName);
+			}
+		}
+
+		state.setLastRealmName(realmName);
+
+		return realm;
+	}
+
+	@Override
+	public Session logonAnonymous(String remoteAddress, String userAgent,
+			Map<String, String> parameters) throws AccessDeniedException {
+
+		Session session = sessionService.openSession(remoteAddress,
+				realmService.getSystemPrincipal(), schemeRepository
+						.getSchemeByResourceKey(realmService.getSystemRealm(),
+								ANONYMOUS_AUTHENTICATION_RESOURCE_KEY),
+				userAgent, parameters);
+		return session;
+	}
+
+	@Override
+	public Collection<PostAuthenticationStep> getPostAuthenticationSteps() {
+		return new ArrayList<PostAuthenticationStep>(postAuthenticationSteps);
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.hypersocket.tables;
 
+import java.util.Collection;
 import java.util.List;
 
 public class DataTablesResult {
@@ -7,9 +8,9 @@ public class DataTablesResult {
 	int sEcho = 1;
 	String iTotalRecords;
 	String iTotalDisplayRecords;
-	List<?> aaData;
+	Collection<?> aaData;
 	
-	public DataTablesResult(List<?> aaData, long totalRecords, int sEcho) {
+	public DataTablesResult(Collection<?> aaData, long totalRecords, int sEcho) {
 		this.aaData = aaData;
 		this.sEcho = sEcho;
 		iTotalRecords = String.valueOf(totalRecords);
@@ -39,8 +40,8 @@ public class DataTablesResult {
 	public void setiTotalDisplayRecords(String iTotalDisplayRecords) {
 		this.iTotalDisplayRecords = iTotalDisplayRecords;
 	}
-
-	public List<?> getAaData() {
+	
+	public Collection<?> getAaData() {
 		return aaData;
 	}
 

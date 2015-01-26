@@ -1,14 +1,18 @@
 package com.hypersocket.resource;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Principal;
@@ -16,10 +20,10 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.tables.ColumnSort;
 
-@Repository
+@Service
 public abstract class AbstractAssignableResourceServiceImpl<T extends AssignableResource>
 		extends AuthenticatedServiceImpl implements
-		AbstractAssignableResourceService<T> {
+		AbstractAssignableResourceService<T>, EventPropertyCollector {
 
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
@@ -62,9 +66,14 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 							+ getPermissionType().getName());
 		}
 	}
+	
+	@Override
+	public Set<String> getPropertyNames(String resourceKey, Realm realm) {
+		return getRepository().getPropertyNames();
+	}
 
 	@Override
-	public void createResource(T resource) throws ResourceCreationException,
+	public void createResource(T resource, Map<String,String> properties) throws ResourceCreationException,
 			AccessDeniedException {
 
 		assertPermission(getCreatePermission());
@@ -77,14 +86,12 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			throw ex;
 		} catch (ResourceNotFoundException ex) {
 			try {
-				// Make sure any resources in default realm
-				// (system) are available across all realms
-				if (getCurrentRealm().isSystem()) {
-					resource.setRealm(null);
-				} else {
+				if(resource.getRealm()==null) {
 					resource.setRealm(getCurrentRealm());
 				}
-				getRepository().saveResource(resource);
+				beforeCreateResource(resource, properties);
+				getRepository().saveResource(resource, properties);
+				afterCreateResource(resource, properties);
 				fireResourceCreationEvent(resource);
 			} catch (Throwable t) {
 				log.error("Failed to create resource", t);
@@ -100,16 +107,37 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 	}
 
+	protected void beforeCreateResource(T resource, Map<String,String> properties) throws ResourceCreationException {
+		
+	}
+
+	protected void afterCreateResource(T resource, Map<String,String> properties) throws ResourceCreationException {
+		
+	}
+	
+	protected void beforeUpdateResource(T resource, Map<String,String> properties) throws ResourceChangeException {
+		
+	}
+	
+	protected void afterUpdateResource(T resource, Map<String,String> properties) throws ResourceChangeException {
+		
+	}
+	
 	protected abstract void fireResourceCreationEvent(T resource);
 
 	protected abstract void fireResourceCreationEvent(T resource, Throwable t);
 
-	public void updateResource(T resource) throws ResourceChangeException,
+	public void updateResource(T resource, Map<String,String> properties) throws ResourceChangeException,
 			AccessDeniedException {
 		assertPermission(getUpdatePermission());
 
 		try {
-			getRepository().saveResource(resource);
+			if(resource.getRealm()==null) {
+				resource.setRealm(getCurrentRealm());
+			}
+			beforeUpdateResource(resource, properties);
+			getRepository().saveResource(resource, properties);
+			afterUpdateResource(resource, properties);
 			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {
 			fireResourceUpdateEvent(resource, t);
@@ -122,6 +150,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		}
 	}
 
+	
 	protected abstract void fireResourceUpdateEvent(T resource);
 
 	protected abstract void fireResourceUpdateEvent(T resource, Throwable t);
@@ -161,15 +190,24 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 
 	@Override
-	public List<T> searchPersonalResources(Principal principal, String search, int start,
+	public List<T> getResources() {
+		return getRepository().getResources(getCurrentRealm());
+	}
+	
+	public List<T> allResources() {
+		return getRepository().allResources();
+	}
+	
+	@Override
+	public Collection<T> searchPersonalResources(Principal principal, String search, int start,
 			int length, ColumnSort[] sorting) {
 
 		return getRepository().searchAssignedResources(principal, search, start, length, sorting);
 	}
 	
 	@Override
-	public List<T> getPersonalResources(Principal principal) {
-		return getRepository().getAssignedResources(principal);
+	public Collection<T> getPersonalResources(Principal principal) throws AccessDeniedException {
+		return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(principal));
 	}
 	
 	@Override
@@ -197,13 +235,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 
 	@Override
-	public List<T> getResources() {
-		return getRepository().getResources();
-	}
-
-	@Override
 	public T getResourceByName(String name) throws ResourceNotFoundException {
-		T resource = getRepository().getResourceByName(name);
+		T resource = getRepository().getResourceByName(name, getCurrentRealm());
 		if (resource == null) {
 			throw new ResourceNotFoundException(getResourceBundle(),
 					"error.invalidResourceName", name);
@@ -222,7 +255,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 
 	@Override
-	public List<T> getResources(Principal principal)
+	public Collection<T> getResources(Principal principal)
 			throws AccessDeniedException {
 
 		if (log.isDebugEnabled()) {
@@ -230,7 +263,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 					+ principal.getRealm() + "/" + principal.getPrincipalName());
 		}
 
-		return getRepository().getAssigedResources(
+		return getRepository().getAssignedResources(
 				realmService.getAssociatedPrincipals(principal));
 	}
 

@@ -1,8 +1,19 @@
 <?xml version="1.0" ?>
 <propertyTemplates context="realm">
 	<propertyCategory resourceKey="realm.options"
-		resourceBundle="RealmService" weight="999999">
-		<property resourceKey="realm.host" inputType="text"
+		resourceBundle="RealmService" weight="99999">
+		<property resourceKey="realm.hostRestriction" inputType="switch"
+			defaultValue="false" weight="0" />
+		<property resourceKey="realm.host" inputType="multipleTextInput"
 			defaultValue="" weight="0" />
+	</propertyCategory>
+	<propertyCategory resourceKey="realm.userProfiles"
+		resourceBundle="RealmService" weight="999999">
+		<property resourceKey="realm.userEditableProperties" inputType="multipleSelect" 
+			includedLabelResourceKey="text.editable" excludedLabelResourceKey="text.notEditable"
+		    url="realms/realm/templateNames/{id}" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>
+		<property resourceKey="realm.userVisibleProperties" inputType="multipleSelect" 
+			includedLabelResourceKey="text.visible" excludedLabelResourceKey="text.notVisible"
+		    url="realms/realm/templateNames/{id}" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>
 	</propertyCategory>
 </propertyTemplates>

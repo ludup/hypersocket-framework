@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.hypersocket.auth.AuthenticatedService;
+import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceChangeException;
@@ -23,11 +24,6 @@ public interface PermissionService extends AuthenticatedService {
 	
 	public PermissionCategory registerPermissionCategory(String resourceBundle, String resourceKey);
 
-	public Permission registerPermission(String resourceKey, PermissionCategory category);
-
-	public Permission registerPermission(String resourceKey,
-			PermissionCategory category, boolean hidden);
-	
 	public Permission getPermission(String resourceKey);
 	
 	public Role createRole(String name, Realm realm) throws AccessDeniedException;
@@ -38,11 +34,11 @@ public interface PermissionService extends AuthenticatedService {
 
 	Set<Principal> getUsersWithPermissions(PermissionType permissions);
 
-	Role getRole(String name, Realm realm) throws ResourceNotFoundException;
+	Role getRole(String name, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
 
 	void deleteRole(Role name) throws ResourceChangeException, AccessDeniedException;
 
-	List<Role> allRoles(Realm realm);
+	List<Role> allRoles(Realm realm) throws AccessDeniedException;
 
 	public List<Permission> allPermissions();
 
@@ -52,11 +48,11 @@ public interface PermissionService extends AuthenticatedService {
 	Role updateRole(Role role, String name,
 			List<Principal> principals, List<Permission> permissions) throws AccessDeniedException;
 
-	public Role getRoleById(Long id, Realm realm) throws ResourceNotFoundException;
+	public Role getRoleById(Long id, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
 
 	public Permission getPermissionById(Long perm);
 
-	Set<Permission> getPrincipalPermissions(Principal principal);
+	Set<Permission> getPrincipalPermissions(Principal principal) throws AccessDeniedException;
 
 	boolean hasSystemPermission(Principal principal);
 
@@ -66,5 +62,12 @@ public interface PermissionService extends AuthenticatedService {
 			ColumnSort[] sorting) throws AccessDeniedException;
 
 	Role getPersonalRole(Principal principal);
+
+	Set<Role> getPrincipalRoles(Principal principal) throws AccessDeniedException;
+
+	List<PropertyCategory> getRoleTemplates() throws AccessDeniedException;
+
+	Permission registerPermission(PermissionType type,
+			PermissionCategory category);
 
 }

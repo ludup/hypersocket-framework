@@ -1,6 +1,7 @@
 package com.hypersocket.client.gui;
 
 import java.io.File;
+import java.io.IOException;
 import java.rmi.RMISecurityManager;
 
 import org.apache.log4j.BasicConfigurator;
@@ -22,8 +23,17 @@ public class Main {
 	Display display;
 	Shell shell;
 	
+	Runnable restartCallback;
+	Runnable shutdownCallback;
+	ClassLoader classLoader;
+	static Main instance;
+
+	public Main(Runnable restartCallback, Runnable shutdownCallback) {
+		this.restartCallback = restartCallback;
+		this.shutdownCallback = shutdownCallback;
+	}
 	
-	public void run(String[] args) {
+	public void run() {
 
 		try {
 			if (System.getSecurityManager() == null) {
@@ -36,6 +46,9 @@ public class Main {
 			shell.addListener(SWT.CLOSE, new Listener() {
 				public void handleEvent(Event event) {
 					event.doit = false;
+					if(log.isInfoEnabled()) {
+						log.info("Main shell is trying to close...");
+					}
 				}
 			});
 			
@@ -48,11 +61,25 @@ public class Main {
 			display.dispose();
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.error("Failed to start client", e);
 			System.exit(1);
 		}
 	}
 
+	public static Main getInstance() {
+		return instance;
+	}
+	
+	public void restart() {
+		restartCallback.run();
+	}
+	
+	public void shutdown() {
+		shutdownCallback.run();
+	}
+	
+	
 	/**
 	 * @param args
 	 */
@@ -63,11 +90,46 @@ public class Main {
 			dir.mkdirs();
 			
 			PropertyConfigurator.configure("conf" + File.separator + "log4j-gui.properties");
-			BasicConfigurator.configure();
+
 		} catch (Exception e) {
 			BasicConfigurator.configure();
 		}
-		new Main().run(args);
+		instance = new Main(new DefaultRestartCallback(), new DefaultShutdownCallback());
+		instance.run();
 	}
 
+	public static void runApplication(Runnable restartCallback,
+			Runnable shutdownCallback) throws IOException {
+
+		new Main(restartCallback, shutdownCallback).run();
+
+	}
+	
+	static class DefaultRestartCallback implements Runnable {
+
+		@Override
+		public void run() {
+			
+			if(log.isInfoEnabled()) {
+				log.info("There is no restart mechanism available. Shutting down");
+			}
+			
+			System.exit(0);
+		}
+		
+	}
+	
+	static class DefaultShutdownCallback implements Runnable {
+
+		@Override
+		public void run() {
+			
+			if(log.isInfoEnabled()) {
+				log.info("Shutting down using default shutdown mechanism");
+			}
+			
+			System.exit(0);
+		}
+		
+	}
 }
