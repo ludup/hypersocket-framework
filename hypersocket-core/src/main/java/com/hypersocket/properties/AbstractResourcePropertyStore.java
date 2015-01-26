@@ -5,14 +5,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.binary.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.resource.AbstractResource;
 
 public abstract class AbstractResourcePropertyStore implements ResourcePropertyStore {
 
+	static Logger log = LoggerFactory.getLogger(AbstractResourcePropertyStore.class);
+	
 	Map<String, String> cachedValues = new HashMap<String, String>();
 	Map<String, PropertyTemplate> templates = new HashMap<String, PropertyTemplate>();
 	Map<String, List<PropertyTemplate>> templatesByModule = new HashMap<String, List<PropertyTemplate>>();
 
+	@Autowired
+	PasswordEncryptionService encryptionService; 
+	
 	public AbstractResourcePropertyStore() {
 	}
 
@@ -86,10 +97,27 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 	public void setPropertyValue(AbstractPropertyTemplate template,
 			AbstractResource resource, String value) {
 
-		doSetProperty(template, resource, value);
+		if(template.isEncrypted()) {
+			doSetProperty(template, resource, encryptValue(value));
+		} else {
+			doSetProperty(template, resource, value);
+		}
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
 		cachedValues.remove(cacheKey);
 		cachedValues.put(cacheKey, value);
+	}
+	
+	private String encryptValue(String value) {
+		return value;
+//		try {
+//		byte[] salt = encryptionService.generateSalt();
+//		String encrypted = encryptionService.encrypt(value, salt);
+//		
+//		return "ENC" + Hex.encodeHexString(salt) + encrypted;
+//		} catch(Exception ex) {
+//			log.error("Failed to encrypt property value", ex);
+//			return value;
+//		}
 	}
 
 }
