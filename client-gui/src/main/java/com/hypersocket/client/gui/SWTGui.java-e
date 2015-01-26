@@ -88,6 +88,8 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 	ConnectionsWindow connectionsWindow;
 	ResourcesTree resourcesWindow;
 
+	boolean suspendShellClose = false;
+	
 	protected SWTGui(Display display, Shell shell) throws RemoteException {
 		super();
 		this.display = display;
@@ -469,7 +471,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 
 			public void shellClosed(ShellEvent e) {
 				shell.setVisible(false);
-				e.doit = false;
+				//e.doit = false;
 			}
 
 			public void shellActivated(ShellEvent e) {
