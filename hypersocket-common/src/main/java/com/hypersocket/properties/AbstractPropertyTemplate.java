@@ -1,6 +1,6 @@
 package com.hypersocket.properties;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public abstract class AbstractPropertyTemplate {
 
@@ -9,7 +9,11 @@ public abstract class AbstractPropertyTemplate {
 	String metaData;
 	int weight;
 	boolean hidden;
+	boolean readOnly;
+	boolean encrypted;
 	PropertyCategory category;
+	String mapping;
+	PropertyStore propertyStore;
 	
 	public String getResourceKey() {
 		return resourceKey;
@@ -56,6 +60,14 @@ public abstract class AbstractPropertyTemplate {
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
 	}
+
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
 	
 	@JsonIgnore
 	public PropertyCategory getCategory() {
@@ -65,4 +77,30 @@ public abstract class AbstractPropertyTemplate {
 	public void setCategory(PropertyCategory category) {
 		this.category = category;
 	}
+
+	public String getMapping() {
+		return mapping;
+	}
+
+	public void setMapping(String mapping) {
+		this.mapping = mapping;
+	}
+	
+	public void setPropertyStore(PropertyStore propertyStore) {
+		this.propertyStore = propertyStore;
+	}
+	
+	@JsonIgnore
+	public PropertyStore getPropertyStore() {
+		return propertyStore;
+	}
+	
+	public void setEncrypted(boolean encrypted) {
+		this.encrypted = encrypted;
+	}
+	
+	public boolean isEncrypted() {
+		return encrypted;
+	}
+	
 }

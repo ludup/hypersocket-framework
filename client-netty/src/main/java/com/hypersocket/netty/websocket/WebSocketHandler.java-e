@@ -93,7 +93,9 @@ public class WebSocketHandler extends SimpleChannelUpstreamHandler implements
 				if (log.isDebugEnabled())
 					log.debug("Web socket handshake complete id=" + ctx.getChannel().getId());
 				Channel ch = (Channel) attachment;
-				ch.setReadable(true);
+				if(ch!=null) {
+					ch.setReadable(true);
+				}
 				callback.onConnect(this);
 			} else {
 				callback.onError(new Exception("Handshake did not complete id=" + ctx.getChannel().getId()));

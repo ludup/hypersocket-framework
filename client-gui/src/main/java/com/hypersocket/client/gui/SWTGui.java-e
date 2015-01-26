@@ -10,6 +10,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,20 +35,20 @@ import org.eclipse.swt.widgets.TrayItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.code.jgntp.Gntp;
-import com.google.code.jgntp.GntpApplicationInfo;
 import com.google.code.jgntp.GntpClient;
-import com.google.code.jgntp.GntpErrorStatus;
-import com.google.code.jgntp.GntpListener;
-import com.google.code.jgntp.GntpNotification;
 import com.google.code.jgntp.GntpNotificationInfo;
 import com.google.common.io.Closeables;
 import com.hypersocket.client.Prompt;
 import com.hypersocket.client.i18n.I18N;
+import com.hypersocket.client.rmi.ApplicationLauncher;
+import com.hypersocket.client.rmi.ApplicationLauncherTemplate;
 import com.hypersocket.client.rmi.ClientService;
 import com.hypersocket.client.rmi.ConfigurationService;
 import com.hypersocket.client.rmi.ConnectionService;
 import com.hypersocket.client.rmi.GUICallback;
+import com.hypersocket.client.rmi.Resource;
+import com.hypersocket.client.rmi.ResourceRealm;
+import com.hypersocket.client.rmi.ResourceService;
 
 public class SWTGui extends UnicastRemoteObject implements GUICallback {
 
@@ -70,27 +71,35 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 	MenuItem connectOrDisconnectItem;
 	MenuItem optionsItem;
 	MenuItem connectionsItem;
+	//MenuItem resourcesItem;
+	//MenuItem launchItem;
 	MenuItem exitItem;
-
+	//Menu launchMenu;
+	MenuItem resourcesSeparator;
 	Image offlineImage;
 	Image onlineImage;
 	TrayItem trayItem;
 
 	ConnectionService connectionService;
 	ConfigurationService configurationService;
+	ResourceService resourceService;
+	
 	ClientService clientService;
 	ConnectionsWindow connectionsWindow;
+	ResourcesTree resourcesWindow;
 
+	boolean suspendShellClose = false;
+	
 	protected SWTGui(Display display, Shell shell) throws RemoteException {
 		super();
 		this.display = display;
 		this.shell = shell;
 
-		try {
-			configureGrowl();
-		} catch (Throwable e) {
-			log.error("Failed to start growl", e);
-		}
+//		try {
+//			configureGrowl();
+//		} catch (Throwable e) {
+//			log.error("Failed to start growl", e);
+//		}
 
 		setupSystemTray();
 
@@ -128,22 +137,27 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 				trayItem.setImage(online ? onlineImage : offlineImage);
 				optionsItem.setEnabled(online);
 				connectionsItem.setEnabled(online);
+				//resourcesItem.setEnabled(online);
 			}
 		});
 	}
 
 	public void notify(String msg, int type) {
+
 		switch (type) {
 		case NOTIFY_CONNECT:
 		case NOTIFY_DISCONNECT:
+			
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
 					if (connectionsWindow != null) {
 						connectionsWindow.updateActions();
 					}
+					rebuildLaunchMenu();
 				}
 			});
-
+			
+			
 			break;
 		default:
 			break;
@@ -153,6 +167,62 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 
 	private void showPopupMessage(final String message, final String title) {
 		
+	}
+	
+	private void rebuildLaunchMenu() {
+		
+		Integer previousCount = (Integer) trayMenu.getData();
+		if(previousCount!=null) {
+			List<MenuItem> toDispose = new ArrayList<MenuItem>();
+			for(int i = 0;i < previousCount; i++) {
+				toDispose.add(trayMenu.getItem(i));
+			}
+			for(MenuItem i : toDispose) {
+				i.dispose();
+			}
+		}
+		
+		if(resourcesSeparator!=null) {
+			resourcesSeparator.dispose();
+			resourcesSeparator = null;
+		}
+		
+		int idx = 0;
+		try {
+			for(ResourceRealm realm : resourceService.getResourceRealms()) {
+				
+				if(realm.getResources().size() > 0) {
+					MenuItem realmItem = new MenuItem(trayMenu, SWT.CASCADE, idx++);
+					realmItem.setText(realm.getName());
+					realmItem.setEnabled(true);
+
+					Menu realmMenu = new Menu(trayMenu);
+					realmItem.setMenu(realmMenu);
+					
+					for(Resource res : realm.getResources()) {
+						if(res.isLaunchable()) {
+							MenuItem resourceItem = new MenuItem(realmMenu, SWT.PUSH);
+							resourceItem.setText(res.getName());
+							resourceItem.setData(res);
+							resourceItem.addListener(SWT.Selection, new Listener() {
+								public void handleEvent(Event e) {
+									Resource res = (Resource) e.widget.getData();
+									res.getResourceLauncher().launch();
+								}
+							});
+						}
+					}
+				}
+			}
+			
+			if(idx > 0) {
+				resourcesSeparator = new MenuItem(trayMenu, SWT.SEPARATOR, idx);
+			}
+			
+			trayMenu.setData(new Integer(idx));
+		} catch (RemoteException e) {
+			log.error("Failed to communicate with service", e);
+		}
 	}
 
 	private void connectToService() throws RemoteException, NotBoundException {
@@ -191,6 +261,10 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 			configurationService = (ConfigurationService) registry
 					.lookup("configurationService");
 
+			resourceService = (ResourceService) registry
+					.lookup("resourceService");
+			
+			
 			clientService = (ClientService) registry.lookup("clientService");
 
 			clientService.registerGUI(this);
@@ -205,7 +279,16 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 					}
 				});
 			}
-
+			
+			Display.getDefault().asyncExec(new Runnable() {
+				public void run() {
+					if (connectionsWindow != null) {
+						connectionsWindow.updateActions();
+					}
+					rebuildLaunchMenu();
+				}
+			});
+			
 			new RMIStatusThread().start();
 		} catch (Throwable e) {
 			if (log.isDebugEnabled()) {
@@ -229,7 +312,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 		}
 	}
 
-	private void configureGrowl() throws IOException {
+	/*private void configureGrowl() throws IOException {
 		GntpApplicationInfo info = Gntp.appInfo("Test")
 				.icon(getImage(APPLICATION_ICON)).build();
 		notif1 = Gntp.notificationInfo(info, "Notify 1")
@@ -283,7 +366,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 
 		client.register();
 
-	}
+	}*/
 
 	private void setupSystemTray() {
 
@@ -345,7 +428,27 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 				connectionsWindow.getShell().setActive();
 			}
 		});
-
+		
+		
+//		resourcesItem = new MenuItem(trayMenu, SWT.PUSH);
+//		resourcesItem.setText(I18N.getResource("resources.text"));
+//		resourcesItem.setEnabled(false);
+//		resourcesItem.addListener(SWT.Selection, new Listener() {
+//			public void handleEvent(Event e) {
+//
+//				if (resourcesWindow == null) {
+//					resourcesWindow = new ResourcesTree(SWTGui.this,
+//							resourceService);
+//					shell.pack();
+//					resourcesWindow.open();
+//				}
+//				resourcesWindow.getShell().setVisible(true);
+//				resourcesWindow.getShell().setActive();
+//				
+//				resourcesWindow.refresh();
+//			}
+//		});
+		
 		new MenuItem(trayMenu, SWT.SEPARATOR);
 
 		exitItem = new MenuItem(trayMenu, SWT.PUSH);
@@ -368,7 +471,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 
 			public void shellClosed(ShellEvent e) {
 				shell.setVisible(false);
-				e.doit = false;
+				//e.doit = false;
 			}
 
 			public void shellActivated(ShellEvent e) {
@@ -380,7 +483,6 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 				trayMenu.setVisible(true);
 			}
 		});
-
 	}
 
 	protected void resetMenuText() {
@@ -453,6 +555,17 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 			}
 		});
 
-		return results;
+		if(results.size() > 0) { 
+			return results;
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public int executeAsUser(ApplicationLauncherTemplate launcherTemplate, String clientUsername, String connectedHostname) throws RemoteException {
+		
+		ApplicationLauncher launcher = new ApplicationLauncher(clientUsername, connectedHostname, launcherTemplate);
+		return launcher.launch();
 	}
 }

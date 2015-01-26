@@ -18,6 +18,7 @@ public class PropertyCategory implements Serializable {
 	String categoryKey;
 	String categoryGroup;
 	String bundle;
+	String displayMode;
 	int weight;
 	boolean userCreated;
 	
@@ -73,6 +74,14 @@ public class PropertyCategory implements Serializable {
 
 	public void setCategoryGroup(String categoryGroup) {
 		this.categoryGroup = categoryGroup;
+	}
+
+	public String getDisplayMode() {
+		return displayMode;
+	}
+
+	public void setDisplayMode(String displayMode) {
+		this.displayMode = displayMode;
 	}
 	
 	

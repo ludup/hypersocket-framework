@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import com.hypersocket.realm.MediaNotFoundException;
-import com.hypersocket.realm.MediaType;
+import org.apache.commons.lang3.StringUtils;
+
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -26,7 +26,8 @@ public class AuthenticationState {
 	String remoteAddress;
 	Integer currentIndex = new Integer(0);
 	List<AuthenticationModule> modules;
-	List<PostAuthenticationStep> postAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
+	List<PostAuthenticationStep> sessionPostAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
+	List<PostAuthenticationStep> nonSessionPostAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
 	String lastErrorMsg;
 	boolean lastErrorIsResourceKey;
 	String lastPrincipalName;
@@ -35,8 +36,9 @@ public class AuthenticationState {
 	Principal principal;
 	Session session;
 	int attempts = 0;
-	boolean isNew = true;
 	Locale locale;
+	String homePage = "";
+	
 	Map<String, String> parameters = new HashMap<String, String>();
 	Map<String, Object> environment = new HashMap<String, Object>();
 	AuthenticationState(String remoteAddress, Locale locale, Map<String,Object> environment) {
@@ -57,7 +59,7 @@ public class AuthenticationState {
 	}
 
 	public boolean isNew() {
-		return isNew;
+		return attempts <= 1;
 	}
 
 	public Integer getCurrentIndex() {
@@ -117,22 +119,38 @@ public class AuthenticationState {
 	}
 
 	public void addPostAuthenticationStep(PostAuthenticationStep proc) {
-		postAuthenticationSteps.add(proc);
+		if(proc.requiresSession(this)) {
+			sessionPostAuthenticationSteps.add(proc);
+		} else {
+			nonSessionPostAuthenticationSteps.add(proc);
+		}
 	}
 
 	public boolean hasPostAuthenticationStep() {
-		return postAuthenticationSteps.size() > 0;
+		return (sessionPostAuthenticationSteps.size() + nonSessionPostAuthenticationSteps.size()) > 0;
+	}
+	
+	public boolean canCreateSession() {
+		return isAuthenticationComplete() && nonSessionPostAuthenticationSteps.isEmpty() && session==null;
 	}
 
 	public PostAuthenticationStep getCurrentPostAuthenticationStep() {
 		if (!hasPostAuthenticationStep()) {
 			return null;
 		}
-		return postAuthenticationSteps.get(0);
+		if(nonSessionPostAuthenticationSteps.size() > 0) {
+			return nonSessionPostAuthenticationSteps.get(0);
+		} else {
+			return sessionPostAuthenticationSteps.get(0);
+		}
 	}
 
 	public void nextPostAuthenticationStep() {
-		postAuthenticationSteps.remove(0);
+		if(nonSessionPostAuthenticationSteps.size() > 0) {
+			nonSessionPostAuthenticationSteps.remove(0);
+		} else {
+			sessionPostAuthenticationSteps.remove(0);
+		}
 	}
 
 	public Locale getLocale() {
@@ -173,10 +191,7 @@ public class AuthenticationState {
 	
 	public String getLastPrincipalName() {
 		if(principal==null) {
-			if(lastPrincipalName==null) {
-				throw new IllegalStateException("Last principal name is not available. Did you forget to set it in your Authenticator?");
-			}
-			return lastPrincipalName;
+			return StringUtils.defaultString(lastPrincipalName);
 		} else {
 			return principal.getPrincipalName();
 		}
@@ -231,24 +246,25 @@ public class AuthenticationState {
 		public PrincipalType getType() {
 			return PrincipalType.USER;
 		}
-
-		@Override
-		public String getPrincipalDesc() {
-			return "";
-		}
-		
-		@Override
-		public String getAddress(MediaType type) throws MediaNotFoundException {
-			throw new MediaNotFoundException();
-		}
-		
 	}
 
 	public void authAttempted() {
 		attempts++;
 	}
 
-	public void setNewSession(boolean isNew) {
-		this.isNew = isNew;
+	public int getAttempts() {
+		return attempts;
+	}
+	
+	public void setHomePage(String homePage) {
+		this.homePage = homePage;
+	}
+	
+	public String getHomePage() {
+		return homePage;
+	}
+
+	public Map<String,String> getParameters() {
+		return parameters;
 	}
 }

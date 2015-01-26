@@ -29,6 +29,7 @@ import com.hypersocket.json.MultiselectElement;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.server.HypersocketServer;
@@ -43,8 +44,11 @@ public class ServerController extends AuthenticatedController {
 	@Autowired
 	SessionUtils sessionUtils;
 
+	@Autowired
+	PermissionService permissionService;
+	
 	@AuthenticationRequired
-	@RequestMapping(value = "restart/{delay}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "server/restart/{delay}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public RequestStatus restartServer(HttpServletRequest request,
@@ -52,7 +56,7 @@ public class ServerController extends AuthenticatedController {
 			throws AccessDeniedException, UnauthorizedException {
 
 		permissionService.verifyPermission(sessionUtils.getPrincipal(request),
-				PermissionStrategy.REQUIRE_ANY,
+				PermissionStrategy.INCLUDE_IMPLIED,
 				SystemPermission.SYSTEM_ADMINISTRATION);
 
 		server.restart(delay);
@@ -63,7 +67,7 @@ public class ServerController extends AuthenticatedController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "shutdown/{delay}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "server/shutdown/{delay}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public RequestStatus shutdownServer(HttpServletRequest request,
@@ -71,7 +75,7 @@ public class ServerController extends AuthenticatedController {
 			throws AccessDeniedException, UnauthorizedException {
 
 		permissionService.verifyPermission(sessionUtils.getPrincipal(request),
-				PermissionStrategy.REQUIRE_ANY,
+				PermissionStrategy.INCLUDE_IMPLIED,
 				SystemPermission.SYSTEM_ADMINISTRATION);
 
 		server.shutdown(delay);
@@ -82,7 +86,7 @@ public class ServerController extends AuthenticatedController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "sslProtocols", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "server/sslProtocols", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<MultiselectElement> getSslProtocols(
@@ -91,7 +95,7 @@ public class ServerController extends AuthenticatedController {
 
 		permissionService.verifyPermission(
 				getSessionUtils().getPrincipal(request),
-				PermissionStrategy.REQUIRE_ALL_PERMISSIONS,
+				PermissionStrategy.INCLUDE_IMPLIED,
 				ConfigurationPermission.READ);
 
 		List<MultiselectElement> protocols = new ArrayList<MultiselectElement>();
@@ -103,7 +107,7 @@ public class ServerController extends AuthenticatedController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "sslCiphers", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "server/sslCiphers", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<MultiselectElement> getSslCiphers(
@@ -112,7 +116,7 @@ public class ServerController extends AuthenticatedController {
 
 		permissionService.verifyPermission(
 				getSessionUtils().getPrincipal(request),
-				PermissionStrategy.REQUIRE_ALL_PERMISSIONS,
+				PermissionStrategy.INCLUDE_IMPLIED,
 				ConfigurationPermission.READ);
 		
 		List<MultiselectElement> ciphers = new ArrayList<MultiselectElement>();
@@ -124,7 +128,7 @@ public class ServerController extends AuthenticatedController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "networkInterfaces", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "server/networkInterfaces", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<MultiselectElement> getCategories(
@@ -133,7 +137,7 @@ public class ServerController extends AuthenticatedController {
 
 		permissionService.verifyPermission(
 				getSessionUtils().getPrincipal(request),
-				PermissionStrategy.REQUIRE_ALL_PERMISSIONS,
+				PermissionStrategy.INCLUDE_IMPLIED,
 				ConfigurationPermission.READ);
 		
 		List<MultiselectElement> interfaces = new ArrayList<MultiselectElement>();

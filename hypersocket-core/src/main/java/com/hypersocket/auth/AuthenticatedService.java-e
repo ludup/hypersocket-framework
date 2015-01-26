@@ -18,6 +18,8 @@ public interface AuthenticatedService {
 	
 	Principal getCurrentPrincipal();
 	
+	Session getCurrentSession();
+	
 	void setCurrentSession(Session session, Locale locale);
 	
 	void setCurrentPrincipal(Principal principal, Locale locale, Realm realm);
@@ -25,4 +27,12 @@ public interface AuthenticatedService {
 	void clearPrincipalContext();
 	
 	boolean hasAuthenticatedContext();
+
+	String getCurrentUsername();
+
+	String getCurrentPassword();
+
+	void setCurrentPassword(String password);
+	
+	void setCurrentPassword(Session session, String password);
 }

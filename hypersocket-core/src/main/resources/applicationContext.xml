@@ -15,7 +15,7 @@
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context-3.1.xsd
            http://www.springframework.org/schema/cache
-    http://www.springframework.org/schema/cache/spring-cache.xsd
+    	   http://www.springframework.org/schema/cache/spring-cache.xsd
            http://www.springframework.org/schema/aop
            http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
            http://www.springframework.org/schema/tx 
@@ -26,7 +26,7 @@
 	<aop:config>
 		<aop:aspect ref="annotationService">
 			<aop:pointcut id="profiledMethods"
-				expression="@annotation(com.hypersocket.annotation.HypersocketAnnotation)" />
+				expression="@annotation(com.hypersocket.annotation.HypersocketExtension)" />
 			<aop:around pointcut-ref="profiledMethods" method="process" />
 		</aop:aspect>
 	</aop:config>
@@ -44,6 +44,8 @@
 			expression="com.hypersocket.repository.AbstractEntity" />
 		<context:exclude-filter type="regex"
 			expression="com.hypersocket.server.*" />
+		<context:exclude-filter type="regex"
+			expression="com.hypersocket.annotation.*" />
 	</context:component-scan>
 
 	<import resource="database.xml" />

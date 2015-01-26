@@ -12,16 +12,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.repository.AbstractEntity;
-import com.hypersocket.resource.AbstractResource;
 
 @Entity
 @Table(name="properties", uniqueConstraints = {
@@ -39,9 +35,8 @@ public class DatabaseProperty extends AbstractEntity<Long> implements ResourcePr
 	@Column(nullable=true, length=8000 /*SQL server limit */)
 	String value;
 	
-	@ManyToOne(optional=true)
-	@JoinColumn(name="resource")
-	AbstractResource resource;
+	@Column(name="resource")
+	Long resource;
 	
 	@Override
 	@XmlElement(name="id")
@@ -63,11 +58,11 @@ public class DatabaseProperty extends AbstractEntity<Long> implements ResourcePr
 	}
 	
 	@JsonIgnore
-	public AbstractResource getResource() {
+	public Long getResourceId() {
 		return resource;
 	}
 
-	public void setResource(AbstractResource resource) {
+	public void setResourceId(Long resource) {
 		this.resource = resource;
 	}
 	
@@ -86,7 +81,7 @@ public class DatabaseProperty extends AbstractEntity<Long> implements ResourcePr
 		int result = 1;
 		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
 		result = 47 * result + ((getResourceKey() == null) ? 0 : getResourceKey().hashCode());
-		result = 61 * result + ((getResource() == null) ? 0 : getResource().hashCode());
+		result = 61 * result + ((getResourceId() == null) ? 0 : getResourceId().hashCode());
 		return result;
 	}
 	
@@ -105,12 +100,12 @@ public class DatabaseProperty extends AbstractEntity<Long> implements ResourcePr
 		} else if (!getResourceKey().equals(other.getResourceKey())) {
 			return false;
 		} else { 
-			if(getResource()==null) {
-				if(other.getResource()!=null) {
+			if(getResourceId()==null) {
+				if(other.getResourceId()!=null) {
 					return false;
 				}
 				return true;
-			} else if(!getResource().equals(other.getResource())) {
+			} else if(!getResourceId().equals(other.getResourceId())) {
 				return false;
 			}
 		}

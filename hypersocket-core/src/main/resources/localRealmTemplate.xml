@@ -6,4 +6,9 @@
 		    	options="PBKDF2_SHA1_1000,PBKDF2_SHA1_20000"
 			defaultValue="PBKDF2_SHA1_20000" weight="0" />
 	</propertyCategory>
+	<propertyCategory resourceKey="realm.userProfiles"
+		resourceBundle="RealmService" weight="999999">
+		<property resourceKey="realm.userEditableProperties" defaultValue="user.email]|[user.mobile]|[user.fullname"/>
+		<property resourceKey="realm.userVisibleProperties" defaultValue="user.email]|[user.mobile]|[user.fullname"/>
+	</propertyCategory>
 </propertyTemplates>

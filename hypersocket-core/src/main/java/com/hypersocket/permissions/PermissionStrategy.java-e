@@ -9,6 +9,6 @@ package com.hypersocket.permissions;
 
 public enum PermissionStrategy {
 
-	REQUIRE_ALL_PERMISSIONS,
-	REQUIRE_ANY;
+	INCLUDE_IMPLIED,
+	EXCLUDE_IMPLIED;
 }

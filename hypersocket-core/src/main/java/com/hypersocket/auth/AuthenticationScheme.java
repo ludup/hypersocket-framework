@@ -22,7 +22,16 @@ public class AuthenticationScheme extends RealmResource {
 
 	@Column(name = "priority")
 	Integer priority;
+	
+	@Column(name = "max_modules", nullable=true)
+	Integer maximumModules;
 
+	@Column(name = "type", nullable=true)
+	AuthenticationModuleType type;
+	
+	@Column(name = "allowed_modules")
+	String allowedModules;
+	
 	public String getResourceKey() {
 		return resourceKey;
 	}
@@ -38,5 +47,40 @@ public class AuthenticationScheme extends RealmResource {
 	public void setPriority(Integer priority) {
 		this.priority = priority;
 	}
+
+	public Integer getMaximumModules() {
+		return maximumModules == null ? 10 : maximumModules;
+	}
+
+	public void setMaximumModules(Integer maximumModules) {
+		if(maximumModules==null) {
+			this.maximumModules = 10;
+		} else {
+			this.maximumModules = maximumModules;
+		}
+	}
+
+	public AuthenticationModuleType getType() {
+		return type==null ? AuthenticationModuleType.HTML : type;
+	}
+
+	public void setType(AuthenticationModuleType type) {
+		if(type==null) {
+			this.type = AuthenticationModuleType.HTML;
+		} else {
+			this.type = type;
+		}
+	}
+
+	public String getAllowedModules() {
+		return allowedModules;
+	}
+	
+	public void setAllowedModules(String allowedModules) {
+		this.allowedModules = allowedModules;
+	}
+	
+	
+	
 
 }

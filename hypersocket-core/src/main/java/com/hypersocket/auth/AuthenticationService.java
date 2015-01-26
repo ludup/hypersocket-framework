@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 
@@ -48,7 +49,18 @@ public interface AuthenticationService extends AuthenticatedService {
 
 	void registerListener(AuthenticationServiceListener listener);
 
-	AuthenticationScheme getAuthenticationScheme(String scheme);
+	boolean isAuthenticatorInScheme(Realm realm, String schemeResourceKey, String resourceKey);
 
-	boolean isAuthenticatorInScheme(String scheme, String resourceKey);
+	AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey) throws AccessDeniedException;
+
+	Realm resolveRealm(AuthenticationState state, String username) throws AccessDeniedException;
+
+	Session logonAnonymous(String remoteAddress,
+			String userAgent, Map<String, String> parameters) throws AccessDeniedException;
+
+	Authenticator getAuthenticator(String resourceKey);
+
+	Collection<PostAuthenticationStep> getPostAuthenticationSteps();
+
+
 }

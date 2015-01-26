@@ -11,28 +11,8 @@ public class ResourceNotFoundException extends ResourceException {
 
 	private static final long serialVersionUID = -5763235151026115782L;
 
-	String bundle;
-	String resourceKey;
-	Object[] args;
-
 	public ResourceNotFoundException(String bundle, String resourceKey,
 			Object... args) {
-		super((String) null);
-		this.bundle = bundle;
-		this.resourceKey = resourceKey;
-		this.args = args;
+		super(bundle, resourceKey, args);
 	}
-
-	public String getBundle() {
-		return bundle;
-	}
-
-	public String getResourceKey() {
-		return resourceKey;
-	}
-
-	public Object[] getArgs() {
-		return args;
-	}
-
 }

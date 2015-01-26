@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.auth.json;
 
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -21,14 +22,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.BrowserEnvironment;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.permissions.PermissionRepository;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -55,7 +55,7 @@ public class AuthenticatedController {
 	protected SessionUtils sessionUtils;
 
 	@Autowired
-	protected PermissionService permissionService;
+	protected PermissionRepository permissionRepository;
 
 	@Autowired
 	protected RealmService realmService;
@@ -66,9 +66,9 @@ public class AuthenticatedController {
 	@Autowired
 	protected I18NService i18nService;
 
-	AuthenticationState createAuthenticationState(String scheme, 
-			HttpServletRequest request,
-			HttpServletResponse response) throws AccessDeniedException {
+	AuthenticationState createAuthenticationState(String scheme,
+			HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException {
 
 		Map<String, Object> environment = new HashMap<String, Object>();
 		for (BrowserEnvironment env : BrowserEnvironment.values()) {
@@ -77,11 +77,17 @@ public class AuthenticatedController {
 						request.getHeader(env.toString()));
 			}
 		}
-		
+
 		AuthenticationState state = authenticationService
-				.createAuthenticationState(scheme,
-						request.getRemoteAddr(), environment,
-						sessionUtils.getLocale(request));
+				.createAuthenticationState(scheme, request.getRemoteAddr(),
+						environment, sessionUtils.getLocale(request));
+		
+		Enumeration<?> names = request.getParameterNames();
+		while(names.hasMoreElements()) {
+			String name = (String) names.nextElement();
+			state.addParameter(name, request.getParameter(name));
+		}
+		
 		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, state);
 		return state;
 	}
@@ -126,44 +132,46 @@ public class AuthenticatedController {
 		setupAuthenticatedContext(getSystemPrincipal(),
 				i18nService.getDefaultLocale(), getSystemPrincipal().getRealm());
 	}
+	
+	protected void setupAnonymousContext(String remoteAddress,
+			String serverName, String userAgent, Map<String, String> parameters)
+			throws AccessDeniedException {
+		
+		Realm realm = realmService.getRealmByHost(serverName);
+		
+		if(log.isInfoEnabled()) {
+			log.info("Logging anonymous onto the " + realm.getName() + " realm [" + serverName + "]");
+		}
+		
+		Session session = authenticationService.logonAnonymous(remoteAddress, userAgent, parameters);
+		setupAuthenticatedContext(session, i18nService.getDefaultLocale());
+		
+		if(!session.getCurrentRealm().equals(realm)) {
+			sessionService.switchRealm(session, realm);
+		}
+
+	}
 
 	protected void clearSystemContext() {
 		clearAuthenticatedContext();
 	}
 
-	protected void setupAuthenticatedContext(Session pricipal, Locale locale,
-			AuthenticatedService... services) {
+	protected void clearAnonymousContext() {
+		sessionService.closeSession(authenticationService.getCurrentSession());
+		clearAuthenticatedContext();
+	}
+	
+	protected void setupAuthenticatedContext(Session pricipal, Locale locale) {
 		authenticationService.setCurrentSession(pricipal, locale);
-		sessionService.setCurrentSession(pricipal, locale);
-		realmService.setCurrentSession(pricipal, locale);
-		configurationService.setCurrentSession(pricipal, locale);
-		permissionService.setCurrentSession(pricipal, locale);
-		for (AuthenticatedService service : services) {
-			service.setCurrentSession(pricipal, locale);
-		}
 	}
 
 	protected void setupAuthenticatedContext(Principal principal,
-			Locale locale, Realm realm, AuthenticatedService... services) {
+			Locale locale, Realm realm) {
 		authenticationService.setCurrentPrincipal(principal, locale, realm);
-		sessionService.setCurrentPrincipal(principal, locale, realm);
-		realmService.setCurrentPrincipal(principal, locale, realm);
-		configurationService.setCurrentPrincipal(principal, locale, realm);
-		permissionService.setCurrentPrincipal(principal, locale, realm);
-		for (AuthenticatedService service : services) {
-			service.setCurrentPrincipal(principal, locale, realm);
-		}
 	}
 
-	protected void clearAuthenticatedContext(AuthenticatedService... services) {
-
+	protected void clearAuthenticatedContext() {
 		authenticationService.clearPrincipalContext();
-		sessionService.clearPrincipalContext();
-		realmService.clearPrincipalContext();
-		configurationService.clearPrincipalContext();
-		for (AuthenticatedService service : services) {
-			service.clearPrincipalContext();
-		}
 	}
 
 	@ExceptionHandler(Throwable.class)

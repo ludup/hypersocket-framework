@@ -175,7 +175,7 @@ public class HttpConnectionPool {
 		final WebSocketHandler clientHandler = new WebSocketHandler(
 				websocketBootstrap, uri, callback,
 				new WebSocketClientHandshakerFactory().newHandshaker(uri,
-						WebSocketVersion.V13, null, false, headers));
+						WebSocketVersion.V13, null, true, headers));
 
 		websocketBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 			public ChannelPipeline getPipeline() throws Exception {

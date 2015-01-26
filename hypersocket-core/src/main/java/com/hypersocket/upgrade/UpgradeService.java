@@ -22,4 +22,6 @@ public interface UpgradeService {
     boolean hasUpgrades()  throws IOException;
     
     void upgrade() throws IOException, ScriptException;
+
+	void registerListener(UpgradeServiceListener listener);
 }

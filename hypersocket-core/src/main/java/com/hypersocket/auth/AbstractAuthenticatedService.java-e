@@ -11,6 +11,7 @@ import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionStrategy;
@@ -18,17 +19,21 @@ import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
+import com.hypersocket.utils.HypersocketUtils;
 
 public abstract class AbstractAuthenticatedService implements
 		AuthenticatedService {
 
+	@Autowired
+	PasswordEncryptionService encryptionService; 
+	
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAuthenticatedService.class);
 
-	ThreadLocal<Principal> currentPrincipal = new ThreadLocal<Principal>();
-	ThreadLocal<Session> currentSession = new ThreadLocal<Session>();
-	ThreadLocal<Realm> currentRealm = new ThreadLocal<Realm>();
-	ThreadLocal<Locale> currentLocale = new ThreadLocal<Locale>();
+	static ThreadLocal<Principal> currentPrincipal = new ThreadLocal<Principal>();
+	static ThreadLocal<Session> currentSession = new ThreadLocal<Session>();
+	static ThreadLocal<Realm> currentRealm = new ThreadLocal<Realm>();
+	static ThreadLocal<Locale> currentLocale = new ThreadLocal<Locale>();
 
 	public void setCurrentPrincipal(Principal principal, Locale locale,
 			Realm realm) {
@@ -38,7 +43,10 @@ public abstract class AbstractAuthenticatedService implements
 	}
 	
 	public void setCurrentSession(Session session, Locale locale) {
-		currentPrincipal.set(session.getPrincipal());
+		if(log.isDebugEnabled()) {
+			log.debug("Setting current session context " + session.getId());
+		}
+		currentPrincipal.set(session.getCurrentPrincipal());
 		currentSession.set(session);
 		currentRealm.set(session.getCurrentRealm());
 		currentLocale.set(locale);
@@ -67,30 +75,81 @@ public abstract class AbstractAuthenticatedService implements
 	}
 
 	public void clearPrincipalContext() {
+		if(log.isDebugEnabled()) {
+			log.debug("Clearing authenticated context.");
+		}
 		currentLocale.set(null);
 		currentPrincipal.set(null);
+		currentSession.set(null);
+		currentRealm.set(null);
 	}
-
+	
+	@Override
+	public String getCurrentUsername() {
+		if(currentPrincipal.get()==null) {
+			throw new IllegalStateException("Cannot determine current principal for getCurrentUsername");
+		}
+		return currentPrincipal.get().getPrincipalName();
+	}
+	
+	@Override
+	public String getCurrentPassword() {
+		if(currentSession.get()==null) {
+			throw new IllegalStateException("Cannot determine current session for getCurrentPassword");
+		}
+		Session session = currentSession.get();
+		try {
+			return encryptionService.decrypt(
+					session.getStateParameter("password"),
+					HypersocketUtils.base64Decode(session.getStateParameter("ss")));
+		} catch (Exception e) {
+			return "";
+		}
+	}
+	
+	@Override
+	public void setCurrentPassword(String password) {
+		if(currentSession.get()==null) {
+			throw new IllegalStateException("Cannot determine current session for setCurrentPassword");
+		}
+		setCurrentPassword(currentSession.get(), password);
+	}
+	
+	public void setCurrentPassword(Session session, String password) {
+		
+		try {
+			byte[] salt = encryptionService.generateSalt();
+			
+			session.setStateParameter("password", 
+					encryptionService.encrypt(
+							password,
+							salt));
+			
+			session.setStateParameter("ss", HypersocketUtils.base64Encode(salt));
+		} catch (Exception e) {
+			
+		}
+	}
+	
 	public boolean hasAuthenticatedContext() {
 		return currentPrincipal.get() != null;
 	}
-
-	protected void assertPermission(PermissionType... permission)
-			throws AccessDeniedException {
-		assertPermission(PermissionStrategy.REQUIRE_ALL_PERMISSIONS, permission);
+	
+	public boolean hasSessionContext() {
+		return currentSession.get() != null;
 	}
 
-	protected void assertAllPermission(PermissionType... permission)
+	protected void assertPermission(PermissionType permission)
 			throws AccessDeniedException {
-		assertPermission(PermissionStrategy.REQUIRE_ALL_PERMISSIONS, permission);
+		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, permission);
 	}
 
 	protected void assertAnyPermission(PermissionType... permission)
 			throws AccessDeniedException {
-		assertPermission(PermissionStrategy.REQUIRE_ANY, permission);
+		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, permission);
 	}
 
-	protected void assertPermission(PermissionStrategy strategy,
+	protected void assertAnyPermission(PermissionStrategy strategy,
 			PermissionType... permissions) throws AccessDeniedException {
 
 		if (log.isWarnEnabled() && !hasAuthenticatedContext()) {
@@ -98,6 +157,13 @@ public abstract class AbstractAuthenticatedService implements
 					+ " is being asserted without a principal in context");
 		}
 
+		if(hasSessionContext()) {
+			if(getCurrentSession().isImpersonating() && getCurrentSession().isInheritPermissions()) {
+				verifyPermission(getCurrentSession().getInheritedPrincipal(), strategy, permissions);
+				return;
+			}
+		}
+		
 		verifyPermission(getCurrentPrincipal(), strategy, permissions);
 	}
 

@@ -12,12 +12,20 @@ import com.hypersocket.permissions.PermissionType;
 public enum ConfigurationPermission implements PermissionType {
 
 	READ("config.read"),
-	UPDATE("config.update");
+	UPDATE("config.update", READ);
 	
 	private final String val;
 	
-	private ConfigurationPermission(final String val) {
+	private PermissionType[] implies;
+	
+	private ConfigurationPermission(final String val, PermissionType... implies) {
 		this.val = val;
+		this.implies = implies;
+	}
+
+	@Override
+	public PermissionType[] impliesPermissions() {
+		return implies;
 	}
 	
 	public String toString() {
@@ -27,5 +35,15 @@ public enum ConfigurationPermission implements PermissionType {
 	@Override
 	public String getResourceKey() {
 		return val;
+	}
+	
+	@Override
+	public boolean isSystem() {
+		return false;
+	}
+	
+	@Override
+	public boolean isHidden() {
+		return false;
 	}
 }

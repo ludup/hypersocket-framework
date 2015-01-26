@@ -129,12 +129,15 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				ctx.getChannel(), nettyRequest);
 
 		HypersocketSession session = server.setupHttpSession(
-				nettyRequest.getHeaders("Cookie"), nettyResponse);
+				nettyRequest.getHeaders("Cookie"), 
+				!server.isPlainPort((InetSocketAddress) ctx.getChannel().getLocalAddress()),
+				nettyResponse);
 
 		HttpRequestServletWrapper servletRequest = new HttpRequestServletWrapper(
 				nettyRequest, (InetSocketAddress) ctx.getChannel()
 						.getLocalAddress(), (InetSocketAddress) ctx
-						.getChannel().getRemoteAddress(), false, server
+						.getChannel().getRemoteAddress(), 
+						!server.isPlainPort((InetSocketAddress) ctx.getChannel().getLocalAddress()) , server
 						.getServletConfig().getServletContext(), session);
 
 		Request.set(servletRequest);
@@ -164,16 +167,19 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					.getLocalAddress()) && server.isHttpsRequired()) {
 				// Redirect the plain port to SSL
 				String host = nettyRequest.getHeader(HttpHeaders.HOST);
-				int idx;
-				if ((idx = host.indexOf(':')) > -1) {
-					host = host.substring(0, idx);
+				if(host==null) {
+					nettyResponse.sendError(400, "No Host Header");
+				} else {
+					int idx;
+					if ((idx = host.indexOf(':')) > -1) {
+						host = host.substring(0, idx);
+					}
+					nettyResponse.sendRedirect("https://"
+							+ host
+							+ (server.getHttpsPort() != 443 ? ":"
+									+ String.valueOf(server.getHttpsPort()) : "")
+							+ nettyRequest.getUri());
 				}
-				nettyResponse.sendRedirect("https://"
-						+ host
-						+ (server.getHttpsPort() != 443 ? ":"
-								+ String.valueOf(server.getHttpsPort()) : "")
-						+ nettyRequest.getUri());
-
 				sendResponse(servletRequest, nettyResponse, false);
 				return;
 			}
@@ -395,9 +401,6 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			servletResponse.setHeader("Connection", "close");
 			servletResponse.setCloseOnComplete(true);
 		}
-		// else {
-		// servletResponse.setHeader("Connection", "keep-alive");
-		// }
 
 		servletResponse.setHeader("Date",
 				DateUtils.formatDate(new Date(System.currentTimeMillis())));
@@ -440,14 +443,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					+ e.getChannel().getLocalAddress(), e.getCause());
 		}
 
-		// if(ctx.getChannel().isOpen()) {
-		// if(log.isInfoEnabled()) {
-		// log.info("Closing channel due to earlier exception remoteAddress="
-		// + e.getChannel().getRemoteAddress() + " localAddress="
-		// + e.getChannel().getLocalAddress());
-		// }
 		ctx.getChannel().close();
-		// }
 	}
 
 	@Override

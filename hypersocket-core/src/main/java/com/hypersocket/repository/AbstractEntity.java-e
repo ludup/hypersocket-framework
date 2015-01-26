@@ -10,17 +10,17 @@ package com.hypersocket.repository;
 import java.util.Date;
 
 import javax.persistence.Column;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @MappedSuperclass
 public abstract class AbstractEntity<T> {
 
@@ -60,14 +60,15 @@ public abstract class AbstractEntity<T> {
 	
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-		return result;
+		HashCodeBuilder builder = new HashCodeBuilder(31, 17);
+		builder.append(getId());
+		doHashCodeOnKeys(builder);
+		return builder.build();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
+		
 		if (this == obj)
 			return true;
 		if (obj == null)
@@ -81,9 +82,20 @@ public abstract class AbstractEntity<T> {
 				return false;
 		} else if (!getId().equals(other.getId()))
 			return false;
-		return true;
+		
+		EqualsBuilder builder = new EqualsBuilder();
+		doEqualsOnKeys(builder, obj);
+		return builder.build();
 	}
 
+	protected void doHashCodeOnKeys(HashCodeBuilder builder) {
+		
+	}
+	
+	protected void doEqualsOnKeys(EqualsBuilder builder, Object obj) {
+
+	}
+	
 	void setLastModified(Date date) {
 		modified = date;
 	}

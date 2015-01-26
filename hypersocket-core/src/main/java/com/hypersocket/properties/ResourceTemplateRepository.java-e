@@ -1,6 +1,8 @@
 package com.hypersocket.properties;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 import com.hypersocket.resource.AbstractResource;
 
@@ -21,11 +23,28 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 	void setValue(AbstractResource resource, String name, Boolean value);
 
 	Collection<PropertyCategory> getPropertyCategories(AbstractResource resource);
-
-	String[] explodeValues(String values);
 	
 	String[] getValues(AbstractResource resource, String name);
 
 	Collection<PropertyTemplate> getPropertyTemplates();
+
+	Collection<PropertyCategory> getPropertyCategories(
+			AbstractResource resource, String group);
+
+	Set<String> getPropertyNames();
+	
+	Map<String,String> getProperties(AbstractResource resource);
+
+	Long getLongValue(AbstractResource resource, String name)
+			throws NumberFormatException;
+	
+	PropertyTemplate getPropertyTemplate(String resourceKey);
+
+	boolean hasPropertyTemplate(String key);
+
+	Set<String> getVariableNames();
+
+	void setValues(AbstractResource resource,
+			Map<String, String> properties);
 
 }

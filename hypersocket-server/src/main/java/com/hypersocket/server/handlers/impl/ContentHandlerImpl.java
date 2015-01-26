@@ -31,11 +31,9 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.mail.javamail.ConfigurableMimeFileTypeMap;
 
-import com.hypersocket.server.HypersocketServer;
 import com.hypersocket.server.handlers.HttpRequestHandler;
 import com.hypersocket.server.handlers.HttpResponseProcessor;
 
@@ -44,9 +42,6 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	private static Logger log = LoggerFactory.getLogger(ContentHandlerImpl.class);
 	
 	String basePath;
-	
-	@Autowired
-	protected HypersocketServer server;
 	
 	public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
     public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
@@ -68,10 +63,6 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	
 	public void setBasePath(String basePath) {
 		this.basePath = basePath;
-	}
-	
-	public void setServer(HypersocketServer server) {
-		this.server = server;
 	}
 
 	@Override

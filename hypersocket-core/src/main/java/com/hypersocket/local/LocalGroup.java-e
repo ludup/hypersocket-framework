@@ -18,12 +18,10 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
-import com.hypersocket.realm.MediaNotFoundException;
-import com.hypersocket.realm.MediaType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 
@@ -33,7 +31,7 @@ import com.hypersocket.realm.PrincipalType;
 public class LocalGroup extends Principal {
 
 	@ManyToMany(fetch=FetchType.EAGER)
-	@Cascade({CascadeType.ALL})
+	@Cascade({CascadeType.SAVE_UPDATE})
 	@JoinTable(name = "local_user_groups", joinColumns={@JoinColumn(name="guid")}, inverseJoinColumns={@JoinColumn(name="uuid")})
 	private Set<LocalUser> users = new HashSet<LocalUser>();
 	
@@ -49,11 +47,6 @@ public class LocalGroup extends Principal {
 	
 	public String getPrincipalDesc() {
 		return "";
-	}
-
-	@Override
-	public String getAddress(MediaType type) throws MediaNotFoundException {
-		throw new MediaNotFoundException();
 	}
 
 }

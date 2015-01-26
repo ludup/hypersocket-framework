@@ -19,7 +19,6 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.resource.ResourceNotFoundException;
 
 @Component
 public class UsernameAndPasswordAuthenticator implements Authenticator {
@@ -42,7 +41,6 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 			@SuppressWarnings("rawtypes") Map parameters)
 			throws AccessDeniedException {
 
-		String realmName = null;
 		String username = AuthenticationUtils.getRequestParameter(parameters,
 				UsernameAndPasswordTemplate.USERNAME_FIELD);
 		String password = AuthenticationUtils.getRequestParameter(parameters,
@@ -67,59 +65,35 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 		}
 
 
-		Realm realm = state.getRealm();
-		
-		// Can we extract realm from username?
-		int idx;
-		idx = username.indexOf('@');
-		if (idx > -1) {
-			realmName = username.substring(idx + 1);
-			username = username.substring(0, idx);
-		} else {
-			idx = username.indexOf('\\');
-			if (idx > -1) {
-				realmName = username.substring(0, idx);
-				username = username.substring(idx+1);
-			}
+		Realm realm = authenticationService.resolveRealm(state, username);
+
+		if(realm==null) {
+			return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_REALM;
 		}
 		
-		if (realm==null && realmName != null) {
-			realm = realmService.getRealmByName(realmName);
-			if (realm == null) {
-				return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_REALM;
-			}
-		}
-
-		Principal principal = null;
-
-		if (realm == null) {
-			try {
-				principal = realmService.getUniquePrincipal(username);
-			} catch (ResourceNotFoundException e) {
-				return AuthenticatorResult.INSUFFICIENT_DATA;
-			}
-			realm = principal.getRealm();
-		} else {
-			principal = realmService.getPrincipalByName(realm, username);
-		}
+		Principal principal =  realmService.getPrincipalByName(realm, username);
 
 		if (principal == null) {
-			state.setLastPrincipalName(username);
-			state.setLastRealmName(realmName);
-			return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
+
+			if(username.indexOf('@') > -1) {
+				username = username.substring(0, username.indexOf('@'));
+			}
+			
+			principal = realmService.getPrincipalByName(realm, username);
+			
+			if(principal==null) {
+				return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
+			}
 		}
 
 		boolean result = realmService.verifyPassword(principal,
 				password.toCharArray());
 
 		if (result) {
+			state.addParameter("password", password);
 			state.setRealm(realm);
 			state.setPrincipal(principal);
-		} else {
-			state.setLastPrincipalName(username);
-			state.setLastRealmName(realmName);
-			state.setRealm(null);
-		}
+		} 
 
 		return result ? AuthenticatorResult.AUTHENTICATION_SUCCESS
 				: AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_CREDENTIALS;
@@ -130,8 +104,7 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 	@SuppressWarnings("rawtypes")
 	public FormTemplate createTemplate(AuthenticationState state, Map params) {
 
-		return new UsernameAndPasswordTemplate(true, true,
-				realmService.allRealms(), state, params);
+		return new UsernameAndPasswordTemplate(state, params);
 	}
 
 	@Override
@@ -157,6 +130,11 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 	@Override
 	public String[] getAllowedSchemes() {
 		return new String[] { ".*" };
+	}
+	
+	@Override
+	public AuthenticationModuleType getType() {
+		return AuthenticationModuleType.BASIC;
 	}
 
 }

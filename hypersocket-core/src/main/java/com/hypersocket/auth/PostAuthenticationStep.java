@@ -16,9 +16,15 @@ public interface PostAuthenticationStep {
 
 	public boolean requiresProcessing(AuthenticationState state);
 	
+	public int getOrderPriority();
+	
 	public String getResourceKey();
 	
 	public AuthenticatorResult process(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException;
 	
 	public FormTemplate createTemplate(AuthenticationState state);
+
+	boolean requiresUserInput(AuthenticationState state);
+
+	boolean requiresSession(AuthenticationState state);
 }

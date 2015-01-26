@@ -8,13 +8,11 @@
 package com.hypersocket.i18n;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -27,7 +25,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationService;
-import com.hypersocket.certs.CertificateService;
+import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.config.ConfigurationChangedEvent;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.EmailNotificationService;
@@ -60,7 +58,7 @@ public class I18NServiceImpl extends AuthenticatedServiceImpl implements I18NSer
 		registerBundle(RESOURCE_BUNDLE);
 		registerBundle(ConfigurationService.RESOURCE_BUNDLE);
 		registerBundle(AuthenticationService.RESOURCE_BUNDLE);
-		registerBundle(CertificateService.RESOURCE_BUNDLE);
+		registerBundle(CertificateResourceService.RESOURCE_BUNDLE);
 		registerBundle(EmailNotificationService.RESOURCE_BUNDLE);
 		registerBundle(LocalRealmProvider.RESOURCE_BUNDLE);
 		registerBundle(PermissionService.RESOURCE_BUNDLE);
@@ -68,18 +66,18 @@ public class I18NServiceImpl extends AuthenticatedServiceImpl implements I18NSer
 		registerBundle(SessionService.RESOURCE_BUNDLE);
 		
 		supportedLocales.add(Locale.ENGLISH);
-		supportedLocales.add(getLocale("da"));
-		supportedLocales.add(getLocale("nl"));
-		supportedLocales.add(getLocale("fi"));
-		supportedLocales.add(getLocale("fr"));
-		supportedLocales.add(getLocale("de"));
-		supportedLocales.add(getLocale("it"));
-		supportedLocales.add(getLocale("ja"));
-		supportedLocales.add(getLocale("no"));
-		supportedLocales.add(getLocale("pl"));
-		supportedLocales.add(getLocale("ru"));
-		supportedLocales.add(getLocale("es"));
-		supportedLocales.add(getLocale("sv"));
+//		supportedLocales.add(getLocale("da"));
+//		supportedLocales.add(getLocale("nl"));
+//		supportedLocales.add(getLocale("fi"));
+//		supportedLocales.add(getLocale("fr"));
+//		supportedLocales.add(getLocale("de"));
+//		supportedLocales.add(getLocale("it"));
+//		supportedLocales.add(getLocale("ja"));
+//		supportedLocales.add(getLocale("no"));
+//		supportedLocales.add(getLocale("pl"));
+//		supportedLocales.add(getLocale("ru"));
+//		supportedLocales.add(getLocale("es"));
+//		supportedLocales.add(getLocale("sv"));
 		
 	}
 	
@@ -98,10 +96,8 @@ public class I18NServiceImpl extends AuthenticatedServiceImpl implements I18NSer
 	}
 	
 	private void buildBundleJson(String bundle, Locale locale, Map<String,String> resources) {
-		ResourceBundle b = I18N.getResourceBundle(locale, bundle);
-		
-		for(Enumeration<String> e = b.getKeys(); e.hasMoreElements();) {
-			String key = e.nextElement();
+
+		for(String key :  I18N.getResourceKeys(locale, bundle)) {
 			resources.put(key, I18N.getResource(locale, bundle, key));
 		}
 	}
@@ -150,11 +146,8 @@ public class I18NServiceImpl extends AuthenticatedServiceImpl implements I18NSer
 		Map<String,Map<String,Message>> messages = new HashMap<String,Map<String,Message>>();
 		
 		for(String bundle : bundles) {
-			ResourceBundle b = I18N.getResourceBundle(Locale.ENGLISH, bundle);
 			messages.put(bundle, new HashMap<String,Message>());
-			for(Enumeration<String> e = b.getKeys(); e.hasMoreElements();) {
-				String key = e.nextElement();
-				
+			for(String key :I18N.getResourceKeys(Locale.ENGLISH, bundle)) {
 				String translated = I18N.getResource(Locale.ENGLISH, bundle, key);
 				String original = I18N.getResourceNoOveride(Locale.ENGLISH, bundle, key);
 				messages.get(bundle).put(key, new Message(bundle, key, original, original.equals(translated) ? "" : translated));

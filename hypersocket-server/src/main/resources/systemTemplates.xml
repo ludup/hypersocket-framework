@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<propertyTemplates>
+	<propertyStore id="hypersocketServer"
+		type="com.hypersocket.properties.PropertiesFileConfigurationStore">
+		<filename>${hypersocket.conf}/hypersocket.properties</filename>
+	</propertyStore>
+	<propertyCategory resourceKey="category.server" resourceBundle="HypersocketServer" weight="100">
+		<property resourceKey="application.name" inputType="text"
+			restart="true" defaultValue="Hypersocket" weight="0" alphaNumericSpacesOnly="true"/>
+		<property resourceKey="application.path" inputType="text"
+			restart="true" defaultValue="hypersocket" weight="100" />
+		<property resourceKey="ui.path" inputType="text" restart="true"
+			defaultValue="ui" weight="200" />
+		<property resourceKey="http.port" inputType="number" minValue="1"
+			maxValue="65535" restart="true" defaultValue="80" weight="300"
+			store="hypersocketServer" />
+		<property resourceKey="https.port" inputType="number" minValue="1"
+			maxValue="65535" restart="true" defaultValue="443" weight="400"
+			store="hypersocketServer" />
+		<property resourceKey="require.https" inputType="switch"
+			restart="false" defaultValue="true" weight="500" store="hypersocketServer" />
+		<property resourceKey="listening.interfaces" inputType="multipleSelect"
+			restart="false" url="server/networkInterfaces" selectAllIfEmpty="true"
+			weight="600" store="hypersocketServer" />
+	</propertyCategory>
+	<propertyCategory resourceKey="category.ssl" resourceBundle="HypersocketServer" weight="200">
+	    <property resourceKey="ssl.protocols" inputType="multipleSelect"
+			restart="false" url="server/sslProtocols" selectAllIfEmpty="true"
+			weight="100"/>
+	    <property resourceKey="ssl.ciphers" inputType="multipleSelect"
+			restart="false" url="server/sslCiphers" selectAllIfEmpty="true"
+			weight="200"/>
+	</propertyCategory>
+</propertyTemplates>

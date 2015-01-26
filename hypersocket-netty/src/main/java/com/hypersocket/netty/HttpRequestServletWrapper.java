@@ -228,7 +228,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public String getProtocol() {
-		return request.getProtocolVersion().getText();
+		return url.startsWith("https") ? "https" : "http";
 	}
 
 	@Override
@@ -238,7 +238,12 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public String getServerName() {
-		return getHeader(HttpHeaders.HOST);
+		String host = getHeader(HttpHeaders.HOST);
+		int idx;
+		if((idx = host.indexOf(":")) > -1) {
+			host = host.substring(0, idx);
+		}
+		return host;
 	}
 
 	@Override

@@ -11,11 +11,17 @@
 	<parent>
 		<groupId>com.hypersocket</groupId>
 		<artifactId>hypersocket-framework</artifactId>
-		<version>0.1.3</version>
+		<version>0.2.0</version>
 		<relativePath>../</relativePath>
 	</parent>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.hypersocket</groupId>
+			<artifactId>hypersocket-json</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.hypersocket</groupId>
 			<artifactId>hypersocket-netty</artifactId>
@@ -28,17 +34,24 @@
 			<version>4.3.2</version>
 		</dependency>
 
+		<!-- Jackson -->
 		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-mapper-asl</artifactId>
-			<version>1.8.5</version>
+			<artifactId>jackson-databind</artifactId>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<version>2.3.2</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>net.sf.json-lib</groupId>
 			<artifactId>json-lib</artifactId>
 			<version>2.4</version>
 			<classifier>jdk15</classifier>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>4.4-alpha1</version>
+		</dependency>
+		
 	</dependencies>
 </project>

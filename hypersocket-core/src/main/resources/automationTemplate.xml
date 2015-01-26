@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="automation">
+
+	<propertyCategory resourceKey="category.schedule"
+		resourceBundle="AutomationResourceService" weight="99990" group="automation">
+		<property inputType="hidden" resourceKey="resourceKey"
+			defaultValue="" weight="0" />
+		<property inputType="date" resourceKey="taskStarts"
+			defaultValue="" weight="0" />
+		<property resourceKey="startTime" inputType="time" 
+			defaultValue="" weight="100"/>
+		<property inputType="date" resourceKey="taskEnds"
+			defaultValue="" weight="200" />
+		<property resourceKey="endTime" inputType="time" 
+			defaultValue="" weight="300"/>
+	</propertyCategory>
+	<propertyCategory resourceKey="category.interval"
+		resourceBundle="AutomationResourceService" weight="99991" group="automation">
+		<property inputType="select" resourceKey="repeatType"
+			defaultValue="NEVER" options="NEVER,SECONDS,MINUTES,HOURS,DAYS,MONTHS"
+			weight="500" />
+		<property inputType="number" resourceKey="repeatValue"
+			defaultValue="0" weight="600" minValue="0" maxValue="9999" />
+	</propertyCategory>
+	<propertyCategory resourceKey="category.notes"
+		resourceBundle="AutomationResourceService" weight="99992" group="automation">
+		<property inputType="textarea" resourceKey="notes"
+			defaultValue="" weight="700" />
+	</propertyCategory>
+</propertyTemplates>

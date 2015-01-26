@@ -12,11 +12,14 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class FormTemplate {
 
 	protected String resourceKey;
 	protected List<InputField> fields = new ArrayList<InputField>();
+	protected boolean showLogonButton = true;
 	
 	public FormTemplate() {
 	}
@@ -38,6 +41,13 @@ public class FormTemplate {
 		this.fields = fields;
 	}
 	
+	public boolean isShowLogonButton() {
+		return showLogonButton;
+	}
+	
+	public void setShowLogonButton(boolean showLogonButton) {
+		this.showLogonButton = showLogonButton;
+	}
 	
 	
 	

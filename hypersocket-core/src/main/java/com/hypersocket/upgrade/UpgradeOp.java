@@ -9,6 +9,8 @@ package com.hypersocket.upgrade;
 
 import java.net.URL;
 
+import com.hypersocket.Version;
+
 public class UpgradeOp implements Comparable<UpgradeOp> {
 
     private Version version;

@@ -32,6 +32,15 @@ public class Attribute extends AbstractEntity<Long>  {
 	@Column(name="type")
 	AttributeType type;
 
+	@Column(name="hidden")
+	Boolean hidden = false;
+	
+	@Column(name="read_only")
+	Boolean readOnly = false;
+	
+	@Column(name="encrypted")
+	Boolean encrypted = false;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
 	@Column(name="attribute_id")
@@ -96,5 +105,29 @@ public class Attribute extends AbstractEntity<Long>  {
 	public void setDescription(String description) {
 		this.description = description;
 	}
+
+	public Boolean getHidden() {
+		return hidden;
+	}
+
+	public void setHidden(Boolean hidden) {
+		this.hidden = hidden == null ? false : hidden;
+	}
+
+	public Boolean getReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(Boolean readOnly) {
+		this.readOnly = readOnly==null ? false : readOnly;
+	}
+
+	public void setEncrypted(boolean encrypted) {
+		this.encrypted = encrypted;
+	}
+	public boolean getEncrypted() {
+		return encrypted!=null && encrypted;
+	}
+
 	
 }

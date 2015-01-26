@@ -10,29 +10,35 @@ package com.hypersocket.realm;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.hypersocket.resource.Resource;
 
 @Entity
-@Table(name="realms", uniqueConstraints = {@UniqueConstraint(columnNames={"name"})})
+@Table(name="realms")
 @XmlRootElement(name="realm")
 public class Realm extends Resource {
 	
-	@Column(name="system", nullable=true)
-	Boolean system;
+	@Column(name="default_realm")
+	boolean defaultRealm = false;
 	
-	public Boolean isSystem() {
-		return system!=null && system;
-	}
-	
-	public boolean isSystemResource() {
-		return isSystem();
+	public boolean isDefaultRealm() {
+		return defaultRealm;
 	}
 
-	public void setSystem(Boolean system) {
-		this.system = system;
+	public void setDefaultRealm(boolean defaultRealm) {
+		this.defaultRealm = defaultRealm;
+	}
+
+	protected void doHashCodeOnKeys(HashCodeBuilder builder) {
+		builder.append(getName());
 	}
 	
+	protected void doEqualsOnKeys(EqualsBuilder builder, Object obj) {
+		Realm r = (Realm) obj;
+		builder.append(getName(), r.getName());
+	}
 }

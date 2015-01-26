@@ -11,15 +11,23 @@ import com.hypersocket.permissions.PermissionType;
 
 public enum RealmPermission implements PermissionType {
 
-	CREATE("permission.realm.create"),
-	READ("permission.realm.read"),
-	UPDATE("permission.realm.update"),
-	DELETE("permission.realm.delete");
+	READ("realm.read"),
+	CREATE("realm.create", READ),
+	UPDATE("realm.update", READ),
+	DELETE("realm.delete", READ);
 	
 	private final String val;
 	
-	private RealmPermission(final String val) {
+	private PermissionType[] implies;
+	
+	private RealmPermission(final String val, PermissionType... implies) {
 		this.val = val;
+		this.implies = implies;
+	}
+
+	@Override
+	public PermissionType[] impliesPermissions() {
+		return implies;
 	}
 	
 	public String toString() {
@@ -29,5 +37,15 @@ public enum RealmPermission implements PermissionType {
 	@Override
 	public String getResourceKey() {
 		return val;
+	}
+	
+	@Override
+	public boolean isSystem() {
+		return true;
+	}
+
+	@Override
+	public boolean isHidden() {
+		return false;
 	}
 }

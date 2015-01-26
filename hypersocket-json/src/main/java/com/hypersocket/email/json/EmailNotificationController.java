@@ -30,7 +30,7 @@ public class EmailNotificationController extends AuthenticatedController {
 	EmailNotificationService emailService;
 	
 	@AuthenticationRequired
-	@RequestMapping(value = "smtpProtocols", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "emails/smtpProtocols", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<SelectOption> getLocales(

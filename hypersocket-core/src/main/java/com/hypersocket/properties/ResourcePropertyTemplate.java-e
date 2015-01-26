@@ -7,21 +7,24 @@
  ******************************************************************************/
 package com.hypersocket.properties;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import com.hypersocket.resource.AbstractResource;
 
-
+@Transactional
 public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 
 	AbstractResource resource;
-	ResourcePropertyStore propertyStore;
 	
 	public ResourcePropertyTemplate(AbstractPropertyTemplate t, AbstractResource resource, ResourcePropertyStore propertyStore) {
 		this.resourceKey = t.getResourceKey();
 		this.defaultValue = t.getDefaultValue();
 		this.metaData = t.getMetaData();
+		this.mapping = t.getMapping();
 		this.weight = t.getWeight();
 		this.category = t.getCategory();
 		this.hidden = t.isHidden();
+		this.readOnly = t.isReadOnly();
 		this.resource = resource;
 		this.propertyStore = propertyStore;
 	}
@@ -31,7 +34,7 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 	}
 	
 	public String getValue() {
-		return propertyStore.getPropertyValue(this, resource);
+		return ((ResourcePropertyStore)propertyStore).getPropertyValue(this, resource);
 	}
 	
 	public void setResource(AbstractResource resource) {

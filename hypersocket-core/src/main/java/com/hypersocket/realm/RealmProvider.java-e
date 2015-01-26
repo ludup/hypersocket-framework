@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -19,37 +20,49 @@ import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.tables.ColumnSort;
 
 public interface RealmProvider extends ResourceTemplateRepository {
-	
+
+	void testConnection(Map<String, String> properties, boolean createMode) throws IOException;
+
 	List<Principal> allPrincipals(Realm realm, PrincipalType... types);
 
 	Principal getPrincipalByName(String principalName, Realm realm,
 			PrincipalType... acceptTypes);
-	
+
 	boolean verifyPassword(Principal principal, char[] password);
-	
-	boolean isReadOnly();
-	
-	Principal createUser(Realm realm, String username, Map<String,String> properties, List<Principal> principals) throws ResourceCreationException;
-	
-	Principal createUser(Realm realm, String username, Map<String,String> properties) throws ResourceCreationException;
-	
-	Principal updateUser(Realm realm, Principal user, String username, Map<String,String> properties, List<Principal> principals) throws ResourceChangeException;
-	
-	void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon) throws ResourceCreationException;
-	
-	void setPassword(Principal principal, char[] password, boolean forceChangeAtNextLogon) throws ResourceCreationException;
+
+	boolean isReadOnly(Realm realm);
+
+	boolean supportsAccountUnlock(Realm realm);
+
+	Principal createUser(Realm realm, String username,
+			Map<String, String> properties, List<Principal> principals,
+			String password, boolean forceChange)
+			throws ResourceCreationException;
+
+	Principal updateUser(Realm realm, Principal user, String username,
+			Map<String, String> properties, List<Principal> principals)
+			throws ResourceChangeException;
+
+	void setPassword(Principal principal, String password,
+			boolean forceChangeAtNextLogon) throws ResourceCreationException;
+
+	void setPassword(Principal principal, char[] password,
+			boolean forceChangeAtNextLogon) throws ResourceCreationException;
 
 	boolean requiresPasswordChange(Principal principal);
-	
+
 	Principal getPrincipalById(Long id, Realm realm, PrincipalType[] type);
 
-	Principal createGroup(Realm realm, String name, List<Principal> principals) throws ResourceCreationException;
-	
-	Principal createGroup(Realm realm, String name) throws ResourceCreationException;
-	
+	Principal createGroup(Realm realm, String name, List<Principal> principals)
+			throws ResourceCreationException;
+
+	Principal createGroup(Realm realm, String name)
+			throws ResourceCreationException;
+
 	void deleteGroup(Principal group) throws ResourceChangeException;
 
-	Principal updateGroup(Realm realm, Principal group, String name, List<Principal> principals) throws ResourceChangeException;
+	Principal updateGroup(Realm realm, Principal group, String name,
+			List<Principal> principals) throws ResourceChangeException;
 
 	void deleteUser(Principal user) throws ResourceChangeException;
 
@@ -66,7 +79,8 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Long getPrincipalCount(Realm realm, PrincipalType type, String searchPattern);
 
-	List<?> getPrincipals(Realm realm, PrincipalType type, String searchPattern, int start, int length, ColumnSort[] sorting);
+	List<?> getPrincipals(Realm realm, PrincipalType type,
+			String searchPattern, int start, int length, ColumnSort[] sorting);
 
 	Collection<PropertyCategory> getUserProperties(Principal principal);
 
@@ -74,6 +88,28 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Collection<PropertyCategory> getGroupProperties(Principal principal);
 
-	Set<Principal> getPrincipalsByProperty(String propertyName, String propertyValue);
+	String getAddress(Principal principal, MediaType type)
+			throws MediaNotFoundException;
 
+	String getPrincipalDescription(Principal principal);
+
+	boolean supportsAccountDisable(Realm realm);
+
+	Principal disableAccount(Principal principal)
+			throws ResourceChangeException;
+
+	Principal enableAccount(Principal principal) throws ResourceChangeException;
+
+	Principal unlockAccount(Principal principal) throws ResourceChangeException;
+
+	Set<String> getUserPropertyNames();
+
+	String getUserPropertyValue(Principal principal, String name);
+	
+	Set<String> getGroupPropertyNames();
+
+	void changePassword(Principal principal, char[] charArray, char[] charArray2)
+			throws ResourceChangeException, ResourceCreationException;
+
+	Set<String> getUserVariableNames();
 }

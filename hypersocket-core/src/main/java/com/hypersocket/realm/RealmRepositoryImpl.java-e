@@ -15,36 +15,45 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hypersocket.repository.AbstractRepositoryImpl;
+import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
+import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.HiddenFilter;
+import com.hypersocket.resource.RealmResource;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
-@Transactional
-public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements RealmRepository {
+public class RealmRepositoryImpl extends AbstractResourceRepositoryImpl<RealmResource> implements RealmRepository {
 
 	
 	@Override
+	@Transactional
 	public Realm createRealm(String name, String module, Map<String,String> properties, RealmProvider provider) {
 		Realm realm = new Realm();
 		realm.setName(name);
 		realm.setResourceCategory(module);
+		
+		
+		
 		save(realm);
 		
 		if(!properties.isEmpty()) {
 			for (Map.Entry<String, String> e : properties.entrySet()) {
-				provider.setValue(realm, e.getKey(), e.getValue());
+				DatabaseProperty p = new DatabaseProperty();
+				p.setResourceId(realm.getId());
+				p.setResourceKey(e.getKey());
+				p.setValue(e.getValue());
+				save(p);
 			}
-			refresh(realm);
 		}
 		
 		return realm;
 	}
 	
 	@Override
+	@Transactional
 	public Realm saveRealm(Realm realm) {
 		save(realm);
 		flush();
@@ -53,6 +62,7 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 	}
 	
 	@Override
+	@Transactional
 	public Realm saveRealm(Realm realm, Map<String,String> properties, RealmProvider provider) {
 		
 		boolean isNew = realm.getId()==null;
@@ -70,11 +80,13 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public List<Realm> allRealms() {
 		return allEntities(Realm.class, new HiddenFilter(), new DeletedCriteria(false), new DistinctRootEntity());
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public List<Realm> searchRealms(String searchPattern, int start, int length, ColumnSort[] sorting) {
 		return search(Realm.class, "name", searchPattern, start, length, sorting, new CriteriaConfiguration() {
 			
@@ -87,6 +99,7 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public List<Realm> allRealms(String resourceKey) {
 		return list("resourceCategory", resourceKey, Realm.class, new HiddenFilter(), new DeletedCriteria(false), new DistinctRootEntity());
 	}
@@ -96,26 +109,31 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Realm getRealmById(Long id) {
 		return get("id", id, Realm.class);
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Realm getRealmByName(String name) {
 		return getRealm("name", name);
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Realm getRealmByName(String name, boolean deleted) {
 		return get("name", name, Realm.class, new DeletedCriteria(deleted));
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Realm getRealmByHost(String host) {
 		return getRealm("host", host);
 	}
 
 	@Override
+	@Transactional
 	public void delete(Realm realm) {
 		realm.setDeleted(true);
 		realm.setName(realm.getName() + "[#" + realm.getId() + " deleted]");
@@ -124,6 +142,7 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Long countRealms(String searchPattern) {
 		return getCount(Realm.class, "name", searchPattern, new CriteriaConfiguration() {
 
@@ -133,5 +152,35 @@ public class RealmRepositoryImpl extends AbstractRepositoryImpl<Long> implements
 				criteria.add(Restrictions.eq("deleted", false));
 			}
 		});
+	}
+
+	@Override
+	protected Class<RealmResource> getResourceClass() {
+		return RealmResource.class;
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public Realm getDefaultRealm() {
+		return get("defaultRealm", true, Realm.class);
+	}
+
+	@Override
+	@Transactional
+	public Realm setDefaultRealm(Realm realm) {
+		
+		realm.setDefaultRealm(true);
+		
+		for(Realm r : allRealms()) {
+			if(!r.equals(realm)) {
+				r.setDefaultRealm(false);
+			}
+			save(r);
+		}
+		save(realm);
+		flush();
+		refresh(realm);
+		
+		return realm;
 	}
 }

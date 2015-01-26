@@ -40,9 +40,9 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 
-import com.hypersocket.certs.CertificateService;
+import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.config.ConfigurationChangedEvent;
-import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
@@ -91,7 +91,10 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	ApplicationContext applicationContext;
 	
 	@Autowired
-	ConfigurationService configurationService;
+	SystemConfigurationService configurationService;
+	
+	@Autowired 
+	RealmService realmService;
 	
 	@Autowired
 	SessionFactory sessionFactory;
@@ -103,6 +106,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	boolean stopping = false;
 	
 	public HypersocketServerImpl() {
+		Security.addProvider(new BouncyCastleProvider());
 		controllerPackages.add("com.hypersocket.json.**");
 		controllerPackages.add("com.hypersocket.**.json");
 	}
@@ -117,7 +121,10 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		if(Boolean.getBoolean("hypersocket.development")) {
 			return localAddress.getPort() == 8080;
 		} else {
-			return localAddress.getPort() == configurationService.getIntValue("http.port");
+			if(configurationService.getIntValue("http.port") > 0) {
+				return localAddress.getPort() == configurationService.getIntValue("http.port");
+			}
+			return true;
 		}
 	}
 
@@ -185,6 +192,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	 */
 	@Override
 	public void registerHttpHandler(HttpRequestHandler handler) {
+		handler.setServer(this);
 		httpHandlers.add(handler);
 		Collections.sort(httpHandlers);
 	}
@@ -198,6 +206,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	@Override
 	public void unregisterHttpHandler(HttpRequestHandler handler) {
 		httpHandlers.remove(handler);
+		Collections.sort(httpHandlers);
 	}
 	
 	public void init(ApplicationContext applicationContext)
@@ -211,10 +220,8 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		eventService.registerEvent(ServerStoppedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(WebappCreatedEvent.class, RESOURCE_BUNDLE);
 		
-		eventService.publishEvent(new ServerStartingEvent(this));
+		eventService.publishEvent(new ServerStartingEvent(this, realmService.getSystemPrincipal().getRealm()));
 		
-		Security.addProvider(new BouncyCastleProvider());
-
 		initializeSSL();
 		
 		registerConfiguration();
@@ -232,6 +239,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		servletConfig = new HypersocketServletConfig("default",
 				resolvePath(API_PATH));
 		
+		
 		webappContext = new AnnotationConfigWebApplicationContext();
 		webappContext.setParent(applicationContext);
 		webappContext.register(DelegatingWebMvcConfiguration.class);
@@ -239,14 +247,15 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 		webappContext.setServletConfig(servletConfig);
 		webappContext.refresh();
-
+		webappContext.start();
+		
 		// We use a custom implementation of DispatcherServlet so it does not restrict the HTTP methods
 		dispatcherServlet = new NonRestrictedDispatcherServlet(webappContext);
 		dispatcherServlet.init(servletConfig);
 
-		registerHttpHandler(new APIRequestHandler(dispatcherServlet, this, 100));
+		registerHttpHandler(new APIRequestHandler(dispatcherServlet, 100));
 
-		eventService.publishEvent(new WebappCreatedEvent(this, true));
+		eventService.publishEvent(new WebappCreatedEvent(this, true, realmService.getSystemRealm()));
 
 	}
 
@@ -361,7 +370,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		System.setProperty("hypersocket.appPath", getBasePath());
 		System.setProperty("hypersocket.uiPath", getUiPath());
 		
-		eventService.publishEvent(new ServerStartedEvent(this));
+		eventService.publishEvent(new ServerStartedEvent(this, realmService.getSystemRealm()));
 
 	}
 
@@ -377,7 +386,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 		stopping = true;
 		
-		eventService.publishEvent(new ServerStoppingEvent(this));
+		eventService.publishEvent(new ServerStoppingEvent(this, realmService.getSystemRealm()));
 		
 		if (log.isInfoEnabled())
 			log.info("Stopping server");
@@ -387,7 +396,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		if (log.isInfoEnabled())
 			log.info("Server stopped");
 		
-		eventService.publishEvent(new ServerStoppedEvent(this));
+		eventService.publishEvent(new ServerStoppedEvent(this, realmService.getSystemRealm()));
 		
 	}
 	
@@ -419,6 +428,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	}
 
 	public HypersocketSession setupHttpSession(List<String> cookies,
+			boolean secure,
 			HttpServletResponse servletResponse) {
 
 		HypersocketSession session = null;
@@ -452,9 +462,9 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		}
 
 		Cookie cookie = new Cookie(sessionCookieName, session.getId());
-		cookie.setSecure(false);
 		cookie.setMaxAge(60 * 15);
 		cookie.setPath("/");
+		cookie.setSecure(secure);
 		servletResponse.addCookie(cookie);
 
 		return session;
@@ -472,20 +482,21 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 	public void initializeSSL() throws FileNotFoundException, IOException {
 
-		CertificateService certificateService = (CertificateService) applicationContext
-				.getBean("certificateServiceImpl");
+		CertificateResourceService certificateService = (CertificateResourceService) applicationContext
+				.getBean("certificateResourceServiceImpl");
 		RealmService realmService = (RealmService) applicationContext
 				.getBean("realmServiceImpl");
 
+		
+		certificateService.setCurrentPrincipal(realmService
+				.getSystemPrincipal(), Locale.getDefault(),
+				realmService.getSystemPrincipal().getRealm());
+		
 		try {
 
 			if (log.isInfoEnabled()) {
 				log.info("Initializing SSL contexts");
 			}
-
-			certificateService.setCurrentPrincipal(realmService
-					.getSystemPrincipal(), Locale.getDefault(),
-					realmService.getSystemPrincipal().getRealm());
 
 			KeyStore ks = certificateService.getDefaultCertificate();
 
@@ -623,5 +634,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		}
 		return false;
 	}
+
 
 }

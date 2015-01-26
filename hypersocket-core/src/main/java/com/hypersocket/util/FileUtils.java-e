@@ -13,6 +13,10 @@ public class FileUtils {
 	static SimpleDateFormat dateFormat = new SimpleDateFormat(
 			"dd MMM yyyy HH:mm");
 
+	public static String convertBackslashToForwardSlash(String str) {
+		return str.replace('\\', '/');
+	}
+	
 	public static String checkStartsWithSlash(String str) {
 		if (str.startsWith("/")) {
 			return str;
@@ -47,10 +51,21 @@ public class FileUtils {
 
 	public static String stripParentPath(String rootPath, String path)
 			throws IOException {
+		path = checkEndsWithSlash(path);
+		rootPath = checkEndsWithSlash(rootPath);
 		if (!path.startsWith(rootPath)) {
 			throw new IOException(path + " is not a child path of " + rootPath);
 		} else {
-			return path.substring(checkEndsWithSlash(rootPath).length());
+			return path.substring(rootPath.length());
+		}
+	}
+	
+	public static String stripFirstPathElement(String path){
+		int idx;
+		if ((idx = path.indexOf('/',1)) > -1) {
+			return path.substring(idx);
+		} else {
+			return path;
 		}
 	}
 

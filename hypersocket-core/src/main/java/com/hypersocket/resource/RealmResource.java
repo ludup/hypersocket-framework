@@ -1,15 +1,12 @@
 package com.hypersocket.resource;
 
-import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
 
 import com.hypersocket.realm.Realm;
 
-@Entity
-@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
+@MappedSuperclass
 public abstract class RealmResource extends Resource {
 
 
@@ -24,8 +21,5 @@ public abstract class RealmResource extends Resource {
 	public void setRealm(Realm realm) {
 		this.realm = realm;
 	}
-	
-	public Boolean isSystemResource() {
-		return realm==null;
-	}
+
 }

@@ -9,6 +9,8 @@ package com.hypersocket.certs.json;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.hypersocket.certificates.CertificateResource;
+
 @XmlRootElement(name="certificateState")
 public class CertificateStatus {
 
@@ -17,9 +19,13 @@ public class CertificateStatus {
 	
 	boolean success = true;
 	String message;
+	CertificateResource resource;
+	
+	public CertificateStatus(CertificateResource resource) {
+		this.resource = resource;
+	}
 	
 	public CertificateStatus() {
-		
 	}
 
 	public boolean isInstalledCertificate() {
@@ -52,6 +58,14 @@ public class CertificateStatus {
 
 	public void setMessage(String message) {
 		this.message = message;
+	}
+	
+	public CertificateResource getResource() {
+		return resource;
+	}
+	
+	public void setResource(CertificateResource resource) {
+		this.resource = resource;
 	}
 
 }

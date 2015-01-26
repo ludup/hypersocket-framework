@@ -17,13 +17,11 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.log4j.BasicConfigurator;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -39,7 +37,6 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hypersocket.client.EmbeddedClient;
 import com.hypersocket.client.HypersocketClientTransport;
 import com.hypersocket.client.NetworkResource;
 import com.hypersocket.netty.websocket.WebSocket;
@@ -62,12 +59,14 @@ public class NettyClientTransport implements HypersocketClientTransport {
 	ExecutorService bossExecutor;
 	ExecutorService workerExecutor;
 	boolean ownsExecutors = true;
+
 	public NettyClientTransport() {
 		bossExecutor = Executors.newCachedThreadPool();
 		workerExecutor = Executors.newCachedThreadPool();
 	}
-	
-	public NettyClientTransport(ExecutorService bossExecutor, ExecutorService workerExecutor) {
+
+	public NettyClientTransport(ExecutorService bossExecutor,
+			ExecutorService workerExecutor) {
 		this.bossExecutor = bossExecutor;
 		this.workerExecutor = workerExecutor;
 		this.ownsExecutors = false;
@@ -99,9 +98,7 @@ public class NettyClientTransport implements HypersocketClientTransport {
 
 		// Configure the server.
 		serverBootstrap = new ServerBootstrap(
-				new NioServerSocketChannelFactory(
-						bossExecutor,
-						workerExecutor));
+				new NioServerSocketChannelFactory(bossExecutor, workerExecutor));
 
 		// Set up the event pipeline factory.
 		serverBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
@@ -135,7 +132,7 @@ public class NettyClientTransport implements HypersocketClientTransport {
 		httpClient.disconnect();
 
 	}
-	
+
 	@Override
 	public void stopAllForwarding() {
 		Set<SocketAddress> tmp = new HashSet<SocketAddress>();
@@ -148,40 +145,43 @@ public class NettyClientTransport implements HypersocketClientTransport {
 	@Override
 	public void shutdown() {
 
-		if(ownsExecutors) {
-			if(log.isDebugEnabled()) {
+		if (ownsExecutors) {
+			if (log.isDebugEnabled()) {
 				log.debug("Releasing thread pool");
 			}
-			
+
 			bossExecutor.shutdownNow();
 			workerExecutor.shutdownNow();
 		}
 	}
-	
+
 	@Override
 	public void stopLocalForwarding(String listenAddress, int listenPort) {
 
 		try {
-			if(log.isInfoEnabled()) {
-				log.info("Stopping forwarding on " + listenAddress + ":" + listenPort);
+			if (log.isInfoEnabled()) {
+				log.info("Stopping forwarding on " + listenAddress + ":"
+						+ listenPort);
 			}
-			
-			SocketAddress addr = new InetSocketAddress(listenAddress, listenPort);
+
+			SocketAddress addr = new InetSocketAddress(listenAddress,
+					listenPort);
 			stopLocalForwarding(addr);
 		} catch (Throwable e) {
-			log.error("Failed to stop local forwarding " + listenAddress + ":" + listenPort,  e);
+			log.error("Failed to stop local forwarding " + listenAddress + ":"
+					+ listenPort, e);
 		}
 	}
 
 	protected void stopLocalForwarding(SocketAddress addr) {
-		if(channelsBySocketAddress.containsKey(addr)) {
+		if (channelsBySocketAddress.containsKey(addr)) {
 			Channel channel = channelsBySocketAddress.remove(addr);
 			channel.close();
 		}
-		if(resourcesBySocketAddress.containsKey(addr)) {
+		if (resourcesBySocketAddress.containsKey(addr)) {
 			resourcesBySocketAddress.remove(addr);
 		}
-		
+
 	}
 
 	@Override
@@ -189,9 +189,10 @@ public class NettyClientTransport implements HypersocketClientTransport {
 			NetworkResource resource) throws IOException {
 		try {
 
-			if(log.isInfoEnabled()) {
-				log.info("Starting forwarding on " + listenAddress + ":" + listenPort 
-						+ " to " + resource.getHostname() + ":" + resource.getPort());
+			if (log.isInfoEnabled()) {
+				log.info("Starting forwarding on " + listenAddress + ":"
+						+ listenPort + " to " + resource.getHostname() + ":"
+						+ resource.getPort());
 			}
 			Channel channel = serverBootstrap.bind(new InetSocketAddress(
 					listenAddress, listenPort));
@@ -199,12 +200,12 @@ public class NettyClientTransport implements HypersocketClientTransport {
 			resourcesBySocketAddress.put(channel.getLocalAddress(), resource);
 			channelsBySocketAddress.put(channel.getLocalAddress(), channel);
 
-			return ((InetSocketAddress)channel.getLocalAddress()).getPort();
+			return ((InetSocketAddress) channel.getLocalAddress()).getPort();
 		} catch (Exception e) {
 			if (log.isErrorEnabled()) {
 				log.error("Could not start local forwarding " + e.getMessage());
 			}
-			if(listenPort > 0) {
+			if (listenPort > 0) {
 				return startLocalForwarding(listenAddress, 0, resource);
 			} else {
 				return 0;
@@ -216,15 +217,14 @@ public class NettyClientTransport implements HypersocketClientTransport {
 	public String get(String uri) throws IOException {
 		return get(uri, requestTimeout);
 	}
-	
+
 	@Override
 	public String get(String uri, long timeout) throws IOException {
 
 		HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
 				HttpMethod.GET, apiPath + uri);
 
-		HttpHandlerResponse response = httpClient.sendRequest(request,
-				timeout);
+		HttpHandlerResponse response = httpClient.sendRequest(request, timeout);
 
 		if (response.getStatusCode() == 200) {
 			return response.getContent().toString(Charset.forName("UTF-8"));
@@ -240,7 +240,7 @@ public class NettyClientTransport implements HypersocketClientTransport {
 			throws IOException {
 		return post(uri, params, requestTimeout);
 	}
-	
+
 	@Override
 	public String post(String uri, Map<String, String> params, long timeout)
 			throws IOException {
@@ -267,8 +267,7 @@ public class NettyClientTransport implements HypersocketClientTransport {
 			request.setContent(buffer);
 		}
 
-		HttpHandlerResponse response = httpClient.sendRequest(request,
-				timeout);
+		HttpHandlerResponse response = httpClient.sendRequest(request, timeout);
 
 		if (response.getStatusCode() == 200) {
 			return response.getContent().toString(Charset.forName("UTF-8"));
@@ -279,17 +278,12 @@ public class NettyClientTransport implements HypersocketClientTransport {
 
 	}
 
-	public WebSocket createTunnel(Channel channel, WebSocketListener callback)
+	public WebSocket createWebsocket(String request, WebSocketListener callback)
 			throws IOException {
 
 		try {
-
-			NetworkResource resource = resourcesBySocketAddress.get(channel
-					.getLocalAddress());
-
 			URI uri = new URI("ws://" + httpClient.getHost() + ":"
-					+ httpClient.getPort() + path + "tunnel?resourceId="
-					+ resource.getId() + "&port=" + resource.getPort());
+					+ httpClient.getPort() + path + request);
 
 			return httpClient.createWebsocket(uri, callback);
 
@@ -298,23 +292,70 @@ public class NettyClientTransport implements HypersocketClientTransport {
 		}
 	}
 
-	public static void main(String[] args) throws UnknownHostException,
-			IOException {
+	public WebSocket createTunnel(Channel channel, WebSocketListener callback)
+			throws IOException {
 
-		BasicConfigurator.configure();
+		NetworkResource resource = resourcesBySocketAddress.get(channel
+				.getLocalAddress());
 
-		NettyClientTransport c = new NettyClientTransport();
-		EmbeddedClient client = new EmbeddedClient(c);
-		
-		client.connect("192.168.82.160", 8443, "/hypersocket", Locale.getDefault());
+		return createWebsocket(resource.getUri() + "?resourceId=" + resource.getId()
+				+ "&hostname=" + resource.getDestinationHostname()
+				+ "&port=" + resource.getPort(), callback);
 
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("realm", "Default");
-		params.put("username", "admin");
-		params.put("password", "admin");
-
-		client.loginHttp("Default", "admin", "admin");
 	}
+
+	/**
+	 * For testing purposes. Commented out, please leave for now.
+	 */
+//	public static void main(String[] args) throws UnknownHostException,
+//			IOException {
+//
+//		//BasicConfigurator.configure();
+//
+//		NettyClientTransport c = new NettyClientTransport();
+//		EmbeddedClient client = new EmbeddedClient(c);
+//
+//		client.connect("localhost", 8443, "/hypersocket",
+//				Locale.getDefault());
+//
+//		Map<String, String> params = new HashMap<String, String>();
+//		params.put("realm", "Default");
+//		params.put("username", "admin");
+//		params.put("password", "admin");
+//
+//		client.loginHttp("Default", "admin", "admin");
+//
+//		final WebSocket ws = c.createWebsocket("bind?id=12345", new WebSocketListener() {
+//			
+//			Random r = new Random();
+//			@Override
+//			public void onMessage(WebSocket client, WebSocketFrame frame) {
+//				System.out.println("Channel: " + frame.getRsv() + " " + frame.getBinaryData().toString("UTF-8"));
+//				client.send(new BinaryWebSocketFrame(true, r.nextInt(100), ChannelBuffers.copiedBuffer("echo\n", "UTF-8")));
+//			}
+//			
+//			@Override
+//			public void onError(Throwable t) {
+//				t.printStackTrace();
+//			}
+//			
+//			@Override
+//			public void onDisconnect(WebSocket client) {
+//				System.out.println("Disconnected");
+//			}
+//			
+//			@Override
+//			public void onConnect(WebSocket client) {
+//				System.out.println("Connected");
+//				client.send(new BinaryWebSocketFrame(true, r.nextInt(100), ChannelBuffers.copiedBuffer("echo\n", "UTF-8")));
+//			}
+//		});
+//		
+//		System.out.println("Connecting");
+//		ws.connect().awaitUninterruptibly();
+//		System.out.println("Waiting for bind");
+//		
+//	}
 
 	@Override
 	public String getHost() {

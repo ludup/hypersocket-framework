@@ -1,5 +1,7 @@
 package com.hypersocket.session.events;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.session.Session;
 
 public class SessionClosedEvent extends SessionEvent {
@@ -13,6 +15,8 @@ public class SessionClosedEvent extends SessionEvent {
 		super(source, EVENT_RESOURCE_KEY, true, session);
 	}
 
-	
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 	
 }

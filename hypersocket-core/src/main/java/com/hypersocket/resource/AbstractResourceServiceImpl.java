@@ -1,7 +1,10 @@
 package com.hypersocket.resource;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,15 +12,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.properties.EntityResourcePropertyStore;
+import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
 public abstract class AbstractResourceServiceImpl<T extends RealmResource>
-		extends AuthenticatedServiceImpl implements AbstractResourceService<T> {
+		extends AuthenticatedServiceImpl implements AbstractResourceService<T>,
+			EventPropertyCollector {
 
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
@@ -25,14 +32,17 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	static final String RESOURCE_BUNDLE = "AssignableResourceService";
 
 	@Autowired
-	RealmService realmService;
+	RealmService realm;
 
+	@Autowired
+	EntityResourcePropertyStore entityPropertyStore;
+	
 	protected abstract AbstractResourceRepository<T> getRepository();
 
 	protected abstract String getResourceBundle();
 
 	public abstract Class<? extends PermissionType> getPermissionType();
-
+	
 	protected PermissionType getUpdatePermission() {
 		return getPermission("UPDATE");
 	}
@@ -62,13 +72,23 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 
 	@Override
-	public void createResource(T resource) throws ResourceCreationException,
+	public Set<String> getPropertyNames(String resourceKey, Realm realm) {
+		return getRepository().getPropertyNames();
+	}
+	
+	@Override
+	public void createResource(T resource, Map<String,String> properties) throws ResourceCreationException,
 			AccessDeniedException {
 
 		assertPermission(getCreatePermission());
 
+		if(resource.getRealm()==null) {
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"generic.create.error", "Calling method should set realm");
+		}
+		
 		try {
-			getResourceByName(resource.getName());
+			getResourceByName(resource.getName(), resource.getRealm());
 			ResourceCreationException ex = new ResourceCreationException(
 					RESOURCE_BUNDLE, "generic.alreadyExists.error",
 					resource.getName());
@@ -76,15 +96,9 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			throw ex;
 		} catch (ResourceNotFoundException ex) {
 			try {
-				// Make sure any resources in default realm
-				// (system) are available across all realms
-				if (getCurrentRealm().isSystem()) {
-					resource.setRealm(null);
-				} else {
-					resource.setRealm(getCurrentRealm());
-				}
-
-				getRepository().saveResource(resource);
+				beforeCreateResource(resource, properties);
+				getRepository().saveResource(resource, properties);
+				afterCreateResource(resource, properties);
 				fireResourceCreationEvent(resource);
 			} catch (Throwable t) {
 				log.error("Failed to create resource", t);
@@ -100,16 +114,37 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	}
 
+	protected void beforeCreateResource(T resource, Map<String,String> properties) throws ResourceCreationException {
+		
+	}
+	
+	protected void afterCreateResource(T resource, Map<String,String> properties) throws ResourceCreationException {
+		
+	}
+	
+	protected void beforeUpdateResource(T resource, Map<String,String> properties) throws ResourceChangeException {
+		
+	}
+	
+	protected void afterUpdateResource(T resource, Map<String,String> properties) throws ResourceChangeException {
+		
+	}
+	
 	protected abstract void fireResourceCreationEvent(T resource);
 
 	protected abstract void fireResourceCreationEvent(T resource, Throwable t);
 
-	public void updateResource(T resource) throws ResourceChangeException,
+	public void updateResource(T resource, Map<String,String> properties) throws ResourceChangeException,
 			AccessDeniedException {
 		assertPermission(getUpdatePermission());
 
 		try {
-			getRepository().saveResource(resource);
+			if(resource.getRealm()==null) {
+				resource.setRealm(getCurrentRealm());
+			}
+			beforeUpdateResource(resource, properties);
+			getRepository().updateResource(resource, properties);
+			afterUpdateResource(resource, properties);
 			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {
 			fireResourceUpdateEvent(resource, t);
@@ -180,12 +215,22 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	@Override
 	public List<T> getResources() {
-		return getRepository().getResources();
+		return getRepository().getResources(getCurrentRealm());
 	}
 
 	@Override
 	public T getResourceByName(String name) throws ResourceNotFoundException {
-		T resource = getRepository().getResourceByName(name);
+		T resource = getRepository().getResourceByName(name, getCurrentRealm());
+		if (resource == null) {
+			throw new ResourceNotFoundException(getResourceBundle(),
+					"error.invalidResourceName", name);
+		}
+		return resource;
+	}
+	
+	@Override
+	public T getResourceByName(String name, Realm realm) throws ResourceNotFoundException {
+		T resource = getRepository().getResourceByName(name, realm);
 		if (resource == null) {
 			throw new ResourceNotFoundException(getResourceBundle(),
 					"error.invalidResourceName", name);
@@ -202,4 +247,30 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		}
 		return resource;
 	}
+	
+	@Override
+	public Collection<PropertyCategory> getResourceTemplate() {
+		return getRepository().getPropertyCategories(null);
+	}
+	
+	@Override
+	public Collection<PropertyCategory> getResourceProperties(T resource) {
+		return getRepository().getPropertyCategories(resource);
+	}
+	
+	@Override
+	public String getResourceProperty(T resource, String resourceKey) {
+		return getRepository().getValue(resource, resourceKey);
+	}
+	
+	@Override
+	public boolean getResourceBooleanProperty(T resource, String resourceKey) {
+		return getRepository().getBooleanValue(resource, resourceKey);
+	}
+	
+	@Override
+	public int getResourceIntProperty(T resource, String resourceKey) {
+		return getRepository().getIntValue(resource, resourceKey);
+	}
+
 }

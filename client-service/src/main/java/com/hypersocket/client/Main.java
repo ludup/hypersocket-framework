@@ -3,6 +3,8 @@ package com.hypersocket.client;
 import java.beans.Introspector;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
 import java.rmi.AccessException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RMISecurityManager;
@@ -14,17 +16,19 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Properties;
 import java.util.Random;
 
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hypersocket.client.rmi.ClientService;
 import com.hypersocket.client.rmi.ConfigurationService;
+import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.client.rmi.ConnectionService;
+import com.hypersocket.client.rmi.ResourceService;
 import com.hypersocket.client.service.ClientServiceImpl;
 import com.hypersocket.client.service.ConfigurationServiceImpl;
 import com.hypersocket.client.service.ConnectionServiceImpl;
+import com.hypersocket.client.service.ResourceServiceImpl;
 
 public class Main {
 
@@ -32,13 +36,22 @@ public class Main {
 
 	ConnectionServiceImpl connectionService;
 	ConfigurationServiceImpl configurationService;
+	ResourceService resourceService;
 	ClientServiceImpl clientService;
 	Properties properties = new Properties();
 	Registry registry;
 	int port;
+	String[] args;
 
-	Main() {
-		
+	Runnable restartCallback;
+	Runnable shutdownCallback;
+	ClassLoader classLoader;
+	static Main instance;
+
+	public Main(Runnable restartCallback, Runnable shutdownCallback, String[] args) {
+		this.restartCallback = restartCallback;
+		this.shutdownCallback = shutdownCallback;
+		this.args = args;
 	}
 
 	void buildServices() throws RemoteException {
@@ -98,11 +111,61 @@ public class Main {
 		configurationService = new ConfigurationServiceImpl();
 
 		if (log.isInfoEnabled()) {
+			log.info("Creating ResourceService");
+		}
+
+		resourceService = new ResourceServiceImpl();
+		
+		if (log.isInfoEnabled()) {
 			log.info("Creating ClientService");
 		}
 
+		buildDefaultConnections();
+		
 		clientService = new ClientServiceImpl(connectionService,
-				configurationService);
+				configurationService, resourceService);
+
+		
+	
+	}
+	
+	private void buildDefaultConnections() {
+		
+		for(String arg : args) {
+			
+			if(arg.startsWith("url=")) {
+				try {
+					URL url = new URL(arg.substring(4));
+					
+					Connection con = connectionService.getConnection(url.getHost());
+					if(con==null) {
+						con = connectionService.createNew();
+						con.setStayConnected(true);
+						
+						con.setConnectAtStartup(false);
+						con.setHostname(url.getHost());
+						con.setPort(url.getPort() <= 0 ? 443 : url.getPort());
+						
+						String path = url.getPath();
+						if(path.equals("") || path.equals("/")) {
+							path = "/hypersocket";
+						} else if(path.indexOf('/', 1) > -1) {
+							path = path.substring(0, path.indexOf('/', 1));
+						}
+						con.setPath(path);
+						
+						// Prompt for authentication
+						con.setUsername("");
+						con.setHashedPassword("");
+						con.setRealm("");
+						
+						connectionService.save(con);
+					}
+				} catch (Exception e) {
+					log.error("Failed to process url app parameter", e);
+				}
+			}
+		}
 	}
 
 	public static int randInt(int min, int max) {
@@ -135,6 +198,13 @@ public class Main {
 		} catch (Exception e) {
 		}
 
+
+		try {
+			registry.unbind("resourceService");
+		} catch (Exception e) {
+		}
+
+		
 		try {
 			registry.unbind("configurationService");
 		} catch (Exception e) {
@@ -156,6 +226,7 @@ public class Main {
 		try {
 			publishService(ConnectionService.class, connectionService);
 			publishService(ConfigurationService.class, configurationService);
+			publishService(ResourceService.class, resourceService);
 			publishService(ClientService.class, clientService);
 			return true;
 		} catch (Exception e) {
@@ -189,7 +260,7 @@ public class Main {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public void run() {
 
 		File logs = new File("logs");
 		logs.mkdirs();
@@ -199,26 +270,23 @@ public class Main {
 		
 		System.setProperty("java.rmi.server.hostname", "localhost");
 		
-		BasicConfigurator.configure();
 		if (System.getSecurityManager() == null) {
 			System.setSecurityManager(new RMISecurityManager());
 		}
 
-		Main main = new Main();
-
 		while(true) {
 			try {
-				main.buildServices();
+				buildServices();
 	
-				if (!main.publishServices()) {
+				if (!publishServices()) {
 					System.exit(1);
 				}
 	
-				if (!main.start()) {
+				if (!start()) {
 					System.exit(2);
 				}
 				
-				main.poll();
+				poll();
 			} catch (Exception e) {
 				log.error("Failed to start", e);
 				try {
@@ -227,6 +295,62 @@ public class Main {
 				}
 			}
 		}
+	}
+	
+	public static Main getInstance() {
+		return instance;
+	}
+	
+	public void restart() {
+		restartCallback.run();
+	}
+	
+	public void shutdown() {
+		shutdownCallback.run();
+	}
+	
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+
+		instance = new Main(new DefaultRestartCallback(), new DefaultShutdownCallback(), args);
+		instance.run();
+	}
+	
+	public static void runApplication(Runnable restartCallback,
+			Runnable shutdownCallback, String[] args) throws IOException {
+
+		new Main(restartCallback, shutdownCallback, args).run();
+
+	}
+	
+	static class DefaultRestartCallback implements Runnable {
+
+		@Override
+		public void run() {
+			
+			if(log.isInfoEnabled()) {
+				log.info("There is no restart mechanism available. Shutting down");
+			}
+			
+			System.exit(0);
+		}
+		
+	}
+	
+	static class DefaultShutdownCallback implements Runnable {
+
+		@Override
+		public void run() {
+			
+			if(log.isInfoEnabled()) {
+				log.info("Shutting down using default shutdown mechanism");
+			}
+			
+			System.exit(0);
+		}
+		
 	}
 
 }

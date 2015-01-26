@@ -2,7 +2,7 @@ package com.hypersocket.properties;
 
 import com.hypersocket.resource.AbstractResource;
 
-public interface ResourcePropertyStore extends PropertyStore {
+public interface ResourcePropertyStore extends XmlTemplatePropertyStore {
 
 	public String getPropertyValue(AbstractPropertyTemplate template, AbstractResource resource);
 	

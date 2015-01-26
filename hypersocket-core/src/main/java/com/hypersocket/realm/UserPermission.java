@@ -11,16 +11,24 @@ import com.hypersocket.permissions.PermissionType;
 
 public enum UserPermission implements PermissionType {
 	
-	CREATE("user.create"),
 	READ("user.read"),
-	UPDATE("user.update"),
-	DELETE("user.delete");
+	CREATE("user.create", READ),
+	UPDATE("user.update", READ),
+	DELETE("user.delete", READ);
 	
 	private final String val;
 	
-	private UserPermission(final String val) {
+	private PermissionType[] implies;
+	
+	private UserPermission(final String val, PermissionType... implies) {
 		this.val = val;
+		this.implies = implies;
 	}
+
+	@Override
+	public PermissionType[] impliesPermissions() {
+		return implies;
+	}	
 	
 	public String toString() {
 		return val;
@@ -30,4 +38,15 @@ public enum UserPermission implements PermissionType {
 	public String getResourceKey() {
 		return val;
 	}
+	
+	@Override
+	public boolean isSystem() {
+		return false;
+	}
+
+	@Override
+	public boolean isHidden() {
+		return false;
+	}
+
 }

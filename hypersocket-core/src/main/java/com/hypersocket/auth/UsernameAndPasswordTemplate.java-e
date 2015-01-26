@@ -7,7 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -16,7 +15,6 @@ import com.hypersocket.i18n.I18N;
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.input.PasswordInputField;
 import com.hypersocket.input.TextInputField;
-import com.hypersocket.realm.Realm;
 
 @XmlRootElement(name = "form")
 public class UsernameAndPasswordTemplate extends FormTemplate {
@@ -25,9 +23,7 @@ public class UsernameAndPasswordTemplate extends FormTemplate {
 	public static final String PASSWORD_FIELD = "password";
 
 	@SuppressWarnings("rawtypes")
-	public UsernameAndPasswordTemplate(boolean showRealm,
-			boolean requiresRealm, List<Realm> realms,
-			AuthenticationState state, Map params) {
+	public UsernameAndPasswordTemplate(AuthenticationState state, Map params) {
 
 		setResourceKey(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
 

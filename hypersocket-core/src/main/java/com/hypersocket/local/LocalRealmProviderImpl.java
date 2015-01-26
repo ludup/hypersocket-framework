@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.local;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -16,6 +17,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.auth.PasswordEncryptionType;
-import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.MediaNotFoundException;
+import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -49,6 +52,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 
 	public final static String FIELD_FULLNAME = "user.fullname";
 	public final static String FIELD_EMAIL = "user.email";
+	public final static String FIELD_MOBILE = "user.mobile";
 	public final static String FIELD_PASSWORD_ENCODING = "password.encoding";
 
 	@Autowired
@@ -169,13 +173,14 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
-	public boolean isReadOnly() {
+	public boolean isReadOnly(Realm realm) {
 		return false;
 	}
 
 	@Override
 	public Principal createUser(Realm realm, String username,
-			Map<String, String> properties, List<Principal> principals)
+			Map<String, String> properties, List<Principal> principals,
+			String password, boolean forceChange)
 			throws ResourceCreationException {
 
 		try {
@@ -197,6 +202,9 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 			userRepository.flush();
 			userRepository.refresh(user);
 
+			if(password!=null) {
+				setPassword(user, password, forceChange);
+			}
 			return user;
 		} catch (Exception e) {
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
@@ -217,9 +225,12 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 						"principal is not of type LocalUser");
 			}
 
-			LocalUser user = (LocalUser) principal;
+			// Get again so we have it within a transaction so lazy loading works.
+			LocalUser user = (LocalUser) userRepository.getUserById(principal.getId(), principal.getRealm());
 			user.setName(username);
 			user.setRealm(realm);
+
+			user.getGroups().clear();
 
 			for (Principal p : principals) {
 				if (p instanceof LocalGroup) {
@@ -241,6 +252,17 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 
 	}
 
+	@Override
+	public void changePassword(Principal principal, char[] oldPassword,
+			char[] newPassword) throws ResourceChangeException,
+			ResourceCreationException {
+		if(!verifyPassword(principal, oldPassword)) {
+			throw new ResourceChangeException(RESOURCE_BUNDLE, "invalid.password");
+		}
+		
+		setPassword(principal, newPassword, false);
+	}
+	
 	@Override
 	public void setPassword(Principal principal, char[] password,
 			boolean forceChangeAtNextLogon) throws ResourceCreationException {
@@ -419,11 +441,10 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 
 		List<Principal> result = new ArrayList<Principal>();
 		if (principal instanceof LocalUser) {
-			LocalUser user = (LocalUser) principal;
-			result.addAll(user.getGroups());
+			result.addAll(userRepository.getGroupsByUser((LocalUser) principal));
 		} else if (principal instanceof LocalGroup) {
-			LocalGroup group = (LocalGroup) principal;
-			result.addAll(group.getUsers());
+			result.addAll(userRepository
+					.getUsersByGroup((LocalGroup) principal));
 		} else {
 			throw new IllegalStateException(
 					"Principal is not a LocalUser or LocalGroup!");
@@ -442,14 +463,14 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		switch (type) {
 		case GROUP:
 			if (principal instanceof LocalUser) {
-				LocalUser user = (LocalUser) principal;
-				result.addAll(user.getGroups());
+				result.addAll(userRepository
+						.getGroupsByUser((LocalUser) principal));
 			}
 			break;
 		case USER:
 			if (principal instanceof LocalGroup) {
-				LocalGroup group = (LocalGroup) principal;
-				result.addAll(group.getUsers());
+				result.addAll(userRepository
+						.getUsersByGroup((LocalGroup) principal));
 			}
 			break;
 		default:
@@ -457,12 +478,6 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		}
 
 		return result;
-	}
-
-	@Override
-	public Principal createUser(Realm realm, String username,
-			Map<String, String> properties) throws ResourceCreationException {
-		return createUser(realm, username, properties, null);
 	}
 
 	@Override
@@ -513,16 +528,100 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		return getPropertyCategories(realm);
 	}
 
+	// @Override
+	// public Set<Principal> getPrincipalsByProperty(String propertyName,
+	// String propertyValue) {
+	//
+	// Set<Principal> principals = new HashSet<Principal>();
+	// List<DatabaseProperty> properties = userRepository
+	// .getPropertiesWithValue(propertyName, propertyValue);
+	// for (DatabaseProperty property : properties) {
+	// principals.add((Principal) property.getResource());
+	// }
+	// return principals;
+	// }
+
 	@Override
-	public Set<Principal> getPrincipalsByProperty(String propertyName,
-			String propertyValue) {
-		
-		Set<Principal> principals = new HashSet<Principal>();
-		List<DatabaseProperty> properties = userRepository.getPropertiesWithValue(propertyName, propertyValue);
-		for(DatabaseProperty property : properties) {
-			principals.add((Principal)property.getResource());
+	public String getAddress(Principal principal, MediaType type)
+			throws MediaNotFoundException {
+
+		switch (type) {
+		case EMAIL:
+			String email = userRepository.getValue(principal,
+					LocalRealmProviderImpl.FIELD_EMAIL);
+			if (!StringUtils.isEmpty(email)) {
+				return email;
+			}
+			break;
+		case PHONE:
+			String phone = userRepository.getValue(principal,
+					LocalRealmProviderImpl.FIELD_MOBILE);
+			if (!StringUtils.isEmpty(phone)) {
+				return phone;
+			}
+			break;
 		}
-		return principals;
+
+		throw new MediaNotFoundException();
+	}
+
+	@Override
+	public String getPrincipalDescription(Principal principal) {
+		return getValue(principal, LocalRealmProviderImpl.FIELD_FULLNAME);
+	}
+
+	@Override
+	public boolean supportsAccountUnlock(Realm realm) {
+		return false;
+	}
+
+	@Override
+	public boolean supportsAccountDisable(Realm realm) {
+		return false;
+	}
+
+	@Override
+	public Principal disableAccount(Principal principal)
+			throws ResourceChangeException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Principal enableAccount(Principal principal)
+			throws ResourceChangeException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Principal unlockAccount(Principal principal)
+			throws ResourceChangeException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Set<String> getUserPropertyNames() {
+		return userRepository.getPropertyNames();
+	}
+
+	@Override
+	public Set<String> getGroupPropertyNames() {
+		return new HashSet<String>();
+	}
+
+	@Override
+	public void testConnection(Map<String, String> properties, boolean createMode)
+			throws IOException {
+		
+	}
+
+	@Override
+	public String getUserPropertyValue(Principal principal, String name) {
+		return userRepository.getValue(principal, name);
+	}
+
+	@Override
+	public Set<String> getUserVariableNames() {
+		return userRepository.getVariableNames();
 	}
 
 }
