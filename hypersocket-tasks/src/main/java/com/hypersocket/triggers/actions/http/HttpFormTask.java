@@ -14,6 +14,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -140,6 +141,7 @@ public class HttpFormTask extends AbstractTaskProvider {
 
 			} else {
 				HttpPost request = new HttpPost(url);
+				
 				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(
 						variables.length);
 				for (String variable : variables) {
@@ -147,7 +149,8 @@ public class HttpFormTask extends AbstractTaskProvider {
 					nameValuePairs.add(new BasicNameValuePair(namePair[0],
 							namePair[1]));
 				}
-
+				
+				request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 				response = client.execute(request);
 
 			}
@@ -160,7 +163,6 @@ public class HttpFormTask extends AbstractTaskProvider {
 				return new HttpFormTaskResult(this, event.getCurrentRealm(),
 						task, method, url, variables, response.getStatusLine().getStatusCode(), content);
 			} else {
-				
 				return new HttpFormTaskResult(this, new ClientProtocolException(
 						"Status code " + response.getStatusLine().getStatusCode() + " not expected."), event.getCurrentRealm(),
 						task, method, url, variables, response.getStatusLine().getStatusCode(), content);
