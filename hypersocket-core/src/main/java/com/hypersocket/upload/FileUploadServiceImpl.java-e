@@ -197,7 +197,7 @@ public class FileUploadServiceImpl extends
 
 		File file = new File(UPLOAD_PATH + "/" + fileUpload.getRealm().getId()
 				+ "/" + fileUpload.getName());
-		InputStream in = new BufferedInputStream(new FileInputStream(file));
+		InputStream in = new FileInputStream(file);
 		try {
 
 			response.setContentType(mimeTypesMap.getContentType(file

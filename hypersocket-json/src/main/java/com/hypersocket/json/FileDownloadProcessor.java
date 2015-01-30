@@ -50,7 +50,7 @@ public abstract class FileDownloadProcessor {
 			response.setHeader("Content-disposition",
 						"attachment; filename=" + file.getName());
 
-			InputStream in = new BufferedInputStream(new FileInputStream(file));
+			InputStream in = new FileInputStream(file);
 
 			try {
 				byte[] buf = new byte[65535];
