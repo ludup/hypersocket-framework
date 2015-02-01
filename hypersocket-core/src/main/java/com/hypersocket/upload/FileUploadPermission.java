@@ -9,6 +9,11 @@ package com.hypersocket.upload;
 
 import com.hypersocket.permissions.PermissionType;
 
+/**
+ * This is intentionally not used but currently requires in resource framework.
+ * @author lee
+ *
+ */
 public enum FileUploadPermission implements PermissionType {
 
 	READ("permission.fileUpload.read"), CREATE("permission.fileUpload.create",
