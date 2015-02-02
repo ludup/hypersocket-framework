@@ -15,6 +15,7 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -39,6 +40,10 @@ public abstract class Principal extends RealmResource {
 	@Fetch(FetchMode.SELECT)
 	Set<Role> roles = new HashSet<Role>();
 	
+	@Fetch(FetchMode.SELECT)
+	@OneToMany(fetch = FetchType.EAGER, mappedBy="principal")
+	Set<PrincipalSuspension> suspensions;
+	
 	@JsonIgnore
 	public Realm getRealm() {
 		return super.getRealm();
@@ -50,6 +55,10 @@ public abstract class Principal extends RealmResource {
 	public String getPrincipalName() {
 		return getName();
 	}
+	
+	public Set<PrincipalSuspension> getSuspensions() {
+		return suspensions;
+	}
 
 	protected void doHashCodeOnKeys(HashCodeBuilder builder) {
 		builder.append(getRealm());
@@ -60,5 +69,14 @@ public abstract class Principal extends RealmResource {
 		Principal r = (Principal) obj;
 		builder.append(getRealm(), r.getRealm());
 		builder.append(getName(), r.getName());
+	}
+	
+	public boolean isSuspended() {
+		for(PrincipalSuspension s : suspensions) {
+			if(s.isActive()) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
