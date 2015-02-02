@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="suspendUserTask">
+	<propertyCategory resourceKey="category.suspendUser"
+		resourceBundle="TriggerResourceService" weight="1000">
+		<property resourceKey="suspendUser.name" inputType="text"
+			defaultValue="" weight="100" />
+		<property resourceKey="suspendUser.duration" inputType="slider"
+			min="0" max="900" defaultValue="0" step="1" weight="400"
+			labelResourceKey="suspendUser.minutes" />
+	</propertyCategory>
+</propertyTemplates>

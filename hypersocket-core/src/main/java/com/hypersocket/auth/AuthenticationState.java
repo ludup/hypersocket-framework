@@ -73,6 +73,10 @@ public class AuthenticationState {
 	void nextModule() {
 		this.currentIndex++;
 	}
+	
+	void revertModule() {
+		this.currentIndex--;
+	}
 
 	public AuthenticationScheme getScheme() {
 		return scheme;

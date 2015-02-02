@@ -8,6 +8,7 @@
 package com.hypersocket.realm;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -204,4 +205,11 @@ public interface RealmService extends AuthenticatedService {
 
 	boolean verifyPrincipal(Principal principal);
 
+	PrincipalSuspension createPrincipalSuspension(Principal principal,
+			Date startDate, Long duration) throws ResourceNotFoundException,
+			ResourceCreationException;
+
+	PrincipalSuspension deletePrincipalSuspension(Principal principal);
+
+	public void notifyResume(String name, boolean onSchedule);
 }
