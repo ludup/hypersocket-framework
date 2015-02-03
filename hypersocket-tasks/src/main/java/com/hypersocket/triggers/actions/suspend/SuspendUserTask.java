@@ -17,6 +17,7 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalSuspensionService;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -41,10 +42,10 @@ public class SuspendUserTask extends AbstractTaskProvider {
 	SuspendUserTaskRepository repository;
 
 	@Autowired
-	RealmService service;
-
+	PrincipalSuspensionService suspensionService; 
+	
 	@Autowired
-	TriggerResourceService triggerService;
+	RealmService realmService;
 
 	@Autowired
 	I18NService i18nService;
@@ -111,8 +112,8 @@ public class SuspendUserTask extends AbstractTaskProvider {
 				log.info("Suspending account " + name);
 			}
 
-			Principal principal = service.getUniquePrincipal(name);
-			service.createPrincipalSuspension(principal, startDate, duration);
+			Principal principal = realmService.getUniquePrincipal(name);
+			suspensionService.createPrincipalSuspension(principal, startDate, duration);
 
 			if (log.isInfoEnabled()) {
 				log.info("Suspended account " + name);

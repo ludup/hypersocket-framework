@@ -13,6 +13,7 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalSuspensionService;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.SchedulerService;
@@ -34,6 +35,9 @@ public class ResumeUserTask extends AbstractTaskProvider {
 	@Autowired
 	SuspendUserTask suspendUserTask;
 
+	@Autowired
+	PrincipalSuspensionService suspensionService;
+	
 	@Autowired
 	ResumeUserTaskRepository repository;
 
@@ -85,9 +89,9 @@ public class ResumeUserTask extends AbstractTaskProvider {
 				log.info("Resuming user " + name);
 			}
 			Principal principal = service.getUniquePrincipal(name);
-			service.deletePrincipalSuspension(principal);
+			suspensionService.deletePrincipalSuspension(principal);
 			
-			service.notifyResume(principal.getPrincipalName(), false);
+			suspensionService.notifyResume(principal.getPrincipalName(), false);
 
 			return new ResumeUserResult(this, event.getCurrentRealm(), task,
 					name);
