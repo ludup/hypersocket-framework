@@ -1,6 +1,5 @@
 package com.hypersocket.upload;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -25,7 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Realm;
@@ -33,8 +31,6 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
-import com.hypersocket.upload.events.FileUploadCreatedEvent;
-import com.hypersocket.upload.events.FileUploadDeletedEvent;
 
 @Service
 public class FileUploadServiceImpl extends
@@ -61,25 +57,12 @@ public class FileUploadServiceImpl extends
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-		PermissionCategory cat = permissionService.registerPermissionCategory(
-				RESOURCE_BUNDLE, "category.fileUpload");
-
-		for (FileUploadPermission p : FileUploadPermission.values()) {
-			permissionService.registerPermission(p, cat);
-		}
-
-		eventService.registerEvent(FileUploadCreatedEvent.class,
-				RESOURCE_BUNDLE, this);
-		eventService.registerEvent(FileUploadDeletedEvent.class,
-				RESOURCE_BUNDLE, this);
-
 	}
 
 	@Override
 	public FileUpload createFile(final MultipartFile file, final Realm realm)
 			throws ResourceCreationException, AccessDeniedException,
 			IOException {
-		assertPermission(FileUploadPermission.CREATE);
 
 		return createFile(file, realm, true, new FileUploadStore() {
 			public long writeFile(String uuid, InputStream in)
@@ -109,7 +92,6 @@ public class FileUploadServiceImpl extends
 			boolean persist, FileUploadStore uploadStore)
 			throws ResourceCreationException, AccessDeniedException,
 			IOException {
-		assertPermission(FileUploadPermission.CREATE);
 
 		return createFile(file.getInputStream(), file.getOriginalFilename(),
 				realm, persist, uploadStore);
@@ -163,8 +145,6 @@ public class FileUploadServiceImpl extends
 
 	@Override
 	public FileUpload getFileByUuid(String uuid) {
-		// assertPermission(FileUploadPermission.READ);
-
 		return repository.getFileByUuid(uuid);
 	}
 
@@ -197,7 +177,7 @@ public class FileUploadServiceImpl extends
 
 		File file = new File(UPLOAD_PATH + "/" + fileUpload.getRealm().getId()
 				+ "/" + fileUpload.getName());
-		InputStream in = new BufferedInputStream(new FileInputStream(file));
+		InputStream in = new FileInputStream(file);
 		try {
 
 			response.setContentType(mimeTypesMap.getContentType(file
@@ -250,38 +230,26 @@ public class FileUploadServiceImpl extends
 
 	@Override
 	protected void fireResourceCreationEvent(FileUpload resource) {
-		eventService.publishEvent(new FileUploadCreatedEvent(this,
-				getCurrentSession(), resource));
 	}
 
 	@Override
 	protected void fireResourceCreationEvent(FileUpload resource, Throwable t) {
-		eventService.publishEvent(new FileUploadCreatedEvent(this, resource, t,
-				getCurrentSession()));
 	}
 
 	@Override
 	protected void fireResourceUpdateEvent(FileUpload resource) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	protected void fireResourceUpdateEvent(FileUpload resource, Throwable t) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	protected void fireResourceDeletionEvent(FileUpload resource) {
-		eventService.publishEvent(new FileUploadDeletedEvent(this,
-				getCurrentSession(), resource));
 	}
 
 	@Override
 	protected void fireResourceDeletionEvent(FileUpload resource, Throwable t) {
-		eventService.publishEvent(new FileUploadDeletedEvent(this, resource, t,
-				getCurrentSession()));
 	}
 
 }

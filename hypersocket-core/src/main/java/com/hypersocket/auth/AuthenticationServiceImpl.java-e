@@ -426,6 +426,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 								// Principal is currently suspended from logon
 								state.setLastErrorMsg("error.accountSuspended");
 								state.setLastErrorIsResourceKey(true);
+								state.revertModule();
 								success = false;
 							} else {
 								
@@ -460,6 +461,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 						// user does not have LOGON permission
 						state.setLastErrorMsg("error.noLogonPermission");
 						state.setLastErrorIsResourceKey(true);
+						state.revertModule();
+						success = false;
 					}
 					break;
 				}

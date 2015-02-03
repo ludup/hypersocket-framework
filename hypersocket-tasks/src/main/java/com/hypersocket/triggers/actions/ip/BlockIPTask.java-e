@@ -136,7 +136,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 				PermissionsAwareJobData data = new PermissionsAwareJobData(event.getCurrentRealm());
 				data.put("addr", ipAddress);
 				
-				String scheduleId = schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000);
+				String scheduleId = schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000, 0);
 				
 				blockedIPUnblockSchedules.put(ipAddress, scheduleId);
 			}

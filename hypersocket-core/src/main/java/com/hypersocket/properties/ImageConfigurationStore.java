@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -128,7 +129,12 @@ public class ImageConfigurationStore implements ResourcePropertyStore {
 		resourceKeyImagesFile = new File(imageResources, "image.properties");
 		
 		if(resourceKeyImagesFile.exists()) {
-			resourceKeyImages.load(new FileInputStream(resourceKeyImagesFile));
+			InputStream in = new FileInputStream(resourceKeyImagesFile);
+			try {
+				resourceKeyImages.load(in);
+			} finally {
+				IOUtils.closeQuietly(in);
+			}
 		}
 		
 	}

@@ -10,6 +10,7 @@ package com.hypersocket.realm;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +25,7 @@ import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 
 import org.apache.commons.lang3.StringUtils;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,11 +60,14 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.scheduler.PermissionsAwareJobData;
+import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.upgrade.UpgradeService;
 import com.hypersocket.upgrade.UpgradeServiceListener;
+import com.mysql.jdbc.jdbc2.optional.SuspendableXAConnection;
 
 @Service
 public class RealmServiceImpl extends AuthenticatedServiceImpl implements
@@ -93,6 +98,12 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Autowired
 	SessionService sessionService;
 
+	@Autowired
+	SchedulerService schedulerService;
+
+	@Autowired
+	PrincipalSuspensionService suspensionService;
+	
 	CacheManager cacheManager;
 	Cache realmCache;
 
@@ -142,7 +153,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 				new RealmPropertyCollector());
 
 		eventService.registerEvent(PrincipalEvent.class, RESOURCE_BUNDLE);
-		
+
 		eventService.registerEvent(UserEvent.class, RESOURCE_BUNDLE,
 				new UserPropertyCollector());
 		eventService.registerEvent(UserCreatedEvent.class, RESOURCE_BUNDLE,
@@ -410,7 +421,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public boolean verifyPrincipal(Principal principal) {
-		return true;
+		return !principal.isSuspended();
 	}
 
 	@Override
@@ -1384,5 +1395,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		return tmp;
 
 	}
+
+
 
 }
