@@ -48,10 +48,4 @@ public interface RealmRepository extends
 
 	public Realm setDefaultRealm(Realm realm);
 
-	public void createPrincipalSuspension(
-			PrincipalSuspension principalSuspension);
-
-	public PrincipalSuspension getSuspension(Principal principal);
-
-	public void deletePrincipalSuspension(PrincipalSuspension suspension);
 }

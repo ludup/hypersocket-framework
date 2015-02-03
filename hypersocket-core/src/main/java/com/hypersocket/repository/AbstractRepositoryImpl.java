@@ -27,7 +27,6 @@ import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
 
 @Repository
-@Transactional
 public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K> {
 
 	protected HibernateTemplate hibernateTemplate;
@@ -46,6 +45,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		return DetachedCriteria.forClass(entityClass);
 	}
 	
+	@Transactional
 	protected void save(AbstractEntity<K> entity) {
 		
 		
@@ -58,20 +58,24 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		}
 	}
 	
+	@Transactional(readOnly=true)
 	public void refresh(Object entity) {
 		hibernateTemplate.refresh(entity);
 	}
 	
+	@Transactional
 	public void flush() {
 		hibernateTemplate.flush();
 		hibernateTemplate.clear();
 	}
 	
+	@Transactional
 	protected void delete(Object entity) {
 		hibernateTemplate.delete(entity);
 	}
 
 	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
 	protected <T> List<T> list(Class<T> cls, boolean caseInsensitive, CriteriaConfiguration... configs) {
 		Criteria criteria = createCriteria(cls);
 		for(CriteriaConfiguration c : configs) {
@@ -83,6 +87,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	}
 
 	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
 	protected <T> Collection<T> list(Class<T> cls, CriteriaConfiguration... configs) {
 		Criteria criteria = createCriteria(cls);
 		for(CriteriaConfiguration c : configs) {
@@ -94,6 +99,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	}
 	
 	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
 	protected <T> List<T> list(String column, Object value, Class<T> cls, boolean caseInsensitive, DetachedCriteriaConfiguration... configs) {
 		DetachedCriteria criteria = createDetachedCriteria(cls);
 		if(caseInsensitive) {
@@ -109,11 +115,13 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		return results;
 	}
 	
+	@Transactional(readOnly=true)
 	protected <T> List<T> list(String column, Object value, Class<T> cls, DetachedCriteriaConfiguration... configs) {
 		return list(column, value, cls, false, configs);
 	}
 	
 	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
 	protected <T> T get(String column, Object value, Class<T> cls, boolean caseInsensitive, DetachedCriteriaConfiguration... configs) {
 		DetachedCriteria criteria = createDetachedCriteria(cls);
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
@@ -136,6 +144,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	}
 	
 	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
 	protected <T> T get(Class<T> cls, DetachedCriteriaConfiguration... configs) {
 		DetachedCriteria criteria = createDetachedCriteria(cls);
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
@@ -153,12 +162,14 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		return (T)results.get(0);
 	}
 	
+	@Transactional(readOnly=true)
 	protected <T> T get(String column, Object value, Class<T> cls, DetachedCriteriaConfiguration... configs) {
 		return get(column, value, cls, false, configs);
 	}
 	
 	
 	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
 	protected <T> List<T> allEntities(Class<T> cls, DetachedCriteriaConfiguration... configs) {
 		DetachedCriteria criteria = createDetachedCriteria(cls);
 		
@@ -171,6 +182,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	}
 	
 	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
 	protected <T> List<T> allEntities(Class<T> cls, CriteriaConfiguration... configs) {
 		Criteria criteria = createCriteria(cls);
 		criteria.add(Restrictions.eq("deleted", false));
@@ -182,6 +194,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	}
 	
 	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
 	protected <T> List<T> allDeletedEntities(Class<T> cls, DetachedCriteriaConfiguration... configs) {
 		DetachedCriteria criteria = createDetachedCriteria(cls);
 		criteria.add(Restrictions.eq("deleted", true));
@@ -196,11 +209,13 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	}
 
 	@Override 
+	@Transactional(readOnly=true)
 	public Long getCount(Class<?> clz, CriteriaConfiguration... configs) {
 		return getCount(clz, "", "", configs);
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Long getCount(Class<?> clz, String searchColumn, String searchPattern, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(clz);
@@ -219,6 +234,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	}
 	
 	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
 	public <T> List<T> search(Class<T> clz, 
 			final String searchColumn, 
 			final String searchPattern, 

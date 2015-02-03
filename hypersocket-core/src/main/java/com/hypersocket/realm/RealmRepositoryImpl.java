@@ -191,20 +191,5 @@ public class RealmRepositoryImpl extends
 		return realm;
 	}
 
-	@Override
-	public void createPrincipalSuspension(
-			PrincipalSuspension principalSuspension) {
-		save(principalSuspension);
-	}
 
-	@Override
-	@Transactional(readOnly = true)
-	public PrincipalSuspension getSuspension(Principal principal) {
-		return get("principal", principal, PrincipalSuspension.class);
-	}
-
-	@Override
-	public void deletePrincipalSuspension(PrincipalSuspension suspension) {
-		delete(suspension);
-	}
 }

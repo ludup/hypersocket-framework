@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +32,7 @@ import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalColumns;
 import com.hypersocket.realm.PrincipalSuspension;
+import com.hypersocket.realm.PrincipalSuspensionService;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -48,6 +50,9 @@ import com.hypersocket.tables.json.DataTablesPageProcessor;
 @Controller
 public class CurrentRealmController extends ResourceController {
 
+	@Autowired
+	PrincipalSuspensionService suspensionService;
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/groups/list", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
@@ -670,7 +675,7 @@ public class CurrentRealmController extends ResourceController {
 				principalSuspensionUpdate.getPrincipalId(), PrincipalType.USER);
 		try {
 
-			PrincipalSuspension principalSuspension = realmService
+			PrincipalSuspension principalSuspension = suspensionService
 					.createPrincipalSuspension(principal,
 							principalSuspensionUpdate.getStartDate(),
 							principalSuspensionUpdate.getDuration());
@@ -711,7 +716,7 @@ public class CurrentRealmController extends ResourceController {
 		Principal principal = realmService.getPrincipalById(realm, id,
 				PrincipalType.USER);
 		try {
-			PrincipalSuspension principalSuspension = realmService
+			PrincipalSuspension principalSuspension = suspensionService
 					.deletePrincipalSuspension(principal);
 
 			return new ResourceStatus<PrincipalSuspension>(principalSuspension,

@@ -9,14 +9,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.PermissionsAwareJob;
+import com.hypersocket.scheduler.PermissionsAwareJobData;
 
 public class ResumeUserJob extends PermissionsAwareJob {
 
 	static Logger log = LoggerFactory.getLogger(ResumeUserJob.class);
 
 	@Autowired
-	RealmService service;
+	PrincipalSuspensionService suspensionService;
 
+	@Autowired
+	RealmService realmService; 
+	
 	public ResumeUserJob() {
 	}
 
@@ -24,30 +28,31 @@ public class ResumeUserJob extends PermissionsAwareJob {
 	protected void executeJob(JobExecutionContext context)
 			throws JobExecutionException {
 
-		String name = (String) context.getTrigger().getJobDataMap().get("name");
+		PermissionsAwareJobData data = (PermissionsAwareJobData) context.getTrigger().getJobDataMap();
+		
+		String name = (String) data.get("name");
 
 		if (name == null) {
 			throw new JobExecutionException(
 					"ResumeUserJob job requires name parameter!");
 		}
 
-		try {
-			if (log.isInfoEnabled()) {
-				log.info("Resuming user " + name.toString());
-			}
+		if (log.isInfoEnabled()) {
+			log.info("Resuming user " + name.toString());
+		}
 
-			service.deletePrincipalSuspension(service.getUniquePrincipal(name));
+		Principal principal = realmService.getPrincipalByName(
+				data.getCurrentRealm(), name, PrincipalType.USER);
 
-			service.notifyResume(name, true);
+		if (principal != null) {
+			suspensionService.deletePrincipalSuspension(principal);
+
+			suspensionService.notifyResume(name, true);
 
 			if (log.isInfoEnabled()) {
 				log.info("Resumed user " + name.toString());
 			}
-
-		} catch (ResourceNotFoundException e) {
-			log.error("Failed to resume user " + name.toString());
 		}
-
 	}
 
 }
