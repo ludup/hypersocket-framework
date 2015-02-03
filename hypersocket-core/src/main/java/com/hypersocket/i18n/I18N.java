@@ -29,6 +29,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import com.hypersocket.util.FileUtils;
@@ -85,9 +86,13 @@ public class I18N {
 			
 			if(overrideFile.exists()) {
 				Properties p = overideProperties.get(overrideFile);
+				InputStream in = null;
 				try {
-					p.load(new FileInputStream(overrideFile));
+					in = new FileInputStream(overrideFile);
+					p.load(in);
 				} catch (IOException e) {
+				} finally {
+					IOUtils.closeQuietly(in);
 				}
 			}
 		}
@@ -105,9 +110,13 @@ public class I18N {
 			
 			if(overrideFile.exists()) {
 				Properties p = overideProperties.get(overrideFile);
+				InputStream in = null;
 				try {
-					p.load(new FileInputStream(overrideFile));
+					in = new FileInputStream(overrideFile);
+					p.load(in);
 				} catch (IOException e) {
+				} finally {
+					IOUtils.closeQuietly(in);
 				}
 			}
 		}
@@ -321,7 +330,12 @@ public class I18N {
 		public OverrideResourceBundle(Locale locale, String resourceBundle) throws FileNotFoundException, IOException {
 			File overideFile = getOverrideFile(locale, resourceBundle);
 			props = new Properties();
-			props.load(new FileInputStream(overideFile));
+			InputStream in = new FileInputStream(overideFile);
+			try {
+				props.load(in);
+			} finally {
+				IOUtils.closeQuietly(in);
+			}
 			names = new Vector<String>();
 			for(Object key : props.keySet()) {
 				names.add(key.toString());
