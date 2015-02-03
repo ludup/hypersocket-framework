@@ -11,37 +11,38 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.repository.AbstractEntity;
 
 @Entity
-@Table(name="attribute_categories")
-public class AttributeCategory extends AbstractEntity<Long>  {
+@Table(name = "attribute_categories")
+public class AttributeCategory extends AbstractEntity<Long> {
 
-	@Column(name="context")
+	@Column(name = "context")
 	String context;
-	
-	@Column(name="name")
+
+	@Column(name = "name")
 	String name;
-	
-	@Column(name="weight", nullable=false)
+
+	@Column(name = "weight", nullable = false)
 	Integer weight = new Integer(0);
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
-	@Column(name="category_id")
+	@Column(name = "category_id")
 	Long id;
 
 	@OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
 	protected Set<Attribute> attributes;
-	
+
 	public Long getId() {
 		return id;
 	}
-	
+
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
+
 	public String getContext() {
 		return context;
 	}
@@ -53,7 +54,7 @@ public class AttributeCategory extends AbstractEntity<Long>  {
 	public Integer getWeight() {
 		return weight;
 	}
-	
+
 	public void setWeight(Integer weight) {
 		this.weight = weight;
 	}
@@ -61,11 +62,12 @@ public class AttributeCategory extends AbstractEntity<Long>  {
 	public String getName() {
 		return name;
 	}
-	
+
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
+	@JsonIgnore
 	public Set<Attribute> getAttributes() {
 		return attributes;
 	}
