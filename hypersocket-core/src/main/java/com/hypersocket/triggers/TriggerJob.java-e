@@ -145,7 +145,7 @@ public class TriggerJob extends PermissionsAwareJob {
 				.getTaskProvider(action.getResourceKey());
 		if (provider == null) {
 			throw new ValidationException(
-					"Failed to execute action because provider "
+					"Failed to execute task because provider "
 							+ action.getResourceKey() + " is not available");
 		}
 

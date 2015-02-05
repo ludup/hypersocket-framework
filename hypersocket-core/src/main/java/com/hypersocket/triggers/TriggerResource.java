@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
-@Table(name="triggers")
+@Table(name="trigger_resources")
 public class TriggerResource extends RealmResource {
 
 	@Column(name="result")
