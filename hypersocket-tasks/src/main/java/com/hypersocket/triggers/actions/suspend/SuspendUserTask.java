@@ -26,7 +26,6 @@ import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.TaskResult;
-import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.ValidationException;
 
 @Component

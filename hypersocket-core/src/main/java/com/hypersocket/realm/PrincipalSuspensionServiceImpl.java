@@ -3,11 +3,7 @@ package com.hypersocket.realm;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
 
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;

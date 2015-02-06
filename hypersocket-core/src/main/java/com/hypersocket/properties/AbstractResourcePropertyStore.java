@@ -5,12 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hypersocket.auth.PasswordEncryptionService;
+import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.resource.AbstractResource;
 
 public abstract class AbstractResourcePropertyStore implements ResourcePropertyStore {
@@ -22,7 +21,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 	Map<String, List<PropertyTemplate>> templatesByModule = new HashMap<String, List<PropertyTemplate>>();
 
 	@Autowired
-	PasswordEncryptionService encryptionService; 
+	EncryptionService encryptionService; 
 	
 	public AbstractResourcePropertyStore() {
 	}
@@ -83,6 +82,9 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
 		if (!cachedValues.containsKey(cacheKey)) {
 			c = lookupPropertyValue(template, resource);
+			if(template.isEncrypted() && c.startsWith("!ENC!")) {
+				c = decryptValue(cacheKey, c.substring(5));
+			}
 			cachedValues.put(cacheKey, c);
 		} else {
 			c = cachedValues.get(cacheKey);
@@ -97,27 +99,34 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 	public void setPropertyValue(AbstractPropertyTemplate template,
 			AbstractResource resource, String value) {
 
+		String cacheKey = createCacheKey(template.getResourceKey(), resource);
+		
 		if(template.isEncrypted()) {
-			doSetProperty(template, resource, encryptValue(value));
+			doSetProperty(template, resource, encryptValue(cacheKey, value));
 		} else {
 			doSetProperty(template, resource, value);
 		}
-		String cacheKey = createCacheKey(template.getResourceKey(), resource);
+		
 		cachedValues.remove(cacheKey);
 		cachedValues.put(cacheKey, value);
 	}
 	
-	private String encryptValue(String value) {
-		return value;
-//		try {
-//		byte[] salt = encryptionService.generateSalt();
-//		String encrypted = encryptionService.encrypt(value, salt);
-//		
-//		return "ENC" + Hex.encodeHexString(salt) + encrypted;
-//		} catch(Exception ex) {
-//			log.error("Failed to encrypt property value", ex);
-//			return value;
-//		}
+	private String encryptValue(String cacheKey, String value) {
+		try {
+			return "!ENC!" + encryptionService.encryptString(cacheKey, value);
+		} catch (Exception e) {
+			log.warn("Unable to encrypt " + cacheKey + "; storing unencrypted");
+			return value;
+		}
+	}
+	
+	private String decryptValue(String cacheKey, String value) {
+		try {
+			return encryptionService.decryptString(cacheKey, value);
+		} catch(Exception e) {
+			log.warn("Unable to decrypt " + cacheKey + "; returning encrypted");
+			return value;
+		}
 	}
 
 }
