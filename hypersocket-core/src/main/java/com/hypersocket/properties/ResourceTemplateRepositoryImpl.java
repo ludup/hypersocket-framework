@@ -497,7 +497,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	@Override
-	public void setValue(AbstractResource resource, String resourceKey, Integer value)  {
+	public void setValue(AbstractResource resource, String resourceKey, Integer value) {
 		setValue(resource, resourceKey, String.valueOf(value));
 	}
 

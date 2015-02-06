@@ -266,7 +266,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 
 	@Override
-	public void saveResource(T resource, Map<String, String> properties) {
+	public void saveResource(T resource, Map<String, String> properties) throws ResourceChangeException {
 
 		for (Map.Entry<String, String> e : properties.entrySet()) {
 			if (hasPropertyTemplate(e.getKey())) {

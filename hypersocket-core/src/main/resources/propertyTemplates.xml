@@ -35,6 +35,22 @@
 			min="0" max="360" defaultValue="15" weight="0" labelResourceKey="session.timeout.slider.label" />
 	</propertyCategory>
 
+	<propertyCategory resourceKey="category.keyserver"
+		resourceBundle="KeyServerService" weight="1000">
+
+		<property resourceKey="keyserver.host"
+			inputType="text" weight="100" defaultValue="" />
+			
+		<property resourceKey="keyserver.port"
+			inputType="number" weight="200" defaultValue="" />
+			
+		<property resourceKey="keyserver.path"
+			inputType="text" weight="300" defaultValue="/hypersocket/api/secrets" />
+			
+		<property resourceKey="keyserver.secret" inputType="password"
+			weight="400" defaultValue=""/>
+		
+	</propertyCategory>
 
 </propertyTemplates>
 
