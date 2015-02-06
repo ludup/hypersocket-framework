@@ -3,10 +3,8 @@ package com.hypersocket.encrypt;
 import org.springframework.stereotype.Service;
 
 @Service
-public interface EncryptionService {
+public interface EncryptionService extends Encryptor {
 
-	String encryptString(String reference, String data) throws Exception;
-
-	String decryptString(String reference, String data) throws Exception;
+	
 
 }
