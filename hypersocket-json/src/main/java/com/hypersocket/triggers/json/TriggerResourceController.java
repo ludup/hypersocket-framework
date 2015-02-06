@@ -326,7 +326,7 @@ public class TriggerResourceController extends ResourceController {
 				allConditions.add(cond);
 			}
 
-			for (TriggerConditionUpdate c : resource.getAllConditions()) {
+			for (TriggerConditionUpdate c : resource.getAnyConditions()) {
 				TriggerCondition cond;
 				if (isNew || c.getId() == null) {
 					cond = new TriggerCondition();
