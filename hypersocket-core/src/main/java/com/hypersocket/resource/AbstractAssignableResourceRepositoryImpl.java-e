@@ -19,8 +19,10 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.transform.Transformers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -113,10 +115,14 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.add(Restrictions.eq("allUsers", true));
 		
 		Set<T> everyone = new HashSet<T>(criteria.list());
-		
+
 		criteria = createCriteria(getResourceClass());
 		
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		ProjectionList projList = Projections.projectionList();
+		projList.add(Projections.property("id"));
+		projList.add(Projections.property("name"));
+		
+		criteria.setProjection(Projections.distinct(projList));
 		criteria.setFirstResult(start);
 		criteria.setMaxResults(length);
 		
@@ -141,6 +147,16 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria = criteria.createCriteria("principals");
 		criteria.add(Restrictions.in("id", new Long[] { principal.getId() }));
 		
+		List<Object[]> results = (List<Object[]>)criteria.list();
+		Long[] entityIds = new Long[results.size()];
+		int idx = 0;
+		for(Object[] obj : results) {
+			entityIds[idx++] = (Long) obj[0];
+		}
+		
+		criteria = createCriteria(getResourceClass());
+		criteria.add(Restrictions.in("id", entityIds));
+
 		everyone.addAll((List<T>) criteria.list());
 		return everyone;
 	};
