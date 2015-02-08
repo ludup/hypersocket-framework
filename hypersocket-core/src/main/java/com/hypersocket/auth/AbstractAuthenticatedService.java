@@ -29,9 +29,7 @@ public abstract class AbstractAuthenticatedService implements
 
 	@Autowired
 	PasswordEncryptionService encryptionService; 
-	
-	@Autowired
-	RealmService realmService;
+
 	
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAuthenticatedService.class);
@@ -63,22 +61,6 @@ public abstract class AbstractAuthenticatedService implements
 			throw new InvalidAuthenticationContext("No principal is attached to the current context!");
 		}
 		return currentPrincipal.get();
-	}
-	
-	public String getCurrentPrincipalEmail() {
-		try {
-			return realmService.getPrincipalAddress(getCurrentPrincipal(), MediaType.EMAIL);
-		} catch (MediaNotFoundException e) {
-			return "";
-		}
-	}
-	
-	public String getCurrentPrincipalPhone() {
-		try {
-			return realmService.getPrincipalAddress(getCurrentPrincipal(), MediaType.PHONE);
-		} catch (MediaNotFoundException e) {
-			return "";
-		}
 	}
 	
 	public Session getCurrentSession() throws InvalidAuthenticationContext {
