@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.repository.AbstractEntity;
 
 @Entity
-@Table(name="trigger_conditions")
+@Table(name="trigger_resource_conditions")
 public class TriggerCondition extends AbstractEntity<Long> {
 
 	@Id
