@@ -204,4 +204,8 @@ public interface RealmService extends AuthenticatedService {
 
 	boolean verifyPrincipal(Principal principal);
 
+	String getPrincipalEmail(Principal currentPrincipal);
+
+	String getPrincipalPhone(Principal principal);
+
 }

@@ -1392,6 +1392,24 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	}
 
+	@Override
+	public String getPrincipalEmail(Principal principal) {
+		try {
+			return getPrincipalAddress(principal, MediaType.EMAIL);
+		} catch (MediaNotFoundException e) {
+			return "";
+		}
+	}
+	
+	@Override
+	public String getPrincipalPhone(Principal principal) {
+		try {
+			return getPrincipalAddress(principal, MediaType.PHONE);
+		} catch (MediaNotFoundException e) {
+			return "";
+		}
+	}
+
 
 
 }
