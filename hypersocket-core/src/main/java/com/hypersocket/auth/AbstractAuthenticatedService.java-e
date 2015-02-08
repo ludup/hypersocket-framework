@@ -16,8 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.realm.MediaNotFoundException;
+import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.utils.HypersocketUtils;
 
@@ -26,6 +29,9 @@ public abstract class AbstractAuthenticatedService implements
 
 	@Autowired
 	PasswordEncryptionService encryptionService; 
+	
+	@Autowired
+	RealmService realmService;
 	
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAuthenticatedService.class);
@@ -57,6 +63,22 @@ public abstract class AbstractAuthenticatedService implements
 			throw new InvalidAuthenticationContext("No principal is attached to the current context!");
 		}
 		return currentPrincipal.get();
+	}
+	
+	public String getCurrentPrincipalEmail() {
+		try {
+			return realmService.getPrincipalAddress(getCurrentPrincipal(), MediaType.EMAIL);
+		} catch (MediaNotFoundException e) {
+			return "";
+		}
+	}
+	
+	public String getCurrentPrincipalPhone() {
+		try {
+			return realmService.getPrincipalAddress(getCurrentPrincipal(), MediaType.PHONE);
+		} catch (MediaNotFoundException e) {
+			return "";
+		}
 	}
 	
 	public Session getCurrentSession() throws InvalidAuthenticationContext {
