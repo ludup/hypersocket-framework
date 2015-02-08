@@ -397,7 +397,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 		String connection = servletResponse.getRequest().getHeader(
 				HttpHeaders.CONNECTION);
-		if (connection.equalsIgnoreCase("close")) {
+		if (connection!=null && connection.equalsIgnoreCase("close")) {
 			servletResponse.setHeader("Connection", "close");
 			servletResponse.setCloseOnComplete(true);
 		}

@@ -22,6 +22,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Repository;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -33,6 +34,7 @@ import com.hypersocket.attributes.Attribute;
 import com.hypersocket.attributes.AttributeCategory;
 import com.hypersocket.resource.AbstractResource;
 
+@Repository
 public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryImpl implements ResourceTemplateRepository {
 
 	static Logger log = LoggerFactory.getLogger(ResourceTemplateRepositoryImpl.class);
