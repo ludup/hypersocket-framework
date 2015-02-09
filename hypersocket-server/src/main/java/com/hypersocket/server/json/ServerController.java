@@ -74,8 +74,6 @@ public class ServerController extends AuthenticatedController {
 				SystemPermission.SYSTEM_ADMINISTRATION);
 
 		server.restart(delay);
-
-		sessionService.closeSession(sessionUtils.getSession(request));
 		
 		return new RequestStatus(true, I18N.getResource(
 				sessionUtils.getLocale(request),
@@ -95,8 +93,6 @@ public class ServerController extends AuthenticatedController {
 				SystemPermission.SYSTEM_ADMINISTRATION);
 
 		server.shutdown(delay);
-
-		sessionService.closeSession(sessionUtils.getSession(request));
 		
 		return new RequestStatus(true, I18N.getResource(
 				sessionUtils.getLocale(request),
