@@ -1,6 +1,14 @@
 package com.hypersocket.encrypt;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -8,6 +16,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.secret.SecretKeyResource;
 import com.hypersocket.secret.SecretKeyService;
@@ -19,49 +29,62 @@ public class DefaultEncryptor implements Encryptor {
 	SecretKeyService secretKeyService;
 
 	@Override
-	public String encryptString(String reference, String data) throws Exception {
-		
-	
-		SecretKeyResource key;
-		
+	public String encryptString(String reference, String data)
+			throws IOException {
+
 		try {
-			key = secretKeyService.getResourceByName(reference);
-		} catch (ResourceNotFoundException e) {
-			key = secretKeyService.createSecretKey(reference);
+			SecretKeyResource key;
+
+			try {
+				key = secretKeyService.getResourceByName(reference);
+			} catch (ResourceNotFoundException e) {
+				key = secretKeyService.createSecretKey(reference);
+			}
+
+			SecretKeySpec secretKeySpec = new SecretKeySpec(
+					secretKeyService.generateSecreyKeyData(key), "AES");
+			byte[] iv = secretKeyService.generateIvData(key);
+
+			Cipher aesCipherForEncryption = Cipher
+					.getInstance("AES/CTR/PKCS7PADDING");
+
+			aesCipherForEncryption.init(Cipher.ENCRYPT_MODE, secretKeySpec,
+					new IvParameterSpec(iv));
+
+			byte[] byteDataToEncrypt = data.getBytes("UTF-8");
+			byte[] byteCipherText = aesCipherForEncryption
+					.doFinal(byteDataToEncrypt);
+
+			return Base64.encodeBase64String(byteCipherText);
+		} catch (Exception e) {
+			throw new IOException(e);
 		}
 
-		SecretKeySpec secretKeySpec = new SecretKeySpec(secretKeyService.generateSecreyKeyData(key), "AES");
-		byte[] iv = secretKeyService.generateIvData(key);
-
-		Cipher aesCipherForEncryption = Cipher.getInstance("AES/CTR/PKCS7PADDING");
-
-		aesCipherForEncryption.init(Cipher.ENCRYPT_MODE, secretKeySpec, 
-				new IvParameterSpec(iv));
-
-		byte[] byteDataToEncrypt = data.getBytes("UTF-8");
-		byte[] byteCipherText = aesCipherForEncryption.doFinal(byteDataToEncrypt);
-		
-		return Base64.encodeBase64String(byteCipherText);
-	
 	}
-	
+
 	@Override
-	public String decryptString(String reference, String data) throws Exception{
-		
-		SecretKeyResource key = secretKeyService.getResourceByName(reference);
- 
-		SecretKeySpec secretKeySpec = new SecretKeySpec(secretKeyService.generateSecreyKeyData(key), "AES");
-		byte[] iv = secretKeyService.generateIvData(key);
+	public String decryptString(String reference, String data)
+			throws IOException {
+		try {
+			SecretKeyResource key = secretKeyService
+					.getResourceByName(reference);
 
-		Cipher aesCipherForDecryption = Cipher.getInstance("AES/CTR/PKCS7PADDING");			
+			SecretKeySpec secretKeySpec = new SecretKeySpec(
+					secretKeyService.generateSecreyKeyData(key), "AES");
+			byte[] iv = secretKeyService.generateIvData(key);
 
-		aesCipherForDecryption.init(Cipher.DECRYPT_MODE, secretKeySpec,
-				new IvParameterSpec(iv));
-		
-		byte[] byteDecryptedText = aesCipherForDecryption
-				.doFinal(Base64.decodeBase64(data));
-		return new String(byteDecryptedText, "UTF-8");
-		
+			Cipher aesCipherForDecryption = Cipher
+					.getInstance("AES/CTR/PKCS7PADDING");
+
+			aesCipherForDecryption.init(Cipher.DECRYPT_MODE, secretKeySpec,
+					new IvParameterSpec(iv));
+
+			byte[] byteDecryptedText = aesCipherForDecryption.doFinal(Base64
+					.decodeBase64(data));
+			return new String(byteDecryptedText, "UTF-8");
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 
 }

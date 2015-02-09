@@ -1,5 +1,7 @@
 package com.hypersocket.encrypt;
 
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,14 +37,14 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 	}
 	
 	@Override
-	public String encryptString(String reference, String data) throws Exception {
+	public String encryptString(String reference, String data) throws IOException {
 		
 		return encryptor.encryptString(reference, data);
 
 	}
 	
 	@Override
-	public String decryptString(String reference, String data) throws Exception{
+	public String decryptString(String reference, String data) throws IOException{
 		
 		return encryptor.decryptString(reference, data);
 	}
