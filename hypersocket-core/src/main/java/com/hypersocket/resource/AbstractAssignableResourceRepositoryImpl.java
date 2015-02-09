@@ -147,16 +147,19 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.add(Restrictions.in("id", new Long[] { principal.getId() }));
 		
 		List<Object[]> results = (List<Object[]>)criteria.list();
-		Long[] entityIds = new Long[results.size()];
-		int idx = 0;
-		for(Object[] obj : results) {
-			entityIds[idx++] = (Long) obj[0];
-		}
 		
-		criteria = createCriteria(getResourceClass());
-		criteria.add(Restrictions.in("id", entityIds));
-
-		everyone.addAll((List<T>) criteria.list());
+		if(results.size() > 0) {
+			Long[] entityIds = new Long[results.size()];
+			int idx = 0;
+			for(Object[] obj : results) {
+				entityIds[idx++] = (Long) obj[0];
+			}
+			
+			criteria = createCriteria(getResourceClass());
+			criteria.add(Restrictions.in("id", entityIds));
+	
+			everyone.addAll((List<T>) criteria.list());
+		}
 		return everyone;
 	};
 
