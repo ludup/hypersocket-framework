@@ -59,8 +59,8 @@ public abstract class PermissionsAwareJob implements Job {
 		
 		try {
 
-			if (log.isDebugEnabled()) {
-				log.debug("Executing permissions aware job as "
+			if (log.isInfoEnabled()) {
+				log.info("Executing permissions aware job as "
 						+ realm.getName() + "/" + principal.getName());
 			}
 
