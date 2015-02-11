@@ -22,6 +22,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -32,6 +33,7 @@ import org.xml.sax.SAXException;
 
 import com.hypersocket.attributes.Attribute;
 import com.hypersocket.attributes.AttributeCategory;
+import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.resource.AbstractResource;
 
 @Repository
@@ -41,6 +43,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	DatabasePropertyStore configPropertyStore;
 
+	@Autowired
+	EncryptionService encryptionService; 
+	
 	Map<String, PropertyCategory> activeCategories = new HashMap<String, PropertyCategory>();
 	Map<String, PropertyTemplate> propertyTemplates = new HashMap<String, PropertyTemplate>();
 	Map<String, PropertyStore> propertyStoresByResourceKey = new HashMap<String, PropertyStore>();
@@ -76,7 +81,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	public void loadPropertyTemplates(String resourceXmlPath) {
 		
 		this.resourceXmlPath = resourceXmlPath;
-		configPropertyStore = new DatabasePropertyStore(this);
+		configPropertyStore = new DatabasePropertyStore(this, encryptionService);
 		
 		String context = null;
 		try {
@@ -227,7 +232,6 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 	
 	private void loadAttributeTemplates(String context) {
-		
 		
 		for(AttributeCategory c : getAttributeCategories(context)) {
 			
@@ -424,6 +428,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		template.setReadOnly(readOnly);
 		template.setMapping(mapping);
 		template.setCategory(category);
+		template.setEncrypted(encrypted);
 		template.setPropertyStore(propertyStore);
 		
 		propertyStore.registerTemplate(template, resourceXmlPath);

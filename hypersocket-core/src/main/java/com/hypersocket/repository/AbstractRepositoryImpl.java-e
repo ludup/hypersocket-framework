@@ -18,6 +18,7 @@ import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.transform.ResultTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Repository;
@@ -81,6 +82,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		for(CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		@SuppressWarnings("rawtypes")
 		List results = criteria.list();
 		return results;
@@ -93,6 +95,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		for(CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		@SuppressWarnings("rawtypes")
 		List results = criteria.list();
 		return results;
@@ -110,6 +113,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		for(DetachedCriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		@SuppressWarnings("rawtypes")
 		List results = hibernateTemplate.findByCriteria(criteria);
 		return results;

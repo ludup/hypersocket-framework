@@ -20,12 +20,20 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 	Map<String, PropertyTemplate> templates = new HashMap<String, PropertyTemplate>();
 	Map<String, List<PropertyTemplate>> templatesByModule = new HashMap<String, List<PropertyTemplate>>();
 
-	@Autowired
 	EncryptionService encryptionService; 
 	
-	public AbstractResourcePropertyStore() {
+	public AbstractResourcePropertyStore(EncryptionService encryptionService) {
+		this.encryptionService = encryptionService;
 	}
 
+	public AbstractResourcePropertyStore() {
+		
+	}
+	
+	protected void setEncryptionService(EncryptionService encryptionService) {
+		this.encryptionService = encryptionService;
+	}
+	
 	protected abstract String lookupPropertyValue(PropertyTemplate template);
 	
 	protected abstract void doSetProperty(PropertyTemplate template, String value);
@@ -82,14 +90,14 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
 		if (!cachedValues.containsKey(cacheKey)) {
 			c = lookupPropertyValue(template, resource);
-			if(template.isEncrypted() && c.startsWith("!ENC!")) {
-				c = decryptValue(cacheKey, c.substring(5));
-			}
 			cachedValues.put(cacheKey, c);
 		} else {
 			c = cachedValues.get(cacheKey);
 		}
 
+		if(template.isEncrypted() && c.startsWith("!ENC!")) {
+			c = decryptValue(cacheKey, c.substring(5));
+		}
 		return c;
 	}
 	
@@ -102,7 +110,8 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
 		
 		if(template.isEncrypted()) {
-			doSetProperty(template, resource, encryptValue(cacheKey, value));
+			value = encryptValue(cacheKey, value);
+			doSetProperty(template, resource, value);
 		} else {
 			doSetProperty(template, resource, value);
 		}
