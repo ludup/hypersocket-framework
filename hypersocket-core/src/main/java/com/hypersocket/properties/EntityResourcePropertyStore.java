@@ -13,9 +13,11 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Element;
 
+import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.resource.AbstractAssignableResourceService;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.AbstractResourceService;
@@ -30,6 +32,9 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	Map<Class<?>,AbstractAssignableResourceService<?>> assignableServices = new HashMap<Class<?>,AbstractAssignableResourceService<?>>();
 	Map<Class<?>, PrimitiveParser<?>> primitiveParsers = new HashMap<Class<?>,PrimitiveParser<?>>();
 	
+	@Autowired
+	EncryptionService encryptionService; 
+	
 	@PostConstruct
 	private void postConstruct() {
 		primitiveParsers.put(String.class, new StringValue());
@@ -38,6 +43,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		primitiveParsers.put(Long.class, new LongValue());
 		primitiveParsers.put(Double.class, new DoubleValue());
 		primitiveParsers.put(Date.class, new DateValue());
+		
+		setEncryptionService(encryptionService);
 	}
 	
 	public void registerResourceService(Class<?> clz, AbstractResourceService<?> service) {
