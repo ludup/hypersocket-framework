@@ -29,18 +29,18 @@ public class HttpUtils {
 		CloseableHttpClient httpclient = null;
 
 		if(allowSelfSigned) {
-		try {
-			SSLContextBuilder builder = new SSLContextBuilder();
-			builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
-			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
-					builder.build(),
-					SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-			httpclient = HttpClients.custom()
-					.setSSLSocketFactory(sslsf)
-					.setDefaultCookieStore(cookieStore).build();
-		} catch (Exception e) {
-			throw new IOException(e);
-		}
+			try {
+				SSLContextBuilder builder = new SSLContextBuilder();
+				builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+				SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+						builder.build(),
+						SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+				httpclient = HttpClients.custom()
+						.setSSLSocketFactory(sslsf)
+						.setDefaultCookieStore(cookieStore).build();
+			} catch (Exception e) {
+				throw new IOException(e);
+			}
 		
 		} else {
 			httpclient = HttpClients.custom()

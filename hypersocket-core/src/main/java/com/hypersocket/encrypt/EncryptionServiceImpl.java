@@ -32,10 +32,7 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 	@Qualifier("defaultEncryptor")
 	Encryptor encryptor;
 	
-	public void setEncrypor(Encryptor encryptor) {
-		this.encryptor = encryptor;
-	}
-	
+
 	@Override
 	public String encryptString(String reference, String data) throws IOException {
 		
@@ -60,6 +57,11 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 			log.error("Failed to process test encryption key", e);
 		}
 		secretKeyService.clearPrincipalContext();
+	}
+
+	@Override
+	public void setEncryptor(Encryptor encryptor) {
+		this.encryptor = encryptor;
 	}
 
 }
