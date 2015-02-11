@@ -208,4 +208,7 @@ public interface RealmService extends AuthenticatedService {
 
 	String getPrincipalPhone(Principal principal);
 
+	Map<String, String> getUserPropertyValues(
+			Principal principal, String... variableNames);
+
 }

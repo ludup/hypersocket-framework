@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import com.hypersocket.attributes.Attribute;
 import com.hypersocket.resource.AbstractResource;
 
 public interface ResourceTemplateRepository extends PropertyRepository {
@@ -46,5 +47,7 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	void setValues(AbstractResource resource,
 			Map<String, String> properties);
+
+	void registerAttribute(String context, Attribute attr);
 
 }

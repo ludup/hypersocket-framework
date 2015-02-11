@@ -27,12 +27,11 @@ public class AttributeRepositoryImpl extends
 		saveEntity(attr);
 
 		I18N.overrideMessage(Locale.ENGLISH, new Message("UserAttributes",
-				"attribute" + String.valueOf(attr.getId()), "", attr.getName()));
+				attr.getVariableName(), "", attr.getName()));
 
 		I18N.overrideMessage(
 				Locale.ENGLISH,
-				new Message("UserAttributes", "attribute"
-						+ String.valueOf(attr.getId()) + ".info", "", attr
+				new Message("UserAttributes", attr.getVariableName() + ".info", "", attr
 						.getDescription()));
 
 		I18N.flushOverrides();

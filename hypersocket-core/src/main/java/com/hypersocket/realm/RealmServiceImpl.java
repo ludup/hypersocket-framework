@@ -1410,6 +1410,21 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		}
 	}
 
+	@Override
+	public Map<String, String> getUserPropertyValues(Principal principal,
+			String... variableNames) {
+		
+		Map<String,String> variables = new HashMap<String,String>();
+		
+		RealmProvider provider = getProviderForRealm(principal.getRealm());
+		
+		for(String variableName : variableNames) {
+			variables.put(variableName, provider.getUserPropertyValue(principal, variableName));			
+		}
+		
+		return variables;
+	}
+
 
 
 }

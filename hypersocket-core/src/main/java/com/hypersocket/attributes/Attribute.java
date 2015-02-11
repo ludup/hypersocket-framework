@@ -46,7 +46,7 @@ public class Attribute extends AbstractEntity<Long>  {
 	@Column(name="attribute_id")
 	Long id;
 	
-	@Column(name="variable_name")
+	@Column(name="variable_name", unique=true)
 	String variableName;
 
 	public Long getId() {

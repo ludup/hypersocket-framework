@@ -53,8 +53,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	
 	String resourceXmlPath;
 	
-	static Set<String> propertyContexts = new HashSet<String>();
-	
+	static Map<String,List<ResourceTemplateRepository>> propertyContexts = new HashMap<String,List<ResourceTemplateRepository>>();
+
 	protected ResourcePropertyStore getPropertyStore() {
 		return configPropertyStore;
 	}
@@ -70,7 +70,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 	
 	public static Set<String> getContextNames() {
-		return propertyContexts;
+		return propertyContexts.keySet();
 	}
 	
 	public void loadPropertyTemplates(String resourceXmlPath) {
@@ -107,7 +107,10 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			if(log.isInfoEnabled()) {
 				log.info("Loading attributes for context " + context);
 			}
-			propertyContexts.add(context);
+			if(!propertyContexts.containsKey(context)) {
+				propertyContexts.put(context, new ArrayList<ResourceTemplateRepository>());
+			}
+			propertyContexts.get(context).add(this);
 			loadAttributeTemplates(context);
 		}
 
@@ -135,6 +138,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		}
 
 	}
+	
 	private String loadPropertyTemplates(URL url) throws SAXException,
 			IOException, ParserConfigurationException {
 
@@ -175,6 +179,53 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		return context;
 	}
 	
+	public static void registerNewAttribute(String context, Attribute attr) {
+		
+		for(ResourceTemplateRepository repository : propertyContexts.get(context)) {
+			repository.registerAttribute(context, attr);
+		}
+	}
+	
+	@Override
+	public void registerAttribute(String context, Attribute attr) {
+		
+		PropertyCategory cat = null;
+		String resourceKey = "attributeCategory" + String.valueOf(attr.getCategory().getId());
+		if(!activeCategories.containsKey(resourceKey)) {
+			cat = registerPropertyCategory(context, attr.getCategory());
+		} else {
+			cat = activeCategories.get(resourceKey);
+		}
+		
+		registerPropertyItem(context, cat, attr);
+		
+	}
+	
+	private PropertyCategory registerPropertyCategory(String context, AttributeCategory c) {
+		return registerPropertyCategory(
+				"attributeCategory" + String.valueOf(c.getId()),
+				"UserAttributes",
+				c.getWeight(),
+				true,
+				context,
+				"");
+	}
+	
+	private void registerPropertyItem(String context, PropertyCategory cat, Attribute attr) {
+		registerPropertyItem(
+				cat,
+				configPropertyStore,
+				attr.getVariableName(),
+				attr.generateMetaData(),
+				"",
+				attr.getWeight(),
+				attr.getHidden(),
+				attr.getReadOnly(),
+				attr.getDefaultValue(),
+				true,
+				attr.getEncrypted());
+	}
+	
 	private void loadAttributeTemplates(String context) {
 		
 		
@@ -189,18 +240,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 					"");
 			
 			for(Attribute attr : c.getAttributes()) {
-				registerPropertyItem(
-						cat,
-						configPropertyStore,
-						"attribute" + String.valueOf(attr.getId()),
-						attr.generateMetaData(),
-						"",
-						attr.getWeight(),
-						attr.getHidden(),
-						attr.getReadOnly(),
-						attr.getDefaultValue(),
-						true,
-						attr.getEncrypted());
+				registerPropertyItem(context, cat, attr);
 			}
 		}
 		

@@ -16,6 +16,7 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
+import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.tables.ColumnSort;
 
@@ -107,7 +108,7 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 		attributeCategory.setName(name);
 		attributeCategory.setContext(context);
 		attributeCategory.setWeight(weight);
-		attributeCategoryRepository.saveEntity(attributeCategory);
+		attributeCategoryRepository.saveCategory(attributeCategory);
 		return attributeCategory;
 	}
 
@@ -135,7 +136,7 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 			if (type.equals("TEXT")) {
 				attribute.setType(AttributeType.TEXT);
 			} else {
-				attribute.setType(AttributeType.SELECT);
+				attribute.setType(AttributeType.PASSWORD);
 			}
 			
 			attribute.setReadOnly(readOnly);
@@ -172,20 +173,20 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 						"attribute.nameInUse.error", name);
 			}
 
-			attribute.setCategory(attributeCategoryRepository
-					.getEntityById(category));
+			AttributeCategory cat = attributeCategoryRepository.getEntityById(category);
+			attribute.setCategory(cat);
 			attribute.setDescription(description);
 			attribute.setDefaultValue(defaultValue);
 			attribute.setWeight(weight);
-			if (type.equals("TEXT")) {
-				attribute.setType(AttributeType.TEXT);
-			} else {
-				attribute.setType(AttributeType.SELECT);
-			}
+			attribute.setType(AttributeType.valueOf(type));
 			attribute.setReadOnly(readOnly);
 			attribute.setEncrypted(encrypted);
 			attribute.setVariableName(variableName);
-			attributeRepository.saveEntity(attribute);
+			
+			attributeRepository.saveAttribute(attribute);
+			
+			ResourceTemplateRepositoryImpl.registerNewAttribute(cat.getContext(), attribute);
+			
 			eventService.publishEvent(new AttributeCreatedEvent(this,
 					getCurrentSession(), attribute));
 			return attribute;

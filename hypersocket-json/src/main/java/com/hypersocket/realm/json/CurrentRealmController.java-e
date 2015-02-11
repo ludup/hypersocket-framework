@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,7 +53,7 @@ public class CurrentRealmController extends ResourceController {
 
 	@Autowired
 	PrincipalSuspensionService suspensionService;
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/groups/list", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
@@ -410,6 +411,30 @@ public class CurrentRealmController extends ResourceController {
 			user.setName(principal.getPrincipalName());
 
 			return user;
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/user/variables", method = {
+			RequestMethod.GET, RequestMethod.POST }, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Map<String, String>> getUserVariableValues(
+			HttpServletRequest request, HttpServletResponse response,
+			@RequestParam String variables) throws UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			String[] variableNames = StringUtils
+					.commaDelimitedListToStringArray(variables);
+
+			return new ResourceStatus<Map<String, String>>(
+					realmService.getUserPropertyValues(
+							sessionUtils.getPrincipal(request), variableNames));
 		} finally {
 			clearAuthenticatedContext();
 		}
