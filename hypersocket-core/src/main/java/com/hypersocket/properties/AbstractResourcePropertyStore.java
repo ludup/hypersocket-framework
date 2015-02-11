@@ -109,7 +109,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
 		
-		if(template.isEncrypted()) {
+		if(template.isEncrypted() && !value.startsWith("!ENC!")) {
 			value = encryptValue(cacheKey, value);
 			doSetProperty(template, resource, value);
 		} else {
