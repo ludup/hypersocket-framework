@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.Provider;
@@ -94,7 +95,10 @@ public class NssEncryptionProvider implements EncryptionProvider {
 		}
 		
 		if(cryptoProvider==null) {
-			cryptoProvider = new sun.security.pkcs11.SunPKCS11(configName);
+			
+			Class<Provider> clz = (Class<Provider>) Class.forName("sun.security.pkcs11.SunPKCS11");
+			Constructor c = clz.getConstructor(String.class);
+			cryptoProvider  = (Provider)c.newInstance(configName);
 		}
 		
 		if(keystore==null) {
