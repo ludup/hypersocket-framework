@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.tasks.TaskProvider;
@@ -88,7 +89,8 @@ public class TriggerResourceRepositoryImpl extends
 	@Override
 	public List<TriggerResource> getTriggersForEvent(final SystemEvent event) {
 
-		return allEntities(TriggerResource.class, new CriteriaConfiguration() {
+		return allEntities(TriggerResource.class,  
+				new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -110,6 +112,7 @@ public class TriggerResourceRepositoryImpl extends
 					break;
 				}
 
+				criteria.add(Restrictions.eq("realm", event.getCurrentRealm()));
 				criteria.add(Restrictions.in("event", event.getResourceKeys()));
 			}
 		});
