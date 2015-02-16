@@ -6,6 +6,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -209,7 +210,7 @@ public class AttributeController extends ResourceController {
 	@RequestMapping(value = "attributeCategories/categories", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<SelectOption> getActions(HttpServletRequest request)
+	public ResourceList<SelectOption> getCategories(HttpServletRequest request)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
@@ -219,6 +220,27 @@ public class AttributeController extends ResourceController {
 			for (AttributeCategory category : service.getCategories()) {
 				result.add(new SelectOption(Long.toString(category.getId()),
 						category.getName()));
+			}
+			return new ResourceList<SelectOption>(result);
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "attributeCategories/contexts", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<SelectOption> getContexts(HttpServletRequest request)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			List<SelectOption> result = new ArrayList<SelectOption>();
+			for (String context : service.getContexts()) {
+				result.add(new SelectOption(context,
+						StringUtils.capitalize(context)));
 			}
 			return new ResourceList<SelectOption>(result);
 		} finally {
