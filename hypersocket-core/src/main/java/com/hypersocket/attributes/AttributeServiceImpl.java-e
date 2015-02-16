@@ -1,5 +1,6 @@
 package com.hypersocket.attributes;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -71,6 +72,11 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 		assertPermission(AttributePermission.READ);
 		return attributeRepository.searchAttributes(searchPattern, start,
 				length, sorting);
+	}
+	
+	@Override
+	public Collection<String> getContexts() {
+		return ResourceTemplateRepositoryImpl.getContextNames();
 	}
 
 	@Override

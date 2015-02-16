@@ -1,5 +1,6 @@
 package com.hypersocket.attributes;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.hypersocket.auth.AuthenticatedService;
@@ -39,4 +40,6 @@ public interface AttributeService extends AuthenticatedService {
 
 	public Long getAttributeCount(String searchPattern)
 			throws AccessDeniedException;
+
+	public Collection<String> getContexts();
 }
