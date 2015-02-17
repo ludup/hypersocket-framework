@@ -151,10 +151,7 @@ public class LogonController extends AuthenticatedController {
 				return getSuccessfulResult(
 						state.getSession(),
 						flash,
-						(StringUtils.isNotBlank(state.getHomePage()) 
-							? state.getHomePage()
-								: StringUtils.isNotBlank((String) request.getSession().getAttribute(POST_AUTHENTICATION_REDIRECT)) 
-									? (String) request.getSession().getAttribute(POST_AUTHENTICATION_REDIRECT) : ""));
+						state.getHomePage());
 			} else {
 
 				return new AuthenticationRequiredResult(
