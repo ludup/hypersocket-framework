@@ -16,11 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
-import com.hypersocket.realm.MediaNotFoundException;
-import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.utils.HypersocketUtils;
 
