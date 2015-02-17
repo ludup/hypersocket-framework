@@ -42,7 +42,7 @@ public class AuthenticatedController {
 	static Logger log = LoggerFactory.getLogger(AuthenticatedController.class);
 
 	static final String AUTHENTICATION_STATE_KEY = "authenticationState";
-
+	
 	static final String LOCATION = "Location";
 
 	@Autowired
