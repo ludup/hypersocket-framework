@@ -5,9 +5,11 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.properties.DatabasePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyRepositoryImpl;
@@ -21,9 +23,12 @@ public class SystemConfigurationRepositoryImpl extends PropertyRepositoryImpl im
 
 	PropertyTemplateRepository repository;
 	
+	@Autowired
+	EncryptionService encryptionService; 
+	
 	@PostConstruct
 	private void postConstruct() {
-		repository = new PropertyTemplateRepositoryAbstractImpl(new DatabasePropertyStore(this));
+		repository = new PropertyTemplateRepositoryAbstractImpl(new DatabasePropertyStore(this, encryptionService));
 	}
 
 	@Override

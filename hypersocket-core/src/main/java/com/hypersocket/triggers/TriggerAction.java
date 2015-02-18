@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.tasks.Task;
 
 @Entity
-@Table(name="trigger_actions")
+@Table(name="trigger_resource_tasks")
 public class TriggerAction extends Task {
 
 	@OneToOne

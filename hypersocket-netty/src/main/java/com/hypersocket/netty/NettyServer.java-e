@@ -63,7 +63,7 @@ public class NettyServer extends HypersocketServerImpl {
 	IpFilterRuleHandler ipFilterHandler =  new IpFilterRuleHandler();
 	MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
 	Set<IpFilterRule> ipRules = new HashSet<IpFilterRule>();
-	Map<InetAddress,List<Channel>> channelsByIPAddress = new HashMap<InetAddress,List<Channel>>();
+	Map<String,List<Channel>> channelsByIPAddress = new HashMap<String,List<Channel>>();
 	
 	public NettyServer() {
 
@@ -255,11 +255,13 @@ public class NettyServer extends HypersocketServerImpl {
 
 	@Override
 	public void blockAddress(String addr) throws UnknownHostException {
-		if(addr.indexOf('/')==-1) {
-			addr += "/0";
+		
+		String cidr = addr;
+		if(cidr.indexOf('/')==-1) {
+			cidr += "/32";
 		}
 		
-		IpFilterRule rule = new IpSubnetFilterRule(false, addr);
+		IpFilterRule rule = new IpSubnetFilterRule(false, cidr);
 		ipFilterHandler.add(rule);
 		ipRules.add(rule);
 		
@@ -275,7 +277,7 @@ public class NettyServer extends HypersocketServerImpl {
 	@Override
 	public void unblockAddress(String addr) throws UnknownHostException {
 		if(addr.indexOf('/')==-1) {
-			addr += "/0";
+			addr += "/32";
 		}
 		
 		IpFilterRule rule = new IpSubnetFilterRule(false, addr);
@@ -295,10 +297,10 @@ public class NettyServer extends HypersocketServerImpl {
 			}
 			
 			synchronized (channelsByIPAddress) {
-				if(!channelsByIPAddress.containsKey(addr)) {
-					channelsByIPAddress.put(addr, new ArrayList<Channel>());
+				if(!channelsByIPAddress.containsKey(addr.getHostAddress())) {
+					channelsByIPAddress.put(addr.getHostAddress(), new ArrayList<Channel>());
 				}
-				channelsByIPAddress.get(addr).add(ctx.getChannel());				
+				channelsByIPAddress.get(addr.getHostAddress()).add(ctx.getChannel());				
 			}
 
 		}
@@ -313,9 +315,9 @@ public class NettyServer extends HypersocketServerImpl {
 			}
 			
 			synchronized (channelsByIPAddress) {
-				channelsByIPAddress.get(addr).remove(ctx.getChannel());
-				if(channelsByIPAddress.get(addr).isEmpty()) {
-					channelsByIPAddress.remove(addr);
+				channelsByIPAddress.get(addr.getHostAddress()).remove(ctx.getChannel());
+				if(channelsByIPAddress.get(addr.getHostAddress()).isEmpty()) {
+					channelsByIPAddress.remove(addr.getHostAddress());
 				}
 			}
 			

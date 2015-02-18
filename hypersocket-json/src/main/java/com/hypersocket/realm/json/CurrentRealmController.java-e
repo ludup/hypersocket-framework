@@ -8,8 +8,10 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +32,8 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalColumns;
+import com.hypersocket.realm.PrincipalSuspension;
+import com.hypersocket.realm.PrincipalSuspensionService;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -37,6 +41,7 @@ import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
@@ -45,6 +50,9 @@ import com.hypersocket.tables.json.DataTablesPageProcessor;
 
 @Controller
 public class CurrentRealmController extends ResourceController {
+
+	@Autowired
+	PrincipalSuspensionService suspensionService;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/groups/list", method = RequestMethod.GET, produces = { "application/json" })
@@ -409,6 +417,30 @@ public class CurrentRealmController extends ResourceController {
 	}
 
 	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/user/variables", method = {
+			RequestMethod.GET, RequestMethod.POST }, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Map<String, String>> getUserVariableValues(
+			HttpServletRequest request, HttpServletResponse response,
+			@RequestParam String variables) throws UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			String[] variableNames = StringUtils
+					.commaDelimitedListToStringArray(variables);
+
+			return new ResourceStatus<Map<String, String>>(
+					realmService.getUserPropertyValues(
+							sessionUtils.getPrincipal(request), variableNames));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/group", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -634,17 +666,89 @@ public class CurrentRealmController extends ResourceController {
 					.getCurrentPrincipal();
 
 			realmService.changePassword(principal, oldPassword, newPassword);
-			
+
 			return new RequestStatus(true,
 					I18N.getResource(sessionUtils.getLocale(request),
 							RealmServiceImpl.RESOURCE_BUNDLE,
 							"password.change.success"));
 		} catch (ResourceException re) {
 			return new RequestStatus(false, I18N.getResource(
-						sessionUtils.getLocale(request),
-						re.getBundle(),
-						re.getResourceKey()));
-			
+					sessionUtils.getLocale(request), re.getBundle(),
+					re.getResourceKey()));
+
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/suspendUser", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<PrincipalSuspension> suspendUser(
+			HttpServletRequest request, HttpServletResponse response,
+			@RequestBody PrincipalSuspensionUpdate principalSuspensionUpdate)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		Realm realm = sessionUtils.getCurrentRealm(request);
+
+		Principal principal = realmService.getPrincipalById(realm,
+				principalSuspensionUpdate.getPrincipalId(), PrincipalType.USER);
+		try {
+
+			PrincipalSuspension principalSuspension = suspensionService
+					.createPrincipalSuspension(principal,
+							principalSuspensionUpdate.getStartDate(),
+							principalSuspensionUpdate.getDuration());
+
+			return new ResourceStatus<PrincipalSuspension>(principalSuspension,
+					I18N.getResource(sessionUtils.getLocale(request),
+							RealmService.RESOURCE_BUNDLE,
+							"suspendUser.suspendSuccess", principalSuspension
+									.getPrincipal().getPrincipalName()));
+
+		} catch (ResourceCreationException e) {
+			return new ResourceStatus<PrincipalSuspension>(false,
+					I18N.getResource(sessionUtils.getLocale(request),
+							e.getBundle(), e.getResourceKey(), e.getArgs()));
+		} catch (ResourceNotFoundException e) {
+			return new ResourceStatus<PrincipalSuspension>(false,
+					I18N.getResource(sessionUtils.getLocale(request),
+							e.getBundle(), e.getResourceKey(), e.getArgs()));
+
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/resumeUser/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<PrincipalSuspension> resumeUser(
+			HttpServletRequest request, HttpServletResponse response,
+			@PathVariable("id") Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		Realm realm = sessionUtils.getCurrentRealm(request);
+
+		Principal principal = realmService.getPrincipalById(realm, id,
+				PrincipalType.USER);
+		try {
+			PrincipalSuspension principalSuspension = suspensionService
+					.deletePrincipalSuspension(principal);
+
+			return new ResourceStatus<PrincipalSuspension>(principalSuspension,
+					I18N.getResource(sessionUtils.getLocale(request),
+							RealmService.RESOURCE_BUNDLE,
+							"suspendUser.resumeSuccess", principalSuspension
+									.getPrincipal().getPrincipalName()));
 		} finally {
 			clearAuthenticatedContext();
 		}

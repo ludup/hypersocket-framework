@@ -88,7 +88,8 @@ public class TriggerResourceRepositoryImpl extends
 	@Override
 	public List<TriggerResource> getTriggersForEvent(final SystemEvent event) {
 
-		return allEntities(TriggerResource.class, new CriteriaConfiguration() {
+		return allEntities(TriggerResource.class,  
+				new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -110,6 +111,7 @@ public class TriggerResourceRepositoryImpl extends
 					break;
 				}
 
+				criteria.add(Restrictions.eq("realm", event.getCurrentRealm()));
 				criteria.add(Restrictions.in("event", event.getResourceKeys()));
 			}
 		});

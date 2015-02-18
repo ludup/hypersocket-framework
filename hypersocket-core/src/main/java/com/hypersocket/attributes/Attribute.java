@@ -45,6 +45,9 @@ public class Attribute extends AbstractEntity<Long>  {
 	@GeneratedValue(strategy = GenerationType.TABLE)
 	@Column(name="attribute_id")
 	Long id;
+	
+	@Column(name="variable_name", unique=true)
+	String variableName;
 
 	public Long getId() {
 		return id;
@@ -129,5 +132,12 @@ public class Attribute extends AbstractEntity<Long>  {
 		return encrypted!=null && encrypted;
 	}
 
-	
+	public String getVariableName() {
+		return variableName;
+	}
+
+	public void setVariableName(String variableName) {
+		this.variableName = variableName;
+	}
+
 }

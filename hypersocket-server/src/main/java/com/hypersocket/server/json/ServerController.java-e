@@ -33,6 +33,8 @@ import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.server.HypersocketServer;
+import com.hypersocket.session.SessionService;
+import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.session.json.SessionUtils;
 
 @Controller
@@ -47,20 +49,32 @@ public class ServerController extends AuthenticatedController {
 	@Autowired
 	PermissionService permissionService;
 	
+	@Autowired
+	SessionService sessionService; 
+	
+	@RequestMapping(value = "server/ping", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus ping(HttpServletRequest request,
+			HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+		return new RequestStatus(true, "");
+	}
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "server/restart/{delay}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public RequestStatus restartServer(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable Long delay)
-			throws AccessDeniedException, UnauthorizedException {
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		permissionService.verifyPermission(sessionUtils.getPrincipal(request),
 				PermissionStrategy.INCLUDE_IMPLIED,
 				SystemPermission.SYSTEM_ADMINISTRATION);
 
 		server.restart(delay);
-
+		
 		return new RequestStatus(true, I18N.getResource(
 				sessionUtils.getLocale(request),
 				HypersocketServer.RESOURCE_BUNDLE, "message.restartIn", delay));
@@ -72,14 +86,14 @@ public class ServerController extends AuthenticatedController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public RequestStatus shutdownServer(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable Long delay)
-			throws AccessDeniedException, UnauthorizedException {
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		permissionService.verifyPermission(sessionUtils.getPrincipal(request),
 				PermissionStrategy.INCLUDE_IMPLIED,
 				SystemPermission.SYSTEM_ADMINISTRATION);
 
 		server.shutdown(delay);
-
+		
 		return new RequestStatus(true, I18N.getResource(
 				sessionUtils.getLocale(request),
 				HypersocketServer.RESOURCE_BUNDLE, "message.shutdownIn", delay));

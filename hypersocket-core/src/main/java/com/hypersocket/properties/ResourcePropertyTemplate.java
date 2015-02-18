@@ -16,7 +16,7 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 
 	AbstractResource resource;
 	
-	public ResourcePropertyTemplate(AbstractPropertyTemplate t, AbstractResource resource, ResourcePropertyStore propertyStore) {
+	public ResourcePropertyTemplate(AbstractPropertyTemplate t, AbstractResource resource) {
 		this.resourceKey = t.getResourceKey();
 		this.defaultValue = t.getDefaultValue();
 		this.metaData = t.getMetaData();
@@ -26,7 +26,7 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 		this.hidden = t.isHidden();
 		this.readOnly = t.isReadOnly();
 		this.resource = resource;
-		this.propertyStore = propertyStore;
+		this.propertyStore = t.getPropertyStore();
 	}
 	
 	public void setPropertyStore(ResourcePropertyStore propertyStore) {

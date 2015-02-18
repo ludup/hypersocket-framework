@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
-@Table(name="triggers")
+@Table(name="trigger_resource")
 public class TriggerResource extends RealmResource {
 
 	@Column(name="result")
@@ -23,10 +23,10 @@ public class TriggerResource extends RealmResource {
 	@Column(name="event")
 	String event;
 	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="trigger", fetch=FetchType.EAGER)
+	@OneToMany(orphanRemoval=true, cascade=CascadeType.ALL, mappedBy="trigger", fetch=FetchType.EAGER)
 	Set<TriggerCondition> conditions = new HashSet<TriggerCondition>();
 	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="trigger", fetch=FetchType.EAGER)
+	@OneToMany(orphanRemoval=true, cascade=CascadeType.ALL, mappedBy="trigger", fetch=FetchType.EAGER)
 	Set<TriggerAction> actions  = new HashSet<TriggerAction>();
 
 	Boolean fireEvent;

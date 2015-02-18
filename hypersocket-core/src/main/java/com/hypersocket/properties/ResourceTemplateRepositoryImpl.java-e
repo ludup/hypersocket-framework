@@ -22,6 +22,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -31,60 +33,67 @@ import org.xml.sax.SAXException;
 
 import com.hypersocket.attributes.Attribute;
 import com.hypersocket.attributes.AttributeCategory;
+import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.resource.AbstractResource;
 
-public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryImpl implements ResourceTemplateRepository {
+@Repository
+public abstract class ResourceTemplateRepositoryImpl extends
+		PropertyRepositoryImpl implements ResourceTemplateRepository {
 
-	static Logger log = LoggerFactory.getLogger(ResourceTemplateRepositoryImpl.class);
+	static Logger log = LoggerFactory
+			.getLogger(ResourceTemplateRepositoryImpl.class);
 
 	DatabasePropertyStore configPropertyStore;
+
+	@Autowired
+	EncryptionService encryptionService;
 
 	Map<String, PropertyCategory> activeCategories = new HashMap<String, PropertyCategory>();
 	Map<String, PropertyTemplate> propertyTemplates = new HashMap<String, PropertyTemplate>();
 	Map<String, PropertyStore> propertyStoresByResourceKey = new HashMap<String, PropertyStore>();
 	Map<String, PropertyStore> propertyStoresById = new HashMap<String, PropertyStore>();
 	Set<PropertyStore> propertyStores = new HashSet<PropertyStore>();
-	
+
 	List<PropertyTemplate> activeTemplates = new ArrayList<PropertyTemplate>();
 	Set<String> propertyNames = new HashSet<String>();
 	Set<String> variableNames = new HashSet<String>();
-	
+
 	String resourceXmlPath;
-	
-	static Set<String> propertyContexts = new HashSet<String>();
-	
+
+	static Map<String, List<ResourceTemplateRepository>> propertyContexts = new HashMap<String, List<ResourceTemplateRepository>>();
+
 	protected ResourcePropertyStore getPropertyStore() {
 		return configPropertyStore;
 	}
-	
+
 	@Override
 	public Set<String> getPropertyNames() {
 		return propertyNames;
 	}
-	
+
 	@Override
 	public Set<String> getVariableNames() {
 		return variableNames;
 	}
-	
+
 	public static Set<String> getContextNames() {
-		return propertyContexts;
+		return propertyContexts.keySet();
 	}
-	
+
 	public void loadPropertyTemplates(String resourceXmlPath) {
-		
+
 		this.resourceXmlPath = resourceXmlPath;
-		configPropertyStore = new DatabasePropertyStore(this);
-		
+		configPropertyStore = new DatabasePropertyStore(this, encryptionService);
+
 		String context = null;
 		try {
 			Enumeration<URL> urls = getClass().getClassLoader().getResources(
 					resourceXmlPath);
-			if(!urls.hasMoreElements()) {
-				throw new IllegalArgumentException(resourceXmlPath + " does not exist!");
+			if (!urls.hasMoreElements()) {
+				throw new IllegalArgumentException(resourceXmlPath
+						+ " does not exist!");
 			}
-			
-			
+
 			while (urls.hasMoreElements()) {
 				URL url = urls.nextElement();
 				try {
@@ -93,19 +102,21 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 					log.error("Failed to process " + url.toExternalForm(), e);
 				}
 			}
-			
-			
+
 		} catch (IOException e) {
 			log.error("Failed to load propertyTemplate.xml resources", e);
 		}
-		
-		
-		if(context!=null) {
-			
-			if(log.isInfoEnabled()) {
+
+		if (context != null) {
+
+			if (log.isInfoEnabled()) {
 				log.info("Loading attributes for context " + context);
 			}
-			propertyContexts.add(context);
+			if (!propertyContexts.containsKey(context)) {
+				propertyContexts.put(context,
+						new ArrayList<ResourceTemplateRepository>());
+			}
+			propertyContexts.get(context).add(this);
 			loadAttributeTemplates(context);
 		}
 
@@ -133,6 +144,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		}
 
 	}
+
 	private String loadPropertyTemplates(URL url) throws SAXException,
 			IOException, ParserConfigurationException {
 
@@ -143,67 +155,92 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 		Element root = doc.getDocumentElement();
 		String context = null;
-		
-		if(root.hasAttribute("extends")) {
+
+		if (root.hasAttribute("extends")) {
 			String extendsTemplates = root.getAttribute("extends");
 			StringTokenizer t = new StringTokenizer(extendsTemplates, ",");
-			while(t.hasMoreTokens()) {
-				Enumeration<URL> extendUrls = getClass().getClassLoader().getResources(t.nextToken());
-				while(extendUrls.hasMoreElements()) {
+			while (t.hasMoreTokens()) {
+				Enumeration<URL> extendUrls = getClass().getClassLoader()
+						.getResources(t.nextToken());
+				while (extendUrls.hasMoreElements()) {
 					URL extendUrl = extendUrls.nextElement();
 					try {
 						context = loadPropertyTemplates(extendUrl);
-					} catch(Exception e) {
-						log.error("Failed to process " + extendUrl.toExternalForm(), e);
+					} catch (Exception e) {
+						log.error(
+								"Failed to process "
+										+ extendUrl.toExternalForm(), e);
 					}
 				}
 			}
-		} else if(root.hasAttribute("context")) {
+		} else if (root.hasAttribute("context")) {
 			context = root.getAttribute("context");
-		} 
-		
-		if(log.isInfoEnabled()) {
-			log.info("Loading property template resource " + url.toExternalForm());
 		}
-		
+
+		if (log.isInfoEnabled()) {
+			log.info("Loading property template resource "
+					+ url.toExternalForm());
+		}
+
 		loadPropertyStores(doc);
-		
+
 		loadPropertyCategories(doc);
-		
+
 		return context;
 	}
-	
+
+	public static void registerNewAttribute(String context, Attribute attr) {
+
+		for (ResourceTemplateRepository repository : propertyContexts
+				.get(context)) {
+			repository.registerAttribute(context, attr);
+		}
+	}
+
+	@Override
+	public void registerAttribute(String context, Attribute attr) {
+
+		PropertyCategory cat = null;
+		String resourceKey = "attributeCategory"
+				+ String.valueOf(attr.getCategory().getId());
+		if (!activeCategories.containsKey(resourceKey)) {
+			cat = registerPropertyCategory(context, attr.getCategory());
+		} else {
+			cat = activeCategories.get(resourceKey);
+		}
+
+		registerPropertyItem(context, cat, attr);
+
+	}
+
+	private PropertyCategory registerPropertyCategory(String context,
+			AttributeCategory c) {
+		return registerPropertyCategory(
+				"attributeCategory" + String.valueOf(c.getId()),
+				"UserAttributes", c.getWeight(), true, context, "");
+	}
+
+	private void registerPropertyItem(String context, PropertyCategory cat,
+			Attribute attr) {
+		registerPropertyItem(cat, configPropertyStore, attr.getVariableName(),
+				attr.generateMetaData(), "", attr.getWeight(),
+				attr.getHidden(), attr.getReadOnly(), attr.getDefaultValue(),
+				true, attr.getEncrypted());
+	}
+
 	private void loadAttributeTemplates(String context) {
-		
-		
-		for(AttributeCategory c : getAttributeCategories(context)) {
-			
-			PropertyCategory cat = registerPropertyCategory(
-					"attributeCategory" + String.valueOf(c.getId()),
-					"UserAttributes",
-					c.getWeight(),
-					true,
-					context,
-					"");
-			
-			for(Attribute attr : c.getAttributes()) {
-				registerPropertyItem(
-						cat,
-						configPropertyStore,
-						"attribute" + String.valueOf(attr.getId()),
-						attr.generateMetaData(),
-						"",
-						attr.getWeight(),
-						attr.getHidden(),
-						attr.getReadOnly(),
-						attr.getDefaultValue(),
-						true,
-						attr.getEncrypted());
+
+		for (AttributeCategory c : getAttributeCategories(context)) {
+
+			PropertyCategory cat = registerPropertyCategory("attributeCategory"
+					+ String.valueOf(c.getId()), "UserAttributes",
+					c.getWeight(), true, context, "");
+
+			for (Attribute attr : c.getAttributes()) {
+				registerPropertyItem(context, cat, attr);
 			}
 		}
-		
-		
-		
+
 	}
 
 	private void loadPropertyCategories(Document doc) throws IOException {
@@ -222,21 +259,20 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 			if (log.isInfoEnabled()) {
 				log.info("Registering category "
-						+ node.getAttribute("resourceKey") + " for bundle " + node.getAttribute("resourceBundle"));
+						+ node.getAttribute("resourceKey") + " for bundle "
+						+ node.getAttribute("resourceBundle"));
 			}
 
 			String group = "system";
-			if(node.hasAttribute("group")) {
+			if (node.hasAttribute("group")) {
 				group = node.getAttribute("group");
 			}
-			
+
 			PropertyCategory cat = registerPropertyCategory(
 					node.getAttribute("resourceKey"),
 					node.getAttribute("resourceBundle"),
-					Integer.parseInt(node.getAttribute("weight")),
-					false,
-					group,
-					node.getAttribute("displayMode"));
+					Integer.parseInt(node.getAttribute("weight")), false,
+					group, node.getAttribute("displayMode"));
 
 			NodeList properties = node.getElementsByTagName("property");
 
@@ -244,30 +280,35 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 				Element pnode = (Element) properties.item(x);
 
-				if(!pnode.hasAttribute("resourceKey")) {
-					throw new IOException("property must have a resourceKey attribute");
+				if (!pnode.hasAttribute("resourceKey")) {
+					throw new IOException(
+							"property must have a resourceKey attribute");
 				}
 				try {
-					
-					PropertyTemplate t = getPropertyTemplate(pnode.getAttribute("resourceKey"));
-					if(t!=null) {
-						if(log.isInfoEnabled()) {
-							log.info("Overriding default value of " + t.getResourceKey() + " to " + pnode.getAttribute("defaultValue"));
+
+					PropertyTemplate t = getPropertyTemplate(pnode
+							.getAttribute("resourceKey"));
+					if (t != null) {
+						if (log.isInfoEnabled()) {
+							log.info("Overriding default value of "
+									+ t.getResourceKey() + " to "
+									+ pnode.getAttribute("defaultValue"));
 						}
 						t.setDefaultValue(pnode.getAttribute("defaultValue"));
 						continue;
 					}
-					
+
 					PropertyStore store = getPropertyStore();
 					if (pnode.hasAttribute("store")) {
-						store = propertyStoresById.get(pnode.getAttribute("store"));
+						store = propertyStoresById.get(pnode
+								.getAttribute("store"));
 						if (store == null) {
 							throw new IOException("PropertyStore "
 									+ pnode.getAttribute("store")
 									+ " does not exist!");
 						}
 					}
-					
+
 					registerPropertyItem(
 							cat,
 							store,
@@ -281,7 +322,10 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 							pnode.hasAttribute("readOnly")
 									&& pnode.getAttribute("readOnly")
 											.equalsIgnoreCase("true"),
-									Boolean.getBoolean("hypersocket.development") && pnode.hasAttribute("developmentValue") ? pnode.getAttribute("developmentValue") : pnode.getAttribute("defaultValue"),
+							Boolean.getBoolean("hypersocket.development")
+									&& pnode.hasAttribute("developmentValue") ? pnode
+									.getAttribute("developmentValue") : pnode
+									.getAttribute("defaultValue"),
 							pnode.hasAttribute("variable")
 									&& pnode.getAttribute("variable")
 											.equalsIgnoreCase("true"),
@@ -307,17 +351,17 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			buf.append("\"");
 			buf.append(n.getNodeName());
 			buf.append("\": ");
-			if(n.getNodeName().equals("options")) {
+			if (n.getNodeName().equals("options")) {
 				buf.append("[");
 				StringTokenizer t = new StringTokenizer(n.getNodeValue(), ",");
-				while(t.hasMoreTokens()) {
+				while (t.hasMoreTokens()) {
 					String opt = t.nextToken();
 					buf.append("{ \"name\": \"");
 					buf.append(opt);
 					buf.append("\", \"value\": \"");
 					buf.append(opt);
 					buf.append("\"}");
-					if(t.hasMoreTokens()) {
+					if (t.hasMoreTokens()) {
 						buf.append(",");
 					}
 				}
@@ -336,45 +380,49 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	public PropertyTemplate getPropertyTemplate(String resourceKey) {
 		return propertyTemplates.get(resourceKey);
 	}
-	
+
 	private void registerPropertyItem(PropertyCategory category,
 			PropertyStore propertyStore, String resourceKey, String metaData,
-			String mapping, int weight, boolean hidden, boolean readOnly, String defaultValue,
-			boolean isVariable, boolean encrypted) {
+			String mapping, int weight, boolean hidden, boolean readOnly,
+			String defaultValue, boolean isVariable, boolean encrypted) {
 
-		if(log.isInfoEnabled()) {
+		if (log.isInfoEnabled()) {
 			log.info("Registering property " + resourceKey);
 		}
-		
-		if(defaultValue != null && defaultValue.startsWith("classpath:")) {
-				String url = defaultValue.substring(10);
-				InputStream in = getClass().getResourceAsStream(url);
-				try {
-					if(in!=null) {
-						try {
-							defaultValue = IOUtils.toString(in);
-						} catch (IOException e) {
-							log.error("Failed to load default value classpath resource " + defaultValue, e);
-						}
-					} else {
-						log.error("Failed to load default value classpath resource " + url);
+
+		if (defaultValue != null && defaultValue.startsWith("classpath:")) {
+			String url = defaultValue.substring(10);
+			InputStream in = getClass().getResourceAsStream(url);
+			try {
+				if (in != null) {
+					try {
+						defaultValue = IOUtils.toString(in);
+					} catch (IOException e) {
+						log.error(
+								"Failed to load default value classpath resource "
+										+ defaultValue, e);
 					}
-				} finally {
-					IOUtils.closeQuietly(in);
+				} else {
+					log.error("Failed to load default value classpath resource "
+							+ url);
 				}
+			} finally {
+				IOUtils.closeQuietly(in);
+			}
 		}
-		
+
 		propertyNames.add(resourceKey);
-		
-		if(isVariable) {
+
+		if (isVariable) {
 			variableNames.add(resourceKey);
 		}
-		PropertyTemplate template = propertyStore.getPropertyTemplate(resourceKey);
+		PropertyTemplate template = propertyStore
+				.getPropertyTemplate(resourceKey);
 		if (template == null) {
 			template = new PropertyTemplate();
 			template.setResourceKey(resourceKey);
 		}
-		
+
 		template.setMetaData(metaData);
 		template.setDefaultValue(defaultValue);
 		template.setWeight(weight);
@@ -382,50 +430,54 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		template.setReadOnly(readOnly);
 		template.setMapping(mapping);
 		template.setCategory(category);
+		template.setEncrypted(encrypted);
 		template.setPropertyStore(propertyStore);
-		
+
 		propertyStore.registerTemplate(template, resourceXmlPath);
 		category.getTemplates().add(template);
 		activeTemplates.add(template);
 		propertyTemplates.put(resourceKey, template);
-		
-		Collections.sort(category.getTemplates(), new Comparator<AbstractPropertyTemplate>() {
-			@Override
-			public int compare(AbstractPropertyTemplate cat1, AbstractPropertyTemplate cat2) {
-				return cat1.getWeight().compareTo(cat2.getWeight());
-			}
-		});
-		
-		Collections.sort(activeTemplates, new Comparator<AbstractPropertyTemplate>() {
-			@Override
-			public int compare(AbstractPropertyTemplate t1, AbstractPropertyTemplate t2) {
-				return t1.getResourceKey().compareTo(t2.getResourceKey());
-			}
-		});
-		
+
+		Collections.sort(category.getTemplates(),
+				new Comparator<AbstractPropertyTemplate>() {
+					@Override
+					public int compare(AbstractPropertyTemplate cat1,
+							AbstractPropertyTemplate cat2) {
+						return cat1.getWeight().compareTo(cat2.getWeight());
+					}
+				});
+
+		Collections.sort(activeTemplates,
+				new Comparator<AbstractPropertyTemplate>() {
+					@Override
+					public int compare(AbstractPropertyTemplate t1,
+							AbstractPropertyTemplate t2) {
+						return t1.getResourceKey().compareTo(
+								t2.getResourceKey());
+					}
+				});
+
 	}
 
 	private PropertyCategory registerPropertyCategory(String resourceKey,
-			String bundle, int weight, boolean userCreated, String group, String displayMode) {
+			String bundle, int weight, boolean userCreated, String group,
+			String displayMode) {
 
 		if (activeCategories.containsKey(resourceKey)) {
 			PropertyCategory cat = activeCategories.get(resourceKey);
-			if(cat.getBundle().equals(bundle)) {
+			if (cat.getBundle().equals(bundle)) {
 				return cat;
 			}
-			throw new IllegalStateException(
-						"Cannot register "
-								+ resourceKey
-								+ "/"
-								+ bundle
-								+ " as the resource key is already registered by bundle "
-								+ activeCategories.get(resourceKey).getBundle());
+			throw new IllegalStateException("Cannot register " + resourceKey
+					+ "/" + bundle
+					+ " as the resource key is already registered by bundle "
+					+ activeCategories.get(resourceKey).getBundle());
 		}
-		
-		if(activeCategories.containsKey(resourceKey)) {
+
+		if (activeCategories.containsKey(resourceKey)) {
 			return activeCategories.get(resourceKey);
 		}
-		
+
 		PropertyCategory category = new PropertyCategory();
 		category.setBundle(bundle);
 		category.setCategoryKey(resourceKey);
@@ -433,7 +485,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		category.setDisplayMode(displayMode);
 		category.setWeight(weight);
 		category.setUserCreated(userCreated);
-		
+
 		activeCategories.put(category.getCategoryKey(), category);
 		return category;
 	}
@@ -441,23 +493,26 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public String getValue(AbstractResource resource, String resourceKey) {
 
-		PropertyTemplate template =  propertyTemplates.get(resourceKey);
+		PropertyTemplate template = propertyTemplates.get(resourceKey);
 
 		if (template == null) {
 			throw new IllegalStateException(resourceKey
 					+ " is not a registered configuration item");
 		}
 
-		return ((ResourcePropertyStore)template.getPropertyStore()).getPropertyValue(template, resource);
+		return ((ResourcePropertyStore) template.getPropertyStore())
+				.getPropertyValue(template, resource);
 	}
 
 	@Override
-	public Integer getIntValue(AbstractResource resource, String name) throws NumberFormatException {
+	public Integer getIntValue(AbstractResource resource, String name)
+			throws NumberFormatException {
 		return Integer.parseInt(getValue(resource, name));
 	}
-	
+
 	@Override
-	public Long getLongValue(AbstractResource resource, String name) throws NumberFormatException {
+	public Long getLongValue(AbstractResource resource, String name)
+			throws NumberFormatException {
 		return Long.parseLong(getValue(resource, name));
 	}
 
@@ -470,17 +525,19 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	public boolean hasPropertyTemplate(String key) {
 		return propertyTemplates.containsKey(key);
 	}
-	
+
 	@Override
-	public void setValues(AbstractResource resource, Map<String,String> properties) {
-		
-		for(String resourceKey : getPropertyNames()) {
+	public void setValues(AbstractResource resource,
+			Map<String, String> properties) {
+
+		for (String resourceKey : getPropertyNames()) {
 			setValue(resource, resourceKey, properties.get(resourceKey));
 		}
 	}
-	
+
 	@Override
-	public void setValue(AbstractResource resource, String resourceKey, String value) {
+	public void setValue(AbstractResource resource, String resourceKey,
+			String value) {
 
 		PropertyTemplate template = propertyTemplates.get(resourceKey);
 
@@ -489,15 +546,17 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 					+ " is not a registered configuration item");
 		}
 
-		if(template.isReadOnly()) {
+		if (template.isReadOnly()) {
 			return;
 		}
-		
-		((ResourcePropertyStore)template.getPropertyStore()).setPropertyValue(template, resource, value);
+
+		((ResourcePropertyStore) template.getPropertyStore()).setPropertyValue(
+				template, resource, value);
 	}
 
 	@Override
-	public void setValue(AbstractResource resource, String resourceKey, Integer value)  {
+	public void setValue(AbstractResource resource, String resourceKey,
+			Integer value) {
 		setValue(resource, resourceKey, String.valueOf(value));
 	}
 
@@ -506,41 +565,42 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		setValue(resource, name, String.valueOf(value));
 	}
 
-
 	@Override
-	public Collection<PropertyCategory> getPropertyCategories(AbstractResource resource)  {
-		
+	public Collection<PropertyCategory> getPropertyCategories(
+			AbstractResource resource) {
+
 		List<PropertyCategory> cats = new ArrayList<PropertyCategory>();
-		for(PropertyCategory c : activeCategories.values()) {
+		for (PropertyCategory c : activeCategories.values()) {
 			PropertyCategory tmp = new PropertyCategory();
 			tmp.setBundle(c.getBundle());
 			tmp.setCategoryKey(c.getCategoryKey());
 			tmp.setWeight(c.getWeight());
 			tmp.setDisplayMode(c.getDisplayMode());
 			tmp.setUserCreated(c.isUserCreated());
-			for(AbstractPropertyTemplate t : c.getTemplates()) {
-				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource, getPropertyStore())); 
+			for (AbstractPropertyTemplate t : c.getTemplates()) {
+				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
 			}
 			cats.add(tmp);
-			
+
 		}
-		
+
 		Collections.sort(cats, new Comparator<PropertyCategory>() {
 			@Override
 			public int compare(PropertyCategory cat1, PropertyCategory cat2) {
 				return cat1.getWeight().compareTo(cat2.getWeight());
 			}
 		});
-		
+
 		return cats;
 	}
-	
+
 	@Override
-	public Collection<PropertyCategory> getPropertyCategories(AbstractResource resource, String group) {
+	public Collection<PropertyCategory> getPropertyCategories(
+			AbstractResource resource, String group) {
 
 		List<PropertyCategory> cats = new ArrayList<PropertyCategory>();
-		for(PropertyCategory c : activeCategories.values()) {
-			if(!c.getCategoryGroup().equals(group)) {
+		for (PropertyCategory c : activeCategories.values()) {
+			if (!c.getCategoryGroup().equals(group)) {
 				continue;
 			}
 			PropertyCategory tmp = new PropertyCategory();
@@ -549,39 +609,40 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			tmp.setWeight(c.getWeight());
 			tmp.setUserCreated(c.isUserCreated());
 			tmp.setDisplayMode(c.getDisplayMode());
-			for(AbstractPropertyTemplate t : c.getTemplates()) {
-				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource, (ResourcePropertyStore) t.getPropertyStore())); 
+			for (AbstractPropertyTemplate t : c.getTemplates()) {
+				tmp.getTemplates().add(
+							new ResourcePropertyTemplate(t, resource));
 			}
 			cats.add(tmp);
 		}
-		
+
 		Collections.sort(cats, new Comparator<PropertyCategory>() {
 			@Override
 			public int compare(PropertyCategory cat1, PropertyCategory cat2) {
 				return cat1.getWeight().compareTo(cat2.getWeight());
 			}
 		});
-		
+
 		return cats;
 	}
-	
+
 	@Override
 	public Collection<PropertyTemplate> getPropertyTemplates() {
 		return Collections.unmodifiableCollection(activeTemplates);
 	}
-	
+
 	@Override
 	public String[] getValues(AbstractResource resource, String name) {
 
 		String values = getValue(resource, name);
 		return ResourceUtils.explodeValues(values);
 	}
-	
+
 	@Override
-	public Map<String,String> getProperties(AbstractResource resource) {
-		
-		Map<String,String> properties = new HashMap<String,String>();
-		for(String name : getPropertyNames()) {
+	public Map<String, String> getProperties(AbstractResource resource) {
+
+		Map<String, String> properties = new HashMap<String, String>();
+		for (String name : getPropertyNames()) {
 			properties.put(name, getValue(resource, name));
 		}
 		return properties;

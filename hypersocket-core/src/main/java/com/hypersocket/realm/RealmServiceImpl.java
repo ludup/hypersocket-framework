@@ -58,6 +58,7 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.tables.ColumnSort;
@@ -93,6 +94,12 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Autowired
 	SessionService sessionService;
 
+	@Autowired
+	SchedulerService schedulerService;
+
+	@Autowired
+	PrincipalSuspensionService suspensionService;
+	
 	CacheManager cacheManager;
 	Cache realmCache;
 
@@ -142,7 +149,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 				new RealmPropertyCollector());
 
 		eventService.registerEvent(PrincipalEvent.class, RESOURCE_BUNDLE);
-		
+
 		eventService.registerEvent(UserEvent.class, RESOURCE_BUNDLE,
 				new UserPropertyCollector());
 		eventService.registerEvent(UserCreatedEvent.class, RESOURCE_BUNDLE,
@@ -410,7 +417,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Override
 	public boolean verifyPrincipal(Principal principal) {
-		return true;
+		return !principal.isSuspended();
 	}
 
 	@Override
@@ -1384,5 +1391,40 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		return tmp;
 
 	}
+
+	@Override
+	public String getPrincipalEmail(Principal principal) {
+		try {
+			return getPrincipalAddress(principal, MediaType.EMAIL);
+		} catch (MediaNotFoundException e) {
+			return "";
+		}
+	}
+	
+	@Override
+	public String getPrincipalPhone(Principal principal) {
+		try {
+			return getPrincipalAddress(principal, MediaType.PHONE);
+		} catch (MediaNotFoundException e) {
+			return "";
+		}
+	}
+
+	@Override
+	public Map<String, String> getUserPropertyValues(Principal principal,
+			String... variableNames) {
+		
+		Map<String,String> variables = new HashMap<String,String>();
+		
+		RealmProvider provider = getProviderForRealm(principal.getRealm());
+		
+		for(String variableName : variableNames) {
+			variables.put(variableName, provider.getUserPropertyValue(principal, variableName));			
+		}
+		
+		return variables;
+	}
+
+
 
 }
