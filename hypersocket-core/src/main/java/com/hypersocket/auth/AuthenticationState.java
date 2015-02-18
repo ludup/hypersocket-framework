@@ -54,6 +54,13 @@ public class AuthenticationState {
 		return modules.get(currentIndex);
 	}
 
+	public void clean() {
+		currentIndex = 0;
+		attempts = 0;
+		lastErrorMsg = null;
+		lastErrorIsResourceKey = false;
+	}
+	
 	public void addParameter(String name, String value) {
 		parameters.put(name, value);
 	}
@@ -72,6 +79,10 @@ public class AuthenticationState {
 
 	void nextModule() {
 		this.currentIndex++;
+	}
+	
+	void revertModule() {
+		this.currentIndex--;
 	}
 
 	public AuthenticationScheme getScheme() {

@@ -97,8 +97,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 			@Override
 			public boolean hasCreatedDefaultResources(Realm realm) {
-				return realm.isSystem()
-						|| repository.getRoleByName(ROLE_ADMINISTRATOR, realm) != null;
+				return repository.getRoleByName(ROLE_ADMINISTRATOR, realm) != null;
 			}
 
 			@Override

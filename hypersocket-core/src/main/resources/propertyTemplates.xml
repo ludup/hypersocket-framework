@@ -34,8 +34,6 @@
 		<property resourceKey="session.timeout" inputType="slider"
 			min="0" max="360" defaultValue="15" weight="0" labelResourceKey="session.timeout.slider.label" />
 	</propertyCategory>
-
-
 </propertyTemplates>
 
 		

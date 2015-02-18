@@ -26,6 +26,7 @@ public abstract class AbstractAuthenticatedService implements
 
 	@Autowired
 	PasswordEncryptionService encryptionService; 
+
 	
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAuthenticatedService.class);
