@@ -3,6 +3,7 @@ package com.hypersocket.rsa;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.security.KeyFactory;
@@ -14,6 +15,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -126,6 +128,21 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 		String decrypted = tk.decrypt(encryped);
 		
 		System.out.print(decrypted);
+	}
+
+	@Override
+	public boolean supportsSecretKeyStorage() {
+		return false;
+	}
+
+	@Override
+	public void createSecretKey(String reference) throws IOException {
+		
+	}
+
+	@Override
+	public SecretKey getSecretKey(String reference) throws IOException {
+		throw new IllegalStateException("Cannot access secret key when EncryptionProvider does not support secret keys");
 	}
 
 }

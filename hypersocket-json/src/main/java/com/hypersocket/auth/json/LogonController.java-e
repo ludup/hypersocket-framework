@@ -34,6 +34,7 @@ import com.hypersocket.session.json.SessionUtils;
 @Controller
 public class LogonController extends AuthenticatedController {
 
+	
 	@RequestMapping(value = "logon/reset", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -142,11 +143,8 @@ public class LogonController extends AuthenticatedController {
 
 				// We have authenticated!
 				request.getSession().removeAttribute(AUTHENTICATION_STATE_KEY);
-				request.getSession().setAttribute(
-						SessionUtils.AUTHENTICATED_SESSION, state.getSession());
-
-				sessionUtils.addAPISession(request, response,
-						state.getSession());
+				
+				attachSession(state.getSession(), request, response);
 
 				return getSuccessfulResult(
 						state.getSession(),
@@ -195,6 +193,47 @@ public class LogonController extends AuthenticatedController {
 		}
 	}
 
+	private void attachSession(Session session, HttpServletRequest request, HttpServletResponse response) {
+		
+		request.getSession().setAttribute(
+				SessionUtils.AUTHENTICATED_SESSION, session);
+
+		sessionUtils.addAPISession(request, response,
+				session);
+	}
+	
+	@RequestMapping(value = "attach/{authCode}/{sessionId}")
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public void attachSession(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String authCode,
+			@PathVariable String sessionId, @RequestParam String location)
+			throws UnauthorizedException, SessionTimeoutException, RedirectException {
+
+		Session session = sessionService.getSession(sessionId);
+		Session authSession = sessionService.getSessionTokenResource(authCode, Session.class);
+		
+		if(!authSession.equals(session)) {
+			throw new UnauthorizedException();
+		}
+		
+		setupAuthenticatedContext(session,
+				sessionUtils.getLocale(request));
+
+		try {
+			attachSession(authSession, request, response);
+			
+			if(StringUtils.isEmpty(location)) {
+				throw new RedirectException(System.getProperty(
+						"hypersocket.uiPath", "/hypersocket/ui"));
+			} else {
+				throw new RedirectException(location);
+			}
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
 	@RequestMapping(value = "logoff/{id}")
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)

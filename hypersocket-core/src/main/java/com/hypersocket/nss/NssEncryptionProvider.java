@@ -7,11 +7,17 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.math.BigInteger;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 
 import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -177,6 +183,40 @@ public class NssEncryptionProvider implements EncryptionProvider {
 
 		System.out.println("Exit code: " + p.exitValue());
 
+	}
+	
+	@Override
+	public boolean supportsSecretKeyStorage() {
+		return true;
+	}
+	
+	@Override
+	public void createSecretKey(String reference) throws IOException {
+		
+		try {
+			KeyGenerator kg = KeyGenerator.getInstance("AES", cryptoProvider);
+			kg.init(256);
+			SecretKey skey = kg.generateKey();
+			keystore.setEntry(reference, new KeyStore.SecretKeyEntry(skey), 
+			        new KeyStore.PasswordProtection(dbPassword.toCharArray()));
+			keystore.store(null, dbPassword.toCharArray());
+		} catch (NoSuchAlgorithmException e) {
+			throw new IOException(e);
+		} catch (KeyStoreException e) {
+			throw new IOException(e);
+		} catch (CertificateException e) {
+			throw new IOException(e);
+		}
+	}
+	
+	@Override
+	public SecretKey getSecretKey(String reference) throws IOException {
+		try {
+			return (SecretKey) keystore.getKey(reference, dbPassword.toCharArray());
+		} catch (UnrecoverableKeyException | KeyStoreException
+				| NoSuchAlgorithmException e) {
+			throw new IOException(e);
+		}
 	}
 	
 	public static void main(String[] args) throws Exception {

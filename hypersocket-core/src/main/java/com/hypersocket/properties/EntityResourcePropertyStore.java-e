@@ -100,6 +100,10 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	protected void doSetProperty(AbstractPropertyTemplate template,
 			AbstractResource resource, String value) {
 		
+		if(value==null) {
+			// We don't support setting null values. Caller may have set values on object directly
+			return;
+		}
 		Method[] methods = resource.getClass().getMethods();
 		
 		String methodName = "set" + StringUtils.capitalize(template.getResourceKey());
@@ -153,24 +157,36 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	
 	class BooleanValue implements PrimitiveParser<Boolean> {
 		public Boolean parseValue(String value) {
+			if(value == null) {
+				return Boolean.FALSE;
+			}
 			return Boolean.valueOf(value);
 		}
 	}
 	
 	class IntegerValue implements PrimitiveParser<Integer> {
 		public Integer parseValue(String value) {
+			if(value == null) {
+				return new Integer(0);
+			}
 			return Integer.valueOf(value);
 		}
 	}
 	
 	class LongValue implements PrimitiveParser<Long> {
 		public Long parseValue(String value) {
+			if(value == null) {
+				return new Long(0);
+			}
 			return Long.valueOf(value);
 		}
 	}
 	
 	class DoubleValue implements PrimitiveParser<Double> {
 		public Double parseValue(String value) {
+			if(value == null) {
+				return new Double(0F);
+			}
 			return Double.valueOf(value);
 		}
 	}
@@ -180,6 +196,9 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		@Override
 		public Date parseValue(String value) {
 			try {
+				if(value == null) {
+					return new Date();
+				}
 				return HypersocketUtils.parseDate(value, "yyyy-MM-dd");
 			} catch (ParseException e) {
 				log.warn("Failed to parse date value " + value);
