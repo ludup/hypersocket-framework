@@ -21,7 +21,6 @@ import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
-@Transactional
 public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		extends ResourceTemplateRepositoryImpl implements
 		AbstractResourceRepository<T> {
@@ -34,34 +33,41 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public T getResourceByName(String name, Realm realm) {
 		return getResourceByName(name, realm, false);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public T getResourceByName(String name, Realm realm, boolean deleted) {
 		return get("name", name, getResourceClass(), new RealmRestriction(realm), new DeletedCriteria(
 				deleted));
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public T getResourceById(Long id) {
 		return get("id", id, getResourceClass());
 	}
 
 	@Override
+	@Transactional
 	public void deleteResource(T resource) throws ResourceChangeException {
 		delete(resource);
 	}
 
 	@Override
+	@Transactional
 	public void saveResource(T resource, Map<String,String> properties) {
 		
 		setValues(resource, properties);
 		save(resource);
+		
 	}
 	
 	@Override
+	@Transactional
 	public void updateResource(T resource, Map<String,String> properties) {
 		
 		setValues(resource, properties);
@@ -71,6 +77,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly=true)
 	public List<T> getResources(Realm realm) {
 
 		Criteria crit = sessionFactory.getCurrentSession().createCriteria(
@@ -84,6 +91,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<T> search(Realm realm, String searchPattern, int start,
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		return super.search(getResourceClass(), "name", searchPattern, start,
@@ -92,6 +100,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public long getResourceCount(Realm realm, String searchPattern,
 			CriteriaConfiguration... configs) {
 		return getCount(getResourceClass(), "name", searchPattern,
