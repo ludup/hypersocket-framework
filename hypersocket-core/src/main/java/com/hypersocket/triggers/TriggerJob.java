@@ -61,7 +61,7 @@ public class TriggerJob extends PermissionsAwareJob {
 	}
 
 	protected void processEventTrigger(TriggerResource trigger,
-			SystemEvent event) throws ValidationException {
+			SystemEvent... event) throws ValidationException {
 		if (log.isInfoEnabled()) {
 			log.info("Processing trigger " + trigger.getName());
 		}
@@ -85,7 +85,7 @@ public class TriggerJob extends PermissionsAwareJob {
 
 	}
 
-	protected boolean checkConditions(TriggerResource trigger, SystemEvent event)
+	protected boolean checkConditions(TriggerResource trigger, SystemEvent... event)
 			throws ValidationException {
 
 		for (TriggerCondition condition : trigger.getAllConditions()) {
@@ -123,7 +123,7 @@ public class TriggerJob extends PermissionsAwareJob {
 	}
 
 	private boolean checkCondition(TriggerCondition condition,
-			TriggerResource trigger, SystemEvent event)
+			TriggerResource trigger, SystemEvent... events)
 			throws ValidationException {
 
 		TriggerConditionProvider provider = triggerService
@@ -134,11 +134,15 @@ public class TriggerJob extends PermissionsAwareJob {
 					"Failed to check condition because provider "
 							+ condition.getConditionKey() + " is not available");
 		}
-		return provider.checkCondition(condition, trigger, event);
-
+		
+		boolean matched = false;
+		for(SystemEvent event : events) {
+			matched |= provider.checkCondition(condition, trigger, event);
+		}
+		return matched;
 	}
 
-	protected void executeAction(TriggerAction action, SystemEvent event)
+	protected void executeAction(TriggerAction action, SystemEvent... event)
 			throws ValidationException {
 
 		TaskProvider provider = taskService
@@ -149,7 +153,7 @@ public class TriggerJob extends PermissionsAwareJob {
 							+ action.getResourceKey() + " is not available");
 		}
 
-		TaskResult outputEvent = provider.execute(action, event);
+		TaskResult outputEvent = provider.execute(action, event[0].getCurrentRealm(), event);
 
 		if(outputEvent!=null) {
 			if(outputEvent.isPublishable()) {

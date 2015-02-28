@@ -23,8 +23,7 @@ public class TriggerAction extends Task {
 	@Column(name="resource_key")
 	String resourceKey;
 	
-	@OneToOne
-	@JoinColumn(name="post_exec_trigger_id")
+	@OneToOne(mappedBy="parentAction")
 	TriggerResource postExecutionTrigger;
 
 	@Transient

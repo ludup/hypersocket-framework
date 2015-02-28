@@ -14,6 +14,7 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalSuspensionService;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.SchedulerService;
@@ -79,10 +80,10 @@ public class ResumeUserTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
 			throws ValidationException {
 
-		String name = repository.getValue(task, "resumeUser.name");
+		String name = processTokenReplacements(repository.getValue(task, "resumeUser.name"), events);
 		try {
 
 			if (log.isInfoEnabled()) {
@@ -93,15 +94,19 @@ public class ResumeUserTask extends AbstractTaskProvider {
 			
 			suspensionService.notifyResume(principal.getPrincipalName(), false);
 
-			return new ResumeUserResult(this, event.getCurrentRealm(), task,
+			return new ResumeUserResult(this, currentRealm, task,
 					name);
 		} catch (ResourceNotFoundException e) {
 			log.error(
 					"Failed to fully process resume user request for " + name,
 					e);
-			return new ResumeUserResult(this, e, event.getCurrentRealm(), task,
+			return new ResumeUserResult(this, e, currentRealm, task,
 					name);
 		}
+	}
+	
+	public String[] getResultResourceKeys() {
+		return new String[] { ResumeUserResult.EVENT_RESOURCE_KEY };
 	}
 
 	@Override

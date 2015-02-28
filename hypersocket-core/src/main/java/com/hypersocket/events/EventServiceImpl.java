@@ -61,6 +61,7 @@ public class EventServiceImpl extends AuthenticatedServiceImpl implements EventS
 		
 		eventDefinitions.put(def.getResourceKey(), def);
 	}
+
 	
 	@Override
 	public void registerEvent(Class<? extends SystemEvent> eventClass,

@@ -14,6 +14,7 @@ public class TriggerResourceUpdate {
 	TriggerConditionUpdate[] allConditions;
 	TriggerConditionUpdate[] anyConditions;
 	PropertyItem[] properties;
+	Long parentId;
 	
 	public TriggerResourceUpdate() {
 		
@@ -81,6 +82,14 @@ public class TriggerResourceUpdate {
 
 	public void setProperties(PropertyItem[] properties) {
 		this.properties = properties;
+	}
+
+	public Long getParentId() {
+		return parentId;
+	}
+
+	public void setParentId(Long parentId) {
+		this.parentId = parentId;
 	}
 	
 	
