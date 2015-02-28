@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -62,12 +63,15 @@ public class ExecuteCommandTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
 			throws ValidationException {
 
-		String command = repository.getValue(task,
-				"command.exe");
+		String command = processTokenReplacements(repository.getValue(task,
+				"command.exe"), events);
 		String[] args = repository.getValues(task, "command.args");
+		for(int i=0;i<args.length;i++) {
+			args[i] = processTokenReplacements(args[i], events);
+		}
 		CommandExecutor exe = new CommandExecutor(command);
 		exe.addArgs(args);
 
@@ -75,12 +79,16 @@ public class ExecuteCommandTask extends AbstractTaskProvider {
 			int result = exe.execute();
 
 			return new ExecuteCommandResult(this, "command.executed",
-					result == 0, event.getCurrentRealm(), task,
+					result == 0, currentRealm, task,
 					exe.getCommandOutput(), result, command, args);
 		} catch (IOException e) {
 			return new ExecuteCommandResult(this, "command.executed", e,
-					event.getCurrentRealm(), task, exe.getCommandOutput(), command, args);
+					currentRealm, task, exe.getCommandOutput(), command, args);
 		}
+	}
+	
+	public String[] getResultResourceKeys() {
+		return new String[] { ExecuteCommandResult.EVENT_RESOURCE_KEY };
 	}
 
 	@Override

@@ -16,6 +16,7 @@ import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.Message;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -78,7 +79,7 @@ public class AlertTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
 			throws ValidationException {
 
 		StringBuffer key = new StringBuffer();
@@ -88,7 +89,7 @@ public class AlertTask extends AbstractTaskProvider {
 			if (key.length() > 0) {
 				key.append("|");
 			}
-			key.append(event.getAttribute(attr));
+			key.append(events[0].getAttribute(attr));
 		}
 
 		int threshold = repository.getIntValue(task, ATTR_THRESHOLD);
@@ -112,9 +113,13 @@ public class AlertTask extends AbstractTaskProvider {
 			repository.deleteKeys(task, key.toString());
 
 			return new AlertEvent(this, "event.alert", true,
-					event.getCurrentRealm(), threshold, timeout, task, event);
+					currentRealm, threshold, timeout, task, events[0]);
 		}
 		return null;
+	}
+	
+	public String[] getResultResourceKeys() {
+		return new String[] { AlertEvent.EVENT_RESOURCE_KEY };
 	}
 
 	@Override
@@ -153,12 +158,12 @@ public class AlertTask extends AbstractTaskProvider {
 
 	@Override
 	public void taskUpdated(Task task) {
-		super.taskUpdated(task);
+		registerDynamicEvent((TriggerAction)task);
 	}
 
 	@Override
 	public void taskDeleted(Task task) {
-		super.taskDeleted(task);
+		
 	}
 
 	@Override

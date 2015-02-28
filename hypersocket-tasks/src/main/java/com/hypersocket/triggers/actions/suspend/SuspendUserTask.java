@@ -18,6 +18,7 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalSuspensionService;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -88,9 +89,9 @@ public class SuspendUserTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
 			throws ValidationException {
-		String name = repository.getValue(task, "suspendUser.name");
+		String name = processTokenReplacements(repository.getValue(task, "suspendUser.name"), events);
 		Long duration = repository.getLongValue(task, "suspendUser.duration");
 		Date startDate = ((AutomationResource) task).getStartDate();
 		String startTime = ((AutomationResource) task).getStartTime();
@@ -118,17 +119,21 @@ public class SuspendUserTask extends AbstractTaskProvider {
 				log.info("Suspended account " + name);
 			}
 
-			return new SuspendUserResult(this, event.getCurrentRealm(), task,
+			return new SuspendUserResult(this, currentRealm, task,
 					name, startDate, duration);
 		} catch (ResourceNotFoundException e) {
 			log.error("Failed to fully process suspend request for " + name, e);
-			return new SuspendUserResult(this, e, event.getCurrentRealm(),
+			return new SuspendUserResult(this, e, currentRealm,
 					task, name, startDate, duration);
 		} catch (ResourceCreationException e) {
 			log.error("Failed to fully process suspend request for " + name, e);
-			return new SuspendUserResult(this, e, event.getCurrentRealm(),
+			return new SuspendUserResult(this, e, currentRealm,
 					task, name, startDate, duration);
 		}
+	}
+	
+	public String[] getResultResourceKeys() {
+		return new String[] { SuspendUserResult.EVENT_RESOURCE_KEY };
 	}
 
 	@Override

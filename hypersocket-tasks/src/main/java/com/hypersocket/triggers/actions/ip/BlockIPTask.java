@@ -18,6 +18,7 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.server.HypersocketServer;
@@ -89,10 +90,10 @@ public class BlockIPTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
 			throws ValidationException {
 		
-		String ipAddress = processTokenReplacements(repository.getValue(task, "block.ip"), event);
+		String ipAddress = processTokenReplacements(repository.getValue(task, "block.ip"), events);
 		int val = repository.getIntValue(task, "block.length");
 		try {
 			
@@ -133,20 +134,24 @@ public class BlockIPTask extends AbstractTaskProvider {
 					log.info("Scheduling unblock for IP address " + ipAddress + " in " + val + " minutes");
 				}
 				
-				PermissionsAwareJobData data = new PermissionsAwareJobData(event.getCurrentRealm());
+				PermissionsAwareJobData data = new PermissionsAwareJobData(currentRealm);
 				data.put("addr", ipAddress);
 				
 				String scheduleId = schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000, 0);
 				
 				blockedIPUnblockSchedules.put(ipAddress, scheduleId);
 			}
-			return new BlockedIPResult(this, event.getCurrentRealm(), task, ipAddress, val);
+			return new BlockedIPResult(this, currentRealm, task, ipAddress, val);
 		} catch (UnknownHostException | SchedulerException e) {
 			log.error("Failed to fully process block IP request for " + ipAddress, e);
-			return new BlockedIPResult(this, e, event.getCurrentRealm(), task, ipAddress, val);
+			return new BlockedIPResult(this, e, currentRealm, task, ipAddress, val);
 		}
 	}
-
+	
+	public String[] getResultResourceKeys() {
+		return new String[] { BlockedIPResult.EVENT_RESOURCE_KEY };
+	}
+	
 	@Override
 	public ResourceTemplateRepository getRepository() {
 		return repository;

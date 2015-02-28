@@ -1,14 +1,11 @@
 package com.hypersocket.client.service;
 
 import java.io.IOException;
-import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -161,4 +161,9 @@ public class TriggerResourceRepositoryImpl extends
 		});
 	}
 
+	@Override
+	public TriggerAction getActionByPostTriggerId(TriggerResource id) {
+		return get("postExecutionTrigger", id, TriggerAction.class);
+	}
+
 }

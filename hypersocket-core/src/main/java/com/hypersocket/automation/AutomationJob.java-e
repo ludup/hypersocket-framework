@@ -60,7 +60,7 @@ public class AutomationJob extends PermissionsAwareJob {
 			
 			eventService.publishEvent(event);
 			
-			TaskResult result = provider.execute(resource, event);
+			TaskResult result = provider.execute(resource, event.getCurrentRealm(), event);
 			
 			if(result!=null && result.isPublishable()) {
 				eventService.publishEvent(result);

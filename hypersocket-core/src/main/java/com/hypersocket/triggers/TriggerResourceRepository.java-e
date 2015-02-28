@@ -24,4 +24,6 @@ public interface TriggerResourceRepository extends
 
 	Collection<TriggerAction> getActionsByResourceKey(String resourceKey);
 
+	TriggerAction getActionByPostTriggerId(TriggerResource id);
+
 }

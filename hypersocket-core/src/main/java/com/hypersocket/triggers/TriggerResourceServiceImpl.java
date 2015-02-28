@@ -245,14 +245,15 @@ public class TriggerResourceServiceImpl extends
 			String name, String event, TriggerResultType result,
 			Map<String, String> properties,
 			List<TriggerCondition> anyConditions,
-			List<TriggerCondition> allConditions, List<TriggerAction> actions)
+			List<TriggerCondition> allConditions, List<TriggerAction> actions,
+			TriggerAction parentAction)
 			throws ResourceChangeException, AccessDeniedException {
 
 		resource.setName(name);
 		resource.getConditions().clear();
 
 		populateTrigger(name, event, result, resource.getRealm(), resource,
-				allConditions, anyConditions, actions);
+				allConditions, anyConditions, actions, parentAction);
 
 		updateResource(resource, properties);
 
@@ -269,13 +270,14 @@ public class TriggerResourceServiceImpl extends
 	public TriggerResource createResource(String name, String event,
 			TriggerResultType result, Map<String, String> properties,
 			Realm realm, List<TriggerCondition> anyConditions,
-			List<TriggerCondition> allConditions, List<TriggerAction> actions)
+			List<TriggerCondition> allConditions, List<TriggerAction> actions,
+			TriggerAction parentAction)
 			throws ResourceCreationException, AccessDeniedException {
 
 		TriggerResource resource = new TriggerResource();
 		
 		populateTrigger(name, event, result, realm, resource, allConditions,
-				anyConditions, actions);
+				anyConditions, actions, parentAction);
 
 		createResource(resource, properties);
 
@@ -304,12 +306,14 @@ public class TriggerResourceServiceImpl extends
 	private void populateTrigger(String name, String event,
 			TriggerResultType result, Realm realm, TriggerResource resource,
 			List<TriggerCondition> allConditions,
-			List<TriggerCondition> anyConditions, List<TriggerAction> actions) {
+			List<TriggerCondition> anyConditions, List<TriggerAction> actions,
+			TriggerAction parentAction) {
 
 		resource.setName(name);
 		resource.setEvent(event);
 		resource.setResult(result);
 		resource.setRealm(realm);
+		resource.setParentAction(parentAction);
 		resource.getConditions().clear();
 		resource.getActions().clear();
 
@@ -409,6 +413,23 @@ public class TriggerResourceServiceImpl extends
 	public Collection<TriggerAction> getActionsByResourceKey(String resourceKey) {
 
 		return repository.getActionsByResourceKey(resourceKey);
+	}
+
+	@Override
+	public List<TriggerResource> getParentTriggers(Long id) {
+		
+		List<TriggerResource> triggers = new ArrayList<TriggerResource>();
+		
+		TriggerAction parent = null;
+		
+		parent = repository.getActionById(id);
+		
+		while(parent!=null) {
+			triggers.add(parent.getTrigger());
+			parent = parent.getTrigger().getParentAction();
+		}
+			
+		return triggers;
 	}
 
 }

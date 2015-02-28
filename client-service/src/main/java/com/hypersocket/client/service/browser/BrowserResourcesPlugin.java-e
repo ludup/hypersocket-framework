@@ -2,14 +2,12 @@ package com.hypersocket.client.service.browser;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +20,6 @@ import com.hypersocket.client.rmi.ResourceImpl;
 import com.hypersocket.client.rmi.ResourceRealm;
 import com.hypersocket.client.rmi.ResourceService;
 import com.hypersocket.client.service.AbstractServicePlugin;
-import com.hypersocket.client.service.ResourceMapper;
-import com.hypersocket.json.JsonResourceList;
 
 public class BrowserResourcesPlugin extends AbstractServicePlugin {
 
