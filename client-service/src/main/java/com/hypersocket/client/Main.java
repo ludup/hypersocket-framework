@@ -2,8 +2,12 @@ package com.hypersocket.client;
 
 import java.beans.Introspector;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.ServerSocket;
+import java.net.SocketException;
 import java.net.URL;
 import java.rmi.AccessException;
 import java.rmi.NoSuchObjectException;
@@ -54,11 +58,79 @@ public class Main {
 		this.args = args;
 	}
 
-	void buildServices() throws RemoteException {
+	boolean buildServices() throws RemoteException {
+		port = -1;
+		
+		File rmiPropertiesFile;
+		if (Boolean.getBoolean("hypersocket.development")) {
+			rmiPropertiesFile = new File(System.getProperty("user.home")
+					+ File.separator + ".hypersocket" + File.separator
+					+ "conf" + File.separator + "rmi.properties");
+			rmiPropertiesFile.getParentFile().mkdirs();
+		} else {
+			rmiPropertiesFile = new File("conf" + File.separator
+					+ "rmi.properties");
+			rmiPropertiesFile.getParentFile().mkdirs();
+		}
+		
+		/* Get the existing port number, if any. If it is still
+		 * active, and appears to be an RMI server, then fail as
+		 * this means there is already a client running.
+		 */
+		if(rmiPropertiesFile.exists()) {
+			try {
+				InputStream in = new FileInputStream(rmiPropertiesFile);
+				try {
+					properties.load(in);
+				}
+				finally {
+					in.close();
+				}
+			}
+			catch(IOException ioe) {
+				throw new RemoteException("Failed to read existing " + rmiPropertiesFile + ".");
+			}
+			
+			port = Integer.parseInt(properties.getProperty("port", "50000"));
+			
+			try {
+				ServerSocket ss = new ServerSocket(port);
+				ss.close();
+				// The port is free, we will try to use it again first
+			}
+			catch(SocketException se) {
+				boolean isExistingClient = false;
+				// Already running, see if it is RMI
+				try {
+					Registry r = LocateRegistry.getRegistry(port);
+						isExistingClient = true;
+				}
+				catch(RemoteException re) {
+					/* Port is in use, but not an RMI server, so consider it unusable and choose
+					 * another random port
+					 */
+				}
+				
+				if(isExistingClient) {
+					// It does appear to RMI registry, so we'll assume it's an existing running client
+					log.error("The Hypersocket client is already running on port " + port);
+					return false;
+				}
+			}
+			catch(IOException ioe) {
+				/* Some other error, let the attempt to create the registry fail if there really
+				 * is a problem
+				 */
+			}
+		}
+		
+		if(port == -1) {
+			port = randInt(49152, 65535);
+		}
+		
 
 		int attempts = 100;
 		while (attempts > 0) {
-			port = randInt(49152, 65535);
 			try {
 				if (log.isInfoEnabled()) {
 					log.info("Trying RMI server on port " + port);
@@ -68,21 +140,7 @@ public class Main {
 					log.info("RMI server started on port " + port);
 				}
 				properties.put("port", String.valueOf(port));
-				FileOutputStream out;
-				if (Boolean.getBoolean("hypersocket.development")) {
-					File f = new File(System.getProperty("user.home")
-							+ File.separator + ".hypersocket" + File.separator
-							+ "conf" + File.separator + "rmi.properties");
-					f.getParentFile().mkdirs();
-					out = new FileOutputStream(f);
-				} else {
-					File f = new File("conf" + File.separator
-							+ "rmi.properties");
-					f.getParentFile().mkdirs();
-					out = new FileOutputStream("conf" + File.separator
-							+ "rmi.properties");
-				}
-
+				FileOutputStream out = new FileOutputStream(rmiPropertiesFile);
 				try {
 					properties.store(out, "Hypersocket Client Service");
 				} finally {
@@ -91,6 +149,7 @@ public class Main {
 				break;
 			} catch (Exception e) {
 				attempts--;
+				port = randInt(49152, 65535);
 				continue;
 			}
 		}
@@ -125,7 +184,7 @@ public class Main {
 		clientService = new ClientServiceImpl(connectionService,
 				configurationService, resourceService);
 
-		
+		return true;
 	
 	}
 	
@@ -276,7 +335,9 @@ public class Main {
 
 		while(true) {
 			try {
-				buildServices();
+				if(!buildServices()) {
+					System.exit(3);
+				}
 	
 				if (!publishServices()) {
 					System.exit(1);

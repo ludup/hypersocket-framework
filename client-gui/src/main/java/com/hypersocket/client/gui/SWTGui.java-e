@@ -121,7 +121,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 	}
 
 	@Override
-	public void unregistered() throws RemoteException {
+	public void unregistered() {
 		registrations--;
 		setOnlineState(false);
 		showPopupMessage("Disconnected from local Hypersocket service",
@@ -518,6 +518,14 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 					if (clientService != null) {
 						try {
 							clientService.ping();
+							display.asyncExec(new Runnable() {					
+								@Override
+								public void run() {
+									if(connectionsWindow != null) {
+										connectionsWindow.refresh();
+									}						
+								}
+							});
 						} catch (Exception e) {
 							running = false;
 							log.error("Failed to get local service status", e);
@@ -525,7 +533,13 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 					}
 				}
 			} finally {
-				setOnlineState(false);
+				display.asyncExec(new Runnable() {					
+					@Override
+					public void run() {
+						closeConnectionsWindow();						
+					}
+				});
+				unregistered();
 				new RMIConnectThread().start();
 			}
 		}
@@ -567,5 +581,14 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 		
 		ApplicationLauncher launcher = new ApplicationLauncher(clientUsername, connectedHostname, launcherTemplate);
 		return launcher.launch();
+	}
+
+
+	private void closeConnectionsWindow() {
+		if(connectionsWindow != null) {
+			log.info("Closing connections window");
+			connectionsWindow.close();
+			connectionsWindow = null;
+		}
 	}
 }
