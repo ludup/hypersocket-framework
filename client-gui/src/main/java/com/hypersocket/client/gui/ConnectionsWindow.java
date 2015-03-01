@@ -64,7 +64,6 @@ public class ConnectionsWindow extends AbstractWindow {
 	private Table table;
 	private TableViewer tableViewer;
 	private ScrolledComposite scrolledComposite;
-	private StatusUpdateThread statusUpdateThread = null;
 	private Action newAction;
 	private Action editAction;
 	private Action deleteAction;
@@ -94,6 +93,12 @@ public class ConnectionsWindow extends AbstractWindow {
 		addToolBar(SWT.FLAT | SWT.WRAP);
 		addMenuBar();
 		addStatusLine();
+	}
+
+	public void refresh() {
+		synchronized (tableViewer) {
+			tableViewer.refresh();
+		}
 	}
 
 	
@@ -168,6 +173,10 @@ public class ConnectionsWindow extends AbstractWindow {
 	}
 
 	public void updateActions() {
+		if(table.isDisposed()) {
+			return;
+		}
+		
 		TableItem[] items = table.getSelection();
 		if (items == null || items.length == 0) {
 			newAction.setEnabled(true);
@@ -423,41 +432,6 @@ public class ConnectionsWindow extends AbstractWindow {
 			updateActions();
 		} catch (RemoteException e) {
 			log.error("Failed to load connections", e);
-		}
-
-		if (statusUpdateThread == null) {
-			statusUpdateThread = new StatusUpdateThread();
-			statusUpdateThread.start();
-		}
-	}
-
-	class StatusUpdateThread extends Thread {
-
-		public void run() {
-
-			updatesRequired = true;
-
-			while (updatesRequired)
-				try {
-					Thread.sleep(1000);
-					if (!gui.getShell().isDisposed()) {
-						gui.getShell().getDisplay().syncExec(new Runnable() {
-							public void run() {
-								if(log.isDebugEnabled()) {
-									log.debug("Getting status updates");
-								}
-								synchronized (tableViewer) {
-									tableViewer.refresh();
-								}
-								if(log.isDebugEnabled()) {
-									log.debug("Got status updates");
-								}
-							}
-						});
-					}
-				} catch (Throwable e) {
-					log.error("Status update thread failed", e);
-				}
 		}
 	}
 
