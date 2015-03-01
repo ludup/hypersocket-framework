@@ -168,7 +168,9 @@ public class HttpClient {
 
 	public void disconnect() {
 		disconnected = true;
-		connectionPool.disconnectAll();
+		if(connectionPool != null) {
+			connectionPool.disconnectAll();
+		}
 	}
 
 	public String getHost() {
