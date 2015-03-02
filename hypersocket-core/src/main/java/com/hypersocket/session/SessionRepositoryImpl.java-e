@@ -27,6 +27,10 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 
 	static Logger log = LoggerFactory.getLogger(SessionRepositoryImpl.class);
 	
+	public SessionRepositoryImpl() {
+		super(true);
+	}
+	
 	@Override
 	public Session createSession(String remoteAddress, 
 			Principal principal, 

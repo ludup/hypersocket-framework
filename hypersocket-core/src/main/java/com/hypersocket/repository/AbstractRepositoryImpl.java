@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.DetachedCriteria;
@@ -29,11 +30,17 @@ import com.hypersocket.tables.Sort;
 @Repository
 public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K> {
 
-	protected HibernateTemplate hibernateTemplate;
-	protected SessionFactory sessionFactory;
+	private HibernateTemplate hibernateTemplate;
+	private SessionFactory sessionFactory;
 
+	private boolean requiresDemoWrite = false;
+	
 	protected AbstractRepositoryImpl() {
-
+		
+	}
+	
+	protected AbstractRepositoryImpl(boolean requiresDemoWrite) {
+		this.requiresDemoWrite = requiresDemoWrite;
 	}
 	
 	@Autowired
@@ -45,9 +52,17 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		return DetachedCriteria.forClass(entityClass);
 	}
 	
+	private void checkDemoMode() {
+		if(Boolean.getBoolean("hypersocket.demo") && !requiresDemoWrite) {
+			throw new IllegalStateException("This is a demo. No changes to resources or settings can be persisted.");
+		}
+	}
+	
 	@Transactional
 	protected void save(AbstractEntity<K> entity) {
 		
+		
+		checkDemoMode();
 		
 		entity.setLastModified(new Date());
 		
@@ -56,6 +71,31 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		} else {
 			hibernateTemplate.saveOrUpdate(entity);
 		}
+	}
+	
+	@Transactional
+	protected void save(Object entity, boolean isNew) {
+		
+		
+		checkDemoMode();
+		
+		if(!isNew) {
+			hibernateTemplate.merge(entity);
+		} else {
+			hibernateTemplate.saveOrUpdate(entity);
+		}
+	}
+	
+	protected <T> T load(Class<T> entityClass, Long id) {
+		return hibernateTemplate.load(entityClass, id);
+	}
+	
+	protected Query createQuery(String hql, boolean isWritable) {
+		
+		if(isWritable) {
+			checkDemoMode();
+		}
+		return sessionFactory.getCurrentSession().createQuery(hql);
 	}
 	
 	@Transactional(readOnly=true)
@@ -71,6 +111,9 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	
 	@Transactional
 	protected void delete(Object entity) {
+		
+		checkDemoMode();
+		
 		hibernateTemplate.delete(entity);
 	}
 

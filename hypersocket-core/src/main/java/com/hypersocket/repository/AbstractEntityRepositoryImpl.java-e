@@ -7,6 +7,14 @@ public abstract class AbstractEntityRepositoryImpl<T extends AbstractEntity<K>,K
 	
 	protected abstract Class<T> getEntityClass();
 	
+	protected AbstractEntityRepositoryImpl(boolean requiresDemoWrite) {
+		super(requiresDemoWrite);
+	}
+	
+	protected AbstractEntityRepositoryImpl() {
+		super();
+	}
+	
 	@Override
 	public void saveEntity(T protocol) {
 		save(protocol);
