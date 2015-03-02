@@ -80,8 +80,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	@Transactional(readOnly=true)
 	public List<T> getResources(Realm realm) {
 
-		Criteria crit = sessionFactory.getCurrentSession().createCriteria(
-				getResourceClass());
+		Criteria crit = createCriteria(getResourceClass());
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit.add(Restrictions.eq("deleted", false));
 		crit.add(Restrictions.or(Restrictions.eq("realm", realm),

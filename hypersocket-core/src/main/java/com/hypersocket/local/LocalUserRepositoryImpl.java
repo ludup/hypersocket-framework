@@ -73,11 +73,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 	
 	protected void save(LocalUserCredentials creds) {
-		if(creds.getId()!=null) {
-			hibernateTemplate.merge(creds);
-		} else {
-			hibernateTemplate.saveOrUpdate(creds);
-		}
+		save(creds, creds.getId()==null);
 	}
 	
 	@Transactional
