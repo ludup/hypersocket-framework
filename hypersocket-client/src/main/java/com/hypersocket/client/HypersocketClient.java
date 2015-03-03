@@ -279,6 +279,14 @@ public abstract class HypersocketClient<T> {
 				Map<String, String> results  = showLogin(prompts);
 				
 				if (results != null) {
+					
+					if(params.containsKey("username")) {
+						cachedUsername = params.get("username");
+					}
+					if(params.containsKey("password")) {
+						cachedPassword = params.get("password");
+					}
+					
 					params.putAll(results);
 				} else {
 					disconnect(false);
@@ -287,12 +295,7 @@ public abstract class HypersocketClient<T> {
 			}
 		}
 		
-		if(params.containsKey("username")) {
-			cachedUsername = params.get("username");
-		}
-		if(params.containsKey("password")) {
-			cachedPassword = params.get("password");
-		}
+		
 
 		if (log.isInfoEnabled()) {
 			log.info("Logon complete sessionId=" + getSessionId());
