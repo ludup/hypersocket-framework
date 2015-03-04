@@ -153,7 +153,7 @@ public class TriggerResourceServiceImpl extends
 	public List<EventDefinition> getTriggerEvents() {
 		List<EventDefinition> ret = new ArrayList<EventDefinition>();
 		for (EventDefinition def : eventService.getEvents()) {
-			ret.add(new EventDefinition(def, getEventAttributes(def)));
+			ret.add(new EventDefinition(def, def.getI18nNamespace(), getEventAttributes(def)));
 		}
 		Collections.sort(ret, new Comparator<EventDefinition>() {
 
