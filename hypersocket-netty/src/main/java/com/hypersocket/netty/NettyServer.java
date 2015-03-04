@@ -323,4 +323,9 @@ public class NettyServer extends HypersocketServerImpl {
 			
 		}
 	}
+
+	@Override
+	public boolean isBlockedAddress(String addr) throws UnknownHostException {
+		return !canConnect(InetAddress.getByName(addr));
+	}
 }

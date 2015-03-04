@@ -106,4 +106,6 @@ public interface HypersocketServer {
 
 	boolean canConnect(InetAddress addr);
 
+	public boolean isBlockedAddress(String ipAddress) throws UnknownHostException;
+
 }
