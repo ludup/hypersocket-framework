@@ -157,11 +157,11 @@ public class BrowserLaunchableRepositoryImpl extends
 		@SuppressWarnings("unchecked")
 		List<Long> list = (List<Long>)criteria.list();
 		
-		if(list.isEmpty()) {
+		if(list.isEmpty() && ids.size()==0) {
 			return 0L;
 		}
 		
-		long count = 0L;
+		long count = ids.size();
 		for(Long l : list) {
 			count += l;
 		}
