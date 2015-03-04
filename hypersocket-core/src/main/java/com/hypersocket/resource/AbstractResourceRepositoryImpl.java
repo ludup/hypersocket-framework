@@ -53,7 +53,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 
 	@Override
 	@Transactional
-	public void deleteResource(T resource) throws ResourceChangeException {
+	public void deleteResource(T resource) {
 		delete(resource);
 	}
 
