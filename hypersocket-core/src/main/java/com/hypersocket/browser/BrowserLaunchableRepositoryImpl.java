@@ -43,6 +43,8 @@ public class BrowserLaunchableRepositoryImpl extends
 		}
 
 		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.eq("displayInBrowserResourcesTable", true));
+		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
@@ -113,6 +115,8 @@ public class BrowserLaunchableRepositoryImpl extends
 			criteria.add(Restrictions.like("name", searchPattern));
 		}
 
+		criteria.add(Restrictions.eq("displayInBrowserResourcesTable", true));
+		
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
@@ -171,6 +175,8 @@ public class BrowserLaunchableRepositoryImpl extends
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 
 		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.eq("displayInBrowserResourcesTable", true));
+		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
@@ -184,7 +190,8 @@ public class BrowserLaunchableRepositoryImpl extends
 		
 		criteria.setProjection(Projections.distinct(projList));
 		criteria.add(Restrictions.eq("realm", principal.getRealm()));
-
+		criteria.add(Restrictions.eq("displayInBrowserResourcesTable", true));
+		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
