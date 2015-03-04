@@ -312,62 +312,6 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 		}
 	}
 
-	/*private void configureGrowl() throws IOException {
-		GntpApplicationInfo info = Gntp.appInfo("Test")
-				.icon(getImage(APPLICATION_ICON)).build();
-		notif1 = Gntp.notificationInfo(info, "Notify 1")
-				.icon(getImage(APPLICATION_ICON)).build();
-
-		client = Gntp.client(info).listener(new GntpListener() {
-			@Override
-			public void onRegistrationSuccess() {
-				log.info("Registered");
-			}
-
-			@Override
-			public void onNotificationSuccess(GntpNotification notification) {
-				log.info("Notification success: " + notification);
-			}
-
-			@Override
-			public void onClickCallback(GntpNotification notification) {
-				log.info("Click callback: " + notification.getContext());
-			}
-
-			@Override
-			public void onCloseCallback(GntpNotification notification) {
-				log.info("Close callback: " + notification.getContext());
-			}
-
-			@Override
-			public void onTimeoutCallback(GntpNotification notification) {
-				log.info("Timeout callback: " + notification.getContext());
-			}
-
-			@Override
-			public void onRegistrationError(GntpErrorStatus status,
-					String description) {
-				log.info("Registration Error: " + status + " - desc: "
-						+ description);
-			}
-
-			@Override
-			public void onNotificationError(GntpNotification notification,
-					GntpErrorStatus status, String description) {
-				log.info("Notification Error: " + status + " - desc: "
-						+ description);
-			}
-
-			@Override
-			public void onCommunicationError(Throwable t) {
-				log.error("Communication error", t);
-			}
-		}).build();
-
-		client.register();
-
-	}*/
-
 	private void setupSystemTray() {
 
 		tray = display.getSystemTray();
@@ -428,26 +372,6 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 				connectionsWindow.getShell().setActive();
 			}
 		});
-		
-		
-//		resourcesItem = new MenuItem(trayMenu, SWT.PUSH);
-//		resourcesItem.setText(I18N.getResource("resources.text"));
-//		resourcesItem.setEnabled(false);
-//		resourcesItem.addListener(SWT.Selection, new Listener() {
-//			public void handleEvent(Event e) {
-//
-//				if (resourcesWindow == null) {
-//					resourcesWindow = new ResourcesTree(SWTGui.this,
-//							resourceService);
-//					shell.pack();
-//					resourcesWindow.open();
-//				}
-//				resourcesWindow.getShell().setVisible(true);
-//				resourcesWindow.getShell().setActive();
-//				
-//				resourcesWindow.refresh();
-//			}
-//		});
 		
 		new MenuItem(trayMenu, SWT.SEPARATOR);
 
