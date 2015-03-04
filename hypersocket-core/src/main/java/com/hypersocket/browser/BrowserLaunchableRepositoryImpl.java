@@ -43,7 +43,7 @@ public class BrowserLaunchableRepositoryImpl extends
 		}
 
 		criteria.add(Restrictions.eq("realm", principal.getRealm()));
-		criteria.add(Restrictions.eq("displayInBrowserResourcesTable", true));
+		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
 		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
@@ -65,7 +65,7 @@ public class BrowserLaunchableRepositoryImpl extends
 			criteria.add(Restrictions.like("name", searchPattern));
 		}
 
-		criteria.add(Restrictions.eq("displayInBrowserResourcesTable", true));
+		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
 		
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
@@ -115,7 +115,7 @@ public class BrowserLaunchableRepositoryImpl extends
 			criteria.add(Restrictions.like("name", searchPattern));
 		}
 
-		criteria.add(Restrictions.eq("displayInBrowserResourcesTable", true));
+		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
 		
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
@@ -136,7 +136,7 @@ public class BrowserLaunchableRepositoryImpl extends
 			criteria.add(Restrictions.like("name", searchPattern));
 		}
 
-		criteria.add(Restrictions.eq("displayInBrowserResourcesTable", true));
+		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
 		
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
