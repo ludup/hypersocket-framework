@@ -11,10 +11,7 @@ public class EqualsCondition implements Condition {
 	public boolean checkCondition(TriggerCondition condition, TriggerResource trigger,
 			SystemEvent event) throws ValidationException {
 		if (!event.hasAttribute(condition.getAttributeKey())) {
-			throw new ValidationException("Event "
-					+ event.getResourceKey()
-					+ " does not have an attribute named "
-					+ condition.getAttributeKey());
+			return false;
 		}
 
 		return event.getAttribute(condition.getAttributeKey()).equals(
