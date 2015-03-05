@@ -1,4 +1,4 @@
-package com.hypersocket.tests;
+package com.hypersocket.tests.json.utils;
 
 public class PropertyObject {
 	String proertyName;

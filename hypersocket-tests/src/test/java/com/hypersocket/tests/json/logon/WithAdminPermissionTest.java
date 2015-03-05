@@ -1,4 +1,4 @@
-package com.hypersocket.tests.logon;
+package com.hypersocket.tests.json.logon;
 
 import static org.junit.Assert.*;
 
@@ -20,7 +20,7 @@ public class WithAdminPermissionTest extends AbstractServerTest{
 		logon("System","admin" ,"Password123?");
 	    JsonSession session=getSession();
 	    assertNotNull(session);
-	    assertEquals("admin", session.getPrincipal().getPrincipalName());
+	    assertEquals("admin", session.getCurrentPrincipal().getPrincipalName());
 		logoff();
 	}
 	
@@ -29,6 +29,11 @@ public class WithAdminPermissionTest extends AbstractServerTest{
 		logon("System", "admin", "Password123?");
 		logoff();
 		assertNull(getSession());
+	}
+	
+	@Test(expected = AssertionError.class)
+	public void testLoginAdminWithIncorrectPassword() throws Exception {
+		logon("System", "admin", "123");
 	}
 	
     
