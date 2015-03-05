@@ -246,7 +246,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 			return user;
 		} catch (Exception e) {
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"error.createFailed", principal.getPrincipalName(),
+					"error.updateFailed", principal.getPrincipalName(),
 					e.getMessage());
 		}
 

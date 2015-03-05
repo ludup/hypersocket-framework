@@ -130,6 +130,14 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		
 	}
 	
+	protected void beforeDeleteResource(T resource) throws ResourceChangeException {
+		
+	}
+	
+	protected void afterDeleteResource(T resource) throws ResourceChangeException {
+		
+	}
+	
 	protected abstract void fireResourceCreationEvent(T resource);
 
 	protected abstract void fireResourceCreationEvent(T resource, Throwable t);
@@ -168,7 +176,9 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		assertPermission(getDeletePermission());
 
 		try {
+			beforeDeleteResource(resource);
 			getRepository().deleteResource(resource);
+			afterDeleteResource(resource);
 			fireResourceDeletionEvent(resource);
 		} catch (Throwable t) {
 			fireResourceDeletionEvent(resource, t);

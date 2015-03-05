@@ -168,6 +168,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		eventService.registerEvent(GroupDeletedEvent.class, RESOURCE_BUNDLE,
 				new GroupPropertyCollector());
 
+		eventService.registerEvent(ProfileUpdatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(ChangePasswordEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SetPasswordEvent.class, RESOURCE_BUNDLE);
 

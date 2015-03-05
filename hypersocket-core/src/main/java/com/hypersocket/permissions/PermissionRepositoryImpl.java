@@ -269,9 +269,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 			return new HashSet<Permission>();
 		}
 
-		Criteria crit = sessionFactory
-				.getCurrentSession()
-				.createCriteria(Permission.class)
+		Criteria crit = createCriteria(Permission.class)
 				.setResultTransformer(
 						CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 
@@ -301,9 +299,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	@Transactional(readOnly=true)
 	public Set<Principal> getPrincipalsWithPermissions(PermissionType permission) {
 
-		Criteria crit = sessionFactory
-				.getCurrentSession()
-				.createCriteria(Principal.class)
+		Criteria crit = createCriteria(Principal.class)
 				.setResultTransformer(
 						CriteriaSpecification.DISTINCT_ROOT_ENTITY)
 				.createCriteria("roles")
@@ -318,9 +314,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	@Transactional(readOnly=true)
 	public Set<Role> getRolesWithPermissions(PermissionType permission) {
 
-		Criteria crit = sessionFactory
-				.getCurrentSession()
-				.createCriteria(Role.class)
+		Criteria crit = createCriteria(Role.class)
 				.setResultTransformer(
 						CriteriaSpecification.DISTINCT_ROOT_ENTITY)
 				.createCriteria("permissions")
@@ -334,9 +328,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	@Transactional(readOnly=true)
 	public Set<Role> getRolesWithPermissions(Permission permission) {
 
-		Criteria crit = sessionFactory
-				.getCurrentSession()
-				.createCriteria(Role.class)
+		Criteria crit = createCriteria(Role.class)
 				.setResultTransformer(
 						CriteriaSpecification.DISTINCT_ROOT_ENTITY)
 				.createCriteria("permissions")
@@ -350,9 +342,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	@Transactional(readOnly=true)
 	public Set<Principal> getPrincipalsWithPermissions(Permission permission) {
 
-		Criteria crit = sessionFactory
-				.getCurrentSession()
-				.createCriteria(Principal.class)
+		Criteria crit = createCriteria(Principal.class)
 				.setResultTransformer(
 						CriteriaSpecification.DISTINCT_ROOT_ENTITY)
 				.createCriteria("roles")
@@ -443,9 +433,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	@Transactional
 	public Role getPersonalRole(Principal principal) {
 
-		Criteria crit = sessionFactory
-				.getCurrentSession()
-				.createCriteria(Role.class)
+		Criteria crit = createCriteria(Role.class)
 				.setResultTransformer(
 						CriteriaSpecification.DISTINCT_ROOT_ENTITY)
 				.add(Restrictions.eq("personalRole", true))
@@ -470,9 +458,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 			return new HashSet<Role>();
 		}
 
-		Criteria crit = sessionFactory
-				.getCurrentSession()
-				.createCriteria(Role.class)
+		Criteria crit = createCriteria(Role.class)
 				.setResultTransformer(
 						CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 

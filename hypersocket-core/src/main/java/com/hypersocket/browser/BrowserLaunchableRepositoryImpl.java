@@ -43,6 +43,8 @@ public class BrowserLaunchableRepositoryImpl extends
 		}
 
 		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
+		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
@@ -63,8 +65,6 @@ public class BrowserLaunchableRepositoryImpl extends
 			criteria.add(Restrictions.like("name", searchPattern));
 		}
 
-		criteria.add(Restrictions.eq("displayInBrowserResourcesTable", true));
-		
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
@@ -76,7 +76,8 @@ public class BrowserLaunchableRepositoryImpl extends
 		}
 		
 		criteria.add(Restrictions.eq("realm", principal.getRealm()));
-
+		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
+		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
@@ -113,11 +114,15 @@ public class BrowserLaunchableRepositoryImpl extends
 			criteria.add(Restrictions.like("name", searchPattern));
 		}
 
+		
+		
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
 
 		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
+		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
@@ -132,13 +137,15 @@ public class BrowserLaunchableRepositoryImpl extends
 			criteria.add(Restrictions.like("name", searchPattern));
 		}
 
-		criteria.add(Restrictions.eq("displayInBrowserResourcesTable", true));
+		
 		
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
 		
 		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
+		
 		if(ids.size() > 0) {
 			criteria.add(Restrictions.not(Restrictions.in("id", ids)));
 		}
@@ -150,11 +157,11 @@ public class BrowserLaunchableRepositoryImpl extends
 		@SuppressWarnings("unchecked")
 		List<Long> list = (List<Long>)criteria.list();
 		
-		if(list.isEmpty()) {
+		if(list.isEmpty() && ids.size()==0) {
 			return 0L;
 		}
 		
-		long count = 0L;
+		long count = ids.size();
 		for(Long l : list) {
 			count += l;
 		}
@@ -171,6 +178,7 @@ public class BrowserLaunchableRepositoryImpl extends
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 
 		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
@@ -184,7 +192,7 @@ public class BrowserLaunchableRepositoryImpl extends
 		
 		criteria.setProjection(Projections.distinct(projList));
 		criteria.add(Restrictions.eq("realm", principal.getRealm()));
-
+		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");

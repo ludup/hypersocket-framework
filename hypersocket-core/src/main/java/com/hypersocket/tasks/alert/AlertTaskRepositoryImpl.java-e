@@ -18,6 +18,10 @@ import com.hypersocket.tasks.Task;
 public class AlertTaskRepositoryImpl extends
 		ResourceTemplateRepositoryImpl implements AlertTaskRepository {
 
+	public AlertTaskRepositoryImpl() {
+		super(true);
+	}
+	
 	@PostConstruct
 	private void postConstruct() {
 		loadPropertyTemplates("tasks/generateAlert.xml");
@@ -39,13 +43,13 @@ public class AlertTaskRepositoryImpl extends
 
 	@Override
 	public void saveKey(AlertKey ak) {
-		hibernateTemplate.save(ak);
+		save(ak, ak.getId()==null);
 	}
 
 	@Override
 	public void deleteKeys(Task task, String key) {
 		String hql = "delete from AlertKey a where a.task = :task and a.key = :key";
-		sessionFactory.getCurrentSession().createQuery(hql)
+		createQuery(hql, true)
 				.setParameter("task", task).setParameter("key", key)
 				.executeUpdate();
 	}

@@ -153,7 +153,7 @@ public class TriggerResourceServiceImpl extends
 	public List<EventDefinition> getTriggerEvents() {
 		List<EventDefinition> ret = new ArrayList<EventDefinition>();
 		for (EventDefinition def : eventService.getEvents()) {
-			ret.add(new EventDefinition(def, getEventAttributes(def)));
+			ret.add(new EventDefinition(def, def.getI18nNamespace(), getEventAttributes(def)));
 		}
 		Collections.sort(ret, new Comparator<EventDefinition>() {
 
@@ -244,8 +244,9 @@ public class TriggerResourceServiceImpl extends
 	public TriggerResource updateResource(TriggerResource resource,
 			String name, String event, TriggerResultType result,
 			Map<String, String> properties,
+			List<TriggerCondition> allConditions, 
 			List<TriggerCondition> anyConditions,
-			List<TriggerCondition> allConditions, List<TriggerAction> actions,
+			List<TriggerAction> actions,
 			TriggerAction parentAction)
 			throws ResourceChangeException, AccessDeniedException {
 
@@ -269,8 +270,9 @@ public class TriggerResourceServiceImpl extends
 	@Override
 	public TriggerResource createResource(String name, String event,
 			TriggerResultType result, Map<String, String> properties,
-			Realm realm, List<TriggerCondition> anyConditions,
-			List<TriggerCondition> allConditions, List<TriggerAction> actions,
+			Realm realm, List<TriggerCondition> allConditions, 
+			List<TriggerCondition> anyConditions,
+			List<TriggerAction> actions,
 			TriggerAction parentAction)
 			throws ResourceCreationException, AccessDeniedException {
 

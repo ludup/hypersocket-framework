@@ -145,7 +145,7 @@ public class AlertTask extends AbstractTaskProvider {
 
 		I18N.flushOverrides();
 		EventDefinition def = new EventDefinition(
-				TriggerResourceServiceImpl.RESOURCE_BUNDLE, resourceKey, null);
+				TriggerResourceServiceImpl.RESOURCE_BUNDLE, resourceKey, "", null);
 		def.getAttributeNames().addAll(sourceEvent.getAttributeNames());
 
 		eventService.registerEventDefinition(def);

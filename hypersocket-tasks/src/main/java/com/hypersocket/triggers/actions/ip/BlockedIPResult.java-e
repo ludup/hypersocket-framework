@@ -22,7 +22,12 @@ public class BlockedIPResult extends TaskResult {
 		addAttribute(ATTR_BLOCKED_IP, ipAddress);
 		addAttribute(ATTR_BLOCK_LENGTH, String.valueOf(length));
 	}
-
+	
+	public BlockedIPResult(Object source, boolean failed, Realm currentRealm, Task task, String ipAddress, int length) {
+		super(source, EVENT_RESOURCE_KEY, failed ? SystemEventStatus.FAILURE : SystemEventStatus.SUCCESS, currentRealm, task);
+		addAttribute(ATTR_BLOCKED_IP, ipAddress);
+		addAttribute(ATTR_BLOCK_LENGTH, String.valueOf(length));
+	}
 	
 	public BlockedIPResult(Object source, Throwable e,
 			Realm currentRealm, Task task, String ipAddress, int length) {

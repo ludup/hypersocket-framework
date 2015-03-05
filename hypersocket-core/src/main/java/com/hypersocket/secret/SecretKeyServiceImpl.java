@@ -9,6 +9,8 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.codec.binary.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,8 @@ public class SecretKeyServiceImpl extends
 		AbstractResourceServiceImpl<SecretKeyResource> implements SecretKeyService {
 
 	public static final String RESOURCE_BUNDLE = "SecretKeyService";
+	
+	static Logger log = LoggerFactory.getLogger(SecretKeyServiceImpl.class);
 	
 	@Autowired
 	SecretKeyRepository repository;
@@ -80,7 +84,8 @@ public class SecretKeyServiceImpl extends
 		try {
 			return Hex.decodeHex(encryptionProvider.decrypt(key.getKeydata()).toCharArray());
 		} catch (Exception e) {
-			throw new IOException("Unable to process key data for " + key.getName());
+			log.error("Could not generate secret key", e);
+			throw new IOException("Unable to process key data for " + key.getName(), e);
 		}
 	}
 	
@@ -90,7 +95,8 @@ public class SecretKeyServiceImpl extends
 		try {
 			return Hex.decodeHex(encryptionProvider.decrypt(key.getIv()).toCharArray());
 		} catch (Exception e) {
-			throw new IOException("Unable to process iv data for " + key.getName());
+			log.error("Could not generate iv", e);
+			throw new IOException("Unable to process iv data for " + key.getName(), e);
 		}
 	}
 
@@ -105,6 +111,7 @@ public class SecretKeyServiceImpl extends
 		try {
 			resource.setKeydata(encryptionProvider.encrypt(Hex.encodeHexString(rawkey)));
 		} catch (Exception e) {
+			log.error("Could not encrypt secret key", e);
 			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.encryptError", e.getMessage());
 		}
 		
@@ -114,6 +121,7 @@ public class SecretKeyServiceImpl extends
 		try {
 			resource.setIv(encryptionProvider.encrypt(Hex.encodeHexString(iv)));
 		} catch (Exception e) {
+			log.error("Could not encrypt iv", e);
 			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.encryptError", e.getMessage());
 		}
 	}

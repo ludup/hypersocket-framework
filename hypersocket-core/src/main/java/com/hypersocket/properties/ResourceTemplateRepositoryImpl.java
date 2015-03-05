@@ -62,6 +62,14 @@ public abstract class ResourceTemplateRepositoryImpl extends
 
 	static Map<String, List<ResourceTemplateRepository>> propertyContexts = new HashMap<String, List<ResourceTemplateRepository>>();
 
+	public ResourceTemplateRepositoryImpl() {
+		super();
+	}
+
+	public ResourceTemplateRepositoryImpl(boolean requiresDemoWrite) {
+		super(requiresDemoWrite);
+	}
+
 	protected ResourcePropertyStore getPropertyStore() {
 		return configPropertyStore;
 	}
