@@ -22,6 +22,14 @@ import com.hypersocket.resource.ResourceRestriction;
 public abstract class PropertyRepositoryImpl extends AbstractRepositoryImpl<Long> implements PropertyRepository {
 
 	
+	public PropertyRepositoryImpl(boolean requiresDemoWrite) {
+		super(requiresDemoWrite);
+	}
+	
+	public PropertyRepositoryImpl() {
+		super(false);
+	}
+
 	@Override
 	@Transactional
 	public void saveProperty(DatabaseProperty item) {

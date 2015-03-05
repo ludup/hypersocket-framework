@@ -1,5 +1,6 @@
 package com.hypersocket.triggers.actions.ip;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -101,47 +102,39 @@ public class BlockIPTask extends AbstractTaskProvider {
 				log.info("Blocking IP address "  + ipAddress);
 			}
 			
-			if(blockedIps.contains(ipAddress) && blockedIPUnblockSchedules.containsKey(ipAddress)) {
+			if(server.isBlockedAddress(ipAddress)) {
 				if(log.isInfoEnabled()) {
-					log.info(ipAddress + " is already blocked. Rescheduling to new parameters");
+					log.info(ipAddress + " is already blocked.");
 				}
 				
-				String scheduleId = blockedIPUnblockSchedules.get(ipAddress);
+				return new BlockedIPResult(this, new IOException(ipAddress + " is already blocked"), currentRealm, task, ipAddress, val);
 				
-				if(log.isInfoEnabled()) {
-					log.info("Cancelling existing schedule for " + ipAddress);
-				}
-				
-				try {
-					schedulerService.cancelNow(scheduleId);
-				} catch (Exception e) {
-					log.error("Failed to cancel unblock schedule for " + ipAddress, e);
-				}
-				
-			}
+			} else {
 			
-			server.blockAddress(ipAddress);
-			
-			if(log.isInfoEnabled()) {
-				log.info("Blocked IP address " + ipAddress);
-			}
-			
-			blockedIps.add(ipAddress);
-			
-			if(val > 0) {
+				server.blockAddress(ipAddress);
 				
 				if(log.isInfoEnabled()) {
-					log.info("Scheduling unblock for IP address " + ipAddress + " in " + val + " minutes");
+					log.info("Blocked IP address " + ipAddress);
 				}
 				
-				PermissionsAwareJobData data = new PermissionsAwareJobData(currentRealm);
-				data.put("addr", ipAddress);
+				blockedIps.add(ipAddress);
 				
-				String scheduleId = schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000, 0);
+				if(val > 0) {
+					
+					if(log.isInfoEnabled()) {
+						log.info("Scheduling unblock for IP address " + ipAddress + " in " + val + " minutes");
+					}
+					
+					PermissionsAwareJobData data = new PermissionsAwareJobData(currentRealm);
+					data.put("addr", ipAddress);
+					
+					String scheduleId = schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000, 0);
+					
+					blockedIPUnblockSchedules.put(ipAddress, scheduleId);
+				}
 				
-				blockedIPUnblockSchedules.put(ipAddress, scheduleId);
+				return new BlockedIPResult(this, currentRealm, task, ipAddress, val);
 			}
-			return new BlockedIPResult(this, currentRealm, task, ipAddress, val);
 		} catch (UnknownHostException | SchedulerException e) {
 			log.error("Failed to fully process block IP request for " + ipAddress, e);
 			return new BlockedIPResult(this, e, currentRealm, task, ipAddress, val);

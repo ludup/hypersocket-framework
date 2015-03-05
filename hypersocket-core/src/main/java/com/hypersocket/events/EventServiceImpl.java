@@ -76,6 +76,13 @@ public class EventServiceImpl extends AuthenticatedServiceImpl implements EventS
 			String resourceKey = (String) eventClass.getField(
 					"EVENT_RESOURCE_KEY").get(null);
 
+			String i18nNamespace = "";
+			
+			try {
+				i18nNamespace = (String) eventClass.getField(
+					"EVENT_NAMESPACE").get(null);
+			} catch(NoSuchFieldException e) { }
+			
 			if (log.isInfoEnabled()) {
 				log.info("Process event with resource key " + resourceKey);
 			}
@@ -87,7 +94,7 @@ public class EventServiceImpl extends AuthenticatedServiceImpl implements EventS
 			}
 
 			eventDefinitions.put(resourceKey, new EventDefinition(
-					resourceBundle, resourceKey, propertyCollector));
+					resourceBundle, resourceKey, i18nNamespace, propertyCollector));
 
 			for (Field field : eventClass.getFields()) {
 				if ((field.getModifiers() & Modifier.STATIC) == Modifier.STATIC
