@@ -85,6 +85,8 @@
 					</includes>
 					<excludes>
 						<exclude>**/AbstractPermissionsTest*</exclude>
+						<exclude>**/AbstractCertificateTest*</exclude>
+						
 					</excludes>
 					<forkMode>always</forkMode>
 				</configuration>
