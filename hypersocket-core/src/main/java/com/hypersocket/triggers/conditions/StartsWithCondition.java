@@ -10,11 +10,8 @@ public class StartsWithCondition implements Condition {
 	@Override
 	public boolean checkCondition(TriggerCondition condition, TriggerResource trigger,
 			SystemEvent event) throws ValidationException {
-		if (event.hasAttribute(condition.getAttributeKey())) {
-			throw new ValidationException("Event "
-					+ event.getResourceKey()
-					+ " does not have an attribute named "
-					+ condition.getAttributeKey());
+		if (!event.hasAttribute(condition.getAttributeKey())) {
+			return false;
 		}
 
 		return event.getAttribute(condition.getAttributeKey()).toString()
