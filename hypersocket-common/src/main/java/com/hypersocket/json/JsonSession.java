@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class JsonSession {
 
 	String id;
-	JsonPrincipal principal;
+	JsonPrincipal currentPrincipal;
 	JsonResource currentRealm;
 
 	public String getId() {
@@ -24,12 +24,12 @@ public class JsonSession {
 		this.id = id;
 	}
 
-	public JsonPrincipal getPrincipal() {
-		return principal;
+	public JsonPrincipal getCurrentPrincipal() {
+		return currentPrincipal;
 	}
 
-	public void setPrincipal(JsonPrincipal principal) {
-		this.principal = principal;
+	public void setPrincipal(JsonPrincipal currentPrincipal) {
+		this.currentPrincipal = currentPrincipal;
 	}
 
 	public JsonResource getCurrentRealm() {

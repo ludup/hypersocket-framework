@@ -50,6 +50,8 @@ import com.hypersocket.realm.json.CredentialsUpdate;
 import com.hypersocket.realm.json.GroupUpdate;
 import com.hypersocket.realm.json.RealmUpdate;
 import com.hypersocket.realm.json.UserUpdate;
+import com.hypersocket.tests.json.utils.MultipartObject;
+import com.hypersocket.tests.json.utils.PropertyObject;
 import com.hypersocket.util.OverridePropertyPlaceholderConfigurer;
 
 public class AbstractServerTest {
@@ -70,7 +72,6 @@ public class AbstractServerTest {
 
 		tmp = Files.createTempDirectory("hypersocket").toFile();
 		tmp.mkdirs();
-
 		File conf = new File(tmp, "conf");
 
 		File data = new File(tmp, "data");
@@ -139,7 +140,7 @@ public class AbstractServerTest {
 
 	public static HttpClient getHttpClient() {
 		return HttpClients.custom().setDefaultCookieStore(cookieStore).build();
-		
+
 	}
 
 	@AfterClass
@@ -149,7 +150,7 @@ public class AbstractServerTest {
 			main.shutdownServer();
 		}
 		try {// wait to close db connection before delete folder
-			new Thread().wait(1000);
+			new Thread().wait(2000);
 		} catch (Exception e) {
 		}
 		if (tmp != null && tmp.exists()) {
@@ -158,6 +159,7 @@ public class AbstractServerTest {
 			} catch (Exception e) {
 			}
 		}
+		
 	}
 
 	protected static void logon(String realm, String username, String password)
@@ -246,8 +248,8 @@ public class AbstractServerTest {
 	protected static String debugJSON(String json) throws JsonParseException,
 			JsonMappingException, IOException {
 		Object obj = mapper.readValue(json, Object.class);
-		String ret = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(
-				obj);
+		String ret = mapper.writerWithDefaultPrettyPrinter()
+				.writeValueAsString(obj);
 		System.out.println(ret);
 		return ret;
 
@@ -273,7 +275,7 @@ public class AbstractServerTest {
 				.setUri(new URI("http://localhost:"
 						+ main.getServer().getActualHttpPort() + url))
 				.addParameters(postVariables).build();
-		
+
 		System.out.println("Executing request " + login.getRequestLine());
 
 		CloseableHttpClient httpClient = (CloseableHttpClient) getHttpClient();
@@ -361,25 +363,31 @@ public class AbstractServerTest {
 			httpClient.close();
 		}
 	}
-	
-	protected static String doPostMultiparts(String url,PropertyObject[] properties,MultipartObject... files)throws ClientProtocolException, IOException{
+
+	protected static String doPostMultiparts(String url,
+			PropertyObject[] properties, MultipartObject... files)
+			throws ClientProtocolException, IOException {
 		if (!url.startsWith("/")) {
 			url = "/" + url;
 		}
-		HttpPost postMethod = new HttpPost("http://localhost:"+ main.getServer().getActualHttpPort() + url);
-		MultipartEntityBuilder builder=MultipartEntityBuilder.create();
-		if(properties !=null && properties.length>0){
-			for(PropertyObject property:properties){
+		HttpPost postMethod = new HttpPost("http://localhost:"
+				+ main.getServer().getActualHttpPort() + url);
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		if (properties != null && properties.length > 0) {
+			for (PropertyObject property : properties) {
 				/**
-				 * I've changed this because of deprecation warning. This may break the test.
+				 * I've changed this because of deprecation warning. This may
+				 * break the test.
 				 */
-				builder.addPart(property.getProertyName(), new StringBody(property.getPropertyValue(), ContentType.APPLICATION_FORM_URLENCODED));
+				builder.addPart(property.getProertyName(), new StringBody(
+						property.getPropertyValue(),
+						ContentType.APPLICATION_FORM_URLENCODED));
 			}
 		}
-		for(MultipartObject file:files){
+		for (MultipartObject file : files) {
 			builder.addPart(file.getProperty(), new FileBody(file.getFile()));
 		}
-		HttpEntity reqEntity =builder.build();
+		HttpEntity reqEntity = builder.build();
 		postMethod.setEntity(reqEntity);
 		System.out.println("Executing request " + postMethod.getRequestLine());
 		CloseableHttpClient httpClient = (CloseableHttpClient) getHttpClient();
@@ -400,8 +408,6 @@ public class AbstractServerTest {
 			httpClient.close();
 		}
 	}
-	
-	
 
 	protected static <T> T doGet(String url, Class<T> clz)
 			throws ClientProtocolException, IOException {
