@@ -4,3 +4,5 @@
 /.settings
 /data/
 *.log
+/bin/
+*.classpath
