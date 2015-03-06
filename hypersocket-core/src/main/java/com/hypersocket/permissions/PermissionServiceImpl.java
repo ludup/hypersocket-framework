@@ -448,12 +448,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 						"error.role.alreadyExists", name);
 			}
 		} catch (ResourceNotFoundException ne) {
-			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"error.role.notFound", name);
+			role.setName(name);
 		}
-
-		role.setName(name);
-
 		repository.saveRole(role);
 
 		Set<Principal> unassignPrincipals = getEntitiesNotIn(principals,
