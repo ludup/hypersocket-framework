@@ -3,3 +3,5 @@
 /target
 /.settings
 /derby.log
+/bin/
+*.classpath
