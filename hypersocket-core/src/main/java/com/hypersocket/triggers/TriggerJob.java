@@ -66,7 +66,16 @@ public class TriggerJob extends PermissionsAwareJob {
 		if (log.isInfoEnabled()) {
 			log.info("Processing trigger " + trigger.getName());
 		}
-
+		
+		if(trigger.getResult() != TriggerResultType.EVENT_ANY_RESULT
+				&& events[events.length-1].getStatus().ordinal() != trigger.getResult().ordinal()) {
+			if(log.isInfoEnabled()) {
+				log.info("Not processing trigger " + trigger.getName() + " with result " + trigger.getResult().toString()
+						+ " because event status is " + events[events.length-1].getStatus().toString());
+			}
+			return;
+		}
+		
 		if (checkConditions(trigger, events)) {
 			
 			if(log.isInfoEnabled()) {
@@ -165,9 +174,7 @@ public class TriggerJob extends PermissionsAwareJob {
 			
 			if (!action.getPostExecutionTriggers().isEmpty()) {
 				for(TriggerResource trigger : action.getPostExecutionTriggers()) {
-					if(checkConditions(trigger, allEvents)) {
-						processEventTrigger(trigger, allEvents);
-					}
+					processEventTrigger(trigger, allEvents);
 				}
 				
 			} 
