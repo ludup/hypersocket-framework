@@ -29,6 +29,7 @@ import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.config.ConfigurationServiceImpl;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.RequestStatus;
@@ -127,7 +128,11 @@ public class ConfigurationController extends AuthenticatedController {
 		} catch (ResourceChangeException e) {
 			return new RequestStatus(false, I18N.getResource(
 					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey()));
+					e.getResourceKey(), e.getArgs()));
+		} catch(Throwable t) { 
+			return new RequestStatus(false, I18N.getResource(
+					sessionUtils.getLocale(request), ConfigurationServiceImpl.RESOURCE_BUNDLE,
+					"error.genericError", t.getMessage()));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -158,7 +163,11 @@ public class ConfigurationController extends AuthenticatedController {
 		} catch (ResourceChangeException e) {
 			return new RequestStatus(false, I18N.getResource(
 					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey()));
+					e.getResourceKey(), e.getArgs()));
+		} catch(Throwable t) { 
+			return new RequestStatus(false, I18N.getResource(
+					sessionUtils.getLocale(request), ConfigurationServiceImpl.RESOURCE_BUNDLE,
+					"error.genericError", t.getMessage()));
 		} finally {
 			clearAuthenticatedContext();
 		}
