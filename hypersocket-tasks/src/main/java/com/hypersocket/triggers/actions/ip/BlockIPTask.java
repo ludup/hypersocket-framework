@@ -18,11 +18,11 @@ import org.springframework.stereotype.Component;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
-import com.hypersocket.server.HypersocketServer;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -46,7 +46,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 	BlockIPTaskRepository repository; 
 	
 	@Autowired
-	HypersocketServer server;
+	IPRestrictionService ipRestrictionService;
 	
 	@Autowired
 	TriggerResourceService triggerService; 
@@ -102,7 +102,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 				log.info("Blocking IP address "  + ipAddress);
 			}
 			
-			if(server.isBlockedAddress(ipAddress)) {
+			if(ipRestrictionService.isBlockedAddress(ipAddress)) {
 				if(log.isInfoEnabled()) {
 					log.info(ipAddress + " is already blocked.");
 				}
@@ -111,7 +111,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 				
 			} else {
 			
-				server.blockAddress(ipAddress);
+				ipRestrictionService.blockIPAddress(ipAddress, val==0);
 				
 				if(log.isInfoEnabled()) {
 					log.info("Blocked IP address " + ipAddress);
@@ -131,7 +131,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 					String scheduleId = schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000, 0);
 					
 					blockedIPUnblockSchedules.put(ipAddress, scheduleId);
-				}
+				} 
 				
 				return new BlockedIPResult(this, currentRealm, task, ipAddress, val);
 			}

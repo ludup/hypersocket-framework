@@ -8,15 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.scheduler.PermissionsAwareJob;
-import com.hypersocket.server.HypersocketServer;
 
 public class UnblockIPJob extends PermissionsAwareJob {
 
 	static Logger log = LoggerFactory.getLogger(UnblockIPJob.class);
 	
 	@Autowired
-	HypersocketServer server;
+	IPRestrictionService ipRestrictionService;
 	
 	@Autowired
 	BlockIPTask blockIPTask;
@@ -39,7 +39,7 @@ public class UnblockIPJob extends PermissionsAwareJob {
 				log.info("Unblocking IP address " + addr.toString());
 			}
 			
-			server.unblockAddress(addr);
+			ipRestrictionService.unblockIPAddress(addr);
 			
 			blockIPTask.notifyUnblock(addr, true);
 			
