@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.hypersocket.resource.Resource;
 
 public class ResourceUtils {
@@ -31,6 +33,14 @@ public class ResourceUtils {
 			buf.append(r.getName());
 		}
 		return buf.toString();
+	}
+
+	public static String implodeValues(String[] array) {
+		return StringUtils.join(array, "]|[");	
+	}
+	
+	public static String implodeValues(List<String> array) {
+		return StringUtils.join(array.toArray(new String[0]), "]|[");	
 	}
 
 }

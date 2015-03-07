@@ -24,6 +24,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceChangeException;
 
@@ -92,7 +93,9 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 			throws AccessDeniedException, ResourceChangeException {
 		try {
 			assertPermission(ConfigurationPermission.UPDATE);
+			String oldValue = repository.getValue(getCurrentRealm(), resourceKey);
 			repository.setValue(getCurrentRealm(), resourceKey, value);
+			fireChangeEvent(resourceKey, oldValue, value);
 		} catch (AccessDeniedException e) {
 			fireChangeEvent(resourceKey, e);
 			throw e;
@@ -176,5 +179,10 @@ public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public String[] getValues(Realm realm, String name) {
 		return repository.getValues(realm, name);
+	}
+	
+	@Override
+	public void setValues(String resourceKey, String[] array) throws ResourceChangeException, AccessDeniedException {
+		setValue(resourceKey, ResourceUtils.implodeValues(array));
 	}
 }

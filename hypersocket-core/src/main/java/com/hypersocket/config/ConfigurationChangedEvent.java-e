@@ -1,9 +1,11 @@
 package com.hypersocket.config;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.util.StringUtils;
 
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.events.SessionEvent;
 
@@ -26,8 +28,19 @@ public class ConfigurationChangedEvent extends SessionEvent {
 				I18NServiceImpl.tagForConversion(property.getCategory()
 						.getBundle(), property.getResourceKey()));
 		addAttribute(ATTR_CONFIG_RESOURCE_KEY, property.getResourceKey());
-		addAttribute(ATTR_OLD_VALUE, oldValue);
-		addAttribute(ATTR_NEW_VALUE, newValue);
+		String[] oldValues = ResourceUtils.explodeValues(oldValue);
+		if(oldValues.length==1) {
+			addAttribute(ATTR_OLD_VALUE, oldValue);
+		} else {
+			addAttribute(ATTR_OLD_VALUE, StringUtils.arrayToDelimitedString(oldValues, "\r\n"));
+		}
+		String[] newValues = ResourceUtils.explodeValues(newValue);
+		if(newValues.length==1) {
+			addAttribute(ATTR_NEW_VALUE, newValue);
+		} else {
+			addAttribute(ATTR_NEW_VALUE, StringUtils.arrayToDelimitedString(newValues, "\r\n"));
+		}
+		
 	}
 
 	public ConfigurationChangedEvent(Object source, String resourceKey,

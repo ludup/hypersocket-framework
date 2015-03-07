@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +27,17 @@ public class SystemConfigurationRepositoryImpl extends PropertyRepositoryImpl im
 	@Autowired
 	EncryptionService encryptionService; 
 	
+	@Autowired
+	ApplicationContext applicationContext;
+	
 	@PostConstruct
 	private void postConstruct() {
-		repository = new PropertyTemplateRepositoryAbstractImpl(new DatabasePropertyStore(this, encryptionService));
+		repository = new PropertyTemplateRepositoryAbstractImpl(new DatabasePropertyStore(this, encryptionService)) {
+			@SuppressWarnings("unchecked")
+			protected <T> T getBean(String name, Class<T> clz) {
+				return (T) applicationContext.getBean(name);
+			}
+		};
 	}
 
 	@Override

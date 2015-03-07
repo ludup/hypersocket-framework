@@ -232,6 +232,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		
 	}
 
+
 	private void createWebappContext() throws ServletException {
 		if (log.isDebugEnabled())
 			log.debug("Creating spring webapp context");
