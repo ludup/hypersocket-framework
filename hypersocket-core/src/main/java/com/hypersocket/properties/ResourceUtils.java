@@ -39,7 +39,7 @@ public class ResourceUtils {
 		return StringUtils.join(array, "]|[");	
 	}
 	
-	public static String implodeValues(List<String> array) {
+	public static String implodeValues(Collection<String> array) {
 		return StringUtils.join(array.toArray(new String[0]), "]|[");	
 	}
 
