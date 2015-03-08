@@ -1,6 +1,7 @@
 package com.hypersocket.tasks.alert;
 
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -49,6 +50,8 @@ public class AlertTask extends AbstractTaskProvider {
 	@Autowired
 	TaskProviderService taskService; 
 	
+	Map<String,Object> alertLocks = new HashMap<String,Object>();
+	
 	@PostConstruct
 	private void postConstruct() {
 		taskService.registerTaskProvider(this);
@@ -95,25 +98,41 @@ public class AlertTask extends AbstractTaskProvider {
 		int threshold = repository.getIntValue(task, ATTR_THRESHOLD);
 		int timeout = repository.getIntValue(task, ATTR_TIMEOUT);
 
-		AlertKey ak = new AlertKey();
-		ak.setTask(task);
-		ak.setKey(key.toString());
+		String alertKey = key.toString();
+		Object alertLock = null;
+		
+		synchronized (alertLocks) {
+			if(!alertLocks.containsKey(alertKey)) {
+				alertLocks.put(alertKey, new Object());
+			}			
+			alertLock = alertLocks.get(alertKey);
+		}
 
-		Calendar c = Calendar.getInstance();
-		ak.setTriggered(c.getTime());
-
-		repository.saveKey(ak);
-
-		c.add(Calendar.MINUTE, -timeout);
-		long count = repository
-				.getKeyCount(task, key.toString(), c.getTime());
-
-		if (count >= threshold) {
-
-			repository.deleteKeys(task, key.toString());
-
-			return new AlertEvent(this, "event.alert", true,
-					currentRealm, threshold, timeout, task, events[0]);
+		synchronized(alertLock) {
+			AlertKey ak = new AlertKey();
+			ak.setTask(task);
+			ak.setKey(alertKey);
+	
+			Calendar c = Calendar.getInstance();
+			ak.setTriggered(c.getTime());
+	
+			repository.saveKey(ak);
+	
+			c.add(Calendar.MINUTE, -timeout);
+			long count = repository
+					.getKeyCount(task, alertKey, c.getTime());
+	
+			if (count >= threshold) {
+	
+				repository.deleteKeys(task, key.toString());
+				
+				synchronized(alertLocks) {
+					alertLocks.remove(alertKey);
+				}
+				
+				return new AlertEvent(this, "event.alert", true,
+						currentRealm, threshold, timeout, task, events[0]);
+			}
 		}
 		return null;
 	}

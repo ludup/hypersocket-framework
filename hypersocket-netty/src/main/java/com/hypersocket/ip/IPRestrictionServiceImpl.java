@@ -38,19 +38,14 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 	
 	Set<IpFilterRule> ipRules = new HashSet<IpFilterRule>();
 	
-	@PostConstruct
-	private void postConstruct() {
-		
-		
-	}
-	
+
 	@Override
 	public void registerListener(IPRestrictionListener listener) {
 		listeners.add(listener);
 	}
 	
 	@Override
-	public void blockIPAddress(String addr) throws UnknownHostException {
+	public synchronized void blockIPAddress(String addr) throws UnknownHostException {
 		
 		if(log.isInfoEnabled()) {
 			log.info("Blocking " + addr);
@@ -70,7 +65,7 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 	}
 	
 	@Override
-	public void blockIPAddress(String addr, boolean permanent) throws UnknownHostException {
+	public synchronized void blockIPAddress(String addr, boolean permanent) throws UnknownHostException {
 		
 		if(permanent) {
 			String[] oldValues = configurationService.getValues("server.blockIPs");
@@ -86,7 +81,7 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 	}
 	
 	@Override
-	public void unblockIPAddress(String addr) throws UnknownHostException {
+	public synchronized void unblockIPAddress(String addr) throws UnknownHostException {
 		
 		if(log.isInfoEnabled()) {
 			log.info("Unblocking " + addr);
@@ -170,7 +165,7 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 	}
 	
 	@Override
-	public boolean isBlockedAddress(InetAddress addr) {
+	public synchronized boolean isBlockedAddress(InetAddress addr) {
 		for(IpFilterRule rule : ipRules) {
 			if(rule.contains(addr)) {
 				return true;
@@ -181,7 +176,7 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 	
 
 	@Override
-	public boolean isBlockedAddress(String addr) throws UnknownHostException {
+	public synchronized boolean isBlockedAddress(String addr) throws UnknownHostException {
 		return isBlockedAddress(InetAddress.getByName(addr));
 	}
 

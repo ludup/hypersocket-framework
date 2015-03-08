@@ -3,11 +3,12 @@ package com.hypersocket.ip;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.commons.io.FileUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.properties.PropertyStore;
@@ -19,6 +20,7 @@ public class BlockedIPConfigurationStore implements PropertyStore {
 
 	File confFile;
 	String cachedValue = null;
+	
 	PropertyTemplate template;
 	
 	public BlockedIPConfigurationStore() {
@@ -26,19 +28,22 @@ public class BlockedIPConfigurationStore implements PropertyStore {
 	}
 
 	@Override
-	public String getPropertyValue(PropertyTemplate template) {
+	public synchronized String getPropertyValue(PropertyTemplate template) {
 		if(!confFile.exists()) {
 			return "";
 		}
 		if(cachedValue==null) {
 			try {
 				StringTokenizer t = new StringTokenizer(FileUtils.readFileToString(confFile), System.getProperty("line.separator"));
-				List<String> data = new ArrayList<String>();
+				Set<String> uniqueValues = new HashSet<String>();
 				while(t.hasMoreTokens()) {
-					data.add(t.nextToken());
+					String ip = t.nextToken();
+					if(!uniqueValues.contains(ip)) {
+						uniqueValues.add(ip);
+					}
 				}
 				
-				cachedValue = ResourceUtils.implodeValues(data.toArray(new String[0]));
+				cachedValue = ResourceUtils.implodeValues(uniqueValues.toArray(new String[0]));
 			} catch (IOException e) {
 				throw new IllegalStateException("Failed to read to blockedIPs.txt");
 			}
@@ -47,14 +52,19 @@ public class BlockedIPConfigurationStore implements PropertyStore {
 	}
 
 	@Override
-	public void setProperty(PropertyTemplate property, String value) {
+	public synchronized void setProperty(PropertyTemplate property, String value) {
 		
 		String[] ips = ResourceUtils.explodeValues(value);
+		Set<String> uniqueValues = new HashSet<String>();
 		String data = "";
+		cachedValue = "";
 		for(String ip : ips) {
-			data += ip + System.getProperty("line.separator");
+			if(!uniqueValues.contains(ip)) {
+				data += ip + System.getProperty("line.separator");
+				uniqueValues.add(ip);
+			}
 		}
-		cachedValue = value;
+		cachedValue = ResourceUtils.implodeValues(uniqueValues);
 		try {
 			FileUtils.writeStringToFile(confFile, data);
 		} catch (IOException e) {
