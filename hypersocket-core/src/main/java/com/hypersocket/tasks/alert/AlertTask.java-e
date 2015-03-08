@@ -36,6 +36,7 @@ public class AlertTask extends AbstractTaskProvider {
 	public static final String ATTR_KEY = "alert.key";
 	public static final String ATTR_THRESHOLD = "alert.threshold";
 	public static final String ATTR_TIMEOUT = "alert.timeout";
+	public static final String ATTR_RESET_DELAY = "alert.reset";
 	public static final String ATTR_ALERT_ID = "alert.id";
 
 	@Autowired
@@ -51,6 +52,7 @@ public class AlertTask extends AbstractTaskProvider {
 	TaskProviderService taskService; 
 	
 	Map<String,Object> alertLocks = new HashMap<String,Object>();
+	Map<String,Long> lastAlertTimestamp = new HashMap<String,Long>();
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -97,7 +99,8 @@ public class AlertTask extends AbstractTaskProvider {
 
 		int threshold = repository.getIntValue(task, ATTR_THRESHOLD);
 		int timeout = repository.getIntValue(task, ATTR_TIMEOUT);
-
+		int delay = repository.getIntValue(task,  ATTR_RESET_DELAY);
+		
 		String alertKey = key.toString();
 		Object alertLock = null;
 		
@@ -109,6 +112,20 @@ public class AlertTask extends AbstractTaskProvider {
 		}
 
 		synchronized(alertLock) {
+	
+			if(lastAlertTimestamp.containsKey(alertKey)) {
+				long timestamp = lastAlertTimestamp.get(alertKey);
+				if((System.currentTimeMillis() - timestamp) < (delay * 1000)) {
+					/**
+					 * Do not generate alert because we are within the reset delay 
+					 * period of the last alert generated.
+					 */
+					return null;
+				} else {
+					lastAlertTimestamp.remove(alertKey);
+				}
+			}
+			
 			AlertKey ak = new AlertKey();
 			ak.setTask(task);
 			ak.setKey(alertKey);
@@ -124,12 +141,13 @@ public class AlertTask extends AbstractTaskProvider {
 	
 			if (count >= threshold) {
 	
-				repository.deleteKeys(task, key.toString());
+				repository.deleteKeys(task, alertKey);
 				
 				synchronized(alertLocks) {
 					alertLocks.remove(alertKey);
 				}
 				
+				lastAlertTimestamp.put(alertKey, System.currentTimeMillis());
 				return new AlertEvent(this, "event.alert", true,
 						currentRealm, threshold, timeout, task, events[0]);
 			}

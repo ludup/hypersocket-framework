@@ -25,6 +25,7 @@ import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.resource.ResourceChangeException;
+import com.mysql.jdbc.StringUtils;
 
 @Service
 public class IPRestrictionServiceImpl implements IPRestrictionService, ApplicationListener<ApplicationEvent> {
@@ -108,10 +109,13 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 		} else if(event instanceof ConfigurationChangedEvent) {
 			ConfigurationChangedEvent c = (ConfigurationChangedEvent)event;
 			if(c.getAttribute(ConfigurationChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("server.blockIPs")) {
-				String[] oldValues = ResourceUtils.explodeValues(c.getAttribute(ConfigurationChangedEvent.ATTR_OLD_VALUE));
-				String[] newValues = ResourceUtils.explodeValues(c.getAttribute(ConfigurationChangedEvent.ATTR_NEW_VALUE));
+				String[] oldValues = c.getAttribute(ConfigurationChangedEvent.ATTR_OLD_VALUE).split("\\r\\n");
+				String[] newValues = c.getAttribute(ConfigurationChangedEvent.ATTR_NEW_VALUE).split("\\r\\n");
 				
 				for(String ip : newValues) {
+					if(StringUtils.isEmptyOrWhitespaceOnly(ip)) {
+						continue;
+					}
 					boolean found = false;
 					for(String ip2 : oldValues) {
 						found |= ip.equals(ip2);
@@ -126,6 +130,9 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 					}
 				}
 				for(String ip : oldValues) {
+					if(StringUtils.isEmptyOrWhitespaceOnly(ip)) {
+						continue;
+					}
 					boolean found = false;
 					for(String ip2 : newValues) {
 						found |= ip.equals(ip2);
