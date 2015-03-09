@@ -34,7 +34,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 			.getLogger(PropertyTemplateRepositoryAbstractImpl.class);
 
 	public static final String SYSTEM_GROUP = "system";
-	
+
 	Map<String, PropertyStore> propertyStoresByResourceKey = new HashMap<String, PropertyStore>();
 	Map<String, PropertyStore> propertyStoresById = new HashMap<String, PropertyStore>();
 
@@ -75,10 +75,10 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		DocumentBuilder xmlBuilder = xmlFactory.newDocumentBuilder();
 		Document doc = xmlBuilder.parse(url.openStream());
 
-		if(log.isInfoEnabled()) {
+		if (log.isInfoEnabled()) {
 			log.info("Loading property template " + url.getPath());
 		}
-		
+
 		Element root = doc.getDocumentElement();
 		if (root.hasAttribute("extends")) {
 			String extendsTemplates = root.getAttribute("extends");
@@ -125,9 +125,10 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 			PropertyCategory cat = registerPropertyCategory(
 					node.getAttribute("resourceKey"),
-					node.hasAttribute("group") ? node.getAttribute("group") : SYSTEM_GROUP,
-					node.getAttribute("resourceBundle"),
-					Integer.parseInt(node.getAttribute("weight")),
+					node.hasAttribute("group") ? node.getAttribute("group")
+							: SYSTEM_GROUP,
+					node.getAttribute("resourceBundle"), Integer.parseInt(node
+							.getAttribute("weight")),
 					node.getAttribute("displayMode"));
 
 			NodeList properties = node.getElementsByTagName("property");
@@ -189,17 +190,17 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 			buf.append("\"");
 			buf.append(n.getNodeName());
 			buf.append("\": ");
-			if(n.getNodeName().equals("options")) {
+			if (n.getNodeName().equals("options")) {
 				buf.append("[");
 				StringTokenizer t = new StringTokenizer(n.getNodeValue(), ",");
-				while(t.hasMoreTokens()) {
+				while (t.hasMoreTokens()) {
 					String opt = t.nextToken();
 					buf.append("{ \"name\": \"");
 					buf.append(opt);
 					buf.append("\", \"value\": \"");
 					buf.append(opt);
 					buf.append("\"}");
-					if(t.hasMoreTokens()) {
+					if (t.hasMoreTokens()) {
 						buf.append(",");
 					}
 				}
@@ -213,6 +214,10 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		buf.append("}");
 		return buf.toString();
 	}
+	
+	protected <T> T getBean(String name, Class<T> clz) {
+		return null;
+	}
 
 	private void loadPropertyStores(Document doc) {
 
@@ -221,12 +226,21 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		for (int i = 0; i < list.getLength(); i++) {
 			Element node = (Element) list.item(i);
 			try {
-				@SuppressWarnings("unchecked")
-				Class<? extends XmlTemplatePropertyStore> clz = (Class<? extends XmlTemplatePropertyStore>) Class
-						.forName(node.getAttribute("type"));
-
-				XmlTemplatePropertyStore store = clz.newInstance();
-				store.init(node);
+				
+				PropertyStore store = null;
+				
+				if(node.hasAttribute("bean")) {
+					store = getBean(node.getAttribute("bean"), PropertyStore.class);
+				} else {
+					@SuppressWarnings("unchecked")
+					Class<? extends PropertyStore> clz = (Class<? extends PropertyStore>) Class
+							.forName(node.getAttribute("type"));
+	
+					store = clz.newInstance();
+				}
+				if(store instanceof XmlTemplatePropertyStore) {
+					((XmlTemplatePropertyStore)store).init(node);
+				}
 
 				propertyStoresById.put(node.getAttribute("id"), store);
 				propertyStores.add(store);
@@ -239,8 +253,8 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 	private void registerPropertyItem(PropertyCategory category,
 			PropertyStore propertyStore, String resourceKey, String metaData,
-			String mapping, int weight, boolean hidden, boolean readOnly, 
-				String defaultValue, boolean encrypted) {
+			String mapping, int weight, boolean hidden, boolean readOnly,
+			String defaultValue, boolean encrypted) {
 
 		PropertyTemplate template = propertyStore
 				.getPropertyTemplate(resourceKey);
@@ -275,8 +289,8 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 	}
 
-	private PropertyCategory registerPropertyCategory(String categoryKey, String categoryGroup,
-			String bundle, int weight, String displayMode) {
+	private PropertyCategory registerPropertyCategory(String categoryKey,
+			String categoryGroup, String bundle, int weight, String displayMode) {
 
 		if (activeCategories.containsKey(categoryKey)) {
 			throw new IllegalStateException("Cannot register " + categoryKey
@@ -299,10 +313,11 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 	@Override
 	public String getValue(String resourceKey) {
 
-		if(!propertyStoresByResourceKey.containsKey(resourceKey)) {
-			throw new IllegalStateException("No store registerd for resource key " + resourceKey);
+		if (!propertyStoresByResourceKey.containsKey(resourceKey)) {
+			throw new IllegalStateException(
+					"No store registerd for resource key " + resourceKey);
 		}
-		
+
 		PropertyStore store = propertyStoresByResourceKey.get(resourceKey);
 
 		PropertyTemplate template = store.getPropertyTemplate(resourceKey);
@@ -369,13 +384,13 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 	public Collection<PropertyCategory> getPropertyCategories() {
 		return getPropertyCategories(SYSTEM_GROUP);
 	}
-	
+
 	@Override
 	public Collection<PropertyCategory> getPropertyCategories(String group) {
 
 		List<PropertyCategory> ret = new ArrayList<PropertyCategory>();
-		for(PropertyCategory c : activeCategories.values()) {
-			if(c.getCategoryGroup().equals(group)) {
+		for (PropertyCategory c : activeCategories.values()) {
+			if (c.getCategoryGroup().equals(group)) {
 				ret.add(c);
 			}
 		}
@@ -402,15 +417,16 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 	@Override
 	public void setValues(Map<String, String> values) {
-		
-		for(String name : values.keySet()) {
+
+		for (String name : values.keySet()) {
 			setValue(name, values.get(name));
 		}
-		
+
 	}
 
 	@Override
 	public PropertyTemplate getPropertyTemplate(String resourceKey) {
-		return propertyStoresByResourceKey.get(resourceKey).getPropertyTemplate(resourceKey);
+		return propertyStoresByResourceKey.get(resourceKey)
+				.getPropertyTemplate(resourceKey);
 	}
 }

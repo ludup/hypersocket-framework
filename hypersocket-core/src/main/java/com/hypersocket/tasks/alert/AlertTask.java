@@ -1,6 +1,7 @@
 package com.hypersocket.tasks.alert;
 
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -35,6 +36,7 @@ public class AlertTask extends AbstractTaskProvider {
 	public static final String ATTR_KEY = "alert.key";
 	public static final String ATTR_THRESHOLD = "alert.threshold";
 	public static final String ATTR_TIMEOUT = "alert.timeout";
+	public static final String ATTR_RESET_DELAY = "alert.reset";
 	public static final String ATTR_ALERT_ID = "alert.id";
 
 	@Autowired
@@ -48,6 +50,9 @@ public class AlertTask extends AbstractTaskProvider {
 
 	@Autowired
 	TaskProviderService taskService; 
+	
+	Map<String,Object> alertLocks = new HashMap<String,Object>();
+	Map<String,Long> lastAlertTimestamp = new HashMap<String,Long>();
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -94,26 +99,58 @@ public class AlertTask extends AbstractTaskProvider {
 
 		int threshold = repository.getIntValue(task, ATTR_THRESHOLD);
 		int timeout = repository.getIntValue(task, ATTR_TIMEOUT);
+		int delay = repository.getIntValue(task,  ATTR_RESET_DELAY);
+		
+		String alertKey = key.toString();
+		Object alertLock = null;
+		
+		synchronized (alertLocks) {
+			if(!alertLocks.containsKey(alertKey)) {
+				alertLocks.put(alertKey, new Object());
+			}			
+			alertLock = alertLocks.get(alertKey);
+		}
 
-		AlertKey ak = new AlertKey();
-		ak.setTask(task);
-		ak.setKey(key.toString());
-
-		Calendar c = Calendar.getInstance();
-		ak.setTriggered(c.getTime());
-
-		repository.saveKey(ak);
-
-		c.add(Calendar.MINUTE, -timeout);
-		long count = repository
-				.getKeyCount(task, key.toString(), c.getTime());
-
-		if (count >= threshold) {
-
-			repository.deleteKeys(task, key.toString());
-
-			return new AlertEvent(this, "event.alert", true,
-					currentRealm, threshold, timeout, task, events[0]);
+		synchronized(alertLock) {
+	
+			if(lastAlertTimestamp.containsKey(alertKey)) {
+				long timestamp = lastAlertTimestamp.get(alertKey);
+				if((System.currentTimeMillis() - timestamp) < (delay * 1000)) {
+					/**
+					 * Do not generate alert because we are within the reset delay 
+					 * period of the last alert generated.
+					 */
+					return null;
+				} else {
+					lastAlertTimestamp.remove(alertKey);
+				}
+			}
+			
+			AlertKey ak = new AlertKey();
+			ak.setTask(task);
+			ak.setKey(alertKey);
+	
+			Calendar c = Calendar.getInstance();
+			ak.setTriggered(c.getTime());
+	
+			repository.saveKey(ak);
+	
+			c.add(Calendar.MINUTE, -timeout);
+			long count = repository
+					.getKeyCount(task, alertKey, c.getTime());
+	
+			if (count >= threshold) {
+	
+				repository.deleteKeys(task, alertKey);
+				
+				synchronized(alertLocks) {
+					alertLocks.remove(alertKey);
+				}
+				
+				lastAlertTimestamp.put(alertKey, System.currentTimeMillis());
+				return new AlertEvent(this, "event.alert", true,
+						currentRealm, threshold, timeout, task, events[0]);
+			}
 		}
 		return null;
 	}

@@ -18,11 +18,11 @@ import org.springframework.stereotype.Component;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
-import com.hypersocket.server.HypersocketServer;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -46,7 +46,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 	BlockIPTaskRepository repository; 
 	
 	@Autowired
-	HypersocketServer server;
+	IPRestrictionService ipRestrictionService;
 	
 	@Autowired
 	TriggerResourceService triggerService; 
@@ -70,6 +70,8 @@ public class BlockIPTask extends AbstractTaskProvider {
 		taskService.registerTaskProvider(this);
 		
 		eventService.registerEvent(BlockedIPResult.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(BlockedIPTempResult.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(BlockedIPPermResult.class, RESOURCE_BUNDLE);
 	}
 	
 	@Override
@@ -102,16 +104,21 @@ public class BlockIPTask extends AbstractTaskProvider {
 				log.info("Blocking IP address "  + ipAddress);
 			}
 			
-			if(server.isBlockedAddress(ipAddress)) {
+			if(ipRestrictionService.isBlockedAddress(ipAddress)) {
 				if(log.isInfoEnabled()) {
 					log.info(ipAddress + " is already blocked.");
 				}
 				
-				return new BlockedIPResult(this, new IOException(ipAddress + " is already blocked"), currentRealm, task, ipAddress, val);
+				if(val > 0) {
+					return new BlockedIPTempResult(this, new IOException(ipAddress + " is already blocked"), currentRealm, task, ipAddress, val);
+				} else {
+					return new BlockedIPPermResult(this, new IOException(ipAddress + " is already blocked"), currentRealm, task, ipAddress);
+				}
+				
 				
 			} else {
 			
-				server.blockAddress(ipAddress);
+				ipRestrictionService.blockIPAddress(ipAddress, val==0);
 				
 				if(log.isInfoEnabled()) {
 					log.info("Blocked IP address " + ipAddress);
@@ -131,18 +138,26 @@ public class BlockIPTask extends AbstractTaskProvider {
 					String scheduleId = schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000, 0);
 					
 					blockedIPUnblockSchedules.put(ipAddress, scheduleId);
+					
+					return new BlockedIPTempResult(this, currentRealm, task, ipAddress, val);
+				} else {
+					
+					return new BlockedIPPermResult(this, currentRealm, task, ipAddress);
 				}
 				
-				return new BlockedIPResult(this, currentRealm, task, ipAddress, val);
 			}
 		} catch (UnknownHostException | SchedulerException e) {
 			log.error("Failed to fully process block IP request for " + ipAddress, e);
-			return new BlockedIPResult(this, e, currentRealm, task, ipAddress, val);
+			if(val > 0) {
+				return new BlockedIPTempResult(this, e, currentRealm, task, ipAddress, val);
+			} else {
+				return new BlockedIPPermResult(this, e, currentRealm, task, ipAddress);
+			}
 		}
 	}
 	
 	public String[] getResultResourceKeys() {
-		return new String[] { BlockedIPResult.EVENT_RESOURCE_KEY };
+		return new String[] { BlockedIPTempResult.EVENT_RESOURCE_KEY, BlockedIPPermResult.EVENT_RESOURCE_KEY };
 	}
 	
 	@Override

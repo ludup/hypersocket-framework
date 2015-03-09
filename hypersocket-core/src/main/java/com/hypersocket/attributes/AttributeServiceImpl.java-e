@@ -22,6 +22,7 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
+import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.tables.ColumnSort;
 
@@ -141,10 +142,19 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 						"attribute.nameInUse.error", name);
 			}
 
+		try {
+			if (attributeCategoryRepository.nameExists(name)) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE,
+						"attribute.nameInUse.error", name);
+			}
+
+			AttributeCategory attributeCategory = new AttributeCategory();
+
 			attributeCategory.setName(name);
 			attributeCategory.setContext(context);
 			attributeCategory.setWeight(weight);
 			attributeCategoryRepository.saveCategory(attributeCategory);
+
 			eventService.publishEvent(new AttributeCategoryCreatedEvent(this,
 					getCurrentSession(), attributeCategory));
 			return attributeCategory;
@@ -180,13 +190,23 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 					e, getCurrentSession(), category));
 			throw e;
 		}
+
+			return attributeCategory;
+
+		} catch (ResourceCreationException ex) {
+			throw ex;
+		} catch (Throwable t) {
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"error.failedToCreateCategory", t.getMessage());
+		}
+
 	}
 
 	@Override
 	public Attribute updateAttribute(Attribute attribute, String name,
 			Long category, String description, String defaultValue, int weight,
 			String type, Boolean readOnly, Boolean encrypted,
-			String variableName) throws ResourceCreationException,
+			String variableName) throws ResourceChangeException,
 			AccessDeniedException {
 		String oldName = attribute.getName();
 		try {
@@ -194,7 +214,7 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 
 			attribute.setName(name);
 			if (attributeRepository.nameExists(attribute)) {
-				throw new ResourceCreationException(RESOURCE_BUNDLE,
+				throw new ResourceChangeException(RESOURCE_BUNDLE,
 						"attribute.nameInUse.error", name);
 			}
 
@@ -218,10 +238,15 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 			eventService.publishEvent(new AttributeUpdatedEvent(this,
 					getCurrentSession(), oldName, attribute));
 			return attribute;
-		} catch (Exception e) {
-			eventService.publishEvent(new AttributeUpdatedEvent(this, e,
+		} catch (ResourceChangeException ex) {
+			eventService.publishEvent(new AttributeUpdatedEvent(this, ex,
 					getCurrentSession(), attribute));
-			throw e;
+			throw ex;
+		} catch (Throwable t) {
+			eventService.publishEvent(new AttributeUpdatedEvent(this, t,
+					getCurrentSession(), attribute));
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"error.failedToUpdateAttribute", t.getMessage());
 		}
 
 	}
@@ -262,12 +287,16 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 			eventService.publishEvent(new AttributeCreatedEvent(this,
 					getCurrentSession(), attribute));
 			return attribute;
-		} catch (Exception e) {
-			eventService.publishEvent(new AttributeCreatedEvent(this, e,
+		} catch (ResourceCreationException ex) {
+			eventService.publishEvent(new AttributeCreatedEvent(this, ex,
 					getCurrentSession(), attribute));
-			throw e;
+			throw ex;
+		} catch (Throwable t) {
+			eventService.publishEvent(new AttributeCreatedEvent(this, t,
+					getCurrentSession(), attribute));
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"error.failedToCreateAttribute", t.getMessage());
 		}
-
 	}
 
 	@Override
@@ -278,7 +307,7 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 			attributeRepository.deleteEntity(attribute);
 			eventService.publishEvent(new AttributeDeletedEvent(this,
 					getCurrentSession(), attribute));
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			eventService.publishEvent(new AttributeDeletedEvent(this, e,
 					getCurrentSession(), attribute));
 			throw e;
