@@ -16,7 +16,7 @@ public abstract class GroupEvent extends PrincipalEvent {
 
 	public static final String EVENT_RESOURCE_KEY = "group.event";
 
-	public static final String ATTR_SUBJECT_NAME = "attr.subjectName";
+	public static final String ATTR_GROUP_NAME = "attr.group";
 	public static final String ATTR_ASSOCIATED_PRINCIPALS = "attr.associatedPrincipals";
 
 	private Principal principal;
@@ -25,7 +25,7 @@ public abstract class GroupEvent extends PrincipalEvent {
 			Realm realm, RealmProvider provider, Principal principal, Map<String,String> properties) {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
-		addAttribute(ATTR_SUBJECT_NAME, principal.getName());
+		addAttribute(ATTR_GROUP_NAME, principal.getName());
 	}
 
 	public GroupEvent(Object source, String resourceKey, Session session,
@@ -33,7 +33,7 @@ public abstract class GroupEvent extends PrincipalEvent {
 			List<Principal> associatedPrincipals, Map<String, String> properties) {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
-		addAttribute(ATTR_SUBJECT_NAME, principal.getName());
+		addAttribute(ATTR_GROUP_NAME, principal.getName());
 		addAssociatedPrincipals(associatedPrincipals);
 		for (String prop : properties.keySet()) {
 			addAttribute(prop, properties.get(prop));
@@ -44,14 +44,14 @@ public abstract class GroupEvent extends PrincipalEvent {
 			Session session, Realm realmName, RealmProvider provider,
 			String principalName) {
 		super(source, resourceKey, e, session, realmName);
-		addAttribute(ATTR_SUBJECT_NAME, principalName);
+		addAttribute(ATTR_GROUP_NAME, principalName);
 	}
 
 	public GroupEvent(Object source, String resourceKey, Throwable e,
 			Session session, Realm realmName, RealmProvider provider,
 			String principalName, List<Principal> associatedPrincipals) {
 		super(source, resourceKey, e, session, realmName);
-		addAttribute(ATTR_SUBJECT_NAME, principalName);
+		addAttribute(ATTR_GROUP_NAME, principalName);
 		addAssociatedPrincipals(associatedPrincipals);
 	}
 
