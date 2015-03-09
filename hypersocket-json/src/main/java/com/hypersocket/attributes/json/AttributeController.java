@@ -167,7 +167,7 @@ public class AttributeController extends ResourceController {
 							attributeCategory.getId() != null ? "attributeCategory.updated.info"
 									: "attributeCategory.created.info",
 							attributeCategory.getName()));
-		} catch (ResourceCreationException e) {
+		} catch (ResourceChangeException | ResourceCreationException e) {
 			return new ResourceStatus<AttributeCategory>(false,
 					I18N.getResource(sessionUtils.getLocale(request),
 							e.getBundle(), e.getResourceKey(), e.getArgs()));
