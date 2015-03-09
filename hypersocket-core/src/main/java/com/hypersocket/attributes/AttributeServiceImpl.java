@@ -63,14 +63,15 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 				.registerEvent(AttributeUpdatedEvent.class, RESOURCE_BUNDLE);
 		eventService
 				.registerEvent(AttributeDeletedEvent.class, RESOURCE_BUNDLE);
-		
-		eventService.registerEvent(AttributeCategoryEvent.class, RESOURCE_BUNDLE);
-		eventService
-				.registerEvent(AttributeCategoryCreatedEvent.class, RESOURCE_BUNDLE);
-		eventService
-				.registerEvent(AttributeCategoryUpdatedEvent.class, RESOURCE_BUNDLE);
-		eventService
-				.registerEvent(AttributeCategoryDeletedEvent.class, RESOURCE_BUNDLE);
+
+		eventService.registerEvent(AttributeCategoryEvent.class,
+				RESOURCE_BUNDLE);
+		eventService.registerEvent(AttributeCategoryCreatedEvent.class,
+				RESOURCE_BUNDLE);
+		eventService.registerEvent(AttributeCategoryUpdatedEvent.class,
+				RESOURCE_BUNDLE);
+		eventService.registerEvent(AttributeCategoryDeletedEvent.class,
+				RESOURCE_BUNDLE);
 	}
 
 	@Override
@@ -142,14 +143,6 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 						"attribute.nameInUse.error", name);
 			}
 
-		try {
-			if (attributeCategoryRepository.nameExists(name)) {
-				throw new ResourceCreationException(RESOURCE_BUNDLE,
-						"attribute.nameInUse.error", name);
-			}
-
-			AttributeCategory attributeCategory = new AttributeCategory();
-
 			attributeCategory.setName(name);
 			attributeCategory.setContext(context);
 			attributeCategory.setWeight(weight);
@@ -168,12 +161,12 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public AttributeCategory updateAttributeCategory(
 			AttributeCategory category, Long id, String name, String context,
-			int weight) throws ResourceCreationException, AccessDeniedException {
+			int weight) throws ResourceChangeException, AccessDeniedException {
 		assertPermission(AttributePermission.UPDATE);
 		String oldName = category.getName();
 		try {
 			if (attributeCategoryRepository.nameExists(category)) {
-				throw new ResourceCreationException(RESOURCE_BUNDLE,
+				throw new ResourceChangeException(RESOURCE_BUNDLE,
 						"attribute.nameInUse.error", name);
 			}
 
@@ -185,19 +178,16 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 			eventService.publishEvent(new AttributeCategoryUpdatedEvent(this,
 					getCurrentSession(), oldName, category));
 			return category;
-		} catch (Exception e) {
+
+		} catch (ResourceChangeException ex) {
 			eventService.publishEvent(new AttributeCategoryUpdatedEvent(this,
-					e, getCurrentSession(), category));
-			throw e;
-		}
-
-			return attributeCategory;
-
-		} catch (ResourceCreationException ex) {
+					ex, getCurrentSession(), category));
 			throw ex;
 		} catch (Throwable t) {
-			throw new ResourceCreationException(RESOURCE_BUNDLE,
-					"error.failedToCreateCategory", t.getMessage());
+			eventService.publishEvent(new AttributeCategoryUpdatedEvent(this,
+					t, getCurrentSession(), category));
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"error.failedToUpdateCategory", t.getMessage());
 		}
 
 	}
@@ -323,7 +313,7 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 			attributeCategoryRepository.deleteEntity(category);
 			eventService.publishEvent(new AttributeCategoryDeletedEvent(this,
 					getCurrentSession(), category));
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			eventService.publishEvent(new AttributeCategoryDeletedEvent(this,
 					e, getCurrentSession(), category));
 			throw e;

@@ -24,7 +24,7 @@ public interface AttributeService extends AuthenticatedService {
 
 	public AttributeCategory updateAttributeCategory(
 			AttributeCategory category, Long id, String name, String context,
-			int weight) throws ResourceCreationException, AccessDeniedException;
+			int weight) throws AccessDeniedException, ResourceChangeException;
 
 	public Attribute updateAttribute(Attribute attribute, String name,
 			Long category, String description, String defaultValue, int weight,
