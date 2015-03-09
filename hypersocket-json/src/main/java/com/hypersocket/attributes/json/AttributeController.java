@@ -32,6 +32,7 @@ import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.json.SelectOption;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.Column;
@@ -213,7 +214,7 @@ public class AttributeController extends ResourceController {
 									.getId() != null ? "attribute.updated.info"
 									: "attribute.created.info", attribute
 									.getName()));
-		} catch (ResourceCreationException e) {
+		} catch (ResourceChangeException | ResourceCreationException e) {
 			return new ResourceStatus<Attribute>(false, I18N.getResource(
 					sessionUtils.getLocale(request), e.getBundle(),
 					e.getResourceKey(), e.getArgs()));

@@ -412,7 +412,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 					getCurrentSession(), realm, provider, username, properties,
 					principals));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"error.unexpectedError", e.getMessage());
+					"updateUser.unexpectedError", e.getMessage());
 		}
 	}
 
@@ -921,7 +921,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			eventService.publishEvent(new GroupUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, name, principals));
 			throw e;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			eventService.publishEvent(new GroupUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, name, principals));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
@@ -999,7 +999,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 					getCurrentSession(), realm, provider, user
 							.getPrincipalName()));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"error.unexpectedError", e.getMessage());
+					"deleteUser.unexpectedError", e.getMessage());
 		}
 
 	}
