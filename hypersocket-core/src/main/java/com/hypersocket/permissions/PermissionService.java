@@ -15,44 +15,55 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
 
 public interface PermissionService extends AuthenticatedService {
 
 	static final String RESOURCE_BUNDLE = "PermissionService";
-	
-	public PermissionCategory registerPermissionCategory(String resourceBundle, String resourceKey);
+
+	public PermissionCategory registerPermissionCategory(String resourceBundle,
+			String resourceKey);
 
 	public Permission getPermission(String resourceKey);
-	
-	public Role createRole(String name, Realm realm) throws AccessDeniedException;
-	
-	void assignRole(Role role, Principal principal) throws AccessDeniedException;
-	
-	void verifyPermission(Principal principal, PermissionStrategy strategy, PermissionType... permission) throws AccessDeniedException;
+
+	public Role createRole(String name, Realm realm)
+			throws AccessDeniedException, ResourceCreationException;
+
+	void assignRole(Role role, Principal principal)
+			throws AccessDeniedException;
+
+	void verifyPermission(Principal principal, PermissionStrategy strategy,
+			PermissionType... permission) throws AccessDeniedException;
 
 	Set<Principal> getUsersWithPermissions(PermissionType permissions);
 
-	Role getRole(String name, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
+	Role getRole(String name, Realm realm) throws ResourceNotFoundException,
+			AccessDeniedException;
 
-	void deleteRole(Role name) throws ResourceChangeException, AccessDeniedException;
+	void deleteRole(Role name) throws ResourceChangeException,
+			AccessDeniedException;
 
 	List<Role> allRoles(Realm realm) throws AccessDeniedException;
 
 	public List<Permission> allPermissions();
 
 	Role createRole(String name, Realm realm, List<Principal> principals,
-			List<Permission> permissions) throws AccessDeniedException;
+			List<Permission> permissions) throws AccessDeniedException,
+			ResourceCreationException;
 
-	Role updateRole(Role role, String name,
-			List<Principal> principals, List<Permission> permissions) throws AccessDeniedException;
+	Role updateRole(Role role, String name, List<Principal> principals,
+			List<Permission> permissions) throws AccessDeniedException,
+			ResourceChangeException;
 
-	public Role getRoleById(Long id, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
+	public Role getRoleById(Long id, Realm realm)
+			throws ResourceNotFoundException, AccessDeniedException;
 
 	public Permission getPermissionById(Long perm);
 
-	Set<Permission> getPrincipalPermissions(Principal principal) throws AccessDeniedException;
+	Set<Permission> getPrincipalPermissions(Principal principal)
+			throws AccessDeniedException;
 
 	boolean hasSystemPermission(Principal principal);
 
@@ -63,7 +74,8 @@ public interface PermissionService extends AuthenticatedService {
 
 	Role getPersonalRole(Principal principal);
 
-	Set<Role> getPrincipalRoles(Principal principal) throws AccessDeniedException;
+	Set<Role> getPrincipalRoles(Principal principal)
+			throws AccessDeniedException;
 
 	List<PropertyCategory> getRoleTemplates() throws AccessDeniedException;
 

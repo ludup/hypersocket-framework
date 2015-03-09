@@ -32,6 +32,7 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmColumns;
 import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.Column;
@@ -58,7 +59,8 @@ public class RoleController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			return permissionService.getRoleById(id, sessionUtils.getCurrentRealm(request));
+			return permissionService.getRoleById(id,
+					sessionUtils.getCurrentRealm(request));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -77,29 +79,31 @@ public class RoleController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			return permissionService.getRole(name, sessionUtils.getCurrentRealm(request));
+			return permissionService.getRole(name,
+					sessionUtils.getCurrentRealm(request));
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/template", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<PropertyCategory> getRoleTemplate(HttpServletRequest request)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
+	public ResourceList<PropertyCategory> getRoleTemplate(
+			HttpServletRequest request) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
 		try {
-			return new ResourceList<PropertyCategory>(permissionService.getRoleTemplates());
+			return new ResourceList<PropertyCategory>(
+					permissionService.getRoleTemplates());
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/role/{id}", method = RequestMethod.DELETE)
 	@ResponseBody
@@ -172,21 +176,27 @@ public class RoleController extends ResourceController {
 						}
 
 						@Override
-						public List<?> getPage(String searchPattern, int start, int length,
-								ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
-							return permissionService.getRoles(searchPattern, start, length, sorting);
+						public List<?> getPage(String searchPattern, int start,
+								int length, ColumnSort[] sorting)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							return permissionService.getRoles(searchPattern,
+									start, length, sorting);
 						}
-						
+
 						@Override
-						public Long getTotalCount(String searchPattern) throws UnauthorizedException, AccessDeniedException {
-							return permissionService.getRoleCount(searchPattern);
+						public Long getTotalCount(String searchPattern)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							return permissionService
+									.getRoleCount(searchPattern);
 						}
 					});
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/role", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
@@ -234,7 +244,8 @@ public class RoleController extends ResourceController {
 					role.getId() != null ? "info.role.updated"
 							: "info.role.created", newRole.getName()));
 
-		} catch (ResourceNotFoundException e) {
+		} catch (ResourceNotFoundException | ResourceCreationException
+				| ResourceChangeException e) {
 			return new ResourceStatus<Role>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
