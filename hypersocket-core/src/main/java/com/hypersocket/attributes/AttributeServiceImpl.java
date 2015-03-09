@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.attributes.events.AttributeCategoryCreatedEvent;
 import com.hypersocket.attributes.events.AttributeCategoryDeletedEvent;
+import com.hypersocket.attributes.events.AttributeCategoryEvent;
 import com.hypersocket.attributes.events.AttributeCategoryUpdatedEvent;
 import com.hypersocket.attributes.events.AttributeCreatedEvent;
 import com.hypersocket.attributes.events.AttributeDeletedEvent;
@@ -61,6 +62,14 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 				.registerEvent(AttributeUpdatedEvent.class, RESOURCE_BUNDLE);
 		eventService
 				.registerEvent(AttributeDeletedEvent.class, RESOURCE_BUNDLE);
+		
+		eventService.registerEvent(AttributeCategoryEvent.class, RESOURCE_BUNDLE);
+		eventService
+				.registerEvent(AttributeCategoryCreatedEvent.class, RESOURCE_BUNDLE);
+		eventService
+				.registerEvent(AttributeCategoryUpdatedEvent.class, RESOURCE_BUNDLE);
+		eventService
+				.registerEvent(AttributeCategoryDeletedEvent.class, RESOURCE_BUNDLE);
 	}
 
 	@Override
