@@ -18,6 +18,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
+import com.hypersocket.repository.DeletedDetachedCriteria;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
@@ -41,7 +42,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	@Override
 	@Transactional(readOnly=true)
 	public T getResourceByName(String name, Realm realm, boolean deleted) {
-		return get("name", name, getResourceClass(), new RealmRestriction(realm), new DeletedCriteria(
+		return get("name", name, getResourceClass(), new RealmRestriction(realm), new DeletedDetachedCriteria(
 				deleted));
 	}
 
@@ -107,5 +108,11 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 						realm)));
 	}
 
+	
+	@Override
+	public long allRealmsResourcesCount() {
+		return getCount(getResourceClass(), new DeletedCriteria(false));
+	}
+	
 	protected abstract Class<T> getResourceClass();
 }
