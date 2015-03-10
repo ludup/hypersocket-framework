@@ -100,12 +100,4 @@ public interface HypersocketServer {
 
 	void registerControllerPackage(String controllerPackage);
 
-	void unblockAddress(String addr) throws UnknownHostException;
-
-	void blockAddress(String addr) throws UnknownHostException;
-
-	boolean canConnect(InetAddress addr);
-
-	public boolean isBlockedAddress(String ipAddress) throws UnknownHostException;
-
 }

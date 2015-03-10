@@ -2,9 +2,13 @@ package com.hypersocket.encrypt;
 
 import java.util.StringTokenizer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class AbstractEncryptionProvider implements EncryptionProvider {
 
-
+	static Logger log = LoggerFactory.getLogger(AbstractEncryptionProvider.class);
+	
 	@Override
 	public String encrypt(String toEncrypt) throws Exception {
 		
@@ -21,11 +25,20 @@ public abstract class AbstractEncryptionProvider implements EncryptionProvider {
 
 	@Override
 	public String decrypt(String toDecrypt) throws Exception {
-		
+	
+		if(log.isDebugEnabled()) {
+			log.debug("Decrypting " + toDecrypt);
+		}
 		StringBuffer ret = new StringBuffer();
 		StringTokenizer t = new StringTokenizer(toDecrypt, "|");
+		
 		while(t.hasMoreTokens()) {
-			ret.append(doDecrypt(t.nextToken()));
+		
+			String data = t.nextToken();
+			if(log.isDebugEnabled()) {
+				log.debug("Decrypting fragment " + data);
+			}
+			ret.append(doDecrypt(data));
 		}
 
 		return ret.toString();

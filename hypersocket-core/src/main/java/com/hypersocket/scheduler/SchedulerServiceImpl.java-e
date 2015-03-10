@@ -260,10 +260,14 @@ public class SchedulerServiceImpl implements SchedulerService {
 
 	@Override
 	public void cancelNow(String id) throws SchedulerException {
+
+		if(log.isInfoEnabled()) {
+			log.info("Cancelling job with id " + id);
+		}
 		
 		triggerKeys.remove(id);
 		JobKey jobKey = jobKeys.remove(id);
-		
+
 		if(scheduler.checkExists(jobKey)) {
 			scheduler.deleteJob(jobKey);
 		}
