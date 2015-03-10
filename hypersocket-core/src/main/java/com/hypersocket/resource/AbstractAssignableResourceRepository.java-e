@@ -54,5 +54,7 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 			CriteriaConfiguration... configs);
 
 	List<T> allResources();
+
+	long allRealmsResourcesCount();
 	
 }

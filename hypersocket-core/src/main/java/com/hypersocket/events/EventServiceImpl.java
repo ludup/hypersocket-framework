@@ -16,10 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.attributes.AttributeSupport;
 import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.i18n.Message;
+import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.resource.AssignableResourceEvent;
 
@@ -182,7 +184,7 @@ public class EventServiceImpl extends AuthenticatedServiceImpl implements EventS
 		if (!event.isSuccess()) {
 			log.error(event.getResourceKey() + " failed", event.getException());
 		}
-
+		
 		eventPublisher.publishEvent(event);
 	}
 

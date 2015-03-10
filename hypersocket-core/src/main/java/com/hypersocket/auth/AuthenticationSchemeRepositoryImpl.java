@@ -22,7 +22,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
-import com.hypersocket.repository.DeletedCriteria;
+import com.hypersocket.repository.DeletedDetachedCriteria;
 import com.hypersocket.repository.DetachedCriteriaConfiguration;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
@@ -112,7 +112,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 
 	@Override
 	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm) {
-		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
+		return allEntities(AuthenticationScheme.class, new DeletedDetachedCriteria(
 				false), new HiddenCriteria(false), new DistinctRootEntity(), new RealmRestriction(realm));
 	}
 

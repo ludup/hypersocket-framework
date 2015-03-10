@@ -62,5 +62,7 @@ public interface AuthenticationService extends AuthenticatedService {
 
 	Collection<PostAuthenticationStep> getPostAuthenticationSteps();
 
+	int getAuthenticatorCount(Realm realm, String schemeResourceKey);
+
 
 }

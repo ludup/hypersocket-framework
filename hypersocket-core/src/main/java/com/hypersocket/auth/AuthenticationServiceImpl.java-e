@@ -208,6 +208,16 @@ public class AuthenticationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
+	public int getAuthenticatorCount(Realm realm,
+			String schemeResourceKey) {
+
+		AuthenticationScheme s = schemeRepository.getSchemeByResourceKey(realm,
+				schemeResourceKey);
+		return repository
+				.getAuthenticationModulesByScheme(s).size();
+	}
+	
+	@Override
 	public AuthenticationScheme getSchemeByResourceKey(Realm realm,
 			String resourceKey) throws AccessDeniedException {
 		return schemeRepository.getSchemeByResourceKey(realm, resourceKey);
