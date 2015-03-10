@@ -99,7 +99,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 	@Autowired
 	PrincipalSuspensionService suspensionService;
-	
+
 	CacheManager cacheManager;
 	Cache realmCache;
 
@@ -868,16 +868,22 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		RealmProvider provider = getProviderForRealm(realm);
 
 		try {
-
 			assertAnyPermission(GroupPermission.CREATE, RealmPermission.CREATE);
 
-			Principal principal = provider.createGroup(realm, name, principals);
+			Principal group = getPrincipalByName(realm, name,
+					PrincipalType.GROUP);
 
+			if (group != null) {
+				ResourceCreationException ex = new ResourceCreationException(
+						RESOURCE_BUNDLE, "error.group.alreadyExists", name);
+				throw ex;
+			}
+			Principal principal = provider.createGroup(realm, name, principals);
 			eventService.publishEvent(new GroupCreatedEvent(this,
 					getCurrentSession(), realm, provider, principal,
 					principals, new HashMap<String, String>()));
-
 			return principal;
+
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(new GroupCreatedEvent(this, e,
 					getCurrentSession(), realm, provider, name, principals));
@@ -904,6 +910,14 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 		try {
 
 			assertAnyPermission(GroupPermission.UPDATE, RealmPermission.UPDATE);
+			Principal tmpGroup = getPrincipalByName(realm, name,
+					PrincipalType.GROUP);
+
+			if (tmpGroup != null && !tmpGroup.getId().equals(group.getId())) {
+				ResourceChangeException ex = new ResourceChangeException(
+						RESOURCE_BUNDLE, "error.group.alreadyExists", name);
+				throw ex;
+			}
 
 			Principal principal = provider.updateGroup(realm, group, name,
 					principals);
@@ -1401,7 +1415,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 			return "";
 		}
 	}
-	
+
 	@Override
 	public String getPrincipalPhone(Principal principal) {
 		try {
@@ -1414,18 +1428,17 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Override
 	public Map<String, String> getUserPropertyValues(Principal principal,
 			String... variableNames) {
-		
-		Map<String,String> variables = new HashMap<String,String>();
-		
+
+		Map<String, String> variables = new HashMap<String, String>();
+
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
-		
-		for(String variableName : variableNames) {
-			variables.put(variableName, provider.getUserPropertyValue(principal, variableName));			
+
+		for (String variableName : variableNames) {
+			variables.put(variableName,
+					provider.getUserPropertyValue(principal, variableName));
 		}
-		
+
 		return variables;
 	}
-
-
 
 }

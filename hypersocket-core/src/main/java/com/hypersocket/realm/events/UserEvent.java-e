@@ -16,7 +16,7 @@ public abstract class UserEvent extends PrincipalEvent {
 
 	public static final String EVENT_RESOURCE_KEY = "user.event";
 	
-	public static final String ATTR_SUBJECT_NAME = "attr.subjectName";
+	public static final String ATTR_USER_NAME = "attr.user";
 	public static final String ATTR_ASSOCIATED_PRINCIPALS = "attr.associatedPrincipals";
 
 	private Principal principal;
@@ -25,7 +25,7 @@ public abstract class UserEvent extends PrincipalEvent {
 			Realm realm, RealmProvider provider, Principal principal) {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
-		addAttribute(ATTR_SUBJECT_NAME, principal.getName());
+		addAttribute(ATTR_USER_NAME, principal.getName());
 	}
 
 	public UserEvent(Object source, String resourceKey, Session session,
@@ -34,7 +34,7 @@ public abstract class UserEvent extends PrincipalEvent {
 			Map<String, String> properties) {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
-		addAttribute(ATTR_SUBJECT_NAME, principal.getName());
+		addAttribute(ATTR_USER_NAME, principal.getName());
 		if(associatedPrincipals!=null) {
 			addAssociatedPrincipals(associatedPrincipals);
 		}
@@ -47,7 +47,7 @@ public abstract class UserEvent extends PrincipalEvent {
 			Session session, Realm realmName, RealmProvider provider,
 			String principalName) {
 		super(source, resourceKey, e, session, realmName);
-		addAttribute(ATTR_SUBJECT_NAME, principalName);
+		addAttribute(ATTR_USER_NAME, principalName);
 	}
 
 	public UserEvent(Object source, String resourceKey, Throwable e,
@@ -55,7 +55,7 @@ public abstract class UserEvent extends PrincipalEvent {
 			String principalName, Map<String, String> properties,
 			List<Principal> associatedPrincipals) {
 		super(source, resourceKey, e, session, realmName);
-		addAttribute(ATTR_SUBJECT_NAME, principalName);
+		addAttribute(ATTR_USER_NAME, principalName);
 		if(associatedPrincipals!=null) {
 			addAssociatedPrincipals(associatedPrincipals);
 		}

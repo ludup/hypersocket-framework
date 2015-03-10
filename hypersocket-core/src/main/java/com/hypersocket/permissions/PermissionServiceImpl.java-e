@@ -41,6 +41,8 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
+import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
 
@@ -168,34 +170,46 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	@Override
 	public Role createRole(String name, Realm realm)
-			throws AccessDeniedException {
-
+			throws AccessDeniedException, ResourceCreationException {
 		assertPermission(RolePermission.CREATE);
-
-		return repository.createRole(name, realm, false, false, false, false);
+		try {
+			getRole(name, realm);
+			ResourceCreationException ex = new ResourceCreationException(
+					RESOURCE_BUNDLE, "error.role.alreadyExists", name);
+			throw ex;
+		} catch (ResourceNotFoundException re) {
+			return repository.createRole(name, realm, false, false, false,
+					false);
+		}
 	}
 
 	@Override
 	public Role createRole(String name, Realm realm,
 			List<Principal> principals, List<Permission> permissions)
-			throws AccessDeniedException {
+			throws AccessDeniedException, ResourceCreationException {
 
 		assertPermission(RolePermission.CREATE);
+		try {
+			getRole(name, realm);
+			ResourceCreationException ex = new ResourceCreationException(
+					RESOURCE_BUNDLE, "error.role.alreadyExists", name);
+			throw ex;
+		} catch (ResourceNotFoundException re) {
+			Role role = new Role();
+			role.setName(name);
+			role.setRealm(realm);
 
-		Role role = new Role();
-		role.setName(name);
-		role.setRealm(realm);
+			repository.saveRole(role);
 
-		repository.saveRole(role);
+			repository.assignRole(role, principals.toArray(new Principal[0]));
 
-		repository.assignRole(role, principals.toArray(new Principal[0]));
+			repository.grantPermissions(role, permissions);
 
-		repository.grantPermissions(role, permissions);
-
-		for (Principal p : principals) {
-			permissionsCache.remove(p);
+			for (Principal p : principals) {
+				permissionsCache.remove(p);
+			}
+			return role;
 		}
-		return role;
 	}
 
 	@Override
@@ -207,8 +221,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	public void assignRole(Role role, Principal principal)
 			throws AccessDeniedException {
 
-		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, RolePermission.CREATE,
-				RolePermission.UPDATE);
+		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED,
+				RolePermission.CREATE, RolePermission.UPDATE);
 
 		repository.assignRole(role, principal);
 
@@ -268,7 +282,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	private void recurseImpliedPermissions(PermissionType t,
 			Set<PermissionType> derivedPermissions) {
 
-		if (t!=null && !derivedPermissions.contains(t)) {
+		if (t != null && !derivedPermissions.contains(t)) {
 			derivedPermissions.add(t);
 			if (t.impliesPermissions() != null) {
 				for (PermissionType t2 : t.impliesPermissions()) {
@@ -290,7 +304,7 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 			Set<PermissionType> derivedPrincipalPermissions = new HashSet<PermissionType>();
 			for (Permission t : principalPermissions) {
-				if(!registeredPermissions.containsKey(t.getResourceKey())) {
+				if (!registeredPermissions.containsKey(t.getResourceKey())) {
 					continue;
 				}
 				switch (strategy) {
@@ -423,12 +437,19 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	@Override
 	public Role updateRole(Role role, String name, List<Principal> principals,
-			List<Permission> permissions) throws AccessDeniedException {
+			List<Permission> permissions) throws AccessDeniedException,
+			ResourceChangeException {
 
 		assertPermission(RolePermission.UPDATE);
-
-		role.setName(name);
-
+		try {
+			Role anotherRole = getRole(name, role.getRealm());
+			if (!anotherRole.getId().equals(role.getId())) {
+				throw new ResourceChangeException(RESOURCE_BUNDLE,
+						"error.role.alreadyExists", name);
+			}
+		} catch (ResourceNotFoundException ne) {
+			role.setName(name);
+		}
 		repository.saveRole(role);
 
 		Set<Principal> unassignPrincipals = getEntitiesNotIn(principals,
