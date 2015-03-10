@@ -24,6 +24,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.resource.ResourceChangeException;
 
 @Service
@@ -77,7 +78,9 @@ public class SystemConfigurationServiceImpl extends AuthenticatedServiceImpl
 			throws AccessDeniedException, ResourceChangeException {
 		try {
 			assertPermission(ConfigurationPermission.UPDATE);
+			String oldValue = repository.getValue(resourceKey);
 			repository.setValue(resourceKey, value);
+			fireChangeEvent(resourceKey, oldValue, value);
 		} catch (AccessDeniedException e) {
 			fireChangeEvent(resourceKey, e);
 			throw e;
@@ -155,5 +158,10 @@ public class SystemConfigurationServiceImpl extends AuthenticatedServiceImpl
 			throws AccessDeniedException {
 		assertPermission(ConfigurationPermission.READ);
 		return repository.getPropertyCategories(group);
+	}
+
+	@Override
+	public void setValues(String resourceKey, String[] array) throws ResourceChangeException, AccessDeniedException {
+		setValue(resourceKey, ResourceUtils.implodeValues(array));
 	}
 }
