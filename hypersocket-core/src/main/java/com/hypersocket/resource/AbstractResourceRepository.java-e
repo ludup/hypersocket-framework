@@ -30,4 +30,6 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 	long getResourceCount(Realm realm, String searchPattern,
 			CriteriaConfiguration... configs);
 
+	long allRealmsResourcesCount();
+
 }
