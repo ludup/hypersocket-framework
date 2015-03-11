@@ -45,6 +45,7 @@ public class SecretKeyServiceImpl extends
 		try {
 			encryptionProvider = NssEncryptionProvider.getInstance();
 		} catch (Exception e) {
+			log.error("Could not create NSS encryption provider", e);
 			encryptionProvider = RsaEncryptionProvider.getInstance();
 		} 
 	}

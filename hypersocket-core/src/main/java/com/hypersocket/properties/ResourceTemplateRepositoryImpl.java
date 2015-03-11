@@ -658,4 +658,5 @@ public abstract class ResourceTemplateRepositoryImpl extends
 		}
 		return properties;
 	}
+
 }

@@ -27,7 +27,7 @@ public abstract class AbstractEntityRepositoryImpl<T extends AbstractEntity<K>,K
 	
 	@Override
 	public T getEntityById(Long id) {
-		return get("id", id, getEntityClass(), new DeletedCriteria(false));
+		return get("id", id, getEntityClass(), new DeletedDetachedCriteria(false));
 	}
 
 	@Override

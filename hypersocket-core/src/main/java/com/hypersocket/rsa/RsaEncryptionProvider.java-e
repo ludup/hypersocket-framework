@@ -45,7 +45,7 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 	
 	private void generateKeys() throws Exception {
 		KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-		gen.initialize(4096);
+		gen.initialize(2048);
 		KeyPair key = gen.generateKeyPair();
 		privateKey = key.getPrivate();
 		publicKey = key.getPublic();
@@ -91,7 +91,7 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 	}
 	
 	public int getLength() {
-		return 501;
+		return 245;
 	}
 	
 	@Override
@@ -114,7 +114,7 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 	public static void main(String[] args) throws Exception {
 		
 		System.out.println(URLEncoder.encode("=", "UTF-8"));
-		System.setProperty("hypersocket.conf", "/Users/lee/smartgit/hypersocket-framework/hypersocket-keystore/conf");
+		System.setProperty("hypersocket.conf", "/Users/lee");
 		
 		EncryptionProvider tk = RsaEncryptionProvider.getInstance();
 		
