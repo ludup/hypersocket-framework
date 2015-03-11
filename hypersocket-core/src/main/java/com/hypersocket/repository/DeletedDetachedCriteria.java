@@ -7,19 +7,19 @@
  ******************************************************************************/
 package com.hypersocket.repository;
 
-import org.hibernate.Criteria;
+import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 
-public class DeletedCriteria implements CriteriaConfiguration {
+public class DeletedDetachedCriteria implements DetachedCriteriaConfiguration {
 
 	boolean deleted;
 	
-	public DeletedCriteria(boolean deleted) {
+	public DeletedDetachedCriteria(boolean deleted) {
 		this.deleted = deleted;
 	}
 	
 	@Override
-	public void configure(Criteria criteria) {
+	public void configure(DetachedCriteria criteria) {
 		criteria.add(Restrictions.eq("deleted", deleted));
 
 	}
