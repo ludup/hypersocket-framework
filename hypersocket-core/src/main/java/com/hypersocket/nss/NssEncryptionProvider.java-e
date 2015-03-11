@@ -40,6 +40,10 @@ public class NssEncryptionProvider extends AbstractEncryptionProvider {
 
 	private NssEncryptionProvider() throws Exception {
 		
+		if(Boolean.getBoolean("hypersocket.disableNss")) {
+			throw new Exception("Nss is disabled");
+		}
+		
 		try {
 			openDatabase();
 			return;
@@ -106,9 +110,10 @@ public class NssEncryptionProvider extends AbstractEncryptionProvider {
 		
 		if(cryptoProvider==null) {
 			
+			@SuppressWarnings("unchecked")
 			Class<Provider> clz = (Class<Provider>) Class.forName("sun.security.pkcs11.SunPKCS11");
-			Constructor c = clz.getConstructor(String.class);
-			cryptoProvider  = (Provider)c.newInstance(configName);
+			Constructor<Provider> c = clz.getConstructor(String.class);
+			cryptoProvider  = c.newInstance(configName);
 		}
 		
 		log.info("Loading NSS keystore");
@@ -200,6 +205,11 @@ public class NssEncryptionProvider extends AbstractEncryptionProvider {
 	@Override
 	public boolean supportsSecretKeyStorage() {
 		return true;
+	}
+	
+	@Override
+	public Provider getProvider() {
+		return cryptoProvider;
 	}
 	
 	@Override

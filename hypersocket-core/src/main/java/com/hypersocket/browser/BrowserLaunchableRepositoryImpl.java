@@ -170,6 +170,7 @@ public class BrowserLaunchableRepositoryImpl extends
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)
 	public List<BrowserLaunchable> getPersonalResources(Principal principal) {
