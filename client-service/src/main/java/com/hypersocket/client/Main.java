@@ -102,8 +102,9 @@ public class Main {
 				boolean isExistingClient = false;
 				// Already running, see if it is RMI
 				try {
+					@SuppressWarnings("unused")
 					Registry r = LocateRegistry.getRegistry(port);
-						isExistingClient = true;
+					isExistingClient = true;
 				}
 				catch(RemoteException re) {
 					/* Port is in use, but not an RMI server, so consider it unusable and choose
