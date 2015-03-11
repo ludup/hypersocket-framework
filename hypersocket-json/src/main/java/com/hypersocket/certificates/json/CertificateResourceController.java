@@ -43,6 +43,7 @@ import com.hypersocket.certs.InvalidPassphraseException;
 import com.hypersocket.certs.X509CertificateUtils;
 import com.hypersocket.certs.json.CertificateStatus;
 import com.hypersocket.i18n.I18N;
+import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -334,11 +335,11 @@ public class CertificateResourceController extends ResourceController {
 	}
 	
 	@AuthenticationRequired
-	@RequestMapping(value = "certificates/exportPfx/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@RequestMapping(value = "certificates/exportPfx/{id}", method = RequestMethod.POST, produces = {"application/json"})
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
-	public byte[] exportPfx(HttpServletRequest request,
-			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
+	public RequestStatus exportPfx(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable Long id,@RequestParam(value = "passphrase") String passphrase) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
@@ -366,26 +367,45 @@ public class CertificateResourceController extends ResourceController {
 						X509CertificateUtils.loadKeyPairFromPEM(new ByteArrayInputStream(resource.getPrivateKey().getBytes("UTF-8")), "changeit".toCharArray()), 
 						certChain.toArray(new X509Certificate[0]),
 						"hypersocket", 
-						"changeit".toCharArray());
-				
-				response.setHeader("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(resource.getName().replace(' ', '_'), "UTF-8") + ".pfx\"");
-				
+						passphrase.toCharArray());
+							
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
-				keystore.store(out, "changeit".toCharArray());
-				
-				return out.toByteArray();
+				keystore.store(out, passphrase.toCharArray());
+				request.getSession().setAttribute("pfx", out.toByteArray());
+				return new RequestStatus(true);
 			} catch (Exception e) {
-				try {
-					response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.ordinal());
-				} catch (IOException e1) {
-				}
-				return null;
+				return new RequestStatus(false, e.getMessage());
 			}
 
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "certificates/downloadPfx/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public byte[] exportPfx(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException,ResourceNotFoundException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			response.setHeader("Content-Disposition", "attachment; filename=\""
+					+ URLEncoder.encode(resourceService.getResourceById(id).getName().replace(' ', '_'), "UTF-8") + ".pfx\"");
+			return (byte[]) request.getSession().getAttribute("pfx");
+		} catch (Exception e) {
+			try {
+				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.ordinal());
+			} catch (IOException e1) {
+			}
+			return null;
+		} finally {
+			clearAuthenticatedContext();
+		}	
+	}
+	
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/exportPem/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
