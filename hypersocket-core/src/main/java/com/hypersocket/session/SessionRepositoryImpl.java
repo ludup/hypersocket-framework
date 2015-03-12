@@ -50,6 +50,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		session.setOsVersion(osVersion);
 		session.setAuthenticationScheme(scheme);
 		session.setTimeout(timeout);
+		session.system = false;
 		save(session);
 		return session;
 	}
