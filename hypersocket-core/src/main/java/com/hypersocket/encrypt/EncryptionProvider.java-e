@@ -1,6 +1,7 @@
 package com.hypersocket.encrypt;
 
 import java.io.IOException;
+import java.security.Provider;
 
 import javax.crypto.SecretKey;
 
@@ -17,5 +18,7 @@ public interface EncryptionProvider {
 	void createSecretKey(String reference) throws IOException;
 
 	SecretKey getSecretKey(String reference) throws IOException;
+
+	Provider getProvider();
 
 }

@@ -1,47 +1,65 @@
 package com.hypersocket.encrypt;
 
 import java.io.IOException;
-import java.security.Security;
 
 import javax.annotation.PostConstruct;
 import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.nss.NssEncryptionProvider;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.rsa.RsaEncryptionProvider;
 import com.hypersocket.secret.SecretKeyResource;
 import com.hypersocket.secret.SecretKeyService;
 
 @Component
 public class DefaultEncryptor implements Encryptor {
 
+	static Logger log = LoggerFactory.getLogger(DefaultEncryptor.class);
+	
 	@Autowired
 	SecretKeyService secretKeyService;
 
+	EncryptionProvider encryptionProvider;
+	
+	@PostConstruct
+	private void postConstruct() throws Exception {
+	
+		try {
+			encryptionProvider = NssEncryptionProvider.getInstance();
+		} catch (Exception e) {
+			log.error("Could not create NSS encryption provider", e);
+			encryptionProvider = RsaEncryptionProvider.getInstance();
+		} 
+	}
+	
 	@Override
 	public String encryptString(String reference, String data)
 			throws IOException {
 
 		try {
+			
 			SecretKeyResource key;
-
+			
 			try {
 				key = secretKeyService.getResourceByName(reference);
 			} catch (ResourceNotFoundException e) {
 				key = secretKeyService.createSecretKey(reference);
 			}
 
-			SecretKeySpec secretKeySpec = new SecretKeySpec(
-					secretKeyService.generateSecreyKeyData(key), "AES");
+			SecretKey secretKeySpec = new SecretKeySpec(secretKeyService.generateSecreyKeyData(key), "AES");
 			byte[] iv = secretKeyService.generateIvData(key);
 
 			Cipher aesCipherForEncryption = Cipher
-					.getInstance("AES/CTR/PKCS7PADDING");
+					.getInstance("AES/CTR/PKCS7PADDING", "BC");
 
 			aesCipherForEncryption.init(Cipher.ENCRYPT_MODE, secretKeySpec,
 					new IvParameterSpec(iv));
@@ -57,6 +75,7 @@ public class DefaultEncryptor implements Encryptor {
 
 	}
 
+	
 	@Override
 	public String decryptString(String reference, String data)
 			throws IOException {
@@ -64,12 +83,11 @@ public class DefaultEncryptor implements Encryptor {
 			SecretKeyResource key = secretKeyService
 					.getResourceByName(reference);
 
-			SecretKeySpec secretKeySpec = new SecretKeySpec(
-					secretKeyService.generateSecreyKeyData(key), "AES");
+			SecretKey secretKeySpec = new SecretKeySpec(secretKeyService.generateSecreyKeyData(key), "AES");
 			byte[] iv = secretKeyService.generateIvData(key);
 
 			Cipher aesCipherForDecryption = Cipher
-					.getInstance("AES/CTR/PKCS7PADDING");
+					.getInstance("AES/CTR/PKCS7PADDING", "BC");
 
 			aesCipherForDecryption.init(Cipher.DECRYPT_MODE, secretKeySpec,
 					new IvParameterSpec(iv));

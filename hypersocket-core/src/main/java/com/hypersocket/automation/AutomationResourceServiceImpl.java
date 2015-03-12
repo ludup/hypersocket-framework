@@ -17,7 +17,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.auth.InvalidAuthenticationContext;
 import com.hypersocket.automation.events.AutomationResourceCreatedEvent;
 import com.hypersocket.automation.events.AutomationResourceDeletedEvent;
 import com.hypersocket.automation.events.AutomationResourceEvent;

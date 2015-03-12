@@ -10,6 +10,7 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -41,6 +42,10 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 		} catch(Exception e) {
 			generateKeys();
 		}
+	}
+	
+	public Provider getProvider() {
+		return null;
 	}
 	
 	private void generateKeys() throws Exception {
