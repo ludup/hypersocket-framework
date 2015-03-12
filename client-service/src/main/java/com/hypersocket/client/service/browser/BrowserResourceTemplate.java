@@ -6,9 +6,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.hypersocket.client.NetworkResource;
 import com.hypersocket.client.i18n.I18N;
 import com.hypersocket.utils.IPAddressValidator;
@@ -17,8 +14,6 @@ public class BrowserResourceTemplate implements Serializable {
 
 	private static final long serialVersionUID = -7338245578258667006L;
 
-	private static Logger log = LoggerFactory.getLogger(BrowserResourceTemplate.class);
-	
 	Long id;
 	String name;
 	String launchUrl;

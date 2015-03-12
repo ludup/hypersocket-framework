@@ -7,8 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.jboss.netty.handler.ipfilter.IpFilterRule;
 import org.jboss.netty.handler.ipfilter.IpSubnetFilterRule;
@@ -23,7 +21,6 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.config.ConfigurationChangedEvent;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.resource.ResourceChangeException;
 import com.mysql.jdbc.StringUtils;
 
