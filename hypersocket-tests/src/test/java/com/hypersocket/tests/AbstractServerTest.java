@@ -44,6 +44,7 @@ import com.hypersocket.json.JsonRole;
 import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.json.JsonSession;
 import com.hypersocket.netty.Main;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.permissions.json.RoleUpdate;
 import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.json.CredentialsUpdate;
@@ -618,6 +619,17 @@ public class AbstractServerTest {
 				newRoleJson, JsonRoleResourceStatus.class);
 		debugJSON(newRoleJson);
 		return newRoleJsonResourceStatus;
+	}
+	
+	protected static JsonRole getRole(String roleName) throws Exception {
+		
+		// role.setPermissions(new Long[0]);
+		String newRoleJson = doGet("/hypersocket/api/roles/byName/"+roleName);
+		JsonRoleResourceStatus newRoleJsonResourceStatus = mapper.readValue(
+				newRoleJson, JsonRoleResourceStatus.class);
+		debugJSON(newRoleJson);
+		return mapper.readValue(
+				newRoleJson, JsonRole.class);
 
 	}
 
@@ -713,9 +725,25 @@ public class AbstractServerTest {
 		JsonRoleResourceStatus jsonCreateRole = createRole("newRole",
 				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
+		resetEveryonePermission();
 		logoff();
 		logon("System", "user", "user");
 
+	}
+	
+	protected static void resetEveryonePermission() throws Exception{
+		JsonRole jsonRole =  getRole("Everyone"); 
+		RoleUpdate role = new RoleUpdate();
+		role.setId(jsonRole.getId());
+		role.setName("Everyone");
+		role.setPermissions(new Long[0]);
+		role.setUsers(new Long[0]);
+		role.setGroups(new Long[0]);
+
+		String newRoleJson = doPostJson("/hypersocket/api/roles/role", role);
+		JsonRoleResourceStatus newRoleJsonResourceStatus = mapper.readValue(
+				newRoleJson, JsonRoleResourceStatus.class);
+		debugJSON(newRoleJson);
 	}
 
 	public static JsonSession getSession() {

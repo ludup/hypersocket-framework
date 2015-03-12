@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.realm.GroupPermission;
+import com.hypersocket.realm.ProfilePermission;
 import com.hypersocket.realm.UserPermission;
 
 public class WithDelegatedPermissionTests extends AbstractPermissionsTest {
@@ -19,6 +20,7 @@ public class WithDelegatedPermissionTests extends AbstractPermissionsTest {
 				AuthenticationPermission.LOGON.getResourceKey(),
 				UserPermission.CREATE.getResourceKey(),
 				UserPermission.READ.getResourceKey(),
+				ProfilePermission.READ.getResourceKey(),
 				UserPermission.UPDATE.getResourceKey(),
 				UserPermission.DELETE.getResourceKey(),
 				GroupPermission.CREATE.getResourceKey(),

@@ -1,20 +1,18 @@
 package com.hypersocket.tests.json.menu;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 import com.hypersocket.json.JsonMenu;
 
 public class WithDelegatedPermissionTests extends AbstractMenuTest {
-
+	
 	@Test
-	public void testAccessMenuAvailability() throws Exception {
+	public void testCertificateMenuAvailable() throws Exception {
 		String json = doGet("/hypersocket/api/menus");
 		debugJSON(json);
 		JsonMenu menus = getMapper().readValue(json, JsonMenu.class);
-		assertNotNull(menus);
 		JsonMenu systemMenu = null;
 		for (JsonMenu menu : menus.getMenus()) {
 			if (menu.getId().equals("system")) {
@@ -23,48 +21,49 @@ public class WithDelegatedPermissionTests extends AbstractMenuTest {
 			}
 		}
 		assertNotNull(systemMenu);
-		JsonMenu accessMenu = null;
+		JsonMenu configurationMenu = null;
 		for (JsonMenu menu : systemMenu.getMenus()) {
-			if (menu.getId().equals("accessControl")) {
-				accessMenu = menu;
+			if (menu.getId().equals("configuration")) {
+				configurationMenu = menu;
 				break;
 			}
 		}
-		assertNotNull(accessMenu);
+		assertNotNull(configurationMenu);
+		JsonMenu certificatesMenu = null;
+		for (JsonMenu menu : configurationMenu.getMenus()) {
+			if (menu.getId().equals("certificates")) {
+				certificatesMenu = menu;
+				break;
+			}
+		}
+		assertNotNull(certificatesMenu);
 	}
-
+	
 	@Test
-	public void testForUserCreation() throws Exception {
+	public void testMyResourcesMenuAvailable() throws Exception {
 		String json = doGet("/hypersocket/api/menus");
 		debugJSON(json);
 		JsonMenu menus = getMapper().readValue(json, JsonMenu.class);
-		assertNotNull(menus);
-		JsonMenu systemMenu = null;
+		JsonMenu personalMenu = null;
 		for (JsonMenu menu : menus.getMenus()) {
-			if (menu.getId().equals("system")) {
-				systemMenu = menu;
+			if (menu.getId().equals("personal")) {
+				personalMenu = menu;
 				break;
 			}
 		}
-		assertNotNull(systemMenu);
-		JsonMenu accessMenu = null;
-		for (JsonMenu menu : systemMenu.getMenus()) {
-			if (menu.getId().equals("accessControl")) {
-				accessMenu = menu;
+		assertNotNull(personalMenu);
+		JsonMenu resourceMenu = null;
+		for (JsonMenu menu : personalMenu.getMenus()) {
+			if (menu.getId().equals("myResources")) {
+				resourceMenu = menu;
 				break;
 			}
 		}
-		assertNotNull(accessMenu);
-		JsonMenu userMenu = null;
-		for (JsonMenu menu : accessMenu.getMenus()) {
-			if (menu.getId().equals("users")) {
-				userMenu = menu;
-				break;
-			}
-		}
-		assertNotNull(userMenu);
-		assertTrue(userMenu.isCanCreate());
-
+		assertNotNull(resourceMenu);
+		
 	}
+		
+
+	
 
 }

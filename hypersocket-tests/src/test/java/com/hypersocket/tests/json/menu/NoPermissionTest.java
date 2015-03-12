@@ -10,7 +10,7 @@ import com.hypersocket.json.JsonMenu;
 public class NoPermissionTest extends AbstractMenuTest {
 
 	@Test
-	public void testConfigurationMenuNotAvailable() throws Exception {
+	public void testLicenseMenuNotAvailable() throws Exception {
 		String json = doGet("/hypersocket/api/menus");
 		debugJSON(json);
 		JsonMenu menus = getMapper().readValue(json, JsonMenu.class);
@@ -22,14 +22,14 @@ public class NoPermissionTest extends AbstractMenuTest {
 			}
 		}
 		assertNotNull(systemMenu);
-		JsonMenu configMenu = null;
+		JsonMenu licenseMenu = null;
 		for (JsonMenu menu : systemMenu.getMenus()) {
-			if (menu.getId().equals("configuration")) {
-				configMenu = menu;
+			if (menu.getId().equals("licenses")) {
+				licenseMenu = menu;
 				break;
 			}
 		}
-		assertNull(configMenu);
+		assertNull(licenseMenu);
 	}
 
 	@Test
@@ -48,7 +48,7 @@ public class NoPermissionTest extends AbstractMenuTest {
 	}
 
 	@Test
-	public void testPersonalMenusNotAvailable() throws Exception {
+	public void testPersonalMenusAvailable() throws Exception {
 		String json = doGet("/hypersocket/api/menus");
 		debugJSON(json);
 		JsonMenu menus = getMapper().readValue(json, JsonMenu.class);
@@ -59,40 +59,31 @@ public class NoPermissionTest extends AbstractMenuTest {
 				break;
 			}
 		}
-		assertNull(personalMenu);
+		assertNotNull(personalMenu);
 
 	}
 
 	@Test
-	public void testGroupMenuNotAvailable() throws Exception {
+	public void testProfileMenuNotAvailable() throws Exception{
 		String json = doGet("/hypersocket/api/menus");
 		debugJSON(json);
 		JsonMenu menus = getMapper().readValue(json, JsonMenu.class);
-		assertNotNull(menus);
-		JsonMenu systemMenu = null;
+		JsonMenu personalMenu = null;
 		for (JsonMenu menu : menus.getMenus()) {
-			if (menu.getId().equals("system")) {
-				systemMenu = menu;
+			if (menu.getId().equals("personal")) {
+				personalMenu = menu;
 				break;
 			}
 		}
-		assertNotNull(systemMenu);
-		JsonMenu accessMenu = null;
-		for (JsonMenu menu : systemMenu.getMenus()) {
-			if (menu.getId().equals("accessControl")) {
-				accessMenu = menu;
+		assertNotNull(personalMenu);
+		JsonMenu profileMenu = null;
+		for (JsonMenu menu : personalMenu.getMenus()) {
+			if (menu.getId().equals("profile")) {
+				profileMenu = menu;
 				break;
 			}
 		}
-		assertNotNull(accessMenu);
-		JsonMenu groupsMenu = null;
-		for (JsonMenu menu : accessMenu.getMenus()) {
-			if (menu.getId().equals("groups")) {
-				groupsMenu = menu;
-				break;
-			}
-		}
-		assertNull(groupsMenu);
+		assertNull(profileMenu);
 	}
 
 }
