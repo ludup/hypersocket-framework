@@ -6,7 +6,6 @@ import java.net.URISyntaxException;
 import org.apache.http.client.ClientProtocolException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -77,7 +76,6 @@ public class NoPermissionTests extends AbstractServerTest {
 				+ json.getResources()[0].getId());
 	}
 
-	@Ignore //current user gets template due to Everyone role 
 	@Test(expected = ClientProtocolException.class)
 	public void tryNoPermissionCurrentRealmUserTemplate()
 			throws ClientProtocolException, IOException {
