@@ -15,7 +15,7 @@ public class AbstractConfigurationTest extends AbstractServerTest {
 
 	@BeforeClass
 	public static void init() throws Exception {
-		logon("System", "admin", "Password123?");
+		/*logon("System", "admin", "Password123?");
 		JsonResourceStatus jsonCreateUser = createUser("System", "user",
 				"user", false);
 		changePassword("user", jsonCreateUser);
@@ -26,7 +26,9 @@ public class AbstractConfigurationTest extends AbstractServerTest {
 				permissions);
 		addUserToRole(jsonCreateRole.getResource(), jsonCreateUser);
 		logoff();
-		logon("System", "user", "user");
+		logon("System", "user", "user");*/
+		logOnNewUser(new String[] { AuthenticationPermission.LOGON
+				.getResourceKey(),ConfigurationPermission.READ.getResourceKey()});
 	}
 
 	@AfterClass

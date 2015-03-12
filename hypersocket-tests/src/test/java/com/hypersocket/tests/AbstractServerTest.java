@@ -60,7 +60,7 @@ public class AbstractServerTest {
 	static File tmp;
 	static Main main;
 	static BasicCookieStore cookieStore;
-	static ObjectMapper mapper = new ObjectMapper();
+	protected static ObjectMapper mapper = new ObjectMapper();
 	protected static Long adminId;
 
 	protected static JsonSession session;
