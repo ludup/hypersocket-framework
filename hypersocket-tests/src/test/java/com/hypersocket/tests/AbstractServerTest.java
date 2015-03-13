@@ -44,7 +44,6 @@ import com.hypersocket.json.JsonRole;
 import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.json.JsonSession;
 import com.hypersocket.netty.Main;
-import com.hypersocket.permissions.Role;
 import com.hypersocket.permissions.json.RoleUpdate;
 import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.json.CredentialsUpdate;
@@ -622,11 +621,7 @@ public class AbstractServerTest {
 	}
 	
 	protected static JsonRole getRole(String roleName) throws Exception {
-		
-		// role.setPermissions(new Long[0]);
 		String newRoleJson = doGet("/hypersocket/api/roles/byName/"+roleName);
-		JsonRoleResourceStatus newRoleJsonResourceStatus = mapper.readValue(
-				newRoleJson, JsonRoleResourceStatus.class);
 		debugJSON(newRoleJson);
 		return mapper.readValue(
 				newRoleJson, JsonRole.class);
