@@ -3,14 +3,14 @@
 	<propertyCategory resourceKey="category.email.message"
 		resourceBundle="TriggerResourceService" weight="1000">
 		<property resourceKey="email.subject" inputType="text"
-			weight="80" defaultValue="" size="50" />
+			weight="80" defaultValue="" size="50" allowEmpty="false" errorResourceKey="error.subjectRequired"/>
 		<property resourceKey="email.body" inputType="textarea" rows="10"
-			cols="100" maxlength="1024" defaultValue="" weight="100" />
+			cols="100" maxlength="1024" defaultValue="" weight="100" allowEmpty="false" errorResourceKey="error.bodyRequired"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email.delivery"
 		resourceBundle="TriggerResourceService" weight="2000">
 		<property resourceKey="email.to" inputType="multipleTextInput"
-			weight="50" defaultValue="" />
+			weight="50" defaultValue="" allowEmpty="false" validateAll="email" errorResourceKey="error.toRequired"/>
 		<property resourceKey="email.cc" inputType="multipleTextInput"
 			weight="60" defaultValue="" />
 		<property resourceKey="email.bcc" inputType="multipleTextInput"
