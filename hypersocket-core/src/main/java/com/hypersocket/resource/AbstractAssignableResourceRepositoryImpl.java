@@ -281,18 +281,39 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@Override
 	public void deleteResource(T resource) throws ResourceChangeException {
+		beforeDelete(resource);
 		delete(resource);
+		afterDelete(resource);
 	}
 
+	protected void beforeDelete(T resource) throws ResourceChangeException {
+		
+	}
+	
+	protected void afterDelete(T resource) throws ResourceChangeException {
+		
+	}
+	
+	protected void beforeSave(T resource, Map<String,String> properties) throws ResourceChangeException {
+		
+	}
+	
+	protected void afterSave(T resource, Map<String,String> properties) throws ResourceChangeException {
+		
+	}
+	
 	@Override
 	public void saveResource(T resource, Map<String, String> properties) throws ResourceChangeException {
 
+		beforeSave(resource, properties);
 		for (Map.Entry<String, String> e : properties.entrySet()) {
 			if (hasPropertyTemplate(e.getKey())) {
 				setValue(resource, e.getKey(), e.getValue());
 			}
 		}
 		save(resource);
+		
+		afterSave(resource, properties);
 	}
 
 	@SuppressWarnings("unchecked")

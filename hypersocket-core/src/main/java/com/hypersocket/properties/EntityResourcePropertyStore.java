@@ -121,7 +121,11 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 				}
 				if(resourceServices.containsKey(clz)) {
 					try {
-						m.invoke(resource, resourceServices.get(clz).getResourceById(Long.parseLong(value)));
+						if(StringUtils.isEmpty(value)) {
+							m.invoke(resource, (Object)null);
+						} else {
+							m.invoke(resource, resourceServices.get(clz).getResourceById(Long.parseLong(value)));
+						}
 					} catch (Exception e) {
 						log.error("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
 						throw new IllegalStateException("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
@@ -130,7 +134,11 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 				}
 				if(assignableServices.containsKey(clz)) {
 					try {
-						m.invoke(resource, assignableServices.get(clz).getResourceById(Long.parseLong(value)));
+						if(StringUtils.isEmpty(value)) {
+							m.invoke(resource, (Object)null);
+						} else {
+							m.invoke(resource, assignableServices.get(clz).getResourceById(Long.parseLong(value)));
+						}
 					} catch (Exception e) {
 						log.error("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
 						throw new IllegalStateException("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
