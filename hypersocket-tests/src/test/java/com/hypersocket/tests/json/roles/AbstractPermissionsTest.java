@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.springframework.util.Assert;
 
 import com.hypersocket.auth.AuthenticationPermission;
-import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.JsonRoleResourceStatus;
 import com.hypersocket.permissions.json.RoleUpdate;
 import com.hypersocket.tests.AbstractServerTest;
@@ -46,7 +45,7 @@ public class AbstractPermissionsTest extends AbstractServerTest {
 	@Test
 	public void tryCreateRolePost() throws Exception {
 		RoleUpdate role = new RoleUpdate();
-		role.setName("newRole");
+		role.setName("newTestRole");
 		role.setPermissions(new Long[0]);
 		Long[] permissions = { getPermissionId(AuthenticationPermission.LOGON
 				.getResourceKey()) };
@@ -55,13 +54,13 @@ public class AbstractPermissionsTest extends AbstractServerTest {
 		role.setUsers(new Long[0]);
 		role.setGroups(new Long[0]);
 
-		JsonResourceStatus json = getMapper().readValue(
+		JsonRoleResourceStatus json = getMapper().readValue(
 				doPostJson("/hypersocket/api/roles/role", role),
-				JsonResourceStatus.class);
+				JsonRoleResourceStatus.class);
 
 		assertTrue(json.isSuccess());
 		Assert.notNull(json.getResource().getId());
-		assertEquals("newRole", json.getResource().getName());
+		assertEquals("newTestRole", json.getResource().getName());
 	}
 
 	@Test
