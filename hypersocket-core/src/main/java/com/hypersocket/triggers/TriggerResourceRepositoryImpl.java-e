@@ -112,33 +112,12 @@ public class TriggerResourceRepositoryImpl extends
 				}
 
 				criteria.add(Restrictions.eq("realm", event.getCurrentRealm()));
+				criteria.add(Restrictions.isNull("parentAction"));
 				criteria.add(Restrictions.in("event", event.getResourceKeys()));
 			}
 		});
 
 	}
-
-	// @Override
-	// public void assignAction(TriggerResource trigger, TriggerAction action,
-	// Map<String, String> properties) {
-	//
-	// // Save the action
-	// action.setTrigger(trigger);
-	// save(action);
-	//
-	// ResourceTemplateRepository repository = registeredRepository.get(action
-	// .getResourceKey());
-	//
-	// // Save properties
-	// if (properties != null) {
-	// for (Map.Entry<String, String> e : properties.entrySet()) {
-	// repository.setValue(action, e.getKey(), e.getValue());
-	// }
-	// }
-	//
-	// refresh(action);
-	// refresh(trigger);
-	// }
 
 	@Override
 	public TriggerAction getActionById(Long id) {
@@ -159,6 +138,11 @@ public class TriggerResourceRepositoryImpl extends
 				criteria.add(Restrictions.eq("resourceKey", resourceKey));
 			}
 		});
+	}
+
+	@Override
+	public TriggerAction getActionByPostTriggerId(TriggerResource id) {
+		return get("postExecutionTrigger", id, TriggerAction.class);
 	}
 
 }

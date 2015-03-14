@@ -34,6 +34,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
+import com.hypersocket.repository.DeletedDetachedCriteria;
 import com.hypersocket.session.Session;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
@@ -264,12 +265,12 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@Override
 	public T getResourceByName(String name, Realm realm) {
-		return get("name", name, getResourceClass(), new DeletedCriteria(false), new RealmRestriction(realm));
+		return get("name", name, getResourceClass(), new DeletedDetachedCriteria(false), new RealmRestriction(realm));
 	}
 
 	@Override
 	public T getResourceByName(String name, Realm realm, boolean deleted) {
-		return get("name", name, getResourceClass(), new DeletedCriteria(
+		return get("name", name, getResourceClass(), new DeletedDetachedCriteria(
 				deleted), new RealmRestriction(realm));
 	}
 
@@ -280,18 +281,39 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@Override
 	public void deleteResource(T resource) throws ResourceChangeException {
+		beforeDelete(resource);
 		delete(resource);
+		afterDelete(resource);
 	}
 
+	protected void beforeDelete(T resource) throws ResourceChangeException {
+		
+	}
+	
+	protected void afterDelete(T resource) throws ResourceChangeException {
+		
+	}
+	
+	protected void beforeSave(T resource, Map<String,String> properties) throws ResourceChangeException {
+		
+	}
+	
+	protected void afterSave(T resource, Map<String,String> properties) throws ResourceChangeException {
+		
+	}
+	
 	@Override
 	public void saveResource(T resource, Map<String, String> properties) throws ResourceChangeException {
 
+		beforeSave(resource, properties);
 		for (Map.Entry<String, String> e : properties.entrySet()) {
 			if (hasPropertyTemplate(e.getKey())) {
 				setValue(resource, e.getKey(), e.getValue());
 			}
 		}
 		save(resource);
+		
+		afterSave(resource, properties);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -326,6 +348,12 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 				length, sorting, ArrayUtils.addAll(configs,
 						new RoleSelectMode(), new RealmAndDefaultRealmCriteria(
 								realm)));
+	}
+	
+	
+	@Override
+	public long allRealmsResourcesCount() {
+		return getCount(getResourceClass(), new DeletedCriteria(false));
 	}
 
 	@Override

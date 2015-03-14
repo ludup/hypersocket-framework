@@ -1,5 +1,6 @@
 package com.hypersocket.triggers.actions.ip;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,10 +18,11 @@ import org.springframework.stereotype.Component;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
-import com.hypersocket.server.HypersocketServer;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -44,7 +46,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 	BlockIPTaskRepository repository; 
 	
 	@Autowired
-	HypersocketServer server;
+	IPRestrictionService ipRestrictionService;
 	
 	@Autowired
 	TriggerResourceService triggerService; 
@@ -68,6 +70,8 @@ public class BlockIPTask extends AbstractTaskProvider {
 		taskService.registerTaskProvider(this);
 		
 		eventService.registerEvent(BlockedIPResult.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(BlockedIPTempResult.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(BlockedIPPermResult.class, RESOURCE_BUNDLE);
 	}
 	
 	@Override
@@ -89,10 +93,10 @@ public class BlockIPTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
 			throws ValidationException {
 		
-		String ipAddress = processTokenReplacements(repository.getValue(task, "block.ip"), event);
+		String ipAddress = processTokenReplacements(repository.getValue(task, "block.ip"), events);
 		int val = repository.getIntValue(task, "block.length");
 		try {
 			
@@ -100,53 +104,62 @@ public class BlockIPTask extends AbstractTaskProvider {
 				log.info("Blocking IP address "  + ipAddress);
 			}
 			
-			if(blockedIps.contains(ipAddress) && blockedIPUnblockSchedules.containsKey(ipAddress)) {
+			if(ipRestrictionService.isBlockedAddress(ipAddress)) {
 				if(log.isInfoEnabled()) {
-					log.info(ipAddress + " is already blocked. Rescheduling to new parameters");
+					log.info(ipAddress + " is already blocked.");
 				}
 				
-				String scheduleId = blockedIPUnblockSchedules.get(ipAddress);
-				
-				if(log.isInfoEnabled()) {
-					log.info("Cancelling existing schedule for " + ipAddress);
+				if(val > 0) {
+					return new BlockedIPTempResult(this, new IOException(ipAddress + " is already blocked"), currentRealm, task, ipAddress, val);
+				} else {
+					return new BlockedIPPermResult(this, new IOException(ipAddress + " is already blocked"), currentRealm, task, ipAddress);
 				}
 				
-				try {
-					schedulerService.cancelNow(scheduleId);
-				} catch (Exception e) {
-					log.error("Failed to cancel unblock schedule for " + ipAddress, e);
+				
+			} else {
+			
+				ipRestrictionService.blockIPAddress(ipAddress, val==0);
+				
+				if(log.isInfoEnabled()) {
+					log.info("Blocked IP address " + ipAddress);
+				}
+				
+				blockedIps.add(ipAddress);
+				
+				if(val > 0) {
+					
+					if(log.isInfoEnabled()) {
+						log.info("Scheduling unblock for IP address " + ipAddress + " in " + val + " minutes");
+					}
+					
+					PermissionsAwareJobData data = new PermissionsAwareJobData(currentRealm);
+					data.put("addr", ipAddress);
+					
+					String scheduleId = schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000, 0);
+					
+					blockedIPUnblockSchedules.put(ipAddress, scheduleId);
+					
+					return new BlockedIPTempResult(this, currentRealm, task, ipAddress, val);
+				} else {
+					
+					return new BlockedIPPermResult(this, currentRealm, task, ipAddress);
 				}
 				
 			}
-			
-			server.blockAddress(ipAddress);
-			
-			if(log.isInfoEnabled()) {
-				log.info("Blocked IP address " + ipAddress);
-			}
-			
-			blockedIps.add(ipAddress);
-			
-			if(val > 0) {
-				
-				if(log.isInfoEnabled()) {
-					log.info("Scheduling unblock for IP address " + ipAddress + " in " + val + " minutes");
-				}
-				
-				PermissionsAwareJobData data = new PermissionsAwareJobData(event.getCurrentRealm());
-				data.put("addr", ipAddress);
-				
-				String scheduleId = schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000, 0);
-				
-				blockedIPUnblockSchedules.put(ipAddress, scheduleId);
-			}
-			return new BlockedIPResult(this, event.getCurrentRealm(), task, ipAddress, val);
 		} catch (UnknownHostException | SchedulerException e) {
 			log.error("Failed to fully process block IP request for " + ipAddress, e);
-			return new BlockedIPResult(this, e, event.getCurrentRealm(), task, ipAddress, val);
+			if(val > 0) {
+				return new BlockedIPTempResult(this, e, currentRealm, task, ipAddress, val);
+			} else {
+				return new BlockedIPPermResult(this, e, currentRealm, task, ipAddress);
+			}
 		}
 	}
-
+	
+	public String[] getResultResourceKeys() {
+		return new String[] { BlockedIPTempResult.EVENT_RESOURCE_KEY, BlockedIPPermResult.EVENT_RESOURCE_KEY };
+	}
+	
 	@Override
 	public ResourceTemplateRepository getRepository() {
 		return repository;

@@ -14,6 +14,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,6 +31,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
 
+import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +53,8 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	private SessionFactory sessionFactory;
 	
 	List<UpgradeServiceListener> listeners = new ArrayList<UpgradeServiceListener>();
+	
+	String databaseType = null;
 	
 	public UpgradeServiceImpl() {
 		manager = new ScriptEngineManager();
@@ -77,6 +83,31 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			log.info("Have upgrade scripts " + Arrays.asList(scripts));
 		}
 		this.scripts = scripts;
+	}
+	
+	public String getDatabaseType() {
+		if(databaseType!=null) {
+			return databaseType;
+		}
+		try {
+			Connection connection = sessionFactory.getCurrentSession().connection();
+			DatabaseMetaData metaData = connection.getMetaData();
+			databaseType = metaData.getDatabaseProductName();
+			if(databaseType.equals("Apache Derby")) {
+				return databaseType = "derby";
+			} else if(databaseType.equals("MySQL")) {
+				return databaseType = "mysql";
+			} else if(databaseType.equals("PostgreSQL")) {
+				return databaseType = "postgres";
+			} else {
+				log.info(databaseType + " is not a supported database type");
+			}
+		} catch (HibernateException e) {
+			log.error("Could not determine database type", e);
+		} catch (SQLException e) {
+			log.error("Could not determine database type", e);
+		}
+		return "unknown";
 	}
 
 	public final Resource[] getScripts() {
@@ -171,7 +202,9 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 		if(log.isInfoEnabled()) {
 			log.info("Executing script " + script);
 		}
-		if (script.getPath().endsWith(".sql")) {
+		
+		String dbType = getDatabaseType();
+		if (script.getPath().endsWith("_" + dbType + ".sql")) {
 			BufferedReader r = new BufferedReader(new InputStreamReader(script.openStream()));
 			try {
 				// TODO this is a bit simplistic, all commands must be on same

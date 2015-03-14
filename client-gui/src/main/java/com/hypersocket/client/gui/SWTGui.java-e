@@ -121,7 +121,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 	}
 
 	@Override
-	public void unregistered() throws RemoteException {
+	public void unregistered() {
 		registrations--;
 		setOnlineState(false);
 		showPopupMessage("Disconnected from local Hypersocket service",
@@ -312,62 +312,6 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 		}
 	}
 
-	/*private void configureGrowl() throws IOException {
-		GntpApplicationInfo info = Gntp.appInfo("Test")
-				.icon(getImage(APPLICATION_ICON)).build();
-		notif1 = Gntp.notificationInfo(info, "Notify 1")
-				.icon(getImage(APPLICATION_ICON)).build();
-
-		client = Gntp.client(info).listener(new GntpListener() {
-			@Override
-			public void onRegistrationSuccess() {
-				log.info("Registered");
-			}
-
-			@Override
-			public void onNotificationSuccess(GntpNotification notification) {
-				log.info("Notification success: " + notification);
-			}
-
-			@Override
-			public void onClickCallback(GntpNotification notification) {
-				log.info("Click callback: " + notification.getContext());
-			}
-
-			@Override
-			public void onCloseCallback(GntpNotification notification) {
-				log.info("Close callback: " + notification.getContext());
-			}
-
-			@Override
-			public void onTimeoutCallback(GntpNotification notification) {
-				log.info("Timeout callback: " + notification.getContext());
-			}
-
-			@Override
-			public void onRegistrationError(GntpErrorStatus status,
-					String description) {
-				log.info("Registration Error: " + status + " - desc: "
-						+ description);
-			}
-
-			@Override
-			public void onNotificationError(GntpNotification notification,
-					GntpErrorStatus status, String description) {
-				log.info("Notification Error: " + status + " - desc: "
-						+ description);
-			}
-
-			@Override
-			public void onCommunicationError(Throwable t) {
-				log.error("Communication error", t);
-			}
-		}).build();
-
-		client.register();
-
-	}*/
-
 	private void setupSystemTray() {
 
 		tray = display.getSystemTray();
@@ -428,26 +372,6 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 				connectionsWindow.getShell().setActive();
 			}
 		});
-		
-		
-//		resourcesItem = new MenuItem(trayMenu, SWT.PUSH);
-//		resourcesItem.setText(I18N.getResource("resources.text"));
-//		resourcesItem.setEnabled(false);
-//		resourcesItem.addListener(SWT.Selection, new Listener() {
-//			public void handleEvent(Event e) {
-//
-//				if (resourcesWindow == null) {
-//					resourcesWindow = new ResourcesTree(SWTGui.this,
-//							resourceService);
-//					shell.pack();
-//					resourcesWindow.open();
-//				}
-//				resourcesWindow.getShell().setVisible(true);
-//				resourcesWindow.getShell().setActive();
-//				
-//				resourcesWindow.refresh();
-//			}
-//		});
 		
 		new MenuItem(trayMenu, SWT.SEPARATOR);
 
@@ -518,6 +442,14 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 					if (clientService != null) {
 						try {
 							clientService.ping();
+							display.asyncExec(new Runnable() {					
+								@Override
+								public void run() {
+									if(connectionsWindow != null) {
+										connectionsWindow.refresh();
+									}						
+								}
+							});
 						} catch (Exception e) {
 							running = false;
 							log.error("Failed to get local service status", e);
@@ -525,7 +457,13 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 					}
 				}
 			} finally {
-				setOnlineState(false);
+				display.asyncExec(new Runnable() {					
+					@Override
+					public void run() {
+						closeConnectionsWindow();						
+					}
+				});
+				unregistered();
 				new RMIConnectThread().start();
 			}
 		}
@@ -567,5 +505,14 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 		
 		ApplicationLauncher launcher = new ApplicationLauncher(clientUsername, connectedHostname, launcherTemplate);
 		return launcher.launch();
+	}
+
+
+	private void closeConnectionsWindow() {
+		if(connectionsWindow != null) {
+			log.info("Closing connections window");
+			connectionsWindow.close();
+			connectionsWindow = null;
+		}
 	}
 }

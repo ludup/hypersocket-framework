@@ -13,13 +13,13 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+
+import javax.annotation.PostConstruct;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -41,14 +41,17 @@ import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.ip.IPRestrictionListener;
+import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
 import com.hypersocket.server.HypersocketServerImpl;
 import com.hypersocket.server.websocket.TCPForwardingClientCallback;
 
 @Component
-public class NettyServer extends HypersocketServerImpl {
+public class NettyServer extends HypersocketServerImpl implements IPRestrictionListener {
 
 	static Logger log = LoggerFactory.getLogger(NettyServer.class);
 
@@ -62,11 +65,18 @@ public class NettyServer extends HypersocketServerImpl {
 	
 	IpFilterRuleHandler ipFilterHandler =  new IpFilterRuleHandler();
 	MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
-	Set<IpFilterRule> ipRules = new HashSet<IpFilterRule>();
 	Map<String,List<Channel>> channelsByIPAddress = new HashMap<String,List<Channel>>();
+	
+	@Autowired
+	IPRestrictionService ipRestrictionService; 
 	
 	public NettyServer() {
 
+	}
+	
+	@PostConstruct
+	private void postConstruct() {
+		ipRestrictionService.registerListener(this);
 	}
 
 	public ClientBootstrap getClientBootstrap() {
@@ -243,47 +253,6 @@ public class NettyServer extends HypersocketServerImpl {
 		return ipFilterHandler;
 	}
 	
-	@Override
-	public boolean canConnect(InetAddress addr) {
-		for(IpFilterRule rule : ipRules) {
-			if(rule.contains(addr)) {
-				return false;
-			}
-		} 
-		return true;
-	}
-
-	@Override
-	public void blockAddress(String addr) throws UnknownHostException {
-		
-		String cidr = addr;
-		if(cidr.indexOf('/')==-1) {
-			cidr += "/32";
-		}
-		
-		IpFilterRule rule = new IpSubnetFilterRule(false, cidr);
-		ipFilterHandler.add(rule);
-		ipRules.add(rule);
-		
-		synchronized (channelsByIPAddress) {
-			if(channelsByIPAddress.containsKey(addr)) {
-				for(Channel c : channelsByIPAddress.get(addr)) {
-					c.close();
-				}
-			}
-		}
-	}
-
-	@Override
-	public void unblockAddress(String addr) throws UnknownHostException {
-		if(addr.indexOf('/')==-1) {
-			addr += "/32";
-		}
-		
-		IpFilterRule rule = new IpSubnetFilterRule(false, addr);
-		ipFilterHandler.remove(rule);
-		ipRules.remove(rule);
-	}
 
 	class MonitorChannelHandler extends SimpleChannelHandler {
 
@@ -322,5 +291,46 @@ public class NettyServer extends HypersocketServerImpl {
 			}
 			
 		}
+	}
+
+	@Override
+	public void onBlockIP(String addr) {
+		
+		try {
+			String cidr = addr;
+			if(cidr.indexOf('/')==-1) {
+				cidr += "/32";
+			}
+			
+			IpFilterRule rule = new IpSubnetFilterRule(false, cidr);
+			ipFilterHandler.add(rule);
+			
+			synchronized (channelsByIPAddress) {
+				if(channelsByIPAddress.containsKey(addr)) {
+					for(Channel c : channelsByIPAddress.get(addr)) {
+						c.close();
+					}
+				}
+			}
+		} catch (UnknownHostException e) {
+			log.error("Failed to block IP " + addr, e);
+		}
+		
+	}
+
+	@Override
+	public void onUnblockIP(String addr) {
+		
+		try {
+			if(addr.indexOf('/')==-1) {
+				addr += "/32";
+			}
+			
+			IpFilterRule rule = new IpSubnetFilterRule(false, addr);
+			ipFilterHandler.remove(rule);
+		} catch (UnknownHostException e) {
+			log.error("Failed to unblock IP " + addr, e);
+		}
+		
 	}
 }

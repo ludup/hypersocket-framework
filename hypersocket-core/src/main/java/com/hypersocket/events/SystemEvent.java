@@ -13,6 +13,7 @@ public abstract class SystemEvent extends AbstractEvent {
 	private static final long serialVersionUID = -2862861933633430347L;
 
 	public static final String EVENT_RESOURCE_KEY = "system.event";
+	public static final String EVENT_NAMESPACE = "";
 	
 	public static final String ATTR_EXCEPTION_TEXT = "attr.exception";
 	
@@ -102,5 +103,6 @@ public abstract class SystemEvent extends AbstractEvent {
 	public String[] getResourceKeys() {
 		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
 	}
+
 }
 

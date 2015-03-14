@@ -46,4 +46,6 @@ public interface HypersocketClientTransport {
 	String post(String uri, Map<String, String> params, long timeout)
 			throws IOException;
 
+	String resolveUrl(String string);
+
 }

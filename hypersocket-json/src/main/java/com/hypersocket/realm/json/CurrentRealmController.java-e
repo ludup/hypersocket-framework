@@ -441,6 +441,29 @@ public class CurrentRealmController extends ResourceController {
 	}
 
 	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/user/allVariables", method = {
+			RequestMethod.GET, RequestMethod.POST }, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Map<String, String>> getAllUserVariableValues(
+			HttpServletRequest request, HttpServletResponse response)
+			throws UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			return new ResourceStatus<Map<String, String>>(
+					realmService.getUserPropertyValues(
+							sessionUtils.getPrincipal(request),
+							realmService.getUserVariableNames(
+									sessionUtils.getCurrentRealm(request))
+									.toArray(new String[0])));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/group", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)

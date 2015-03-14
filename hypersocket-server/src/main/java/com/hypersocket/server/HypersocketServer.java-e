@@ -8,9 +8,7 @@
 package com.hypersocket.server;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -99,11 +97,5 @@ public interface HypersocketServer {
 	int getActualHttpsPort();
 
 	void registerControllerPackage(String controllerPackage);
-
-	void unblockAddress(String addr) throws UnknownHostException;
-
-	void blockAddress(String addr) throws UnknownHostException;
-
-	boolean canConnect(InetAddress addr);
 
 }

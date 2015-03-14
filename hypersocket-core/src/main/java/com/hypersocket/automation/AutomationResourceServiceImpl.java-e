@@ -154,10 +154,20 @@ public class AutomationResourceServiceImpl extends
 				resource, t, getCurrentSession()));
 	}
 
+	protected void afterDeleteResource(AutomationResource resource) throws ResourceChangeException {
+		try {
+			unschedule(resource);
+	
+		} catch (SchedulerException e) {
+			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.couldNotUnschedule", resource.getName(), e.getMessage());
+		}
+	}
+	
 	@Override
 	protected void fireResourceDeletionEvent(AutomationResource resource) {
+		
 		eventService.publishEvent(new AutomationResourceDeletedEvent(this,
-				getCurrentSession(), resource));
+					getCurrentSession(), resource));
 	}
 
 	@Override
@@ -229,6 +239,13 @@ public class AutomationResourceServiceImpl extends
 		return ret;
 	}
 
+	protected void unschedule(AutomationResource resource) throws SchedulerException {
+		
+		if (scheduleIdsByResource.containsKey(resource.getId())) {
+			String scheduleId = scheduleIdsByResource.remove(resource.getId());
+			schedulerService.cancelNow(scheduleId);
+		}
+	}
 	protected void schedule(AutomationResource resource) {
 
 		Date start = calculateDateTime(resource.getStartDate(),

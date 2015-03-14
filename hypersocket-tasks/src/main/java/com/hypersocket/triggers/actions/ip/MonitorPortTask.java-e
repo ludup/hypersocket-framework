@@ -18,6 +18,7 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -83,9 +84,9 @@ public class MonitorPortTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
 			throws ValidationException {
-		String ipAddress = repository.getValue(task, ATTR_IP);
+		String ipAddress = processTokenReplacements(repository.getValue(task, ATTR_IP), events);
 		int port = Integer.valueOf(repository.getValue(task, ATTR_PORT));
 		int timeout = Integer.valueOf(repository.getValue(task, ATTR_TIMEOUT));
 		try {
@@ -94,14 +95,18 @@ public class MonitorPortTask extends AbstractTaskProvider {
 			Socket sck = new Socket();
 			sck.connect(bindAddr, timeout * 1000);
 			sck.close();
-			return new MonitorPortResult(this, true, event.getCurrentRealm(),
+			return new MonitorPortResult(this, true, currentRealm,
 					task, ipAddress, port, timeout);
 		} catch (Exception e) {
 			log.error("Failed to monitor connection to  host:" + ipAddress
 					+ " port :" + port, e);
-			return new MonitorPortResult(this, e, event.getCurrentRealm(),
+			return new MonitorPortResult(this, e, currentRealm,
 					task, ipAddress, port, timeout);
 		}
+	}
+	
+	public String[] getResultResourceKeys() {
+		return new String[] { MonitorPortResult.EVENT_RESOURCE_KEY };
 	}
 
 	@Override

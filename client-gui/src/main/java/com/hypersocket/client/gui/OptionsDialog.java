@@ -83,18 +83,22 @@ public class OptionsDialog extends Dialog {
 		gd_comboLocale.widthHint = 200;
 		comboLocale.setLayoutData(gd_comboLocale);
 		addLanguage("en");
-		addLanguage("da");
-		addLanguage("nl");
-		addLanguage("fi");
-		addLanguage("fr");
-		addLanguage("de");
-		addLanguage("it");
-		addLanguage("no");
-		addLanguage("pl");
-		addLanguage("ru");
-		addLanguage("sv");
-		addLanguage("es");
-		addLanguage("ja");
+		
+		/**
+		 * Other languages currently not supported.
+		 */
+//		addLanguage("da");
+//		addLanguage("nl");
+//		addLanguage("fi");
+//		addLanguage("fr");
+//		addLanguage("de");
+//		addLanguage("it");
+//		addLanguage("no");
+//		addLanguage("pl");
+//		addLanguage("ru");
+//		addLanguage("sv");
+//		addLanguage("es");
+//		addLanguage("ja");
 
 		return container;
 	}

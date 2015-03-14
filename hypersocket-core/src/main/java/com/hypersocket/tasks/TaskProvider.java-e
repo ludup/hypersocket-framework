@@ -6,6 +6,7 @@ import java.util.Map;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.triggers.TaskResult;
 import com.hypersocket.triggers.ValidationException;
 
@@ -18,7 +19,7 @@ public interface TaskProvider {
 	void validate(Task task, Map<String, String> parameters)
 			throws ValidationException;
 
-	TaskResult execute(Task task, SystemEvent event)
+	TaskResult execute(Task task, Realm currentRealm, SystemEvent... event)
 			throws ValidationException;
 	
 	ResourceTemplateRepository getRepository();
@@ -26,6 +27,8 @@ public interface TaskProvider {
 	Collection<PropertyCategory> getPropertyTemplate();
 
 	Collection<PropertyCategory> getProperties(Task task);
+	
+	String[] getResultResourceKeys();
 	
 	void taskCreated(Task task);
 	

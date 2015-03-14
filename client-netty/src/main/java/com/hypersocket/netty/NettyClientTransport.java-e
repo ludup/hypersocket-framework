@@ -217,6 +217,12 @@ public class NettyClientTransport implements HypersocketClientTransport {
 	public String get(String uri) throws IOException {
 		return get(uri, requestTimeout);
 	}
+	
+	public String resolveUrl(String uri) {
+		
+		return "https://" + getHost() + (getPort()!=443 ? ":" + getPort() : "")
+				+ apiPath + uri;
+	}
 
 	@Override
 	public String get(String uri, long timeout) throws IOException {

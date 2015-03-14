@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.tables.ColumnSort;
 
@@ -24,8 +25,8 @@ public interface AttributeService extends AuthenticatedService {
 	public Attribute updateAttribute(Attribute attribute, String name,
 			Long category, String description, String defaultValue, int weight,
 			String type, Boolean readOnly, Boolean encrypted,
-			String variableName) throws ResourceCreationException,
-			AccessDeniedException;
+			String variableName) throws AccessDeniedException,
+			ResourceChangeException;
 
 	public Attribute createAttribute(String name, Long category,
 			String description, String defaultValue, int weight, String type,

@@ -1,6 +1,7 @@
 package com.hypersocket.tasks.alert;
 
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.Message;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -34,6 +36,7 @@ public class AlertTask extends AbstractTaskProvider {
 	public static final String ATTR_KEY = "alert.key";
 	public static final String ATTR_THRESHOLD = "alert.threshold";
 	public static final String ATTR_TIMEOUT = "alert.timeout";
+	public static final String ATTR_RESET_DELAY = "alert.reset";
 	public static final String ATTR_ALERT_ID = "alert.id";
 
 	@Autowired
@@ -47,6 +50,9 @@ public class AlertTask extends AbstractTaskProvider {
 
 	@Autowired
 	TaskProviderService taskService; 
+	
+	Map<String,Object> alertLocks = new HashMap<String,Object>();
+	Map<String,Long> lastAlertTimestamp = new HashMap<String,Long>();
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -78,7 +84,7 @@ public class AlertTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
 			throws ValidationException {
 
 		StringBuffer key = new StringBuffer();
@@ -88,33 +94,69 @@ public class AlertTask extends AbstractTaskProvider {
 			if (key.length() > 0) {
 				key.append("|");
 			}
-			key.append(event.getAttribute(attr));
+			key.append(events[0].getAttribute(attr));
 		}
 
 		int threshold = repository.getIntValue(task, ATTR_THRESHOLD);
 		int timeout = repository.getIntValue(task, ATTR_TIMEOUT);
+		int delay = repository.getIntValue(task,  ATTR_RESET_DELAY);
+		
+		String alertKey = key.toString();
+		Object alertLock = null;
+		
+		synchronized (alertLocks) {
+			if(!alertLocks.containsKey(alertKey)) {
+				alertLocks.put(alertKey, new Object());
+			}			
+			alertLock = alertLocks.get(alertKey);
+		}
 
-		AlertKey ak = new AlertKey();
-		ak.setTask(task);
-		ak.setKey(key.toString());
-
-		Calendar c = Calendar.getInstance();
-		ak.setTriggered(c.getTime());
-
-		repository.saveKey(ak);
-
-		c.add(Calendar.MINUTE, -timeout);
-		long count = repository
-				.getKeyCount(task, key.toString(), c.getTime());
-
-		if (count >= threshold) {
-
-			repository.deleteKeys(task, key.toString());
-
-			return new AlertEvent(this, "event.alert", true,
-					event.getCurrentRealm(), threshold, timeout, task, event);
+		synchronized(alertLock) {
+	
+			if(lastAlertTimestamp.containsKey(alertKey)) {
+				long timestamp = lastAlertTimestamp.get(alertKey);
+				if((System.currentTimeMillis() - timestamp) < (delay * 1000)) {
+					/**
+					 * Do not generate alert because we are within the reset delay 
+					 * period of the last alert generated.
+					 */
+					return null;
+				} else {
+					lastAlertTimestamp.remove(alertKey);
+				}
+			}
+			
+			AlertKey ak = new AlertKey();
+			ak.setTask(task);
+			ak.setKey(alertKey);
+	
+			Calendar c = Calendar.getInstance();
+			ak.setTriggered(c.getTime());
+	
+			repository.saveKey(ak);
+	
+			c.add(Calendar.MINUTE, -timeout);
+			long count = repository
+					.getKeyCount(task, alertKey, c.getTime());
+	
+			if (count >= threshold) {
+	
+				repository.deleteKeys(task, alertKey);
+				
+				synchronized(alertLocks) {
+					alertLocks.remove(alertKey);
+				}
+				
+				lastAlertTimestamp.put(alertKey, System.currentTimeMillis());
+				return new AlertEvent(this, "event.alert", true,
+						currentRealm, threshold, timeout, task, events[0]);
+			}
 		}
 		return null;
+	}
+	
+	public String[] getResultResourceKeys() {
+		return new String[] { AlertEvent.EVENT_RESOURCE_KEY };
 	}
 
 	@Override
@@ -140,7 +182,7 @@ public class AlertTask extends AbstractTaskProvider {
 
 		I18N.flushOverrides();
 		EventDefinition def = new EventDefinition(
-				TriggerResourceServiceImpl.RESOURCE_BUNDLE, resourceKey, null);
+				TriggerResourceServiceImpl.RESOURCE_BUNDLE, resourceKey, "", null);
 		def.getAttributeNames().addAll(sourceEvent.getAttributeNames());
 
 		eventService.registerEventDefinition(def);
@@ -153,12 +195,12 @@ public class AlertTask extends AbstractTaskProvider {
 
 	@Override
 	public void taskUpdated(Task task) {
-		super.taskUpdated(task);
+		registerDynamicEvent((TriggerAction)task);
 	}
 
 	@Override
 	public void taskDeleted(Task task) {
-		super.taskDeleted(task);
+		
 	}
 
 	@Override

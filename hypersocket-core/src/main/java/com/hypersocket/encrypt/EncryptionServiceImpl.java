@@ -31,7 +31,7 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 	@Autowired
 	@Qualifier("defaultEncryptor")
 	Encryptor encryptor;
-	
+
 
 	@Override
 	public String encryptString(String reference, String data) throws IOException {
@@ -52,7 +52,8 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 		
 		secretKeyService.setCurrentPrincipal(realmService.getSystemPrincipal(), i18nService.getDefaultLocale(), realmService.getDefaultRealm());
 		try {
-			log.info(decryptString("Test Key", encryptString("Test Key", "Encryption service has been initialized")));
+			String text = encryptString("Test Key", "Encryption service has been initialized");
+			log.info(decryptString("Test Key", text) + " " + text);
 		} catch (Exception e) {
 			log.error("Failed to process test encryption key", e);
 		}
@@ -64,4 +65,7 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 		this.encryptor = encryptor;
 	}
 
+	public EncryptionProvider getEncryptionProvider() {
+		return encryptionProvider;
+	}
 }

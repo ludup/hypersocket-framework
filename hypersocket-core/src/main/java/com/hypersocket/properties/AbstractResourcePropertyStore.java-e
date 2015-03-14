@@ -123,7 +123,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		try {
 			return "!ENC!" + encryptionService.encryptString(cacheKey, value);
 		} catch (Exception e) {
-			log.warn("Unable to encrypt " + cacheKey + "; storing unencrypted");
+			log.warn("Unable to encrypt " + cacheKey + "; storing unencrypted", e);
 			return value;
 		}
 	}
@@ -132,7 +132,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		try {
 			return encryptionService.decryptString(cacheKey, value);
 		} catch(Exception e) {
-			log.warn("Unable to decrypt " + cacheKey + "; returning encrypted");
+			log.warn("Unable to decrypt " + cacheKey + "; returning encrypted", e);
 			return value;
 		}
 	}
