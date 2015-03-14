@@ -21,6 +21,7 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -145,21 +146,21 @@ public class EmailTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
 			throws ValidationException {
 
 		String subject = processTokenReplacements(
-				repository.getValue(task, ATTR_SUBJECT), event);
+				repository.getValue(task, ATTR_SUBJECT), events);
 		String body = processTokenReplacements(
-				repository.getValue(task, ATTR_BODY), event);
+				repository.getValue(task, ATTR_BODY), events);
 		List<Recipient> recipients = new ArrayList<Recipient>();
 
 		String to = populateEmailList(task, ATTR_TO_ADDRESSES, recipients,
-				RecipientType.TO, event);
+				RecipientType.TO, events);
 		String cc = populateEmailList(task, ATTR_CC_ADDRESSES, recipients,
-				RecipientType.CC, event);
+				RecipientType.CC, events);
 		String bcc = populateEmailList(task, ATTR_BCC_ADDRESSES, recipients,
-				RecipientType.BCC, event);
+				RecipientType.BCC, events);
 
 		try {
 			emailService.sendPlainEmail(subject, body,
@@ -170,18 +171,21 @@ public class EmailTask extends AbstractTaskProvider {
 
 		} catch (Exception ex) {
 			log.error("Failed to send email", ex);
-			return new EmailTaskResult(this, ex, task
-					.getRealm(), task, subject, body, to, cc, bcc);
+			return new EmailTaskResult(this, ex, currentRealm, task, subject, body, to, cc, bcc);
 		}
+	}
+	
+	public String[] getResultResourceKeys() {
+		return new String[] { EmailTaskResult.EVENT_RESOURCE_KEY };
 	}
 
 	private String populateEmailList(Task task,
 			String attributeName, List<Recipient> recipients,
-			RecipientType type, SystemEvent event)
+			RecipientType type, SystemEvent... events)
 			throws ValidationException {
 
 		String[] emails = ResourceUtils.explodeValues(processTokenReplacements(
-				repository.getValue(task, attributeName), event));
+				repository.getValue(task, attributeName), events));
 		return emailService.populateEmailList(emails, recipients, type);
 	}
 

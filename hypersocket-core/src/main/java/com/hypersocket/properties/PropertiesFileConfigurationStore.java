@@ -67,6 +67,10 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 
 	@Override
 	public void setProperty(PropertyTemplate template, String value) {
+		
+		if(Boolean.getBoolean("hypersocket.demo")) {
+			throw new IllegalStateException("This is a demo. No changes to resources or settings can be persisted.");
+		}
 		properties.put(template.getResourceKey(), value);
 		try {
 			saveProperties();

@@ -62,6 +62,14 @@ public abstract class ResourceTemplateRepositoryImpl extends
 
 	static Map<String, List<ResourceTemplateRepository>> propertyContexts = new HashMap<String, List<ResourceTemplateRepository>>();
 
+	public ResourceTemplateRepositoryImpl() {
+		super();
+	}
+
+	public ResourceTemplateRepositoryImpl(boolean requiresDemoWrite) {
+		super(requiresDemoWrite);
+	}
+
 	protected ResourcePropertyStore getPropertyStore() {
 		return configPropertyStore;
 	}
@@ -130,11 +138,14 @@ public abstract class ResourceTemplateRepositoryImpl extends
 			Element node = (Element) list.item(i);
 			try {
 				@SuppressWarnings("unchecked")
-				Class<? extends XmlTemplatePropertyStore> clz = (Class<? extends XmlTemplatePropertyStore>) Class
+				Class<? extends PropertyStore> clz = (Class<? extends PropertyStore>) Class
 						.forName(node.getAttribute("type"));
 
-				XmlTemplatePropertyStore store = clz.newInstance();
-				store.init(node);
+				PropertyStore store = clz.newInstance();
+				
+				if(store instanceof XmlTemplatePropertyStore) {
+					((XmlTemplatePropertyStore)store).init(node);
+				}
 
 				propertyStoresById.put(node.getAttribute("id"), store);
 				propertyStores.add(store);
@@ -647,4 +658,5 @@ public abstract class ResourceTemplateRepositoryImpl extends
 		}
 		return properties;
 	}
+
 }

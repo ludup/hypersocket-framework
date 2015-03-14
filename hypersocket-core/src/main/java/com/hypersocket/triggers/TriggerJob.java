@@ -1,5 +1,6 @@
 package com.hypersocket.triggers;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
@@ -61,12 +62,21 @@ public class TriggerJob extends PermissionsAwareJob {
 	}
 
 	protected void processEventTrigger(TriggerResource trigger,
-			SystemEvent event) throws ValidationException {
+			SystemEvent... events) throws ValidationException {
 		if (log.isInfoEnabled()) {
 			log.info("Processing trigger " + trigger.getName());
 		}
-
-		if (checkConditions(trigger, event)) {
+		
+		if(trigger.getResult() != TriggerResultType.EVENT_ANY_RESULT
+				&& events[events.length-1].getStatus().ordinal() != trigger.getResult().ordinal()) {
+			if(log.isInfoEnabled()) {
+				log.info("Not processing trigger " + trigger.getName() + " with result " + trigger.getResult().toString()
+						+ " because event status is " + events[events.length-1].getStatus().toString());
+			}
+			return;
+		}
+		
+		if (checkConditions(trigger, events)) {
 			
 			if(log.isInfoEnabled()) {
 				log.info("There are " + trigger.getActions().size() + " tasks to perform");
@@ -76,7 +86,7 @@ public class TriggerJob extends PermissionsAwareJob {
 				if(log.isInfoEnabled()) {
 					log.info("Performing task " + action.getName());
 				}
-				executeAction(action, event);
+				executeAction(action, events);
 			}
 		}
 		if (log.isInfoEnabled()) {
@@ -85,11 +95,11 @@ public class TriggerJob extends PermissionsAwareJob {
 
 	}
 
-	protected boolean checkConditions(TriggerResource trigger, SystemEvent event)
+	protected boolean checkConditions(TriggerResource trigger, SystemEvent... events)
 			throws ValidationException {
 
 		for (TriggerCondition condition : trigger.getAllConditions()) {
-			if (!checkCondition(condition, trigger, event)) {
+			if (!checkCondition(condition, trigger, events)) {
 				if (log.isDebugEnabled()) {
 					log.debug("Trigger " + trigger.getName()
 							+ " failed processing all conditions due to "
@@ -104,7 +114,7 @@ public class TriggerJob extends PermissionsAwareJob {
 		if (trigger.getAnyConditions().size() > 0) {
 			boolean conditionPassed = false;
 			for (TriggerCondition condition : trigger.getAnyConditions()) {
-				if (checkCondition(condition, trigger, event)) {
+				if (checkCondition(condition, trigger, events)) {
 					conditionPassed = true;
 					break;
 				}
@@ -123,7 +133,7 @@ public class TriggerJob extends PermissionsAwareJob {
 	}
 
 	private boolean checkCondition(TriggerCondition condition,
-			TriggerResource trigger, SystemEvent event)
+			TriggerResource trigger, SystemEvent... events)
 			throws ValidationException {
 
 		TriggerConditionProvider provider = triggerService
@@ -134,11 +144,15 @@ public class TriggerJob extends PermissionsAwareJob {
 					"Failed to check condition because provider "
 							+ condition.getConditionKey() + " is not available");
 		}
-		return provider.checkCondition(condition, trigger, event);
-
+		
+		boolean matched = false;
+		for(SystemEvent event : events) {
+			matched |= provider.checkCondition(condition, trigger, event);
+		}
+		return matched;
 	}
 
-	protected void executeAction(TriggerAction action, SystemEvent event)
+	protected void executeAction(TriggerAction action, SystemEvent... events)
 			throws ValidationException {
 
 		TaskProvider provider = taskService
@@ -149,16 +163,20 @@ public class TriggerJob extends PermissionsAwareJob {
 							+ action.getResourceKey() + " is not available");
 		}
 
-		TaskResult outputEvent = provider.execute(action, event);
+		TaskResult outputEvent = provider.execute(action, events[0].getCurrentRealm(), events);
 
 		if(outputEvent!=null) {
 			if(outputEvent.isPublishable()) {
 				eventService.publishEvent(outputEvent);
 			}
 			
-			if (action.getPostExecutionTrigger() != null
-					&& checkConditions(action.getTrigger(), outputEvent)) {
-				processEventTrigger(action.getPostExecutionTrigger(), outputEvent);
+			SystemEvent[] allEvents = ArrayUtils.add(events, outputEvent);
+			
+			if (!action.getPostExecutionTriggers().isEmpty()) {
+				for(TriggerResource trigger : action.getPostExecutionTriggers()) {
+					processEventTrigger(trigger, allEvents);
+				}
+				
 			} 
 		}
 		

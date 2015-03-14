@@ -5,10 +5,23 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.hypersocket.config;
+package com.hypersocket.repository;
 
-public interface ConfigurationChangeListener {
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Restrictions;
 
-	//void configurationChanged(String resourceKey, String value, String oldValue);
+public class DeletedDetachedCriteria implements DetachedCriteriaConfiguration {
+
+	boolean deleted;
+	
+	public DeletedDetachedCriteria(boolean deleted) {
+		this.deleted = deleted;
+	}
+	
+	@Override
+	public void configure(DetachedCriteria criteria) {
+		criteria.add(Restrictions.eq("deleted", deleted));
+
+	}
 
 }

@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.hypersocket</groupId>
 		<artifactId>hypersocket-framework</artifactId>
-		<version>0.2.1</version>
+		<version>0.2.2</version>
 		<relativePath>../</relativePath>
 	</parent>
 
@@ -59,14 +59,6 @@
 			<artifactId>commons-io</artifactId>
 			<version>1.3.2</version>
 		</dependency>
-
-		<!-- Apache Http Client -->
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.3</version>
-		</dependency>
-
 
 		<!-- Spring -->
 		<dependency>

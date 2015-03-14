@@ -21,6 +21,8 @@ public interface PropertyTemplateService {
 
 	void setValue(String name, Boolean value) throws AccessDeniedException, ResourceChangeException;
 
+	void setValues(String resourceKey, String[] add) throws ResourceChangeException, AccessDeniedException;
+	
 	Collection<PropertyCategory> getPropertyCategories()
 			throws AccessDeniedException;
 

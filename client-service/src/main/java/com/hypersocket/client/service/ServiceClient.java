@@ -1,14 +1,11 @@
 package com.hypersocket.client.service;
 
 import java.io.IOException;
-import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,36 +54,7 @@ public class ServiceClient extends HypersocketClient<Connection> {
 	}
 	
 	protected void onConnected() {
-		loadPlugins();
-	}
 
-	private void loadPlugins() {
-		
-		try {
-			Enumeration<URL> urls = getClass().getClassLoader().getResources("service-plugin.properties");
-			
-			while(urls.hasMoreElements()) {
-				URL pluginUrl = urls.nextElement();
-				try {
-					Properties props = new Properties();
-					props.load(pluginUrl.openStream());
-					
-					if(log.isInfoEnabled()) {
-						log.info("Starting service plugin " + props.getProperty("plugin.name"));
-					}
-					ServicePlugin plugin = (ServicePlugin) Class.forName(props.getProperty("plugin.class")).newInstance();
-					if(plugin.start(this, resourceService, service.getGUI())) {
-						plugins.add(plugin);
-					}
-				} catch (Throwable e) {
-					log.error("Failed to load plugin " + pluginUrl.toString(), e);
-				}
-				
-			}
-		} catch(Throwable e) {
-			log.error("Failed to load plugins", e);
-		}
-		
 	}
 
 	@Override

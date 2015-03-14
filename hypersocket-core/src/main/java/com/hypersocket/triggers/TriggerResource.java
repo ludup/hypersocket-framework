@@ -8,6 +8,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -29,6 +30,9 @@ public class TriggerResource extends RealmResource {
 	@OneToMany(orphanRemoval=true, cascade=CascadeType.ALL, mappedBy="trigger", fetch=FetchType.EAGER)
 	Set<TriggerAction> actions  = new HashSet<TriggerAction>();
 
+	@OneToOne
+	TriggerAction parentAction;
+	
 	Boolean fireEvent;
 	
 	public TriggerResultType getResult() {
@@ -82,6 +86,15 @@ public class TriggerResource extends RealmResource {
 			}
 		}
 		return ret;
+	}
+
+	public void setParentAction(TriggerAction parentAction) {
+		this.parentAction = parentAction;
+	}
+	
+	@JsonIgnore
+	public TriggerAction getParentAction() {
+		return parentAction;
 	}
 	
 }

@@ -7,20 +7,27 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.math.BigInteger;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 
 import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.hypersocket.encrypt.EncryptionProvider;
+import com.hypersocket.encrypt.AbstractEncryptionProvider;
 
-public class NssEncryptionProvider implements EncryptionProvider {
+public class NssEncryptionProvider extends AbstractEncryptionProvider {
 
 	static Log log = LogFactory.getLog(NssEncryptionProvider.class);
 	
@@ -32,6 +39,10 @@ public class NssEncryptionProvider implements EncryptionProvider {
 	private static NssEncryptionProvider instance;
 
 	private NssEncryptionProvider() throws Exception {
+		
+		if(Boolean.getBoolean("hypersocket.disableNss")) {
+			throw new Exception("Nss is disabled");
+		}
 		
 		try {
 			openDatabase();
@@ -49,7 +60,7 @@ public class NssEncryptionProvider implements EncryptionProvider {
 	}
 	
 	@Override
-	public String encrypt(String toEncrypt) throws Exception {
+	public String doEncrypt(String toEncrypt) throws Exception {
 
 		Cipher c = Cipher.getInstance("RSA/ECB/PKCS1Padding", cryptoProvider);
 		c.init(Cipher.ENCRYPT_MODE, keystore.getKey("hypersocket", null));
@@ -58,7 +69,7 @@ public class NssEncryptionProvider implements EncryptionProvider {
 	}
 	
 	@Override
-	public String decrypt(String toDecrypt) throws Exception {
+	public String doDecrypt(String toDecrypt) throws Exception {
 		
 		Cipher c = Cipher.getInstance("RSA/ECB/PKCS1Padding", cryptoProvider);
 		c.init(Cipher.DECRYPT_MODE, keystore.getCertificate("hypersocket"));
@@ -77,8 +88,9 @@ public class NssEncryptionProvider implements EncryptionProvider {
 	    return new String(text);
 	}
 	
-	@SuppressWarnings("restriction")
 	private void openDatabase() throws Exception {
+		
+		log.info("Determine platform for NSS");
 		
 		File libFolder64bit = new File("/usr/lib/x86_64-linux-gnu/");
 		
@@ -94,12 +106,17 @@ public class NssEncryptionProvider implements EncryptionProvider {
 			log.warn(p.getName());
 		}
 		
+		log.info("Creating NSS crypto provider");
+		
 		if(cryptoProvider==null) {
 			
+			@SuppressWarnings("unchecked")
 			Class<Provider> clz = (Class<Provider>) Class.forName("sun.security.pkcs11.SunPKCS11");
-			Constructor c = clz.getConstructor(String.class);
-			cryptoProvider  = (Provider)c.newInstance(configName);
+			Constructor<Provider> c = clz.getConstructor(String.class);
+			cryptoProvider  = c.newInstance(configName);
 		}
+		
+		log.info("Loading NSS keystore");
 		
 		if(keystore==null) {
 			File dbFile = new File(System.getProperty("hypersocket.conf", "conf"), ".private");
@@ -115,7 +132,12 @@ public class NssEncryptionProvider implements EncryptionProvider {
 	private void createDatabase() throws IOException, InterruptedException {
 
 		File dbFile = new File(System.getProperty("hypersocket.conf", "conf"), ".private");
-		dbFile.mkdirs();
+		
+		if(dbFile.exists()) {
+			FileUtils.cleanDirectory(dbFile);
+		} else {
+			dbFile.mkdirs();
+		}
 		
 		String password =  new BigInteger(130, new SecureRandom()).toString(32);
 		File keyFile = new File(dbFile, ".key");
@@ -146,10 +168,11 @@ public class NssEncryptionProvider implements EncryptionProvider {
 		String[] certCmd = new String[] { "certutil", "-S", "-s",
 				"CN=Hypersocket Keystore", "-n", "hypersocket", "-x", "-t", "CT,C,C", "-v",
 				"120", "-m", "1234", "-d", db, "-z", "noise.dat", "-f",
-				".private/.key", "-g", "4096" };
+				".private/.key", "-g", "2048" };
 		exec(certCmd);
 		exec(new String[] { "chmod", "400", keyFile.getAbsolutePath()});
 		exec(new String[] { "chmod", "500", dbFile.getAbsolutePath()});
+		
 		noiseFile.delete();
 		
 	}
@@ -179,6 +202,45 @@ public class NssEncryptionProvider implements EncryptionProvider {
 
 	}
 	
+	@Override
+	public boolean supportsSecretKeyStorage() {
+		return true;
+	}
+	
+	@Override
+	public Provider getProvider() {
+		return cryptoProvider;
+	}
+	
+	@Override
+	public void createSecretKey(String reference) throws IOException {
+		
+		try {
+			KeyGenerator kg = KeyGenerator.getInstance("AES", cryptoProvider);
+			kg.init(256);
+			SecretKey skey = kg.generateKey();
+			keystore.setEntry(reference, new KeyStore.SecretKeyEntry(skey), 
+			        new KeyStore.PasswordProtection(dbPassword.toCharArray()));
+			keystore.store(null, dbPassword.toCharArray());
+		} catch (NoSuchAlgorithmException e) {
+			throw new IOException(e);
+		} catch (KeyStoreException e) {
+			throw new IOException(e);
+		} catch (CertificateException e) {
+			throw new IOException(e);
+		}
+	}
+	
+	@Override
+	public SecretKey getSecretKey(String reference) throws IOException {
+		try {
+			return (SecretKey) keystore.getKey(reference, dbPassword.toCharArray());
+		} catch (UnrecoverableKeyException | KeyStoreException
+				| NoSuchAlgorithmException e) {
+			throw new IOException(e);
+		}
+	}
+	
 	public static void main(String[] args) throws Exception {
 		
 		System.setProperty("hypersocket.conf", "/home/lee/workspaces/nervepoint-1.2/wui-server/conf");
@@ -192,5 +254,10 @@ public class NssEncryptionProvider implements EncryptionProvider {
 		String decrypted = tk.decrypt(encryped);
 		
 		System.out.print(decrypted);
+	}
+
+	@Override
+	protected int getLength() {
+		return 245;
 	}
 }

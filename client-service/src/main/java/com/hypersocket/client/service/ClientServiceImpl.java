@@ -176,6 +176,7 @@ public class ClientServiceImpl implements ClientService,
 		}
 
 		activeClients.clear();
+		connectingClients.clear();
 		bossExecutor.shutdown();
 		workerExecutor.shutdown();
 
@@ -198,6 +199,12 @@ public class ClientServiceImpl implements ClientService,
 		if (activeClients.containsKey(c)) {
 			activeClients.get(c).disconnect(false);
 		}
+		
+		/**
+		 * 	Force removal here for final chance clean up	
+		 */
+		activeClients.remove(c);
+		connectingClients.remove(c);
 	}
 
 	@Override

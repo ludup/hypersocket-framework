@@ -27,6 +27,10 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 
 	static Logger log = LoggerFactory.getLogger(SessionRepositoryImpl.class);
 	
+	public SessionRepositoryImpl() {
+		super(true);
+	}
+	
 	@Override
 	public Session createSession(String remoteAddress, 
 			Principal principal, 
@@ -46,6 +50,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		session.setOsVersion(osVersion);
 		session.setAuthenticationScheme(scheme);
 		session.setTimeout(timeout);
+		session.system = false;
 		save(session);
 		return session;
 	}

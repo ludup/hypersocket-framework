@@ -16,7 +16,7 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 
 	T getResourceById(Long id);
 
-	void deleteResource(T resource) throws ResourceChangeException;
+	void deleteResource(T resource);
 
 	void saveResource(T resource, Map<String,String> properties);
 
@@ -29,5 +29,7 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 
 	long getResourceCount(Realm realm, String searchPattern,
 			CriteriaConfiguration... configs);
+
+	long allRealmsResourcesCount();
 
 }

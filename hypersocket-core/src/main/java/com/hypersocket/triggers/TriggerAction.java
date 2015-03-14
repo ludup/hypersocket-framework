@@ -1,10 +1,13 @@
 package com.hypersocket.triggers;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -23,9 +26,8 @@ public class TriggerAction extends Task {
 	@Column(name="resource_key")
 	String resourceKey;
 	
-	@OneToOne
-	@JoinColumn(name="post_exec_trigger_id")
-	TriggerResource postExecutionTrigger;
+	@OneToMany(mappedBy="parentAction", fetch=FetchType.EAGER)
+	List<TriggerResource> postExecutionTrigger;
 
 	@Transient
 	Map<String,String> properties;
@@ -47,12 +49,8 @@ public class TriggerAction extends Task {
 		this.resourceKey = resourceKey;
 	}
 
-	public TriggerResource getPostExecutionTrigger() {
+	public List<TriggerResource> getPostExecutionTriggers() {
 		return postExecutionTrigger;
-	}
-
-	public void setPostExecutionTrigger(TriggerResource postExecutionTrigger) {
-		this.postExecutionTrigger = postExecutionTrigger;
 	}
 
 	public Map<String, String> getProperties() {

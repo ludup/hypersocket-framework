@@ -12,9 +12,10 @@ import org.springframework.stereotype.Component;
 
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.scheduler.SchedulerService;
-import com.hypersocket.server.HypersocketServer;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -38,7 +39,7 @@ public class UnblockIPTask extends AbstractTaskProvider {
 	UnblockIPTaskRepository repository; 
 	
 	@Autowired
-	HypersocketServer server;
+	IPRestrictionService ipRestrictionService;
 	
 	@Autowired
 	I18NService i18nService;
@@ -75,25 +76,29 @@ public class UnblockIPTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
 			throws ValidationException {
 		
-		String ipAddress = processTokenReplacements(repository.getValue(task, "unblock.ip"), event);
+		String ipAddress = processTokenReplacements(repository.getValue(task, "unblock.ip"), events);
 		try {
 			
 			if(log.isInfoEnabled()) {
 				log.info("Unblocking IP address "  + ipAddress);
 			}
 			
-			server.unblockAddress(ipAddress);
+			ipRestrictionService.unblockIPAddress(ipAddress);
 			
 			blockTask.notifyUnblock(ipAddress, false);
 			
-			return new UnblockedIPResult(this, event.getCurrentRealm(), task, ipAddress);
+			return new UnblockedIPResult(this, currentRealm, task, ipAddress);
 		} catch (UnknownHostException e) {
 			log.error("Failed to fully process block IP request for " + ipAddress, e);
-			return new UnblockedIPResult(this, e, event.getCurrentRealm(), task, ipAddress);
+			return new UnblockedIPResult(this, e, currentRealm, task, ipAddress);
 		}
+	}
+	
+	public String[] getResultResourceKeys() {
+		return new String[] { UnblockedIPResult.EVENT_RESOURCE_KEY };
 	}
 
 	@Override

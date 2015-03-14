@@ -28,7 +28,7 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
-import com.hypersocket.repository.DeletedCriteria;
+import com.hypersocket.repository.DeletedDetachedCriteria;
 import com.hypersocket.repository.DetachedCriteriaConfiguration;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
@@ -73,11 +73,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 	
 	protected void save(LocalUserCredentials creds) {
-		if(creds.getId()!=null) {
-			hibernateTemplate.merge(creds);
-		} else {
-			hibernateTemplate.saveOrUpdate(creds);
-		}
+		save(creds, creds.getId()==null);
 	}
 	
 	@Transactional
@@ -91,7 +87,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 	
 	protected LocalUser getUser(String column, Object value, Realm realm, PrincipalType type) {
-		return get(column, value, LocalUser.class, JOIN_GROUPS, new RealmRestriction(realm), new DeletedCriteria(false), new PrincipalTypeRestriction(type));
+		return get(column, value, LocalUser.class, JOIN_GROUPS, new RealmRestriction(realm), new DeletedDetachedCriteria(false), new PrincipalTypeRestriction(type));
 	}
 	
 	@Transactional(readOnly=true)
@@ -100,7 +96,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 	
 	protected LocalGroup getGroup(String column, Object value, Realm realm) {
-		return get(column, value, LocalGroup.class, JOIN_USERS, new DeletedCriteria(false), new RealmRestriction(realm));
+		return get(column, value, LocalGroup.class, JOIN_USERS, new DeletedDetachedCriteria(false), new RealmRestriction(realm));
 	}
 	
 	@Transactional(readOnly=true)

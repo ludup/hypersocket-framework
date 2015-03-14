@@ -3,17 +3,20 @@ package com.hypersocket.rsa;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -41,9 +44,13 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 		}
 	}
 	
+	public Provider getProvider() {
+		return null;
+	}
+	
 	private void generateKeys() throws Exception {
 		KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-		gen.initialize(4096);
+		gen.initialize(2048);
 		KeyPair key = gen.generateKeyPair();
 		privateKey = key.getPrivate();
 		publicKey = key.getPublic();
@@ -89,7 +96,7 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 	}
 	
 	public int getLength() {
-		return 501;
+		return 245;
 	}
 	
 	@Override
@@ -112,7 +119,7 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 	public static void main(String[] args) throws Exception {
 		
 		System.out.println(URLEncoder.encode("=", "UTF-8"));
-		System.setProperty("hypersocket.conf", "/Users/lee/smartgit/hypersocket-framework/hypersocket-keystore/conf");
+		System.setProperty("hypersocket.conf", "/Users/lee");
 		
 		EncryptionProvider tk = RsaEncryptionProvider.getInstance();
 		
@@ -126,6 +133,21 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 		String decrypted = tk.decrypt(encryped);
 		
 		System.out.print(decrypted);
+	}
+
+	@Override
+	public boolean supportsSecretKeyStorage() {
+		return false;
+	}
+
+	@Override
+	public void createSecretKey(String reference) throws IOException {
+		
+	}
+
+	@Override
+	public SecretKey getSecretKey(String reference) throws IOException {
+		throw new IllegalStateException("Cannot access secret key when EncryptionProvider does not support secret keys");
 	}
 
 }
