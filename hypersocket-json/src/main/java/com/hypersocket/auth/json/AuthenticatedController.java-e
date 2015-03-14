@@ -133,6 +133,11 @@ public class AuthenticatedController {
 				i18nService.getDefaultLocale(), getSystemPrincipal().getRealm());
 	}
 	
+	protected void setupSystemContext(Realm realm) {
+		setupAuthenticatedContext(getSystemPrincipal(),
+				i18nService.getDefaultLocale(), realm);
+	}
+	
 	protected void setupAnonymousContext(String remoteAddress,
 			String serverName, String userAgent, Map<String, String> parameters)
 			throws AccessDeniedException {
