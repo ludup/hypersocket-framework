@@ -28,50 +28,6 @@ public class TriggerResourceRepositoryImpl extends
 	TaskProviderService taskService; 
 	
 	@Override
-	public void updateResource(TriggerResource resource,
-			Map<String, String> properties) {
-
-		// Reverse the operation for update due to transient properties needing
-		// updating first.
-		for (TriggerAction action : resource.getActions()) {
-
-			if(action.getProperties()!=null) {
-				TaskProvider provider = taskService
-						.getTaskProvider(action.getResourceKey());
-				for (Map.Entry<String, String> e : action.getProperties()
-						.entrySet()) {
-					provider.getRepository().setValue(action, e.getKey(),
-							e.getValue());
-				}
-			}
-		}
-
-		super.updateResource(resource, properties);
-
-	}
-
-	@Override
-	public void saveResource(TriggerResource resource,
-			Map<String, String> properties) {
-
-		super.saveResource(resource, properties);
-
-		for (TriggerAction action : resource.getActions()) {
-
-			if(action.getProperties()!=null) {
-				TaskProvider provider = taskService
-						.getTaskProvider(action.getResourceKey());
-				
-				for (Map.Entry<String, String> e : action.getProperties()
-						.entrySet()) {
-					provider.getRepository().setValue(action, e.getKey(),
-							e.getValue());
-				}
-			}
-		}
-	}
-
-	@Override
 	protected Class<TriggerResource> getResourceClass() {
 		return TriggerResource.class;
 	}

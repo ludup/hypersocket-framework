@@ -8,7 +8,7 @@ import org.jboss.netty.handler.stream.ChunkedInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hypersocket.util.FileUtils;
+import com.hypersocket.utils.FileUtils;
 
 public class HttpChunkStream implements ChunkedInput {
 

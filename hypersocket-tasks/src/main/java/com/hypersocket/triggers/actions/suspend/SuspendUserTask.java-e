@@ -20,8 +20,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalSuspensionService;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.resource.ResourceCreationException;
-import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
@@ -121,15 +120,11 @@ public class SuspendUserTask extends AbstractTaskProvider {
 
 			return new SuspendUserResult(this, currentRealm, task,
 					name, startDate, duration);
-		} catch (ResourceNotFoundException e) {
+		} catch (ResourceException e) {
 			log.error("Failed to fully process suspend request for " + name, e);
 			return new SuspendUserResult(this, e, currentRealm,
 					task, name, startDate, duration);
-		} catch (ResourceCreationException e) {
-			log.error("Failed to fully process suspend request for " + name, e);
-			return new SuspendUserResult(this, e, currentRealm,
-					task, name, startDate, duration);
-		}
+		} 
 	}
 	
 	public String[] getResultResourceKeys() {

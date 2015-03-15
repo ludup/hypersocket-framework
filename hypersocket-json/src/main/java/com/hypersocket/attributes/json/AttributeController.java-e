@@ -32,6 +32,7 @@ import com.hypersocket.json.SelectOption;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
@@ -97,29 +98,25 @@ public class AttributeController extends ResourceController {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
+
+		AttributeCategory newAttributeCategory;
+
 		try {
+			newAttributeCategory = service.createAttributeCategory(
+					attributeCategory.getName(),
+					attributeCategory.getContext(),
+					attributeCategory.getWeight());
 
-			AttributeCategory newAttributeCategory;
-
-			try {
-				newAttributeCategory = service.createAttributeCategory(
-						attributeCategory.getName(),
-						attributeCategory.getContext(),
-						attributeCategory.getWeight());
-
-				return new ResourceStatus<AttributeCategory>(
-						newAttributeCategory,
-						I18N.getResource(
-								sessionUtils.getLocale(request),
-								AttributeServiceImpl.RESOURCE_BUNDLE,
-								attributeCategory.getId() != null ? "attributeCategory.updated.info"
-										: "attributeCategory.created.info",
-								attributeCategory.getName()));
-			} catch (ResourceCreationException e) {
-				return new ResourceStatus<AttributeCategory>(false,
-						I18N.getResource(sessionUtils.getLocale(request),
-								e.getBundle(), e.getResourceKey(), e.getArgs()));
-			}
+			return new ResourceStatus<AttributeCategory>(
+					newAttributeCategory,
+					I18N.getResource(
+							sessionUtils.getLocale(request),
+							AttributeServiceImpl.RESOURCE_BUNDLE,
+							attributeCategory.getId() != null ? "attributeCategory.updated.info"
+									: "attributeCategory.created.info",
+							attributeCategory.getName()));
+		} catch (ResourceCreationException e) {
+			return new ResourceStatus<AttributeCategory>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -162,10 +159,8 @@ public class AttributeController extends ResourceController {
 									.getId() != null ? "attribute.updated.info"
 									: "attribute.created.info", attribute
 									.getName()));
-		} catch (ResourceChangeException | ResourceCreationException e) {
-			return new ResourceStatus<Attribute>(false, I18N.getResource(
-					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey(), e.getArgs()));
+		} catch (ResourceException e) {
+			return new ResourceStatus<Attribute>(false, e.getMessage());
 
 		} finally {
 			clearAuthenticatedContext();
@@ -227,7 +222,7 @@ public class AttributeController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "attributeCategories/contexts", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
@@ -240,8 +235,8 @@ public class AttributeController extends ResourceController {
 		try {
 			List<SelectOption> result = new ArrayList<SelectOption>();
 			for (String context : service.getContexts()) {
-				result.add(new SelectOption(context,
-						StringUtils.capitalize(context)));
+				result.add(new SelectOption(context, StringUtils
+						.capitalize(context)));
 			}
 			return new ResourceList<SelectOption>(result);
 		} finally {

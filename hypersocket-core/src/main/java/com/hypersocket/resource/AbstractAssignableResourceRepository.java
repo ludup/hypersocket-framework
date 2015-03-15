@@ -33,7 +33,7 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	List<T> getResources(Realm realm);
 
-	void saveResource(T resource, Map<String,String> properties) throws ResourceChangeException;
+	void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceChangeException;
 
 	List<T> search(Realm realm, String searchPattern, int start, int length,
 			ColumnSort[] sorting, CriteriaConfiguration... configs);
