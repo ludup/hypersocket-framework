@@ -213,18 +213,9 @@ public class CertificateResourceController extends ResourceController {
 									: "resource.created.info", resource
 									.getName()));
 
-		} catch (ResourceChangeException e) {
+		} catch (ResourceException e) {
 			return new ResourceStatus<CertificateResource>(false,
-					I18N.getResource(sessionUtils.getLocale(request),
-							e.getBundle(), e.getResourceKey(), e.getArgs()));
-		} catch (ResourceCreationException e) {
-			return new ResourceStatus<CertificateResource>(false,
-					I18N.getResource(sessionUtils.getLocale(request),
-							e.getBundle(), e.getResourceKey(), e.getArgs()));
-		} catch (ResourceNotFoundException e) {
-			return new ResourceStatus<CertificateResource>(false,
-					I18N.getResource(sessionUtils.getLocale(request),
-							e.getBundle(), e.getResourceKey(), e.getArgs()));
+					e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}

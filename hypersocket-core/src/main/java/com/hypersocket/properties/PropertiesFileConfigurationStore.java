@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.hypersocket.util.FileUtils;
+import com.hypersocket.utils.FileUtils;
 
 public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStore {
 
