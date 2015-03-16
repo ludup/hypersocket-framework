@@ -303,9 +303,13 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 	
 	@Override
-	public void saveResource(T resource, Map<String, String> properties) throws ResourceChangeException {
+	@SafeVarargs
+	public final void saveResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops) throws ResourceChangeException {
 
 		beforeSave(resource, properties);
+		for(TransactionOperation<T> op : ops) {
+			op.beforeOperation(resource, properties);
+		}
 		for (Map.Entry<String, String> e : properties.entrySet()) {
 			if (hasPropertyTemplate(e.getKey())) {
 				setValue(resource, e.getKey(), e.getValue());
@@ -314,6 +318,9 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		save(resource);
 		
 		afterSave(resource, properties);
+		for(TransactionOperation<T> op : ops) {
+			op.afterOperation(resource, properties);
+		}
 	}
 
 	@SuppressWarnings("unchecked")

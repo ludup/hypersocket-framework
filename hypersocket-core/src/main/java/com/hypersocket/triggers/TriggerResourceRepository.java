@@ -20,8 +20,6 @@ public interface TriggerResourceRepository extends
 
 	TriggerCondition getConditionById(Long id);
 
-	void updateResource(TriggerResource resource, Map<String, String> properties);
-
 	Collection<TriggerAction> getActionsByResourceKey(String resourceKey);
 
 	TriggerAction getActionByPostTriggerId(TriggerResource id);

@@ -38,7 +38,7 @@ import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
@@ -275,9 +275,7 @@ public class RealmController extends ResourceController {
 					realm.getId() != null ? "info.realm.updated"
 							: "info.realm.created", realm.getName()));
 
-		} catch (ResourceChangeException e) {
-			return new ResourceStatus<Realm>(false, e.getMessage());
-		} catch (ResourceCreationException e) {
+		} catch (ResourceException e) {
 			return new ResourceStatus<Realm>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
@@ -315,9 +313,7 @@ public class RealmController extends ResourceController {
 					previousName));
 
 		} catch (ResourceChangeException e) {
-			return new ResourceStatus<Realm>(false, I18N.getResource(
-					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey(), e.getArgs()));
+			return new ResourceStatus<Realm>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}
