@@ -30,13 +30,13 @@ public class NoPermissionTests extends AbstractServerTest {
 	@Test(expected = ClientProtocolException.class)
 	public void tryNoPermissionServerRestart() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/server/restart/5");
+		doGet("/hypersocket/api/server/restart/" + adminId);
 	}
 
 	@Test(expected = ClientProtocolException.class)
 	public void tryNoPermissionServerShutdown() throws ClientProtocolException,
 			IOException {
-		doGet("/hypersocket/api/server/shutdown/5");
+		doGet("/hypersocket/api/server/shutdown/" + adminId);
 	}
 
 	@Test(expected = ClientProtocolException.class)

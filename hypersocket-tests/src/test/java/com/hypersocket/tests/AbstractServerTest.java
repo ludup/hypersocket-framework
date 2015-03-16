@@ -130,7 +130,7 @@ public class AbstractServerTest {
 				.println("Integration test server is running. Changing admin password to Password123?");
 
 		logon("System", "admin", "admin", true, "Password123?");
-
+		adminId = getSession().getCurrentPrincipal().getId();
 		System.out.println("Logging out");
 
 		logoff();
@@ -159,7 +159,7 @@ public class AbstractServerTest {
 			} catch (Exception e) {
 			}
 		}
-		
+
 	}
 
 	protected static void logon(String realm, String username, String password)
@@ -619,12 +619,11 @@ public class AbstractServerTest {
 		debugJSON(newRoleJson);
 		return newRoleJsonResourceStatus;
 	}
-	
+
 	protected static JsonRole getRole(String roleName) throws Exception {
-		String newRoleJson = doGet("/hypersocket/api/roles/byName/"+roleName);
+		String newRoleJson = doGet("/hypersocket/api/roles/byName/" + roleName);
 		debugJSON(newRoleJson);
-		return mapper.readValue(
-				newRoleJson, JsonRole.class);
+		return mapper.readValue(newRoleJson, JsonRole.class);
 
 	}
 
@@ -725,9 +724,9 @@ public class AbstractServerTest {
 		logon("System", "user", "user");
 
 	}
-	
-	protected static void resetEveryonePermission() throws Exception{
-		JsonRole jsonRole =  getRole("Everyone"); 
+
+	protected static void resetEveryonePermission() throws Exception {
+		JsonRole jsonRole = getRole("Everyone");
 		RoleUpdate role = new RoleUpdate();
 		role.setId(jsonRole.getId());
 		role.setName("Everyone");
