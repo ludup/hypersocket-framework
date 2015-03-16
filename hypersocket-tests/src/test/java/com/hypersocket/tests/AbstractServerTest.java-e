@@ -725,6 +725,7 @@ public class AbstractServerTest {
 
 	}
 
+	@SuppressWarnings("unused")
 	protected static void resetEveryonePermission() throws Exception {
 		JsonRole jsonRole = getRole("Everyone");
 		RoleUpdate role = new RoleUpdate();
