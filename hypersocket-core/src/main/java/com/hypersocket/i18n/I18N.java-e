@@ -32,7 +32,7 @@ import java.util.Vector;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import com.hypersocket.util.FileUtils;
+import com.hypersocket.utils.FileUtils;
 
 public class I18N {
 

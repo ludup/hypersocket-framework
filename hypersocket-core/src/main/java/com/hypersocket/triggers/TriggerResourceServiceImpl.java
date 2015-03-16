@@ -36,6 +36,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
@@ -256,7 +257,28 @@ public class TriggerResourceServiceImpl extends
 		populateTrigger(name, event, result, resource.getRealm(), resource,
 				allConditions, anyConditions, actions, parentAction);
 
-		updateResource(resource, properties);
+		updateResource(resource, properties, new TransactionAdapter<TriggerResource>() {
+
+			@Override
+			public void afterOperation(TriggerResource resource,
+					Map<String, String> properties) {
+
+				for (TriggerAction action : resource.getActions()) {
+
+					if(action.getProperties()!=null) {
+						TaskProvider provider = taskService
+								.getTaskProvider(action.getResourceKey());
+						
+						for (Map.Entry<String, String> e : action.getProperties()
+								.entrySet()) {
+							provider.getRepository().setValue(action, e.getKey(),
+									e.getValue());
+						}
+					}
+				}
+			}
+			
+		});
 
 		for (TriggerAction action : resource.getActions()) {
 			TaskProvider provider = taskService.getTaskProvider(action
@@ -281,7 +303,28 @@ public class TriggerResourceServiceImpl extends
 		populateTrigger(name, event, result, realm, resource, allConditions,
 				anyConditions, actions, parentAction);
 
-		createResource(resource, properties);
+		createResource(resource, properties, new TransactionAdapter<TriggerResource>() {
+
+			@Override
+			public void afterOperation(TriggerResource resource,
+					Map<String, String> properties) {
+
+				for (TriggerAction action : resource.getActions()) {
+
+					if(action.getProperties()!=null) {
+						TaskProvider provider = taskService
+								.getTaskProvider(action.getResourceKey());
+						
+						for (Map.Entry<String, String> e : action.getProperties()
+								.entrySet()) {
+							provider.getRepository().setValue(action, e.getKey(),
+									e.getValue());
+						}
+					}
+				}
+			}
+			
+		});
 
 		for (TriggerAction action : resource.getActions()) {
 			TaskProvider provider = taskService.getTaskProvider(action

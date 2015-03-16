@@ -21,6 +21,7 @@ import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.resource.AbstractAssignableResourceService;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.AbstractResourceService;
+import com.hypersocket.resource.Resource;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Component
@@ -77,11 +78,17 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		try {
 			
 			Method m = resource.getClass().getMethod(methodName, (Class<?>[])null);
-			Object obj = m.invoke(resource);
-			if(obj==null) {
-				return "";
+			if(assignableServices.containsKey(m.getReturnType()) || resourceServices.containsKey(m.getReturnType())) {
+				Resource r = (Resource) m.invoke(resource);
+				return r.getId().toString();
+			} else {
+				Object obj = m.invoke(resource);
+				if(obj==null) {
+					return "";
+				}
+				return obj.toString();
 			}
-			return obj.toString();
+			
 		} catch (NoSuchMethodException e) {
 			t = e;
 		} catch (SecurityException e) {
