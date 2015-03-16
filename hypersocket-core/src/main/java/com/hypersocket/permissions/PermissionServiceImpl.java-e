@@ -33,6 +33,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hypersocket.auth.AbstractAuthenticatedService;
 import com.hypersocket.auth.AuthenticationPermission;
+import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
@@ -44,6 +45,10 @@ import com.hypersocket.realm.RolePermission;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.role.events.RoleCreatedEvent;
+import com.hypersocket.role.events.RoleDeletedEvent;
+import com.hypersocket.role.events.RoleEvent;
+import com.hypersocket.role.events.RoleUpdatedEvent;
 import com.hypersocket.tables.ColumnSort;
 
 @Service
@@ -64,6 +69,9 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 	@Autowired
 	@Qualifier("transactionManager")
 	protected PlatformTransactionManager txManager;
+
+	@Autowired
+	EventService eventService;
 
 	Set<Long> registerPermissionIds = new HashSet<Long>();
 	Set<Long> nonSystemPermissionIds = new HashSet<Long>();
@@ -133,6 +141,10 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			}
 
 		});
+		eventService.registerEvent(RoleEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(RoleCreatedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(RoleUpdatedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(RoleDeletedEvent.class, RESOURCE_BUNDLE);
 	}
 
 	@Override
@@ -195,20 +207,29 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 					RESOURCE_BUNDLE, "error.role.alreadyExists", name);
 			throw ex;
 		} catch (ResourceNotFoundException re) {
-			Role role = new Role();
-			role.setName(name);
-			role.setRealm(realm);
+			try {
+				Role role = new Role();
+				role.setName(name);
+				role.setRealm(realm);
 
-			repository.saveRole(role);
+				repository.saveRole(role);
 
-			repository.assignRole(role, principals.toArray(new Principal[0]));
+				repository.assignRole(role,
+						principals.toArray(new Principal[0]));
 
-			repository.grantPermissions(role, permissions);
+				repository.grantPermissions(role, permissions);
 
-			for (Principal p : principals) {
-				permissionsCache.remove(p);
+				for (Principal p : principals) {
+					permissionsCache.remove(p);
+				}
+				eventService.publishEvent(new RoleCreatedEvent(this,
+						getCurrentSession(), realm, role));
+				return role;
+			} catch (Throwable te) {
+				eventService.publishEvent(new RoleCreatedEvent(this, name, te,
+						getCurrentSession(), realm));
+				throw te;
 			}
-			return role;
 		}
 	}
 
@@ -397,12 +418,17 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 	@Override
 	public void deleteRole(Role role) throws AccessDeniedException {
-
 		assertPermission(RolePermission.DELETE);
-
-		repository.deleteRole(role);
-
-		permissionsCache.removeAll();
+		try {
+			repository.deleteRole(role);
+			permissionsCache.removeAll();
+			eventService.publishEvent(new RoleDeletedEvent(this,
+					getCurrentSession(), role.getRealm(), role));
+		} catch (Throwable te) {
+			eventService.publishEvent(new RoleDeletedEvent(this,
+					role.getName(), te, getCurrentSession(), role.getRealm()));
+			throw te;
+		}
 	}
 
 	@Override
@@ -450,41 +476,50 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 		} catch (ResourceNotFoundException ne) {
 			role.setName(name);
 		}
-		repository.saveRole(role);
+		try {
+			repository.saveRole(role);
 
-		Set<Principal> unassignPrincipals = getEntitiesNotIn(principals,
-				role.getPrincipals(), new EntityMatch<Principal>() {
-					@Override
-					public boolean validate(Principal t) {
-						return getCurrentRealm().equals(t.getRealm());
-					}
+			Set<Principal> unassignPrincipals = getEntitiesNotIn(principals,
+					role.getPrincipals(), new EntityMatch<Principal>() {
+						@Override
+						public boolean validate(Principal t) {
+							return getCurrentRealm().equals(t.getRealm());
+						}
 
-				});
-		Set<Principal> assignPrincipals = getEntitiesNotIn(
-				role.getPrincipals(), principals, new EntityMatch<Principal>() {
-					@Override
-					public boolean validate(Principal t) {
-						return getCurrentRealm().equals(t.getRealm());
-					}
+					});
+			Set<Principal> assignPrincipals = getEntitiesNotIn(
+					role.getPrincipals(), principals,
+					new EntityMatch<Principal>() {
+						@Override
+						public boolean validate(Principal t) {
+							return getCurrentRealm().equals(t.getRealm());
+						}
 
-				});
-		repository.unassignRole(role,
-				unassignPrincipals.toArray(new Principal[0]));
+					});
+			repository.unassignRole(role,
+					unassignPrincipals.toArray(new Principal[0]));
 
-		repository.assignRole(role, assignPrincipals.toArray(new Principal[0]));
+			repository.assignRole(role,
+					assignPrincipals.toArray(new Principal[0]));
 
-		Set<Permission> revokePermissions = getEntitiesNotIn(permissions,
-				role.getPermissions(), null);
-		Set<Permission> grantPermissions = getEntitiesNotIn(
-				role.getPermissions(), permissions, null);
+			Set<Permission> revokePermissions = getEntitiesNotIn(permissions,
+					role.getPermissions(), null);
+			Set<Permission> grantPermissions = getEntitiesNotIn(
+					role.getPermissions(), permissions, null);
 
-		repository.revokePermission(role, revokePermissions);
+			repository.revokePermission(role, revokePermissions);
 
-		repository.grantPermissions(role, grantPermissions);
+			repository.grantPermissions(role, grantPermissions);
 
-		permissionsCache.removeAll();
-
-		return role;
+			permissionsCache.removeAll();
+			eventService.publishEvent(new RoleUpdatedEvent(this,
+					getCurrentSession(), role.getRealm(), role));
+			return role;
+		} catch (Throwable te) {
+			eventService.publishEvent(new RoleUpdatedEvent(this,
+					role.getName(), te, getCurrentSession(), role.getRealm()));
+			throw te;
+		}
 	}
 
 	@Override
@@ -539,4 +574,5 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 
 		return new ArrayList<PropertyCategory>();
 	}
+
 }
