@@ -11,12 +11,12 @@ public class AbstractPermissionsTest extends AbstractServerTest {
 
 	@Test
 	public void tryServerRestart() throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/server/restart/5");
+		doGet("/hypersocket/api/server/restart/" + adminId);
 	}
 
 	@Test
 	public void tryServerShutdown() throws ClientProtocolException, IOException {
-		doGet("/hypersocket/api/server/shutdown/5");
+		doGet("/hypersocket/api/server/shutdown/" + adminId);
 	}
 
 	@Test
