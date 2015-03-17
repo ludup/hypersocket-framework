@@ -80,7 +80,11 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 			Method m = resource.getClass().getMethod(methodName, (Class<?>[])null);
 			if(assignableServices.containsKey(m.getReturnType()) || resourceServices.containsKey(m.getReturnType())) {
 				Resource r = (Resource) m.invoke(resource);
-				return r.getId().toString();
+				if(r==null) {
+					return null;
+				} else {
+					return r.getId().toString();
+				}
 			} else {
 				Object obj = m.invoke(resource);
 				if(obj==null) {

@@ -9,8 +9,12 @@ package com.hypersocket.auth;
 
 import java.util.Locale;
 
+import org.springframework.transaction.support.TransactionCallback;
+
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.Session;
 
 public interface AuthenticatedService {
@@ -35,4 +39,5 @@ public interface AuthenticatedService {
 	void setCurrentPassword(String password);
 	
 	void setCurrentPassword(Session session, String password);
+
 }
