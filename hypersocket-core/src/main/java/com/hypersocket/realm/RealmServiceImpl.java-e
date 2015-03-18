@@ -1436,7 +1436,7 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		for (String variableName : variableNames) {
 			variables.put(variableName,
-					userVariableReplacement.replaceVariables(principal, variableName));
+					userVariableReplacement.getVariableValue(principal, variableName));
 		}
 
 		return variables;
