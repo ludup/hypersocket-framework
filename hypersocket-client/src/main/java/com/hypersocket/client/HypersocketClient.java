@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.client.i18n.I18N;
 import com.hypersocket.json.JsonPrincipal;
-import com.hypersocket.json.ResourceStatus;
 
 public abstract class HypersocketClient<T> {
 
@@ -463,8 +462,7 @@ public abstract class HypersocketClient<T> {
 	public HypersocketClientTransport getTransport() {
 		return transport;
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	public Map<String,String> getUserVariables() throws IOException {
 		
 		String json = transport.get("currentRealm/user/allVariables");
@@ -484,11 +482,5 @@ public abstract class HypersocketClient<T> {
 		}
 		return value;
 	}
-	
-	class VariableResult extends ResourceStatus<Map<String,String>> {
-		
-		public VariableResult() {
-			
-		}
-	}
+
 }
