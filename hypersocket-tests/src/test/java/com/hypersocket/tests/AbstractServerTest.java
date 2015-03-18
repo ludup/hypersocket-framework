@@ -56,7 +56,7 @@ import com.hypersocket.util.OverridePropertyPlaceholderConfigurer;
 
 public class AbstractServerTest {
 
-	static File tmp;
+	protected static File tmp;
 	static Main main;
 	static BasicCookieStore cookieStore;
 	protected static ObjectMapper mapper = new ObjectMapper();
