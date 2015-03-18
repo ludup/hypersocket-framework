@@ -4,7 +4,9 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.URLEncoder;
+import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.openssl.jcajce.JcePEMEncryptorBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -50,8 +53,6 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.ResourceUpdate;
@@ -64,13 +65,6 @@ import com.hypersocket.tables.json.DataTablesPageProcessor;
 @Controller
 public class CertificateResourceController extends ResourceController {
 
-	/**
-	 * TODO rename this class to match your entity.
-	 * 
-	 * rename RequestMapping annotions for your desired resource URLs. e.g
-	 * replace certificates for example with "applications" certificates with "Applications"
-	 * certificate with "application" and certificate with "Application"
-	 */
 	@Autowired
 	CertificateResourceService resourceService;
 
@@ -130,12 +124,13 @@ public class CertificateResourceController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate());
+			return new ResourceList<PropertyCategory>(
+					resourceService.getPropertyTemplate());
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
@@ -148,7 +143,8 @@ public class CertificateResourceController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 			CertificateResource resource = resourceService.getResourceById(id);
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
+			return new ResourceList<PropertyCategory>(
+					resourceService.getPropertyTemplate(resource));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -179,9 +175,8 @@ public class CertificateResourceController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<CertificateResource> createOrUpdateNetworkResource(
 			HttpServletRequest request, HttpServletResponse response,
-			@RequestBody ResourceUpdate resource)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
+			@RequestBody ResourceUpdate resource) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
@@ -195,17 +190,14 @@ public class CertificateResourceController extends ResourceController {
 			for (PropertyItem i : resource.getProperties()) {
 				properties.put(i.getId(), i.getValue());
 			}
-			
+
 			if (resource.getId() != null) {
 				newResource = resourceService.updateResource(
 						resourceService.getResourceById(resource.getId()),
 						resource.getName(), properties);
 			} else {
 				newResource = resourceService.createResource(
-						resource.getName(),
-						realm,
-						properties,
-						false);
+						resource.getName(), realm, properties, false);
 			}
 			return new ResourceStatus<CertificateResource>(newResource,
 					I18N.getResource(sessionUtils.getLocale(request),
@@ -247,25 +239,27 @@ public class CertificateResourceController extends ResourceController {
 			String preDeletedName = resource.getName();
 			resourceService.deleteResource(resource);
 
-			return new ResourceStatus<CertificateResource>(true, I18N.getResource(
-					sessionUtils.getLocale(request),
-					CertificateResourceServiceImpl.RESOURCE_BUNDLE,
-					"resource.deleted.info", preDeletedName));
+			return new ResourceStatus<CertificateResource>(true,
+					I18N.getResource(sessionUtils.getLocale(request),
+							CertificateResourceServiceImpl.RESOURCE_BUNDLE,
+							"resource.deleted.info", preDeletedName));
 
 		} catch (ResourceException e) {
-			return new ResourceStatus<CertificateResource>(false, e.getMessage());
+			return new ResourceStatus<CertificateResource>(false,
+					e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/downloadCSR/{id}", method = RequestMethod.GET, produces = { "text/plain" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
 	public String generateCSR(HttpServletRequest request,
-			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException {
+			HttpServletResponse response, @PathVariable Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
@@ -274,14 +268,18 @@ public class CertificateResourceController extends ResourceController {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
-				
-				CertificateResource resource = resourceService.getResourceById(id);
+
+				CertificateResource resource = resourceService
+						.getResourceById(id);
 				String csr = resourceService.generateCSR(resource);
-				response.setHeader("Content-Disposition", "attachment; filename=\"" + resource.getName() + ".csr\"");
+				response.setHeader("Content-Disposition",
+						"attachment; filename=\"" + resource.getName()
+								+ ".csr\"");
 				return csr;
 			} catch (Exception e) {
 				try {
-					response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.ordinal());
+					response.sendError(HttpStatus.INTERNAL_SERVER_ERROR
+							.ordinal());
 				} catch (IOException e1) {
 				}
 				return null;
@@ -291,14 +289,15 @@ public class CertificateResourceController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/downloadCertificate/{id}", method = RequestMethod.GET, produces = { "text/plain" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
 	public String downloadCertificate(HttpServletRequest request,
-			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException {
+			HttpServletResponse response, @PathVariable Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
@@ -307,14 +306,20 @@ public class CertificateResourceController extends ResourceController {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
-				
-				CertificateResource resource = resourceService.getResourceById(id);
+
+				CertificateResource resource = resourceService
+						.getResourceById(id);
 				String csr = resource.getCertificate();
-				response.setHeader("Content-Disposition", "attachment; filename=\"" + resource.getName().replace(' ', '_') + ".crt\"");
+				response.setHeader(
+						"Content-Disposition",
+						"attachment; filename=\""
+								+ resource.getName().replace(' ', '_')
+								+ ".crt\"");
 				return csr;
 			} catch (Exception e) {
 				try {
-					response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.ordinal());
+					response.sendError(HttpStatus.INTERNAL_SERVER_ERROR
+							.ordinal());
 				} catch (IOException e1) {
 				}
 				return null;
@@ -324,14 +329,16 @@ public class CertificateResourceController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
-	@RequestMapping(value = "certificates/exportPfx/{id}", method = RequestMethod.POST, produces = {"application/json"})
+	@RequestMapping(value = "certificates/exportPfx/{id}", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
 	public RequestStatus exportPfx(HttpServletRequest request,
-			HttpServletResponse response, @PathVariable Long id,@RequestParam(value = "passphrase") String passphrase) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException {
+			HttpServletResponse response, @PathVariable Long id,
+			@RequestParam(value = "passphrase") String passphrase)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
@@ -340,26 +347,33 @@ public class CertificateResourceController extends ResourceController {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
-				
-				CertificateResource resource = resourceService.getResourceById(id);
-				
+
+				CertificateResource resource = resourceService
+						.getResourceById(id);
+
 				List<X509Certificate> certChain = new ArrayList<X509Certificate>();
-				X509Certificate[] arr = X509CertificateUtils.loadCertificateChainFromPEM(new ByteArrayInputStream(resource.getCertificate().getBytes("UTF-8")));
-				for(X509Certificate cert : arr) {
+				X509Certificate[] arr = X509CertificateUtils
+						.loadCertificateChainFromPEM(new ByteArrayInputStream(
+								resource.getCertificate().getBytes("UTF-8")));
+				for (X509Certificate cert : arr) {
 					certChain.add(cert);
 				}
-				if(StringUtils.isNotEmpty(resource.getBundle()))
-				arr = X509CertificateUtils.loadCertificateChainFromPEM(new ByteArrayInputStream(resource.getBundle().getBytes("UTF-8")));
-				for(X509Certificate cert : arr) {
+				if (StringUtils.isNotEmpty(resource.getBundle()))
+					arr = X509CertificateUtils
+							.loadCertificateChainFromPEM(new ByteArrayInputStream(
+									resource.getBundle().getBytes("UTF-8")));
+				for (X509Certificate cert : arr) {
 					certChain.add(cert);
 				}
-				
+
 				KeyStore keystore = X509CertificateUtils.createPKCS12Keystore(
-						X509CertificateUtils.loadKeyPairFromPEM(new ByteArrayInputStream(resource.getPrivateKey().getBytes("UTF-8")), "changeit".toCharArray()), 
-						certChain.toArray(new X509Certificate[0]),
-						"hypersocket", 
-						passphrase.toCharArray());
-							
+						X509CertificateUtils.loadKeyPairFromPEM(
+								new ByteArrayInputStream(resource
+										.getPrivateKey().getBytes("UTF-8")),
+								passphrase.toCharArray()), certChain
+								.toArray(new X509Certificate[0]),
+						"hypersocket", passphrase.toCharArray());
+
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				keystore.store(out, passphrase.toCharArray());
 				request.getSession().setAttribute("pfx", out.toByteArray());
@@ -372,19 +386,25 @@ public class CertificateResourceController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/downloadPfx/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
-	public byte[] exportPfx(HttpServletRequest request,
-			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException,ResourceNotFoundException {
+	public byte[] downloadPfx(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException, ResourceNotFoundException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			response.setHeader("Content-Disposition", "attachment; filename=\""
-					+ URLEncoder.encode(resourceService.getResourceById(id).getName().replace(' ', '_'), "UTF-8") + ".pfx\"");
+			response.setHeader(
+					"Content-Disposition",
+					"attachment; filename=\""
+							+ URLEncoder.encode(
+									resourceService.getResourceById(id)
+											.getName().replace(' ', '_'),
+									"UTF-8") + ".pfx\"");
 			return (byte[]) request.getSession().getAttribute("pfx");
 		} catch (Exception e) {
 			try {
@@ -394,17 +414,18 @@ public class CertificateResourceController extends ResourceController {
 			return null;
 		} finally {
 			clearAuthenticatedContext();
-		}	
+		}
 	}
-	
-	
+
 	@AuthenticationRequired
-	@RequestMapping(value = "certificates/exportPem/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@RequestMapping(value = "certificates/exportPem/{id}", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
-	public byte[] exportPem(HttpServletRequest request,
-			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException {
+	public RequestStatus exportPem(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable Long id,
+			@RequestParam(value = "passphrase") String passphrase)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
@@ -413,51 +434,92 @@ public class CertificateResourceController extends ResourceController {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
-				
-				CertificateResource resource = resourceService.getResourceById(id);
-				
+
+				CertificateResource resource = resourceService
+						.getResourceById(id);
+
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
-				ZipOutputStream zip = new ZipOutputStream(new BufferedOutputStream(out));
-				
+				ZipOutputStream zip = new ZipOutputStream(
+						new BufferedOutputStream(out));
+
 				zip.putNextEntry(new ZipEntry("certificate.pem"));
 				zip.write(resource.getCertificate().getBytes("UTF-8"));
 				zip.closeEntry();
-				
-				if(StringUtils.isNotEmpty(resource.getBundle())) {
+
+				if (StringUtils.isNotEmpty(resource.getBundle())) {
 					zip.putNextEntry(new ZipEntry("ca-bundle.pem"));
 					zip.write(resource.getBundle().getBytes("UTF-8"));
-					zip.closeEntry();	
+					zip.closeEntry();
 				}
-				
 				zip.putNextEntry(new ZipEntry("key.pem"));
-				zip.write(resource.getPrivateKey().getBytes("UTF-8"));
-				zip.closeEntry();
-				
-				zip.close();
-				
-				response.setHeader("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(resource.getName().replace(' ', '_'), "UTF-8") + ".zip\"");
-				return out.toByteArray();
-				
-			} catch (Exception e) {
-				try {
-					response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.ordinal());
-				} catch (IOException e1) {
+				if (passphrase == null || passphrase.trim().equals("")) {
+					zip.write(resource.getPrivateKey().getBytes("UTF-8"));
+				} else {
+					KeyPair keypair = X509CertificateUtils.loadKeyPairFromPEM(
+							new ByteArrayInputStream(resource.getPrivateKey()
+									.getBytes("UTF-8")), passphrase
+									.toCharArray());
+					ByteArrayOutputStream bout = new ByteArrayOutputStream();
+					org.bouncycastle.openssl.PEMWriter pem = new org.bouncycastle.openssl.PEMWriter(
+							new OutputStreamWriter(bout));
+					pem.writeObject(
+							keypair,
+							new JcePEMEncryptorBuilder("AES-128-CBC")
+									.setProvider("BC").build(
+											passphrase.toCharArray()));
+					pem.flush();
+					zip.write(bout.toByteArray());
+					pem.close();
+					bout.close();
 				}
-				return null;
+				zip.closeEntry();
+				zip.close();
+				request.getSession().setAttribute("pem", out.toByteArray());
+				return new RequestStatus(true);
+			} catch (Exception e) {
+				return new RequestStatus(false, e.getMessage());
 			}
-
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
+	@AuthenticationRequired
+	@RequestMapping(value = "certificates/downloadPem/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public byte[] downloadPem(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException, ResourceNotFoundException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			response.setHeader(
+					"Content-Disposition",
+					"attachment; filename=\""
+							+ URLEncoder.encode(
+									resourceService.getResourceById(id)
+											.getName().replace(' ', '_'),
+									"UTF-8") + ".zip\"");
+			return (byte[]) request.getSession().getAttribute("pem");
+		} catch (Exception e) {
+			try {
+				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.ordinal());
+			} catch (IOException e1) {
+			}
+			return null;
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/cert/{id}", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
 	public CertificateStatus uploadCertificate(HttpServletRequest request,
-			HttpServletResponse response,
-			@PathVariable Long id,
+			HttpServletResponse response, @PathVariable Long id,
 			@RequestPart(value = "file") MultipartFile file,
 			@RequestPart(value = "bundle") MultipartFile bundle)
 			throws AccessDeniedException, UnauthorizedException,
@@ -470,12 +532,14 @@ public class CertificateResourceController extends ResourceController {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
-				CertificateResource resource = resourceService.getResourceById(id);
+				CertificateResource resource = resourceService
+						.getResourceById(id);
 				resourceService.updateCertificate(resource, file, bundle);
 				status.setSuccess(true);
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
-						CertificateResourceServiceImpl.RESOURCE_BUNDLE, "info.certUploaded"));
+						CertificateResourceServiceImpl.RESOURCE_BUNDLE,
+						"info.certUploaded"));
 
 			} catch (Exception ex) {
 				status.setMessage(I18N.getResource(
@@ -490,7 +554,7 @@ public class CertificateResourceController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/pem", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
@@ -504,9 +568,10 @@ public class CertificateResourceController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		return replaceKey(request, response, file, bundle, key, passphrase, null);
+		return replaceKey(request, response, file, bundle, key, passphrase,
+				null);
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/pem/{id}", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
@@ -517,11 +582,9 @@ public class CertificateResourceController extends ResourceController {
 			@RequestPart(value = "bundle") MultipartFile bundle,
 			@RequestPart(value = "key") MultipartFile key,
 			@RequestParam(value = "passphrase") String passphrase,
-			@PathVariable Long id)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
+			@PathVariable Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
 
-		
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
@@ -529,25 +592,20 @@ public class CertificateResourceController extends ResourceController {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
-				
-				if(id==null) {
-					status.setResource(resourceService.importPrivateKey(
-							key, 
-							passphrase, 
-							file,
-							bundle));
+
+				if (id == null) {
+					status.setResource(resourceService.importPrivateKey(key,
+							passphrase, file, bundle));
 				} else {
 					status.setResource(resourceService.replacePrivateKey(
-							resourceService.getResourceById(id), 
-							key, 
-							passphrase, 
-							file, 
-							bundle));
+							resourceService.getResourceById(id), key,
+							passphrase, file, bundle));
 				}
 				status.setSuccess(true);
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
-						CertificateResourceServiceImpl.RESOURCE_BUNDLE, "info.keyUploaded"));
+						CertificateResourceServiceImpl.RESOURCE_BUNDLE,
+						"info.keyUploaded"));
 			} catch (InvalidPassphraseException e) {
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
@@ -579,7 +637,7 @@ public class CertificateResourceController extends ResourceController {
 			SessionTimeoutException {
 		return replacePfx(request, response, key, passphrase, null);
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/pfx/{id}", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
@@ -588,10 +646,8 @@ public class CertificateResourceController extends ResourceController {
 			HttpServletResponse response,
 			@RequestPart(value = "key") MultipartFile key,
 			@RequestParam(value = "passphrase") String passphrase,
-			@PathVariable Long id)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
-		
+			@PathVariable Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
@@ -600,21 +656,25 @@ public class CertificateResourceController extends ResourceController {
 			CertificateStatus status = new CertificateStatus();
 			status.setSuccess(false);
 			try {
-				if(id==null) {
-					status.setResource(resourceService.importPfx(key, passphrase));
+				if (id == null) {
+					status.setResource(resourceService.importPfx(key,
+							passphrase));
 				} else {
-					CertificateResource resource = resourceService.getResourceById(id);
-					status.setResource(resourceService.replacePfx(resource, key, passphrase));
+					CertificateResource resource = resourceService
+							.getResourceById(id);
+					status.setResource(resourceService.replacePfx(resource,
+							key, passphrase));
 				}
 				status.setSuccess(true);
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
-						CertificateResourceServiceImpl.RESOURCE_BUNDLE, "info.keyUploaded"));
-//			} catch (InvalidPassphraseException e) {
-//				status.setMessage(I18N.getResource(
-//						sessionUtils.getLocale(request),
-//						CertificateService.RESOURCE_BUNDLE,
-//						"error.invalidPassphrase"));
+						CertificateResourceServiceImpl.RESOURCE_BUNDLE,
+						"info.keyUploaded"));
+				// } catch (InvalidPassphraseException e) {
+				// status.setMessage(I18N.getResource(
+				// sessionUtils.getLocale(request),
+				// CertificateService.RESOURCE_BUNDLE,
+				// "error.invalidPassphrase"));
 			} catch (Exception e) {
 				status.setMessage(I18N.getResource(
 						sessionUtils.getLocale(request),
