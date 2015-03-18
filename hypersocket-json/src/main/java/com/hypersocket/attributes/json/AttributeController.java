@@ -144,15 +144,8 @@ public class AttributeController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
-<<<<<<< HEAD
-		AttributeCategory newAttributeCategory;
-
 		try {
-			newAttributeCategory = service.createAttributeCategory(
-					attributeCategory.getName(),
-					attributeCategory.getContext(),
-					attributeCategory.getWeight());
-=======
+
 			AttributeCategory newAttributeCategory;
 
 			if (attributeCategory.getId() != null) {
@@ -167,7 +160,6 @@ public class AttributeController extends ResourceController {
 						attributeCategory.getContext(),
 						attributeCategory.getWeight());
 			}
->>>>>>> 0f3a63985798f6ee3b6a56012ae883e8746a72d4
 
 			return new ResourceStatus<AttributeCategory>(
 					newAttributeCategory,
@@ -177,16 +169,8 @@ public class AttributeController extends ResourceController {
 							attributeCategory.getId() != null ? "attributeCategory.updated.info"
 									: "attributeCategory.created.info",
 							attributeCategory.getName()));
-<<<<<<< HEAD
-		} catch (ResourceCreationException e) {
+		} catch (ResourceException e) {
 			return new ResourceStatus<AttributeCategory>(false, e.getMessage());
-=======
-		} catch (ResourceChangeException | ResourceCreationException e) {
-			return new ResourceStatus<AttributeCategory>(false,
-					I18N.getResource(sessionUtils.getLocale(request),
-							e.getBundle(), e.getResourceKey(), e.getArgs()));
-
->>>>>>> 0f3a63985798f6ee3b6a56012ae883e8746a72d4
 		} finally {
 			clearAuthenticatedContext();
 		}
