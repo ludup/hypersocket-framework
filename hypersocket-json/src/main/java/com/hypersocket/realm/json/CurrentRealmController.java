@@ -41,7 +41,6 @@ import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;

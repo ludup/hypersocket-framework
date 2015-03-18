@@ -2,7 +2,6 @@ package com.hypersocket.triggers;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.resource.AbstractResourceRepository;

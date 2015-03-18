@@ -32,8 +32,6 @@ import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.json.SelectOption;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.Column;

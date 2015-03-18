@@ -52,4 +52,8 @@ public interface TriggerResourceService extends
 
 	List<TriggerResource> getParentTriggers(Long id);
 
+	void start();
+
+	void stop();
+
 }

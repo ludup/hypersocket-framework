@@ -77,11 +77,12 @@ public class TriggerResourceServiceImpl extends
 	@Autowired
 	TaskProviderService taskService; 
 	
-	
 	Map<String, TriggerConditionProvider> registeredConditions = new HashMap<String, TriggerConditionProvider>();
 
 	Map<String, ReplacementVariableProvider> replacementVariables = new HashMap<String, ReplacementVariableProvider>();
 
+	boolean running = true;
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -398,7 +399,12 @@ public class TriggerResourceServiceImpl extends
 	private void processEventTriggers(SystemEvent event) {
 
 		// TODO cache triggers to prevent constant database lookup
-		
+		if(!running) {
+			if(log.isDebugEnabled()) {
+				log.debug("Not processing triggers as the service is not running");
+			}
+			return;
+		}
 		
 		if (log.isInfoEnabled()) {
 			log.info("Looking for triggers for events " 
@@ -477,4 +483,13 @@ public class TriggerResourceServiceImpl extends
 		return triggers;
 	}
 
+	@Override
+	public void start() {
+		running = true;
+	}
+	
+	@Override
+	public void stop() {
+		running = false;
+	}
 }
