@@ -35,4 +35,5 @@ public interface AuthenticatedService {
 	void setCurrentPassword(String password);
 	
 	void setCurrentPassword(Session session, String password);
+
 }

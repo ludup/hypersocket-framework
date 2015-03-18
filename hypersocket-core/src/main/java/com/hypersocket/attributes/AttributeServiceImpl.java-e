@@ -8,6 +8,10 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.attributes.events.AttributeCategoryCreatedEvent;
+import com.hypersocket.attributes.events.AttributeCategoryDeletedEvent;
+import com.hypersocket.attributes.events.AttributeCategoryEvent;
+import com.hypersocket.attributes.events.AttributeCategoryUpdatedEvent;
 import com.hypersocket.attributes.events.AttributeCreatedEvent;
 import com.hypersocket.attributes.events.AttributeDeletedEvent;
 import com.hypersocket.attributes.events.AttributeEvent;
@@ -59,6 +63,15 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 				.registerEvent(AttributeUpdatedEvent.class, RESOURCE_BUNDLE);
 		eventService
 				.registerEvent(AttributeDeletedEvent.class, RESOURCE_BUNDLE);
+
+		eventService.registerEvent(AttributeCategoryEvent.class,
+				RESOURCE_BUNDLE);
+		eventService.registerEvent(AttributeCategoryCreatedEvent.class,
+				RESOURCE_BUNDLE);
+		eventService.registerEvent(AttributeCategoryUpdatedEvent.class,
+				RESOURCE_BUNDLE);
+		eventService.registerEvent(AttributeCategoryDeletedEvent.class,
+				RESOURCE_BUNDLE);
 	}
 
 	@Override
@@ -73,6 +86,15 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 		assertPermission(AttributePermission.READ);
 		return attributeRepository.searchAttributes(searchPattern, start,
 				length, sorting);
+	}
+
+	@Override
+	public List<AttributeCategory> searchAttributeCategories(
+			String searchPattern, int start, int length, ColumnSort[] sorting)
+			throws AccessDeniedException {
+		assertPermission(AttributePermission.READ);
+		return attributeCategoryRepository.searchAttributeCategories(
+				searchPattern, start, length, sorting);
 	}
 
 	@Override
@@ -95,6 +117,14 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 	}
 
 	@Override
+	public Long getAttributeCategoryCount(String searchPattern)
+			throws AccessDeniedException {
+		assertPermission(AttributePermission.READ);
+		return attributeCategoryRepository
+				.getAttributeCategoryCount(searchPattern);
+	}
+
+	@Override
 	public Attribute getAttributeById(Long id) throws AccessDeniedException {
 		assertPermission(AttributePermission.READ);
 		return attributeRepository.getEntityById(id);
@@ -105,26 +135,61 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 			String context, int weight) throws ResourceCreationException,
 			AccessDeniedException {
 		assertPermission(AttributePermission.CREATE);
-
+		AttributeCategory attributeCategory = new AttributeCategory();
 		try {
-			if (attributeCategoryRepository.nameExists(name)) {
+			attributeCategory.setName(name);
+			if (attributeCategoryRepository.nameExists(attributeCategory)) {
 				throw new ResourceCreationException(RESOURCE_BUNDLE,
 						"attribute.nameInUse.error", name);
 			}
 
-			AttributeCategory attributeCategory = new AttributeCategory();
 			attributeCategory.setName(name);
 			attributeCategory.setContext(context);
 			attributeCategory.setWeight(weight);
 			attributeCategoryRepository.saveCategory(attributeCategory);
-			return attributeCategory;
 
-		} catch (ResourceCreationException ex) {
+			eventService.publishEvent(new AttributeCategoryCreatedEvent(this,
+					getCurrentSession(), attributeCategory));
+			return attributeCategory;
+		} catch (Exception e) {
+			eventService.publishEvent(new AttributeCategoryCreatedEvent(this,
+					e, getCurrentSession(), attributeCategory));
+			throw e;
+		}
+	}
+
+	@Override
+	public AttributeCategory updateAttributeCategory(
+			AttributeCategory category, Long id, String name, String context,
+			int weight) throws ResourceChangeException, AccessDeniedException {
+		assertPermission(AttributePermission.UPDATE);
+		String oldName = category.getName();
+		try {
+			if (attributeCategoryRepository.nameExists(category)) {
+				throw new ResourceChangeException(RESOURCE_BUNDLE,
+						"attribute.nameInUse.error", name);
+			}
+
+			category.setId(id);
+			category.setName(name);
+			category.setContext(context);
+			category.setWeight(weight);
+			attributeCategoryRepository.saveCategory(category);
+			eventService.publishEvent(new AttributeCategoryUpdatedEvent(this,
+					getCurrentSession(), oldName, category));
+			return category;
+
+		} catch (ResourceChangeException ex) {
+			eventService.publishEvent(new AttributeCategoryUpdatedEvent(this,
+					ex, getCurrentSession(), category));
 			throw ex;
 		} catch (Throwable t) {
-			throw new ResourceCreationException(RESOURCE_BUNDLE,
-					"error.failedToCreateCategory", t.getMessage());
+			eventService.publishEvent(new AttributeCategoryUpdatedEvent(this,
+					t, getCurrentSession(), category));
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"error.failedToUpdateCategory", t.getMessage());
 		}
+
 	}
 
 	@Override
@@ -235,6 +300,22 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 		} catch (Throwable e) {
 			eventService.publishEvent(new AttributeDeletedEvent(this, e,
 					getCurrentSession(), attribute));
+			throw e;
+		}
+
+	}
+
+	@Override
+	public void deleteAttributeCategory(AttributeCategory category)
+			throws AccessDeniedException {
+		try {
+			assertPermission(AttributePermission.DELETE);
+			attributeCategoryRepository.deleteEntity(category);
+			eventService.publishEvent(new AttributeCategoryDeletedEvent(this,
+					getCurrentSession(), category));
+		} catch (Throwable e) {
+			eventService.publishEvent(new AttributeCategoryDeletedEvent(this,
+					e, getCurrentSession(), category));
 			throw e;
 		}
 

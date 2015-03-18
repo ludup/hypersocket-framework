@@ -34,6 +34,7 @@ import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
+import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.json.PropertyItem;
@@ -82,6 +83,24 @@ public class ConfigurationController extends AuthenticatedController {
 			UnauthorizedException, SessionTimeoutException {
 		return getSystemCategories(request, group);
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "configuration/values/{resourceKeys}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Map<String,String>> getPropertyValues(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String resourceKeys) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+		
+		String[] resources = resourceKeys.split(",");
+		Map<String,String> results = new HashMap<String,String>();
+		for(String resourceKey : resources) {
+			results.put(resourceKey, configurationService.getValue(
+					sessionUtils.getCurrentRealm(request), resourceKey));
+		}
+		
+		return new ResourceStatus<Map<String,String>>(results);
+	}	
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "configuration/realm/{group}", method = RequestMethod.GET, produces = { "application/json" })
