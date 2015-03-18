@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.hypersocket.attributes.Attribute;
 import com.hypersocket.attributes.AttributeCategory;
+import com.hypersocket.attributes.AttributeCategoryColumns;
 import com.hypersocket.attributes.AttributeColumns;
 import com.hypersocket.attributes.AttributeService;
 import com.hypersocket.attributes.AttributeServiceImpl;
@@ -87,6 +89,49 @@ public class AttributeController extends ResourceController {
 	}
 
 	@AuthenticationRequired
+	@RequestMapping(value = "attributeCategories/table", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public DataTablesResult tableAttributeCategories(
+			final HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			return processDataTablesRequest(request,
+					new DataTablesPageProcessor() {
+
+						@Override
+						public Column getColumn(int col) {
+							return AttributeCategoryColumns.values()[col];
+						}
+
+						@Override
+						public List<?> getPage(String searchPattern, int start,
+								int length, ColumnSort[] sorting)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							return service.searchAttributeCategories(
+									searchPattern, start, length, sorting);
+
+						}
+
+						@Override
+						public Long getTotalCount(String searchPattern)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							return service
+									.getAttributeCategoryCount(searchPattern);
+						}
+					});
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
 	@RequestMapping(value = "attributeCategories/attributeCategory", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -99,6 +144,7 @@ public class AttributeController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
+<<<<<<< HEAD
 		AttributeCategory newAttributeCategory;
 
 		try {
@@ -106,6 +152,22 @@ public class AttributeController extends ResourceController {
 					attributeCategory.getName(),
 					attributeCategory.getContext(),
 					attributeCategory.getWeight());
+=======
+			AttributeCategory newAttributeCategory;
+
+			if (attributeCategory.getId() != null) {
+				newAttributeCategory = service.updateAttributeCategory(service
+						.getAttributeCategoryById(attributeCategory.getId()),
+						attributeCategory.getId(), attributeCategory.getName(),
+						attributeCategory.getContext(), attributeCategory
+								.getWeight());
+			} else {
+				newAttributeCategory = service.createAttributeCategory(
+						attributeCategory.getName(),
+						attributeCategory.getContext(),
+						attributeCategory.getWeight());
+			}
+>>>>>>> 0f3a63985798f6ee3b6a56012ae883e8746a72d4
 
 			return new ResourceStatus<AttributeCategory>(
 					newAttributeCategory,
@@ -115,8 +177,16 @@ public class AttributeController extends ResourceController {
 							attributeCategory.getId() != null ? "attributeCategory.updated.info"
 									: "attributeCategory.created.info",
 							attributeCategory.getName()));
+<<<<<<< HEAD
 		} catch (ResourceCreationException e) {
 			return new ResourceStatus<AttributeCategory>(false, e.getMessage());
+=======
+		} catch (ResourceChangeException | ResourceCreationException e) {
+			return new ResourceStatus<AttributeCategory>(false,
+					I18N.getResource(sessionUtils.getLocale(request),
+							e.getBundle(), e.getResourceKey(), e.getArgs()));
+
+>>>>>>> 0f3a63985798f6ee3b6a56012ae883e8746a72d4
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -196,6 +266,49 @@ public class AttributeController extends ResourceController {
 					sessionUtils.getLocale(request),
 					AttributeServiceImpl.RESOURCE_BUNDLE,
 					"attribute.deleted.info", preDeletedName));
+
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "attributeCategories/attributeCategory/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<AttributeCategory> deleteAttributeCategory(
+			HttpServletRequest request, HttpServletResponse response,
+			@PathVariable("id") Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+			AttributeCategory category = service.getAttributeCategoryById(id);
+
+			if (category == null) {
+				return new ResourceStatus<AttributeCategory>(false,
+						I18N.getResource(sessionUtils.getLocale(request),
+								AttributeServiceImpl.RESOURCE_BUNDLE,
+								"error.invalidAttributeCategoryId", id));
+			}
+
+			String preDeletedName = category.getName();
+			try {
+				service.deleteAttributeCategory(category);
+			} catch (DataIntegrityViolationException e) {
+				return new ResourceStatus<AttributeCategory>(false,
+						I18N.getResource(sessionUtils.getLocale(request),
+								AttributeServiceImpl.RESOURCE_BUNDLE,
+								"attributeCategory.deleteError.info",
+								preDeletedName));
+			}
+
+			return new ResourceStatus<AttributeCategory>(true,
+					I18N.getResource(sessionUtils.getLocale(request),
+							AttributeServiceImpl.RESOURCE_BUNDLE,
+							"attributeCategory.deleted.info", preDeletedName));
 
 		} finally {
 			clearAuthenticatedContext();
