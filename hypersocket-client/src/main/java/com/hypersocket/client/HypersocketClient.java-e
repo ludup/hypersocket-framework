@@ -487,5 +487,8 @@ public abstract class HypersocketClient<T> {
 	
 	class VariableResult extends ResourceStatus<Map<String,String>> {
 		
+		public VariableResult() {
+			
+		}
 	}
 }
