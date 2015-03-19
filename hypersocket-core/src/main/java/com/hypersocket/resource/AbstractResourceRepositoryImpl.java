@@ -58,21 +58,34 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		delete(resource);
 	}
 
-	@Override
-	@Transactional
-	public void saveResource(T resource, Map<String,String> properties) {
+	protected void beforeSave(T resource, Map<String,String> properties) {
 		
-		setValues(resource, properties);
-		save(resource);
+	}
+	
+	protected void afterSave(T resource, Map<String,String> properties) {
 		
 	}
 	
 	@Override
 	@Transactional
-	public void updateResource(T resource, Map<String,String> properties) {
+	@SafeVarargs
+	public final void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) {
+		
+		beforeSave(resource, properties);
+		
+		for(TransactionOperation<T> op : ops) {
+			op.beforeOperation(resource, properties);
+		}
 		
 		setValues(resource, properties);
 		save(resource);
+		
+		afterSave(resource, properties);
+		
+		for(TransactionOperation<T> op : ops) {
+			op.afterOperation(resource, properties);
+		}
+		
 	}
 
 
@@ -84,8 +97,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		Criteria crit = createCriteria(getResourceClass());
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit.add(Restrictions.eq("deleted", false));
-		crit.add(Restrictions.or(Restrictions.eq("realm", realm),
-				Restrictions.isNull("realm")));
+		crit.add(Restrictions.eq("realm", realm));
 
 		return (List<T>) crit.list();
 	}

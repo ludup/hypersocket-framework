@@ -32,7 +32,7 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmColumns;
 import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.Column;
@@ -244,8 +244,7 @@ public class RoleController extends ResourceController {
 					role.getId() != null ? "info.role.updated"
 							: "info.role.created", newRole.getName()));
 
-		} catch (ResourceNotFoundException | ResourceCreationException
-				| ResourceChangeException e) {
+		} catch (ResourceException e) {
 			return new ResourceStatus<Role>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();

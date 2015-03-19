@@ -27,10 +27,12 @@ public interface AbstractAssignableResourceService<T> extends AuthenticatedServi
 
 	Collection<T> getResources(Principal principal) throws AccessDeniedException;
 
-	void createResource(T resource, Map<String,String> properties) throws 
+	void createResource(T resource, Map<String,String> properties,
+			TransactionOperation<T>... ops) throws 
 			AccessDeniedException, ResourceCreationException;
 
-	void updateResource(T resource, Map<String,String> properties) throws ResourceChangeException,
+	void updateResource(T resource, Map<String,String> properties,
+			@SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException;
 
 	List<T> searchResources(Realm realm, String search, int start, int length,
