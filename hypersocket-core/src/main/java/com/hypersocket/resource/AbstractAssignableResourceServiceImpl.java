@@ -73,7 +73,9 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 
 	@Override
-	public void createResource(T resource, Map<String,String> properties) throws ResourceCreationException,
+	@SafeVarargs
+	public final void createResource(T resource, Map<String,String> properties,  
+			TransactionOperation<T>... ops) throws ResourceCreationException,
 			AccessDeniedException {
 
 		assertPermission(getCreatePermission());
@@ -90,8 +92,11 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 					resource.setRealm(getCurrentRealm());
 				}
 				beforeCreateResource(resource, properties);
-				getRepository().saveResource(resource, properties);
+				
+				getRepository().saveResource(resource, properties, ops);
+				
 				afterCreateResource(resource, properties);
+
 				fireResourceCreationEvent(resource);
 			} catch (Throwable t) {
 				log.error("Failed to create resource", t);
@@ -127,7 +132,9 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 	protected abstract void fireResourceCreationEvent(T resource, Throwable t);
 
-	public void updateResource(T resource, Map<String,String> properties) throws ResourceChangeException,
+	@SafeVarargs
+	public final void updateResource(T resource, Map<String,String> properties,  
+			TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
 		assertPermission(getUpdatePermission());
 
@@ -136,8 +143,11 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 				resource.setRealm(getCurrentRealm());
 			}
 			beforeUpdateResource(resource, properties);
-			getRepository().saveResource(resource, properties);
+
+			getRepository().saveResource(resource, properties, ops);
+
 			afterUpdateResource(resource, properties);
+
 			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {
 			fireResourceUpdateEvent(resource, t);

@@ -18,10 +18,8 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 
 	void deleteResource(T resource);
 
-	void saveResource(T resource, Map<String,String> properties);
+	void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops);
 
-	void updateResource(T resource, Map<String,String> properties);
-	
 	List<T> getResources(Realm realm);
 
 	List<T> search(Realm realm, String searchPattern, int start, int length,

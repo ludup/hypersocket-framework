@@ -1,4 +1,4 @@
-package com.hypersocket.util;
+package com.hypersocket.utils;
 
 import java.io.File;
 import java.io.IOException;

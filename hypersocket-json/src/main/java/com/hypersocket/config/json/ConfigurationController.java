@@ -34,6 +34,7 @@ import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
+import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.json.PropertyItem;
@@ -84,6 +85,24 @@ public class ConfigurationController extends AuthenticatedController {
 	}
 	
 	@AuthenticationRequired
+	@RequestMapping(value = "configuration/values/{resourceKeys}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Map<String,String>> getPropertyValues(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String resourceKeys) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+		
+		String[] resources = resourceKeys.split(",");
+		Map<String,String> results = new HashMap<String,String>();
+		for(String resourceKey : resources) {
+			results.put(resourceKey, configurationService.getValue(
+					sessionUtils.getCurrentRealm(request), resourceKey));
+		}
+		
+		return new ResourceStatus<Map<String,String>>(results);
+	}	
+	
+	@AuthenticationRequired
 	@RequestMapping(value = "configuration/realm/{group}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -126,9 +145,7 @@ public class ConfigurationController extends AuthenticatedController {
 					sessionUtils.getLocale(request), RESOURCE_KEY,
 					"message.saved"));
 		} catch (ResourceChangeException e) {
-			return new RequestStatus(false, I18N.getResource(
-					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey(), e.getArgs()));
+			return new RequestStatus(false, e.getMessage());
 		} catch(Throwable t) { 
 			return new RequestStatus(false, I18N.getResource(
 					sessionUtils.getLocale(request), ConfigurationServiceImpl.RESOURCE_BUNDLE,

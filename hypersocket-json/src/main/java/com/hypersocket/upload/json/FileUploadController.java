@@ -1,7 +1,5 @@
 package com.hypersocket.upload.json;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -80,10 +78,8 @@ public class FileUploadController extends ResourceController {
 					"fileUpload.uploaded.info", fileUpload.getName()));
 
 		} catch (ResourceCreationException e) {
-			return new ResourceStatus<FileUpload>(false, I18N.getResource(
-					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey(), e.getArgs()));
-		} catch (IOException e) {
+			return new ResourceStatus<FileUpload>(false, e.getMessage());
+		} catch (Throwable e) {
 			return new ResourceStatus<FileUpload>(false, I18N.getResource(
 					sessionUtils.getLocale(request),
 					FileUploadServiceImpl.RESOURCE_BUNDLE, "fileUpload.error",

@@ -41,7 +41,6 @@ import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
@@ -361,9 +360,7 @@ public class CurrentRealmController extends ResourceController {
 					sessionUtils.getLocale(request),
 					RealmServiceImpl.RESOURCE_BUNDLE, "profile.saved"));
 		} catch (ResourceChangeException e) {
-			return new RequestStatus(false, I18N.getResource(
-					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey(), e.getArgs()));
+			return new RequestStatus(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -503,14 +500,8 @@ public class CurrentRealmController extends ResourceController {
 							: "info.group.created", principal
 							.getPrincipalName()));
 
-		} catch (ResourceCreationException e) {
-			return new ResourceStatus<Principal>(false, I18N.getResource(
-					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey(), e.getArgs()));
-		} catch (ResourceChangeException e) {
-			return new ResourceStatus<Principal>(false, I18N.getResource(
-					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey(), e.getArgs()));
+		} catch (ResourceException e) {
+			return new ResourceStatus<Principal>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -540,9 +531,7 @@ public class CurrentRealmController extends ResourceController {
 							oldName));
 
 		} catch (ResourceChangeException e) {
-			return new ResourceStatus<Principal>(false, I18N.getResource(
-					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey(), e.getArgs()));
+			return new ResourceStatus<Principal>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -571,9 +560,7 @@ public class CurrentRealmController extends ResourceController {
 					RealmService.RESOURCE_BUNDLE, "info.user.deleted", oldName));
 
 		} catch (ResourceChangeException e) {
-			return new ResourceStatus<Principal>(false, I18N.getResource(
-					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey(), e.getArgs()));
+			return new ResourceStatus<Principal>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -624,14 +611,8 @@ public class CurrentRealmController extends ResourceController {
 									: "info.user.created", principal
 									.getPrincipalName()));
 
-		} catch (ResourceChangeException e) {
-			return new ResourceStatus<Principal>(false, I18N.getResource(
-					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey(), e.getArgs()));
-		} catch (ResourceCreationException e) {
-			return new ResourceStatus<Principal>(false, I18N.getResource(
-					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey(), e.getArgs()));
+		} catch (ResourceException e) {
+			return new ResourceStatus<Principal>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -664,9 +645,7 @@ public class CurrentRealmController extends ResourceController {
 					principal.getName()));
 
 		} catch (ResourceCreationException e) {
-			return new CredentialsStatus(false, I18N.getResource(
-					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey(), e.getArgs()));
+			return new CredentialsStatus(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -734,15 +713,9 @@ public class CurrentRealmController extends ResourceController {
 							"suspendUser.suspendSuccess", principalSuspension
 									.getPrincipal().getPrincipalName()));
 
-		} catch (ResourceCreationException e) {
+		} catch (ResourceException e) {
 			return new ResourceStatus<PrincipalSuspension>(false,
-					I18N.getResource(sessionUtils.getLocale(request),
-							e.getBundle(), e.getResourceKey(), e.getArgs()));
-		} catch (ResourceNotFoundException e) {
-			return new ResourceStatus<PrincipalSuspension>(false,
-					I18N.getResource(sessionUtils.getLocale(request),
-							e.getBundle(), e.getResourceKey(), e.getArgs()));
-
+					e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}
