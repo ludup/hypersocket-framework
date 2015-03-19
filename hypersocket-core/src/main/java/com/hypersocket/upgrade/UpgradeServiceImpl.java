@@ -90,6 +90,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			return databaseType;
 		}
 		try {
+			@SuppressWarnings("deprecation")
 			Connection connection = sessionFactory.getCurrentSession().connection();
 			DatabaseMetaData metaData = connection.getMetaData();
 			databaseType = metaData.getDatabaseProductName();
@@ -99,6 +100,8 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 				return databaseType = "mysql";
 			} else if(databaseType.equals("PostgreSQL")) {
 				return databaseType = "postgres";
+			} else if(databaseType.equals("Microsoft SQL Server")) {
+				return databaseType = "mssql";
 			} else {
 				log.info(databaseType + " is not a supported database type");
 			}
