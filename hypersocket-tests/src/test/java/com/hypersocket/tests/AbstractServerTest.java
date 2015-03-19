@@ -61,6 +61,7 @@ public class AbstractServerTest {
 	static BasicCookieStore cookieStore;
 	protected static ObjectMapper mapper = new ObjectMapper();
 	protected static Long adminId;
+	protected static File certificatesFolder;
 
 	protected static JsonSession session;
 	private static JsonSession auxSession;
@@ -77,6 +78,9 @@ public class AbstractServerTest {
 		File data = new File(tmp, "data");
 
 		FileUtils.copyDirectory(new File("default-conf"), conf);
+		certificatesFolder = new File(tmp, "cert_folder");
+		certificatesFolder.mkdirs();
+		FileUtils.copyDirectory(new File("certificates"), certificatesFolder);
 
 		StringBuffer buf = new StringBuffer();
 		buf.append("http.port=0\r\n"); // Generate random port

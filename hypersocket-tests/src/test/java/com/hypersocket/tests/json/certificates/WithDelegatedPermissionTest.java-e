@@ -1,19 +1,22 @@
 package com.hypersocket.tests.json.certificates;
 
 import java.io.IOException;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.hypersocket.auth.AuthenticationPermission;
+import com.hypersocket.permissions.SystemPermission;
 
-
-
-public class WithAdminPermissionTest extends AbstractPermissionsTest {
-
+public class WithDelegatedPermissionTest extends AbstractPermissionsTest {
 
 	@BeforeClass
 	public static void LogOn() throws Exception {
-		logon("System", "admin", "Password123?");
+		logOnNewUser(new String[] {
+				AuthenticationPermission.LOGON.getResourceKey(),
+				SystemPermission.SYSTEM_ADMINISTRATION.getResourceKey() });
 
 	}
 
@@ -22,6 +25,4 @@ public class WithAdminPermissionTest extends AbstractPermissionsTest {
 			JsonMappingException, IOException {
 		logoff();
 	}
-
-	
 }
