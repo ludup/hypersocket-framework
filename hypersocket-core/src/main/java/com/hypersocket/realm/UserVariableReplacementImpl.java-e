@@ -39,7 +39,7 @@ public class UserVariableReplacementImpl extends
 	}
 
 	@Override
-	protected String getVariableValue(Principal source, String name) {
+	public String getVariableValue(Principal source, String name) {
 
 		if (name.equals("password")) {
 			return realmService.getCurrentPassword();

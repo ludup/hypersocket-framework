@@ -100,6 +100,9 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 	@Autowired
 	PrincipalSuspensionService suspensionService;
 
+	@Autowired
+	UserVariableReplacement userVariableReplacement;
+	
 	CacheManager cacheManager;
 	Cache realmCache;
 
@@ -1431,11 +1434,9 @@ public class RealmServiceImpl extends AuthenticatedServiceImpl implements
 
 		Map<String, String> variables = new HashMap<String, String>();
 
-		RealmProvider provider = getProviderForRealm(principal.getRealm());
-
 		for (String variableName : variableNames) {
 			variables.put(variableName,
-					provider.getUserPropertyValue(principal, variableName));
+					userVariableReplacement.getVariableValue(principal, variableName));
 		}
 
 		return variables;

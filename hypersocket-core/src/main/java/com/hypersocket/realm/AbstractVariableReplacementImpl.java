@@ -12,7 +12,7 @@ public abstract class AbstractVariableReplacementImpl<T> implements VariableRepl
 	
 	protected abstract boolean hasVariable(T source, String name);
 	
-	protected abstract String getVariableValue(T source, String name);
+	public abstract String getVariableValue(T source, String name);
 	
 	@Override
 	public String replaceVariables(T source, String value) {
