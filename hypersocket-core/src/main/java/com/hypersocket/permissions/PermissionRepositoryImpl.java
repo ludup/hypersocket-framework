@@ -487,4 +487,14 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 				}));
 	}
 
+	@Override
+	@Transactional
+	public void saveRole(Role role, Principal[] principals,
+			Collection<Permission> permissions) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	
+
 }

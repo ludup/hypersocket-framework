@@ -21,14 +21,16 @@ public interface PermissionRepository extends AbstractRepository<Long> {
 	public PermissionCategory createCategory(String resourceBundle,
 			String resourceKey);
 
-	public Permission createPermission(String resourceKey,
-			boolean system, PermissionCategory category, boolean hidden);
+	public Permission createPermission(String resourceKey, boolean system,
+			PermissionCategory category, boolean hidden);
 
-	public Role createRole(String name, Realm realm, boolean personalRole, boolean allUsers, boolean allPermissions, boolean system);
+	public Role createRole(String name, Realm realm, boolean personalRole,
+			boolean allUsers, boolean allPermissions, boolean system);
 
 	public PermissionCategory getCategoryById(Long id);
 
-	public PermissionCategory getCategoryByKey(String resourceBundle, String resourceKey);
+	public PermissionCategory getCategoryByKey(String resourceBundle,
+			String resourceKey);
 
 	public Permission getPermissionById(Long id);
 
@@ -54,7 +56,8 @@ public interface PermissionRepository extends AbstractRepository<Long> {
 
 	public List<PermissionCategory> getAllCatgories();
 
-	public List<Permission> getAllPermissions(Set<Long> registered, boolean includeSystem);
+	public List<Permission> getAllPermissions(Set<Long> registered,
+			boolean includeSystem);
 
 	public void assignRole(Role role, Principal... principal);
 
@@ -62,7 +65,7 @@ public interface PermissionRepository extends AbstractRepository<Long> {
 
 	Set<Permission> getPrincipalPermissions(Collection<Principal> principals,
 			PermissionType... permissionTypes);
-	
+
 	Set<Principal> getPrincipalsWithPermissions(PermissionType permissions);
 
 	public List<Role> getRolesForRealm(Realm realm);
@@ -89,5 +92,8 @@ public interface PermissionRepository extends AbstractRepository<Long> {
 	Set<Role> getRolesForPrincipal(List<Principal> associatedPrincipals);
 
 	Set<Role> getAllUserRoles(Realm realm);
+
+	void saveRole(Role role, Principal[] principals,
+			Collection<Permission> permissions);
 
 }
