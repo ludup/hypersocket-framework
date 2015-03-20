@@ -93,7 +93,10 @@ public interface PermissionRepository extends AbstractRepository<Long> {
 
 	Set<Role> getAllUserRoles(Realm realm);
 
-	void saveRole(Role role, Principal[] principals,
+	void saveRole(Role role, Realm realm, Principal[] principals,
 			Collection<Permission> permissions);
 
+	void updateRole(Role role, Set<Principal> unassignPrincipals,
+			Set<Principal> assignPrincipals, Set<Permission> revokePermissions,
+			Set<Permission> grantPermissions);
 }
