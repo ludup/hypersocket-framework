@@ -211,14 +211,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 				Role role = new Role();
 				role.setName(name);
 				role.setRealm(realm);
-
-				repository.saveRole(role);
-
-				repository.assignRole(role,
-						principals.toArray(new Principal[0]));
-
-				repository.grantPermissions(role, permissions);
-
+				repository.saveRole(role, realm,
+						principals.toArray(new Principal[0]), permissions);
 				for (Principal p : principals) {
 					permissionsCache.remove(p);
 				}
@@ -477,8 +471,6 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			role.setName(name);
 		}
 		try {
-			repository.saveRole(role);
-
 			Set<Principal> unassignPrincipals = getEntitiesNotIn(principals,
 					role.getPrincipals(), new EntityMatch<Principal>() {
 						@Override
@@ -496,21 +488,12 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 						}
 
 					});
-			repository.unassignRole(role,
-					unassignPrincipals.toArray(new Principal[0]));
-
-			repository.assignRole(role,
-					assignPrincipals.toArray(new Principal[0]));
-
 			Set<Permission> revokePermissions = getEntitiesNotIn(permissions,
 					role.getPermissions(), null);
 			Set<Permission> grantPermissions = getEntitiesNotIn(
 					role.getPermissions(), permissions, null);
-
-			repository.revokePermission(role, revokePermissions);
-
-			repository.grantPermissions(role, grantPermissions);
-
+			repository.updateRole(role, unassignPrincipals, assignPrincipals,
+					revokePermissions, grantPermissions);
 			permissionsCache.removeAll();
 			eventService.publishEvent(new RoleUpdatedEvent(this,
 					getCurrentSession(), role.getRealm(), role));

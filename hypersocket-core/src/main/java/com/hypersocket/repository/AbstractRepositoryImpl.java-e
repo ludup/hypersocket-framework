@@ -22,6 +22,7 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.tables.ColumnSort;
@@ -73,7 +74,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		}
 	}
 	
-	@Transactional
+	@Transactional(propagation=Propagation.REQUIRED)
 	protected void save(Object entity, boolean isNew) {
 		
 		
