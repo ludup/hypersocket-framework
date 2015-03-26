@@ -41,11 +41,14 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			channel.setAttachment(null);
 			return state.response;
 		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("Timeout processing http request channelId="
+			if (log.isInfoEnabled()) {
+				log.info("Timeout processing http request channelId="
 						+ channel.getId());
 			}
 			channel.setAttachment(null);
+			if(state.ex!=null) {
+				throw new IOException("Channel exception", state.ex);
+			}
 			throw new IOException("Timeout processing HTTP request "
 					+ request.getMethod() + " " + request.getUri());
 		}
@@ -106,6 +109,14 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 						+ ctx.getChannel().getId(), e.getCause());
 			}
 		}
+		
+		HttpRequestState state = (HttpRequestState) ctx.getChannel()
+				.getAttachment();
+
+		if (state != null) {
+			state.ex = e.getCause();
+			state.closed = true;
+		}
 	}
 
 	@Override
@@ -118,6 +129,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		HttpRequestState state = (HttpRequestState) ctx.getChannel()
 				.getAttachment();
 		if(state!=null) {
+			state.closed = true;
 			state.future.cancel();
 		}
 	}
@@ -129,6 +141,12 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			log.debug("Http connection closed channelId="
 					+ ctx.getChannel().getId());
 		}
+		HttpRequestState state = (HttpRequestState) ctx.getChannel()
+				.getAttachment();
+		if(state!=null) {
+			state.closed = true;
+			state.future.cancel();
+		}
 	}
 
 	class HttpRequestState {
@@ -136,5 +154,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		boolean readingChunks = false;
 		ChannelFuture future;
 		HttpHandlerResponse response;
+		Throwable ex;
+		boolean closed;
 	}
 }
