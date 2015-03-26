@@ -18,6 +18,7 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 
 	void deleteResource(T resource);
 
+	@SuppressWarnings("unchecked") 
 	void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops);
 
 	List<T> getResources(Realm realm);

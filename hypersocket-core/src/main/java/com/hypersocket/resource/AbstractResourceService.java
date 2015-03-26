@@ -13,9 +13,11 @@ import com.hypersocket.tables.ColumnSort;
 public interface AbstractResourceService<T extends RealmResource> extends
 		AuthenticatedService {
 
+	@SuppressWarnings("unchecked") 
 	void createResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops)
 			throws ResourceCreationException, AccessDeniedException;
 
+	@SuppressWarnings("unchecked") 
 	void updateResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops)
 			throws ResourceChangeException, AccessDeniedException;
 

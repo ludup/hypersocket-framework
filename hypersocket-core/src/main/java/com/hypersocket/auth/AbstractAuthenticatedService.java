@@ -13,19 +13,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
-import com.hypersocket.utils.HypersocketUtils;
 
 public abstract class AbstractAuthenticatedService implements
 		AuthenticatedService {
 
 	@Autowired
-	PasswordEncryptionService encryptionService; 
+	EncryptionService encryptionService; 
 
 	
 	static Logger log = LoggerFactory
@@ -100,9 +100,8 @@ public abstract class AbstractAuthenticatedService implements
 		}
 		Session session = currentSession.get();
 		try {
-			return encryptionService.decrypt(
-					session.getStateParameter("password"),
-					HypersocketUtils.base64Decode(session.getStateParameter("ss")));
+			return encryptionService.decryptString("sessionState",
+					session.getStateParameter("password"));
 		} catch (Exception e) {
 			return "";
 		}
@@ -119,16 +118,10 @@ public abstract class AbstractAuthenticatedService implements
 	public void setCurrentPassword(Session session, String password) {
 		
 		try {
-			byte[] salt = encryptionService.generateSalt();
-			
 			session.setStateParameter("password", 
-					encryptionService.encrypt(
-							password,
-							salt));
-			
-			session.setStateParameter("ss", HypersocketUtils.base64Encode(salt));
+					encryptionService.encryptString("sessionState",
+							password));
 		} catch (Exception e) {
-			
 		}
 	}
 	
