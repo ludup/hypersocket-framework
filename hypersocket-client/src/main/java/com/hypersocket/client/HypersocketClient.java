@@ -448,7 +448,7 @@ public abstract class HypersocketClient<T> {
 
 				if(!userDisconnect && !isDisconnecting) {
 					try {
-						transport.get("session/touch", 10000L);
+						transport.get("session/touch");
 					} catch (IOException e) {
 						if(!userDisconnect && !isDisconnecting) {
 							disconnect(true);
