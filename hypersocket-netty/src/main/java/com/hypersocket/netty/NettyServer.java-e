@@ -10,11 +10,17 @@ package com.hypersocket.netty;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -44,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.ip.IPRestrictionListener;
 import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
@@ -57,8 +64,8 @@ public class NettyServer extends HypersocketServerImpl implements IPRestrictionL
 
 	private ClientBootstrap clientBootstrap = null;
 	private ServerBootstrap serverBootstrap = null;
-	Channel httpChannel;
-	Channel httpsChannel;
+	Set<Channel> httpChannels;
+	Set<Channel> httpsChannels;
 	
 	ExecutorService bossExecutor;
 	ExecutorService workerExecutors;
@@ -69,6 +76,9 @@ public class NettyServer extends HypersocketServerImpl implements IPRestrictionL
 	
 	@Autowired
 	IPRestrictionService ipRestrictionService; 
+	
+	@Autowired
+	SystemConfigurationService configurationService; 
 	
 	public NettyServer() {
 
@@ -131,44 +141,89 @@ public class NettyServer extends HypersocketServerImpl implements IPRestrictionL
 		serverBootstrap.setOption("child.sendBufferSize", 1048576);
 		serverBootstrap.setOption("backlog", 5000);
 		
-		httpChannel = bindInterface(getHttpPort());
-		httpsChannel = bindInterface(getHttpsPort());
+		httpChannels = new HashSet<Channel>();
+		httpsChannels = new HashSet<Channel>();
 		
+		bindInterface(getHttpPort(), httpChannels);
+		bindInterface(getHttpsPort(), httpsChannels);
+		
+		if(httpChannels.size()==0 && httpsChannels.size()==0) {
+			throw new IOException("Failed to startup any listening interfaces!");
+		}
 	}
 
 	@Override
 	public int getActualHttpPort() {
-		if(httpChannel==null) {
+		if(httpChannels==null) {
 			throw new IllegalStateException("You cannot get the actual port in use because the server is not started");
 		}
-		return ((InetSocketAddress)httpChannel.getLocalAddress()).getPort();
+		return ((InetSocketAddress)httpChannels.iterator().next().getLocalAddress()).getPort();
 	}
 
 	@Override
 	public int getActualHttpsPort() {
-		if(httpChannel==null) {
+		if(httpsChannels==null) {
 			throw new IllegalStateException("You cannot get the actual port in use because the server is not started");
 		}
-		return ((InetSocketAddress)httpChannel.getLocalAddress()).getPort();
+		return ((InetSocketAddress)httpChannels.iterator().next().getLocalAddress()).getPort();
 	}
 	
-	protected Channel bindInterface(Integer port) throws IOException {
-		try {
-			if(log.isInfoEnabled()) {
-				log.info("Binding server to " + port);
-			}
+	protected void bindInterface(Integer port, Set<Channel> channels) throws IOException {
 			
+		Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
+		
+		Set<String> interfacesToBind = new HashSet<String>(
+				Arrays.asList(configurationService.getValues("listening.interfaces")));
+		
+		if(interfacesToBind.isEmpty()) {
+			
+			if(log.isInfoEnabled()) {
+				log.info("Binding server to all interfaces on port " 
+						+ port);
+			}
 			Channel ch = serverBootstrap.bind(new InetSocketAddress(port));
+			channels.add(ch);
 			
 			if(log.isInfoEnabled()) {
-				log.info("Bound to port " + ((InetSocketAddress)ch.getLocalAddress()).getPort());
+				log.info("Bound to port "
+						+ ((InetSocketAddress)ch.getLocalAddress()).getPort());
 			}
+		} else {
+			while(e.hasMoreElements())  {
+				
+				NetworkInterface i = e.nextElement();
 			
-			return ch;
-			
-		} catch (ChannelException e) {
-			log.error("Failed to bind port", e);
-			throw e;
+				Enumeration<InetAddress> inetAddresses = i.getInetAddresses();
+				
+				for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+					
+					if(interfacesToBind.contains(inetAddress.getHostAddress())) {
+						try {
+							if(log.isInfoEnabled()) {
+								log.info("Binding server to interface " 
+										+ i.getDisplayName() 
+										+ " " 
+										+ inetAddress.getHostAddress() 
+										+ ":" 
+										+ port);
+							}
+							
+							Channel ch = serverBootstrap.bind(new InetSocketAddress(inetAddress, port));
+							channels.add(ch);
+							
+							if(log.isInfoEnabled()) {
+								log.info("Bound to " 
+										+ inetAddress.getHostAddress() 
+										+ ":" 
+										+ ((InetSocketAddress)ch.getLocalAddress()).getPort());
+							}
+						
+						} catch(ChannelException ex) {
+							log.error("Failed to bind port", ex);
+						}
+					}
+				}
+			}
 		}
 	}
 	
