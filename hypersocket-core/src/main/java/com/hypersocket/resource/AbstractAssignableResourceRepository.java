@@ -32,7 +32,8 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	void deleteResource(T resource) throws ResourceChangeException;
 
 	List<T> getResources(Realm realm);
-
+	
+	@SuppressWarnings("unchecked") 
 	void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceChangeException;
 
 	List<T> search(Realm realm, String searchPattern, int start, int length,
