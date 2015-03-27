@@ -33,6 +33,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	@Autowired
 	RealmService realmService;
 
+	
 	protected abstract AbstractAssignableResourceRepository<T> getRepository();
 
 	protected abstract String getResourceBundle();
@@ -269,7 +270,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			throws AccessDeniedException {
 
 		if (log.isDebugEnabled()) {
-			log.debug("Looking up NetworkResources for principal "
+			log.debug("Looking up resources for principal "
 					+ principal.getRealm() + "/" + principal.getPrincipalName());
 		}
 
