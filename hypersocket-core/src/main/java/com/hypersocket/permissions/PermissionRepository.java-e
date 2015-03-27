@@ -99,4 +99,8 @@ public interface PermissionRepository extends AbstractRepository<Long> {
 	void updateRole(Role role, Set<Principal> unassignPrincipals,
 			Set<Principal> assignPrincipals, Set<Permission> revokePermissions,
 			Set<Permission> grantPermissions);
+
+	void createRole(String name, Realm realm, boolean personalRole,
+			boolean allUsers, boolean allPermissions, boolean system,
+			Set<Permission> permissions);
 }

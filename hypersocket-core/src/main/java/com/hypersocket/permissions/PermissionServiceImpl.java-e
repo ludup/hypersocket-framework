@@ -126,17 +126,15 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 							+ realm.getName());
 				}
 
-				Role r = repository.createRole(ROLE_EVERYONE, realm, false,
-						true, false, true);
 				Set<Permission> perms = new HashSet<Permission>();
 				perms.add(getPermission(AuthenticationPermission.LOGON
 						.getResourceKey()));
 				perms.add(getPermission(ProfilePermission.READ.getResourceKey()));
 				perms.add(getPermission(ProfilePermission.UPDATE
 						.getResourceKey()));
-				r.setAllUsers(true);
-				r.setPermissions(perms);
-				repository.saveRole(r);
+
+				repository.createRole(ROLE_EVERYONE, realm, false, true, false,
+						true, perms);
 
 			}
 
