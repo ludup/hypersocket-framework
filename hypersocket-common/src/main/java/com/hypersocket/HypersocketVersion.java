@@ -9,6 +9,7 @@ package com.hypersocket;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.prefs.Preferences;
@@ -26,10 +27,20 @@ public class HypersocketVersion {
 		return getVersion("hypersocket-framework");
 	}
 	
+	public static Date getReleaseDate() {
+		return new Date(/* RELEASE_DATE */);
+	}
+	
 	public static String getSerial() {
 		Preferences pref = Preferences.userNodeForPackage(HypersocketVersion.class);
-		String serial = pref.get("hypersocket.serial", UUID.randomUUID().toString());
-		pref.put("hypersocket.serial", serial);
+		
+		String hypersocketId = System.getProperty("hypersocket.id", "hypersocket-unknown");
+		if(pref.get("hypersocket.serial", null)!=null) {
+			pref.put(hypersocketId, pref.get("hypersocket.serial", UUID.randomUUID().toString()));
+			pref.remove("hypersocket.serial");
+		} 
+		String serial = pref.get(hypersocketId, UUID.randomUUID().toString());
+		pref.put(hypersocketId, serial);
 		return serial;
 	}
 	
