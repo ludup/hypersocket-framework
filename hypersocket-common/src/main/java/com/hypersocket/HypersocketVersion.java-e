@@ -9,7 +9,6 @@ package com.hypersocket;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.prefs.Preferences;
@@ -25,10 +24,6 @@ public class HypersocketVersion {
 	
 	public static String getVersion() {
 		return getVersion("hypersocket-framework");
-	}
-	
-	public static Date getReleaseDate() {
-		return new Date(/* RELEASE_DATE */);
 	}
 	
 	public static String getSerial() {
