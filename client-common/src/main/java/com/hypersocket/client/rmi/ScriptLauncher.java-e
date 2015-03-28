@@ -42,7 +42,7 @@ public class ScriptLauncher implements ResourceLauncher, Serializable {
 		properties.put("username", username);
 		
 		for(String prop : ALLOWED_SYSTEM_PROPERTIES) {
-			properties.put(prop, System.getProperty(prop));
+			properties.put(prop.replace("user.", "client.user"), System.getProperty(prop));
 		}
 		
 		script = ReplacementUtils.processTokenReplacements(script, env);
@@ -76,7 +76,7 @@ public class ScriptLauncher implements ResourceLauncher, Serializable {
 			int exitCode = cmd.execute();
 			
 			if(log.isInfoEnabled()) {
-				log.info("Command exited with exit code " + exitCode);
+				log.info("Script exited with exit code " + exitCode);
 				log.info("---BEGIN CMD OUTPUT----");
 				log.info(cmd.getCommandOutput());
 				log.info("---END CMD OUTPUT----");
@@ -84,6 +84,7 @@ public class ScriptLauncher implements ResourceLauncher, Serializable {
 			
 			return exitCode;
 		} catch (IOException e) {
+			scriptFile.delete();
 			log.error("Failed to execute script", e);
 			return Integer.MIN_VALUE;
 		}
