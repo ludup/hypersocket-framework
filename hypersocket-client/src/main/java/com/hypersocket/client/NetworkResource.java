@@ -56,11 +56,11 @@ public class NetworkResource implements Serializable {
 		return actualPort;
 	}
 
-	public void setLocalInterface(String alias) {
+	public void setAliasInterface(String alias) {
 		this.alias = alias;
 	}
 
-	public String getLocalInterface() {
+	public String getAliasInterface() {
 		return alias;
 	}
 
