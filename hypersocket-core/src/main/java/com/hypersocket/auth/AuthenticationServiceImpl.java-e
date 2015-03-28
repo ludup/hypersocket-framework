@@ -46,7 +46,7 @@ import com.hypersocket.session.SessionService;
 
 @Service
 @Transactional
-public class AuthenticationServiceImpl extends AbstractAuthenticatedService
+public class AuthenticationServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		implements AuthenticationService {
 
 	public static final String BROWSER_AUTHENTICATION_SCHEME = "Browser";

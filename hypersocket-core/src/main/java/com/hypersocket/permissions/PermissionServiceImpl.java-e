@@ -31,7 +31,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import com.hypersocket.auth.AbstractAuthenticatedService;
+import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18N;
@@ -52,7 +52,7 @@ import com.hypersocket.role.events.RoleUpdatedEvent;
 import com.hypersocket.tables.ColumnSort;
 
 @Service
-public class PermissionServiceImpl extends AbstractAuthenticatedService
+public class PermissionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		implements PermissionService {
 
 	static Logger log = LoggerFactory.getLogger(PermissionServiceImpl.class);

@@ -4,13 +4,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.hypersocket.auth.AuthenticatedService;
+import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tables.ColumnSort;
 
-public interface AbstractAssignableResourceService<T> extends AuthenticatedService {
+public interface AbstractAssignableResourceService<T> extends PasswordEnabledAuthenticatedService {
 
 	void deleteResource(T resource) throws ResourceChangeException,
 			AccessDeniedException;

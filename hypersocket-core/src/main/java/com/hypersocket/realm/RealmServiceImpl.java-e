@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -66,7 +67,7 @@ import com.hypersocket.upgrade.UpgradeService;
 import com.hypersocket.upgrade.UpgradeServiceListener;
 
 @Service
-public class RealmServiceImpl extends AuthenticatedServiceImpl implements
+public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl implements
 		RealmService, UpgradeServiceListener {
 
 	static Logger log = LoggerFactory.getLogger(RealmServiceImpl.class);

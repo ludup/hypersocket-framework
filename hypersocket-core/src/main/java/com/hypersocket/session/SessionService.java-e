@@ -10,14 +10,14 @@ package com.hypersocket.session;
 import java.util.List;
 import java.util.Map;
 
-import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.auth.AuthenticationScheme;
+import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.Resource;
 
-public interface SessionService extends AuthenticatedService {
+public interface SessionService extends PasswordEnabledAuthenticatedService {
 
 	static final String RESOURCE_BUNDLE = "SessionService";
 
