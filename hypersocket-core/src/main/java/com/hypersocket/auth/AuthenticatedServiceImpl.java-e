@@ -32,10 +32,7 @@ import com.hypersocket.session.Session;
 public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 
 	static Logger log = LoggerFactory.getLogger(AuthenticatedServiceImpl.class);
-	
-	@Autowired
-	protected PermissionService permissionService;
-	
+
 	@Autowired
 	@Qualifier("transactionManager")
 	PlatformTransactionManager txManager;
@@ -46,10 +43,8 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	static ThreadLocal<Locale> currentLocale = new ThreadLocal<Locale>();
 
 	
-	protected void verifyPermission(Principal principal,
-			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException {
-		permissionService.verifyPermission(principal, strategy, permissions);
-	}
+	protected abstract void verifyPermission(Principal principal,
+			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException;
 	
 	public void setCurrentPrincipal(Principal principal, Locale locale,
 			Realm realm) {
