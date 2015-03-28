@@ -7,13 +7,13 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.tables.ColumnSort;
 
 @Service
-public class BrowserLaunchableServiceImpl extends AuthenticatedServiceImpl implements BrowserLaunchableService {
+public class BrowserLaunchableServiceImpl extends AbstractAuthenticatedServiceImpl implements BrowserLaunchableService {
 
 	public static final String RESOURCE_BUNDLE = "BrowserLaunchable";
 	
