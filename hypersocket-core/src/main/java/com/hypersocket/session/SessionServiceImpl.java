@@ -31,9 +31,9 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.auth.AuthenticationService;
+import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -49,7 +49,7 @@ import com.hypersocket.session.events.SessionEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
 
 @Service
-public class SessionServiceImpl extends AuthenticatedServiceImpl implements
+public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl implements
 		SessionService, ApplicationListener<ContextStartedEvent> {
 
 	@Autowired
