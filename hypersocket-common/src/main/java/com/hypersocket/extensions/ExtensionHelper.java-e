@@ -121,7 +121,7 @@ public class ExtensionHelper {
 									extsByName.put(ext.getId(), ext);
 								} else {
 									
-									Version remoteVersion = new Version(ext.getVersion());
+									Version remoteVersion = new Version(remote.getVersion());
 									Version localVersion = new Version(HypersocketVersion.getVersion());
 									
 									if(remoteVersion.compareTo(localVersion) >= 0) {
