@@ -121,20 +121,33 @@ public class ExtensionHelper {
 									extsByName.put(ext.getId(), ext);
 								} else {
 									
-									Version remoteVersion = ext.getVersion();
+									Version remoteVersion = new Version(ext.getVersion());
 									Version localVersion = new Version(HypersocketVersion.getVersion());
-									if (log.isInfoEnabled()) {
-										log.info(extensionId
-												+ " is installed but an update is available hash=\""
-												+ ext.getHash()
-												+ "\" modified=\""
-												+ ext.getLastModified()
-												+ "\" size=\""
-												+ currentArchive.length()
-												+ "\"");
-									}
 									
-									remote.setState(ExtensionState.UPDATABLE);
+									if(remoteVersion.compareTo(localVersion) >= 0) {
+										
+										if (log.isInfoEnabled()) {
+											log.info(extensionId
+													+ " is installed but an update is available hash=\""
+													+ ext.getHash()
+													+ "\" modified=\""
+													+ ext.getLastModified()
+													+ "\" size=\""
+													+ currentArchive.length()
+													+ "\"");
+										}
+										
+										remote.setState(ExtensionState.UPDATABLE);
+									} else {
+									
+										if(log.isInfoEnabled()) {
+											log.info("Although the current repository version of " 
+													+ extensionId + " differs its version " 
+													+ ext.getVersion() + " is earlier than the current " 
+													+ HypersocketVersion.getVersion());;
+										}
+										remote.setState(ExtensionState.INSTALLED);
+									}
 								}
 							} else {
 								if (log.isInfoEnabled()) {
