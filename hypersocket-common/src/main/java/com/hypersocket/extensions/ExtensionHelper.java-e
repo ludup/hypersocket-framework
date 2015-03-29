@@ -143,7 +143,7 @@ public class ExtensionHelper {
 										if(log.isInfoEnabled()) {
 											log.info("Although the current repository version of " 
 													+ extensionId + " differs its version " 
-													+ ext.getVersion() + " is earlier than the current " 
+													+ ext.getVersion() + " is earlier than the current version " 
 													+ HypersocketVersion.getVersion());;
 										}
 										remote.setState(ExtensionState.INSTALLED);
@@ -238,7 +238,7 @@ public class ExtensionHelper {
 				Node node = list.item(i);
 				try {
 					ExtensionDefinition ext = new ExtensionDefinition(
-							(Element) node, appUrl);
+							(Element) node, appUrl, repoVersion);
 					ext.setLocalArchiveFile(localArchives.get(ext.getId()));
 					extsByName.put(ext.getId(), ext);
 				} catch (Throwable e) {
