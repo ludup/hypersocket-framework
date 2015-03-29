@@ -83,7 +83,10 @@ public class DefaultEncryptor implements Encryptor {
 			SecretKeyResource key = secretKeyService
 					.getResourceByName(reference);
 
-			SecretKey secretKeySpec = new SecretKeySpec(secretKeyService.generateSecreyKeyData(key), "AES");
+			byte[] keydata = secretKeyService.generateSecreyKeyData(key);
+
+			SecretKey secretKeySpec = new SecretKeySpec(keydata, "AES");
+			
 			byte[] iv = secretKeyService.generateIvData(key);
 
 			Cipher aesCipherForDecryption = Cipher

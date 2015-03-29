@@ -16,6 +16,9 @@ public class SecretKeyResource extends RealmResource {
 	@Column(name="iv", length=8000)
 	String iv;
 	
+	@Column(name="keylength")
+	Integer keylength;
+	
 	public String getKeydata() {
 		return keydata;
 	}
@@ -31,5 +34,15 @@ public class SecretKeyResource extends RealmResource {
 	public void setIv(String iv) {
 		this.iv = iv;
 	}
+
+	public Integer getKeylength() {
+		return keylength == null ? 256 : keylength;
+	}
+
+	public void setKeylength(Integer keylength) {
+		this.keylength = keylength;
+	}
+	
+	
 
 }
