@@ -33,6 +33,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.hypersocket.HypersocketVersion;
+import com.hypersocket.Version;
 
 public class ExtensionHelper {
 
@@ -84,7 +85,8 @@ public class ExtensionHelper {
 						if (Boolean.getBoolean("hypersocket.development")) {
 							ExtensionDefinition ext = new ExtensionDefinition(
 									props, System.currentTimeMillis(),
-									currentArchive);
+									currentArchive,
+									HypersocketVersion.getVersion());
 							ext.setState(ExtensionState.INSTALLED);
 							extsByName.put(ext.getId(), ext);
 						}
@@ -104,7 +106,7 @@ public class ExtensionHelper {
 							}
 							ExtensionDefinition ext = new ExtensionDefinition(
 									props, currentArchive.lastModified(),
-									currentArchive);
+									currentArchive, HypersocketVersion.getVersion());
 							if (extsByName.containsKey(ext.getId())) {
 								ExtensionDefinition remote = extsByName.get(ext
 										.getId());
@@ -118,6 +120,9 @@ public class ExtensionHelper {
 									ext.setState(ExtensionState.INSTALLED);
 									extsByName.put(ext.getId(), ext);
 								} else {
+									
+									Version remoteVersion = ext.getVersion();
+									Version localVersion = new Version(HypersocketVersion.getVersion());
 									if (log.isInfoEnabled()) {
 										log.info(extensionId
 												+ " is installed but an update is available hash=\""
@@ -128,6 +133,7 @@ public class ExtensionHelper {
 												+ currentArchive.length()
 												+ "\"");
 									}
+									
 									remote.setState(ExtensionState.UPDATABLE);
 								}
 							} else {
@@ -212,7 +218,7 @@ public class ExtensionHelper {
 					.getBytes("UTF-8")));
 
 			String appUrl = doc.getDocumentElement().getAttribute("url");
-
+			String repoVersion = doc.getDocumentElement().getAttribute("version");
 			NodeList list = doc.getElementsByTagName("archive");
 			Map<String, File> localArchives = getBootstrapArchives();
 			for (int i = 0; i < list.getLength(); i++) {
