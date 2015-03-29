@@ -134,7 +134,7 @@ public class ExtensionHelper {
 													+ ext.getLastModified()
 													+ "\" size=\""
 													+ currentArchive.length()
-													+ "\"");
+													+ "\" [" + remoteVersion.compareTo(localVersion) + "]");
 										}
 										
 										remote.setState(ExtensionState.UPDATABLE);
