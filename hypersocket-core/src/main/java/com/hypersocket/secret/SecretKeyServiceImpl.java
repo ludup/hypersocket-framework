@@ -51,6 +51,10 @@ public class SecretKeyServiceImpl extends
 			log.error("Could not create NSS encryption provider", e);
 			encryptionProvider = RsaEncryptionProvider.getInstance();
 		} 
+		
+		if(log.isInfoEnabled()) {
+			log.info("Maximum supported cipher size is " + Cipher.getMaxAllowedKeyLength("AES"));
+		}
 	}
 	
 	@Override
@@ -78,7 +82,7 @@ public class SecretKeyServiceImpl extends
 			SecretKeyResource key = new SecretKeyResource();
 			key.setName(name);
 			key.setRealm(getCurrentRealm());
-			key.setKeylength(Cipher.getMaxAllowedKeyLength("AES"));
+			key.setKeylength(Math.min(Cipher.getMaxAllowedKeyLength("AES"), 256));
 			createResource(key, new HashMap<String,String>());
 			
 			return key;
