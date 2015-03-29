@@ -120,6 +120,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 	
 	@Override
 	public Session getSystemSession() {
+		if(systemSession==null) {
+			systemSession = createSystemSession();
+		}
 		return systemSession;
 	}
 	
@@ -445,10 +448,11 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 		}
 		
 		for(Session session : repository.getSystemSessions()) {
+			if(systemSession!=null && systemSession.equals(session)) {
+				continue;
+			}
 			closeSession(session);
 		}
-		
-		systemSession = createSystemSession();
 		
 		try {
 			schedulerService.scheduleIn(SessionReaperJob.class, null, 60000, 60000);
