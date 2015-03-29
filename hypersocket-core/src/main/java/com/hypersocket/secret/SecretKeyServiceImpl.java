@@ -1,14 +1,17 @@
 package com.hypersocket.secret;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
+import javax.crypto.Cipher;
 
 import org.apache.commons.codec.binary.Hex;
+import org.bouncycastle.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,20 +73,27 @@ public class SecretKeyServiceImpl extends
 	@Override
 	public SecretKeyResource createSecretKey(String name) throws ResourceCreationException, AccessDeniedException {
 		
-		SecretKeyResource key = new SecretKeyResource();
-		key.setName(name);
-		key.setRealm(getCurrentRealm());
 		
-		createResource(key, new HashMap<String,String>());
+		try {
+			SecretKeyResource key = new SecretKeyResource();
+			key.setName(name);
+			key.setRealm(getCurrentRealm());
+			key.setKeylength(Cipher.getMaxAllowedKeyLength("AES"));
+			createResource(key, new HashMap<String,String>());
+			
+			return key;
+		} catch (NoSuchAlgorithmException e) {
+			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.aesNotSupported");
+		}
 		
-		return key;
 	}
+
 	
 	@Override
 	public byte[] generateSecreyKeyData(SecretKeyResource key) throws IOException {
 		
 		try {
-			return Hex.decodeHex(encryptionProvider.decrypt(key.getKeydata()).toCharArray());
+			return Arrays.copyOf(Hex.decodeHex(encryptionProvider.decrypt(key.getKeydata()).toCharArray()), key.getKeylength() / 8);
 		} catch (Exception e) {
 			log.error("Could not generate secret key", e);
 			throw new IOException("Unable to process key data for " + key.getName(), e);
@@ -94,7 +104,7 @@ public class SecretKeyServiceImpl extends
 	public byte[] generateIvData(SecretKeyResource key) throws IOException {
 		
 		try {
-			return Hex.decodeHex(encryptionProvider.decrypt(key.getIv()).toCharArray());
+			return Arrays.copyOf(Hex.decodeHex(encryptionProvider.decrypt(key.getIv()).toCharArray()), 16);
 		} catch (Exception e) {
 			log.error("Could not generate iv", e);
 			throw new IOException("Unable to process iv data for " + key.getName(), e);
