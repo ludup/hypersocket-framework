@@ -36,7 +36,7 @@ public class SecretKeyResource extends RealmResource {
 	}
 
 	public Integer getKeylength() {
-		return keylength == null ? 256 : keylength;
+		return keylength == null ? 256 : Math.min(keylength, 256);
 	}
 
 	public void setKeylength(Integer keylength) {
