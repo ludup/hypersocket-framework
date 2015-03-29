@@ -143,7 +143,7 @@ public class ExtensionHelper {
 										if(log.isInfoEnabled()) {
 											log.info("Although the current repository version of " 
 													+ extensionId + " differs its version " 
-													+ ext.getVersion() + " is earlier than the current version " 
+													+ remote.getVersion() + " is earlier than the current version " 
 													+ HypersocketVersion.getVersion());;
 										}
 										remote.setState(ExtensionState.INSTALLED);
