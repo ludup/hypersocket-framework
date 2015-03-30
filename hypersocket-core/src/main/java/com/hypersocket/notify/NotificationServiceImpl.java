@@ -3,9 +3,9 @@ package com.hypersocket.notify;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 
-public class NotificationServiceImpl extends AuthenticatedServiceImpl implements NotificationService {
+public class NotificationServiceImpl extends AbstractAuthenticatedServiceImpl implements NotificationService {
 
 	List<NotificationProvider> providers = new ArrayList<NotificationProvider>();
 	

@@ -304,8 +304,9 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	
 	@Override
 	@SafeVarargs
+	@Transactional
 	public final void saveResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops) throws ResourceChangeException {
-
+		
 		beforeSave(resource, properties);
 		for(TransactionOperation<T> op : ops) {
 			op.beforeOperation(resource, properties);
@@ -322,7 +323,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			op.afterOperation(resource, properties);
 		}
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<T> getResources(Realm realm) {

@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
+import com.hypersocket.Version;
+
 @XmlRootElement
 public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
 
@@ -38,12 +40,13 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
 	Long remoteArchiveSize = null;
 	Properties remoteProperties;
 	boolean isSystem;
+	String version;
 	
 	public ExtensionDefinition() {
 		
 	}
 	
-	ExtensionDefinition(String id, String license, String licenseUrl, String depends, long lastModified, String image, String vendor, String url, int weight, long size, String hash, boolean isSystem) {
+	ExtensionDefinition(String id, String license, String licenseUrl, String depends, long lastModified, String image, String vendor, String url, int weight, long size, String hash, boolean isSystem, String version) {
 		this.id = id;
 		this.license = license;
 		this.licenseUrl = licenseUrl;
@@ -54,6 +57,7 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
 		this.weight = weight;
 		this.size = size;
 		this.hash = hash;
+		this.version = version;
 		this.isSystem = System.getProperty("hypersocket.bootstrap.systemArchive", "server-core").equals(id) || isSystem;
 		StringTokenizer t = new StringTokenizer(depends, ",");
 		while(t.hasMoreTokens()) {
@@ -61,7 +65,7 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
 		}
 	}
 	
-	ExtensionDefinition(Properties props, long lastModified, File archiveFile) {
+	ExtensionDefinition(Properties props, long lastModified, File archiveFile, String version) {
 		this(props.getProperty("extension.id"), 
 				props.getProperty("extension.license"),
 				props.getProperty("extension.licenseUrl"),
@@ -73,11 +77,12 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
 				Integer.parseInt(props.getProperty("extension.weight")),
 				archiveFile == null ? 0 : archiveFile.length(),
 				props.getProperty("hash"),
-				Boolean.parseBoolean(props.getProperty("extension.system", "false")));
+				Boolean.parseBoolean(props.getProperty("extension.system", "false")),
+				version);
 		this.archiveFile = archiveFile;
 	}
 
-	ExtensionDefinition(Element node, String remoteDefinitionBase) throws IOException {
+	ExtensionDefinition(Element node, String remoteDefinitionBase, String remoteVersion) throws IOException {
 		this(node.getAttribute("id"), 
 				node.getAttribute("license"),
 				node.getAttribute("licenseUrl"),
@@ -89,7 +94,8 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
 				Integer.parseInt(node.getAttribute("weight")),
 				Long.parseLong(node.getAttribute("size")),
 				node.getAttribute("hash"),
-				Boolean.parseBoolean(node.getAttribute("system")));
+				Boolean.parseBoolean(node.getAttribute("system")),
+				remoteVersion);
 		remoteProperties = new Properties();
 		this.remoteDefinitionUrl = remoteDefinitionBase + "/" + node.getAttribute("id");
 		this.remoteDefinitionUrl = remoteDefinitionUrl.replace(" ", "%20");
@@ -192,6 +198,10 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
 
 	public String getHash() {
 		return hash;
+	}
+
+	public String getVersion() {
+		return version;
 	}
 
 }

@@ -28,8 +28,14 @@ public class HypersocketVersion {
 	
 	public static String getSerial() {
 		Preferences pref = Preferences.userNodeForPackage(HypersocketVersion.class);
-		String serial = pref.get("hypersocket.serial", UUID.randomUUID().toString());
-		pref.put("hypersocket.serial", serial);
+		
+		String hypersocketId = System.getProperty("hypersocket.id", "hypersocket-unknown");
+		if(pref.get("hypersocket.serial", null)!=null) {
+			pref.put(hypersocketId, pref.get("hypersocket.serial", UUID.randomUUID().toString()));
+			pref.remove("hypersocket.serial");
+		} 
+		String serial = pref.get(hypersocketId, UUID.randomUUID().toString());
+		pref.put(hypersocketId, serial);
 		return serial;
 	}
 	
