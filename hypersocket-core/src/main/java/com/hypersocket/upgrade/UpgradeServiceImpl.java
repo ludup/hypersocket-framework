@@ -268,23 +268,15 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 					} 
 					
 					if(!line.startsWith("/*") && !line.startsWith("//")) {
-						statement += line + "\n";
-					} 
-					
-					if (line.endsWith(";")) {
-						if(log.isInfoEnabled()) {
-							log.info(line);
-						}
-						try {
+						if(line.endsWith(";")) {
+							line = line.substring(0, line.length()-1);
+							statement += line;
 							sessionFactory.getCurrentSession().createSQLQuery(statement).executeUpdate();
-						} catch (Throwable e) {
-							if(!ignoreErrors) {
-								throw e;
-							}
-						} finally {
 							statement = "";
+						} else {
+							statement += line + "\n";
 						}
-					}
+					} 
 				}
 				
 				if(StringUtils.isNotBlank(statement)) {
