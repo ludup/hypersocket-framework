@@ -49,11 +49,7 @@ public class DefaultEncryptor implements Encryptor {
 			
 			SecretKeyResource key;
 			
-			try {
-				key = secretKeyService.getResourceByName(reference);
-			} catch (ResourceNotFoundException e) {
-				key = secretKeyService.createSecretKey(reference);
-			}
+			key = secretKeyService.getSecretKey(reference);
 
 			SecretKey secretKeySpec = new SecretKeySpec(secretKeyService.generateSecreyKeyData(key), "AES");
 			byte[] iv = secretKeyService.generateIvData(key);
@@ -80,8 +76,7 @@ public class DefaultEncryptor implements Encryptor {
 	public String decryptString(String reference, String data)
 			throws IOException {
 		try {
-			SecretKeyResource key = secretKeyService
-					.getResourceByName(reference);
+			SecretKeyResource key = secretKeyService.getSecretKey(reference);
 
 			byte[] keydata = secretKeyService.generateSecreyKeyData(key);
 

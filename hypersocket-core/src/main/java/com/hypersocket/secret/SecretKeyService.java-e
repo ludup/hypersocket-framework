@@ -18,4 +18,6 @@ public interface SecretKeyService extends AbstractResourceService<SecretKeyResou
 
 	byte[] generateIvData(SecretKeyResource key) throws IOException;
 
+	SecretKeyResource getSecretKey(String reference) throws ResourceNotFoundException, ResourceCreationException, AccessDeniedException;
+
 }
