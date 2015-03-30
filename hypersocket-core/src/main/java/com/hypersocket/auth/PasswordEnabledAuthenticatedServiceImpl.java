@@ -62,6 +62,7 @@ public abstract class PasswordEnabledAuthenticatedServiceImpl
 	
 	public void setCurrentPassword(Session session, String password) {
 		
+		log.info("REMOVEME: Setting session state password");
 		try {
 			session.setStateParameter("password", 
 					encryptionService.encryptString("sessionState",
