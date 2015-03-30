@@ -47,6 +47,7 @@ public abstract class PasswordEnabledAuthenticatedServiceImpl
 			return encryptionService.decryptString("sessionState",
 					session.getStateParameter("password"));
 		} catch (Exception e) {
+			log.error("Failed to get session state", e);
 			return "";
 		}
 	}
@@ -66,6 +67,7 @@ public abstract class PasswordEnabledAuthenticatedServiceImpl
 					encryptionService.encryptString("sessionState",
 							password));
 		} catch (Exception e) {
+			log.error("Failed to store session state", e);
 		}
 	}
 
