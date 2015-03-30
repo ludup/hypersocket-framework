@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,9 +39,21 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 		properties.put("username", username);
 		
 		for(String prop : ALLOWED_SYSTEM_PROPERTIES) {
-			properties.put(prop, System.getProperty(prop));
+			properties.put(prop.replace("user.", "client.user"), System.getProperty(prop));
 		}
 		
+		if(StringUtils.isNotBlank(launcher.getStartupScript())) {
+			
+			if(log.isInfoEnabled()) {
+				log.info("Executing startup script");
+			}
+			
+			ScriptLauncher script = new ScriptLauncher(username, hostname, launcher.getStartupScript());
+			int exitCode = script.launch();
+			if(exitCode!=0) {
+				log.warn("Startup script returned non zero exit code " + exitCode);
+			}
+		}
 		String exe = ReplacementUtils.processTokenReplacements(launcher.getExe(), env);
 		exe = ReplacementUtils.processTokenReplacements(exe, properties);
 		
@@ -67,6 +80,20 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 		} catch (IOException e) {
 			log.error("Failed to launch application", e);
 			return Integer.MIN_VALUE;
+		} finally {
+
+			if(StringUtils.isNotBlank(launcher.getShutdownScript())) {
+				
+				if(log.isInfoEnabled()) {
+					log.info("Executing shutdown script");
+				}
+				
+				ScriptLauncher script = new ScriptLauncher(username, hostname, launcher.getShutdownScript());
+				int exitCode = script.launch();
+				if(exitCode!=0) {
+					log.warn("Shutdown script returned non zero exit code " + exitCode);
+				}
+			}
 		}
 
 		

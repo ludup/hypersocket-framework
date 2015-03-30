@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.hypersocket.auth.AuthenticatedService;
+import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.resource.ResourceChangeException;
@@ -19,7 +19,7 @@ import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
 
-public interface RealmService extends AuthenticatedService {
+public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	static final String RESOURCE_BUNDLE = "RealmService";
 	static final String SYSTEM_REALM = "System";
