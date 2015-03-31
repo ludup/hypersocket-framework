@@ -45,7 +45,9 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 		if(StringUtils.isNotBlank(launcher.getStartupScript())) {
 			
 			if(log.isInfoEnabled()) {
-				log.info("Executing startup script");
+				log.info("Executing startup script ---");
+				log.info(launcher.getStartupScript());
+				log.info("--------");
 			}
 			
 			ScriptLauncher script = new ScriptLauncher(launcher.getStartupScript(), properties);
@@ -85,7 +87,9 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 			if(StringUtils.isNotBlank(launcher.getShutdownScript())) {
 				
 				if(log.isInfoEnabled()) {
-					log.info("Executing shutdown script");
+					log.info("Executing shutdown script ---");
+				log.info(launcher.getShutdownScript());
+				log.info("--------");
 				}
 				
 				ScriptLauncher script = new ScriptLauncher(launcher.getShutdownScript(), properties);
