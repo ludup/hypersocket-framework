@@ -78,11 +78,11 @@ public class ScriptLauncher implements ResourceLauncher, Serializable {
 	}
 
 	private CommandExecutor executeBashScript(File scriptFile) {
-		return new CommandExecutor("cmd.exe", "/C", scriptFile.getAbsolutePath());
+		return new CommandExecutor("/bin/sh", scriptFile.getAbsolutePath());
 	}
 
 	private CommandExecutor executeWindowsScript(File scriptFile) {
-		return new CommandExecutor("/bin/sh", scriptFile.getAbsolutePath());
+		return new CommandExecutor("cmd.exe", "/C", scriptFile.getAbsolutePath());
 	}
 
 	private String getScriptSuffix() {
