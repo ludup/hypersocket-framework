@@ -13,10 +13,13 @@ import java.util.UUID;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,8 +41,12 @@ public class FileUploadServiceImpl extends
 
 	public static final String RESOURCE_BUNDLE = "FileUploadService";
 	public static final String UPLOAD_PATH = "conf/uploads/";
+	
 	static MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
 
+	static Logger log = LoggerFactory.getLogger(FileUploadServiceImpl.class);
+	
+	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
 	@Autowired
 	FileUploadRepository repository;
 
@@ -170,7 +177,7 @@ public class FileUploadServiceImpl extends
 	}
 
 	@Override
-	public void downloadURIFile(String uuid, HttpServletResponse response)
+	public void downloadURIFile(String uuid, HttpServletRequest request, HttpServletResponse response, boolean forceDownload)
 			throws IOException, AccessDeniedException {
 
 		FileUpload fileUpload = getFileByUuid(uuid);
@@ -178,39 +185,29 @@ public class FileUploadServiceImpl extends
 		File file = new File(UPLOAD_PATH + "/" + fileUpload.getRealm().getId()
 				+ "/" + fileUpload.getName());
 		InputStream in = new FileInputStream(file);
-		try {
 
-			response.setContentType(mimeTypesMap.getContentType(file
-					.getAbsolutePath()));
 
-			response.setHeader("Content-disposition", "attachment; filename="
+			String contentType = mimeTypesMap.getContentType(fileUpload.getFileName());
+			response.setContentType(contentType);
+
+			if(forceDownload) {
+				response.setHeader("Content-disposition", "attachment; filename="
 					+ fileUpload.getFileName());
-
-			if (file.length() >= 1024000) {
-
-				byte[] buf = new byte[65535];
-				int r;
-				long remaining = file.length();
-				while ((r = in.read(buf, 0,
-						(int) Math.min(buf.length, remaining))) > -1
-						&& remaining > 0) {
-					response.getOutputStream().write(buf, 0, r);
-					remaining -= r;
-				}
-
-			} else {
-
-				org.apache.commons.io.IOUtils.copy(in,
-						response.getOutputStream());
 			}
-			response.flushBuffer();
 
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			in.close();
-		}
-
+			if (file.length() < 1024000) {
+				try  {
+					IOUtils.copy(in,  response.getOutputStream());
+					response.flushBuffer();
+				} catch(IOException ex) {
+					log.error("Failed to copy file", ex);
+				} finally {
+					in.close();
+				}
+			} else {
+				// Let the HTTP server handle it.
+				request.setAttribute(CONTENT_INPUTSTREAM, in);
+			}
 	}
 
 	@Override

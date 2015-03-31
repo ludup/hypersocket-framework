@@ -10,6 +10,10 @@ public class DataTablesResult {
 	String iTotalDisplayRecords;
 	Collection<?> aaData;
 	
+	public DataTablesResult() {
+		
+	}
+	
 	public DataTablesResult(Collection<?> aaData, long totalRecords, int sEcho) {
 		this.aaData = aaData;
 		this.sEcho = sEcho;

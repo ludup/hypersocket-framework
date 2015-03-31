@@ -20,32 +20,18 @@ public class ScriptLauncher implements ResourceLauncher, Serializable {
 	
 	private static final long serialVersionUID = 4922604914995232181L;
 
-	String[] ALLOWED_SYSTEM_PROPERTIES = { "user.name", "user.home", "user.dir" };
-	
-	String hostname;
 	String script;
-	String username;
+	Map<String,String> properties;
 	
-	public ScriptLauncher(String username, String hostname, String script) {
-		this.username = username;
-		this.hostname = hostname;
+	public ScriptLauncher(String script, Map<String,String> properties) {
 		this.script = script;
+		this.properties = properties;
 	}
 	
 	@Override
 	public int launch() {
 		
-		Map<String,String> env = System.getenv();
-		Map<String,String> properties = new HashMap<String,String>();
-		
-		properties.put("hostname", hostname);
-		properties.put("username", username);
-		
-		for(String prop : ALLOWED_SYSTEM_PROPERTIES) {
-			properties.put(prop.replace("user.", "client.user"), System.getProperty(prop));
-		}
-		
-		script = ReplacementUtils.processTokenReplacements(script, env);
+		script = ReplacementUtils.processTokenReplacements(script, System.getenv());
 		script = ReplacementUtils.processTokenReplacements(script, properties);
 		
 		File scriptFile = null; 
