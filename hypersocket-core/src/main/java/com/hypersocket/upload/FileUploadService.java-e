@@ -3,6 +3,7 @@ package com.hypersocket.upload;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +34,7 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 			throws ResourceCreationException, AccessDeniedException,
 			IOException;
 
-	void downloadURIFile(String uuid, HttpServletResponse response)
+	void downloadURIFile(String uuid, HttpServletRequest request,
+			HttpServletResponse response, boolean forceDownload)
 			throws IOException, AccessDeniedException;
 }

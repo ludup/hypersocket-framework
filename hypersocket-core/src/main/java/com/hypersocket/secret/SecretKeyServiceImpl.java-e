@@ -21,10 +21,13 @@ import com.hypersocket.encrypt.EncryptionProvider;
 import com.hypersocket.nss.NssEncryptionProvider;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.rsa.RsaEncryptionProvider;
+import com.hypersocket.session.SessionService;
 
 @Service
 public class SecretKeyServiceImpl extends
@@ -36,6 +39,12 @@ public class SecretKeyServiceImpl extends
 	
 	@Autowired
 	SecretKeyRepository repository;
+	
+	@Autowired
+	SessionService sessionService; 
+	
+	@Autowired
+	RealmService realmService; 
 	
 	EncryptionProvider encryptionProvider;
 	
@@ -74,6 +83,7 @@ public class SecretKeyServiceImpl extends
 		return createSecretKey(name);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public SecretKeyResource createSecretKey(String name) throws ResourceCreationException, AccessDeniedException {
 		
@@ -83,7 +93,29 @@ public class SecretKeyServiceImpl extends
 			key.setName(name);
 			key.setRealm(getCurrentRealm());
 			key.setKeylength(Math.min(Cipher.getMaxAllowedKeyLength("AES"), 256));
-			createResource(key, new HashMap<String,String>());
+			
+			SecureRandom rnd = new SecureRandom();
+			byte[] rawkey = new byte[32];
+			rnd.nextBytes(rawkey);
+			
+			try {
+				key.setKeydata(encryptionProvider.encrypt(Hex.encodeHexString(rawkey)));
+			} catch (Exception e) {
+				log.error("Could not encrypt secret key", e);
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.encryptError", e.getMessage());
+			}
+			
+			byte[] iv = new byte[16];
+			rnd.nextBytes(iv);
+			
+			try {
+				key.setIv(encryptionProvider.encrypt(Hex.encodeHexString(iv)));
+			} catch (Exception e) {
+				log.error("Could not encrypt iv", e);
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.encryptError", e.getMessage());
+			}
+			
+			repository.saveResource(key, new HashMap<String,String>());
 			
 			return key;
 		} catch (NoSuchAlgorithmException e) {
@@ -112,32 +144,6 @@ public class SecretKeyServiceImpl extends
 		} catch (Exception e) {
 			log.error("Could not generate iv", e);
 			throw new IOException("Unable to process iv data for " + key.getName(), e);
-		}
-	}
-
-	@Override
-	protected void beforeCreateResource(SecretKeyResource resource,
-			Map<String, String> properties) throws ResourceCreationException {
-		
-		SecureRandom rnd = new SecureRandom();
-		byte[] rawkey = new byte[32];
-		rnd.nextBytes(rawkey);
-		
-		try {
-			resource.setKeydata(encryptionProvider.encrypt(Hex.encodeHexString(rawkey)));
-		} catch (Exception e) {
-			log.error("Could not encrypt secret key", e);
-			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.encryptError", e.getMessage());
-		}
-		
-		byte[] iv = new byte[16];
-		rnd.nextBytes(iv);
-		
-		try {
-			resource.setIv(encryptionProvider.encrypt(Hex.encodeHexString(iv)));
-		} catch (Exception e) {
-			log.error("Could not encrypt iv", e);
-			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.encryptError", e.getMessage());
 		}
 	}
 
@@ -174,6 +180,15 @@ public class SecretKeyServiceImpl extends
 	@Override
 	protected void fireResourceDeletionEvent(SecretKeyResource resource, Throwable t) {
 
+	}
+
+	@Override
+	public SecretKeyResource getSecretKey(String reference) throws ResourceNotFoundException, ResourceCreationException, AccessDeniedException {
+		SecretKeyResource key = repository.getResourceByName(reference, getCurrentRealm());
+		if(key==null) {
+			key = createSecretKey(reference);
+		}
+		return key;
 	}
 
 }

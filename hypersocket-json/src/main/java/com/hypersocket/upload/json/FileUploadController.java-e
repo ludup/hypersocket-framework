@@ -1,5 +1,7 @@
 package com.hypersocket.upload.json;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -125,21 +127,21 @@ public class FileUploadController extends ResourceController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "fileUpload/file/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "fileUpload/file/{uuid}", method = RequestMethod.GET)
 	@ResponseStatus(value = HttpStatus.OK)
 	public void downloadFile(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String uuid)
 			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
+			SessionTimeoutException, IOException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
 
-			service.downloadURIFile(uuid, response);
+			service.downloadURIFile(uuid, request, response, true);
 
-		} catch (Exception e) {
-			throw new RuntimeException("IOError writing file to output stream");
+		} finally {
+			clearAuthenticatedContext();
 		}
 	}
 }

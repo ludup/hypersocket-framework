@@ -32,11 +32,11 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 	@Override
 	public int launch() {
 		
-		Map<String,String> env = System.getenv();
 		Map<String,String> properties = new HashMap<String,String>();
 		
 		properties.put("hostname", hostname);
 		properties.put("username", username);
+		properties.put("timestamp", String.valueOf(System.currentTimeMillis()));
 		
 		for(String prop : ALLOWED_SYSTEM_PROPERTIES) {
 			properties.put(prop.replace("user.", "client.user"), System.getProperty(prop));
@@ -48,19 +48,19 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 				log.info("Executing startup script");
 			}
 			
-			ScriptLauncher script = new ScriptLauncher(username, hostname, launcher.getStartupScript());
+			ScriptLauncher script = new ScriptLauncher(launcher.getStartupScript(), properties);
 			int exitCode = script.launch();
 			if(exitCode!=0) {
 				log.warn("Startup script returned non zero exit code " + exitCode);
 			}
 		}
-		String exe = ReplacementUtils.processTokenReplacements(launcher.getExe(), env);
+		String exe = ReplacementUtils.processTokenReplacements(launcher.getExe(), System.getenv());
 		exe = ReplacementUtils.processTokenReplacements(exe, properties);
 		
 		
 		final CommandExecutor cmd = new CommandExecutor(exe);
 		for(String arg : launcher.getArgs()) {
-			arg = ReplacementUtils.processTokenReplacements(arg, env);
+			arg = ReplacementUtils.processTokenReplacements(arg, System.getenv());
 			arg = ReplacementUtils.processTokenReplacements(arg, properties);
 			cmd.addArg(arg);
 		}
@@ -88,7 +88,7 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 					log.info("Executing shutdown script");
 				}
 				
-				ScriptLauncher script = new ScriptLauncher(username, hostname, launcher.getShutdownScript());
+				ScriptLauncher script = new ScriptLauncher(launcher.getShutdownScript(), properties);
 				int exitCode = script.launch();
 				if(exitCode!=0) {
 					log.warn("Shutdown script returned non zero exit code " + exitCode);

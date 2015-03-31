@@ -524,6 +524,8 @@ public class AuthenticationServiceImpl extends PasswordEnabledAuthenticatedServi
 		Session session = sessionService.openSession(state.getRemoteAddress(),
 				state.getPrincipal(), state.getScheme(), state.getUserAgent(),
 				state.getParameters());
+		
+		setCurrentSession(session, state.getLocale());
 
 		if (state.hasParameter("password")) {
 			sessionService.setCurrentPassword(session,
