@@ -36,6 +36,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.NotScheduledException;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
@@ -154,20 +155,23 @@ public class AutomationResourceServiceImpl extends
 				resource, t, getCurrentSession()));
 	}
 
-	protected void afterDeleteResource(AutomationResource resource) throws ResourceChangeException {
+	protected void afterDeleteResource(AutomationResource resource)
+			throws ResourceChangeException {
 		try {
 			unschedule(resource);
-	
+
 		} catch (SchedulerException e) {
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.couldNotUnschedule", resource.getName(), e.getMessage());
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"error.couldNotUnschedule", resource.getName(),
+					e.getMessage());
 		}
 	}
-	
+
 	@Override
 	protected void fireResourceDeletionEvent(AutomationResource resource) {
-		
+
 		eventService.publishEvent(new AutomationResourceDeletedEvent(this,
-					getCurrentSession(), resource));
+				getCurrentSession(), resource));
 	}
 
 	@Override
@@ -184,10 +188,15 @@ public class AutomationResourceServiceImpl extends
 
 		resource.setName(name);
 
-		updateResource(resource, properties);
+		updateResource(resource, properties,new TransactionAdapter<AutomationResource>() {
 
-		schedule(resource);
-
+			@Override
+			public void afterOperation(AutomationResource resource,
+					Map<String, String> properties) {
+				schedule(resource);
+			}
+			
+		});
 		return resource;
 	}
 
@@ -222,7 +231,7 @@ public class AutomationResourceServiceImpl extends
 		Calendar c = Calendar.getInstance();
 
 		Date ret = null;
-		
+
 		if (from != null) {
 			c.setTime(from);
 			ret = c.getTime();
@@ -234,18 +243,20 @@ public class AutomationResourceServiceImpl extends
 					Integer.parseInt(time.substring(0, idx)));
 			c.set(Calendar.MINUTE, Integer.parseInt(time.substring(idx + 1)));
 			ret = c.getTime();
-		} 
-		
+		}
+
 		return ret;
 	}
 
-	protected void unschedule(AutomationResource resource) throws SchedulerException {
-		
+	protected void unschedule(AutomationResource resource)
+			throws SchedulerException {
+
 		if (scheduleIdsByResource.containsKey(resource.getId())) {
 			String scheduleId = scheduleIdsByResource.remove(resource.getId());
 			schedulerService.cancelNow(scheduleId);
 		}
 	}
+
 	protected void schedule(AutomationResource resource) {
 
 		Date start = calculateDateTime(resource.getStartDate(),
@@ -292,7 +303,7 @@ public class AutomationResourceServiceImpl extends
 				scheduleId = scheduleIdsByResource.get(resource.getId());
 
 				try {
-					if (start==null || start.before(new Date())) {
+					if (start == null || start.before(new Date())) {
 						schedulerService.rescheduleNow(scheduleId, interval,
 								repeat, end);
 					} else {
@@ -301,25 +312,24 @@ public class AutomationResourceServiceImpl extends
 					}
 					return;
 				} catch (NotScheduledException e) {
-					if(log.isInfoEnabled()) {
+					if (log.isInfoEnabled()) {
 						log.info("Attempted to reschedule job but it was not scheduled.");
 					}
 					scheduleIdsByResource.remove(resource.getId());
 				}
 
-			} 
-		
-			if (start==null || start.before(new Date())) {
-				scheduleId = schedulerService.scheduleNow(
-						AutomationJob.class, data, interval, repeat, end);
+			}
+
+			if (start == null || start.before(new Date())) {
+				scheduleId = schedulerService.scheduleNow(AutomationJob.class,
+						data, interval, repeat, end);
 			} else {
-				scheduleId = schedulerService.scheduleAt(
-						AutomationJob.class, data, start, interval, repeat,
-						end);
+				scheduleId = schedulerService.scheduleAt(AutomationJob.class,
+						data, start, interval, repeat, end);
 			}
 
 			scheduleIdsByResource.put(resource.getId(), scheduleId);
-			
+
 		} catch (SchedulerException e) {
 			log.error(
 					"Failed to schedule automation task " + resource.getName(),
@@ -335,10 +345,14 @@ public class AutomationResourceServiceImpl extends
 		AutomationResource resource = new AutomationResource();
 		resource.setName(name);
 		resource.setRealm(realm);
-
-		createResource(resource, properties);
-
-		schedule(resource);
+		createResource(resource, properties,
+				new TransactionAdapter<AutomationResource>() {
+					@Override
+					public void afterOperation(AutomationResource resource,
+							Map<String, String> properties) {
+						schedule(resource);
+					}
+				});
 
 		return resource;
 	}
@@ -350,10 +364,10 @@ public class AutomationResourceServiceImpl extends
 		assertPermission(AutomationResourcePermission.READ);
 
 		TaskProvider provider = taskService.getTaskProvider(resourceKey);
-		Collection<PropertyCategory> results = provider.getRepository().getPropertyCategories(null);
+		Collection<PropertyCategory> results = provider.getRepository()
+				.getPropertyCategories(null);
 
-		results.addAll(repository
-				.getPropertyCategories(null));
+		results.addAll(repository.getPropertyCategories(null));
 
 		return results;
 	}
@@ -365,10 +379,10 @@ public class AutomationResourceServiceImpl extends
 		assertPermission(AutomationResourcePermission.READ);
 
 		TaskProvider provider = taskService.getTaskProvider(resource);
-		Collection<PropertyCategory> results = provider.getRepository().getPropertyCategories(resource);
+		Collection<PropertyCategory> results = provider.getRepository()
+				.getPropertyCategories(resource);
 
-		results.addAll(repository
-				.getPropertyCategories(resource));
+		results.addAll(repository.getPropertyCategories(resource));
 
 		return results;
 	}
