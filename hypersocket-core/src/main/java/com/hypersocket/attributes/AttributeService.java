@@ -3,8 +3,6 @@ package com.hypersocket.attributes;
 import java.util.Collection;
 import java.util.List;
 
-import upgrade.AttributeCategory;
-
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.ResourceChangeException;
