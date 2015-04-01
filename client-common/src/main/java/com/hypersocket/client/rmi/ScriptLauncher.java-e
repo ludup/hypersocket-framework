@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,19 +71,26 @@ public class ScriptLauncher implements ResourceLauncher, Serializable {
 			
 			return exitCode;
 		} catch (IOException e) {
-			scriptFile.delete();
 			log.error("Failed to execute script", e);
 			return Integer.MIN_VALUE;
+		} finally {
+			try {
+				Files.delete(scriptFile.toPath());
+			} catch (IOException e) {
+				log.error("Script file could not be deleted " + scriptFile.getAbsolutePath(), e);
+			}
+			
+			
 		}
 				
 	}
 
 	private CommandExecutor executeBashScript(File scriptFile) {
-		return new CommandExecutor("cmd.exe", "/C", scriptFile.getAbsolutePath());
+		return new CommandExecutor("/bin/sh", scriptFile.getAbsolutePath());
 	}
 
 	private CommandExecutor executeWindowsScript(File scriptFile) {
-		return new CommandExecutor("/bin/sh", scriptFile.getAbsolutePath());
+		return new CommandExecutor("cmd.exe", "/C", scriptFile.getAbsolutePath());
 	}
 
 	private String getScriptSuffix() {

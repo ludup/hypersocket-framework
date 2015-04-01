@@ -271,7 +271,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 		if (log.isDebugEnabled()) {
 			log.debug("Looking up resources for principal "
-					+ principal.getRealm() + "/" + principal.getPrincipalName());
+					+ principal.getRealm().getName() + "/" + principal.getPrincipalName());
 		}
 
 		return getRepository().getAssignedResources(
