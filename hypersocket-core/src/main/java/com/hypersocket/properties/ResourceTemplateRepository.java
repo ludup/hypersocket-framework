@@ -50,4 +50,6 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	void registerAttribute(String context, Attribute attr);
 
+	Set<String> getAttributeNames();
+
 }

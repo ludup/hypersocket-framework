@@ -1255,6 +1255,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 		Map<String, String> currentProperties = provider
 				.getProperties(principal);
+		
+		
 		Map<String, String> filteredProperties = new HashMap<String, String>();
 		for (String allowed : editableProperties) {
 			String value = properties.get(allowed);
