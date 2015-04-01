@@ -3,6 +3,8 @@ package com.hypersocket.attributes;
 import java.util.Collection;
 import java.util.List;
 
+import upgrade.AttributeCategory;
+
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.ResourceChangeException;
@@ -57,4 +59,10 @@ public interface AttributeService extends AuthenticatedService {
 			throws AccessDeniedException;
 
 	public Collection<String> getContexts();
+
+	public AttributeCategory getCategoryByName(String attributeCategory) throws AccessDeniedException;
+
+	public Long getMaximumCategoryWeight() throws AccessDeniedException;
+
+	public Long getMaximumAttributeWeight(AttributeCategory cat) throws AccessDeniedException;
 }

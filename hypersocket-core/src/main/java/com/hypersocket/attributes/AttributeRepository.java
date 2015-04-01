@@ -16,4 +16,6 @@ public interface AttributeRepository extends AbstractEntityRepository<Attribute,
 
 	boolean nameExists(Attribute attribute);
 
+	Long getMaximumAttributeWeight(AttributeCategory cat);
+
 }

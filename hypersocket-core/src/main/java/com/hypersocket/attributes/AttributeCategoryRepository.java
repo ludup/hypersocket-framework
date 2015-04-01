@@ -16,5 +16,9 @@ public interface AttributeCategoryRepository extends
 			int start, int length, ColumnSort[] sorting);
 
 	Long getAttributeCategoryCount(String searchPattern);
+	
+	AttributeCategory getCategoryByName(String name);
+
+	Long getMaximumCategoryWeight();
 
 }
