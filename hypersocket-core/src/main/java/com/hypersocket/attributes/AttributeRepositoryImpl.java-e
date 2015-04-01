@@ -82,5 +82,18 @@ public class AttributeRepositoryImpl extends
 
 		return attribute != null;
 	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public Long getMaximumAttributeWeight(final AttributeCategory cat) {
+		return max("weight", getEntityClass(), new CriteriaConfiguration() {
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("category", cat));
+				criteria.add(Restrictions.eq("deleted", false));
+			}
+		});
+
+	}
 
 }

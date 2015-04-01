@@ -29,4 +29,10 @@ public interface AuthenticatedService {
 
 	String getCurrentUsername();
 
+	Realm getCurrentRealm();
+
+	Locale getCurrentLocale();
+
+	boolean hasSessionContext();
+
 }

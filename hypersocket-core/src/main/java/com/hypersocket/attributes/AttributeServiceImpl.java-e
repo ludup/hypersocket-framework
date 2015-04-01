@@ -321,4 +321,23 @@ public class AttributeServiceImpl extends AbstractAuthenticatedServiceImpl imple
 
 	}
 
+	@Override
+	public AttributeCategory getCategoryByName(String name) throws AccessDeniedException {
+
+		assertPermission(AttributePermission.READ);
+		return attributeCategoryRepository.getCategoryByName(name);
+	}
+
+	@Override
+	public Long getMaximumCategoryWeight() throws AccessDeniedException {
+		assertPermission(AttributePermission.READ);
+		return attributeCategoryRepository.getMaximumCategoryWeight();
+	}
+
+	@Override
+	public Long getMaximumAttributeWeight(AttributeCategory cat) throws AccessDeniedException {
+		assertPermission(AttributePermission.READ);
+		return attributeRepository.getMaximumAttributeWeight(cat);
+	}
+
 }

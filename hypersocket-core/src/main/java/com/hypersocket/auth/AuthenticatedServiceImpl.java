@@ -9,6 +9,7 @@ package com.hypersocket.auth;
 
 import java.util.Locale;
 
+import org.apache.derby.catalog.GetProcedureColumns;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	protected abstract void verifyPermission(Principal principal,
 			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException;
 	
+	@Override
 	public void setCurrentPrincipal(Principal principal, Locale locale,
 			Realm realm) {
 		currentPrincipal.set(principal);
@@ -53,6 +55,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		currentLocale.set(locale);
 	}
 	
+	@Override
 	public void setCurrentSession(Session session, Locale locale) {
 		if(log.isDebugEnabled()) {
 			log.debug("Setting current session context " + session.getId());
@@ -63,6 +66,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		currentLocale.set(locale);
 	}
 
+	@Override
 	public Principal getCurrentPrincipal() {
 		if(currentPrincipal.get()==null) {
 			throw new InvalidAuthenticationContext("No principal is attached to the current context!");
@@ -70,6 +74,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		return currentPrincipal.get();
 	}
 	
+	@Override
 	public Session getCurrentSession() throws InvalidAuthenticationContext {
 		if(currentSession.get()==null) {
 			throw new InvalidAuthenticationContext("No session is attached to the current context!");
@@ -77,14 +82,20 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		return currentSession.get();
 	}
 
-	public Realm getCurrentRealm() {
-		return currentRealm.get();
-	}
-
+	@Override
 	public Locale getCurrentLocale() {
 		return currentLocale.get();
 	}
+	
+	@Override
+	public Realm getCurrentRealm() {
+		if(currentSession.get()==null) {
+			return currentRealm.get();
+		}
+		return getCurrentSession().getCurrentRealm();
+	}
 
+	@Override
 	public void clearPrincipalContext() {
 		if(log.isDebugEnabled()) {
 			log.debug("Clearing authenticated context.");
@@ -154,10 +165,12 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		verifyPermission(getCurrentPrincipal(), strategy, permissions);
 	}
 
+	@Override
 	public boolean hasAuthenticatedContext() {
 		return currentPrincipal.get() != null;
 	}
 	
+	@Override
 	public boolean hasSessionContext() {
 		return currentSession.get() != null;
 	}

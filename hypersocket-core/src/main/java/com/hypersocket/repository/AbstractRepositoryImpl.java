@@ -18,6 +18,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -278,6 +279,22 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
 		
 		return (long) criteria.list().size();
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public Long max(String column, Class<?> clz, CriteriaConfiguration... configs) {
+		
+		Criteria criteria = createCriteria(clz);
+		
+		for(CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		
+		criteria.setProjection(Projections.projectionList()
+		            .add(Projections.max(column)));
+		
+		return (long) criteria.uniqueResult();
 	}
 	
 	@SuppressWarnings("unchecked")

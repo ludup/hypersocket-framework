@@ -20,4 +20,6 @@ public interface AbstractRepository<K> {
 
 	Long getCount(Class<?> clz, CriteriaConfiguration... configs);
 
+	Long max(String column, Class<?> clz, CriteriaConfiguration... configs);
+
 }
