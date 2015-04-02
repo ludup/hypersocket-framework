@@ -322,6 +322,13 @@ public class AttributeServiceImpl extends AbstractAuthenticatedServiceImpl imple
 	}
 
 	@Override
+	public Attribute getAttributeByName(String name) throws AccessDeniedException {
+
+		assertPermission(AttributePermission.READ);
+		return attributeRepository.getAttributeByName(name);
+	}
+	
+	@Override
 	public AttributeCategory getCategoryByName(String name) throws AccessDeniedException {
 
 		assertPermission(AttributePermission.READ);

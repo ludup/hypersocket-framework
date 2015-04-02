@@ -211,4 +211,6 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Map<String, String> getUserPropertyValues(
 			Principal principal, String... variableNames);
 
+	void setRealmProperty(Realm realm, String resourceKey, String value) throws AccessDeniedException;
+
 }

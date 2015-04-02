@@ -65,21 +65,34 @@ public class ConnectionJob extends TimerTask {
 						c.getHashedPassword(), true);
 			}
 
-			client.addListener(new HypersocketClientAdapter<Connection>() {
-				@Override
-				public void disconnected(HypersocketClient<Connection> client,
-						boolean onError) {
-					if (client.getAttachment().isStayConnected() && onError) {
-						try {
-							service.scheduleConnect(c);
-						} catch (RemoteException e1) {
+			// Now get the current version and check against ours. 
+			String response[] = client.getTransport().get("server/version").split(";");
+			if(response.length != 2) {
+				if(log.isErrorEnabled()) {
+					log.error("Failed to get version from server " + response.length);
+				}
+				client.disconnect(false);
+			} else {
+				String version = response[0];
+				String serial = response[1];
+	
+				client.addListener(new HypersocketClientAdapter<Connection>() {
+					@Override
+					public void disconnected(HypersocketClient<Connection> client,
+							boolean onError) {
+						if (client.getAttachment().isStayConnected() && onError) {
+							try {
+								service.scheduleConnect(c);
+							} catch (RemoteException e1) {
+							}
 						}
 					}
+				});
+	
+				if (log.isInfoEnabled()) {
+					log.info("Logged into " + url);
 				}
-			});
-
-			if (log.isInfoEnabled()) {
-				log.info("Logged into " + url);
+			
 			}
 
 		} catch (Throwable e) {

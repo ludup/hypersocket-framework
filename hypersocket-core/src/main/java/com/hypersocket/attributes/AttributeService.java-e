@@ -63,4 +63,6 @@ public interface AttributeService extends AuthenticatedService {
 	public Long getMaximumCategoryWeight() throws AccessDeniedException;
 
 	public Long getMaximumAttributeWeight(AttributeCategory cat) throws AccessDeniedException;
+
+	Attribute getAttributeByName(String name) throws AccessDeniedException;
 }

@@ -21,4 +21,10 @@ public interface EventService extends AuthenticatedService {
 
 	void registerEventDefinition(EventDefinition def);
 
+	void publishDelayedEvents();
+
+	void delayEvents(Boolean val);
+
+	void rollbackDelayedEvents();
+
 }
