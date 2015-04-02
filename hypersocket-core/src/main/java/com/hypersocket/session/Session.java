@@ -26,6 +26,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 
+import org.apache.log4j.Logger;
 import org.hibernate.annotations.GenericGenerator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -41,6 +42,8 @@ import com.hypersocket.utils.HypersocketUtils;
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class Session extends AbstractEntity<String> {
 
+	static Logger log = Logger.getLogger(Session.class);
+	
 	@Id
 	@GeneratedValue(generator="uuid")
 	@GenericGenerator(name="uuid", strategy="uuid2")
@@ -267,6 +270,7 @@ public class Session extends AbstractEntity<String> {
 			obj.writeObject(stateParameters);
 			this.state =  HypersocketUtils.base64Encode(out.toByteArray());
 		} catch (IOException e) {
+			log.error("Could not write session state", e);
 		}
 	}
 	

@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
@@ -22,7 +22,7 @@ import com.hypersocket.tables.ColumnSort;
 
 @Service
 public abstract class AbstractAssignableResourceServiceImpl<T extends AssignableResource>
-		extends AuthenticatedServiceImpl implements
+		extends PasswordEnabledAuthenticatedServiceImpl implements
 		AbstractAssignableResourceService<T>, EventPropertyCollector {
 
 	static Logger log = LoggerFactory
@@ -33,6 +33,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	@Autowired
 	RealmService realmService;
 
+	
 	protected abstract AbstractAssignableResourceRepository<T> getRepository();
 
 	protected abstract String getResourceBundle();
@@ -269,8 +270,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			throws AccessDeniedException {
 
 		if (log.isDebugEnabled()) {
-			log.debug("Looking up NetworkResources for principal "
-					+ principal.getRealm() + "/" + principal.getPrincipalName());
+			log.debug("Looking up resources for principal "
+					+ principal.getRealm().getName() + "/" + principal.getPrincipalName());
 		}
 
 		return getRepository().getAssignedResources(

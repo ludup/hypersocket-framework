@@ -167,9 +167,7 @@ public class LogonController extends AuthenticatedController {
 			}
 		} finally {
 			clearSystemContext();
-
 		}
-
 	}
 
 	@RequestMapping(value = "logoff")

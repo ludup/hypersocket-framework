@@ -16,7 +16,7 @@ import com.hypersocket.attributes.events.AttributeCreatedEvent;
 import com.hypersocket.attributes.events.AttributeDeletedEvent;
 import com.hypersocket.attributes.events.AttributeEvent;
 import com.hypersocket.attributes.events.AttributeUpdatedEvent;
-import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -27,7 +27,7 @@ import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.tables.ColumnSort;
 
 @Service
-public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
+public class AttributeServiceImpl extends AbstractAuthenticatedServiceImpl implements
 		AttributeService {
 
 	public static final String RESOURCE_BUNDLE = "UserAttributes";
@@ -319,6 +319,25 @@ public class AttributeServiceImpl extends AuthenticatedServiceImpl implements
 			throw e;
 		}
 
+	}
+
+	@Override
+	public AttributeCategory getCategoryByName(String name) throws AccessDeniedException {
+
+		assertPermission(AttributePermission.READ);
+		return attributeCategoryRepository.getCategoryByName(name);
+	}
+
+	@Override
+	public Long getMaximumCategoryWeight() throws AccessDeniedException {
+		assertPermission(AttributePermission.READ);
+		return attributeCategoryRepository.getMaximumCategoryWeight();
+	}
+
+	@Override
+	public Long getMaximumAttributeWeight(AttributeCategory cat) throws AccessDeniedException {
+		assertPermission(AttributePermission.READ);
+		return attributeRepository.getMaximumAttributeWeight(cat);
 	}
 
 }

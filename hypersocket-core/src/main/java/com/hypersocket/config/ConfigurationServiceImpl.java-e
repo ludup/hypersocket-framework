@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
@@ -29,7 +29,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceChangeException;
 
 @Service
-public class ConfigurationServiceImpl extends AuthenticatedServiceImpl
+public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 		implements ConfigurationService {
 
 	static Logger log = LoggerFactory.getLogger(ConfigurationServiceImpl.class);

@@ -57,4 +57,10 @@ public interface AttributeService extends AuthenticatedService {
 			throws AccessDeniedException;
 
 	public Collection<String> getContexts();
+
+	public AttributeCategory getCategoryByName(String attributeCategory) throws AccessDeniedException;
+
+	public Long getMaximumCategoryWeight() throws AccessDeniedException;
+
+	public Long getMaximumAttributeWeight(AttributeCategory cat) throws AccessDeniedException;
 }

@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,23 +32,37 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 	@Override
 	public int launch() {
 		
-		Map<String,String> env = System.getenv();
 		Map<String,String> properties = new HashMap<String,String>();
 		
 		properties.put("hostname", hostname);
 		properties.put("username", username);
+		properties.put("timestamp", String.valueOf(System.currentTimeMillis()));
 		
 		for(String prop : ALLOWED_SYSTEM_PROPERTIES) {
-			properties.put(prop, System.getProperty(prop));
+			properties.put(prop.replace("user.", "client.user"), System.getProperty(prop));
 		}
 		
-		String exe = ReplacementUtils.processTokenReplacements(launcher.getExe(), env);
+		if(StringUtils.isNotBlank(launcher.getStartupScript())) {
+			
+			if(log.isInfoEnabled()) {
+				log.info("Executing startup script ---");
+				log.info(launcher.getStartupScript());
+				log.info("--------");
+			}
+			
+			ScriptLauncher script = new ScriptLauncher(launcher.getStartupScript(), properties);
+			int exitCode = script.launch();
+			if(exitCode!=0) {
+				log.warn("Startup script returned non zero exit code " + exitCode);
+			}
+		}
+		String exe = ReplacementUtils.processTokenReplacements(launcher.getExe(), System.getenv());
 		exe = ReplacementUtils.processTokenReplacements(exe, properties);
 		
 		
 		final CommandExecutor cmd = new CommandExecutor(exe);
 		for(String arg : launcher.getArgs()) {
-			arg = ReplacementUtils.processTokenReplacements(arg, env);
+			arg = ReplacementUtils.processTokenReplacements(arg, System.getenv());
 			arg = ReplacementUtils.processTokenReplacements(arg, properties);
 			cmd.addArg(arg);
 		}
@@ -67,6 +82,22 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 		} catch (IOException e) {
 			log.error("Failed to launch application", e);
 			return Integer.MIN_VALUE;
+		} finally {
+
+			if(StringUtils.isNotBlank(launcher.getShutdownScript())) {
+				
+				if(log.isInfoEnabled()) {
+					log.info("Executing shutdown script ---");
+				log.info(launcher.getShutdownScript());
+				log.info("--------");
+				}
+				
+				ScriptLauncher script = new ScriptLauncher(launcher.getShutdownScript(), properties);
+				int exitCode = script.launch();
+				if(exitCode!=0) {
+					log.warn("Shutdown script returned non zero exit code " + exitCode);
+				}
+			}
 		}
 
 		

@@ -33,6 +33,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.hypersocket.HypersocketVersion;
+import com.hypersocket.Version;
 
 public class ExtensionHelper {
 
@@ -84,7 +85,8 @@ public class ExtensionHelper {
 						if (Boolean.getBoolean("hypersocket.development")) {
 							ExtensionDefinition ext = new ExtensionDefinition(
 									props, System.currentTimeMillis(),
-									currentArchive);
+									currentArchive,
+									HypersocketVersion.getVersion());
 							ext.setState(ExtensionState.INSTALLED);
 							extsByName.put(ext.getId(), ext);
 						}
@@ -104,7 +106,7 @@ public class ExtensionHelper {
 							}
 							ExtensionDefinition ext = new ExtensionDefinition(
 									props, currentArchive.lastModified(),
-									currentArchive);
+									currentArchive, HypersocketVersion.getVersion());
 							if (extsByName.containsKey(ext.getId())) {
 								ExtensionDefinition remote = extsByName.get(ext
 										.getId());
@@ -118,17 +120,34 @@ public class ExtensionHelper {
 									ext.setState(ExtensionState.INSTALLED);
 									extsByName.put(ext.getId(), ext);
 								} else {
-									if (log.isInfoEnabled()) {
-										log.info(extensionId
-												+ " is installed but an update is available hash=\""
-												+ ext.getHash()
-												+ "\" modified=\""
-												+ ext.getLastModified()
-												+ "\" size=\""
-												+ currentArchive.length()
-												+ "\"");
+									
+									Version remoteVersion = new Version(remote.getVersion());
+									Version localVersion = new Version(HypersocketVersion.getVersion());
+									
+									if(remoteVersion.compareTo(localVersion) >= 0) {
+										
+										if (log.isInfoEnabled()) {
+											log.info(extensionId
+													+ " is installed but an update is available hash=\""
+													+ ext.getHash()
+													+ "\" modified=\""
+													+ ext.getLastModified()
+													+ "\" size=\""
+													+ currentArchive.length()
+													+ "\" [" + remoteVersion.compareTo(localVersion) + "]");
+										}
+										
+										remote.setState(ExtensionState.UPDATABLE);
+									} else {
+									
+										if(log.isInfoEnabled()) {
+											log.info("Although the current repository version of " 
+													+ extensionId + " differs its version " 
+													+ remote.getVersion() + " is earlier than the current version " 
+													+ HypersocketVersion.getVersion());;
+										}
+										remote.setState(ExtensionState.INSTALLED);
 									}
-									remote.setState(ExtensionState.UPDATABLE);
 								}
 							} else {
 								if (log.isInfoEnabled()) {
@@ -212,14 +231,14 @@ public class ExtensionHelper {
 					.getBytes("UTF-8")));
 
 			String appUrl = doc.getDocumentElement().getAttribute("url");
-
+			String repoVersion = doc.getDocumentElement().getAttribute("version");
 			NodeList list = doc.getElementsByTagName("archive");
 			Map<String, File> localArchives = getBootstrapArchives();
 			for (int i = 0; i < list.getLength(); i++) {
 				Node node = list.item(i);
 				try {
 					ExtensionDefinition ext = new ExtensionDefinition(
-							(Element) node, appUrl);
+							(Element) node, appUrl, repoVersion);
 					ext.setLocalArchiveFile(localArchives.get(ext.getId()));
 					extsByName.put(ext.getId(), ext);
 				} catch (Throwable e) {

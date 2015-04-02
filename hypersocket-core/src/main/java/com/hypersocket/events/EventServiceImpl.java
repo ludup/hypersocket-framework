@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.i18n.Message;
@@ -24,7 +24,7 @@ import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.resource.AssignableResourceEvent;
 
 @Service
-public class EventServiceImpl extends AuthenticatedServiceImpl implements EventService {
+public class EventServiceImpl extends AbstractAuthenticatedServiceImpl implements EventService {
 
 	static Logger log = LoggerFactory.getLogger(EventServiceImpl.class);
 

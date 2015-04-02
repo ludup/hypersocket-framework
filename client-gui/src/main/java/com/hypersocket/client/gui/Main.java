@@ -31,6 +31,17 @@ public class Main {
 	public Main(Runnable restartCallback, Runnable shutdownCallback) {
 		this.restartCallback = restartCallback;
 		this.shutdownCallback = shutdownCallback;
+		
+		try {
+			File dir = new File(System.getProperty("user.home"), ".hypersocket");
+			dir.mkdirs();
+			
+			PropertyConfigurator.configure("conf" + File.separator + "log4j-gui.properties");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			BasicConfigurator.configure();
+		}
 	}
 	
 	public void run() {
@@ -85,15 +96,6 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
-		try {
-			File dir = new File(System.getProperty("user.home"), ".hypersocket");
-			dir.mkdirs();
-			
-			PropertyConfigurator.configure("conf" + File.separator + "log4j-gui.properties");
-
-		} catch (Exception e) {
-			BasicConfigurator.configure();
-		}
 		instance = new Main(new DefaultRestartCallback(), new DefaultShutdownCallback());
 		instance.run();
 	}

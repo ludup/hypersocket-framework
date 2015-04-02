@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,32 +21,18 @@ public class ScriptLauncher implements ResourceLauncher, Serializable {
 	
 	private static final long serialVersionUID = 4922604914995232181L;
 
-	String[] ALLOWED_SYSTEM_PROPERTIES = { "user.name", "user.home", "user.dir" };
-	
-	String hostname;
 	String script;
-	String username;
+	Map<String,String> properties;
 	
-	public ScriptLauncher(String username, String hostname, String script) {
-		this.username = username;
-		this.hostname = hostname;
+	public ScriptLauncher(String script, Map<String,String> properties) {
 		this.script = script;
+		this.properties = properties;
 	}
 	
 	@Override
 	public int launch() {
 		
-		Map<String,String> env = System.getenv();
-		Map<String,String> properties = new HashMap<String,String>();
-		
-		properties.put("hostname", hostname);
-		properties.put("username", username);
-		
-		for(String prop : ALLOWED_SYSTEM_PROPERTIES) {
-			properties.put(prop, System.getProperty(prop));
-		}
-		
-		script = ReplacementUtils.processTokenReplacements(script, env);
+		script = ReplacementUtils.processTokenReplacements(script, System.getenv());
 		script = ReplacementUtils.processTokenReplacements(script, properties);
 		
 		File scriptFile = null; 
@@ -76,7 +63,7 @@ public class ScriptLauncher implements ResourceLauncher, Serializable {
 			int exitCode = cmd.execute();
 			
 			if(log.isInfoEnabled()) {
-				log.info("Command exited with exit code " + exitCode);
+				log.info("Script exited with exit code " + exitCode);
 				log.info("---BEGIN CMD OUTPUT----");
 				log.info(cmd.getCommandOutput());
 				log.info("---END CMD OUTPUT----");
@@ -86,16 +73,24 @@ public class ScriptLauncher implements ResourceLauncher, Serializable {
 		} catch (IOException e) {
 			log.error("Failed to execute script", e);
 			return Integer.MIN_VALUE;
+		} finally {
+			try {
+				Files.delete(scriptFile.toPath());
+			} catch (IOException e) {
+				log.error("Script file could not be deleted " + scriptFile.getAbsolutePath(), e);
+			}
+			
+			
 		}
 				
 	}
 
 	private CommandExecutor executeBashScript(File scriptFile) {
-		return new CommandExecutor("cmd.exe", "/C", scriptFile.getAbsolutePath());
+		return new CommandExecutor("/bin/sh", scriptFile.getAbsolutePath());
 	}
 
 	private CommandExecutor executeWindowsScript(File scriptFile) {
-		return new CommandExecutor("/bin/sh", scriptFile.getAbsolutePath());
+		return new CommandExecutor("cmd.exe", "/C", scriptFile.getAbsolutePath());
 	}
 
 	private String getScriptSuffix() {

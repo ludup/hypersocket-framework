@@ -11,16 +11,22 @@ public class ApplicationLauncherTemplate implements Serializable {
 	String name;
 	String exe;
 	String[] args = { };
+	String startupScript;
+	String shutdownScript;
 	
-	public ApplicationLauncherTemplate(String name, String exe, String... args) {
+	public ApplicationLauncherTemplate(String name, String exe, String startupScript, String shutdownScript, String... args) {
 		this.name = name;
 		this.exe = exe;
 		this.args = args;
+		this.startupScript = startupScript;
+		this.shutdownScript = shutdownScript;
 	}
 	
-	public ApplicationLauncherTemplate(String name, String exe, String args) {
+	public ApplicationLauncherTemplate(String name, String exe, String startupScript, String shutdownScript, String args) {
 		this.name = name;
 		this.exe = exe;
+		this.startupScript = startupScript;
+		this.shutdownScript = shutdownScript;
 		if(!StringUtils.isEmpty(args)) {
 			this.args = args.split("\\]\\|\\[");
 		}
@@ -37,4 +43,13 @@ public class ApplicationLauncherTemplate implements Serializable {
 	public String[] getArgs() {
 		return args;
 	}
+	
+	public String getStartupScript() {
+		return startupScript;
+	}
+	
+	public String getShutdownScript() {
+		return shutdownScript;
+	}
+	
 }

@@ -57,7 +57,8 @@ public abstract class ResourceTemplateRepositoryImpl extends
 	List<PropertyTemplate> activeTemplates = new ArrayList<PropertyTemplate>();
 	Set<String> propertyNames = new HashSet<String>();
 	Set<String> variableNames = new HashSet<String>();
-
+	Set<String> attributeNames = new HashSet<String>();
+	
 	String resourceXmlPath;
 
 	static Map<String, List<ResourceTemplateRepository>> propertyContexts = new HashMap<String, List<ResourceTemplateRepository>>();
@@ -77,6 +78,11 @@ public abstract class ResourceTemplateRepositoryImpl extends
 	@Override
 	public Set<String> getPropertyNames() {
 		return propertyNames;
+	}
+	
+	@Override
+	public Set<String> getAttributeNames() {
+		return attributeNames;
 	}
 
 	@Override
@@ -221,7 +227,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 		}
 
 		registerPropertyItem(context, cat, attr);
-
+		attributeNames.add(attr.getVariableName());
 	}
 
 	private PropertyCategory registerPropertyCategory(String context,
@@ -249,6 +255,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 
 			for (Attribute attr : c.getAttributes()) {
 				registerPropertyItem(context, cat, attr);
+				attributeNames.add(attr.getVariableName());
 			}
 		}
 

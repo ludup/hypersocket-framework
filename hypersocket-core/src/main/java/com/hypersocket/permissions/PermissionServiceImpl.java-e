@@ -31,7 +31,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import com.hypersocket.auth.AbstractAuthenticatedService;
+import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18N;
@@ -52,7 +53,7 @@ import com.hypersocket.role.events.RoleUpdatedEvent;
 import com.hypersocket.tables.ColumnSort;
 
 @Service
-public class PermissionServiceImpl extends AbstractAuthenticatedService
+public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		implements PermissionService {
 
 	static Logger log = LoggerFactory.getLogger(PermissionServiceImpl.class);
@@ -211,14 +212,8 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 				Role role = new Role();
 				role.setName(name);
 				role.setRealm(realm);
-
-				repository.saveRole(role);
-
-				repository.assignRole(role,
-						principals.toArray(new Principal[0]));
-
-				repository.grantPermissions(role, permissions);
-
+				repository.saveRole(role, realm,
+						principals.toArray(new Principal[0]), permissions);
 				for (Principal p : principals) {
 					permissionsCache.remove(p);
 				}
@@ -477,8 +472,6 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 			role.setName(name);
 		}
 		try {
-			repository.saveRole(role);
-
 			Set<Principal> unassignPrincipals = getEntitiesNotIn(principals,
 					role.getPrincipals(), new EntityMatch<Principal>() {
 						@Override
@@ -496,21 +489,12 @@ public class PermissionServiceImpl extends AbstractAuthenticatedService
 						}
 
 					});
-			repository.unassignRole(role,
-					unassignPrincipals.toArray(new Principal[0]));
-
-			repository.assignRole(role,
-					assignPrincipals.toArray(new Principal[0]));
-
 			Set<Permission> revokePermissions = getEntitiesNotIn(permissions,
 					role.getPermissions(), null);
 			Set<Permission> grantPermissions = getEntitiesNotIn(
 					role.getPermissions(), permissions, null);
-
-			repository.revokePermission(role, revokePermissions);
-
-			repository.grantPermissions(role, grantPermissions);
-
+			repository.updateRole(role, unassignPrincipals, assignPrincipals,
+					revokePermissions, grantPermissions);
 			permissionsCache.removeAll();
 			eventService.publishEvent(new RoleUpdatedEvent(this,
 					getCurrentSession(), role.getRealm(), role));
