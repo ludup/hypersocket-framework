@@ -31,6 +31,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
@@ -40,6 +41,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 
 import com.hypersocket.Version;
 
@@ -55,6 +58,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	List<UpgradeServiceListener> listeners = new ArrayList<UpgradeServiceListener>();
 	
 	String databaseType = null;
+	boolean fresh = true;
 	
 	public UpgradeServiceImpl() {
 		manager = new ScriptEngineManager();
@@ -118,13 +122,26 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	}
 
 	public void upgrade() throws IOException, ScriptException {
-
+		
+		if(log.isInfoEnabled()) {
+			log.info("Starting upgrade");
+		}
+		fresh = sessionFactory.getCurrentSession()
+				.createCriteria(Upgrade.class).list().size() == 0;
+		
+		if(log.isInfoEnabled()) {
+			if(fresh) {
+				log.info("Database is fresh");
+			} else {
+				log.info("Upgrading existing database");
+			}
+		}
 		List<UpgradeOp> ops = buildUpgradeOps();
 		Map<String, Object> beans = new HashMap<String, Object>();
 		
 		// Do all the SQL upgrades first
-		doOps(ops, beans, "sql");
-		
+		doOps(ops, beans, "sql", getDatabaseType());
+
 		doOps(ops, beans, "js", "class");
 		
 		for(UpgradeServiceListener listener : listeners) {
@@ -206,26 +223,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			log.info("Executing script " + script);
 		}
 		
-		String dbType = getDatabaseType();
-		if (script.getPath().endsWith("_" + dbType + ".sql")) {
-			BufferedReader r = new BufferedReader(new InputStreamReader(script.openStream()));
-			try {
-				// TODO this is a bit simplistic, all commands must be on same
-				// line
-				String line;
-				while ((line = r.readLine()) != null) {
-					line = line.trim();
-					if (!line.equals("") && !line.startsWith("/*") && !line.startsWith("//")) {
-						if(log.isInfoEnabled()) {
-							log.info(line);
-						}
-						sessionFactory.getCurrentSession().createSQLQuery(line).executeUpdate();
-					}
-				}
-			} finally {
-				r.close();
-			}
-		} else if (script.getPath().endsWith(".js")) {
+		if (script.getPath().endsWith(".js")) {
 			ScriptContext context = new SimpleScriptContext();
 			ScriptEngine engine = buildEngine(beans, script, context);
 			InputStream openStream = script.openStream();
@@ -253,10 +251,54 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
+		} else {
+
+			BufferedReader r = new BufferedReader(new InputStreamReader(script.openStream()));
+			try {
+				String statement = "";
+				String line;
+				boolean ignoreErrors = false;
+				while ((line = r.readLine()) != null) {
+					line = line.trim();
+					if(line.startsWith("EXIT IF FRESH")) {
+						if(isFreshInstall()) {
+							break;
+						}
+						continue;
+					} 
+					
+					if(!line.startsWith("/*") && !line.startsWith("//")) {
+						if(line.endsWith(";")) {
+							line = line.substring(0, line.length()-1);
+							statement += line;
+							sessionFactory.getCurrentSession().createSQLQuery(statement).executeUpdate();
+							statement = "";
+						} else {
+							statement += line + "\n";
+						}
+					} 
+				}
+				
+				if(StringUtils.isNotBlank(statement)) {
+					try {
+						sessionFactory.getCurrentSession().createSQLQuery(statement).executeUpdate();
+					} catch (Throwable e) {
+						if(!ignoreErrors) {
+							throw e;
+						}
+					} 
+				}
+			} finally {
+				r.close();
+			}
 		}
 
 	}
 
+	private boolean isFreshInstall() {
+		return fresh;
+	}
+	
 	private ScriptEngine buildEngine(Map<String, Object> beans, URL script, ScriptContext context) throws ScriptException,
 			IOException {
 		// Create a new scope for the beans

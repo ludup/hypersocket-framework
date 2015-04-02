@@ -4,13 +4,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.hypersocket.auth.AuthenticatedService;
+import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tables.ColumnSort;
 
-public interface AbstractAssignableResourceService<T> extends AuthenticatedService {
+public interface AbstractAssignableResourceService<T> extends PasswordEnabledAuthenticatedService {
 
 	void deleteResource(T resource) throws ResourceChangeException,
 			AccessDeniedException;
@@ -27,12 +27,14 @@ public interface AbstractAssignableResourceService<T> extends AuthenticatedServi
 
 	Collection<T> getResources(Principal principal) throws AccessDeniedException;
 
+	@SuppressWarnings("unchecked") 
 	void createResource(T resource, Map<String,String> properties,
 			TransactionOperation<T>... ops) throws 
 			AccessDeniedException, ResourceCreationException;
 
+	@SuppressWarnings("unchecked") 
 	void updateResource(T resource, Map<String,String> properties,
-			@SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceChangeException,
+			TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException;
 
 	List<T> searchResources(Realm realm, String search, int start, int length,

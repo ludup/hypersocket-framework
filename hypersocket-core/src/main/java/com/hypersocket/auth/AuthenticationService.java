@@ -16,7 +16,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 
-public interface AuthenticationService extends AuthenticatedService {
+public interface AuthenticationService extends PasswordEnabledAuthenticatedService {
 
 	public static final String RESOURCE_BUNDLE = "AuthenticationService";
 

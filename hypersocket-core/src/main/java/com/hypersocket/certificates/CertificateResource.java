@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
-@Table(name="certificates")
+@Table(name="ssl_certificates")
 public class CertificateResource extends RealmResource {
 
 	@Column(name="type")

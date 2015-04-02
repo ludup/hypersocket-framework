@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
@@ -28,7 +28,7 @@ import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.triggers.ValidationException;
 
 @Service
-public class EmailNotificationServiceImpl extends AuthenticatedServiceImpl implements EmailNotificationService {
+public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceImpl implements EmailNotificationService {
 
 	@Autowired
 	ConfigurationService configurationService;

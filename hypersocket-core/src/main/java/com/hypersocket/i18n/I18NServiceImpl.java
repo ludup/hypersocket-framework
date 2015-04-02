@@ -23,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.config.ConfigurationChangedEvent;
@@ -35,7 +35,7 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.SessionService;
 
 @Service
-public class I18NServiceImpl extends AuthenticatedServiceImpl implements I18NService, ApplicationListener<ConfigurationChangedEvent> {
+public class I18NServiceImpl extends AbstractAuthenticatedServiceImpl implements I18NService, ApplicationListener<ConfigurationChangedEvent> {
 
 	static Logger log = LoggerFactory.getLogger(I18NServiceImpl.class);
 	

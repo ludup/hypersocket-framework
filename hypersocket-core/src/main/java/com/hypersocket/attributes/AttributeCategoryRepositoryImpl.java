@@ -17,7 +17,6 @@ import com.hypersocket.repository.DetachedCriteriaConfiguration;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
-@Transactional
 public class AttributeCategoryRepositoryImpl extends
 		AbstractEntityRepositoryImpl<AttributeCategory, Long> implements
 		AttributeCategoryRepository {
@@ -28,6 +27,7 @@ public class AttributeCategoryRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional
 	public void saveCategory(AttributeCategory cat) {
 		save(cat);
 
@@ -39,6 +39,7 @@ public class AttributeCategoryRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public boolean nameExists(final AttributeCategory newCategory) {
 		AttributeCategory attributeCategory = get(getEntityClass(),
 				new DetachedCriteriaConfiguration() {
@@ -57,6 +58,7 @@ public class AttributeCategoryRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<AttributeCategory> searchAttributeCategories(
 			String searchPattern, int start, int length, ColumnSort[] sorting) {
 		return search(getEntityClass(), "name", searchPattern, start, length,
@@ -69,6 +71,7 @@ public class AttributeCategoryRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Long getAttributeCategoryCount(String searchPattern) {
 		return getCount(getEntityClass(), "name", searchPattern,
 				new CriteriaConfiguration() {
@@ -77,5 +80,29 @@ public class AttributeCategoryRepositoryImpl extends
 						criteria.add(Restrictions.eq("deleted", false));
 					}
 				});
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public Long getMaximumCategoryWeight() {
+		return max("weight", getEntityClass(), new CriteriaConfiguration() {
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("deleted", false));
+			}
+		});
+
+	}
+	
+	
+	@Override
+	@Transactional(readOnly=true)
+	public AttributeCategory getCategoryByName(String name) {
+		return get("name", name, getEntityClass(), new DetachedCriteriaConfiguration() {
+			@Override
+			public void configure(DetachedCriteria criteria) {
+				criteria.add(Restrictions.eq("deleted", false));
+			}
+		});
 	}
 }

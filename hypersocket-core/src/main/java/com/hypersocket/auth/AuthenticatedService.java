@@ -15,7 +15,6 @@ import com.hypersocket.session.Session;
 
 public interface AuthenticatedService {
 
-	
 	Principal getCurrentPrincipal();
 	
 	Session getCurrentSession();
@@ -30,10 +29,10 @@ public interface AuthenticatedService {
 
 	String getCurrentUsername();
 
-	String getCurrentPassword();
+	Realm getCurrentRealm();
 
-	void setCurrentPassword(String password);
-	
-	void setCurrentPassword(Session session, String password);
+	Locale getCurrentLocale();
+
+	boolean hasSessionContext();
 
 }

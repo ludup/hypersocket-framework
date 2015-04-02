@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.hypersocket</groupId>
 	<artifactId>hypersocket-framework</artifactId>
-	<version>0.2.3</version>
+	<version>0.2.4</version>
 	<url>http://www.hypersocket.com/</url>
 	<packaging>pom</packaging>
 	<name>Hypersocket Framework</name>
@@ -55,6 +55,7 @@
 		<module>hypersocket-json</module>
 		<module>hypersocket-netty</module>
 		<module>hypersocket-tasks</module>
+		<module>hypersocket-templates</module>
 		<module>hypersocket-tests</module>
 	</modules>
 

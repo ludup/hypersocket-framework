@@ -5,6 +5,7 @@ import java.io.IOException;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceNotFoundException;
 
 public interface SecretKeyService extends AbstractResourceService<SecretKeyResource> {
 
@@ -16,5 +17,7 @@ public interface SecretKeyService extends AbstractResourceService<SecretKeyResou
 	byte[] generateSecreyKeyData(SecretKeyResource key) throws IOException;
 
 	byte[] generateIvData(SecretKeyResource key) throws IOException;
+
+	SecretKeyResource getSecretKey(String reference) throws ResourceNotFoundException, ResourceCreationException, AccessDeniedException;
 
 }

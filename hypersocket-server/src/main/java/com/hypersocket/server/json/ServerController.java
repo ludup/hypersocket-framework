@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.hypersocket.HypersocketVersion;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
@@ -59,6 +60,16 @@ public class ServerController extends AuthenticatedController {
 			HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		return new RequestStatus(true, "");
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "server/version", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus version(HttpServletRequest request,
+			HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+		return new RequestStatus(true, HypersocketVersion.getVersion() + ";" + HypersocketVersion.getSerial());
 	}
 	
 	@AuthenticationRequired

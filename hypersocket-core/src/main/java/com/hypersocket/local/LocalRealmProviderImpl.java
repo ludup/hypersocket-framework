@@ -623,5 +623,10 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	public Set<String> getUserVariableNames() {
 		return userRepository.getVariableNames();
 	}
+	
+	@Override
+	public Set<String> getAttributeNames() {
+		return userRepository.getAttributeNames();
+	}
 
 }

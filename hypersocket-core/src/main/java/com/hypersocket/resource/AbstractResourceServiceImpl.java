@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
@@ -23,7 +23,7 @@ import com.hypersocket.tables.ColumnSort;
 
 @Repository
 public abstract class AbstractResourceServiceImpl<T extends RealmResource>
-		extends AuthenticatedServiceImpl implements AbstractResourceService<T>,
+		extends AbstractAuthenticatedServiceImpl implements AbstractResourceService<T>,
 			EventPropertyCollector {
 
 	static Logger log = LoggerFactory
