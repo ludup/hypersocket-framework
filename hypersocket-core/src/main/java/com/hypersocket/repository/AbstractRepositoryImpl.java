@@ -292,9 +292,14 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		}
 		
 		criteria.setProjection(Projections.projectionList()
-		            .add(Projections.max(column)));
+				.add(Projections.max(column)));
 		
-		return (long) criteria.uniqueResult();
+		Integer result = (Integer) criteria.uniqueResult();
+		if(result==null) {
+			return 0L;
+		} else {
+			return new Long(result);
+		}
 	}
 	
 	@SuppressWarnings("unchecked")

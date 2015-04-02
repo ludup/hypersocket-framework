@@ -96,4 +96,14 @@ public class AttributeRepositoryImpl extends
 
 	}
 
+	@Override
+	public Attribute getAttributeByName(String name) {
+		return get("name", name, getEntityClass(), new DetachedCriteriaConfiguration() {
+			@Override
+			public void configure(DetachedCriteria criteria) {
+				criteria.add(Restrictions.eq("deleted", false));
+			}
+		});
+	}
+
 }

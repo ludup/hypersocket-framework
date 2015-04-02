@@ -1,6 +1,7 @@
 package com.hypersocket.properties;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -18,6 +19,21 @@ public class ResourceUtils {
 			ret.add(t.nextToken());
 		}
 		return ret.toArray(new String[0]);
+	}
+	
+	public static List<String> explodeCollectionValues(String values) {
+		return Arrays.asList(explodeValues(values));
+	}
+	
+	public static String addToValues(String values, String value) {
+		List<String> vals;
+		if(StringUtils.isNotBlank(value)) {
+			vals = new ArrayList<String>(explodeCollectionValues(values));
+		} else {
+			vals = new ArrayList<String>();
+		}
+		vals.add(value);
+		return implodeValues(vals);
 	}
 	
 	public static <T extends Resource> String createCommaSeparatedString(Collection<T> resources) {

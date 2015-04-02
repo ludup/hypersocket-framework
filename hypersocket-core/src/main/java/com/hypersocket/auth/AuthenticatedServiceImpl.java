@@ -7,9 +7,9 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.LinkedList;
 import java.util.Locale;
 
-import org.apache.derby.catalog.GetProcedureColumns;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +18,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.hypersocket.events.EventService;
+import com.hypersocket.events.SystemEvent;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Principal;
@@ -34,15 +35,13 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 
 	static Logger log = LoggerFactory.getLogger(AuthenticatedServiceImpl.class);
 
-	@Autowired
-	@Qualifier("transactionManager")
-	PlatformTransactionManager txManager;
-	
 	static ThreadLocal<Principal> currentPrincipal = new ThreadLocal<Principal>();
 	static ThreadLocal<Session> currentSession = new ThreadLocal<Session>();
 	static ThreadLocal<Realm> currentRealm = new ThreadLocal<Realm>();
 	static ThreadLocal<Locale> currentLocale = new ThreadLocal<Locale>();
 
+	static ThreadLocal<Boolean> isDelayingEvents = new ThreadLocal<Boolean>();
+	static ThreadLocal<LinkedList<SystemEvent>> delayedEvents = new ThreadLocal<LinkedList<SystemEvent>>();
 	
 	protected abstract void verifyPermission(Principal principal,
 			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException;
@@ -112,29 +111,6 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 			throw new IllegalStateException("Cannot determine current principal for getCurrentUsername");
 		}
 		return currentPrincipal.get().getPrincipalName();
-	}
-	
-	protected <T> T doInTransaction(TransactionCallback<T> transaction)
-			throws ResourceException, AccessDeniedException {
-		
-		TransactionTemplate tmpl = new TransactionTemplate(txManager);
-		
-		try {
-			return tmpl.execute(transaction);
-		} catch (Throwable e) {
-			if(e.getCause() instanceof ResourceChangeException) {
-				throw (ResourceChangeException) e.getCause();
-			} else if(e.getCause() instanceof ResourceCreationException) {
-				throw (ResourceCreationException) e.getCause();
-			} else if(e.getCause() instanceof ResourceNotFoundException) {
-				throw (ResourceNotFoundException) e.getCause();
-			} else if(e.getCause() instanceof AccessDeniedException) {
-				throw (AccessDeniedException) e.getCause();
-			}
-			throw new ResourceException(AuthenticationService.RESOURCE_BUNDLE, "error.transactionFailed", e.getMessage());
-		}
-		
-		
 	}
 	
 	protected void assertPermission(PermissionType permission)

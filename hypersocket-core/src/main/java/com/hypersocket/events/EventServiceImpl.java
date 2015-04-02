@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -38,6 +39,66 @@ public class EventServiceImpl extends AbstractAuthenticatedServiceImpl implement
 	@Autowired
 	I18NService i18nService;
 
+	ThreadLocal<Boolean> isDelayingEvents = new ThreadLocal<Boolean>();
+	ThreadLocal<LinkedList<SystemEvent>> delayedEvents = new ThreadLocal<LinkedList<SystemEvent>>();
+	
+	@Override
+	public void delayEvents(Boolean val) {
+		isDelayingEvents.set(val);
+		if(delayedEvents.get()!=null) {
+			delayedEvents.set(null);
+		}
+	}
+	
+	@Override
+	public void publishDelayedEvents() {
+		
+		try {
+			if(delayedEvents.get()==null) {
+				return;
+			}
+			
+			LinkedList<SystemEvent> events = delayedEvents.get();
+			synchronized (events) {
+				isDelayingEvents.set(false);
+				for(SystemEvent event : events) {
+					publishEvent(event);
+				}
+				
+				delayedEvents.get().clear();
+				delayedEvents.set(null);				
+			}
+		} catch(Throwable t) {
+			log.error("Failed to process delayed events", t);
+		}
+	}
+	
+	@Override
+	public void rollbackDelayedEvents() {
+		
+		if(delayedEvents.get()==null) {
+			return;
+		}
+		
+		LinkedList<SystemEvent> events = delayedEvents.get();
+		synchronized (events) {
+			delayedEvents.get().clear();
+			delayedEvents.set(null);
+		}
+	}
+	
+	protected void delayEvent(SystemEvent event) {
+		
+		if(delayedEvents.get()==null) {
+			delayedEvents.set(new LinkedList<SystemEvent>());
+		}
+		
+		LinkedList<SystemEvent> events = delayedEvents.get();
+		synchronized (events) {
+			events.addLast(event);
+		}
+	}
+	
 	@PostConstruct
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
@@ -171,19 +232,28 @@ public class EventServiceImpl extends AbstractAuthenticatedServiceImpl implement
 
 	@Override
 	public void publishEvent(SystemEvent event) {
-		if (!eventDefinitions.containsKey(event.getResourceKey())) {
-			if (log.isWarnEnabled()) {
-				log.warn("The system is firing an unregistered event "
-						+ event.getResourceKey()
-						+ ". Register your event with EventService to remove this message.");
-			}
-		}
-
-		if (!event.isSuccess()) {
-			log.error(event.getResourceKey() + " failed", event.getException());
-		}
 		
-		eventPublisher.publishEvent(event);
+		if(isDelayEvent()) {
+			delayEvent(event);
+		} else {
+			if (!eventDefinitions.containsKey(event.getResourceKey())) {
+				if (log.isWarnEnabled()) {
+					log.warn("The system is firing an unregistered event "
+							+ event.getResourceKey()
+							+ ". Register your event with EventService to remove this message.");
+				}
+			}
+	
+			if (!event.isSuccess()) {
+				log.error(event.getResourceKey() + " failed", event.getException());
+			}
+			
+			eventPublisher.publishEvent(event);
+		}
+	}
+
+	private boolean isDelayEvent() {
+		return isDelayingEvents.get()!=null && isDelayingEvents.get();
 	}
 
 	@Override

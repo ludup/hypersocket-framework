@@ -18,4 +18,6 @@ public interface AttributeRepository extends AbstractEntityRepository<Attribute,
 
 	Long getMaximumAttributeWeight(AttributeCategory cat);
 
+	Attribute getAttributeByName(String name);
+
 }

@@ -674,6 +674,18 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 			realmCache.remove(host);
 		}
 	}
+	
+	@Override
+	public void setRealmProperty(Realm realm, String resourceKey, String value) throws AccessDeniedException {
+		
+		assertPermission(RealmPermission.UPDATE);
+		RealmProvider realmProvider = getProviderForRealm(realm
+				.getResourceCategory());
+		
+		realmProvider.setValue(realm, resourceKey, value);
+	}
+	
+
 
 	@Override
 	public Realm updateRealm(Realm realm, String name,
