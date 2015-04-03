@@ -63,7 +63,7 @@ public class FileUploadServiceImpl extends
 	private void postConstruct() {
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
-
+		setAssertPermissions(false);
 	}
 
 	@Override
