@@ -5,6 +5,8 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -33,6 +35,8 @@ import com.hypersocket.upload.FileUploadServiceImpl;
 @Controller
 public class FileUploadController extends ResourceController {
 
+	static Logger log = LoggerFactory.getLogger(FileUploadController.class);
+	
 	@Autowired
 	FileUploadService service;
 
@@ -80,8 +84,10 @@ public class FileUploadController extends ResourceController {
 					"fileUpload.uploaded.info", fileUpload.getName()));
 
 		} catch (ResourceCreationException e) {
+			log.error("File upload failed", e);
 			return new ResourceStatus<FileUpload>(false, e.getMessage());
 		} catch (Throwable e) {
+			log.error("File upload failed", e);
 			return new ResourceStatus<FileUpload>(false, I18N.getResource(
 					sessionUtils.getLocale(request),
 					FileUploadServiceImpl.RESOURCE_BUNDLE, "fileUpload.error",
@@ -120,7 +126,15 @@ public class FileUploadController extends ResourceController {
 					"fileUpload.deleted", preDeletedName));
 
 		} catch (ResourceException e) {
+			log.error("File upload failed", e);
 			return new ResourceStatus<FileUpload>(false, e.getMessage());
+		}  catch (Throwable e) {
+			log.error("File upload failed", e);
+			return new ResourceStatus<FileUpload>(false, I18N.getResource(
+					sessionUtils.getLocale(request),
+					FileUploadServiceImpl.RESOURCE_BUNDLE, "fileUpload.error",
+					e.getMessage()));
+
 		} finally {
 			clearAuthenticatedContext();
 		}
