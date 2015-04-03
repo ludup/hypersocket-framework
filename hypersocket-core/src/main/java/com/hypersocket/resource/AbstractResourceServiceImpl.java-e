@@ -34,6 +34,8 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	@Autowired
 	RealmService realm;
 
+	boolean assertPermissions = true;
+	
 	@Autowired
 	EntityResourcePropertyStore entityPropertyStore;
 	
@@ -59,6 +61,10 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		return getPermission("READ");
 	}
 
+	protected void setAssertPermissions(boolean assertPermissions) {
+		this.assertPermissions = assertPermissions;
+	}
+	
 	protected PermissionType getPermission(String name) {
 		try {
 			Field f = getPermissionType().getField(name);
@@ -81,8 +87,9 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public final void createResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceCreationException,
 			AccessDeniedException {
 
-		assertPermission(getCreatePermission());
-
+		if(assertPermissions) {
+			assertPermission(getCreatePermission());
+		}
 		if(resource.getRealm()==null) {
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
 					"generic.create.error", "Calling method should set realm");
@@ -146,7 +153,10 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	@SafeVarargs
 	public final void updateResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
-		assertPermission(getUpdatePermission());
+		
+		if(assertPermissions) {
+			assertPermission(getUpdatePermission());
+		}
 
 		try {
 			if(resource.getRealm()==null) {
@@ -175,8 +185,10 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public void deleteResource(T resource) throws ResourceChangeException,
 			AccessDeniedException {
 
-		assertPermission(getDeletePermission());
-
+		if(assertPermissions) {
+			assertPermission(getDeletePermission());
+		}
+		
 		try {
 			beforeDeleteResource(resource);
 			getRepository().deleteResource(resource);
@@ -201,8 +213,9 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	@Override
 	public List<T> getResources(Realm realm) throws AccessDeniedException {
 
-		assertPermission(getReadPermission());
-
+		if(assertPermissions) {
+			assertPermission(getReadPermission());
+		}
 		return getRepository().getResources(realm);
 
 	}
@@ -211,7 +224,9 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public List<T> searchResources(Realm realm, String search, int start,
 			int length, ColumnSort[] sorting) throws AccessDeniedException {
 
-		assertPermission(getReadPermission());
+		if(assertPermissions) {
+			assertPermission(getReadPermission());
+		}
 
 		return getRepository().search(realm, search, start, length, sorting);
 	}
@@ -220,7 +235,9 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public long getResourceCount(Realm realm, String search)
 			throws AccessDeniedException {
 
-		assertPermission(getReadPermission());
+		if(assertPermissions) {
+			assertPermission(getReadPermission());
+		}
 
 		return getRepository().getResourceCount(realm, search);
 	}
