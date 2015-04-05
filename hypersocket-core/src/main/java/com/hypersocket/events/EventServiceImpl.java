@@ -53,6 +53,9 @@ public class EventServiceImpl extends AbstractAuthenticatedServiceImpl implement
 	@Override
 	public void publishDelayedEvents() {
 		
+		if(log.isInfoEnabled()) {
+			log.info("REMOVEME: Publishing delayed events");
+		}
 		try {
 			if(delayedEvents.get()==null) {
 				return;
@@ -61,12 +64,14 @@ public class EventServiceImpl extends AbstractAuthenticatedServiceImpl implement
 			LinkedList<SystemEvent> events = delayedEvents.get();
 			synchronized (events) {
 				isDelayingEvents.set(false);
-				for(SystemEvent event : events) {
+				List<SystemEvent> tmp = new LinkedList<SystemEvent>(events);
+				
+				for(SystemEvent event : tmp) {
 					publishEvent(event);
 				}
 				
 				delayedEvents.get().clear();
-				delayedEvents.set(null);				
+				delayedEvents.set(null);
 			}
 		} catch(Throwable t) {
 			log.error("Failed to process delayed events", t);
@@ -74,20 +79,36 @@ public class EventServiceImpl extends AbstractAuthenticatedServiceImpl implement
 	}
 	
 	@Override
-	public void rollbackDelayedEvents() {
+	public void rollbackDelayedEvents(boolean fireFailedEvents) {
 		
+		if(log.isInfoEnabled()) {
+			log.info("REMOVEME: Rolling back delayed events [" + fireFailedEvents + "]");
+		}
 		if(delayedEvents.get()==null) {
 			return;
 		}
-		
+		isDelayingEvents.set(false);
 		LinkedList<SystemEvent> events = delayedEvents.get();
 		synchronized (events) {
+			
+			if(fireFailedEvents) {
+				LinkedList<SystemEvent> tmp = new LinkedList<SystemEvent>(events);
+				for(SystemEvent event : tmp) {
+					if(!event.isSuccess()) {
+						publishEvent(event);
+					}
+				}
+			}
 			delayedEvents.get().clear();
 			delayedEvents.set(null);
 		}
 	}
 	
 	protected void delayEvent(SystemEvent event) {
+		
+		if(log.isInfoEnabled()) {
+			log.info("REMOVEME: Delaying event " + event.getResourceKey());
+		}
 		
 		if(delayedEvents.get()==null) {
 			delayedEvents.set(new LinkedList<SystemEvent>());

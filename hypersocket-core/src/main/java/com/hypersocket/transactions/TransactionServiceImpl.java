@@ -1,7 +1,5 @@
 package com.hypersocket.transactions;
 
-import net.sf.ehcache.transaction.TransactionException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -38,7 +36,7 @@ public class TransactionServiceImpl implements TransactionService {
 			eventService.publishDelayedEvents();
 			return result;
 		} catch (Throwable e) {
-			eventService.rollbackDelayedEvents();
+			eventService.rollbackDelayedEvents(true);
 			if(e.getCause() instanceof ResourceChangeException) {
 				throw (ResourceChangeException) e.getCause();
 			} else if(e.getCause() instanceof ResourceCreationException) {
