@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.auth.json;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
@@ -68,7 +70,7 @@ public class AuthenticatedController {
 
 	AuthenticationState createAuthenticationState(String scheme,
 			HttpServletRequest request, HttpServletResponse response)
-			throws AccessDeniedException {
+			throws AccessDeniedException, UnsupportedEncodingException {
 
 		Map<String, Object> environment = new HashMap<String, Object>();
 		for (BrowserEnvironment env : BrowserEnvironment.values()) {
@@ -85,7 +87,7 @@ public class AuthenticatedController {
 		Enumeration<?> names = request.getParameterNames();
 		while(names.hasMoreElements()) {
 			String name = (String) names.nextElement();
-			state.addParameter(name, request.getParameter(name));
+			state.addParameter(name, URLDecoder.decode(request.getParameter(name), "UTF-8"));
 		}
 		
 		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, state);

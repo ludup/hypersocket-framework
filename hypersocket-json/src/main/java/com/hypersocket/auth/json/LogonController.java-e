@@ -8,6 +8,10 @@
 package com.hypersocket.auth.json;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -80,7 +84,7 @@ public class LogonController extends AuthenticatedController {
 
 	public AuthenticationState resetAuthenticationState(
 			HttpServletRequest request, HttpServletResponse response,
-			String scheme) throws AccessDeniedException {
+			String scheme) throws AccessDeniedException, UnsupportedEncodingException {
 		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, null);
 		return createAuthenticationState(scheme, request, response);
 	}
@@ -91,7 +95,7 @@ public class LogonController extends AuthenticatedController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public AuthenticationResult logon(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
-			UnauthorizedException {
+			UnauthorizedException, UnsupportedEncodingException {
 		return logon(request, response, null);
 	}
 
@@ -101,7 +105,7 @@ public class LogonController extends AuthenticatedController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public AuthenticationResult logon(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String scheme)
-			throws AccessDeniedException, UnauthorizedException {
+			throws AccessDeniedException, UnauthorizedException, UnsupportedEncodingException {
 
 		setupSystemContext();
 
@@ -136,7 +140,7 @@ public class LogonController extends AuthenticatedController {
 			}
 
 			boolean success = authenticationService.logon(state,
-					request.getParameterMap());
+					decodeParameters(request.getParameterMap()));
 
 			if (state.isAuthenticationComplete()
 					&& !state.hasPostAuthenticationStep()) {
@@ -168,6 +172,29 @@ public class LogonController extends AuthenticatedController {
 		} finally {
 			clearSystemContext();
 		}
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private Map decodeParameters(Map parameterMap) throws UnsupportedEncodingException {
+		
+		Map params = new HashMap();
+		for(Object key : parameterMap.keySet()) {
+			Object val = parameterMap.get(key);
+			if(val instanceof String[]) {
+				String[] arr = (String[])val;
+				if(arr.length == 1) {
+					params.put(key, URLDecoder.decode(arr[0], "UTF-8"));
+				} else {
+					for(int i=0;i<arr.length;i++) {
+						arr[i] = URLDecoder.decode(arr[i], "UTF-8");
+					}
+					params.put(key, arr);
+				}
+			} else if(val instanceof String) {
+				params.put(key, URLDecoder.decode((String)val, "UTF-8"));
+			}
+		}
+		return params;
 	}
 
 	@RequestMapping(value = "logoff")
