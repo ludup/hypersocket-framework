@@ -1080,15 +1080,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 			List<AbstractPropertyTemplate> tmp = new ArrayList<AbstractPropertyTemplate>();
 			for (AbstractPropertyTemplate t : c.getTemplates()) {
 
-				if (!editable.contains(t.getResourceKey()) && !t.isReadOnly()) {
+				if(!editable.contains(t.getResourceKey())) {
 					if (!visible.contains(t.getResourceKey())) {
 						tmp.add(t);
 						continue;
 					}
-					t.setReadOnly(true);
-					continue;
-				}
-				if (provider.isReadOnly(principal.getRealm())) {
 					t.setReadOnly(true);
 					continue;
 				}
