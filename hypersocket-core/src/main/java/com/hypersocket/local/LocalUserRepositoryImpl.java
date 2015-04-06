@@ -245,7 +245,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 				criteria.add(Restrictions.eq("deleted", false));
 				criteria.add(Restrictions.eq("hidden", false));
 				if(!StringUtils.isEmpty(searchPattern)) {
-					criteria.add(Restrictions.like("name", searchPattern));
+					criteria.add(Restrictions.ilike("name", searchPattern));
 				}
 				
 			}
@@ -262,7 +262,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 				criteria.add(Restrictions.eq("deleted", false));
 				criteria.add(Restrictions.eq("hidden", false));
 				if(!StringUtils.isEmpty(searchPattern)) {
-					criteria.add(Restrictions.like("name", searchPattern));
+					criteria.add(Restrictions.ilike("name", searchPattern));
 				}
 			}
 		});

@@ -103,7 +103,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.like("name", searchPattern));
+			criteria.add(Restrictions.ilike("name", searchPattern));
 		}
 
 		for (CriteriaConfiguration c : configs) {
@@ -127,7 +127,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.setMaxResults(length);
 		
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.like("name", searchPattern));
+			criteria.add(Restrictions.ilike("name", searchPattern));
 		}
 
 		for (CriteriaConfiguration c : configs) {
@@ -172,7 +172,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.setProjection(Projections.property("id"));
 		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.like("name", searchPattern));
+			criteria.add(Restrictions.ilike("name", searchPattern));
 		}
 
 		for (CriteriaConfiguration c : configs) {
@@ -189,7 +189,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.setProjection(Projections.countDistinct("name"));
 		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.like("name", searchPattern));
+			criteria.add(Restrictions.ilike("name", searchPattern));
 		}
 
 		for (CriteriaConfiguration c : configs) {

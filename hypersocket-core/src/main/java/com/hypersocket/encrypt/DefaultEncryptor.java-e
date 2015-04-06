@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.nss.NssEncryptionProvider;
-import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.rsa.RsaEncryptionProvider;
 import com.hypersocket.secret.SecretKeyResource;
 import com.hypersocket.secret.SecretKeyService;

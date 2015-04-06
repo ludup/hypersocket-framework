@@ -35,7 +35,7 @@ public class BrowserLaunchableRepositoryImpl extends
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.like("name", searchPattern));
+			criteria.add(Restrictions.ilike("name", searchPattern));
 		}
 
 		for (CriteriaConfiguration c : configs) {
@@ -62,7 +62,7 @@ public class BrowserLaunchableRepositoryImpl extends
 		criteria.setMaxResults(length);
 		
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.like("name", searchPattern));
+			criteria.add(Restrictions.ilike("name", searchPattern));
 		}
 
 		for (CriteriaConfiguration c : configs) {
@@ -111,7 +111,7 @@ public class BrowserLaunchableRepositoryImpl extends
 		criteria.setProjection(Projections.property("id"));
 		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.like("name", searchPattern));
+			criteria.add(Restrictions.ilike("name", searchPattern));
 		}
 
 		
@@ -134,7 +134,7 @@ public class BrowserLaunchableRepositoryImpl extends
 		criteria.setProjection(Projections.countDistinct("name"));
 		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.like("name", searchPattern));
+			criteria.add(Restrictions.ilike("name", searchPattern));
 		}
 
 		

@@ -32,7 +32,6 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
-import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18N;

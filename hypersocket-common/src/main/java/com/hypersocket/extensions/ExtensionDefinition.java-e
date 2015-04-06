@@ -15,8 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
-import com.hypersocket.Version;
-
 @XmlRootElement
 public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
 
