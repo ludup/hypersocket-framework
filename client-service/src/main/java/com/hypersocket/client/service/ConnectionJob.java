@@ -73,8 +73,8 @@ public class ConnectionJob extends TimerTask {
 				}
 				client.disconnect(false);
 			} else {
-				String version = response[0];
-				String serial = response[1];
+//				String version = response[0];
+//				String serial = response[1];
 	
 				client.addListener(new HypersocketClientAdapter<Connection>() {
 					@Override

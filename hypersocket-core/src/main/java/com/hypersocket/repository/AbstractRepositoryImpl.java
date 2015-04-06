@@ -273,7 +273,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		}
 		
 		if(!StringUtils.isEmpty(searchPattern)) {
-			criteria.add(Restrictions.like(searchColumn, searchPattern));
+			criteria.add(Restrictions.ilike(searchColumn, searchPattern));
 		}
 		
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
@@ -313,7 +313,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			CriteriaConfiguration... configs) {
 		Criteria criteria = createCriteria(clz);
 		if(!StringUtils.isEmpty(searchPattern)) {
-			criteria.add(Restrictions.like(searchColumn, searchPattern));
+			criteria.add(Restrictions.ilike(searchColumn, searchPattern));
 		}
 	
 		for (ColumnSort sort : sorting) {
