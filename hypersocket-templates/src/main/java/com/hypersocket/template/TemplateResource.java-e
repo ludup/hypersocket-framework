@@ -22,6 +22,9 @@ public class TemplateResource extends RealmResource {
 	@Column(name="template_type")
 	TemplateType type;
 	
+	@Column(name="template_status")
+	TemplateStatus status;
+	
 	public String getVariables() {
 		return variables;
 	}
@@ -54,6 +57,13 @@ public class TemplateResource extends RealmResource {
 		return type;
 	}
 	
+	public TemplateStatus getTemplateStatus() {
+		return status==null ? TemplateStatus.PRIVATE : status;
+	}
+	
+	public void setTemplateStatus(String templateStatus) {
+		this.status = TemplateStatus.valueOf(templateStatus);
+	}
 	
 	
 }
