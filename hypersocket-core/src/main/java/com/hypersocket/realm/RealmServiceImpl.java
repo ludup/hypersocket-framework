@@ -27,9 +27,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
+import com.hypersocket.config.ConfigurationChangedEvent;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -316,7 +318,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 					}
 				}
 			}
-			realmCache.put(new Element(host, getDefaultRealm()));
 			return getDefaultRealm();
 		}
 
@@ -465,8 +466,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE,
 					"error.invalidRealm", name);
 		}
-
-		clearCache(realm);
 
 		deleteRealm(realm);
 	}
@@ -804,6 +803,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 				}
 			}
 
+			clearCache(realm);
+			
 			fireRealmDelete(realm);
 
 			realmRepository.delete(realm);
@@ -1451,5 +1452,4 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 		return variables;
 	}
-
 }

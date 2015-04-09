@@ -140,7 +140,7 @@ public class AttributeServiceImpl extends AbstractAuthenticatedServiceImpl imple
 			attributeCategory.setName(name);
 			if (attributeCategoryRepository.nameExists(attributeCategory)) {
 				throw new ResourceCreationException(RESOURCE_BUNDLE,
-						"attribute.nameInUse.error", name);
+						"attribute.catInUse.error", name);
 			}
 
 			attributeCategory.setName(name);
