@@ -22,8 +22,9 @@ public class ConfigurationChangedEvent extends SessionEvent {
 
 	public ConfigurationChangedEvent(Object source, boolean success,
 			Session session, PropertyTemplate property, String oldValue,
-			String newValue) {
+			String newValue, boolean hidden) {
 		super(source, EVENT_RESOURCE_KEY, success, session);
+		this.hidden = hidden;
 		addAttribute(ATTR_CONFIG_DISPLAY_NAME,
 				I18NServiceImpl.tagForConversion(property.getCategory()
 						.getBundle(), property.getResourceKey()));
