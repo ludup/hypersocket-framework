@@ -28,8 +28,8 @@ import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.resource.ResourceChangeException;
 
 @Service
-public class SystemConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
-		implements SystemConfigurationService {
+public class SystemConfigurationServiceImpl extends
+		AbstractAuthenticatedServiceImpl implements SystemConfigurationService {
 
 	static Logger log = LoggerFactory
 			.getLogger(SystemConfigurationServiceImpl.class);
@@ -48,14 +48,15 @@ public class SystemConfigurationServiceImpl extends AbstractAuthenticatedService
 
 		eventService.registerEvent(ConfigurationChangedEvent.class,
 				ConfigurationServiceImpl.RESOURCE_BUNDLE);
-		
+
 		repository.loadPropertyTemplates("systemTemplates.xml");
 	}
 
 	protected void onValueChanged(PropertyTemplate template, String oldValue,
 			String value) {
 		eventService.publishEvent(new ConfigurationChangedEvent(this, true,
-				getCurrentSession(), template, oldValue, value));
+				getCurrentSession(), template, oldValue, value, template
+						.isHidden()));
 	}
 
 	@Override
@@ -86,7 +87,9 @@ public class SystemConfigurationServiceImpl extends AbstractAuthenticatedService
 			throw e;
 		} catch (Throwable t) {
 			fireChangeEvent(resourceKey, t);
-			throw new ResourceChangeException(ConfigurationService.RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
+			throw new ResourceChangeException(
+					ConfigurationService.RESOURCE_BUNDLE,
+					"error.unexpectedError", t.getMessage());
 		}
 	}
 
@@ -120,37 +123,43 @@ public class SystemConfigurationServiceImpl extends AbstractAuthenticatedService
 
 		try {
 			assertPermission(ConfigurationPermission.UPDATE);
-			
-			Map<String,String> oldValues = new HashMap<String,String>();
-			for(String resourceKey : values.keySet()) {
+
+			Map<String, String> oldValues = new HashMap<String, String>();
+			for (String resourceKey : values.keySet()) {
 				oldValues.put(resourceKey, getValue(resourceKey));
 			}
 			repository.setValues(values);
-			
-			for(String resourceKey : values.keySet()) {
-				fireChangeEvent(resourceKey, oldValues.get(resourceKey), values.get(resourceKey));
+
+			for (String resourceKey : values.keySet()) {
+				fireChangeEvent(resourceKey, oldValues.get(resourceKey),
+						values.get(resourceKey));
 			}
 		} catch (AccessDeniedException e) {
-			for(String resourceKey : values.keySet()) {
+			for (String resourceKey : values.keySet()) {
 				fireChangeEvent(resourceKey, e);
 			}
 			throw e;
 		} catch (Throwable t) {
-			for(String resourceKey : values.keySet()) {
+			for (String resourceKey : values.keySet()) {
 				fireChangeEvent(resourceKey, t);
 			}
-			throw new ResourceChangeException(ConfigurationService.RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
+			throw new ResourceChangeException(
+					ConfigurationService.RESOURCE_BUNDLE,
+					"error.unexpectedError", t.getMessage());
 		}
 	}
-	
-	private void fireChangeEvent(String resourceKey, String oldValue, String newValue) {
+
+	private void fireChangeEvent(String resourceKey, String oldValue,
+			String newValue) {
 		eventService.publishEvent(new ConfigurationChangedEvent(this, true,
-				getCurrentSession(), repository.getPropertyTemplate(resourceKey), oldValue, newValue));
+				getCurrentSession(), repository
+						.getPropertyTemplate(resourceKey), oldValue, newValue,
+				repository.getPropertyTemplate(resourceKey).isHidden()));
 	}
 
 	private void fireChangeEvent(String resourceKey, Throwable t) {
-		eventService.publishEvent(new ConfigurationChangedEvent(this, resourceKey, t,
-				getCurrentSession()));
+		eventService.publishEvent(new ConfigurationChangedEvent(this,
+				resourceKey, t, getCurrentSession()));
 	}
 
 	@Override
@@ -161,7 +170,8 @@ public class SystemConfigurationServiceImpl extends AbstractAuthenticatedService
 	}
 
 	@Override
-	public void setValues(String resourceKey, String[] array) throws ResourceChangeException, AccessDeniedException {
+	public void setValues(String resourceKey, String[] array)
+			throws ResourceChangeException, AccessDeniedException {
 		setValue(resourceKey, ResourceUtils.implodeValues(array));
 	}
 }

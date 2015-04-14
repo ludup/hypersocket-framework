@@ -21,6 +21,7 @@ public abstract class SystemEvent extends AbstractEvent {
 	SystemEventStatus status;
 	Throwable exception;
 	Realm currentRealm;
+	protected boolean hidden;
 	
 	Map<String,String> attributes = new HashMap<String,String>();
 	
@@ -102,6 +103,10 @@ public abstract class SystemEvent extends AbstractEvent {
 
 	public String[] getResourceKeys() {
 		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
+	
+	public boolean isHidden() {
+		return hidden;
 	}
 
 }
