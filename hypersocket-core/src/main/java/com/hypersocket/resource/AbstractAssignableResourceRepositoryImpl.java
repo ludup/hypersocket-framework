@@ -354,7 +354,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		return super.search(getResourceClass(), "name", searchPattern, start,
 				length, sorting, ArrayUtils.addAll(configs, new DeletedCriteria(false),
-						new RoleSelectMode(), new RealmAndDefaultRealmCriteria(
+						new RoleSelectMode(), new RealmCriteria(
 								realm)));
 	}
 	
@@ -369,7 +369,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			CriteriaConfiguration... configs) {
 		return getCount(getResourceClass(), "name", searchPattern,
 				ArrayUtils.addAll(configs, new RoleSelectMode(), new DeletedCriteria(false),
-						new RealmAndDefaultRealmCriteria(realm)));
+						new RealmCriteria(realm)));
 	}
 
 	protected abstract Class<T> getResourceClass();
