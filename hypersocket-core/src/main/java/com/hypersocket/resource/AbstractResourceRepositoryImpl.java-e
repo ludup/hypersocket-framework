@@ -97,8 +97,11 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		Criteria crit = createCriteria(getResourceClass());
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit.add(Restrictions.eq("deleted", false));
-		crit.add(Restrictions.eq("realm", realm));
-
+		if(realm==null) {
+			crit.add(Restrictions.isNull("realm"));
+		} else {
+			crit.add(Restrictions.eq("realm", realm));
+		}
 		return (List<T>) crit.list();
 	}
 
@@ -108,7 +111,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		return super.search(getResourceClass(), "name", searchPattern, start,
 				length, sorting, ArrayUtils.addAll(configs,
-						new RealmAndDefaultRealmCriteria(realm)));
+						new RealmCriteria(realm)));
 	}
 
 	@Override
@@ -116,7 +119,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	public long getResourceCount(Realm realm, String searchPattern,
 			CriteriaConfiguration... configs) {
 		return getCount(getResourceClass(), "name", searchPattern,
-				ArrayUtils.addAll(configs, new RealmAndDefaultRealmCriteria(
+				ArrayUtils.addAll(configs, new RealmCriteria(
 						realm)));
 	}
 
