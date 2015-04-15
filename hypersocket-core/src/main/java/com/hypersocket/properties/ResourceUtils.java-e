@@ -13,6 +13,9 @@ import com.hypersocket.resource.Resource;
 public class ResourceUtils {
 
 	public static String[] explodeValues(String values) {
+		if(StringUtils.isBlank(values)) {
+			return new String[] { };
+		}
 		StringTokenizer t = new StringTokenizer(values, "]|[");
 		List<String> ret = new ArrayList<String>();
 		while (t.hasMoreTokens()) {
