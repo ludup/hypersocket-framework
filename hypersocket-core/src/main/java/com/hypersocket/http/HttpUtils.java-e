@@ -11,6 +11,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -89,11 +90,25 @@ public class HttpUtils {
 		CloseableHttpClient client = createHttpClient(allowSelfSigned);
 
 		HttpGet request = new HttpGet(uri);
+	
 		return new ContentInputStream(client, client.execute(request)
 				.getEntity().getContent());
 
 	}
 
+	public static CloseableHttpResponse doHttpGet(String uri, boolean allowSelfSigned, Map<String,String> headers)
+			throws IOException {
+
+		CloseableHttpClient client = createHttpClient(allowSelfSigned);
+
+		HttpGet request = new HttpGet(uri);
+		for(String key : headers.keySet()) {
+			request.setHeader(key, headers.get(key));
+		}
+		
+		return client.execute(request);
+
+	}
 	static class ContentInputStream extends InputStream {
 
 		CloseableHttpClient client;
