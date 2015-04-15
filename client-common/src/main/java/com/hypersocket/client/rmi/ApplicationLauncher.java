@@ -42,6 +42,8 @@ public class ApplicationLauncher implements ResourceLauncher, Serializable {
 			properties.put(prop.replace("user.", "client.user"), System.getProperty(prop));
 		}
 		
+		properties.putAll(launcher.getVariables());
+		
 		if(StringUtils.isNotBlank(launcher.getStartupScript())) {
 			
 			if(log.isInfoEnabled()) {

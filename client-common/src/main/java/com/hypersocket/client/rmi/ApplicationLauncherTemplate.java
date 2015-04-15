@@ -1,6 +1,7 @@
 package com.hypersocket.client.rmi;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -13,20 +14,23 @@ public class ApplicationLauncherTemplate implements Serializable {
 	String[] args = { };
 	String startupScript;
 	String shutdownScript;
+	Map<String,String> variables;
 	
-	public ApplicationLauncherTemplate(String name, String exe, String startupScript, String shutdownScript, String... args) {
+	public ApplicationLauncherTemplate(String name, String exe, String startupScript, String shutdownScript, Map<String,String> variables, String... args) {
 		this.name = name;
 		this.exe = exe;
 		this.args = args;
 		this.startupScript = startupScript;
 		this.shutdownScript = shutdownScript;
+		this.variables = variables;
 	}
 	
-	public ApplicationLauncherTemplate(String name, String exe, String startupScript, String shutdownScript, String args) {
+	public ApplicationLauncherTemplate(String name, String exe, String startupScript, String shutdownScript, Map<String,String> variables, String args) {
 		this.name = name;
 		this.exe = exe;
 		this.startupScript = startupScript;
 		this.shutdownScript = shutdownScript;
+		this.variables = variables;
 		if(!StringUtils.isEmpty(args)) {
 			this.args = args.split("\\]\\|\\[");
 		}
@@ -42,6 +46,10 @@ public class ApplicationLauncherTemplate implements Serializable {
 	
 	public String[] getArgs() {
 		return args;
+	}
+	
+	public Map<String,String> getVariables() {
+		return variables;
 	}
 	
 	public String getStartupScript() {
