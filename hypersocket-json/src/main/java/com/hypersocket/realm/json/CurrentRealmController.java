@@ -1,6 +1,7 @@
 package com.hypersocket.realm.json;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -449,12 +450,13 @@ public class CurrentRealmController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
+			Collection<String> names = realmService.getUserVariableNames(
+					sessionUtils.getCurrentRealm(request));
+			names.add("password");
 			return new ResourceStatus<Map<String, String>>(
 					realmService.getUserPropertyValues(
 							sessionUtils.getPrincipal(request),
-							realmService.getUserVariableNames(
-									sessionUtils.getCurrentRealm(request))
-									.toArray(new String[0])));
+								names.toArray(new String[0])));
 		} finally {
 			clearAuthenticatedContext();
 		}
