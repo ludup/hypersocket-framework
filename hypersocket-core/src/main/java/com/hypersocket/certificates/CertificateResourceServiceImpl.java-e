@@ -457,14 +457,14 @@ public class CertificateResourceServiceImpl extends
 	}
 
 	@Override
-	public CertificateResource importPrivateKey(MultipartFile key, String passphrase,
-			MultipartFile file, MultipartFile bundle)
+	public CertificateResource importPrivateKey(MultipartFile key,
+			String passphrase, MultipartFile file, MultipartFile bundle)
 			throws ResourceCreationException, InvalidPassphraseException {
 
 		CertificateResource resource = new CertificateResource();
 
 		try {
-			
+
 			doInternalPrivateKey(resource, key, passphrase, file, bundle);
 			resource.setRealm(getCurrentRealm());
 			createResource(resource, new HashMap<String, String>());
@@ -485,7 +485,7 @@ public class CertificateResourceServiceImpl extends
 			InvalidPassphraseException {
 
 		try {
-			
+
 			doInternalPrivateKey(resource, key, passphrase, file, bundle);
 			updateResource(resource, new HashMap<String, String>());
 			return resource;
@@ -531,15 +531,17 @@ public class CertificateResourceServiceImpl extends
 
 		X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
 		RDN cn = x500name.getRDNs(BCStyle.CN)[0];
-		for(RDN rdn : x500name.getRDNs()) {
-			for(AttributeTypeAndValue v : rdn.getTypesAndValues()) {
-				log.info(v.getType().toString() + ": " + IETFUtils.valueToString(v.getValue()));
+		for (RDN rdn : x500name.getRDNs()) {
+			for (AttributeTypeAndValue v : rdn.getTypesAndValues()) {
+				log.info(v.getType().toString() + ": "
+						+ IETFUtils.valueToString(v.getValue()));
 			}
 		}
-		if(!resource.getName().equals(DEFAULT_CERTIFICATE_NAME)) {
+		if (!resource.getName().equals(DEFAULT_CERTIFICATE_NAME)) {
 			resource.setName(IETFUtils.valueToString(cn.getFirst().getValue()));
 		}
-		resource.setCommonName(IETFUtils.valueToString(cn.getFirst().getValue()));
+		resource.setCommonName(IETFUtils
+				.valueToString(cn.getFirst().getValue()));
 		resource.setCountry("");
 		resource.setLocation("");
 		resource.setOrganization("");
@@ -574,17 +576,21 @@ public class CertificateResourceServiceImpl extends
 	}
 
 	@Override
-	public CertificateResource replacePfx(CertificateResource resource, MultipartFile pfx,
-			String passphrase) throws AccessDeniedException,
+	public CertificateResource replacePfx(CertificateResource resource,
+			MultipartFile pfx, String passphrase) throws AccessDeniedException,
 			ResourceChangeException {
 
 		try {
 			internalDoPfx(resource, pfx, passphrase);
 			updateResource(resource, new HashMap<String, String>());
 			return resource;
+		} catch (KeyStoreException ke) {
+			throw new ResourceChangeException(
+					CertificateResourceServiceImpl.RESOURCE_BUNDLE,
+					"error.keyError", ke.getMessage());
 		} catch (IOException | CertificateException | UnrecoverableKeyException
-				| KeyStoreException | NoSuchAlgorithmException
-				| NoSuchProviderException | MismatchedCertificateException e) {
+				| NoSuchAlgorithmException | NoSuchProviderException
+				| MismatchedCertificateException e) {
 			throw new ResourceChangeException(
 					CertificateResourceServiceImpl.RESOURCE_BUNDLE,
 					"error.genericError", e.getMessage());
@@ -598,10 +604,14 @@ public class CertificateResourceServiceImpl extends
 			NoSuchAlgorithmException, CertificateException,
 			NoSuchProviderException, IOException,
 			MismatchedCertificateException {
+		KeyStore keystore = null;
 
-		KeyStore keystore = X509CertificateUtils.loadKeyStoreFromPFX(
-				pfx.getInputStream(), passphrase.toCharArray());
-
+		try {
+			keystore = X509CertificateUtils.loadKeyStoreFromPFX(
+					pfx.getInputStream(), passphrase.toCharArray());
+		} catch (IOException ie) {
+			throw new KeyStoreException(ie.getMessage());
+		}
 		Enumeration<String> aliases = keystore.aliases();
 		while (aliases.hasMoreElements()) {
 			String alias = aliases.nextElement();
@@ -651,15 +661,18 @@ public class CertificateResourceServiceImpl extends
 					X500Name x500name = new JcaX509CertificateHolder(cert)
 							.getSubject();
 					RDN cn = x500name.getRDNs(BCStyle.CN)[0];
-					for(RDN rdn : x500name.getRDNs()) {
-						for(AttributeTypeAndValue v : rdn.getTypesAndValues()) {
-							log.info(v.getType().toString() + ": " + IETFUtils.valueToString(v.getValue()));
+					for (RDN rdn : x500name.getRDNs()) {
+						for (AttributeTypeAndValue v : rdn.getTypesAndValues()) {
+							log.info(v.getType().toString() + ": "
+									+ IETFUtils.valueToString(v.getValue()));
 						}
 					}
-					if(!resource.getName().equals(DEFAULT_CERTIFICATE_NAME)) {
-						resource.setName(IETFUtils.valueToString(cn.getFirst().getValue()));
+					if (!resource.getName().equals(DEFAULT_CERTIFICATE_NAME)) {
+						resource.setName(IETFUtils.valueToString(cn.getFirst()
+								.getValue()));
 					}
-					resource.setCommonName(IETFUtils.valueToString(cn.getFirst().getValue()));
+					resource.setCommonName(IETFUtils.valueToString(cn
+							.getFirst().getValue()));
 					resource.setCountry("");
 					resource.setLocation("");
 					resource.setOrganization("");
