@@ -103,8 +103,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Collection<PropertyCategory> getUserPropertyTemplates(String module)
 			throws AccessDeniedException;
 
-	List<Principal> getAssociatedPrincipals(Principal principal)
-			throws AccessDeniedException;
+	List<Principal> getAssociatedPrincipals(Principal principal);
 
 	List<Principal> getAssociatedPrincipals(Principal principal,
 			PrincipalType type) throws AccessDeniedException;

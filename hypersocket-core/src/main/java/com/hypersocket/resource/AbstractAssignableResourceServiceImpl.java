@@ -33,7 +33,6 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	@Autowired
 	RealmService realmService;
 
-	
 	protected abstract AbstractAssignableResourceRepository<T> getRepository();
 
 	protected abstract String getResourceBundle();
@@ -213,7 +212,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	public Collection<T> searchPersonalResources(Principal principal, String search, int start,
 			int length, ColumnSort[] sorting) {
 
-		return getRepository().searchAssignedResources(principal, search, start, length, sorting);
+		List<Principal> principals = realmService.getAssociatedPrincipals(principal);
+		return getRepository().searchAssignedResources(principals, search, start, length, sorting);
 	}
 	
 	@Override
@@ -224,7 +224,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	@Override
 	public long getPersonalResourceCount(Principal principal, String search) {
 
-		return getRepository().getAssignedResourceCount(principal, search);
+		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(principal), search);
 	}
 
 	@Override
