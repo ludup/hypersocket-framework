@@ -123,8 +123,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		try {
 			return "!ENC!" + encryptionService.encryptString(cacheKey, value);
 		} catch (Exception e) {
-			log.warn("Unable to encrypt " + cacheKey + "; storing unencrypted", e);
-			return value;
+			throw new IllegalStateException("Could not encrypt property value. Check the logs for more detail.", e);
 		}
 	}
 	
