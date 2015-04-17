@@ -13,6 +13,9 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 @Entity
 @Inheritance(strategy=InheritanceType.JOINED)
 @Table(name="resources")
@@ -62,4 +65,13 @@ public abstract class Resource extends AbstractResource {
 		this.resourceCategory = resourceCategory;
 	}
 
+	protected void doHashCodeOnKeys(HashCodeBuilder builder) {
+		super.doHashCodeOnKeys(builder);
+		builder.append(name);
+	}
+	
+	protected void doEqualsOnKeys(EqualsBuilder builder, Object obj) {
+		super.doEqualsOnKeys(builder, obj);
+		builder.append(name, ((Resource)obj).getName());
+	}
 }
