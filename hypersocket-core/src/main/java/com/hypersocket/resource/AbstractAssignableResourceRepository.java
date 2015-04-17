@@ -44,13 +44,13 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	Collection<T> getAssignedResources(Principal... principals);
 
-	Long getAssignableResourceCount(Principal principal);
+	Long getAssignableResourceCount(List<Principal> principal);
 
-	Long getAssignedResourceCount(Principal principal, 
+	Long getAssignedResourceCount(List<Principal> principals, 
 			String searchPattern,
 			CriteriaConfiguration... configs);
 
-	Collection<T> searchAssignedResources(Principal principal, 
+	Collection<T> searchAssignedResources(List<Principal> principals, 
 			String searchPattern, int start, int length, ColumnSort[] sorting,
 			CriteriaConfiguration... configs);
 

@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -95,7 +96,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Collection<T> searchAssignedResources(Principal principal,
+	public Collection<T> searchAssignedResources(List<Principal> principals,
 			final String searchPattern, final int start, final int length,
 			final ColumnSort[] sorting, CriteriaConfiguration... configs) {
 
@@ -110,7 +111,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			c.configure(criteria);
 		}
 
-		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
@@ -140,12 +141,17 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 					.getColumnName()));
 		}
 		
-		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
-		criteria.add(Restrictions.in("id", new Long[] { principal.getId() }));
+		
+		List<Long> ids = new ArrayList<Long>();
+		for(Principal p : principals) {
+			ids.add(p.getId());
+		}
+		criteria.add(Restrictions.in("id", ids));
 		
 		List<Object[]> results = (List<Object[]>)criteria.list();
 		
@@ -165,7 +171,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	};
 
 	@Override
-	public Long getAssignedResourceCount(Principal principal,
+	public Long getAssignedResourceCount(List<Principal> principals,
 			final String searchPattern, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(getResourceClass());
@@ -179,7 +185,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			c.configure(criteria);
 		}
 
-		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
@@ -196,14 +202,19 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			c.configure(criteria);
 		}
 		
-		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.eq("realm",  principals.get(0).getRealm()));
 		if(ids.size() > 0) {
 			criteria.add(Restrictions.not(Restrictions.in("id", ids)));
 		}
+		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
-		criteria.add(Restrictions.in("id", new Long[] { principal.getId() }));
+		List<Long> pids = new ArrayList<Long>();
+		for(Principal p : principals) {
+			pids.add(p.getId());
+		}
+		criteria.add(Restrictions.in("id", pids));
 		
 		Long count = (Long) criteria.uniqueResult();
 		return count + ids.size();
@@ -211,8 +222,8 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 
 	@Override
-	public Long getAssignableResourceCount(Principal principal) {
-		return getAssignedResourceCount(principal, "");
+	public Long getAssignableResourceCount(List<Principal> principals) {
+		return getAssignedResourceCount(principals, "");
 	}
 
 	@SuppressWarnings("unchecked")
