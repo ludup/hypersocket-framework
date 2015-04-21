@@ -41,6 +41,8 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 
 	private static Logger log = LoggerFactory.getLogger(ContentHandlerImpl.class);
 	
+	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
+	
 	String basePath;
 	
 	public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
@@ -127,17 +129,23 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			long actualLength = 0;
 			InputStream in = getInputStream(path, request);
 			
-			
-			int r;
-			byte[] buf = new byte[4096];
-			while((r = in.read(buf)) > -1) {
-				response.getOutputStream().write(buf,0,r);
-				if(fileLength < 0) {
-					actualLength += r;
+			if(fileLength <= 131072) {
+				int r;
+				byte[] buf = new byte[4096];
+				while((r = in.read(buf)) > -1) {
+					response.getOutputStream().write(buf,0,r);
+					if(fileLength < 0) {
+						actualLength += r;
+					}
+				
+					
 				}
+				response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(actualLength));
+				
+			} else {
+				request.setAttribute(CONTENT_INPUTSTREAM, in);
 			}
 			
-			response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(actualLength));
 			setContentTypeHeader(response, path);
 			setDateAndCacheHeaders(response, path);
 			
