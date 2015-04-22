@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;
@@ -17,6 +18,7 @@ public abstract class GroupEvent extends PrincipalEvent {
 	public static final String EVENT_RESOURCE_KEY = "group.event";
 
 	public static final String ATTR_GROUP_NAME = "attr.group";
+	public static final String ATTR_PRINCIPAL_NAME = CommonAttributes.ATTR_PRINCIPAL_NAME;
 	public static final String ATTR_ASSOCIATED_PRINCIPALS = "attr.associatedPrincipals";
 
 	private Principal principal;
@@ -26,6 +28,7 @@ public abstract class GroupEvent extends PrincipalEvent {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
 		addAttribute(ATTR_GROUP_NAME, principal.getName());
+		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
 	}
 
 	public GroupEvent(Object source, String resourceKey, Session session,
@@ -34,6 +37,7 @@ public abstract class GroupEvent extends PrincipalEvent {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
 		addAttribute(ATTR_GROUP_NAME, principal.getName());
+		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
 		addAssociatedPrincipals(associatedPrincipals);
 		for (String prop : properties.keySet()) {
 			addAttribute(prop, properties.get(prop));
@@ -45,6 +49,7 @@ public abstract class GroupEvent extends PrincipalEvent {
 			String principalName) {
 		super(source, resourceKey, e, session, realmName);
 		addAttribute(ATTR_GROUP_NAME, principalName);
+		addAttribute(ATTR_PRINCIPAL_NAME, principalName);
 	}
 
 	public GroupEvent(Object source, String resourceKey, Throwable e,
@@ -52,6 +57,7 @@ public abstract class GroupEvent extends PrincipalEvent {
 			String principalName, List<Principal> associatedPrincipals) {
 		super(source, resourceKey, e, session, realmName);
 		addAttribute(ATTR_GROUP_NAME, principalName);
+		addAttribute(ATTR_PRINCIPAL_NAME, principalName);
 		addAssociatedPrincipals(associatedPrincipals);
 	}
 
