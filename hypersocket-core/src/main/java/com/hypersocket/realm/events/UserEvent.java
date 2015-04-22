@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;
@@ -17,6 +18,7 @@ public abstract class UserEvent extends PrincipalEvent {
 	public static final String EVENT_RESOURCE_KEY = "user.event";
 	
 	public static final String ATTR_USER_NAME = "attr.user";
+	public static final String ATTR_PRINCIPAL_NAME = CommonAttributes.ATTR_PRINCIPAL_NAME;
 	public static final String ATTR_ASSOCIATED_PRINCIPALS = "attr.associatedPrincipals";
 
 	private Principal principal;
@@ -26,6 +28,7 @@ public abstract class UserEvent extends PrincipalEvent {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
 		addAttribute(ATTR_USER_NAME, principal.getName());
+		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
 	}
 
 	public UserEvent(Object source, String resourceKey, Session session,
@@ -35,6 +38,7 @@ public abstract class UserEvent extends PrincipalEvent {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
 		addAttribute(ATTR_USER_NAME, principal.getName());
+		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
 		if(associatedPrincipals!=null) {
 			addAssociatedPrincipals(associatedPrincipals);
 		}
@@ -48,6 +52,7 @@ public abstract class UserEvent extends PrincipalEvent {
 			String principalName) {
 		super(source, resourceKey, e, session, realmName);
 		addAttribute(ATTR_USER_NAME, principalName);
+		addAttribute(ATTR_PRINCIPAL_NAME, principalName);
 	}
 
 	public UserEvent(Object source, String resourceKey, Throwable e,
@@ -56,6 +61,7 @@ public abstract class UserEvent extends PrincipalEvent {
 			List<Principal> associatedPrincipals) {
 		super(source, resourceKey, e, session, realmName);
 		addAttribute(ATTR_USER_NAME, principalName);
+		addAttribute(ATTR_PRINCIPAL_NAME, principalName);
 		if(associatedPrincipals!=null) {
 			addAssociatedPrincipals(associatedPrincipals);
 		}
