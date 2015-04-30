@@ -13,6 +13,7 @@ import java.util.Map;
 
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 
@@ -53,8 +54,6 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 
 	AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey) throws AccessDeniedException;
 
-	Realm resolveRealm(AuthenticationState state, String username) throws AccessDeniedException;
-
 	Session logonAnonymous(String remoteAddress,
 			String userAgent, Map<String, String> parameters) throws AccessDeniedException;
 
@@ -63,6 +62,10 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 	Collection<PostAuthenticationStep> getPostAuthenticationSteps();
 
 	int getAuthenticatorCount(Realm realm, String schemeResourceKey);
+	
+	Principal resolvePrincipalAndRealm(AuthenticationState state,
+			String username) throws AccessDeniedException,
+			PrincipalNotFoundException;
 
 
 }

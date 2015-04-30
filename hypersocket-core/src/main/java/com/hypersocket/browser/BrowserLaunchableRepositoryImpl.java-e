@@ -27,7 +27,7 @@ public class BrowserLaunchableRepositoryImpl extends
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)
-	public List<BrowserLaunchable> searchAssignedResources(Principal principal,
+	public List<BrowserLaunchable> searchAssignedResources(List<Principal> principals,
 			final String searchPattern, final int start, final int length,
 			final ColumnSort[] sorting, CriteriaConfiguration... configs) {
 
@@ -42,7 +42,7 @@ public class BrowserLaunchableRepositoryImpl extends
 			c.configure(criteria);
 		}
 
-		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
 		
 		criteria = criteria.createCriteria("roles");
@@ -75,13 +75,18 @@ public class BrowserLaunchableRepositoryImpl extends
 					.getColumnName()));
 		}
 		
-		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
 		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
-		criteria.add(Restrictions.in("id", new Long[] { principal.getId() }));
+		
+		List<Long> ids = new ArrayList<Long>();
+		for(Principal p : principals) {
+			ids.add(p.getId());
+		}
+		criteria.add(Restrictions.in("id", ids));
 		
 		List<Object[]> results = (List<Object[]>)criteria.list();
 		
@@ -104,7 +109,7 @@ public class BrowserLaunchableRepositoryImpl extends
 
 	@Override
 	@Transactional(readOnly=true)
-	public Long getAssignedResourceCount(Principal principal,
+	public Long getAssignedResourceCount(List<Principal> principals,
 			final String searchPattern, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(BrowserLaunchable.class);
@@ -120,7 +125,7 @@ public class BrowserLaunchableRepositoryImpl extends
 			c.configure(criteria);
 		}
 
-		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
 		
 		criteria = criteria.createCriteria("roles");
@@ -143,7 +148,7 @@ public class BrowserLaunchableRepositoryImpl extends
 			c.configure(criteria);
 		}
 		
-		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
 		
 		if(ids.size() > 0) {
@@ -152,7 +157,12 @@ public class BrowserLaunchableRepositoryImpl extends
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
-		criteria.add(Restrictions.in("id", new Long[] { principal.getId() }));
+
+		List<Long> pids = new ArrayList<Long>();
+		for(Principal p : principals) {
+			pids.add(p.getId());
+		}
+		criteria.add(Restrictions.in("id", pids));
 		
 		@SuppressWarnings("unchecked")
 		List<Long> list = (List<Long>)criteria.list();
@@ -173,12 +183,12 @@ public class BrowserLaunchableRepositoryImpl extends
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)
-	public List<BrowserLaunchable> getPersonalResources(Principal principal) {
+	public List<BrowserLaunchable> getPersonalResources(List<Principal> principals) {
 		
 		Criteria criteria = createCriteria(BrowserLaunchable.class);
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 
-		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
@@ -192,12 +202,17 @@ public class BrowserLaunchableRepositoryImpl extends
 		projList.add(Projections.property("name"));
 		
 		criteria.setProjection(Projections.distinct(projList));
-		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
-		criteria.add(Restrictions.in("id", new Long[] { principal.getId() }));
+		
+		List<Long> ids = new ArrayList<Long>();
+		for(Principal p : principals) {
+			ids.add(p.getId());
+		}
+		criteria.add(Restrictions.in("id", ids));
 		
 		List<Object[]> results = (List<Object[]>)criteria.list();
 		

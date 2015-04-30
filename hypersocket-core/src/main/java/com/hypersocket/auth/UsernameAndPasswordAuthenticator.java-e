@@ -17,11 +17,11 @@ import org.springframework.stereotype.Component;
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 
 @Component
-public class UsernameAndPasswordAuthenticator implements Authenticator {
+public class UsernameAndPasswordAuthenticator extends
+		AbstractUsernameAuthenticator {
 
 	public static final String RESOURCE_KEY = "usernameAndPassword";
 
@@ -34,70 +34,6 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 	@PostConstruct
 	private void postConstruct() {
 		authenticationService.registerAuthenticator(this);
-	}
-
-	@Override
-	public AuthenticatorResult authenticate(AuthenticationState state,
-			@SuppressWarnings("rawtypes") Map parameters)
-			throws AccessDeniedException {
-
-		String username = AuthenticationUtils.getRequestParameter(parameters,
-				UsernameAndPasswordTemplate.USERNAME_FIELD);
-		String password = AuthenticationUtils.getRequestParameter(parameters,
-				UsernameAndPasswordTemplate.PASSWORD_FIELD);
-
-		if (username == null || username.equals("")) {
-			username = state
-					.getParameter(UsernameAndPasswordTemplate.USERNAME_FIELD);
-		}
-
-		if (password == null || password.equals("")) {
-			password = state
-					.getParameter(UsernameAndPasswordTemplate.PASSWORD_FIELD);
-		}
-
-		if (username == null || username.equals("")) {
-			return AuthenticatorResult.INSUFFICIENT_DATA;
-		}
-
-		if (password == null || password.equals("")) {
-			return AuthenticatorResult.INSUFFICIENT_DATA;
-		}
-
-
-		Realm realm = authenticationService.resolveRealm(state, username);
-
-		if(realm==null) {
-			return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_REALM;
-		}
-		
-		Principal principal =  realmService.getPrincipalByName(realm, username);
-
-		if (principal == null) {
-
-			if(username.indexOf('@') > -1) {
-				username = username.substring(0, username.indexOf('@'));
-			}
-			
-			principal = realmService.getPrincipalByName(realm, username);
-			
-			if(principal==null) {
-				return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
-			}
-		}
-
-		boolean result = realmService.verifyPassword(principal,
-				password.toCharArray());
-
-		if (result) {
-			state.addParameter("password", password);
-			state.setRealm(realm);
-			state.setPrincipal(principal);
-		} 
-
-		return result ? AuthenticatorResult.AUTHENTICATION_SUCCESS
-				: AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_CREDENTIALS;
-
 	}
 
 	@Override
@@ -126,15 +62,43 @@ public class UsernameAndPasswordAuthenticator implements Authenticator {
 	public boolean isIdentityModule() {
 		return true;
 	}
-	
+
 	@Override
 	public String[] getAllowedSchemes() {
 		return new String[] { ".*" };
 	}
-	
+
 	@Override
 	public AuthenticationModuleType getType() {
 		return AuthenticationModuleType.BASIC;
+	}
+
+	@Override
+	protected boolean processFields(AuthenticationState state,
+			@SuppressWarnings("rawtypes") Map parameters) {
+		String password = AuthenticationUtils.getRequestParameter(parameters,
+				UsernameAndPasswordTemplate.PASSWORD_FIELD);
+
+		if (password == null || password.equals("")) {
+			password = state
+					.getParameter(UsernameAndPasswordTemplate.PASSWORD_FIELD);
+		}
+
+		if (password == null || password.equals("")) {
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
+	protected boolean verifyCredentials(AuthenticationState state,
+			Principal principal, @SuppressWarnings("rawtypes") Map parameters) {
+
+		String password = AuthenticationUtils.getRequestParameter(parameters,
+				UsernameAndPasswordTemplate.PASSWORD_FIELD);
+
+		return realmService.verifyPassword(principal, password.toCharArray());
 	}
 
 }

@@ -223,7 +223,6 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	
 	@Override
 	public long getPersonalResourceCount(Principal principal, String search) {
-
 		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(principal), search);
 	}
 

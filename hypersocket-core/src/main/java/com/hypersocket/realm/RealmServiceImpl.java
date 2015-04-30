@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
+import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -300,6 +301,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 	@Override
 	public Realm getRealmByHost(String host) {
+		return getRealmByHost(host, getDefaultRealm());
+	}
+	
+	@Override
+	public Realm getRealmByHost(String host, Realm defaultRealm) {
 
 		if (!realmCache.isElementInMemory(host)
 				|| (realmCache.get(host) == null || realmCache
@@ -316,7 +322,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 					}
 				}
 			}
-			return getDefaultRealm();
+			return defaultRealm;
 		}
 
 		return (Realm) realmCache.get(host).getObjectValue();
@@ -352,6 +358,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 			assertAnyPermission(UserPermission.CREATE, RealmPermission.CREATE);
 
+			if (provider.isReadOnly(realm)) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE,
+						"error.realmIsReadOnly");
+			}
+			
 			Principal principal = provider.createUser(realm, username,
 					properties, principals, password, forceChange);
 
@@ -391,6 +402,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 			assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
 
+			if (provider.isReadOnly(realm)) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE,
+						"error.realmIsReadOnly");
+			}
+			
 			Principal principal = provider.updateUser(realm, user, username,
 					properties, principals);
 
@@ -448,8 +464,16 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		if (type.length == 0) {
 			type = PrincipalType.ALL_TYPES;
 		}
-		return getProviderForRealm(realm).getPrincipalByName(principalName,
-				realm, type);
+		if(realm==null || !isRealmStrictedToHost(realm)) {
+			try {
+				return getUniquePrincipal(principalName, type);
+			} catch (ResourceNotFoundException e) {
+				return null;
+			}
+		} else {
+			return getProviderForRealm(realm).getPrincipalByName(principalName,
+					realm, type);	
+		}
 	}
 
 	@Override
@@ -532,11 +556,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
 		try {
-			if (provider.isReadOnly(principal.getRealm())) {
-				throw new ResourceCreationException(RESOURCE_BUNDLE,
-						"error.realmIsReadOnly");
-			}
-
 			if (!verifyPassword(principal, oldPassword.toCharArray())) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE,
 						"error.invalidPassword");
@@ -884,6 +903,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		try {
 			assertAnyPermission(GroupPermission.CREATE, RealmPermission.CREATE);
 
+			if (provider.isReadOnly(realm)) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE,
+						"error.realmIsReadOnly");
+			}
+			
 			Principal group = getPrincipalByName(realm, name,
 					PrincipalType.GROUP);
 
@@ -924,6 +948,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		try {
 
 			assertAnyPermission(GroupPermission.UPDATE, RealmPermission.UPDATE);
+			
+			if (provider.isReadOnly(realm)) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE,
+						"error.realmIsReadOnly");
+			}
+			
 			Principal tmpGroup = getPrincipalByName(realm, name,
 					PrincipalType.GROUP);
 
@@ -967,6 +997,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		try {
 			assertAnyPermission(GroupPermission.DELETE, RealmPermission.DELETE);
 
+			if (provider.isReadOnly(realm)) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE,
+						"error.realmIsReadOnly");
+			}
+			
 			provider.deleteGroup(group);
 
 			eventService.publishEvent(new GroupDeletedEvent(this,
@@ -1001,6 +1036,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		try {
 			assertAnyPermission(UserPermission.DELETE, RealmPermission.DELETE);
 
+			if (provider.isReadOnly(realm)) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE,
+						"error.realmIsReadOnly");
+			}
+			
 			if (permissionService.hasSystemPermission(user)) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE,
 						"error.cannotDeleteSystemAdmin",
@@ -1210,12 +1250,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 	}
 
 	@Override
-	public Principal getUniquePrincipal(String username)
+	public Principal getUniquePrincipal(String username, PrincipalType...  type)
 			throws ResourceNotFoundException {
 		int found = 0;
 		Principal ret = null;
 		for (Realm r : internalAllRealms()) {
-			Principal p = getPrincipalByName(r, username, PrincipalType.USER);
+			Principal p = getProviderForRealm(r).getPrincipalByName(username, r, type);	
 			if (p != null) {
 				ret = p;
 				found++;
@@ -1334,6 +1374,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
+		if (provider.isReadOnly(principal.getRealm())) {
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"error.realmIsReadOnly");
+		}
+		
 		return provider.disableAccount(principal);
 
 	}
@@ -1343,9 +1388,14 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 			throws ResourceChangeException, AccessDeniedException {
 
 		assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
-
+		
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
+		if (provider.isReadOnly(principal.getRealm())) {
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"error.realmIsReadOnly");
+		}
+		
 		return provider.enableAccount(principal);
 	}
 
@@ -1357,6 +1407,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
+		if (provider.isReadOnly(principal.getRealm())) {
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"error.realmIsReadOnly");
+		}
+		
 		return provider.unlockAccount(principal);
 	}
 

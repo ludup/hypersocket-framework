@@ -9,13 +9,13 @@ import com.hypersocket.tables.ColumnSort;
 
 public interface BrowserLaunchableRepository extends AbstractRepository<Long> {
 
-	List<BrowserLaunchable> searchAssignedResources(Principal principal,
+	List<BrowserLaunchable> searchAssignedResources(List<Principal> principals,
 			String searchPattern, int start, int length, ColumnSort[] sorting,
 			CriteriaConfiguration... configs);
 
-	Long getAssignedResourceCount(Principal principal, String searchPattern,
+	Long getAssignedResourceCount(List<Principal> principals, String searchPattern,
 			CriteriaConfiguration... configs);
 
-	List<BrowserLaunchable> getPersonalResources(Principal principal);
+	List<BrowserLaunchable> getPersonalResources(List<Principal> principals);
 
 }

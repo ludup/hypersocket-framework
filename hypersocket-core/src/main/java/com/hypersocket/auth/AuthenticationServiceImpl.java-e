@@ -37,6 +37,7 @@ import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmRepository;
@@ -46,15 +47,16 @@ import com.hypersocket.session.SessionService;
 
 @Service
 @Transactional
-public class AuthenticationServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
-		implements AuthenticationService {
+public class AuthenticationServiceImpl extends
+		PasswordEnabledAuthenticatedServiceImpl implements
+		AuthenticationService {
 
 	public static final String BROWSER_AUTHENTICATION_SCHEME = "Browser";
 	public static final String BROWSER_AUTHENTICATION_RESOURCE_KEY = "basic";
 
 	public static final String ANONYMOUS_AUTHENTICATION_SCHEME = "Anonymous";
 	public static final String ANONYMOUS_AUTHENTICATION_RESOURCE_KEY = "anonymous";
-	
+
 	private static Logger log = LoggerFactory
 			.getLogger(AuthenticationServiceImpl.class);
 
@@ -133,24 +135,24 @@ public class AuthenticationServiceImpl extends PasswordEnabledAuthenticatedServi
 							+ " authentication scheme for realm "
 							+ realm.getName());
 				}
-				
+
 				List<String> modules = new ArrayList<String>();
 				schemeRepository.createScheme(realm,
 						ANONYMOUS_AUTHENTICATION_SCHEME, modules,
-						ANONYMOUS_AUTHENTICATION_RESOURCE_KEY, true,
-						0, AuthenticationModuleType.HIDDEN);
+						ANONYMOUS_AUTHENTICATION_RESOURCE_KEY, true, 0,
+						AuthenticationModuleType.HIDDEN);
 
 				if (log.isInfoEnabled()) {
 					log.info("Creating " + BROWSER_AUTHENTICATION_SCHEME
 							+ " authentication scheme for realm "
 							+ realm.getName());
 				}
-				
+
 				modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
 				schemeRepository.createScheme(realm,
 						BROWSER_AUTHENTICATION_SCHEME, modules,
-						BROWSER_AUTHENTICATION_RESOURCE_KEY, false,
-						10, AuthenticationModuleType.HTML);
+						BROWSER_AUTHENTICATION_RESOURCE_KEY, false, 10,
+						AuthenticationModuleType.HTML);
 
 			}
 		});
@@ -208,15 +210,13 @@ public class AuthenticationServiceImpl extends PasswordEnabledAuthenticatedServi
 	}
 
 	@Override
-	public int getAuthenticatorCount(Realm realm,
-			String schemeResourceKey) {
+	public int getAuthenticatorCount(Realm realm, String schemeResourceKey) {
 
 		AuthenticationScheme s = schemeRepository.getSchemeByResourceKey(realm,
 				schemeResourceKey);
-		return repository
-				.getAuthenticationModulesByScheme(s).size();
+		return repository.getAuthenticationModulesByScheme(s).size();
 	}
-	
+
 	@Override
 	public AuthenticationScheme getSchemeByResourceKey(Realm realm,
 			String resourceKey) throws AccessDeniedException {
@@ -304,10 +304,10 @@ public class AuthenticationServiceImpl extends PasswordEnabledAuthenticatedServi
 
 		if (state.isAuthenticationComplete()) {
 
-			if(state.getSession()!=null) {
+			if (state.getSession() != null) {
 				setCurrentSession(state.getSession(), state.getLocale());
 			}
-			
+
 			try {
 				if (state.getCurrentPostAuthenticationStep() != null) {
 
@@ -323,14 +323,15 @@ public class AuthenticationServiceImpl extends PasswordEnabledAuthenticatedServi
 					case AUTHENTICATION_SUCCESS: {
 
 						state.nextPostAuthenticationStep();
-						
-						if(state.canCreateSession()) {
+
+						if (state.canCreateSession()) {
 							state.setSession(completeLogon(state));
 						}
-						
-						if(state.hasPostAuthenticationStep()) {
-							PostAuthenticationStep step = state.getCurrentPostAuthenticationStep();
-							if(!step.requiresUserInput(state)) {
+
+						if (state.hasPostAuthenticationStep()) {
+							PostAuthenticationStep step = state
+									.getCurrentPostAuthenticationStep();
+							if (!step.requiresUserInput(state)) {
 								success = logon(state, parameterMap);
 							}
 						}
@@ -350,7 +351,7 @@ public class AuthenticationServiceImpl extends PasswordEnabledAuthenticatedServi
 		} else {
 			Authenticator authenticator = authenticators.get(state
 					.getCurrentModule().getTemplate());
-			
+
 			if (authenticator.isSecretModule()
 					&& state.getPrincipal() instanceof AuthenticationState.FakePrincipal) {
 				state.setLastErrorMsg("error.genericLogonError");
@@ -427,36 +428,39 @@ public class AuthenticationServiceImpl extends PasswordEnabledAuthenticatedServi
 									AuthenticationPermission.LOGON,
 									SystemPermission.SYSTEM_ADMINISTRATION);
 
-							if(!realmService.verifyPrincipal(state.getPrincipal())) {
-								
-								eventService.publishEvent(new AuthenticationAttemptEvent(
-										this, state, authenticator,
-										"hint.accountSuspended"));
-								
+							if (!realmService.verifyPrincipal(state
+									.getPrincipal())) {
+
+								eventService
+										.publishEvent(new AuthenticationAttemptEvent(
+												this, state, authenticator,
+												"hint.accountSuspended"));
+
 								// Principal is currently suspended from logon
 								state.setLastErrorMsg("error.accountSuspended");
 								state.setLastErrorIsResourceKey(true);
 								state.revertModule();
 								success = false;
 							} else {
-								
 
-								eventService.publishEvent(new AuthenticationAttemptEvent(
-										this, state, authenticator));
-								
+								eventService
+										.publishEvent(new AuthenticationAttemptEvent(
+												this, state, authenticator));
+
 								for (PostAuthenticationStep proc : postAuthenticationSteps) {
 									if (proc.requiresProcessing(state)) {
-											state.addPostAuthenticationStep(proc);
+										state.addPostAuthenticationStep(proc);
 									}
 								}
-	
-								if(state.canCreateSession()) {
+
+								if (state.canCreateSession()) {
 									state.setSession(completeLogon(state));
 								}
-								
-								if(state.hasPostAuthenticationStep()) {
-									PostAuthenticationStep step = state.getCurrentPostAuthenticationStep();
-									if(!step.requiresUserInput(state)) {
+
+								if (state.hasPostAuthenticationStep()) {
+									PostAuthenticationStep step = state
+											.getCurrentPostAuthenticationStep();
+									if (!step.requiresUserInput(state)) {
 										success = logon(state, parameterMap);
 									}
 								}
@@ -524,7 +528,7 @@ public class AuthenticationServiceImpl extends PasswordEnabledAuthenticatedServi
 		Session session = sessionService.openSession(state.getRemoteAddress(),
 				state.getPrincipal(), state.getScheme(), state.getUserAgent(),
 				state.getParameters());
-		
+
 		setCurrentSession(session, state.getLocale());
 
 		if (state.hasParameter("password")) {
@@ -571,17 +575,19 @@ public class AuthenticationServiceImpl extends PasswordEnabledAuthenticatedServi
 	@Override
 	public Map<String, Authenticator> getAuthenticators(String schemeResourceKey) {
 		Map<String, Authenticator> tmp = new HashMap<String, Authenticator>();
-		AuthenticationScheme scheme =schemeRepository.getSchemeByResourceKey(getCurrentRealm(), schemeResourceKey);
-		
+		AuthenticationScheme scheme = schemeRepository.getSchemeByResourceKey(
+				getCurrentRealm(), schemeResourceKey);
+
 		for (Authenticator a : authenticators.values()) {
-			
-			if(scheme.getType()!=AuthenticationModuleType.CUSTOM) {
-				if(scheme.getType().ordinal() >= a.getType().ordinal()) {
+
+			if (scheme.getType() != AuthenticationModuleType.CUSTOM) {
+				if (scheme.getType().ordinal() >= a.getType().ordinal()) {
 					tmp.put(a.getResourceKey(), a);
 				}
 			} else {
-				if(scheme.getAllowedModules()==null) {
-					throw new IllegalStateException("CUSTOM authentication scheme type must declare allowed modules");
+				if (scheme.getAllowedModules() == null) {
+					throw new IllegalStateException(
+							"CUSTOM authentication scheme type must declare allowed modules");
 				}
 				for (String s : scheme.getAllowedModules().split(",")) {
 					if (a.getResourceKey().matches(s)) {
@@ -595,39 +601,62 @@ public class AuthenticationServiceImpl extends PasswordEnabledAuthenticatedServi
 	}
 
 	@Override
-	public Realm resolveRealm(AuthenticationState state, String username)
-			throws AccessDeniedException {
-
-		Realm realm = state.getRealm();
-		String realmName = realm.getName();
+	public Principal resolvePrincipalAndRealm(AuthenticationState state,
+			String username) throws AccessDeniedException,
+			PrincipalNotFoundException {
 
 		// Set before we manipulate it
 		state.setLastPrincipalName(username);
 
-		if (!realmService.isRealmStrictedToHost(realm)) {
+		Realm hostRealm = realmService.getRealmByHost((String) state
+				.getEnvironmentVariable(BrowserEnvironment.HOST.toString()),
+				null);
 
-			// Can we extract realm from username?
-			int idx;
-			idx = username.indexOf('\\');
-			if (idx > -1) {
-				realmName = username.substring(0, idx);
-				username = username.substring(idx + 1);
-			} else {
-				idx = username.indexOf('@');
+		String realmName = null;
+		if (hostRealm != null) {
+			realmName = hostRealm.getName();
+			state.setLastRealmName(realmName);
+		}
+
+		Principal principal = realmService.getPrincipalByName(hostRealm,
+				username, PrincipalType.USER);
+
+		if (principal == null) {
+
+			if (!realmService.isRealmStrictedToHost(hostRealm)) {
+
+				// Can we extract realm from username?
+				int idx;
+				idx = username.indexOf('\\');
 				if (idx > -1) {
-					realmName = username.substring(idx + 1);
-					username = username.substring(0, idx);
+					realmName = username.substring(0, idx);
+					username = username.substring(idx + 1);
+				} else {
+					idx = username.indexOf('/');
+					if (idx > -1) {
+						realmName = username.substring(idx + 1);
+						username = username.substring(0, idx);
+					}
 				}
+
+				if (realmName != null) {
+					state.setLastRealmName(realmName);
+					hostRealm = realmService.getRealmByName(realmName);
+				}
+
+				principal = realmService.getPrincipalByName(hostRealm,
+						username, PrincipalType.USER);
 			}
 
-			if (realmName != null) {
-				realm = realmService.getRealmByName(realmName);
+			if (principal == null) {
+				throw new PrincipalNotFoundException();
 			}
 		}
 
-		state.setLastRealmName(realmName);
+		state.setRealm(principal.getRealm());
+		state.setPrincipal(principal);
 
-		return realm;
+		return principal;
 	}
 
 	@Override
