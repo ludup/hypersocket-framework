@@ -346,7 +346,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 
 	@Override
 	public Principal createGroup(Realm realm, String name,
-			List<Principal> principals) throws ResourceCreationException {
+			Map<String, String> properties, List<Principal> principals) throws ResourceCreationException {
 
 		LocalGroup group = new LocalGroup();
 		group.setName(name);
@@ -381,7 +381,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 
 	@Override
 	public Principal updateGroup(Realm realm, Principal group, String name,
-			List<Principal> principals) throws ResourceChangeException {
+			Map<String, String> properties, List<Principal> principals) throws ResourceChangeException {
 		if (!(group instanceof LocalGroup)) {
 			throw new IllegalStateException(
 					"Principal is not of type LocalGroup");
@@ -405,7 +405,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
-	public Principal createGroup(Realm realm, String name)
+	public Principal createGroup(Realm realm, String name, Map<String, String> properties)
 			throws ResourceCreationException {
 		return createGroup(realm, name, null);
 	}

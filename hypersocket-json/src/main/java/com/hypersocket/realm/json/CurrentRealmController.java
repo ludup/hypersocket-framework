@@ -484,15 +484,16 @@ public class CurrentRealmController extends ResourceController {
 			}
 
 			Principal principal;
-
+			Map<String,String> properties = new HashMap<String,String>();
+			
 			if (group.getId() == null) {
 				principal = realmService.createGroup(realm, group.getName(),
-						principals);
+						properties, principals);
 			} else {
 				principal = realmService.getPrincipalById(realm, group.getId(),
 						PrincipalType.GROUP);
 				principal = realmService.updateGroup(realm, principal,
-						group.getName(), principals);
+						group.getName(), properties, principals);
 			}
 
 			return new ResourceStatus<Principal>(principal, I18N.getResource(
