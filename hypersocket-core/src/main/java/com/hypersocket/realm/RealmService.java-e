@@ -82,11 +82,13 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean requiresPasswordChange(Principal principal, Realm realm);
 
-	Principal createGroup(Realm realm, String name, List<Principal> principals)
+	Principal createGroup(Realm realm, String name,
+			Map<String, String> properties, List<Principal> principals)
 			throws ResourceCreationException, AccessDeniedException;
 
+
 	Principal updateGroup(Realm realm, Principal principal, String name,
-			List<Principal> principals) throws ResourceChangeException,
+			Map<String, String> properties, List<Principal> principals) throws ResourceChangeException,
 			AccessDeniedException;
 
 	void deleteGroup(Realm realm, Principal group)
@@ -214,5 +216,4 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 			throws ResourceNotFoundException;
 
 	Realm getRealmByHost(String host, Realm defaultRealm);
-
 }

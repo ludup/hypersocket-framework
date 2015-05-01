@@ -895,7 +895,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 	@Override
 	public Principal createGroup(Realm realm, String name,
-			List<Principal> principals) throws ResourceCreationException,
+			Map<String, String> properties, List<Principal> principals) throws ResourceCreationException,
 			AccessDeniedException {
 
 		RealmProvider provider = getProviderForRealm(realm);
@@ -916,7 +916,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 						RESOURCE_BUNDLE, "error.group.alreadyExists", name);
 				throw ex;
 			}
-			Principal principal = provider.createGroup(realm, name, principals);
+			
+			Principal principal = provider.createGroup(realm, name, properties, principals);
+			
 			eventService.publishEvent(new GroupCreatedEvent(this,
 					getCurrentSession(), realm, provider, principal,
 					principals, new HashMap<String, String>()));
@@ -940,7 +942,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 	@Override
 	public Principal updateGroup(Realm realm, Principal group, String name,
-			List<Principal> principals) throws ResourceChangeException,
+			Map<String, String> properties, List<Principal> principals) throws ResourceChangeException,
 			AccessDeniedException {
 
 		RealmProvider provider = getProviderForRealm(realm);
@@ -964,7 +966,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 			}
 
 			Principal principal = provider.updateGroup(realm, group, name,
-					principals);
+					properties, principals);
 
 			eventService.publishEvent(new GroupUpdatedEvent(this,
 					getCurrentSession(), realm, provider, principal,
@@ -1457,6 +1459,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 	@Override
 	public boolean isRealmStrictedToHost(Realm realm) {
 
+		if(realm==null) {
+			return false;
+		}
 		RealmProvider realmProvider = getProviderForRealm(realm);
 		return realmProvider.getBooleanValue(realm, "realm.hostRestriction");
 

@@ -618,11 +618,19 @@ public class AuthenticationServiceImpl extends
 			state.setLastRealmName(realmName);
 		}
 
+		if(log.isDebugEnabled()) {
+			log.debug("Looking up principal " + username + " in " + (hostRealm==null ? "all realms" : hostRealm.getName()));
+		}
+		
 		Principal principal = realmService.getPrincipalByName(hostRealm,
 				username, PrincipalType.USER);
 
 		if (principal == null) {
 
+			if(log.isDebugEnabled()) {
+				log.debug("Unable to find principal for " + username);
+			}
+			
 			if (!realmService.isRealmStrictedToHost(hostRealm)) {
 
 				// Can we extract realm from username?
@@ -649,6 +657,9 @@ public class AuthenticationServiceImpl extends
 			}
 
 			if (principal == null) {
+				if(log.isDebugEnabled()) {
+					log.debug("Still unable to find principal for " + username);
+				}
 				throw new PrincipalNotFoundException();
 			}
 		}

@@ -134,7 +134,7 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 
 		// Create Administrators group for Default realm
 		Principal group = localRealmProvider.createGroup(realm,
-				"Administrators");
+				"Administrators", new HashMap<String,String>());
 
 		List<Principal> groups = new ArrayList<Principal>();
 		groups.add(group);

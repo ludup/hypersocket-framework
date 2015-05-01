@@ -53,16 +53,17 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Principal getPrincipalById(Long id, Realm realm, PrincipalType[] type);
 
-	Principal createGroup(Realm realm, String name, List<Principal> principals)
+	Principal createGroup(Realm realm, String name,
+			Map<String, String> properties, List<Principal> principals)
 			throws ResourceCreationException;
 
-	Principal createGroup(Realm realm, String name)
+	Principal createGroup(Realm realm, String name, Map<String, String> properties)
 			throws ResourceCreationException;
 
 	void deleteGroup(Principal group) throws ResourceChangeException;
 
 	Principal updateGroup(Realm realm, Principal group, String name,
-			List<Principal> principals) throws ResourceChangeException;
+			Map<String, String> properties, List<Principal> principals) throws ResourceChangeException;
 
 	void deleteUser(Principal user) throws ResourceChangeException;
 
