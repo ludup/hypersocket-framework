@@ -98,6 +98,10 @@ public class UsernameAndPasswordAuthenticator extends
 		String password = AuthenticationUtils.getRequestParameter(parameters,
 				UsernameAndPasswordTemplate.PASSWORD_FIELD);
 
+		if (password == null || password.equals("")) {
+			password = state
+					.getParameter(UsernameAndPasswordTemplate.PASSWORD_FIELD);
+		}
 		return realmService.verifyPassword(principal, password.toCharArray());
 	}
 
