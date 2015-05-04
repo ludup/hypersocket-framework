@@ -464,7 +464,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		if (type.length == 0) {
 			type = PrincipalType.ALL_TYPES;
 		}
-		if(realm==null || !isRealmStrictedToHost(realm)) {
+		if(realm==null) {
 			try {
 				return getUniquePrincipal(principalName, type);
 			} catch (ResourceNotFoundException e) {
@@ -1264,6 +1264,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 			}
 		}
 		if (found != 1) {
+			if(found > 1 && log.isInfoEnabled()) {
+				log.info("More than one principal found for username " + username);
+			}
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE,
 					"principal.notFound");
 		}

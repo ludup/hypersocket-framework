@@ -628,11 +628,13 @@ public class AuthenticationServiceImpl extends
 		if (principal == null) {
 
 			if(log.isDebugEnabled()) {
-				log.debug("Unable to find principal for " + username);
+				log.debug("Unable to find principal for " + username + " in " + (hostRealm==null ? "all realms" : hostRealm.getName()));
 			}
 			
 			if (!realmService.isRealmStrictedToHost(hostRealm)) {
 
+				hostRealm = null;
+				
 				// Can we extract realm from username?
 				int idx;
 				idx = username.indexOf('\\');
@@ -658,7 +660,7 @@ public class AuthenticationServiceImpl extends
 
 			if (principal == null) {
 				if(log.isDebugEnabled()) {
-					log.debug("Still unable to find principal for " + username);
+					log.debug("Still unable to find principal for " + username + " in " + (hostRealm==null ? "all realms" : hostRealm.getName()));
 				}
 				throw new PrincipalNotFoundException();
 			}
