@@ -33,7 +33,7 @@ public class SessionUtils {
 
 	public static final String AUTHENTICATED_SESSION = "authenticatedSession";
 	public static final String HYPERSOCKET_API_SESSION = "HYPERSOCKET_API_SESSION";
-
+	public static final String HYPERSOCKET_API_KEY = "apikey";
 	public static final String USER_LOCALE = "userLocale";
 	public static final String HYPERSOCKET_LOCALE = "HYPERSOCKET_LOCALE";
 
@@ -57,6 +57,12 @@ public class SessionUtils {
 				if (session != null && sessionService.isLoggedOn(session, true)) {
 					return session;
 				}
+			}
+		}
+		if(request.getParameterMap().containsKey(HYPERSOCKET_API_KEY)) {
+			Session session = sessionService.getSession(request.getParameter(HYPERSOCKET_API_KEY));
+			if (session != null && sessionService.isLoggedOn(session, true)) {
+				return session;
 			}
 		}
 		return null;
