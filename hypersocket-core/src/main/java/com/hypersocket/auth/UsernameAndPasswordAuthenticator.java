@@ -102,7 +102,13 @@ public class UsernameAndPasswordAuthenticator extends
 			password = state
 					.getParameter(UsernameAndPasswordTemplate.PASSWORD_FIELD);
 		}
-		return realmService.verifyPassword(principal, password.toCharArray());
+		boolean success = realmService.verifyPassword(principal, password.toCharArray());
+		
+		if(success) {
+			state.addParameter("password", password);
+		}
+		
+		return success;
 	}
 
 }
