@@ -629,4 +629,9 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		return userRepository.getAttributeNames();
 	}
 
+	@Override
+	public Map<String, String> getUserPropertyValues(Principal principal) {
+		return userRepository.getProperties(principal);
+	}
+
 }
