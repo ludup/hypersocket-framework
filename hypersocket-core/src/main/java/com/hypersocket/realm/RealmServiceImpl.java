@@ -1305,18 +1305,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		String[] editableProperties = getRealmPropertyArray(realm,
 				"realm.userEditableProperties");
 
-		Map<String, String> currentProperties = provider
-				.getProperties(principal);
+		Map<String, String> currentProperties = provider.getUserPropertyValues(principal);
 		
-		
-		Map<String, String> filteredProperties = new HashMap<String, String>();
 		for (String allowed : editableProperties) {
-			String value = properties.get(allowed);
-			if (StringUtils.isNotBlank(value)) {
-				filteredProperties.put(allowed, properties.get(allowed));
-			} else if (currentProperties.containsKey(allowed)) {
-				filteredProperties.put(allowed, currentProperties.get(allowed));
-			}
+			if (properties.containsKey(allowed)) {
+				currentProperties.put(allowed, properties.get(allowed));
+			} 
 		}
 
 		try {
@@ -1327,21 +1321,21 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 					.getAssociatedPrincipals(principal);
 
 			principal = provider.updateUser(realm, principal,
-					principal.getPrincipalName(), filteredProperties,
+					principal.getPrincipalName(), currentProperties,
 					assosiated);
 
 			eventService.publishEvent(new ProfileUpdatedEvent(this,
 					getCurrentSession(), realm, provider, principal,
-					filteredProperties));
+					currentProperties));
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(new ProfileUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, principal
-							.getPrincipalName(), filteredProperties));
+							.getPrincipalName(), currentProperties));
 			throw e;
 		} catch (ResourceChangeException e) {
 			eventService.publishEvent(new ProfileUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, principal
-							.getPrincipalName(), filteredProperties));
+							.getPrincipalName(), currentProperties));
 			throw e;
 		}
 
