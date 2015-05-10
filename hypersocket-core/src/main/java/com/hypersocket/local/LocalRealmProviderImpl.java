@@ -407,7 +407,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	@Override
 	public Principal createGroup(Realm realm, String name, Map<String, String> properties)
 			throws ResourceCreationException {
-		return createGroup(realm, name, null);
+		return createGroup(realm, name, properties, null);
 	}
 
 	@Override
