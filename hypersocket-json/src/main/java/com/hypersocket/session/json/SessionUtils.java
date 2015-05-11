@@ -59,6 +59,12 @@ public class SessionUtils {
 				}
 			}
 		}
+		if (request.getHeader(HYPERSOCKET_API_SESSION) != null) {
+			Session session = sessionService.getSession((String)request.getHeader(HYPERSOCKET_API_SESSION));
+			if (session != null && sessionService.isLoggedOn(session, true)) {
+				return session;
+			}
+		}
 		return null;
 	}
 
