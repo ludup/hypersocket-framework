@@ -17,6 +17,8 @@ public interface ClientService extends Remote {
 	void disconnect(Connection c) throws RemoteException;
 
 	List<ConnectionStatus> getStatus() throws RemoteException;
+	
+	byte[] getBlob(String host, String path, long timeout) throws RemoteException; 
 
 	void ping() throws RemoteException;
 	

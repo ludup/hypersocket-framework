@@ -19,6 +19,7 @@ import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.ResourceImpl;
 import com.hypersocket.client.rmi.ResourceRealm;
 import com.hypersocket.client.rmi.ResourceService;
+import com.hypersocket.client.rmi.Resource.Type;
 import com.hypersocket.client.service.AbstractServicePlugin;
 
 public class BrowserResourcesPlugin extends AbstractServicePlugin {
@@ -91,6 +92,15 @@ public class BrowserResourcesPlugin extends AbstractServicePlugin {
 				ResourceImpl res = new ResourceImpl(resource.getName() + " - "
 						+ I18N.getResource("text.defaultBrowser"));
 				res.setLaunchable(true);
+				res.setIcon(resource.getLogo());
+
+				if (resource.getType().equals("FileResource")) {
+					res.setType(Type.FILE);
+				} else if (resource.getType().equals("BrowserSSOPlugin")) {
+					res.setType(Type.SSO);
+				} else {
+					res.setType(Type.BROWSER);
+				}
 
 				String sessionId = serviceClient.getSessionId();
 				res.setResourceLauncher(new BrowserLauncher(serviceClient
@@ -115,7 +125,6 @@ public class BrowserResourcesPlugin extends AbstractServicePlugin {
 				errors++;
 			}
 
-			
 		}
 
 		return errors;

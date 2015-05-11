@@ -127,6 +127,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 				principal = userRepository.getGroupByName(principalName, realm);
 				break;
 			case SERVICE:
+				principal = userRepository.getUserByNameAndType(principalName, realm, PrincipalType.SERVICE);
 				break;
 			case SYSTEM:
 				principal = userRepository.getUserByNameAndType(principalName,
@@ -336,6 +337,9 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	@Override
 	public boolean requiresPasswordChange(Principal principal) {
 		if (principal instanceof LocalUser) {
+			if(principal.getType().equals(PrincipalType.SERVICE)) {
+				return false;
+			}
 			LocalUserCredentials creds = userRepository
 					.getCredentials((LocalUser) principal);
 			return creds == null || creds.isPasswordChangeRequired();

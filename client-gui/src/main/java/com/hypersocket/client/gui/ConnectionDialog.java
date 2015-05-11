@@ -39,8 +39,9 @@ public class ConnectionDialog extends Dialog {
 	ClientService clientService;
 	/**
 	 * Create the dialog.
-	 * @param parent
-	 * @param style
+	 * @param swtGui
+	 * @param connection
+	 * @param clientService
 	 */
 	public ConnectionDialog(SWTGui swtGui, Connection connection, ClientService clientService) {
 		super(swtGui.getShell());
