@@ -2,6 +2,7 @@ package com.hypersocket.scheduler;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -12,6 +13,7 @@ import org.quartz.Job;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -21,6 +23,7 @@ import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
 import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -285,6 +288,45 @@ public class SchedulerServiceImpl implements SchedulerService {
 		
 		Trigger trigger = scheduler.getTrigger(triggerKeys.get(id));
 		return trigger.getPreviousFireTime();
+	}
+	
+	@Override
+	public void getSheduledJobs()throws SchedulerException{
+		System.out.println("call for jobs");
+		for(String group: scheduler.getJobGroupNames()) {
+			System.out.println("Registered groups :"+group);
+		    // enumerate each job in group
+		    for(JobKey jobKey : scheduler.getJobKeys(GroupMatcher.jobGroupEquals(group))) {
+		    	System.out.println("++++++++++++++++++++++++++++");
+		        System.out.println("Found job identified by: " + jobKey+ " , name :"+jobKey.getName());
+		        JobDetail detail=scheduler.getJobDetail(jobKey);
+		        System.out.println(" Job detail :"+detail);
+		        List<? extends Trigger> triggersOfJob= scheduler.getTriggersOfJob(jobKey);
+		        for(Trigger trigger: triggersOfJob){
+		        	System.out.println("Triger.........");
+		        	System.out.println("Data class :"+trigger.getJobDataMap().getClass().getName());
+		        	System.out.println("Job Data : ");
+		        	if(trigger.getJobDataMap()  instanceof PermissionsAwareJobData){
+		        		PermissionsAwareJobData data=(PermissionsAwareJobData)trigger.getJobDataMap();
+		        		System.out.println("Name :"+data.getName());
+		        		System.out.println("Job type :"+data.getJobType());
+		        		/*for(String key :trigger.getJobDataMap().getKeys()){
+		        			System.out.println("Key : "+key);
+		        		}*/
+		        		
+		        	}else{
+		        		for(String key :trigger.getJobDataMap().getKeys()){
+		        			System.out.println("Key : "+key);
+		        		}
+		        	}
+		        	System.out.println("Last fire time :"+trigger.getPreviousFireTime());
+	        		System.out.println("Next fire time :"+trigger.getNextFireTime());
+		        	System.out.println(trigger.toString());
+		        	
+		        }
+		    }
+		}
+		
 	}
 
 }

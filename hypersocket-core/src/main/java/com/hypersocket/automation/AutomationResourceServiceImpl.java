@@ -282,7 +282,8 @@ public class AutomationResourceServiceImpl extends
 		PermissionsAwareJobData data = new PermissionsAwareJobData(
 				resource.getRealm());
 		data.put("resourceId", resource.getId());
-
+        data.setName(resource.getName()); 
+        data.setJobType(resource.getResourceKey());
 		try {
 
 			String scheduleId;
