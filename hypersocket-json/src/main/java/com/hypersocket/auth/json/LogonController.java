@@ -9,7 +9,6 @@ package com.hypersocket.auth.json;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
