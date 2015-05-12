@@ -183,15 +183,15 @@ public class LogonController extends AuthenticatedController {
 			if(val instanceof String[]) {
 				String[] arr = (String[])val;
 				if(arr.length == 1) {
-					params.put(key, URLDecoder.decode(arr[0], "UTF-8"));
+					params.put(key, arr[0]);
 				} else {
 					for(int i=0;i<arr.length;i++) {
-						arr[i] = URLDecoder.decode(arr[i], "UTF-8");
+						arr[i] = arr[i];
 					}
 					params.put(key, arr);
 				}
 			} else if(val instanceof String) {
-				params.put(key, URLDecoder.decode((String)val, "UTF-8"));
+				params.put(key, (String)val);
 			}
 		}
 		return params;
