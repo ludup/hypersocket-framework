@@ -78,5 +78,7 @@ public interface SchedulerService {
 
 	String scheduleAt(Class<? extends Job> clz, JobDataMap data, Date start,
 			int interval, int repeat, Date ends) throws SchedulerException;
+	
+	void getSheduledJobs()throws SchedulerException;
 
 }

@@ -13,6 +13,8 @@ public class PermissionsAwareJobData extends JobDataMap {
 	Realm currentRealm;
 	Principal principal;
 	Locale locale;
+	String jobType;
+	String name;
 	
 	public PermissionsAwareJobData(Realm currentRealm) {
 		this(currentRealm, null, null);
@@ -42,5 +44,23 @@ public class PermissionsAwareJobData extends JobDataMap {
 	public Locale getLocale() {
 		return locale;
 	}
+
+	public String getJobType() {
+		return jobType;
+	}
+
+	public void setJobType(String jobType) {
+		this.jobType = jobType;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	
 
 }
