@@ -52,18 +52,23 @@ public abstract class AbstractUpdateExtensionsJob implements Job {
 			
 			long totalSize = 0;
 			for (ExtensionDefinition def : extensions) {
-				if (def.getState() == ExtensionState.UPDATABLE) {
+				if (def.getState() == ExtensionState.UPDATABLE || (installMissing() && def.getState() == ExtensionState.NOT_INSTALLED)) {
 					updates.add(def);
 					totalSize += def.getSize();
 				}
 			}
 			
+			if(totalSize == 0) {
+				throw new JobExecutionException("Nothing to update");
+			}
 			onUpdateStart(totalSize);
 			
 			long transfered = 0;
 			
 			for(ExtensionDefinition def : updates) {
 
+					onExtensionDownloadStarted(def);
+					
 					URL url = new URL(def.getRemoteArchiveURL());
 					
 					File archiveTmp = new File(tmpFolder, FileUtils.lastPathElement(url.getFile()));
@@ -98,6 +103,8 @@ public abstract class AbstractUpdateExtensionsJob implements Job {
 						}
 						throw new JobExecutionException("Corrupt download for extension " + def.getId());
 					}
+					
+					onExtensionDownloaded(def);
 			}
 		
 			/**
@@ -108,20 +115,23 @@ public abstract class AbstractUpdateExtensionsJob implements Job {
 			/**
 			 * Rename all the old archives to .bak
 			 */
-			for(File prevArchive : archivesDirFile.listFiles(new FilenameFilter() {
+			File[] archives = archivesDirFile.listFiles(new FilenameFilter() {
 				
 				@Override
 				public boolean accept(File dir, String name) {
 					return name.endsWith(".zip");
 				}
-			})) {
-				String filename = prevArchive.getName().replace(".zip", ".bak");
-				
-				File backupFile = new File(archivesDirFile, filename);
-				if(!prevArchive.renameTo(backupFile)) {
-					throw new JobExecutionException("Could not backup previous archive " + prevArchive.getName());
-				}
-			};
+			});
+			if(archives!=null) {
+				for(File prevArchive : archives) {
+					String filename = prevArchive.getName().replace(".zip", ".bak");
+					
+					File backupFile = new File(archivesDirFile, filename);
+					if(!prevArchive.renameTo(backupFile)) {
+						throw new JobExecutionException("Could not backup previous archive " + prevArchive.getName());
+					}
+				};
+			}
 			
 			/**
 			 * Now copy over the new archives
@@ -136,17 +146,21 @@ public abstract class AbstractUpdateExtensionsJob implements Job {
 			/**
 			 * Finally delete the backups
 			 */
-			for(File prevArchive : archivesDirFile.listFiles(new FilenameFilter() {
+			archives = archivesDirFile.listFiles(new FilenameFilter() {
 				
 				@Override
 				public boolean accept(File dir, String name) {
 					return name.endsWith(".bak");
 				}
-			})) {
-				if(!prevArchive.delete()) {
-					log.warn(prevArchive.getName() + " could not be deleted. This should not affect the upgrade but advisable that its removed.");
-				}
-			};
+			});
+			
+			if(archives!=null) {
+				for(File prevArchive : archives ){
+					if(!prevArchive.delete()) {
+						log.warn(prevArchive.getName() + " could not be deleted. This should not affect the upgrade but advisable that its removed.");
+					}
+				};
+			}
 			
 			onUpdateComplete(totalSize);
 			
@@ -161,6 +175,14 @@ public abstract class AbstractUpdateExtensionsJob implements Job {
 		}
 	}
 	
+	protected void onExtensionDownloadStarted(ExtensionDefinition def) {
+		
+	}
+
+	protected void onExtensionDownloaded(ExtensionDefinition def) {
+		
+	}
+
 	protected abstract void onInitUpdate(JobExecutionContext context) throws JobExecutionException;
 	
 	protected abstract List<ExtensionDefinition> onResolveExtensions() throws IOException;
@@ -175,10 +197,17 @@ public abstract class AbstractUpdateExtensionsJob implements Job {
 	
 	protected abstract void onExtensionUpdateComplete(ExtensionDefinition def);
 	
+	protected boolean installMissing() {
+		return false;
+	}
+	
 	private void completeDownload(File archiveTmp, File archiveFile,
 			ExtensionDefinition def) throws IOException {
 
 		InputStream in = new FileInputStream(archiveTmp);
+		if(!archiveFile.exists()) {
+			archiveFile.createNewFile();
+		}
 		OutputStream out = new FileOutputStream(archiveFile);
 		
 		try {
