@@ -1,13 +1,25 @@
 package com.hypersocket.scheduler;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 
-public interface SchedulerService {
+import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.resource.AbstractResourceService;
+import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceCreationException;
 
+public interface SchedulerService extends
+AbstractResourceService<SchedulerResource>{
+
+	public static final String RESOURCE_BUNDLE = "SchedulerService";
+	
 	String scheduleNow(Class<? extends Job> clz, JobDataMap data, int interval) throws SchedulerException;
 
 	String scheduleNow(Class<? extends Job> clz, JobDataMap data, int interval,
@@ -80,5 +92,20 @@ public interface SchedulerService {
 			int interval, int repeat, Date ends) throws SchedulerException;
 	
 	void getSheduledJobs()throws SchedulerException;
+	
+	SchedulerResource updateResource(SchedulerResource resourceById,
+			String name, Map<String, String> properties)
+			throws ResourceChangeException, AccessDeniedException;
+
+	SchedulerResource createResource(String name, Realm realm,
+			Map<String, String> properties) throws ResourceCreationException,
+			AccessDeniedException;
+
+	Collection<PropertyCategory> getPropertyTemplate()
+			throws AccessDeniedException;
+
+	Collection<PropertyCategory> getPropertyTemplate(SchedulerResource resource)
+			throws AccessDeniedException;
+
 
 }
