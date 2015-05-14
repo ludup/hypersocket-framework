@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Criteria;
+import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -68,16 +69,11 @@ public class TriggerResourceRepositoryImpl extends
 				}
 
 				criteria.add(Restrictions.eq("realm", event.getCurrentRealm()));
-				criteria.add(Restrictions.isNull("parentAction"));
+				criteria.add(Restrictions.isNull("parentTrigger"));
 				criteria.add(Restrictions.in("event", event.getResourceKeys()));
 			}
 		});
 
-	}
-
-	@Override
-	public TriggerAction getActionById(Long id) {
-		return get("id", id, TriggerAction.class);
 	}
 
 	@Override
@@ -86,8 +82,8 @@ public class TriggerResourceRepositoryImpl extends
 	}
 
 	@Override
-	public Collection<TriggerAction> getActionsByResourceKey(final String resourceKey) {
-		return list(TriggerAction.class, true, new CriteriaConfiguration() {
+	public Collection<TriggerResource> getActionsByResourceKey(final String resourceKey) {
+		return list(TriggerResource.class, true, new CriteriaConfiguration() {
 			
 			@Override
 			public void configure(Criteria criteria) {
@@ -96,9 +92,11 @@ public class TriggerResourceRepositoryImpl extends
 		});
 	}
 
-	@Override
-	public TriggerAction getActionByPostTriggerId(TriggerResource id) {
-		return get("postExecutionTrigger", id, TriggerAction.class);
+	protected void processDefaultCriteria(Criteria criteria) {
+		criteria.add(Restrictions.isNull("parentTrigger"));
 	}
 
+	protected void processDefaultCriteria(DetachedCriteria criteria) {
+		criteria.add(Restrictions.isNull("parentTrigger"));
+	}
 }
