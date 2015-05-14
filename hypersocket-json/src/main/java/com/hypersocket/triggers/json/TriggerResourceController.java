@@ -39,7 +39,6 @@ import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.DataTablesResult;
 import com.hypersocket.tables.json.DataTablesPageProcessor;
 import com.hypersocket.tasks.TaskProviderService;
-import com.hypersocket.triggers.TriggerAction;
 import com.hypersocket.triggers.TriggerCondition;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.TriggerResourceColumns;
@@ -182,7 +181,7 @@ public class TriggerResourceController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<EventDefinition> getParentEventDefinitions(HttpServletRequest request, @PathVariable Long id)
 			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
+			SessionTimeoutException, ResourceNotFoundException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
@@ -212,7 +211,7 @@ public class TriggerResourceController extends ResourceController {
 		
 			List<EventDefinition> events = new ArrayList<EventDefinition>();
 
-			TriggerAction action = resourceService.getActionById(id);
+			TriggerResource action = resourceService.getResourceById(id);
 			
 			for(String resourceKey : taskService.getTaskProvider(action.getResourceKey()).getResultResourceKeys()) {
 				events.add(eventService.getEventDefinition(resourceKey));
@@ -244,55 +243,38 @@ public class TriggerResourceController extends ResourceController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "triggers/actions", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "triggers/tasks", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<String> getActions(HttpServletRequest request)
+	public ResourceList<SelectOption> getTasks(HttpServletRequest request)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-
-			return new ResourceList<String>(taskService.getTriggerTasks());
+			List<SelectOption> result = new ArrayList<SelectOption>();
+			for(String task : resourceService.getTasks()) {
+				result.add(new SelectOption(task, task));
+			}
+			return new ResourceList<SelectOption>(result);
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "triggers/action/template/{action}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "triggers/task/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<PropertyCategory> getActionsTemplate(
-			HttpServletRequest request, @PathVariable String action)
+			HttpServletRequest request, @PathVariable String resourceKey)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
 			return new ResourceList<PropertyCategory>(taskService
-					.getTaskProvider(action).getPropertyTemplate());
-		} finally {
-			clearAuthenticatedContext();
-		}
-	}
-
-	@AuthenticationRequired
-	@RequestMapping(value = "triggers/action/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<PropertyCategory> getActionTemplate(
-			HttpServletRequest request, @PathVariable Long id)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			TriggerAction action = resourceService.getActionById(id);
-			return new ResourceList<PropertyCategory>(taskService
-					.getTaskProvider(action.getResourceKey())
-					.getProperties(action));
+					.getTaskProvider(resourceKey).getPropertyTemplate());
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -353,33 +335,12 @@ public class TriggerResourceController extends ResourceController {
 
 			Realm realm = sessionUtils.getCurrentRealm(request);
 
-			List<TriggerAction> actions = new ArrayList<TriggerAction>();
 			List<TriggerCondition> allConditions = new ArrayList<TriggerCondition>();
 			List<TriggerCondition> anyConditions = new ArrayList<TriggerCondition>();
 
-			TriggerAction parentAction = null;
+			TriggerResource parentAction = null;
 			if(resource.getParentId()!=null) {
-				parentAction = resourceService.getActionById(resource.getParentId());
-			}
-			for (TriggerActionUpdate a : resource.getActions()) {
-				TriggerAction action;
-				if (a.isNewAction()) {
-					action = new TriggerAction();
-				} else {
-					action = resourceService.getActionById(a.getId());
-				}
-				action.setName(a.getName());
-				action.setRealm(realm);
-				action.setResourceKey(a.getResourceKey());
-				if (a.getProperties() != null) {
-					Map<String, String> properties = new HashMap<String, String>();
-					for (PropertyItem prop : a.getProperties()) {
-						properties.put(prop.getId(), prop.getValue());
-					}
-					action.setProperties(properties);
-				}
-				actions.add(action);
-
+				parentAction = resourceService.getResourceById(resource.getParentId());
 			}
 
 			for (TriggerConditionUpdate c : resource.getAllConditions()) {
@@ -418,13 +379,14 @@ public class TriggerResourceController extends ResourceController {
 						resourceService.getResourceById(resource.getId()),
 						resource.getName(), resource.getEvent(),
 						TriggerResultType.valueOf(resource.getResult()),
+						resource.getTask(),
 						properties,
-						allConditions, anyConditions, actions, parentAction);
+						allConditions, anyConditions, parentAction);
 			} else {
 				newResource = resourceService.createResource(
 						resource.getName(), resource.getEvent(),
-						TriggerResultType.valueOf(resource.getResult()), properties, realm,
-						allConditions, anyConditions, actions, parentAction);
+						TriggerResultType.valueOf(resource.getResult()), resource.getTask(), properties, realm,
+						allConditions, anyConditions, parentAction);
 			}
 			return new ResourceStatus<TriggerResource>(newResource,
 					I18N.getResource(sessionUtils.getLocale(request),
