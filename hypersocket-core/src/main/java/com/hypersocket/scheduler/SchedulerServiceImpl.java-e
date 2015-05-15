@@ -1,10 +1,13 @@
 package com.hypersocket.scheduler;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -44,6 +47,7 @@ import com.hypersocket.scheduler.events.SchedulerResourceCreatedEvent;
 import com.hypersocket.scheduler.events.SchedulerResourceDeletedEvent;
 import com.hypersocket.scheduler.events.SchedulerResourceEvent;
 import com.hypersocket.scheduler.events.SchedulerResourceUpdatedEvent;
+import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Service
@@ -54,7 +58,7 @@ public class SchedulerServiceImpl extends
 	static Logger log = LoggerFactory.getLogger(SchedulerServiceImpl.class);
 
 	Scheduler scheduler;
-	
+
 	@Autowired
 	I18NService i18nService;
 
@@ -63,12 +67,15 @@ public class SchedulerServiceImpl extends
 
 	@Autowired
 	SchedulerResourceRepository repository;
-	
+
 	@Autowired
 	EntityResourcePropertyStore entityPropertyStore;
-	
+
 	@Autowired
 	EventService eventService;
+
+	public static Long SEQUENCE_GEN = 0L;
+	Map<String, SchedulerResource> cachedResources = new HashMap<String, SchedulerResource>();
 
 	Map<String, JobKey> jobKeys = new HashMap<String, JobKey>();
 	Map<String, TriggerKey> triggerKeys = new HashMap<String, TriggerKey>();
@@ -80,19 +87,16 @@ public class SchedulerServiceImpl extends
 		scheduler.start();
 		repository.loadPropertyTemplates("schedulerResourceTemplate.xml");
 		i18nService.registerBundle(RESOURCE_BUNDLE);
-		eventService.registerEvent(
-				SchedulerResourceEvent.class, RESOURCE_BUNDLE,
+		eventService.registerEvent(SchedulerResourceEvent.class,
+				RESOURCE_BUNDLE, this);
+		eventService.registerEvent(SchedulerResourceCreatedEvent.class,
+				RESOURCE_BUNDLE, this);
+		eventService.registerEvent(SchedulerResourceUpdatedEvent.class,
+				RESOURCE_BUNDLE, this);
+		eventService.registerEvent(SchedulerResourceDeletedEvent.class,
+				RESOURCE_BUNDLE, this);
+		entityPropertyStore.registerResourceService(SchedulerResource.class,
 				this);
-		eventService.registerEvent(
-				SchedulerResourceCreatedEvent.class, RESOURCE_BUNDLE,
-				this);
-		eventService.registerEvent(
-				SchedulerResourceUpdatedEvent.class, RESOURCE_BUNDLE,
-				this);
-		eventService.registerEvent(
-				SchedulerResourceDeletedEvent.class, RESOURCE_BUNDLE,
-				this);
-		entityPropertyStore.registerResourceService(SchedulerResource.class, this);
 	}
 
 	@Override
@@ -268,22 +272,26 @@ public class SchedulerServiceImpl extends
 					+ (end != null ? " until "
 							+ HypersocketUtils.formatDate(end) : ""));
 		}
-		JobDetail job = JobBuilder.newJob(clz).build();
+		JobDetail job = JobBuilder.newJob(clz).withIdentity(uuid).build();
+
 		jobKeys.put(uuid, job.getKey());
 
 		Trigger trigger = createTrigger(data, start, interval, repeat, end);
-
 		triggerKeys.put(uuid, trigger.getKey());
 		scheduler.scheduleJob(job, trigger);
-		
+		Map<String, String> properties = new HashMap<String, String>();
+		properties.put(
+				"started",
+				(start == null ? HypersocketUtils.formatDate(new Date(),
+						"yyyy/MM/dd HH:mm") : HypersocketUtils.formatDate(
+						start, "yyyy/MM/dd HH:mm")));
+		properties.put("intervals", String.valueOf((interval / 60000)));
 		try {
-			createResource(uuid, getCurrentRealm(), new HashMap<String,String>());
+			createResource(uuid, getCurrentRealm(), properties);
 		} catch (ResourceCreationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("Error in create resource for schedule ", e);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("Error in create resource for schedule ", e);
 		}
 		return uuid;
 	}
@@ -296,7 +304,6 @@ public class SchedulerServiceImpl extends
 		if (data != null) {
 			triggerBuilder.usingJobData(data);
 		}
-
 		if (interval > 0) {
 			SimpleScheduleBuilder schedule = SimpleScheduleBuilder
 					.simpleSchedule();
@@ -343,6 +350,20 @@ public class SchedulerServiceImpl extends
 					interval, repeat, end);
 			scheduler.rescheduleJob(triggerKey, trigger);
 			triggerKeys.put(id, trigger.getKey());
+			Map<String, String> properties = new HashMap<String, String>();
+			properties.put(
+					"started",
+					(start == null ? HypersocketUtils.formatDate(new Date(),
+							"yyyy/MM/dd HH:mm") : HypersocketUtils.formatDate(
+							start, "yyyy/MM/dd HH:mm")));
+			properties.put("intervals", String.valueOf((interval / 60000)));
+			try {
+				updateResource(cachedResources.get(id), properties);
+			} catch (ResourceChangeException e) {
+				log.error("Error in update resource for schedule ", e);
+			} catch (Exception e) {
+				log.error("Error in update resource for schedule ", e);
+			}
 
 		} else {
 			cancelNow(id);
@@ -359,7 +380,7 @@ public class SchedulerServiceImpl extends
 
 		triggerKeys.remove(id);
 		JobKey jobKey = jobKeys.remove(id);
-
+		cachedResources.remove(id);
 		if (scheduler.checkExists(jobKey)) {
 			scheduler.deleteJob(jobKey);
 		}
@@ -380,58 +401,12 @@ public class SchedulerServiceImpl extends
 	}
 
 	@Override
-	public void getSheduledJobs() throws SchedulerException {
-		System.out.println("call for jobs");
-		for (String group : scheduler.getJobGroupNames()) {
-			System.out.println("Registered groups :" + group);
-			// enumerate each job in group
-			for (JobKey jobKey : scheduler.getJobKeys(GroupMatcher
-					.jobGroupEquals(group))) {
-				System.out.println("++++++++++++++++++++++++++++");
-				System.out.println("Found job identified by: " + jobKey
-						+ " , name :" + jobKey.getName());
-				JobDetail detail = scheduler.getJobDetail(jobKey);
-				System.out.println(" Job detail :" + detail);
-				List<? extends Trigger> triggersOfJob = scheduler
-						.getTriggersOfJob(jobKey);
-				for (Trigger trigger : triggersOfJob) {
-					System.out.println("Triger.........");
-					System.out.println("Data class :"
-							+ trigger.getJobDataMap().getClass().getName());
-					System.out.println("Job Data : ");
-					if (trigger.getJobDataMap() instanceof PermissionsAwareJobData) {
-						PermissionsAwareJobData data = (PermissionsAwareJobData) trigger
-								.getJobDataMap();
-						System.out.println("Name :" + data.getName());
-						System.out.println("Job type :" + data.getJobType());
-						/*
-						 * for(String key :trigger.getJobDataMap().getKeys()){
-						 * System.out.println("Key : "+key); }
-						 */
-
-					} else {
-						for (String key : trigger.getJobDataMap().getKeys()) {
-							System.out.println("Key : " + key);
-						}
-					}
-					System.out.println("Last fire time :"
-							+ trigger.getPreviousFireTime());
-					System.out.println("Next fire time :"
-							+ trigger.getNextFireTime());
-					System.out.println(trigger.toString());
-
-				}
-			}
-		}
-
-	}
-
-	@Override
-	public SchedulerResource updateResource(SchedulerResource resourceById,
+	public SchedulerResource updateResource(SchedulerResource resource,
 			String name, Map<String, String> properties)
 			throws ResourceChangeException, AccessDeniedException {
-		// TODO Auto-generated method stub
-		return null;
+		resource.setStarted(properties.get("started"));
+		resource.setIntervals(Integer.parseInt(properties.get("intervals")));
+		return resource;
 	}
 
 	@Override
@@ -440,16 +415,13 @@ public class SchedulerServiceImpl extends
 			AccessDeniedException {
 
 		SchedulerResource resource = new SchedulerResource();
+		resource.setId(++SEQUENCE_GEN);
 		resource.setName(name);
+		resource.setStarted(properties.get("started"));
+		resource.setIntervals(Integer.parseInt(properties.get("intervals")));
 		resource.setRealm(realm);
-		/**
-		 * Set any additional fields on your resource here before calling
-		 * createResource.
-		 * 
-		 * Remember to fill in the fire*Event methods to ensure events are fired
-		 * for all operations.
-		 */
-		createResource(resource, properties);
+		resource.setJobId(name);
+		cachedResources.put(name, resource);
 		return resource;
 	}
 
@@ -481,41 +453,85 @@ public class SchedulerServiceImpl extends
 	}
 
 	@Override
+	public List<SchedulerResource> searchResources(Realm realm, String search,
+			int start, int length, ColumnSort[] sorting)
+			throws AccessDeniedException {
+		List<SchedulerResource> list = new ArrayList<SchedulerResource>();
+		SchedulerResource schedulerResource = null;
+		JobKey jobKey = null;
+		try {
+			for (String group : scheduler.getJobGroupNames()) {
+				Set<JobKey> scheduleKeys = scheduler.getJobKeys(GroupMatcher
+						.jobGroupEquals(group));
+				Set<String> keySet = new HashSet<String>(
+						cachedResources.keySet());
+				for (String key : keySet) {
+					schedulerResource = cachedResources.get(key);
+					jobKey = new JobKey(schedulerResource.getJobId(), group);
+					if (scheduleKeys.contains(jobKey)) {
+						List<? extends Trigger> triggersOfJob = scheduler
+								.getTriggersOfJob(jobKey);
+						if (triggersOfJob.size() > 0) {
+							if (triggersOfJob.get(0).getJobDataMap()
+									.containsKey("jobName")) {
+								schedulerResource.setName(triggersOfJob.get(0)
+										.getJobDataMap().getString("jobName"));
+							}
+							if (triggersOfJob.get(0).getPreviousFireTime() != null) {
+								schedulerResource
+										.setLastExecuted(HypersocketUtils
+												.formatDate(triggersOfJob
+														.get(0)
+														.getPreviousFireTime(),
+														"yyyy/MM/dd HH:mm"));
+							}
+							schedulerResource.setNextExecute(HypersocketUtils
+									.formatDate(triggersOfJob.get(0)
+											.getNextFireTime(),
+											"yyyy/MM/dd HH:mm"));
+							list.add(schedulerResource);
+						}
+					} else {
+						cachedResources.remove(schedulerResource.getJobId());
+					}
+				}
+			}
+		} catch (SchedulerException e) {
+			log.error("Error in getting Scheduler list ", e);
+		}
+		return list;
+	}
+
+	@Override
 	protected void fireResourceCreationEvent(SchedulerResource resource) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	protected void fireResourceCreationEvent(SchedulerResource resource,
 			Throwable t) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	protected void fireResourceUpdateEvent(SchedulerResource resource) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	protected void fireResourceUpdateEvent(SchedulerResource resource,
 			Throwable t) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	protected void fireResourceDeletionEvent(SchedulerResource resource) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	protected void fireResourceDeletionEvent(SchedulerResource resource,
 			Throwable t) {
-		// TODO Auto-generated method stub
 
 	}
 
