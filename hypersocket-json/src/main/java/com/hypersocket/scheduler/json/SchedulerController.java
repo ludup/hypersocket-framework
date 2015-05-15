@@ -31,12 +31,12 @@ import com.hypersocket.tables.json.DataTablesPageProcessor;
 
 @Controller
 public class SchedulerController extends ResourceController {
-	
+
 	static Logger log = LoggerFactory.getLogger(SchedulerController.class);
-	
+
 	@Autowired
 	SchedulerService schedulerService;
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "schedulers/list", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
@@ -56,15 +56,14 @@ public class SchedulerController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "schedulers/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public DataTablesResult tableResources(
-			final HttpServletRequest request, HttpServletResponse response)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
+	public DataTablesResult tableResources(final HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
@@ -102,26 +101,4 @@ public class SchedulerController extends ResourceController {
 		}
 	}
 
-	
-	/*
-	@AuthenticationRequired
-	@RequestMapping(value = "scheduler/list", method = { RequestMethod.POST }, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public void getScheduleJobs(HttpServletRequest request, HttpServletResponse response)throws AccessDeniedException, UnauthorizedException,
-	SessionTimeoutException{
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try{
-			schedulerService.getSheduledJobs();
-		}catch(Exception e){
-			log.error("Failed to get scheduled jobs ",e);
-		}finally{
-			clearAuthenticatedContext();
-		}
-		
-	}
-	*/
-	
-	
 }

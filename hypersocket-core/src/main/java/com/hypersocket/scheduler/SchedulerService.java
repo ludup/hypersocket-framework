@@ -16,26 +16,27 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 
 public interface SchedulerService extends
-AbstractResourceService<SchedulerResource>{
+		AbstractResourceService<SchedulerResource> {
 
 	public static final String RESOURCE_BUNDLE = "SchedulerService";
-	
-	String scheduleNow(Class<? extends Job> clz, JobDataMap data, int interval) throws SchedulerException;
+
+	String scheduleNow(Class<? extends Job> clz, JobDataMap data, int interval)
+			throws SchedulerException;
 
 	String scheduleNow(Class<? extends Job> clz, JobDataMap data, int interval,
 			int repeat) throws SchedulerException;
-	
+
 	String scheduleNow(Class<? extends Job> clz, JobDataMap data)
 			throws SchedulerException;
 
 	String scheduleAt(Class<? extends Job> clz, JobDataMap data, Date start)
 			throws SchedulerException;
-	
-	String scheduleAt(Class<? extends Job> clz, JobDataMap data, Date start, int interval)
-			throws SchedulerException;
-	
-	String scheduleAt(Class<? extends Job> clz, JobDataMap data, Date start, int interval, int repeat)
-			throws SchedulerException;
+
+	String scheduleAt(Class<? extends Job> clz, JobDataMap data, Date start,
+			int interval) throws SchedulerException;
+
+	String scheduleAt(Class<? extends Job> clz, JobDataMap data, Date start,
+			int interval, int repeat) throws SchedulerException;
 
 	String scheduleIn(Class<? extends Job> clz, JobDataMap data, int millis)
 			throws SchedulerException;
@@ -52,20 +53,23 @@ AbstractResourceService<SchedulerResource>{
 	void rescheduleIn(String scheduleId, int millis, int interval)
 			throws SchedulerException, NotScheduledException;
 
-	void rescheduleIn(String scheduleId, int millis) throws SchedulerException, NotScheduledException;
+	void rescheduleIn(String scheduleId, int millis) throws SchedulerException,
+			NotScheduledException;
 
 	void rescheduleAt(String scheduleId, Date time, int interval, int repeat)
 			throws SchedulerException, NotScheduledException;
 
-	void rescheduleAt(String scheduleId, Date time, int interval, int repeat, Date end)
-			throws SchedulerException, NotScheduledException;
-	
+	void rescheduleAt(String scheduleId, Date time, int interval, int repeat,
+			Date end) throws SchedulerException, NotScheduledException;
+
 	void rescheduleAt(String scheduleId, Date time, int interval)
 			throws SchedulerException, NotScheduledException;
 
-	void rescheduleAt(String scheduleId, Date time) throws SchedulerException, NotScheduledException;
+	void rescheduleAt(String scheduleId, Date time) throws SchedulerException,
+			NotScheduledException;
 
-	void rescheduleNow(String scheduleId) throws SchedulerException, NotScheduledException;
+	void rescheduleNow(String scheduleId) throws SchedulerException,
+			NotScheduledException;
 
 	void rescheduleNow(String scheduleId, int interval)
 			throws SchedulerException, NotScheduledException;
@@ -90,9 +94,7 @@ AbstractResourceService<SchedulerResource>{
 
 	String scheduleAt(Class<? extends Job> clz, JobDataMap data, Date start,
 			int interval, int repeat, Date ends) throws SchedulerException;
-	
-	void getSheduledJobs()throws SchedulerException;
-	
+
 	SchedulerResource updateResource(SchedulerResource resourceById,
 			String name, Map<String, String> properties)
 			throws ResourceChangeException, AccessDeniedException;
@@ -106,6 +108,5 @@ AbstractResourceService<SchedulerResource>{
 
 	Collection<PropertyCategory> getPropertyTemplate(SchedulerResource resource)
 			throws AccessDeniedException;
-
 
 }
