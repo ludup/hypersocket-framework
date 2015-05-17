@@ -5,27 +5,18 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.hypersocket.scheduler.SchedulerResource;
 import com.hypersocket.session.Session;
 
-public class SchedulerResourceCreatedEvent extends
-		SchedulerResourceEvent {
+public class SchedulerResourceCreatedEvent extends SchedulerResourceEvent {
 
-	/**
-	 * TODO rename to suit your resource and replace <resource> with lower case
-	 * name of your resource.
-	 * 
-	 * You typically add attributes to the base TemplateAssignableResourceEvent class
-	 * so these can be reused across all resource events.
-	 */
+	private static final long serialVersionUID = -6763277077845079802L;
 	public static final String EVENT_RESOURCE_KEY = "scheduler.created";
-	
-	public SchedulerResourceCreatedEvent(Object source,
-			Session session,
+
+	public SchedulerResourceCreatedEvent(Object source, Session session,
 			SchedulerResource resource) {
 		super(source, EVENT_RESOURCE_KEY, session, resource);
 	}
 
 	public SchedulerResourceCreatedEvent(Object source,
-			SchedulerResource resource, Throwable e,
-			Session session) {
+			SchedulerResource resource, Throwable e, Session session) {
 		super(source, EVENT_RESOURCE_KEY, resource, e, session);
 	}
 

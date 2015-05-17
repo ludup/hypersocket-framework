@@ -7,6 +7,7 @@ import com.hypersocket.session.Session;
 
 public class SchedulerResourceDeletedEvent extends SchedulerResourceEvent {
 
+	private static final long serialVersionUID = -7069066344569181990L;
 	public static final String EVENT_RESOURCE_KEY = "scheduler.deleted";
 
 	public SchedulerResourceDeletedEvent(Object source, Session session,

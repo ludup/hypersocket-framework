@@ -10,6 +10,7 @@ public class SchedulerResourceEvent extends AssignableResourceEvent {
 
 	// public static final String ATTR_NAME = "attr.name";
 
+	private static final long serialVersionUID = -5982908195483181087L;
 	public static final String EVENT_RESOURCE_KEY = "scheduler.event";
 
 	public SchedulerResourceEvent(Object source, String resourceKey,

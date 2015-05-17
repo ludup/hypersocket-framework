@@ -7,6 +7,7 @@ import com.hypersocket.session.Session;
 
 public class SchedulerResourceUpdatedEvent extends SchedulerResourceEvent {
 
+	private static final long serialVersionUID = -784245216689480508L;
 	public static final String EVENT_RESOURCE_KEY = "scheduler.updated";
 
 	public SchedulerResourceUpdatedEvent(Object source, Session session,
