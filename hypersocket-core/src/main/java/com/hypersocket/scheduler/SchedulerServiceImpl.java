@@ -55,6 +55,10 @@ public class SchedulerServiceImpl extends
 		AbstractResourceServiceImpl<SchedulerResource> implements
 		SchedulerService {
 
+	protected SchedulerServiceImpl() {
+		super("Schedulers");
+	}
+
 	static Logger log = LoggerFactory.getLogger(SchedulerServiceImpl.class);
 
 	Scheduler scheduler;
@@ -477,6 +481,7 @@ public class SchedulerServiceImpl extends
 								schedulerResource.setName(triggersOfJob.get(0)
 										.getJobDataMap().getString("jobName"));
 							}
+
 							if (triggersOfJob.get(0).getPreviousFireTime() != null) {
 								schedulerResource
 										.setLastExecuted(HypersocketUtils
@@ -489,7 +494,15 @@ public class SchedulerServiceImpl extends
 									.formatDate(triggersOfJob.get(0)
 											.getNextFireTime(),
 											"yyyy/MM/dd HH:mm"));
-							list.add(schedulerResource);
+							String searchCritria = search.substring(0,
+									search.length() - 1);
+							if (searchCritria.equals("")) {
+								list.add(schedulerResource);
+							} else if (schedulerResource.getName()
+									.toUpperCase()
+									.startsWith(searchCritria.toUpperCase())) {
+								list.add(schedulerResource);
+							}
 						}
 					} else {
 						cachedResources.remove(schedulerResource.getJobId());
@@ -499,7 +512,16 @@ public class SchedulerServiceImpl extends
 		} catch (SchedulerException e) {
 			log.error("Error in getting Scheduler list ", e);
 		}
-		return list;
+		return getPage(list, start, length);
+	}
+
+	private List<SchedulerResource> getPage(List<SchedulerResource> resources,
+			int start, int length) {
+		if (resources.size() < (start + length)) {
+			return resources.subList(start, resources.size());
+		} else {
+			return resources.subList(start, (start + length - 1));
+		}
 	}
 
 	@Override
@@ -533,6 +555,17 @@ public class SchedulerServiceImpl extends
 	protected void fireResourceDeletionEvent(SchedulerResource resource,
 			Throwable t) {
 
+	}
+
+	@Override
+	protected Class<SchedulerResource> getResourceClass() {
+		return SchedulerResource.class;
+	}
+
+	@Override
+	public long getResourceCount(Realm realm, String search)
+			throws AccessDeniedException {
+		return cachedResources.size();
 	}
 
 }
