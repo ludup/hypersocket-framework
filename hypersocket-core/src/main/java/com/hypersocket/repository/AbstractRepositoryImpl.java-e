@@ -193,15 +193,6 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			if(log.isWarnEnabled()) {
 				log.warn("Too many results returned in get request for column=" + column + " value=" + value + " class=" + cls.getName());
 			}
-			if(log.isInfoEnabled()) {
-				log.info("Cleaning up erroneous database entries");
-			}
-			for(int i=1;i<results.size();i++) {
-				delete(results.get(i));
-			}
-			if(log.isInfoEnabled()) {
-				log.info("Completed clean up");
-			}
 		}
 		return (T)results.get(0);
 	}

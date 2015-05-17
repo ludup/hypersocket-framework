@@ -81,6 +81,10 @@ public class AutomationResourceServiceImpl extends
 	@Autowired
 	RealmRepository realmRepository;
 
+	public AutomationResourceServiceImpl() {
+		super("automationResource");
+	}
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -130,7 +134,11 @@ public class AutomationResourceServiceImpl extends
 	public Class<AutomationResourcePermission> getPermissionType() {
 		return AutomationResourcePermission.class;
 	}
-
+	
+	protected Class<AutomationResource> getResourceClass() {
+		return AutomationResource.class;
+	}
+	
 	@Override
 	protected void fireResourceCreationEvent(AutomationResource resource) {
 		eventService.publishEvent(new AutomationResourceCreatedEvent(this,

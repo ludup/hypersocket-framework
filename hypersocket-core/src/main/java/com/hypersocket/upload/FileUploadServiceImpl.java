@@ -59,6 +59,10 @@ public class FileUploadServiceImpl extends
 	@Autowired
 	EventService eventService;
 
+	public FileUploadServiceImpl() {
+		super("fileUploads");
+	}
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -224,7 +228,11 @@ public class FileUploadServiceImpl extends
 	public Class<? extends PermissionType> getPermissionType() {
 		return FileUploadPermission.class;
 	}
-
+	
+	protected Class<FileUpload> getResourceClass() {
+		return FileUpload.class;
+	}
+	
 	@Override
 	protected void fireResourceCreationEvent(FileUpload resource) {
 	}

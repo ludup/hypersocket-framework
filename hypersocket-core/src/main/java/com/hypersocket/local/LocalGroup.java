@@ -40,13 +40,14 @@ public class LocalGroup extends Principal {
 		return PrincipalType.GROUP;
 	}
 	
+	public String getPrincipalDescription() {
+		return getName();
+	}
+	
 	@JsonIgnore
 	public Set<LocalUser> getUsers() {
 		return users;
 	}
-	
-	public String getPrincipalDesc() {
-		return "";
-	}
+
 
 }

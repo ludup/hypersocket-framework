@@ -20,8 +20,10 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @MappedSuperclass
+@JsonIgnoreProperties({"createDate", "modifiedDate"})
 public abstract class AbstractEntity<T> {
 
 	public abstract T getId();
