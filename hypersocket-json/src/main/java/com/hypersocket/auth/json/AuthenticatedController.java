@@ -171,6 +171,18 @@ public class AuthenticatedController {
 	protected void setupAuthenticatedContext(Session pricipal, Locale locale) {
 		authenticationService.setCurrentSession(pricipal, locale);
 	}
+	
+	protected Realm getCurrentRealm() {
+		return authenticationService.getCurrentRealm();
+	}
+	
+	protected Principal getCurrentPrincipal() {
+		return authenticationService.getCurrentPrincipal();
+	}
+	
+	protected Session getCurrentSession() {
+		return authenticationService.getCurrentSession();
+	}
 
 	protected void setupAuthenticatedContext(Principal principal,
 			Locale locale, Realm realm) {
