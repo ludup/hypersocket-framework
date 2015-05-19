@@ -242,7 +242,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 		registerPropertyItem(cat, configPropertyStore, attr.getVariableName(),
 				attr.generateMetaData(), "", attr.getWeight(),
 				attr.getHidden(), attr.getReadOnly(), attr.getDefaultValue(),
-				true, attr.getEncrypted());
+				true, attr.getEncrypted(), false);
 	}
 
 	private void loadAttributeTemplates(String context) {
@@ -349,6 +349,9 @@ public abstract class ResourceTemplateRepositoryImpl extends
 											.equalsIgnoreCase("true"),
 							pnode.hasAttribute("encrypted")
 									&& pnode.getAttribute("encrypted")
+											.equalsIgnoreCase("true"),
+							pnode.hasAttribute("defaultValuePropertyValue")
+									&& pnode.getAttribute("defaultValuePropertyValue")
 											.equalsIgnoreCase("true"));
 				} catch (Throwable e) {
 					log.error("Failed to register property item", e);
@@ -402,7 +405,8 @@ public abstract class ResourceTemplateRepositoryImpl extends
 	private void registerPropertyItem(PropertyCategory category,
 			PropertyStore propertyStore, String resourceKey, String metaData,
 			String mapping, int weight, boolean hidden, boolean readOnly,
-			String defaultValue, boolean isVariable, boolean encrypted) {
+			String defaultValue, boolean isVariable, boolean encrypted,
+			boolean defaultValuePropertyValue) {
 
 		if (log.isInfoEnabled()) {
 			log.info("Registering property " + resourceKey);
@@ -449,6 +453,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 		template.setMapping(mapping);
 		template.setCategory(category);
 		template.setEncrypted(encrypted);
+		template.setDefaultValuePropertyValue(defaultValuePropertyValue);
 		template.setPropertyStore(propertyStore);
 
 		propertyStore.registerTemplate(template, resourceXmlPath);

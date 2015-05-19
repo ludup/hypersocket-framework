@@ -81,6 +81,18 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		return getPermission("DELETE");
 	}
 
+	protected PermissionType getUpdatePermission(T resource) {
+		return getUpdatePermission();
+	}
+
+	protected PermissionType getCreatePermission(T resource) {
+		return getCreatePermission();
+	}
+
+	protected PermissionType getDeletePermission(T resource) {
+		return getDeletePermission();
+	}
+	
 	protected PermissionType getReadPermission() {
 		return getPermission("READ");
 	}
@@ -112,7 +124,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			AccessDeniedException {
 
 		if(assertPermissions) {
-			assertPermission(getCreatePermission());
+			assertPermission(getCreatePermission(resource));
 		}
 		if(resource.getRealm()==null) {
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
@@ -179,7 +191,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			AccessDeniedException {
 		
 		if(assertPermissions) {
-			assertPermission(getUpdatePermission());
+			assertPermission(getUpdatePermission(resource));
 		}
 
 		try {
@@ -211,7 +223,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			AccessDeniedException {
 
 		if(assertPermissions) {
-			assertPermission(getDeletePermission());
+			assertPermission(getDeletePermission(resource));
 		}
 		
 		try {

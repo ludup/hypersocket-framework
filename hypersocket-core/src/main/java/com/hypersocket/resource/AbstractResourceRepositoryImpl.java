@@ -71,13 +71,14 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	@SafeVarargs
 	public final void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) {
 		
+		setValues(resource, properties);
+
 		beforeSave(resource, properties);
 		
 		for(TransactionOperation<T> op : ops) {
 			op.beforeOperation(resource, properties);
 		}
 		
-		setValues(resource, properties);
 		save(resource);
 		
 		afterSave(resource, properties);
