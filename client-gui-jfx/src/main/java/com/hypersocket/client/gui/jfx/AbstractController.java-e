@@ -96,4 +96,9 @@ public class AbstractController implements FramedController, Listener {
 		System.out.println("[[DISCONNECTED " + connection.getId() + " " + e + "]]");
 		stateChanged();								
 	}
+
+	@Override
+	public Scene getScene() {
+		return scene;
+	}
 }

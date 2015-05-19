@@ -1,41 +1,44 @@
 package com.hypersocket.client.gui.jfx;
 
+import javafx.application.ConditionalFeature;
+import javafx.application.Platform;
+import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
 public class Popup extends Stage {
 
+	private boolean sizeObtained;
+
 	public Popup(Window parent, Scene scene) {
 		this(parent, scene, true);
 	}
 
 	public Popup(Window parent, Scene scene, boolean dismissOnFocusLost) {
-		super(StageStyle.UNDECORATED);
+		super(Platform.isSupported(ConditionalFeature.TRANSPARENT_WINDOW) ? StageStyle.TRANSPARENT : StageStyle.UNDECORATED);
+		
 		initOwner(parent);
 		setScene(scene);
 
-		// This is to align the window AFTER we know it's size. 
+		// This is to align the window AFTER we know it's size.
 		ChangeListener<? super Number> l = new ChangeListener<Number>() {
-
-			boolean widthObtained;
 
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (!widthObtained) {
-					setY(getOwner().getY() + getOwner().getHeight());
-					setX(getOwner().getX() + getOwner().getWidth() - getWidth());
-					widthObtained = true;
+				if (!sizeObtained) {
+					positionPopup();
+					sizeObtained = true;
 				}
 			}
 		};
 		widthProperty().addListener(l);
 
-		sizeToScene();
 		if (dismissOnFocusLost) {
 			focusedProperty().addListener(new ChangeListener<Boolean>() {
 
@@ -43,12 +46,59 @@ public class Popup extends Stage {
 				public void changed(
 						ObservableValue<? extends Boolean> observable,
 						Boolean oldValue, Boolean newValue) {
-					if (oldValue && !newValue) {
+
+					System.out.println("LOST FOCUS ON POPUP " + Popup.this
+							+ " NV: " + newValue + " CF: " + isChildFocussed());
+					if (oldValue && !newValue && !isChildFocussed()) {
+						System.out.println("CHILD NOT FOCUSSED: HIDING PARENT");
 						hide();
+						Platform.runLater(new Runnable() {
+							@Override
+							public void run() {
+								if (!parent.focusedProperty().get() && Configuration.getDefault().autoHideProperty().get()) {
+									((Stage) parent).setIconified(true);
+								}
+							}
+						});
 					}
 				}
 			});
 		}
+
+		// Watch for all changes and reposition this popup if appropriate
+		ChangeListener<Boolean> cl = new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				positionPopup();
+			}
+		};
+		Configuration cfg = Configuration.getDefault();
+		cfg.topProperty().addListener(cl);
+		cfg.bottomProperty().addListener(cl);
+		cfg.leftProperty().addListener(cl);
+		cfg.rightProperty().addListener(cl);
+		cfg.avoidReservedProperty().addListener(cl);
+		ChangeListener<Number> sl = new ChangeListener<Number>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Number> observable,
+					Number oldValue, Number newValue) {
+				positionPopup();
+			}
+		};
+		cfg.sizeProperty().addListener(sl);
+		
+
+		Property<Color> colorProperty = cfg.colorProperty();
+		colorProperty.addListener(new ChangeListener<Color>() {
+			@Override
+			public void changed(ObservableValue<? extends Color> observable,
+					Color oldValue, Color newValue) {
+				Client.setColors(scene);
+			}
+		});
+		Client.setColors(scene);
 	}
 
 	public void popupAndWait() {
@@ -60,11 +110,24 @@ public class Popup extends Stage {
 	}
 
 	public void popup() {
-
 		if (!isShowing()) {
+			positionPopup();
+			show();
+		}
+	}
+
+	protected boolean isChildFocussed() {
+		return false;
+	}
+
+	private void positionPopup() {
+		Configuration cfg = Configuration.getDefault();
+		if (cfg.topProperty().get()) {
 			setY(getOwner().getY() + getOwner().getHeight());
 			setX(getOwner().getX() + getOwner().getWidth() - getWidth());
-			show();
+		} else if (cfg.bottomProperty().get()) {
+			setY(getOwner().getY() - getHeight());
+			setX(getOwner().getX() + getOwner().getWidth() - getWidth());
 		}
 	}
 }

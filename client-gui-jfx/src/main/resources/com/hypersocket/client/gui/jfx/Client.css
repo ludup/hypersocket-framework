@@ -1,5 +1,7 @@
 * {
-    -fx-background: white;
+    /*-fx-background: transparent; -fx-text-fill: #000000; */
+    -fx-text-fill: inherit; 
+	
     DOCK_BUTTON_SELECT_HIGHLIGHT_FG: #ffffff;
     HIGHLIGHT_TEXT_COLOR: #5693BA;
     DOCK_BUTTON_HIGHLIGHT_COLOR: #5693BA;
@@ -10,14 +12,17 @@
 
 
 /* Main styles for the dock */
-.dock {
+.background {
+	-fx-background: transparent;
 }
 
 /* Dock icons */
-.dock .button{
+.dock .button {  
+	-fx-padding: 4 4 4 4;
     -fx-background-color: inherit;
 }
-.dock .toggle-button {
+.dock .toggle-button {    
+	-fx-padding: 4 4 4 4;
     -fx-background-color: inherit;
 }
 

@@ -1,27 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Options">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="background" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Options">
    <children>
-      <TabPane tabClosingPolicy="UNAVAILABLE">
+      <TabPane styleClass="background" tabClosingPolicy="UNAVAILABLE">
         <tabs>
           <Tab text="%appearance">
             <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0">
+              <AnchorPane minHeight="0.0" minWidth="0.0" styleClass="background">
                      <children>
-                        <BorderPane layoutX="14.0" layoutY="-10.0">
+                        <BorderPane layoutX="14.0" layoutY="-10.0" prefHeight="255.0" prefWidth="315.0" styleClass="background" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
                            <bottom>
-                              <HBox BorderPane.alignment="CENTER">
+                              <HBox alignment="CENTER" prefWidth="373.0" styleClass="background" BorderPane.alignment="CENTER">
                                  <children>
-                                    <Slider />
+                                    <Label alignment="CENTER" minWidth="48.0" styleClass="info" text="%size" textOverrun="CLIP">
+                                       <padding>
+                                          <Insets right="8.0" />
+                                       </padding>
+                                    </Label>
+                                    <Slider fx:id="size" prefWidth="96.0">
+                                       <padding>
+                                          <Insets right="8.0" />
+                                       </padding></Slider>
+                                    <Label alignment="CENTER" prefWidth="64.0" styleClass="info" text="%colour" textOverrun="CLIP">
+                                       <padding>
+                                          <Insets right="8.0" />
+                                       </padding>
+                                    </Label>
+                                    <ColorPicker fx:id="color" />
                                  </children>
                               </HBox>
                            </bottom>
                            <center>
-                              <GridPane BorderPane.alignment="CENTER">
+                              <GridPane alignment="CENTER" styleClass="background" BorderPane.alignment="CENTER">
                                 <columnConstraints>
                                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -33,18 +48,27 @@
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                 </rowConstraints>
                                  <children>
-                                    <Button mnemonicParsing="false" text="%left" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
-                                    <Button mnemonicParsing="false" text="%top" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
-                                    <Button mnemonicParsing="false" text="%bottom" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
-                                    <Button mnemonicParsing="false" text="%right" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                                    <ToggleButton fx:id="top" mnemonicParsing="false" text="%top" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+                                    <ToggleButton fx:id="bottom" mnemonicParsing="false" text="%bottom" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
+                                    <ToggleButton fx:id="left" disable="true" mnemonicParsing="false" text="%left" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                                    <ToggleButton fx:id="right" disable="true" mnemonicParsing="false" text="%right" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
                                  </children>
                               </GridPane>
                            </center>
                            <top>
-                              <VBox BorderPane.alignment="CENTER">
+                              <VBox styleClass="background" BorderPane.alignment="CENTER">
                                  <children>
-                                    <CheckBox mnemonicParsing="false" text="%avoidReserved" />
-                                    <CheckBox mnemonicParsing="false" text="%autohide" />
+                                    <CheckBox fx:id="avoidReserved" mnemonicParsing="false" text="%avoidReserved">
+                                       <VBox.margin>
+                                          <Insets top="8.0" />
+                                       </VBox.margin>
+                                       <tooltip>
+                                          <Tooltip text="%avoidReserved.toolTip" />
+                                       </tooltip></CheckBox>
+                                    <CheckBox fx:id="autoHide" mnemonicParsing="false" text="%autohide">
+                                       <VBox.margin>
+                                          <Insets top="8.0" />
+                                       </VBox.margin></CheckBox>
                                  </children>
                               </VBox>
                            </top>

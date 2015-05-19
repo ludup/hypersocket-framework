@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.rmi.RemoteException;
 import java.util.MissingResourceException;
 import java.util.Optional;
-import java.util.prefs.Preferences;
 
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
@@ -14,10 +13,10 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ToggleButton;
@@ -26,6 +25,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
@@ -41,9 +42,6 @@ import com.hypersocket.client.rmi.ResourceService;
 public class Dock extends AbstractController implements Listener {
 	static Logger log = LoggerFactory.getLogger(Main.class);
 
-	private Preferences preferences = Preferences
-			.userNodeForPackage(Dock.class);
-
 	private Popup signInPopup;
 	private Popup optionsPopup;
 
@@ -53,6 +51,8 @@ public class Dock extends AbstractController implements Listener {
 	private Button slideRight;
 	@FXML
 	private Button signIn;
+	@FXML
+	private Button options;
 	@FXML
 	private HBox shortcuts;
 	@FXML
@@ -65,8 +65,6 @@ public class Dock extends AbstractController implements Listener {
 	private ToggleButton ssoResources;
 	@FXML
 	private HBox shortcutContainer;
-	// @FXML
-	// private StackPane stack;
 
 	private TranslateTransition slideTransition;
 	private double offset;
@@ -76,14 +74,23 @@ public class Dock extends AbstractController implements Listener {
 	@Override
 	protected void onConfigure() {
 		super.onConfigure();
+
+		Configuration cfg = Configuration.getDefault();
+
 		setAvailable();
-		fileResources
-				.setSelected(preferences.getBoolean("fileResources", true));
-		browserResources.setSelected(preferences.getBoolean("browserResources",
-				true));
-		networkResources.setSelected(preferences.getBoolean("networkResources",
-				true));
-		ssoResources.setSelected(preferences.getBoolean("ssoResources", true));
+
+		networkResources.selectedProperty().bindBidirectional(
+				cfg.showNetworkProperty());
+
+		ssoResources.selectedProperty()
+				.bindBidirectional(cfg.showSSOProperty());
+
+		browserResources.selectedProperty().bindBidirectional(
+				cfg.showWebProperty());
+
+		fileResources.selectedProperty().bindBidirectional(
+				cfg.showWebProperty());
+
 		context.getBridge().addListener(this);
 
 		slideTransition = new TranslateTransition(Duration.seconds(0.5),
@@ -104,33 +111,46 @@ public class Dock extends AbstractController implements Listener {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-
-				double centre = getLaunchBarOffset();
-				slideLeft.disableProperty().set(centre > 0);
-				slideRight.disableProperty().set(centre > 0);
-				
-				
-				// offset = 100;
-				System.err.println("rebuild: offset: " + centre + " clip: "
-						+ slideClip.toString() + " " + offset + " barwidth: "
-						+ shortcuts.getBoundsInParent().getWidth() + "/"
-						+ shortcuts.getWidth() + "/"
-						+ shortcutContainer.getBoundsInLocal().getWidth()
-						+ " available: " + shortcutContainer.getWidth());
-				slideTransition.setFromX(shortcuts.getTranslateX());
-				slideTransition.setToX(centre);
-				slideTransition.play();
+				recentre();
 			}
 		};
 		shortcuts.widthProperty().addListener(l);
 
-		// shortcuts.layoutXProperty().bind(shortcutContainer.widthProperty().subtract(shortcuts.prefWidth(-1)).divide(2));
+		cfg.sizeProperty().addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable,
+					Number oldValue, Number newValue) {
+				recentre();
+				sizeButtons();
+			}
+		});
 
-		// Region clipRegion = new Region();
-		// clipRegion.w
-		//
-		// shortcuts.setClip(clipRegion);
 		rebuildIcons();
+		sizeButtons();
+		recentre();
+	}
+
+	public boolean arePopupsOpen() {
+		return (signInPopup != null && signInPopup.isShowing())
+				|| (optionsPopup != null && optionsPopup.isShowing());
+	}
+
+	private void recentre() {
+		double centre = getLaunchBarOffset();
+		slideLeft.disableProperty().set(centre > 0);
+		slideRight.disableProperty().set(centre > 0);
+
+		// offset = 100;
+		System.err.println("rebuild: offset: " + centre + " clip: "
+				+ slideClip.toString() + " " + offset + " barwidth: "
+				+ shortcuts.getBoundsInParent().getWidth() + "/"
+				+ shortcuts.getWidth() + "/"
+				+ shortcutContainer.getBoundsInLocal().getWidth()
+				+ " available: " + shortcutContainer.getWidth());
+		slideTransition.setFromX(shortcuts.getTranslateX());
+		slideTransition.setToX(centre);
+		slideTransition.stop();
+		slideTransition.play();
 	}
 
 	private double getLaunchBarOffset() {
@@ -140,32 +160,33 @@ public class Dock extends AbstractController implements Listener {
 
 	@FXML
 	private void evtSlideLeft() {
-		/* We should only get this action if the button is enabled, which means
-		 * at least one button is partially obscured on the left 
+		/*
+		 * We should only get this action if the button is enabled, which means
+		 * at least one button is partially obscured on the left
 		 */
-		
+
 		double scroll = 0;
 		boolean first = true;
-		for(Node n : shortcuts.getChildren()) {
-			
-			/* The position of the child within the container. When we find
-			 * a node that crosses '0', that is how much this single scroll
-			 * will adjust by, so completely revealing the hidden nide 
+		for (Node n : shortcuts.getChildren()) {
+
+			/*
+			 * The position of the child within the container. When we find a
+			 * node that crosses '0', that is how much this single scroll will
+			 * adjust by, so completely revealing the hidden nide
 			 */
 			double p = n.getLayoutX() + shortcuts.getTranslateX();
-			
-			double amt = p + n.getLayoutBounds().getWidth(); 
-			if(amt >=0) {
-				scroll =  n.getLayoutBounds().getWidth() - amt;
+
+			double amt = p + n.getLayoutBounds().getWidth();
+			if (amt >= 0) {
+				scroll = n.getLayoutBounds().getWidth() - amt;
 				System.out.println("Reveal " + scroll);
 				break;
-			}
-			else {
+			} else {
 				first = false;
 			}
 		}
 		slideLeft.disableProperty().set(first);
-		if(scroll >0) {
+		if (scroll > 0) {
 			slideRight.disableProperty().set(false);
 			slideTransition.setFromX(shortcuts.getTranslateX());
 			slideTransition.setToX(shortcuts.getTranslateX() + scroll);
@@ -175,26 +196,27 @@ public class Dock extends AbstractController implements Listener {
 
 	@FXML
 	private void evtSlideRight() {
-		/* We should only get this action if the button is enabled, which means
-		 * at least one button is partially obscured on the left 
+		/*
+		 * We should only get this action if the button is enabled, which means
+		 * at least one button is partially obscured on the left
 		 */
-		
+
 		double scroll = 0;
 		boolean last = true;
 		ObservableList<Node> c = shortcuts.getChildren();
-		for(int i = c.size() - 1 ; i >= 0 ; i--) {
+		for (int i = c.size() - 1; i >= 0; i--) {
 			Node n = c.get(i);
 			double p = n.getLayoutX() + shortcuts.getTranslateX();
-			if(p <= shortcutContainer.getWidth()) {
-				scroll = n.getLayoutBounds().getWidth() - ( shortcutContainer.getWidth() - p );
+			if (p <= shortcutContainer.getWidth()) {
+				scroll = n.getLayoutBounds().getWidth()
+						- (shortcutContainer.getWidth() - p);
 				break;
-			}
-			else {
+			} else {
 				last = false;
 			}
 		}
 		slideRight.disableProperty().set(last);
-		if(scroll >0) {
+		if (scroll > 0) {
 			slideLeft.disableProperty().set(false);
 			slideTransition.setFromX(shortcuts.getTranslateX());
 			slideTransition.setToX(shortcuts.getTranslateX() - scroll);
@@ -223,8 +245,8 @@ public class Dock extends AbstractController implements Listener {
 	private void evtOpenSignInWindow(ActionEvent evt) throws Exception {
 		Window parent = this.scene.getWindow();
 		if (signInPopup == null) {
-			Scene signInScene = context.openScene(SignIn.class);
-			signInPopup = new Popup(parent, signInScene);
+			FramedController signInScene = context.openScene(SignIn.class);
+			signInPopup = new Popup(parent, signInScene.getScene());
 		}
 		signInPopup.popup();
 	}
@@ -233,8 +255,25 @@ public class Dock extends AbstractController implements Listener {
 	private void evtOpenOptionsWindow(ActionEvent evt) throws Exception {
 		Window parent = this.scene.getWindow();
 		if (optionsPopup == null) {
-			Scene optionsScene = context.openScene(Options.class);
-			optionsPopup = new Popup(parent, optionsScene);
+			final FramedController optionsScene = context
+					.openScene(Options.class);
+			optionsPopup = new Popup(parent, optionsScene.getScene()) {
+				@SuppressWarnings("restriction")
+				protected boolean isChildFocussed() {
+					// HACK!
+					//
+					// When the custom colour dialog is focussed, there doesn't
+					// seem to be anyway of determining what the opposite
+					// component was the gained the focus. Being as that is
+					// the ONLY utility dialog, it should the one
+					for (Stage s : com.sun.javafx.stage.StageHelper.getStages()) {
+						if (s.getStyle() == StageStyle.UTILITY) {
+							return s.isShowing();
+						}
+					}
+					return false;
+				}
+			};
 		}
 		optionsPopup.popup();
 	}
@@ -242,6 +281,12 @@ public class Dock extends AbstractController implements Listener {
 	protected void onStateChanged() {
 		setAvailable();
 		rebuildIcons();
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				recentre();
+			}
+		});
 	}
 
 	private void rebuildIcons() {
@@ -255,94 +300,27 @@ public class Dock extends AbstractController implements Listener {
 					for (Resource r : resourceRealm.getResources()) {
 						switch (r.getType()) {
 						case SSO:
-							if (!ssoResources.isSelected()) {
+							if (!ssoResources.isSelected())
 								continue;
-							}
 							break;
 						case BROWSER:
-							if (!browserResources.isSelected()) {
+							if (!browserResources.isSelected())
 								continue;
-							}
 							break;
 						case FILE:
-							if (!fileResources.isSelected()) {
+							if (!fileResources.isSelected())
 								continue;
-							}
 							break;
 						case NETWORK:
-							if (!networkResources.isSelected()) {
+							if (!networkResources.isSelected())
 								continue;
-							}
 							break;
 						default:
 							break;
 						}
-						Button b = new Button();
-						b.setTextOverrun(OverrunStyle.CLIP);
-						b.setPrefHeight(56);
-						b.setPrefWidth(56);
-						b.getStyleClass().add("iconButton");
-						b.setOnAction((event) -> {
-							new Thread() {
-								public void run() {
-									System.out.println("Launch: "
-											+ r.getResourceLauncher().launch());
-								}
-							}.start();
-						});
-						Tooltip tt = new Tooltip(r.getName());
-						b.setTooltip(tt);
-						try {
-							if (r.getIcon() == null) {
-								b.setText(resources.getString("resource.icon."
-										+ r.getType().name()));
-							} else {
-
-								final ImageView imageView = new ImageView(
-										getClass().getResource(
-												"ajax-loader.gif").toString());
-								imageView.setFitHeight(32);
-								imageView.setFitWidth(32);
-								imageView.setPreserveRatio(true);
-								imageView.getStyleClass().add("launcherIcon");
-								b.setGraphic(imageView);
-
-								// Load the actual logo in a thread, it may take
-								// a short while
-								new Thread() {
-									public void run() {
-										try {
-											byte[] arr = context
-													.getBridge()
-													.getClientService()
-													.getBlob(
-															resourceRealm
-																	.getName(),
-															r.getIcon(), 10000);
-											final Image img = new Image(
-													new ByteArrayInputStream(
-															arr));
-											Platform.runLater(new Runnable() {
-												@Override
-												public void run() {
-													imageView.setImage(img);
-												}
-											});
-										} catch (RemoteException re) {
-											log.error("Failed to load icon.",
-													re);
-										}
-									}
-								}.start();
-							}
-						} catch (MissingResourceException mre) {
-							b.setText("%" + r.getType().name());
-						}
-						shortcuts.getChildren().add(b);
-						System.out.println("b: " + b.getPrefWidth() + " / "
-								+ b.getWidth() + " / "
-								+ b.getBoundsInLocal().getWidth() + " / "
-								+ b.getBoundsInParent().getWidth());
+						shortcuts.getChildren().add(
+								createLauncherButtonForResource(resourceRealm,
+										r));
 
 					}
 				}
@@ -350,26 +328,100 @@ public class Dock extends AbstractController implements Listener {
 				log.error("Failed to get resources.", e);
 			}
 		}
+	}
 
-		// Now need to centre the bar based on the new icons
+	private Button createLauncherButtonForResource(ResourceRealm resourceRealm,
+			Resource r) {
+		Button b = new Button();
+		b.setTextOverrun(OverrunStyle.CLIP);
+		sizeButton(b);
+		b.getStyleClass().add("iconButton");
+		b.setOnAction((event) -> {
+			new Thread() {
+				public void run() {
+					System.out.println("Launch: "
+							+ r.getResourceLauncher().launch());
+				}
+			}.start();
+		});
+		Tooltip tt = new Tooltip(r.getName());
+		b.setTooltip(tt);
+		try {
+			if (r.getIcon() == null) {
+				b.setText(resources.getString("resource.icon."
+						+ r.getType().name()));
+			} else {
 
-		// shortcuts.layout();
-		// shortcutContainer.layout();
-		//
-		// double centre = (shortcutContainer.getWidth() - shortcuts.getWidth())
-		// / 2d;
-		// // offset = 100;
-		// System.err.println("rebuild: offset: " + centre + " clip: "
-		// + slideClip.toString() + " " + offset + " barwidth: "
-		// + shortcuts.getBoundsInParent().getWidth() + "/"
-		// + shortcuts.getWidth() + "/"
-		// + shortcutContainer.getBoundsInLocal().getWidth()
-		// + " available: " + shortcutContainer.getWidth());
-		// slideTransition.setToX(centre);
-		// slideTransition.play();
+				final ImageView imageView = new ImageView(getClass()
+						.getResource("ajax-loader.gif").toString());
+				imageView.setFitHeight(32);
+				imageView.setFitWidth(32);
+				imageView.setPreserveRatio(true);
+				imageView.getStyleClass().add("launcherIcon");
+				b.setGraphic(imageView);
 
-		// left off: Rectangle[x=0.0, y=0.0, width=1315.0, height=64.0,
-		// fill=0x000000ff] 0 barwidth: 310.0 available: 1315.0
+				// Load the actual logo in a thread, it may take
+				// a short while
+				new Thread() {
+					public void run() {
+						try {
+							byte[] arr = context
+									.getBridge()
+									.getClientService()
+									.getBlob(resourceRealm.getName(),
+											r.getIcon(), 10000);
+							final Image img = new Image(
+									new ByteArrayInputStream(arr));
+							Platform.runLater(new Runnable() {
+								@Override
+								public void run() {
+									imageView.setImage(img);
+									sizeButton(b);
+								}
+							});
+						} catch (RemoteException re) {
+							log.error("Failed to load icon.", re);
+						}
+					}
+				}.start();
+			}
+		} catch (MissingResourceException mre) {
+			b.setText("%" + r.getType().name());
+		}
+		return b;
+	}
+
+	private void sizeButtons() {
+		sizeButton(networkResources);
+		sizeButton(fileResources);
+		sizeButton(ssoResources);
+		sizeButton(browserResources);
+		sizeButton(slideLeft);
+		sizeButton(slideRight);
+		sizeButton(signIn);
+		sizeButton(options);
+		for (Node n : shortcuts.getChildren()) {
+			sizeButton((ButtonBase) n);
+		}
+	}
+
+	private void sizeButton(ButtonBase button) {
+		Configuration cfg = Configuration.getDefault();
+		int sz = cfg.sizeProperty().get();
+		int df = sz / 8;
+		sz -= df;
+		if (button.getGraphic() != null) {
+			ImageView iv = ((ImageView) button.getGraphic());
+			iv.setFitWidth(sz - df);
+			iv.setFitHeight(sz - df);
+		} else {
+			int fs = (int) ((float) sz * 0.6f);
+			button.setStyle("-fx-font-size: " + fs + "px;");
+		}
+		button.setMinSize(sz, sz);
+		button.setMaxSize(sz, sz);
+		button.setPrefSize(sz, sz);
+		button.layout();
 	}
 
 	private void setAvailable() {
