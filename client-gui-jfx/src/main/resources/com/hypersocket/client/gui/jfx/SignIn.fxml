@@ -5,7 +5,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="260.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.SignIn">
+<VBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="background" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.SignIn">
    <children>
       <Label text="%serverURL">
          <padding>
@@ -13,7 +13,7 @@
          </padding>
       </Label>
       <ComboBox fx:id="serverUrls" editable="true" onAction="#evtServerUrlSelected" prefHeight="25.0" prefWidth="270.0" />
-      <BorderPane>
+      <BorderPane styleClass="background">
          <right>
             <CheckBox fx:id="saveConnection" alignment="CENTER_RIGHT" mnemonicParsing="false" styleClass="info" text="%saveConnection" BorderPane.alignment="CENTER">
                <padding>
@@ -45,7 +45,7 @@
          </padding>
       </Label>
       <PasswordField fx:id="password" />
-      <BorderPane>
+      <BorderPane styleClass="background">
          <center>
             <CheckBox fx:id="saveCredentials" mnemonicParsing="false" styleClass="info" text="%saveCredentials" BorderPane.alignment="CENTER_RIGHT" />
          </center>

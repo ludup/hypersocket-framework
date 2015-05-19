@@ -8,6 +8,8 @@ import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.javafx.application.LauncherImpl;
+
 public class Main {
 
 	static Logger log = LoggerFactory.getLogger(Main.class);
@@ -34,14 +36,23 @@ public class Main {
 		}
 	}
 
+	/* NOTE: LauncherImpl has to be used, as Application.launch() tests where
+	 * the main() method was invoked from by examining the stack (stupid 
+	 * stupid stupid technique!). Because we are launched from BoostrapMain,
+	 * this is what it detects. To work around this LauncherImpl.launchApplication()
+	 * is used directly, which is an internal API.
+	 */
+	@SuppressWarnings("restriction")
 	public void run() {
 
 		try {
-			if (System.getSecurityManager() == null) {
-				System.setSecurityManager(new SecurityManager());
-			}
+//			if (!"true".equals(System.getProperty("hsjfx.nosecurity")) && System.getSecurityManager() == null) {
+//				System.setSecurityManager(new SecurityManager());
+//			}
 
-			Client.launch();
+			// :(
+			LauncherImpl.launchApplication(Client.class, null, new String[0]);
+//			Client.launch();
 
 		} catch (Exception e) {
 			e.printStackTrace();
