@@ -23,6 +23,7 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -305,6 +306,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 	@Override
 	public Realm getRealmByHost(String host, Realm defaultRealm) {
 
+		if(StringUtils.isBlank(host)) {
+			return defaultRealm;
+		}
+		
 		if (!realmCache.isElementInMemory(host)
 				|| (realmCache.get(host) == null || realmCache
 						.isExpired(realmCache.get(host)))) {
