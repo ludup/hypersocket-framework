@@ -344,6 +344,20 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		return exportResources(Arrays.asList(resources));
 	}
 	
+	@SuppressWarnings("unchecked")
+	@Override
+	public String exportResoure(Long id) throws ResourceNotFoundException,
+			ResourceExportException {
+		final T resource = getResourceById(id);
+		return exportResources(resource);
+	}
+
+	@Override
+	public String exportAllResoures() throws ResourceExportException {
+		List<T> list = getResources();
+		return exportResources(list);
+	}
+	
 	@Override
 	public String exportResources(Collection<T> resources) throws ResourceExportException {
 

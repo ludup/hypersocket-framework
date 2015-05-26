@@ -61,4 +61,9 @@ public interface AbstractResourceService<T extends RealmResource> extends
 
 	String getResourceCategory();
 
+	String exportResoure(Long id) throws ResourceNotFoundException,
+			ResourceExportException;
+
+	String exportAllResoures() throws ResourceExportException;
+
 }
