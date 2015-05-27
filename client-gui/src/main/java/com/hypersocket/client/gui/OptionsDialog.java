@@ -43,7 +43,7 @@ public class OptionsDialog extends Dialog {
 	SWTGui swtGui;
 	/**
 	 * Create the dialog.
-	 * @param parentShell
+	 * @param swtGui
 	 */
 	public OptionsDialog(SWTGui swtGui) {
 		super(swtGui.getShell());

@@ -44,6 +44,7 @@ import com.hypersocket.client.rmi.ApplicationLauncher;
 import com.hypersocket.client.rmi.ApplicationLauncherTemplate;
 import com.hypersocket.client.rmi.ClientService;
 import com.hypersocket.client.rmi.ConfigurationService;
+import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.client.rmi.ConnectionService;
 import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.Resource;
@@ -514,5 +515,28 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 			connectionsWindow.close();
 			connectionsWindow = null;
 		}
+	}
+
+	@Override
+	public void disconnected(Connection connection, String errorMessage)
+			throws RemoteException {
+		// TODO use these instead of polling in SWT client too
+	}
+
+	@Override
+	public void failedToConnect(Connection connection, String errorMessage)
+			throws RemoteException {
+		// TODO use these instead of polling in SWT client too
+	}
+
+	@Override
+	public void transportConnected(Connection connection)
+			throws RemoteException {
+		// TODO use these instead of polling in SWT client too
+	}
+
+	@Override
+	public void ready(Connection connection) throws RemoteException {
+		// TODO use these instead of polling in SWT client too
 	}
 }

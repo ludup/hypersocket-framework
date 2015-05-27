@@ -1,5 +1,6 @@
 package com.hypersocket.client.service;
 
+import java.io.IOException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -157,6 +158,7 @@ public class ClientServiceImpl implements ClientService,
 		data.put("bossExecutor", bossExecutor);
 		data.put("workerExecutor", workerExecutor);
 		data.put("resourceService", resourceService);
+		data.put("gui", gui);
 		data.put("locale", locale);
 		data.put("reconnectSeconds", reconnectSeconds);
 		data.put("url", getUrl(c));
@@ -205,6 +207,10 @@ public class ClientServiceImpl implements ClientService,
 		 */
 		activeClients.remove(c);
 		connectingClients.remove(c);
+		
+		if(gui != null) {
+			gui.disconnected(c, null);
+		}
 	}
 
 	@Override
@@ -336,5 +342,24 @@ public class ClientServiceImpl implements ClientService,
 	public ConfigurationService getConfigurationService()
 			throws RemoteException {
 		return configurationService;
+	}
+
+	@Override
+	public byte[] getBlob(String host, String path, long timeout) throws RemoteException {
+		HypersocketClient<Connection> s = null;
+		for(HypersocketClient<Connection> a : activeClients.values()) {
+			if(a.getHost().equals(host)) {
+				s = a;
+				break;
+			}
+		}
+		if(s == null) {
+			throw new RemoteException("No connection for " + host);
+		}
+		try {
+			return s.getTransport().getBlob(path, timeout);
+		} catch (IOException e) {
+			throw new RemoteException(e.getMessage());
+		}
 	}
 }

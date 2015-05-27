@@ -15,5 +15,9 @@ public interface BrowserLaunchable {
 	
 	Set<Role> getRoles();
 	
+	String getLogo();
+	
+	String getType();
+	
 	boolean isDisplayInBrowserResourcesTable();
 }

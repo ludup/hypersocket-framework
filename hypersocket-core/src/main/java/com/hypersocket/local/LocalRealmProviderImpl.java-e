@@ -127,8 +127,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 				principal = userRepository.getGroupByName(principalName, realm);
 				break;
 			case SERVICE:
-				principal = userRepository.getUserByNameAndType(principalName,
-						realm, PrincipalType.SERVICE);
+				principal = userRepository.getUserByNameAndType(principalName, realm, PrincipalType.SERVICE);
 				break;
 			case SYSTEM:
 				principal = userRepository.getUserByNameAndType(principalName,
