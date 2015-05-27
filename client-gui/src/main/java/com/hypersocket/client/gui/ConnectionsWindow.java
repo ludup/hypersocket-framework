@@ -73,7 +73,6 @@ public class ConnectionsWindow extends AbstractWindow {
 	
 	
 	/**
-	 * @wbp.parser.constructor
 	 */
 	public ConnectionsWindow() {
 		super(null);
