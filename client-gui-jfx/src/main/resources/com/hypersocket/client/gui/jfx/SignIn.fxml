@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="background" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.SignIn">
+   <children>
+      <Label text="%serverURL">
+         <padding>
+            <Insets bottom="8.0" />
+         </padding>
+      </Label>
+      <ComboBox fx:id="serverUrls" editable="true" onAction="#evtServerUrlSelected" prefHeight="25.0" prefWidth="270.0" />
+      <BorderPane styleClass="background">
+         <right>
+            <CheckBox fx:id="saveConnection" alignment="CENTER_RIGHT" mnemonicParsing="false" styleClass="info" text="%saveConnection" BorderPane.alignment="CENTER">
+               <padding>
+                  <Insets top="8.0" />
+               </padding>
+            </CheckBox>
+         </right>
+         <VBox.margin>
+            <Insets top="8.0" />
+         </VBox.margin>
+         <left>
+            <HBox BorderPane.alignment="CENTER">
+               <children>
+                  <Hyperlink fx:id="delete" onAction="#evtDelete" styleClass="small" text="%delete" visible="false" />
+                  <Hyperlink fx:id="disconnect" onAction="#evtDisconnect" styleClass="small" text="%disconnect" visible="false" />
+               </children>
+            </HBox>
+         </left>
+      </BorderPane>
+      <Label text="%username">
+         <padding>
+            <Insets bottom="8.0" />
+         </padding>
+      </Label>
+      <TextField fx:id="username" />
+      <Label text="%password">
+         <padding>
+            <Insets bottom="8.0" top="8.0" />
+         </padding>
+      </Label>
+      <PasswordField fx:id="password" />
+      <BorderPane styleClass="background">
+         <center>
+            <CheckBox fx:id="saveCredentials" mnemonicParsing="false" styleClass="info" text="%saveCredentials" BorderPane.alignment="CENTER_RIGHT" />
+         </center>
+         <left>
+            <Button fx:id="login" mnemonicParsing="false" onAction="#evtLogin" text="%login" BorderPane.alignment="CENTER" />
+         </left>
+         <VBox.margin>
+            <Insets top="8.0" />
+         </VBox.margin>
+      </BorderPane>
+   </children>
+   <padding>
+      <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+   </padding>
+   <opaqueInsets>
+      <Insets />
+   </opaqueInsets>
+</VBox>

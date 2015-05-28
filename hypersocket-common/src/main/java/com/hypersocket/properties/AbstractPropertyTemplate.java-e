@@ -11,6 +11,7 @@ public abstract class AbstractPropertyTemplate {
 	boolean hidden;
 	boolean readOnly;
 	boolean encrypted;
+	boolean defaultValuePropertyValue;
 	PropertyCategory category;
 	String mapping;
 	PropertyStore propertyStore;
@@ -102,5 +103,12 @@ public abstract class AbstractPropertyTemplate {
 	public boolean isEncrypted() {
 		return encrypted;
 	}
-	
+
+	public boolean isDefaultValuePropertyValue() {
+		return defaultValuePropertyValue;
+	}
+
+	public void setDefaultValuePropertyValue(boolean defaultValuePropertyValue) {
+		this.defaultValuePropertyValue = defaultValuePropertyValue;
+	}
 }

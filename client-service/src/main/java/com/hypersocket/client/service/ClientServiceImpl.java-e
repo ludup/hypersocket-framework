@@ -183,6 +183,7 @@ public class ClientServiceImpl implements ClientService,
 		data.put("bossExecutor", bossExecutor);
 		data.put("workerExecutor", workerExecutor);
 		data.put("resourceService", resourceService);
+		data.put("gui", gui);
 		data.put("locale", locale);
 		data.put("reconnectSeconds", reconnectSeconds);
 		data.put("url", getUrl(c));

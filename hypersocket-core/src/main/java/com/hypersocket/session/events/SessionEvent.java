@@ -35,6 +35,10 @@ public abstract class SessionEvent extends SystemEvent {
 			Session session) {
 		super(source, resourceKey, e, session.getCurrentPrincipal().getRealm());
 		this.session = session;
+		addAttribute(ATTR_UUID, session.getId());
+		addAttribute(ATTR_PRINCIPAL_NAME, session.getCurrentPrincipal().getPrincipalName());
+		addAttribute(ATTR_PRINCIPAL_REALM, session.getCurrentRealm().getName());
+		addAttribute(ATTR_IP_ADDRESS, session.getRemoteAddress());
 	}
 	
 	public String getResourceBundle() {

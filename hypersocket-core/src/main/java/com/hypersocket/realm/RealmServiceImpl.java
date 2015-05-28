@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
-import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -307,6 +306,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 	@Override
 	public Realm getRealmByHost(String host, Realm defaultRealm) {
 
+		if(StringUtils.isBlank(host)) {
+			return defaultRealm;
+		}
+		
 		if (!realmCache.isElementInMemory(host)
 				|| (realmCache.get(host) == null || realmCache
 						.isExpired(realmCache.get(host)))) {

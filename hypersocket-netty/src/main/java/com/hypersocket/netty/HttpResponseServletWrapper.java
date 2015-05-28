@@ -166,10 +166,10 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 			 */
 			cookieHeader.append("; Expires=");
 			if (cookie.getMaxAge() == 0) {
-				cookieHeader.append(DateUtils.formatDate(new Date(10000)));
+				cookieHeader.append(DateUtils.formatDate(new Date(10000), DateUtils.PATTERN_RFC1036));
 			} else {
 				cookieHeader.append(DateUtils.formatDate(new Date(System
-						.currentTimeMillis() + cookie.getMaxAge() * 1000L)));
+						.currentTimeMillis() + cookie.getMaxAge() * 1000L), DateUtils.PATTERN_RFC1036));
 			}
 		}
 		

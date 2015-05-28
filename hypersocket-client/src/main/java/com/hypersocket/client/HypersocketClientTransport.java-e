@@ -18,6 +18,8 @@ public interface HypersocketClientTransport {
 
 	String get(String uri) throws IOException;
 
+	byte[] getBlob(String uri, long timeout) throws IOException;
+
 	String post(String uri, Map<String, String> params) throws IOException;
 
 	int startLocalForwarding(String listenAddress, int listenPort,

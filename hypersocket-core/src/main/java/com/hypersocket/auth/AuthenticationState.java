@@ -257,6 +257,9 @@ public class AuthenticationState {
 		public PrincipalType getType() {
 			return PrincipalType.USER;
 		}
+		public String getPrincipalDescription() {
+			return getName();
+		}
 	}
 
 	public void authAttempted() {

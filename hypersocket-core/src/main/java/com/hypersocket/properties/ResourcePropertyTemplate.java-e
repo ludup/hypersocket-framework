@@ -40,4 +40,5 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 	public void setResource(AbstractResource resource) {
 		this.resource = resource;
 	}
+	
 }

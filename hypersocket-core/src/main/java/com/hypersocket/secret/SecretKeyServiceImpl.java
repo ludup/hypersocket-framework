@@ -48,6 +48,7 @@ public class SecretKeyServiceImpl extends
 	EncryptionProvider encryptionProvider;
 	
 	public SecretKeyServiceImpl() {
+		super("secretKeyResource");
 	}
 
 	@PostConstruct
@@ -73,6 +74,10 @@ public class SecretKeyServiceImpl extends
 	@Override
 	protected String getResourceBundle() {
 		return RESOURCE_BUNDLE;
+	}	
+	
+	protected Class<SecretKeyResource> getResourceClass() {
+		return SecretKeyResource.class;
 	}
 	
 	@Override
