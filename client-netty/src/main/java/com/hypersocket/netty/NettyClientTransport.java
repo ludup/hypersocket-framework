@@ -242,6 +242,23 @@ public class NettyClientTransport implements HypersocketClientTransport {
 	}
 
 	@Override
+	public byte[] getBlob(String uri, long timeout) throws IOException {
+
+		HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
+				HttpMethod.GET, apiPath + uri);
+
+		HttpHandlerResponse response = httpClient.sendRequest(request, timeout);
+
+		if (response.getStatusCode() == 200) {
+			return response.getContent().array();
+		} else {
+			throw new IOException("GET did not respond with 200 OK ["
+					+ response.getStatusCode() + "]");
+		}
+
+	}
+
+	@Override
 	public String post(String uri, Map<String, String> params)
 			throws IOException {
 		return post(uri, params, requestTimeout);

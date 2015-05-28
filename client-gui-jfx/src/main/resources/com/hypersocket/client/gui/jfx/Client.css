@@ -1,0 +1,75 @@
+* {
+    /*-fx-background: transparent; -fx-text-fill: #000000; */
+    -fx-text-fill: inherit; 
+	
+    DOCK_BUTTON_SELECT_HIGHLIGHT_FG: #ffffff;
+    HIGHLIGHT_TEXT_COLOR: #5693BA;
+    DOCK_BUTTON_HIGHLIGHT_COLOR: #5693BA;
+    DOCK_BUTTON_DESELECT_COLOR: #000000;
+    DOCK_BUTTON_SELECT_COLOR: #78B5DC;
+    BUTTON_SELECTED_COLOR: derive(DOCK_BUTTON_HIGHLIGHT_COLOR, -3%);
+}
+
+
+/* Main styles for the dock */
+.background {
+	-fx-background: transparent;
+}
+
+/* Dock icons */
+.dock .button {  
+	-fx-padding: 4 4 4 4;
+    -fx-background-color: inherit;
+}
+.dock .toggle-button {    
+	-fx-padding: 4 4 4 4;
+    -fx-background-color: inherit;
+}
+
+.dock .toggle-button:hover, .dock .button:hover {
+    -fx-background-color: DOCK_BUTTON_HIGHLIGHT_COLOR;
+}
+
+
+.dock .toggle-button:selected {
+	-fx-text-fill: DOCK_BUTTON_SELECT_COLOR;
+} 
+
+.dock .toggle-button:selected:hover {
+}
+
+/* Filters */
+.dock .iconButton {
+    -fx-font-family: FontAwesome;
+    -fx-font-size: 32px;
+    /*
+    -fx-effect: innershadow( three-pass-box , derive(-icons-color,-70%) , 0.1em, 0.0 , 0.07em, 0.07em );
+    -fx-text-fill: linear-gradient(to bottom, derive(-icons-color,20%) 10%, derive(-icons-color,-40%) 80%);
+    */
+}
+
+.dock .launcherIcon {
+	
+}
+
+.dock .smallButton {	
+    -fx-font-family: FontAwesome;
+    -fx-font-size: 12px;
+}
+
+/* General */
+.info, .info .text {
+	-fx-text-fill: HIGHLIGHT_TEXT_COLOR;
+	-fx-font-weight: bold;
+	-fx-font-size: 10;
+}
+
+.small {
+	-fx-font-size: 9;
+}
+
+.launchers {
+}
+
+.stack {
+}

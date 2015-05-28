@@ -51,4 +51,19 @@ public interface AbstractResourceService<T extends RealmResource> extends
 	T getResourceByName(String name, Realm realm)
 			throws ResourceNotFoundException;
 
+	String exportResources(Collection<T> resources)
+			throws ResourceExportException;
+
+	String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException;
+
+	Collection<T> importResources(String json, Realm realm)
+			throws AccessDeniedException, ResourceException;
+
+	String getResourceCategory();
+
+	String exportResoure(Long id) throws ResourceNotFoundException,
+			ResourceExportException;
+
+	String exportAllResoures() throws ResourceExportException;
+
 }

@@ -88,19 +88,6 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 		}
 	}
 
-//	@Override
-//	public List<Property> getProperties(String module) {
-//		
-//		List<Property> props = new ArrayList<Property>();
-//		for(PropertyTemplate template : templatesByModule.get(module)) {
-//			if(properties.containsKey(template.getResourceKey())) {
-//				props.add(new PropertiesFileProperty(template, 
-//						(String) properties.get(template.getResourceKey())));
-//			}
-//		}
-//		return props;
-//	}
-
 	@Override
 	public void registerTemplate(PropertyTemplate template, String module) {
 		templates.put(template.getResourceKey(), template);
@@ -115,36 +102,4 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 	public PropertyTemplate getPropertyTemplate(String resourceKey) {
 		return templates.get(resourceKey);
 	}
-
-//
-//	@Override
-//	public void setProperty(PropertyTemplate template, Resource resource,
-//			String value) {
-//		if(resource==null) {
-//			setProperty(template, value);
-//		} else {
-//			properties.put(template.getResourceKey() + "/" + resource.getId(), value);
-//			try {
-//				saveProperties();
-//			} catch (IOException e) {
-//				throw new IllegalStateException("Failed to save property to properties file", e);
-//			}
-//		}
-//	}
-//
-//
-//	@Override
-//	public String getPropertyValue(PropertyTemplate template, Resource resource) {
-//		if(resource==null) {
-//			return getPropertyValue(template);
-//		} else {
-//			if(properties.containsKey(template.getResourceKey() + "/" + resource.getId())) {
-//				return properties.getProperty(template.getResourceKey() + "/" + resource.getId());
-//			} else {
-//				return template.getDefaultValue();
-//			}
-//		}
-//	}
-
-
 }
