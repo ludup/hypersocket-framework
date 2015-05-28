@@ -1,0 +1,97 @@
+<!-- Copyright (c) 2013 Hypersocket Limited. All rights reserved. This program 
+	and the accompanying materials are made available under the terms of the 
+	GNU Public License v3.0 which accompanies this distribution, and is available 
+	at http://www.gnu.org/licenses/gpl.html -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>client-gui-jfx</artifactId>
+	<name>Hypersocket - Client GUI (JavaFX version)</name>
+
+	<parent>
+		<groupId>com.hypersocket</groupId>
+		<artifactId>hypersocket-framework</artifactId>
+		<version>0.2.8-SNAPSHOT</version>
+		<relativePath>..</relativePath>
+	</parent>
+
+	<build>
+		<directory>target</directory>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>com.zenjava</groupId>
+				<artifactId>javafx-maven-plugin</artifactId>
+				<version>8.1.2</version>
+				<configuration>
+					<mainClass>com.hypersocket.client.gui.jfx.Client</mainClass>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-jfx-jar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+
+				<!-- BUG - http://stackoverflow.com/questions/19407959/javafx-maven-plugin-and-api-incompatibility -->
+				<!-- <dependencies>
+					<dependency>
+						<groupId>org.twdata.maven</groupId>
+						<artifactId>mojo-executor</artifactId>
+						<version>2.1.0</version>
+					</dependency>
+				</dependencies> -->
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.hypersocket</groupId>
+			<artifactId>client-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.hypersocket</groupId>
+			<artifactId>client-network</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.jgntp</groupId>
+			<artifactId>jgntp</artifactId>
+			<version>1.2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>scenicview</groupId>
+			<artifactId>scenicview</artifactId>
+			<version>8.0.0</version>
+		</dependency>
+	</dependencies>
+
+	<profiles>
+	</profiles>
+
+	<repositories>
+		<repository>
+			<id>swt-repo</id>
+			<url>https://swt-repo.googlecode.com/svn/repo/</url>
+		</repository>
+		<repository>
+			<id>ext-releases-local</id>
+			<name>artifactory.javassh.com-releases</name>
+			<url>http://artifactory.javassh.com/ext-releases-local</url>
+		</repository>
+	</repositories>
+
+</project>
