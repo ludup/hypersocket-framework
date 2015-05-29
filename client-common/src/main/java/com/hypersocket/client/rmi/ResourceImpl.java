@@ -9,10 +9,13 @@ public class ResourceImpl implements Resource, Serializable {
 	private static final long serialVersionUID = 6947909274209893794L;
 
 	String name;
+	String colour;
 	List<ResourceProtocol> protocols;
 	ResourceRealm realm;
 	boolean launchable;
 	ResourceLauncher launcher;
+	String icon;
+	Type type;
 	
 	public ResourceImpl() {
 	}
@@ -35,6 +38,30 @@ public class ResourceImpl implements Resource, Serializable {
 		protocols.add(proto);
 	}
 	
+	public String getColour() {
+		return colour;
+	}
+
+	public void setColour(String colour) {
+		this.colour = colour;
+	}
+
+	public String getIcon() {
+		return icon;
+	}
+
+	public void setIcon(String icon) {
+		this.icon = icon;
+	}
+
+	public Type getType() {
+		return type;
+	}
+
+	public void setType(Type type) {
+		this.type = type;
+	}
+
 	@Override
 	public String getHostname() {
 		return name;

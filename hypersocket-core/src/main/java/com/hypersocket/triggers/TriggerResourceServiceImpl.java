@@ -83,6 +83,10 @@ public class TriggerResourceServiceImpl extends
 	Map<String, ReplacementVariableProvider> replacementVariables = new HashMap<String, ReplacementVariableProvider>();
 
 	boolean running = true;
+
+	public TriggerResourceServiceImpl() {
+		super("triggerResource");
+	}
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -204,7 +208,11 @@ public class TriggerResourceServiceImpl extends
 	public Class<TriggerResourcePermission> getPermissionType() {
 		return TriggerResourcePermission.class;
 	}
-
+	
+	protected Class<TriggerResource> getResourceClass() {
+		return TriggerResource.class;
+	}
+	
 	@Override
 	protected void fireResourceCreationEvent(TriggerResource resource) {
 		eventService.publishEvent(new TriggerResourceCreatedEvent(this,

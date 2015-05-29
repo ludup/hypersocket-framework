@@ -22,12 +22,18 @@
      	   http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
 	<bean id="annotationService" class="com.hypersocket.annotation.AnnotationServiceImpl" />
+    <bean id="contextAnnotationService" class="com.hypersocket.context.ContextAnnotationServiceImpl" />
 
 	<aop:config>
 		<aop:aspect ref="annotationService">
 			<aop:pointcut id="profiledMethods"
 				expression="@annotation(com.hypersocket.annotation.HypersocketExtension)" />
 			<aop:around pointcut-ref="profiledMethods" method="process" />
+		</aop:aspect>
+		<aop:aspect ref="contextAnnotationService">
+			<aop:pointcut id="systemContextAnnotation"
+				expression="@annotation(com.hypersocket.context.SystemContextRequired)" />
+			<aop:around pointcut-ref="systemContextAnnotation" method="process" />
 		</aop:aspect>
 	</aop:config>
 

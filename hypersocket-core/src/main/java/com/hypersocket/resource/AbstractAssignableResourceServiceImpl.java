@@ -43,12 +43,24 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		return getPermission("UPDATE");
 	}
 
+	protected PermissionType getUpdatePermission(T resource) {
+		return getUpdatePermission();
+	}
+	
 	protected PermissionType getCreatePermission() {
 		return getPermission("CREATE");
 	}
 
+	protected PermissionType getCreatePermission(T resource) {
+		return getCreatePermission();
+	}
+	
 	protected PermissionType getDeletePermission() {
 		return getPermission("DELETE");
+	}
+	
+	protected PermissionType getDeletePermission(T resource) {
+		return getDeletePermission();
 	}
 
 	protected PermissionType getReadPermission() {
@@ -78,7 +90,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			TransactionOperation<T>... ops) throws ResourceCreationException,
 			AccessDeniedException {
 
-		assertPermission(getCreatePermission());
+		assertPermission(getCreatePermission(resource));
 
 		try {
 			getResourceByName(resource.getName());
@@ -136,7 +148,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	public final void updateResource(T resource, Map<String,String> properties,  
 			TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
-		assertPermission(getUpdatePermission());
+		assertPermission(getUpdatePermission(resource));
 
 		try {
 			if(resource.getRealm()==null) {
@@ -169,7 +181,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	public void deleteResource(T resource) throws ResourceChangeException,
 			AccessDeniedException {
 
-		assertPermission(getDeletePermission());
+		assertPermission(getDeletePermission(resource));
 
 		try {
 			getRepository().deleteResource(resource);

@@ -51,6 +51,8 @@ public abstract class Principal extends RealmResource {
 
 	public abstract PrincipalType getType();
 
+	public abstract String getPrincipalDescription();
+	
 	@XmlElement(name = "principalName")
 	public String getPrincipalName() {
 		return getName();
