@@ -68,18 +68,29 @@ public class Client extends Application implements Context {
 		controllerInst.configure(scene, this);
 		return controllerInst;
 	}
-
-	private void setStageBounds() {
+	
+	public static Screen getConfiguredScreen() {
 		Configuration cfg = Configuration.getDefault();
 		ObservableList<Screen> screens = Screen.getScreens();
-		Screen screen = screens.get(Math.min(screens.size() - 1, cfg.monitorProperty().get()));
+		return screens.get(Math.min(screens.size() - 1, cfg.monitorProperty().get()));
+	}
+	
+	public static Rectangle2D getConfiguredBounds() {
+
+		Configuration cfg = Configuration.getDefault();
+		Screen screen = getConfiguredScreen();
 
 		// TODO might need to monitor the bounds constantly, I can't see
 		// a way to get screen geometry change events.
 		Rectangle2D visualBounds = screen.getVisualBounds();
 		Rectangle2D screenBounds = screen.getBounds();
-		Rectangle2D bounds = cfg.avoidReservedProperty().get() ? visualBounds
+		return cfg.avoidReservedProperty().get() ? visualBounds
 				: screenBounds;
+	}
+
+	private void setStageBounds() {
+		Configuration cfg = Configuration.getDefault();
+		Rectangle2D bounds = getConfiguredBounds();
 
 		if (cfg.leftProperty().get()) {
 			primaryStage.setX(bounds.getMinX());

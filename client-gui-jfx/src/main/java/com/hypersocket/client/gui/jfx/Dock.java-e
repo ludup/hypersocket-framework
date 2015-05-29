@@ -12,6 +12,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -24,6 +25,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -67,7 +69,6 @@ public class Dock extends AbstractController implements Listener {
 	private HBox shortcutContainer;
 
 	private TranslateTransition slideTransition;
-	private double offset;
 
 	private Rectangle slideClip;
 
@@ -79,15 +80,19 @@ public class Dock extends AbstractController implements Listener {
 
 		setAvailable();
 
+		networkResources.setTooltip(createDockButtonToolTip(resources.getString("network.toolTip")));
 		networkResources.selectedProperty().bindBidirectional(
 				cfg.showNetworkProperty());
 
+		ssoResources.setTooltip(createDockButtonToolTip(resources.getString("sso.toolTip")));
 		ssoResources.selectedProperty()
 				.bindBidirectional(cfg.showSSOProperty());
 
+		browserResources.setTooltip(createDockButtonToolTip(resources.getString("web.toolTip")));
 		browserResources.selectedProperty().bindBidirectional(
 				cfg.showWebProperty());
 
+		fileResources.setTooltip(createDockButtonToolTip(resources.getString("files.toolTip")));
 		fileResources.selectedProperty().bindBidirectional(
 				cfg.showFilesProperty());
 
@@ -124,6 +129,13 @@ public class Dock extends AbstractController implements Listener {
 				sizeButtons();
 			}
 		});
+		cfg.colorProperty().addListener(new ChangeListener<Color>() {
+			@Override
+			public void changed(ObservableValue<? extends Color> observable,
+					Color oldValue, Color newValue) {
+				styleToolTips();
+			}
+		});
 
 		rebuildIcons();
 		sizeButtons();
@@ -140,13 +152,6 @@ public class Dock extends AbstractController implements Listener {
 		slideLeft.disableProperty().set(centre > 0);
 		slideRight.disableProperty().set(centre > 0);
 
-		// offset = 100;
-		System.err.println("rebuild: offset: " + centre + " clip: "
-				+ slideClip.toString() + " " + offset + " barwidth: "
-				+ shortcuts.getBoundsInParent().getWidth() + "/"
-				+ shortcuts.getWidth() + "/"
-				+ shortcutContainer.getBoundsInLocal().getWidth()
-				+ " available: " + shortcutContainer.getWidth());
 		slideTransition.setFromX(shortcuts.getTranslateX());
 		slideTransition.setToX(centre);
 		slideTransition.stop();
@@ -179,7 +184,6 @@ public class Dock extends AbstractController implements Listener {
 			double amt = p + n.getLayoutBounds().getWidth();
 			if (amt >= 0) {
 				scroll = n.getLayoutBounds().getWidth() - amt;
-				System.out.println("Reveal " + scroll);
 				break;
 			} else {
 				first = false;
@@ -265,7 +269,7 @@ public class Dock extends AbstractController implements Listener {
 					// When the custom colour dialog is focussed, there doesn't
 					// seem to be anyway of determining what the opposite
 					// component was the gained the focus. Being as that is
-					// the ONLY utility dialog, it should the one
+					// the ONLY utility dialog, it should be the one
 					for (Stage s : com.sun.javafx.stage.StageHelper.getStages()) {
 						if (s.getStyle() == StageStyle.UTILITY) {
 							return s.isShowing();
@@ -332,7 +336,7 @@ public class Dock extends AbstractController implements Listener {
 
 	private Button createLauncherButtonForResource(ResourceRealm resourceRealm,
 			Resource r) {
-		Button b = new Button();
+		final Button b = new Button();
 		b.setTextOverrun(OverrunStyle.CLIP);
 		sizeButton(b);
 		b.getStyleClass().add("iconButton");
@@ -344,8 +348,11 @@ public class Dock extends AbstractController implements Listener {
 				}
 			}.start();
 		});
-		Tooltip tt = new Tooltip(r.getName());
-		b.setTooltip(tt);
+
+		b.setTooltip(createDockButtonToolTip(r.getName()));
+
+		// b.setTooltip(tt);
+		// b.getStyleClass().add("tooltip");
 		try {
 			if (r.getIcon() == null) {
 				b.setText(resources.getString("resource.icon."
@@ -389,6 +396,56 @@ public class Dock extends AbstractController implements Listener {
 			b.setText("%" + r.getType().name());
 		}
 		return b;
+	}
+
+	private Tooltip createDockButtonToolTip(String text) {
+		Configuration cfg = Configuration.getDefault();
+		Color newValue = cfg.colorProperty().getValue();
+		final Tooltip tt = new Tooltip(text) {
+			@Override
+			public void show(Window ownerWindow, double anchorX, double anchorY) {
+				Configuration cfg = Configuration.getDefault();
+				Rectangle2D bnds = Client.getConfiguredBounds();
+
+				if (cfg.leftProperty().get()) {
+				} else if (cfg.rightProperty().get()) {
+				} else if (cfg.bottomProperty().get()) {
+					anchorY = bnds.getMaxY() - cfg.sizeProperty().doubleValue()
+							- 8.0 - prefHeight(USE_COMPUTED_SIZE);
+				} else {
+					anchorY = cfg.sizeProperty().doubleValue() + bnds.getMinY()
+							+ 8.0;
+				}
+
+				super.show(ownerWindow, anchorX, anchorY);
+			}
+		};
+		tt.setAutoHide(true);
+		tt.setStyle(String.format("-fx-background: #%02x%02x%02x",
+				(int) (newValue.getRed() * 255),
+				(int) (newValue.getGreen() * 255),
+				(int) (newValue.getBlue() * 255)));
+		tt.setStyle(String.format("-fx-text-fill: %s",
+				newValue.getBrightness() < 0.5f ? "#ffffff" : "#000000"));
+		tt.setStyle(String.format("-fx-background-color: #%02x%02x%02x",
+				(int) (newValue.getRed() * 255),
+				(int) (newValue.getGreen() * 255),
+				(int) (newValue.getBlue() * 255)));
+		return tt;
+	}
+
+	private void styleToolTips() {
+		for (Node s : shortcuts.getChildren()) {
+			recreateTooltip((ButtonBase)s);
+		}
+		recreateTooltip(fileResources);
+		recreateTooltip(networkResources);
+		recreateTooltip(ssoResources);
+		recreateTooltip(browserResources);
+	}
+	
+	private void recreateTooltip(ButtonBase bb) {
+		bb.setTooltip(createDockButtonToolTip(bb.getTooltip().getText()));
 	}
 
 	private void sizeButtons() {
