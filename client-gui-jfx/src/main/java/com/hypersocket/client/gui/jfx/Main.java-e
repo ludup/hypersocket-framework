@@ -8,8 +8,6 @@ import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.javafx.application.LauncherImpl;
-
 public class Main {
 
 	static Logger log = LoggerFactory.getLogger(Main.class);
@@ -46,14 +44,8 @@ public class Main {
 	public void run() {
 
 		try {
-//			if (!"true".equals(System.getProperty("hsjfx.nosecurity")) && System.getSecurityManager() == null) {
-//				System.setSecurityManager(new SecurityManager());
-//			}
-
 			// :(
-			LauncherImpl.launchApplication(Client.class, null, new String[0]);
-//			Client.launch();
-
+			com.sun.javafx.application.LauncherImpl.launchApplication(Client.class, null, new String[0]);
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error("Failed to start client", e);
