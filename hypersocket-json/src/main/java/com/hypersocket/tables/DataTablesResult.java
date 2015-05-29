@@ -53,5 +53,12 @@ public class DataTablesResult {
 		this.aaData = aaData;
 	}
 	
+	public Collection<?> getRows() {
+		return aaData;
+	}
+	
+	public String getTotal() {
+		return iTotalRecords;
+	}
 	
 }

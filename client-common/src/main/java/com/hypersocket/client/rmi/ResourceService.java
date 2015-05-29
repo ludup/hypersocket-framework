@@ -11,4 +11,5 @@ public interface ResourceService extends Remote {
 	ResourceRealm getResourceRealm(String name) throws RemoteException;
 
 	public void removeResourceRealm(String host) throws RemoteException;
+	
 }

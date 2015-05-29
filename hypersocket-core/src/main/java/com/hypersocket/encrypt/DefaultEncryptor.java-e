@@ -89,8 +89,8 @@ public class DefaultEncryptor implements Encryptor {
 			aesCipherForDecryption.init(Cipher.DECRYPT_MODE, secretKeySpec,
 					new IvParameterSpec(iv));
 
-			byte[] byteDecryptedText = aesCipherForDecryption.doFinal(Base64
-					.decodeBase64(data));
+			byte[] tmp = Base64.decodeBase64(data);
+			byte[] byteDecryptedText = aesCipherForDecryption.doFinal(tmp);
 			return new String(byteDecryptedText, "UTF-8");
 		} catch (Exception e) {
 			throw new IOException(e);

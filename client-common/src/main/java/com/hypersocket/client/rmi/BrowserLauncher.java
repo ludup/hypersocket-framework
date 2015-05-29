@@ -1,43 +1,33 @@
 package com.hypersocket.client.rmi;
 
-import java.awt.Desktop;
 import java.io.Serializable;
-import java.net.URI;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
+@SuppressWarnings("serial")
 public class BrowserLauncher implements ResourceLauncher, Serializable {
 
-	private static Logger log = LoggerFactory.getLogger(BrowserLauncher.class);
-	
-	private static final long serialVersionUID = 7508038649288643559L;
+	public interface BrowserLauncherFactory {
+		ResourceLauncher create(String uri);
+	}
 
-	String launchUrl;
-	
-	public BrowserLauncher(String launchUrl) {
-		this.launchUrl = launchUrl;
+	private static BrowserLauncherFactory factory;
+
+	public static void setFactory(BrowserLauncherFactory factory) {
+		BrowserLauncher.factory = factory;
+	}
+
+	private String launchUri;
+
+	public BrowserLauncher(String launchUri) {
+		this.launchUri = launchUri;
 	}
 
 	@Override
 	public int launch() {
-		
-		if(log.isInfoEnabled()) {
-			log.info("Launching website " + launchUrl);
+		if (factory == null) {
+			return new AWTBrowserLauncher(launchUri).launch();
+		} else {
+			return factory.create(launchUri).launch();
 		}
-		
-		Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-	    if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
-	        try {
-	            desktop.browse(new URI(launchUrl));
-	            return 0;
-	        } catch (Exception e) {
-	           log.error("Failed to launch website", e);
-	           return Integer.MIN_VALUE;
-	        }
-	    }
-	    return -1;
 	}
 
 }

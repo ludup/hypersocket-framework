@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.hypersocket</groupId>
 	<artifactId>hypersocket-framework</artifactId>
-	<version>0.2.8-SNAPSHOT</version>
+	<version>0.2.9-SNAPSHOT</version>
 	<url>http://www.hypersocket.com/</url>
 	<packaging>pom</packaging>
 	<name>Hypersocket Framework</name>
@@ -49,6 +49,7 @@
 		<module>client-service</module>
 		<module>client-netty</module>
 		<module>client-gui</module>
+		<module>client-gui-jfx</module>
 		<module>hypersocket-common</module>
 		<module>hypersocket-core</module>
 		<module>hypersocket-server</module>

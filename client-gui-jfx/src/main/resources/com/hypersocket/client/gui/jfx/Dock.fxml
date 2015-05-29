@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Dock">
+   <left>
+   	  <HBox alignment="CENTER_LEFT" styleClass="background">
+         <children>
+            <ToggleButton fx:id="ssoResources" mnemonicParsing="false" onAction="#evtRefilter" styleClass="iconButton" text="%sso">
+               <tooltip>
+                  <Tooltip text="%sso.toolTip" />
+               </tooltip></ToggleButton>
+            <ToggleButton fx:id="browserResources" mnemonicParsing="false" onAction="#evtRefilter" prefHeight="56.0" prefWidth="56.0" styleClass="iconButton" text="%web">
+               <tooltip>
+                  <Tooltip text="%web.toolTip" />
+               </tooltip></ToggleButton>
+            <ToggleButton fx:id="networkResources" mnemonicParsing="false" onAction="#evtRefilter" prefHeight="56.0" prefWidth="56.0" styleClass="iconButton" text="%network" textOverrun="CLIP">
+               <tooltip>
+                  <Tooltip text="%network.toolTip" />
+               </tooltip></ToggleButton>
+            <ToggleButton fx:id="fileResources" mnemonicParsing="false" onAction="#evtRefilter" styleClass="iconButton" text="%files" textOverrun="CLIP">
+               <tooltip>
+                  <Tooltip text="%files.toolTip" />
+               </tooltip></ToggleButton>
+            <Separator orientation="VERTICAL" />
+         </children>
+      </HBox>
+   </left>
+   <right>
+   	  <HBox alignment="CENTER_RIGHT" minWidth="150.0" styleClass="background">
+         <children>
+            <Separator orientation="VERTICAL" />
+            <Button fx:id="options" mnemonicParsing="false" onAction="#evtOpenOptionsWindow" styleClass="iconButton" text="%options" textOverrun="CLIP" />
+            <Button fx:id="signIn" mnemonicParsing="false" onAction="#evtOpenSignInWindow" styleClass="iconButton" text="%signIn" textOverrun="CLIP" />
+            <Separator orientation="VERTICAL" />
+            <VBox alignment="CENTER">
+               <children>
+                  <Button mnemonicParsing="false" onAction="#evtExit" styleClass="smallButton" text="%exit" />
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </right>
+   <center>
+      <BorderPane styleClass="background" BorderPane.alignment="CENTER">
+         <center>
+            <HBox fx:id="shortcutContainer" alignment="CENTER_LEFT" minWidth="1.0" styleClass="background" BorderPane.alignment="CENTER">
+               <children>
+                  <HBox fx:id="shortcuts" alignment="CENTER" scaleShape="false" styleClass="launchers" />
+               </children>
+            </HBox>
+         </center>
+         <left>
+            <Button fx:id="slideLeft" mnemonicParsing="false" onAction="#evtSlideLeft" styleClass="iconButton" text="%left" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" BorderPane.alignment="CENTER" />
+         </left>
+         <right>
+            <Button fx:id="slideRight" mnemonicParsing="false" onAction="#evtSlideRight" styleClass="iconButton" text="%right" BorderPane.alignment="CENTER" />
+         </right>
+      </BorderPane>
+   </center>
+   <styleClass>
+      <String fx:value="dock" />
+      <String fx:value="background" />
+   </styleClass>
+</BorderPane>

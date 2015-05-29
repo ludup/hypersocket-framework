@@ -14,6 +14,7 @@ import com.hypersocket.client.HypersocketClient;
 import com.hypersocket.client.HypersocketClientAdapter;
 import com.hypersocket.client.UserCancelledException;
 import com.hypersocket.client.rmi.Connection;
+import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.ResourceService;
 import com.hypersocket.netty.NettyClientTransport;
 
@@ -33,6 +34,8 @@ public class ConnectionJob extends TimerTask {
 		final Connection c = (Connection) data.get("connection");
 		ExecutorService boss = (ExecutorService) data.get("bossExecutor");
 		ExecutorService worker = (ExecutorService) data.get("workerExecutor");
+		final GUICallback callback = (GUICallback) data.get("gui");
+
 		Locale locale = (Locale) data.get("locale");
 		final ClientServiceImpl service = (ClientServiceImpl) data
 				.get("service");
@@ -46,7 +49,7 @@ public class ConnectionJob extends TimerTask {
 		}
 
 		try {
-			
+
 			ServiceClient client = new ServiceClient(new NettyClientTransport(
 					boss, worker), locale, service, resourceService, c);
 
@@ -54,6 +57,9 @@ public class ConnectionJob extends TimerTask {
 
 			if (log.isInfoEnabled()) {
 				log.info("Connected to " + url);
+			}
+			if (callback != null) {
+				callback.transportConnected(c);
 			}
 
 			if (StringUtils.isBlank(c.getUsername())
@@ -65,21 +71,36 @@ public class ConnectionJob extends TimerTask {
 						c.getHashedPassword(), true);
 			}
 
-			// Now get the current version and check against ours. 
-			String response[] = client.getTransport().get("server/version").split(";");
-			if(response.length != 2) {
-				if(log.isErrorEnabled()) {
-					log.error("Failed to get version from server " + response.length);
+			// Now get the current version and check against ours.
+			String response[] = client.getTransport().get("server/version")
+					.split(";");
+			if (response.length != 2) {
+				if (log.isErrorEnabled()) {
+					log.error("Failed to get version from server "
+							+ response.length);
 				}
 				client.disconnect(false);
+				if (callback != null) {
+					callback.failedToConnect(c,
+							"Failed to get version from server "
+									+ response.length);
+				}
 			} else {
-//				String version = response[0];
-//				String serial = response[1];
-	
+				// String version = response[0];
+				// String serial = response[1];
+
 				client.addListener(new HypersocketClientAdapter<Connection>() {
 					@Override
-					public void disconnected(HypersocketClient<Connection> client,
+					public void disconnected(
+							HypersocketClient<Connection> client,
 							boolean onError) {
+						try {
+							callback.disconnected(
+									c,
+									onError ? "Error occured during connection."
+											: null);
+						} catch (RemoteException e) {
+						}
 						if (client.getAttachment().isStayConnected() && onError) {
 							try {
 								service.scheduleConnect(c);
@@ -88,19 +109,29 @@ public class ConnectionJob extends TimerTask {
 						}
 					}
 				});
-	
+
 				if (log.isInfoEnabled()) {
 					log.info("Logged into " + url);
 				}
-			
+
+				if (callback != null) {
+					callback.ready(c);
+				}
 			}
 
 		} catch (Throwable e) {
 			if (log.isErrorEnabled()) {
 				log.error("Failed to connect " + url, e);
 			}
+			if (callback != null) {
+				try {
+					callback.failedToConnect(c, e.getMessage());
+				} catch (RemoteException e2) {
+					//
+				}
+			}
 
-			if(!(e instanceof UserCancelledException)) {
+			if (!(e instanceof UserCancelledException)) {
 				if (StringUtils.isNotBlank(c.getUsername())
 						&& StringUtils.isNotBlank(c.getHashedPassword())) {
 					if (c.isStayConnected()) {

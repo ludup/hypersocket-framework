@@ -58,6 +58,10 @@ public class LocalUser extends Principal implements UserPrincipal, Serializable 
 		return type;
 	}
 	
+	public String getPrincipalDescription() {
+		return getName();
+	}
+	
 	public void setType(PrincipalType type) {
 		this.type = type;
 	}	

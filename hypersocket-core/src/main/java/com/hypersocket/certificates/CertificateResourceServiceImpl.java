@@ -87,6 +87,10 @@ public class CertificateResourceServiceImpl extends
 	@Autowired
 	EventService eventService;
 
+	public CertificateResourceServiceImpl() {
+		super("certificates");
+	}
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -130,6 +134,10 @@ public class CertificateResourceServiceImpl extends
 	@Override
 	public Class<CertificateResourcePermission> getPermissionType() {
 		return CertificateResourcePermission.class;
+	}
+	
+	protected Class<CertificateResource> getResourceClass() {
+		return CertificateResource.class;
 	}
 
 	@Override
@@ -719,5 +727,6 @@ public class CertificateResourceServiceImpl extends
 		}
 
 	}
+
 
 }

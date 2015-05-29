@@ -318,7 +318,6 @@ public class Main {
 	}
 
 	/**
-	 * @param args
 	 */
 	public void run() {
 

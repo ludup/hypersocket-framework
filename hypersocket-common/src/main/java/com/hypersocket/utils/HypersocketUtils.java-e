@@ -12,6 +12,10 @@ import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class HypersocketUtils {
 
 	static Logger log = LoggerFactory.getLogger(HypersocketUtils.class);
@@ -125,6 +129,21 @@ public class HypersocketUtils {
 	public static byte[] base64Decode(String property) throws IOException {
 		return Base64.decodeBase64(property.getBytes("UTF-8"));
 	}
+	
+	public static boolean isValidJSON(final String json) {
+		   try {
+		      final JsonParser parser = new ObjectMapper().getFactory()
+		            .createParser(json);
+		      while (parser.nextToken() != null) {
+		      }
+		      return true;
+		   } catch (JsonParseException jpe) {
+		      return false;
+		   } catch (IOException ioe) {
+			   return false;
+		   }
+
+		}
 
 
 }

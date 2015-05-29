@@ -137,8 +137,6 @@ public class Main {
 	/**
 	 * Restart the current Java application
 	 * 
-	 * @param runBeforeRestart
-	 *            some custom code to be run before restarting
 	 * @throws IOException
 	 */
 	public void restartServer() throws IOException {

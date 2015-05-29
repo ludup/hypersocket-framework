@@ -44,6 +44,9 @@ public class SessionUtils {
 	I18NService i18nService;
 
 	public Session getActiveSession(HttpServletRequest request) {
+		
+		Session session = null;
+		
 		if (request.getAttribute(AUTHENTICATED_SESSION) != null) {
 			return (Session) request.getAttribute(AUTHENTICATED_SESSION);
 		}
@@ -53,18 +56,23 @@ public class SessionUtils {
 		}
 		for (Cookie c : request.getCookies()) {
 			if (c.getName().equals(HYPERSOCKET_API_SESSION)) {
-				Session session = sessionService.getSession(c.getValue());
+				session = sessionService.getSession(c.getValue());
 				if (session != null && sessionService.isLoggedOn(session, true)) {
 					return session;
 				}
 			}
 		}
+		
 		if(request.getParameterMap().containsKey(HYPERSOCKET_API_KEY)) {
-			Session session = sessionService.getSession(request.getParameter(HYPERSOCKET_API_KEY));
-			if (session != null && sessionService.isLoggedOn(session, true)) {
-				return session;
-			}
+			session = sessionService.getSession(request.getParameter(HYPERSOCKET_API_KEY));
+		} else if(request.getHeader(HYPERSOCKET_API_SESSION) != null) {
+			session = sessionService.getSession((String)request.getHeader(HYPERSOCKET_API_SESSION));
 		}
+		
+		if (session != null && sessionService.isLoggedOn(session, true)) {
+			return session;
+		}
+		
 		return null;
 	}
 
