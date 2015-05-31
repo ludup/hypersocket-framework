@@ -12,6 +12,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.paint.Color;
 
+@SuppressWarnings("restriction")
 public class Configuration {
 
 	private BooleanProperty showSSO = new SimpleBooleanProperty();
