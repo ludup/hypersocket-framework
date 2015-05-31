@@ -41,6 +41,7 @@ import com.hypersocket.client.rmi.BrowserLauncher;
 import com.hypersocket.client.rmi.BrowserLauncher.BrowserLauncherFactory;
 import com.hypersocket.client.rmi.ResourceLauncher;
 
+@SuppressWarnings("restriction")
 public class Client extends Application implements Context {
 	static ResourceBundle BUNDLE = ResourceBundle.getBundle(Client.class
 			.getName());

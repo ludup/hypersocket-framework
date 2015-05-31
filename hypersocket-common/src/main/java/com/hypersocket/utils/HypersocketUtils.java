@@ -2,6 +2,7 @@ package com.hypersocket.utils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,6 +24,8 @@ public class HypersocketUtils {
 	static ThreadLocal<Long> times = new ThreadLocal<Long>();
 
 	static Map<String,SimpleDateFormat> dateFormats = new HashMap<String,SimpleDateFormat>();
+	
+	static DecimalFormat df = new DecimalFormat("#.00");
 	
 	public static void resetInterval() {
 		times.set(System.currentTimeMillis());
@@ -145,5 +148,12 @@ public class HypersocketUtils {
 
 		}
 
+	public static String format(Double d) {
+		return df.format(d);
+	}
+	
+	public static String format(Float f) {
+		return df.format(f);
+	}
 
 }

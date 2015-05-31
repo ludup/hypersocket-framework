@@ -232,10 +232,20 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	public Collection<T> getPersonalResources(Principal principal) throws AccessDeniedException {
 		return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(principal));
 	}
+
+	@Override
+	public Collection<T> getPersonalResources() throws AccessDeniedException {
+		return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(getCurrentPrincipal()));
+	}
 	
 	@Override
 	public long getPersonalResourceCount(Principal principal, String search) {
 		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(principal), search);
+	}
+	
+	@Override
+	public long getPersonalResourceCount(String search) {
+		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(getCurrentPrincipal()), search);
 	}
 
 	@Override
