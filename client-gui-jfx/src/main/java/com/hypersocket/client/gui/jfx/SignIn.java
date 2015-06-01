@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import com.hypersocket.client.gui.jfx.Bridge.Listener;
 import com.hypersocket.client.rmi.Connection;
 
+@SuppressWarnings("restriction")
 public class SignIn extends AbstractController implements Listener {
 	static Logger log = LoggerFactory.getLogger(Main.class);
 

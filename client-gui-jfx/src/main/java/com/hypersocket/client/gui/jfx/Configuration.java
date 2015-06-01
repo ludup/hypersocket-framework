@@ -12,6 +12,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.paint.Color;
 
+@SuppressWarnings("restriction")
 public class Configuration {
 
 	private BooleanProperty showSSO = new SimpleBooleanProperty();
@@ -25,6 +26,7 @@ public class Configuration {
 	private BooleanProperty autoHide = new SimpleBooleanProperty();
 	private BooleanProperty avoidReserved = new SimpleBooleanProperty();
 	private IntegerProperty size = new SimpleIntegerProperty();
+	private IntegerProperty monitor = new SimpleIntegerProperty();
 	private Property<Color> color = new SimpleObjectProperty<Color>();
 
 	//
@@ -146,6 +148,10 @@ public class Configuration {
 	
 	public IntegerProperty sizeProperty() {
 		return size;
+	}
+	
+	public IntegerProperty monitorProperty() {
+		return monitor;
 	}
 
 	public BooleanProperty autoHideProperty() {
