@@ -10,22 +10,10 @@
    <left>
    	  <HBox alignment="CENTER_LEFT" styleClass="background">
          <children>
-            <ToggleButton fx:id="ssoResources" mnemonicParsing="false" onAction="#evtRefilter" styleClass="iconButton" text="%sso">
-               <tooltip>
-                  <Tooltip text="%sso.toolTip" />
-               </tooltip></ToggleButton>
-            <ToggleButton fx:id="browserResources" mnemonicParsing="false" onAction="#evtRefilter" prefHeight="56.0" prefWidth="56.0" styleClass="iconButton" text="%web">
-               <tooltip>
-                  <Tooltip text="%web.toolTip" />
-               </tooltip></ToggleButton>
-            <ToggleButton fx:id="networkResources" mnemonicParsing="false" onAction="#evtRefilter" prefHeight="56.0" prefWidth="56.0" styleClass="iconButton" text="%network" textOverrun="CLIP">
-               <tooltip>
-                  <Tooltip text="%network.toolTip" />
-               </tooltip></ToggleButton>
-            <ToggleButton fx:id="fileResources" mnemonicParsing="false" onAction="#evtRefilter" styleClass="iconButton" text="%files" textOverrun="CLIP">
-               <tooltip>
-                  <Tooltip text="%files.toolTip" />
-               </tooltip></ToggleButton>
+            <ToggleButton fx:id="ssoResources" mnemonicParsing="false" onAction="#evtRefilter" styleClass="iconButton" text="%sso" />
+            <ToggleButton fx:id="browserResources" mnemonicParsing="false" onAction="#evtRefilter" prefHeight="56.0" prefWidth="56.0" styleClass="iconButton" text="%web" />
+            <ToggleButton fx:id="networkResources" mnemonicParsing="false" onAction="#evtRefilter" prefHeight="56.0" prefWidth="56.0" styleClass="iconButton" text="%network" textOverrun="CLIP" />
+            <ToggleButton fx:id="fileResources" mnemonicParsing="false" onAction="#evtRefilter" styleClass="iconButton" text="%files" textOverrun="CLIP" />
             <Separator orientation="VERTICAL" />
          </children>
       </HBox>

@@ -157,7 +157,7 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 				Thread.sleep(1000);
 			} catch (InterruptedException e1) {
 			}
-			connectToService();
+			new RMIConnectThread().start();
 		}
 
 	}

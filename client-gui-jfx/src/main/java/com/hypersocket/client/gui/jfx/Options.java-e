@@ -2,10 +2,13 @@ package com.hypersocket.client.gui.jfx;
 
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Slider;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.HBox;
+import javafx.stage.Screen;
 
 import com.sun.javafx.scene.control.skin.ColorPalette;
 import com.sun.javafx.scene.control.skin.ColorPickerSkin;
@@ -42,6 +45,9 @@ public class Options extends AbstractController {
 	
 	@FXML
 	private ColorPicker color;
+	
+	@FXML
+	private HBox monitorContainer;
 
 	@Override
 	protected void onInitialize() {
@@ -59,10 +65,25 @@ public class Options extends AbstractController {
 		size.valueProperty().bindBidirectional(cfg.sizeProperty());
 		color.valueProperty().bindBidirectional(cfg.colorProperty());
 		color.setSkin(new CustomColorPickerSkin(color));
+		
+		int idx = 1;
+		for(Screen s : Screen.getScreens()) {
+			Button b = new Button();
+			b.setOnAction((event) -> {
+				moveToScreen(s);
+			});
+			b.setText(String.valueOf(idx));
+			monitorContainer.getChildren().add(b);
+			idx++;
+		}
 	}
 
 	public boolean isCustomColorPopupShowing() {
 		return ((ColorPalette)((CustomColorPickerSkin)color.getSkin()).getPopupContent()).isCustomColorDialogShowing();
+	}
+	
+	private void moveToScreen(Screen s) {
+		Configuration.getDefault().monitorProperty().set(Screen.getScreens().indexOf(s));
 	}
 
 	class CustomColorPickerSkin extends ColorPickerSkin {

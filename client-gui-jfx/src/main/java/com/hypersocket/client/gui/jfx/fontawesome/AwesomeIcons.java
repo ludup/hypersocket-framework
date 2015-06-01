@@ -3,6 +3,7 @@ package com.hypersocket.client.gui.jfx.fontawesome;
 import javafx.scene.Parent;
 import javafx.scene.text.Font;
 
+@SuppressWarnings("restriction")
 public class AwesomeIcons {
 
 	private static final String STYLE_SHEET = "icons_blue.css";

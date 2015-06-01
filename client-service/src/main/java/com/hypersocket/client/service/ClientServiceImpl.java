@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ public class ClientServiceImpl implements ClientService,
 	ConnectionService connectionService;
 	ConfigurationService configurationService;
 	ResourceService resourceService;
-	
+
 	ExecutorService bossExecutor;
 	ExecutorService workerExecutor;
 	Timer timer;
@@ -49,14 +50,22 @@ public class ClientServiceImpl implements ClientService,
 	Map<Connection, HypersocketClient<Connection>> connectingClients = new HashMap<Connection, HypersocketClient<Connection>>();
 	Map<Connection, Set<ServicePlugin>> connectionPlugins = new HashMap<Connection, Set<ServicePlugin>>();
 
+	Semaphore startupLock = new Semaphore(1);
+
 	public ClientServiceImpl(ConnectionService connectionService,
 			ConfigurationService configurationService,
 			ResourceService resourceService) {
 
+		try {
+			startupLock.acquire();
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+
 		this.connectionService = connectionService;
 		this.configurationService = configurationService;
 		this.resourceService = resourceService;
-		
+
 		bossExecutor = Executors.newCachedThreadPool();
 		workerExecutor = Executors.newCachedThreadPool();
 
@@ -66,10 +75,25 @@ public class ClientServiceImpl implements ClientService,
 
 	@Override
 	public void registerGUI(GUICallback gui) throws RemoteException {
-		this.gui = gui;
-		gui.registered();
-		if (log.isInfoEnabled()) {
-			log.info("Registered GUI");
+		try {
+			/* BPS - We need registration to wait until the client services
+			 * are started up or there will be weird hibernate transaction
+			 * errors if the GUI connects while the client is trying to 
+			 * connect  
+			 */
+			startupLock.acquire();
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+
+		try {
+			this.gui = gui;
+			gui.registered();
+			if (log.isInfoEnabled()) {
+				log.info("Registered GUI");
+			}
+		} finally {
+			startupLock.release();
 		}
 	}
 
@@ -113,6 +137,8 @@ public class ClientServiceImpl implements ClientService,
 		} catch (RemoteException e) {
 			log.error("Failed to start service", e);
 			return false;
+		} finally {
+			startupLock.release();
 		}
 	}
 
@@ -201,14 +227,14 @@ public class ClientServiceImpl implements ClientService,
 		if (activeClients.containsKey(c)) {
 			activeClients.get(c).disconnect(false);
 		}
-		
+
 		/**
-		 * 	Force removal here for final chance clean up	
+		 * Force removal here for final chance clean up
 		 */
 		activeClients.remove(c);
 		connectingClients.remove(c);
-		
-		if(gui != null) {
+
+		if (gui != null) {
 			gui.disconnected(c, null);
 		}
 	}
@@ -236,7 +262,7 @@ public class ClientServiceImpl implements ClientService,
 		activeClients.put(client.getAttachment(), client);
 		connectingClients.remove(client.getAttachment());
 		startPlugins(client);
-		
+
 		notifyGui(client.getHost() + " connected", GUICallback.NOTIFY_CONNECT);
 	}
 
@@ -345,15 +371,16 @@ public class ClientServiceImpl implements ClientService,
 	}
 
 	@Override
-	public byte[] getBlob(String host, String path, long timeout) throws RemoteException {
+	public byte[] getBlob(String host, String path, long timeout)
+			throws RemoteException {
 		HypersocketClient<Connection> s = null;
-		for(HypersocketClient<Connection> a : activeClients.values()) {
-			if(a.getHost().equals(host)) {
+		for (HypersocketClient<Connection> a : activeClients.values()) {
+			if (a.getHost().equals(host)) {
 				s = a;
 				break;
 			}
 		}
-		if(s == null) {
+		if (s == null) {
 			throw new RemoteException("No connection for " + host);
 		}
 		try {

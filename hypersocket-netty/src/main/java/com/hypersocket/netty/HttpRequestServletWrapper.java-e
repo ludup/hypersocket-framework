@@ -92,8 +92,6 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 			}
 		}
 
-		
-		
 		String contentType = request.getHeader(HttpHeaders.CONTENT_TYPE);
 		
 		String contentTypeCharset = "UTF-8";

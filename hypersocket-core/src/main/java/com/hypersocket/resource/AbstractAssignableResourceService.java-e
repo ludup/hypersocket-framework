@@ -49,5 +49,9 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	long getPersonalResourceCount(Principal principal, String search);
 
 	Collection<T> getPersonalResources(Principal principal) throws AccessDeniedException;
+	
+	Collection<T> getPersonalResources() throws AccessDeniedException;
+
+	long getPersonalResourceCount(String search);
 
 }
