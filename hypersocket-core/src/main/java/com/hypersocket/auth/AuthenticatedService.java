@@ -35,4 +35,6 @@ public interface AuthenticatedService {
 
 	boolean hasSessionContext();
 
+	void setCurrentRealm(Realm realm);
+
 }
