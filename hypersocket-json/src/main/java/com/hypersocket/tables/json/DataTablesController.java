@@ -24,11 +24,20 @@ public class DataTablesController extends AuthenticatedController {
 			throws NumberFormatException, UnauthorizedException,
 			AccessDeniedException {
 
-		Integer start = (request.getParameter("iDisplayStart") == null ? 0
-				: Integer.parseInt(request.getParameter("iDisplayStart")));
-		Integer length = (request.getParameter("iDisplayLength") == null ? Integer.MAX_VALUE
-				: Integer.parseInt(request.getParameter("iDisplayLength")));
-
+		Integer start = 0;
+		if(request.getParameter("iDisplayStart") != null) {
+				start = Integer.parseInt(request.getParameter("iDisplayStart"));
+		} else if(request.getParameter("offset") != null) {
+			start = Integer.parseInt(request.getParameter("offset"));
+		}
+		
+		Integer length = 0;
+		if(request.getParameter("iDisplayLength") != null) {
+			length = Integer.parseInt(request.getParameter("iDisplayLength"));
+		} else if(request.getParameter("limit") != null) {
+			length = Integer.parseInt(request.getParameter("limit"));
+		}
+		
 		List<ColumnSort> sorting = new ArrayList<ColumnSort>();
 		int count = (request.getParameter("iSortingCols") == null ? 0 : Integer
 				.parseInt(request.getParameter("iSortingCols")));
@@ -39,8 +48,14 @@ public class DataTablesController extends AuthenticatedController {
 					.valueOf(sor.toUpperCase())));
 		}
 
-		String searchPattern = request.getParameter("sSearch") == null ? ""
-				: request.getParameter("sSearch");
+		String searchPattern = "";
+		
+		if(request.getParameter("sSearch") != null) {
+			searchPattern = request.getParameter("sSearch");
+		} else if(request.getParameter("search") != null) {
+			searchPattern = request.getParameter("search");
+		}
+		
 		if (searchPattern.indexOf('*') > -1) {
 			searchPattern = searchPattern.replace('*', '%');
 		}

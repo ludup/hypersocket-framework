@@ -58,4 +58,22 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	void updateResource(T resource, TransactionOperation<T>... ops)
 			throws ResourceChangeException, AccessDeniedException;
 
+	String exportResoure(Long id) throws ResourceNotFoundException,
+			ResourceExportException;
+
+	String exportAllResoures() throws ResourceExportException;
+
+	String exportResources(Collection<T> resources)
+			throws ResourceExportException;
+
+	Collection<T> importResources(String json, Realm realm)
+			throws AccessDeniedException, ResourceException;
+
+	String exportResources(T... resources) throws ResourceExportException;
+
+	T getResourceByName(String name, Realm realm)
+			throws ResourceNotFoundException;
+
+	String getResourceCategory();
+
 }
