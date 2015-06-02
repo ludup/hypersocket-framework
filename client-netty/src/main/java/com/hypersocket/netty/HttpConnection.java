@@ -9,8 +9,6 @@ package com.hypersocket.netty;
 
 import java.io.IOException;
 
-import javax.net.ssl.SSLContext;
-
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
@@ -23,7 +21,6 @@ public class HttpConnection {
 	HttpHandler httpHandler;
 	HttpConnectionPool pool;
 	
-	SSLContext sslContext;
 	NioClientSocketChannelFactory clientSocketFactory = null;
 	ClientBootstrap httpBootstrap;
 	
