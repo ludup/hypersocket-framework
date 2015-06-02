@@ -2,6 +2,7 @@ package com.hypersocket.resource;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -145,6 +146,16 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	protected abstract void fireResourceCreationEvent(T resource, Throwable t);
 
 	@SafeVarargs
+	@Override
+	public final void updateResource(T resource,  
+			TransactionOperation<T>... ops) throws ResourceChangeException,
+			AccessDeniedException {
+		updateResource(resource, new HashMap<String,String>(), ops);
+		
+	}
+	
+	@SafeVarargs
+	@Override
 	public final void updateResource(T resource, Map<String,String> properties,  
 			TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {

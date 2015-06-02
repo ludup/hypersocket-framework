@@ -54,4 +54,8 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 
 	long getPersonalResourceCount(String search);
 
+	@SuppressWarnings("unchecked")
+	void updateResource(T resource, TransactionOperation<T>... ops)
+			throws ResourceChangeException, AccessDeniedException;
+
 }
