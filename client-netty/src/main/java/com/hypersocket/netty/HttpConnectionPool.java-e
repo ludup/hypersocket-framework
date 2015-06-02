@@ -121,17 +121,12 @@ public class HttpConnectionPool {
 			log.debug("Checking in http connection id=" + con.getId());
 		}
 		
+		leasedConnections.remove(con);
+		
 		if(!con.isConnected()) {
 			con.cleanup();
-			if(!client.isDisconnected()) {
-				if(availableConnections.size() < client.getMinimumConnections()) {
-					availableConnections.add(createConnection());
-				}
-			}
 		} else {
-			
 			if(!client.isDisconnected()) {
-				leasedConnections.remove(con);
 				availableConnections.add(con);
 			} else {
 				con.disconnect();
@@ -198,10 +193,14 @@ public class HttpConnectionPool {
 	public synchronized void disconnectAll() {
 		
 		if(log.isDebugEnabled()) {
-			log.debug("Disconnecting all connections");
+			log.debug("Disconnecting all connections available=" + availableConnections.size() + " leased=" + leasedConnections.size());
 		}
 		
 		for(HttpConnection con : availableConnections) {
+			con.disconnect();
+		}
+		
+		for(HttpConnection con : leasedConnections) {
 			con.disconnect();
 		}
 		
