@@ -54,6 +54,11 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		currentRealm.set(session.getCurrentRealm());
 		currentLocale.set(locale);
 	}
+	
+	@Override
+	public void setCurrentRealm(Realm realm) {
+		currentRealm.set(realm);
+	}
 
 	@Override
 	public Principal getCurrentPrincipal() {
