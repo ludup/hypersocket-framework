@@ -109,6 +109,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 		role.setAllUsers(allUsers);
 		role.setAllPermissions(allPermissions);
 		role.setSystem(system);
+		
 		save(role);
 		return role;
 	}
