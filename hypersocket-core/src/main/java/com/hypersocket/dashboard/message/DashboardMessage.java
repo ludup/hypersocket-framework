@@ -14,6 +14,9 @@ import com.hypersocket.resource.Resource;
 @Table(name="dashboard_messages")
 public class DashboardMessage extends Resource {
 
+	@Column(name="message_id")
+	String messageId;
+	
 	@Column(name="author")
 	String author;
 	
@@ -33,6 +36,15 @@ public class DashboardMessage extends Resource {
 	@Temporal(TemporalType.TIMESTAMP)
 	Date expires;
 	
+	
+	public String getMessageId() {
+		return messageId;
+	}
+
+	public void setMessageId(String messageId) {
+		this.messageId = messageId;
+	}
+
 	public String getAuthor() {
 		return author;
 	}
