@@ -1,6 +1,7 @@
 package com.hypersocket.client.gui.jfx;
 
 import java.net.URL;
+
 import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
@@ -12,12 +13,14 @@ import com.hypersocket.client.rmi.Connection;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 
+@SuppressWarnings("restriction")
 public class AbstractController implements FramedController, Listener {
 	static Logger log = LoggerFactory.getLogger(AbstractController.class);
 
 	protected Client context;
 	protected ResourceBundle resources;
 	protected URL location;
+	
 	protected Scene scene;
 
 	@Override
