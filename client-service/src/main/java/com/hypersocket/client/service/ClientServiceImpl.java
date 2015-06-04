@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -76,10 +77,10 @@ public class ClientServiceImpl implements ClientService,
 	@Override
 	public void registerGUI(GUICallback gui) throws RemoteException {
 		try {
-			/* BPS - We need registration to wait until the client services
-			 * are started up or there will be weird hibernate transaction
-			 * errors if the GUI connects while the client is trying to 
-			 * connect  
+			/*
+			 * BPS - We need registration to wait until the client services are
+			 * started up or there will be weird hibernate transaction errors if
+			 * the GUI connects while the client is trying to connect
 			 */
 			startupLock.acquire();
 		} catch (InterruptedException e) {
@@ -165,9 +166,13 @@ public class ClientServiceImpl implements ClientService,
 		Integer reconnectSeconds = new Integer(configurationService.getValue(
 				"client.reconnectInSeconds", "5"));
 
-		timer.schedule(
-				new ConnectionJob(createJobData(connectionService
-						.getConnection(c.getId()))), reconnectSeconds * 1000);
+		Connection connection = connectionService.getConnection(c.getId());
+		if (connection == null) {
+			log.warn("Ignoring a scheduled connection that no longer exists, probably deleted.");
+		} else {
+			timer.schedule(new ConnectionJob(createJobData(connection)),
+					reconnectSeconds * 1000);
+		}
 
 	}
 
@@ -214,7 +219,9 @@ public class ClientServiceImpl implements ClientService,
 
 	@Override
 	public boolean isConnected(Connection c) throws RemoteException {
-		return activeClients.containsKey(c) || connectingClients.containsKey(c);
+		// return activeClients.containsKey(c) ||
+		// connectingClients.containsKey(c);
+		return activeClients.containsKey(c);
 	}
 
 	@Override
@@ -250,11 +257,23 @@ public class ClientServiceImpl implements ClientService,
 	public List<ConnectionStatus> getStatus() throws RemoteException {
 
 		List<ConnectionStatus> ret = new ArrayList<ConnectionStatus>();
-		for (Connection c : connectionService.getConnections()) {
-			ret.add(new ConnectionStatusImpl(c, getStatus(c)));
-		}
+		Collection<Connection> connections = connectionService.getConnections();
+		List<Connection> added = new ArrayList<Connection>();
+		addConnections(ret, connections, added);
+		addConnections(ret, activeClients.keySet(), added);
+		addConnections(ret, connectingClients.keySet(), added);
 		return ret;
 
+	}
+
+	private void addConnections(List<ConnectionStatus> ret,
+			Collection<Connection> connections, List<Connection> added) {
+		for (Connection c : connections) {
+			if (!added.contains(c)) {
+				ret.add(new ConnectionStatusImpl(c, getStatus(c)));
+				added.add(c);
+			}
+		}
 	}
 
 	@Override
@@ -388,5 +407,27 @@ public class ClientServiceImpl implements ClientService,
 		} catch (IOException e) {
 			throw new RemoteException(e.getMessage());
 		}
+	}
+
+	@Override
+	public Connection save(Connection c) throws RemoteException {
+		// If a non-persistent connection is now being saved as a persistent
+		// one, then update our maps
+		Connection newConnection = connectionService.save(c);
+		
+		if(c.getId() == null && newConnection.getId() != null) {
+			log.info(String.format("Saving non-persistent connection, now has ID %d", newConnection.getId()));
+		}
+		
+		if (activeClients.containsKey(c)) {
+			activeClients.put(newConnection, activeClients.remove(c));
+		}
+		if (connectingClients.containsKey(c)) {
+			connectingClients.put(newConnection, connectingClients.remove(c));
+		}
+		if (connectionPlugins.containsKey(c)) {
+			connectionPlugins.put(newConnection, connectionPlugins.remove(c));
+		}
+		return newConnection;
 	}
 }

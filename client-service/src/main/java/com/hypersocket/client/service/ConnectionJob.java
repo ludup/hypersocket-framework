@@ -1,5 +1,6 @@
 package com.hypersocket.client.service;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Locale;
 import java.util.Map;
@@ -48,9 +49,10 @@ public class ConnectionJob extends TimerTask {
 			log.info("Connecting to " + url);
 		}
 
+		ServiceClient client = null;
 		try {
 
-			ServiceClient client = new ServiceClient(new NettyClientTransport(
+			client = new ServiceClient(new NettyClientTransport(
 					boss, worker), locale, service, resourceService, c);
 
 			client.connect(c.getHostname(), c.getPort(), c.getPath(), locale);
@@ -62,14 +64,21 @@ public class ConnectionJob extends TimerTask {
 				callback.transportConnected(c);
 			}
 
+			log.info("Awaiting authentication for " + url);
 			if (StringUtils.isBlank(c.getUsername())
 					|| StringUtils.isBlank(c.getHashedPassword())) {
 				client.login();
 
 			} else {
-				client.loginHttp(c.getRealm(), c.getUsername(),
+				try {
+					client.loginHttp(c.getRealm(), c.getUsername(),
 						c.getHashedPassword(), true);
+				}
+				catch(IOException ioe) {
+					client.login();					
+				}
 			}
+			log.info("Received authentication for " + url);
 
 			// Now get the current version and check against ours.
 			String response[] = client.getTransport().get("server/version")
@@ -130,7 +139,7 @@ public class ConnectionJob extends TimerTask {
 					//
 				}
 			}
-
+			
 			if (!(e instanceof UserCancelledException)) {
 				if (StringUtils.isNotBlank(c.getUsername())
 						&& StringUtils.isNotBlank(c.getHashedPassword())) {

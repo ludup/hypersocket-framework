@@ -11,7 +11,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
-@SuppressWarnings("restriction")
 public class Popup extends Stage {
 
 	private boolean sizeObtained;
