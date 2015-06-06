@@ -16,6 +16,7 @@
 
 package com.hypersocket.client.gui.jfx;
 
+
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -31,10 +32,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Popup;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
 import javafx.util.Duration;
 
 
@@ -201,9 +202,9 @@ public class Notification {
          * Show the given Notification on the screen
          * @param NOTIFICATION
          */
-        public void notify(final Notification NOTIFICATION) {
+        public void notify(Window parent, final Notification NOTIFICATION) {
             preOrder();
-            showPopup(NOTIFICATION);
+            showPopup(parent, NOTIFICATION);
         }
 
         /**
@@ -212,8 +213,8 @@ public class Notification {
          * @param MESSAGE
          * @param IMAGE
          */
-        public void notify(final String TITLE, final String MESSAGE, final Image IMAGE) {
-            notify(new Notification(TITLE, MESSAGE, IMAGE));
+        public void notify(Window parent, final String TITLE, final String MESSAGE, final Image IMAGE) {
+            notify(parent, new Notification(TITLE, MESSAGE, IMAGE));
         }
 
         /**
@@ -221,8 +222,8 @@ public class Notification {
          * @param TITLE
          * @param MESSAGE
          */
-        public void notifyInfo(final String TITLE, final String MESSAGE) {
-            notify(new Notification(TITLE, MESSAGE, Notification.INFO_ICON));
+        public void notifyInfo(Window parent, final String TITLE, final String MESSAGE) {
+            notify(parent, new Notification(TITLE, MESSAGE, Notification.INFO_ICON));
         }
 
         /**
@@ -230,8 +231,8 @@ public class Notification {
          * @param TITLE
          * @param MESSAGE
          */
-        public void notifyWarning(final String TITLE, final String MESSAGE) {
-            notify(new Notification(TITLE, MESSAGE, Notification.WARNING_ICON));
+        public void notifyWarning(Window parent, final String TITLE, final String MESSAGE) {
+            notify(parent, new Notification(TITLE, MESSAGE, Notification.WARNING_ICON));
         }
 
         /**
@@ -239,8 +240,8 @@ public class Notification {
          * @param TITLE
          * @param MESSAGE
          */
-        public void notifySuccess(final String TITLE, final String MESSAGE) {
-            notify(new Notification(TITLE, MESSAGE, Notification.SUCCESS_ICON));
+        public void notifySuccess(Window parent, final String TITLE, final String MESSAGE) {
+            notify(parent, new Notification(TITLE, MESSAGE, Notification.SUCCESS_ICON));
         }
 
         /**
@@ -248,8 +249,8 @@ public class Notification {
          * @param TITLE
          * @param MESSAGE
          */
-        public void notifyError(final String TITLE, final String MESSAGE) {
-            notify(new Notification(TITLE, MESSAGE, Notification.ERROR_ICON));
+        public void notifyError(Window parent, final String TITLE, final String MESSAGE) {
+            notify(parent, new Notification(TITLE, MESSAGE, Notification.ERROR_ICON));
         }
 
         /**
@@ -282,7 +283,7 @@ public class Notification {
          * Creates and shows a popup with the data from the given Notification object
          * @param NOTIFICATION
          */
-        private void showPopup(final Notification NOTIFICATION) {
+        private void showPopup(Window parent, final Notification NOTIFICATION) {
             Label title = new Label(NOTIFICATION.TITLE);
             title.getStyleClass().add("title");
 
@@ -303,10 +304,10 @@ public class Notification {
             popupContent.getStyleClass().add("notification");
             popupContent.getChildren().addAll(popupLayout);
 
-            final Popup POPUP = new Popup();
+            Scene s = new Scene(popupContent);
+            final Popup POPUP = new Popup(parent, s);
             POPUP.setX( getX() );
             POPUP.setY( getY() );
-            POPUP.getContent().add(popupContent);
 
             popups.add(POPUP);
 
@@ -333,7 +334,7 @@ public class Notification {
                 stage.show();
             }
 
-            POPUP.show(stage);
+            POPUP.popup();
             timeline.play();
         }
 

@@ -74,6 +74,8 @@ public class SignIn extends AbstractController implements Listener {
 
 	private boolean adjusting;
 
+	private Popup popup;
+
 	@Override
 	public void disconnecting(Connection connection) {
 		abortPrompts();
@@ -188,6 +190,7 @@ public class SignIn extends AbstractController implements Listener {
 					credentialsUI.setCenter(vbox);
 					promptsAvailable = true;
 					getStage().sizeToScene();
+					popup.positionPopup();
 					setAvailable();
 
 					Platform.runLater(new Runnable() {
@@ -458,6 +461,7 @@ public class SignIn extends AbstractController implements Listener {
 			promptsAvailable = false;
 			setAvailable();
 			getStage().sizeToScene();
+			popup.positionPopup();
 			promptSemaphore.release();
 		} catch (Exception e) {
 			log.error("Failed to login.", e);
@@ -600,5 +604,9 @@ public class SignIn extends AbstractController implements Listener {
 			login.setDisable(true);
 			saveCredentials.setDisable(false);
 		}
+	}
+
+	public void setPopup(Popup popup) {
+		this.popup = popup;		
 	}
 }

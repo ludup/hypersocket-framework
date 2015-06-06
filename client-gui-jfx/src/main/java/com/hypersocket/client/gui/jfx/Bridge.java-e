@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import javafx.application.Platform;
+import javafx.stage.Window;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -224,26 +225,27 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 		System.err.println("[[NOTIFY]] " + msg + " (" + type + ")");
 		Platform.runLater(new Runnable() {
 			public void run() {
+				Window parent = Dock.getInstance().getStage();
 
 				switch (type) {
 				case NOTIFY_CONNECT:
-					Notifier.INSTANCE.notifySuccess(
+					Notifier.INSTANCE.notifySuccess(parent,
 							I18N.getResource("notify.connect"), msg);
 					break;
 				case NOTIFY_DISCONNECT:
-					Notifier.INSTANCE.notifySuccess(
+					Notifier.INSTANCE.notifySuccess(parent,
 							I18N.getResource("notify.disconnect"), msg);
 					break;
 				case NOTIFY_INFO:
-					Notifier.INSTANCE.notifyInfo(
+					Notifier.INSTANCE.notifyInfo(parent,
 							I18N.getResource("notify.information"), msg);
 					break;
 				case NOTIFY_WARNING:
-					Notifier.INSTANCE.notifyWarning(
+					Notifier.INSTANCE.notifyWarning(parent,
 							I18N.getResource("notify.warning"), msg);
 					break;
 				case NOTIFY_ERROR:
-					Notifier.INSTANCE.notifyError(
+					Notifier.INSTANCE.notifyError(parent,
 							I18N.getResource("notify.error"), msg);
 					break;
 				}
