@@ -117,7 +117,7 @@ public class Popup extends Stage {
 		return false;
 	}
 
-	private void positionPopup() {
+	public void positionPopup() {
 		Configuration cfg = Configuration.getDefault();
 		if (cfg.topProperty().get()) {
 			setY(getOwner().getY() + getOwner().getHeight());

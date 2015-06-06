@@ -71,8 +71,19 @@ public class Dock extends AbstractController implements Listener {
 	private HBox shortcutContainer;
 
 	private TranslateTransition slideTransition;
-
 	private Rectangle slideClip;
+	private static Dock instance;
+
+	public Dock() {
+		if (instance != null) {
+			throw new IllegalStateException("Only allowed one dock instance.");
+		}
+		instance = this;
+	}
+	
+	public static Dock getInstance() {
+		return instance;
+	}
 
 	@Override
 	protected void onConfigure() {
@@ -144,7 +155,7 @@ public class Dock extends AbstractController implements Listener {
 		rebuildIcons();
 		sizeButtons();
 		recentre();
-		setAvailable();				
+		setAvailable();
 	}
 
 	public boolean arePopupsOpen() {
@@ -256,6 +267,7 @@ public class Dock extends AbstractController implements Listener {
 		if (signInPopup == null) {
 			FramedController signInScene = context.openScene(SignIn.class);
 			signInPopup = new Popup(parent, signInScene.getScene());
+			((SignIn) signInScene).setPopup(signInPopup);
 		}
 		signInPopup.popup();
 	}

@@ -84,25 +84,21 @@ public class AbstractController implements FramedController, Listener {
 
 	@Override
 	public void connecting(Connection connection) {
-		System.out.println("[[CONNECTING " + connection.getId() + "]]");
 		stateChanged();		
 	}
 
 	@Override
 	public void finishedConnecting(Connection connection, Exception e) {
-		System.out.println("[[FINISHED CONNECTING " + connection.getId() + " " + e + "]]");
 		stateChanged();				
 	}
 
 	@Override
 	public void disconnecting(Connection connection) {
-		System.out.println("[[DISCONNECTING" + connection.getId() + "]]");
 		stateChanged();						
 	}
 
 	@Override
 	public void disconnected(Connection connection, Exception e) {
-		System.out.println("[[DISCONNECTED " + connection.getId() + " " + e + "]]");
 		stateChanged();								
 	}
 
