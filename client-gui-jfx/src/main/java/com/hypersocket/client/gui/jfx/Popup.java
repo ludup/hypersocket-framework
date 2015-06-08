@@ -47,10 +47,7 @@ public class Popup extends Stage {
 						ObservableValue<? extends Boolean> observable,
 						Boolean oldValue, Boolean newValue) {
 
-					System.out.println("LOST FOCUS ON POPUP " + Popup.this
-							+ " NV: " + newValue + " CF: " + isChildFocussed());
 					if (oldValue && !newValue && !isChildFocussed()) {
-						System.out.println("CHILD NOT FOCUSSED: HIDING PARENT");
 						hide();
 						Platform.runLater(new Runnable() {
 							@Override
@@ -88,6 +85,7 @@ public class Popup extends Stage {
 			}
 		};
 		cfg.sizeProperty().addListener(sl);
+		cfg.monitorProperty().addListener(sl);
 		
 
 		Property<Color> colorProperty = cfg.colorProperty();
@@ -103,8 +101,7 @@ public class Popup extends Stage {
 
 	public void popupAndWait() {
 		if (!isShowing()) {
-			setY(getOwner().getY() + getOwner().getHeight());
-			setX(getOwner().getX() + getOwner().getWidth() - getWidth());
+			positionPopup();
 			showAndWait();
 		}
 	}
@@ -120,7 +117,7 @@ public class Popup extends Stage {
 		return false;
 	}
 
-	private void positionPopup() {
+	public void positionPopup() {
 		Configuration cfg = Configuration.getDefault();
 		if (cfg.topProperty().get()) {
 			setY(getOwner().getY() + getOwner().getHeight());

@@ -18,7 +18,15 @@ public interface AbstractResourceService<T extends RealmResource> extends
 			throws ResourceCreationException, AccessDeniedException;
 
 	@SuppressWarnings("unchecked") 
+	void createResource(T resource, TransactionOperation<T>... ops)
+			throws ResourceCreationException, AccessDeniedException;
+	
+	@SuppressWarnings("unchecked") 
 	void updateResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops)
+			throws ResourceChangeException, AccessDeniedException;
+	
+	@SuppressWarnings("unchecked") 
+	void updateResource(T resource, TransactionOperation<T>... ops)
 			throws ResourceChangeException, AccessDeniedException;
 
 	void deleteResource(T resource) throws ResourceChangeException,
@@ -32,7 +40,7 @@ public interface AbstractResourceService<T extends RealmResource> extends
 	long getResourceCount(Realm realm, String search)
 			throws AccessDeniedException;
 
-	List<T> getResources();
+	List<T> allResources();
 
 	T getResourceByName(String name) throws ResourceNotFoundException;
 
@@ -50,5 +58,22 @@ public interface AbstractResourceService<T extends RealmResource> extends
 
 	T getResourceByName(String name, Realm realm)
 			throws ResourceNotFoundException;
+
+	String exportResources(Collection<T> resources)
+			throws ResourceExportException;
+
+	String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException;
+
+	Collection<T> importResources(String json, Realm realm)
+			throws AccessDeniedException, ResourceException;
+
+	String getResourceCategory();
+
+	String exportResoure(Long id) throws ResourceNotFoundException,
+			ResourceExportException;
+
+	String exportAllResoures() throws ResourceExportException;
+	
+	void extendPropertyTemplates(String string);
 
 }

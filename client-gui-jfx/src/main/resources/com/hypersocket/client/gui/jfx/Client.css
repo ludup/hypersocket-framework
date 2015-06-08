@@ -57,6 +57,12 @@
     -fx-font-size: 12px;
 }
 
+
+/* Tooltip */
+.tooltip {
+    -fx-font-size: 14px;
+}
+
 /* General */
 .info, .info .text {
 	-fx-text-fill: HIGHLIGHT_TEXT_COLOR;

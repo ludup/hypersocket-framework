@@ -13,9 +13,9 @@
          </padding>
       </Label>
       <ComboBox fx:id="serverUrls" editable="true" onAction="#evtServerUrlSelected" prefHeight="25.0" prefWidth="270.0" />
-      <BorderPane styleClass="background">
+      <BorderPane fx:id="optionsUI" styleClass="background">
          <right>
-            <CheckBox fx:id="saveConnection" alignment="CENTER_RIGHT" mnemonicParsing="false" styleClass="info" text="%saveConnection" BorderPane.alignment="CENTER">
+            <CheckBox fx:id="saveConnection" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#evtSaveConnection" styleClass="info" text="%saveConnection" BorderPane.alignment="CENTER">
                <padding>
                   <Insets top="8.0" />
                </padding>
@@ -33,21 +33,10 @@
             </HBox>
          </left>
       </BorderPane>
-      <Label text="%username">
-         <padding>
-            <Insets bottom="8.0" />
-         </padding>
-      </Label>
-      <TextField fx:id="username" />
-      <Label text="%password">
-         <padding>
-            <Insets bottom="8.0" top="8.0" />
-         </padding>
-      </Label>
-      <PasswordField fx:id="password" />
-      <BorderPane styleClass="background">
+      <BorderPane fx:id="credentialsUI" />
+      <BorderPane fx:id="promptUI" styleClass="background">
          <center>
-            <CheckBox fx:id="saveCredentials" mnemonicParsing="false" styleClass="info" text="%saveCredentials" BorderPane.alignment="CENTER_RIGHT" />
+            <CheckBox fx:id="saveCredentials" mnemonicParsing="false" onAction="#evtSaveCredentials" styleClass="info" text="%saveCredentials" BorderPane.alignment="CENTER_RIGHT" />
          </center>
          <left>
             <Button fx:id="login" mnemonicParsing="false" onAction="#evtLogin" text="%login" BorderPane.alignment="CENTER" />

@@ -136,7 +136,7 @@ public class AuthenticatedController {
 	}
 	
 	protected void setupSystemContext(Realm realm) {
-		setupAuthenticatedContext(getSystemPrincipal(),
+		setupAuthenticatedContext(sessionService.getSystemSession(),
 				i18nService.getDefaultLocale(), realm);
 	}
 	
@@ -170,6 +170,23 @@ public class AuthenticatedController {
 	
 	protected void setupAuthenticatedContext(Session pricipal, Locale locale) {
 		authenticationService.setCurrentSession(pricipal, locale);
+	}
+
+	protected void setupAuthenticatedContext(Session pricipal, Locale locale, Realm realm) {
+		authenticationService.setCurrentSession(pricipal, locale);
+		authenticationService.setCurrentRealm(realm);
+	}
+	
+	protected Realm getCurrentRealm() {
+		return authenticationService.getCurrentRealm();
+	}
+	
+	protected Principal getCurrentPrincipal() {
+		return authenticationService.getCurrentPrincipal();
+	}
+	
+	protected Session getCurrentSession() {
+		return authenticationService.getCurrentSession();
 	}
 
 	protected void setupAuthenticatedContext(Principal principal,

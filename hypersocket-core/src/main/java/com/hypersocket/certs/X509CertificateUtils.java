@@ -54,8 +54,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 import org.bouncycastle.operator.ContentSigner;
@@ -208,7 +208,7 @@ public class X509CertificateUtils {
 	public static void saveKeyPair(KeyPair pair, OutputStream keyfile)
 			throws CertificateException {
 
-		PEMWriter writer = new PEMWriter(new OutputStreamWriter(keyfile));
+		JcaPEMWriter writer = new JcaPEMWriter(new OutputStreamWriter(keyfile));
 		try {
 			writer.writeObject(pair.getPrivate());
 			writer.flush();
@@ -220,7 +220,7 @@ public class X509CertificateUtils {
 
 	public static void saveCertificate(Certificate[] certs,
 			OutputStream certfile) throws CertificateException {
-		PEMWriter writer = new PEMWriter(new OutputStreamWriter(certfile));
+		JcaPEMWriter writer = new JcaPEMWriter(new OutputStreamWriter(certfile));
 
 		try {
 			for (Certificate c : certs) {
@@ -443,9 +443,9 @@ public class X509CertificateUtils {
 		PKCS10CertificationRequest req = builder.build(cs);
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		PEMWriter p = null;
+		JcaPEMWriter p = null;
 		try {
-			p = new PEMWriter(new OutputStreamWriter(bout));
+			p = new JcaPEMWriter(new OutputStreamWriter(bout));
 			p.writeObject(req);
 		} finally {
 			if (p != null)
