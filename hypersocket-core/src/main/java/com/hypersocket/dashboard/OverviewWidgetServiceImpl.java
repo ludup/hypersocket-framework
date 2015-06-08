@@ -1,6 +1,8 @@
 package com.hypersocket.dashboard;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -9,12 +11,15 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationPermission;
+import com.hypersocket.http.HttpUtils;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.SchedulerService;
 
 @Service
@@ -66,5 +71,19 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	public List<OverviewWidget> getWidgets() throws AccessDeniedException {
 		assertPermission(ConfigurationPermission.READ);
 		return widgetList;
+	}
+
+	@Override
+	public Collection<UsefulLink> getLinks() throws ResourceException {
+		
+		ObjectMapper mapper = new ObjectMapper();
+
+		try {
+			return Arrays.asList(mapper.readValue(HttpUtils.doHttpGet(
+					"http://updates.hypersocket.com/messages/articles.json",
+					true), UsefulLink[].class));
+		} catch (Throwable e) {
+			throw new ResourceException(RESOURCE_BUNDLE, "error.readingArticleList", e.getMessage());
+		}
 	}
 }
