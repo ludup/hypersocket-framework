@@ -27,6 +27,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.upload.FileUploadService;
@@ -44,7 +45,7 @@ public class FileUploadController extends ResourceController {
 	@RequestMapping(value = "fileUpload/metainfo/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public FileUpload getFile(final HttpServletRequest request,
+	public ResourceStatus<FileUpload> getFile(final HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String uuid)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
@@ -52,8 +53,12 @@ public class FileUploadController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			return service.getFileByUuid(uuid);
+			return new ResourceStatus<FileUpload>(service.getFileByUuid(uuid));
 
+		} catch(ResourceException ex) { 
+			return new ResourceStatus<FileUpload>(false, I18N.getResource(
+					sessionUtils.getLocale(request),
+					ex.getBundle(), ex.getResourceKey(), ex.getArgs()));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -146,7 +151,7 @@ public class FileUploadController extends ResourceController {
 	public void downloadFile(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String uuid)
 			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException, IOException {
+			SessionTimeoutException, IOException, ResourceNotFoundException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
