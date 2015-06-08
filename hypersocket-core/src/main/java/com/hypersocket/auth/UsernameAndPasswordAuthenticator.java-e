@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.input.FormTemplate;
-import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmService;
 
@@ -102,7 +101,13 @@ public class UsernameAndPasswordAuthenticator extends
 			password = state
 					.getParameter(UsernameAndPasswordTemplate.PASSWORD_FIELD);
 		}
-		return realmService.verifyPassword(principal, password.toCharArray());
+		boolean success = realmService.verifyPassword(principal, password.toCharArray());
+		
+		if(success) {
+			state.addParameter("password", password);
+		}
+		
+		return success;
 	}
 
 }

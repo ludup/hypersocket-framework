@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.openssl.jcajce.JcePEMEncryptorBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -460,7 +461,7 @@ public class CertificateResourceController extends ResourceController {
 									.getBytes("UTF-8")), passphrase
 									.toCharArray());
 					ByteArrayOutputStream bout = new ByteArrayOutputStream();
-					org.bouncycastle.openssl.PEMWriter pem = new org.bouncycastle.openssl.PEMWriter(
+					JcaPEMWriter pem = new JcaPEMWriter(
 							new OutputStreamWriter(bout));
 					pem.writeObject(
 							keypair,

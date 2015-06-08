@@ -113,4 +113,6 @@ public interface RealmProvider extends ResourceTemplateRepository {
 			throws ResourceChangeException, ResourceCreationException;
 
 	Set<String> getUserVariableNames();
+
+	Map<String, String> getUserPropertyValues(Principal principal);
 }

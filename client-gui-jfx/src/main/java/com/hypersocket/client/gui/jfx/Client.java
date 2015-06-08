@@ -2,11 +2,7 @@ package com.hypersocket.client.gui.jfx;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.concurrent.Semaphore;
 
 import javafx.application.Application;
 import javafx.application.ConditionalFeature;
@@ -14,33 +10,24 @@ import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import com.hypersocket.client.Option;
-import com.hypersocket.client.Prompt;
 import com.hypersocket.client.gui.jfx.fontawesome.AwesomeIcons;
 import com.hypersocket.client.rmi.BrowserLauncher;
 import com.hypersocket.client.rmi.BrowserLauncher.BrowserLauncherFactory;
 import com.hypersocket.client.rmi.ResourceLauncher;
 
-public class Client extends Application implements Context {
+public class Client extends Application {
 	static ResourceBundle BUNDLE = ResourceBundle.getBundle(Client.class
 			.getName());
 
@@ -67,17 +54,29 @@ public class Client extends Application implements Context {
 		controllerInst.configure(scene, this);
 		return controllerInst;
 	}
+	
+	public static Screen getConfiguredScreen() {
+		Configuration cfg = Configuration.getDefault();
+		ObservableList<Screen> screens = Screen.getScreens();
+		return screens.get(Math.min(screens.size() - 1, cfg.monitorProperty().get()));
+	}
+	
+	public static Rectangle2D getConfiguredBounds() {
 
-	private void setStageBounds() {
-		Screen screen = Screen.getPrimary();
+		Configuration cfg = Configuration.getDefault();
+		Screen screen = getConfiguredScreen();
 
 		// TODO might need to monitor the bounds constantly, I can't see
 		// a way to get screen geometry change events.
 		Rectangle2D visualBounds = screen.getVisualBounds();
 		Rectangle2D screenBounds = screen.getBounds();
-		Configuration cfg = Configuration.getDefault();
-		Rectangle2D bounds = cfg.avoidReservedProperty().get() ? visualBounds
+		return cfg.avoidReservedProperty().get() ? visualBounds
 				: screenBounds;
+	}
+
+	private void setStageBounds() {
+		Configuration cfg = Configuration.getDefault();
+		Rectangle2D bounds = getConfiguredBounds();
 
 		if (cfg.leftProperty().get()) {
 			primaryStage.setX(bounds.getMinX());
@@ -107,7 +106,7 @@ public class Client extends Application implements Context {
 
 		this.primaryStage = primaryStage;
 
-		bridge = new Bridge(this);
+		bridge = new Bridge();
 		if (Platform.isSupported(ConditionalFeature.TRANSPARENT_WINDOW)) {
 			primaryStage.initStyle(StageStyle.TRANSPARENT);
 		} else {
@@ -202,14 +201,16 @@ public class Client extends Application implements Context {
 				}
 			}
 		};
-		cfg.sizeProperty().addListener(new ChangeListener<Number>() {
+		ChangeListener<Number> geometryChangeListener = new ChangeListener<Number>() {
 
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
 				setStageBounds();
 			}
-		});
+		};
+		cfg.monitorProperty().addListener(geometryChangeListener);
+		cfg.sizeProperty().addListener(geometryChangeListener);
 		cfg.topProperty().addListener(dockPositionListener);
 		cfg.bottomProperty().addListener(dockPositionListener);
 		cfg.leftProperty().addListener(dockPositionListener);
@@ -246,82 +247,4 @@ public class Client extends Application implements Context {
 		return bridge;
 	}
 
-	@Override
-	public Map<String, String> showPrompts(List<Prompt> prompts) {
-		final Map<String, String> values = new HashMap<String, String>();
-
-		Semaphore s = new Semaphore(1);
-		try {
-			s.acquire();
-			Platform.runLater(new Runnable() {
-
-				@SuppressWarnings("unchecked")
-				@Override
-				public void run() {
-
-					VBox vbox = new VBox();
-					Map<Prompt, Node> nodes = new HashMap<Prompt, Node>();
-					for (Prompt p : prompts) {
-						Label l = new Label(p.getLabel());
-						vbox.getChildren().add(l);
-						switch (p.getType()) {
-						case TEXT:
-							TextField txt = new TextField(p.getDefaultValue());
-							vbox.getChildren().add(txt);
-							nodes.put(p, txt);
-							break;
-						case HIDDEN:
-							values.put(p.getResourceKey(), p.getDefaultValue());
-							break;
-						case PASSWORD:
-							PasswordField pw = new PasswordField();
-							vbox.getChildren().add(pw);
-							nodes.put(p, pw);
-							break;
-						case SELECT:
-							ComboBox<String> cb = new ComboBox<String>();
-							for (Option o : p.getOptions()) {
-								cb.itemsProperty().get().add(o.getName());
-							}
-							vbox.getChildren().add(cb);
-							nodes.put(p, cb);
-							break;
-						case P:
-							// TODO What's a P?
-							break;
-						}
-					}
-					Scene scene = new Scene(vbox);
-					Popup popup = new Popup(primaryStage, scene, false);
-					Button b = new Button("Continue");
-					b.setOnAction((event) -> {
-						popup.hide();
-						for (Map.Entry<Prompt, Node> en : nodes.entrySet()) {
-							if (en.getValue() instanceof TextField) {
-								values.put(en.getKey().getResourceKey(),
-										((TextField) en.getValue()).getText());
-							} else if (en.getValue() instanceof PasswordField) {
-								values.put(en.getKey().getResourceKey(),
-										((PasswordField) en.getValue())
-												.getText());
-							} else if (en.getValue() instanceof ComboBox) {
-								values.put(en.getKey().getResourceKey(),
-										((ComboBox<String>) en.getValue())
-												.getValue());
-							}
-						}
-						s.release();
-					});
-					vbox.getChildren().add(b);
-					popup.initModality(Modality.WINDOW_MODAL);
-					popup.popup();
-				}
-			});
-			s.acquire();
-			s.release();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		return values;
-	}
 }

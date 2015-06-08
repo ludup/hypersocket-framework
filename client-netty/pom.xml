@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>com.hypersocket</groupId>
 		<artifactId>hypersocket-framework</artifactId>
-		<version>0.2.8-SNAPSHOT</version>
+		<version>0.2.10-LOCAL</version>
 		<relativePath>..</relativePath>
 	</parent>
 
@@ -28,7 +28,7 @@
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty</artifactId>
-			<version>3.5.8.Final</version>
+			<version>3.6.6.Final</version>
 			<scope>compile</scope>
 		</dependency>
 

@@ -20,6 +20,8 @@ import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Repository;
@@ -32,6 +34,8 @@ import com.hypersocket.tables.Sort;
 @Repository
 public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K> {
 
+	static Logger log = LoggerFactory.getLogger(AbstractRepositoryImpl.class);
+	
 	private HibernateTemplate hibernateTemplate;
 	private SessionFactory sessionFactory;
 
@@ -186,7 +190,9 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		if(results.isEmpty()) {
 			return null;
 		} else if(results.size() > 1) {
-			throw new IllegalStateException("Too many results returned in get request for column=" + column + " value=" + value + " class=" + cls.getName());
+			if(log.isWarnEnabled()) {
+				log.warn("Too many results returned in get request for column=" + column + " value=" + value + " class=" + cls.getName());
+			}
 		}
 		return (T)results.get(0);
 	}

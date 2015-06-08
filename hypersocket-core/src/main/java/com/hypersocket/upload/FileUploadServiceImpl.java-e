@@ -34,6 +34,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceNotFoundException;
 
 @Service
 public class FileUploadServiceImpl extends
@@ -47,6 +48,7 @@ public class FileUploadServiceImpl extends
 	static Logger log = LoggerFactory.getLogger(FileUploadServiceImpl.class);
 	
 	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
+	
 	@Autowired
 	FileUploadRepository repository;
 
@@ -59,6 +61,10 @@ public class FileUploadServiceImpl extends
 	@Autowired
 	EventService eventService;
 
+	public FileUploadServiceImpl() {
+		super("fileUploads");
+	}
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -71,27 +77,7 @@ public class FileUploadServiceImpl extends
 			throws ResourceCreationException, AccessDeniedException,
 			IOException {
 
-		return createFile(file, realm, true, new FileUploadStore() {
-			public long writeFile(String uuid, InputStream in)
-					throws IOException {
-
-				File f = new File("conf/uploads/" + realm.getId() + "/" + uuid);
-				f.getParentFile().mkdirs();
-				f.createNewFile();
-
-				OutputStream out = new FileOutputStream(UPLOAD_PATH
-						+ realm.getId() + "/" + uuid);
-
-				try {
-					IOUtils.copyLarge(in, out);
-				} finally {
-					IOUtils.closeQuietly(out);
-					IOUtils.closeQuietly(in);
-				}
-
-				return f.length();
-			}
-		});
+		return createFile(file, realm, true, new DefaultFileUploadStore(realm));
 	}
 
 	@Override
@@ -151,8 +137,12 @@ public class FileUploadServiceImpl extends
 	}
 
 	@Override
-	public FileUpload getFileByUuid(String uuid) {
-		return repository.getFileByUuid(uuid);
+	public FileUpload getFileByUuid(String uuid) throws ResourceNotFoundException {
+		FileUpload upload = repository.getFileByUuid(uuid);
+		if(upload==null) {
+			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.fileNotFound", uuid);
+		}
+		return upload;
 	}
 
 	@Override
@@ -178,12 +168,12 @@ public class FileUploadServiceImpl extends
 
 	@Override
 	public void downloadURIFile(String uuid, HttpServletRequest request, HttpServletResponse response, boolean forceDownload)
-			throws IOException, AccessDeniedException {
+			throws IOException, AccessDeniedException, ResourceNotFoundException {
 
 		FileUpload fileUpload = getFileByUuid(uuid);
 
-		File file = new File(UPLOAD_PATH + "/" + fileUpload.getRealm().getId()
-				+ "/" + fileUpload.getName());
+		File file = getFile(uuid);
+		
 		InputStream in = new FileInputStream(file);
 
 
@@ -209,6 +199,16 @@ public class FileUploadServiceImpl extends
 				request.setAttribute(CONTENT_INPUTSTREAM, in);
 			}
 	}
+	
+	@Override
+	public File getFile(String uuid) throws IOException, ResourceNotFoundException {
+		FileUpload fileUpload = getFileByUuid(uuid);
+
+		File file = new File(UPLOAD_PATH + "/" + fileUpload.getRealm().getId()
+				+ "/" + fileUpload.getName());
+		
+		return file;
+	}
 
 	@Override
 	protected AbstractResourceRepository<FileUpload> getRepository() {
@@ -224,7 +224,11 @@ public class FileUploadServiceImpl extends
 	public Class<? extends PermissionType> getPermissionType() {
 		return FileUploadPermission.class;
 	}
-
+	
+	protected Class<FileUpload> getResourceClass() {
+		return FileUpload.class;
+	}
+	
 	@Override
 	protected void fireResourceCreationEvent(FileUpload resource) {
 	}
@@ -249,4 +253,43 @@ public class FileUploadServiceImpl extends
 	protected void fireResourceDeletionEvent(FileUpload resource, Throwable t) {
 	}
 
+	@Override
+	public FileUpload createFile(File outputFile, String filename,
+			Realm realm, boolean persist) throws ResourceCreationException, AccessDeniedException, IOException {
+		
+		InputStream in = new FileInputStream(outputFile);
+		try {
+			return createFile(in, filename, realm, persist, new DefaultFileUploadStore(realm));
+		} finally {
+			IOUtils.closeQuietly(in);
+		}
+	}
+
+	class DefaultFileUploadStore implements FileUploadStore {
+		
+		Realm realm;
+		DefaultFileUploadStore(Realm realm) {
+			this.realm = realm;
+		}
+		
+		public long writeFile(String uuid, InputStream in)
+				throws IOException {
+
+			File f = new File("conf/uploads/" + realm.getId() + "/" + uuid);
+			f.getParentFile().mkdirs();
+			f.createNewFile();
+
+			OutputStream out = new FileOutputStream(UPLOAD_PATH
+					+ realm.getId() + "/" + uuid);
+
+			try {
+				IOUtils.copyLarge(in, out);
+			} finally {
+				IOUtils.closeQuietly(out);
+				IOUtils.closeQuietly(in);
+			}
+
+			return f.length();
+		}
+	}
 }

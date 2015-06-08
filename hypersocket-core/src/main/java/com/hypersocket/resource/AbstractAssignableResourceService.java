@@ -12,9 +12,6 @@ import com.hypersocket.tables.ColumnSort;
 
 public interface AbstractAssignableResourceService<T> extends PasswordEnabledAuthenticatedService {
 
-	void deleteResource(T resource) throws ResourceChangeException,
-			AccessDeniedException;
-
 	List<T> allResources();
 	
 	List<T> getResources(Realm realm) throws AccessDeniedException;
@@ -49,5 +46,33 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	long getPersonalResourceCount(Principal principal, String search);
 
 	Collection<T> getPersonalResources(Principal principal) throws AccessDeniedException;
+	
+	Collection<T> getPersonalResources() throws AccessDeniedException;
+
+	long getPersonalResourceCount(String search);
+
+	void updateResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops)
+			throws ResourceChangeException, AccessDeniedException;
+
+	String exportResoure(Long id) throws ResourceNotFoundException,
+			ResourceExportException;
+
+	String exportAllResoures() throws ResourceExportException;
+
+	String exportResources(Collection<T> resources)
+			throws ResourceExportException;
+
+	Collection<T> importResources(String json, Realm realm)
+			throws AccessDeniedException, ResourceException;
+
+	String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException;
+
+	T getResourceByName(String name, Realm realm)
+			throws ResourceNotFoundException;
+
+	String getResourceCategory();
+
+	void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops)
+			throws ResourceChangeException, AccessDeniedException;
 
 }

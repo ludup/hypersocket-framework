@@ -152,7 +152,7 @@ public class ConnectionDialog extends Dialog {
 		FormData fd_lblNewLabel_5 = new FormData();
 		fd_lblNewLabel_5.top = new FormAttachment(lblNewLabel_4, 11);
 		lblNewLabel_5.setLayoutData(fd_lblNewLabel_5);
-		lblNewLabel_5.setText("Passsord:");
+		lblNewLabel_5.setText("Password:");
 		
 		txtPassword = new Text(composite, SWT.BORDER | SWT.PASSWORD);
 		fd_lblNewLabel_5.right = new FormAttachment(txtPassword, -21);

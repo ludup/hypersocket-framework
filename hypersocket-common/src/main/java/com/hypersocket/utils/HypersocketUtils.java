@@ -2,6 +2,7 @@ package com.hypersocket.utils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -12,6 +13,10 @@ import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class HypersocketUtils {
 
 	static Logger log = LoggerFactory.getLogger(HypersocketUtils.class);
@@ -19,6 +24,8 @@ public class HypersocketUtils {
 	static ThreadLocal<Long> times = new ThreadLocal<Long>();
 
 	static Map<String,SimpleDateFormat> dateFormats = new HashMap<String,SimpleDateFormat>();
+	
+	static DecimalFormat df = new DecimalFormat("#.00");
 	
 	public static void resetInterval() {
 		times.set(System.currentTimeMillis());
@@ -125,6 +132,28 @@ public class HypersocketUtils {
 	public static byte[] base64Decode(String property) throws IOException {
 		return Base64.decodeBase64(property.getBytes("UTF-8"));
 	}
+	
+	public static boolean isValidJSON(final String json) {
+		   try {
+		      final JsonParser parser = new ObjectMapper().getFactory()
+		            .createParser(json);
+		      while (parser.nextToken() != null) {
+		      }
+		      return true;
+		   } catch (JsonParseException jpe) {
+		      return false;
+		   } catch (IOException ioe) {
+			   return false;
+		   }
 
+		}
+
+	public static String format(Double d) {
+		return df.format(d);
+	}
+	
+	public static String format(Float f) {
+		return df.format(f);
+	}
 
 }

@@ -52,6 +52,7 @@
                                     <ToggleButton fx:id="bottom" mnemonicParsing="false" text="%bottom" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
                                     <ToggleButton fx:id="left" disable="true" mnemonicParsing="false" text="%left" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
                                     <ToggleButton fx:id="right" disable="true" mnemonicParsing="false" text="%right" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                                    <HBox fx:id="monitorContainer" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                  </children>
                               </GridPane>
                            </center>

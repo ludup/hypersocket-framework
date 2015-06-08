@@ -33,8 +33,11 @@
         <!-- Drop and re-create the database schema on startup -->
         <property name="hbm2ddl.auto">update</property>
 		
+        <property name="hibernate.connection.autocommit">true</property>
+		
 		<mapping class="com.hypersocket.client.rmi.ConnectionImpl"/>
 		<mapping class="com.hypersocket.client.rmi.ConfigurationItemImpl"/>
+		
 		
     </session-factory>
  

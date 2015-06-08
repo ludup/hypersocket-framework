@@ -1,7 +1,10 @@
 package com.hypersocket.resource;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,7 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -19,6 +26,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.transactions.TransactionService;
 
 @Service
 public abstract class AbstractAssignableResourceServiceImpl<T extends AssignableResource>
@@ -33,28 +41,56 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	@Autowired
 	RealmService realmService;
 
+	@Autowired
+	TransactionService transactionService; 
+	
+	String resourceCategory;
+	
 	protected abstract AbstractAssignableResourceRepository<T> getRepository();
 
 	protected abstract String getResourceBundle();
-
+	
 	public abstract Class<?> getPermissionType();
 
+	protected abstract Class<T> getResourceClass();
+	
+	protected AbstractAssignableResourceServiceImpl(String resourceCateogory) {
+		this.resourceCategory = resourceCateogory;
+	}
+	
 	protected PermissionType getUpdatePermission() {
 		return getPermission("UPDATE");
 	}
 
+	protected PermissionType getUpdatePermission(T resource) {
+		return getUpdatePermission();
+	}
+	
 	protected PermissionType getCreatePermission() {
 		return getPermission("CREATE");
 	}
 
+	protected PermissionType getCreatePermission(T resource) {
+		return getCreatePermission();
+	}
+	
 	protected PermissionType getDeletePermission() {
 		return getPermission("DELETE");
+	}
+	
+	protected PermissionType getDeletePermission(T resource) {
+		return getDeletePermission();
 	}
 
 	protected PermissionType getReadPermission() {
 		return getPermission("READ");
 	}
 
+	@Override
+	public String getResourceCategory() {
+		return resourceCategory;
+	}
+	
 	protected PermissionType getPermission(String name) {
 		try {
 			Field f = getPermissionType().getField(name);
@@ -78,7 +114,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			TransactionOperation<T>... ops) throws ResourceCreationException,
 			AccessDeniedException {
 
-		assertPermission(getCreatePermission());
+		assertPermission(getCreatePermission(resource));
 
 		try {
 			getResourceByName(resource.getName());
@@ -91,6 +127,9 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 				if(resource.getRealm()==null) {
 					resource.setRealm(getCurrentRealm());
 				}
+				
+				resource.setResourceCategory(resourceCategory);
+				
 				beforeCreateResource(resource, properties);
 				
 				getRepository().saveResource(resource, properties, ops);
@@ -133,10 +172,20 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	protected abstract void fireResourceCreationEvent(T resource, Throwable t);
 
 	@SafeVarargs
+	@Override
+	public final void updateResource(T resource,  
+			TransactionOperation<T>... ops) throws ResourceChangeException,
+			AccessDeniedException {
+		updateResource(resource, new HashMap<String,String>(), ops);
+		
+	}
+	
+	@SafeVarargs
+	@Override
 	public final void updateResource(T resource, Map<String,String> properties,  
 			TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
-		assertPermission(getUpdatePermission());
+		assertPermission(getUpdatePermission(resource));
 
 		try {
 			if(resource.getRealm()==null) {
@@ -166,13 +215,13 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	protected abstract void fireResourceUpdateEvent(T resource, Throwable t);
 
 	@Override
-	public void deleteResource(T resource) throws ResourceChangeException,
+	public void deleteResource(T resource, TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
 
-		assertPermission(getDeletePermission());
+		assertPermission(getDeletePermission(resource));
 
 		try {
-			getRepository().deleteResource(resource);
+			getRepository().deleteResource(resource, ops);
 			fireResourceDeletionEvent(resource);
 		} catch (Throwable t) {
 			fireResourceDeletionEvent(resource, t);
@@ -220,10 +269,20 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	public Collection<T> getPersonalResources(Principal principal) throws AccessDeniedException {
 		return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(principal));
 	}
+
+	@Override
+	public Collection<T> getPersonalResources() throws AccessDeniedException {
+		return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(getCurrentPrincipal()));
+	}
 	
 	@Override
 	public long getPersonalResourceCount(Principal principal, String search) {
 		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(principal), search);
+	}
+	
+	@Override
+	public long getPersonalResourceCount(String search) {
+		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(getCurrentPrincipal()), search);
 	}
 
 	@Override
@@ -253,6 +312,17 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		}
 		return resource;
 	}
+	
+	@Override
+	public T getResourceByName(String name, Realm realm) throws ResourceNotFoundException {
+		T resource = getRepository().getResourceByName(name, realm);
+		if (resource == null) {
+			throw new ResourceNotFoundException(getResourceBundle(),
+					"error.invalidResourceName", name);
+		}
+		return resource;
+	}
+
 
 	@Override
 	public T getResourceById(Long id) throws ResourceNotFoundException {
@@ -287,5 +357,92 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		}
 		throw new AccessDeniedException("Principal " + principal.getName()
 				+ " does not have access to " + resource.getName());
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public String exportResoure(Long id) throws ResourceNotFoundException,
+			ResourceExportException {
+		final T resource = getResourceById(id);
+		return exportResources(resource);
+	}
+
+	@Override
+	public String exportAllResoures() throws ResourceExportException {
+		List<T> list = getResources();
+		return exportResources(list);
+	}
+	
+	@Override
+	public String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException {
+		return exportResources(Arrays.asList(resources));
+	}
+	
+	protected void prepareExport(T resource) {
+		
+	}
+	
+	protected void prepareImport(T resource, Realm realm) throws ResourceCreationException, AccessDeniedException {
+		
+	}
+	
+	@Override
+	public String exportResources(Collection<T> resources) throws ResourceExportException {
+
+		if(resources.isEmpty()) {
+			throw new ResourceExportException(RESOURCE_BUNDLE, "error.nothingToExport");
+		}
+		
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			for(T resource : resources) {
+				resource.setId(null);
+				resource.setRealm(null);
+				resource.getRoles().clear();
+				prepareExport(resource);
+			}
+
+			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resources);
+		} catch (JsonProcessingException e) {
+			throw new ResourceExportException(RESOURCE_BUNDLE, "error.exportError", e.getMessage());
+		}
+	}
+	
+	@Override
+	public Collection<T> importResources(final String json, final Realm realm) throws AccessDeniedException, ResourceException {
+		
+		return transactionService.doInTransaction(new TransactionCallback<Collection<T>>() {
+
+			@Override
+			public Collection<T> doInTransaction(TransactionStatus status) {
+				ObjectMapper mapper = new ObjectMapper();
+				
+				try {
+					Collection<T> resources = mapper.readValue(json, mapper.getTypeFactory().constructCollectionType(List.class, getResourceClass()));
+					for(T resource : resources) {
+						resource.setRealm(realm);
+						checkImportName(resource, realm);
+						createResource(resource, new HashMap<String,String>());
+					}
+					
+					return resources;
+				} catch(ResourceException e) { 
+					throw new IllegalStateException(e);
+				}catch (AccessDeniedException | IOException e) {
+					throw new IllegalStateException(new ResourceImportException(RESOURCE_BUNDLE, "error.importError", e.getMessage()));
+				}			
+			}
+		});
+		
+	}
+	protected void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
+		
+		try {
+			prepareImport(resource, realm);
+			getResourceByName(resource.getName(), realm);
+			resource.setName(resource.getName() + " [imported]");
+		} catch(ResourceNotFoundException e) {
+			return;
+		}
 	}
 }

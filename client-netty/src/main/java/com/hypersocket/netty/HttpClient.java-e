@@ -36,7 +36,7 @@ public class HttpClient {
 	int port;
 	boolean secure;
 	boolean disconnected = false;
-	int minimumConnections = 2;
+	int minimumConnections = 0;
 	Map<String,CookieHolder> cookies = new HashMap<String,CookieHolder>();
 	Map<String, String> staticHeaders = new HashMap<String, String>();
 
