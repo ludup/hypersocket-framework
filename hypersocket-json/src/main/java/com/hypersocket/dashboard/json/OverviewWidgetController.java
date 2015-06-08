@@ -1,7 +1,5 @@
 package com.hypersocket.dashboard.json;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -18,7 +16,11 @@ import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.dashboard.OverviewWidget;
 import com.hypersocket.dashboard.OverviewWidgetService;
+import com.hypersocket.dashboard.UsefulLink;
+import com.hypersocket.i18n.I18N;
+import com.hypersocket.json.ResourceList;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
 
 @Controller
@@ -31,14 +33,35 @@ public class OverviewWidgetController extends ResourceController {
 	@RequestMapping(value = "overview/widgets", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public List<OverviewWidget> getWidgets(HttpServletRequest request,
+	public ResourceList<OverviewWidget> getWidgets(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			return service.getWidgets();
+			return new ResourceList<OverviewWidget>(service.getWidgets());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "overview/articles", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<UsefulLink> getArticles(HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+				return new ResourceList<UsefulLink>(service.getLinks());
+			
+		} catch (ResourceException e) {
+			return new ResourceList<UsefulLink>(false, I18N.getResource(sessionUtils.getLocale(request), e.getBundle(), e.getResourceKey(), e.getArgs()));
 		} finally {
 			clearAuthenticatedContext();
 		}
