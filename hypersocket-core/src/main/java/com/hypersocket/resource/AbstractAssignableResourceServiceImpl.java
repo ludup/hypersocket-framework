@@ -215,13 +215,13 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	protected abstract void fireResourceUpdateEvent(T resource, Throwable t);
 
 	@Override
-	public void deleteResource(T resource) throws ResourceChangeException,
+	public void deleteResource(T resource, TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
 
 		assertPermission(getDeletePermission(resource));
 
 		try {
-			getRepository().deleteResource(resource);
+			getRepository().deleteResource(resource, ops);
 			fireResourceDeletionEvent(resource);
 		} catch (Throwable t) {
 			fireResourceDeletionEvent(resource, t);
@@ -378,6 +378,14 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		return exportResources(Arrays.asList(resources));
 	}
 	
+	protected void prepareExport(T resource) {
+		
+	}
+	
+	protected void prepareImport(T resource, Realm realm) throws ResourceCreationException, AccessDeniedException {
+		
+	}
+	
 	@Override
 	public String exportResources(Collection<T> resources) throws ResourceExportException {
 
@@ -391,6 +399,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 				resource.setId(null);
 				resource.setRealm(null);
 				resource.getRoles().clear();
+				prepareExport(resource);
 			}
 
 			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resources);
@@ -417,7 +426,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 					}
 					
 					return resources;
-				} catch(ResourceCreationException e) { 
+				} catch(ResourceException e) { 
 					throw new IllegalStateException(e);
 				}catch (AccessDeniedException | IOException e) {
 					throw new IllegalStateException(new ResourceImportException(RESOURCE_BUNDLE, "error.importError", e.getMessage()));
@@ -426,9 +435,10 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		});
 		
 	}
-	protected void checkImportName(T resource, Realm realm) {
+	protected void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 		
 		try {
+			prepareImport(resource, realm);
 			getResourceByName(resource.getName(), realm);
 			resource.setName(resource.getName() + " [imported]");
 		} catch(ResourceNotFoundException e) {

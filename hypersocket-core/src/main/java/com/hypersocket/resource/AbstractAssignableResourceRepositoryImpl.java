@@ -291,10 +291,16 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 
 	@Override
-	public void deleteResource(T resource) throws ResourceChangeException {
+	public void deleteResource(T resource, TransactionOperation<T>... ops) throws ResourceChangeException {
 		beforeDelete(resource);
+		for(TransactionOperation<T> op : ops) {
+			op.beforeOperation(resource, null);
+		}
 		delete(resource);
 		afterDelete(resource);
+		for(TransactionOperation<T> op : ops) {
+			op.afterOperation(resource, null);
+		}
 	}
 
 	protected void beforeDelete(T resource) throws ResourceChangeException {
