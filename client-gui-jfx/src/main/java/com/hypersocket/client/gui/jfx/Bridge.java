@@ -30,7 +30,7 @@ import com.hypersocket.client.rmi.ConnectionService;
 import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.ResourceService;
 
-@SuppressWarnings("serial")
+@SuppressWarnings({"serial"})
 public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 	static Logger log = LoggerFactory.getLogger(Main.class);
