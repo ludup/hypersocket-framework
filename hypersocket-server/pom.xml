@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>com.hypersocket</groupId>
 		<artifactId>hypersocket-framework</artifactId>
-		<version>0.2.9</version>
+		<version>0.2.10-LOCAL</version>
 		<relativePath>../</relativePath>
 	</parent>
 
