@@ -65,6 +65,11 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 	
 	@Override
+	public void extendPropertyTemplates(String path) {
+		getRepository().loadPropertyTemplates(path);
+	}
+	
+	@Override
 	public String getResourceCategory() {
 		return resourceCategory;
 	}
@@ -116,6 +121,13 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	@Override
 	public Set<String> getPropertyNames(String resourceKey, Realm realm) {
 		return getRepository().getPropertyNames();
+	}
+	
+	@Override
+	@SafeVarargs
+	public final void createResource(T resource, TransactionOperation<T>... ops) throws ResourceCreationException,
+			AccessDeniedException {
+		createResource(resource, new HashMap<String,String>(), ops);
 	}
 	
 	@Override
@@ -213,6 +225,13 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			}
 		}
 	}
+	
+	@Override
+	@SafeVarargs
+	public final void updateResource(T resource, TransactionOperation<T>... ops) throws ResourceChangeException,
+			AccessDeniedException {
+		updateResource(resource, new HashMap<String,String>(), ops);
+	}
 
 	protected abstract void fireResourceUpdateEvent(T resource);
 
@@ -280,7 +299,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 
 	@Override
-	public List<T> getResources() {
+	public List<T> allResources() {
 		return getRepository().getResources(getCurrentRealm());
 	}
 
@@ -354,8 +373,16 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	@Override
 	public String exportAllResoures() throws ResourceExportException {
-		List<T> list = getResources();
+		List<T> list = allResources();
 		return exportResources(list);
+	}
+	
+	protected void prepareExport(T resource) {
+		
+	}
+	
+	protected void prepareImport(T resource, Realm realm) throws ResourceCreationException, AccessDeniedException {
+		
 	}
 	
 	@Override
@@ -370,6 +397,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			for(T resource : resources) {
 				resource.setId(null);
 				resource.setRealm(null);
+				prepareExport(resource);
 			}
 
 			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resources);
@@ -396,7 +424,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 					}
 					
 					return resources;
-				} catch(ResourceCreationException e) { 
+				} catch(ResourceException e) { 
 					throw new IllegalStateException(e);
 				}catch (AccessDeniedException | IOException e) {
 					throw new IllegalStateException(new ResourceImportException(RESOURCE_BUNDLE, "error.importError", e.getMessage()));
@@ -405,9 +433,10 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		});
 		
 	}
-	protected void checkImportName(T resource, Realm realm) {
+	protected void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 		
 		try {
+			prepareImport(resource, realm);
 			getResourceByName(resource.getName(), realm);
 			resource.setName(resource.getName() + " [imported]");
 		} catch(ResourceNotFoundException e) {

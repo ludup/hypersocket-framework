@@ -65,6 +65,8 @@ public abstract class ResourceTemplateRepositoryImpl extends
 
 	public ResourceTemplateRepositoryImpl() {
 		super();
+		configPropertyStore = new DatabasePropertyStore(this, encryptionService);
+		propertyStoresById.put("db", configPropertyStore);
 	}
 
 	public ResourceTemplateRepositoryImpl(boolean requiresDemoWrite) {
@@ -97,7 +99,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 	public void loadPropertyTemplates(String resourceXmlPath) {
 
 		this.resourceXmlPath = resourceXmlPath;
-		configPropertyStore = new DatabasePropertyStore(this, encryptionService);
+		
 
 		String context = null;
 		try {
@@ -292,6 +294,17 @@ public abstract class ResourceTemplateRepositoryImpl extends
 					Integer.parseInt(node.getAttribute("weight")), false,
 					group, node.getAttribute("displayMode"));
 
+			PropertyStore defaultStore = getPropertyStore();
+			
+			if(node.hasAttribute("store")) {
+				defaultStore = propertyStoresById.get(node.getAttribute("store"));
+				if (defaultStore == null) {
+					throw new IOException("PropertyStore "
+							+ node.getAttribute("store")
+							+ " does not exist!");
+				}
+			}
+			
 			NodeList properties = node.getElementsByTagName("property");
 
 			for (int x = 0; x < properties.getLength(); x++) {
@@ -316,7 +329,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 						continue;
 					}
 
-					PropertyStore store = getPropertyStore();
+					PropertyStore store = defaultStore;
 					if (pnode.hasAttribute("store")) {
 						store = propertyStoresById.get(pnode
 								.getAttribute("store"));
