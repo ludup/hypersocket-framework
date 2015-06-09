@@ -42,7 +42,6 @@ import com.hypersocket.client.rmi.Resource;
 import com.hypersocket.client.rmi.ResourceRealm;
 import com.hypersocket.client.rmi.ResourceService;
 
-@SuppressWarnings("restriction")
 public class Dock extends AbstractController implements Listener {
 	static Logger log = LoggerFactory.getLogger(Main.class);
 
