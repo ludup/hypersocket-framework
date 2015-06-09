@@ -38,6 +38,9 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	@Autowired
 	PermissionService permissionService;
 
+	Collection<UsefulLink> links = null;
+	long lastLinkUpdate = 0L;
+	
 	@PostConstruct
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
@@ -61,7 +64,13 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 				"featureReel", true));
 		this.registerWidget(new OverviewWidget(3, "overview.quickSetup.title",
 				"quickSetup", false));
+		
+		try {
+			getLinks();
+		} catch (ResourceException e) {
+		}
 	}
+
 
 	public void registerWidget(OverviewWidget widget) {
 		widgetList.add(widget);
@@ -75,15 +84,20 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public Collection<UsefulLink> getLinks() throws ResourceException {
-		
-		ObjectMapper mapper = new ObjectMapper();
-
-		try {
-			return Arrays.asList(mapper.readValue(HttpUtils.doHttpGet(
-					"http://updates.hypersocket.com/messages/articles.json",
-					true), UsefulLink[].class));
-		} catch (Throwable e) {
-			throw new ResourceException(RESOURCE_BUNDLE, "error.readingArticleList", e.getMessage());
+				
+		if(lastLinkUpdate < (System.currentTimeMillis() - (24  * 60 * 60 * 1000))) {
+			ObjectMapper mapper = new ObjectMapper();
+	
+			try {
+				links = Arrays.asList(mapper.readValue(HttpUtils.doHttpGet(
+						"http://updates.hypersocket.com/messages/links.json",
+						true), UsefulLink[].class));
+				lastLinkUpdate = System.currentTimeMillis();
+			} catch (Throwable e) {
+				throw new ResourceException(RESOURCE_BUNDLE, "error.readingArticleList", e.getMessage());
+			}
 		}
+		
+		return links;
 	}
 }
