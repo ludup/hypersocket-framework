@@ -374,7 +374,7 @@ public class ClientServiceImpl implements ClientService,
 	}
 
 	@Override
-	public void connectFailed(HypersocketClient<Connection> client) {
+	public void connectFailed(Exception e, HypersocketClient<Connection> client) {
 		connectingClients.remove(client.getAttachment());
 	}
 

@@ -8,7 +8,7 @@ public class HypersocketClientAdapter<T> implements HypersocketClientListener<T>
 	}
 
 	@Override
-	public void connectFailed(HypersocketClient<T> client) {
+	public void connectFailed(Exception e, HypersocketClient<T> client) {
 		
 	}
 

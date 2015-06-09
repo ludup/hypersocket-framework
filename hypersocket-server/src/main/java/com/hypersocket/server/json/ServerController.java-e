@@ -71,7 +71,7 @@ public class ServerController extends AuthenticatedController {
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		return new RequestStatus(true, HypersocketVersion.getVersion() + ";" + HypersocketVersion.getSerial());
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "server/restart/{delay}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody

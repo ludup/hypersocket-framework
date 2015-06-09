@@ -133,7 +133,7 @@ public abstract class HypersocketClient<T> {
 			
 			for(HypersocketClientListener<T> l : listeners) {
 				try {
-					l.connectFailed(this);
+					l.connectFailed(ex, this);
 				} catch (Throwable t) {
 				}
 			}

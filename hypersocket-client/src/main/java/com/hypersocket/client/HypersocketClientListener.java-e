@@ -4,7 +4,7 @@ public interface HypersocketClientListener<T> {
 
 	void connectStarted(HypersocketClient<T> client);
 	
-	void connectFailed(HypersocketClient<T> client);
+	void connectFailed(Exception e, HypersocketClient<T> client);
 	
 	void connected(HypersocketClient<T> client);
 	

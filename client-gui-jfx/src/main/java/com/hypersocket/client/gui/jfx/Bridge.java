@@ -13,15 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javafx.application.Platform;
-import javafx.stage.Window;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hypersocket.client.Prompt;
-import com.hypersocket.client.gui.jfx.Notification.Notifier;
-import com.hypersocket.client.i18n.I18N;
 import com.hypersocket.client.rmi.ApplicationLauncherTemplate;
 import com.hypersocket.client.rmi.ClientService;
 import com.hypersocket.client.rmi.ConfigurationService;
@@ -30,7 +25,7 @@ import com.hypersocket.client.rmi.ConnectionService;
 import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.ResourceService;
 
-@SuppressWarnings({"serial"})
+@SuppressWarnings({ "serial" })
 public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 	static Logger log = LoggerFactory.getLogger(Main.class);
@@ -223,34 +218,34 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	@Override
 	public void notify(String msg, int type) throws RemoteException {
 		System.err.println("[[NOTIFY]] " + msg + " (" + type + ")");
-		Platform.runLater(new Runnable() {
-			public void run() {
-				Window parent = Dock.getInstance().getStage();
-
-				switch (type) {
-				case NOTIFY_CONNECT:
-					Notifier.INSTANCE.notifySuccess(parent,
-							I18N.getResource("notify.connect"), msg);
-					break;
-				case NOTIFY_DISCONNECT:
-					Notifier.INSTANCE.notifySuccess(parent,
-							I18N.getResource("notify.disconnect"), msg);
-					break;
-				case NOTIFY_INFO:
-					Notifier.INSTANCE.notifyInfo(parent,
-							I18N.getResource("notify.information"), msg);
-					break;
-				case NOTIFY_WARNING:
-					Notifier.INSTANCE.notifyWarning(parent,
-							I18N.getResource("notify.warning"), msg);
-					break;
-				case NOTIFY_ERROR:
-					Notifier.INSTANCE.notifyError(parent,
-							I18N.getResource("notify.error"), msg);
-					break;
-				}
-			}
-		});
+		// Platform.runLater(new Runnable() {
+		// public void run() {
+		// Window parent = Dock.getInstance().getStage();
+		//
+		// switch (type) {
+		// case NOTIFY_CONNECT:
+		// Notifier.INSTANCE.notifySuccess(parent,
+		// I18N.getResource("notify.connect"), msg);
+		// break;
+		// case NOTIFY_DISCONNECT:
+		// Notifier.INSTANCE.notifySuccess(parent,
+		// I18N.getResource("notify.disconnect"), msg);
+		// break;
+		// case NOTIFY_INFO:
+		// Notifier.INSTANCE.notifyInfo(parent,
+		// I18N.getResource("notify.information"), msg);
+		// break;
+		// case NOTIFY_WARNING:
+		// Notifier.INSTANCE.notifyWarning(parent,
+		// I18N.getResource("notify.warning"), msg);
+		// break;
+		// case NOTIFY_ERROR:
+		// Notifier.INSTANCE.notifyError(parent,
+		// I18N.getResource("notify.error"), msg);
+		// break;
+		// }
+		// }
+		// });
 	}
 
 	@Override
