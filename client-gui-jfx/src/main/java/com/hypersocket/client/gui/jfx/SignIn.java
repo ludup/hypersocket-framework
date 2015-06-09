@@ -11,6 +11,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Semaphore;
 
+import javafx.animation.Animation;
+import javafx.animation.Animation.Status;
+import javafx.animation.RotateTransition;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -29,7 +32,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -51,6 +57,8 @@ public class SignIn extends AbstractController implements Listener {
 	@FXML
 	private BorderPane optionsUI;
 	@FXML
+	private BorderPane messageContainer;
+	@FXML
 	private ComboBox<String> serverUrls;
 	@FXML
 	private CheckBox saveConnection;
@@ -62,6 +70,18 @@ public class SignIn extends AbstractController implements Listener {
 	private Hyperlink delete;
 	@FXML
 	private Button login;
+	@FXML
+	private Label spinner;
+	@FXML
+	private HBox progressUI;
+	@FXML
+	private VBox container;
+	@FXML
+	private VBox root;
+	@FXML
+	private Label messageText;
+	@FXML
+	private Label messageIcon;
 
 	private Connection foregroundConnection;
 	private Semaphore promptSemaphore = new Semaphore(1);
@@ -73,8 +93,13 @@ public class SignIn extends AbstractController implements Listener {
 	private final Map<String, String> promptValues = new LinkedHashMap<String, String>();
 
 	private boolean adjusting;
-
+	private boolean busy;
+	private boolean disconnecting;
 	private Popup popup;
+
+	private RotateTransition progressRotation;
+
+	private boolean deleteOnDisconnect;
 
 	@Override
 	public void disconnecting(Connection connection) {
@@ -86,10 +111,32 @@ public class SignIn extends AbstractController implements Listener {
 	public void disconnected(Connection connection, Exception e) {
 		super.disconnected(connection, e);
 		log.info("Disconnected " + connection);
+		if (disconnecting) {
+			busy = false;
+			disconnecting = false;
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					setAvailable();
+					sizeAndPosition();
+				}
+			});
+		}
 		if (Objects.equals(connection, foregroundConnection)) {
 			log.info("Clearing foreground connection");
 			foregroundConnection = null;
 		}
+		if (deleteOnDisconnect) {
+			try {
+				context.getBridge().getConnectionService().delete(connection);
+			} catch (RemoteException e1) {
+				log.error("Failed to delete.", e);
+			}
+		}
+	}
+
+	public void setPopup(Popup popup) {
+		this.popup = popup;
 	}
 
 	@Override
@@ -101,31 +148,42 @@ public class SignIn extends AbstractController implements Listener {
 
 	@Override
 	public void finishedConnecting(final Connection connection, Exception e) {
-		if (e == null && Objects.equals(connection, foregroundConnection)) {
+		if (Objects.equals(connection, foregroundConnection)) {
 			Platform.runLater(new Runnable() {
 
 				@Override
 				public void run() {
-					if (saveCredentials.selectedProperty().get()) {
-						/*
-						 * If we get here this implies save connection as well,
-						 * but we need to have collected the username and
-						 * password
-						 */
-						if (promptedUsername != null
-								&& promptedPassword != null) {
-							try {
-								connection.setUsername(promptedUsername);
-								connection.setHashedPassword(new String(
-										promptedPassword));
 
-								saveConnection(connection);
-							} catch (Exception e) {
-								log.error("Failed to save credentials.", e);
+					busy = false;
+					setMessage(null, null);
+					setAvailable();
+					sizeAndPosition();
+					if (e == null) {
+						if (saveCredentials.selectedProperty().get()) {
+							/*
+							 * If we get here this implies save connection as
+							 * well, but we need to have collected the username
+							 * and password
+							 */
+							if (promptedUsername != null
+									&& promptedPassword != null) {
+								try {
+									connection.setUsername(promptedUsername);
+									connection.setHashedPassword(new String(
+											promptedPassword));
+
+									saveConnection(connection);
+								} catch (Exception e) {
+									log.error("Failed to save credentials.", e);
+								}
+							} else {
+								log.warn("No username or password save as credentials. Does you scheme have both?");
 							}
-						} else {
-							log.warn("No username or password save as credentials. Does you scheme have both?");
 						}
+					} else {
+						abortPrompts();
+						log.error("Failed to connect.", e);
+						setMessage(AlertType.ERROR, e.getMessage());
 					}
 				}
 			});
@@ -139,6 +197,7 @@ public class SignIn extends AbstractController implements Listener {
 		try {
 			abortPrompt = false;
 			promptSemaphore.acquire();
+			busy = false;
 			Platform.runLater(new Runnable() {
 
 				@Override
@@ -189,9 +248,8 @@ public class SignIn extends AbstractController implements Listener {
 					}
 					credentialsUI.setCenter(vbox);
 					promptsAvailable = true;
-					getStage().sizeToScene();
-					popup.positionPopup();
 					setAvailable();
+					sizeAndPosition();
 
 					Platform.runLater(new Runnable() {
 
@@ -211,37 +269,74 @@ public class SignIn extends AbstractController implements Listener {
 			log.info("Returning nothing from prompt, was aborted.");
 			return null;
 		} else {
-			if(promptValues.containsKey("username"))
+			if (promptValues.containsKey("username"))
 				promptedUsername = promptValues.get("username");
-			if(promptValues.containsKey("password"))
+			if (promptValues.containsKey("password"))
 				promptedPassword = promptValues.get("password").toCharArray();
-			
+
 			return promptValues;
 		}
 	}
 
 	@Override
-	protected void onInitialize() {
-		super.onInitialize();
-	}
-
-	@Override
 	protected void onConfigure() {
 		super.onConfigure();
-		// saveConnection.selectedProperty().set(false);
 		context.getBridge().addListener(this);
-		serverUrls.focusedProperty().addListener(new ChangeListener<Boolean>() {
+		// serverUrls.focusedProperty().addListener(new
+		// ChangeListener<Boolean>() {
+		//
+		// @Override
+		// public void changed(ObservableValue<? extends Boolean> observable,
+		// Boolean oldValue, Boolean newValue) {
+		// if (!newValue) {
+		// urlSelected();
+		// }
+		// }
+		// });
 
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable,
-					Boolean oldValue, Boolean newValue) {
-				if (!newValue) {
-					urlSelected();
-				}
-			}
-		});
+		progressRotation = new RotateTransition(Duration.millis(500), spinner);
+		progressRotation.setByAngle(360);
+		progressRotation.setCycleCount(Animation.INDEFINITE);
+
+		setMessage(null, null);
 
 		initUi();
+	}
+
+	private void setMessage(Alert.AlertType type, String message) {
+		messageContainer.getStyleClass().remove("errorMessage");
+		messageContainer.getStyleClass().remove("warningMessage");
+		messageContainer.getStyleClass().remove("informationMessage");
+		if (type != null) {
+			messageText.setText(message);
+			switch (type) {
+			case ERROR:
+				messageContainer.getStyleClass().add("errorMessage");
+				messageIcon.setText(resources.getString("message.error.icon"));
+				break;
+			case INFORMATION:
+				messageContainer.getStyleClass().add("informationMessage");
+				messageIcon.setText(resources
+						.getString("message.information.icon"));
+				break;
+			case WARNING:
+				messageContainer.getStyleClass().add("warninigMessage");
+				messageIcon
+						.setText(resources.getString("message.warning.icon"));
+				break;
+			default:
+				break;
+			}
+		}
+
+		if (type == null && root.getChildren().contains(messageContainer)) {
+			root.getChildren().remove(messageContainer);
+			sizeAndPosition();
+		} else if (type != null
+				&& !root.getChildren().contains(messageContainer)) {
+			root.getChildren().add(0, messageContainer);
+			sizeAndPosition();
+		}
 	}
 
 	private void focusNextPrompt(Control c) {
@@ -280,7 +375,6 @@ public class SignIn extends AbstractController implements Listener {
 
 		if (selectedConnection == null) {
 			// If no connection was found, this is new, so add it
-			// saveConnection.selectedProperty().set(false);
 			try {
 				Connection newConnection = context.getBridge()
 						.getConnectionService().createNew();
@@ -320,7 +414,8 @@ public class SignIn extends AbstractController implements Listener {
 
 				selectedConnection = newConnection;
 			} catch (URISyntaxException urise) {
-				// TODO Maybe show some error
+				setMessage(AlertType.ERROR,
+						resources.getString("error.invalidUri"));
 			} catch (Exception e) {
 				log.error("Failed to create new connection.", e);
 				return;
@@ -328,30 +423,39 @@ public class SignIn extends AbstractController implements Listener {
 		} else {
 			log.info(String.format("Selected connection exists for %s",
 					uriString));
+
 		}
+
+		// Clear any messages
+		setMessage(null, null);
 
 		// If there is an existing connection and it differs from the current
 		// one's URI, disconnect first,
 		if (foregroundConnection != null) {
 
-			if (getUri(foregroundConnection).equals(getUri(selectedConnection))) {
+			String foregroundUri = getUri(foregroundConnection);
+			String selectedUri = getUri(selectedConnection);
+
+			if (foregroundUri.equals(selectedUri)) {
 				log.info(String.format("Already connected to %s", uriString));
 				setAvailable();
 				return;
-			}
-
-			try {
-				abortPrompts();
-
-				log.info(String.format("Disconnecting temporary connection %s",
-						getUri(foregroundConnection)));
-				context.getBridge().disconnect(foregroundConnection);
+			} else {
 				foregroundConnection = null;
-			} catch (Exception e) {
-				log.error(String.format(
-						"Failed to disconnect temporary connection %d.",
-						foregroundConnection.getId()), e);
 			}
+			//
+			//
+			// try {
+			// busy = false;
+			// log.info(String.format("Disconnecting temporary connection %s",
+			// foregroundUri));
+			// context.getBridge().disconnect(foregroundConnection);
+			// foregroundConnection = null;
+			// } catch (Exception e) {
+			// log.error(String.format(
+			// "Failed to disconnect temporary connection %d.",
+			// foregroundConnection.getId()), e);
+			// }
 		}
 
 		setUserDetails(uriString, selectedConnection);
@@ -368,9 +472,19 @@ public class SignIn extends AbstractController implements Listener {
 		// if not
 		promptSemaphore.release();
 
-		// Clear up the prompt UI as well
-		clearCredentials();
-		getStage().sizeToScene();
+		// Update UI
+		Runnable r = new Runnable() {
+			@Override
+			public void run() {
+				clearCredentials();
+				setAvailable();
+				getStage().sizeToScene();
+			}
+		};
+		if (Platform.isFxApplicationThread())
+			r.run();
+		else
+			Platform.runLater(r);
 	}
 
 	private void clearCredentials() {
@@ -401,7 +515,7 @@ public class SignIn extends AbstractController implements Listener {
 	@FXML
 	private void evtDelete(ActionEvent evt) throws Exception {
 		Connection sel = getSelectedConnection();
-		if (sel != null) {
+		if (sel != null && sel.getId() != null) {
 			confirmDelete(sel);
 		}
 	}
@@ -418,8 +532,10 @@ public class SignIn extends AbstractController implements Listener {
 				if (context.getBridge().getClientService().isConnected(sel)) {
 					log.info("Disconnecting deleted connection.");
 					context.getBridge().disconnect(sel);
+					deleteOnDisconnect = true;
+				} else {
+					context.getBridge().getConnectionService().delete(sel);
 				}
-				context.getBridge().getConnectionService().delete(sel);
 				log.info("Connection deleted");
 			} catch (Exception e) {
 				log.error("Failed to delete connection.", e);
@@ -433,7 +549,18 @@ public class SignIn extends AbstractController implements Listener {
 	private void evtDisconnect(ActionEvent evt) throws Exception {
 		Connection sel = getSelectedConnection();
 		if (sel != null) {
-			context.getBridge().disconnect(sel);
+			disconnecting = true;
+			busy = true;
+			setAvailable();
+			new Thread() {
+				public void run() {
+					try {
+						context.getBridge().disconnect(sel);
+					} catch (Exception e) {
+						log.error("Failed to disconnect.", e);
+					}
+				}
+			}.start();
 		}
 	}
 
@@ -459,13 +586,28 @@ public class SignIn extends AbstractController implements Listener {
 			}
 			credentialsUI.getChildren().clear();
 			promptsAvailable = false;
+			busy = true;
 			setAvailable();
-			getStage().sizeToScene();
-			popup.positionPopup();
+			sizeAndPosition();
 			promptSemaphore.release();
 		} catch (Exception e) {
 			log.error("Failed to login.", e);
 		}
+	}
+
+	void sizeAndPosition() {
+		Stage stage = getStage();
+		if (stage != null) {
+			stage.sizeToScene();
+			popup.positionPopup();
+		}
+	}
+
+	private void populateUserDetails(String uri, Connection connection) {
+		saveConnection.setSelected(connection != null
+				&& connection.getId() != null);
+		saveCredentials.setSelected(connection != null
+				&& !StringUtils.isBlank(connection.getUsername()));
 	}
 
 	private void setUserDetails(String uri, Connection connection) {
@@ -478,10 +620,7 @@ public class SignIn extends AbstractController implements Listener {
 		} catch (Exception e) {
 			log.warn("Failed to test if already connected.", e);
 		}
-
-		saveConnection.setSelected(connection != null && connection.getId() != null);
-		saveCredentials.setSelected(connection != null
-				&& !StringUtils.isBlank(connection.getUsername()));
+		populateUserDetails(uri, connection);
 
 		// These will be collected during prompts and maybe saved
 		promptedUsername = null;
@@ -490,10 +629,13 @@ public class SignIn extends AbstractController implements Listener {
 		if (connection != null && foregroundConnection == null) {
 			// Try to connect
 			try {
+				busy = true;
+				setAvailable();
+				foregroundConnection = connection;
 				context.getBridge().connect(connection);
 				log.info(String.format("Connected to %s", uri));
-				foregroundConnection = connection;
 			} catch (Exception e) {
+				foregroundConnection = null;
 				e.printStackTrace();
 			} finally {
 				setAvailable();
@@ -522,6 +664,9 @@ public class SignIn extends AbstractController implements Listener {
 	}
 
 	private String getUri(Connection connection) {
+		if (connection == null) {
+			return "";
+		}
 		String uri = "https://" + connection.getHostname();
 		if (connection.getPort() != 443) {
 			uri += ":" + connection.getPort();
@@ -533,47 +678,62 @@ public class SignIn extends AbstractController implements Listener {
 	private void initUi() {
 		adjusting = true;
 		try {
+			String previousUri = serverUrls.getValue();
 			serverUrls.itemsProperty().getValue().clear();
 			Connection selectedConnection = null;
-			String selectedUri = serverUrls.getValue();
+			String selectedUri = null;
 			ObservableList<String> serverUrlsList = serverUrls.itemsProperty()
 					.get();
+			if (foregroundConnection != null) {
+				selectedUri = getUri(foregroundConnection);
+				serverUrlsList.add(selectedUri);
+				selectedConnection = foregroundConnection;
+			}
 			if (context.getBridge().isConnected()) {
 				try {
-
 					List<ConnectionStatus> connections = context.getBridge()
 							.getClientService().getStatus();
+
+					// Look for new connections
 					for (ConnectionStatus c : connections) {
-						String uri = getUri(c.getConnection());
-						if (uri.equals(selectedUri)) {
-							selectedConnection = c.getConnection();
+						Connection conx = c.getConnection();
+						String uri = getUri(conx);
+						if (!serverUrlsList.contains(uri)) {
+							if (selectedUri == null && uri.equals(previousUri)) {
+								selectedUri = uri;
+								selectedConnection = foregroundConnection;
+							}
+							serverUrlsList.add(uri);
 						}
-						serverUrlsList.add(uri);
 					}
 				} catch (Exception e) {
 					log.error("Failed to load connections.", e);
 				}
 			}
 			if (selectedConnection == null && !serverUrlsList.isEmpty()) {
-				String first = serverUrlsList.get(0);
-				selectedConnection = getConnectionForUri(first);
-				serverUrls.setValue(first);
+				selectedUri = serverUrlsList.get(0);
+				selectedConnection = getConnectionForUri(selectedUri);
+				serverUrls.setValue(selectedUri);
 			}
+			if (selectedUri != null) {
+				log.info("Selecting " + selectedUri);
+				serverUrls.getSelectionModel().select(selectedUri);
+			} else {
+				log.info("No selection");
+			}
+			log.info("Rebuilt URIs");
 			setAvailable();
+			sizeAndPosition();
 			if (selectedConnection != null) {
 				setUserDetails(serverUrls.getEditor().getText(),
 						selectedConnection);
-			} else {
-				log.info("No initial connections (fg is "
-						+ foregroundConnection + ")");
-			}
+			} 
 		} finally {
 			adjusting = false;
 		}
 	}
 
-	private void setAvailable() {
-		log.info("setAvailable()");
+	void setAvailable() {
 		if (context.getBridge().isConnected()) {
 			Connection sel = getSelectedConnection();
 			boolean selectionConnected = false;
@@ -584,18 +744,34 @@ public class SignIn extends AbstractController implements Listener {
 			} catch (Exception e) {
 				log.warn("Failed to test if connected. Assuming not.", e);
 			}
-			log.info("connected: " + selectionConnected + " pa: "
-					+ promptsAvailable);
-			optionsUI.setVisible(promptsAvailable || selectionConnected);
-			promptUI.setVisible(promptsAvailable);
+			optionsUI.setVisible(!disconnecting
+					&& (promptsAvailable || selectionConnected));
+			promptUI.setVisible(!disconnecting && promptsAvailable);
+			progressUI.setVisible(busy);
+			serverUrls.editorProperty().get().setDisable(busy);
+			serverUrls.setDisable(busy);
 			saveConnection.setVisible(selectionConnected);
-			delete.setVisible(sel != null && !selectionConnected);
-			disconnect.setVisible(selectionConnected && ( sel.getId() == null || !saveCredentials.selectedProperty().get() ) );
+			delete.setVisible(sel != null && !selectionConnected
+					&& sel.getId() != null);
+			delete.setDisable(disconnecting);
+			disconnect.setVisible(selectionConnected
+					&& (sel.getId() == null || !saveCredentials
+							.selectedProperty().get()));
 			serverUrls.setDisable(false);
 			login.setDisable(selectionConnected);
 			saveCredentials.setDisable(selectionConnected);
 			saveConnection.setDisable(!selectionConnected);
+
+			if (busy && progressRotation.getStatus() != Status.RUNNING) {
+				progressRotation.play();
+			} else if (!busy && progressRotation.getStatus() == Status.RUNNING) {
+				progressRotation.pause();
+			}
 		} else {
+			progressRotation.pause();
+			serverUrls.editorProperty().get().setDisable(false);
+			serverUrls.setDisable(false);
+			progressUI.setVisible(false);
 			promptUI.setVisible(false);
 			optionsUI.setVisible(false);
 			delete.setVisible(false);
@@ -604,9 +780,22 @@ public class SignIn extends AbstractController implements Listener {
 			login.setDisable(true);
 			saveCredentials.setDisable(false);
 		}
+		rebuildContainer();
 	}
 
-	public void setPopup(Popup popup) {
-		this.popup = popup;		
+	private void rebuildContainer() {
+		container.getChildren().clear();
+		if (optionsUI.isVisible()) {
+			container.getChildren().add(optionsUI);
+		}
+		if (credentialsUI.isVisible()) {
+			container.getChildren().add(credentialsUI);
+		}
+		if (progressUI.isVisible()) {
+			container.getChildren().add(progressUI);
+		}
+		if (promptUI.isVisible()) {
+			container.getChildren().add(promptUI);
+		}
 	}
 }

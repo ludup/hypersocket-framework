@@ -100,6 +100,16 @@ public class ConnectionJob extends TimerTask {
 
 				client.addListener(new HypersocketClientAdapter<Connection>() {
 					@Override
+					public void connectFailed(Exception e,
+							HypersocketClient<Connection> client) {
+						super.connectFailed(e, client);
+						try {
+							callback.failedToConnect(client.getAttachment(), e.getMessage());
+						} catch (RemoteException e1) {
+						}
+					}
+
+					@Override
 					public void disconnected(
 							HypersocketClient<Connection> client,
 							boolean onError) {

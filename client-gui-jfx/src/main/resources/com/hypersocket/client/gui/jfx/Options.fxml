@@ -78,11 +78,6 @@
                   </AnchorPane>
             </content>
           </Tab>
-          <Tab text="%system">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" />
-            </content>
-          </Tab>
         </tabs>
       </TabPane>
    </children>

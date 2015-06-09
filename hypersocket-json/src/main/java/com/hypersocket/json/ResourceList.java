@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
 
 @JsonSerialize(include=Inclusion.NON_NULL)
-public class ResourceList<T> {
+public class ResourceList<T> extends ResourceStatus<T> {
 
 	Collection<T> resources;
 	Map<String,String> properties;
@@ -23,6 +23,10 @@ public class ResourceList<T> {
 	}
 	public ResourceList(Collection<T> resources) {
 		this.resources = resources;
+	}
+	
+	public ResourceList(boolean success, String message) {
+		super(success, message);
 	}
 	
 	public ResourceList(Map<String,String> properties, Collection<T> resources) {

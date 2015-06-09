@@ -72,6 +72,7 @@ public class Dock extends AbstractController implements Listener {
 
 	private TranslateTransition slideTransition;
 	private Rectangle slideClip;
+	private SignIn signInScene;
 	private static Dock instance;
 
 	public Dock() {
@@ -265,7 +266,7 @@ public class Dock extends AbstractController implements Listener {
 	private void evtOpenSignInWindow(ActionEvent evt) throws Exception {
 		Window parent = this.scene.getWindow();
 		if (signInPopup == null) {
-			FramedController signInScene = context.openScene(SignIn.class);
+			signInScene = (SignIn)context.openScene(SignIn.class);
 			signInPopup = new Popup(parent, signInScene.getScene());
 			((SignIn) signInScene).setPopup(signInPopup);
 		}

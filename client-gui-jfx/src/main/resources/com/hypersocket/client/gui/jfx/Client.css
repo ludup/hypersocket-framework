@@ -74,8 +74,39 @@
 	-fx-font-size: 9;
 }
 
+.promptUI {
+}
+
+.optionsUI {
+}
+
+
+.progressUI {
+}
+
+.spinner {
+	-fx-font-size: 40;
+	-fx-padding: 0;
+    -fx-background-color: inherit;
+}
+
 .launchers {
 }
 
 .stack {
+}
+
+.errorMessage {
+	-fx-text-fill: white;
+    -fx-background-color: #aa3939;
+}
+
+.informationMessage {
+	-fx-text-fill: white;
+    -fx-background-color: #0c56ff;
+}
+
+.warningMessage {
+	-fx-text-fill: black;
+    -fx-background-color: #ffdf00;
 }
