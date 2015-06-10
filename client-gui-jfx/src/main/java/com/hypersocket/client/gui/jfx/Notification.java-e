@@ -34,7 +34,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
@@ -83,9 +82,10 @@ public class Notification {
         private static       Pos    popupLocation = Pos.TOP_RIGHT;
         private static       Stage  stageRef      = null;
         private Duration              popupLifetime;
-        private Stage                 stage;
+//        private Stage                 stage;
         private Scene                 scene;
         private ObservableList<Popup> popups;
+		private Popup POPUP;
 
 
         // ******************** Constructor ***************************************
@@ -105,10 +105,10 @@ public class Notification {
             scene = new Scene(new Region());
             scene.setFill(null);
             scene.getStylesheets().add(getClass().getResource("notifier.css").toExternalForm());
-
-            stage = new Stage();
-            stage.initStyle(StageStyle.TRANSPARENT);
-            stage.setScene(scene);
+//
+//            stage = new Stage();
+//            stage.initStyle(StageStyle.TRANSPARENT);
+//            stage.setScene(scene);
         }
 
 
@@ -120,7 +120,7 @@ public class Notification {
          */
         public static void setPopupLocation(final Stage STAGE_REF, final Pos POPUP_LOCATION) {
             if (null != STAGE_REF) {
-                INSTANCE.stage.initOwner(STAGE_REF);
+                INSTANCE.POPUP.initOwner(STAGE_REF);
                 Notifier.stageRef = STAGE_REF;
             }
             Notifier.popupLocation = POPUP_LOCATION;
@@ -134,7 +134,7 @@ public class Notification {
          * @param OWNER
          */
         public static void setNotificationOwner(final Stage OWNER) {
-            INSTANCE.stage.initOwner(OWNER);
+            INSTANCE.POPUP.initOwner(OWNER);
         }
 
         /**
@@ -177,7 +177,7 @@ public class Notification {
 
         public void stop() {
             popups.clear();
-            stage.close();
+            POPUP.close();
         }
 
         /**
@@ -305,7 +305,7 @@ public class Notification {
             popupContent.getChildren().addAll(popupLayout);
 
             Scene s = new Scene(popupContent);
-            final Popup POPUP = new Popup(parent, s);
+            POPUP = new Popup(parent, s);
             POPUP.setX( getX() );
             POPUP.setY( getY() );
 
@@ -328,11 +328,11 @@ public class Notification {
             // Move popup to the right during fade out
             //POPUP.opacityProperty().addListener((observableValue, oldOpacity, opacity) -> popup.setX(popup.getX() + (1.0 - opacity.doubleValue()) * popup.getWidth()) );
 
-            if (stage.isShowing()) {
-                stage.toFront();
-            } else {
-                stage.show();
-            }
+//            if (stage.isShowing()) {
+//                stage.toFront();
+//            } else {
+//                stage.show();
+//            }
 
             POPUP.popup();
             timeline.play();

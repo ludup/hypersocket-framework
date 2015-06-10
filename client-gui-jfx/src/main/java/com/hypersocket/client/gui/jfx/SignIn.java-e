@@ -13,10 +13,11 @@ import java.util.concurrent.Semaphore;
 
 import javafx.animation.Animation;
 import javafx.animation.Animation.Status;
+import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
 import javafx.animation.RotateTransition;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -101,6 +102,10 @@ public class SignIn extends AbstractController implements Listener {
 
 	private boolean deleteOnDisconnect;
 
+	private Timeline messageHider;
+
+	private FadeTransition fadeTransition;
+
 	@Override
 	public void disconnecting(Connection connection) {
 		abortPrompts();
@@ -146,6 +151,9 @@ public class SignIn extends AbstractController implements Listener {
 		}
 	}
 
+	public void notify(String msg, int type) {
+	}
+
 	@Override
 	public void finishedConnecting(final Connection connection, Exception e) {
 		if (Objects.equals(connection, foregroundConnection)) {
@@ -155,7 +163,7 @@ public class SignIn extends AbstractController implements Listener {
 				public void run() {
 
 					busy = false;
-					setMessage(null, null);
+					// setMessage(null, null);
 					setAvailable();
 					sizeAndPosition();
 					if (e == null) {
@@ -212,6 +220,7 @@ public class SignIn extends AbstractController implements Listener {
 						case TEXT:
 							TextField txt = new TextField(p.getDefaultValue());
 							vbox.getChildren().add(txt);
+							txt.getStyleClass().add("input");
 							txt.setOnAction((event) -> {
 								focusNextPrompt(txt);
 							});
@@ -224,6 +233,7 @@ public class SignIn extends AbstractController implements Listener {
 						case PASSWORD:
 							PasswordField pw = new PasswordField();
 							vbox.getChildren().add(pw);
+							pw.getStyleClass().add("input");
 							promptNodes.put(p, pw);
 							pw.setOnAction((event) -> {
 								focusNextPrompt(pw);
@@ -234,6 +244,7 @@ public class SignIn extends AbstractController implements Listener {
 							for (Option o : p.getOptions()) {
 								cb.itemsProperty().get().add(o.getName());
 							}
+							cb.getStyleClass().add("input");
 							vbox.getChildren().add(cb);
 							promptNodes.put(p, cb);
 							if (idx == 0) {
@@ -303,7 +314,7 @@ public class SignIn extends AbstractController implements Listener {
 		initUi();
 	}
 
-	private void setMessage(Alert.AlertType type, String message) {
+	public void setMessage(Alert.AlertType type, String message) {
 		messageContainer.getStyleClass().remove("errorMessage");
 		messageContainer.getStyleClass().remove("warningMessage");
 		messageContainer.getStyleClass().remove("informationMessage");
@@ -336,6 +347,39 @@ public class SignIn extends AbstractController implements Listener {
 				&& !root.getChildren().contains(messageContainer)) {
 			root.getChildren().add(0, messageContainer);
 			sizeAndPosition();
+		}
+		
+		messageContainer.setOpacity(1);
+		
+		// Stop previous fade timer and animation
+		if (messageHider != null && messageHider.getStatus() == Status.RUNNING) {
+			messageHider.stop();
+		}
+		if (fadeTransition != null
+				&& fadeTransition.getStatus() == Status.RUNNING) {
+			fadeTransition.stop();
+		}
+
+		// Start a new one
+		messageHider = new Timeline(new KeyFrame(Duration.millis(10000),
+				ae -> hideMessage()));
+		messageHider.play();
+
+	}
+
+	private void hideMessage() {
+		if (root.getChildren().contains(messageContainer)) {
+			fadeTransition = new FadeTransition(Duration.millis(1000),
+					messageContainer);
+			fadeTransition.setFromValue(1.0f);
+			fadeTransition.setToValue(0.0f);
+			fadeTransition.setCycleCount(1);
+			fadeTransition.setAutoReverse(true);
+			fadeTransition.onFinishedProperty().set(ae -> {
+				root.getChildren().remove(messageContainer);
+				sizeAndPosition();
+			});
+			fadeTransition.play();
 		}
 	}
 
@@ -551,6 +595,13 @@ public class SignIn extends AbstractController implements Listener {
 		if (sel != null) {
 			disconnecting = true;
 			busy = true;
+			foregroundConnection = null;
+			adjusting = true;
+			try {
+				serverUrls.getSelectionModel().select("");
+			} finally {
+				adjusting = false;
+			}
 			setAvailable();
 			new Thread() {
 				public void run() {
@@ -679,16 +730,26 @@ public class SignIn extends AbstractController implements Listener {
 		adjusting = true;
 		try {
 			String previousUri = serverUrls.getValue();
+
 			serverUrls.itemsProperty().getValue().clear();
 			Connection selectedConnection = null;
-			String selectedUri = null;
+			String selectedUri = "";
 			ObservableList<String> serverUrlsList = serverUrls.itemsProperty()
 					.get();
+
+			// An empty URL
+			serverUrlsList.add("");
+
+			/*
+			 * If there is a current foreground connection, make sure that is in
+			 * the list and use it as the actual connection object
+			 */
 			if (foregroundConnection != null) {
 				selectedUri = getUri(foregroundConnection);
 				serverUrlsList.add(selectedUri);
 				selectedConnection = foregroundConnection;
 			}
+
 			if (context.getBridge().isConnected()) {
 				try {
 					List<ConnectionStatus> connections = context.getBridge()
@@ -696,13 +757,18 @@ public class SignIn extends AbstractController implements Listener {
 
 					// Look for new connections
 					for (ConnectionStatus c : connections) {
+
 						Connection conx = c.getConnection();
 						String uri = getUri(conx);
+
+						// We might end up using the first connected Uri
+						if (selectedUri.equals("")
+								&& c.getStatus() == ConnectionStatus.CONNECTED) {
+							selectedUri = uri;
+							selectedConnection = conx;
+						}
+
 						if (!serverUrlsList.contains(uri)) {
-							if (selectedUri == null && uri.equals(previousUri)) {
-								selectedUri = uri;
-								selectedConnection = foregroundConnection;
-							}
 							serverUrlsList.add(uri);
 						}
 					}
@@ -710,24 +776,32 @@ public class SignIn extends AbstractController implements Listener {
 					log.error("Failed to load connections.", e);
 				}
 			}
-			if (selectedConnection == null && !serverUrlsList.isEmpty()) {
-				selectedUri = serverUrlsList.get(0);
-				selectedConnection = getConnectionForUri(selectedUri);
-				serverUrls.setValue(selectedUri);
+
+			if (selectedUri != null && selectedConnection == null
+					&& !serverUrlsList.isEmpty()) {
+				// Finally fall back to the first Uri in the list
+				if (previousUri != null && previousUri.length() == 0
+						&& serverUrlsList.contains(previousUri)) {
+					selectedUri = previousUri;
+					selectedConnection = getConnectionForUri(selectedUri);
+				}
+				if (selectedConnection == null || selectedUri == null) {
+					selectedUri = serverUrlsList.get(0);
+					selectedConnection = getConnectionForUri(selectedUri);
+				}
 			}
-			if (selectedUri != null) {
-				log.info("Selecting " + selectedUri);
-				serverUrls.getSelectionModel().select(selectedUri);
-			} else {
-				log.info("No selection");
-			}
+
+			log.info("Selecting " + selectedUri);
+			serverUrls.setValue(selectedUri);
+
+			// Adjust available actions etc
 			log.info("Rebuilt URIs");
 			setAvailable();
 			sizeAndPosition();
 			if (selectedConnection != null) {
 				setUserDetails(serverUrls.getEditor().getText(),
 						selectedConnection);
-			} 
+			}
 		} finally {
 			adjusting = false;
 		}
@@ -757,6 +831,7 @@ public class SignIn extends AbstractController implements Listener {
 			disconnect.setVisible(selectionConnected
 					&& (sel.getId() == null || !saveCredentials
 							.selectedProperty().get()));
+			disconnect.setVisible(selectionConnected);
 			serverUrls.setDisable(false);
 			login.setDisable(selectionConnected);
 			saveCredentials.setDisable(selectionConnected);

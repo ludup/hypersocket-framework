@@ -4,6 +4,7 @@
 	
     DOCK_BUTTON_SELECT_HIGHLIGHT_FG: #ffffff;
     HIGHLIGHT_TEXT_COLOR: #5693BA;
+    DEFAULT_TEXT_COLOR: #000000;
     DOCK_BUTTON_HIGHLIGHT_COLOR: #5693BA;
     DOCK_BUTTON_DESELECT_COLOR: #000000;
     DOCK_BUTTON_SELECT_COLOR: #78B5DC;
@@ -74,15 +75,12 @@
 	-fx-font-size: 9;
 }
 
-.promptUI {
-}
-
-.optionsUI {
+.input {
+	-fx-text-fill: DEFAULT_TEXT_COLOR;
 }
 
 
-.progressUI {
-}
+/* Progress */
 
 .spinner {
 	-fx-font-size: 40;
@@ -90,11 +88,7 @@
     -fx-background-color: inherit;
 }
 
-.launchers {
-}
-
-.stack {
-}
+/* Info messages */
 
 .errorMessage {
 	-fx-text-fill: white;
