@@ -19,8 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hypersocket.client.Prompt;
-import com.hypersocket.client.gui.jfx.Notification.Notifier;
-import com.hypersocket.client.i18n.I18N;
 import com.hypersocket.client.rmi.ApplicationLauncherTemplate;
 import com.hypersocket.client.rmi.ClientService;
 import com.hypersocket.client.rmi.ConfigurationService;

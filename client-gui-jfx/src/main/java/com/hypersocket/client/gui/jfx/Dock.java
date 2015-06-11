@@ -70,6 +70,8 @@ public class Dock extends AbstractController implements Listener {
 
 	private TranslateTransition slideTransition;
 	private Rectangle slideClip;
+
+	private SignIn signInScene;
 	private static Dock instance;
 
 	public Dock() {

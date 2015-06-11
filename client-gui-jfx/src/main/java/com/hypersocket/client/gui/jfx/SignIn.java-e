@@ -331,16 +331,14 @@ public class SignIn extends AbstractController implements Listener {
 						.getString("message.information.icon"));
 				break;
 			case WARNING:
-				messageContainer.getStyleClass().add("warninigMessage");
+				messageContainer.getStyleClass().add("warningMessage");
 				messageIcon
 						.setText(resources.getString("message.warning.icon"));
 				break;
 			default:
 				break;
 			}
-		});
-
-		}
+		};
 
 		if (type == null && root.getChildren().contains(messageContainer)) {
 			root.getChildren().remove(messageContainer);
