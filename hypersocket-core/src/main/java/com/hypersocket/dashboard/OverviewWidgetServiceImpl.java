@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
-import com.hypersocket.config.ConfigurationPermission;
 import com.hypersocket.http.HttpUtils;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -69,13 +68,13 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	}
 
 	public List<OverviewWidget> getWidgets() throws AccessDeniedException {
-		assertPermission(ConfigurationPermission.READ);
+		assertPermission(OverviewPermission.READ);
 		return widgetList;
 	}
 
 	@Override
 	public Collection<UsefulLink> getLinks() throws ResourceException {
-		
+
 		ObjectMapper mapper = new ObjectMapper();
 
 		try {
@@ -83,7 +82,8 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 					"http://updates.hypersocket.com/messages/articles.json",
 					true), UsefulLink[].class));
 		} catch (Throwable e) {
-			throw new ResourceException(RESOURCE_BUNDLE, "error.readingArticleList", e.getMessage());
+			throw new ResourceException(RESOURCE_BUNDLE,
+					"error.readingArticleList", e.getMessage());
 		}
 	}
 }
