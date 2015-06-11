@@ -78,9 +78,29 @@
                   </AnchorPane>
             </content>
           </Tab>
-            <Tab text="%updates">
+            <Tab disable="true" text="%updates">
               <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <BorderPane layoutX="-12.0" layoutY="-86.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <top>
+                              <BorderPane BorderPane.alignment="CENTER">
+                                 <right>
+                                    <Button mnemonicParsing="false" text="%update" BorderPane.alignment="CENTER" />
+                                 </right>
+                                 <center>
+                                    <Label text="Label" BorderPane.alignment="CENTER_LEFT" />
+                                 </center>
+                                 <padding>
+                                    <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                                 </padding>
+                              </BorderPane>
+                           </top>
+                           <center>
+                              <ProgressBar prefWidth="200.0" progress="0.0" BorderPane.alignment="CENTER" />
+                           </center>
+                        </BorderPane>
+                     </children></AnchorPane>
               </content>
             </Tab>
         </tabs>
