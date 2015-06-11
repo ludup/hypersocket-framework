@@ -11,13 +11,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Semaphore;
 
-import javafx.animation.Animation;
 import javafx.animation.Animation.Status;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
-import javafx.animation.RotateTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -31,6 +30,7 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -72,7 +72,7 @@ public class SignIn extends AbstractController implements Listener {
 	@FXML
 	private Button login;
 	@FXML
-	private Label spinner;
+	private ProgressIndicator spinner;
 	@FXML
 	private HBox progressUI;
 	@FXML
@@ -97,8 +97,6 @@ public class SignIn extends AbstractController implements Listener {
 	private boolean busy;
 	private boolean disconnecting;
 	private Popup popup;
-
-	private RotateTransition progressRotation;
 
 	private boolean deleteOnDisconnect;
 
@@ -293,28 +291,14 @@ public class SignIn extends AbstractController implements Listener {
 	protected void onConfigure() {
 		super.onConfigure();
 		context.getBridge().addListener(this);
-		// serverUrls.focusedProperty().addListener(new
-		// ChangeListener<Boolean>() {
-		//
-		// @Override
-		// public void changed(ObservableValue<? extends Boolean> observable,
-		// Boolean oldValue, Boolean newValue) {
-		// if (!newValue) {
-		// urlSelected();
-		// }
-		// }
-		// });
-
-		progressRotation = new RotateTransition(Duration.millis(500), spinner);
-		progressRotation.setByAngle(360);
-		progressRotation.setCycleCount(Animation.INDEFINITE);
-
 		setMessage(null, null);
 
 		initUi();
 	}
 
 	public void setMessage(Alert.AlertType type, String message) {
+		log.info(String.format("Setting message %s (%s)", message,
+				type == null ? "clear" : type.name()));
 		messageContainer.getStyleClass().remove("errorMessage");
 		messageContainer.getStyleClass().remove("warningMessage");
 		messageContainer.getStyleClass().remove("informationMessage");
@@ -348,9 +332,9 @@ public class SignIn extends AbstractController implements Listener {
 			root.getChildren().add(0, messageContainer);
 			sizeAndPosition();
 		}
-		
+
 		messageContainer.setOpacity(1);
-		
+
 		// Stop previous fade timer and animation
 		if (messageHider != null && messageHider.getStatus() == Status.RUNNING) {
 			messageHider.stop();
@@ -413,6 +397,8 @@ public class SignIn extends AbstractController implements Listener {
 	}
 
 	private void urlSelected() {
+		abortPrompts();
+
 		Connection selectedConnection = getSelectedConnection();
 		String uriString = serverUrls.getEditor().getText();
 		log.info(String.format("Selected URI is %s", uriString));
@@ -598,6 +584,7 @@ public class SignIn extends AbstractController implements Listener {
 			foregroundConnection = null;
 			adjusting = true;
 			try {
+				log.info("Clearing selection");
 				serverUrls.getSelectionModel().select("");
 			} finally {
 				adjusting = false;
@@ -679,18 +666,28 @@ public class SignIn extends AbstractController implements Listener {
 
 		if (connection != null && foregroundConnection == null) {
 			// Try to connect
-			try {
-				busy = true;
-				setAvailable();
-				foregroundConnection = connection;
-				context.getBridge().connect(connection);
-				log.info(String.format("Connected to %s", uri));
-			} catch (Exception e) {
-				foregroundConnection = null;
-				e.printStackTrace();
-			} finally {
-				setAvailable();
-			}
+			busy = true;
+			setAvailable();
+			foregroundConnection = connection;
+			new Thread() {
+				public void run() {
+					try {
+						context.getBridge().connect(connection);
+					} catch (Exception e) {
+						foregroundConnection = null;
+						log.error("Failed to connect.", e);
+						Platform.runLater(new Runnable() {
+							@Override
+							public void run() {
+								setMessage(AlertType.ERROR, e.getMessage());
+							}
+						});
+					} finally {
+						setAvailable();
+					}
+				}
+			}.start();
+			log.info(String.format("Connected to %s", uri));
 		}
 	}
 
@@ -729,13 +726,14 @@ public class SignIn extends AbstractController implements Listener {
 	private void initUi() {
 		adjusting = true;
 		try {
+			log.info("Rebuilding URIs");
 			String previousUri = serverUrls.getValue();
 
 			serverUrls.itemsProperty().getValue().clear();
 			Connection selectedConnection = null;
 			String selectedUri = "";
-			ObservableList<String> serverUrlsList = serverUrls.itemsProperty()
-					.get();
+			ObservableList<String> serverUrlsList = FXCollections
+					.observableArrayList();
 
 			// An empty URL
 			serverUrlsList.add("");
@@ -792,6 +790,7 @@ public class SignIn extends AbstractController implements Listener {
 			}
 
 			log.info("Selecting " + selectedUri);
+			serverUrls.itemsProperty().setValue(serverUrlsList);
 			serverUrls.setValue(selectedUri);
 
 			// Adjust available actions etc
@@ -837,13 +836,7 @@ public class SignIn extends AbstractController implements Listener {
 			saveCredentials.setDisable(selectionConnected);
 			saveConnection.setDisable(!selectionConnected);
 
-			if (busy && progressRotation.getStatus() != Status.RUNNING) {
-				progressRotation.play();
-			} else if (!busy && progressRotation.getStatus() == Status.RUNNING) {
-				progressRotation.pause();
-			}
 		} else {
-			progressRotation.pause();
 			serverUrls.editorProperty().get().setDisable(false);
 			serverUrls.setDisable(false);
 			progressUI.setVisible(false);

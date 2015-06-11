@@ -270,8 +270,12 @@ public class Client extends Application {
 
 						Optional<ButtonType> result = alert.showAndWait();
 						if (result.get() == disconnect) {
-							bridge.disconnectAll();
-							System.exit(0);
+							new Thread() {
+								public void run() {
+									bridge.disconnectAll();
+									System.exit(0);		
+								}
+							}.start();
 						}
 						else if (result.get() == stayConnected) {
 							System.exit(0);
