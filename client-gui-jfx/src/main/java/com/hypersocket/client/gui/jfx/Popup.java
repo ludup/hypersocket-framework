@@ -113,10 +113,6 @@ public class Popup extends Stage {
 		}
 	}
 
-	protected boolean isChildFocussed() {
-		return false;
-	}
-
 	public void positionPopup() {
 		Configuration cfg = Configuration.getDefault();
 		if (cfg.topProperty().get()) {
@@ -126,5 +122,9 @@ public class Popup extends Stage {
 			setY(getOwner().getY() - getHeight());
 			setX(getOwner().getX() + getOwner().getWidth() - getWidth());
 		}
+	}
+
+	protected boolean isChildFocussed() {
+		return false;
 	}
 }

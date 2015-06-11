@@ -2,6 +2,7 @@ package com.hypersocket.client.gui.jfx;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import javafx.application.Application;
@@ -16,6 +17,10 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
@@ -54,13 +59,14 @@ public class Client extends Application {
 		controllerInst.configure(scene, this);
 		return controllerInst;
 	}
-	
+
 	public static Screen getConfiguredScreen() {
 		Configuration cfg = Configuration.getDefault();
 		ObservableList<Screen> screens = Screen.getScreens();
-		return screens.get(Math.min(screens.size() - 1, cfg.monitorProperty().get()));
+		return screens.get(Math.min(screens.size() - 1, cfg.monitorProperty()
+				.get()));
 	}
-	
+
 	public static Rectangle2D getConfiguredBounds() {
 
 		Configuration cfg = Configuration.getDefault();
@@ -70,8 +76,7 @@ public class Client extends Application {
 		// a way to get screen geometry change events.
 		Rectangle2D visualBounds = screen.getVisualBounds();
 		Rectangle2D screenBounds = screen.getBounds();
-		return cfg.avoidReservedProperty().get() ? visualBounds
-				: screenBounds;
+		return cfg.avoidReservedProperty().get() ? visualBounds : screenBounds;
 	}
 
 	private void setStageBounds() {
@@ -215,6 +220,13 @@ public class Client extends Application {
 		cfg.bottomProperty().addListener(dockPositionListener);
 		cfg.leftProperty().addListener(dockPositionListener);
 		cfg.rightProperty().addListener(dockPositionListener);
+		// exitAlert.setTitle(resources.getString("exit.confirm.title"));
+		// exitAlert.setHeaderText(resources.getString("exit.confirm.header"));
+		// exitAlert.setContentText(resources.getString("exit.confirm.content"));
+		// Optional<ButtonType> result = alert.showAndWait();
+		// if (result.get() == ButtonType.OK) {
+		// System.exit(0);
+		// }
 
 		//
 		primaryStage.focusedProperty().addListener(
@@ -231,13 +243,54 @@ public class Client extends Application {
 						}
 					}
 				});
+
+		primaryStage.onCloseRequestProperty().set(
+				we -> {
+
+					int active = bridge.getActiveConnections();
+
+					if (active > 0) {
+						Alert alert = new Alert(AlertType.CONFIRMATION);
+						alert.setTitle(BUNDLE.getString("exit.confirm.title"));
+						alert.setHeaderText(BUNDLE
+								.getString("exit.confirm.header"));
+						alert.setContentText(BUNDLE
+								.getString("exit.confirm.content"));
+
+						ButtonType disconnect = new ButtonType(BUNDLE
+								.getString("exit.confirm.disconnect"));
+						ButtonType stayConnected = new ButtonType(BUNDLE
+								.getString("exit.confirm.stayConnected"));
+						ButtonType cancel = new ButtonType(BUNDLE
+								.getString("exit.confirm.cancel"),
+								ButtonData.CANCEL_CLOSE);
+
+						alert.getButtonTypes().setAll(disconnect,
+								stayConnected, cancel);
+
+						Optional<ButtonType> result = alert.showAndWait();
+						if (result.get() == disconnect) {
+							bridge.disconnectAll();
+							System.exit(0);
+						}
+						else if (result.get() == stayConnected) {
+							System.exit(0);
+						}
+						we.consume();
+					}
+					else {
+						System.exit(0);
+					}
+				});
 	}
 
 	public static void setColors(Scene scene) {
 		Configuration cfg = Configuration.getDefault();
 		Color newValue = cfg.colorProperty().getValue();
 		scene.fillProperty().set(newValue);
-		String newCol = "-fx-text-fill: " + (newValue.getBrightness() < 0.5f ? "#ffffff" : "#000000") + ";";
+		String newCol = "-fx-text-fill: "
+				+ (newValue.getBrightness() < 0.5f ? "#ffffff" : "#000000")
+				+ ";";
 		System.out.println("New col: " + newCol);
 		scene.getRoot().setStyle(newCol);
 		scene.setFill(newValue);
