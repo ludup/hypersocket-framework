@@ -14,23 +14,21 @@ import java.util.Map;
 import java.util.Properties;
 
 import javafx.application.Platform;
-import javafx.stage.Window;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hypersocket.client.Prompt;
-import com.hypersocket.client.gui.jfx.Notification.Notifier;
-import com.hypersocket.client.i18n.I18N;
 import com.hypersocket.client.rmi.ApplicationLauncherTemplate;
 import com.hypersocket.client.rmi.ClientService;
 import com.hypersocket.client.rmi.ConfigurationService;
 import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.client.rmi.ConnectionService;
+import com.hypersocket.client.rmi.ConnectionStatus;
 import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.ResourceService;
 
-@SuppressWarnings({"serial"})
+@SuppressWarnings({ "serial" })
 public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 	static Logger log = LoggerFactory.getLogger(Main.class);
@@ -225,30 +223,31 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 		System.err.println("[[NOTIFY]] " + msg + " (" + type + ")");
 		Platform.runLater(new Runnable() {
 			public void run() {
-				Window parent = Dock.getInstance().getStage();
-
-				switch (type) {
-				case NOTIFY_CONNECT:
-					Notifier.INSTANCE.notifySuccess(parent,
-							I18N.getResource("notify.connect"), msg);
-					break;
-				case NOTIFY_DISCONNECT:
-					Notifier.INSTANCE.notifySuccess(parent,
-							I18N.getResource("notify.disconnect"), msg);
-					break;
-				case NOTIFY_INFO:
-					Notifier.INSTANCE.notifyInfo(parent,
-							I18N.getResource("notify.information"), msg);
-					break;
-				case NOTIFY_WARNING:
-					Notifier.INSTANCE.notifyWarning(parent,
-							I18N.getResource("notify.warning"), msg);
-					break;
-				case NOTIFY_ERROR:
-					Notifier.INSTANCE.notifyError(parent,
-							I18N.getResource("notify.error"), msg);
-					break;
-				}
+				Dock.getInstance().notify(msg, type);
+//				Window parent = Dock.getInstance().getStage();
+//
+//				switch (type) {
+//				case NOTIFY_CONNECT:
+//					Notifier.INSTANCE.notifySuccess(parent,
+//							I18N.getResource("notify.connect"), msg);
+//					break;
+//				case NOTIFY_DISCONNECT:
+//					Notifier.INSTANCE.notifySuccess(parent,
+//							I18N.getResource("notify.disconnect"), msg);
+//					break;
+//				case NOTIFY_INFO:
+//					Notifier.INSTANCE.notifyInfo(parent,
+//							I18N.getResource("notify.information"), msg);
+//					break;
+//				case NOTIFY_WARNING:
+//					Notifier.INSTANCE.notifyWarning(parent,
+//							I18N.getResource("notify.warning"), msg);
+//					break;
+//				case NOTIFY_ERROR:
+//					Notifier.INSTANCE.notifyError(parent,
+//							I18N.getResource("notify.error"), msg);
+//					break;
+//				}
 			}
 		});
 	}
@@ -319,6 +318,38 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 		Exception e = errorMessage == null ? null : new Exception(errorMessage);
 		for (Listener l : new ArrayList<Listener>(listeners)) {
 			l.finishedConnecting(connection, e);
+		}
+	}
+
+	public int getActiveConnections() {
+		int active = 0;
+		try {
+			for(ConnectionStatus s: clientService.getStatus()) {
+				if(s.getStatus() == ConnectionStatus.CONNECTED) {
+					active++;
+				}
+			}
+		} catch (RemoteException e) {
+			log.error("Failed to get active connections.", e);
+		}
+		return active;
+	}
+	
+	public void disconnectAll() {
+		try {
+			for(ConnectionStatus s: clientService.getStatus()) {
+				if(s.getStatus() == ConnectionStatus.CONNECTED || s.getStatus() == ConnectionStatus.CONNECTING) {
+					try {
+						disconnect(s.getConnection());
+					}
+					catch(RemoteException re) {
+						log.error("Failed to disconnect " + s.getConnection().getId(), re);
+					}
+					
+				}
+			}
+		} catch (RemoteException e) {
+			log.error("Failed to disconnect all.", e);
 		}
 	}
 }

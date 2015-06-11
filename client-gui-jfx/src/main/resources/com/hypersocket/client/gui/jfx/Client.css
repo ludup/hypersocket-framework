@@ -4,6 +4,7 @@
 	
     DOCK_BUTTON_SELECT_HIGHLIGHT_FG: #ffffff;
     HIGHLIGHT_TEXT_COLOR: #5693BA;
+    DEFAULT_TEXT_COLOR: #000000;
     DOCK_BUTTON_HIGHLIGHT_COLOR: #5693BA;
     DOCK_BUTTON_DESELECT_COLOR: #000000;
     DOCK_BUTTON_SELECT_COLOR: #78B5DC;
@@ -74,8 +75,32 @@
 	-fx-font-size: 9;
 }
 
-.launchers {
+.input {
+	-fx-text-fill: DEFAULT_TEXT_COLOR;
 }
 
-.stack {
+
+/* Progress */
+
+.spinner {
+	-fx-font-size: 40;
+	-fx-padding: 0;
+    -fx-background-color: inherit;
+}
+
+/* Info messages */
+
+.errorMessage {
+	-fx-text-fill: white;
+    -fx-background-color: #aa3939;
+}
+
+.informationMessage {
+	-fx-text-fill: white;
+    -fx-background-color: #0c56ff;
+}
+
+.warningMessage {
+	-fx-text-fill: black;
+    -fx-background-color: #ffdf00;
 }

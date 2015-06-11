@@ -19,17 +19,11 @@
       </HBox>
    </left>
    <right>
-   	  <HBox alignment="CENTER_RIGHT" minWidth="150.0" styleClass="background">
+   	  <HBox alignment="CENTER_RIGHT" styleClass="background">
          <children>
             <Separator orientation="VERTICAL" />
             <Button fx:id="options" mnemonicParsing="false" onAction="#evtOpenOptionsWindow" styleClass="iconButton" text="%options" textOverrun="CLIP" />
             <Button fx:id="signIn" mnemonicParsing="false" onAction="#evtOpenSignInWindow" styleClass="iconButton" text="%signIn" textOverrun="CLIP" />
-            <Separator orientation="VERTICAL" />
-            <VBox alignment="CENTER">
-               <children>
-                  <Button mnemonicParsing="false" onAction="#evtExit" styleClass="smallButton" text="%exit" />
-               </children>
-            </VBox>
          </children>
       </HBox>
    </right>
