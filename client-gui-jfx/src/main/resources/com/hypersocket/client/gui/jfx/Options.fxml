@@ -22,7 +22,7 @@
                                           <Insets right="8.0" />
                                        </padding>
                                     </Label>
-                                    <Slider fx:id="size" prefWidth="96.0">
+                                    <Slider fx:id="size" min="26.0" prefWidth="96.0">
                                        <padding>
                                           <Insets right="8.0" />
                                        </padding></Slider>
@@ -78,11 +78,11 @@
                   </AnchorPane>
             </content>
           </Tab>
-          <Tab text="%system">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" />
-            </content>
-          </Tab>
+            <Tab text="%updates">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+              </content>
+            </Tab>
         </tabs>
       </TabPane>
    </children>

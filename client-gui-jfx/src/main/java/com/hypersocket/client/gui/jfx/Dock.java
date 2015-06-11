@@ -1,10 +1,10 @@
 package com.hypersocket.client.gui.jfx;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.MissingResourceException;
-import java.util.Optional;
 
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
@@ -15,11 +15,9 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
@@ -38,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import com.hypersocket.client.gui.jfx.Bridge.Listener;
 import com.hypersocket.client.rmi.ConnectionStatus;
+import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.Resource;
 import com.hypersocket.client.rmi.ResourceRealm;
 import com.hypersocket.client.rmi.ResourceService;
@@ -249,26 +248,8 @@ public class Dock extends AbstractController implements Listener {
 	}
 
 	@FXML
-	private void evtExit(ActionEvent evt) throws Exception {
-		Alert alert = new Alert(AlertType.CONFIRMATION);
-		alert.setTitle(resources.getString("exit.confirm.title"));
-		alert.setHeaderText(resources.getString("exit.confirm.header"));
-		alert.setContentText(resources.getString("exit.confirm.content"));
-		Optional<ButtonType> result = alert.showAndWait();
-		if (result.get() == ButtonType.OK) {
-			System.exit(0);
-		}
-	}
-
-	@FXML
 	private void evtOpenSignInWindow(ActionEvent evt) throws Exception {
-		Window parent = this.scene.getWindow();
-		if (signInPopup == null) {
-			FramedController signInScene = context.openScene(SignIn.class);
-			signInPopup = new Popup(parent, signInScene.getScene());
-			((SignIn) signInScene).setPopup(signInPopup);
-		}
-		signInPopup.popup();
+		openSignInWindow();
 	}
 
 	@FXML
@@ -307,6 +288,16 @@ public class Dock extends AbstractController implements Listener {
 				recentre();
 			}
 		});
+	}
+
+	private void openSignInWindow() throws IOException {
+		Window parent = this.scene.getWindow();
+		if (signInPopup == null) {
+			signInScene = (SignIn)context.openScene(SignIn.class);
+			signInPopup = new Popup(parent, signInScene.getScene());
+			((SignIn) signInScene).setPopup(signInPopup);
+		}
+		signInPopup.popup();
 	}
 
 	private void rebuildIcons() {
@@ -520,6 +511,29 @@ public class Dock extends AbstractController implements Listener {
 		} else {
 			log.info("Bridge says not connected");
 			signIn.setStyle("-fx-text-fill: #777777");
+		}
+	}
+
+	public void notify(String msg, int type) { 
+		if(signInPopup == null || !signInPopup.isShowing()) {
+			try {
+				openSignInWindow();
+			} catch (IOException e) {
+				log.error("Failed to open sign in window.", e);
+			}
+		}
+		switch(type) {
+		case GUICallback.NOTIFY_CONNECT:
+		case GUICallback.NOTIFY_DISCONNECT:
+		case GUICallback.NOTIFY_INFO:
+			signInScene.setMessage(AlertType.INFORMATION, msg);
+			break;
+		case GUICallback.NOTIFY_WARNING:
+			signInScene.setMessage(AlertType.WARNING, msg);
+			break;
+		case GUICallback.NOTIFY_ERROR:
+			signInScene.setMessage(AlertType.ERROR, msg);
+			break;
 		}
 	}
 
