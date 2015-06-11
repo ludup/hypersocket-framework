@@ -683,7 +683,12 @@ public class SignIn extends AbstractController implements Listener {
 							}
 						});
 					} finally {
-						setAvailable();
+						Platform.runLater(new Runnable() {
+							@Override
+							public void run() {
+								setAvailable();
+							}
+						});
 					}
 				}
 			}.start();
