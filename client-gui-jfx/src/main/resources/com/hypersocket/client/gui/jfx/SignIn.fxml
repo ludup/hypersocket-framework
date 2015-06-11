@@ -29,7 +29,7 @@
       </Label>
       <ComboBox fx:id="serverUrls" editable="true" onAction="#evtServerUrlSelected" prefHeight="25.0" prefWidth="270.0" promptText="%urlPrompt" styleClass="input">
          <tooltip>
-            <Tooltip text="%serverURL.tooltip" />
+            <Tooltip text="%serverURL.tooltip" wrapText="true" />
          </tooltip></ComboBox>
       <VBox fx:id="container">
          <children>
@@ -60,8 +60,11 @@
             <BorderPane fx:id="credentialsUI" />
             <HBox fx:id="progressUI" alignment="CENTER" fillHeight="false" styleClass="progressUI">
                <children>
-                  <Label fx:id="spinner" alignment="CENTER" prefHeight="52.0" prefWidth="52.0" styleClass="spinner" text="%progress" textAlignment="CENTER" />
+                  <ProgressIndicator fx:id="spinner" HBox.hgrow="NEVER" />
                </children>
+               <padding>
+                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+               </padding>
             </HBox>
             <BorderPane fx:id="promptUI">
                <center>
