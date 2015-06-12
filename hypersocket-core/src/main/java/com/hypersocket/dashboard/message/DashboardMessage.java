@@ -8,10 +8,12 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.hypersocket.resource.Resource;
 
 @Entity
 @Table(name="dashboard_messages")
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class DashboardMessage extends Resource {
 
 	@Column(name="message_id")
