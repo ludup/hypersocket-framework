@@ -56,9 +56,7 @@ public class FileUploadController extends ResourceController {
 			return new ResourceStatus<FileUpload>(service.getFileByUuid(uuid));
 
 		} catch(ResourceException ex) { 
-			return new ResourceStatus<FileUpload>(false, I18N.getResource(
-					sessionUtils.getLocale(request),
-					ex.getBundle(), ex.getResourceKey(), ex.getArgs()));
+			return new ResourceStatus<FileUpload>(false, ex.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}

@@ -18,9 +18,9 @@ import org.springframework.stereotype.Component;
 import org.w3c.dom.Element;
 
 import com.hypersocket.encrypt.EncryptionService;
-import com.hypersocket.resource.AbstractAssignableResourceService;
+import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AbstractResource;
-import com.hypersocket.resource.AbstractResourceService;
+import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.utils.HypersocketUtils;
 
@@ -29,8 +29,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 
 	static Logger log = LoggerFactory.getLogger(EntityResourcePropertyStore.class);
 	
-	Map<Class<?>,AbstractResourceService<?>> resourceServices = new HashMap<Class<?>,AbstractResourceService<?>>();
-	Map<Class<?>,AbstractAssignableResourceService<?>> assignableServices = new HashMap<Class<?>,AbstractAssignableResourceService<?>>();
+	Map<Class<?>,AbstractResourceRepository<?>> resourceServices = new HashMap<Class<?>,AbstractResourceRepository<?>>();
+	Map<Class<?>,AbstractAssignableResourceRepository<?>> assignableServices = new HashMap<Class<?>,AbstractAssignableResourceRepository<?>>();
 	Map<Class<?>, PrimitiveParser<?>> primitiveParsers = new HashMap<Class<?>,PrimitiveParser<?>>();
 	
 	@Autowired
@@ -48,11 +48,11 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		setEncryptionService(encryptionService);
 	}
 	
-	public void registerResourceService(Class<?> clz, AbstractResourceService<?> service) {
+	public void registerResourceService(Class<?> clz, AbstractResourceRepository<?> service) {
 		resourceServices.put(clz, service);
 	}
 	
-	public void registerResourceService(Class<?> clz, AbstractAssignableResourceService<?> service) {
+	public void registerResourceService(Class<?> clz, AbstractAssignableResourceRepository<?> service) {
 		assignableServices.put(clz, service);
 	}
 	
@@ -107,6 +107,21 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		throw new IllegalStateException(methodName + " not found", t);
 	}
 
+	public void setField(AbstractPropertyTemplate template,
+			AbstractResource resource, String value) {
+		doSetProperty(template, resource, value);
+	}
+	
+	public void setPropertyValue(AbstractPropertyTemplate template, AbstractResource resource, String value) {
+		
+		// Prevent caching until resource has an id.
+		if(resource.getId()==null) {
+			doSetProperty(template, resource, value);
+		} else {
+			super.setPropertyValue(template, resource, value);
+		}
+	}
+	
 	@Override
 	protected void doSetProperty(AbstractPropertyTemplate template,
 			AbstractResource resource, String value) {

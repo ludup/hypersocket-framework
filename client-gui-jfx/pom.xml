@@ -45,13 +45,9 @@
 				</executions>
 
 				<!-- BUG - http://stackoverflow.com/questions/19407959/javafx-maven-plugin-and-api-incompatibility -->
-				<!-- <dependencies>
-					<dependency>
-						<groupId>org.twdata.maven</groupId>
-						<artifactId>mojo-executor</artifactId>
-						<version>2.1.0</version>
-					</dependency>
-				</dependencies> -->
+				<!-- <dependencies> <dependency> <groupId>org.twdata.maven</groupId> 
+					<artifactId>mojo-executor</artifactId> <version>2.1.0</version> </dependency> 
+					</dependencies> -->
 			</plugin>
 		</plugins>
 	</build>
@@ -71,6 +67,13 @@
 			<groupId>scenicview</groupId>
 			<artifactId>scenicview</artifactId>
 			<version>8.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>javafx</artifactId>
+			<version>2.2.3</version>
+			<scope>system</scope>
+			<systemPath>/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home/jre/lib/ext/jfxrt.jar</systemPath>
 		</dependency>
 	</dependencies>
 
