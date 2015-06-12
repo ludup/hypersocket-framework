@@ -329,12 +329,17 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		for(CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
-		
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
+		criteria.setProjection(Projections.distinct(Projections.id()));	
 		criteria.setFirstResult(start);
 		criteria.setMaxResults(length);
 		
-		List<T> res = (List<T>)criteria.list();
-		return res;
+		List<T> ids = (List<T>)criteria.list();
+		
+		criteria = createCriteria(clz);
+		
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		criteria.add(Restrictions.in("id", ids));
+		
+		return ((List<T>) criteria.list());
 	};
 }

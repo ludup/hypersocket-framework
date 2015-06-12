@@ -17,7 +17,6 @@ import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.dashboard.OverviewWidget;
 import com.hypersocket.dashboard.OverviewWidgetService;
 import com.hypersocket.dashboard.UsefulLink;
-import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.ResourceException;
@@ -61,7 +60,7 @@ public class OverviewWidgetController extends ResourceController {
 				return new ResourceList<UsefulLink>(service.getLinks());
 			
 		} catch (ResourceException e) {
-			return new ResourceList<UsefulLink>(false, I18N.getResource(sessionUtils.getLocale(request), e.getBundle(), e.getResourceKey(), e.getArgs()));
+			return new ResourceList<UsefulLink>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}

@@ -1,6 +1,7 @@
 package com.hypersocket.properties;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,11 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 
 		return c;
 	}
+	
+	@Override
+	public Collection<String> getPropertyNames() {
+		return templates.keySet();
+	}
 
 	private String createCacheKey(String resourceKey, AbstractResource resource) {
 		String key = resourceKey;
@@ -102,11 +108,13 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 	
 	protected abstract void doSetProperty(AbstractPropertyTemplate template, AbstractResource resource, String value);
 
+
 	@Override
 	public void setPropertyValue(AbstractPropertyTemplate template,
 			AbstractResource resource, String value) {
 
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
+		cachedValues.remove(cacheKey);
 		
 		if(template.isEncrypted() && !value.startsWith("!ENC!")) {
 			value = encryptValue(cacheKey, value);
@@ -115,8 +123,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 			doSetProperty(template, resource, value);
 		}
 		
-		cachedValues.remove(cacheKey);
-		cachedValues.put(cacheKey, value);
+
 	}
 	
 	private String encryptValue(String cacheKey, String value) {

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.properties.EntityResourcePropertyStore;
+import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Realm;
@@ -67,12 +68,24 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	}
 	
 	@Override
+	public void populateEntityFields(T resource, Map<String,String> properties) {
+		
+		for(String resourceKey : getPropertyNames()) {
+			if(properties.containsKey(resourceKey)) {
+				PropertyTemplate template = getPropertyTemplate(resourceKey);
+				if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
+					setValue(resource, resourceKey, properties.get(resourceKey));
+					properties.remove(resourceKey);
+				}
+			}
+		}
+	}
+	
+	@Override
 	@Transactional
 	@SafeVarargs
 	public final void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) {
 		
-		setValues(resource, properties);
-
 		beforeSave(resource, properties);
 		
 		for(TransactionOperation<T> op : ops) {
@@ -80,6 +93,9 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		}
 		
 		save(resource);
+
+		// Now set any remaining values
+		setValues(resource, properties);
 		
 		afterSave(resource, properties);
 		

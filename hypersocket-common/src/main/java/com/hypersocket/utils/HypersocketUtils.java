@@ -84,6 +84,10 @@ public class HypersocketUtils {
 		return formatDate(date, "EEE, d MMM yyyy HH:mm:ss");
 	}
 	
+	public static String formatShortDate(Date date) {
+		return formatDate(date, "EEE, d MMM yyyy");
+	}
+	
 	/**
 	 * Parse a date on a given format. 
 	 * @param date
