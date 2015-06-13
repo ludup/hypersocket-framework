@@ -338,9 +338,9 @@ public class TriggerResourceController extends ResourceController {
 			List<TriggerCondition> allConditions = new ArrayList<TriggerCondition>();
 			List<TriggerCondition> anyConditions = new ArrayList<TriggerCondition>();
 
-			TriggerResource parentAction = null;
-			if(resource.getParentId()!=null) {
-				parentAction = resourceService.getResourceById(resource.getParentId());
+			TriggerResource parentTrigger = null;
+			if(resource.getParentId()!=null && resource.getParentId() > 0) {
+				parentTrigger = resourceService.getResourceById(resource.getParentId());
 			}
 
 			for (TriggerConditionUpdate c : resource.getAllConditions()) {
@@ -381,12 +381,12 @@ public class TriggerResourceController extends ResourceController {
 						TriggerResultType.valueOf(resource.getResult()),
 						resource.getTask(),
 						properties,
-						allConditions, anyConditions, parentAction);
+						allConditions, anyConditions, parentTrigger);
 			} else {
 				newResource = resourceService.createResource(
 						resource.getName(), resource.getEvent(),
 						TriggerResultType.valueOf(resource.getResult()), resource.getTask(), properties, realm,
-						allConditions, anyConditions, parentAction);
+						allConditions, anyConditions, parentTrigger);
 			}
 			return new ResourceStatus<TriggerResource>(newResource,
 					I18N.getResource(sessionUtils.getLocale(request),

@@ -16,7 +16,6 @@ import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskProviderServiceImpl;
-import com.hypersocket.tasks.email.EmailTaskResult;
 import com.hypersocket.triggers.TaskResult;
 import com.hypersocket.triggers.ValidationException;
 import com.hypersocket.utils.CommandExecutor;
@@ -42,7 +41,7 @@ public class ExecuteCommandTask extends AbstractTaskProvider {
 	private void postConstruct() {
 		taskService.registerTaskProvider(this);
 
-		eventService.registerEvent(EmailTaskResult.class,
+		eventService.registerEvent(ExecuteCommandResult.class,
 				TaskProviderServiceImpl.RESOURCE_BUNDLE);
 	}
 

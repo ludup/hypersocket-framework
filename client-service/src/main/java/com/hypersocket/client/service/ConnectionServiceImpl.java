@@ -7,6 +7,8 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hypersocket.client.db.HibernateSessionFactory;
 import com.hypersocket.client.rmi.Connection;
@@ -14,6 +16,8 @@ import com.hypersocket.client.rmi.ConnectionImpl;
 import com.hypersocket.client.rmi.ConnectionService;
 
 public class ConnectionServiceImpl implements ConnectionService {
+
+	static Logger log = LoggerFactory.getLogger(ClientServiceImpl.class);
 
 	Session session;
 	public ConnectionServiceImpl() {
@@ -31,8 +35,10 @@ public class ConnectionServiceImpl implements ConnectionService {
 		Transaction trans = session.beginTransaction();
 		
 		if(connection.getId()!=null) {
+			log.info("Updating existing connection " + connection);
 			session.merge(connection);
 		} else {
+			log.info("Saving new connection " + connection);
 			session.save(connection);
 		}
 		session.flush();

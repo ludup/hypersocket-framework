@@ -12,18 +12,15 @@ import com.hypersocket.tables.ColumnSort;
 
 public interface AbstractAssignableResourceService<T> extends PasswordEnabledAuthenticatedService {
 
-	void deleteResource(T resource) throws ResourceChangeException,
-			AccessDeniedException;
-
 	List<T> allResources();
 	
 	List<T> getResources(Realm realm) throws AccessDeniedException;
 
 	List<T> getResources();
 	
-	T getResourceByName(String name) throws ResourceNotFoundException;
+	T getResourceByName(String name) throws ResourceNotFoundException, AccessDeniedException;
 	
-	T getResourceById(Long id) throws ResourceNotFoundException;
+	T getResourceById(Long id) throws ResourceNotFoundException, AccessDeniedException;
 
 	Collection<T> getResources(Principal principal) throws AccessDeniedException;
 
@@ -44,7 +41,7 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 			throws AccessDeniedException;
 
 	Collection<T> searchPersonalResources(Principal principal, String search,
-			int start, int length, ColumnSort[] sorting);
+			int start, int length, ColumnSort[] sorting) throws AccessDeniedException;
 
 	long getPersonalResourceCount(Principal principal, String search);
 
@@ -54,12 +51,11 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 
 	long getPersonalResourceCount(String search);
 
-	@SuppressWarnings("unchecked")
-	void updateResource(T resource, TransactionOperation<T>... ops)
+	void updateResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops)
 			throws ResourceChangeException, AccessDeniedException;
 
 	String exportResoure(Long id) throws ResourceNotFoundException,
-			ResourceExportException;
+			ResourceExportException, AccessDeniedException;
 
 	String exportAllResoures() throws ResourceExportException;
 
@@ -69,11 +65,14 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	Collection<T> importResources(String json, Realm realm)
 			throws AccessDeniedException, ResourceException;
 
-	String exportResources(T... resources) throws ResourceExportException;
+	String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException;
 
 	T getResourceByName(String name, Realm realm)
-			throws ResourceNotFoundException;
+			throws ResourceNotFoundException, AccessDeniedException;
 
 	String getResourceCategory();
+
+	void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops)
+			throws ResourceChangeException, AccessDeniedException;
 
 }

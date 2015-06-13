@@ -39,4 +39,6 @@ public interface TaskProvider {
 	boolean supportsAutomation();
 	
 	boolean supportsTriggers();
+
+	Collection<String> getPropertyNames();
 }

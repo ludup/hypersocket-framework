@@ -1,61 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="background" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.SignIn">
+<VBox fx:id="root" alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="background" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.SignIn">
    <children>
+      <BorderPane fx:id="messageContainer">
+         <left>
+            <Label fx:id="messageIcon" alignment="CENTER" prefHeight="24.0" prefWidth="24.0" text="*" textAlignment="CENTER" BorderPane.alignment="CENTER" />
+         </left>
+         <center>
+            <Label fx:id="messageText" text="Message Text" wrapText="true" BorderPane.alignment="CENTER_LEFT" />
+         </center>
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
+         <VBox.margin>
+            <Insets bottom="8.0" />
+         </VBox.margin>
+      </BorderPane>
       <Label text="%serverURL">
          <padding>
             <Insets bottom="8.0" />
          </padding>
       </Label>
-      <ComboBox fx:id="serverUrls" editable="true" onAction="#evtServerUrlSelected" prefHeight="25.0" prefWidth="270.0" />
-      <BorderPane styleClass="background">
-         <right>
-            <CheckBox fx:id="saveConnection" alignment="CENTER_RIGHT" mnemonicParsing="false" styleClass="info" text="%saveConnection" BorderPane.alignment="CENTER">
-               <padding>
+      <ComboBox fx:id="serverUrls" editable="true" onAction="#evtServerUrlSelected" prefHeight="25.0" prefWidth="270.0" promptText="%urlPrompt" styleClass="input">
+         <tooltip>
+            <Tooltip text="%serverURL.tooltip" wrapText="true" />
+         </tooltip></ComboBox>
+      <VBox fx:id="container">
+         <children>
+            <BorderPane fx:id="optionsUI">
+               <right>
+                  <CheckBox fx:id="saveConnection" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#evtSaveConnection" styleClass="info" text="%saveConnection" BorderPane.alignment="CENTER">
+                     <padding>
+                        <Insets top="8.0" />
+                     </padding>
+                  </CheckBox>
+               </right>
+               <VBox.margin>
                   <Insets top="8.0" />
-               </padding>
-            </CheckBox>
-         </right>
-         <VBox.margin>
-            <Insets top="8.0" />
-         </VBox.margin>
-         <left>
-            <HBox BorderPane.alignment="CENTER">
+               </VBox.margin>
+               <left>
+                  <HBox BorderPane.alignment="CENTER">
+                     <children>
+                        <Hyperlink fx:id="delete" onAction="#evtDelete" styleClass="small" text="%delete" visible="false" />
+                        <Hyperlink fx:id="disconnect" onAction="#evtDisconnect" styleClass="small" text="%disconnect" visible="false" />
+                     </children>
+                  </HBox>
+               </left>
+               <styleClass>
+                  <String fx:value="background" />
+                  <String fx:value="optionsUI" />
+               </styleClass>
+            </BorderPane>
+            <BorderPane fx:id="credentialsUI" />
+            <HBox fx:id="progressUI" alignment="CENTER" fillHeight="false" styleClass="progressUI">
                <children>
-                  <Hyperlink fx:id="delete" onAction="#evtDelete" styleClass="small" text="%delete" visible="false" />
-                  <Hyperlink fx:id="disconnect" onAction="#evtDisconnect" styleClass="small" text="%disconnect" visible="false" />
+                  <ProgressIndicator fx:id="spinner" HBox.hgrow="NEVER" />
                </children>
+               <padding>
+                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+               </padding>
             </HBox>
-         </left>
-      </BorderPane>
-      <Label text="%username">
-         <padding>
-            <Insets bottom="8.0" />
-         </padding>
-      </Label>
-      <TextField fx:id="username" />
-      <Label text="%password">
-         <padding>
-            <Insets bottom="8.0" top="8.0" />
-         </padding>
-      </Label>
-      <PasswordField fx:id="password" />
-      <BorderPane styleClass="background">
-         <center>
-            <CheckBox fx:id="saveCredentials" mnemonicParsing="false" styleClass="info" text="%saveCredentials" BorderPane.alignment="CENTER_RIGHT" />
-         </center>
-         <left>
-            <Button fx:id="login" mnemonicParsing="false" onAction="#evtLogin" text="%login" BorderPane.alignment="CENTER" />
-         </left>
-         <VBox.margin>
-            <Insets top="8.0" />
-         </VBox.margin>
-      </BorderPane>
+            <BorderPane fx:id="promptUI">
+               <center>
+                  <CheckBox fx:id="saveCredentials" mnemonicParsing="false" onAction="#evtSaveCredentials" styleClass="info" text="%saveCredentials" BorderPane.alignment="CENTER_RIGHT" />
+               </center>
+               <left>
+                  <Button fx:id="login" mnemonicParsing="false" onAction="#evtLogin" text="%login" BorderPane.alignment="CENTER" />
+               </left>
+               <VBox.margin>
+                  <Insets top="8.0" />
+               </VBox.margin>
+               <styleClass>
+                  <String fx:value="background" />
+                  <String fx:value="promptUI" />
+               </styleClass>
+            </BorderPane>
+         </children>
+      </VBox>
    </children>
    <padding>
       <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />

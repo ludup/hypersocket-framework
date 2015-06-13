@@ -319,11 +319,26 @@ public class TriggerResourceServiceImpl extends
 		return resource;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void deleteResource(TriggerResource resource)
+	public void deleteResource(final TriggerResource resource)
 			throws ResourceChangeException, AccessDeniedException {
 
-		super.deleteResource(resource);
+		super.deleteResource(resource, new TransactionAdapter<TriggerResource>() {
+			
+			public void beforeOperation(TriggerResource resource, Map<String,String> properties) {
+				
+				try {
+					for(TriggerResource child : resource.getChildTriggers()) {
+						deleteResource(child);
+					}
+					resource.setParentTrigger(null);
+					getRepository().deletePropertiesForResource(resource);
+				} catch (Throwable e) {
+					throw new IllegalStateException(e);
+				}
+			}
+		});
 		
 		TaskProvider provider = taskService.getTaskProvider(resource.getResourceKey());
 		provider.taskDeleted(resource);
@@ -441,7 +456,7 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	@Override
-	public List<TriggerResource> getParentTriggers(Long id) throws ResourceNotFoundException {
+	public List<TriggerResource> getParentTriggers(Long id) throws ResourceNotFoundException, AccessDeniedException {
 		
 		List<TriggerResource> triggers = new ArrayList<TriggerResource>();
 		

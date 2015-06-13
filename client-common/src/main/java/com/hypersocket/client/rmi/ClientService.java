@@ -12,6 +12,8 @@ public interface ClientService extends Remote {
 	
 	boolean isConnected(Connection c) throws RemoteException;
 	
+	Connection save(Connection c) throws RemoteException;
+	
 	void connect(Connection c) throws RemoteException;
 	
 	void disconnect(Connection c) throws RemoteException;

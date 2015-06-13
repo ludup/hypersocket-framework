@@ -11,7 +11,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
-@SuppressWarnings("restriction")
 public class Popup extends Stage {
 
 	private boolean sizeObtained;
@@ -114,11 +113,7 @@ public class Popup extends Stage {
 		}
 	}
 
-	protected boolean isChildFocussed() {
-		return false;
-	}
-
-	private void positionPopup() {
+	public void positionPopup() {
 		Configuration cfg = Configuration.getDefault();
 		if (cfg.topProperty().get()) {
 			setY(getOwner().getY() + getOwner().getHeight());
@@ -127,5 +122,9 @@ public class Popup extends Stage {
 			setY(getOwner().getY() - getHeight());
 			setX(getOwner().getX() + getOwner().getWidth() - getWidth());
 		}
+	}
+
+	protected boolean isChildFocussed() {
+		return false;
 	}
 }
