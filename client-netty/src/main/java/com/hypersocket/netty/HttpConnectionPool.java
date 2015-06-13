@@ -204,6 +204,8 @@ public class HttpConnectionPool {
 			con.disconnect();
 		}
 		
+		clientSocketFactory.shutdown();
+		
 		if(log.isDebugEnabled()) {
 			log.debug("Disconnection complete");
 		}

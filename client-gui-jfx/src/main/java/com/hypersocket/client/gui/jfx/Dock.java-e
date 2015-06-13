@@ -1,9 +1,10 @@
 package com.hypersocket.client.gui.jfx;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.MissingResourceException;
-import java.util.Optional;
 
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
@@ -14,11 +15,9 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
@@ -36,12 +35,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hypersocket.client.gui.jfx.Bridge.Listener;
-import com.hypersocket.client.rmi.Connection;
+import com.hypersocket.client.rmi.ConnectionStatus;
+import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.Resource;
 import com.hypersocket.client.rmi.ResourceRealm;
 import com.hypersocket.client.rmi.ResourceService;
 
-@SuppressWarnings("restriction")
 public class Dock extends AbstractController implements Listener {
 	static Logger log = LoggerFactory.getLogger(Main.class);
 
@@ -70,31 +69,45 @@ public class Dock extends AbstractController implements Listener {
 	private HBox shortcutContainer;
 
 	private TranslateTransition slideTransition;
-
 	private Rectangle slideClip;
 
+	private SignIn signInScene;
+	private static Dock instance;
+
+	public Dock() {
+		if (instance != null) {
+			throw new IllegalStateException("Only allowed one dock instance.");
+		}
+		instance = this;
+	}
 	
+	public static Dock getInstance() {
+		return instance;
+	}
+
 	@Override
 	protected void onConfigure() {
 		super.onConfigure();
 
 		Configuration cfg = Configuration.getDefault();
 
-		setAvailable();
-
-		networkResources.setTooltip(createDockButtonToolTip(resources.getString("network.toolTip")));
+		networkResources.setTooltip(createDockButtonToolTip(resources
+				.getString("network.toolTip")));
 		networkResources.selectedProperty().bindBidirectional(
 				cfg.showNetworkProperty());
 
-		ssoResources.setTooltip(createDockButtonToolTip(resources.getString("sso.toolTip")));
+		ssoResources.setTooltip(createDockButtonToolTip(resources
+				.getString("sso.toolTip")));
 		ssoResources.selectedProperty()
 				.bindBidirectional(cfg.showSSOProperty());
 
-		browserResources.setTooltip(createDockButtonToolTip(resources.getString("web.toolTip")));
+		browserResources.setTooltip(createDockButtonToolTip(resources
+				.getString("web.toolTip")));
 		browserResources.selectedProperty().bindBidirectional(
 				cfg.showWebProperty());
 
-		fileResources.setTooltip(createDockButtonToolTip(resources.getString("files.toolTip")));
+		fileResources.setTooltip(createDockButtonToolTip(resources
+				.getString("files.toolTip")));
 		fileResources.selectedProperty().bindBidirectional(
 				cfg.showFilesProperty());
 
@@ -142,6 +155,7 @@ public class Dock extends AbstractController implements Listener {
 		rebuildIcons();
 		sizeButtons();
 		recentre();
+		setAvailable();
 	}
 
 	public boolean arePopupsOpen() {
@@ -236,25 +250,8 @@ public class Dock extends AbstractController implements Listener {
 	}
 
 	@FXML
-	private void evtExit(ActionEvent evt) throws Exception {
-		Alert alert = new Alert(AlertType.CONFIRMATION);
-		alert.setTitle(resources.getString("exit.confirm.title"));
-		alert.setHeaderText(resources.getString("exit.confirm.header"));
-		alert.setContentText(resources.getString("exit.confirm.content"));
-		Optional<ButtonType> result = alert.showAndWait();
-		if (result.get() == ButtonType.OK) {
-			System.exit(0);
-		}
-	}
-
-	@FXML
 	private void evtOpenSignInWindow(ActionEvent evt) throws Exception {
-		Window parent = this.scene.getWindow();
-		if (signInPopup == null) {
-			FramedController signInScene = context.openScene(SignIn.class);
-			signInPopup = new Popup(parent, signInScene.getScene());
-		}
-		signInPopup.popup();
+		openSignInWindow();
 	}
 
 	@FXML
@@ -264,7 +261,6 @@ public class Dock extends AbstractController implements Listener {
 			final FramedController optionsScene = context
 					.openScene(Options.class);
 			optionsPopup = new Popup(parent, optionsScene.getScene()) {
-				@SuppressWarnings("restriction")
 				protected boolean isChildFocussed() {
 					// HACK!
 					//
@@ -285,6 +281,7 @@ public class Dock extends AbstractController implements Listener {
 	}
 
 	protected void onStateChanged() {
+		log.info("State changed for dock, rebuilding");
 		setAvailable();
 		rebuildIcons();
 		Platform.runLater(new Runnable() {
@@ -293,6 +290,16 @@ public class Dock extends AbstractController implements Listener {
 				recentre();
 			}
 		});
+	}
+
+	private void openSignInWindow() throws IOException {
+		Window parent = this.scene.getWindow();
+		if (signInPopup == null) {
+			signInScene = (SignIn)context.openScene(SignIn.class);
+			signInPopup = new Popup(parent, signInScene.getScene());
+			((SignIn) signInScene).setPopup(signInPopup);
+		}
+		signInPopup.popup();
 	}
 
 	private void rebuildIcons() {
@@ -353,8 +360,6 @@ public class Dock extends AbstractController implements Listener {
 
 		b.setTooltip(createDockButtonToolTip(r.getName()));
 
-		// b.setTooltip(tt);
-		// b.getStyleClass().add("tooltip");
 		try {
 			if (r.getIcon() == null) {
 				b.setText(resources.getString("resource.icon."
@@ -438,14 +443,14 @@ public class Dock extends AbstractController implements Listener {
 
 	private void styleToolTips() {
 		for (Node s : shortcuts.getChildren()) {
-			recreateTooltip((ButtonBase)s);
+			recreateTooltip((ButtonBase) s);
 		}
 		recreateTooltip(fileResources);
 		recreateTooltip(networkResources);
 		recreateTooltip(ssoResources);
 		recreateTooltip(browserResources);
 	}
-	
+
 	private void recreateTooltip(ButtonBase bb) {
 		bb.setTooltip(createDockButtonToolTip(bb.getTooltip().getText()));
 	}
@@ -487,22 +492,50 @@ public class Dock extends AbstractController implements Listener {
 		if (context.getBridge().isConnected()) {
 			int connected = 0;
 			try {
-				for (Connection c : context.getBridge().getConnectionService()
-						.getConnections()) {
-					if (context.getBridge().getClientService().isConnected(c)) {
+				List<ConnectionStatus> connections = context.getBridge()
+						.getClientService().getStatus();
+				for (ConnectionStatus c : connections) {
+					if (c.getStatus() == ConnectionStatus.CONNECTED) {
 						connected++;
 					}
 				}
+				log.info(String.format("Bridge says %d are connected of %d",
+						connected, connections.size()));
+				if (connected > 0) {
+					signIn.setStyle("-fx-text-fill: #00aa00");
+				} else {
+					signIn.setStyle("-fx-text-fill: #aa0000");
+				}
 			} catch (Exception e) {
 				log.error("Failed to check connection state.", e);
-			}
-			if (connected > 0) {
-				signIn.setStyle("-fx-text-fill: #00aa00");
-			} else {
-				signIn.setStyle("-fx-text-fill: #aa0000");
+				signIn.setStyle("-fx-text-fill: #777777");
 			}
 		} else {
+			log.info("Bridge says not connected");
 			signIn.setStyle("-fx-text-fill: #777777");
+		}
+	}
+
+	public void notify(String msg, int type) { 
+		if(signInPopup == null || !signInPopup.isShowing()) {
+			try {
+				openSignInWindow();
+			} catch (IOException e) {
+				log.error("Failed to open sign in window.", e);
+			}
+		}
+		switch(type) {
+		case GUICallback.NOTIFY_CONNECT:
+		case GUICallback.NOTIFY_DISCONNECT:
+		case GUICallback.NOTIFY_INFO:
+			signInScene.setMessage(AlertType.INFORMATION, msg);
+			break;
+		case GUICallback.NOTIFY_WARNING:
+			signInScene.setMessage(AlertType.WARNING, msg);
+			break;
+		case GUICallback.NOTIFY_ERROR:
+			signInScene.setMessage(AlertType.ERROR, msg);
+			break;
 		}
 	}
 

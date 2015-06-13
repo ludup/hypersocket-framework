@@ -81,6 +81,11 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 		return getRepository().getPropertyCategories(task);
 	}
 	
+	@Override 
+	public Collection<String> getPropertyNames() {
+		return getRepository().getPropertyNames();
+	}
+	
 	@Override
 	public void taskCreated(Task task) {
 		

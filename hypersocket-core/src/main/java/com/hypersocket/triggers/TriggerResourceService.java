@@ -51,12 +51,16 @@ public interface TriggerResourceService extends
 
 	Collection<TriggerResource> getTriggersByResourceKey(String actionGenerateAlert);
 
-	List<TriggerResource> getParentTriggers(Long id) throws ResourceNotFoundException;
+	List<TriggerResource> getParentTriggers(Long id) throws ResourceNotFoundException, AccessDeniedException;
 
 	void start();
 
 	void stop();
 
 	Collection<String> getTasks() throws AccessDeniedException;
+
+
+	void deleteResource(TriggerResource resource)
+			throws ResourceChangeException, AccessDeniedException;
 
 }

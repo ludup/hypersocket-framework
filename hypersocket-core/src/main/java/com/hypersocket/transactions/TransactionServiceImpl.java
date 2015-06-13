@@ -37,6 +37,10 @@ public class TransactionServiceImpl implements TransactionService {
 			return result;
 		} catch (Throwable e) {
 			eventService.rollbackDelayedEvents(true);
+			eventService.delayEvents(false);
+			if(transaction instanceof TransactionCallbackWithError) {
+				((TransactionCallbackWithError<T>)transaction).doTransacationError(e);
+			}
 			if(e.getCause() instanceof ResourceChangeException) {
 				throw (ResourceChangeException) e.getCause();
 			} else if(e.getCause() instanceof ResourceCreationException) {

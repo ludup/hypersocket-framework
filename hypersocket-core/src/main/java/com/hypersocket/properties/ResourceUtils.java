@@ -12,14 +12,29 @@ import com.hypersocket.resource.Resource;
 
 public class ResourceUtils {
 
+	static final String[] DELIMS = { "]|[", "\r\n" };
+	
 	public static String[] explodeValues(String values) {
 		if(StringUtils.isBlank(values)) {
 			return new String[] { };
 		}
-		StringTokenizer t = new StringTokenizer(values, "]|[");
+		String delim = null;
+		for(String str : DELIMS) {
+			if(values.contains(str)) {
+				delim = str;
+			}
+		}
+		
 		List<String> ret = new ArrayList<String>();
-		while (t.hasMoreTokens()) {
-			ret.add(t.nextToken());
+		
+		if(delim!=null) {
+			StringTokenizer t = new StringTokenizer(values, delim);
+			
+			while (t.hasMoreTokens()) {
+				ret.add(t.nextToken());
+			}
+		} else {
+			ret.add(values);
 		}
 		return ret.toArray(new String[0]);
 	}

@@ -22,9 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
@@ -39,17 +37,20 @@ public class Role extends RealmResource {
 	private Set<Permission> permissions = new HashSet<Permission>();
 
 	@ManyToMany(fetch=FetchType.EAGER)
-	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
+	@Cascade({CascadeType.SAVE_UPDATE})
 	@JoinTable(name = "role_principals", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
 	Set<Principal> principals = new HashSet<Principal>();
 	
-	@ManyToMany(fetch=FetchType.EAGER)
-	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
-	@JoinTable(name = "resource_roles", 
-		joinColumns = {@JoinColumn(name="role_id")}, 
-		inverseJoinColumns = {@JoinColumn(name="resource_id")})
-	private Set<AssignableResource> resources = new HashSet<AssignableResource>();
-	
+	/**
+	 * Causes too many joins when many resources are used
+	 */
+//	@ManyToMany(fetch=FetchType.EAGER)
+//	@Cascade({CascadeType.SAVE_UPDATE})
+//	@JoinTable(name = "resource_roles", 
+//		joinColumns = {@JoinColumn(name="role_id")}, 
+//		inverseJoinColumns = {@JoinColumn(name="resource_id")})
+//	private Set<AssignableResource> resources = new HashSet<AssignableResource>();
+//	
 	@Column(name="all_users", nullable=false)
 	boolean allUsers;
 	
@@ -75,10 +76,10 @@ public class Role extends RealmResource {
 		this.principals = principals;
 	}
 	
-	@JsonIgnore
-	public Set<AssignableResource> getResources() {
-		return resources;
-	}
+//	@JsonIgnore
+//	public Set<AssignableResource> getResources() {
+//		return resources;
+//	}
 	
 	public boolean isAllUsers() {
 		return allUsers;
@@ -107,7 +108,4 @@ public class Role extends RealmResource {
 	public void setPersonalRole(Boolean personalRole) {
 		this.personalRole = personalRole;
 	}
-
-	
-	
 }

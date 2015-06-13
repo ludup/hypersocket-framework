@@ -86,6 +86,14 @@ public class TriggerResource extends Task {
 	public TriggerResource getParentTrigger() {
 		return parentTrigger;
 	}
+	
+	public boolean getIsRoot() {
+		return parentTrigger==null;
+	}
+	
+	public Long getParentId() {
+		return parentTrigger==null ? -1 : parentTrigger.getId();
+	}
 
 	public void setResourceKey(String task) {
 		this.resourceKey = task;

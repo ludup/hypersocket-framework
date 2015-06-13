@@ -18,8 +18,6 @@ import com.sun.javafx.scene.control.skin.ColorPickerSkin;
  * The class uses a nasty hack using restricted API to try and determine if the custom colour picker is 
  * open. If it is, we don't want it's receipt of focus to autohide the dock.
  */
-@SuppressWarnings("restriction")
-
 public class Options extends AbstractController {
 	
 	@FXML

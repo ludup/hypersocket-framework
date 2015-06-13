@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,6 +66,8 @@ public abstract class ResourceTemplateRepositoryImpl extends
 
 	public ResourceTemplateRepositoryImpl() {
 		super();
+		configPropertyStore = new DatabasePropertyStore(this, encryptionService);
+		propertyStoresById.put("db", configPropertyStore);
 	}
 
 	public ResourceTemplateRepositoryImpl(boolean requiresDemoWrite) {
@@ -97,7 +100,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 	public void loadPropertyTemplates(String resourceXmlPath) {
 
 		this.resourceXmlPath = resourceXmlPath;
-		configPropertyStore = new DatabasePropertyStore(this, encryptionService);
+		
 
 		String context = null;
 		try {
@@ -292,6 +295,17 @@ public abstract class ResourceTemplateRepositoryImpl extends
 					Integer.parseInt(node.getAttribute("weight")), false,
 					group, node.getAttribute("displayMode"));
 
+			PropertyStore defaultStore = getPropertyStore();
+			
+			if(node.hasAttribute("store")) {
+				defaultStore = propertyStoresById.get(node.getAttribute("store"));
+				if (defaultStore == null) {
+					throw new IOException("PropertyStore "
+							+ node.getAttribute("store")
+							+ " does not exist!");
+				}
+			}
+			
 			NodeList properties = node.getElementsByTagName("property");
 
 			for (int x = 0; x < properties.getLength(); x++) {
@@ -316,7 +330,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 						continue;
 					}
 
-					PropertyStore store = getPropertyStore();
+					PropertyStore store = defaultStore;
 					if (pnode.hasAttribute("store")) {
 						store = propertyStoresById.get(pnode
 								.getAttribute("store"));
@@ -533,12 +547,29 @@ public abstract class ResourceTemplateRepositoryImpl extends
 		return Integer.parseInt(getValue(resource, name));
 	}
 
+	
 	@Override
 	public Long getLongValue(AbstractResource resource, String name)
 			throws NumberFormatException {
 		return Long.parseLong(getValue(resource, name));
 	}
 
+	@Override
+	public Date getDateValue(AbstractResource resource, String name)
+			throws NumberFormatException {
+		return new Date(getLongValue(resource, name));
+	}
+
+	@Override
+	public void setValue(AbstractResource resource, String name, Long value) {
+		setValue(resource, name, Long.toString(value));
+	}
+	
+	@Override
+	public void setValue(AbstractResource resource, String name, Date value) {
+		setValue(resource, name, value.getTime());
+	}
+	
 	@Override
 	public Boolean getBooleanValue(AbstractResource resource, String name) {
 		return Boolean.parseBoolean(getValue(resource, name));
@@ -553,8 +584,10 @@ public abstract class ResourceTemplateRepositoryImpl extends
 	public void setValues(AbstractResource resource,
 			Map<String, String> properties) {
 
-		for (String resourceKey : getPropertyNames()) {
-			setValue(resource, resourceKey, properties.get(resourceKey));
+		for (String resourceKey : properties.keySet()) {
+			if(propertyTemplates.containsKey(resourceKey)) {
+				setValue(resource, resourceKey, properties.get(resourceKey));
+			}
 		}
 	}
 

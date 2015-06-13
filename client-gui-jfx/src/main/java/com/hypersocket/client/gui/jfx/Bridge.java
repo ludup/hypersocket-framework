@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javafx.application.Platform;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,10 +24,11 @@ import com.hypersocket.client.rmi.ClientService;
 import com.hypersocket.client.rmi.ConfigurationService;
 import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.client.rmi.ConnectionService;
+import com.hypersocket.client.rmi.ConnectionStatus;
 import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.ResourceService;
 
-@SuppressWarnings("serial")
+@SuppressWarnings({ "serial" })
 public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 	static Logger log = LoggerFactory.getLogger(Main.class);
@@ -34,7 +37,6 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	private ResourceService resourceService;
 	private ClientService clientService;
 	private ConfigurationService configurationService;
-	private Context context;
 	private boolean connected;
 	private List<Listener> listeners = new ArrayList<>();
 
@@ -53,11 +55,12 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 		void bridgeLost();
 
 		void ping();
+
+		Map<String, String> showPrompts(List<Prompt> prompts);
 	}
 
-	public Bridge(Context context) throws RemoteException {
+	public Bridge() throws RemoteException {
 		super();
-		this.context = context;
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				try {
@@ -218,12 +221,47 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	@Override
 	public void notify(String msg, int type) throws RemoteException {
 		System.err.println("[[NOTIFY]] " + msg + " (" + type + ")");
+		Platform.runLater(new Runnable() {
+			public void run() {
+				Dock.getInstance().notify(msg, type);
+//				Window parent = Dock.getInstance().getStage();
+//
+//				switch (type) {
+//				case NOTIFY_CONNECT:
+//					Notifier.INSTANCE.notifySuccess(parent,
+//							I18N.getResource("notify.connect"), msg);
+//					break;
+//				case NOTIFY_DISCONNECT:
+//					Notifier.INSTANCE.notifySuccess(parent,
+//							I18N.getResource("notify.disconnect"), msg);
+//					break;
+//				case NOTIFY_INFO:
+//					Notifier.INSTANCE.notifyInfo(parent,
+//							I18N.getResource("notify.information"), msg);
+//					break;
+//				case NOTIFY_WARNING:
+//					Notifier.INSTANCE.notifyWarning(parent,
+//							I18N.getResource("notify.warning"), msg);
+//					break;
+//				case NOTIFY_ERROR:
+//					Notifier.INSTANCE.notifyError(parent,
+//							I18N.getResource("notify.error"), msg);
+//					break;
+//				}
+			}
+		});
 	}
 
 	@Override
 	public Map<String, String> showPrompts(List<Prompt> prompts)
 			throws RemoteException {
-		return context.showPrompts(prompts);
+		for (Listener l : new ArrayList<Listener>(listeners)) {
+			Map<String, String> m = l.showPrompts(prompts);
+			if (m != null) {
+				return m;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -237,6 +275,9 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 		for (Listener l : new ArrayList<Listener>(listeners)) {
 			l.disconnecting(connection);
 		}
+		log.info(String.format("Disconnecting from https://%s:%d/%s",
+				connection.getHostname(), connection.getPort(),
+				connection.getPath()));
 		clientService.disconnect(connection);
 	}
 
@@ -244,6 +285,9 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 		for (Listener l : new ArrayList<Listener>(listeners)) {
 			l.connecting(connection);
 		}
+		log.info(String.format("Connecting to https://%s:%d/%s",
+				connection.getHostname(), connection.getPort(),
+				connection.getPath()));
 		clientService.connect(connection);
 	}
 
@@ -274,6 +318,38 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 		Exception e = errorMessage == null ? null : new Exception(errorMessage);
 		for (Listener l : new ArrayList<Listener>(listeners)) {
 			l.finishedConnecting(connection, e);
+		}
+	}
+
+	public int getActiveConnections() {
+		int active = 0;
+		try {
+			for(ConnectionStatus s: clientService.getStatus()) {
+				if(s.getStatus() == ConnectionStatus.CONNECTED) {
+					active++;
+				}
+			}
+		} catch (RemoteException e) {
+			log.error("Failed to get active connections.", e);
+		}
+		return active;
+	}
+	
+	public void disconnectAll() {
+		try {
+			for(ConnectionStatus s: clientService.getStatus()) {
+				if(s.getStatus() == ConnectionStatus.CONNECTED || s.getStatus() == ConnectionStatus.CONNECTING) {
+					try {
+						disconnect(s.getConnection());
+					}
+					catch(RemoteException re) {
+						log.error("Failed to disconnect " + s.getConnection().getId(), re);
+					}
+					
+				}
+			}
+		} catch (RemoteException e) {
+			log.error("Failed to disconnect all.", e);
 		}
 	}
 }

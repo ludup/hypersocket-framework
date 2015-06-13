@@ -2,11 +2,8 @@ package com.hypersocket.client.gui.jfx;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.concurrent.Semaphore;
 
 import javafx.application.Application;
 import javafx.application.ConditionalFeature;
@@ -18,31 +15,24 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import com.hypersocket.client.Option;
-import com.hypersocket.client.Prompt;
 import com.hypersocket.client.gui.jfx.fontawesome.AwesomeIcons;
 import com.hypersocket.client.rmi.BrowserLauncher;
 import com.hypersocket.client.rmi.BrowserLauncher.BrowserLauncherFactory;
 import com.hypersocket.client.rmi.ResourceLauncher;
 
-@SuppressWarnings("restriction")
-public class Client extends Application implements Context {
+public class Client extends Application {
 	static ResourceBundle BUNDLE = ResourceBundle.getBundle(Client.class
 			.getName());
 
@@ -69,13 +59,14 @@ public class Client extends Application implements Context {
 		controllerInst.configure(scene, this);
 		return controllerInst;
 	}
-	
+
 	public static Screen getConfiguredScreen() {
 		Configuration cfg = Configuration.getDefault();
 		ObservableList<Screen> screens = Screen.getScreens();
-		return screens.get(Math.min(screens.size() - 1, cfg.monitorProperty().get()));
+		return screens.get(Math.min(screens.size() - 1, cfg.monitorProperty()
+				.get()));
 	}
-	
+
 	public static Rectangle2D getConfiguredBounds() {
 
 		Configuration cfg = Configuration.getDefault();
@@ -85,8 +76,7 @@ public class Client extends Application implements Context {
 		// a way to get screen geometry change events.
 		Rectangle2D visualBounds = screen.getVisualBounds();
 		Rectangle2D screenBounds = screen.getBounds();
-		return cfg.avoidReservedProperty().get() ? visualBounds
-				: screenBounds;
+		return cfg.avoidReservedProperty().get() ? visualBounds : screenBounds;
 	}
 
 	private void setStageBounds() {
@@ -121,7 +111,7 @@ public class Client extends Application implements Context {
 
 		this.primaryStage = primaryStage;
 
-		bridge = new Bridge(this);
+		bridge = new Bridge();
 		if (Platform.isSupported(ConditionalFeature.TRANSPARENT_WINDOW)) {
 			primaryStage.initStyle(StageStyle.TRANSPARENT);
 		} else {
@@ -230,6 +220,13 @@ public class Client extends Application implements Context {
 		cfg.bottomProperty().addListener(dockPositionListener);
 		cfg.leftProperty().addListener(dockPositionListener);
 		cfg.rightProperty().addListener(dockPositionListener);
+		// exitAlert.setTitle(resources.getString("exit.confirm.title"));
+		// exitAlert.setHeaderText(resources.getString("exit.confirm.header"));
+		// exitAlert.setContentText(resources.getString("exit.confirm.content"));
+		// Optional<ButtonType> result = alert.showAndWait();
+		// if (result.get() == ButtonType.OK) {
+		// System.exit(0);
+		// }
 
 		//
 		primaryStage.focusedProperty().addListener(
@@ -246,13 +243,58 @@ public class Client extends Application implements Context {
 						}
 					}
 				});
+
+		primaryStage.onCloseRequestProperty().set(
+				we -> {
+
+					int active = bridge.getActiveConnections();
+
+					if (active > 0) {
+						Alert alert = new Alert(AlertType.CONFIRMATION);
+						alert.setTitle(BUNDLE.getString("exit.confirm.title"));
+						alert.setHeaderText(BUNDLE
+								.getString("exit.confirm.header"));
+						alert.setContentText(BUNDLE
+								.getString("exit.confirm.content"));
+
+						ButtonType disconnect = new ButtonType(BUNDLE
+								.getString("exit.confirm.disconnect"));
+						ButtonType stayConnected = new ButtonType(BUNDLE
+								.getString("exit.confirm.stayConnected"));
+						ButtonType cancel = new ButtonType(BUNDLE
+								.getString("exit.confirm.cancel"),
+								ButtonData.CANCEL_CLOSE);
+
+						alert.getButtonTypes().setAll(disconnect,
+								stayConnected, cancel);
+
+						Optional<ButtonType> result = alert.showAndWait();
+						if (result.get() == disconnect) {
+							new Thread() {
+								public void run() {
+									bridge.disconnectAll();
+									System.exit(0);		
+								}
+							}.start();
+						}
+						else if (result.get() == stayConnected) {
+							System.exit(0);
+						}
+						we.consume();
+					}
+					else {
+						System.exit(0);
+					}
+				});
 	}
 
 	public static void setColors(Scene scene) {
 		Configuration cfg = Configuration.getDefault();
 		Color newValue = cfg.colorProperty().getValue();
 		scene.fillProperty().set(newValue);
-		String newCol = "-fx-text-fill: " + (newValue.getBrightness() < 0.5f ? "#ffffff" : "#000000") + ";";
+		String newCol = "-fx-text-fill: "
+				+ (newValue.getBrightness() < 0.5f ? "#ffffff" : "#000000")
+				+ ";";
 		System.out.println("New col: " + newCol);
 		scene.getRoot().setStyle(newCol);
 		scene.setFill(newValue);
@@ -262,82 +304,4 @@ public class Client extends Application implements Context {
 		return bridge;
 	}
 
-	@Override
-	public Map<String, String> showPrompts(List<Prompt> prompts) {
-		final Map<String, String> values = new HashMap<String, String>();
-
-		Semaphore s = new Semaphore(1);
-		try {
-			s.acquire();
-			Platform.runLater(new Runnable() {
-
-				@SuppressWarnings("unchecked")
-				@Override
-				public void run() {
-
-					VBox vbox = new VBox();
-					Map<Prompt, Node> nodes = new HashMap<Prompt, Node>();
-					for (Prompt p : prompts) {
-						Label l = new Label(p.getLabel());
-						vbox.getChildren().add(l);
-						switch (p.getType()) {
-						case TEXT:
-							TextField txt = new TextField(p.getDefaultValue());
-							vbox.getChildren().add(txt);
-							nodes.put(p, txt);
-							break;
-						case HIDDEN:
-							values.put(p.getResourceKey(), p.getDefaultValue());
-							break;
-						case PASSWORD:
-							PasswordField pw = new PasswordField();
-							vbox.getChildren().add(pw);
-							nodes.put(p, pw);
-							break;
-						case SELECT:
-							ComboBox<String> cb = new ComboBox<String>();
-							for (Option o : p.getOptions()) {
-								cb.itemsProperty().get().add(o.getName());
-							}
-							vbox.getChildren().add(cb);
-							nodes.put(p, cb);
-							break;
-						case P:
-							// TODO What's a P?
-							break;
-						}
-					}
-					Scene scene = new Scene(vbox);
-					Popup popup = new Popup(primaryStage, scene, false);
-					Button b = new Button("Continue");
-					b.setOnAction((event) -> {
-						popup.hide();
-						for (Map.Entry<Prompt, Node> en : nodes.entrySet()) {
-							if (en.getValue() instanceof TextField) {
-								values.put(en.getKey().getResourceKey(),
-										((TextField) en.getValue()).getText());
-							} else if (en.getValue() instanceof PasswordField) {
-								values.put(en.getKey().getResourceKey(),
-										((PasswordField) en.getValue())
-												.getText());
-							} else if (en.getValue() instanceof ComboBox) {
-								values.put(en.getKey().getResourceKey(),
-										((ComboBox<String>) en.getValue())
-												.getValue());
-							}
-						}
-						s.release();
-					});
-					vbox.getChildren().add(b);
-					popup.initModality(Modality.WINDOW_MODAL);
-					popup.popup();
-				}
-			});
-			s.acquire();
-			s.release();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		return values;
-	}
 }

@@ -29,7 +29,7 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	T getResourceById(Long id);
 
-	void deleteResource(T resource) throws ResourceChangeException;
+	void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceChangeException;
 
 	List<T> getResources(Realm realm);
 	
@@ -57,5 +57,7 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	List<T> allResources();
 
 	long allRealmsResourcesCount();
+
+	void populateEntityFields(T resource, Map<String, String> properties);
 	
 }

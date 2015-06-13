@@ -96,6 +96,11 @@ public class NettyClientTransport implements HypersocketClientTransport {
 
 		this.apiPath = this.path + "api/";
 
+//		createServerBootstrap();
+
+	}
+
+	private void createServerBootstrap() {
 		// Configure the server.
 		serverBootstrap = new ServerBootstrap(
 				new NioServerSocketChannelFactory(bossExecutor, workerExecutor));
@@ -109,7 +114,6 @@ public class NettyClientTransport implements HypersocketClientTransport {
 				return pipeline;
 			}
 		});
-
 	}
 
 	public void setRequestTimeout(long requestTimeout) {
@@ -127,7 +131,6 @@ public class NettyClientTransport implements HypersocketClientTransport {
 
 	@Override
 	public void disconnect(boolean onError) {
-
 		try {
 			stopAllForwarding();
 		} finally {
@@ -155,6 +158,8 @@ public class NettyClientTransport implements HypersocketClientTransport {
 			bossExecutor.shutdownNow();
 			workerExecutor.shutdownNow();
 		}
+		if(serverBootstrap != null)
+			serverBootstrap.shutdown();
 	}
 
 	@Override
@@ -190,6 +195,9 @@ public class NettyClientTransport implements HypersocketClientTransport {
 	public int startLocalForwarding(String listenAddress, int listenPort,
 			NetworkResource resource) throws IOException {
 		try {
+			if(serverBootstrap == null) {
+				createServerBootstrap();
+			}
 
 			if (log.isInfoEnabled()) {
 				log.info("Starting forwarding on " + listenAddress + ":"
