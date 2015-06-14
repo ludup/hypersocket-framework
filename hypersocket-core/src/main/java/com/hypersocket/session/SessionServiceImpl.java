@@ -86,7 +86,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 	Session systemSession;
 	
 	@PostConstruct
-	private void registerConfiguration() throws AccessDeniedException {
+	private void postConstruct() throws AccessDeniedException {
 
 		if(log.isInfoEnabled()) {
 			log.info("Loading User Agent database");
@@ -100,6 +100,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 		eventService.registerEvent(SessionOpenEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionClosedEvent.class, RESOURCE_BUNDLE);
 		
+	
 	}
 
 	private Session createSystemSession() {
@@ -335,6 +336,50 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
 		
 		return repository.getActiveSessions();
+	}
+	
+	@Override
+	public Long getActiveSessionCount(boolean distinctUsers) throws AccessDeniedException {
+
+		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
+		
+		return repository.getActiveSessionCount(distinctUsers);
+	}
+	
+	@Override
+	public Long getSessionCount(Date startDate, Date endDate, boolean distinctUsers) throws AccessDeniedException {
+		
+		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
+		
+		return repository.getSessionCount(startDate, endDate, distinctUsers);
+		
+	}
+
+	@Override
+	public Map<String,Long> getBrowserCount(Date startDate, Date endDate) throws AccessDeniedException {
+		
+		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
+		
+		return repository.getBrowserCount(startDate, endDate);
+		
+	}
+
+	@Override
+	public Map<String,Long> getIPCount(Date startDate, Date endDate) throws AccessDeniedException {
+		
+		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
+		
+		return repository.getIPCount(startDate, endDate);
+		
+	}
+	
+	@Override
+	public Map<String,Long> getOSCount(Date startDate, Date endDate) throws AccessDeniedException {
+		
+		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
+		
+		return repository.getOSCount(startDate, endDate);
+		
 	}
 	
 	@Override
