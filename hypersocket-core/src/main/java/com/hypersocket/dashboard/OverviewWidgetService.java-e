@@ -12,5 +12,5 @@ public interface OverviewWidgetService {
 
 	public List<OverviewWidget> getWidgets() throws AccessDeniedException;
 
-	public Collection<UsefulLink> getLinks() throws ResourceException;
+	public Collection<Link> getLinks() throws ResourceException;
 }

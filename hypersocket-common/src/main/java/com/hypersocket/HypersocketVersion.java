@@ -80,5 +80,9 @@ public class HypersocketVersion {
 	    }
 
 	    return version;
+	}
+
+	public static String getProductId() {
+		return System.getProperty("hypersocket.id", "hypersocket-uber");
 	} 
 }

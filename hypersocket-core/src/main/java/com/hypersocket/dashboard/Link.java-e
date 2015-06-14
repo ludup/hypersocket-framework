@@ -1,12 +1,15 @@
 package com.hypersocket.dashboard;
 
-public class UsefulLink {
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown=true)
+public class Link {
 
 	String name;
 	String url;
 	String icon;
 	
-	public UsefulLink() {
+	public Link() {
 		
 	}
 

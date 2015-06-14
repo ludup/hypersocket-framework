@@ -7,9 +7,15 @@
  ******************************************************************************/
 package com.hypersocket.session;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,6 +84,131 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 				criteria.add(Restrictions.eq("system", false));
 			}
 		});
+	}
+	
+	@Override
+	public Long getActiveSessionCount(boolean distinctUsers) {
+		Criteria criteria = createCriteria(Session.class);
+
+		criteria.add(Restrictions.isNull("signedOut"));
+		criteria.add(Restrictions.eq("system", false));
+		
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
+		
+		if(distinctUsers) {
+			criteria.setProjection(Projections.countDistinct("principal"));
+		} else {
+			criteria.setProjection(Projections.rowCount());
+		}
+		return (long) criteria.uniqueResult();
+	}
+	
+	@Override
+	public Long getActiveSessionCount() {
+		return getActiveSessionCount(false);
+	}
+	
+	@Override
+	public Map<String,Long> getBrowserCount() {
+		List<?> ret = getCounts(Session.class, "userAgent", new CriteriaConfiguration() {
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("system", false));
+			}
+		});
+		
+		Map<String,Long> results = new HashMap<String,Long>();
+		for(Object obj : ret) {
+			Object[] tmp = (Object[])obj;
+			results.put((String) tmp[0], (Long)tmp[1]);
+		}
+		
+		return results;
+	}
+	
+	@Override
+	public Map<String,Long> getBrowserCount(final Date startDate, final Date endDate) {
+
+		List<?> ret = getCounts(Session.class, "userAgent", new CriteriaConfiguration() {
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.ge("created", startDate));
+				criteria.add(Restrictions.lt("created", endDate));
+				criteria.add(Restrictions.eq("system", false));
+			}
+		});
+		
+		Map<String,Long> results = new HashMap<String,Long>();
+		for(Object obj : ret) {
+			Object[] tmp = (Object[])obj;
+			results.put((String) tmp[0], (Long)tmp[1]);
+		}
+		
+		return results;
+	}
+	
+	@Override
+	public Map<String,Long> getIPCount(final Date startDate, final Date endDate) {
+
+		List<?> ret = getCounts(Session.class, "remoteAddress", new CriteriaConfiguration() {
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.ge("created", startDate));
+				criteria.add(Restrictions.lt("created", endDate));
+				criteria.add(Restrictions.eq("system", false));
+			}
+		});
+		
+		Map<String,Long> results = new HashMap<String,Long>();
+		for(Object obj : ret) {
+			Object[] tmp = (Object[])obj;
+			results.put((String) tmp[0], (Long)tmp[1]);
+		}
+		
+		return results;
+	}
+	
+	@Override
+	public Map<String,Long> getOSCount(final Date startDate, final Date endDate) {
+
+		List<?> ret = getCounts(Session.class, "os", new CriteriaConfiguration() {
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.ge("created", startDate));
+				criteria.add(Restrictions.lt("created", endDate));
+				criteria.add(Restrictions.eq("system", false));
+			}
+		});
+		
+		Map<String,Long> results = new HashMap<String,Long>();
+		for(Object obj : ret) {
+			Object[] tmp = (Object[])obj;
+			results.put((String) tmp[0], (Long)tmp[1]);
+		}
+		
+		return results;
+	}
+	
+	@Override
+	public Long getSessionCount(final Date startDate, final Date endDate, final boolean distinctUsers) {
+
+		Criteria criteria = createCriteria(Session.class);
+		
+		criteria.add(Restrictions.or(
+				Restrictions.and(Restrictions.ge("created", startDate), Restrictions.lt("created", endDate)),
+				Restrictions.and(Restrictions.lt("created", startDate), Restrictions.or(
+						Restrictions.ge("signedOut", startDate), Restrictions.isNull("signedOut")))));
+
+		criteria.add(Restrictions.eq("system", false));
+		
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
+		
+		if(distinctUsers) {
+			criteria.setProjection(Projections.countDistinct("principal"));
+		} else {
+			criteria.setProjection(Projections.rowCount());
+		}
+		return (long) criteria.uniqueResult();
 	}
 	
 	@Override

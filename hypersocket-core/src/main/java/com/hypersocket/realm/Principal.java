@@ -16,8 +16,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -31,7 +31,7 @@ import com.hypersocket.permissions.Role;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
-@XmlRootElement(name = "principal")
+@Table(name = "principals")
 public abstract class Principal extends RealmResource {
 
 	@ManyToMany(fetch = FetchType.LAZY)

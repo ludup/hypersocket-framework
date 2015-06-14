@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hypersocket.HypersocketVersion;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.http.HttpUtils;
 import com.hypersocket.i18n.I18NService;
@@ -28,6 +29,9 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	public static final String RESOURCE_BUNDLE = "OverviewWidgetService";
 	private List<OverviewWidget> widgetList = new ArrayList<OverviewWidget>();
 
+	private Collection<Link> cachedLinks = null;
+	private long lastLinkUpdate = 0;
+	
 	@Autowired
 	I18NService i18nService;
 
@@ -54,8 +58,6 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 				"usefulLinks", false));
 		this.registerWidget(new OverviewWidget(1,
 				"overview.systemMessages.title", "systemMessages", true));
-		this.registerWidget(new OverviewWidget(2,
-				"overview.featureUsage.title", "featureUsage", true));
 		this.registerWidget(new OverviewWidget(3, "overview.featureReel.title",
 				"featureReel", true));
 		this.registerWidget(new OverviewWidget(3, "overview.quickSetup.title",
@@ -73,17 +75,34 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Collection<UsefulLink> getLinks() throws ResourceException {
+	public Collection<Link> getLinks() throws ResourceException {
 
-		ObjectMapper mapper = new ObjectMapper();
-
-		try {
-			return Arrays.asList(mapper.readValue(HttpUtils.doHttpGet(
-					"http://updates.hypersocket.com/messages/articles.json",
-					true), UsefulLink[].class));
-		} catch (Throwable e) {
-			throw new ResourceException(RESOURCE_BUNDLE,
-					"error.readingArticleList", e.getMessage());
+		if(System.currentTimeMillis() - lastLinkUpdate > (24 * 60 * 60 * 1000)) {
+			
+			ObjectMapper mapper = new ObjectMapper();
+	
+			try {
+				
+				List<Link> results = new ArrayList<Link>();
+				
+				// Get global links
+				results.addAll(Arrays.asList(mapper.readValue(HttpUtils.doHttpGet(
+						"http://updates.hypersocket.com/messages/links.json",
+						true), Link[].class)));
+				
+				// Get product links
+				results.addAll(Arrays.asList(mapper.readValue(HttpUtils.doHttpGet(
+						"http://updates.hypersocket.com/messages/" + HypersocketVersion.getProductId() + "/links.json",
+						true), Link[].class)));
+				
+				cachedLinks = results;
+				lastLinkUpdate = System.currentTimeMillis();
+			} catch (Throwable e) {
+				throw new ResourceException(RESOURCE_BUNDLE,
+						"error.readingArticleList", e.getMessage());
+			}
 		}
+		
+		return cachedLinks;
 	}
 }

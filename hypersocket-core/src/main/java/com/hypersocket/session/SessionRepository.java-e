@@ -7,7 +7,9 @@
  ******************************************************************************/
 package com.hypersocket.session;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.realm.Principal;
@@ -31,4 +33,18 @@ public interface SessionRepository extends AbstractEntityRepository<Session,Stri
 	public List<Session> getActiveSessions();
 
 	List<Session> getSystemSessions();
+
+	Long getActiveSessionCount();
+
+	Map<String, Long> getBrowserCount();
+
+	Map<String, Long> getBrowserCount(Date startDate, Date endDate);
+
+	Long getSessionCount(Date startDate, Date endDate, boolean distinctUsers);
+
+	Long getActiveSessionCount(boolean distinctUsers);
+
+	Map<String, Long> getOSCount(Date startDate, Date endDate);
+
+	Map<String, Long> getIPCount(Date startDate, Date endDate);
 }
