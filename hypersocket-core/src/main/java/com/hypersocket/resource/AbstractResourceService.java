@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.transaction.support.TransactionCallback;
+
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
@@ -29,9 +31,6 @@ public interface AbstractResourceService<T extends RealmResource> extends
 	void updateResource(T resource, TransactionOperation<T>... ops)
 			throws ResourceChangeException, AccessDeniedException;
 
-	void deleteResource(T resource) throws ResourceChangeException,
-			AccessDeniedException;
-
 	List<T> getResources(Realm realm) throws AccessDeniedException;
 
 	List<T> searchResources(Realm realm, String search, int start, int length,
@@ -42,9 +41,9 @@ public interface AbstractResourceService<T extends RealmResource> extends
 
 	List<T> allResources();
 
-	T getResourceByName(String name) throws ResourceNotFoundException;
+	T getResourceByName(String name) throws ResourceNotFoundException, AccessDeniedException;
 
-	T getResourceById(Long id) throws ResourceNotFoundException;
+	T getResourceById(Long id) throws ResourceNotFoundException, AccessDeniedException;
 
 	Collection<PropertyCategory> getResourceTemplate();
 
@@ -56,13 +55,15 @@ public interface AbstractResourceService<T extends RealmResource> extends
 
 	int getResourceIntProperty(T resource, String resourceKey);
 
+	Long getResourceLongProperty(T resource, String resourceKey);
+	
 	T getResourceByName(String name, Realm realm)
-			throws ResourceNotFoundException;
+			throws ResourceNotFoundException, AccessDeniedException;
 
 	String exportResources(Collection<T> resources)
-			throws ResourceExportException;
+			throws ResourceExportException, AccessDeniedException, ResourceNotFoundException;
 
-	String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException;
+	String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException, AccessDeniedException, ResourceNotFoundException;
 
 	Collection<T> importResources(String json, Realm realm)
 			throws AccessDeniedException, ResourceException;
@@ -70,10 +71,13 @@ public interface AbstractResourceService<T extends RealmResource> extends
 	String getResourceCategory();
 
 	String exportResoure(Long id) throws ResourceNotFoundException,
-			ResourceExportException;
+			ResourceExportException, AccessDeniedException;
 
-	String exportAllResoures() throws ResourceExportException;
+	String exportAllResoures() throws ResourceExportException, AccessDeniedException, ResourceNotFoundException;
 	
 	void extendPropertyTemplates(String string);
+
+	void deleteResource(T resource, TransactionOperation<T>... ops)
+			throws ResourceChangeException, AccessDeniedException;
 
 }

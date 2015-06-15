@@ -36,6 +36,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.NotScheduledException;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
@@ -114,7 +115,7 @@ public class AutomationResourceServiceImpl extends
 		eventService.registerEvent(AutomationTaskFinishedEvent.class,
 				RESOURCE_BUNDLE);
 		entityPropertyStore.registerResourceService(AutomationResource.class,
-				this);
+				repository);
 	}
 
 	@Override
@@ -192,37 +193,27 @@ public class AutomationResourceServiceImpl extends
 
 		resource.setName(name);
 
-		updateResource(resource, properties);
+		updateResource(resource, properties, new TransactionAdapter<AutomationResource>() {
+
+			@Override
+			public void afterOperation(AutomationResource resource,
+					Map<String, String> properties) {
+				setProperties(resource, properties);
+			}
+		});
 
 		schedule(resource);
 
 		return resource;
 	}
 
-	@Override
-	protected void beforeCreateResource(AutomationResource resource,
-			Map<String, String> properties) throws ResourceCreationException {
-		super.beforeCreateResource(resource, properties);
-	}
-
-	@Override
-	protected void beforeUpdateResource(AutomationResource resource,
-			Map<String, String> properties) throws ResourceChangeException {
-		super.beforeUpdateResource(resource, properties);
-	}
-
-	@Override
-	protected void afterCreateResource(AutomationResource resource,
-			Map<String, String> properties) throws ResourceCreationException {
+	private void setProperties(AutomationResource resource, Map<String,String> properties) {
 		TaskProvider provider = taskService.getTaskProvider(resource);
-		provider.getRepository().setValues(resource, properties);
-	}
-
-	@Override
-	protected void afterUpdateResource(AutomationResource resource,
-			Map<String, String> properties) throws ResourceChangeException {
-		TaskProvider provider = taskService.getTaskProvider(resource);
-		provider.getRepository().setValues(resource, properties);
+		for(String resourceKey : provider.getPropertyNames()) {
+			if(properties.containsKey(resourceKey)) {
+				provider.getRepository().setValue(resource, resourceKey, properties.get(resourceKey));
+			}
+		}
 	}
 
 	protected Date calculateDateTime(Date from, String time) {
@@ -344,7 +335,14 @@ public class AutomationResourceServiceImpl extends
 		resource.setName(name);
 		resource.setRealm(realm);
 
-		createResource(resource, properties);
+		createResource(resource, properties, new TransactionAdapter<AutomationResource>() {
+
+			@Override
+			public void afterOperation(AutomationResource resource,
+					Map<String, String> properties) {
+				setProperties(resource, properties);
+			}
+		});
 
 		schedule(resource);
 

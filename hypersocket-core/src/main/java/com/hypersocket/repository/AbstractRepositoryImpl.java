@@ -283,8 +283,24 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		}
 		
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
+		criteria.setProjection(Projections.rowCount());
 		
-		return (long) criteria.list().size();
+		return (long) criteria.uniqueResult();
+	}
+	
+	@Override
+	public List<?> getCounts(Class<?> clz, String groupBy, CriteriaConfiguration... configs) {
+	
+		Criteria criteria = createCriteria(clz);
+		
+		for(CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
+		criteria.setProjection(Projections.projectionList().add(Projections.groupProperty(groupBy)).add(Projections.count(groupBy)));
+		
+		return criteria.list();
 	}
 	
 	@Override
@@ -329,12 +345,17 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		for(CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
-		
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
+		criteria.setProjection(Projections.distinct(Projections.id()));	
 		criteria.setFirstResult(start);
 		criteria.setMaxResults(length);
 		
-		List<T> res = (List<T>)criteria.list();
-		return res;
+		List<T> ids = (List<T>)criteria.list();
+		
+		criteria = createCriteria(clz);
+		
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		criteria.add(Restrictions.in("id", ids));
+		
+		return ((List<T>) criteria.list());
 	};
 }

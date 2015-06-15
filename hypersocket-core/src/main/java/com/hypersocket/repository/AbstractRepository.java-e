@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.repository;
 
+import java.util.List;
+
 
 
 
@@ -21,5 +23,8 @@ public interface AbstractRepository<K> {
 	Long getCount(Class<?> clz, CriteriaConfiguration... configs);
 
 	Long max(String column, Class<?> clz, CriteriaConfiguration... configs);
+
+	List<?> getCounts(Class<?> clz, String groupBy,
+			CriteriaConfiguration[] configs);
 
 }

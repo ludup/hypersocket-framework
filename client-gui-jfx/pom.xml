@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.hypersocket</groupId>
 		<artifactId>hypersocket-framework</artifactId>
-		<version>0.2.10-LOCAL</version>
+		<version>1.0.0-LOCAL</version>
 		<relativePath>..</relativePath>
 	</parent>
 
@@ -45,13 +45,9 @@
 				</executions>
 
 				<!-- BUG - http://stackoverflow.com/questions/19407959/javafx-maven-plugin-and-api-incompatibility -->
-				<!-- <dependencies>
-					<dependency>
-						<groupId>org.twdata.maven</groupId>
-						<artifactId>mojo-executor</artifactId>
-						<version>2.1.0</version>
-					</dependency>
-				</dependencies> -->
+				<!-- <dependencies> <dependency> <groupId>org.twdata.maven</groupId> 
+					<artifactId>mojo-executor</artifactId> <version>2.1.0</version> </dependency> 
+					</dependencies> -->
 			</plugin>
 		</plugins>
 	</build>

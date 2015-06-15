@@ -178,9 +178,7 @@ public class ConfigurationController extends AuthenticatedController {
 					sessionUtils.getLocale(request), RESOURCE_KEY,
 					"message.saved"));
 		} catch (ResourceChangeException e) {
-			return new RequestStatus(false, I18N.getResource(
-					sessionUtils.getLocale(request), e.getBundle(),
-					e.getResourceKey(), e.getArgs()));
+			return new RequestStatus(false, e.getMessage());
 		} catch(Throwable t) { 
 			return new RequestStatus(false, I18N.getResource(
 					sessionUtils.getLocale(request), ConfigurationServiceImpl.RESOURCE_BUNDLE,

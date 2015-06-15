@@ -11,32 +11,33 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceNotFoundException;
 
 public interface TriggerResourceService extends
 		AbstractResourceService<TriggerResource> {
 
-	TriggerResource updateResource(TriggerResource resourceById, String name,
-			String event, TriggerResultType result,
+	TriggerResource createResource(String name,
+			String event, TriggerResultType result, String task,
 			Map<String, String> properties,
+			Realm realm,
 			List<TriggerCondition> allConditions,
-			List<TriggerCondition> anyConditions, List<TriggerAction> actions,
-			TriggerAction parentAction)
-			throws ResourceChangeException, AccessDeniedException;
-
-	TriggerResource createResource(String name, String event,
-			TriggerResultType result, Map<String, String> properties,
-			Realm realm, List<TriggerCondition> allConditions,
-			List<TriggerCondition> anyConditions, List<TriggerAction> actions,
-			TriggerAction parentAction)
+			List<TriggerCondition> anyConditions, 
+			TriggerResource parent)
 			throws ResourceCreationException, AccessDeniedException;
 
+
+	TriggerResource updateResource(TriggerResource resource, String name,
+			String event, TriggerResultType result, String task,
+			Map<String, String> properties,
+			List<TriggerCondition> allConditions,
+			List<TriggerCondition> anyConditions, TriggerResource parent)
+			throws ResourceChangeException, AccessDeniedException;
+	
 	void registerConditionProvider(TriggerConditionProvider condition);
 
 	TriggerConditionProvider getConditionProvider(TriggerCondition condition);
 
 	List<String> getConditions();
-
-	TriggerAction getActionById(Long id) throws AccessDeniedException;
 
 	TriggerCondition getConditionById(Long id) throws AccessDeniedException;
 
@@ -48,12 +49,18 @@ public interface TriggerResourceService extends
 
 	Collection<String> getEventAttributes(String resourceKey);
 
-	Collection<TriggerAction> getActionsByResourceKey(String actionGenerateAlert);
+	Collection<TriggerResource> getTriggersByResourceKey(String actionGenerateAlert);
 
-	List<TriggerResource> getParentTriggers(Long id);
+	List<TriggerResource> getParentTriggers(Long id) throws ResourceNotFoundException, AccessDeniedException;
 
 	void start();
 
 	void stop();
+
+	Collection<String> getTasks() throws AccessDeniedException;
+
+
+	void deleteResource(TriggerResource resource)
+			throws ResourceChangeException, AccessDeniedException;
 
 }

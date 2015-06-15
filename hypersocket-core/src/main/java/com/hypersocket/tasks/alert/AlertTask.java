@@ -23,7 +23,7 @@ import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskProviderServiceImpl;
 import com.hypersocket.triggers.TaskResult;
-import com.hypersocket.triggers.TriggerAction;
+import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.ValidationException;
@@ -61,9 +61,9 @@ public class AlertTask extends AbstractTaskProvider {
 		eventService.registerEvent(AlertEvent.class,
 				TaskProviderServiceImpl.RESOURCE_BUNDLE);
 
-		for (TriggerAction action : triggerService
-				.getActionsByResourceKey(ACTION_GENERATE_ALERT)) {
-			registerDynamicEvent(action);
+		for (TriggerResource trigger : triggerService
+				.getTriggersByResourceKey(ACTION_GENERATE_ALERT)) {
+			registerDynamicEvent(trigger);
 		}
 	}
 
@@ -164,20 +164,19 @@ public class AlertTask extends AbstractTaskProvider {
 		return repository;
 	}
 
-	private void registerDynamicEvent(TriggerAction action) {
-		EventDefinition sourceEvent = eventService.getEventDefinition(action
-				.getTrigger().getEvent());
+	private void registerDynamicEvent(TriggerResource trigger) {
+		EventDefinition sourceEvent = eventService.getEventDefinition(trigger.getEvent());
 
-		String resourceKey = "event.alert." + action.getId();
+		String resourceKey = "event.alert." + trigger.getId();
 
 		I18N.overrideMessage(Locale.ENGLISH,
 				new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
-						resourceKey, action.getName(), action.getName()));
+						resourceKey, trigger.getName(), trigger.getName()));
 		I18N.overrideMessage(
 				Locale.ENGLISH,
 				new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
-						resourceKey + ".warning", repository.getValue(action,
-								"alert.text"), repository.getValue(action,
+						resourceKey + ".warning", repository.getValue(trigger,
+								"alert.text"), repository.getValue(trigger,
 								"alert.text")));
 
 		I18N.flushOverrides();
@@ -190,12 +189,12 @@ public class AlertTask extends AbstractTaskProvider {
 
 	@Override
 	public void taskCreated(Task task) {
-		registerDynamicEvent((TriggerAction)task);
+		registerDynamicEvent((TriggerResource)task);
 	}
 
 	@Override
 	public void taskUpdated(Task task) {
-		registerDynamicEvent((TriggerAction)task);
+		registerDynamicEvent((TriggerResource)task);
 	}
 
 	@Override

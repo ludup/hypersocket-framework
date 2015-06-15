@@ -50,11 +50,6 @@ public class TriggerJob extends PermissionsAwareJob {
 
 		try {
 			processEventTrigger(trigger, event);
-
-			if(trigger.getFireEvent()!=null && trigger.getFireEvent()) {
-				eventService.publishEvent(new TriggerExecutedEvent(this, trigger));
-			}
-			
 		} catch (Throwable e) {
 			eventService.publishEvent(new TriggerExecutedEvent(this, trigger, e));
 		} 
@@ -79,15 +74,10 @@ public class TriggerJob extends PermissionsAwareJob {
 		if (checkConditions(trigger, events)) {
 			
 			if(log.isInfoEnabled()) {
-				log.info("There are " + trigger.getActions().size() + " tasks to perform");
+				log.info("Performing task " + trigger.getResourceKey());
 			}
-			for (TriggerAction action : trigger.getActions()) {
-				
-				if(log.isInfoEnabled()) {
-					log.info("Performing task " + action.getName());
-				}
-				executeAction(action, events);
-			}
+			executeAction(trigger, events);
+			
 		}
 		if (log.isInfoEnabled()) {
 			log.info("Finished processing trigger " + trigger.getName());
@@ -152,7 +142,7 @@ public class TriggerJob extends PermissionsAwareJob {
 		return matched;
 	}
 
-	protected void executeAction(TriggerAction action, SystemEvent... events)
+	protected void executeAction(TriggerResource action, SystemEvent... events)
 			throws ValidationException {
 
 		TaskProvider provider = taskService
@@ -172,8 +162,8 @@ public class TriggerJob extends PermissionsAwareJob {
 			
 			SystemEvent[] allEvents = ArrayUtils.add(events, outputEvent);
 			
-			if (!action.getPostExecutionTriggers().isEmpty()) {
-				for(TriggerResource trigger : action.getPostExecutionTriggers()) {
+			if (!action.getChildTriggers().isEmpty()) {
+				for(TriggerResource trigger : action.getChildTriggers()) {
 					processEventTrigger(trigger, allEvents);
 				}
 				

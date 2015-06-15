@@ -16,7 +16,7 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 
 	T getResourceById(Long id);
 
-	void deleteResource(T resource);
+	void deleteResource(T resource, TransactionOperation<T>... ops);
 
 	@SuppressWarnings("unchecked") 
 	void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops);
@@ -30,5 +30,7 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 			CriteriaConfiguration... configs);
 
 	long allRealmsResourcesCount();
+
+	void populateEntityFields(T resource, Map<String, String> properties);
 
 }

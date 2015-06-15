@@ -9,6 +9,7 @@ public class TriggerResourceUpdate {
 	Long id;
 	String name;
 	String event;
+	String task;
 	String result;
 	TriggerActionUpdate[] actions;
 	TriggerConditionUpdate[] allConditions;
@@ -92,5 +93,12 @@ public class TriggerResourceUpdate {
 		this.parentId = parentId;
 	}
 	
+	public String getTask() {
+		return task;
+	}
+	
+	public void setTask(String task) {
+		this.task = task;
+	}
 	
 }

@@ -57,5 +57,7 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	List<T> allResources();
 
 	long allRealmsResourcesCount();
+
+	void populateEntityFields(T resource, Map<String, String> properties);
 	
 }

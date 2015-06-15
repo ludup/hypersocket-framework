@@ -1,9 +1,9 @@
 package com.hypersocket.dashboard.message;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -13,7 +13,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hypersocket.HypersocketVersion;
+import com.hypersocket.http.HttpUtils;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.resource.ResourceException;
 
 public class DashboardMessageJob implements Job {
 
@@ -34,23 +37,28 @@ public class DashboardMessageJob implements Job {
 
 	}
 
-	private void checkMessages() throws IOException, AccessDeniedException {
+	private void checkMessages() throws IOException, AccessDeniedException, ResourceException {
 
-		URL url = new URL(MESSAGES_URL + System.getProperty("hypersocket.id")
-				+ ".json");
-		BufferedReader reader = new BufferedReader(new InputStreamReader(
-				url.openStream()));
-		StringBuilder stringBuilder = new StringBuilder();
-		String line = null;
-		while ((line = reader.readLine()) != null) {
-			stringBuilder.append(line);
-		}
-		String jsonStr = stringBuilder.toString();
 		ObjectMapper mapper = new ObjectMapper();
 
-		DashboardMessage[] dashboardMessageList = mapper.readValue(jsonStr,
-				DashboardMessage[].class);
-
-		service.saveNewMessages(dashboardMessageList);
+		try {
+			
+			List<DashboardMessage> results = new ArrayList<DashboardMessage>();
+			
+			// Get global links
+			results.addAll(Arrays.asList(mapper.readValue(HttpUtils.doHttpGet(
+					MESSAGES_URL + "messages.json",
+					true), DashboardMessage[].class)));
+			
+			// Get product links
+			results.addAll(Arrays.asList(mapper.readValue(HttpUtils.doHttpGet(
+					MESSAGES_URL + HypersocketVersion.getProductId() + "/messages.json",
+					true), DashboardMessage[].class)));
+			
+			service.saveNewMessages(results.toArray(new DashboardMessage[0]));
+		} catch (Throwable e) {
+			throw new ResourceException(DashboardMessageServiceImpl.RESOURCE_BUNDLE,
+					"error.readingMessageList", e.getMessage());
+		}
 	}
 }

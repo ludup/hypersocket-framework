@@ -10,7 +10,6 @@ import com.hypersocket.automation.events.AutomationTaskFinishedEvent;
 import com.hypersocket.automation.events.AutomationTaskStartedEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.PermissionsAwareJob;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
@@ -45,7 +44,7 @@ public class AutomationJob extends PermissionsAwareJob {
 		
 		try {
 			resource = automationService.getResourceById(resourceId);
-		} catch (ResourceNotFoundException e) {
+		} catch (Exception e) {
 			log.error("Could not find resource id " + resourceId + " to execute job", e);
 			eventService.publishEvent(new AutomationTaskStartedEvent(this, realm, e));
 			return;
