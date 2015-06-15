@@ -6,12 +6,14 @@ import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.properties.EntityResourcePropertyStore;
+import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Realm;
@@ -19,6 +21,7 @@ import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DeletedDetachedCriteria;
+import com.hypersocket.repository.DetachedCriteriaConfiguration;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
@@ -42,7 +45,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	@Override
 	@Transactional(readOnly=true)
 	public T getResourceByName(String name, Realm realm, boolean deleted) {
-		return get("name", name, getResourceClass(), new RealmRestriction(realm), new DeletedDetachedCriteria(
+		return get("name", name, getResourceClass(), new RealmRestriction(realm), new DefaultDetatchedCriteriaConfiguration(), new DeletedDetachedCriteria(
 				deleted));
 	}
 
@@ -54,8 +57,17 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 
 	@Override
 	@Transactional
-	public void deleteResource(T resource) {
+	public void deleteResource(T resource, TransactionOperation<T>... ops) {
+		
+		for(TransactionOperation<T> op : ops) {
+			op.beforeOperation(resource, null);
+		}
+		
 		delete(resource);
+		
+		for(TransactionOperation<T> op : ops) {
+			op.afterOperation(resource, null);
+		}
 	}
 
 	protected void beforeSave(T resource, Map<String,String> properties) {
@@ -67,12 +79,24 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	}
 	
 	@Override
+	public void populateEntityFields(T resource, Map<String,String> properties) {
+		
+		for(String resourceKey : getPropertyNames()) {
+			if(properties.containsKey(resourceKey)) {
+				PropertyTemplate template = getPropertyTemplate(resourceKey);
+				if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
+					setValue(resource, resourceKey, properties.get(resourceKey));
+					properties.remove(resourceKey);
+				}
+			}
+		}
+	}
+	
+	@Override
 	@Transactional
 	@SafeVarargs
 	public final void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) {
 		
-		setValues(resource, properties);
-
 		beforeSave(resource, properties);
 		
 		for(TransactionOperation<T> op : ops) {
@@ -80,6 +104,9 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		}
 		
 		save(resource);
+
+		// Now set any remaining values
+		setValues(resource, properties);
 		
 		afterSave(resource, properties);
 		
@@ -103,6 +130,9 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		} else {
 			crit.add(Restrictions.eq("realm", realm));
 		}
+		
+		processDefaultCriteria(crit);
+		
 		return (List<T>) crit.list();
 	}
 
@@ -112,7 +142,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		return super.search(getResourceClass(), "name", searchPattern, start,
 				length, sorting, ArrayUtils.addAll(configs,
-						new RealmCriteria(realm)));
+						new RealmCriteria(realm), new DefaultCriteriaConfiguration()));
 	}
 
 	@Override
@@ -121,14 +151,39 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 			CriteriaConfiguration... configs) {
 		return getCount(getResourceClass(), "name", searchPattern,
 				ArrayUtils.addAll(configs, new RealmCriteria(
-						realm)));
+						realm), new DefaultCriteriaConfiguration()));
 	}
 
 	
 	@Override
 	public long allRealmsResourcesCount() {
-		return getCount(getResourceClass(), new DeletedCriteria(false));
+		return getCount(getResourceClass(), new DeletedCriteria(false), new DefaultCriteriaConfiguration());
 	}
 	
+	protected void processDefaultCriteria(Criteria criteria) {
+		
+	}
+
+	protected void processDefaultCriteria(DetachedCriteria criteria) {
+		
+	}
+
+	class DefaultDetatchedCriteriaConfiguration implements DetachedCriteriaConfiguration {
+
+		@Override
+		public void configure(DetachedCriteria criteria) {
+			processDefaultCriteria(criteria);
+		}
+		
+	}
+	
+	class DefaultCriteriaConfiguration implements CriteriaConfiguration {
+
+		@Override
+		public void configure(Criteria criteria) {
+			processDefaultCriteria(criteria);
+		}
+		
+	}
 	protected abstract Class<T> getResourceClass();
 }

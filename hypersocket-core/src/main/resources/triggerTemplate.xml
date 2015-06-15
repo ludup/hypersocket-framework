@@ -1,8 +1,4 @@
 <?xml version="1.0" ?>
 <propertyTemplates context="trigger">
-	<propertyCategory resourceKey="category.event"
-		resourceBundle="TriggerResourceService" weight="700">
-		<property resourceKey="fireEvent" inputType="switch"
-			defaultValue="false" weight="0" />
-	</propertyCategory>
+
 </propertyTemplates>

@@ -677,9 +677,7 @@ public class CurrentRealmController extends ResourceController {
 							RealmServiceImpl.RESOURCE_BUNDLE,
 							"password.change.success"));
 		} catch (ResourceException re) {
-			return new RequestStatus(false, I18N.getResource(
-					sessionUtils.getLocale(request), re.getBundle(),
-					re.getResourceKey()));
+			return new RequestStatus(false, re.getMessage());
 
 		} finally {
 			clearAuthenticatedContext();

@@ -15,12 +15,9 @@ public interface TriggerResourceRepository extends
 
 	List<TriggerResource> getTriggersForEvent(SystemEvent event);
 
-	TriggerAction getActionById(Long id);
-
 	TriggerCondition getConditionById(Long id);
 
-	Collection<TriggerAction> getActionsByResourceKey(String resourceKey);
+	Collection<TriggerResource> getActionsByResourceKey(String resourceKey);
 
-	TriggerAction getActionByPostTriggerId(TriggerResource id);
 
 }

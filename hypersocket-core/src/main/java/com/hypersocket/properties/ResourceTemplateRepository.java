@@ -1,6 +1,7 @@
 package com.hypersocket.properties;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,12 +18,19 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	Boolean getBooleanValue(AbstractResource resource, String resourceKey);
 
+	Long getLongValue(AbstractResource resource, String name)
+			throws NumberFormatException;
+	
 	void setValue(AbstractResource resource, String resourceKey, String value);
 
 	void setValue(AbstractResource resource, String resourceKey, Integer value);
 
+	void setValue(AbstractResource resource, String resourceKey, Long value);
+	
 	void setValue(AbstractResource resource, String name, Boolean value);
 
+	void setValue(AbstractResource resource, String name, Date value);
+	
 	Collection<PropertyCategory> getPropertyCategories(AbstractResource resource);
 	
 	String[] getValues(AbstractResource resource, String name);
@@ -36,9 +44,6 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 	
 	Map<String,String> getProperties(AbstractResource resource);
 
-	Long getLongValue(AbstractResource resource, String name)
-			throws NumberFormatException;
-	
 	PropertyTemplate getPropertyTemplate(String resourceKey);
 
 	boolean hasPropertyTemplate(String key);
@@ -51,5 +56,8 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 	void registerAttribute(String context, Attribute attr);
 
 	Set<String> getAttributeNames();
+
+	Date getDateValue(AbstractResource resource, String name)
+			throws NumberFormatException;
 
 }

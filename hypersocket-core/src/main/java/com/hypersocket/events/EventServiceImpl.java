@@ -84,10 +84,11 @@ public class EventServiceImpl extends AbstractAuthenticatedServiceImpl implement
 		if(log.isInfoEnabled()) {
 			log.info("REMOVEME: Rolling back delayed events [" + fireFailedEvents + "]");
 		}
+		
+		isDelayingEvents.set(false);
 		if(delayedEvents.get()==null) {
 			return;
 		}
-		isDelayingEvents.set(false);
 		LinkedList<SystemEvent> events = delayedEvents.get();
 		synchronized (events) {
 			

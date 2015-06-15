@@ -16,8 +16,7 @@ import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.dashboard.OverviewWidget;
 import com.hypersocket.dashboard.OverviewWidgetService;
-import com.hypersocket.dashboard.UsefulLink;
-import com.hypersocket.i18n.I18N;
+import com.hypersocket.dashboard.Link;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.ResourceException;
@@ -50,7 +49,7 @@ public class OverviewWidgetController extends ResourceController {
 	@RequestMapping(value = "overview/articles", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<UsefulLink> getArticles(HttpServletRequest request,
+	public ResourceList<Link> getArticles(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
@@ -58,10 +57,10 @@ public class OverviewWidgetController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 
-				return new ResourceList<UsefulLink>(service.getLinks());
+				return new ResourceList<Link>(service.getLinks());
 			
 		} catch (ResourceException e) {
-			return new ResourceList<UsefulLink>(false, I18N.getResource(sessionUtils.getLocale(request), e.getBundle(), e.getResourceKey(), e.getArgs()));
+			return new ResourceList<Link>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}

@@ -1,6 +1,7 @@
 package com.hypersocket.triggers;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -12,11 +13,11 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hypersocket.resource.RealmResource;
+import com.hypersocket.tasks.Task;
 
 @Entity
-@Table(name="trigger_resource")
-public class TriggerResource extends RealmResource {
+@Table(name="trigger_resources")
+public class TriggerResource extends Task {
 
 	@Column(name="result")
 	TriggerResultType result;
@@ -27,13 +28,14 @@ public class TriggerResource extends RealmResource {
 	@OneToMany(orphanRemoval=true, cascade=CascadeType.ALL, mappedBy="trigger", fetch=FetchType.EAGER)
 	Set<TriggerCondition> conditions = new HashSet<TriggerCondition>();
 	
-	@OneToMany(orphanRemoval=true, cascade=CascadeType.ALL, mappedBy="trigger", fetch=FetchType.EAGER)
-	Set<TriggerAction> actions  = new HashSet<TriggerAction>();
-
-	@OneToOne
-	TriggerAction parentAction;
+	@OneToMany(mappedBy="parentTrigger", fetch=FetchType.EAGER)
+	List<TriggerResource> childTriggers;
 	
-	Boolean fireEvent;
+	@OneToOne
+	TriggerResource parentTrigger;
+	
+	@Column(name="resource_key")
+	String resourceKey;
 	
 	public TriggerResultType getResult() {
 		return result;
@@ -50,19 +52,7 @@ public class TriggerResource extends RealmResource {
 	public void setEvent(String event) {
 		this.event = event;
 	}
-
-	public Set<TriggerAction> getActions() {
-		return actions;
-	}
 	
-	public Boolean getFireEvent() {
-		return fireEvent;
-	}
-
-	public void setFireEvent(Boolean fireEvent) {
-		this.fireEvent = fireEvent;
-	}
-
 	@JsonIgnore
 	public Set<TriggerCondition> getConditions() {
 		return conditions;
@@ -88,13 +78,34 @@ public class TriggerResource extends RealmResource {
 		return ret;
 	}
 
-	public void setParentAction(TriggerAction parentAction) {
-		this.parentAction = parentAction;
+	public void setParentTrigger(TriggerResource parentTrigger) {
+		this.parentTrigger = parentTrigger;
 	}
 	
 	@JsonIgnore
-	public TriggerAction getParentAction() {
-		return parentAction;
+	public TriggerResource getParentTrigger() {
+		return parentTrigger;
+	}
+	
+	public boolean getIsRoot() {
+		return parentTrigger==null;
+	}
+	
+	public Long getParentId() {
+		return parentTrigger==null ? -1 : parentTrigger.getId();
+	}
+
+	public void setResourceKey(String task) {
+		this.resourceKey = task;
+	}
+
+	@Override
+	public String getResourceKey() {
+		return resourceKey;
+	}
+	
+	public List<TriggerResource> getChildTriggers() {
+		return childTriggers;
 	}
 	
 }

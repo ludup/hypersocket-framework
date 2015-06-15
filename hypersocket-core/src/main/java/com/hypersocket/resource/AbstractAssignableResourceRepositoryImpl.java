@@ -28,6 +28,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.properties.EntityResourcePropertyStore;
+import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Principal;
@@ -291,7 +292,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 
 	@Override
-	public void deleteResource(T resource, TransactionOperation<T>... ops) throws ResourceChangeException {
+	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceChangeException {
 		beforeDelete(resource);
 		for(TransactionOperation<T> op : ops) {
 			op.beforeOperation(resource, null);
@@ -320,24 +321,38 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 	
 	@Override
+	public void populateEntityFields(T resource, Map<String,String> properties) {
+		
+		for(String resourceKey : getPropertyNames()) {
+			if(properties.containsKey(resourceKey)) {
+				PropertyTemplate template = getPropertyTemplate(resourceKey);
+				if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
+					setValue(resource, resourceKey, properties.get(resourceKey));
+					properties.remove(resourceKey);
+				}
+			}
+		}
+	}
+	
+	@Override
 	@SafeVarargs
 	@Transactional
 	public final void saveResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops) throws ResourceChangeException {
-		
-		for (Map.Entry<String, String> e : properties.entrySet()) {
-			if (hasPropertyTemplate(e.getKey())) {
-				setValue(resource, e.getKey(), e.getValue());
-			}
-		}
 
+		
 		beforeSave(resource, properties);
+		
 		for(TransactionOperation<T> op : ops) {
 			op.beforeOperation(resource, properties);
 		}
-		
+
 		save(resource);
+
+		// Now set any remaining values
+		setValues(resource, properties);
 		
 		afterSave(resource, properties);
+		
 		for(TransactionOperation<T> op : ops) {
 			op.afterOperation(resource, properties);
 		}

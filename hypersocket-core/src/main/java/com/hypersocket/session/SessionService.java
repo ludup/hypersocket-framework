@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.session;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -68,4 +69,19 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 			boolean inheritPermissions) throws AccessDeniedException;
 
 	Session getSystemSession();
+
+	Map<String, Long> getBrowserCount(Date startDate, Date endDate)
+			throws AccessDeniedException;
+
+	Long getSessionCount(Date startDate, Date endDate, boolean distinctUsers)
+			throws AccessDeniedException;
+
+	Long getActiveSessionCount(boolean distinctUsers)
+			throws AccessDeniedException;
+
+	Map<String, Long> getOSCount(Date startDate, Date endDate)
+			throws AccessDeniedException;
+
+	Map<String, Long> getIPCount(Date startDate, Date endDate)
+			throws AccessDeniedException;
 }
