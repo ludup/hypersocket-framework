@@ -107,14 +107,14 @@ public class DashboardMessageServiceImpl extends
 				repository.saveNewMessage(dashboardMessage);
 				message = repository.getMessage(dashboardMessage);
 
-//				eventService.publishEvent(new DashboardMessageCreatedEvent(
-//						this, getCurrentSession(), message));
+				eventService.publishEvent(new DashboardMessageCreatedEvent(
+						this, getCurrentSession(), message));
 			}
 
 			return message;
 		} catch (Exception e) {
-//			eventService.publishEvent(new DashboardMessageCreatedEvent(this, e,
-//					getCurrentSession(), message));
+			eventService.publishEvent(new DashboardMessageCreatedEvent(this, e,
+					getCurrentSession(), message));
 			throw e;
 		}
 	}
