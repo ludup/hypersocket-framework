@@ -205,10 +205,9 @@ public class AutomationResourceServiceImpl extends
 			public void afterOperation(AutomationResource resource,
 					Map<String, String> properties) {
 				setProperties(resource, properties);
+				schedule(resource);
 			}
 		});
-
-		schedule(resource);
 
 		return resource;
 	}
@@ -349,10 +348,9 @@ public class AutomationResourceServiceImpl extends
 			public void afterOperation(AutomationResource resource,
 					Map<String, String> properties) {
 				setProperties(resource, properties);
+				schedule(resource);
 			}
 		});
-
-		schedule(resource);
 
 		return resource;
 	}
