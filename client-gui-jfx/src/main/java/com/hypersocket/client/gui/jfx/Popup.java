@@ -24,6 +24,7 @@ public class Popup extends Stage {
 		
 		initOwner(parent);
 		setScene(scene);
+		setMinHeight(24);
 
 		// This is to align the window AFTER we know it's size.
 		ChangeListener<? super Number> l = new ChangeListener<Number>() {
@@ -97,6 +98,9 @@ public class Popup extends Stage {
 			}
 		});
 		Client.setColors(scene);
+		
+		sizeToScene();
+		positionPopup();
 	}
 
 	public void popupAndWait() {
@@ -109,6 +113,8 @@ public class Popup extends Stage {
 	public void popup() {
 		if (!isShowing()) {
 			positionPopup();
+			sizeToScene();
+			System.out.println("Popping up stage with height of " + getHeight() + " scene: " + sceneProperty().get().getHeight() + " " + sceneProperty().get().getRoot().prefHeight(getHeight()));
 			show();
 		}
 	}
