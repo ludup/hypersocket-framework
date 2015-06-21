@@ -30,8 +30,13 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	private List<OverviewWidget> widgetList = new ArrayList<OverviewWidget>();
 
 	private Collection<Link> cachedLinks = null;
+	private Collection<Link> cachedVideos = null;
+	private Collection<Link> cachedDocumentation = null;
+
 	private long lastLinkUpdate = 0;
-	
+	private long lastVideoUpdate = 0;
+	private long lastDocumentationUpdate = 0;
+
 	@Autowired
 	I18NService i18nService;
 
@@ -77,24 +82,27 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	@Override
 	public Collection<Link> getLinks() throws ResourceException {
 
-		if(System.currentTimeMillis() - lastLinkUpdate > (24 * 60 * 60 * 1000)) {
-			
+		if (System.currentTimeMillis() - lastLinkUpdate > (24 * 60 * 60 * 1000)) {
+
 			ObjectMapper mapper = new ObjectMapper();
-	
+
 			try {
-				
+
 				List<Link> results = new ArrayList<Link>();
-				
+
 				// Get global links
-				results.addAll(Arrays.asList(mapper.readValue(HttpUtils.doHttpGet(
-						"http://updates.hypersocket.com/messages/links.json",
-						true), Link[].class)));
-				
+				results.addAll(Arrays.asList(mapper.readValue(
+						HttpUtils
+								.doHttpGet(
+										"http://updates.hypersocket.com/messages/links.json",
+										true), Link[].class)));
+
 				// Get product links
-				results.addAll(Arrays.asList(mapper.readValue(HttpUtils.doHttpGet(
-						"http://updates.hypersocket.com/messages/" + HypersocketVersion.getProductId() + "/links.json",
-						true), Link[].class)));
-				
+				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
+						.doHttpGet("http://updates.hypersocket.com/messages/"
+								+ HypersocketVersion.getProductId()
+								+ "/links.json", true), Link[].class)));
+
 				cachedLinks = results;
 				lastLinkUpdate = System.currentTimeMillis();
 			} catch (Throwable e) {
@@ -102,7 +110,77 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 						"error.readingArticleList", e.getMessage());
 			}
 		}
-		
+
 		return cachedLinks;
+	}
+
+	@Override
+	public Collection<Link> getVideos() throws ResourceException {
+
+		if (System.currentTimeMillis() - lastVideoUpdate > (24 * 60 * 60 * 1000)) {
+
+			ObjectMapper mapper = new ObjectMapper();
+
+			try {
+
+				List<Link> results = new ArrayList<Link>();
+
+				// Get global videos
+				results.addAll(Arrays.asList(mapper.readValue(
+						HttpUtils
+								.doHttpGet(
+										"http://updates.hypersocket.com/messages/videos.json",
+										true), Link[].class)));
+
+				// Get product videos
+				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
+						.doHttpGet("http://updates.hypersocket.com/messages/"
+								+ HypersocketVersion.getProductId()
+								+ "/videos.json", true), Link[].class)));
+
+				cachedVideos = results;
+				lastVideoUpdate = System.currentTimeMillis();
+			} catch (Throwable e) {
+				throw new ResourceException(RESOURCE_BUNDLE,
+						"error.readingArticleList", e.getMessage());
+			}
+		}
+
+		return cachedVideos;
+	}
+
+	@Override
+	public Collection<Link> getDocumentation() throws ResourceException {
+
+		if (System.currentTimeMillis() - lastDocumentationUpdate > (24 * 60 * 60 * 1000)) {
+
+			ObjectMapper mapper = new ObjectMapper();
+
+			try {
+
+				List<Link> results = new ArrayList<Link>();
+
+				// Get global documentation
+				results.addAll(Arrays.asList(mapper.readValue(
+						HttpUtils
+								.doHttpGet(
+										"http://updates.hypersocket.com/messages/documentation.json",
+										true), Link[].class)));
+
+				// Get product documentation
+				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
+						.doHttpGet("http://updates.hypersocket.com/messages/"
+								+ HypersocketVersion.getProductId()
+								+ "/documentation.json", true), Link[].class)));
+
+				cachedDocumentation = results;
+				lastDocumentationUpdate = System.currentTimeMillis();
+			} catch (Throwable e) {
+				throw new ResourceException(RESOURCE_BUNDLE,
+						"error.readingDocumentationList", e.getMessage());
+			}
+		}
+
+		return cachedDocumentation;
 	}
 }

@@ -65,4 +65,46 @@ public class OverviewWidgetController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "overview/videos", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<Link> getVideos(HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+				return new ResourceList<Link>(service.getVideos());
+			
+		} catch (ResourceException e) {
+			return new ResourceList<Link>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "overview/documentation", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<Link> getDocumentation(HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+				return new ResourceList<Link>(service.getDocumentation());
+			
+		} catch (ResourceException e) {
+			return new ResourceList<Link>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 }
