@@ -509,4 +509,15 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 		grantPermissions(role, permissions);
 	}
 
+	@Transactional
+	@Override
+	public void createRole(String name, Realm realm, boolean personalRole,
+			boolean allUsers, boolean allPermissions, boolean system,
+			Set<Permission> permissions) {
+		Role role = createRole(name, realm, personalRole, allUsers,
+				allPermissions, system);
+		role.setPermissions(permissions);
+		save(role);
+	}
+
 }
