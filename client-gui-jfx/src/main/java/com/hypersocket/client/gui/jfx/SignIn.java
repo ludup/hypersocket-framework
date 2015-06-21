@@ -282,7 +282,7 @@ public class SignIn extends AbstractController implements Listener {
 				promptedUsername = promptValues.get("username");
 			if (promptValues.containsKey("password"))
 				promptedPassword = promptValues.get("password").toCharArray();
-			
+
 			return promptValues;
 		}
 	}
@@ -322,7 +322,7 @@ public class SignIn extends AbstractController implements Listener {
 			default:
 				break;
 			}
-		};
+		}
 
 		if (type == null && root.getChildren().contains(messageContainer)) {
 			root.getChildren().remove(messageContainer);
@@ -683,12 +683,7 @@ public class SignIn extends AbstractController implements Listener {
 							}
 						});
 					} finally {
-						Platform.runLater(new Runnable() {
-							@Override
-							public void run() {
-								setAvailable();
-							}
-						});
+						setAvailable();
 					}
 				}
 			}.start();
