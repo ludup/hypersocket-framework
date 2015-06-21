@@ -16,7 +16,7 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 
 	T getResourceById(Long id);
 
-	void deleteResource(T resource, TransactionOperation<T>... ops);
+	void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops);
 
 	@SuppressWarnings("unchecked") 
 	void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops);

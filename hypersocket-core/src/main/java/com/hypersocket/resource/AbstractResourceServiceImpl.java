@@ -252,7 +252,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	protected abstract void fireResourceUpdateEvent(T resource, Throwable t);
 
 	@Override
-	public void deleteResource(T resource, TransactionOperation<T>... ops) throws ResourceChangeException,
+	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
 
 		if(assertPermissions) {

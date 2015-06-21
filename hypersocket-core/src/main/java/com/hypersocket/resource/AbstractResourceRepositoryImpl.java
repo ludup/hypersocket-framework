@@ -57,7 +57,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 
 	@Override
 	@Transactional
-	public void deleteResource(T resource, TransactionOperation<T>... ops) {
+	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) {
 		
 		for(TransactionOperation<T> op : ops) {
 			op.beforeOperation(resource, null);

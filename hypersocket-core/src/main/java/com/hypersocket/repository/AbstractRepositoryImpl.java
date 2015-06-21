@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.repository;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -351,11 +352,15 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		
 		List<T> ids = (List<T>)criteria.list();
 		
-		criteria = createCriteria(clz);
-		
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-		criteria.add(Restrictions.in("id", ids));
-		
-		return ((List<T>) criteria.list());
+		if(ids.size() > 0) {
+			criteria = createCriteria(clz);
+			
+			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+			criteria.add(Restrictions.in("id", ids));
+			
+			return ((List<T>) criteria.list());
+		} else {
+			return new ArrayList<T>();
+		}
 	};
 }

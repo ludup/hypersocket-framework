@@ -25,6 +25,6 @@ public interface AbstractRepository<K> {
 	Long max(String column, Class<?> clz, CriteriaConfiguration... configs);
 
 	List<?> getCounts(Class<?> clz, String groupBy,
-			CriteriaConfiguration[] configs);
+			CriteriaConfiguration... configs);
 
 }
