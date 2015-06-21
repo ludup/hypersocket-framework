@@ -13,6 +13,9 @@ import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
+import com.hypersocket.dashboard.message.events.DashboardMessageCreatedEvent;
+import com.hypersocket.dashboard.message.events.DashboardMessageEvent;
+import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
@@ -35,6 +38,9 @@ public class DashboardMessageServiceImpl extends
 	@Autowired
 	I18NService i18nService;
 
+	@Autowired
+	EventService eventService;
+
 	@PostConstruct
 	private void postConstruct() {
 
@@ -46,6 +52,11 @@ public class DashboardMessageServiceImpl extends
 		for (DashboardMessagePermission p : DashboardMessagePermission.values()) {
 			permissionService.registerPermission(p, cat);
 		}
+
+		eventService
+				.registerEvent(DashboardMessageEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(DashboardMessageCreatedEvent.class,
+				RESOURCE_BUNDLE);
 
 	}
 
@@ -67,7 +78,9 @@ public class DashboardMessageServiceImpl extends
 			}
 		}
 
-		repository.saveNewMessages(newMessages);
+		for (DashboardMessage message : newMessages) {
+			repository.saveNewMessage(message);
+		}
 	}
 
 	@Override
@@ -88,12 +101,22 @@ public class DashboardMessageServiceImpl extends
 			throws AccessDeniedException {
 		assertPermission(DashboardMessagePermission.CREATE);
 
-		if (repository.getMessage(dashboardMessage) != null) {
+		DashboardMessage message = repository.getMessage(dashboardMessage);
+		try {
+			if (message == null) {
+				repository.saveNewMessage(dashboardMessage);
+				message = repository.getMessage(dashboardMessage);
 
+				eventService.publishEvent(new DashboardMessageCreatedEvent(
+						this, getCurrentSession(), message));
+			}
+
+			return message;
+		} catch (Exception e) {
+			eventService.publishEvent(new DashboardMessageCreatedEvent(this, e,
+					getCurrentSession(), message));
+			throw e;
 		}
-		repository.saveNewMessage(dashboardMessage);
-
-		return repository.getMessage(dashboardMessage);
 	}
 
 	@Override
@@ -105,7 +128,8 @@ public class DashboardMessageServiceImpl extends
 	@Override
 	public void onApplicationEvent(ContextStartedEvent event) {
 		try {
-			schedulerService.scheduleNow(DashboardMessageJob.class, null, 600000);
+			schedulerService.scheduleNow(DashboardMessageJob.class, null,
+					600000);
 
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule DashboardMessageJob", e);
