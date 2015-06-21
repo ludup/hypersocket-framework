@@ -145,6 +145,7 @@ public class FileUploadServiceImpl extends
 		return upload;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void deleteFile(FileUpload fileUpload)
 			throws ResourceChangeException, AccessDeniedException {

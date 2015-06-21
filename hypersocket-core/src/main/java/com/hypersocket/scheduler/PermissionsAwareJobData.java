@@ -13,7 +13,7 @@ public class PermissionsAwareJobData extends JobDataMap {
 	Realm currentRealm;
 	Principal principal;
 	Locale locale;
-	
+		
 	public PermissionsAwareJobData(Realm currentRealm) {
 		this(currentRealm, null, null);
 	}
@@ -42,5 +42,5 @@ public class PermissionsAwareJobData extends JobDataMap {
 	public Locale getLocale() {
 		return locale;
 	}
-
+	
 }

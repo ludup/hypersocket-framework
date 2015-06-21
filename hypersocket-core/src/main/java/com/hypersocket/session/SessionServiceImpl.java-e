@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -23,6 +24,7 @@ import net.sf.uadetector.ReadableUserAgent;
 import net.sf.uadetector.UserAgentStringParser;
 import net.sf.uadetector.service.UADetectorServiceFactory;
 
+import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,7 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
+import com.hypersocket.i18n.I18N;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.SystemPermission;
@@ -49,8 +52,8 @@ import com.hypersocket.session.events.SessionEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
 
 @Service
-public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl implements
-		SessionService, ApplicationListener<ContextStartedEvent> {
+public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
+		implements SessionService, ApplicationListener<ContextStartedEvent> {
 
 	@Autowired
 	SessionRepository repository;
@@ -63,13 +66,13 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 
 	@Autowired
 	SchedulerService schedulerService;
-	
+
 	@Autowired
 	RealmService realmService;
-	 
+
 	@Autowired
 	EventService eventService;
-	
+
 	static final String SESSION_TIMEOUT = "session.timeout";
 
 	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
@@ -78,24 +81,24 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 
 	UserAgentStringParser parser;
 
-	Map<Session,List<ResourceSession<?>>> resourceSessions = new HashMap<Session,List<ResourceSession<?>>>();
-	Map<String,SessionResourceToken<?>> sessionTokens = new HashMap<String,SessionResourceToken<?>>();
-	
-	Map<String,Session> nonCookieSessions = new HashMap<String,Session>();
-	
+	Map<Session, List<ResourceSession<?>>> resourceSessions = new HashMap<Session, List<ResourceSession<?>>>();
+	Map<String, SessionResourceToken<?>> sessionTokens = new HashMap<String, SessionResourceToken<?>>();
+
+	Map<String, Session> nonCookieSessions = new HashMap<String, Session>();
+
 	Session systemSession;
-	
+
 	@PostConstruct
 	private void postConstruct() throws AccessDeniedException {
 
-		if(log.isInfoEnabled()) {
+		if (log.isInfoEnabled()) {
 			log.info("Loading User Agent database");
 		}
 		parser = UADetectorServiceFactory.getCachingAndUpdatingParser();
-		if(log.isInfoEnabled()) {
+		if (log.isInfoEnabled()) {
 			log.info("Loaded User Agent database");
 		}
-		
+
 		eventService.registerEvent(SessionEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionOpenEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionClosedEvent.class, RESOURCE_BUNDLE);
@@ -114,39 +117,37 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 		session.setUserAgentVersion("N/A");
 		session.setRemoteAddress("N/A");
 		session.system = true;
-		
+
 		repository.saveEntity(session);
 		return session;
 	}
-	
+
 	@Override
 	public Session getSystemSession() {
-		if(systemSession==null) {
+		if (systemSession == null) {
 			systemSession = createSystemSession();
 		}
 		return systemSession;
 	}
-	
+
 	@Override
-	public Session openSession(String remoteAddress, 
-			Principal principal,
-			AuthenticationScheme completedScheme, 
-			String userAgent,
-			Map<String,String> parameters) {
-		
-		if(userAgent==null) {
+	public Session openSession(String remoteAddress, Principal principal,
+			AuthenticationScheme completedScheme, String userAgent,
+			Map<String, String> parameters) {
+
+		if (userAgent == null) {
 			userAgent = "Unknown";
 		}
 		ReadableUserAgent ua = parser.parse(userAgent);
-		
+
 		Session session = repository.createSession(remoteAddress, principal,
-				completedScheme, 
-				ua.getFamily().getName(), 
-				ua.getVersionNumber().toVersionString(), 
-				ua.getOperatingSystem().getFamily().getName(),
-				ua.getOperatingSystem().getVersionNumber().toVersionString(),
-				configurationService.getIntValue(principal.getRealm(), SESSION_TIMEOUT));
-		
+				completedScheme, ua.getFamily().getName(), ua
+						.getVersionNumber().toVersionString(), ua
+						.getOperatingSystem().getFamily().getName(), ua
+						.getOperatingSystem().getVersionNumber()
+						.toVersionString(), configurationService.getIntValue(
+						principal.getRealm(), SESSION_TIMEOUT));
+
 		eventService.publishEvent(new SessionOpenEvent(this, session));
 		return session;
 	}
@@ -192,15 +193,16 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 
 			if (touch) {
 				session.touch();
-				if(session.isReadyForUpdate()) {
+				if (session.isReadyForUpdate()) {
 					repository.updateSession(session);
-					if(log.isDebugEnabled()) {
+					if (log.isDebugEnabled()) {
 						log.debug("Session "
-								+ session.getPrincipal().getPrincipalName() + "/"
-								+ session.getId() + " state has been updated");
+								+ session.getPrincipal().getPrincipalName()
+								+ "/" + session.getId()
+								+ " state has been updated");
 					}
 				}
-				
+
 			}
 			return true;
 		} else {
@@ -216,36 +218,36 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 			throw new IllegalArgumentException(
 					"Attempting to close a session which is already closed!");
 		}
-		
-		if(nonCookieSessions.containsKey(session.getNonCookieKey())) {
+
+		if (nonCookieSessions.containsKey(session.getNonCookieKey())) {
 			nonCookieSessions.remove(session.getNonCookieKey());
 		}
-		
-		if(resourceSessions.containsKey(session)) {
+
+		if (resourceSessions.containsKey(session)) {
 			List<ResourceSession<?>> rs = resourceSessions.remove(session);
-			for(ResourceSession<?> s : rs) {
+			for (ResourceSession<?> s : rs) {
 				s.close();
 			}
 		}
-		
+
 		synchronized (sessionTokens) {
 			Set<String> tokens = new HashSet<String>();
-			for(SessionResourceToken<?> token : sessionTokens.values()) {
-				if(token.getSession().equals(session)) {
+			for (SessionResourceToken<?> token : sessionTokens.values()) {
+				if (token.getSession().equals(session)) {
 					tokens.add(token.getShortCode());
 				}
 			}
-			
-			for(String t : tokens) {
+
+			for (String t : tokens) {
 				sessionTokens.remove(t);
 			}
 		}
-		
+
 		session.setSignedOut(new Date());
 		session.setNonCookieKey(null);
 		repository.updateSession(session);
-		
-		if(!session.isSystem()) {
+
+		if (!session.isSystem()) {
 			eventService.publishEvent(new SessionClosedEvent(this, session));
 		}
 	}
@@ -254,66 +256,74 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 	public void switchRealm(Session session, Realm realm)
 			throws AccessDeniedException {
 
-		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION, SystemPermission.SYSTEM);
+		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION,
+				SystemPermission.SYSTEM);
 
-		if(log.isInfoEnabled()) {
-			log.info("Switching " + session.getPrincipal().getName() + " to " + realm.getName() + " realm");
+		if (log.isInfoEnabled()) {
+			log.info("Switching " + session.getPrincipal().getName() + " to "
+					+ realm.getName() + " realm");
 		}
-		
+
 		session.setCurrentRealm(realm);
 		repository.updateSession(session);
 	}
-	
+
 	protected void assertImpersonationPermission() throws AccessDeniedException {
-		if(hasSessionContext()) {
-			if(getCurrentSession().isImpersonating()) {
-				verifyPermission(getCurrentSession().getPrincipal(), PermissionStrategy.EXCLUDE_IMPLIED, 
-						SystemPermission.SYSTEM_ADMINISTRATION, SystemPermission.SYSTEM);
+		if (hasSessionContext()) {
+			if (getCurrentSession().isImpersonating()) {
+				verifyPermission(getCurrentSession().getPrincipal(),
+						PermissionStrategy.EXCLUDE_IMPLIED,
+						SystemPermission.SYSTEM_ADMINISTRATION,
+						SystemPermission.SYSTEM);
 				return;
 			}
-		} 
-		
-		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION, SystemPermission.SYSTEM);
-		
+		}
+
+		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION,
+				SystemPermission.SYSTEM);
+
 	}
+
 	@Override
 	public void switchPrincipal(Session session, Principal principal)
 			throws AccessDeniedException {
 		switchPrincipal(session, principal, false);
 	}
-	
+
 	@Override
-	public void switchPrincipal(Session session, Principal principal, boolean inheritPermissions)
-			throws AccessDeniedException {
+	public void switchPrincipal(Session session, Principal principal,
+			boolean inheritPermissions) throws AccessDeniedException {
 
 		assertImpersonationPermission();
 
-		if(log.isInfoEnabled()) {
-			log.info("Switching " + session.getPrincipal().getName() + " to " + principal.getName());
+		if (log.isInfoEnabled()) {
+			log.info("Switching " + session.getPrincipal().getName() + " to "
+					+ principal.getName());
 		}
-		
+
 		session.setImpersonatedPrincipal(principal);
 		session.setInheritPermissions(inheritPermissions);
-		
+
 		setCurrentSession(session, getCurrentLocale());
 		repository.updateSession(session);
 	}
 
 	@Override
-	public void registerResourceSession(Session session, ResourceSession<?> resourceSession) {
-		
-		if(!resourceSessions.containsKey(session)) {
+	public void registerResourceSession(Session session,
+			ResourceSession<?> resourceSession) {
+
+		if (!resourceSessions.containsKey(session)) {
 			resourceSessions.put(session, new ArrayList<ResourceSession<?>>());
 		}
 		resourceSessions.get(session).add(resourceSession);
 	}
-	
+
 	@Override
 	public boolean hasResourceSession(Session session, Resource resource) {
-		if(resourceSessions.containsKey(session)) {
+		if (resourceSessions.containsKey(session)) {
 			List<ResourceSession<?>> rs = resourceSessions.get(session);
-			for(ResourceSession<?> s : rs) {
-				if(s.getResource().equals(resource)) {
+			for (ResourceSession<?> s : rs) {
+				if (s.getResource().equals(resource)) {
 					return true;
 				}
 			}
@@ -324,8 +334,8 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 	@Override
 	public void unregisterResourceSession(Session session,
 			ResourceSession<?> resourceSession) {
-		
-		if(resourceSessions.containsKey(session)) {
+
+		if (resourceSessions.containsKey(session)) {
 			resourceSessions.get(session).remove(resourceSession);
 		}
 	}
@@ -333,11 +343,12 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 	@Override
 	public List<Session> getActiveSessions() throws AccessDeniedException {
 
-		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
-		
+		assertAnyPermission(SystemPermission.SYSTEM,
+				SystemPermission.SYSTEM_ADMINISTRATION);
+
 		return repository.getActiveSessions();
 	}
-	
+
 	@Override
 	public Long getActiveSessionCount(boolean distinctUsers) throws AccessDeniedException {
 
@@ -384,57 +395,60 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 	
 	@Override
 	public <T> SessionResourceToken<T> createSessionToken(T resource) {
-		
-		SessionResourceToken<T> token = new SessionResourceToken<T>(getCurrentSession(), resource);
+
+		SessionResourceToken<T> token = new SessionResourceToken<T>(
+				getCurrentSession(), resource);
 		sessionTokens.put(token.getShortCode(), token);
 		return token;
 	}
-	
+
 	@Override
-	public <T> SessionResourceToken<T> getSessionToken(String shortCode, Class<T> resourceClz) {
-		
-		if(sessionTokens.containsKey(shortCode)) {
-			
+	public <T> SessionResourceToken<T> getSessionToken(String shortCode,
+			Class<T> resourceClz) {
+
+		if (sessionTokens.containsKey(shortCode)) {
+
 			@SuppressWarnings("unchecked")
-			SessionResourceToken<T> token = (SessionResourceToken<T>) sessionTokens.get(shortCode);
-			
-			if(isLoggedOn(token.getSession(), true)) {
+			SessionResourceToken<T> token = (SessionResourceToken<T>) sessionTokens
+					.get(shortCode);
+
+			if (isLoggedOn(token.getSession(), true)) {
 				return token;
 			}
 		}
-		
+
 		return null;
 	}
 
 	@Override
 	public <T> T getSessionTokenResource(String shortCode, Class<T> resourceClz) {
-		
-		if(sessionTokens.containsKey(shortCode)) {
-			
+
+		if (sessionTokens.containsKey(shortCode)) {
+
 			@SuppressWarnings("unchecked")
-			SessionResourceToken<T> token = (SessionResourceToken<T>) sessionTokens.get(shortCode);
-			
-			if(isLoggedOn(token.getSession(), true)) {
+			SessionResourceToken<T> token = (SessionResourceToken<T>) sessionTokens
+					.get(shortCode);
+
+			if (isLoggedOn(token.getSession(), true)) {
 				return token.getResource();
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	@Override
 	public Session getNonCookieSession(String remoteAddr, String requestHeader,
-			String authenticationSchemeResourceKey) throws AccessDeniedException {
-		
-		String key = createNonCookieSessionKey(
-				remoteAddr, 
-				requestHeader, 
+			String authenticationSchemeResourceKey)
+			throws AccessDeniedException {
+
+		String key = createNonCookieSessionKey(remoteAddr, requestHeader,
 				authenticationSchemeResourceKey);
-		
+
 		Session session = nonCookieSessions.get(key);
-		
-		if(session!=null) {
-			if(!isLoggedOn(session, true)) {
+
+		if (session != null) {
+			if (!isLoggedOn(session, true)) {
 				throw new AccessDeniedException();
 			}
 			return session;
@@ -446,18 +460,16 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 	public void registerNonCookieSession(String remoteAddr,
 			String requestHeader, String authenticationSchemeResourceKey,
 			Session session) {
-		
-		String key = createNonCookieSessionKey(
-				remoteAddr, 
-				requestHeader, 
+
+		String key = createNonCookieSessionKey(remoteAddr, requestHeader,
 				authenticationSchemeResourceKey);
 
 		session.setNonCookieKey(key);
 		nonCookieSessions.put(key, session);
 	}
-	
-	private String createNonCookieSessionKey(String remoteAddr, String requestHeader,
-			String authenticationSchemeResourceKey) {
+
+	private String createNonCookieSessionKey(String remoteAddr,
+			String requestHeader, String authenticationSchemeResourceKey) {
 		StringBuffer buf = new StringBuffer();
 		buf.append(remoteAddr);
 		buf.append("|");
@@ -468,44 +480,46 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl 
 	}
 
 	@Override
-	public void revertPrincipal(Session session)
-			throws AccessDeniedException {
-		
+	public void revertPrincipal(Session session) throws AccessDeniedException {
+
 		assertImpersonationPermission();
-		
-		if(log.isInfoEnabled()) {
-			log.info("Switching " + session.getCurrentPrincipal().getName() + " to " + session.getPrincipal().getName());
+
+		if (log.isInfoEnabled()) {
+			log.info("Switching " + session.getCurrentPrincipal().getName()
+					+ " to " + session.getPrincipal().getName());
 		}
-		
+
 		session.setImpersonatedPrincipal(null);
 		session.setInheritPermissions(false);
-		
+
 		setCurrentSession(session, getCurrentLocale());
 		repository.updateSession(session);
 	}
 
 	@Override
 	public void onApplicationEvent(ContextStartedEvent event) {
-		
 
-		if(log.isInfoEnabled()) {
+		if (log.isInfoEnabled()) {
 			log.info("Scheduling session reaper job");
 		}
-		
-		for(Session session : repository.getSystemSessions()) {
-			if(systemSession!=null && systemSession.equals(session)) {
+
+		for (Session session : repository.getSystemSessions()) {
+			if (systemSession != null && systemSession.equals(session)) {
 				continue;
 			}
 			closeSession(session);
 		}
-		
+
 		try {
-			schedulerService.scheduleIn(SessionReaperJob.class, null, 60000, 60000);
+			JobDataMap data = new JobDataMap();
+			data.put("jobName", I18N.getResource(Locale.getDefault(),
+					RESOURCE_BUNDLE, "sessionReaperJob"));
+			schedulerService.scheduleIn(SessionReaperJob.class, data, 60000,
+					60000);
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule session reaper job", e);
 		}
-		
-		
+
 	}
-	
+
 }

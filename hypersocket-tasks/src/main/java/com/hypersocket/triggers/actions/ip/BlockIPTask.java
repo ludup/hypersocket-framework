@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
+import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.properties.ResourceTemplateRepository;
@@ -134,11 +136,12 @@ public class BlockIPTask extends AbstractTaskProvider {
 					
 					PermissionsAwareJobData data = new PermissionsAwareJobData(currentRealm);
 					data.put("addr", ipAddress);
-					
+					data.put("jobName", I18N.getResource(Locale.getDefault(),
+							RESOURCE_BUNDLE, "unblockIP"));
 					String scheduleId = schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000, 0);
 					
 					blockedIPUnblockSchedules.put(ipAddress, scheduleId);
-					
+										
 					return new BlockedIPTempResult(this, currentRealm, task, ipAddress, val);
 				} else {
 					

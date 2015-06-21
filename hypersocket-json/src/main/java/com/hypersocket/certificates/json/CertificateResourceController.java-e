@@ -215,6 +215,7 @@ public class CertificateResourceController extends ResourceController {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/certificate/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody

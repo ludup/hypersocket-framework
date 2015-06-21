@@ -236,6 +236,7 @@ public class AutomationResourceController extends ResourceController {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@AuthenticationRequired
 	@RequestMapping(value = "automations/automation/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody

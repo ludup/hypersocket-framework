@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.transaction.support.TransactionCallback;
-
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
@@ -77,7 +75,7 @@ public interface AbstractResourceService<T extends RealmResource> extends
 	
 	void extendPropertyTemplates(String string);
 
-	void deleteResource(T resource, TransactionOperation<T>... ops)
+	void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops)
 			throws ResourceChangeException, AccessDeniedException;
 
 }

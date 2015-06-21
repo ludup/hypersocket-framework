@@ -4,11 +4,13 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,7 @@ import com.hypersocket.automation.events.AutomationResourceUpdatedEvent;
 import com.hypersocket.automation.events.AutomationTaskFinishedEvent;
 import com.hypersocket.automation.events.AutomationTaskStartedEvent;
 import com.hypersocket.events.EventService;
+import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
@@ -163,20 +166,23 @@ public class AutomationResourceServiceImpl extends
 				resource, t, getCurrentSession()));
 	}
 
-	protected void afterDeleteResource(AutomationResource resource) throws ResourceChangeException {
+	protected void afterDeleteResource(AutomationResource resource)
+			throws ResourceChangeException {
 		try {
 			unschedule(resource);
-	
+
 		} catch (SchedulerException e) {
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.couldNotUnschedule", resource.getName(), e.getMessage());
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"error.couldNotUnschedule", resource.getName(),
+					e.getMessage());
 		}
 	}
-	
+
 	@Override
 	protected void fireResourceDeletionEvent(AutomationResource resource) {
-		
+
 		eventService.publishEvent(new AutomationResourceDeletedEvent(this,
-					getCurrentSession(), resource));
+				getCurrentSession(), resource));
 	}
 
 	@Override
@@ -221,7 +227,7 @@ public class AutomationResourceServiceImpl extends
 		Calendar c = Calendar.getInstance();
 
 		Date ret = null;
-		
+
 		if (from != null) {
 			c.setTime(from);
 			ret = c.getTime();
@@ -233,18 +239,20 @@ public class AutomationResourceServiceImpl extends
 					Integer.parseInt(time.substring(0, idx)));
 			c.set(Calendar.MINUTE, Integer.parseInt(time.substring(idx + 1)));
 			ret = c.getTime();
-		} 
-		
+		}
+
 		return ret;
 	}
 
-	protected void unschedule(AutomationResource resource) throws SchedulerException {
-		
+	protected void unschedule(AutomationResource resource)
+			throws SchedulerException {
+
 		if (scheduleIdsByResource.containsKey(resource.getId())) {
 			String scheduleId = scheduleIdsByResource.remove(resource.getId());
 			schedulerService.cancelNow(scheduleId);
 		}
 	}
+
 	protected void schedule(AutomationResource resource) {
 
 		Date start = calculateDateTime(resource.getStartDate(),
@@ -281,7 +289,8 @@ public class AutomationResourceServiceImpl extends
 		PermissionsAwareJobData data = new PermissionsAwareJobData(
 				resource.getRealm());
 		data.put("resourceId", resource.getId());
-
+		data.put("jobName", i18nService.getResourceJson(Locale.getDefault())
+				.get(resource.getResourceKey()));
 		try {
 
 			String scheduleId;
@@ -291,7 +300,7 @@ public class AutomationResourceServiceImpl extends
 				scheduleId = scheduleIdsByResource.get(resource.getId());
 
 				try {
-					if (start==null || start.before(new Date())) {
+					if (start == null || start.before(new Date())) {
 						schedulerService.rescheduleNow(scheduleId, interval,
 								repeat, end);
 					} else {
@@ -300,25 +309,24 @@ public class AutomationResourceServiceImpl extends
 					}
 					return;
 				} catch (NotScheduledException e) {
-					if(log.isInfoEnabled()) {
+					if (log.isInfoEnabled()) {
 						log.info("Attempted to reschedule job but it was not scheduled.");
 					}
 					scheduleIdsByResource.remove(resource.getId());
 				}
 
-			} 
-		
-			if (start==null || start.before(new Date())) {
-				scheduleId = schedulerService.scheduleNow(
-						AutomationJob.class, data, interval, repeat, end);
+			}
+
+			if (start == null || start.before(new Date())) {
+				scheduleId = schedulerService.scheduleNow(AutomationJob.class,
+						data, interval, repeat, end);
 			} else {
-				scheduleId = schedulerService.scheduleAt(
-						AutomationJob.class, data, start, interval, repeat,
-						end);
+				scheduleId = schedulerService.scheduleAt(AutomationJob.class,
+						data, start, interval, repeat, end);
 			}
 
 			scheduleIdsByResource.put(resource.getId(), scheduleId);
-			
+
 		} catch (SchedulerException e) {
 			log.error(
 					"Failed to schedule automation task " + resource.getName(),
@@ -356,10 +364,10 @@ public class AutomationResourceServiceImpl extends
 		assertPermission(AutomationResourcePermission.READ);
 
 		TaskProvider provider = taskService.getTaskProvider(resourceKey);
-		Collection<PropertyCategory> results = provider.getRepository().getPropertyCategories(null);
+		Collection<PropertyCategory> results = provider.getRepository()
+				.getPropertyCategories(null);
 
-		results.addAll(repository
-				.getPropertyCategories(null));
+		results.addAll(repository.getPropertyCategories(null));
 
 		return results;
 	}
@@ -371,10 +379,10 @@ public class AutomationResourceServiceImpl extends
 		assertPermission(AutomationResourcePermission.READ);
 
 		TaskProvider provider = taskService.getTaskProvider(resource);
-		Collection<PropertyCategory> results = provider.getRepository().getPropertyCategories(resource);
+		Collection<PropertyCategory> results = provider.getRepository()
+				.getPropertyCategories(resource);
 
-		results.addAll(repository
-				.getPropertyCategories(resource));
+		results.addAll(repository.getPropertyCategories(resource));
 
 		return results;
 	}
@@ -431,9 +439,11 @@ public class AutomationResourceServiceImpl extends
 		c.set(Calendar.HOUR, 0);
 		c.set(Calendar.MINUTE, 0);
 		c.add(Calendar.DAY_OF_MONTH, 1);
-
+		JobDataMap data = new JobDataMap();
+		data.put("jobName", I18N.getResource(Locale.getDefault(),
+				RESOURCE_BUNDLE, "automationDailyJob"));
 		try {
-			schedulerService.scheduleAt(DailySchedulerJob.class, null,
+			schedulerService.scheduleAt(DailySchedulerJob.class, data,
 					c.getTime());
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule daily automation jobs", e);
