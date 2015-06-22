@@ -37,7 +37,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
 
-	static final String RESOURCE_BUNDLE = "AssignableResourceService";
+	static final String RESOURCE_BUNDLE_DEFAULT = "AssignableResourceService";
 
 	final String resourceCategory;
 	
@@ -148,7 +148,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			assertPermission(getCreatePermission(resource));
 		}
 		if(resource.getRealm()==null) {
-			throw new ResourceCreationException(RESOURCE_BUNDLE,
+			throw new ResourceCreationException(RESOURCE_BUNDLE_DEFAULT,
 					"generic.create.error", "Calling method should set realm");
 		}
 		
@@ -157,7 +157,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		
 		if(!checkUnique(resource)) {
 			ResourceCreationException ex = new ResourceCreationException(
-				RESOURCE_BUNDLE, "generic.alreadyExists.error",
+					RESOURCE_BUNDLE_DEFAULT, "generic.alreadyExists.error",
 				resource.getName());
 			fireResourceCreationEvent(resource, ex);
 			throw ex;
@@ -174,7 +174,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			if (t instanceof ResourceCreationException) {
 				throw (ResourceCreationException) t;
 			} else {
-				throw new ResourceCreationException(RESOURCE_BUNDLE,
+				throw new ResourceCreationException(RESOURCE_BUNDLE_DEFAULT,
 						"generic.create.error", t.getMessage());
 			}
 		}
@@ -234,7 +234,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			if (t instanceof ResourceChangeException) {
 				throw (ResourceChangeException) t;
 			} else {
-				throw new ResourceChangeException(RESOURCE_BUNDLE,
+				throw new ResourceChangeException(RESOURCE_BUNDLE_DEFAULT,
 						"generic.update.error", t.getMessage());
 			}
 		}
@@ -269,7 +269,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			if (t instanceof ResourceChangeException) {
 				throw (ResourceChangeException) t;
 			} else {
-				throw new ResourceChangeException(RESOURCE_BUNDLE,
+				throw new ResourceChangeException(RESOURCE_BUNDLE_DEFAULT,
 						"generic.delete.error", t.getMessage());
 			}
 		}
@@ -321,7 +321,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public T getResourceByName(String name) throws ResourceNotFoundException {
 		T resource = getRepository().getResourceByName(name, getCurrentRealm());
 		if (resource == null) {
-			throw new ResourceNotFoundException(getResourceBundle(),
+			throw new ResourceNotFoundException(RESOURCE_BUNDLE_DEFAULT,
 					"error.invalidResourceName", name);
 		}
 		return resource;
@@ -334,7 +334,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		
 		T resource = getRepository().getResourceByName(name, realm);
 		if (resource == null) {
-			throw new ResourceNotFoundException(getResourceBundle(),
+			throw new ResourceNotFoundException(RESOURCE_BUNDLE_DEFAULT,
 					"error.invalidResourceName", name);
 		}
 		return resource;
@@ -347,7 +347,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 		T resource = getRepository().getResourceById(id);
 		if (resource == null) {
-			throw new ResourceNotFoundException(getResourceBundle(),
+			throw new ResourceNotFoundException(RESOURCE_BUNDLE_DEFAULT,
 					"error.invalidResourceId", id);
 		}
 		return resource;
@@ -414,7 +414,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public String exportResources(Collection<T> resources) throws ResourceExportException {
 
 		if(resources.isEmpty()) {
-			throw new ResourceExportException(RESOURCE_BUNDLE, "error.nothingToExport");
+			throw new ResourceExportException(RESOURCE_BUNDLE_DEFAULT, "error.nothingToExport");
 		}
 		
 		ObjectMapper mapper = new ObjectMapper();
@@ -427,7 +427,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resources);
 		} catch (JsonProcessingException e) {
-			throw new ResourceExportException(RESOURCE_BUNDLE, "error.exportError", e.getMessage());
+			throw new ResourceExportException(RESOURCE_BUNDLE_DEFAULT, "error.exportError", e.getMessage());
 		}
 	}
 	
@@ -452,7 +452,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 				} catch(ResourceException e) { 
 					throw new IllegalStateException(e);
 				}catch (AccessDeniedException | IOException e) {
-					throw new IllegalStateException(new ResourceImportException(RESOURCE_BUNDLE, "error.importError", e.getMessage()));
+					throw new IllegalStateException(new ResourceImportException(RESOURCE_BUNDLE_DEFAULT, "error.importError", e.getMessage()));
 				}			
 			}
 		});
