@@ -156,6 +156,7 @@ public class I18N {
 	}
 	public static String getResource(Locale locale, String resourceBundle,
 			String key, Object... arguments) {
+		
 		if (key == null) {
 			throw new IllegalArgumentException("You must specify a key!");
 		}
@@ -203,12 +204,13 @@ public class I18N {
 			}
 		}
 		
-		if (!resourceBundle.startsWith("i18n/")) {
-			resourceBundle = "i18n/" + resourceBundle;
+		String bundlePath = resourceBundle;
+		if (!bundlePath.startsWith("i18n/")) {
+			bundlePath = "i18n/" + resourceBundle;
 		}
 		
 		try {
-			ResourceBundle resource = ResourceBundle.getBundle(resourceBundle,
+			ResourceBundle resource = ResourceBundle.getBundle(bundlePath,
 					locale, I18N.class.getClassLoader());
 			String localizedString = resource.getString(key);
 			if (arguments == null || arguments.length == 0) {
@@ -219,7 +221,7 @@ public class I18N {
 			messageFormat.setLocale(locale);
 			return messageFormat.format(formatParameters(arguments));
 		} catch (MissingResourceException mre) {
-			return "[i18n/" + resourceBundle + "/" + key + "]";
+			return "Missing resource key [i18n/" + resourceBundle + "/" + key + "]";
 		}
 	}
 	
