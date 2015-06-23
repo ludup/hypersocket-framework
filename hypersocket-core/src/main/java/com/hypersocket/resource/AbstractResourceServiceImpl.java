@@ -120,7 +120,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	@Override
 	public Set<String> getPropertyNames(String resourceKey, Realm realm) {
-		return getRepository().getPropertyNames();
+		return getRepository().getPropertyNames(null);
 	}
 	
 	@Override

@@ -1,26 +1,25 @@
-package com.hypersocket.attributes.events;
+package com.hypersocket.attributes.user.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.hypersocket.attributes.Attribute;
+import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.session.Session;
 
-public class AttributeUpdatedEvent extends AttributeEvent {
+public class UserAttributeUpdatedEvent extends UserAttributeEvent {
 
 	private static final long serialVersionUID = -3669089170984706952L;
 
 	public static final String ATTR_OLD_ATTRIBUTE_NAME = "attr.oldAttributemName";
 
-	public static final String EVENT_RESOURCE_KEY = "event.attributeUpdated";
+	public static final String EVENT_RESOURCE_KEY = "event.userAttributeUpdated";
 
-	public AttributeUpdatedEvent(Object source, Session session,
-			String oldName, Attribute attribute) {
+	public UserAttributeUpdatedEvent(Object source, Session session,
+			UserAttribute attribute) {
 		super(source, EVENT_RESOURCE_KEY, true, session, attribute);
-		addAttribute(ATTR_OLD_ATTRIBUTE_NAME, oldName);
 	}
 
-	public AttributeUpdatedEvent(Object source, Throwable e, Session session,
-			Attribute attribute) {
+	public UserAttributeUpdatedEvent(Object source, Throwable e, Session session,
+			UserAttribute attribute) {
 		super(source, EVENT_RESOURCE_KEY, e, session, attribute);
 	}
 

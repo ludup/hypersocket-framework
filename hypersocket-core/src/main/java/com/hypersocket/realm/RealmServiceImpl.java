@@ -1165,7 +1165,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 	}
 
 	@Override
-	public Collection<String> getUserPropertyNames(Realm realm)
+	public Collection<String> getUserPropertyNames(Realm realm, Principal principal)
 			throws AccessDeniedException {
 
 		assertAnyPermission(UserPermission.READ, ProfilePermission.READ,
@@ -1173,7 +1173,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 		RealmProvider provider = getProviderForRealm(realm);
 
-		return provider.getUserPropertyNames();
+		return provider.getUserPropertyNames(principal);
 
 	}
 
@@ -1185,7 +1185,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 		RealmProvider provider = getProviderForRealm(module);
 
-		return provider.getUserPropertyNames();
+		return provider.getUserPropertyNames(null);
 	}
 
 	@Override
@@ -1432,7 +1432,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		@Override
 		public Set<String> getPropertyNames(String resourceKey, Realm realm) {
 			RealmProvider provider = getProviderForRealm(realm);
-			return provider.getPropertyNames();
+			return provider.getPropertyNames(null);
 		}
 
 	}
@@ -1442,7 +1442,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		@Override
 		public Set<String> getPropertyNames(String resourceKey, Realm realm) {
 			RealmProvider provider = getProviderForRealm(realm);
-			return provider.getUserPropertyNames();
+			return provider.getUserPropertyNames(null);
 		}
 	}
 
@@ -1451,7 +1451,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		@Override
 		public Set<String> getPropertyNames(String resourceKey, Realm realm) {
 			RealmProvider provider = getProviderForRealm(realm);
-			return provider.getGroupPropertyNames();
+			return provider.getGroupPropertyNames(null);
 		}
 
 	}
@@ -1468,13 +1468,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 	}
 
 	@Override
-	public Collection<String> getUserVariableNames(Realm realm) {
+	public Collection<String> getUserVariableNames(Realm realm, Principal principal) {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
 		Set<String> tmp = new HashSet<String>(
 				UserVariableReplacementImpl.getDefaultReplacements());
-		tmp.addAll(provider.getUserVariableNames());
+		tmp.addAll(provider.getUserVariableNames(principal));
 		return tmp;
 
 	}

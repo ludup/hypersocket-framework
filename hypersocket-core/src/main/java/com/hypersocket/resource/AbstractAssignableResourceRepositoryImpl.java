@@ -323,9 +323,9 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Override
 	public void populateEntityFields(T resource, Map<String,String> properties) {
 		
-		for(String resourceKey : getPropertyNames()) {
+		for(String resourceKey : getPropertyNames(resource)) {
 			if(properties.containsKey(resourceKey)) {
-				PropertyTemplate template = getPropertyTemplate(resourceKey);
+				PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
 				if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
 					setValue(resource, resourceKey, properties.get(resourceKey));
 					properties.remove(resourceKey);

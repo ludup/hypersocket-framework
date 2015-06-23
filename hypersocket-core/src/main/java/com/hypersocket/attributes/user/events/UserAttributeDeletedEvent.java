@@ -1,23 +1,23 @@
-package com.hypersocket.attributes.events;
+package com.hypersocket.attributes.user.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.hypersocket.attributes.Attribute;
+import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.session.Session;
 
-public class AttributeDeletedEvent extends AttributeEvent {
+public class UserAttributeDeletedEvent extends UserAttributeEvent {
 
 	private static final long serialVersionUID = 5911872553198849151L;
 
-	public static final String EVENT_RESOURCE_KEY = "event.attributeDeleted";
+	public static final String EVENT_RESOURCE_KEY = "event.userAttributeDeleted";
 
-	public AttributeDeletedEvent(Object source, Session session,
-			Attribute attribute) {
+	public UserAttributeDeletedEvent(Object source, Session session,
+			UserAttribute attribute) {
 		super(source, EVENT_RESOURCE_KEY, true, session, attribute);
 	}
 
-	public AttributeDeletedEvent(Object source, Throwable e, Session session,
-			Attribute attribute) {
+	public UserAttributeDeletedEvent(Object source, Throwable e, Session session,
+			UserAttribute attribute) {
 		super(source, EVENT_RESOURCE_KEY, e, session, attribute);
 	}
 

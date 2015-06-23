@@ -1,5 +1,7 @@
 package com.hypersocket.properties;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -75,6 +77,26 @@ public class ResourceUtils {
 	
 	public static String implodeValues(Collection<String> array) {
 		return StringUtils.join(array.toArray(new String[0]), "]|[");	
+	}
+
+	public static String getNamePairValue(String element) {	
+		int idx = element.indexOf('=');
+		if(idx > -1) {
+			try {
+				return URLDecoder.decode(element.substring(idx+1), "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new IllegalStateException("Unsupported UTF-8 encoding?!?!");
+			}
+		}
+		return "";
+	}
+	
+	public static String getNamePairKey(String element) {	
+		int idx = element.indexOf('=');
+		if(idx > -1) {
+			return element.substring(0, idx);
+		}
+		return element;
 	}
 
 }

@@ -1,6 +1,6 @@
-package com.hypersocket.attributes;
+package com.hypersocket.attributes.user;
 
-public enum AttributeType {
+public enum UserAttributeType {
 
 	TEXT,
 	PASSWORD

@@ -278,6 +278,8 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		template.setPropertyStore(propertyStore);
 
 		propertyStore.registerTemplate(template, resourceXmlPath);
+		
+		category.getTemplates().remove(template);
 		category.getTemplates().add(template);
 
 		Collections.sort(category.getTemplates(),

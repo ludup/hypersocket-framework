@@ -17,6 +17,7 @@ public class ResourceEvent extends SessionEvent {
 	
 	public static final String ATTR_REALM_NAME = CommonAttributes.ATTR_REALM_NAME;
 	public static final String ATTR_RESOURCE_NAME = CommonAttributes.ATTR_RESOURCE_NAME;
+	public static final String ATTR_OLD_RESOURCE_NAME = "attr.oldResourceName";
 	public static final String ATTR_CREATED = "attr.created";
 	public static final String ATTR_LAST_MODIFIED = "attr.lastModified";
 	
@@ -25,6 +26,7 @@ public class ResourceEvent extends SessionEvent {
 		super(source, resourceKey, success, session);
 		this.resource = resource;
 		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
+		addAttribute(ATTR_OLD_RESOURCE_NAME, resource.getOldName());
 		addAttribute(ATTR_CREATED, HypersocketUtils.formatDate(resource.getCreateDate()));
 		addAttribute(ATTR_LAST_MODIFIED, HypersocketUtils.formatDate(resource.getModifiedDate()));
 	}
@@ -34,6 +36,7 @@ public class ResourceEvent extends SessionEvent {
 		super(source, resourceKey, e, session);
 		this.resource = resource;
 		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
+		addAttribute(ATTR_OLD_RESOURCE_NAME, resource.getOldName());
 		addAttribute(ATTR_CREATED, HypersocketUtils.formatDate(resource.getCreateDate()));
 		addAttribute(ATTR_LAST_MODIFIED, HypersocketUtils.formatDate(resource.getModifiedDate()));
 	}

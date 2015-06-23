@@ -1,25 +1,19 @@
-package com.hypersocket.attributes;
+package com.hypersocket.attributes.user;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import com.hypersocket.repository.AbstractEntity;
+import com.hypersocket.resource.AssignableResource;
 
 @Entity
-@Table(name="attributes")
-public class Attribute extends AbstractEntity<Long>  {
+@Table(name="user_attributes")
+public class UserAttribute extends AssignableResource  {
 
 	@ManyToOne
-	AttributeCategory category;
-
-	@Column(name="name")
-	String name;
-
+	UserAttributeCategory category;
+	
 	@Column(name="description")
 	String description;
 	
@@ -30,7 +24,7 @@ public class Attribute extends AbstractEntity<Long>  {
 	int weight;
 	
 	@Column(name="type")
-	AttributeType type;
+	UserAttributeType type;
 
 	@Column(name="hidden")
 	Boolean hidden = false;
@@ -41,27 +35,14 @@ public class Attribute extends AbstractEntity<Long>  {
 	@Column(name="encrypted")
 	Boolean encrypted = false;
 	
-	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE)
-	@Column(name="attribute_id")
-	Long id;
-	
 	@Column(name="variable_name", unique=true)
 	String variableName;
 
-	public Long getId() {
-		return id;
-	}
-	
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public AttributeCategory getCategory() {
+	public UserAttributeCategory getCategory() {
 		return category;
 	}
 
-	public void setCategory(AttributeCategory category) {
+	public void setCategory(UserAttributeCategory category) {
 		this.category = category;
 	}
 
@@ -81,24 +62,16 @@ public class Attribute extends AbstractEntity<Long>  {
 		this.weight = weight;
 	}
 
-	public AttributeType getType() {
+	public UserAttributeType getType() {
 		return type;
 	}
 
-	public void setType(AttributeType type) {
+	public void setType(UserAttributeType type) {
 		this.type = type;
 	}
 
 	public String generateMetaData() {
 		return "{ \"inputType\": \"" + type.toString().toLowerCase() + "\" }";
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public String getDescription() {
@@ -140,4 +113,5 @@ public class Attribute extends AbstractEntity<Long>  {
 		this.variableName = variableName;
 	}
 
+	
 }
