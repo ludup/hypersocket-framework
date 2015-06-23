@@ -9,6 +9,4 @@ public interface UserInterfaceStateRepository extends
 
 	void updateState(UserInterfaceState newState);
 
-	void createState(UserInterfaceState newState);
-
 }

@@ -31,11 +31,6 @@ public class UserInterfaceStateRepositoryImpl extends
 	}
 
 	@Override
-	public void createState(UserInterfaceState newState) {
-		save(newState);
-	}
-
-	@Override
 	protected Class<UserInterfaceState> getResourceClass() {
 		return UserInterfaceState.class;
 	}
