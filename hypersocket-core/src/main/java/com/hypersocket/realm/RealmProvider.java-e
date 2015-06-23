@@ -103,16 +103,17 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Principal unlockAccount(Principal principal) throws ResourceChangeException;
 
-	Set<String> getUserPropertyNames();
+	Set<String> getUserPropertyNames(Principal principal);
 
 	String getUserPropertyValue(Principal principal, String name);
 	
-	Set<String> getGroupPropertyNames();
+	Set<String> getGroupPropertyNames(Principal principal);
 
 	void changePassword(Principal principal, char[] charArray, char[] charArray2)
 			throws ResourceChangeException, ResourceCreationException;
 
-	Set<String> getUserVariableNames();
+	Set<String> getUserVariableNames(Principal principal);
 
 	Map<String, String> getUserPropertyValues(Principal principal);
+
 }

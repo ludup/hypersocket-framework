@@ -274,7 +274,7 @@ public class TriggerResourceController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 			return new ResourceList<PropertyCategory>(taskService
-					.getTaskProvider(resourceKey).getPropertyTemplate());
+					.getTaskProvider(resourceKey).getPropertyTemplate(null));
 		} finally {
 			clearAuthenticatedContext();
 		}

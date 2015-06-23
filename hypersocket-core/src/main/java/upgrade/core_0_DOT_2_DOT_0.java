@@ -13,7 +13,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hypersocket.attributes.AttributeRepository;
+import com.hypersocket.attributes.user.UserAttributeRepository;
 import com.hypersocket.auth.AuthenticationModuleRepository;
 import com.hypersocket.auth.AuthenticationSchemeRepository;
 import com.hypersocket.local.LocalRealmProvider;
@@ -32,7 +32,7 @@ import com.hypersocket.resource.ResourceCreationException;
 public class core_0_DOT_2_DOT_0 implements Runnable {
 
 	@Autowired
-	AttributeRepository attributeRepository;
+	UserAttributeRepository attributeRepository;
 
 	@Autowired
 	RealmRepository realmRepository;

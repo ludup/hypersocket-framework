@@ -41,13 +41,13 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 			throws AccessDeniedException;
 
 	Collection<T> searchPersonalResources(Principal principal, String search,
-			int start, int length, ColumnSort[] sorting) throws AccessDeniedException;
+			int start, int length, ColumnSort[] sorting);
 
 	long getPersonalResourceCount(Principal principal, String search);
 
-	Collection<T> getPersonalResources(Principal principal) throws AccessDeniedException;
+	Collection<T> getPersonalResources(Principal principal);
 	
-	Collection<T> getPersonalResources() throws AccessDeniedException;
+	Collection<T> getPersonalResources();
 
 	long getPersonalResourceCount(String search);
 

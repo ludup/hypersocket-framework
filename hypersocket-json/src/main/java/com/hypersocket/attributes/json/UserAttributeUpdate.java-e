@@ -1,6 +1,6 @@
 package com.hypersocket.attributes.json;
 
-public class AttributeUpdate {
+public class UserAttributeUpdate {
 
 	private Long id;
 	private String name;
@@ -12,12 +12,13 @@ public class AttributeUpdate {
 	private Boolean readOnly;
 	private Boolean encrypted;
 	private String variableName;
-
-	public AttributeUpdate() {
+	Long[] roles;
+	
+	public UserAttributeUpdate() {
 
 	}
 
-	public AttributeUpdate(Long id, String name, Long category,
+	public UserAttributeUpdate(Long id, String name, Long category,
 			String description, String defaultValue, int weight, String type,
 			Boolean readOnly, Boolean encrypted, String variableName) {
 		this.id = id;
@@ -48,6 +49,14 @@ public class AttributeUpdate {
 		this.name = name;
 	}
 
+	public Long[] getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Long[] roles) {
+		this.roles = roles;
+	}
+	
 	public Long getCategory() {
 		return category;
 	}

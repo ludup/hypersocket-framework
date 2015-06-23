@@ -12,9 +12,12 @@ import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Inheritance(strategy=InheritanceType.JOINED)
@@ -33,6 +36,9 @@ public abstract class Resource extends AbstractResource {
 	@Column(name="system", nullable=false)
 	boolean system = false;
 	
+	@Transient
+	String oldName;
+	
 	public boolean isSystem() {
 		return system;
 	}
@@ -46,6 +52,7 @@ public abstract class Resource extends AbstractResource {
 	}
 	
 	public void setName(String name) {
+		this.oldName = this.name;
 		this.name = name;
 	}
 
@@ -73,5 +80,10 @@ public abstract class Resource extends AbstractResource {
 	protected void doEqualsOnKeys(EqualsBuilder builder, Object obj) {
 		super.doEqualsOnKeys(builder, obj);
 		builder.append(name, ((Resource)obj).getName());
+	}
+	
+	@JsonIgnore
+	public String getOldName() {
+		return oldName;
 	}
 }

@@ -1,17 +1,17 @@
 package com.hypersocket.attributes.json;
 
-public class AttributeCategoryUpdate {
+public class UserAttributeCategoryUpdate {
 
 	private Long id;
 	private String name;
 	private String context;
 	private int weight;
 
-	public AttributeCategoryUpdate() {
+	public UserAttributeCategoryUpdate() {
 
 	}
 
-	public AttributeCategoryUpdate(Long id, String name, String context,
+	public UserAttributeCategoryUpdate(Long id, String name, String context,
 			int weight) {
 		this.id = id;
 		this.name = name;

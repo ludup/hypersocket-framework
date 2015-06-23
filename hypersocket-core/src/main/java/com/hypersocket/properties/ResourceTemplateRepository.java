@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
-import com.hypersocket.attributes.Attribute;
 import com.hypersocket.resource.AbstractResource;
 
 public interface ResourceTemplateRepository extends PropertyRepository {
@@ -35,29 +34,29 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 	
 	String[] getValues(AbstractResource resource, String name);
 
-	Collection<PropertyTemplate> getPropertyTemplates();
+	Collection<PropertyTemplate> getPropertyTemplates(AbstractResource resource);
 
 	Collection<PropertyCategory> getPropertyCategories(
 			AbstractResource resource, String group);
 
-	Set<String> getPropertyNames();
+	Set<String> getPropertyNames(AbstractResource resource);
 	
 	Map<String,String> getProperties(AbstractResource resource);
 
-	PropertyTemplate getPropertyTemplate(String resourceKey);
+	PropertyTemplate getPropertyTemplate(AbstractResource resource, String resourceKey);
 
-	boolean hasPropertyTemplate(String key);
+	boolean hasPropertyTemplate(AbstractResource resource, String key);
 
-	Set<String> getVariableNames();
+	Set<String> getVariableNames(AbstractResource resource);
 
 	void setValues(AbstractResource resource,
 			Map<String, String> properties);
 
-	void registerAttribute(String context, Attribute attr);
-
-	Set<String> getAttributeNames();
-
 	Date getDateValue(AbstractResource resource, String name)
 			throws NumberFormatException;
+
+	void registerPropertyResolver(PropertyResolver resolver);
+
+	ResourcePropertyStore getDatabasePropertyStore();
 
 }

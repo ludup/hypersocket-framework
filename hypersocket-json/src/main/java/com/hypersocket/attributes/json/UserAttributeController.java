@@ -1,14 +1,13 @@
 package com.hypersocket.attributes.json;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,20 +17,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.hypersocket.attributes.Attribute;
-import com.hypersocket.attributes.AttributeCategory;
-import com.hypersocket.attributes.AttributeCategoryColumns;
-import com.hypersocket.attributes.AttributeColumns;
-import com.hypersocket.attributes.AttributeService;
-import com.hypersocket.attributes.AttributeServiceImpl;
+import com.hypersocket.attributes.user.UserAttribute;
+import com.hypersocket.attributes.user.UserAttributeColumns;
+import com.hypersocket.attributes.user.UserAttributeService;
+import com.hypersocket.attributes.user.UserAttributeServiceImpl;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.i18n.I18N;
-import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
-import com.hypersocket.json.SelectOption;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.Column;
@@ -40,13 +36,13 @@ import com.hypersocket.tables.DataTablesResult;
 import com.hypersocket.tables.json.DataTablesPageProcessor;
 
 @Controller
-public class AttributeController extends ResourceController {
+public class UserAttributeController extends ResourceController {
 
 	@Autowired
-	AttributeService service;
+	UserAttributeService service;
 
 	@AuthenticationRequired
-	@RequestMapping(value = "attributes/table", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "userAttributes/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public DataTablesResult tableAttributes(final HttpServletRequest request,
@@ -61,7 +57,7 @@ public class AttributeController extends ResourceController {
 
 						@Override
 						public Column getColumn(int col) {
-							return AttributeColumns.values()[col];
+							return UserAttributeColumns.values()[col];
 						}
 
 						@Override
@@ -69,7 +65,8 @@ public class AttributeController extends ResourceController {
 								int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return service.searchAttributes(searchPattern,
+							return service.searchResources(sessionUtils.getCurrentRealm(request),
+									searchPattern,
 									start, length, sorting);
 
 						}
@@ -78,7 +75,8 @@ public class AttributeController extends ResourceController {
 						public Long getTotalCount(String searchPattern)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return service.getAttributeCount(searchPattern);
+							return service.getResourceCount(sessionUtils.getCurrentRealm(request), 
+									searchPattern);
 						}
 					});
 		} finally {
@@ -87,132 +85,49 @@ public class AttributeController extends ResourceController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "attributeCategories/table", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "userAttributes/userAttribute", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public DataTablesResult tableAttributeCategories(
-			final HttpServletRequest request, HttpServletResponse response)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return processDataTablesRequest(request,
-					new DataTablesPageProcessor() {
-
-						@Override
-						public Column getColumn(int col) {
-							return AttributeCategoryColumns.values()[col];
-						}
-
-						@Override
-						public List<?> getPage(String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return service.searchAttributeCategories(
-									searchPattern, start, length, sorting);
-
-						}
-
-						@Override
-						public Long getTotalCount(String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return service
-									.getAttributeCategoryCount(searchPattern);
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
-	}
-
-	@AuthenticationRequired
-	@RequestMapping(value = "attributeCategories/attributeCategory", method = RequestMethod.POST, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceStatus<AttributeCategory> createOrUpdateAttributeCategory(
+	public ResourceStatus<UserAttribute> createOrUpdateAttribute(
 			HttpServletRequest request, HttpServletResponse response,
-			@RequestBody AttributeCategoryUpdate attributeCategory)
+			@RequestBody UserAttributeUpdate attribute)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
-
 		try {
 
-			AttributeCategory newAttributeCategory;
+			UserAttribute newAttribute;
 
-			if (attributeCategory.getId() != null) {
-				newAttributeCategory = service.updateAttributeCategory(service
-						.getAttributeCategoryById(attributeCategory.getId()),
-						attributeCategory.getId(), attributeCategory.getName(),
-						attributeCategory.getContext(), attributeCategory
-								.getWeight());
-			} else {
-				newAttributeCategory = service.createAttributeCategory(
-						attributeCategory.getName(),
-						attributeCategory.getContext(),
-						attributeCategory.getWeight());
+			Set<Role> roles = new HashSet<Role>();
+			for (Long id : attribute.getRoles()) {
+				roles.add(permissionRepository.getRoleById(id));
 			}
-
-			return new ResourceStatus<AttributeCategory>(
-					newAttributeCategory,
-					I18N.getResource(
-							sessionUtils.getLocale(request),
-							AttributeServiceImpl.RESOURCE_BUNDLE,
-							attributeCategory.getId() != null ? "attributeCategory.updated.info"
-									: "attributeCategory.created.info",
-							attributeCategory.getName()));
-		} catch (ResourceException e) {
-			return new ResourceStatus<AttributeCategory>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
-		}
-	}
-
-	@AuthenticationRequired
-	@RequestMapping(value = "attributes/attribute", method = RequestMethod.POST, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceStatus<Attribute> createOrUpdateAttribute(
-			HttpServletRequest request, HttpServletResponse response,
-			@RequestBody AttributeUpdate attribute)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-
-			Attribute newAttribute;
-
+			
 			if (attribute.getId() != null) {
 				newAttribute = service.updateAttribute(
-						service.getAttributeById(attribute.getId()),
+						service.getResourceById(attribute.getId()),
 						attribute.getName(), attribute.getCategory(),
 						attribute.getDescription(),
 						attribute.getDefaultValue(), attribute.getWeight(),
 						attribute.getType(), attribute.getReadOnly(),
-						attribute.getEncrypted(), attribute.getVariableName());
+						attribute.getEncrypted(), attribute.getVariableName(), roles);
 			} else {
 				newAttribute = service.createAttribute(attribute.getName(),
 						attribute.getCategory(), attribute.getDescription(),
 						attribute.getDefaultValue(), attribute.getWeight(),
 						attribute.getType(), attribute.getReadOnly(),
-						attribute.getEncrypted(), attribute.getVariableName());
+						attribute.getEncrypted(), attribute.getVariableName(), roles);
 			}
-			return new ResourceStatus<Attribute>(newAttribute,
+			return new ResourceStatus<UserAttribute>(newAttribute,
 					I18N.getResource(sessionUtils.getLocale(request),
-							AttributeServiceImpl.RESOURCE_BUNDLE, attribute
+							UserAttributeServiceImpl.RESOURCE_BUNDLE, attribute
 									.getId() != null ? "attribute.updated.info"
 									: "attribute.created.info", attribute
 									.getName()));
 		} catch (ResourceException e) {
-			return new ResourceStatus<Attribute>(false, e.getMessage());
+			return new ResourceStatus<UserAttribute>(false, e.getMessage());
 
 		} finally {
 			clearAuthenticatedContext();
@@ -220,10 +135,10 @@ public class AttributeController extends ResourceController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "attributes/attribute/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
+	@RequestMapping(value = "userAttributes/userAttribute/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceStatus<Attribute> deleteAttribute(
+	public ResourceStatus<UserAttribute> deleteAttribute(
 			HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") Long id) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
@@ -232,109 +147,27 @@ public class AttributeController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 
-			Attribute attribute = service.getAttributeById(id);
+			UserAttribute attribute = service.getResourceById(id);
 
 			if (attribute == null) {
-				return new ResourceStatus<Attribute>(false, I18N.getResource(
+				return new ResourceStatus<UserAttribute>(false, I18N.getResource(
 						sessionUtils.getLocale(request),
-						AttributeServiceImpl.RESOURCE_BUNDLE,
+						UserAttributeServiceImpl.RESOURCE_BUNDLE,
 						"error.invalidAttributeId", id));
 			}
 
 			String preDeletedName = attribute.getName();
 			service.deleteAttribute(attribute);
 
-			return new ResourceStatus<Attribute>(true, I18N.getResource(
+			return new ResourceStatus<UserAttribute>(true, I18N.getResource(
 					sessionUtils.getLocale(request),
-					AttributeServiceImpl.RESOURCE_BUNDLE,
+					UserAttributeServiceImpl.RESOURCE_BUNDLE,
 					"attribute.deleted.info", preDeletedName));
 
-		} finally {
-			clearAuthenticatedContext();
+		} catch(ResourceException ex) { 
+			return new ResourceStatus<UserAttribute>(false, ex.getMessage());
 		}
-	}
-
-	@AuthenticationRequired
-	@RequestMapping(value = "attributeCategories/attributeCategory/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceStatus<AttributeCategory> deleteAttributeCategory(
-			HttpServletRequest request, HttpServletResponse response,
-			@PathVariable("id") Long id) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-
-			AttributeCategory category = service.getAttributeCategoryById(id);
-
-			if (category == null) {
-				return new ResourceStatus<AttributeCategory>(false,
-						I18N.getResource(sessionUtils.getLocale(request),
-								AttributeServiceImpl.RESOURCE_BUNDLE,
-								"error.invalidAttributeCategoryId", id));
-			}
-
-			String preDeletedName = category.getName();
-			try {
-				service.deleteAttributeCategory(category);
-			} catch (DataIntegrityViolationException e) {
-				return new ResourceStatus<AttributeCategory>(false,
-						I18N.getResource(sessionUtils.getLocale(request),
-								AttributeServiceImpl.RESOURCE_BUNDLE,
-								"attributeCategory.deleteError.info",
-								preDeletedName));
-			}
-
-			return new ResourceStatus<AttributeCategory>(true,
-					I18N.getResource(sessionUtils.getLocale(request),
-							AttributeServiceImpl.RESOURCE_BUNDLE,
-							"attributeCategory.deleted.info", preDeletedName));
-
-		} finally {
-			clearAuthenticatedContext();
-		}
-	}
-
-	@AuthenticationRequired
-	@RequestMapping(value = "attributeCategories/categories", method = RequestMethod.GET, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<SelectOption> getCategories(HttpServletRequest request)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			List<SelectOption> result = new ArrayList<SelectOption>();
-			for (AttributeCategory category : service.getCategories()) {
-				result.add(new SelectOption(Long.toString(category.getId()),
-						category.getName()));
-			}
-			return new ResourceList<SelectOption>(result);
-		} finally {
-			clearAuthenticatedContext();
-		}
-	}
-
-	@AuthenticationRequired
-	@RequestMapping(value = "attributeCategories/contexts", method = RequestMethod.GET, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<SelectOption> getContexts(HttpServletRequest request)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			List<SelectOption> result = new ArrayList<SelectOption>();
-			for (String context : service.getContexts()) {
-				result.add(new SelectOption(context, StringUtils
-						.capitalize(context)));
-			}
-			return new ResourceList<SelectOption>(result);
-		} finally {
+		finally {
 			clearAuthenticatedContext();
 		}
 	}

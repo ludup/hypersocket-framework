@@ -181,7 +181,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	String getRealmHostname(Realm realm);
 
-	Collection<String> getUserPropertyNames(Realm realm)
+	Collection<String> getUserPropertyNames(Realm realm, Principal principal)
 			throws AccessDeniedException;
 
 	String[] getRealmPropertyArray(Realm realm, String resourceKey);
@@ -194,7 +194,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean isRealmStrictedToHost(Realm realm);
 
-	Collection<String> getUserVariableNames(Realm realmById);
+	Collection<String> getUserVariableNames(Realm realm, Principal principal);
 
 	void unregisterRealmProvider(RealmProvider provider);
 
@@ -215,4 +215,5 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 			throws ResourceNotFoundException;
 
 	Realm getRealmByHost(String host, Realm defaultRealm);
+
 }

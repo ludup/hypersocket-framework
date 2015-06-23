@@ -1,23 +1,12 @@
-package com.hypersocket.attributes;
+package com.hypersocket.attributes.user;
 
-import java.util.List;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.resource.AbstractAssignableResourceRepository;
 
-import com.hypersocket.repository.AbstractEntityRepository;
-import com.hypersocket.tables.ColumnSort;
+public interface UserAttributeRepository extends AbstractAssignableResourceRepository<UserAttribute> {
 
-public interface AttributeRepository extends AbstractEntityRepository<Attribute,Long> {
+	Long getMaximumAttributeWeight(UserAttributeCategory cat);
 
-	void saveAttribute(Attribute attr);
-	
-	List<Attribute> searchAttributes(String searchPattern,
-			int start, int length, ColumnSort[] sorting);
-
-	Long getAttributeCount(String searchPattern);
-
-	boolean nameExists(Attribute attribute);
-
-	Long getMaximumAttributeWeight(AttributeCategory cat);
-
-	Attribute getAttributeByName(String name);
+	UserAttribute getAttributeByVariableName(String attributeName, Realm realm);
 
 }

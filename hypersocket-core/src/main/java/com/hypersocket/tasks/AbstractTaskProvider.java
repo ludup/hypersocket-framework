@@ -71,8 +71,8 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	}
 	
 	@Override
-	public Collection<PropertyCategory> getPropertyTemplate() {
-		return getRepository().getPropertyCategories(null);
+	public Collection<PropertyCategory> getPropertyTemplate(Task task) {
+		return getRepository().getPropertyCategories(task);
 	}
 
 	@Override
@@ -82,8 +82,8 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	}
 	
 	@Override 
-	public Collection<String> getPropertyNames() {
-		return getRepository().getPropertyNames();
+	public Collection<String> getPropertyNames(Task task) {
+		return getRepository().getPropertyNames(task);
 	}
 	
 	@Override

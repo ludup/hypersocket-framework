@@ -77,7 +77,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		loadPropertyTemplates("localRealmTemplate.xml");
 
 		userRepository.loadPropertyTemplates("localUserTemplate.xml");
-
+		userRepository.registerPropertyResolver(userAttributeService);
 	}
 
 	@Override
@@ -603,12 +603,12 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
-	public Set<String> getUserPropertyNames() {
-		return userRepository.getPropertyNames();
+	public Set<String> getUserPropertyNames(Principal principal) {
+		return userRepository.getPropertyNames(principal);
 	}
 
 	@Override
-	public Set<String> getGroupPropertyNames() {
+	public Set<String> getGroupPropertyNames(Principal principal) {
 		return new HashSet<String>();
 	}
 
@@ -624,13 +624,8 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
-	public Set<String> getUserVariableNames() {
-		return userRepository.getVariableNames();
-	}
-	
-	@Override
-	public Set<String> getAttributeNames() {
-		return userRepository.getAttributeNames();
+	public Set<String> getUserVariableNames(Principal principal) {
+		return userRepository.getVariableNames(principal);
 	}
 
 	@Override

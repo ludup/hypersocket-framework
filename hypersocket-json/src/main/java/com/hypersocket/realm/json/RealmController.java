@@ -209,7 +209,7 @@ public class RealmController extends ResourceController {
 			try {
 				Long resourceId = Long.parseLong(id);
 				return new ResourceList<String>(
-						realmService.getUserPropertyNames(realmService.getRealmById(resourceId)));
+						realmService.getUserPropertyNames(realmService.getRealmById(resourceId), null));
 			} catch (NumberFormatException e) {
 				return new ResourceList<String>(
 						realmService.getUserPropertyNames(id));
@@ -234,7 +234,7 @@ public class RealmController extends ResourceController {
 
 		try {
 			return new ResourceList<String>(
-				realmService.getUserVariableNames(realmService.getRealmById(id)));
+				realmService.getUserVariableNames(realmService.getRealmById(id), null));
 
 		} finally {
 			clearAuthenticatedContext();

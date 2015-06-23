@@ -106,7 +106,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	
 	@Override
 	public Set<String> getPropertyNames(String resourceKey, Realm realm) {
-		return getRepository().getPropertyNames();
+		return getRepository().getPropertyNames(null);
 	}
 
 	protected boolean checkUnique(T resource) throws AccessDeniedException {
@@ -188,7 +188,6 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
 		updateResource(resource, new HashMap<String,String>(), ops);
-		
 	}
 	
 	protected boolean isAssignedUserAllowedUpdate() {
@@ -283,19 +282,19 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	
 	@Override
 	public Collection<T> searchPersonalResources(Principal principal, String search, int start,
-			int length, ColumnSort[] sorting) throws AccessDeniedException {
+			int length, ColumnSort[] sorting) {
 
 		List<Principal> principals = realmService.getAssociatedPrincipals(principal);
 		return getRepository().searchAssignedResources(principals, search, start, length, sorting);
 	}
 	
 	@Override
-	public Collection<T> getPersonalResources(Principal principal) throws AccessDeniedException {
+	public Collection<T> getPersonalResources(Principal principal) {
 		return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(principal));
 	}
 
 	@Override
-	public Collection<T> getPersonalResources() throws AccessDeniedException {
+	public Collection<T> getPersonalResources() {
 		return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(getCurrentPrincipal()));
 	}
 	

@@ -24,7 +24,7 @@ public interface TaskProvider {
 	
 	ResourceTemplateRepository getRepository();
 
-	Collection<PropertyCategory> getPropertyTemplate();
+	Collection<PropertyCategory> getPropertyTemplate(Task task);
 
 	Collection<PropertyCategory> getProperties(Task task);
 	
@@ -40,5 +40,5 @@ public interface TaskProvider {
 	
 	boolean supportsTriggers();
 
-	Collection<String> getPropertyNames();
+	Collection<String> getPropertyNames(Task task);
 }

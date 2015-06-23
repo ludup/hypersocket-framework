@@ -95,7 +95,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 			assertPermission(ConfigurationPermission.UPDATE);
 			String oldValue = repository.getValue(getCurrentRealm(), resourceKey);
 			repository.setValue(getCurrentRealm(), resourceKey, value);
-			fireChangeEvent(resourceKey, oldValue, value, repository.getPropertyTemplate(resourceKey).isHidden());
+			fireChangeEvent(resourceKey, oldValue, value, repository.getPropertyTemplate(getCurrentRealm(), resourceKey).isHidden());
 		} catch (AccessDeniedException e) {
 			fireChangeEvent(resourceKey, e);
 			throw e;
@@ -144,7 +144,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 			repository.setValues(getCurrentRealm(), values);
 			
 			for(String resourceKey : values.keySet()) {
-				fireChangeEvent(resourceKey, oldValues.get(resourceKey), values.get(resourceKey), repository.getPropertyTemplate(resourceKey).isHidden());
+				fireChangeEvent(resourceKey, oldValues.get(resourceKey), values.get(resourceKey), repository.getPropertyTemplate(getCurrentRealm(), resourceKey).isHidden());
 			}
 		} catch (AccessDeniedException e) {
 			for(String resourceKey : values.keySet()) {
@@ -161,7 +161,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	
 	private void fireChangeEvent(String resourceKey, String oldValue, String newValue, boolean hidden) {
 		eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true,
-				getCurrentSession(), repository.getPropertyTemplate(resourceKey), oldValue, newValue, hidden));
+				getCurrentSession(), repository.getPropertyTemplate(getCurrentRealm(), resourceKey), oldValue, newValue, hidden));
 	}
 
 	private void fireChangeEvent(String resourceKey, Throwable t) {

@@ -1,68 +1,34 @@
-package com.hypersocket.attributes;
+package com.hypersocket.attributes.user;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
-import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.Role;
+import com.hypersocket.properties.PropertyResolver;
+import com.hypersocket.resource.AbstractAssignableResourceService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
-import com.hypersocket.tables.ColumnSort;
 
-public interface AttributeService extends AuthenticatedService {
+public interface UserAttributeService extends AbstractAssignableResourceService<UserAttribute>, PropertyResolver {
 
-	public List<AttributeCategory> getCategories() throws AccessDeniedException;
 
-	public AttributeCategory getAttributeCategoryById(Long id)
-			throws AccessDeniedException;
-
-	public Attribute getAttributeById(Long id) throws AccessDeniedException;
-
-	public AttributeCategory createAttributeCategory(String name,
-			String context, int weight) throws ResourceCreationException,
-			AccessDeniedException;
-
-	public AttributeCategory updateAttributeCategory(
-			AttributeCategory category, Long id, String name, String context,
-			int weight) throws AccessDeniedException, ResourceChangeException;
-
-	public Attribute updateAttribute(Attribute attribute, String name,
+	public UserAttribute updateAttribute(UserAttribute attribute, String name,
 			Long category, String description, String defaultValue, int weight,
 			String type, Boolean readOnly, Boolean encrypted,
-			String variableName) throws AccessDeniedException,
+			String variableName, Set<Role> roles) throws AccessDeniedException,
 			ResourceChangeException;
 
-	public Attribute createAttribute(String name, Long category,
+	public UserAttribute createAttribute(String name, Long category,
 			String description, String defaultValue, int weight, String type,
-			Boolean readOnly, Boolean encrypted, String variableName)
+			Boolean readOnly, Boolean encrypted, String variableName, Set<Role> roles)
 			throws ResourceCreationException, AccessDeniedException;
 
-	public void deleteAttribute(Attribute attribute)
-			throws AccessDeniedException;
+	public void deleteAttribute(UserAttribute attribute)
+			throws AccessDeniedException, ResourceChangeException;
 
-	public void deleteAttributeCategory(AttributeCategory category)
-			throws AccessDeniedException;
+	public Long getMaximumAttributeWeight(UserAttributeCategory cat) throws AccessDeniedException;
 
-	public List<Attribute> searchAttributes(String searchPattern, int start,
-			int length, ColumnSort[] sorting) throws AccessDeniedException;
+	public UserAttribute getAttributeByVariableName(String attributeName) throws AccessDeniedException;
 
-	public List<AttributeCategory> searchAttributeCategories(
-			String searchPattern, int start, int length, ColumnSort[] sorting)
-			throws AccessDeniedException;
 
-	public Long getAttributeCount(String searchPattern)
-			throws AccessDeniedException;
-
-	public Long getAttributeCategoryCount(String searchPattern)
-			throws AccessDeniedException;
-
-	public Collection<String> getContexts();
-
-	public AttributeCategory getCategoryByName(String attributeCategory) throws AccessDeniedException;
-
-	public Long getMaximumCategoryWeight() throws AccessDeniedException;
-
-	public Long getMaximumAttributeWeight(AttributeCategory cat) throws AccessDeniedException;
-
-	Attribute getAttributeByName(String name) throws AccessDeniedException;
 }

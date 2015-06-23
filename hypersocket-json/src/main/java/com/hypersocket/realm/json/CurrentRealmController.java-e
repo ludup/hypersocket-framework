@@ -451,7 +451,8 @@ public class CurrentRealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 			Collection<String> names = realmService.getUserVariableNames(
-					sessionUtils.getCurrentRealm(request));
+					sessionUtils.getCurrentRealm(request),
+					sessionUtils.getPrincipal(request));
 			names.add("password");
 			return new ResourceStatus<Map<String, String>>(
 					realmService.getUserPropertyValues(

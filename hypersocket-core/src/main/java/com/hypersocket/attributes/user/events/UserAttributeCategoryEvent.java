@@ -1,28 +1,27 @@
-package com.hypersocket.attributes.events;
+package com.hypersocket.attributes.user.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.hypersocket.attributes.AttributeCategory;
+import com.hypersocket.attributes.user.UserAttributeCategory;
+import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.session.Session;
-import com.hypersocket.session.events.SessionEvent;
 
-public class AttributeCategoryEvent extends SessionEvent {
+public class UserAttributeCategoryEvent extends ResourceEvent {
 
 	private static final long serialVersionUID = 2403614014077914053L;
 
 	public static final String EVENT_RESOURCE_KEY = "attributeCategory.event";
 	public static final String ATTR_CATEGORY_NAME = "attr.categoryName";
 
-	public AttributeCategoryEvent(Object source, String resourceKey,
-			boolean success, Session session, AttributeCategory category) {
-		super(source, resourceKey, success, session);
-
+	public UserAttributeCategoryEvent(Object source, String resourceKey,
+			boolean success, Session session, UserAttributeCategory category) {
+		super(source, resourceKey, success, session, category);
 		addAttribute(ATTR_CATEGORY_NAME, category.getName());
 	}
 
-	public AttributeCategoryEvent(Object source, String resourceKey,
-			Throwable e, Session session, AttributeCategory category) {
-		super(source, resourceKey, e, session);
+	public UserAttributeCategoryEvent(Object source, String resourceKey,
+			Throwable e, Session session, UserAttributeCategory category) {
+		super(source, resourceKey, e, session, category);
 		addAttribute(ATTR_CATEGORY_NAME, category.getName());
 	}
 

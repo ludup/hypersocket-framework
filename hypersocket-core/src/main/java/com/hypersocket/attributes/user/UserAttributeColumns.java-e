@@ -1,8 +1,8 @@
-package com.hypersocket.attributes;
+package com.hypersocket.attributes.user;
 
 import com.hypersocket.tables.Column;
 
-public enum AttributeColumns implements Column {
+public enum UserAttributeColumns implements Column {
 
 	NAME;
 

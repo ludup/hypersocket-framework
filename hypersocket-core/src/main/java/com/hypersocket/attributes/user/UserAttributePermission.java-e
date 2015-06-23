@@ -5,21 +5,21 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.hypersocket.attributes;
+package com.hypersocket.attributes.user;
 
 import com.hypersocket.permissions.PermissionType;
 
-public enum AttributePermission implements PermissionType {
+public enum UserAttributePermission implements PermissionType {
 
-	READ("permission.attribute.read"), CREATE("permission.attribute.create",
-			READ), UPDATE("permission.attribute.update", READ), DELETE(
-			"permission.attribute.delete", READ);
+	READ("permission.userAttribute.read"), CREATE("permission.userAttribute.create",
+			READ), UPDATE("permission.userAttribute.update", READ), DELETE(
+			"permission.userAttribute.delete", READ);
 
 	private final String val;
 
 	private PermissionType[] implies;
 
-	private AttributePermission(final String val, PermissionType... implies) {
+	private UserAttributePermission(final String val, PermissionType... implies) {
 		this.val = val;
 		this.implies = implies;
 	}
