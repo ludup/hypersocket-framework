@@ -72,12 +72,14 @@ public class UserInterfaceStateController extends ResourceController {
 			if (newState != null) {
 				newState = service.updateState(newState,
 						userInterfaceStateUpdate.getTop(),
-						userInterfaceStateUpdate.getLeftpx());
+						userInterfaceStateUpdate.getLeftpx(),
+						userInterfaceStateUpdate.getName());
 			} else {
 				newState = service.createState(
 						userInterfaceStateUpdate.getResourceId(),
 						userInterfaceStateUpdate.getTop(),
-						userInterfaceStateUpdate.getLeftpx());
+						userInterfaceStateUpdate.getLeftpx(),
+						userInterfaceStateUpdate.getName());
 			}
 			return new ResourceStatus<UserInterfaceState>(newState,
 					I18N.getResource(sessionUtils.getLocale(request),

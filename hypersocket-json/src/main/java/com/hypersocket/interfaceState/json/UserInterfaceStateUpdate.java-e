@@ -5,15 +5,18 @@ public class UserInterfaceStateUpdate {
 	Long top;
 	Long leftpx;
 	Long resourceId;
+	String name;
 
 	public UserInterfaceStateUpdate() {
 
 	}
 
-	public UserInterfaceStateUpdate(Long top, Long leftpx, Long resourceId) {
+	public UserInterfaceStateUpdate(Long top, Long leftpx, Long resourceId,
+			String name) {
 		this.top = top;
 		this.leftpx = leftpx;
 		this.resourceId = resourceId;
+		this.name = name;
 	}
 
 	public Long getTop() {
@@ -40,4 +43,11 @@ public class UserInterfaceStateUpdate {
 		this.resourceId = resourceId;
 	}
 
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 }
