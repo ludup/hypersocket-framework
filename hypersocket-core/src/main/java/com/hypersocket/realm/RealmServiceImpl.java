@@ -1121,6 +1121,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		 */
 		for (PropertyCategory c : ret) {
 
+			if(c.isUserCreated()) {
+				continue;
+			}
+			
 			List<AbstractPropertyTemplate> tmp = new ArrayList<AbstractPropertyTemplate>();
 			for (AbstractPropertyTemplate t : c.getTemplates()) {
 
