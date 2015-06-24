@@ -20,7 +20,7 @@ public interface ClientService extends Remote {
 
 	List<ConnectionStatus> getStatus() throws RemoteException;
 	
-	byte[] getBlob(String host, String path, long timeout) throws RemoteException; 
+	byte[] getBlob(String host, String path, long timeout) throws RemoteException;
 
 	void ping() throws RemoteException;
 	

@@ -2,6 +2,7 @@ package com.hypersocket.extensions;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -15,8 +16,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @XmlRootElement
-public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
+public class ExtensionDefinition implements Comparable<ExtensionDefinition>, Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	static Logger log = LoggerFactory.getLogger(ExtensionDefinition.class);
 	
@@ -34,10 +39,10 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
 	long size;
 	ExtensionState state = ExtensionState.NOT_INSTALLED;
 	String remoteDefinitionUrl = null;
-	String remoteArchitveUrl = null;
+	String remoteArchiveUrl = null;
 	Long remoteArchiveSize = null;
 	Properties remoteProperties;
-	boolean isSystem;
+	boolean system;
 	String version;
 	
 	public ExtensionDefinition() {
@@ -56,7 +61,7 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
 		this.size = size;
 		this.hash = hash;
 		this.version = version;
-		this.isSystem = System.getProperty("hypersocket.bootstrap.systemArchive", "server-core").equals(id) || isSystem;
+		this.system = System.getProperty("hypersocket.bootstrap.systemArchive", "server-core").equals(id) || isSystem;
 		StringTokenizer t = new StringTokenizer(depends, ",");
 		while(t.hasMoreTokens()) {
 			dependencies.add(t.nextToken());
@@ -97,7 +102,7 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
 		remoteProperties = new Properties();
 		this.remoteDefinitionUrl = remoteDefinitionBase + "/" + node.getAttribute("id");
 		this.remoteDefinitionUrl = remoteDefinitionUrl.replace(" ", "%20");
-		this.remoteArchitveUrl = remoteDefinitionUrl + "/" + node.getAttribute("file");
+		this.remoteArchiveUrl = remoteDefinitionUrl + "/" + node.getAttribute("file");
 		this.remoteArchiveSize = Long.parseLong(node.getAttribute("size"));
 		try {
 			// TODO i18n
@@ -118,9 +123,10 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
 		this.archiveFile = archive;
 	}
 	public boolean isSystem() {
-		return isSystem;
+		return system;
 	}
 	
+	@JsonIgnore
 	public boolean isLocal() {
 		return remoteDefinitionUrl==null;
 	}
@@ -173,8 +179,8 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
 		return remoteDefinitionUrl;
 	}
 	
-	public String getRemoteArchiveURL() {
-		return remoteArchitveUrl;
+	public String getRemoteArchiveUrl() {
+		return remoteArchiveUrl;
 	}
 	
 	public Long getRemoteArchiveSize() {
@@ -200,6 +206,21 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>{
 
 	public String getVersion() {
 		return version;
+	}
+
+	@Override
+	public String toString() {
+		return "ExtensionDefinition [id=" + id + ", license=" + license
+				+ ", licenseUrl=" + licenseUrl + ", image=" + image
+				+ ", vendor=" + vendor + ", url=" + url + ", weight=" + weight
+				+ ", hash=" + hash + ", archiveFile=" + archiveFile
+				+ ", dependencies=" + dependencies + ", lastModified="
+				+ lastModified + ", size=" + size + ", state=" + state
+				+ ", remoteDefinitionUrl=" + remoteDefinitionUrl
+				+ ", remoteArchiveUrl=" + remoteArchiveUrl
+				+ ", remoteArchiveSize=" + remoteArchiveSize
+				+ ", remoteProperties=" + remoteProperties + ", system="
+				+ system + ", version=" + version + "]";
 	}
 
 }

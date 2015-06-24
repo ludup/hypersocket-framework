@@ -11,12 +11,17 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hypersocket.HypersocketVersion;
+import com.hypersocket.Version;
 import com.hypersocket.client.HypersocketClient;
 import com.hypersocket.client.HypersocketClientAdapter;
 import com.hypersocket.client.UserCancelledException;
 import com.hypersocket.client.rmi.Connection;
+import com.hypersocket.client.rmi.Connection.UpdateState;
 import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.ResourceService;
+import com.hypersocket.json.JsonResponse;
 import com.hypersocket.netty.NettyClientTransport;
 
 public class ConnectionJob extends TimerTask {
@@ -81,53 +86,73 @@ public class ConnectionJob extends TimerTask {
 			log.info("Received authentication for " + url);
 
 			// Now get the current version and check against ours.
-			String response[] = client.getTransport().get("server/version")
-					.split(";");
-			if (response.length != 2) {
+			String reply = client.getTransport().get("server/version");
+			ObjectMapper mapper = new ObjectMapper();
+			
+			try {
+				JsonResponse json = mapper.readValue(reply, JsonResponse.class);
+				if(json.isSuccess()) {
+					String[] versionAndSerial = json.getMessage().split(";");
+					String version = versionAndSerial[0].trim();
+					String serial = versionAndSerial[1].trim();
+
+					/* Set the transient details. If an update is required it will be performed shortly
+					 * by the client service (which will check all connections and update to the highest
+					 * one 
+					 */
+					c.setServerVersion(version);
+					c.setSerial(serial);
+					c.setUpdateState(checkIfUpdateRequired(client, version) ? UpdateState.UPDATE_REQUIRED : UpdateState.UP_TO_DATE);
+	
+					client.addListener(new HypersocketClientAdapter<Connection>() {
+						@Override
+						public void disconnected(
+								HypersocketClient<Connection> client,
+								boolean onError) {
+							try {
+								callback.disconnected(
+										c,
+										onError ? "Error occured during connection."
+												: null);
+							} catch (RemoteException e) {
+							}
+							if (client.getAttachment().isStayConnected() && onError) {
+								try {
+									service.scheduleConnect(c);
+								} catch (RemoteException e1) {
+								}
+							}
+						}
+					});
+	
+					if (log.isInfoEnabled()) {
+						log.info("Logged into " + url);
+					}
+	
+					if (callback != null) {
+						callback.ready(c);
+					}
+					
+					// Trigger interest in possibly updating
+					service.maybeUpdate(c);
+				}
+				else {
+					throw new Exception("Server refused to supply version. " + json.getMessage());
+				}
+			}
+			catch(Exception jpe) {
 				if (log.isErrorEnabled()) {
-					log.error("Failed to get version from server "
-							+ response.length);
+					log.error("Failed to parse server version response "
+							+ reply, jpe);
 				}
 				client.disconnect(false);
 				if (callback != null) {
 					callback.failedToConnect(c,
 							"Failed to get version from server "
-									+ response.length);
-				}
-			} else {
-				// String version = response[0];
-				// String serial = response[1];
-
-				client.addListener(new HypersocketClientAdapter<Connection>() {
-					@Override
-					public void disconnected(
-							HypersocketClient<Connection> client,
-							boolean onError) {
-						try {
-							callback.disconnected(
-									c,
-									onError ? "Error occured during connection."
-											: null);
-						} catch (RemoteException e) {
-						}
-						if (client.getAttachment().isStayConnected() && onError) {
-							try {
-								service.scheduleConnect(c);
-							} catch (RemoteException e1) {
-							}
-						}
-					}
-				});
-
-				if (log.isInfoEnabled()) {
-					log.info("Logged into " + url);
-				}
-
-				if (callback != null) {
-					callback.ready(c);
+									+ reply);
 				}
 			}
-
+			
 		} catch (Throwable e) {
 			if (log.isErrorEnabled()) {
 				log.error("Failed to connect " + url, e);
@@ -153,6 +178,24 @@ public class ConnectionJob extends TimerTask {
 			}
 		}
 
+	}
+	
+	private boolean checkIfUpdateRequired(ServiceClient client, String versionString) {
+		Version ourVersion = new Version(HypersocketVersion.getVersion("client-service"));
+		
+		// Compare
+		Version version = new Version(versionString);
+		if(version.compareTo(ourVersion) > 0) {
+			log.info(String.format("Updating required, server is version %s, and we are version %s.", version.toString(), ourVersion.toString()));
+			return true;
+		}
+		else if(version.compareTo(ourVersion) < 0) {
+			log.warn(String.format("Client is on a later version than the server. This client is %s, where as the server is %s.", ourVersion.toString(), version.toString()));
+		}
+		else {
+			log.info(String.format("Both server and client are on version %s", version.toString()));
+		}
+		return false;
 	}
 
 }

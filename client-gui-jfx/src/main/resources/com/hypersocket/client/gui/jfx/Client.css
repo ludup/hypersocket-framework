@@ -79,6 +79,10 @@
 	-fx-text-fill: DEFAULT_TEXT_COLOR;
 }
 
+.logo {
+	-fx-image: url("hypersocket-icon64x64.png");
+}
+
 
 /* Progress */
 
