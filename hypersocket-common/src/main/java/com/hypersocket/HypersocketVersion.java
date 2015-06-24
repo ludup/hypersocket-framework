@@ -40,6 +40,11 @@ public class HypersocketVersion {
 	}
 	
 	public static String getVersion(String artifactId) {
+		String fakeVersion = System.getProperty("hypersocket.development.version");
+		if(fakeVersion != null) {
+			return fakeVersion;
+		}
+		
 	    if (version != null) {
 	        return version;
 	    }

@@ -1,6 +1,22 @@
 package com.hypersocket.client.rmi;
 
 public interface Connection {
+	
+	public enum UpdateState {
+		UPDATE_REQUIRED, UPDATING, UP_TO_DATE, UPDATE_FAILED
+	}
+	
+	public void setUpdateState(UpdateState updateState);
+	
+	public UpdateState getUpdateState();
+	
+	public void setServerVersion(String serverVersion);
+	
+	public String getServerVersion();
+	
+	public void setSerial(String serial);
+	
+	public String getSerial();
 
 	public void setPort(Integer port);
 

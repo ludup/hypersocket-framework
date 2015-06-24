@@ -20,7 +20,7 @@ public class Version implements Comparable<Version> {
         this.versionString = versionString;
         String[] stringElements = versionString.split("[^a-zA-Z0-9]+");
         if (stringElements.length < 2 || stringElements.length > 4) {
-            throw new IllegalArgumentException("Version number be in the format <major>.<minor>.<release>[?TAG]");
+            throw new IllegalArgumentException("Version number '" + versionString + "' incorrect. Must be in the format <major>.<minor>.<release>[?TAG]");
         } else if (stringElements.length == 3) {
             stringElements = new String[] { stringElements[0], stringElements[1], stringElements[2], "base" };
         } else if (stringElements.length == 2) {
@@ -48,6 +48,9 @@ public class Version implements Comparable<Version> {
                 } else if (string.toLowerCase().startsWith("snapshot")) {
                     String substring = string.substring(8);
                     element = -599 + ( substring.equals("") ? 0 : Integer.parseInt(substring) );
+                } else if (string.toLowerCase().startsWith("local")) {
+                    String substring = string.substring(5);
+                    element = -699 + ( substring.equals("") ? 0 : Integer.parseInt(substring) );
                 } else if (string.toLowerCase().startsWith("r")) {
                     String substring = string.substring(1);
                     element = ( substring.equals("") ? 0 : Integer.parseInt(substring) );

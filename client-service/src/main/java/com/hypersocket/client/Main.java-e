@@ -183,7 +183,7 @@ public class Main {
 		buildDefaultConnections();
 		
 		clientService = new ClientServiceImpl(connectionService,
-				configurationService, resourceService);
+				configurationService, resourceService, restartCallback);
 
 		return true;
 	

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.hypersocket.client.Prompt;
+import com.hypersocket.extensions.ExtensionDefinition;
+import com.hypersocket.extensions.ExtensionPlace;
 
 public interface GUICallback extends Serializable, Remote {
 
@@ -38,5 +40,21 @@ public interface GUICallback extends Serializable, Remote {
 	void transportConnected(Connection connection) throws RemoteException;
 
 	void ready(Connection connection) throws RemoteException;
+	
+	void onUpdateInit(int expectedApps) throws RemoteException;
+	
+	void onUpdateStart(String app, long totalBytesExpected) throws RemoteException;
+	
+	void onUpdateProgress(String app, long sincelastProgress, long totalSoFar) throws RemoteException;
+	
+	void onUpdateComplete(long totalBytesTransfered, String app) throws RemoteException;
+	
+	void onUpdateFailure(String app, String message) throws RemoteException;
+	
+	void onExtensionUpdateComplete(String app, ExtensionDefinition def) throws RemoteException;
+	
+	void onUpdateDone(String failureMessage)  throws RemoteException;
+	
+	ExtensionPlace getExtensionPlace() throws RemoteException;
 
 }

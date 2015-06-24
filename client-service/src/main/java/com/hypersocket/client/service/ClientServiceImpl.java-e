@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -21,16 +22,20 @@ import java.util.concurrent.Semaphore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hypersocket.Version;
 import com.hypersocket.client.HypersocketClient;
 import com.hypersocket.client.HypersocketClientListener;
 import com.hypersocket.client.rmi.ClientService;
 import com.hypersocket.client.rmi.ConfigurationService;
 import com.hypersocket.client.rmi.Connection;
+import com.hypersocket.client.rmi.Connection.UpdateState;
 import com.hypersocket.client.rmi.ConnectionService;
 import com.hypersocket.client.rmi.ConnectionStatus;
 import com.hypersocket.client.rmi.ConnectionStatusImpl;
 import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.ResourceService;
+import com.hypersocket.client.service.updates.ClientUpdater;
+import com.hypersocket.extensions.ExtensionPlace;
 
 public class ClientServiceImpl implements ClientService,
 		HypersocketClientListener<Connection> {
@@ -52,10 +57,12 @@ public class ClientServiceImpl implements ClientService,
 	Map<Connection, Set<ServicePlugin>> connectionPlugins = new HashMap<Connection, Set<ServicePlugin>>();
 
 	Semaphore startupLock = new Semaphore(1);
+	TimerTask updateTask;
+	Runnable restartCallback;
 
 	public ClientServiceImpl(ConnectionService connectionService,
 			ConfigurationService configurationService,
-			ResourceService resourceService) {
+			ResourceService resourceService, Runnable restartCallback) {
 
 		try {
 			startupLock.acquire();
@@ -63,6 +70,7 @@ public class ClientServiceImpl implements ClientService,
 			throw new RuntimeException(e);
 		}
 
+		this.restartCallback = restartCallback;
 		this.connectionService = connectionService;
 		this.configurationService = configurationService;
 		this.resourceService = resourceService;
@@ -134,6 +142,7 @@ public class ClientServiceImpl implements ClientService,
 					connect(c);
 				}
 			}
+
 			return true;
 		} catch (RemoteException e) {
 			log.error("Failed to start service", e);
@@ -202,6 +211,18 @@ public class ClientServiceImpl implements ClientService,
 				+ (c.getPort() != 443 ? ":" + c.getPort() : "") + c.getPath();
 	}
 
+	protected void maybeUpdate(final Connection c) {
+		if (updateTask != null)
+			updateTask.cancel();
+		updateTask = new TimerTask() {
+			@Override
+			public void run() {
+				update(c);
+			}
+		};
+		timer.schedule(updateTask, 5000);
+	}
+
 	public void stopService() throws RemoteException {
 
 		for (HypersocketClient<?> client : activeClients.values()) {
@@ -264,6 +285,81 @@ public class ClientServiceImpl implements ClientService,
 		addConnections(ret, connectingClients.keySet(), added);
 		return ret;
 
+	}
+
+	private void update(final Connection c) {
+		Version highestVersionAvailable = null;
+		Map.Entry<Connection, HypersocketClient<Connection>> updater = null;
+		for (Map.Entry<Connection, HypersocketClient<Connection>> en : activeClients
+				.entrySet()) {
+			if (c.getUpdateState() == UpdateState.UPDATE_REQUIRED) {
+				Version availableVersion = new Version(c.getServerVersion());
+				if (highestVersionAvailable == null
+						|| availableVersion.compareTo(highestVersionAvailable) > 0) {
+					highestVersionAvailable = availableVersion;
+					updater = en;
+				}
+			}
+		}
+
+		if (updater == null) {
+			log.info("No updates to do.");
+		} else {
+			log.info("Updating to " + highestVersionAvailable + " via "
+					+ getUrl(c));
+
+			try {
+				/*
+				 * For the client service, we use the local 'extension place'
+				 */
+				final ClientUpdater serviceJob = new ClientUpdater(gui, c,
+						updater.getValue(), ExtensionPlace.getDefault());
+
+				/*
+				 * For the GUI, we get the extension place remotely, as the GUI
+				 * itself is best placed to know what extensions it has and
+				 * where they stored
+				 */
+				final ClientUpdater guiJob = new ClientUpdater(gui, c,
+						updater.getValue(), gui.getExtensionPlace());
+
+				timer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+
+						try {
+							gui.onUpdateInit(2);
+							
+							int updates = 0;
+
+							if(serviceJob.update()) {
+								updates++;
+							}
+							
+							if(guiJob.update()) {
+								updates++;
+							}
+
+							if(updates > 0) {
+								gui.onUpdateDone(null);
+								log.info("Update complete, restarting.");
+								restartCallback.run();
+							}
+							else {
+								gui.onUpdateDone("Nothing to update.");
+							}
+
+						} catch (IOException e) {
+							log.error("Failed to execute update job.", e);
+						}
+					}
+				}, 500);
+			} catch (RemoteException re) {
+				log.error(
+						"Failed to get GUI extension information. Update aborted.",
+						re);
+			}
+		}
 	}
 
 	private void addConnections(List<ConnectionStatus> ret,
@@ -414,11 +510,13 @@ public class ClientServiceImpl implements ClientService,
 		// If a non-persistent connection is now being saved as a persistent
 		// one, then update our maps
 		Connection newConnection = connectionService.save(c);
-		
-		if(c.getId() == null && newConnection.getId() != null) {
-			log.info(String.format("Saving non-persistent connection, now has ID %d", newConnection.getId()));
+
+		if (c.getId() == null && newConnection.getId() != null) {
+			log.info(String.format(
+					"Saving non-persistent connection, now has ID %d",
+					newConnection.getId()));
 		}
-		
+
 		if (activeClients.containsKey(c)) {
 			activeClients.put(newConnection, activeClients.remove(c));
 		}

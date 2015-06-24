@@ -47,6 +47,12 @@ public class ConnectionImpl implements Connection, Serializable {
 	@Column
 	boolean connectAtStartup;
 	
+	// Not peristed
+	private String serverVersion;
+	private UpdateState updateState;
+	private String serial;
+	
+	
 	@Override
 	public Long getId() {
 		return id;
@@ -187,6 +193,36 @@ public class ConnectionImpl implements Connection, Serializable {
 		} else if (!username.equals(other.username))
 			return false;
 		return true;
+	}
+
+	@Override
+	public void setServerVersion(String serverVersion) {
+		this.serverVersion = serverVersion;
+	}
+
+	@Override
+	public void setUpdateState(UpdateState updateState) {
+		this.updateState = updateState;
+	}
+
+	@Override
+	public UpdateState getUpdateState() {
+		return updateState;
+	}
+
+	@Override
+	public String getServerVersion() {
+		return serverVersion;
+	}
+
+	@Override
+	public String getSerial() {
+		return serial;
+	}
+
+	@Override
+	public void setSerial(String serial) {
+		this.serial = serial;
 	}
 
 	

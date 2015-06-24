@@ -48,6 +48,9 @@ public class Client extends Application {
 		Parent root = loader.load(resource.openStream());
 		FramedController controllerInst = (FramedController) loader
 				.getController();
+		if(controllerInst == null) {
+			throw new IOException("Controller not found. Check controller in FXML");
+		}
 		root.getStylesheets().add(
 				controller.getResource(Client.class.getSimpleName() + ".css")
 						.toExternalForm());
