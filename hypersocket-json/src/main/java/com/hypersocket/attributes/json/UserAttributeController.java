@@ -111,13 +111,13 @@ public class UserAttributeController extends ResourceController {
 						attribute.getName(), attribute.getCategory(),
 						attribute.getDescription(),
 						attribute.getDefaultValue(), attribute.getWeight(),
-						attribute.getType(), attribute.getReadOnly(),
+						attribute.getType(), attribute.getDisplayMode(), attribute.getReadOnly(),
 						attribute.getEncrypted(), attribute.getVariableName(), roles);
 			} else {
 				newAttribute = service.createAttribute(attribute.getName(),
 						attribute.getCategory(), attribute.getDescription(),
 						attribute.getDefaultValue(), attribute.getWeight(),
-						attribute.getType(), attribute.getReadOnly(),
+						attribute.getType(), attribute.getDisplayMode(), attribute.getReadOnly(),
 						attribute.getEncrypted(), attribute.getVariableName(), roles);
 			}
 			return new ResourceStatus<UserAttribute>(newAttribute,

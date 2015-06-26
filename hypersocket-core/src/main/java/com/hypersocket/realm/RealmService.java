@@ -108,7 +108,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	List<Principal> getAssociatedPrincipals(Principal principal);
 
 	List<Principal> getAssociatedPrincipals(Principal principal,
-			PrincipalType type) throws AccessDeniedException;
+			PrincipalType type);
 
 	List<Realm> allRealms(Class<? extends RealmProvider> clz);
 
@@ -215,5 +215,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 			throws ResourceNotFoundException;
 
 	Realm getRealmByHost(String host, Realm defaultRealm);
+
+	long getPrincipalCount(Realm realm);
 
 }

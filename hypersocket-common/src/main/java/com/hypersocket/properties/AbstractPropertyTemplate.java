@@ -9,6 +9,7 @@ public abstract class AbstractPropertyTemplate {
 	String metaData;
 	int weight;
 	boolean hidden;
+	String displayMode;
 	boolean readOnly;
 	boolean encrypted;
 	boolean defaultValuePropertyValue;
@@ -110,6 +111,14 @@ public abstract class AbstractPropertyTemplate {
 
 	public void setDefaultValuePropertyValue(boolean defaultValuePropertyValue) {
 		this.defaultValuePropertyValue = defaultValuePropertyValue;
+	}
+
+	public String getDisplayMode() {
+		return displayMode;
+	}
+
+	public void setDisplayMode(String displayMode) {
+		this.displayMode = displayMode;
 	}
 
 	@Override

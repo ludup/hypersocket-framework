@@ -9,6 +9,7 @@ public class UserAttributeUpdate {
 	private String defaultValue;
 	private int weight;
 	private String type;
+	private String displayMode;
 	private Boolean readOnly;
 	private Boolean encrypted;
 	private String variableName;
@@ -20,7 +21,7 @@ public class UserAttributeUpdate {
 
 	public UserAttributeUpdate(Long id, String name, Long category,
 			String description, String defaultValue, int weight, String type,
-			Boolean readOnly, Boolean encrypted, String variableName) {
+			String displayMode, Boolean readOnly, Boolean encrypted, String variableName) {
 		this.id = id;
 		this.name = name;
 		this.category = category;
@@ -28,6 +29,7 @@ public class UserAttributeUpdate {
 		this.defaultValue = defaultValue;
 		this.weight = weight;
 		this.type = type;
+		this.displayMode = displayMode;
 		this.readOnly = readOnly;
 		this.encrypted = encrypted;
 		this.variableName = variableName;
@@ -120,4 +122,14 @@ public class UserAttributeUpdate {
 	public void setVariableName(String variableName) {
 		this.variableName = variableName;
 	}
+
+	public String getDisplayMode() {
+		return displayMode;
+	}
+
+	public void setDisplayMode(String displayMode) {
+		this.displayMode = displayMode;
+	}
+	
+	
 }
