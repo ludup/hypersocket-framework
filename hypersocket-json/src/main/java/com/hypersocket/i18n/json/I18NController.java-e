@@ -44,11 +44,6 @@ public class I18NController extends AuthenticatedController {
 	@Autowired
 	SessionUtils sessionUtils;
 	
-	@PostConstruct
-	private void postConstruct() {
-		i18nService.registerBundle("UserInterface");
-	}
-	
 	@RequestMapping(value="i18n", method = RequestMethod.GET, produces = {"application/json"})
 	@ResponseBody
 	@ResponseStatus(value=HttpStatus.OK)
