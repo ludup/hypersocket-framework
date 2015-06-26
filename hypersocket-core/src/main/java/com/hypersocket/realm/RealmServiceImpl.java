@@ -29,7 +29,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.attributes.user.UserAttributeService;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
+import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -38,6 +40,7 @@ import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.events.ChangePasswordEvent;
 import com.hypersocket.realm.events.GroupCreatedEvent;
 import com.hypersocket.realm.events.GroupDeletedEvent;
@@ -102,6 +105,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 	@Autowired
 	UserVariableReplacement userVariableReplacement;
+	
+	@Autowired
+	ConfigurationService configurationService; 
+	
+	@Autowired
+	UserAttributeService userAttributeService; 
 	
 	CacheManager cacheManager;
 	Cache realmCache;
@@ -1109,39 +1118,56 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 				.getUserProperties(principal);
 
 		Set<String> editable = new HashSet<String>(
-				Arrays.asList(getRealmPropertyArray(principal.getRealm(),
+				Arrays.asList(configurationService.getValues(principal.getRealm(),
 						"realm.userEditableProperties")));
 		Set<String> visible = new HashSet<String>(
-				Arrays.asList(getRealmPropertyArray(principal.getRealm(),
+				Arrays.asList(configurationService.getValues(principal.getRealm(),
 						"realm.userVisibleProperties")));
 
 		/**
 		 * Filter the properties down to read only and editable as defined by
 		 * the realm configuration.
 		 */
+		
+		List<PropertyCategory> results = new ArrayList<PropertyCategory>();
+		
 		for (PropertyCategory c : ret) {
 
-			if(c.isUserCreated()) {
-				continue;
-			}
-			
 			List<AbstractPropertyTemplate> tmp = new ArrayList<AbstractPropertyTemplate>();
+
 			for (AbstractPropertyTemplate t : c.getTemplates()) {
 
-				if(!editable.contains(t.getResourceKey())) {
-					if (!visible.contains(t.getResourceKey())) {
+				if(c.isUserCreated()) {
+					/**
+					 * Custom user created properties
+					 */
+					if(t.getDisplayMode()!=null && t.getDisplayMode().equals("admin")) {
 						tmp.add(t);
+					}
+					
+				} else {
+					/**
+					 * These are built-in realm properties
+					 */
+					if(!editable.contains(t.getResourceKey())) {
+						if (!visible.contains(t.getResourceKey())) {
+							tmp.add(t);
+							continue;
+						}
+						t.setReadOnly(true);
 						continue;
 					}
-					t.setReadOnly(true);
-					continue;
 				}
-			}
+			}	
 
 			c.getTemplates().removeAll(tmp);
+			
+			if(c.getTemplates().size() > 0) {
+				results.add(c);
+			}
 		}
 
-		return ret;
+		return results;
 	}
 
 	@Override
@@ -1309,15 +1335,25 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		/**
 		 * This ensures we only ever update those properties that are allowed
 		 */
-		String[] editableProperties = getRealmPropertyArray(realm,
+		String[] editableProperties = configurationService.getValues(realm,
 				"realm.userEditableProperties");
 
 		Map<String, String> currentProperties = provider.getUserPropertyValues(principal);
+		
+		Collection<PropertyTemplate> userAttributes = userAttributeService.getPropertyTemplates(principal);
 		
 		for (String allowed : editableProperties) {
 			if (properties.containsKey(allowed)) {
 				currentProperties.put(allowed, properties.get(allowed));
 			} 
+		}
+		
+		for(PropertyTemplate t : userAttributes) {
+			if (properties.containsKey(t.getResourceKey())) {
+				if(t.getDisplayMode()==null || !t.getDisplayMode().equals("admin")) {
+					currentProperties.put(t.getResourceKey(), properties.get(t.getResourceKey()));
+				}
+			}
 		}
 
 		try {
@@ -1513,5 +1549,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		}
 
 		return variables;
+	}
+
+	@Override
+	public long getPrincipalCount(Realm realm) {
+		
+		RealmProvider provider = getProviderForRealm(realm);
+		return provider.getPrincipalCount(realm, PrincipalType.USER, "");
 	}
 }

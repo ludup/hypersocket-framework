@@ -24,6 +24,7 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 		this.weight = t.getWeight();
 		this.category = t.getCategory();
 		this.hidden = t.isHidden();
+		this.displayMode = t.getDisplayMode();
 		this.readOnly = t.isReadOnly();
 		this.resource = resource;
 		this.propertyStore = t.getPropertyStore();

@@ -172,6 +172,80 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	};
 
 	@Override
+	public boolean hasAssignedEveryoneRole(Realm realm, CriteriaConfiguration... configs) {
+
+		Criteria criteria = createCriteria(getResourceClass());
+		criteria.setProjection(Projections.property("id"));
+		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+
+		for (CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+
+		criteria.add(Restrictions.eq("realm", realm));
+		criteria = criteria.createCriteria("roles");
+		criteria.add(Restrictions.eq("allUsers", true));
+		
+		List<?> everyoneRoles = criteria.list();
+		
+		return everyoneRoles.size() > 0;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Collection<Principal> getAssignedPrincipals(Realm realm, CriteriaConfiguration... configs) {
+
+		Criteria criteria = createCriteria(getResourceClass());
+		
+		for (CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+
+		criteria.add(Restrictions.eq("realm", realm));
+		criteria = criteria.createCriteria("roles");
+		criteria.add(Restrictions.eq("allUsers", false));
+		
+		criteria = criteria.createCriteria("principals");
+		criteria.setProjection(Projections.distinct(Projections.property("id")));
+		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+		
+		List<?> uniquePrincipals = criteria.list();
+		
+		if(uniquePrincipals.isEmpty()) {
+			return new HashSet<Principal>();
+		}
+		criteria = createCriteria(Principal.class);
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		criteria.add(Restrictions.in("id", uniquePrincipals));
+		List<?> res = criteria.list();
+		
+		return (Collection<Principal>) res;
+	}
+		
+	@Override
+	public Long getAssignedPrincipalCount(Realm realm, CriteriaConfiguration... configs) {
+
+		Criteria criteria = createCriteria(getResourceClass());
+		
+		for (CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+
+		criteria.add(Restrictions.eq("realm", realm));
+		criteria = criteria.createCriteria("roles");
+		criteria.add(Restrictions.eq("allUsers", false));
+		
+		criteria = criteria.createCriteria("principals");
+		criteria.setProjection(Projections.distinct(Projections.property("id")));
+		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+		
+		List<?> uniquePrincipals = criteria.list();
+		
+		return (long)uniquePrincipals.size();
+
+	}
+	
+	@Override
 	public Long getAssignedResourceCount(List<Principal> principals,
 			final String searchPattern, CriteriaConfiguration... configs) {
 

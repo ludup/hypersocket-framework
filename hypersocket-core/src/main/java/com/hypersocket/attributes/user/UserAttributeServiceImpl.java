@@ -100,7 +100,7 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 	@Override
 	public UserAttribute updateAttribute(UserAttribute attribute, String name,
 			Long category, String description, String defaultValue, int weight,
-			String type, Boolean readOnly, Boolean encrypted,
+			String type, String displayMode, Boolean readOnly, Boolean encrypted,
 			String variableName, Set<Role> roles) throws ResourceChangeException,
 			AccessDeniedException {
 
@@ -122,6 +122,7 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 			attribute.setType(UserAttributeType.PASSWORD);
 		}
 
+		attribute.setDisplayMode(displayMode);
 		attribute.setReadOnly(readOnly);
 		attribute.setEncrypted(encrypted);
 		attribute.setVariableName(variableName);
@@ -141,7 +142,7 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 	@Override
 	public UserAttribute createAttribute(String name, Long category,
 			String description, String defaultValue, int weight, String type,
-			Boolean readOnly, Boolean encrypted, String variableName, Set<Role> roles)
+			String displayMode, Boolean readOnly, Boolean encrypted, String variableName, Set<Role> roles)
 			throws ResourceCreationException, AccessDeniedException {
 		
 		UserAttribute attribute = new UserAttribute();
@@ -162,6 +163,8 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 		attribute.setDefaultValue(defaultValue);
 		attribute.setWeight(weight);
 		attribute.setType(UserAttributeType.valueOf(type));
+		
+		attribute.setDisplayMode(displayMode);
 		attribute.setReadOnly(readOnly);
 		attribute.setEncrypted(encrypted);
 		attribute.setVariableName(variableName);
@@ -306,6 +309,11 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 	
 	
 	private Principal checkResource(AbstractResource resource) {
+		
+		if(resource==null) {
+			return null;
+		}
+		
 		if(!(resource instanceof Principal)) {
 			throw new IllegalArgumentException("Resource must be a Principal in order to get UserAttributes");
 		}
@@ -315,7 +323,13 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 	
 	Map<String, PropertyTemplate> getUserTemplates(Principal principal)  {
 		
+		if(principal == null) {
+			return new HashMap<String, PropertyTemplate>();
+		}
+		
 		synchronized (userPropertyTemplates) {
+			
+			
 			if(userPropertyTemplates.containsKey(principal)) {
 				return userPropertyTemplates.get(principal);
 			}
@@ -349,13 +363,13 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 	void registerPropertyItem(PropertyCategory cat, UserAttribute attr) {
 		registerPropertyItem(cat, attributeRepository.getDatabasePropertyStore(), attr.getVariableName(),
 				attr.generateMetaData(), "", attr.getWeight(),
-				attr.getHidden(), attr.getReadOnly(), attr.getDefaultValue(),
+				attr.getHidden(), attr.getDisplayMode(), attr.getReadOnly(), attr.getDefaultValue(),
 				true, attr.getEncrypted(), false);
 	}
 
 	void registerPropertyItem(PropertyCategory category,
 			PropertyStore propertyStore, String resourceKey, String metaData,
-			String mapping, int weight, boolean hidden, boolean readOnly,
+			String mapping, int weight, boolean hidden, String displayMode, boolean readOnly,
 			String defaultValue, boolean isVariable, boolean encrypted,
 			boolean defaultValuePropertyValue) {
 
@@ -395,6 +409,7 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 		template.setDefaultValue(defaultValue);
 		template.setWeight(weight);
 		template.setHidden(hidden);
+		template.setDisplayMode(displayMode);
 		template.setReadOnly(readOnly);
 		template.setMapping(mapping);
 		template.setCategory(category);

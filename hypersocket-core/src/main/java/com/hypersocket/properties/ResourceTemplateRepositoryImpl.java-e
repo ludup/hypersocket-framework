@@ -311,6 +311,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 							pnode.hasAttribute("hidden")
 									&& pnode.getAttribute("hidden")
 											.equalsIgnoreCase("true"),
+							pnode.hasAttribute("displayMode") ? pnode.getAttribute("displayMode") : "",
 							pnode.hasAttribute("readOnly")
 									&& pnode.getAttribute("readOnly")
 											.equalsIgnoreCase("true"),
@@ -385,7 +386,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 
 	private void registerPropertyItem(PropertyCategory category,
 			PropertyStore propertyStore, String resourceKey, String metaData,
-			String mapping, int weight, boolean hidden, boolean readOnly,
+			String mapping, int weight, boolean hidden, String displayMode, boolean readOnly,
 			String defaultValue, boolean isVariable, boolean encrypted,
 			boolean defaultValuePropertyValue) {
 
@@ -430,6 +431,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 		template.setDefaultValue(defaultValue);
 		template.setWeight(weight);
 		template.setHidden(hidden);
+		template.setDisplayMode(displayMode);
 		template.setReadOnly(readOnly);
 		template.setMapping(mapping);
 		template.setCategory(category);

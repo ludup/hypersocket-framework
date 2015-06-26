@@ -14,13 +14,13 @@ public interface UserAttributeService extends AbstractAssignableResourceService<
 
 	public UserAttribute updateAttribute(UserAttribute attribute, String name,
 			Long category, String description, String defaultValue, int weight,
-			String type, Boolean readOnly, Boolean encrypted,
+			String type, String displayMode, Boolean readOnly, Boolean encrypted,
 			String variableName, Set<Role> roles) throws AccessDeniedException,
 			ResourceChangeException;
 
 	public UserAttribute createAttribute(String name, Long category,
 			String description, String defaultValue, int weight, String type,
-			Boolean readOnly, Boolean encrypted, String variableName, Set<Role> roles)
+			String displayMode, Boolean readOnly, Boolean encrypted, String variableName, Set<Role> roles)
 			throws ResourceCreationException, AccessDeniedException;
 
 	public void deleteAttribute(UserAttribute attribute)

@@ -74,7 +74,7 @@ public class AttributeServiceImpl extends AbstractAuthenticatedServiceImpl
 			throws ResourceCreationException, AccessDeniedException {
 
 		return attributeService.createAttribute(name, category, description,
-				defaultValue, weight, type, readOnly, encrypted, variableName,
+				defaultValue, weight, type, readOnly ? "admin" : "", readOnly, encrypted, variableName,
 				new HashSet<Role>());
 	}
 }

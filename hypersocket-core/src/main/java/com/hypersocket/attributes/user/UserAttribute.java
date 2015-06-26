@@ -3,6 +3,7 @@ package com.hypersocket.attributes.user;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.hypersocket.resource.AssignableResource;
@@ -29,6 +30,9 @@ public class UserAttribute extends AssignableResource  {
 	@Column(name="hidden")
 	Boolean hidden = false;
 	
+	@Column(name="display_mode")
+	String displayMode;
+	
 	@Column(name="read_only")
 	Boolean readOnly = false;
 	
@@ -38,6 +42,9 @@ public class UserAttribute extends AssignableResource  {
 	@Column(name="variable_name", unique=true)
 	String variableName;
 
+	@OneToOne
+	AssignableResource resource;
+	
 	public UserAttributeCategory getCategory() {
 		return category;
 	}
@@ -111,6 +118,22 @@ public class UserAttribute extends AssignableResource  {
 
 	public void setVariableName(String variableName) {
 		this.variableName = variableName;
+	}
+
+	public String getDisplayMode() {
+		return displayMode==null ? "" : displayMode;
+	}
+
+	public void setDisplayMode(String displayMode) {
+		this.displayMode = displayMode;
+	}
+
+	public AssignableResource getResource() {
+		return resource;
+	}
+
+	public void setResource(AssignableResource resource) {
+		this.resource = resource;
 	}
 
 	
