@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.repository;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -334,6 +335,10 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		criteria.setMaxResults(length);
 		
 		List<T> ids = (List<T>)criteria.list();
+		
+		if(ids.isEmpty()) {
+			return new ArrayList<T>();
+		}
 		
 		criteria = createCriteria(clz);
 		
