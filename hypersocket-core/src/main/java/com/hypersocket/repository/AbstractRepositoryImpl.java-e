@@ -339,10 +339,6 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			criteria.add(Restrictions.ilike(searchColumn, searchPattern));
 		}
 	
-		for (ColumnSort sort : sorting) {
-			criteria.addOrder(sort.getSort() == Sort.ASC ? Order
-					.asc(sort.getColumn().getColumnName()) : Order.desc(sort.getColumn().getColumnName()));
-		}
 		for(CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
@@ -357,6 +353,11 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		}
 		
 		criteria = createCriteria(clz);
+		
+		for (ColumnSort sort : sorting) {
+			criteria.addOrder(sort.getSort() == Sort.ASC ? Order
+					.asc(sort.getColumn().getColumnName()) : Order.desc(sort.getColumn().getColumnName()));
+		}
 		
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		criteria.add(Restrictions.in("id", ids));
