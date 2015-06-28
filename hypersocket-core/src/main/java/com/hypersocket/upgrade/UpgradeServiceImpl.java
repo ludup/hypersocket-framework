@@ -293,7 +293,8 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 
 	}
 
-	private boolean isFreshInstall() {
+	@Override
+	public boolean isFreshInstall() {
 		return fresh;
 	}
 	

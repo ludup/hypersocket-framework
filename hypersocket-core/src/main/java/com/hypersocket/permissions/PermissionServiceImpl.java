@@ -57,8 +57,6 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	static Logger log = LoggerFactory.getLogger(PermissionServiceImpl.class);
 
-	static final String ROLE_ADMINISTRATOR = "Administrator";
-	static final String ROLE_EVERYONE = "Everyone";
 
 	@Autowired
 	PermissionRepository repository;
@@ -220,7 +218,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			} catch (Throwable te) {
 				eventService.publishEvent(new RoleCreatedEvent(this, name, te,
 						getCurrentSession(), realm));
-				throw te;
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.resourceCreateError", te.getMessage());
 			}
 		}
 	}
@@ -237,9 +235,15 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED,
 				RolePermission.CREATE, RolePermission.UPDATE);
 
-		repository.assignRole(role, principal);
-
-		permissionsCache.remove(principal);
+		try {
+			repository.assignRole(role, principal);
+			permissionsCache.remove(principal);
+			eventService.publishEvent(new RoleUpdatedEvent(this,
+					getCurrentSession(), role.getRealm(), role));
+		} catch (Throwable e) {
+			eventService.publishEvent(new RoleUpdatedEvent(this, role.getName(), e,
+					getCurrentSession(), role.getRealm()));
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -409,7 +413,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
-	public void deleteRole(Role role) throws AccessDeniedException {
+	public void deleteRole(Role role) throws AccessDeniedException, ResourceChangeException {
 		assertPermission(RolePermission.DELETE);
 		try {
 			repository.deleteRole(role);
@@ -419,7 +423,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		} catch (Throwable te) {
 			eventService.publishEvent(new RoleDeletedEvent(this,
 					role.getName(), te, getCurrentSession(), role.getRealm()));
-			throw te;
+			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.resourceDeleteError", te.getMessage());
 		}
 	}
 
@@ -453,6 +457,22 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		return result;
 	}
 
+	@Override
+	public void grantPermission(Role role, Permission permission) throws AccessDeniedException, ResourceChangeException {
+		
+		assertPermission(RolePermission.UPDATE);
+		
+		try {
+			repository.grantPermission(role, permission);
+			eventService.publishEvent(new RoleUpdatedEvent(this,
+					getCurrentSession(), role.getRealm(), role));
+		} catch (Throwable e) {
+			eventService.publishEvent(new RoleUpdatedEvent(this,
+					role.getName(), e, getCurrentSession(), role.getRealm()));
+			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.resourceUpdateError", e.getMessage());
+		}
+	}
+	
 	@Override
 	public Role updateRole(Role role, String name, List<Principal> principals,
 			List<Permission> permissions) throws AccessDeniedException,
@@ -499,7 +519,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		} catch (Throwable te) {
 			eventService.publishEvent(new RoleUpdatedEvent(this,
 					role.getName(), te, getCurrentSession(), role.getRealm()));
-			throw te;
+			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.resourceUpdateError", te.getMessage());
 		}
 	}
 
