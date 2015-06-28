@@ -24,4 +24,6 @@ public interface UpgradeService {
     void upgrade() throws IOException, ScriptException;
 
 	void registerListener(UpgradeServiceListener listener);
+
+	boolean isFreshInstall();
 }

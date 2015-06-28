@@ -195,8 +195,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 	@Override
 	public void onUpgradeComplete() {
 
-		setCurrentPrincipal(getSystemPrincipal(), Locale.getDefault(),
-				getSystemPrincipal().getRealm());
+		setCurrentSession(sessionService.getSystemSession(), Locale.getDefault());
 
 		try {
 			for (Realm realm : realmRepository.allRealms()) {
@@ -305,6 +304,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 	@Override
 	public int getRealmPropertyInt(Realm realm, String resourceKey) {
 		return Integer.parseInt(getRealmProperty(realm, resourceKey));
+	}
+	
+	@Override
+	public boolean getRealmPropertyBoolean(Realm realm, String resourceKey) {
+		return Boolean.parseBoolean(getRealmProperty(realm, resourceKey));
 	}
 
 	@Override

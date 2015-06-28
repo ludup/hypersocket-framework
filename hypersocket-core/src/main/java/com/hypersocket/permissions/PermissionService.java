@@ -22,6 +22,8 @@ import com.hypersocket.tables.ColumnSort;
 public interface PermissionService extends AuthenticatedService {
 
 	static final String RESOURCE_BUNDLE = "PermissionService";
+	static final String ROLE_ADMINISTRATOR = "Administrator";
+	static final String ROLE_EVERYONE = "Everyone";
 
 	public PermissionCategory registerPermissionCategory(String resourceBundle,
 			String resourceKey);
@@ -81,5 +83,7 @@ public interface PermissionService extends AuthenticatedService {
 
 	Permission registerPermission(PermissionType type,
 			PermissionCategory category);
+
+	void grantPermission(Role everyone, Permission permission) throws AccessDeniedException, ResourceChangeException;
 
 }
