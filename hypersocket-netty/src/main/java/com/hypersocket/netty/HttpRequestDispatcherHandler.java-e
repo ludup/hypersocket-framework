@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.StringTokenizer;
 import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.ServletException;
@@ -133,10 +134,23 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				!server.isPlainPort((InetSocketAddress) ctx.getChannel().getLocalAddress()),
 				nettyResponse);
 
+		InetSocketAddress remoteAddress = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
+		if(nettyRequest.containsHeader("X-Forwarded-For")) {
+			String[] ips = nettyRequest.getHeader("X-Forwarded-For").split(",");
+			remoteAddress = new InetSocketAddress(ips[0], remoteAddress.getPort());
+		} else if(nettyRequest.containsHeader("Forwarded")) {
+			StringTokenizer t = new StringTokenizer(nettyRequest.getHeader("Forwarded"), ";");
+			while(t.hasMoreTokens()) {
+				String[] pair = t.nextToken().split("=");
+				if(pair.length == 2 && pair[0].equalsIgnoreCase("for")) {
+					remoteAddress = new InetSocketAddress(pair[1], remoteAddress.getPort());
+				}
+			}
+		}
+		
 		HttpRequestServletWrapper servletRequest = new HttpRequestServletWrapper(
 				nettyRequest, (InetSocketAddress) ctx.getChannel()
-						.getLocalAddress(), (InetSocketAddress) ctx
-						.getChannel().getRemoteAddress(), 
+						.getLocalAddress(), remoteAddress, 
 						!server.isPlainPort((InetSocketAddress) ctx.getChannel().getLocalAddress()) , server
 						.getServletConfig().getServletContext(), session);
 
