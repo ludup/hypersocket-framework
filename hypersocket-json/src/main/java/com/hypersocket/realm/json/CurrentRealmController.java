@@ -667,6 +667,8 @@ public class CurrentRealmController extends ResourceController {
 					RealmService.RESOURCE_BUNDLE, "info.credentialsSet",
 					principal.getName()));
 
+		} catch(AccessDeniedException ex) { 
+			return new CredentialsStatus(false, ex.getMessage());
 		} catch (ResourceCreationException e) {
 			return new CredentialsStatus(false, e.getMessage());
 		} finally {
