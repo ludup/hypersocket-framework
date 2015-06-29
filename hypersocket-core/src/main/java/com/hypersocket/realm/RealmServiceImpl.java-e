@@ -41,6 +41,7 @@ import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.events.ChangePasswordEvent;
 import com.hypersocket.realm.events.GroupCreatedEvent;
 import com.hypersocket.realm.events.GroupDeletedEvent;
@@ -689,7 +690,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 			Realm realm = realmRepository.createRealm(name, module, properties,
 					realmProvider);
-
+			
+			configurationService.setValue(realm, "realm.userEditableProperties",
+					ResourceUtils.implodeValues(realmProvider.getDefaultUserPropertyNames()));
+			
 			fireRealmCreate(realm);
 
 			eventService.publishEvent(new RealmCreatedEvent(this,

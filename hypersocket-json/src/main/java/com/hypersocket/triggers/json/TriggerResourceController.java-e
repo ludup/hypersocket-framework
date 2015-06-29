@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.aspectj.apache.bcel.Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -133,9 +134,9 @@ public class TriggerResourceController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			return new ResourceList<PropertyCategory>(
-					resourceService.getResourceProperties(resourceService
-							.getResourceById(id)));
+			TriggerResource resource = resourceService.getResourceById(id);
+			return new ResourceList<PropertyCategory>(taskService
+					.getTaskProvider(resource.getResourceKey()).getPropertyTemplate(resource));
 		} finally {
 			clearAuthenticatedContext();
 		}

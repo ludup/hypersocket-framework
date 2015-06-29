@@ -69,9 +69,15 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 
 	PropertyCategory userDetailsCategory;
 
+	Set<String> defaultProperties = new HashSet<String>();
+	
 	@PostConstruct
 	private void registerProvider() throws Exception {
 
+		defaultProperties.add("user.fullname");
+		defaultProperties.add("user.email");
+		defaultProperties.add("user.mobile");
+		
 		realmService.registerRealmProvider(this);
 
 		loadPropertyTemplates("localRealmTemplate.xml");
@@ -631,6 +637,11 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	@Override
 	public Map<String, String> getUserPropertyValues(Principal principal) {
 		return userRepository.getProperties(principal);
+	}
+
+	@Override
+	public Set<String> getDefaultUserPropertyNames() {
+		return defaultProperties;
 	}
 
 }

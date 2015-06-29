@@ -520,7 +520,7 @@ public class SchedulerServiceImpl extends
 		if (resources.size() < (start + length)) {
 			return resources.subList(start, resources.size());
 		} else {
-			return resources.subList(start, (start + length - 1));
+			return resources.subList(start, (start + length));
 		}
 	}
 

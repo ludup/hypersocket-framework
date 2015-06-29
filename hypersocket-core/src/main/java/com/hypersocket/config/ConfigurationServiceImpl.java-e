@@ -91,11 +91,17 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	@Override
 	public void setValue(String resourceKey, String value)
 			throws AccessDeniedException, ResourceChangeException {
+		setValue(getCurrentRealm(), resourceKey, value);
+	}
+	
+	@Override
+	public void setValue(Realm realm, String resourceKey, String value)
+			throws AccessDeniedException, ResourceChangeException {
 		try {
 			assertPermission(ConfigurationPermission.UPDATE);
-			String oldValue = repository.getValue(getCurrentRealm(), resourceKey);
-			repository.setValue(getCurrentRealm(), resourceKey, value);
-			fireChangeEvent(resourceKey, oldValue, value, repository.getPropertyTemplate(getCurrentRealm(), resourceKey).isHidden());
+			String oldValue = repository.getValue(realm, resourceKey);
+			repository.setValue(realm, resourceKey, value);
+			fireChangeEvent(resourceKey, oldValue, value, repository.getPropertyTemplate(realm, resourceKey).isHidden());
 		} catch (AccessDeniedException e) {
 			fireChangeEvent(resourceKey, e);
 			throw e;
