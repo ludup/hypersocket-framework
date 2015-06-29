@@ -76,7 +76,7 @@ public class TriggerJob extends PermissionsAwareJob {
 			if(log.isInfoEnabled()) {
 				log.info("Performing task " + trigger.getResourceKey());
 			}
-			executeAction(trigger, events);
+			executeTrigger(trigger, events);
 			
 		}
 		if (log.isInfoEnabled()) {
@@ -142,18 +142,18 @@ public class TriggerJob extends PermissionsAwareJob {
 		return matched;
 	}
 
-	protected void executeAction(TriggerResource action, SystemEvent... events)
+	protected void executeTrigger(TriggerResource trigger, SystemEvent... events)
 			throws ValidationException {
 
 		TaskProvider provider = taskService
-				.getTaskProvider(action.getResourceKey());
+				.getTaskProvider(trigger.getResourceKey());
 		if (provider == null) {
 			throw new ValidationException(
 					"Failed to execute task because provider "
-							+ action.getResourceKey() + " is not available");
+							+ trigger.getResourceKey() + " is not available");
 		}
 
-		TaskResult outputEvent = provider.execute(action, events[0].getCurrentRealm(), events);
+		TaskResult outputEvent = provider.execute(trigger, events[0].getCurrentRealm(), events);
 
 		if(outputEvent!=null) {
 			if(outputEvent.isPublishable()) {
@@ -162,9 +162,9 @@ public class TriggerJob extends PermissionsAwareJob {
 			
 			SystemEvent[] allEvents = ArrayUtils.add(events, outputEvent);
 			
-			if (!action.getChildTriggers().isEmpty()) {
-				for(TriggerResource trigger : action.getChildTriggers()) {
-					processEventTrigger(trigger, allEvents);
+			if (!trigger.getChildTriggers().isEmpty()) {
+				for(TriggerResource t : trigger.getChildTriggers()) {
+					processEventTrigger(t, allEvents);
 				}
 				
 			} 
