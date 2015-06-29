@@ -568,6 +568,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 	public void changePassword(Principal principal, String oldPassword,
 			String newPassword) throws ResourceCreationException,
 			ResourceChangeException, AccessDeniedException {
+		
 		assertPermission(PasswordPermission.CHANGE);
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
@@ -599,8 +600,22 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 	@Override
 	public void setPassword(Principal principal, String password,
-			boolean forceChangeAtNextLogon) throws ResourceCreationException {
+			boolean forceChangeAtNextLogon) throws ResourceCreationException, AccessDeniedException {
 
+		if(permissionService.hasSystemPermission(principal)) {
+			try {
+				assertPermission(SystemPermission.SYSTEM_ADMINISTRATION);
+			} catch (AccessDeniedException e) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.sysadminOnly");
+			}
+		} else if(!getCurrentPrincipal().equals(principal)) {
+			try {
+				assertAnyPermission(UserPermission.CREATE, UserPermission.UPDATE);
+			} catch (AccessDeniedException e) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noUserChangePermission");
+			}
+		} 
+		
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
 		try {

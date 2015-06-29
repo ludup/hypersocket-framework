@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -34,14 +35,18 @@ import org.springframework.transaction.support.TransactionTemplate;
 import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.events.EventService;
+import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.PasswordPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.ProfilePermission;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
+import com.hypersocket.realm.events.GroupEvent;
+import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -53,7 +58,7 @@ import com.hypersocket.tables.ColumnSort;
 
 @Service
 public class PermissionServiceImpl extends AuthenticatedServiceImpl
-		implements PermissionService {
+		implements PermissionService, ApplicationListener<SystemEvent> {
 
 	static Logger log = LoggerFactory.getLogger(PermissionServiceImpl.class);
 
@@ -130,6 +135,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				perms.add(getPermission(ProfilePermission.READ.getResourceKey()));
 				perms.add(getPermission(ProfilePermission.UPDATE
 						.getResourceKey()));
+				perms.add(getPermission(PasswordPermission.CHANGE.getResourceKey()));
 
 				repository.createRole(ROLE_EVERYONE, realm, false, true, false,
 						true, perms);
@@ -522,6 +528,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.resourceUpdateError", te.getMessage());
 		}
 	}
+	
 
 	@Override
 	public Role getRoleById(Long id, Realm realm)
@@ -574,6 +581,15 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		assertPermission(RolePermission.READ);
 
 		return new ArrayList<PropertyCategory>();
+	}
+
+	@Override
+	public void onApplicationEvent(SystemEvent event) {
+		
+		if(event instanceof GroupEvent || event instanceof UserEvent) {
+			permissionsCache.removeAll();
+		}
+		
 	}
 
 }
