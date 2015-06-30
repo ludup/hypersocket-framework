@@ -7,6 +7,8 @@ public interface UserInterfaceStateRepository extends
 
 	UserInterfaceState getStateByResourceId(Long resourceId);
 
+	UserInterfaceState getStateByResourceId(Long resourceId, Long principalId);
+
 	void updateState(UserInterfaceState newState);
 
 }
