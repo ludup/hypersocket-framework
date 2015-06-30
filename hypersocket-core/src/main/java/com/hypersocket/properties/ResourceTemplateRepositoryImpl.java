@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.annotation.PostConstruct;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -65,15 +66,21 @@ public abstract class ResourceTemplateRepositoryImpl extends
 	static Map<String, List<ResourceTemplateRepository>> propertyContexts = new HashMap<String, List<ResourceTemplateRepository>>();
 
 	public ResourceTemplateRepositoryImpl() {
-		super();
-		configPropertyStore = new DatabasePropertyStore(this, encryptionService);
+		super(false);
+		configPropertyStore = new DatabasePropertyStore(this, null);
 		propertyStoresById.put("db", configPropertyStore);
 	}
 
 	public ResourceTemplateRepositoryImpl(boolean requiresDemoWrite) {
 		super(requiresDemoWrite);
+		configPropertyStore = new DatabasePropertyStore(this, null);
+		propertyStoresById.put("db", configPropertyStore);
 	}
 
+	@PostConstruct
+	private void postConstruct() {
+		configPropertyStore.setEncryptionService(encryptionService);
+	}
 	protected ResourcePropertyStore getPropertyStore() {
 		return configPropertyStore;
 	}
