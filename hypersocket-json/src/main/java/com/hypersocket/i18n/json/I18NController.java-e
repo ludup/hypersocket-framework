@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -43,11 +42,6 @@ public class I18NController extends AuthenticatedController {
 	
 	@Autowired
 	SessionUtils sessionUtils;
-	
-	@PostConstruct
-	private void postConstruct() {
-		i18nService.registerBundle("UserInterface");
-	}
 	
 	@RequestMapping(value="i18n", method = RequestMethod.GET, produces = {"application/json"})
 	@ResponseBody

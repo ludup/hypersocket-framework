@@ -41,7 +41,8 @@ public class I18NServiceImpl extends AbstractAuthenticatedServiceImpl implements
 	
 	Set<String> bundles = new HashSet<String>();
 	
-	static final String RESOURCE_BUNDLE = "I18NService";
+	public static final String RESOURCE_BUNDLE = "I18NService";
+	public static final String USER_INTERFACE_BUNDLE = "UserInterface";
 	
 	@Autowired
 	ConfigurationService configurationService;
@@ -64,6 +65,7 @@ public class I18NServiceImpl extends AbstractAuthenticatedServiceImpl implements
 		registerBundle(PermissionService.RESOURCE_BUNDLE);
 		registerBundle(RealmService.RESOURCE_BUNDLE);
 		registerBundle(SessionService.RESOURCE_BUNDLE);
+		registerBundle(USER_INTERFACE_BUNDLE);
 		
 		supportedLocales.add(Locale.ENGLISH);
 //		supportedLocales.add(getLocale("da"));

@@ -368,6 +368,25 @@ public class CurrentRealmController extends ResourceController {
 	}
 
 	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/user/templateNames", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<String> getUserPropertyNames(
+			HttpServletRequest request)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<String>(
+				realmService.getUserPropertyNames(sessionUtils.getCurrentRealm(request), null));
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
+	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/group/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -451,7 +470,8 @@ public class CurrentRealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 			Collection<String> names = realmService.getUserVariableNames(
-					sessionUtils.getCurrentRealm(request));
+					sessionUtils.getCurrentRealm(request),
+					sessionUtils.getPrincipal(request));
 			names.add("password");
 			return new ResourceStatus<Map<String, String>>(
 					realmService.getUserPropertyValues(
@@ -647,6 +667,8 @@ public class CurrentRealmController extends ResourceController {
 					RealmService.RESOURCE_BUNDLE, "info.credentialsSet",
 					principal.getName()));
 
+		} catch(AccessDeniedException ex) { 
+			return new CredentialsStatus(false, ex.getMessage());
 		} catch (ResourceCreationException e) {
 			return new CredentialsStatus(false, e.getMessage());
 		} finally {

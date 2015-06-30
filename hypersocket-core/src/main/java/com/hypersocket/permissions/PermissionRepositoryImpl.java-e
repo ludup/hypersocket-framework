@@ -127,6 +127,25 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	}
 
 	@Override
+	@Transactional
+	public void saveRole(Role role, Realm realm, Principal[] principals,
+			Collection<Permission> permissions) {
+		save(role);
+		assignRole(role, principals);
+		grantPermissions(role, permissions);
+	}
+
+	@Transactional
+	@Override
+	public void createRole(String name, Realm realm, boolean personalRole,
+			boolean allUsers, boolean allPermissions, boolean system,
+			Set<Permission> permissions) {
+		Role role = createRole(name, realm, personalRole, allUsers,
+				allPermissions, system);
+		role.setPermissions(permissions);
+		save(role);
+	}
+	@Override
 	@Transactional(readOnly = true)
 	public PermissionCategory getCategoryByKey(String resourceBundle,
 			String resourceKey) {
@@ -500,24 +519,5 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 				}));
 	}
 
-	@Override
-	@Transactional
-	public void saveRole(Role role, Realm realm, Principal[] principals,
-			Collection<Permission> permissions) {
-		save(role);
-		assignRole(role, principals);
-		grantPermissions(role, permissions);
-	}
-
-	@Transactional
-	@Override
-	public void createRole(String name, Realm realm, boolean personalRole,
-			boolean allUsers, boolean allPermissions, boolean system,
-			Set<Permission> permissions) {
-		Role role = createRole(name, realm, personalRole, allUsers,
-				allPermissions, system);
-		role.setPermissions(permissions);
-		save(role);
-	}
 
 }

@@ -8,14 +8,16 @@
 package upgrade;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hypersocket.attributes.AttributeRepository;
+import com.hypersocket.attributes.user.UserAttributeRepository;
 import com.hypersocket.auth.AuthenticationModuleRepository;
 import com.hypersocket.auth.AuthenticationSchemeRepository;
+import com.hypersocket.config.ConfigurationRepository;
 import com.hypersocket.local.LocalRealmProvider;
 import com.hypersocket.local.LocalUser;
 import com.hypersocket.local.LocalUserRepository;
@@ -23,6 +25,7 @@ import com.hypersocket.permissions.Permission;
 import com.hypersocket.permissions.PermissionRepository;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.permissions.SystemPermission;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -32,7 +35,7 @@ import com.hypersocket.resource.ResourceCreationException;
 public class core_0_DOT_2_DOT_0 implements Runnable {
 
 	@Autowired
-	AttributeRepository attributeRepository;
+	UserAttributeRepository attributeRepository;
 
 	@Autowired
 	RealmRepository realmRepository;
@@ -51,6 +54,10 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 	
 	@Autowired
 	LocalRealmProvider localRealmProvider;
+	
+	@Autowired
+	ConfigurationRepository configurationRepository;
+	
 	
 	@Override
 	public void run() {
@@ -111,6 +118,9 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 		
 		realmRepository.saveRealm(realm, new HashMap<String,String>(), localRealmProvider);
 
+		configurationRepository.setValue(realm, "realm.userEditableProperties",
+				ResourceUtils.implodeValues(Arrays.asList("user.email", "user.fullname", "user.mobile")));
+		
 		// Create a system user
 		LocalUser system = new LocalUser();
 		system.setName("system");

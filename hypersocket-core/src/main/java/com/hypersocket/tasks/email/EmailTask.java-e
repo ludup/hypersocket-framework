@@ -76,8 +76,8 @@ public class EmailTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public Collection<PropertyCategory> getPropertyTemplate() {
-		return repository.getPropertyCategories(null);
+	public Collection<PropertyCategory> getPropertyTemplate(Task task) {
+		return repository.getPropertyCategories(task);
 	}
 
 	@Override

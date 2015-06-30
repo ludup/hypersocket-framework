@@ -38,6 +38,7 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
+import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
@@ -408,11 +409,12 @@ public class TriggerResourceServiceImpl extends
 			if(log.isInfoEnabled()) {
 				log.info("Found trigger " + trigger.getName());
 			}
-			JobDataMap data = new JobDataMap();
+			JobDataMap data = new PermissionsAwareJobData(event.getCurrentRealm(),
+					hasAuthenticatedContext() ? getCurrentPrincipal() : realmService.getSystemPrincipal(),
+					hasAuthenticatedContext() ? getCurrentLocale() : i18nService.getDefaultLocale());
+								
 			data.put("event", event);
 			data.put("trigger", trigger);
-			data.put("principal", hasAuthenticatedContext() ? getCurrentPrincipal() : realmService.getSystemPrincipal());
-			data.put("locale", hasAuthenticatedContext() ? getCurrentLocale() : i18nService.getDefaultLocale());
 			data.put("realm", event.getCurrentRealm());
 			
 			try {

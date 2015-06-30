@@ -60,4 +60,11 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	void populateEntityFields(T resource, Map<String, String> properties);
 	
+	boolean hasAssignedEveryoneRole(Realm realm, CriteriaConfiguration... configs);
+
+	Long getAssignedPrincipalCount(Realm realm, CriteriaConfiguration... configs);
+
+	Collection<Principal> getAssignedPrincipals(Realm realm,
+			CriteriaConfiguration... configs);
+	
 }

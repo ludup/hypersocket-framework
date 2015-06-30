@@ -28,7 +28,6 @@ public abstract class UserEvent extends PrincipalEvent {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
 		addAttribute(ATTR_USER_NAME, principal.getName());
-		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
 	}
 
 	public UserEvent(Object source, String resourceKey, Session session,
@@ -38,7 +37,6 @@ public abstract class UserEvent extends PrincipalEvent {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
 		addAttribute(ATTR_USER_NAME, principal.getName());
-		addAttribute(ATTR_PRINCIPAL_NAME, principal.getName());
 		if(associatedPrincipals!=null) {
 			addAssociatedPrincipals(associatedPrincipals);
 		}
@@ -52,7 +50,6 @@ public abstract class UserEvent extends PrincipalEvent {
 			String principalName) {
 		super(source, resourceKey, e, session, realmName);
 		addAttribute(ATTR_USER_NAME, principalName);
-		addAttribute(ATTR_PRINCIPAL_NAME, principalName);
 	}
 
 	public UserEvent(Object source, String resourceKey, Throwable e,
@@ -61,7 +58,6 @@ public abstract class UserEvent extends PrincipalEvent {
 			List<Principal> associatedPrincipals) {
 		super(source, resourceKey, e, session, realmName);
 		addAttribute(ATTR_USER_NAME, principalName);
-		addAttribute(ATTR_PRINCIPAL_NAME, principalName);
 		if(associatedPrincipals!=null) {
 			addAssociatedPrincipals(associatedPrincipals);
 		}

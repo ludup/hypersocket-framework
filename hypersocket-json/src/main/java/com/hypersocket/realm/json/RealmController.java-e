@@ -194,33 +194,6 @@ public class RealmController extends ResourceController {
 	
 	
 	@AuthenticationRequired
-	@RequestMapping(value = "realms/realm/templateNames/{id}", method = RequestMethod.GET, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<String> getUserPropertyNames(
-			HttpServletRequest request,
-			@PathVariable String id)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			try {
-				Long resourceId = Long.parseLong(id);
-				return new ResourceList<String>(
-						realmService.getUserPropertyNames(realmService.getRealmById(resourceId)));
-			} catch (NumberFormatException e) {
-				return new ResourceList<String>(
-						realmService.getUserPropertyNames(id));
-			}
-		} finally {
-			clearAuthenticatedContext();
-		}
-
-	}
-
-	@AuthenticationRequired
 	@RequestMapping(value = "realms/realm/userVariables/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -234,7 +207,7 @@ public class RealmController extends ResourceController {
 
 		try {
 			return new ResourceList<String>(
-				realmService.getUserVariableNames(realmService.getRealmById(id)));
+				realmService.getUserVariableNames(realmService.getRealmById(id), null));
 
 		} finally {
 			clearAuthenticatedContext();
