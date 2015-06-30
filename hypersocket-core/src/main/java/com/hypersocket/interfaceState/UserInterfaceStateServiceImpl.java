@@ -11,10 +11,6 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
-import com.hypersocket.interfaceState.event.UserInterfaceStateCreatedEvent;
-import com.hypersocket.interfaceState.event.UserInterfaceStateDeletedEvent;
-import com.hypersocket.interfaceState.event.UserInterfaceStateEvent;
-import com.hypersocket.interfaceState.event.UserInterfaceStateUpdatedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 
@@ -44,15 +40,6 @@ public class UserInterfaceStateServiceImpl extends
 				.values()) {
 			permissionService.registerPermission(p, cat);
 		}
-
-		eventService.registerEvent(UserInterfaceStateEvent.class,
-				RESOURCE_BUNDLE);
-		eventService.registerEvent(UserInterfaceStateCreatedEvent.class,
-				RESOURCE_BUNDLE);
-		eventService.registerEvent(UserInterfaceStateUpdatedEvent.class,
-				RESOURCE_BUNDLE);
-		eventService.registerEvent(UserInterfaceStateDeletedEvent.class,
-				RESOURCE_BUNDLE);
 	}
 
 	@Override
@@ -61,55 +48,60 @@ public class UserInterfaceStateServiceImpl extends
 	}
 
 	@Override
+	public UserInterfaceState getSpecificStateByResourceId(Long resourceId) {
+		return repository.getStateByResourceId(resourceId,
+				getCurrentPrincipal().getId());
+	}
+
+	@Override
 	public UserInterfaceState updateState(UserInterfaceState newState,
-			Long top, Long left, String name) throws AccessDeniedException {
+			Long top, Long left, String name, boolean specific)
+			throws AccessDeniedException {
 		assertPermission(UserInterfaceStatePermission.UPDATE);
-		try {
-			newState.setTop(top);
-			newState.setLeftpx(left);
-			newState.setName(name);
-			repository.updateState(newState);
-			
-			//TODO change to update event
-			eventService.publishEvent(new UserInterfaceStateCreatedEvent(this,
-					getCurrentSession(), newState));
-			return newState;
-		} catch (Exception e) {
-			eventService.publishEvent(new UserInterfaceStateUpdatedEvent(this,
-					e, getCurrentSession(), newState));
-			throw e;
+
+		newState.setTop(top);
+		newState.setLeftpx(left);
+		newState.setName(name);
+		if (specific) {
+			newState.setPrincipalId(getCurrentPrincipal().getId());
 		}
+		repository.updateState(newState);
+		return newState;
 	}
 
 	@Override
 	public UserInterfaceState createState(Long resourceId, Long top, Long left,
-			String name) throws AccessDeniedException {
+			String name, boolean specific) throws AccessDeniedException {
 		assertPermission(UserInterfaceStatePermission.CREATE);
 		UserInterfaceState newState = new UserInterfaceState();
-		try {
-			newState.setResourceId(resourceId);
-			newState.setTop(top);
-			newState.setLeftpx(left);
-			newState.setName(name);
-			repository.updateState(newState);
-			eventService.publishEvent(new UserInterfaceStateCreatedEvent(this,
-					getCurrentSession(), newState));
-			return this.getStateByResourceId(resourceId);
-		} catch (Exception e) {
-			eventService.publishEvent(new UserInterfaceStateCreatedEvent(this,
-					e, getCurrentSession(), newState));
-			throw e;
+
+		newState.setResourceId(resourceId);
+		newState.setTop(top);
+		newState.setLeftpx(left);
+		newState.setName(name);
+		if (specific) {
+			newState.setPrincipalId(getCurrentPrincipal().getId());
 		}
+		repository.updateState(newState);
+
+		return this.getStateByResourceId(resourceId);
 
 	}
 
 	@Override
-	public List<UserInterfaceState> getStates(Long[] resources)
+	public List<UserInterfaceState> getStates(Long[] resources, boolean specific)
 			throws AccessDeniedException {
 		assertPermission(UserInterfaceStatePermission.READ);
+
 		List<UserInterfaceState> stateList = new ArrayList<UserInterfaceState>();
 		for (Long resourceId : resources) {
-			UserInterfaceState state = getStateByResourceId(resourceId);
+			UserInterfaceState state;
+			if (specific) {
+				state = getSpecificStateByResourceId(resourceId);
+			} else {
+				state = getStateByResourceId(resourceId);
+			}
+
 			if (state != null) {
 				stateList.add(state);
 			}

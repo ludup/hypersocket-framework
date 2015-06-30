@@ -19,13 +19,19 @@ public class UserInterfaceState extends RealmResource {
 	@Column(name = "resourceId")
 	Long resourceId;
 
+	@Column(name = "principalId")
+	Long principalId;
+
 	public UserInterfaceState() {
 	}
 
-	public UserInterfaceState(Long top, Long leftpx, Long resourceId) {
+	public UserInterfaceState(Long top, Long leftpx, Long resourceId,
+			Long principalId) {
+
 		this.top = top;
 		this.leftpx = leftpx;
 		this.resourceId = resourceId;
+		this.principalId = principalId;
 	}
 
 	public Long getTop() {
@@ -50,6 +56,14 @@ public class UserInterfaceState extends RealmResource {
 
 	public void setResourceId(Long resourceId) {
 		this.resourceId = resourceId;
+	}
+
+	public Long getPrincipalId() {
+		return principalId;
+	}
+
+	public void setPrincipalId(Long principalId) {
+		this.principalId = principalId;
 	}
 
 }

@@ -32,20 +32,20 @@ public class UserInterfaceStateController extends ResourceController {
 	UserInterfaceStateService service;
 
 	@AuthenticationRequired
-	@RequestMapping(value = "interfaceState/state/{resources}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "interfaceState/state/{specific}/{resources}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<UserInterfaceState> getCategories(
+	public ResourceList<UserInterfaceState> getStates(
 			HttpServletRequest request,
+			@PathVariable("specific") boolean specific,
 			@PathVariable("resources") Long[] resources)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-
 			return new ResourceList<UserInterfaceState>(
-					service.getStates(resources));
+					service.getStates(resources, specific));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -55,7 +55,7 @@ public class UserInterfaceStateController extends ResourceController {
 	@RequestMapping(value = "interfaceState/state", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceStatus<UserInterfaceState> saveUserInterfaceState(
+	public ResourceStatus<UserInterfaceState> saveState(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestBody UserInterfaceStateUpdate userInterfaceStateUpdate)
 			throws AccessDeniedException, UnauthorizedException,
@@ -73,13 +73,15 @@ public class UserInterfaceStateController extends ResourceController {
 				newState = service.updateState(newState,
 						userInterfaceStateUpdate.getTop(),
 						userInterfaceStateUpdate.getLeftpx(),
-						userInterfaceStateUpdate.getName());
+						userInterfaceStateUpdate.getName(),
+						userInterfaceStateUpdate.isSpecific());
 			} else {
 				newState = service.createState(
 						userInterfaceStateUpdate.getResourceId(),
 						userInterfaceStateUpdate.getTop(),
 						userInterfaceStateUpdate.getLeftpx(),
-						userInterfaceStateUpdate.getName());
+						userInterfaceStateUpdate.getName(),
+						userInterfaceStateUpdate.isSpecific());
 			}
 			return new ResourceStatus<UserInterfaceState>(newState,
 					I18N.getResource(sessionUtils.getLocale(request),

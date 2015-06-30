@@ -20,7 +20,22 @@ public class UserInterfaceStateRepositoryImpl extends
 				new DetachedCriteriaConfiguration() {
 					@Override
 					public void configure(DetachedCriteria criteria) {
-						criteria.add(Restrictions.eq("resourceId", resourceId));
+						criteria.add(Restrictions.eq("resourceId", resourceId))
+								.add(Restrictions.isNull("principalId"));
+					}
+				});
+	}
+
+	@Override
+	public UserInterfaceState getStateByResourceId(final Long resourceId,
+			final Long principalId) {
+		return get("resourceId", resourceId, UserInterfaceState.class,
+				new DetachedCriteriaConfiguration() {
+					@Override
+					public void configure(DetachedCriteria criteria) {
+						criteria.add(Restrictions.eq("resourceId", resourceId))
+								.add(Restrictions
+										.eq("principalId", principalId));
 					}
 				});
 	}

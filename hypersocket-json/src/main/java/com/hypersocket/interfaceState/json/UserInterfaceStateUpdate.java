@@ -6,17 +6,19 @@ public class UserInterfaceStateUpdate {
 	Long leftpx;
 	Long resourceId;
 	String name;
+	boolean specific;
 
 	public UserInterfaceStateUpdate() {
 
 	}
 
 	public UserInterfaceStateUpdate(Long top, Long leftpx, Long resourceId,
-			String name) {
+			String name, boolean specific) {
 		this.top = top;
 		this.leftpx = leftpx;
 		this.resourceId = resourceId;
 		this.name = name;
+		this.specific = specific;
 	}
 
 	public Long getTop() {
@@ -50,4 +52,13 @@ public class UserInterfaceStateUpdate {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+	public boolean isSpecific() {
+		return specific;
+	}
+
+	public void setSpecific(boolean specific) {
+		this.specific = specific;
+	}
+
 }

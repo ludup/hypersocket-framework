@@ -8,13 +8,15 @@ public interface UserInterfaceStateService {
 
 	UserInterfaceState getStateByResourceId(Long resourceId);
 
+	UserInterfaceState getSpecificStateByResourceId(Long resourceId);
+
 	UserInterfaceState updateState(UserInterfaceState newState, Long top,
-			Long left, String name) throws AccessDeniedException;
+			Long left, String name, boolean specific) throws AccessDeniedException;
 
 	UserInterfaceState createState(Long resourceId, Long top, Long left,
-			String name) throws AccessDeniedException;
+			String name, boolean specific) throws AccessDeniedException;
 
-	List<UserInterfaceState> getStates(Long[] resources)
+	List<UserInterfaceState> getStates(Long[] resources, boolean specific)
 			throws AccessDeniedException;
 
 }
