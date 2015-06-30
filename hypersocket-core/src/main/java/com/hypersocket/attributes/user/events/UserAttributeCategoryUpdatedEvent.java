@@ -1,11 +1,11 @@
-package com.hypersocket.attributes.events;
+package com.hypersocket.attributes.user.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.hypersocket.attributes.AttributeCategory;
+import com.hypersocket.attributes.user.UserAttributeCategory;
 import com.hypersocket.session.Session;
 
-public class AttributeCategoryUpdatedEvent extends AttributeCategoryEvent {
+public class UserAttributeCategoryUpdatedEvent extends UserAttributeCategoryEvent {
 
 	private static final long serialVersionUID = -2152094139303539214L;
 
@@ -13,14 +13,12 @@ public class AttributeCategoryUpdatedEvent extends AttributeCategoryEvent {
 
 	public static final String EVENT_RESOURCE_KEY = "event.categoryUpdated";
 
-	public AttributeCategoryUpdatedEvent(Object source, Session session,
-			String oldName, AttributeCategory category) {
+	public UserAttributeCategoryUpdatedEvent(Object source, Session session, UserAttributeCategory category) {
 		super(source, EVENT_RESOURCE_KEY, true, session, category);
-		addAttribute(ATTR_OLD_CATEGORY_NAME, oldName);
 	}
 
-	public AttributeCategoryUpdatedEvent(Object source, Throwable e,
-			Session session, AttributeCategory category) {
+	public UserAttributeCategoryUpdatedEvent(Object source, Throwable e,
+			Session session, UserAttributeCategory category) {
 		super(source, EVENT_RESOURCE_KEY, e, session, category);
 	}
 

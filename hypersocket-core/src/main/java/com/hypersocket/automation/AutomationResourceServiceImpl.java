@@ -214,7 +214,7 @@ public class AutomationResourceServiceImpl extends
 
 	private void setProperties(AutomationResource resource, Map<String,String> properties) {
 		TaskProvider provider = taskService.getTaskProvider(resource);
-		for(String resourceKey : provider.getPropertyNames()) {
+		for(String resourceKey : provider.getPropertyNames(resource)) {
 			if(properties.containsKey(resourceKey)) {
 				provider.getRepository().setValue(resource, resourceKey, properties.get(resourceKey));
 			}

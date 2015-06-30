@@ -16,4 +16,5 @@ public interface AssignableResourceRepository extends ResourceTemplateRepository
 
 	List<AssignableResource> getAllAssignableResources(List<Principal> principals);
 
+
 }

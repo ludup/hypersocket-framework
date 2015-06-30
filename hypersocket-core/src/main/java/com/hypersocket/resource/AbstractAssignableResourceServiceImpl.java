@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +25,7 @@ import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.tables.ColumnSort;
@@ -106,7 +108,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	
 	@Override
 	public Set<String> getPropertyNames(String resourceKey, Realm realm) {
-		return getRepository().getPropertyNames();
+		return getRepository().getPropertyNames(null);
 	}
 
 	protected boolean checkUnique(T resource) throws AccessDeniedException {
@@ -188,7 +190,6 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
 		updateResource(resource, new HashMap<String,String>(), ops);
-		
 	}
 	
 	protected boolean isAssignedUserAllowedUpdate() {
@@ -283,19 +284,19 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	
 	@Override
 	public Collection<T> searchPersonalResources(Principal principal, String search, int start,
-			int length, ColumnSort[] sorting) throws AccessDeniedException {
+			int length, ColumnSort[] sorting) {
 
 		List<Principal> principals = realmService.getAssociatedPrincipals(principal);
 		return getRepository().searchAssignedResources(principals, search, start, length, sorting);
 	}
 	
 	@Override
-	public Collection<T> getPersonalResources(Principal principal) throws AccessDeniedException {
+	public Collection<T> getPersonalResources(Principal principal) {
 		return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(principal));
 	}
 
 	@Override
-	public Collection<T> getPersonalResources() throws AccessDeniedException {
+	public Collection<T> getPersonalResources() {
 		return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(getCurrentPrincipal()));
 	}
 	
@@ -484,6 +485,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		});
 		
 	}
+	
 	protected void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 		
 		try {
@@ -494,4 +496,26 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			return;
 		}
 	}
+	
+	
+	@Override
+	public long getPrincipalsInUse(Realm realm) {
+		
+		if(getRepository().hasAssignedEveryoneRole(realm)) {
+			return realmService.getPrincipalCount(realm);
+		} else {
+			Set<Principal> tmp = new HashSet<Principal>();
+			
+			for(Principal p : getRepository().getAssignedPrincipals(realm)) {
+				if(p.getType()==PrincipalType.USER) {
+					tmp.add(p);
+				} else if(p.getType()==PrincipalType.GROUP) {
+					tmp.addAll(realmService.getAssociatedPrincipals(p, PrincipalType.USER));
+				}
+			}
+			
+			return tmp.size();
+		}
+	}
+	
 }

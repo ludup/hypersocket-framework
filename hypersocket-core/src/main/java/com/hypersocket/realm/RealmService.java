@@ -57,7 +57,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	boolean verifyPassword(Principal principal, char[] password);
 
 	void setPassword(Principal principal, String password,
-			boolean forceChangeAtNextLogon) throws ResourceCreationException;
+			boolean forceChangeAtNextLogon) throws ResourceCreationException, AccessDeniedException;
 
 	void changePassword(Principal principal, String oldPassword,
 			String newPassword) throws ResourceCreationException,
@@ -108,7 +108,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	List<Principal> getAssociatedPrincipals(Principal principal);
 
 	List<Principal> getAssociatedPrincipals(Principal principal,
-			PrincipalType type) throws AccessDeniedException;
+			PrincipalType type);
 
 	List<Realm> allRealms(Class<? extends RealmProvider> clz);
 
@@ -181,7 +181,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	String getRealmHostname(Realm realm);
 
-	Collection<String> getUserPropertyNames(Realm realm)
+	Collection<String> getUserPropertyNames(Realm realm, Principal principal)
 			throws AccessDeniedException;
 
 	String[] getRealmPropertyArray(Realm realm, String resourceKey);
@@ -194,7 +194,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean isRealmStrictedToHost(Realm realm);
 
-	Collection<String> getUserVariableNames(Realm realmById);
+	Collection<String> getUserVariableNames(Realm realm, Principal principal);
 
 	void unregisterRealmProvider(RealmProvider provider);
 
@@ -215,4 +215,9 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 			throws ResourceNotFoundException;
 
 	Realm getRealmByHost(String host, Realm defaultRealm);
+
+	long getPrincipalCount(Realm realm);
+
+	boolean getRealmPropertyBoolean(Realm realm, String string);
+
 }

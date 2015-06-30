@@ -339,28 +339,31 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			criteria.add(Restrictions.ilike(searchColumn, searchPattern));
 		}
 	
+		for(CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		
 		for (ColumnSort sort : sorting) {
 			criteria.addOrder(sort.getSort() == Sort.ASC ? Order
 					.asc(sort.getColumn().getColumnName()) : Order.desc(sort.getColumn().getColumnName()));
 		}
-		for(CriteriaConfiguration c : configs) {
-			c.configure(criteria);
-		}
+		
 		criteria.setProjection(Projections.distinct(Projections.id()));	
+		
 		criteria.setFirstResult(start);
 		criteria.setMaxResults(length);
 		
 		List<T> ids = (List<T>)criteria.list();
 		
-		if(ids.size() > 0) {
-			criteria = createCriteria(clz);
-			
-			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-			criteria.add(Restrictions.in("id", ids));
-			
-			return ((List<T>) criteria.list());
-		} else {
+		if(ids.isEmpty()) {
 			return new ArrayList<T>();
 		}
+		
+		criteria = createCriteria(clz);
+		
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		criteria.add(Restrictions.in("id", ids));
+		
+		return ((List<T>) criteria.list());
 	};
 }

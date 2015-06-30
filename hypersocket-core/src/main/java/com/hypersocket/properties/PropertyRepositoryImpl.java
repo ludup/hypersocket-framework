@@ -12,7 +12,6 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hypersocket.attributes.AttributeCategory;
 import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.resource.AbstractResource;
@@ -76,9 +75,9 @@ public abstract class PropertyRepositoryImpl extends AbstractRepositoryImpl<Long
 		}
 	}
 	
-	@Transactional(readOnly=true)
-	public List<AttributeCategory> getAttributeCategories(String context) {
-		return list("context", context, AttributeCategory.class);
-	}
+//	@Transactional(readOnly=true)
+//	public List<UserAttributeCategory> getAttributeCategories(String context) {
+//		return list("context", context, UserAttributeCategory.class);
+//	}
 	
 }

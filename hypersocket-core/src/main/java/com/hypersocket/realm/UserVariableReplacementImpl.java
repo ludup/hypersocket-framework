@@ -27,15 +27,15 @@ public class UserVariableReplacementImpl extends
 	}
 	
 	@Override
-	protected boolean hasVariable(Principal source, String name) {
+	protected boolean hasVariable(Principal principal, String name) {
 
 		if (name.equals("password")) {
 			return true;
 		} 
-		RealmProvider provider = realmService.getProviderForRealm(source
+		RealmProvider provider = realmService.getProviderForRealm(principal
 				.getRealm());
 		return defaultReplacements.contains(name)
-				|| provider.getUserPropertyNames().contains(name);
+				|| provider.getUserPropertyNames(principal).contains(name);
 	}
 
 	@Override
