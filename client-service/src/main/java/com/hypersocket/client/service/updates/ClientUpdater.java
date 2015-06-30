@@ -1,6 +1,9 @@
 package com.hypersocket.client.service.updates;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,19 +29,21 @@ public class ClientUpdater extends AbstractExtensionUpdater {
 	private boolean guiAttached = true;
 	private HypersocketClient<Connection> hypersocketClient;
 	private ExtensionPlace extensionPlace;
+	private Connection connection;
 
 	public ClientUpdater(GUICallback gui,
 			Connection connection,
 			HypersocketClient<Connection> hypersocketClient,
 			ExtensionPlace extensionPlace) {
-		super(extensionPlace.getDir().getPath());
+		super();
+		this.connection = connection;
 		this.gui = gui;
 		this.hypersocketClient = hypersocketClient;
 		this.extensionPlace = extensionPlace;
 	}
 
 	@Override
-	protected List<ExtensionDefinition> onResolveExtensions()
+	protected Map<ExtensionPlace, List<ExtensionDefinition>> onResolveExtensions()
 			throws IOException {
 		
 		log.info(String.format("Resolving extensions for %s in %s", extensionPlace.getApp(), extensionPlace.getDir()));
@@ -56,11 +61,21 @@ public class ClientUpdater extends AbstractExtensionUpdater {
 			for (ExtensionDefinition def : json.getResources()) {
 				defMap.put(def.getId(), def);
 			}
-			return new ArrayList<ExtensionDefinition>(ExtensionHelper
+			
+			ArrayList<ExtensionDefinition> extensionList = new ArrayList<ExtensionDefinition>(ExtensionHelper
 					.processLocalExtensions(defMap, extensionPlace)
 					.values());
+			Map<ExtensionPlace, List<ExtensionDefinition>> map = new HashMap<ExtensionPlace, List<ExtensionDefinition>>();
+			map.put(extensionPlace, extensionList);
+			return map;
 		}
 		throw new IOException(json.getError());
+	}
+
+	@Override
+	protected InputStream downloadFromUrl(URL url) throws IOException {
+		String path = url.getPath().substring(connection.getPath().length() + 5);
+		return hypersocketClient.getTransport().getContent(path, 10000);
 	}
 
 	@Override

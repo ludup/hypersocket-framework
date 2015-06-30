@@ -8,6 +8,7 @@
 package com.hypersocket.netty;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
@@ -24,6 +25,7 @@ import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBufferInputStream;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -261,6 +263,23 @@ public class NettyClientTransport implements HypersocketClientTransport {
 
 		if (response.getStatusCode() == 200) {
 			return response.getContent().array();
+		} else {
+			throw new IOException("GET did not respond with 200 OK ["
+					+ response.getStatusCode() + "]");
+		}
+
+	}
+
+	@Override
+	public InputStream getContent(String uri, long timeout) throws IOException {
+
+		HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
+				HttpMethod.GET, apiPath + uri);
+
+		HttpHandlerResponse response = httpClient.sendRequest(request, timeout);
+
+		if (response.getStatusCode() == 200) {
+			return new ChannelBufferInputStream(response.getContent());
 		} else {
 			throw new IOException("GET did not respond with 200 OK ["
 					+ response.getStatusCode() + "]");

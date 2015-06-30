@@ -1,5 +1,6 @@
 package com.hypersocket.client.rmi;
 
+import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
@@ -31,4 +32,7 @@ public interface ClientService extends Remote {
 	int getStatus(Connection con) throws RemoteException;
 
 	void scheduleConnect(Connection c) throws RemoteException;
+
+	byte[] getBlob(Connection connection, String path, long timeout)
+			throws IOException;
 }

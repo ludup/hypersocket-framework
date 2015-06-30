@@ -12,10 +12,6 @@ public abstract class AbstractUpdateExtensionsJob extends AbstractExtensionUpdat
 
 	static Logger log = LoggerFactory.getLogger(AbstractUpdateExtensionsJob.class);
 
-	protected AbstractUpdateExtensionsJob(String archivesDir) {
-		super(archivesDir);
-	}
-	
 	@Override
 	public void execute(JobExecutionContext context)
 			throws JobExecutionException {

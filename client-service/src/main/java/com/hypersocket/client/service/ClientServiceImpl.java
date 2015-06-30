@@ -19,6 +19,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
+import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
+import org.jboss.netty.handler.codec.http.HttpMethod;
+import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +40,7 @@ import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.ResourceService;
 import com.hypersocket.client.service.updates.ClientUpdater;
 import com.hypersocket.extensions.ExtensionPlace;
+import com.hypersocket.netty.HttpHandlerResponse;
 
 public class ClientServiceImpl implements ClientService,
 		HypersocketClientListener<Connection> {
@@ -483,6 +488,27 @@ public class ClientServiceImpl implements ClientService,
 	public ConfigurationService getConfigurationService()
 			throws RemoteException {
 		return configurationService;
+	}
+
+	@Override
+	public byte[] getBlob(Connection connection, String path, long timeout) throws IOException {
+
+		HypersocketClient<Connection> s = null;
+		for (HypersocketClient<Connection> a : activeClients.values()) {
+			if (a.getAttachment() == connection) {
+				s = a;
+				break;
+			}
+		}
+		if (s == null) {
+			throw new RemoteException("No connection for " + connection);
+		}
+		try {
+			return s.getTransport().getBlob(path, timeout);
+		} catch (IOException e) {
+			throw new RemoteException(e.getMessage());
+		}
+
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,12 @@ public class ExtensionPlace implements Serializable {
 	private List<URL> urls;
 	private File dir;
 	private String app;
+	private boolean downloadAllExtensions;
+
+	public ExtensionPlace(String app, File dir) {
+		// Constructor for extension places that are not loaded (e.g. client updates hosted on HS server)
+		this(app, dir, new HashMap<String, File>(), new ArrayList<URL>());
+	}
 
 	public ExtensionPlace(String app, File dir,
 			Map<String, File> bootstrapArchives, List<URL> urls) {
@@ -37,6 +44,14 @@ public class ExtensionPlace implements Serializable {
 		this.dir = dir;
 		this.bootstrapArchives = bootstrapArchives;
 		this.urls = urls;
+	}
+
+	public boolean isDownloadAllExtensions() {
+		return downloadAllExtensions;
+	}
+
+	public void setDownloadAllExtensions(boolean downloadAllExtensions) {
+		this.downloadAllExtensions = downloadAllExtensions;
 	}
 
 	public String getApp() {
