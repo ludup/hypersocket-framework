@@ -3,6 +3,9 @@ package com.hypersocket.tables;
 import java.util.Collection;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class DataTablesResult {
 
 	int sEcho = 1;
@@ -18,7 +21,7 @@ public class DataTablesResult {
 		this.aaData = aaData;
 		this.sEcho = sEcho;
 		iTotalRecords = String.valueOf(totalRecords);
-		iTotalDisplayRecords = String.valueOf(totalRecords); // String.valueOf(aaData.size());
+		iTotalDisplayRecords = String.valueOf(totalRecords);
 	}
 
 	public int getsEcho() {
@@ -51,14 +54,6 @@ public class DataTablesResult {
 
 	public void setAaData(List<?> aaData) {
 		this.aaData = aaData;
-	}
-	
-	public Collection<?> getRows() {
-		return aaData;
-	}
-	
-	public String getTotal() {
-		return iTotalRecords;
 	}
 	
 }

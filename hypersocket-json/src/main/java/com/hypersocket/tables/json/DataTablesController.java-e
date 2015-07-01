@@ -20,7 +20,7 @@ public class DataTablesController extends AuthenticatedController {
 	Logger log = LoggerFactory.getLogger(DataTablesController.class);
 
 	protected DataTablesResult processDataTablesRequest(
-			HttpServletRequest request, DataTablesPageProcessor processor)
+			HttpServletRequest request, BootstrapTablePageProcessor processor)
 			throws NumberFormatException, UnauthorizedException,
 			AccessDeniedException {
 
