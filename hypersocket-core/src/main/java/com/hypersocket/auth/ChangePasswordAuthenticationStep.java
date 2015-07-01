@@ -17,8 +17,6 @@ import org.springframework.stereotype.Component;
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
-import com.hypersocket.permissions.PermissionStrategy;
-import com.hypersocket.realm.PasswordPermission;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceCreationException;
 

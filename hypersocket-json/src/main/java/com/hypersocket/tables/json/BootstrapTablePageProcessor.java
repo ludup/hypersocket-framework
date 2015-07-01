@@ -7,7 +7,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
 
-public interface DataTablesPageProcessor {
+public interface BootstrapTablePageProcessor {
 
 	Column getColumn(int col);
 	

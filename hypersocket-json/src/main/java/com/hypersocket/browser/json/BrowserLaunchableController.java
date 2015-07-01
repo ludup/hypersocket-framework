@@ -25,12 +25,12 @@ import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.session.json.SessionUtils;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.DataTablesResult;
-import com.hypersocket.tables.json.DataTablesController;
-import com.hypersocket.tables.json.DataTablesPageProcessor;
+import com.hypersocket.tables.BootstrapTableResult;
+import com.hypersocket.tables.json.BootstrapTableController;
+import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller
-public class BrowserLaunchableController extends DataTablesController {
+public class BrowserLaunchableController extends BootstrapTableController {
 
 	@Autowired
 	BrowserLaunchableService resourceService;
@@ -69,7 +69,7 @@ public class BrowserLaunchableController extends DataTablesController {
 	@RequestMapping(value = "browser/personal", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public DataTablesResult tableNetworkResources(
+	public BootstrapTableResult tableNetworkResources(
 			final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
@@ -79,7 +79,7 @@ public class BrowserLaunchableController extends DataTablesController {
 
 		try {
 			return processDataTablesRequest(request,
-					new DataTablesPageProcessor() {
+					new BootstrapTablePageProcessor() {
 
 						@Override
 						public Column getColumn(int col) {
