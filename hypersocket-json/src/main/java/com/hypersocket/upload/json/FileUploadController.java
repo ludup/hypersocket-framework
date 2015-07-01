@@ -242,7 +242,7 @@ public class FileUploadController extends ResourceController {
 						"error.incorrectJSON");
 			}
 			Collection<FileUpload> collects = resourceService
-					.importResources(json, getCurrentRealm(), dropExisting);
+					.importResources(json, getCurrentRealm());
 			return new ResourceStatus<FileUpload>(
 					true,
 					I18N.getResource(
