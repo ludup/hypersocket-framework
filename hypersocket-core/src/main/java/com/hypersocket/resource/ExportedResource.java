@@ -3,13 +3,17 @@ package com.hypersocket.resource;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ExportedResource {
+public class ExportedResource<T> {
 
 	Map<String,String> properties = new HashMap<String,String>();
-	Resource resource;
+	T resource;
 	
 	public ExportedResource() {
-		
+	}
+	
+	public ExportedResource(T resource, Map<String,String> properties) {
+		this.resource = resource;
+		this.properties = properties;
 	}
 
 	public Map<String, String> getProperties() {
@@ -20,11 +24,11 @@ public class ExportedResource {
 		this.properties = properties;
 	}
 
-	public Resource getResource() {
+	public T getResource() {
 		return resource;
 	}
 
-	public void setResource(Resource resource) {
+	public void setResource(T resource) {
 		this.resource = resource;
 	}
 

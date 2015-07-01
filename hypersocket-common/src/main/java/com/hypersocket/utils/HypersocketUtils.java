@@ -77,6 +77,10 @@ public class HypersocketUtils {
 			dateFormats.put(format, new SimpleDateFormat(format));
 		}
 		
+		if(date==null) {
+			return "";
+		}
+		
 		return dateFormats.get(format).format(date);
 	}
 	

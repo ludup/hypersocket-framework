@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
+import java.util.Map;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
@@ -38,6 +40,9 @@ public abstract class Resource extends AbstractResource {
 	
 	@Transient
 	String oldName;
+	
+	@Transient
+	Map<String,String> properties;
 	
 	public boolean isSystem() {
 		return system;
@@ -86,4 +91,14 @@ public abstract class Resource extends AbstractResource {
 	public String getOldName() {
 		return oldName;
 	}
+
+	public Map<String, String> getProperties() {
+		return properties;
+	}
+
+	public void setProperties(Map<String, String> properties) {
+		this.properties = properties;
+	}
+	
+	
 }
