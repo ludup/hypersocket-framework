@@ -50,6 +50,8 @@ import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.Resource;
 import com.hypersocket.client.rmi.ResourceRealm;
 import com.hypersocket.client.rmi.ResourceService;
+import com.hypersocket.extensions.ExtensionDefinition;
+import com.hypersocket.extensions.ExtensionPlace;
 
 public class SWTGui extends UnicastRemoteObject implements GUICallback {
 
@@ -538,5 +540,38 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 	@Override
 	public void ready(Connection connection) throws RemoteException {
 		// TODO use these instead of polling in SWT client too
+	}
+
+	@Override
+	public void onUpdateStart(String app, long totalBytesExpected) {
+	}
+
+	@Override
+	public void onUpdateProgress(String app, long sincelastProgress, long totalSoFar) {
+	}
+
+	@Override
+	public void onUpdateComplete(long totalBytesTransfered, String app) {
+	}
+
+	@Override
+	public void onUpdateFailure(String app, String message) {
+	}
+
+	@Override
+	public void onExtensionUpdateComplete(String app, ExtensionDefinition def) {
+	}
+
+	@Override
+	public void onUpdateInit(int expectedApps) throws RemoteException {
+	}
+
+	@Override
+	public ExtensionPlace getExtensionPlace() throws RemoteException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void onUpdateDone(String failureMessage) throws RemoteException {
 	}
 }

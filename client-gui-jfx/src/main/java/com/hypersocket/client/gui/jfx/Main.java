@@ -18,6 +18,8 @@ public class Main {
 	static Main instance;
 
 	public Main(Runnable restartCallback, Runnable shutdownCallback) {
+		instance = this;
+		
 		this.restartCallback = restartCallback;
 		this.shutdownCallback = shutdownCallback;
 
@@ -40,6 +42,7 @@ public class Main {
 	 * this is what it detects. To work around this LauncherImpl.launchApplication()
 	 * is used directly, which is an internal API.
 	 */
+	@SuppressWarnings("restriction")
 	public void run() {
 
 		try {
@@ -69,10 +72,9 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
-		instance = new Main(new DefaultRestartCallback(),
-				new DefaultShutdownCallback());
+		new Main(new DefaultRestartCallback(),
+			new DefaultShutdownCallback()).run();
 
-		instance.run();
 	}
 
 	public static void runApplication(Runnable restartCallback,

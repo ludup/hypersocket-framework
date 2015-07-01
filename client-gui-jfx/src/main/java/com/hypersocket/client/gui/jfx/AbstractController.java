@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.hypersocket.client.Prompt;
 import com.hypersocket.client.gui.jfx.Bridge.Listener;
 import com.hypersocket.client.rmi.Connection;
+import com.hypersocket.extensions.ExtensionDefinition;
 
 public class AbstractController implements FramedController, Listener {
 	static Logger log = LoggerFactory.getLogger(AbstractController.class);
@@ -22,7 +23,6 @@ public class AbstractController implements FramedController, Listener {
 	protected Client context;
 	protected ResourceBundle resources;
 	protected URL location;
-	
 	protected Scene scene;
 
 	@Override
@@ -110,5 +110,33 @@ public class AbstractController implements FramedController, Listener {
 	@Override
 	public Map<String, String> showPrompts(List<Prompt> prompts) {
 		return null;
+	}
+
+	@Override
+	public void startingUpdate(String app, long totalBytesExpected) {
+	}
+
+	@Override
+	public void updateProgressed(String app, long sincelastProgress, long totalSoFar) {
+	}
+
+	@Override
+	public void updateComplete(String app, long totalBytesTransfered) {
+	}
+
+	@Override
+	public void updateFailure(String app, String message) {
+	}
+
+	@Override
+	public void extensionUpdateComplete(String app, ExtensionDefinition def) {
+	}
+
+	@Override
+	public void initUpdate(int apps) {
+	}
+
+	@Override
+	public void initDone(String errorMessage) {
 	}
 }
