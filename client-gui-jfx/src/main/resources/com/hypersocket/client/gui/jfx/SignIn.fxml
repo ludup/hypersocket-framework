@@ -10,7 +10,7 @@
    <children>
       <BorderPane fx:id="messageContainer">
          <left>
-            <Label fx:id="messageIcon" alignment="CENTER" prefHeight="24.0" prefWidth="24.0" text="*" textAlignment="CENTER" BorderPane.alignment="CENTER" />
+            <Label fx:id="messageIcon" alignment="CENTER" prefHeight="28.0" prefWidth="28.0" text="*" textAlignment="CENTER" BorderPane.alignment="CENTER" />
          </left>
          <center>
             <Label fx:id="messageText" text="Message Text" wrapText="true" BorderPane.alignment="CENTER_LEFT" />

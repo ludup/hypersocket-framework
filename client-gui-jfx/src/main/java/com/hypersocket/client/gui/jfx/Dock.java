@@ -72,6 +72,8 @@ public class Dock extends AbstractController implements Listener {
 	private Rectangle slideClip;
 
 	private SignIn signInScene;
+
+	private Popup updatePopup;
 	private static Dock instance;
 
 	public Dock() {
@@ -80,7 +82,7 @@ public class Dock extends AbstractController implements Listener {
 		}
 		instance = this;
 	}
-	
+
 	public static Dock getInstance() {
 		return instance;
 	}
@@ -160,7 +162,35 @@ public class Dock extends AbstractController implements Listener {
 
 	public boolean arePopupsOpen() {
 		return (signInPopup != null && signInPopup.isShowing())
-				|| (optionsPopup != null && optionsPopup.isShowing());
+				|| (optionsPopup != null && optionsPopup.isShowing())
+				|| (updatePopup != null && updatePopup.isShowing());
+	}
+
+	@Override
+	public void initUpdate(int apps) {
+		
+		// Starting an update, so hide the all other windows and popup the updating window
+		Window parent = this.scene.getWindow();
+		if (updatePopup == null) {
+			try {
+				final Update updateScene = (Update)context
+						.openScene(Update.class);
+				
+				// The update popup will get future update events, but it needs this one too to initialize
+				updateScene.initUpdate(apps);
+				
+				updatePopup = new Popup(parent, updateScene.getScene(), false);
+			} catch (IOException ioe) {
+				throw new RuntimeException(ioe);
+			}
+		}
+		if(signInPopup != null && signInPopup.isShowing())
+			signInPopup.hide();
+		if(optionsPopup != null && optionsPopup.isShowing())
+			optionsPopup.hide();
+		scene.getRoot().setDisable(true);
+		updatePopup.popup();
+
 	}
 
 	private void recentre() {
@@ -261,6 +291,7 @@ public class Dock extends AbstractController implements Listener {
 			final FramedController optionsScene = context
 					.openScene(Options.class);
 			optionsPopup = new Popup(parent, optionsScene.getScene()) {
+				@SuppressWarnings("restriction")
 				protected boolean isChildFocussed() {
 					// HACK!
 					//
@@ -295,7 +326,7 @@ public class Dock extends AbstractController implements Listener {
 	private void openSignInWindow() throws IOException {
 		Window parent = this.scene.getWindow();
 		if (signInPopup == null) {
-			signInScene = (SignIn)context.openScene(SignIn.class);
+			signInScene = (SignIn) context.openScene(SignIn.class);
 			signInPopup = new Popup(parent, signInScene.getScene());
 			((SignIn) signInScene).setPopup(signInPopup);
 		}
@@ -516,15 +547,15 @@ public class Dock extends AbstractController implements Listener {
 		}
 	}
 
-	public void notify(String msg, int type) { 
-		if(signInPopup == null || !signInPopup.isShowing()) {
+	public void notify(String msg, int type) {
+		if (signInPopup == null || !signInPopup.isShowing()) {
 			try {
 				openSignInWindow();
 			} catch (IOException e) {
 				log.error("Failed to open sign in window.", e);
 			}
 		}
-		switch(type) {
+		switch (type) {
 		case GUICallback.NOTIFY_CONNECT:
 		case GUICallback.NOTIFY_DISCONNECT:
 		case GUICallback.NOTIFY_INFO:

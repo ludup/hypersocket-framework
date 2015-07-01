@@ -27,6 +27,8 @@ import com.hypersocket.client.rmi.ConnectionService;
 import com.hypersocket.client.rmi.ConnectionStatus;
 import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.ResourceService;
+import com.hypersocket.extensions.ExtensionDefinition;
+import com.hypersocket.extensions.ExtensionPlace;
 
 @SuppressWarnings({ "serial" })
 public class Bridge extends UnicastRemoteObject implements GUICallback {
@@ -57,6 +59,20 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 		void ping();
 
 		Map<String, String> showPrompts(List<Prompt> prompts);
+		
+		void initUpdate(int apps);
+		
+		void initDone(String errorMessage);
+
+		void startingUpdate(String app, long totalBytesExpected);
+
+		void updateProgressed(String app, long sincelastProgress, long totalSoFar);
+
+		void updateComplete(String app, long totalBytesTransfered);
+
+		void updateFailure(String app, String message);
+
+		void extensionUpdateComplete(String app, ExtensionDefinition def);
 	}
 
 	public Bridge() throws RemoteException {
@@ -224,30 +240,30 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 		Platform.runLater(new Runnable() {
 			public void run() {
 				Dock.getInstance().notify(msg, type);
-//				Window parent = Dock.getInstance().getStage();
-//
-//				switch (type) {
-//				case NOTIFY_CONNECT:
-//					Notifier.INSTANCE.notifySuccess(parent,
-//							I18N.getResource("notify.connect"), msg);
-//					break;
-//				case NOTIFY_DISCONNECT:
-//					Notifier.INSTANCE.notifySuccess(parent,
-//							I18N.getResource("notify.disconnect"), msg);
-//					break;
-//				case NOTIFY_INFO:
-//					Notifier.INSTANCE.notifyInfo(parent,
-//							I18N.getResource("notify.information"), msg);
-//					break;
-//				case NOTIFY_WARNING:
-//					Notifier.INSTANCE.notifyWarning(parent,
-//							I18N.getResource("notify.warning"), msg);
-//					break;
-//				case NOTIFY_ERROR:
-//					Notifier.INSTANCE.notifyError(parent,
-//							I18N.getResource("notify.error"), msg);
-//					break;
-//				}
+				// Window parent = Dock.getInstance().getStage();
+				//
+				// switch (type) {
+				// case NOTIFY_CONNECT:
+				// Notifier.INSTANCE.notifySuccess(parent,
+				// I18N.getResource("notify.connect"), msg);
+				// break;
+				// case NOTIFY_DISCONNECT:
+				// Notifier.INSTANCE.notifySuccess(parent,
+				// I18N.getResource("notify.disconnect"), msg);
+				// break;
+				// case NOTIFY_INFO:
+				// Notifier.INSTANCE.notifyInfo(parent,
+				// I18N.getResource("notify.information"), msg);
+				// break;
+				// case NOTIFY_WARNING:
+				// Notifier.INSTANCE.notifyWarning(parent,
+				// I18N.getResource("notify.warning"), msg);
+				// break;
+				// case NOTIFY_ERROR:
+				// Notifier.INSTANCE.notifyError(parent,
+				// I18N.getResource("notify.error"), msg);
+				// break;
+				// }
 			}
 		});
 	}
@@ -324,8 +340,8 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	public int getActiveConnections() {
 		int active = 0;
 		try {
-			for(ConnectionStatus s: clientService.getStatus()) {
-				if(s.getStatus() == ConnectionStatus.CONNECTED) {
+			for (ConnectionStatus s : clientService.getStatus()) {
+				if (s.getStatus() == ConnectionStatus.CONNECTED) {
 					active++;
 				}
 			}
@@ -334,22 +350,116 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 		}
 		return active;
 	}
-	
+
 	public void disconnectAll() {
 		try {
-			for(ConnectionStatus s: clientService.getStatus()) {
-				if(s.getStatus() == ConnectionStatus.CONNECTED || s.getStatus() == ConnectionStatus.CONNECTING) {
+			for (ConnectionStatus s : clientService.getStatus()) {
+				if (s.getStatus() == ConnectionStatus.CONNECTED
+						|| s.getStatus() == ConnectionStatus.CONNECTING) {
 					try {
 						disconnect(s.getConnection());
+					} catch (RemoteException re) {
+						log.error("Failed to disconnect "
+								+ s.getConnection().getId(), re);
 					}
-					catch(RemoteException re) {
-						log.error("Failed to disconnect " + s.getConnection().getId(), re);
-					}
-					
+
 				}
 			}
 		} catch (RemoteException e) {
 			log.error("Failed to disconnect all.", e);
 		}
+	}
+
+	@Override
+	public void onUpdateStart(String app, long totalBytesExpected) throws RemoteException {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				for (Listener l : new ArrayList<Listener>(listeners)) {
+					l.startingUpdate(app, totalBytesExpected);
+				}
+			}
+		});
+	}
+
+	@Override
+	public void onUpdateProgress(String app, long sincelastProgress, long totalSoFar)
+			throws RemoteException {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				for (Listener l : new ArrayList<Listener>(listeners)) {
+					l.updateProgressed(app, sincelastProgress, totalSoFar);
+				}
+			}
+		});
+	}
+
+	@Override
+	public void onUpdateComplete(long totalBytesTransfered, String app)
+			throws RemoteException {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				for (Listener l : new ArrayList<Listener>(listeners)) {
+					l.updateComplete(app, totalBytesTransfered);
+				}
+			}
+		});
+	}
+
+	@Override
+	public void onUpdateFailure(String app, String message) throws RemoteException {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				for (Listener l : new ArrayList<Listener>(listeners))  {
+					l.updateFailure(app, message);
+				}
+			}
+		});
+	}
+
+	@Override
+	public void onExtensionUpdateComplete(String app, ExtensionDefinition def)
+			throws RemoteException {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				for (Listener l : new ArrayList<Listener>(listeners)) {
+					l.extensionUpdateComplete(app, def);
+				}
+			}
+		});
+	}
+
+	@Override
+	public void onUpdateInit(final int expectedApps) throws RemoteException {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				for (Listener l : new ArrayList<Listener>(listeners)) {
+					l.initUpdate(expectedApps);
+				}
+			}
+		});
+	}
+
+	@Override
+	public ExtensionPlace getExtensionPlace() {
+		return ExtensionPlace.getDefault();
+	}
+
+	@Override
+	public void onUpdateDone(final String failureMessage) throws RemoteException {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				for (Listener l : new ArrayList<Listener>(listeners)) {
+					l.initDone(failureMessage);
+				}
+			}
+		});
+		
 	}
 }

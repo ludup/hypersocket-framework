@@ -8,6 +8,7 @@
 package com.hypersocket.client;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.Map;
 
@@ -18,6 +19,8 @@ public interface HypersocketClientTransport {
 
 	String get(String uri) throws IOException;
 
+	InputStream getContent(String uri, long timeout) throws IOException;
+	
 	byte[] getBlob(String uri, long timeout) throws IOException;
 
 	String post(String uri, Map<String, String> params) throws IOException;
