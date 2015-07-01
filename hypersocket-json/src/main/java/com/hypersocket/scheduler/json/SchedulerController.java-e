@@ -24,10 +24,10 @@ import com.hypersocket.scheduler.SchedulerResource;
 import com.hypersocket.scheduler.SchedulerResourceColumns;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.json.SessionTimeoutException;
+import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.DataTablesResult;
-import com.hypersocket.tables.json.DataTablesPageProcessor;
+import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller
 public class SchedulerController extends ResourceController {
@@ -61,7 +61,7 @@ public class SchedulerController extends ResourceController {
 	@RequestMapping(value = "schedulers/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public DataTablesResult tableResources(final HttpServletRequest request,
+	public BootstrapTableResult tableResources(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
@@ -70,7 +70,7 @@ public class SchedulerController extends ResourceController {
 
 		try {
 			return processDataTablesRequest(request,
-					new DataTablesPageProcessor() {
+					new BootstrapTablePageProcessor() {
 
 						@Override
 						public Column getColumn(int col) {

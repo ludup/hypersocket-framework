@@ -291,7 +291,6 @@ public class Dock extends AbstractController implements Listener {
 			final FramedController optionsScene = context
 					.openScene(Options.class);
 			optionsPopup = new Popup(parent, optionsScene.getScene()) {
-				@SuppressWarnings("restriction")
 				protected boolean isChildFocussed() {
 					// HACK!
 					//

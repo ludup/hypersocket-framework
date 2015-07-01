@@ -31,10 +31,10 @@ import com.hypersocket.json.SelectOption;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
+import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.DataTablesResult;
-import com.hypersocket.tables.json.DataTablesPageProcessor;
+import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller
 public class UserAttributeCategoryController extends ResourceController {
@@ -46,7 +46,7 @@ public class UserAttributeCategoryController extends ResourceController {
 	@RequestMapping(value = "userAttributeCategories/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public DataTablesResult tableAttributeCategories(
+	public BootstrapTableResult tableAttributeCategories(
 			final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
@@ -55,7 +55,7 @@ public class UserAttributeCategoryController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 			return processDataTablesRequest(request,
-					new DataTablesPageProcessor() {
+					new BootstrapTablePageProcessor() {
 
 						@Override
 						public Column getColumn(int col) {

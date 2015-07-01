@@ -42,8 +42,8 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.DataTablesResult;
-import com.hypersocket.tables.json.DataTablesPageProcessor;
+import com.hypersocket.tables.BootstrapTableResult;
+import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller
 public class RealmController extends ResourceController {
@@ -114,7 +114,7 @@ public class RealmController extends ResourceController {
 	@RequestMapping(value = "realms/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public DataTablesResult tableRealms(final HttpServletRequest request,
+	public BootstrapTableResult tableRealms(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
@@ -123,7 +123,7 @@ public class RealmController extends ResourceController {
 
 		try {
 			return processDataTablesRequest(request,
-					new DataTablesPageProcessor() {
+					new BootstrapTablePageProcessor() {
 
 						@Override
 						public Column getColumn(int col) {

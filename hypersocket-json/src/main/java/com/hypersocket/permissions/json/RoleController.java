@@ -37,8 +37,8 @@ import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.DataTablesResult;
-import com.hypersocket.tables.json.DataTablesPageProcessor;
+import com.hypersocket.tables.BootstrapTableResult;
+import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller
 public class RoleController extends ResourceController {
@@ -159,7 +159,7 @@ public class RoleController extends ResourceController {
 	@RequestMapping(value = "roles/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public DataTablesResult tableRoles(final HttpServletRequest request,
+	public BootstrapTableResult tableRoles(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
@@ -168,7 +168,7 @@ public class RoleController extends ResourceController {
 
 		try {
 			return processDataTablesRequest(request,
-					new DataTablesPageProcessor() {
+					new BootstrapTablePageProcessor() {
 
 						@Override
 						public Column getColumn(int col) {

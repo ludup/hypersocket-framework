@@ -20,10 +20,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.tables.json.DataTablesController;
+import com.hypersocket.tables.json.BootstrapTableController;
 
 @Controller
-public class ResourceController extends DataTablesController {
+public class ResourceController extends BootstrapTableController {
 
 	static Logger log = LoggerFactory.getLogger(ResourceController.class);
 	

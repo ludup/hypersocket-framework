@@ -45,8 +45,8 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.DataTablesResult;
-import com.hypersocket.tables.json.DataTablesPageProcessor;
+import com.hypersocket.tables.BootstrapTableResult;
+import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller
 public class CurrentRealmController extends ResourceController {
@@ -123,7 +123,7 @@ public class CurrentRealmController extends ResourceController {
 	@RequestMapping(value = "currentRealm/users/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public DataTablesResult tableUsers(final HttpServletRequest request,
+	public BootstrapTableResult tableUsers(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
@@ -131,8 +131,8 @@ public class CurrentRealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			DataTablesResult r = processDataTablesRequest(request,
-					new DataTablesPageProcessor() {
+			BootstrapTableResult r = processDataTablesRequest(request,
+					new BootstrapTablePageProcessor() {
 
 						@Override
 						public Column getColumn(int col) {
@@ -169,7 +169,7 @@ public class CurrentRealmController extends ResourceController {
 	@RequestMapping(value = "currentRealm/groups/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public DataTablesResult tableGroups(final HttpServletRequest request,
+	public BootstrapTableResult tableGroups(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
@@ -178,7 +178,7 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return processDataTablesRequest(request,
-					new DataTablesPageProcessor() {
+					new BootstrapTablePageProcessor() {
 
 						@Override
 						public Column getColumn(int col) {
