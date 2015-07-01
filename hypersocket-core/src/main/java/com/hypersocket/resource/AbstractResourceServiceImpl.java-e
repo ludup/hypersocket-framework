@@ -2,6 +2,7 @@ package com.hypersocket.resource;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -402,8 +403,14 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		return exportResources(list);
 	}
 	
+	protected boolean isExportingAdditionalProperties() {
+		return false;
+	}
+	
 	protected void prepareExport(T resource) {
-		
+		if(isExportingAdditionalProperties()) {
+			resource.setProperties(getRepository().getProperties(resource));
+		}
 	}
 	
 	protected void prepareImport(T resource, Realm realm) throws ResourceCreationException, AccessDeniedException {
@@ -418,6 +425,8 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		}
 		
 		ObjectMapper mapper = new ObjectMapper();
+		
+		
 		try {
 			for(T resource : resources) {
 				resource.setId(null);
@@ -432,20 +441,28 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 	
 	@Override
-	public Collection<T> importResources(final String json, final Realm realm) throws AccessDeniedException, ResourceException {
+	public Collection<T> importResources(final String json, final Realm realm, final boolean dropCurrent) throws AccessDeniedException, ResourceException {
 		
 		return transactionService.doInTransaction(new TransactionCallback<Collection<T>>() {
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public Collection<T> doInTransaction(TransactionStatus status) {
-				ObjectMapper mapper = new ObjectMapper();
 				
 				try {
+				
+					if(dropCurrent) {
+						for(T resource : getResources(realm)) {
+							deleteResource(resource);
+						}
+					}
+					ObjectMapper mapper = new ObjectMapper();
+					
 					Collection<T> resources = mapper.readValue(json, mapper.getTypeFactory().constructCollectionType(List.class, getResourceClass()));
 					for(T resource : resources) {
 						resource.setRealm(realm);
 						checkImportName(resource, realm);
-						createResource(resource, new HashMap<String,String>());
+						createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() : resource.getProperties());
 					}
 					
 					return resources;

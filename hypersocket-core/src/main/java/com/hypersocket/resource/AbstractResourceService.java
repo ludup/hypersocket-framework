@@ -63,9 +63,6 @@ public interface AbstractResourceService<T extends RealmResource> extends
 
 	String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException, AccessDeniedException, ResourceNotFoundException;
 
-	Collection<T> importResources(String json, Realm realm)
-			throws AccessDeniedException, ResourceException;
-
 	String getResourceCategory();
 
 	String exportResoure(Long id) throws ResourceNotFoundException,
@@ -77,5 +74,8 @@ public interface AbstractResourceService<T extends RealmResource> extends
 
 	void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops)
 			throws ResourceChangeException, AccessDeniedException;
+
+	Collection<T> importResources(String json, Realm realm, boolean dropCurrent)
+			throws AccessDeniedException, ResourceException;
 
 }
