@@ -62,9 +62,6 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	String exportResources(Collection<T> resources)
 			throws ResourceExportException;
 
-	Collection<T> importResources(String json, Realm realm)
-			throws AccessDeniedException, ResourceException;
-
 	String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException;
 
 	T getResourceByName(String name, Realm realm)
@@ -76,5 +73,8 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 			throws ResourceChangeException, AccessDeniedException;
 
 	long getPrincipalsInUse(Realm realm) throws AccessDeniedException;
+
+	Collection<T> importResources(String json, Realm realm, boolean dropCurrent)
+			throws AccessDeniedException, ResourceException;
 
 }

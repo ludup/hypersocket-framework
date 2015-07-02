@@ -2,6 +2,7 @@ package com.hypersocket.attributes.user;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -42,7 +43,7 @@ public class UserAttribute extends AssignableResource  {
 	@Column(name="variable_name", unique=true)
 	String variableName;
 
-	@OneToOne
+	@OneToOne(fetch=FetchType.LAZY)
 	AssignableResource resource;
 	
 	public UserAttributeCategory getCategory() {
