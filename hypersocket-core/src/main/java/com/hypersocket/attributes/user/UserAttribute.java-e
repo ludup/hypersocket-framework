@@ -2,9 +2,7 @@ package com.hypersocket.attributes.user;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.hypersocket.resource.AssignableResource;
@@ -43,8 +41,8 @@ public class UserAttribute extends AssignableResource  {
 	@Column(name="variable_name", unique=true)
 	String variableName;
 
-	@OneToOne(fetch=FetchType.LAZY)
-	AssignableResource resource;
+	@Column(name="linked_resource_id")
+	Long linkedResourceId;
 	
 	public UserAttributeCategory getCategory() {
 		return category;
@@ -129,12 +127,12 @@ public class UserAttribute extends AssignableResource  {
 		this.displayMode = displayMode;
 	}
 
-	public AssignableResource getResource() {
-		return resource;
+	public Long getLinkedResourceId() {
+		return linkedResourceId;
 	}
 
-	public void setResource(AssignableResource resource) {
-		this.resource = resource;
+	public void setLinkedResourceId(Long linkedResourceId) {
+		this.linkedResourceId = linkedResourceId;
 	}
 
 	
