@@ -329,7 +329,6 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 		
 		synchronized (userPropertyTemplates) {
 			
-			
 			if(userPropertyTemplates.containsKey(principal)) {
 				return userPropertyTemplates.get(principal);
 			}
