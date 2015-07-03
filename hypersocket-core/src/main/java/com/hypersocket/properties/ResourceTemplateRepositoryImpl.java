@@ -563,9 +563,11 @@ public abstract class ResourceTemplateRepositoryImpl extends
 	public void setValues(AbstractResource resource,
 			Map<String, String> properties) {
 
-		for (String resourceKey : properties.keySet()) {
-			if(propertyTemplates.containsKey(resourceKey)) {
-				setValue(resource, resourceKey, properties.get(resourceKey));
+		if(properties!=null) {
+			for (String resourceKey : properties.keySet()) {
+				if(propertyTemplates.containsKey(resourceKey)) {
+					setValue(resource, resourceKey, properties.get(resourceKey));
+				}
 			}
 		}
 	}
