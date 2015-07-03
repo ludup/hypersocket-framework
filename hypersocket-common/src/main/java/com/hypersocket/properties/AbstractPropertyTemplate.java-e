@@ -6,13 +6,13 @@ public abstract class AbstractPropertyTemplate {
 
 	String resourceKey;
 	String defaultValue;
+	String defaultsToProperty;
 	String metaData;
 	int weight;
 	boolean hidden;
 	String displayMode;
 	boolean readOnly;
 	boolean encrypted;
-	boolean defaultValuePropertyValue;
 	PropertyCategory category;
 	String mapping;
 	PropertyStore propertyStore;
@@ -106,19 +106,23 @@ public abstract class AbstractPropertyTemplate {
 	}
 
 	public boolean isDefaultValuePropertyValue() {
-		return defaultValuePropertyValue;
+		return defaultsToProperty!=null;
 	}
-
-	public void setDefaultValuePropertyValue(boolean defaultValuePropertyValue) {
-		this.defaultValuePropertyValue = defaultValuePropertyValue;
-	}
-
+	
 	public String getDisplayMode() {
 		return displayMode;
 	}
 
 	public void setDisplayMode(String displayMode) {
 		this.displayMode = displayMode;
+	}
+
+	public String getDefaultsToProperty() {
+		return defaultsToProperty;
+	}
+
+	public void setDefaultsToProperty(String defaultsToProperty) {
+		this.defaultsToProperty = defaultsToProperty;
 	}
 
 	@Override

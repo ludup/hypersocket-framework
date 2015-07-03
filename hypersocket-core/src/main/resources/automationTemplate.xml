@@ -19,7 +19,7 @@
 		<property inputType="select" resourceKey="repeatType"
 			defaultValue="NEVER" options="NEVER,SECONDS,MINUTES,HOURS,DAYS,MONTHS"
 			weight="500" />
-		<property inputType="number" resourceKey="repeatValue"
+		<property inputType="integer" resourceKey="repeatValue"
 			defaultValue="0" weight="600" minValue="0" maxValue="9999" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.notes"

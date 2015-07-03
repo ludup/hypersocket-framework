@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Hypersocket Limited.
+x * Copyright (c) 2013 Hypersocket Limited.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License v3.0
  * which accompanies this distribution, and is available at
@@ -24,12 +24,8 @@ public interface LocalUserRepository extends ResourceTemplateRepository, Abstrac
 	public LocalUser createUser(String username, Realm realm);
 	
 	public LocalGroup createGroup(String name, Realm realm);
-
-//	public User getUserById(String id, Realm realm);
 	
 	public LocalUser getUserByName(String name, Realm realm);
-	
-//	public Group getGroupById(String id, Realm realm);
 	
 	public LocalGroup getGroupByName(String name, Realm realm);
 	
