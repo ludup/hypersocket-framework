@@ -47,6 +47,8 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	boolean hasPropertyTemplate(AbstractResource resource, String key);
 
+	boolean hasPropertyValueSet(AbstractResource resource, String resourceKey);
+	
 	Set<String> getVariableNames(AbstractResource resource);
 
 	void setValues(AbstractResource resource,

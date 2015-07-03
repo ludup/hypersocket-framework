@@ -13,7 +13,6 @@ import com.hypersocket.resource.AbstractResource;
 public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 
 	PropertyRepository repository;
-	ApplicationContext applicationContext;
 	
 	public DatabasePropertyStore(PropertyRepository repository, EncryptionService encryptionService) {
 		super(encryptionService);
@@ -26,15 +25,17 @@ public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 		// Look up property on resource
 		Property p = repository.getProperty(template.getResourceKey(), resource);
 		if (p == null || p.getValue()==null) {
-			// No value for resource, look for overridden default setting
-			p = repository.getProperty(template.getResourceKey(), null);
-			if(p==null) {
-				// Return actual default
-				return template.getDefaultValue();
-			}		
+			return template.getDefaultValue();		
 		}
 		
 		return p.getValue();
+	}
+
+	@Override
+	public boolean hasPropertyValueSet(AbstractPropertyTemplate template,
+			AbstractResource resource) {
+		Property p = repository.getProperty(template.getResourceKey(), resource);
+		return p!=null;
 	}
 
 	@Override
@@ -83,5 +84,4 @@ public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 	public void init(Element element) throws IOException {
 		
 	}
-
 }
