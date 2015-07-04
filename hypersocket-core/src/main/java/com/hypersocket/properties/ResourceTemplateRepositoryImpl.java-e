@@ -538,6 +538,16 @@ public abstract class ResourceTemplateRepositoryImpl extends
 			throws NumberFormatException {
 		return new Date(getLongValue(resource, name));
 	}
+	
+	@Override
+	public Double getDoubleValue(AbstractResource resource, String resourceKey) {
+		return Double.parseDouble(getValue(resource, resourceKey));
+	}
+	
+	@Override
+	public void setDoubleValue(AbstractResource resource, String resourceKey, Double value) {
+		setValue(resource, resourceKey, Double.toString(value));
+	}
 
 	@Override
 	public void setValue(AbstractResource resource, String name, Long value) {

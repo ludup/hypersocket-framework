@@ -61,4 +61,9 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	ResourcePropertyStore getDatabasePropertyStore();
 
+	Double getDoubleValue(AbstractResource resource, String resourceKey);
+
+	void setDoubleValue(AbstractResource resource, String resourceKey,
+			Double value);
+
 }

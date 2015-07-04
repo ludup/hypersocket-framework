@@ -83,6 +83,16 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 		return repository.getBooleanValue(realm, name);
 	}
 	
+	@Override 
+	public Double getDoubleValue(Realm realm, String name) {
+		return repository.getDoubleValue(realm, name);
+	}
+	
+	@Override
+	public void setDoubleValue(Realm realm, String name, Double value) {
+		repository.setDoubleValue(realm, name, value);
+	}
+	
 	@Override
 	public Boolean getBooleanValue(String name) {
 		return repository.getBooleanValue(getCurrentRealm(), name);
