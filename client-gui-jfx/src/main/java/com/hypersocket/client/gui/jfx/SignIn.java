@@ -807,48 +807,54 @@ public class SignIn extends AbstractController implements Listener {
 	}
 
 	void setAvailable() {
-		if (context.getBridge().isConnected()) {
-			Connection sel = getSelectedConnection();
-			boolean selectionConnected = false;
-			try {
-				selectionConnected = sel != null
-						&& context.getBridge().getClientService()
-								.isConnected(sel);
-			} catch (Exception e) {
-				log.warn("Failed to test if connected. Assuming not.", e);
-			}
-			optionsUI.setVisible(!disconnecting
-					&& (promptsAvailable || selectionConnected));
-			promptUI.setVisible(!disconnecting && promptsAvailable);
-			progressUI.setVisible(busy);
-			serverUrls.editorProperty().get().setDisable(busy);
-			serverUrls.setDisable(busy);
-			saveConnection.setVisible(selectionConnected);
-			delete.setVisible(sel != null && !selectionConnected
-					&& sel.getId() != null);
-			delete.setDisable(disconnecting);
-			disconnect.setVisible(selectionConnected
-					&& (sel.getId() == null || !saveCredentials
-							.selectedProperty().get()));
-			disconnect.setVisible(selectionConnected);
-			serverUrls.setDisable(false);
-			login.setDisable(selectionConnected);
-			saveCredentials.setDisable(selectionConnected);
-			saveConnection.setDisable(!selectionConnected);
+		
+		Platform.runLater(new Runnable(){
+			public void run() {
+				if (context.getBridge().isConnected()) {
+					Connection sel = getSelectedConnection();
+					boolean selectionConnected = false;
+					try {
+						selectionConnected = sel != null
+								&& context.getBridge().getClientService()
+										.isConnected(sel);
+					} catch (Exception e) {
+						log.warn("Failed to test if connected. Assuming not.", e);
+					}
+					optionsUI.setVisible(!disconnecting
+							&& (promptsAvailable || selectionConnected));
+					promptUI.setVisible(!disconnecting && promptsAvailable);
+					progressUI.setVisible(busy);
+					serverUrls.editorProperty().get().setDisable(busy);
+					serverUrls.setDisable(busy);
+					saveConnection.setVisible(selectionConnected);
+					delete.setVisible(sel != null && !selectionConnected
+							&& sel.getId() != null);
+					delete.setDisable(disconnecting);
+					disconnect.setVisible(selectionConnected
+							&& (sel.getId() == null || !saveCredentials
+									.selectedProperty().get()));
+					disconnect.setVisible(selectionConnected);
+					serverUrls.setDisable(false);
+					login.setDisable(selectionConnected);
+					saveCredentials.setDisable(selectionConnected);
+					saveConnection.setDisable(!selectionConnected);
 
-		} else {
-			serverUrls.editorProperty().get().setDisable(false);
-			serverUrls.setDisable(false);
-			progressUI.setVisible(false);
-			promptUI.setVisible(false);
-			optionsUI.setVisible(false);
-			delete.setVisible(false);
-			disconnect.setVisible(false);
-			serverUrls.setDisable(true);
-			login.setDisable(true);
-			saveCredentials.setDisable(false);
-		}
-		rebuildContainer();
+				} else {
+					serverUrls.editorProperty().get().setDisable(false);
+					serverUrls.setDisable(false);
+					progressUI.setVisible(false);
+					promptUI.setVisible(false);
+					optionsUI.setVisible(false);
+					delete.setVisible(false);
+					disconnect.setVisible(false);
+					serverUrls.setDisable(true);
+					login.setDisable(true);
+					saveCredentials.setDisable(false);
+				}
+				rebuildContainer();
+			}
+		});
+		
 	}
 
 	private void rebuildContainer() {
