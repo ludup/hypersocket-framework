@@ -32,4 +32,6 @@ public interface Authenticator {
 	AuthenticationModuleType getType();
 	 
 	String[] getAllowedSchemes();
+	
+	boolean isHidden();
 }

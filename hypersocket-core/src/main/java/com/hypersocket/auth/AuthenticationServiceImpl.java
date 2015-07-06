@@ -580,6 +580,9 @@ public class AuthenticationServiceImpl extends
 
 		for (Authenticator a : authenticators.values()) {
 
+			if(a.isHidden()) {
+				continue;
+			}
 			if (scheme.getType() != AuthenticationModuleType.CUSTOM) {
 				if (scheme.getType().ordinal() >= a.getType().ordinal()) {
 					tmp.put(a.getResourceKey(), a);
