@@ -90,7 +90,7 @@ public class Configuration {
 		avoidReserved.set(node.getBoolean("avoidReserved", true));
 		avoidReserved.addListener(new BooleanPreferenceUpdateChangeListener(node, "avoidReserved"));
 		
-		size.set(node.getInt("size", 64));
+		size.set(node.getInt("size", 48));
 		size.addListener(new ChangeListener<Number>() {
 
 			@Override
