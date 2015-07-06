@@ -7,6 +7,7 @@ import javax.persistence.MappedSuperclass;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.realm.Realm;
 
 @MappedSuperclass
@@ -17,6 +18,7 @@ public abstract class RealmResource extends Resource {
 	@JoinColumn(name="realm_id")
 	protected Realm realm;
 
+	@JsonIgnore
 	public Realm getRealm() {
 		return realm;
 	}
