@@ -39,6 +39,23 @@ public class Client extends Application {
 	private Bridge bridge;
 	private Stage primaryStage;
 
+	private static Object barrier = new Object();
+	
+	public static void initialize() throws InterruptedException {
+        Thread t = new Thread("JavaFX Init Thread") {
+            @Override
+            public void run() {
+                Application.launch(Client.class, new String[0]);
+            }
+        };
+        
+        synchronized (barrier) {
+        	t.setDaemon(true);
+        	t.start();
+            barrier.wait();
+        }
+    }
+	
 	public FramedController openScene(Class<? extends Initializable> controller)
 			throws IOException {
 		URL resource = controller.getResource(controller.getSimpleName()
@@ -112,6 +129,10 @@ public class Client extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 
+		synchronized (barrier) {
+            barrier.notify();
+        }
+		
 		this.primaryStage = primaryStage;
 
 		bridge = new Bridge();

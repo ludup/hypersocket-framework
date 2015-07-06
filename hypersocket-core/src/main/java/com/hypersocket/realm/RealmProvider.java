@@ -118,4 +118,6 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	
 	Set<String> getDefaultUserPropertyNames();
 
+	boolean hasPropertyValueSet(Principal principal, String string);
+
 }

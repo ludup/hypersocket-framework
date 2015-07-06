@@ -644,4 +644,9 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		return defaultProperties;
 	}
 
+	@Override
+	public boolean hasPropertyValueSet(Principal principal, String resourceKey) {
+		return userRepository.hasPropertyValueSet(principal, resourceKey);
+	}
+
 }
