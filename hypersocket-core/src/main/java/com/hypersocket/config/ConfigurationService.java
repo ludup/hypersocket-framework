@@ -33,4 +33,8 @@ public interface ConfigurationService extends AuthenticatedService, PropertyTemp
 	void setValue(Realm realm, String resourceKey, String value)
 			throws AccessDeniedException, ResourceChangeException;
 
+	Double getDoubleValue(Realm realm, String name);
+
+	void setDoubleValue(Realm realm, String name, Double value);
+
 }

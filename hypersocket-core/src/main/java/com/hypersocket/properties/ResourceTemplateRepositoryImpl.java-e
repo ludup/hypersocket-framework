@@ -325,9 +325,9 @@ public abstract class ResourceTemplateRepositoryImpl extends
 							pnode.hasAttribute("encrypted")
 									&& pnode.getAttribute("encrypted")
 											.equalsIgnoreCase("true"),
-							pnode.hasAttribute("defaultValuePropertyValue")
-									&& pnode.getAttribute("defaultValuePropertyValue")
-											.equalsIgnoreCase("true"));
+							pnode.hasAttribute("defaultsToProperty")
+									? pnode.getAttribute("defaultsToProperty")
+									: null);
 				} catch (Throwable e) {
 					log.error("Failed to register property item", e);
 				}
@@ -388,7 +388,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 			PropertyStore propertyStore, String resourceKey, String metaData,
 			String mapping, int weight, boolean hidden, String displayMode, boolean readOnly,
 			String defaultValue, boolean isVariable, boolean encrypted,
-			boolean defaultValuePropertyValue) {
+			String defaultsToProperty) {
 
 		if (log.isInfoEnabled()) {
 			log.info("Registering property " + resourceKey);
@@ -436,7 +436,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 		template.setMapping(mapping);
 		template.setCategory(category);
 		template.setEncrypted(encrypted);
-		template.setDefaultValuePropertyValue(defaultValuePropertyValue);
+		template.setDefaultsToProperty(defaultsToProperty);
 		template.setPropertyStore(propertyStore);
 
 		propertyStore.registerTemplate(template, resourceXmlPath);
@@ -538,6 +538,16 @@ public abstract class ResourceTemplateRepositoryImpl extends
 			throws NumberFormatException {
 		return new Date(getLongValue(resource, name));
 	}
+	
+	@Override
+	public Double getDoubleValue(AbstractResource resource, String resourceKey) {
+		return Double.parseDouble(getValue(resource, resourceKey));
+	}
+	
+	@Override
+	public void setDoubleValue(AbstractResource resource, String resourceKey, Double value) {
+		setValue(resource, resourceKey, Double.toString(value));
+	}
 
 	@Override
 	public void setValue(AbstractResource resource, String name, Long value) {
@@ -558,14 +568,22 @@ public abstract class ResourceTemplateRepositoryImpl extends
 	public boolean hasPropertyTemplate(AbstractResource resource, String key) {
 		return propertyTemplates.containsKey(key);
 	}
+	
+	@Override 
+	public boolean hasPropertyValueSet(AbstractResource resource, String resourceKey) {
+		PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
+		return ((ResourcePropertyStore)template.getPropertyStore()).hasPropertyValueSet(template, resource);
+	}
 
 	@Override
 	public void setValues(AbstractResource resource,
 			Map<String, String> properties) {
 
-		for (String resourceKey : properties.keySet()) {
-			if(propertyTemplates.containsKey(resourceKey)) {
-				setValue(resource, resourceKey, properties.get(resourceKey));
+		if(properties!=null) {
+			for (String resourceKey : properties.keySet()) {
+				if(propertyTemplates.containsKey(resourceKey)) {
+					setValue(resource, resourceKey, properties.get(resourceKey));
+				}
 			}
 		}
 	}

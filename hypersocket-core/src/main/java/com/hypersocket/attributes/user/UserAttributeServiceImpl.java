@@ -329,7 +329,6 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 		
 		synchronized (userPropertyTemplates) {
 			
-			
 			if(userPropertyTemplates.containsKey(principal)) {
 				return userPropertyTemplates.get(principal);
 			}
@@ -364,14 +363,14 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 		registerPropertyItem(cat, attributeRepository.getDatabasePropertyStore(), attr.getVariableName(),
 				attr.generateMetaData(), "", attr.getWeight(),
 				attr.getHidden(), attr.getDisplayMode(), attr.getReadOnly(), attr.getDefaultValue(),
-				true, attr.getEncrypted(), false);
+				true, attr.getEncrypted(), null);
 	}
 
 	void registerPropertyItem(PropertyCategory category,
 			PropertyStore propertyStore, String resourceKey, String metaData,
 			String mapping, int weight, boolean hidden, String displayMode, boolean readOnly,
 			String defaultValue, boolean isVariable, boolean encrypted,
-			boolean defaultValuePropertyValue) {
+			String defaultsToProperty) {
 
 		if (log.isInfoEnabled()) {
 			log.info("Registering property " + resourceKey);
@@ -414,7 +413,7 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 		template.setMapping(mapping);
 		template.setCategory(category);
 		template.setEncrypted(encrypted);
-		template.setDefaultValuePropertyValue(defaultValuePropertyValue);
+		template.setDefaultsToProperty(defaultsToProperty);
 		template.setPropertyStore(propertyStore);
 
 		category.getTemplates().remove(template);

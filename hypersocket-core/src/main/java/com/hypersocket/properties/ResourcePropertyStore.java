@@ -10,5 +10,7 @@ public interface ResourcePropertyStore extends XmlTemplatePropertyStore {
 	
 	public void setPropertyValue(AbstractPropertyTemplate template, AbstractResource resource, String value);
 
+	public boolean hasPropertyValueSet(AbstractPropertyTemplate template, AbstractResource resource);
+	
 	Collection<String> getPropertyNames();
 }

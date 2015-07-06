@@ -247,4 +247,21 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		
 	}
 
+	@Override
+	public boolean hasPropertyValueSet(AbstractPropertyTemplate template,
+			AbstractResource resource) {
+
+		String methodName = "get" + StringUtils.capitalize(template.getResourceKey());
+		try {
+			
+			Method m = resource.getClass().getMethod(methodName, (Class<?>[])null);
+			return true;
+			
+		} catch (NoSuchMethodException e) {
+		} catch (SecurityException e) {
+		} catch (IllegalArgumentException e) {
+		}
+		return false;
+	}
+
 }

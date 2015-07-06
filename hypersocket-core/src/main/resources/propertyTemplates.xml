@@ -9,7 +9,7 @@
 		resourceBundle="EmailService" weight="600">
 		<property resourceKey="smtp.host" inputType="text" weight="0"
 			defaultValue="localhost" />
-		<property resourceKey="smtp.port" inputType="number"
+		<property resourceKey="smtp.port" inputType="integer"
 			minValue="1" maxValue="65535" weight="100" defaultValue="25" />
 		<property resourceKey="smtp.protocol" inputType="select"
 			url="emails/smtpProtocols" weight="200" defaultValue="0" nameIsResourceKey="true" />

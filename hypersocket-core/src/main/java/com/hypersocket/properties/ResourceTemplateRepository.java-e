@@ -47,6 +47,8 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	boolean hasPropertyTemplate(AbstractResource resource, String key);
 
+	boolean hasPropertyValueSet(AbstractResource resource, String resourceKey);
+	
 	Set<String> getVariableNames(AbstractResource resource);
 
 	void setValues(AbstractResource resource,
@@ -58,5 +60,10 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 	void registerPropertyResolver(PropertyResolver resolver);
 
 	ResourcePropertyStore getDatabasePropertyStore();
+
+	Double getDoubleValue(AbstractResource resource, String resourceKey);
+
+	void setDoubleValue(AbstractResource resource, String resourceKey,
+			Double value);
 
 }

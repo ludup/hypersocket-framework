@@ -21,6 +21,7 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 
 import net.sf.uadetector.ReadableUserAgent;
+import net.sf.uadetector.UserAgentFamily;
 import net.sf.uadetector.UserAgentStringParser;
 import net.sf.uadetector.service.UADetectorServiceFactory;
 

@@ -198,4 +198,12 @@ public class ImageConfigurationStore implements ResourcePropertyStore {
 		return templates.keySet();
 	}
 
+	@Override
+	public boolean hasPropertyValueSet(AbstractPropertyTemplate template,
+			AbstractResource resource) {
+		
+		String key = resource.getId() + File.separator + template.getResourceKey();
+		return resourceKeyImages.containsKey(key);
+	}
+
 }

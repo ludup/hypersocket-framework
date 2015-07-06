@@ -172,9 +172,9 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 							pnode.hasAttribute("encrypted")
 									&& pnode.getAttribute("encrypted")
 											.equalsIgnoreCase("true"),
-							pnode.hasAttribute("defaultValuePropertyValue")
-									&& pnode.getAttribute("defaultValuePropertyValue")
-											.equalsIgnoreCase("true"));
+							pnode.hasAttribute("defaultsToProperty")
+									? pnode.getAttribute("defaultsToProperty")
+									: null);
 				} catch (Throwable e) {
 					log.error("Failed to register property item", e);
 				}
@@ -258,7 +258,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 	private void registerPropertyItem(PropertyCategory category,
 			PropertyStore propertyStore, String resourceKey, String metaData,
 			String mapping, int weight, boolean hidden, String displayMode, boolean readOnly,
-			String defaultValue, boolean encrypted, boolean defaultValuePropertyValue) {
+			String defaultValue, boolean encrypted, String defaultsToProperty) {
 
 		PropertyTemplate template = propertyStore
 				.getPropertyTemplate(resourceKey);
@@ -275,7 +275,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		template.setReadOnly(readOnly);
 		template.setCategory(category);
 		template.setEncrypted(encrypted);
-		template.setDefaultValuePropertyValue(defaultValuePropertyValue);
+		template.setDefaultsToProperty(defaultsToProperty);
 		template.setMapping(mapping);
 		template.setPropertyStore(propertyStore);
 

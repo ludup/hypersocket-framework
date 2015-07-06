@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.resource.AbstractResource;
 
-@Transactional
 public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 
 	AbstractResource resource;
@@ -28,6 +27,7 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 		this.readOnly = t.isReadOnly();
 		this.resource = resource;
 		this.propertyStore = t.getPropertyStore();
+		this.defaultsToProperty = t.getDefaultsToProperty();
 	}
 	
 	public void setPropertyStore(ResourcePropertyStore propertyStore) {

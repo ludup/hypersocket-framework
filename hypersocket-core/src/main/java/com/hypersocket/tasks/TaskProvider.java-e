@@ -28,6 +28,8 @@ public interface TaskProvider {
 
 	Collection<PropertyCategory> getProperties(Task task);
 	
+	Map<String,String> getTaskProperties(Task task);
+	
 	String[] getResultResourceKeys();
 	
 	void taskCreated(Task task);
