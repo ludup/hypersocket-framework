@@ -494,7 +494,6 @@ public class TriggerResourceServiceImpl extends
 		running = false;
 	}
 
-	
 	protected boolean isExportingAdditionalProperties() {
 		return true;
 	}
@@ -503,9 +502,15 @@ public class TriggerResourceServiceImpl extends
 
 		super.prepareExport(resource);
 
-		if(isExportingAdditionalProperties()) {
-			resource.setProperties(repository.getProperties(resource));
+		TaskProvider provider = taskService.getTaskProvider(resource
+				.getResourceKey());
+		try {
+			resource.setProperties(provider
+					.getTaskProperties(getResourceByName(resource.getName())));
+		} catch (ResourceNotFoundException e) {
+			log.error("Failed to add properties to export trigger", e);
 		}
+
 		for (TriggerCondition condition : resource.getConditions()) {
 			condition.setId(null);
 			condition.setTrigger(null);
@@ -519,30 +524,4 @@ public class TriggerResourceServiceImpl extends
 		}
 	}
 
-	protected void prepareImport(TriggerResource resource, Realm realm)
-			throws ResourceCreationException, AccessDeniedException {
-		// try {
-		//
-		// ProductGroup existingGroup = groupService.getResourceByName(
-		// resource.getGroup().getName(), realm);
-		// resource.setGroup(existingGroup);
-		// resource.setRealm(realm);
-		// } catch (ResourceNotFoundException e) {
-		// resource.getGroup().setRealm(realm);
-		// groupService.createResource(resource.getGroup(),
-		// resource.getProperties());
-		// }
-		//
-		// for (ProductPrice price : resource.getPrices()) {
-		// price.setProduct(resource);
-		// Currency existingCurrency = currencyService.getCurrencyByISOCode(
-		// price.getCurrency().getCurrencyCode(), realm);
-		// if (existingCurrency != null) {
-		// price.setCurrency(existingCurrency);
-		// } else {
-		// price.getCurrency().setRealm(realm);
-		// currencyService.createResource(price.getCurrency());
-		// }
-		// }
-	}
 }
