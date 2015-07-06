@@ -12,8 +12,8 @@
 		<property resourceKey="email.to" inputType="multipleTextInput"
 			weight="50" defaultValue="" allowEmpty="false" validateAll="email" errorResourceKey="error.toRequired"/>
 		<property resourceKey="email.cc" inputType="multipleTextInput"
-			weight="60" defaultValue="" />
+			weight="60" defaultValue="" validateAll="email" />
 		<property resourceKey="email.bcc" inputType="multipleTextInput"
-			weight="70" defaultValue="" />
+			weight="70" defaultValue="" validateAll="email" />
 	</propertyCategory>
 </propertyTemplates>

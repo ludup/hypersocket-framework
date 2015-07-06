@@ -63,5 +63,9 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 	protected abstract boolean verifyCredentials(AuthenticationState state,
 			Principal principal, 
 			@SuppressWarnings("rawtypes") Map parameters);
+	
+	public boolean isHidden() {
+		return false;
+	}
 
 }
