@@ -1,6 +1,7 @@
 package com.hypersocket.tasks;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -79,6 +80,11 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	public Collection<PropertyCategory> getProperties(
 			Task task) {
 		return getRepository().getPropertyCategories(task);
+	}
+	
+	@Override
+	public Map<String,String> getTaskProperties(Task task) {
+		return getRepository().getProperties(task);
 	}
 	
 	@Override 
