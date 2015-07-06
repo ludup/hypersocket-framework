@@ -2,9 +2,11 @@ package com.hypersocket.triggers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -31,6 +33,13 @@ public class TriggerResourceDeserializer extends
 		resource.setHidden(node.get("hidden").asBoolean());
 		resource.setResourceCategory(node.get("resourceCategory").asText());
 		resource.setSystem(node.get("system").asBoolean());
+
+		Map<String, String> properties = new HashMap<String, String>();
+		properties.put("block.length",
+				node.get("properties").get("block.length").asText());
+		properties.put("block.ip", node.get("properties").get("block.ip")
+				.asText());
+		resource.setProperties(properties);
 
 		resource.setResult(TriggerResultType.valueOf(node.get("result")
 				.asText()));
