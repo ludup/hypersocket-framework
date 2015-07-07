@@ -22,6 +22,8 @@ public class Options extends AbstractController {
 	
 	@FXML
 	private CheckBox autoHide;
+	@FXML
+	private CheckBox alwaysOnTop;
 	
 	@FXML
 	private CheckBox avoidReserved;
@@ -53,7 +55,9 @@ public class Options extends AbstractController {
 
 	@Override
 	protected void onConfigure() {
+		
 		Configuration cfg = Configuration.getDefault();
+		alwaysOnTop.selectedProperty().bindBidirectional(cfg.alwaysOnTopProperty());
 		autoHide.selectedProperty().bindBidirectional(cfg.autoHideProperty());
 		avoidReserved.selectedProperty().bindBidirectional(cfg.avoidReservedProperty());
 		top.selectedProperty().bindBidirectional(cfg.topProperty());
