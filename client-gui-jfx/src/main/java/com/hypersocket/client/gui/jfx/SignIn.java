@@ -153,6 +153,13 @@ public class SignIn extends AbstractController implements Listener {
 	}
 
 	@Override
+	public void bridgeLost() {
+		super.bridgeLost();
+		abortPrompts();
+	}
+	
+
+	@Override
 	public void finishedConnecting(final Connection connection, Exception e) {
 		if (Objects.equals(connection, foregroundConnection)) {
 			Platform.runLater(new Runnable() {
