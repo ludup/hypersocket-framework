@@ -267,14 +267,14 @@ public class SchedulerServiceImpl extends
 					+ uuid
 					+ " to start "
 					+ (start == null ? "now" : "at "
-							+ HypersocketUtils.formatDate(start))
+							+ HypersocketUtils.formatDateTime(start))
 					+ " with interval of "
 					+ (interval / 60000)
 					+ " minutes and repeat "
 					+ (repeat >= 0 ? (repeat / 60000) + " time(s)"
 							: "indefinately")
 					+ (end != null ? " until "
-							+ HypersocketUtils.formatDate(end) : ""));
+							+ HypersocketUtils.formatDateTime(end) : ""));
 		}
 		JobDetail job = JobBuilder.newJob(clz).withIdentity(uuid).build();
 
@@ -337,13 +337,13 @@ public class SchedulerServiceImpl extends
 					+ id
 					+ " to start "
 					+ (start == null ? "now" : "at "
-							+ HypersocketUtils.formatDate(start))
+							+ HypersocketUtils.formatDateTime(start))
 					+ " with interval of "
 					+ interval
 					+ " and repeat "
 					+ (repeat >= 0 ? repeat : "indefinatley")
 					+ (end != null ? " until "
-							+ HypersocketUtils.formatDate(end) : ""));
+							+ HypersocketUtils.formatDateTime(end) : ""));
 		}
 		TriggerKey triggerKey = triggerKeys.get(id);
 
@@ -362,7 +362,8 @@ public class SchedulerServiceImpl extends
 							start, "yyyy/MM/dd HH:mm")));
 			properties.put("intervals", String.valueOf((interval / 60000)));
 			try {
-				updateResource(cachedResources.get(id), properties);
+				SchedulerResource resource = cachedResources.get(id);
+				updateResource(resource, "Reconcile Realm", properties);
 			} catch (ResourceChangeException e) {
 				log.error("Error in update resource for schedule ", e);
 			} catch (Exception e) {

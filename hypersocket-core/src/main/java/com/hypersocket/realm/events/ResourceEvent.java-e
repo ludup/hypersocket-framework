@@ -27,8 +27,8 @@ public class ResourceEvent extends SessionEvent {
 		this.resource = resource;
 		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
 		addAttribute(ATTR_OLD_RESOURCE_NAME, resource.getOldName());
-		addAttribute(ATTR_CREATED, HypersocketUtils.formatDate(resource.getCreateDate()));
-		addAttribute(ATTR_LAST_MODIFIED, HypersocketUtils.formatDate(resource.getModifiedDate()));
+		addAttribute(ATTR_CREATED, HypersocketUtils.formatDateTime(resource.getCreateDate()));
+		addAttribute(ATTR_LAST_MODIFIED, HypersocketUtils.formatDateTime(resource.getModifiedDate()));
 	}
 
 	public ResourceEvent(Object source, String resourceKey, Throwable e,
@@ -37,8 +37,8 @@ public class ResourceEvent extends SessionEvent {
 		this.resource = resource;
 		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
 		addAttribute(ATTR_OLD_RESOURCE_NAME, resource.getOldName());
-		addAttribute(ATTR_CREATED, HypersocketUtils.formatDate(resource.getCreateDate()));
-		addAttribute(ATTR_LAST_MODIFIED, HypersocketUtils.formatDate(resource.getModifiedDate()));
+		addAttribute(ATTR_CREATED, HypersocketUtils.formatDateTime(resource.getCreateDate()));
+		addAttribute(ATTR_LAST_MODIFIED, HypersocketUtils.formatDateTime(resource.getModifiedDate()));
 	}
 
 

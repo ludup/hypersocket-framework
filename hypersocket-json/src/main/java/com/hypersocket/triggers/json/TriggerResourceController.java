@@ -1,6 +1,7 @@
 package com.hypersocket.triggers.json;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -15,8 +17,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
@@ -24,6 +28,7 @@ import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18N;
+import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.json.SelectOption;
@@ -32,11 +37,12 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceExportException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
+import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.TriggerCondition;
@@ -45,6 +51,7 @@ import com.hypersocket.triggers.TriggerResourceColumns;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.TriggerResultType;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Controller
 public class TriggerResourceController extends ResourceController {
@@ -56,8 +63,8 @@ public class TriggerResourceController extends ResourceController {
 	EventService eventService;
 
 	@Autowired
-	TaskProviderService taskService; 
-	
+	TaskProviderService taskService;
+
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
@@ -135,7 +142,8 @@ public class TriggerResourceController extends ResourceController {
 		try {
 			TriggerResource resource = resourceService.getResourceById(id);
 			return new ResourceList<PropertyCategory>(taskService
-					.getTaskProvider(resource.getResourceKey()).getPropertyTemplate(resource));
+					.getTaskProvider(resource.getResourceKey())
+					.getPropertyTemplate(resource));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -162,7 +170,8 @@ public class TriggerResourceController extends ResourceController {
 	@RequestMapping(value = "triggers/event/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceStatus<EventDefinition> getEventDefinition(HttpServletRequest request, @PathVariable String resourceKey)
+	public ResourceStatus<EventDefinition> getEventDefinition(
+			HttpServletRequest request, @PathVariable String resourceKey)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
@@ -174,57 +183,60 @@ public class TriggerResourceController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/parentEvents/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<EventDefinition> getParentEventDefinitions(HttpServletRequest request, @PathVariable Long id)
+	public ResourceList<EventDefinition> getParentEventDefinitions(
+			HttpServletRequest request, @PathVariable Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			
-			List<TriggerResource> triggers = resourceService.getParentTriggers(id);
+
+			List<TriggerResource> triggers = resourceService
+					.getParentTriggers(id);
 			List<EventDefinition> events = new ArrayList<EventDefinition>();
-			for(TriggerResource trigger : triggers) {
+			for (TriggerResource trigger : triggers) {
 				events.add(eventService.getEventDefinition(trigger.getEvent()));
 			}
 			return new ResourceList<EventDefinition>(events);
-			
+
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
-	
+
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/actionResults/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<EventDefinition> getPostTriggerEvents(HttpServletRequest request, @PathVariable Long id)
+	public ResourceList<EventDefinition> getPostTriggerEvents(
+			HttpServletRequest request, @PathVariable Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-		
+
 			List<EventDefinition> events = new ArrayList<EventDefinition>();
 
 			TriggerResource action = resourceService.getResourceById(id);
-			
-			for(String resourceKey : taskService.getTaskProvider(action.getResourceKey()).getResultResourceKeys()) {
+
+			for (String resourceKey : taskService.getTaskProvider(
+					action.getResourceKey()).getResultResourceKeys()) {
 				events.add(eventService.getEventDefinition(resourceKey));
 			}
-			
+
 			return new ResourceList<EventDefinition>(events);
-			
+
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
 
-	
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/eventAttributes/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
@@ -253,7 +265,7 @@ public class TriggerResourceController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 			List<SelectOption> result = new ArrayList<SelectOption>();
-			for(String task : resourceService.getTasks()) {
+			for (String task : resourceService.getTasks()) {
 				result.add(new SelectOption(task, task));
 			}
 			return new ResourceList<SelectOption>(result);
@@ -339,8 +351,9 @@ public class TriggerResourceController extends ResourceController {
 			List<TriggerCondition> anyConditions = new ArrayList<TriggerCondition>();
 
 			TriggerResource parentTrigger = null;
-			if(resource.getParentId()!=null && resource.getParentId() > 0) {
-				parentTrigger = resourceService.getResourceById(resource.getParentId());
+			if (resource.getParentId() != null && resource.getParentId() > 0) {
+				parentTrigger = resourceService.getResourceById(resource
+						.getParentId());
 			}
 
 			for (TriggerConditionUpdate c : resource.getAllConditions()) {
@@ -368,7 +381,7 @@ public class TriggerResourceController extends ResourceController {
 				cond.setConditionValue(c.getConditionValue());
 				anyConditions.add(cond);
 			}
-			
+
 			Map<String, String> properties = new HashMap<String, String>();
 			for (PropertyItem i : resource.getProperties()) {
 				properties.put(i.getId(), i.getValue());
@@ -379,16 +392,23 @@ public class TriggerResourceController extends ResourceController {
 						resourceService.getResourceById(resource.getId()),
 						resource.getName(), resource.getEvent(),
 						TriggerResultType.valueOf(resource.getResult()),
-						resource.getTask(),
-						properties,
-						allConditions, anyConditions, parentTrigger);
+						resource.getTask(), properties, allConditions,
+						anyConditions, parentTrigger);
 			} else {
 				newResource = resourceService.createResource(
 						resource.getName(), resource.getEvent(),
-						TriggerResultType.valueOf(resource.getResult()), resource.getTask(), properties, realm,
-						allConditions, anyConditions, parentTrigger);
+						TriggerResultType.valueOf(resource.getResult()),
+						resource.getTask(), properties, realm, allConditions,
+						anyConditions, parentTrigger);
 			}
-			return new ResourceStatus<TriggerResource>(newResource,
+			
+			TriggerResource rootTrigger = newResource;
+			
+			while(rootTrigger.getParentTrigger()!=null) {
+				rootTrigger = rootTrigger.getParentTrigger();
+			}
+			
+			return new ResourceStatus<TriggerResource>(rootTrigger,
 					I18N.getResource(sessionUtils.getLocale(request),
 							TriggerResourceServiceImpl.RESOURCE_BUNDLE,
 							resource.getId() != null ? "resource.updated.info"
@@ -425,12 +445,30 @@ public class TriggerResourceController extends ResourceController {
 			}
 
 			String preDeletedName = resource.getName();
+			
+			TriggerResource rootTrigger = null;
+			
+			if(resource.getParentTrigger()!=null) {
+				rootTrigger = resource;
+				while(rootTrigger.getParentTrigger()!=null) {
+					rootTrigger = rootTrigger.getParentTrigger();
+				}
+			}
+			
 			resourceService.deleteResource(resource);
 
-			return new ResourceStatus<TriggerResource>(true, I18N.getResource(
-					sessionUtils.getLocale(request),
-					TriggerResourceServiceImpl.RESOURCE_BUNDLE,
-					"resource.deleted.info", preDeletedName));
+			if(rootTrigger!=null) {
+				return new ResourceStatus<TriggerResource>(resourceService.getResourceById(rootTrigger.getId()), 
+						I18N.getResource(
+						sessionUtils.getLocale(request),
+						TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+						"resource.deleted.info", preDeletedName));
+			} else {
+				return new ResourceStatus<TriggerResource>(true, I18N.getResource(
+						sessionUtils.getLocale(request),
+						TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+						"resource.deleted.info", preDeletedName));
+			}
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<TriggerResource>(false, e.getMessage());
@@ -454,5 +492,98 @@ public class TriggerResourceController extends ResourceController {
 		}
 
 		return new ResourceList<SelectOption>(results);
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "triggers/export/{id}", method = RequestMethod.GET, produces = { "text/plain" })
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public String exportResource(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable("id") long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException, ResourceNotFoundException,
+			ResourceExportException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Thread.sleep(1000);
+		} catch (Exception e) {
+		}
+		try {
+			response.setHeader("Content-Disposition", "attachment; filename=\""
+					+ resourceService.getResourceCategory() + "-"
+					+ resourceService.getResourceById(id).getName() + ".json\"");
+			return resourceService.exportResoure(id);
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "triggers/export", method = RequestMethod.GET, produces = { "text/plain" })
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public String exportAll(HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException,
+			ResourceNotFoundException, ResourceExportException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Thread.sleep(1000);
+		} catch (Exception e) {
+		}
+		try {
+			response.setHeader("Content-Disposition", "attachment; filename=\""
+					+ resourceService.getResourceCategory() + ".json\"");
+			return resourceService.exportAllResoures();
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "triggers/import", method = { RequestMethod.POST }, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<TriggerResource> importAll(
+			HttpServletRequest request, HttpServletResponse response,
+			@RequestParam(value = "file") MultipartFile jsonFile,
+			@RequestParam(required = false) boolean dropExisting)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Thread.sleep(2000);
+		} catch (Exception e) {
+		}
+		try {
+			String json = IOUtils.toString(jsonFile.getInputStream());
+			if (!HypersocketUtils.isValidJSON(json)) {
+				throw new ResourceException(
+						I18NServiceImpl.USER_INTERFACE_BUNDLE,
+						"error.incorrectJSON");
+			}
+			Collection<TriggerResource> collects = resourceService
+					.importResources(json, getCurrentRealm(), dropExisting);
+			return new ResourceStatus<TriggerResource>(true, I18N.getResource(
+					sessionUtils.getLocale(request),
+					I18NServiceImpl.USER_INTERFACE_BUNDLE,
+					"resource.import.success", collects.size()));
+		} catch (ResourceException e) {
+			return new ResourceStatus<TriggerResource>(false, e.getMessage());
+		} catch (Exception e) {
+			return new ResourceStatus<TriggerResource>(false, I18N.getResource(
+					sessionUtils.getLocale(request),
+					I18NServiceImpl.USER_INTERFACE_BUNDLE,
+					"resource.import.failure", e.getMessage()));
+		} finally {
+			clearAuthenticatedContext();
+		}
 	}
 }

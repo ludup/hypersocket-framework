@@ -12,12 +12,17 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Date;
 
 import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+
+import com.hypersocket.utils.HypersocketUtils;
 
 
 public class ClasspathContentHandler extends ContentHandlerImpl {
 
+	static Logger log = org.slf4j.LoggerFactory.getLogger(ClasspathContentHandler.class);
 	String classpathPrefix;
 	
 	public ClasspathContentHandler(String classpathPrefix, int priority) {
@@ -45,11 +50,20 @@ public class ClasspathContentHandler extends ContentHandlerImpl {
 		try {
 			URL url = getClass().getResource(classpathPrefix + "/" + path);
 			int idx;
+			File jarFile;
 			if((idx = url.toURI().toString().indexOf("!")) > -1) {
-				return new File(url.toURI().toString().substring(0, idx)).lastModified();
+				jarFile = new File(url.toURI().toString().substring(0, idx));
 			} else {
-				return new File(url.toURI()).lastModified();
+				jarFile = new File(url.toURI());
 			}
+			
+			if(log.isInfoEnabled()) {
+				Date modified = new Date(jarFile.lastModified());
+				if(log.isInfoEnabled()){
+					log.info("REMOVE ME: Jar file " + jarFile.getName() + " last modified " + HypersocketUtils.formatDateTime(modified));
+				}
+			}
+			return jarFile.lastModified();
 		} catch (URISyntaxException e) {
 		}
 		

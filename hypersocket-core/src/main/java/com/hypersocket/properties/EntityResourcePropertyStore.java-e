@@ -175,7 +175,9 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 			}
 		}
 		
-		throw new IllegalStateException("Could not set " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName());
+		if(log.isDebugEnabled()) {
+			log.debug(template.getResourceKey() + " is not a property of the entity " + resource.getClass().getName());
+		}
 	}
 
 	

@@ -84,7 +84,7 @@ public class HypersocketUtils {
 		return dateFormats.get(format).format(date);
 	}
 	
-	public static String formatDate(Date date) {
+	public static String formatDateTime(Date date) {
 		return formatDate(date, "EEE, d MMM yyyy HH:mm:ss");
 	}
 	

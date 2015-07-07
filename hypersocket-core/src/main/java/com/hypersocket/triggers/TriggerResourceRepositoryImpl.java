@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,9 +95,13 @@ public class TriggerResourceRepositoryImpl extends
 
 	protected void processDefaultCriteria(Criteria criteria) {
 		criteria.add(Restrictions.isNull("parentTrigger"));
+		criteria.setFetchMode("conditions", FetchMode.SELECT);
+		criteria.setFetchMode("childTriggers", FetchMode.SELECT);
 	}
 
 	protected void processDefaultCriteria(DetachedCriteria criteria) {
 		criteria.add(Restrictions.isNull("parentTrigger"));
+		criteria.setFetchMode("conditions", FetchMode.SELECT);
+		criteria.setFetchMode("childTriggers", FetchMode.SELECT);
 	}
 }

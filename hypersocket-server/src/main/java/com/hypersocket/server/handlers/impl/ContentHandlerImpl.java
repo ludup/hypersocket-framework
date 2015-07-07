@@ -36,6 +36,7 @@ import org.springframework.mail.javamail.ConfigurableMimeFileTypeMap;
 
 import com.hypersocket.server.handlers.HttpRequestHandler;
 import com.hypersocket.server.handlers.HttpResponseProcessor;
+import com.hypersocket.utils.HypersocketUtils;
 
 public abstract class ContentHandlerImpl extends HttpRequestHandler implements ContentHandler {
 
@@ -116,7 +117,10 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 					long ifModifiedSinceDateSeconds = ifModifiedSinceDate.getTime() / 1000;
 					long fileLastModifiedSeconds = getLastModified(path) / 1000;
 					if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {
-					    sendNotModified(response);
+						if(log.isInfoEnabled()) {
+							log.info(path + " has not been modified since " + HypersocketUtils.formatDateTime(ifModifiedSinceDate));
+						}
+						sendNotModified(response);
 					    return;
 					}
 				} catch (ParseException e) {

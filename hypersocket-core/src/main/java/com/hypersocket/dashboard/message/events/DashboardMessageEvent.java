@@ -23,7 +23,7 @@ public class DashboardMessageEvent extends SessionEvent {
 		addAttribute(ATTR_MESSAGE_BODY, message.getBody());
 		addAttribute(ATTR_MESSAGE_AUTHOR, message.getBody());
 		addAttribute(ATTR_MESSAGE_SUBJECT, message.getName());
-		addAttribute(ATTR_MESSAGE_AUTHOR, HypersocketUtils.formatDate(message.getExpires()));
+		addAttribute(ATTR_MESSAGE_AUTHOR, HypersocketUtils.formatDateTime(message.getExpires()));
 		addAttribute(ATTR_MESSAGE_LINK, message.isBodyHyperlink());
 		
 	}
@@ -34,7 +34,7 @@ public class DashboardMessageEvent extends SessionEvent {
 		addAttribute(ATTR_MESSAGE_BODY, message.getBody());
 		addAttribute(ATTR_MESSAGE_AUTHOR, message.getBody());
 		addAttribute(ATTR_MESSAGE_SUBJECT, message.getName());
-		addAttribute(ATTR_MESSAGE_AUTHOR, HypersocketUtils.formatDate(message.getExpires()));
+		addAttribute(ATTR_MESSAGE_AUTHOR, HypersocketUtils.formatDateTime(message.getExpires()));
 		addAttribute(ATTR_MESSAGE_LINK, message.isBodyHyperlink());
 	}
 

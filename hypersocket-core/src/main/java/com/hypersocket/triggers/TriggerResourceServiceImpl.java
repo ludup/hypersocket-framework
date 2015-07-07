@@ -36,6 +36,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
@@ -75,10 +76,10 @@ public class TriggerResourceServiceImpl extends
 
 	@Autowired
 	RealmService realmService;
-	
+
 	@Autowired
-	TaskProviderService taskService; 
-	
+	TaskProviderService taskService;
+
 	Map<String, TriggerConditionProvider> registeredConditions = new HashMap<String, TriggerConditionProvider>();
 
 	Map<String, ReplacementVariableProvider> replacementVariables = new HashMap<String, ReplacementVariableProvider>();
@@ -88,7 +89,7 @@ public class TriggerResourceServiceImpl extends
 	public TriggerResourceServiceImpl() {
 		super("triggerResource");
 	}
-	
+
 	@PostConstruct
 	private void postConstruct() {
 
@@ -109,8 +110,8 @@ public class TriggerResourceServiceImpl extends
 		 * Register the events. All events have to be registered so the system
 		 * knows about them.
 		 */
-		eventService.registerEvent(TriggerResourceEvent.class,
-				RESOURCE_BUNDLE, this);
+		eventService.registerEvent(TriggerResourceEvent.class, RESOURCE_BUNDLE,
+				this);
 		eventService.registerEvent(TriggerResourceCreatedEvent.class,
 				RESOURCE_BUNDLE, this);
 		eventService.registerEvent(TriggerResourceUpdatedEvent.class,
@@ -161,7 +162,8 @@ public class TriggerResourceServiceImpl extends
 	public List<EventDefinition> getTriggerEvents() {
 		List<EventDefinition> ret = new ArrayList<EventDefinition>();
 		for (EventDefinition def : eventService.getEvents()) {
-			ret.add(new EventDefinition(def, def.getI18nNamespace(), getEventAttributes(def)));
+			ret.add(new EventDefinition(def, def.getI18nNamespace(),
+					getEventAttributes(def)));
 		}
 		Collections.sort(ret, new Comparator<EventDefinition>() {
 
@@ -209,11 +211,11 @@ public class TriggerResourceServiceImpl extends
 	public Class<TriggerResourcePermission> getPermissionType() {
 		return TriggerResourcePermission.class;
 	}
-	
+
 	protected Class<TriggerResource> getResourceClass() {
 		return TriggerResource.class;
 	}
-	
+
 	@Override
 	protected void fireResourceCreationEvent(TriggerResource resource) {
 		eventService.publishEvent(new TriggerResourceCreatedEvent(this,
@@ -254,69 +256,72 @@ public class TriggerResourceServiceImpl extends
 
 	@Override
 	public TriggerResource updateResource(TriggerResource resource,
-			String name, String event, TriggerResultType result,
-			String task,
+			String name, String event, TriggerResultType result, String task,
 			Map<String, String> properties,
-			List<TriggerCondition> allConditions, 
-			List<TriggerCondition> anyConditions,
-			TriggerResource parent)
+			List<TriggerCondition> allConditions,
+			List<TriggerCondition> anyConditions, TriggerResource parent)
 			throws ResourceChangeException, AccessDeniedException {
 
 		resource.setName(name);
 		resource.getConditions().clear();
 
-		populateTrigger(name, event, result, task, resource.getRealm(), resource,
-				allConditions, anyConditions, parent);
+		populateTrigger(name, event, result, task, resource.getRealm(),
+				resource, allConditions, anyConditions, parent);
 
-		updateResource(resource, properties, new TransactionAdapter<TriggerResource>() {
+		updateResource(resource, properties,
+				new TransactionAdapter<TriggerResource>() {
 
-			@Override
-			public void afterOperation(TriggerResource resource,
-					Map<String, String> properties) {
-				TaskProvider provider = taskService
-						.getTaskProvider(resource.getResourceKey());
-				provider.getRepository().setValues(resource, properties);
-			}
-			
-		});
-		
-		TaskProvider provider = taskService.getTaskProvider(resource.getResourceKey());
+					@Override
+					public void afterOperation(TriggerResource resource,
+							Map<String, String> properties) {
+						TaskProvider provider = taskService
+								.getTaskProvider(resource.getResourceKey());
+						provider.getRepository()
+								.setValues(resource, properties);
+					}
+
+				});
+
+		TaskProvider provider = taskService.getTaskProvider(resource
+				.getResourceKey());
 		provider.taskUpdated(resource);
-		
+
 		return resource;
 	}
 
-	
 	@Override
 	public TriggerResource createResource(String name, String event,
-			TriggerResultType result, String task, Map<String, String> properties,
-			Realm realm, List<TriggerCondition> allConditions, 
-			List<TriggerCondition> anyConditions,
-			TriggerResource parent)
+			TriggerResultType result, String task,
+			Map<String, String> properties, Realm realm,
+			List<TriggerCondition> allConditions,
+			List<TriggerCondition> anyConditions, TriggerResource parent)
 			throws ResourceCreationException, AccessDeniedException {
 
 		TriggerResource resource = new TriggerResource();
-		
-		populateTrigger(name, event, result, task, realm, resource, allConditions,
-				anyConditions,  parent);
 
-		createResource(resource, properties, new TransactionAdapter<TriggerResource>() {
+		populateTrigger(name, event, result, task, realm, resource,
+				allConditions, anyConditions, parent);
 
-			@Override
-			public void afterOperation(TriggerResource resource,
-					Map<String, String> properties) {
+		createResource(resource, properties,
+				new TransactionAdapter<TriggerResource>() {
 
-				TaskProvider provider = taskService
-						.getTaskProvider(resource.getResourceKey());
-				provider.getRepository().setValues(resource, properties);
-				
-			}
-			
-		});
+					@Override
+					public void afterOperation(TriggerResource resource,
+							Map<String, String> properties) {
 
-		TaskProvider provider = taskService.getTaskProvider(resource.getResourceKey());
+						TaskProvider provider = taskService
+								.getTaskProvider(resource.getResourceKey());
+						provider.getRepository()
+								.setValues(resource, properties);
+
+					}
+
+				});
+
+		TaskProvider provider = taskService.getTaskProvider(resource
+				.getResourceKey());
 		provider.taskCreated(resource);
-		
+
 		return resource;
 	}
 
@@ -325,29 +330,34 @@ public class TriggerResourceServiceImpl extends
 	public void deleteResource(final TriggerResource resource)
 			throws ResourceChangeException, AccessDeniedException {
 
-		super.deleteResource(resource, new TransactionAdapter<TriggerResource>() {
-			
-			public void beforeOperation(TriggerResource resource, Map<String,String> properties) {
-				
-				try {
-					for(TriggerResource child : resource.getChildTriggers()) {
-						deleteResource(child);
+		super.deleteResource(resource,
+				new TransactionAdapter<TriggerResource>() {
+
+					public void beforeOperation(TriggerResource resource,
+							Map<String, String> properties) {
+
+						try {
+							for (TriggerResource child : resource
+									.getChildTriggers()) {
+								deleteResource(child);
+							}
+							resource.setParentTrigger(null);
+							getRepository().deletePropertiesForResource(
+									resource);
+						} catch (Throwable e) {
+							throw new IllegalStateException(e);
+						}
 					}
-					resource.setParentTrigger(null);
-					getRepository().deletePropertiesForResource(resource);
-				} catch (Throwable e) {
-					throw new IllegalStateException(e);
-				}
-			}
-		});
-		
-		TaskProvider provider = taskService.getTaskProvider(resource.getResourceKey());
+				});
+
+		TaskProvider provider = taskService.getTaskProvider(resource
+				.getResourceKey());
 		provider.taskDeleted(resource);
 	}
 
 	private void populateTrigger(String name, String event,
-			TriggerResultType result, String task, Realm realm, TriggerResource resource,
-			List<TriggerCondition> allConditions,
+			TriggerResultType result, String task, Realm realm,
+			TriggerResource resource, List<TriggerCondition> allConditions,
 			List<TriggerCondition> anyConditions, TriggerResource parent) {
 
 		resource.setName(name);
@@ -390,36 +400,38 @@ public class TriggerResourceServiceImpl extends
 	private void processEventTriggers(SystemEvent event) {
 
 		// TODO cache triggers to prevent constant database lookup
-		if(!running) {
-			if(log.isDebugEnabled()) {
+		if (!running) {
+			if (log.isDebugEnabled()) {
 				log.debug("Not processing triggers as the service is not running");
 			}
 			return;
 		}
-		
+
 		if (log.isInfoEnabled()) {
-			log.info("Looking for triggers for events " 
-						+ StringUtils.join(event.getResourceKeys(), ",") + " " 
-						+ event.getStatus().toString());
+			log.info("Looking for triggers for events "
+					+ StringUtils.join(event.getResourceKeys(), ",") + " "
+					+ event.getStatus().toString());
 		}
 
 		List<TriggerResource> triggers = repository.getTriggersForEvent(event);
 		for (TriggerResource trigger : triggers) {
-			
-			if(log.isInfoEnabled()) {
+
+			if (log.isInfoEnabled()) {
 				log.info("Found trigger " + trigger.getName());
 			}
-			JobDataMap data = new PermissionsAwareJobData(event.getCurrentRealm(),
-					hasAuthenticatedContext() ? getCurrentPrincipal() : realmService.getSystemPrincipal(),
-					hasAuthenticatedContext() ? getCurrentLocale() : i18nService.getDefaultLocale());
-								
+			JobDataMap data = new PermissionsAwareJobData(
+					event.getCurrentRealm(),
+					hasAuthenticatedContext() ? getCurrentPrincipal()
+							: realmService.getSystemPrincipal(),
+					hasAuthenticatedContext() ? getCurrentLocale()
+							: i18nService.getDefaultLocale());
+
 			data.put("event", event);
 			data.put("trigger", trigger);
 			data.put("realm", event.getCurrentRealm());
-			
+
 			try {
-				schedulerService.scheduleNow(TriggerJob.class,
-						data);
+				schedulerService.scheduleNow(TriggerJob.class, data);
 			} catch (SchedulerException e) {
 				log.error("Failed to schedule event trigger job", e);
 			}
@@ -433,7 +445,6 @@ public class TriggerResourceServiceImpl extends
 		return registeredConditions.get(condition.getConditionKey());
 	}
 
-
 	@Override
 	public TriggerCondition getConditionById(Long id)
 			throws AccessDeniedException {
@@ -444,11 +455,12 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	@Override
-	public Collection<TriggerResource> getTriggersByResourceKey(String resourceKey) {
+	public Collection<TriggerResource> getTriggersByResourceKey(
+			String resourceKey) {
 
 		return repository.getActionsByResourceKey(resourceKey);
 	}
-	
+
 	@Override
 	public Collection<String> getTasks() throws AccessDeniedException {
 
@@ -458,18 +470,18 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	@Override
-	public List<TriggerResource> getParentTriggers(Long id) throws ResourceNotFoundException, AccessDeniedException {
-		
+	public List<TriggerResource> getParentTriggers(Long id)
+			throws ResourceNotFoundException, AccessDeniedException {
+
 		List<TriggerResource> triggers = new ArrayList<TriggerResource>();
-		
-		
+
 		TriggerResource trigger = getResourceById(id);
 		triggers.add(trigger);
-		while(trigger!=null && trigger.getParentTrigger()!=null) {
+		while (trigger != null && trigger.getParentTrigger() != null) {
 			triggers.add(trigger.getParentTrigger());
 			trigger = trigger.getParentTrigger();
 		}
-			
+
 		return triggers;
 	}
 
@@ -477,10 +489,53 @@ public class TriggerResourceServiceImpl extends
 	public void start() {
 		running = true;
 	}
-	
+
 	@Override
 	public void stop() {
 		running = false;
+	}
+
+	protected boolean isExportingAdditionalProperties() {
+		return false;
+	}
+
+	protected void performImport(TriggerResource resource, Realm realm) throws ResourceException, AccessDeniedException {
+		
+		Map<String,String> properties = resource.getProperties();
+		resource.setProperties(null);
+		
+		super.performImport(resource, realm);
+		
+		TaskProvider provider = taskService.getTaskProvider(resource
+				.getResourceKey());
+		provider.getRepository().setValues(resource, properties);
+		
+		for(TriggerResource child : resource.getChildTriggers()) {
+			child.setParentTrigger(resource);
+			performImport(child, realm);
+		}
+	}
+	
+	protected void prepareExport(TriggerResource resource) {
+
+		TaskProvider provider = taskService.getTaskProvider(resource
+				.getResourceKey());
+		resource.setProperties(provider
+					.getTaskProperties(resource));
+
+		for (TriggerCondition condition : resource.getConditions()) {
+			condition.setId(null);
+			condition.setTrigger(null);
+		}
+		for (TriggerResource childTrigger : resource.getChildTriggers()) {
+			prepareExport(childTrigger);
+		}
+
+		if (resource.getParentTrigger() != null) {
+			resource.getParentTrigger().setId(null);
+		}
+		
+		super.prepareExport(resource);
 	}
 
 }
