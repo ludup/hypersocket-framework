@@ -331,6 +331,7 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	@Override
 	public void failedToConnect(Connection connection, String errorMessage)
 			throws RemoteException {
+		log.error(String.format("Failed to connect. %s", errorMessage));
 		Exception e = errorMessage == null ? null : new Exception(errorMessage);
 		for (Listener l : new ArrayList<Listener>(listeners)) {
 			l.finishedConnecting(connection, e);
