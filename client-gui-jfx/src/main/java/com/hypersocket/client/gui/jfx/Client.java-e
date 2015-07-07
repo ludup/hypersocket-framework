@@ -8,6 +8,7 @@ import java.util.ResourceBundle;
 import javafx.application.Application;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -133,9 +134,12 @@ public class Client extends Application {
             barrier.notify();
         }
 		
-		this.primaryStage = primaryStage;
 
+		// Bridges to the common client network code
 		bridge = new Bridge();
+		
+		// Setup the window
+		this.primaryStage = primaryStage;
 		if (Platform.isSupported(ConditionalFeature.TRANSPARENT_WINDOW)) {
 			primaryStage.initStyle(StageStyle.TRANSPARENT);
 		} else {
@@ -157,21 +161,21 @@ public class Client extends Application {
 		primaryStage.getIcons().add(
 				new Image(getClass().getResourceAsStream(
 						"hypersocket-icon32x32.png")));
+		
+		// Open the actual scene
 		FramedController fc = openScene(Dock.class);
 		final Scene scene = fc.getScene();
+		
+		// Configure the scene (window)
 		Configuration cfg = Configuration.getDefault();
-		Property<Color> colorProperty = cfg.colorProperty();
-		colorProperty.addListener(new ChangeListener<Color>() {
-			@Override
-			public void changed(ObservableValue<? extends Color> observable,
-					Color oldValue, Color newValue) {
-				setColors(scene);
-			}
-		});
+		BooleanProperty alwaysOnTopProperty = cfg.alwaysOnTopProperty();
+		primaryStage.setAlwaysOnTop(alwaysOnTopProperty.get());
+		
+		// Background colour
 		setColors(scene);
-
+		
+		// Finalise and show
 		setStageBounds();
-		primaryStage.setAlwaysOnTop(true);
 		primaryStage.setScene(scene);
 		primaryStage.show();
 
@@ -214,6 +218,25 @@ public class Client extends Application {
 		// }
 
 		// Listen for configuration changes
+		
+		// Always on top
+		alwaysOnTopProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				primaryStage.setAlwaysOnTop(newValue);
+			}
+		});
+
+		Property<Color> colorProperty = cfg.colorProperty();
+		colorProperty.addListener(new ChangeListener<Color>() {
+			@Override
+			public void changed(ObservableValue<? extends Color> observable,
+					Color oldValue, Color newValue) {
+				setColors(scene);
+			}
+		});
+		
 		cfg.avoidReservedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable,

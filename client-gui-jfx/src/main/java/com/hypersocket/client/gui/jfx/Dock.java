@@ -436,8 +436,6 @@ public class Dock extends AbstractController implements Listener {
 	}
 
 	private Tooltip createDockButtonToolTip(String text) {
-		Configuration cfg = Configuration.getDefault();
-		Color newValue = cfg.colorProperty().getValue();
 		final Tooltip tt = new Tooltip(text) {
 			@Override
 			public void show(Window ownerWindow, double anchorX, double anchorY) {
@@ -457,6 +455,13 @@ public class Dock extends AbstractController implements Listener {
 				super.show(ownerWindow, anchorX, anchorY);
 			}
 		};
+		styleToolTip(tt);
+		return tt;
+	}
+
+	static void styleToolTip(final Tooltip tt) {
+		Configuration cfg = Configuration.getDefault();
+		Color newValue = cfg.colorProperty().getValue();
 		tt.setAutoHide(true);
 		tt.setStyle(String.format("-fx-background: #%02x%02x%02x",
 				(int) (newValue.getRed() * 255),
@@ -468,7 +473,6 @@ public class Dock extends AbstractController implements Listener {
 				(int) (newValue.getRed() * 255),
 				(int) (newValue.getGreen() * 255),
 				(int) (newValue.getBlue() * 255)));
-		return tt;
 	}
 
 	private void styleToolTips() {

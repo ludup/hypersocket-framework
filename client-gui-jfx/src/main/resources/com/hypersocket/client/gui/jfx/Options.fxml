@@ -70,6 +70,11 @@
                                        <VBox.margin>
                                           <Insets top="8.0" />
                                        </VBox.margin></CheckBox>
+                                    <CheckBox fx:id="alwaysOnTop" mnemonicParsing="false" text="%alwaysOnTop">
+                                       <VBox.margin>
+                                          <Insets top="8.0" />
+                                       </VBox.margin>
+                                    </CheckBox>
                                  </children>
                               </VBox>
                            </top>
