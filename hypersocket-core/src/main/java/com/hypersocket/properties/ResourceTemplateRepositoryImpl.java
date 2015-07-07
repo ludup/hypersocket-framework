@@ -96,6 +96,19 @@ public abstract class ResourceTemplateRepositoryImpl extends
 		}
 		return results;
 	}
+	
+	@Override
+	public Set<String> getPropertyNames(AbstractResource resource, boolean includeResolvers) {
+		
+		Set<String> results = new HashSet<String>();
+		results.addAll(propertyNames);
+		if(includeResolvers) {
+			for(PropertyResolver r : propertyResolvers) {
+				results.addAll(r.getPropertyNames(resource));
+			}
+		}
+		return results;
+	}
 
 	@Override
 	public Set<String> getVariableNames(AbstractResource resource) {
