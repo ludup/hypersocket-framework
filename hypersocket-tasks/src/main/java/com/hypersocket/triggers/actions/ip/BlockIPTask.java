@@ -160,7 +160,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 	}
 	
 	public String[] getResultResourceKeys() {
-		return new String[] { BlockedIPTempResult.EVENT_RESOURCE_KEY, BlockedIPPermResult.EVENT_RESOURCE_KEY };
+		return new String[] { BlockedIPResult.EVENT_RESOURCE_KEY, BlockedIPTempResult.EVENT_RESOURCE_KEY, BlockedIPPermResult.EVENT_RESOURCE_KEY };
 	}
 	
 	@Override

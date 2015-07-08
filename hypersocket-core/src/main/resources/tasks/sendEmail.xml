@@ -16,4 +16,11 @@
 		<property resourceKey="email.bcc" inputType="multipleTextInput"
 			weight="70" defaultValue="" validateAll="email" />
 	</propertyCategory>
+	<propertyCategory resourceKey="category.email.attachments"
+		resourceBundle="TriggerResourceService" weight="3000">
+		<property resourceKey="attach.static" inputType="multipleFileInput"
+			weight="50" defaultValue="" allowEmpty="true" text=""/>
+		<property resourceKey="attach.dynamic" inputType="namePairs"
+			weight="100" defaultValue="" onlyName="true" text=""/>
+	</propertyCategory>
 </propertyTemplates>

@@ -452,7 +452,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 				
 					if(dropCurrent) {
 						for(T resource : getResources(realm)) {
-							deleteResource(resource);
+							performImportDropResources(resource);
 						}
 					}
 					ObjectMapper mapper = new ObjectMapper();
@@ -471,6 +471,10 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			}
 		});
 		
+	}
+	
+	protected void performImportDropResources(T resource) throws ResourceChangeException, AccessDeniedException {
+		deleteResource(resource);
 	}
 	
 	protected void performImport(T resource, Realm realm) throws ResourceException, AccessDeniedException {

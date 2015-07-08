@@ -71,6 +71,11 @@ public class FileUploadServiceImpl extends
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 		setAssertPermissions(false);
 	}
+	
+	@Override
+	public String getContentType(String uuid) throws ResourceNotFoundException, IOException {
+		return mimeTypesMap.getContentType(getFile(uuid));
+	}
 
 	@Override
 	public FileUpload createFile(final MultipartFile file, final Realm realm)
@@ -292,5 +297,10 @@ public class FileUploadServiceImpl extends
 
 			return f.length();
 		}
+	}
+
+	@Override
+	public String getContentType(File file) {
+		return mimeTypesMap.getContentType(file);
 	}
 }
