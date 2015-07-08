@@ -25,6 +25,7 @@ public class ExecuteCommandTask extends AbstractTaskProvider {
 
 	public static final String EXECUTE_COMMAND_TASK = "executeCommand";
 
+	
 	@Autowired
 	ExecuteCommandRepository repository;
 
@@ -77,11 +78,11 @@ public class ExecuteCommandTask extends AbstractTaskProvider {
 		try {
 			int result = exe.execute();
 
-			return new ExecuteCommandResult(this, "command.executed",
+			return new ExecuteCommandResult(this, 
 					result == 0, currentRealm, task,
 					exe.getCommandOutput(), result, command, args);
 		} catch (IOException e) {
-			return new ExecuteCommandResult(this, "command.executed", e,
+			return new ExecuteCommandResult(this, e,
 					currentRealm, task, exe.getCommandOutput(), command, args);
 		}
 	}

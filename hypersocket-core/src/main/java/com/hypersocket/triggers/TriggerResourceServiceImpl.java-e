@@ -537,5 +537,9 @@ public class TriggerResourceServiceImpl extends
 		
 		super.prepareExport(resource);
 	}
+	
+	protected void performImportDropResources(TriggerResource resource) throws ResourceChangeException, AccessDeniedException {
+		deleteResource(resource);
+	}
 
 }

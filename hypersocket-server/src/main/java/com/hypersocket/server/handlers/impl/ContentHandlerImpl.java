@@ -123,7 +123,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 						sendNotModified(response);
 					    return;
 					}
-				} catch (ParseException e) {
+				} catch (Throwable e) {
 					response.sendError(HttpStatus.SC_BAD_REQUEST);
 					return;
 				}

@@ -1,5 +1,9 @@
 package com.hypersocket.tasks.email;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
@@ -22,6 +27,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -31,6 +37,8 @@ import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.TriggerValidationError;
 import com.hypersocket.triggers.ValidationException;
+import com.hypersocket.upload.FileUpload;
+import com.hypersocket.upload.FileUploadService;
 
 @Component
 public class EmailTask extends AbstractTaskProvider {
@@ -46,7 +54,9 @@ public class EmailTask extends AbstractTaskProvider {
 	public static final String ATTR_SUBJECT = "email.subject";
 	public static final String ATTR_FORMAT = "email.format";
 	public static final String ATTR_BODY = "email.body";
-
+	public static final String ATTR_STATIC_ATTACHMENTS = "attach.static";
+	public static final String ATTR_DYNAMIC_ATTACHMENTS = "attach.dynamic";
+	
 	@Autowired
 	TriggerResourceService triggerService;
 
@@ -61,6 +71,9 @@ public class EmailTask extends AbstractTaskProvider {
 
 	@Autowired
 	TaskProviderService taskService; 
+	
+	@Autowired
+	FileUploadService uploadService; 
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -162,9 +175,43 @@ public class EmailTask extends AbstractTaskProvider {
 		String bcc = populateEmailList(task, ATTR_BCC_ADDRESSES, recipients,
 				RecipientType.BCC, events);
 
+		List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
+		
+		for(String uuid : repository.getValues(task, ATTR_STATIC_ATTACHMENTS)) {
+			try {
+				FileUpload upload = uploadService.getFileByUuid(uuid);	
+				attachments.add(new EmailAttachment(upload.getFileName(), 
+						uploadService.getContentType(uuid), 
+						new FileInputStream(uploadService.getFile(uuid))));
+			} catch (ResourceException e) {
+				log.error("Failed to get upload file", e);
+				return new EmailTaskResult(this, e, currentRealm, task, subject, body, to, cc, bcc);
+			} catch (IOException e) {
+				log.error("Failed to get upload file", e);
+				return new EmailTaskResult(this, e, currentRealm, task, subject, body, to, cc, bcc);
+			}
+		}
+		
+		for(String path : repository.getValues(task,  ATTR_DYNAMIC_ATTACHMENTS)) {
+			
+			String filename = ResourceUtils.getNamePairKey(path);
+			String filepath = ResourceUtils.getNamePairValue(path);
+
+			filepath = processTokenReplacements(filepath, events);
+			File file = new File(filepath);
+			if(!file.exists()) {
+				return new EmailTaskResult(this, new FileNotFoundException(filepath + " does not exist"), currentRealm, task, subject, body, to, cc, bcc);
+			}
+			try {
+				attachments.add(new EmailAttachment(filename, uploadService.getContentType(file), new FileInputStream(file)));
+			} catch (FileNotFoundException e) {
+				return new EmailTaskResult(this, e, currentRealm, task, subject, body, to, cc, bcc);
+			}
+		}
+		
 		try {
 			emailService.sendPlainEmail(subject, body,
-					recipients.toArray(new Recipient[0]));
+					recipients.toArray(new Recipient[0]), attachments.toArray(new EmailAttachment[0]));
 
 			return new EmailTaskResult(this, task.getRealm(),
 					task, subject, body, to, cc, bcc);

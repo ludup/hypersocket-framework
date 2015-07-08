@@ -16,18 +16,19 @@ public class ExecuteCommandResult extends TaskResult {
 	public static final String ATTR_EXIT_CODE = "attr.exitCode";
 	public static final String ATTR_OUTPUT = "attr.output";
 	
-	public ExecuteCommandResult(Object source, String resourceKey,
-			boolean success, Realm currentRealm, Task task, String output, int exitCode, String command, String[] args) {
-		super(source, resourceKey, success, currentRealm, task);
+	public static final String EVENT_RESOURCE_KEY = "executeCommand.result";
+	
+	public ExecuteCommandResult(Object source, boolean success, Realm currentRealm, Task task, String output, int exitCode, String command, String[] args) {
+		super(source, EVENT_RESOURCE_KEY, success, currentRealm, task);
 		addAttribute(ATTR_EXIT_CODE, String.valueOf(exitCode));
 		addAttribute(ATTR_OUTPUT, output);
 		addAttribute(ATTR_COMMAND, command);
 		addAttribute(ATTR_ARGS, StringUtils.arrayToDelimitedString(args, " "));
 	}
 
-	public ExecuteCommandResult(Object source, String resourceKey, Throwable e,
+	public ExecuteCommandResult(Object source, Throwable e,
 			Realm currentRealm, Task task, String output, String command, String[] args) {
-		super(source, resourceKey, e, currentRealm, task);
+		super(source, EVENT_RESOURCE_KEY, e, currentRealm, task);
 		addAttribute(ATTR_EXIT_CODE, String.valueOf(-1));
 		addAttribute(ATTR_OUTPUT, output);
 		addAttribute(ATTR_COMMAND, command);
