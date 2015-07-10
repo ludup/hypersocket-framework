@@ -15,8 +15,8 @@ public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 	PropertyRepository repository;
 	
 	public DatabasePropertyStore(PropertyRepository repository, EncryptionService encryptionService) {
-		super(encryptionService);
 		this.repository = repository;
+		setEncryptionService(encryptionService);
 	}
 
 	@Override

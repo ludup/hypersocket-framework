@@ -831,6 +831,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 			assertPermission(RealmPermission.DELETE);
 
+			if(realm.isDefaultRealm()) {
+				throw new ResourceChangeException(RESOURCE_BUNDLE,
+						"error.cannotDeleteDefault", realm.getName());
+			}
+			
 			List<Realm> realms = realmRepository.allRealms();
 			if (realms.size() == 1) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE,

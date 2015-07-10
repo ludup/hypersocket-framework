@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.secret.SecretKeyService;
 
@@ -34,16 +35,16 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 
 
 	@Override
-	public String encryptString(String reference, String data) throws IOException {
+	public String encryptString(String reference, String data, Realm realm) throws IOException {
 		
-		return encryptor.encryptString(reference, data);
+		return encryptor.encryptString(reference, data, realm);
 
 	}
 	
 	@Override
-	public String decryptString(String reference, String data) throws IOException{
+	public String decryptString(String reference, String data, Realm realm) throws IOException{
 		
-		return encryptor.decryptString(reference, data);
+		return encryptor.decryptString(reference, data, realm);
 	}
 
 
@@ -52,8 +53,8 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 		
 		secretKeyService.setCurrentPrincipal(realmService.getSystemPrincipal(), i18nService.getDefaultLocale(), realmService.getDefaultRealm());
 		try {
-			String text = encryptString("Test Key", "Encryption service has been initialized");
-			log.info(decryptString("Test Key", text) + " " + text);
+			String text = encryptString("Test Key", "Encryption service has been initialized", realmService.getDefaultRealm());
+			log.info(decryptString("Test Key", text, realmService.getDefaultRealm()) + " " + text);
 		} catch (Exception e) {
 			log.error("Failed to process test encryption key", e);
 		}
