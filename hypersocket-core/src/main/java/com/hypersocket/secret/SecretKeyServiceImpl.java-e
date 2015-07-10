@@ -20,6 +20,7 @@ import com.hypersocket.encrypt.EncryptionProvider;
 import com.hypersocket.nss.NssEncryptionProvider;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
@@ -81,21 +82,21 @@ public class SecretKeyServiceImpl extends
 	}
 	
 	@Override
-	public SecretKeyResource createSecretKey() throws ResourceCreationException, AccessDeniedException {
+	public SecretKeyResource createSecretKey(Realm realm) throws ResourceCreationException, AccessDeniedException {
 
 		String name = UUID.randomUUID().toString();
-		return createSecretKey(name);
+		return createSecretKey(name, realm);
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public SecretKeyResource createSecretKey(String name) throws ResourceCreationException, AccessDeniedException {
+	public SecretKeyResource createSecretKey(String name, Realm realm) throws ResourceCreationException, AccessDeniedException {
 		
 		
 		try {
 			SecretKeyResource key = new SecretKeyResource();
 			key.setName(name);
-			key.setRealm(getCurrentRealm());
+			key.setRealm(realm);
 			key.setKeylength(Math.min(Cipher.getMaxAllowedKeyLength("AES"), 256));
 			
 			SecureRandom rnd = new SecureRandom();
@@ -187,10 +188,10 @@ public class SecretKeyServiceImpl extends
 	}
 
 	@Override
-	public SecretKeyResource getSecretKey(String reference) throws ResourceNotFoundException, ResourceCreationException, AccessDeniedException {
-		SecretKeyResource key = repository.getResourceByName(reference, getCurrentRealm());
+	public SecretKeyResource getSecretKey(String reference, Realm realm) throws ResourceNotFoundException, ResourceCreationException, AccessDeniedException {
+		SecretKeyResource key = repository.getResourceByName(reference, realm);
 		if(key==null) {
-			key = createSecretKey(reference);
+			key = createSecretKey(reference, realm);
 		}
 		return key;
 	}

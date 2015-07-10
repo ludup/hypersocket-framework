@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.annotation.PostConstruct;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -64,10 +65,14 @@ public abstract class ResourceTemplateRepositoryImpl extends
 
 	public ResourceTemplateRepositoryImpl() {
 		super();
+	}
+
+	@PostConstruct
+	private void postConstruct() {
 		configPropertyStore = new DatabasePropertyStore(this, encryptionService);
 		propertyStoresById.put("db", configPropertyStore);
 	}
-
+	
 	public ResourceTemplateRepositoryImpl(boolean requiresDemoWrite) {
 		super(requiresDemoWrite);
 	}

@@ -313,4 +313,8 @@ public class Session extends AbstractEntity<String> {
 	public boolean isSystem() {
 		return system!=null && system;
 	}
+
+	public Realm getPrincipalRealm() {
+		return principal.getRealm();
+	}
 }

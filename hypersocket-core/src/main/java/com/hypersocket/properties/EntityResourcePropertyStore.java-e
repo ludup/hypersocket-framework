@@ -35,7 +35,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	
 	@Autowired
 	EncryptionService encryptionService; 
-	
+
+
 	@PostConstruct
 	private void postConstruct() {
 		primitiveParsers.put(String.class, new StringValue());

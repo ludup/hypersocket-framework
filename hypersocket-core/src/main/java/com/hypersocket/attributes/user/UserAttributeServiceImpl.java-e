@@ -111,6 +111,12 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
 					"attribute.nameInUse.error", name);
 		}
+		
+		UserAttribute varAttribute = attributeRepository.getAttributeByVariableName(attribute.getVariableName(), getCurrentRealm());
+		if (varAttribute != null && !varAttribute.getId().equals(attribute.getId())) {
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"attribute.variableInUse.error", attribute.getVariableName());
+		}
 
 		attribute.setCategory(categoryRepository.getResourceById(category));
 		attribute.setDescription(description);
@@ -154,6 +160,11 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 		if (attributeRepository.getResourceByName(attribute.getName(), getCurrentRealm()) != null) {
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
 					"attribute.nameInUse.error", name);
+		}
+		
+		if (attributeRepository.getAttributeByVariableName(attribute.getVariableName(), getCurrentRealm()) != null) {
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"attribute.variableInUse.error", attribute.getVariableName());
 		}
 
 		UserAttributeCategory cat = categoryRepository

@@ -40,15 +40,7 @@ public class RealmRepositoryImpl extends
 
 		save(realm);
 
-		if (!properties.isEmpty()) {
-			for (Map.Entry<String, String> e : properties.entrySet()) {
-				DatabaseProperty p = new DatabaseProperty();
-				p.setResourceId(realm.getId());
-				p.setResourceKey(e.getKey());
-				p.setValue(e.getValue());
-				save(p);
-			}
-		}
+		provider.setValues(realm, properties);
 
 		return realm;
 	}
@@ -70,9 +62,7 @@ public class RealmRepositoryImpl extends
 		boolean isNew = realm.getId() == null;
 		save(realm);
 
-		for (Map.Entry<String, String> e : properties.entrySet()) {
-			provider.setValue(realm, e.getKey(), e.getValue());
-		}
+		provider.setValues(realm, properties);
 
 		if (!isNew) {
 			refresh(realm);
