@@ -47,7 +47,7 @@ public class DashboardMessageJob implements Job {
 			
 			// Get global links
 			results.addAll(Arrays.asList(mapper.readValue(HttpUtils.doHttpGet(
-					MESSAGES_URL + "messages.json",
+					MESSAGES_URL + HypersocketVersion.getBrandId() + "messages.json",
 					true), DashboardMessage[].class)));
 			
 			// Get product links
