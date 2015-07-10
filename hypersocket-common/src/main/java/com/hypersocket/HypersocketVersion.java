@@ -90,4 +90,13 @@ public class HypersocketVersion {
 	public static String getProductId() {
 		return System.getProperty("hypersocket.id", "hypersocket-uber");
 	} 
+	
+	public static String getBrandId() {
+		String id = getProductId();
+		int idx = id.indexOf('-');
+		if(idx==-1) {
+			throw new IllegalStateException("Product id must consist of string formatted like <brand>-<product>");
+		}
+		return id.substring(0, idx-1);
+	} 
 }

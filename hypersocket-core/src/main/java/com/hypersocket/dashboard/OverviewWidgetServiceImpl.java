@@ -58,15 +58,47 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 		}
 
 		this.registerWidget(new OverviewWidget(2, "overview.yourSerial.title",
-				"yourSerial", false));
+				"yourSerial", false) {
+			public boolean hasContent() {
+				return true;
+			}
+		});
 		this.registerWidget(new OverviewWidget(4, "overview.usefulLinks.title",
-				"usefulLinks", false));
+				"usefulLinks", false) {
+			public boolean hasContent() {
+				try {
+					return getLinks().size() > 0;
+				} catch (ResourceException e) {
+					return false;
+				}
+			}
+		});
 		this.registerWidget(new OverviewWidget(1,
-				"overview.systemMessages.title", "systemMessages", true));
+				"overview.systemMessages.title", "systemMessages", true) {
+			public boolean hasContent() {
+				return true;
+			}
+		});
 		this.registerWidget(new OverviewWidget(3, "overview.featureReel.title",
-				"featureReel", true));
+				"featureReel", true) {
+			public boolean hasContent() {
+				try {
+					return getVideos().size() > 0;
+				} catch (ResourceException e) {
+					return false;
+				}
+			}
+		});
 		this.registerWidget(new OverviewWidget(3, "overview.quickSetup.title",
-				"quickSetup", false));
+				"quickSetup", false) {
+			public boolean hasContent() {
+				try {
+					return getDocumentation().size() > 0;
+				} catch (ResourceException e) {
+					return false;
+				}
+			}
+		});
 	}
 
 	public void registerWidget(OverviewWidget widget) {
@@ -76,7 +108,14 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	public List<OverviewWidget> getWidgets() throws AccessDeniedException {
 		assertPermission(OverviewPermission.READ);
-		return widgetList;
+
+		List<OverviewWidget> visibleWidgets = new ArrayList<OverviewWidget>();
+		for (OverviewWidget w : widgetList) {
+			if (w.hasContent()) {
+				visibleWidgets.add(w);
+			}
+		}
+		return visibleWidgets;
 	}
 
 	@Override
@@ -91,11 +130,10 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 				List<Link> results = new ArrayList<Link>();
 
 				// Get global links
-				results.addAll(Arrays.asList(mapper.readValue(
-						HttpUtils
-								.doHttpGet(
-										"http://updates.hypersocket.com/messages/links.json",
-										true), Link[].class)));
+				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
+						.doHttpGet("http://updates.hypersocket.com/messages/"
+								+ HypersocketVersion.getBrandId()
+								+ "/links.json", true), Link[].class)));
 
 				// Get product links
 				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
@@ -126,11 +164,10 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 				List<Link> results = new ArrayList<Link>();
 
 				// Get global videos
-				results.addAll(Arrays.asList(mapper.readValue(
-						HttpUtils
-								.doHttpGet(
-										"http://updates.hypersocket.com/messages/videos.json",
-										true), Link[].class)));
+				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
+						.doHttpGet("http://updates.hypersocket.com/messages/"
+								+ HypersocketVersion.getBrandId()
+								+ "/videos.json", true), Link[].class)));
 
 				// Get product videos
 				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
@@ -161,11 +198,10 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 				List<Link> results = new ArrayList<Link>();
 
 				// Get global documentation
-				results.addAll(Arrays.asList(mapper.readValue(
-						HttpUtils
-								.doHttpGet(
-										"http://updates.hypersocket.com/messages/documentation.json",
-										true), Link[].class)));
+				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
+						.doHttpGet("http://updates.hypersocket.com/messages/"
+								+ HypersocketVersion.getBrandId()
+								+ "/documentation.json", true), Link[].class)));
 
 				// Get product documentation
 				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
