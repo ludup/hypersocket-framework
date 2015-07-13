@@ -99,7 +99,7 @@ public class Client extends Application {
 		Rectangle2D screenBounds = screen.getBounds();
 		return cfg.avoidReservedProperty().get() ? visualBounds : screenBounds;
 	}
-
+	
 	private void setStageBounds() {
 		Configuration cfg = Configuration.getDefault();
 		Rectangle2D bounds = getConfiguredBounds();
@@ -169,7 +169,6 @@ public class Client extends Application {
 		// Configure the scene (window)
 		Configuration cfg = Configuration.getDefault();
 		BooleanProperty alwaysOnTopProperty = cfg.alwaysOnTopProperty();
-		primaryStage.setAlwaysOnTop(alwaysOnTopProperty.get());
 		
 		// Background colour
 		setColors(scene);
@@ -178,6 +177,13 @@ public class Client extends Application {
 		setStageBounds();
 		primaryStage.setScene(scene);
 		primaryStage.show();
+		
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				primaryStage.setAlwaysOnTop(alwaysOnTopProperty.get());				
+			}
+		});
 
 		// Install JavaFX compatible browser launcher
 		// if (SystemUtils.IS_OS_LINUX) {
@@ -286,7 +292,7 @@ public class Client extends Application {
 						Dock root = (Dock) fc;
 						if (!newValue && cfg.autoHideProperty().get()
 								&& !root.arePopupsOpen()) {
-							primaryStage.setIconified(true);
+							root.hideDock(true);
 						}
 					}
 				});

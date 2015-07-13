@@ -42,6 +42,7 @@ public class Main {
 	 * this is what it detects. To work around this LauncherImpl.launchApplication()
 	 * is used directly, which is an internal API.
 	 */
+	@SuppressWarnings("restriction")
 	public void run() {
 
 		try {

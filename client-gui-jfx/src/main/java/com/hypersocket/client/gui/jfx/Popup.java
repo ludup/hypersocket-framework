@@ -54,7 +54,7 @@ public class Popup extends Stage {
 							@Override
 							public void run() {
 								if (!parent.focusedProperty().get() && Configuration.getDefault().autoHideProperty().get()) {
-									((Stage) parent).setIconified(true);
+									hideParent(parent);
 								}
 							}
 						});
@@ -112,10 +112,18 @@ public class Popup extends Stage {
 
 	public void popup() {
 		if (!isShowing()) {
-			positionPopup();
 			sizeToScene();
-			System.out.println("Popping up stage with height of " + getHeight() + " scene: " + sceneProperty().get().getHeight() + " " + sceneProperty().get().getRoot().prefHeight(getHeight()));
-			show();
+			positionPopup();
+			
+			/* Absolute no idea why this runLater() is required, but without it sizeToScene
+			 * calculates an incorrect height. 
+			 */
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					show();
+				}
+			});
 		}
 	}
 
@@ -128,6 +136,10 @@ public class Popup extends Stage {
 			setY(getOwner().getY() - getHeight());
 			setX(getOwner().getX() + getOwner().getWidth() - getWidth());
 		}
+	}
+
+	protected void hideParent(Window parent) {
+		((Stage) parent).setIconified(true);
 	}
 
 	protected boolean isChildFocussed() {
