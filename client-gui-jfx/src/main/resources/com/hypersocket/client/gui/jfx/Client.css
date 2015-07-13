@@ -75,6 +75,10 @@
 	-fx-font-size: 9;
 }
 
+.pull {
+	-fx-font-size: 14;
+}
+
 .input {
 	-fx-text-fill: DEFAULT_TEXT_COLOR;
 }
