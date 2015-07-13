@@ -32,7 +32,7 @@
          <center>
             <HBox fx:id="shortcutContainer" alignment="CENTER_LEFT" minWidth="1.0" styleClass="background" BorderPane.alignment="CENTER">
                <children>
-                  <HBox fx:id="shortcuts" alignment="CENTER" scaleShape="false" styleClass="launchers" />
+                  <HBox fx:id="shortcuts" alignment="CENTER" scaleShape="false" spacing="6.0" styleClass="launchers" />
                </children>
             </HBox>
          </center>
