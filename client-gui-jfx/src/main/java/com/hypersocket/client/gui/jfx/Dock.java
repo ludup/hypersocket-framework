@@ -6,6 +6,9 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.MissingResourceException;
 
+import javafx.animation.Animation.Status;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -23,6 +26,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -42,6 +46,22 @@ import com.hypersocket.client.rmi.ResourceRealm;
 import com.hypersocket.client.rmi.ResourceService;
 
 public class Dock extends AbstractController implements Listener {
+	/*
+	 * The number of pixels to leave visible on the screen when the dock is
+	 * auto-hidden
+	 */
+	private static final int AUTOHIDE_REVEAL_BAR_SIZE = 8;
+	
+	/* How long the autohide should take to complete (in MS) */
+	
+	private static final int AUTOHIDE_DURATION = 125;
+	
+	/*
+	 * How long after the mouse leaves the dock area, will the dock be hidden
+	 * (in MS)
+	 */
+	private static final int AUTOHIDE_HIDE_TIME = 2000;
+
 	static Logger log = LoggerFactory.getLogger(Main.class);
 
 	private Popup signInPopup;
@@ -70,10 +90,12 @@ public class Dock extends AbstractController implements Listener {
 
 	private TranslateTransition slideTransition;
 	private Rectangle slideClip;
-
 	private SignIn signInScene;
-
+	private Timeline dockHider;
 	private Popup updatePopup;
+	private boolean hidden;
+	private Timeline dockHiderTrigger;
+	private long yEnd;
 	private static Dock instance;
 
 	public Dock() {
@@ -168,25 +190,27 @@ public class Dock extends AbstractController implements Listener {
 
 	@Override
 	public void initUpdate(int apps) {
-		
-		// Starting an update, so hide the all other windows and popup the updating window
+
+		// Starting an update, so hide the all other windows and popup the
+		// updating window
 		Window parent = this.scene.getWindow();
 		if (updatePopup == null) {
 			try {
-				final Update updateScene = (Update)context
+				final Update updateScene = (Update) context
 						.openScene(Update.class);
-				
-				// The update popup will get future update events, but it needs this one too to initialize
+
+				// The update popup will get future update events, but it needs
+				// this one too to initialize
 				updateScene.initUpdate(apps);
-				
+
 				updatePopup = new Popup(parent, updateScene.getScene(), false);
 			} catch (IOException ioe) {
 				throw new RuntimeException(ioe);
 			}
 		}
-		if(signInPopup != null && signInPopup.isShowing())
+		if (signInPopup != null && signInPopup.isShowing())
 			signInPopup.hide();
-		if(optionsPopup != null && optionsPopup.isShowing())
+		if (optionsPopup != null && optionsPopup.isShowing())
 			optionsPopup.hide();
 		scene.getRoot().setDisable(true);
 		updatePopup.popup();
@@ -207,6 +231,20 @@ public class Dock extends AbstractController implements Listener {
 	private double getLaunchBarOffset() {
 		double centre = (shortcutContainer.getWidth() - shortcuts.getWidth()) / 2d;
 		return centre;
+	}
+
+	@FXML
+	private void evtMouseEnter(MouseEvent evt) throws Exception {
+		if (Configuration.getDefault().autoHideProperty().get()
+				&& !arePopupsOpen())
+			hideDock(false);
+	}
+
+	@FXML
+	private void evtMouseExit(MouseEvent evt) throws Exception {
+		if (Configuration.getDefault().autoHideProperty().get()
+				&& !arePopupsOpen())
+			maybeShowDock();
 	}
 
 	@FXML
@@ -291,10 +329,17 @@ public class Dock extends AbstractController implements Listener {
 			final FramedController optionsScene = context
 					.openScene(Options.class);
 			optionsPopup = new Popup(parent, optionsScene.getScene()) {
+
+				@Override
+				protected void hideParent(Window parent) {
+					hideDock(true);
+				}
+
+				@SuppressWarnings("restriction")
 				protected boolean isChildFocussed() {
 					// HACK!
 					//
-					// When the custom colour dialog is focussed, there doesn't
+					// When the custom colour dialog is focused, there doesn't
 					// seem to be anyway of determining what the opposite
 					// component was the gained the focus. Being as that is
 					// the ONLY utility dialog, it should be the one
@@ -326,7 +371,12 @@ public class Dock extends AbstractController implements Listener {
 		Window parent = this.scene.getWindow();
 		if (signInPopup == null) {
 			signInScene = (SignIn) context.openScene(SignIn.class);
-			signInPopup = new Popup(parent, signInScene.getScene());
+			signInPopup = new Popup(parent, signInScene.getScene()) {
+				@Override
+				protected void hideParent(Window parent) {
+					hideDock(true);
+				}
+			};
 			((SignIn) signInScene).setPopup(signInPopup);
 		}
 		signInPopup.popup();
@@ -473,6 +523,66 @@ public class Dock extends AbstractController implements Listener {
 				(int) (newValue.getRed() * 255),
 				(int) (newValue.getGreen() * 255),
 				(int) (newValue.getBlue() * 255)));
+	}
+
+	private void maybeShowDock() {
+		stopDockHiderTrigger();
+		dockHiderTrigger = new Timeline(new KeyFrame(
+				Duration.millis(AUTOHIDE_HIDE_TIME), ae -> hideDock(true)));
+		dockHiderTrigger.play();
+	}
+
+	private void stopDockHiderTrigger() {
+		if (dockHiderTrigger != null
+				&& dockHiderTrigger.getStatus() == Status.RUNNING)
+			dockHiderTrigger.stop();
+	}
+	
+	void hideDock(boolean hide) {
+		stopDockHiderTrigger();
+
+		if (hide != hidden) {
+			hidden = hide;
+
+			dockHider = new Timeline(new KeyFrame(Duration.millis(5),
+					ae -> shiftDock()));
+			yEnd = System.currentTimeMillis() + AUTOHIDE_DURATION;
+			dockHider.play();
+		}
+	}
+
+	private void shiftDock() {
+		long now = System.currentTimeMillis();
+		
+		// Total amount to slide
+		Configuration cfg = Configuration.getDefault();
+		int value = cfg.sizeProperty().get() - AUTOHIDE_REVEAL_BAR_SIZE;
+		
+		// How far along the timeline?
+		float fac = Math.min(1f, 1f - ( (float)(yEnd - now) / (float)AUTOHIDE_DURATION ));
+		
+		// The amount of movement so far 
+		float amt = fac * (float)value;
+		
+		// If showing, reverse
+		if(!hidden) {
+			amt = value - amt;
+		}
+		
+		if (cfg.topProperty().get()) {
+			getScene().getRoot().translateYProperty().set(-amt);
+			getStage().setHeight(cfg.sizeProperty().get() - amt);
+		} else if (cfg.bottomProperty().get()) {
+			getStage().setY(Client.getConfiguredBounds().getMaxY() + amt);
+			getStage().setHeight(cfg.sizeProperty().get() - amt);
+		} else {
+			throw new UnsupportedOperationException();
+		}
+		
+		// If not fully hidden / revealed, play again
+		if(now < yEnd) {
+			dockHider.playFromStart();
+		}
 	}
 
 	private void styleToolTips() {
