@@ -21,13 +21,16 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
+import javafx.scene.control.Label;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
@@ -46,16 +49,22 @@ import com.hypersocket.client.rmi.ResourceRealm;
 import com.hypersocket.client.rmi.ResourceService;
 
 public class Dock extends AbstractController implements Listener {
-	/*
-	 * The number of pixels to leave visible on the screen when the dock is
-	 * auto-hidden
+	/**
+	 * How wide (or high when vertical mode is supported) will the 'tab' be,
+	 * i.e. the area where the user hovers over to dock to reveal it
 	 */
-	private static final int AUTOHIDE_REVEAL_BAR_SIZE = 8;
-	
+	private static final int AUTOHIDE_TAB_SIZE = 80;
+
+	/*
+	 * How height (or wide when vertical mode is supported) will the 'tab' be,
+	 * i.e. the area where the user hovers over to dock to reveal it
+	 */
+	private static final int AUTOHIDE_TAB_OPPOSITE_SIZE = 16;
+
 	/* How long the autohide should take to complete (in MS) */
-	
+
 	private static final int AUTOHIDE_DURATION = 125;
-	
+
 	/*
 	 * How long after the mouse leaves the dock area, will the dock be hidden
 	 * (in MS)
@@ -87,6 +96,12 @@ public class Dock extends AbstractController implements Listener {
 	private ToggleButton ssoResources;
 	@FXML
 	private HBox shortcutContainer;
+	@FXML
+	private BorderPane dockContent;
+	@FXML
+	private StackPane dockStack;
+	@FXML
+	private Label pull;
 
 	private TranslateTransition slideTransition;
 	private Rectangle slideClip;
@@ -96,6 +111,8 @@ public class Dock extends AbstractController implements Listener {
 	private boolean hidden;
 	private Timeline dockHiderTrigger;
 	private long yEnd;
+
+	private boolean hiding;
 	private static Dock instance;
 
 	public Dock() {
@@ -175,6 +192,8 @@ public class Dock extends AbstractController implements Listener {
 				styleToolTips();
 			}
 		});
+		
+		dockContent.prefWidthProperty().bind(dockStack.widthProperty());
 
 		rebuildIcons();
 		sizeButtons();
@@ -235,8 +254,7 @@ public class Dock extends AbstractController implements Listener {
 
 	@FXML
 	private void evtMouseEnter(MouseEvent evt) throws Exception {
-		if (Configuration.getDefault().autoHideProperty().get()
-				&& !arePopupsOpen())
+		if (Configuration.getDefault().autoHideProperty().get())
 			hideDock(false);
 	}
 
@@ -526,6 +544,9 @@ public class Dock extends AbstractController implements Listener {
 	}
 
 	private void maybeShowDock() {
+		if(hiding) {
+			return;
+		}
 		stopDockHiderTrigger();
 		dockHiderTrigger = new Timeline(new KeyFrame(
 				Duration.millis(AUTOHIDE_HIDE_TIME), ae -> hideDock(true)));
@@ -537,12 +558,20 @@ public class Dock extends AbstractController implements Listener {
 				&& dockHiderTrigger.getStatus() == Status.RUNNING)
 			dockHiderTrigger.stop();
 	}
-	
+
 	void hideDock(boolean hide) {
 		stopDockHiderTrigger();
 
 		if (hide != hidden) {
+			/* If already hiding, we don't want the mouse event that MIGHT happen
+			 * when the resizing dock passes under the mouse (the user wont have moved mouse yet) 
+			 */
+			if(hiding) {
+				return;
+			}
+			
 			hidden = hide;
+			hiding = true;
 
 			dockHider = new Timeline(new KeyFrame(Duration.millis(5),
 					ae -> shiftDock()));
@@ -553,35 +582,62 @@ public class Dock extends AbstractController implements Listener {
 
 	private void shiftDock() {
 		long now = System.currentTimeMillis();
-		
+		Rectangle2D cfgBounds = Client.getConfiguredBounds();
+
 		// Total amount to slide
 		Configuration cfg = Configuration.getDefault();
-		int value = cfg.sizeProperty().get() - AUTOHIDE_REVEAL_BAR_SIZE;
-		
+		int value = cfg.sizeProperty().get() - AUTOHIDE_TAB_OPPOSITE_SIZE;
+
 		// How far along the timeline?
-		float fac = Math.min(1f, 1f - ( (float)(yEnd - now) / (float)AUTOHIDE_DURATION ));
-		
-		// The amount of movement so far 
-		float amt = fac * (float)value;
-		
+		float fac = Math.min(1f,
+				1f - ((float) (yEnd - now) / (float) AUTOHIDE_DURATION));
+
+		// The amount of movement so far
+		float amt = fac * (float) value;
+
+		// The amount to shrink the width (or height when vertical) of the
+		// visible 'bar'
+		float barSize = (float) cfgBounds.getWidth() * fac;
+
 		// If showing, reverse
-		if(!hidden) {
+		if (!hidden) {
 			amt = value - amt;
+			barSize = (float) cfgBounds.getWidth() - barSize;
 		}
 		
+		// Reveal or hide the pull tab
+		dockContent.setOpacity(hidden ? 1f - fac : fac);
+		pull.setOpacity(hidden ? fac : 1f - fac);
+
+		Stage stage = getStage();
 		if (cfg.topProperty().get()) {
 			getScene().getRoot().translateYProperty().set(-amt);
-			getStage().setHeight(cfg.sizeProperty().get() - amt);
+			stage.setHeight(cfg.sizeProperty().get() - amt);
+			stage.setWidth(Math.max(AUTOHIDE_TAB_SIZE, cfgBounds.getWidth()
+					- barSize));
+			stage.setX((cfgBounds.getWidth() - stage.getWidth()) / 2f);
 		} else if (cfg.bottomProperty().get()) {
-			getStage().setY(Client.getConfiguredBounds().getMaxY() + amt);
-			getStage().setHeight(cfg.sizeProperty().get() - amt);
+			stage.setY(cfgBounds.getMaxY() + amt);
+			stage.setHeight(cfg.sizeProperty().get() - amt);
+			stage.setWidth(Math.max(AUTOHIDE_TAB_SIZE, cfgBounds.getWidth()
+					- barSize));
+			stage.setX((cfgBounds.getWidth() - stage.getWidth()) / 2f);
 		} else {
 			throw new UnsupportedOperationException();
 		}
-		
+
 		// If not fully hidden / revealed, play again
-		if(now < yEnd) {
+		if (now < yEnd) {
 			dockHider.playFromStart();
+		}
+		else {
+			// Defer this as events may still be coming in
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					hiding = false;					
+				}
+			});
 		}
 	}
 
