@@ -330,6 +330,11 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		criteria.setFirstResult(start);
 		criteria.setMaxResults(length);
 		
+		for (ColumnSort sort : sorting) {
+			criteria.addOrder(sort.getSort() == Sort.ASC ? Order
+					.asc(sort.getColumn().getColumnName()) : Order.desc(sort.getColumn().getColumnName()));
+		}
+		
 		List<T> ids = (List<T>)criteria.list();
 		
 		if(ids.isEmpty()) {
