@@ -6,8 +6,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-
-<StackPane fx:id="dockStack" alignment="CENTER_LEFT" cacheShape="false" centerShape="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseEntered="#evtMouseEnter" onMouseExited="#evtMouseExit" prefWidth="900.0" scaleShape="false" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Dock">
+<StackPane fx:id="dockStack" alignment="CENTER_LEFT" cacheShape="false" centerShape="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#evtMouseClick" onMouseEntered="#evtMouseEnter" onMouseExited="#evtMouseExit" prefWidth="900.0" scaleShape="false" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Dock">
    <children>
       <BorderPane fx:id="dockContent" cacheShape="false" centerShape="false" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefWidth="900.0" scaleShape="false">
          <center>
