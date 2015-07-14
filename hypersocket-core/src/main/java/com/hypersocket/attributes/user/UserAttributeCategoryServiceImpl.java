@@ -132,6 +132,11 @@ public class UserAttributeCategoryServiceImpl extends AbstractResourceServiceImp
 
 		assertPermission(UserAttributePermission.DELETE);
 		
+		for(UserAttribute attr : category.getAttributes()) {
+			if(!attr.isDeleted()) {
+				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.hasAttributes", category.getName());
+			}
+		}
 		deleteResource(category);
 
 	}
