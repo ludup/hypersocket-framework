@@ -21,12 +21,15 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -113,6 +116,8 @@ public class Dock extends AbstractController implements Listener {
 	private long yEnd;
 
 	private boolean hiding;
+
+	private ContextMenu contextMenu;
 	private static Dock instance;
 
 	public Dock() {
@@ -192,13 +197,15 @@ public class Dock extends AbstractController implements Listener {
 				styleToolTips();
 			}
 		});
-		
+
 		dockContent.prefWidthProperty().bind(dockStack.widthProperty());
 
 		rebuildIcons();
 		sizeButtons();
-		recentre();
 		setAvailable();
+
+		if (cfg.autoHideProperty().get())
+			maybeHideDock();
 	}
 
 	public boolean arePopupsOpen() {
@@ -236,6 +243,31 @@ public class Dock extends AbstractController implements Listener {
 
 	}
 
+	private void showContextMenu(double x, double y) {
+		if (contextMenu != null && contextMenu.isShowing())
+			contextMenu.hide();
+		contextMenu = new ContextMenu();
+		// contextMenu.getStyleClass().add("background");
+
+		// Client.setColors(contextMenu.getScene());
+		Configuration cfg = Configuration.getDefault();
+		contextMenu.setOnHidden(value -> {
+			if (Configuration.getDefault().autoHideProperty().get()
+					&& !arePopupsOpen())
+				maybeHideDock();
+		});
+		if (!cfg.autoHideProperty().get()) {
+			MenuItem hide = new MenuItem(resources.getString("menu.hide"));
+			hide.setOnAction(value -> getStage().setIconified(true));
+			contextMenu.getItems().add(hide);
+		}
+		MenuItem close = new MenuItem(resources.getString("menu.exit"));
+		close.setOnAction(value -> context.confirmExit());
+		contextMenu.getItems().add(close);
+		contextMenu.show(dockContent, x, y);
+		System.err.println("ctx show " + x + "," + y);
+	}
+
 	private void recentre() {
 		double centre = getLaunchBarOffset();
 		slideLeft.disableProperty().set(centre > 0);
@@ -254,15 +286,30 @@ public class Dock extends AbstractController implements Listener {
 
 	@FXML
 	private void evtMouseEnter(MouseEvent evt) throws Exception {
-		if (Configuration.getDefault().autoHideProperty().get())
+		if (Configuration.getDefault().autoHideProperty().get()) {
 			hideDock(false);
+			evt.consume();
+		}
 	}
 
 	@FXML
 	private void evtMouseExit(MouseEvent evt) throws Exception {
 		if (Configuration.getDefault().autoHideProperty().get()
-				&& !arePopupsOpen())
-			maybeShowDock();
+				&& !arePopupsOpen()
+				&& (contextMenu == null || !contextMenu.isShowing())) {
+			maybeHideDock();
+			evt.consume();
+		}
+	}
+
+	@FXML
+	private void evtMouseClick(MouseEvent evt) throws Exception {
+		System.err.println("evt " + evt);
+		if (evt.getButton() == MouseButton.SECONDARY) {
+			showContextMenu(evt.getX(), evt.getY());
+			evt.consume();
+		}
+		;
 	}
 
 	@FXML
@@ -543,8 +590,8 @@ public class Dock extends AbstractController implements Listener {
 				(int) (newValue.getBlue() * 255)));
 	}
 
-	private void maybeShowDock() {
-		if(hiding) {
+	private void maybeHideDock() {
+		if (hiding) {
 			return;
 		}
 		stopDockHiderTrigger();
@@ -563,13 +610,15 @@ public class Dock extends AbstractController implements Listener {
 		stopDockHiderTrigger();
 
 		if (hide != hidden) {
-			/* If already hiding, we don't want the mouse event that MIGHT happen
-			 * when the resizing dock passes under the mouse (the user wont have moved mouse yet) 
+			/*
+			 * If already hiding, we don't want the mouse event that MIGHT
+			 * happen when the resizing dock passes under the mouse (the user
+			 * wont have moved mouse yet)
 			 */
-			if(hiding) {
+			if (hiding) {
 				return;
 			}
-			
+
 			hidden = hide;
 			hiding = true;
 
@@ -604,7 +653,7 @@ public class Dock extends AbstractController implements Listener {
 			amt = value - amt;
 			barSize = (float) cfgBounds.getWidth() - barSize;
 		}
-		
+
 		// Reveal or hide the pull tab
 		dockContent.setOpacity(hidden ? 1f - fac : fac);
 		pull.setOpacity(hidden ? fac : 1f - fac);
@@ -629,13 +678,12 @@ public class Dock extends AbstractController implements Listener {
 		// If not fully hidden / revealed, play again
 		if (now < yEnd) {
 			dockHider.playFromStart();
-		}
-		else {
+		} else {
 			// Defer this as events may still be coming in
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					hiding = false;					
+					hiding = false;
 				}
 			});
 		}
