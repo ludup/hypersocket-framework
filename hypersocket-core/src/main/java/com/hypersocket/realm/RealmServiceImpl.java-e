@@ -686,7 +686,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 			RealmProvider realmProvider = getProviderForRealm(module);
 
-			realmProvider.testConnection(properties, true);
+			realmProvider.testConnection(properties);
 
 			Realm realm = realmRepository.createRealm(name, module, properties,
 					realmProvider);
@@ -757,7 +757,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 			RealmProvider realmProvider = getProviderForRealm(realm
 					.getResourceCategory());
 
-			realmProvider.testConnection(properties, false);
+			realmProvider.testConnection(properties, realm);
 			String oldName = realm.getName();
 
 			clearCache(realm);
@@ -785,7 +785,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 			eventService.publishEvent(new RealmUpdatedEvent(this, t,
 					getCurrentSession(), realm));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"error.unexpectedError", t);
+					"error.unexpectedError", t.getMessage());
 		}
 		return realm;
 	}

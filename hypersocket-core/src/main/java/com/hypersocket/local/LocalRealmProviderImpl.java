@@ -538,19 +538,6 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		return getPropertyCategories(realm);
 	}
 
-	// @Override
-	// public Set<Principal> getPrincipalsByProperty(String propertyName,
-	// String propertyValue) {
-	//
-	// Set<Principal> principals = new HashSet<Principal>();
-	// List<DatabaseProperty> properties = userRepository
-	// .getPropertiesWithValue(propertyName, propertyValue);
-	// for (DatabaseProperty property : properties) {
-	// principals.add((Principal) property.getResource());
-	// }
-	// return principals;
-	// }
-
 	@Override
 	public String getAddress(Principal principal, MediaType type)
 			throws MediaNotFoundException {
@@ -619,11 +606,17 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
-	public void testConnection(Map<String, String> properties, boolean createMode)
+	public void testConnection(Map<String, String> properties)
 			throws IOException {
 		
 	}
 
+	@Override
+	public void testConnection(Map<String, String> properties, Realm realm)
+			throws IOException {
+		
+	}
+	
 	@Override
 	public String getUserPropertyValue(Principal principal, String name) {
 		return userRepository.getValue(principal, name);
