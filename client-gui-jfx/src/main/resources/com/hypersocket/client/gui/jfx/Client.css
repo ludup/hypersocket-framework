@@ -112,3 +112,24 @@
 	-fx-text-fill: black;
     -fx-background-color: #ffdf00;
 }
+
+/* Menus */
+.menu-item .label {
+    -fx-text-fill: black;
+}
+
+.menu-item:focused {
+     -fx-background-color: DOCK_BUTTON_HIGHLIGHT_COLOR;
+}
+
+.menu-item:focused .label {
+    -fx-text-fill: inherit;
+}
+
+.context-menu {
+    -fx-skin: "com.sun.javafx.scene.control.skin.ContextMenuSkin";
+    -fx-background-color: white;
+    -fx-background-insets: 0, 1, 2;
+    -fx-background-radius: 0 0 0 0;
+    -fx-padding: 0.333333em 0.083333em 0.666667em 0.083333em; /* 4 1 8 1 */
+}

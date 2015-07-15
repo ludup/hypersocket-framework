@@ -47,7 +47,7 @@
             </HBox>
          </right>
       </BorderPane>
-      <Label fx:id="pull" alignment="CENTER" opacity="0.0" styleClass="pull" text="%pull" StackPane.alignment="BOTTOM_CENTER" />
+      <Label fx:id="pull" alignment="CENTER" opacity="0.0" styleClass="pull" text="%pullTop" StackPane.alignment="BOTTOM_CENTER" />
    </children>
    <styleClass>
       <String fx:value="dock" />

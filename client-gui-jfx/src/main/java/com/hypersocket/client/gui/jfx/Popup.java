@@ -33,7 +33,7 @@ public class Popup extends Stage {
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
 				if (!sizeObtained) {
-					positionPopup();
+					sizeToScene();
 					sizeObtained = true;
 				}
 			}
@@ -68,7 +68,7 @@ public class Popup extends Stage {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
-				positionPopup();
+				sizeToScene();
 			}
 		};
 		Configuration cfg = Configuration.getDefault();
@@ -82,7 +82,7 @@ public class Popup extends Stage {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				positionPopup();
+				sizeToScene();
 			}
 		};
 		cfg.sizeProperty().addListener(sl);
@@ -100,12 +100,11 @@ public class Popup extends Stage {
 		Client.setColors(scene);
 		
 		sizeToScene();
-		positionPopup();
 	}
 
 	public void popupAndWait() {
 		if (!isShowing()) {
-			positionPopup();
+			sizeToScene();
 			showAndWait();
 		}
 	}
@@ -113,7 +112,6 @@ public class Popup extends Stage {
 	public void popup() {
 		if (!isShowing()) {
 			sizeToScene();
-			positionPopup();
 			
 			/* Absolute no idea why this runLater() is required, but without it sizeToScene
 			 * calculates an incorrect height. 
@@ -126,8 +124,10 @@ public class Popup extends Stage {
 			});
 		}
 	}
+	
 
-	public void positionPopup() {
+    public void sizeToScene() {
+    	super.sizeToScene();
 		Configuration cfg = Configuration.getDefault();
 		if (cfg.topProperty().get()) {
 			setY(getOwner().getY() + getOwner().getHeight());

@@ -104,7 +104,7 @@ public class Client extends Application {
 	private void setStageBounds() {
 		Configuration cfg = Configuration.getDefault();
 		Rectangle2D bounds = getConfiguredBounds();
-
+		
 		if (cfg.leftProperty().get()) {
 			primaryStage.setX(bounds.getMinX());
 			primaryStage.setHeight(bounds.getHeight());
@@ -273,13 +273,6 @@ public class Client extends Application {
 		cfg.bottomProperty().addListener(dockPositionListener);
 		cfg.leftProperty().addListener(dockPositionListener);
 		cfg.rightProperty().addListener(dockPositionListener);
-		// exitAlert.setTitle(resources.getString("exit.confirm.title"));
-		// exitAlert.setHeaderText(resources.getString("exit.confirm.header"));
-		// exitAlert.setContentText(resources.getString("exit.confirm.content"));
-		// Optional<ButtonType> result = alert.showAndWait();
-		// if (result.get() == ButtonType.OK) {
-		// System.exit(0);
-		// }
 
 		//
 		primaryStage.focusedProperty().addListener(
