@@ -16,6 +16,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.Alert.AlertType;
@@ -114,10 +115,9 @@ public class Dock extends AbstractController implements Listener {
 	private boolean hidden;
 	private Timeline dockHiderTrigger;
 	private long yEnd;
-
 	private boolean hiding;
-
 	private ContextMenu contextMenu;
+	private Configuration cfg;
 	private static Dock instance;
 
 	public Dock() {
@@ -135,7 +135,7 @@ public class Dock extends AbstractController implements Listener {
 	protected void onConfigure() {
 		super.onConfigure();
 
-		Configuration cfg = Configuration.getDefault();
+		cfg = Configuration.getDefault();
 
 		networkResources.setTooltip(createDockButtonToolTip(resources
 				.getString("network.toolTip")));
@@ -197,15 +197,33 @@ public class Dock extends AbstractController implements Listener {
 				styleToolTips();
 			}
 		});
+		ChangeListener<Boolean> borderChangeListener = new ChangeListener<Boolean>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				configurePull();
+			}
+		};
+		cfg.topProperty().addListener(borderChangeListener);
+		cfg.bottomProperty().addListener(borderChangeListener);
 
 		dockContent.prefWidthProperty().bind(dockStack.widthProperty());
 
 		rebuildIcons();
 		sizeButtons();
 		setAvailable();
+		configurePull();
 
 		if (cfg.autoHideProperty().get())
 			maybeHideDock();
+	}
+
+	private void configurePull() {
+		if (cfg.topProperty().get())
+			pull.setText(resources.getString("pullTop"));
+		else if (cfg.bottomProperty().get())
+			pull.setText(resources.getString("pullBottom"));
 	}
 
 	public boolean arePopupsOpen() {
@@ -243,29 +261,57 @@ public class Dock extends AbstractController implements Listener {
 
 	}
 
+	private static String textFill(Color color) {
+		return String.format("-fx-text-fill: %s ;", toHex(color, false));
+	}
+
+	private static String background(Color color, boolean opacity) {
+		return String.format("-fx-background-color: %s ;",
+				toHex(color, opacity));
+	}
+
+	private static String toHex(Color color, boolean opacity) {
+		if (opacity)
+			return String.format("#%02x%02x%02x%02x",
+					(int) (color.getRed() * 255),
+					(int) (color.getGreen() * 255),
+					(int) (color.getBlue() * 255),
+					(int) (color.getOpacity() * 255));
+		else
+			return String.format("#%02x%02x%02x", (int) (color.getRed() * 255),
+					(int) (color.getGreen() * 255),
+					(int) (color.getBlue() * 255));
+	}
+
 	private void showContextMenu(double x, double y) {
 		if (contextMenu != null && contextMenu.isShowing())
 			contextMenu.hide();
 		contextMenu = new ContextMenu();
 		// contextMenu.getStyleClass().add("background");
 
-		// Client.setColors(contextMenu.getScene());
-		Configuration cfg = Configuration.getDefault();
+		Color bg = cfg.colorProperty().getValue();
+		Color fg = bg.getBrightness() < 0.5f ? Color.WHITE : Color.BLACK;
+
+		contextMenu.setStyle(background(bg, true));
+
 		contextMenu.setOnHidden(value -> {
-			if (Configuration.getDefault().autoHideProperty().get()
-					&& !arePopupsOpen())
+			if (cfg.autoHideProperty().get() && !arePopupsOpen())
 				maybeHideDock();
 		});
 		if (!cfg.autoHideProperty().get()) {
 			MenuItem hide = new MenuItem(resources.getString("menu.hide"));
 			hide.setOnAction(value -> getStage().setIconified(true));
+			hide.setStyle(textFill(fg));
 			contextMenu.getItems().add(hide);
 		}
 		MenuItem close = new MenuItem(resources.getString("menu.exit"));
 		close.setOnAction(value -> context.confirmExit());
+		close.setStyle(textFill(fg));
 		contextMenu.getItems().add(close);
-		contextMenu.show(dockContent, x, y);
-		System.err.println("ctx show " + x + "," + y);
+		Point2D loc = new Point2D(x + getStage().getX(), y + getStage().getY());
+		contextMenu.show(dockContent, loc.getX(), loc.getY());
+		System.err.println(String.format("ctx show %f, %f", loc.getX(),
+				loc.getY()));
 	}
 
 	private void recentre() {
@@ -286,7 +332,7 @@ public class Dock extends AbstractController implements Listener {
 
 	@FXML
 	private void evtMouseEnter(MouseEvent evt) throws Exception {
-		if (Configuration.getDefault().autoHideProperty().get()) {
+		if (cfg.autoHideProperty().get()) {
 			hideDock(false);
 			evt.consume();
 		}
@@ -294,8 +340,7 @@ public class Dock extends AbstractController implements Listener {
 
 	@FXML
 	private void evtMouseExit(MouseEvent evt) throws Exception {
-		if (Configuration.getDefault().autoHideProperty().get()
-				&& !arePopupsOpen()
+		if (cfg.autoHideProperty().get() && !arePopupsOpen()
 				&& (contextMenu == null || !contextMenu.isShowing())) {
 			maybeHideDock();
 			evt.consume();
@@ -304,12 +349,11 @@ public class Dock extends AbstractController implements Listener {
 
 	@FXML
 	private void evtMouseClick(MouseEvent evt) throws Exception {
-		System.err.println("evt " + evt);
 		if (evt.getButton() == MouseButton.SECONDARY) {
 			showContextMenu(evt.getX(), evt.getY());
 			evt.consume();
-		}
-		;
+		} else if (contextMenu != null)
+			contextMenu.hide();
 	}
 
 	@FXML
@@ -554,7 +598,6 @@ public class Dock extends AbstractController implements Listener {
 		final Tooltip tt = new Tooltip(text) {
 			@Override
 			public void show(Window ownerWindow, double anchorX, double anchorY) {
-				Configuration cfg = Configuration.getDefault();
 				Rectangle2D bnds = Client.getConfiguredBounds();
 
 				if (cfg.leftProperty().get()) {
@@ -634,7 +677,6 @@ public class Dock extends AbstractController implements Listener {
 		Rectangle2D cfgBounds = Client.getConfiguredBounds();
 
 		// Total amount to slide
-		Configuration cfg = Configuration.getDefault();
 		int value = cfg.sizeProperty().get() - AUTOHIDE_TAB_OPPOSITE_SIZE;
 
 		// How far along the timeline?
@@ -718,7 +760,6 @@ public class Dock extends AbstractController implements Listener {
 	}
 
 	private void sizeButton(ButtonBase button) {
-		Configuration cfg = Configuration.getDefault();
 		int sz = cfg.sizeProperty().get();
 		int df = sz / 8;
 		sz -= df;

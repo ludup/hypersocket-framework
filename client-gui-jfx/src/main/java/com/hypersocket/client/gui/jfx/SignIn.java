@@ -650,7 +650,7 @@ public class SignIn extends AbstractController implements Listener {
 		Stage stage = getStage();
 		if (stage != null) {
 			stage.sizeToScene();
-			popup.positionPopup();
+			popup.sizeToScene();
 		}
 	}
 
