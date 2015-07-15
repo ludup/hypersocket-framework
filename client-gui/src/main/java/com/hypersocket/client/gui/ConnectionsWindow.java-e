@@ -70,8 +70,6 @@ public class ConnectionsWindow extends AbstractWindow {
 	private Action connectAction;
 	private Action disconnectAction;
 
-	
-	
 	/**
 	 */
 	public ConnectionsWindow() {
@@ -175,10 +173,10 @@ public class ConnectionsWindow extends AbstractWindow {
 		if(table.isDisposed()) {
 			return;
 		}
-		
+		table.setEnabled(!gui.isUpdating());
 		TableItem[] items = table.getSelection();
-		if (items == null || items.length == 0) {
-			newAction.setEnabled(true);
+		if (items == null || items.length == 0 || gui.isUpdating()) {
+			newAction.setEnabled(!gui.isUpdating());
 			editAction.setEnabled(false);
 			deleteAction.setEnabled(false);
 			connectAction.setEnabled(false);
