@@ -48,7 +48,9 @@ public class ClasspathContentHandler extends ContentHandlerImpl {
 	@Override
 	public long getLastModified(String path) {
 		try {
-			URL url = getClass().getResource(classpathPrefix + "/" + path);
+			URL url = getClass().getResource(classpathPrefix + "/" + path);if(log.isInfoEnabled()){
+				log.info("REMOVE ME: Processing resource URL " + url.toExternalForm());
+			}
 			int idx;
 			File jarFile;
 			if((idx = url.toURI().toString().indexOf("!")) > -1) {
