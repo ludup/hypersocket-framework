@@ -204,6 +204,10 @@ public class Configuration {
 	public Property<Color> colorProperty() {
 		return color ;
 	}
+
+	public boolean isVertical() {
+		return left.get() || right.get();
+	}
 	
 	static void putColor(String key, Preferences p, Color color) {
 		p.putDouble(key + "_r", color.getRed());

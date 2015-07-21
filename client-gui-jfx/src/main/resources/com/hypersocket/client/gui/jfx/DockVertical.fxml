@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane fx:id="dockStack" cacheShape="false" centerShape="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#evtMouseClick" onMouseEntered="#evtMouseEnter" onMouseExited="#evtMouseExit" prefHeight="900.0" scaleShape="false" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Dock">
+   <children>
+      <Group StackPane.alignment="CENTER_RIGHT">
+         <children>
+            <Label fx:id="pull" alignment="CENTER" opacity="0.0" rotate="90.0" styleClass="pull" text="%pullTop" />
+         </children>
+      </Group>
+      <BorderPane fx:id="dockContent" cacheShape="false" centerShape="false" scaleShape="false">
+         <center>
+            <BorderPane styleClass="background" BorderPane.alignment="CENTER">
+               <center>
+                  <VBox fx:id="shortcutContainer" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" minWidth="1.0" styleClass="background" BorderPane.alignment="CENTER">
+                     <children>
+                        <VBox fx:id="shortcuts" alignment="CENTER" maxHeight="1.7976931348623157E308" scaleShape="false" spacing="6.0" styleClass="launchers" />
+                     </children>
+                  </VBox>
+               </center>
+               <top>
+                  <Button fx:id="slideLeft" mnemonicParsing="false" onAction="#evtSlideLeft" styleClass="iconButton" text="%up" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" BorderPane.alignment="CENTER" />
+               </top>
+               <bottom>
+                  <Button fx:id="slideRight" mnemonicParsing="false" onAction="#evtSlideRight" styleClass="iconButton" text="%down" BorderPane.alignment="CENTER" />
+               </bottom>
+            </BorderPane>
+         </center>
+         <bottom>
+            <VBox alignment="BOTTOM_CENTER" styleClass="background">
+               <children>
+                  <ToggleButton fx:id="ssoResources" mnemonicParsing="false" onAction="#evtRefilter" styleClass="iconButton" text="%sso" />
+                  <ToggleButton fx:id="browserResources" mnemonicParsing="false" onAction="#evtRefilter" prefHeight="56.0" prefWidth="56.0" styleClass="iconButton" text="%web" />
+                  <ToggleButton fx:id="networkResources" mnemonicParsing="false" onAction="#evtRefilter" prefHeight="56.0" prefWidth="56.0" styleClass="iconButton" text="%network" textOverrun="CLIP" />
+                  <ToggleButton fx:id="fileResources" mnemonicParsing="false" onAction="#evtRefilter" styleClass="iconButton" text="%files" textOverrun="CLIP" />
+                  <Separator orientation="HORIZONTAL" />
+               </children>
+            </VBox>
+         </bottom>
+         <top>
+            <VBox alignment="TOP_CENTER" styleClass="background">
+               <children>
+                  <Separator orientation="HORIZONTAL" />
+                  <Button fx:id="signIn" mnemonicParsing="false" onAction="#evtOpenSignInWindow" styleClass="iconButton" text="%signIn" textOverrun="CLIP" />
+                  <Button fx:id="options" mnemonicParsing="false" onAction="#evtOpenOptionsWindow" styleClass="iconButton" text="%options" textOverrun="CLIP" />
+                  <Button fx:id="status" mnemonicParsing="false" onAction="#evtStatus" styleClass="iconButton" text="%status" />
+               </children>
+            </VBox>
+         </top>
+      </BorderPane>
+   </children>
+   <styleClass>
+      <String fx:value="dock" />
+      <String fx:value="background" />
+   </styleClass>
+</StackPane>

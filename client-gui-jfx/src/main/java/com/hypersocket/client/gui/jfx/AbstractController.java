@@ -147,7 +147,7 @@ public class AbstractController implements FramedController, Listener {
 						// NOTE Bleh. Have to recreate tooltips? How crazy is that
 						Tooltip newTooltip = new Tooltip();
 						newTooltip.setText(tooltip.getText());
-						Dock.styleToolTip(newTooltip);
+						UIHelpers.styleToolTip(newTooltip);
 						((Control)t).setTooltip(newTooltip);
 					}
 				}				

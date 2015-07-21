@@ -14,14 +14,29 @@ import javafx.stage.Window;
 public class Popup extends Stage {
 
 	private boolean sizeObtained;
+	private double position;
+	private PositionType positionType;
+
+	public enum PositionType {
+		POSITIONED, DOCKED
+	}
 
 	public Popup(Window parent, Scene scene) {
 		this(parent, scene, true);
 	}
 
 	public Popup(Window parent, Scene scene, boolean dismissOnFocusLost) {
-		super(Platform.isSupported(ConditionalFeature.TRANSPARENT_WINDOW) ? StageStyle.TRANSPARENT : StageStyle.UNDECORATED);
-		
+		this(parent, scene, dismissOnFocusLost, PositionType.DOCKED);
+	}
+
+	public Popup(Window parent, Scene scene, boolean dismissOnFocusLost,
+			PositionType positionType) {
+		super(
+				Platform.isSupported(ConditionalFeature.TRANSPARENT_WINDOW) ? StageStyle.TRANSPARENT
+						: StageStyle.UNDECORATED);
+
+		this.positionType = positionType;
+
 		initOwner(parent);
 		setScene(scene);
 		setMinHeight(24);
@@ -53,7 +68,9 @@ public class Popup extends Stage {
 						Platform.runLater(new Runnable() {
 							@Override
 							public void run() {
-								if (!parent.focusedProperty().get() && Configuration.getDefault().autoHideProperty().get()) {
+								if (!parent.focusedProperty().get()
+										&& Configuration.getDefault()
+												.autoHideProperty().get()) {
 									hideParent(parent);
 								}
 							}
@@ -87,7 +104,6 @@ public class Popup extends Stage {
 		};
 		cfg.sizeProperty().addListener(sl);
 		cfg.monitorProperty().addListener(sl);
-		
 
 		Property<Color> colorProperty = cfg.colorProperty();
 		colorProperty.addListener(new ChangeListener<Color>() {
@@ -98,8 +114,24 @@ public class Popup extends Stage {
 			}
 		});
 		Client.setColors(scene);
-		
+
 		sizeToScene();
+	}
+
+	public void setPosition(double position) {
+		this.position = position;
+	}
+
+	public double getPosition() {
+		return position;
+	}
+
+	public PositionType getPositionType() {
+		return positionType;
+	}
+
+	public void setPositionType(PositionType positionType) {
+		this.positionType = positionType;
 	}
 
 	public void popupAndWait() {
@@ -112,9 +144,10 @@ public class Popup extends Stage {
 	public void popup() {
 		if (!isShowing()) {
 			sizeToScene();
-			
-			/* Absolute no idea why this runLater() is required, but without it sizeToScene
-			 * calculates an incorrect height. 
+
+			/*
+			 * Absolute no idea why this runLater() is required, but without it
+			 * sizeToScene calculates an incorrect height.
 			 */
 			Platform.runLater(new Runnable() {
 				@Override
@@ -124,17 +157,58 @@ public class Popup extends Stage {
 			});
 		}
 	}
-	
 
-    public void sizeToScene() {
-    	super.sizeToScene();
+	public void sizeToScene() {
+		super.sizeToScene();
 		Configuration cfg = Configuration.getDefault();
 		if (cfg.topProperty().get()) {
 			setY(getOwner().getY() + getOwner().getHeight());
-			setX(getOwner().getX() + getOwner().getWidth() - getWidth());
+			switch (positionType) {
+			case POSITIONED:
+				if (position + getWidth() > getOwner().getWidth() - getWidth())
+					setX(getOwner().getWidth() - getWidth());
+				else
+					setX(position);
+				break;
+			default:
+				setX(getOwner().getX() + getOwner().getWidth() - getWidth());
+			}
 		} else if (cfg.bottomProperty().get()) {
 			setY(getOwner().getY() - getHeight());
-			setX(getOwner().getX() + getOwner().getWidth() - getWidth());
+			switch (positionType) {
+			case POSITIONED:
+				if (position + getWidth() > getOwner().getWidth() - getWidth())
+					setX(getOwner().getWidth() - getWidth());
+				else
+					setX(position);
+				break;
+			default:
+				setX(getOwner().getX() + getOwner().getWidth() - getWidth());
+			}
+		} else if (cfg.leftProperty().get()) {
+			setX(getOwner().getX() + getOwner().getWidth());
+			switch (positionType) {
+			case POSITIONED:
+				if (position + getHeight() > getOwner().getHeight() - getHeight())
+					setY(getOwner().getHeight() - getHeight());
+				else
+					setY(position);
+				break;
+			default:
+				setY(getOwner().getY());
+			}
+		} else if (cfg.rightProperty().get()) {
+			setX(getOwner().getX() - getWidth());
+			switch (positionType) {
+			case POSITIONED:
+				if (position + getHeight() > getOwner().getHeight() - getHeight())
+					setY(getOwner().getHeight() - getHeight());
+				else
+					setY(position);
+				break;
+			default:
+				setY(getOwner().getY());
+			}
 		}
 	}
 
