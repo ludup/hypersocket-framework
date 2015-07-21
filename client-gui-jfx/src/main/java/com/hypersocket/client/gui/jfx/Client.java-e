@@ -5,6 +5,9 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javafx.application.Application;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
@@ -34,11 +37,15 @@ import com.hypersocket.client.rmi.BrowserLauncher.BrowserLauncherFactory;
 import com.hypersocket.client.rmi.ResourceLauncher;
 
 public class Client extends Application {
+
+	static Logger log = LoggerFactory.getLogger(Client.class);
 	static ResourceBundle BUNDLE = ResourceBundle.getBundle(Client.class
 			.getName());
 
 	private Bridge bridge;
 	private Stage primaryStage;
+
+	private boolean vertical;
 
 	private static Object barrier = new Object();
 
@@ -59,8 +66,13 @@ public class Client extends Application {
 
 	public FramedController openScene(Class<? extends Initializable> controller)
 			throws IOException {
+		return openScene(controller, null);
+	}	
+	
+	public FramedController openScene(Class<? extends Initializable> controller, String fxmlSuffix)
+			throws IOException {
 		URL resource = controller.getResource(controller.getSimpleName()
-				+ ".fxml");
+				+ (fxmlSuffix == null ? "" : fxmlSuffix ) +".fxml");
 		FXMLLoader loader = new FXMLLoader();
 		loader.setResources(ResourceBundle.getBundle(controller.getName()));
 		Parent root = loader.load(resource.openStream());
@@ -101,26 +113,48 @@ public class Client extends Application {
 		return cfg.avoidReservedProperty().get() ? visualBounds : screenBounds;
 	}
 
+	private void recreateScene() {
+		try {
+			// Open the actual scene
+			FramedController fc = openScene(Dock.class, Configuration.getDefault().isVertical() ? "Vertical" : null);
+			final Scene scene = fc.getScene();
+
+			// Background colour
+			setColors(scene);
+
+			// Finalise and show
+			setStageBounds();
+			primaryStage.setScene(scene);
+			primaryStage.show();
+		} catch (Exception e) {
+			log.error("Failed to create scene.", e);
+		}
+	}
+
 	private void setStageBounds() {
 		Configuration cfg = Configuration.getDefault();
 		Rectangle2D bounds = getConfiguredBounds();
-		
+
 		if (cfg.leftProperty().get()) {
+			vertical = true;
 			primaryStage.setX(bounds.getMinX());
 			primaryStage.setHeight(bounds.getHeight());
 			primaryStage.setWidth(cfg.sizeProperty().get());
 			primaryStage.setY(bounds.getMinY());
 		} else if (cfg.rightProperty().get()) {
+			vertical = true;
 			primaryStage.setX(bounds.getMaxX() - cfg.sizeProperty().get());
 			primaryStage.setHeight(bounds.getHeight());
 			primaryStage.setWidth(cfg.sizeProperty().get());
 			primaryStage.setY(0);
 		} else if (cfg.bottomProperty().get()) {
+			vertical = false;
 			primaryStage.setX(bounds.getMinX());
 			primaryStage.setHeight(cfg.sizeProperty().get());
 			primaryStage.setWidth(bounds.getWidth());
 			primaryStage.setY(bounds.getMaxY() - primaryStage.getHeight());
 		} else {
+			vertical = false;
 			primaryStage.setX(bounds.getMinX());
 			primaryStage.setHeight(cfg.sizeProperty().get());
 			primaryStage.setWidth(bounds.getWidth());
@@ -130,6 +164,7 @@ public class Client extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		Configuration cfg = Configuration.getDefault();
 
 		synchronized (barrier) {
 			barrier.notify();
@@ -163,11 +198,10 @@ public class Client extends Application {
 						"hypersocket-icon32x32.png")));
 
 		// Open the actual scene
-		FramedController fc = openScene(Dock.class);
+		FramedController fc = openScene(Dock.class, cfg.isVertical() ? "Vertical" : null);
 		final Scene scene = fc.getScene();
 
 		// Configure the scene (window)
-		Configuration cfg = Configuration.getDefault();
 		BooleanProperty alwaysOnTopProperty = cfg.alwaysOnTopProperty();
 
 		// Background colour
@@ -255,7 +289,12 @@ public class Client extends Application {
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
 				if (newValue) {
-					setStageBounds();
+					boolean newVertical = cfg.isVertical();
+					if (newVertical != vertical) {
+						recreateScene();
+					} else {
+						setStageBounds();
+					}
 				}
 			}
 		};
@@ -338,7 +377,6 @@ public class Client extends Application {
 		String newCol = "-fx-text-fill: "
 				+ (newValue.getBrightness() < 0.5f ? "#ffffff" : "#000000")
 				+ ";";
-		System.out.println("New col: " + newCol);
 		scene.getRoot().setStyle(newCol);
 		scene.setFill(newValue);
 	}

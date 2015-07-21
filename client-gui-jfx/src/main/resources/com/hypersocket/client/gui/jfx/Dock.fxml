@@ -41,6 +41,7 @@
             <HBox alignment="CENTER_RIGHT" styleClass="background">
                <children>
                   <Separator orientation="VERTICAL" />
+                  <Button fx:id="status" mnemonicParsing="false" onAction="#evtStatus" styleClass="iconButton" text="%status" />
                   <Button fx:id="options" mnemonicParsing="false" onAction="#evtOpenOptionsWindow" styleClass="iconButton" text="%options" textOverrun="CLIP" />
                   <Button fx:id="signIn" mnemonicParsing="false" onAction="#evtOpenSignInWindow" styleClass="iconButton" text="%signIn" textOverrun="CLIP" />
                </children>

@@ -18,7 +18,7 @@
 }
 
 /* Dock icons */
-.dock .button {  
+.dock .button, .group .button {  
 	-fx-padding: 4 4 4 4;
     -fx-background-color: inherit;
 }
@@ -27,7 +27,7 @@
     -fx-background-color: inherit;
 }
 
-.dock .toggle-button:hover, .dock .button:hover {
+.dock .toggle-button:hover, .dock .button:hover, .group .button:hover {
     -fx-background-color: DOCK_BUTTON_HIGHLIGHT_COLOR;
 }
 
@@ -47,6 +47,9 @@
     -fx-effect: innershadow( three-pass-box , derive(-icons-color,-70%) , 0.1em, 0.0 , 0.07em, 0.07em );
     -fx-text-fill: linear-gradient(to bottom, derive(-icons-color,20%) 10%, derive(-icons-color,-40%) 80%);
     */
+}
+
+.group .itemButton {
 }
 
 .dock .launcherIcon {
@@ -85,6 +88,24 @@
 
 .logo {
 	-fx-image: url("hypersocket-icon64x64.png");
+}
+
+/* Text */
+.description {
+	-fx-font-size: 10;
+}
+
+.title {
+	-fx-font-size: 16;
+}
+
+.item {
+	-fx-font-size: 14;
+}
+
+.item .icon {
+	-fx-font-size: 18;
+	-fx-padding: 0 10 0 4;
 }
 
 

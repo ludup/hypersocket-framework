@@ -1,12 +1,14 @@
 package com.hypersocket.client.gui.jfx;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.MissingResourceException;
+import java.util.Map;
+import java.util.TreeMap;
 
-import javafx.animation.Animation.Status;
+import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
@@ -17,6 +19,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.Alert.AlertType;
@@ -27,13 +30,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.control.Tooltip;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -45,10 +46,13 @@ import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hypersocket.client.ServiceResource;
 import com.hypersocket.client.gui.jfx.Bridge.Listener;
+import com.hypersocket.client.gui.jfx.Popup.PositionType;
 import com.hypersocket.client.rmi.ConnectionStatus;
 import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.Resource;
+import com.hypersocket.client.rmi.Resource.Type;
 import com.hypersocket.client.rmi.ResourceRealm;
 import com.hypersocket.client.rmi.ResourceService;
 
@@ -79,6 +83,7 @@ public class Dock extends AbstractController implements Listener {
 
 	private Popup signInPopup;
 	private Popup optionsPopup;
+	private Popup resourceGroupPopup;
 
 	@FXML
 	private Button slideLeft;
@@ -89,7 +94,9 @@ public class Dock extends AbstractController implements Listener {
 	@FXML
 	private Button options;
 	@FXML
-	private HBox shortcuts;
+	private Button status;
+	@FXML
+	private Pane shortcuts;
 	@FXML
 	private ToggleButton fileResources;
 	@FXML
@@ -99,7 +106,7 @@ public class Dock extends AbstractController implements Listener {
 	@FXML
 	private ToggleButton ssoResources;
 	@FXML
-	private HBox shortcutContainer;
+	private Pane shortcutContainer;
 	@FXML
 	private BorderPane dockContent;
 	@FXML
@@ -119,11 +126,13 @@ public class Dock extends AbstractController implements Listener {
 	private ContextMenu contextMenu;
 	private Configuration cfg;
 	private static Dock instance;
+	private Map<ResourceGroupKey, ResourceGroupList> icons = new TreeMap<>();
+	private List<ServiceResource> serviceResources = new ArrayList<>();
+	private ResourceGroup resourceGroup;
+	private Popup statusPopup;
+	private Status statusContent;
 
 	public Dock() {
-		if (instance != null) {
-			throw new IllegalStateException("Only allowed one dock instance.");
-		}
 		instance = this;
 	}
 
@@ -137,29 +146,29 @@ public class Dock extends AbstractController implements Listener {
 
 		cfg = Configuration.getDefault();
 
-		networkResources.setTooltip(createDockButtonToolTip(resources
+		networkResources.setTooltip(UIHelpers.createDockButtonToolTip(resources
 				.getString("network.toolTip")));
 		networkResources.selectedProperty().bindBidirectional(
 				cfg.showNetworkProperty());
 
-		ssoResources.setTooltip(createDockButtonToolTip(resources
+		ssoResources.setTooltip(UIHelpers.createDockButtonToolTip(resources
 				.getString("sso.toolTip")));
 		ssoResources.selectedProperty()
 				.bindBidirectional(cfg.showSSOProperty());
 
-		browserResources.setTooltip(createDockButtonToolTip(resources
+		browserResources.setTooltip(UIHelpers.createDockButtonToolTip(resources
 				.getString("web.toolTip")));
 		browserResources.selectedProperty().bindBidirectional(
 				cfg.showWebProperty());
 
-		fileResources.setTooltip(createDockButtonToolTip(resources
+		fileResources.setTooltip(UIHelpers.createDockButtonToolTip(resources
 				.getString("files.toolTip")));
 		fileResources.selectedProperty().bindBidirectional(
 				cfg.showFilesProperty());
 
 		context.getBridge().addListener(this);
 
-		slideTransition = new TranslateTransition(Duration.seconds(0.5),
+		slideTransition = new TranslateTransition(Duration.seconds(0.125),
 				shortcuts);
 		slideTransition.setAutoReverse(false);
 		slideTransition.setCycleCount(1);
@@ -169,6 +178,15 @@ public class Dock extends AbstractController implements Listener {
 		slideClip.heightProperty().bind(shortcutContainer.heightProperty());
 		shortcutContainer.setClip(slideClip);
 
+		shortcutContainer.widthProperty().addListener(new ChangeListener<Number>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Number> observable,
+					Number oldValue, Number newValue) {
+				recentre();
+			}
+		});
+		
 		/*
 		 * Watch for the width of the inner launchers pane. This will get called
 		 * when launchers are added and removed.
@@ -210,11 +228,11 @@ public class Dock extends AbstractController implements Listener {
 
 		dockContent.prefWidthProperty().bind(dockStack.widthProperty());
 
+		rebuildResources();
 		rebuildIcons();
 		sizeButtons();
 		setAvailable();
 		configurePull();
-
 		if (cfg.autoHideProperty().get())
 			maybeHideDock();
 	}
@@ -224,12 +242,27 @@ public class Dock extends AbstractController implements Listener {
 			pull.setText(resources.getString("pullTop"));
 		else if (cfg.bottomProperty().get())
 			pull.setText(resources.getString("pullBottom"));
+		else if (cfg.leftProperty().get()) {
+			pull.setText(resources.getString("pullBottom"));
+			pull.setAlignment(Pos.CENTER_RIGHT);
+		} else if (cfg.rightProperty().get()) {
+			pull.setText(resources.getString("pullTop"));
+			pull.setAlignment(Pos.CENTER_LEFT);
+		}
 	}
 
 	public boolean arePopupsOpen() {
 		return (signInPopup != null && signInPopup.isShowing())
 				|| (optionsPopup != null && optionsPopup.isShowing())
+				|| (statusPopup != null && statusPopup.isShowing())
+				|| (resourceGroupPopup != null && resourceGroupPopup
+						.isShowing())
 				|| (updatePopup != null && updatePopup.isShowing());
+	}
+
+	@Override
+	public void bridgeEstablished() {
+		super.bridgeEstablished();
 	}
 
 	@Override
@@ -252,13 +285,17 @@ public class Dock extends AbstractController implements Listener {
 				throw new RuntimeException(ioe);
 			}
 		}
-		if (signInPopup != null && signInPopup.isShowing())
-			signInPopup.hide();
-		if (optionsPopup != null && optionsPopup.isShowing())
-			optionsPopup.hide();
+		hideIfShowing(signInPopup);
+		hideIfShowing(optionsPopup);
+		hideIfShowing(resourceGroupPopup);
 		scene.getRoot().setDisable(true);
 		updatePopup.popup();
 
+	}
+
+	private void hideIfShowing(Popup popup) {
+		if (popup != null && popup.isShowing())
+			popup.hide();
 	}
 
 	private static String textFill(Color color) {
@@ -319,14 +356,21 @@ public class Dock extends AbstractController implements Listener {
 		slideLeft.disableProperty().set(centre > 0);
 		slideRight.disableProperty().set(centre > 0);
 
-		slideTransition.setFromX(shortcuts.getTranslateX());
-		slideTransition.setToX(centre);
+		if (cfg.isVertical()) {
+			slideTransition.setFromY(shortcuts.getTranslateY());
+			slideTransition.setToY(centre);
+		} else {
+			slideTransition.setFromX(shortcuts.getTranslateX());
+			slideTransition.setToX(centre);
+		}
 		slideTransition.stop();
 		slideTransition.play();
 	}
 
 	private double getLaunchBarOffset() {
-		double centre = (shortcutContainer.getWidth() - shortcuts.getWidth()) / 2d;
+		double centre = cfg.isVertical() ? (shortcutContainer.getHeight() - shortcuts
+				.getHeight()) / 2d : (shortcutContainer.getWidth() - shortcuts
+				.getWidth()) / 2d;
 		return centre;
 	}
 
@@ -365,28 +409,49 @@ public class Dock extends AbstractController implements Listener {
 
 		double scroll = 0;
 		boolean first = true;
-		for (Node n : shortcuts.getChildren()) {
 
-			/*
-			 * The position of the child within the container. When we find a
-			 * node that crosses '0', that is how much this single scroll will
-			 * adjust by, so completely revealing the hidden nide
-			 */
-			double p = n.getLayoutX() + shortcuts.getTranslateX();
+		/*
+		 * The position of the child within the container. When we find a node
+		 * that crosses '0', that is how much this single scroll will adjust by,
+		 * so completely revealing the hidden side
+		 */
 
-			double amt = p + n.getLayoutBounds().getWidth();
-			if (amt >= 0) {
-				scroll = n.getLayoutBounds().getWidth() - amt;
-				break;
-			} else {
-				first = false;
+		if (cfg.isVertical()) {
+
+			for (Node n : shortcuts.getChildren()) {
+				double p = n.getLayoutY() + shortcuts.getTranslateY();
+
+				double amt = p + n.getLayoutBounds().getHeight();
+				if (amt >= 0) {
+					scroll = n.getLayoutBounds().getHeight() - amt;
+					break;
+				} else {
+					first = false;
+				}
+			}
+		} else {
+			for (Node n : shortcuts.getChildren()) {
+				double p = n.getLayoutX() + shortcuts.getTranslateX();
+
+				double amt = p + n.getLayoutBounds().getWidth();
+				if (amt >= 0) {
+					scroll = n.getLayoutBounds().getWidth() - amt;
+					break;
+				} else {
+					first = false;
+				}
 			}
 		}
 		slideLeft.disableProperty().set(first);
 		if (scroll > 0) {
 			slideRight.disableProperty().set(false);
-			slideTransition.setFromX(shortcuts.getTranslateX());
-			slideTransition.setToX(shortcuts.getTranslateX() + scroll);
+			if (cfg.isVertical()) {
+				slideTransition.setFromY(shortcuts.getTranslateY());
+				slideTransition.setToY(shortcuts.getTranslateY() + scroll);
+			} else {
+				slideTransition.setFromX(shortcuts.getTranslateX());
+				slideTransition.setToX(shortcuts.getTranslateX() + scroll);
+			}
 			slideTransition.play();
 		}
 	}
@@ -401,22 +466,43 @@ public class Dock extends AbstractController implements Listener {
 		double scroll = 0;
 		boolean last = true;
 		ObservableList<Node> c = shortcuts.getChildren();
-		for (int i = c.size() - 1; i >= 0; i--) {
-			Node n = c.get(i);
-			double p = n.getLayoutX() + shortcuts.getTranslateX();
-			if (p <= shortcutContainer.getWidth()) {
-				scroll = n.getLayoutBounds().getWidth()
-						- (shortcutContainer.getWidth() - p);
-				break;
-			} else {
-				last = false;
+
+		if (cfg.isVertical()) {
+
+			for (int i = c.size() - 1; i >= 0; i--) {
+				Node n = c.get(i);
+				double p = n.getLayoutY() + shortcuts.getTranslateY();
+				if (p <= shortcutContainer.getHeight()) {
+					scroll = n.getLayoutBounds().getHeight()
+							- (shortcutContainer.getHeight() - p);
+					break;
+				} else {
+					last = false;
+				}
+			}
+		} else {
+			for (int i = c.size() - 1; i >= 0; i--) {
+				Node n = c.get(i);
+				double p = n.getLayoutX() + shortcuts.getTranslateX();
+				if (p <= shortcutContainer.getWidth()) {
+					scroll = n.getLayoutBounds().getWidth()
+							- (shortcutContainer.getWidth() - p);
+					break;
+				} else {
+					last = false;
+				}
 			}
 		}
 		slideRight.disableProperty().set(last);
 		if (scroll > 0) {
 			slideLeft.disableProperty().set(false);
-			slideTransition.setFromX(shortcuts.getTranslateX());
-			slideTransition.setToX(shortcuts.getTranslateX() - scroll);
+			if (cfg.isVertical()) {
+				slideTransition.setFromY(shortcuts.getTranslateY());
+				slideTransition.setToY(shortcuts.getTranslateY() - scroll);
+			} else {
+				slideTransition.setFromX(shortcuts.getTranslateX());
+				slideTransition.setToX(shortcuts.getTranslateX() - scroll);
+			}
 			slideTransition.play();
 		}
 	}
@@ -429,6 +515,11 @@ public class Dock extends AbstractController implements Listener {
 	@FXML
 	private void evtOpenSignInWindow(ActionEvent evt) throws Exception {
 		openSignInWindow();
+	}
+
+	@FXML
+	private void evtStatus(ActionEvent evt) throws Exception {
+		showStatus((Button) evt.getSource());
 	}
 
 	@FXML
@@ -467,6 +558,7 @@ public class Dock extends AbstractController implements Listener {
 	protected void onStateChanged() {
 		log.info("State changed for dock, rebuilding");
 		setAvailable();
+		rebuildResources();
 		rebuildIcons();
 		Platform.runLater(new Runnable() {
 			@Override
@@ -474,6 +566,51 @@ public class Dock extends AbstractController implements Listener {
 				recentre();
 			}
 		});
+	}
+
+	private void showStatus(Button source) throws IOException {
+		Window parent = this.scene.getWindow();
+		if (statusPopup == null) {
+			statusContent = (Status) context.openScene(Status.class);
+			statusPopup = new Popup(parent, statusContent.getScene(), true,
+					PositionType.DOCKED) {
+				@Override
+				protected void hideParent(Window parent) {
+					hideDock(true);
+				}
+			};
+			((Status) statusContent).setPopup(statusPopup);
+		}
+		statusContent.setResources(serviceResources);
+		statusPopup.popup();
+	}
+
+	private void showResourceGroup(Button source, ResourceGroupList group)
+			throws IOException {
+		Window parent = this.scene.getWindow();
+		if (resourceGroupPopup == null) {
+			resourceGroup = (ResourceGroup) context
+					.openScene(ResourceGroup.class);
+			resourceGroupPopup = new Popup(parent, resourceGroup.getScene(),
+					true, PositionType.POSITIONED) {
+				@Override
+				protected void hideParent(Window parent) {
+					hideDock(true);
+				}
+			};
+			((ResourceGroup) resourceGroup).setPopup(resourceGroupPopup);
+		}
+		positionResourceGroupPopup(source);
+		resourceGroup.setResources(group);
+		resourceGroupPopup.popup();
+	}
+
+	private void positionResourceGroupPopup(Button source) {
+		Point2D sceneCoord = source.localToScreen(0, 0);
+		if (cfg.topProperty().get() || cfg.bottomProperty().get())
+			resourceGroupPopup.setPosition(sceneCoord.getX());
+		else
+			resourceGroupPopup.setPosition(sceneCoord.getY());
 	}
 
 	private void openSignInWindow() throws IOException {
@@ -491,39 +628,25 @@ public class Dock extends AbstractController implements Listener {
 		signInPopup.popup();
 	}
 
-	private void rebuildIcons() {
-		shortcuts.getChildren().clear();
+	private void rebuildResources() {
+
+		serviceResources.clear();
+		icons.clear();
 		if (context.getBridge().isConnected()) {
 			ResourceService resourceService = context.getBridge()
 					.getResourceService();
+
+			try {
+				serviceResources.addAll(resourceService.getServiceResources());
+			} catch (Exception e) {
+				log.error("Failed to get service resources.", e);
+			}
+
 			try {
 				for (ResourceRealm resourceRealm : resourceService
 						.getResourceRealms()) {
 					for (Resource r : resourceRealm.getResources()) {
-						switch (r.getType()) {
-						case SSO:
-							if (!ssoResources.isSelected())
-								continue;
-							break;
-						case BROWSER:
-							if (!browserResources.isSelected())
-								continue;
-							break;
-						case FILE:
-							if (!fileResources.isSelected())
-								continue;
-							break;
-						case NETWORK:
-							if (!networkResources.isSelected())
-								continue;
-							break;
-						default:
-							break;
-						}
-						shortcuts.getChildren().add(
-								createLauncherButtonForResource(resourceRealm,
-										r));
-
+						rebuildResourceIcon(resourceRealm, r, r.getIcon());
 					}
 				}
 			} catch (Exception e) {
@@ -532,105 +655,118 @@ public class Dock extends AbstractController implements Listener {
 		}
 	}
 
-	private Button createLauncherButtonForResource(ResourceRealm resourceRealm,
-			Resource r) {
-		final Button b = new Button();
-		b.setTextOverrun(OverrunStyle.CLIP);
-		sizeButton(b);
-		b.getStyleClass().add("iconButton");
-		b.setOnAction((event) -> {
-			new Thread() {
-				public void run() {
-					System.out.println("Launch: "
-							+ r.getResourceLauncher().launch());
+	private void rebuildResourceIcon(ResourceRealm resourceRealm, Resource r,
+			String groupName) {
+		ResourceGroupKey igk = new ResourceGroupKey(r.getType(), groupName);
+		ResourceGroupList ig = icons.get(igk);
+		if (ig == null) {
+			ig = new ResourceGroupList(igk);
+			icons.put(igk, ig);
+		}
+		ig.getItems().add(new ResourceItem(r, resourceRealm));
+	}
+
+	private void rebuildIcons() {
+
+		shortcuts.getChildren().clear();
+		// Type lastType = null;
+		for (Map.Entry<ResourceGroupKey, ResourceGroupList> ig : icons
+				.entrySet()) {
+			Type type = ig.getKey().getType();
+			// if (lastType != null && type != lastType) {
+			// shortcuts
+			// .getChildren()
+			// .add(new Separator(
+			// cfg.topProperty().get()
+			// || cfg.bottomProperty().get() ? Orientation.VERTICAL
+			// : Orientation.HORIZONTAL));
+			// }
+			switch (type) {
+			case SSO:
+				if (!ssoResources.isSelected())
+					continue;
+				break;
+			case BROWSER:
+				if (!browserResources.isSelected())
+					continue;
+				break;
+			case FILE:
+				if (!fileResources.isSelected())
+					continue;
+				break;
+			case NETWORK:
+				if (!networkResources.isSelected())
+					continue;
+				break;
+			default:
+				break;
+			}
+
+			// SSO launchers are not grouped, all others are
+			if (type == Resource.Type.SSO) {
+				for (ResourceItem item : ig.getValue().getItems()) {
+					IconButton button = new IconButton(resources, item, context);
+					shortcuts.getChildren().add(button);
 				}
-			}.start();
+			} else {
+				shortcuts.getChildren().add(createGroupButton(ig.getValue()));
+			}
+
+			// lastType = type;
+		}
+
+	}
+
+	private Button createGroupButton(final ResourceGroupList group) {
+		final Button groupButton = new Button();
+		groupButton.setTextOverrun(OverrunStyle.CLIP);
+		groupButton.getStyleClass().add("iconButton");
+		groupButton.setOnMouseEntered((event) -> {
+			if (resourceGroupPopup != null && resourceGroupPopup.isShowing()) {
+				resourceGroup.setResources(group);
+				positionResourceGroupPopup(groupButton);
+				resourceGroupPopup.sizeToScene();
+			}
+		});
+		groupButton.setOnAction((event) -> {
+			try {
+				showResourceGroup((Button) event.getSource(), group);
+			} catch (IOException e) {
+				log.error("Failed to show resource group.", e);
+			}
 		});
 
-		b.setTooltip(createDockButtonToolTip(r.getName()));
-
-		try {
-			if (r.getIcon() == null) {
-				b.setText(resources.getString("resource.icon."
-						+ r.getType().name()));
-			} else {
-
-				final ImageView imageView = new ImageView(getClass()
-						.getResource("ajax-loader.gif").toString());
-				imageView.setFitHeight(32);
-				imageView.setFitWidth(32);
-				imageView.setPreserveRatio(true);
-				imageView.getStyleClass().add("launcherIcon");
-				b.setGraphic(imageView);
-
-				// Load the actual logo in a thread, it may take
-				// a short while
-				new Thread() {
-					public void run() {
-						try {
-							byte[] arr = context
-									.getBridge()
-									.getClientService()
-									.getBlob(resourceRealm.getName(),
-											r.getIcon(), 10000);
-							final Image img = new Image(
-									new ByteArrayInputStream(arr));
-							Platform.runLater(new Runnable() {
-								@Override
-								public void run() {
-									imageView.setImage(img);
-									sizeButton(b);
-								}
-							});
-						} catch (RemoteException re) {
-							log.error("Failed to load icon.", re);
-						}
-					}
-				}.start();
-			}
-		} catch (MissingResourceException mre) {
-			b.setText("%" + r.getType().name());
+		// Determine image path from 'logo'
+		String subType = group.getKey().getSubType();
+		if (subType == null) {
+			subType = "fs";
 		}
-		return b;
-	}
+		String imgPath = String.format("types/%s.png", subType);
+		URL resource = getClass().getResource(imgPath);
+		if (resource == null) {
+			// Fallback
+			// TODO use an 'error' image, because it is an error
+			imgPath = String.format("error.png");
+			resource = getClass().getResource(imgPath);
+		}
 
-	private Tooltip createDockButtonToolTip(String text) {
-		final Tooltip tt = new Tooltip(text) {
-			@Override
-			public void show(Window ownerWindow, double anchorX, double anchorY) {
-				Rectangle2D bnds = Client.getConfiguredBounds();
+		// Create image and set on button
+		final ImageView imageView = new ImageView(resource.toString());
+		imageView.setFitHeight(32);
+		imageView.setFitWidth(32);
+		imageView.setPreserveRatio(true);
+		imageView.getStyleClass().add("launcherIcon");
+		groupButton.setGraphic(imageView);
 
-				if (cfg.leftProperty().get()) {
-				} else if (cfg.rightProperty().get()) {
-				} else if (cfg.bottomProperty().get()) {
-					anchorY = bnds.getMaxY() - cfg.sizeProperty().doubleValue()
-							- 8.0 - prefHeight(USE_COMPUTED_SIZE);
-				} else {
-					anchorY = cfg.sizeProperty().doubleValue() + bnds.getMinY()
-							+ 8.0;
-				}
-
-				super.show(ownerWindow, anchorX, anchorY);
-			}
-		};
-		styleToolTip(tt);
-		return tt;
-	}
-
-	static void styleToolTip(final Tooltip tt) {
-		Configuration cfg = Configuration.getDefault();
-		Color newValue = cfg.colorProperty().getValue();
-		tt.setAutoHide(true);
-		tt.setStyle(String.format("-fx-background: #%02x%02x%02x",
-				(int) (newValue.getRed() * 255),
-				(int) (newValue.getGreen() * 255),
-				(int) (newValue.getBlue() * 255)));
-		tt.setStyle(String.format("-fx-text-fill: %s",
-				newValue.getBrightness() < 0.5f ? "#ffffff" : "#000000"));
-		tt.setStyle(String.format("-fx-background-color: #%02x%02x%02x",
-				(int) (newValue.getRed() * 255),
-				(int) (newValue.getGreen() * 255),
-				(int) (newValue.getBlue() * 255)));
+		// Tooltip for the sub-type
+		String tipTextKey = String.format("subType.%s", subType);
+		String tipText = resources.containsKey(tipTextKey) ? resources
+				.getString(tipTextKey) : MessageFormat.format(
+				resources.getString("subType.unknown"), group.getKey()
+						.getType().name());
+		groupButton.setTooltip(UIHelpers.createDockButtonToolTip(tipText));
+		UIHelpers.sizeToImage(groupButton);
+		return groupButton;
 	}
 
 	private void maybeHideDock() {
@@ -645,7 +781,7 @@ public class Dock extends AbstractController implements Listener {
 
 	private void stopDockHiderTrigger() {
 		if (dockHiderTrigger != null
-				&& dockHiderTrigger.getStatus() == Status.RUNNING)
+				&& dockHiderTrigger.getStatus() == Animation.Status.RUNNING)
 			dockHiderTrigger.stop();
 	}
 
@@ -676,6 +812,10 @@ public class Dock extends AbstractController implements Listener {
 		long now = System.currentTimeMillis();
 		Rectangle2D cfgBounds = Client.getConfiguredBounds();
 
+		// The bounds to work in
+		int boundsSize = cfg.isVertical() ? (int) cfgBounds.getHeight()
+				: (int) cfgBounds.getWidth();
+
 		// Total amount to slide
 		int value = cfg.sizeProperty().get() - AUTOHIDE_TAB_OPPOSITE_SIZE;
 
@@ -688,33 +828,47 @@ public class Dock extends AbstractController implements Listener {
 
 		// The amount to shrink the width (or height when vertical) of the
 		// visible 'bar'
-		float barSize = (float) cfgBounds.getWidth() * fac;
+		float barSize = (float) boundsSize * fac;
 
 		// If showing, reverse
 		if (!hidden) {
 			amt = value - amt;
-			barSize = (float) cfgBounds.getWidth() - barSize;
+			barSize = (float) boundsSize - barSize;
 		}
 
 		// Reveal or hide the pull tab
 		dockContent.setOpacity(hidden ? 1f - fac : fac);
-		pull.setOpacity(hidden ? fac : 1f - fac);
+		pull.setOpacity((hidden ? fac : 1f - fac) * 0.5f);
 
 		Stage stage = getStage();
-		if (cfg.topProperty().get()) {
-			getScene().getRoot().translateYProperty().set(-amt);
-			stage.setHeight(cfg.sizeProperty().get() - amt);
-			stage.setWidth(Math.max(AUTOHIDE_TAB_SIZE, cfgBounds.getWidth()
-					- barSize));
-			stage.setX((cfgBounds.getWidth() - stage.getWidth()) / 2f);
-		} else if (cfg.bottomProperty().get()) {
-			stage.setY(cfgBounds.getMaxY() + amt);
-			stage.setHeight(cfg.sizeProperty().get() - amt);
-			stage.setWidth(Math.max(AUTOHIDE_TAB_SIZE, cfgBounds.getWidth()
-					- barSize));
-			stage.setX((cfgBounds.getWidth() - stage.getWidth()) / 2f);
-		} else {
-			throw new UnsupportedOperationException();
+		if (stage != null) {
+			if (cfg.topProperty().get()) {
+				getScene().getRoot().translateYProperty().set(-amt);
+				stage.setHeight(cfg.sizeProperty().get() - amt);
+				stage.setWidth(Math.max(AUTOHIDE_TAB_SIZE, cfgBounds.getWidth()
+						- barSize));
+				stage.setX((cfgBounds.getWidth() - stage.getWidth()) / 2f);
+			} else if (cfg.bottomProperty().get()) {
+				stage.setY(cfgBounds.getMaxY() + amt);
+				stage.setHeight(cfg.sizeProperty().get() - amt);
+				stage.setWidth(Math.max(AUTOHIDE_TAB_SIZE, cfgBounds.getWidth()
+						- barSize));
+				stage.setX((cfgBounds.getWidth() - stage.getWidth()) / 2f);
+			} else if (cfg.leftProperty().get()) {
+				getScene().getRoot().translateXProperty().set(-amt);
+				stage.setWidth(cfg.sizeProperty().get() - amt);
+				stage.setHeight(Math.max(AUTOHIDE_TAB_SIZE,
+						cfgBounds.getHeight() - barSize));
+				stage.setY((cfgBounds.getHeight() - stage.getHeight()) / 2f);
+			} else if (cfg.rightProperty().get()) {
+				stage.setX(cfgBounds.getMaxX() + amt - cfg.sizeProperty().get());
+				stage.setWidth(cfg.sizeProperty().get() - amt);
+				stage.setHeight(Math.max(AUTOHIDE_TAB_SIZE,
+						cfgBounds.getHeight() - barSize));
+				stage.setY((cfgBounds.getHeight() - stage.getHeight()) / 2f);
+			} else {
+				throw new UnsupportedOperationException();
+			}
 		}
 
 		// If not fully hidden / revealed, play again
@@ -733,7 +887,9 @@ public class Dock extends AbstractController implements Listener {
 
 	private void styleToolTips() {
 		for (Node s : shortcuts.getChildren()) {
-			recreateTooltip((ButtonBase) s);
+			if (s instanceof ButtonBase) {
+				recreateTooltip((ButtonBase) s);
+			}
 		}
 		recreateTooltip(fileResources);
 		recreateTooltip(networkResources);
@@ -742,39 +898,25 @@ public class Dock extends AbstractController implements Listener {
 	}
 
 	private void recreateTooltip(ButtonBase bb) {
-		bb.setTooltip(createDockButtonToolTip(bb.getTooltip().getText()));
+		bb.setTooltip(UIHelpers.createDockButtonToolTip(bb.getTooltip()
+				.getText()));
 	}
 
 	private void sizeButtons() {
-		sizeButton(networkResources);
-		sizeButton(fileResources);
-		sizeButton(ssoResources);
-		sizeButton(browserResources);
-		sizeButton(slideLeft);
-		sizeButton(slideRight);
-		sizeButton(signIn);
-		sizeButton(options);
+		UIHelpers.sizeToImage(networkResources);
+		UIHelpers.sizeToImage(fileResources);
+		UIHelpers.sizeToImage(ssoResources);
+		UIHelpers.sizeToImage(browserResources);
+		UIHelpers.sizeToImage(slideLeft);
+		UIHelpers.sizeToImage(slideRight);
+		UIHelpers.sizeToImage(signIn);
+		UIHelpers.sizeToImage(options);
+		UIHelpers.sizeToImage(status);
 		for (Node n : shortcuts.getChildren()) {
-			sizeButton((ButtonBase) n);
+			if (n instanceof ButtonBase) {
+				UIHelpers.sizeToImage((ButtonBase) n);
+			}
 		}
-	}
-
-	private void sizeButton(ButtonBase button) {
-		int sz = cfg.sizeProperty().get();
-		int df = sz / 8;
-		sz -= df;
-		if (button.getGraphic() != null) {
-			ImageView iv = ((ImageView) button.getGraphic());
-			iv.setFitWidth(sz - df);
-			iv.setFitHeight(sz - df);
-		} else {
-			int fs = (int) ((float) sz * 0.6f);
-			button.setStyle("-fx-font-size: " + fs + "px;");
-		}
-		button.setMinSize(sz, sz);
-		button.setMaxSize(sz, sz);
-		button.setPrefSize(sz, sz);
-		button.layout();
 	}
 
 	private void setAvailable() {
