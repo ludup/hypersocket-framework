@@ -1,6 +1,5 @@
 package com.hypersocket.email;
 
-import java.io.File;
 import java.util.List;
 
 import javax.mail.Message.RecipientType;

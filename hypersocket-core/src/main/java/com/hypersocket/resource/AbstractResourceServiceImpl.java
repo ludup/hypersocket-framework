@@ -444,7 +444,6 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		
 		return transactionService.doInTransaction(new TransactionCallback<Collection<T>>() {
 
-			@SuppressWarnings("unchecked")
 			@Override
 			public Collection<T> doInTransaction(TransactionStatus status) {
 				

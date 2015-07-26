@@ -3,7 +3,6 @@ package com.hypersocket.properties;
 import java.util.Collection;
 
 import com.hypersocket.resource.AbstractResource;
-import com.hypersocket.resource.RealmResource;
 
 public interface ResourcePropertyStore extends XmlTemplatePropertyStore {
 

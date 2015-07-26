@@ -1,11 +1,9 @@
 package com.hypersocket.email;
 
-import java.io.File;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.activation.FileDataSource;
 import javax.mail.Message.RecipientType;
 
 import org.apache.commons.lang3.text.WordUtils;
