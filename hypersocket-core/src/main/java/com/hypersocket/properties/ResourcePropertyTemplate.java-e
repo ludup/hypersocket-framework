@@ -7,8 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.properties;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import com.hypersocket.resource.AbstractResource;
 
 public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
