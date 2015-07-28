@@ -21,12 +21,15 @@ public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 	@Override
 	protected String lookupPropertyValue(AbstractPropertyTemplate template,
 			AbstractResource resource) {
+		return getProperty(resource, template.getResourceKey(), template.getDefaultValue());
+	}
+	
+	public String getProperty(AbstractResource resource, String resourceKey, String defaultValue) {
 		// Look up property on resource
-		Property p = repository.getProperty(template.getResourceKey(), resource);
+		Property p = repository.getProperty(resourceKey, resource);
 		if (p == null || p.getValue()==null) {
-			return template.getDefaultValue();		
+			return defaultValue;		
 		}
-		
 		return p.getValue();
 	}
 
@@ -40,18 +43,21 @@ public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 	@Override
 	protected void doSetProperty(AbstractPropertyTemplate template,
 			AbstractResource resource, String value) {
+		setProperty(resource, template.getResourceKey(), value);
+	}
+	
+	public void setProperty(AbstractResource resource, String resourceKey, String value) {
 		DatabaseProperty property = repository.getProperty(
-				template.getResourceKey(), resource);
+				resourceKey, resource);
 		if (property == null) {
 			property = new DatabaseProperty();
-			property.setResourceKey(template.getResourceKey());
+			property.setResourceKey(resourceKey);
 			if(resource!=null) {
 				property.setResourceId(resource.getId());
 			}
 		}
 		property.setValue(value);
 		repository.saveProperty(property);
-		
 	}
 
 	@Override

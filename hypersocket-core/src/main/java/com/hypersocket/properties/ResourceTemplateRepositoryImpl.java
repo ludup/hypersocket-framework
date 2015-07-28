@@ -516,6 +516,11 @@ public abstract class ResourceTemplateRepositoryImpl extends
 
 	@Override
 	public String getValue(AbstractResource resource, String resourceKey) {
+		return getValue(resource, resourceKey, null);
+	}
+	
+	@Override
+	public String getValue(AbstractResource resource, String resourceKey, String defaultValue) {
 
 		PropertyTemplate template = propertyTemplates.get(resourceKey);
 
@@ -529,8 +534,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 			}
 			
 			if(template==null) {
-				throw new IllegalStateException(resourceKey
-					+ " is not a registered configuration item");
+				return configPropertyStore.getProperty(resource, resourceKey, defaultValue);
 			}
 		}
 
@@ -622,8 +626,8 @@ public abstract class ResourceTemplateRepositoryImpl extends
 			}
 			
 			if(template==null) {
-				throw new IllegalStateException(resourceKey
-					+ " is not a registered configuration item");
+				configPropertyStore.setProperty(resource, resourceKey, value);
+				return;
 			}
 		}
 

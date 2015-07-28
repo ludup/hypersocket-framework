@@ -424,7 +424,8 @@ public class TriggerResourceServiceImpl extends
 					hasAuthenticatedContext() ? getCurrentPrincipal()
 							: realmService.getSystemPrincipal(),
 					hasAuthenticatedContext() ? getCurrentLocale()
-							: i18nService.getDefaultLocale());
+							: i18nService.getDefaultLocale(),
+					"triggerExecutionJob");
 
 			data.put("event", event);
 			data.put("trigger", trigger);

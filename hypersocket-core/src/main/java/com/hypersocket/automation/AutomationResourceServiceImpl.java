@@ -4,7 +4,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -26,7 +25,6 @@ import com.hypersocket.automation.events.AutomationResourceUpdatedEvent;
 import com.hypersocket.automation.events.AutomationTaskFinishedEvent;
 import com.hypersocket.automation.events.AutomationTaskStartedEvent;
 import com.hypersocket.events.EventService;
-import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
@@ -286,10 +284,9 @@ public class AutomationResourceServiceImpl extends
 		}
 
 		PermissionsAwareJobData data = new PermissionsAwareJobData(
-				resource.getRealm());
+				resource.getRealm(), resource.getName());
 		data.put("resourceId", resource.getId());
-		data.put("jobName", i18nService.getResourceJson(Locale.getDefault())
-				.get(resource.getResourceKey()));
+
 		try {
 
 			String scheduleId;
@@ -438,8 +435,7 @@ public class AutomationResourceServiceImpl extends
 		c.set(Calendar.MINUTE, 0);
 		c.add(Calendar.DAY_OF_MONTH, 1);
 		JobDataMap data = new JobDataMap();
-		data.put("jobName", I18N.getResource(Locale.getDefault(),
-				RESOURCE_BUNDLE, "automationDailyJob"));
+		data.put("jobName", "automationDailyJob");
 		try {
 			schedulerService.scheduleAt(DailySchedulerJob.class, data,
 					c.getTime());

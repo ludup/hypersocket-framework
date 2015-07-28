@@ -260,6 +260,10 @@ public class SchedulerServiceImpl extends
 			Date start, int interval, int repeat, Date end)
 			throws SchedulerException {
 
+		if(data==null || !data.containsKey("jobName")) {
+			throw new IllegalArgumentException("JobDataMap must be present with at least jobName data key");
+		}
+		
 		String uuid = UUID.randomUUID().toString();
 
 		if (log.isInfoEnabled()) {
@@ -291,7 +295,7 @@ public class SchedulerServiceImpl extends
 						start, "yyyy/MM/dd HH:mm")));
 		properties.put("intervals", String.valueOf((interval / 60000)));
 		try {
-			createResource(uuid, getCurrentRealm(), properties);
+			createResource(data.getString("jobName"), uuid, getCurrentRealm(), properties);
 		} catch (ResourceCreationException e) {
 			log.error("Error in create resource for schedule ", e);
 		} catch (Exception e) {
@@ -363,7 +367,7 @@ public class SchedulerServiceImpl extends
 			properties.put("intervals", String.valueOf((interval / 60000)));
 			try {
 				SchedulerResource resource = cachedResources.get(id);
-				updateResource(resource, "Reconcile Realm", properties);
+				updateResource(resource, oldTrigger.getJobDataMap().getString("jobName"), properties);
 			} catch (ResourceChangeException e) {
 				log.error("Error in update resource for schedule ", e);
 			} catch (Exception e) {
@@ -415,7 +419,7 @@ public class SchedulerServiceImpl extends
 	}
 
 	@Override
-	public SchedulerResource createResource(String name, Realm realm,
+	public SchedulerResource createResource(String name, String uuid, Realm realm,
 			Map<String, String> properties) throws ResourceCreationException,
 			AccessDeniedException {
 
@@ -425,7 +429,7 @@ public class SchedulerServiceImpl extends
 		resource.setStarted(properties.get("started"));
 		resource.setIntervals(Integer.parseInt(properties.get("intervals")));
 		resource.setRealm(realm);
-		resource.setJobId(name);
+		resource.setJobId(uuid);
 		cachedResources.put(name, resource);
 		return resource;
 	}
@@ -481,6 +485,8 @@ public class SchedulerServiceImpl extends
 									.containsKey("jobName")) {
 								schedulerResource.setName(triggersOfJob.get(0)
 										.getJobDataMap().getString("jobName"));
+							} else {
+								log.warn("Job has no name");
 							}
 
 							if (triggersOfJob.get(0).getPreviousFireTime() != null) {

@@ -860,11 +860,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 				}
 			}
 
-			clearCache(realm);
+			/**
+			 * Get a copy of the realm to delete so we can fire events
+			 * with the current realm detail as delete will rename it
+			 */
+			Realm deletedRealm = getRealmById(realm.getId());
 			
-			fireRealmDelete(realm);
+			clearCache(deletedRealm);
+			
+			fireRealmDelete(deletedRealm);
 
-			realmRepository.delete(realm);
+			realmRepository.delete(deletedRealm);
 
 			eventService.publishEvent(new RealmDeletedEvent(this,
 					getCurrentSession(), realm));
