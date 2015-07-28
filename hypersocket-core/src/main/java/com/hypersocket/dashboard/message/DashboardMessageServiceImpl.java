@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
+import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -128,7 +129,9 @@ public class DashboardMessageServiceImpl extends
 	@Override
 	public void onApplicationEvent(ContextStartedEvent event) {
 		try {
-			schedulerService.scheduleNow(DashboardMessageJob.class, null,
+			JobDataMap data = new JobDataMap();
+			data.put("jobName", "dashboardMessageJob");
+			schedulerService.scheduleNow(DashboardMessageJob.class, data,
 					600000);
 
 		} catch (SchedulerException e) {

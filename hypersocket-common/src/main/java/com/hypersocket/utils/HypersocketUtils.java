@@ -1,6 +1,9 @@
 package com.hypersocket.utils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -8,6 +11,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
@@ -162,6 +175,32 @@ public class HypersocketUtils {
 	
 	public static String format(Float f) {
 		return df.format(f);
+	}
+	
+	public static String prettyPrintXml(SOAPMessage message) throws SOAPException, IOException, TransformerFactoryConfigurationError, TransformerException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		message.writeTo(out);
+		
+		return prettyPrintXml(out.toString("UTF-8"));
+	}
+	
+	public static String prettyPrintXml(String unformattedXml) throws TransformerFactoryConfigurationError, UnsupportedEncodingException, TransformerException {
+
+		Transformer transformer = TransformerFactory.newInstance()
+				.newTransformer();
+		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+		StreamResult result = new StreamResult(new StringWriter());
+		transformer.transform(
+				new StreamSource(new ByteArrayInputStream(unformattedXml.getBytes("UTF-8"))),
+				result);
+		return result.getWriter().toString();
+	}
+	
+	public static String checkNull(String str) {
+		if(str==null) {
+			return "";
+		}
+		return str;
 	}
 
 }

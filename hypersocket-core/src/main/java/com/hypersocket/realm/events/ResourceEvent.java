@@ -29,6 +29,11 @@ public class ResourceEvent extends SessionEvent {
 		addAttribute(ATTR_OLD_RESOURCE_NAME, resource.getOldName());
 		addAttribute(ATTR_CREATED, HypersocketUtils.formatDateTime(resource.getCreateDate()));
 		addAttribute(ATTR_LAST_MODIFIED, HypersocketUtils.formatDateTime(resource.getModifiedDate()));
+		if(resource.getProperties()!=null) {
+			for(String key : resource.getProperties().keySet()) {
+				addAttribute(key, resource.getProperties().get(resourceKey));
+			}
+		}
 	}
 
 	public ResourceEvent(Object source, String resourceKey, Throwable e,
@@ -39,6 +44,11 @@ public class ResourceEvent extends SessionEvent {
 		addAttribute(ATTR_OLD_RESOURCE_NAME, resource.getOldName());
 		addAttribute(ATTR_CREATED, HypersocketUtils.formatDateTime(resource.getCreateDate()));
 		addAttribute(ATTR_LAST_MODIFIED, HypersocketUtils.formatDateTime(resource.getModifiedDate()));
+		if(resource.getProperties()!=null) {
+			for(String key : resource.getProperties().keySet()) {
+				addAttribute(key, resource.getProperties().get(resourceKey));
+			}
+		}
 	}
 
 

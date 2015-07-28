@@ -5,10 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,8 @@ import com.hypersocket.tasks.TaskProviderService;
 public class TriggerResourceRepositoryImpl extends
 		AbstractResourceRepositoryImpl<TriggerResource> implements
 		TriggerResourceRepository {
+	
+	static Logger log = LoggerFactory.getLogger(TriggerResourceRepositoryImpl.class);
 	
 	@Autowired
 	TaskProviderService taskService; 
@@ -71,7 +76,17 @@ public class TriggerResourceRepositoryImpl extends
 
 				criteria.add(Restrictions.eq("realm", event.getCurrentRealm()));
 				criteria.add(Restrictions.isNull("parentTrigger"));
-				criteria.add(Restrictions.in("event", event.getResourceKeys()));
+				
+				
+				String[] events = event.getResourceKeys();
+				if(!ArrayUtils.contains(events, event.getResourceKey())) {
+					events = ArrayUtils.add(events, event.getResourceKey());
+					if(log.isWarnEnabled()) {
+						log.warn("Event " + event.getResourceKey() + " does not return its own resource key in getResourceKeys method.");
+					}
+				}
+				
+				criteria.add(Restrictions.in("event",events));
 			}
 		});
 
