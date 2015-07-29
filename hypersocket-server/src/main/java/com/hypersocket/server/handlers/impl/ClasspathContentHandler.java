@@ -54,7 +54,7 @@ public class ClasspathContentHandler extends ContentHandlerImpl {
 			int idx;
 			File jarFile;
 			if((idx = url.toURI().toString().indexOf("!")) > -1) {
-				jarFile = new File(url.toURI().toString().substring(0, idx));
+				jarFile = new File(url.toURI().toString().substring(4, idx));
 			} else {
 				jarFile = new File(url.toURI());
 			}

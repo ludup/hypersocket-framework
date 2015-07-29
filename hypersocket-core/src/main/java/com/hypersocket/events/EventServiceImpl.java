@@ -53,9 +53,6 @@ public class EventServiceImpl extends AbstractAuthenticatedServiceImpl implement
 	@Override
 	public void publishDelayedEvents() {
 		
-		if(log.isInfoEnabled()) {
-			log.info("REMOVEME: Publishing delayed events");
-		}
 		try {
 			if(delayedEvents.get()==null) {
 				return;

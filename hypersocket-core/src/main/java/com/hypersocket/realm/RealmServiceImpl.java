@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
@@ -688,7 +689,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 			realmProvider.testConnection(properties);
 
-			Realm realm = realmRepository.createRealm(name, module, properties,
+			Realm realm = realmRepository.createRealm(name, 
+					UUID.randomUUID().toString(), 
+					module, 
+					properties,
 					realmProvider);
 			
 			configurationService.setValue(realm, "realm.userEditableProperties",

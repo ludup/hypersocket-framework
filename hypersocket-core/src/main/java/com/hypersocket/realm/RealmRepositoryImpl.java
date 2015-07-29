@@ -31,11 +31,12 @@ public class RealmRepositoryImpl extends
 
 	@Override
 	@Transactional
-	public Realm createRealm(String name, String module,
+	public Realm createRealm(String name, String uuid, String module,
 			Map<String, String> properties, RealmProvider provider) {
 		Realm realm = new Realm();
 		realm.setName(name);
 		realm.setResourceCategory(module);
+		realm.setUuid(uuid);
 
 		save(realm);
 
