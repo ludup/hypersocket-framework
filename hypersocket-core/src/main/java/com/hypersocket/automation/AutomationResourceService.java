@@ -3,6 +3,7 @@ package com.hypersocket.automation;
 import java.util.Collection;
 import java.util.Map;
 
+import com.hypersocket.events.EventDefinition;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
@@ -30,6 +31,5 @@ public interface AutomationResourceService extends
 	Collection<String> getTasks() throws AccessDeniedException;
 
 	void scheduleDailyJobs();
-
 
 }

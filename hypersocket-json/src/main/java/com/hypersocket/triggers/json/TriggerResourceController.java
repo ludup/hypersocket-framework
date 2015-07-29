@@ -69,7 +69,7 @@ public class TriggerResourceController extends ResourceController {
 	@RequestMapping(value = "triggers/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableNetworkResources(
+	public BootstrapTableResult tableTriggers(
 			final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
@@ -210,11 +210,11 @@ public class TriggerResourceController extends ResourceController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "triggers/actionResults/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "triggers/taskResults/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<EventDefinition> getPostTriggerEvents(
-			HttpServletRequest request, @PathVariable Long id)
+			HttpServletRequest request, @PathVariable String resourceKey)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
@@ -223,11 +223,9 @@ public class TriggerResourceController extends ResourceController {
 
 			List<EventDefinition> events = new ArrayList<EventDefinition>();
 
-			TriggerResource action = resourceService.getResourceById(id);
-
-			for (String resourceKey : taskService.getTaskProvider(
-					action.getResourceKey()).getResultResourceKeys()) {
-				events.add(eventService.getEventDefinition(resourceKey));
+			for (String result : taskService.getTaskProvider(
+					resourceKey).getResultResourceKeys()) {
+				events.add(eventService.getEventDefinition(result));
 			}
 
 			return new ResourceList<EventDefinition>(events);
@@ -278,7 +276,7 @@ public class TriggerResourceController extends ResourceController {
 	@RequestMapping(value = "triggers/task/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<PropertyCategory> getActionsTemplate(
+	public ResourceList<PropertyCategory> getTaskTemplate(
 			HttpServletRequest request, @PathVariable String resourceKey)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
@@ -390,16 +388,15 @@ public class TriggerResourceController extends ResourceController {
 			if (resource.getId() != null) {
 				newResource = resourceService.updateResource(
 						resourceService.getResourceById(resource.getId()),
-						resource.getName(), resource.getEvent(),
+						resource.getName(), resource.getType(), resource.getEvent(),
 						TriggerResultType.valueOf(resource.getResult()),
 						resource.getTask(), properties, allConditions,
 						anyConditions, parentTrigger);
 			} else {
 				newResource = resourceService.createResource(
-						resource.getName(), resource.getEvent(),
-						TriggerResultType.valueOf(resource.getResult()),
-						resource.getTask(), properties, realm, allConditions,
-						anyConditions, parentTrigger);
+						resource.getName(), resource.getType(), resource.getEvent(),
+						TriggerResultType.valueOf(resource.getResult()), resource.getTask(), properties, realm,
+						allConditions, anyConditions, parentTrigger);
 			}
 			
 			TriggerResource rootTrigger = newResource;

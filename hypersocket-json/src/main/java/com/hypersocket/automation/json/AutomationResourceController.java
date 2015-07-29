@@ -25,6 +25,7 @@ import com.hypersocket.automation.AutomationResource;
 import com.hypersocket.automation.AutomationResourceColumns;
 import com.hypersocket.automation.AutomationResourceService;
 import com.hypersocket.automation.AutomationResourceServiceImpl;
+import com.hypersocket.events.EventDefinition;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
@@ -273,4 +274,5 @@ public class AutomationResourceController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+
 }

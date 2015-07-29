@@ -17,7 +17,10 @@ public interface TriggerResourceService extends
 		AbstractResourceService<TriggerResource> {
 
 	TriggerResource createResource(String name,
-			String event, TriggerResultType result, String task,
+			TriggerType type,
+			String event, 
+			TriggerResultType result, 
+			String task,
 			Map<String, String> properties,
 			Realm realm,
 			List<TriggerCondition> allConditions,
@@ -26,7 +29,7 @@ public interface TriggerResourceService extends
 			throws ResourceCreationException, AccessDeniedException;
 
 
-	TriggerResource updateResource(TriggerResource resource, String name,
+	TriggerResource updateResource(TriggerResource resource, String name, TriggerType type,
 			String event, TriggerResultType result, String task,
 			Map<String, String> properties,
 			List<TriggerCondition> allConditions,
