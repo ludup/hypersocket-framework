@@ -18,7 +18,7 @@ import com.hypersocket.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 
 @Component
 public class ChangePasswordAuthenticationStep implements PostAuthenticationStep {
@@ -69,10 +69,10 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 		}
 		
 		try {
-			realmService.setPassword(state.getPrincipal(), password, false);
+			realmService.changePassword(state.getPrincipal(), state.getParameter("password"), password);
 			return AuthenticatorResult.AUTHENTICATION_SUCCESS;
 			
-		} catch (ResourceCreationException e) {
+		} catch (ResourceException e) {
 			state.setLastErrorMsg(e.getResourceKey());
 			state.setLastErrorIsResourceKey(true);
 			

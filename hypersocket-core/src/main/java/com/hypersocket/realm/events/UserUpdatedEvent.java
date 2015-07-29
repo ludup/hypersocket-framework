@@ -18,14 +18,14 @@ public class UserUpdatedEvent extends UserEvent {
 	
 	public UserUpdatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
-			List<Principal> associatedPrincipals, Map<String,String> properties) {
+			List<? extends Principal> associatedPrincipals, Map<String,String> properties) {
 		super(source, "event.userUpdated", session, realm, provider, principal,
 				associatedPrincipals, properties);
 	}
 
 	public UserUpdatedEvent(Object source, Throwable e, Session session,
 			Realm realm, RealmProvider provider, String principalName,
-			Map<String, String> properties, List<Principal> associatedPrincipals) {
+			Map<String, String> properties, List<? extends Principal> associatedPrincipals) {
 		super(source, "event.userUpdated", e, session, realm, provider,
 				principalName, properties, associatedPrincipals);
 	}

@@ -18,7 +18,7 @@ public class UserCreatedEvent extends UserEvent {
 	
 	public UserCreatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
-			List<Principal> associatedPrincipals, Map<String,String> properties) {
+			List<? extends Principal> associatedPrincipals, Map<String,String> properties) {
 		super(source, "event.userCreated", session, realm, provider, principal,
 				associatedPrincipals, properties);
 	}

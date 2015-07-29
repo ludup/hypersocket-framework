@@ -400,6 +400,8 @@ public class TriggerResourceServiceImpl extends
 	private void processEventTriggers(SystemEvent event) {
 
 		// TODO cache triggers to prevent constant database lookup
+		
+		// TODO need some security  to prevent inifinte loops
 		if (!running) {
 			if (log.isDebugEnabled()) {
 				log.debug("Not processing triggers as the service is not running");

@@ -32,7 +32,7 @@ public abstract class UserEvent extends PrincipalEvent {
 
 	public UserEvent(Object source, String resourceKey, Session session,
 			Realm realm, RealmProvider provider, Principal principal,
-			List<Principal> associatedPrincipals,
+			List<? extends Principal> associatedPrincipals,
 			Map<String, String> properties) {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
@@ -55,7 +55,7 @@ public abstract class UserEvent extends PrincipalEvent {
 	public UserEvent(Object source, String resourceKey, Throwable e,
 			Session session, Realm realmName, RealmProvider provider,
 			String principalName, Map<String, String> properties,
-			List<Principal> associatedPrincipals) {
+			List<? extends Principal> associatedPrincipals) {
 		super(source, resourceKey, e, session, realmName);
 		addAttribute(ATTR_USER_NAME, principalName);
 		if(associatedPrincipals!=null) {
@@ -66,7 +66,7 @@ public abstract class UserEvent extends PrincipalEvent {
 		}
 	}
 
-	private void addAssociatedPrincipals(List<Principal> associatedPrincipals) {
+	private void addAssociatedPrincipals(List<? extends Principal> associatedPrincipals) {
 		StringBuffer buf = new StringBuffer();
 		for (Principal p : associatedPrincipals) {
 			if (buf.length() > 0) {

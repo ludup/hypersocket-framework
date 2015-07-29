@@ -286,7 +286,7 @@ public class SchedulerServiceImpl extends
 
 		Trigger trigger = createTrigger(data, start, interval, repeat, end);
 		triggerKeys.put(uuid, trigger.getKey());
-		scheduler.scheduleJob(job, trigger);
+		
 		Map<String, String> properties = new HashMap<String, String>();
 		properties.put(
 				"started",
@@ -296,6 +296,7 @@ public class SchedulerServiceImpl extends
 		properties.put("intervals", String.valueOf((interval / 60000)));
 		try {
 			createResource(data.getString("jobName"), uuid, getCurrentRealm(), properties);
+			scheduler.scheduleJob(job, trigger);
 		} catch (ResourceCreationException e) {
 			log.error("Error in create resource for schedule ", e);
 		} catch (Exception e) {
@@ -367,7 +368,11 @@ public class SchedulerServiceImpl extends
 			properties.put("intervals", String.valueOf((interval / 60000)));
 			try {
 				SchedulerResource resource = cachedResources.get(id);
-				updateResource(resource, oldTrigger.getJobDataMap().getString("jobName"), properties);
+				if(resource==null) {
+					throw new IllegalStateException();
+				} else {
+					updateResource(resource, oldTrigger.getJobDataMap().getString("jobName"), properties);
+				}
 			} catch (ResourceChangeException e) {
 				log.error("Error in update resource for schedule ", e);
 			} catch (Exception e) {
@@ -413,8 +418,8 @@ public class SchedulerServiceImpl extends
 	public SchedulerResource updateResource(SchedulerResource resource,
 			String name, Map<String, String> properties)
 			throws ResourceChangeException, AccessDeniedException {
-		resource.setStarted(properties.get("started"));
-		resource.setIntervals(Integer.parseInt(properties.get("intervals")));
+		resource.setStarted(resource.getStarted());
+		resource.setIntervals(resource.getIntervals());
 		return resource;
 	}
 
@@ -430,7 +435,7 @@ public class SchedulerServiceImpl extends
 		resource.setIntervals(Integer.parseInt(properties.get("intervals")));
 		resource.setRealm(realm);
 		resource.setJobId(uuid);
-		cachedResources.put(name, resource);
+		cachedResources.put(uuid, resource);
 		return resource;
 	}
 

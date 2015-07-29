@@ -18,13 +18,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 
 @Repository
-@Transactional
 public class TriggerResourceRepositoryImpl extends
 		AbstractResourceRepositoryImpl<TriggerResource> implements
 		TriggerResourceRepository {
@@ -33,6 +33,9 @@ public class TriggerResourceRepositoryImpl extends
 	
 	@Autowired
 	TaskProviderService taskService; 
+	
+	@Autowired
+	RealmService realmService; 
 	
 	@Override
 	protected Class<TriggerResource> getResourceClass() {
@@ -49,8 +52,9 @@ public class TriggerResourceRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<TriggerResource> getTriggersForEvent(final SystemEvent event) {
-
+		
 		return allEntities(TriggerResource.class,  
 				new CriteriaConfiguration() {
 
@@ -74,7 +78,13 @@ public class TriggerResourceRepositoryImpl extends
 					break;
 				}
 
-				criteria.add(Restrictions.eq("realm", event.getCurrentRealm()));
+				/**
+				 * Get all triggers in the current realm OR the System realm.
+				 */
+				criteria.add(Restrictions.or(
+						Restrictions.eq("realm", event.getCurrentRealm()),
+						Restrictions.eq("realm", realmService.getSystemRealm())));
+				
 				criteria.add(Restrictions.isNull("parentTrigger"));
 				
 				
@@ -93,11 +103,13 @@ public class TriggerResourceRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public TriggerCondition getConditionById(Long id) {
 		return get("id", id, TriggerCondition.class);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Collection<TriggerResource> getActionsByResourceKey(final String resourceKey) {
 		return list(TriggerResource.class, true, new CriteriaConfiguration() {
 			
