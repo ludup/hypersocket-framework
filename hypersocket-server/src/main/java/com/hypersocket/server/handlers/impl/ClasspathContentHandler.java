@@ -48,13 +48,14 @@ public class ClasspathContentHandler extends ContentHandlerImpl {
 	@Override
 	public long getLastModified(String path) {
 		try {
-			URL url = getClass().getResource(classpathPrefix + "/" + path);if(log.isInfoEnabled()){
-				log.info("REMOVE ME: Processing resource URL " + url.toExternalForm());
+			URL url = getClass().getResource(classpathPrefix + "/" + path);
+			if(log.isInfoEnabled()){
+				log.info("REMOVE ME: Processing resource URL " + url.toURI().toString());
 			}
 			int idx;
 			File jarFile;
 			if((idx = url.toURI().toString().indexOf("!")) > -1) {
-				jarFile = new File(url.toURI().toString().substring(4, idx));
+				jarFile = new File(url.toURI().toString().substring(9, idx));
 			} else {
 				jarFile = new File(url.toURI());
 			}
@@ -62,7 +63,7 @@ public class ClasspathContentHandler extends ContentHandlerImpl {
 			if(log.isInfoEnabled()) {
 				Date modified = new Date(jarFile.lastModified());
 				if(log.isInfoEnabled()){
-					log.info("REMOVE ME: Jar file " + jarFile.getName() + " last modified " + HypersocketUtils.formatDateTime(modified));
+					log.info("REMOVE ME: Jar file " + jarFile.getAbsolutePath() + " last modified " + HypersocketUtils.formatDateTime(modified));
 				}
 			}
 			return jarFile.lastModified();
