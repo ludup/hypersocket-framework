@@ -24,6 +24,7 @@ import com.hypersocket.automation.events.AutomationResourceEvent;
 import com.hypersocket.automation.events.AutomationResourceUpdatedEvent;
 import com.hypersocket.automation.events.AutomationTaskFinishedEvent;
 import com.hypersocket.automation.events.AutomationTaskStartedEvent;
+import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -444,4 +445,5 @@ public class AutomationResourceServiceImpl extends
 		}
 
 	}
+
 }

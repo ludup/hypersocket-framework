@@ -24,8 +24,11 @@ public class TriggerResource extends Task {
 
 	@Column(name = "result")
 	TriggerResultType result;
-
-	@Column(name = "event")
+	
+	@Column(name="trigger_type")
+	TriggerType triggerType = TriggerType.TRIGGER;
+	
+	@Column(name="event")
 	String event;
 
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "trigger", fetch = FetchType.EAGER)
@@ -111,4 +114,14 @@ public class TriggerResource extends Task {
 		return childTriggers;
 	}
 
+	public TriggerType getTriggerType() {
+		return triggerType;
+	}
+
+	public void setTriggerType(TriggerType triggerType) {
+		this.triggerType = triggerType;
+	}
+	
+	
+	
 }

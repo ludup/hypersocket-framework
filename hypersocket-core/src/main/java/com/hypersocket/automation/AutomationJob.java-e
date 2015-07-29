@@ -1,7 +1,11 @@
 package com.hypersocket.automation;
 
+import java.util.Set;
+
+import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,13 +14,17 @@ import com.hypersocket.automation.events.AutomationTaskFinishedEvent;
 import com.hypersocket.automation.events.AutomationTaskStartedEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.scheduler.PermissionsAwareJob;
+import com.hypersocket.scheduler.PermissionsAwareJobData;
+import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
+import com.hypersocket.triggers.AbstractTriggerJob;
 import com.hypersocket.triggers.TaskResult;
+import com.hypersocket.triggers.TriggerJob;
+import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.ValidationException;
 
-public class AutomationJob extends PermissionsAwareJob {
+public class AutomationJob extends AbstractTriggerJob {
 
 	static Logger log = LoggerFactory.getLogger(AutomationJob.class);
 	
@@ -29,6 +37,9 @@ public class AutomationJob extends PermissionsAwareJob {
 	@Autowired
 	EventService eventService; 
 	
+	@Autowired
+	SchedulerService schedulerService; 
+	
 	public AutomationJob() {
 	}
 
@@ -36,6 +47,7 @@ public class AutomationJob extends PermissionsAwareJob {
 	protected void executeJob(JobExecutionContext context)
 			throws JobExecutionException {
 		
+		PermissionsAwareJobData jobdata = (PermissionsAwareJobData) context.getTrigger().getJobDataMap();
 		
 		Long resourceId = context.getTrigger().getJobDataMap().getLong("resourceId");
 		Realm realm = (Realm) context.getTrigger().getJobDataMap().get("realm");
@@ -63,6 +75,10 @@ public class AutomationJob extends PermissionsAwareJob {
 			
 			if(result!=null && result.isPublishable()) {
 				eventService.publishEvent(result);
+			}
+			
+			for(TriggerResource trigger : resource.getTriggers()) {
+				processEventTrigger(trigger, result);
 			}
 			
 			eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource));

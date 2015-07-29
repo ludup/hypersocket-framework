@@ -256,7 +256,8 @@ public class TriggerResourceServiceImpl extends
 
 	@Override
 	public TriggerResource updateResource(TriggerResource resource,
-			String name, String event, TriggerResultType result, String task,
+			String name, TriggerType type, String event, TriggerResultType result,
+			String task,
 			Map<String, String> properties,
 			List<TriggerCondition> allConditions,
 			List<TriggerCondition> anyConditions, TriggerResource parent)
@@ -290,14 +291,20 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	@Override
-	public TriggerResource createResource(String name, String event,
-			TriggerResultType result, String task,
-			Map<String, String> properties, Realm realm,
-			List<TriggerCondition> allConditions,
-			List<TriggerCondition> anyConditions, TriggerResource parent)
+	public TriggerResource createResource(String name, TriggerType type,
+			String event,
+			TriggerResultType result, String task, Map<String, String> properties,
+			Realm realm, List<TriggerCondition> allConditions, 
+			List<TriggerCondition> anyConditions,
+			TriggerResource parent)
 			throws ResourceCreationException, AccessDeniedException {
 
 		TriggerResource resource = new TriggerResource();
+		
+		resource.setTriggerType(type);
+		
+		populateTrigger(name, event, result, task, realm, resource, allConditions,
+				anyConditions,  parent);
 
 		populateTrigger(name, event, result, task, realm, resource,
 				allConditions, anyConditions, parent);

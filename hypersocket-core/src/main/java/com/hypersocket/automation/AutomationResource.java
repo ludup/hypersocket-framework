@@ -1,9 +1,13 @@
 package com.hypersocket.automation;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -11,6 +15,7 @@ import javax.persistence.TemporalType;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hypersocket.tasks.Task;
+import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Entity
@@ -42,6 +47,9 @@ public class AutomationResource extends Task {
 	
 	@Column(name="notes", length=8000)
 	String notes;
+	
+	@OneToMany(fetch=FetchType.EAGER)
+	Set<TriggerResource> triggers = new HashSet<TriggerResource>();
 	
 	public String getResourceKey() {
 		return resourceKey;
@@ -121,6 +129,14 @@ public class AutomationResource extends Task {
 	
 	public Date getEndDate() {
 		return taskEnds;
+	}
+
+	public Set<TriggerResource> getTriggers() {
+		return triggers;
+	}
+
+	public void setTriggers(Set<TriggerResource> triggers) {
+		this.triggers = triggers;
 	}
 
 	public boolean isDailyJob() {
