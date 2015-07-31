@@ -260,6 +260,10 @@ public class SchedulerServiceImpl extends
 			Date start, int interval, int repeat, Date end)
 			throws SchedulerException {
 
+		if(data==null || !data.containsKey("jobName")) {
+			throw new IllegalArgumentException("JobDataMap must be present with at least jobName data key");
+		}
+		
 		String uuid = UUID.randomUUID().toString();
 
 		if (log.isInfoEnabled()) {
@@ -267,14 +271,14 @@ public class SchedulerServiceImpl extends
 					+ uuid
 					+ " to start "
 					+ (start == null ? "now" : "at "
-							+ HypersocketUtils.formatDate(start))
+							+ HypersocketUtils.formatDateTime(start))
 					+ " with interval of "
 					+ (interval / 60000)
 					+ " minutes and repeat "
 					+ (repeat >= 0 ? (repeat / 60000) + " time(s)"
 							: "indefinately")
 					+ (end != null ? " until "
-							+ HypersocketUtils.formatDate(end) : ""));
+							+ HypersocketUtils.formatDateTime(end) : ""));
 		}
 		JobDetail job = JobBuilder.newJob(clz).withIdentity(uuid).build();
 
@@ -282,7 +286,7 @@ public class SchedulerServiceImpl extends
 
 		Trigger trigger = createTrigger(data, start, interval, repeat, end);
 		triggerKeys.put(uuid, trigger.getKey());
-		scheduler.scheduleJob(job, trigger);
+		
 		Map<String, String> properties = new HashMap<String, String>();
 		properties.put(
 				"started",
@@ -291,7 +295,8 @@ public class SchedulerServiceImpl extends
 						start, "yyyy/MM/dd HH:mm")));
 		properties.put("intervals", String.valueOf((interval / 60000)));
 		try {
-			createResource(uuid, getCurrentRealm(), properties);
+			createResource(data.getString("jobName"), uuid, getCurrentRealm(), properties);
+			scheduler.scheduleJob(job, trigger);
 		} catch (ResourceCreationException e) {
 			log.error("Error in create resource for schedule ", e);
 		} catch (Exception e) {
@@ -337,13 +342,13 @@ public class SchedulerServiceImpl extends
 					+ id
 					+ " to start "
 					+ (start == null ? "now" : "at "
-							+ HypersocketUtils.formatDate(start))
+							+ HypersocketUtils.formatDateTime(start))
 					+ " with interval of "
 					+ interval
 					+ " and repeat "
 					+ (repeat >= 0 ? repeat : "indefinatley")
 					+ (end != null ? " until "
-							+ HypersocketUtils.formatDate(end) : ""));
+							+ HypersocketUtils.formatDateTime(end) : ""));
 		}
 		TriggerKey triggerKey = triggerKeys.get(id);
 
@@ -362,7 +367,12 @@ public class SchedulerServiceImpl extends
 							start, "yyyy/MM/dd HH:mm")));
 			properties.put("intervals", String.valueOf((interval / 60000)));
 			try {
-				updateResource(cachedResources.get(id), properties);
+				SchedulerResource resource = cachedResources.get(id);
+				if(resource==null) {
+					throw new IllegalStateException();
+				} else {
+					updateResource(resource, oldTrigger.getJobDataMap().getString("jobName"), properties);
+				}
 			} catch (ResourceChangeException e) {
 				log.error("Error in update resource for schedule ", e);
 			} catch (Exception e) {
@@ -408,13 +418,13 @@ public class SchedulerServiceImpl extends
 	public SchedulerResource updateResource(SchedulerResource resource,
 			String name, Map<String, String> properties)
 			throws ResourceChangeException, AccessDeniedException {
-		resource.setStarted(properties.get("started"));
-		resource.setIntervals(Integer.parseInt(properties.get("intervals")));
+		resource.setStarted(resource.getStarted());
+		resource.setIntervals(resource.getIntervals());
 		return resource;
 	}
 
 	@Override
-	public SchedulerResource createResource(String name, Realm realm,
+	public SchedulerResource createResource(String name, String uuid, Realm realm,
 			Map<String, String> properties) throws ResourceCreationException,
 			AccessDeniedException {
 
@@ -424,8 +434,8 @@ public class SchedulerServiceImpl extends
 		resource.setStarted(properties.get("started"));
 		resource.setIntervals(Integer.parseInt(properties.get("intervals")));
 		resource.setRealm(realm);
-		resource.setJobId(name);
-		cachedResources.put(name, resource);
+		resource.setJobId(uuid);
+		cachedResources.put(uuid, resource);
 		return resource;
 	}
 
@@ -480,6 +490,8 @@ public class SchedulerServiceImpl extends
 									.containsKey("jobName")) {
 								schedulerResource.setName(triggersOfJob.get(0)
 										.getJobDataMap().getString("jobName"));
+							} else {
+								log.warn("Job has no name");
 							}
 
 							if (triggersOfJob.get(0).getPreviousFireTime() != null) {

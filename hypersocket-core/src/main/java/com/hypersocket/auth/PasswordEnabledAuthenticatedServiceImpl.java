@@ -45,7 +45,8 @@ public abstract class PasswordEnabledAuthenticatedServiceImpl
 		Session session = currentSession.get();
 		try {
 			return encryptionService.decryptString("sessionState",
-					session.getStateParameter("password"));
+					session.getStateParameter("password"),
+					session.getPrincipalRealm());
 		} catch (Exception e) {
 			log.error("Failed to get session state", e);
 			return "";
@@ -65,7 +66,8 @@ public abstract class PasswordEnabledAuthenticatedServiceImpl
 		try {
 			session.setStateParameter("password", 
 					encryptionService.encryptString("sessionState",
-							password));
+							password,
+							session.getPrincipalRealm()));
 		} catch (Exception e) {
 			log.error("Failed to store session state", e);
 		}

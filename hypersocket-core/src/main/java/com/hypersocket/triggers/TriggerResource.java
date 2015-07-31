@@ -1,7 +1,6 @@
 package com.hypersocket.triggers;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -13,30 +12,34 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hypersocket.tasks.Task;
 
 @Entity
-@Table(name="trigger_resources")
+@Table(name = "trigger_resources")
+@JsonIgnoreProperties(ignoreUnknown=true)
+@JsonDeserialize(using = TriggerResourceDeserializer.class)
 public class TriggerResource extends Task {
 
-	@Column(name="result")
+	@Column(name = "result")
 	TriggerResultType result;
-	
-	@Column(name="event")
+
+	@Column(name = "event")
 	String event;
-	
-	@OneToMany(orphanRemoval=true, cascade=CascadeType.ALL, mappedBy="trigger", fetch=FetchType.EAGER)
+
+	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "trigger", fetch = FetchType.EAGER)
 	Set<TriggerCondition> conditions = new HashSet<TriggerCondition>();
-	
-	@OneToMany(mappedBy="parentTrigger", fetch=FetchType.EAGER)
-	List<TriggerResource> childTriggers;
-	
+
+	@OneToMany(mappedBy = "parentTrigger", fetch = FetchType.EAGER)
+	Set<TriggerResource> childTriggers;
+
 	@OneToOne
 	TriggerResource parentTrigger;
-	
-	@Column(name="resource_key")
+
+	@Column(name = "resource_key")
 	String resourceKey;
-	
+
 	public TriggerResultType getResult() {
 		return result;
 	}
@@ -52,26 +55,26 @@ public class TriggerResource extends Task {
 	public void setEvent(String event) {
 		this.event = event;
 	}
-	
+
 	@JsonIgnore
 	public Set<TriggerCondition> getConditions() {
 		return conditions;
 	}
-	
+
 	public Set<TriggerCondition> getAllConditions() {
 		Set<TriggerCondition> ret = new HashSet<TriggerCondition>();
-		for(TriggerCondition c : conditions) {
-			if(c.getType()==TriggerConditionType.ALL) {
+		for (TriggerCondition c : conditions) {
+			if (c.getType() == TriggerConditionType.ALL) {
 				ret.add(c);
 			}
 		}
 		return ret;
 	}
-	
+
 	public Set<TriggerCondition> getAnyConditions() {
 		Set<TriggerCondition> ret = new HashSet<TriggerCondition>();
-		for(TriggerCondition c : conditions) {
-			if(c.getType()==TriggerConditionType.ANY) {
+		for (TriggerCondition c : conditions) {
+			if (c.getType() == TriggerConditionType.ANY) {
 				ret.add(c);
 			}
 		}
@@ -81,18 +84,18 @@ public class TriggerResource extends Task {
 	public void setParentTrigger(TriggerResource parentTrigger) {
 		this.parentTrigger = parentTrigger;
 	}
-	
+
 	@JsonIgnore
 	public TriggerResource getParentTrigger() {
 		return parentTrigger;
 	}
-	
+
 	public boolean getIsRoot() {
-		return parentTrigger==null;
+		return parentTrigger == null;
 	}
-	
+
 	public Long getParentId() {
-		return parentTrigger==null ? -1 : parentTrigger.getId();
+		return parentTrigger == null ? null : parentTrigger.getId();
 	}
 
 	public void setResourceKey(String task) {
@@ -103,9 +106,9 @@ public class TriggerResource extends Task {
 	public String getResourceKey() {
 		return resourceKey;
 	}
-	
-	public List<TriggerResource> getChildTriggers() {
+
+	public Set<TriggerResource> getChildTriggers() {
 		return childTriggers;
 	}
-	
+
 }

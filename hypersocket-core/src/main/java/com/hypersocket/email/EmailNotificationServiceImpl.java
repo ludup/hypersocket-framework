@@ -53,15 +53,25 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 	@Override
 	public void sendPlainEmail(String subject, String text, Recipient[] recipients) throws MailException {
-		sendEmail(subject, text, recipients, false);
+		sendEmail(subject, text, recipients, null, false);
 	}
 	
 	@Override
 	public void sendHtmlEmail(String subject, String text, Recipient[] recipients) throws MailException {
-		sendEmail(subject, text, recipients, true);
+		sendEmail(subject, text, recipients,  null, true);
 	}
 	
-	private void sendEmail(String subject, String text, Recipient[] recipients, boolean html) throws MailException {
+	@Override
+	public void sendPlainEmail(String subject, String text, Recipient[] recipients, EmailAttachment[] attachments) throws MailException {
+		sendEmail(subject, text, recipients, attachments, false);
+	}
+	
+	@Override
+	public void sendHtmlEmail(String subject, String text, Recipient[] recipients, EmailAttachment[] attachments) throws MailException {
+		sendEmail(subject, text, recipients,  attachments, true);
+	}
+	
+	private void sendEmail(String subject, String text, Recipient[] recipients, EmailAttachment[] attachments, boolean html) throws MailException {
 		Email email = new Email();
 		
 		email.setFromAddress(configurationService.getValue(SMTP_FROM_NAME), 
@@ -78,7 +88,13 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		} else {
 			email.setText(text);
 		}
-
+		
+		if(attachments!=null) {
+			for(EmailAttachment attachment : attachments) {
+				email.addAttachment(attachment.getName(), attachment);
+			}
+		}
+		
 		Mailer mail = new Mailer(configurationService.getValue(SMTP_HOST), 
 				configurationService.getIntValue(SMTP_PORT), 
 				configurationService.getValue(SMTP_USERNAME),

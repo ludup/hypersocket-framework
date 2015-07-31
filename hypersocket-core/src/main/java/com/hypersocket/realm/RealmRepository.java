@@ -30,7 +30,7 @@ public interface RealmRepository extends
 	Realm saveRealm(Realm realm, Map<String, String> properties,
 			RealmProvider provider);
 
-	Realm createRealm(String name, String module,
+	Realm createRealm(String name, String uuid, String module,
 			Map<String, String> properties, RealmProvider provider);
 
 	Realm getRealmByName(String name, boolean deleted);

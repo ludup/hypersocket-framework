@@ -1,6 +1,6 @@
 package com.hypersocket.dashboard;
 
-public class OverviewWidget implements Comparable<OverviewWidget>{
+public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 
 	int weight;
 	String resourceKey;
@@ -74,6 +74,8 @@ public class OverviewWidget implements Comparable<OverviewWidget>{
 	public void setVisible(boolean visible) {
 		this.visible = visible;
 	}
+
+	public abstract boolean hasContent();
 	
 	
 }

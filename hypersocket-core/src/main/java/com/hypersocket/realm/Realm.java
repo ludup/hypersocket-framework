@@ -25,12 +25,23 @@ public class Realm extends Resource {
 	@Column(name="default_realm")
 	boolean defaultRealm = false;
 	
+	@Column(name="uuid")
+	String uuid;
+	
 	public boolean isDefaultRealm() {
 		return defaultRealm;
 	}
 
 	public void setDefaultRealm(boolean defaultRealm) {
 		this.defaultRealm = defaultRealm;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 
 	protected void doHashCodeOnKeys(HashCodeBuilder builder) {

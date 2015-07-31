@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.annotation.PostConstruct;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -64,10 +65,14 @@ public abstract class ResourceTemplateRepositoryImpl extends
 
 	public ResourceTemplateRepositoryImpl() {
 		super();
+	}
+
+	@PostConstruct
+	private void postConstruct() {
 		configPropertyStore = new DatabasePropertyStore(this, encryptionService);
 		propertyStoresById.put("db", configPropertyStore);
 	}
-
+	
 	public ResourceTemplateRepositoryImpl(boolean requiresDemoWrite) {
 		super(requiresDemoWrite);
 	}
@@ -93,6 +98,19 @@ public abstract class ResourceTemplateRepositoryImpl extends
 		results.addAll(propertyNames);
 		for(PropertyResolver r : propertyResolvers) {
 			results.addAll(r.getPropertyNames(resource));
+		}
+		return results;
+	}
+	
+	@Override
+	public Set<String> getPropertyNames(AbstractResource resource, boolean includeResolvers) {
+		
+		Set<String> results = new HashSet<String>();
+		results.addAll(propertyNames);
+		if(includeResolvers) {
+			for(PropertyResolver r : propertyResolvers) {
+				results.addAll(r.getPropertyNames(resource));
+			}
 		}
 		return results;
 	}
@@ -498,6 +516,11 @@ public abstract class ResourceTemplateRepositoryImpl extends
 
 	@Override
 	public String getValue(AbstractResource resource, String resourceKey) {
+		return getValue(resource, resourceKey, null);
+	}
+	
+	@Override
+	public String getValue(AbstractResource resource, String resourceKey, String defaultValue) {
 
 		PropertyTemplate template = propertyTemplates.get(resourceKey);
 
@@ -511,8 +534,7 @@ public abstract class ResourceTemplateRepositoryImpl extends
 			}
 			
 			if(template==null) {
-				throw new IllegalStateException(resourceKey
-					+ " is not a registered configuration item");
+				return configPropertyStore.getProperty(resource, resourceKey, defaultValue);
 			}
 		}
 
@@ -604,8 +626,8 @@ public abstract class ResourceTemplateRepositoryImpl extends
 			}
 			
 			if(template==null) {
-				throw new IllegalStateException(resourceKey
-					+ " is not a registered configuration item");
+				configPropertyStore.setProperty(resource, resourceKey, value);
+				return;
 			}
 		}
 

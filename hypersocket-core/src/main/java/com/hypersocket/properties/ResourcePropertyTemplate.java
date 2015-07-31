@@ -7,8 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.properties;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import com.hypersocket.resource.AbstractResource;
 
 public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
@@ -28,6 +26,7 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 		this.resource = resource;
 		this.propertyStore = t.getPropertyStore();
 		this.defaultsToProperty = t.getDefaultsToProperty();
+		this.encrypted = t.isEncrypted();
 	}
 	
 	public void setPropertyStore(ResourcePropertyStore propertyStore) {

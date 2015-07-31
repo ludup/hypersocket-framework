@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.nss.NssEncryptionProvider;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.rsa.RsaEncryptionProvider;
 import com.hypersocket.secret.SecretKeyResource;
 import com.hypersocket.secret.SecretKeyService;
@@ -41,14 +42,14 @@ public class DefaultEncryptor implements Encryptor {
 	}
 	
 	@Override
-	public String encryptString(String reference, String data)
+	public String encryptString(String reference, String data, Realm realm)
 			throws IOException {
 
 		try {
 			
 			SecretKeyResource key;
 			
-			key = secretKeyService.getSecretKey(reference);
+			key = secretKeyService.getSecretKey(reference, realm);
 
 			SecretKey secretKeySpec = new SecretKeySpec(secretKeyService.generateSecreyKeyData(key), "AES");
 			byte[] iv = secretKeyService.generateIvData(key);
@@ -72,10 +73,10 @@ public class DefaultEncryptor implements Encryptor {
 
 	
 	@Override
-	public String decryptString(String reference, String data)
+	public String decryptString(String reference, String data, Realm realm)
 			throws IOException {
 		try {
-			SecretKeyResource key = secretKeyService.getSecretKey(reference);
+			SecretKeyResource key = secretKeyService.getSecretKey(reference, realm);
 
 			byte[] keydata = secretKeyService.generateSecreyKeyData(key);
 

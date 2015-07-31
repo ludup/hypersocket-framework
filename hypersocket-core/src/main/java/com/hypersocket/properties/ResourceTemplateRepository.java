@@ -66,4 +66,9 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 	void setDoubleValue(AbstractResource resource, String resourceKey,
 			Double value);
 
+	Set<String> getPropertyNames(AbstractResource resource,
+			boolean includeResolvers);
+
+	String getValue(AbstractResource resource, String resourceKey, String defaultValue);
+
 }

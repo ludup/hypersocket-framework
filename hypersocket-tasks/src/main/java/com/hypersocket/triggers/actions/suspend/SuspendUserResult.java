@@ -11,21 +11,26 @@ public class SuspendUserResult extends TaskResult {
 
 	private static final long serialVersionUID = 8659070892407924656L;
 
+	public static final String EVENT_RESOURCE_KEY = "suspendUser.result";
+	public static final String ATTR_SUSPENDED_USER = "suspendUser.name";
+	public static final String ATTR_START_DATE = "suspendUser.startDate";
+	public static final String ATTR_DURATION = "suspendUser.duration";
+	
 	public SuspendUserResult(Object source, Realm currentRealm, Task task,
 			String name, Date startDate, Long duration) {
-		super(source, "suspendUser.name", SystemEventStatus.SUCCESS, currentRealm,
+		super(source, EVENT_RESOURCE_KEY, SystemEventStatus.SUCCESS, currentRealm,
 				task);
-		addAttribute("suspendUser.name", name);
-		addAttribute("suspendUser.startDate", startDate);
-		addAttribute("suspendUser.duration", duration);
+		addAttribute(ATTR_SUSPENDED_USER, name);
+		addAttribute(ATTR_START_DATE, startDate);
+		addAttribute(ATTR_DURATION, duration);
 	}
 
 	public SuspendUserResult(Object source, Throwable e, Realm currentRealm,
 			Task task, String name, Date startDate, Long duration) {
-		super(source, "blocked.ip", e, currentRealm, task);
-		addAttribute("suspendUser.name", name);
-		addAttribute("suspendUser.startDate", startDate);
-		addAttribute("suspendUser.duration", duration);
+		super(source, EVENT_RESOURCE_KEY, e, currentRealm, task);
+		addAttribute(ATTR_SUSPENDED_USER, name);
+		addAttribute(ATTR_START_DATE, startDate);
+		addAttribute(ATTR_DURATION, duration);
 	}
 
 	@Override
