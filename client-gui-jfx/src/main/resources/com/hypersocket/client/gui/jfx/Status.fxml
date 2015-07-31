@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Status">
+   <center>
+      <VBox fx:id="statusItems" BorderPane.alignment="CENTER" />
+   </center>
+   <styleClass>
+      <String fx:value="background" />
+      <String fx:value="group" />
+   </styleClass>
+   <padding>
+      <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+   </padding>
+   <top>
+      <VBox BorderPane.alignment="CENTER">
+         <children>
+            <Label styleClass="title" text="%status.title">
+               <padding>
+                  <Insets bottom="8.0" />
+               </padding>
+            </Label>
+            <Label styleClass="description" text="%status.description" wrapText="true">
+               <padding>
+                  <Insets bottom="8.0" />
+               </padding>
+            </Label>
+         </children>
+      </VBox>
+   </top>
+   <opaqueInsets>
+      <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+   </opaqueInsets>
+</BorderPane>

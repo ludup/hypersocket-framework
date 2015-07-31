@@ -100,6 +100,9 @@ public class BrowserResourcesPlugin extends AbstractServicePlugin {
 					res.setType(Type.SSO);
 				} else {
 					res.setType(Type.BROWSER);
+					if(res.getIcon() == null || res.getIcon().equals("")) {
+						res.setIcon("web-https");
+					}
 				}
 
 				String sessionId = serviceClient.getSessionId();

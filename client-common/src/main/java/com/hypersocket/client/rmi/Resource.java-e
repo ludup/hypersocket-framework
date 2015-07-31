@@ -5,7 +5,7 @@ import java.util.List;
 public interface Resource extends Launchable {
 	
 	public enum Type {
-		SSO, BROWSER, FILE, NETWORK
+		FILE, NETWORK, BROWSER, SSO
 	}
 	
 	String getIcon();

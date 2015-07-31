@@ -14,10 +14,6 @@ public abstract class AbstractServicePlugin implements ServicePlugin {
 
 	static Logger log = LoggerFactory.getLogger(AbstractServicePlugin.class);
 	
-	public AbstractServicePlugin() {
-		// TODO Auto-generated constructor stub
-	}
-
 	protected int processResourceList(String json, ResourceMapper mapper, String resourceName)
 			throws IOException {
 		try {

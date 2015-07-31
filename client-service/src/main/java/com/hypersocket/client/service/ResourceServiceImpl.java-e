@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.hypersocket.client.ServiceResource;
 import com.hypersocket.client.rmi.Resource;
 import com.hypersocket.client.rmi.ResourceRealm;
 import com.hypersocket.client.rmi.ResourceRealmImpl;
@@ -14,6 +15,7 @@ import com.hypersocket.client.rmi.ResourceService;
 public class ResourceServiceImpl implements ResourceService {
 
 	Map<String, ResourceRealm> resourceRealms = new HashMap<String,ResourceRealm>();
+	List<ServiceResource> serviceResources = new ArrayList<ServiceResource>();
 	
 	public ResourceServiceImpl() {
 	}
@@ -34,6 +36,11 @@ public class ResourceServiceImpl implements ResourceService {
 	@Override
 	public void removeResourceRealm(String name) throws RemoteException {
 		resourceRealms.remove(name);
+	}
+
+	@Override
+	public List<ServiceResource> getServiceResources() throws RemoteException {
+		return serviceResources;
 	}
 
 }
