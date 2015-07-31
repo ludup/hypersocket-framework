@@ -18,8 +18,6 @@ import com.hypersocket.dashboard.message.events.DashboardMessageCreatedEvent;
 import com.hypersocket.dashboard.message.events.DashboardMessageEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
-import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.scheduler.SchedulerService;
 
 @Service
@@ -47,13 +45,6 @@ public class DashboardMessageServiceImpl extends
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-		PermissionCategory cat = permissionService.registerPermissionCategory(
-				RESOURCE_BUNDLE, "category.dashboardMessage");
-
-		for (DashboardMessagePermission p : DashboardMessagePermission.values()) {
-			permissionService.registerPermission(p, cat);
-		}
-
 		eventService
 				.registerEvent(DashboardMessageEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(DashboardMessageCreatedEvent.class,
@@ -62,8 +53,7 @@ public class DashboardMessageServiceImpl extends
 	}
 
 	@Override
-	public void saveNewMessages(DashboardMessage[] dashboardMessageList)
-			throws AccessDeniedException {
+	public void saveNewMessages(DashboardMessage[] dashboardMessageList) {
 		List<DashboardMessage> savedMessages = repository.getMessages();
 		List<DashboardMessage> newMessages = new ArrayList<DashboardMessage>();
 		for (DashboardMessage newMessage : dashboardMessageList) {
@@ -85,22 +75,17 @@ public class DashboardMessageServiceImpl extends
 	}
 
 	@Override
-	public List<DashboardMessage> getMessages() throws AccessDeniedException {
-		assertPermission(DashboardMessagePermission.READ);
+	public List<DashboardMessage> getMessages()  {
 		return repository.getMessages();
 	}
 
 	@Override
-	public List<DashboardMessage> getUnexpiredMessages(int pageNum)
-			throws AccessDeniedException {
-		assertPermission(DashboardMessagePermission.READ);
+	public List<DashboardMessage> getUnexpiredMessages(int pageNum) {
 		return repository.getUnexpiredMessages(pageNum);
 	}
 
 	@Override
-	public DashboardMessage saveNewMessage(DashboardMessage dashboardMessage)
-			throws AccessDeniedException {
-		assertPermission(DashboardMessagePermission.CREATE);
+	public DashboardMessage saveNewMessage(DashboardMessage dashboardMessage) {
 
 		DashboardMessage message = repository.getMessage(dashboardMessage);
 		try {
@@ -121,8 +106,7 @@ public class DashboardMessageServiceImpl extends
 	}
 
 	@Override
-	public Long getMessageCount() throws AccessDeniedException {
-		assertPermission(DashboardMessagePermission.READ);
+	public Long getMessageCount() {
 		return repository.getMessageCount();
 	}
 
