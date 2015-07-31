@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
@@ -686,9 +687,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 			RealmProvider realmProvider = getProviderForRealm(module);
 
-			realmProvider.testConnection(properties, true);
+			realmProvider.testConnection(properties);
 
-			Realm realm = realmRepository.createRealm(name, module, properties,
+			Realm realm = realmRepository.createRealm(name, 
+					UUID.randomUUID().toString(), 
+					module, 
+					properties,
 					realmProvider);
 			
 			configurationService.setValue(realm, "realm.userEditableProperties",
@@ -757,7 +761,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 			RealmProvider realmProvider = getProviderForRealm(realm
 					.getResourceCategory());
 
-			realmProvider.testConnection(properties, false);
+			realmProvider.testConnection(properties, realm);
 			String oldName = realm.getName();
 
 			clearCache(realm);
@@ -785,7 +789,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 			eventService.publishEvent(new RealmUpdatedEvent(this, t,
 					getCurrentSession(), realm));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"error.unexpectedError", t);
+					"error.unexpectedError", t.getMessage());
 		}
 		return realm;
 	}
@@ -831,6 +835,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 			assertPermission(RealmPermission.DELETE);
 
+			if(realm.isDefaultRealm()) {
+				throw new ResourceChangeException(RESOURCE_BUNDLE,
+						"error.cannotDeleteDefault", realm.getName());
+			}
+			
 			List<Realm> realms = realmRepository.allRealms();
 			if (realms.size() == 1) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE,
@@ -855,11 +864,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 				}
 			}
 
-			clearCache(realm);
+			/**
+			 * Get a copy of the realm to delete so we can fire events
+			 * with the current realm detail as delete will rename it
+			 */
+			Realm deletedRealm = getRealmById(realm.getId());
 			
-			fireRealmDelete(realm);
+			clearCache(deletedRealm);
+			
+			fireRealmDelete(deletedRealm);
 
-			realmRepository.delete(realm);
+			realmRepository.delete(deletedRealm);
 
 			eventService.publishEvent(new RealmDeletedEvent(this,
 					getCurrentSession(), realm));

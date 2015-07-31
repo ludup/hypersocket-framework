@@ -95,18 +95,17 @@ public interface SchedulerService extends
 	String scheduleAt(Class<? extends Job> clz, JobDataMap data, Date start,
 			int interval, int repeat, Date ends) throws SchedulerException;
 
-	SchedulerResource updateResource(SchedulerResource resourceById,
+	SchedulerResource updateResource(SchedulerResource resource,
 			String name, Map<String, String> properties)
 			throws ResourceChangeException, AccessDeniedException;
-
-	SchedulerResource createResource(String name, Realm realm,
-			Map<String, String> properties) throws ResourceCreationException,
-			AccessDeniedException;
 
 	Collection<PropertyCategory> getPropertyTemplate()
 			throws AccessDeniedException;
 
 	Collection<PropertyCategory> getPropertyTemplate(SchedulerResource resource)
 			throws AccessDeniedException;
+
+	SchedulerResource createResource(String name, String uuid, Realm realm, Map<String, String> properties)
+			throws ResourceCreationException, AccessDeniedException;
 
 }

@@ -13,17 +13,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
-
-import net.sf.uadetector.ReadableUserAgent;
-import net.sf.uadetector.UserAgentFamily;
-import net.sf.uadetector.UserAgentStringParser;
-import net.sf.uadetector.service.UADetectorServiceFactory;
 
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
@@ -39,7 +33,6 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
-import com.hypersocket.i18n.I18N;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.SystemPermission;
@@ -51,6 +44,10 @@ import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.events.SessionClosedEvent;
 import com.hypersocket.session.events.SessionEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
+
+import net.sf.uadetector.ReadableUserAgent;
+import net.sf.uadetector.UserAgentStringParser;
+import net.sf.uadetector.service.UADetectorServiceFactory;
 
 @Service
 public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
@@ -513,8 +510,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		try {
 			JobDataMap data = new JobDataMap();
-			data.put("jobName", I18N.getResource(Locale.getDefault(),
-					RESOURCE_BUNDLE, "sessionReaperJob"));
+			data.put("jobName", "sessionReaperJob");
 			schedulerService.scheduleIn(SessionReaperJob.class, data, 60000,
 					60000);
 		} catch (SchedulerException e) {

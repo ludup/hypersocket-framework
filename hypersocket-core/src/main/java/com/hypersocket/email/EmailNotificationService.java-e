@@ -26,4 +26,10 @@ public interface EmailNotificationService {
 	String populateEmailList(String[] emails, List<Recipient> recipients,
 			RecipientType type) throws ValidationException;
 
+	void sendPlainEmail(String subject, String text, Recipient[] recipients,
+			EmailAttachment[] attachments) throws MailException;
+
+	void sendHtmlEmail(String subject, String text, Recipient[] recipients,
+			EmailAttachment[] attachments) throws MailException;
+
 }

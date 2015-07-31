@@ -10,7 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hypersocket.encrypt.EncryptionService;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.RealmResource;
 
 public abstract class AbstractResourcePropertyStore implements ResourcePropertyStore {
 
@@ -22,12 +24,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 
 	EncryptionService encryptionService; 
 	
-	public AbstractResourcePropertyStore(EncryptionService encryptionService) {
-		this.encryptionService = encryptionService;
-	}
-
 	public AbstractResourcePropertyStore() {
-		
 	}
 	
 	protected void setEncryptionService(EncryptionService encryptionService) {
@@ -101,7 +98,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		}
 
 		if(template.isEncrypted() && c.startsWith("!ENC!")) {
-			c = decryptValue(cacheKey, c.substring(5));
+			c = decryptValue(cacheKey, c, resolveRealm(resource));
 		}
 		return c;
 	}
@@ -117,7 +114,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		cachedValues.remove(cacheKey);
 		
 		if(template.isEncrypted() && !value.startsWith("!ENC!")) {
-			value = encryptValue(cacheKey, value);
+			value = encryptValue(cacheKey, value, resolveRealm(resource));
 			doSetProperty(template, resource, value);
 		} else {
 			doSetProperty(template, resource, value);
@@ -126,21 +123,34 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 
 	}
 	
-	private String encryptValue(String cacheKey, String value) {
+	private String encryptValue(String cacheKey, String value, Realm realm) {
 		try {
-			return "!ENC!" + encryptionService.encryptString(cacheKey, value);
+			return "!ENC!" + encryptionService.encryptString(cacheKey, value, realm);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new IllegalStateException("Could not encrypt property value. Check the logs for more detail.", e);
 		}
 	}
 	
-	private String decryptValue(String cacheKey, String value) {
+	private String decryptValue(String cacheKey, String value, Realm realm) {
 		try {
-			return encryptionService.decryptString(cacheKey, value);
+			String e =  value.substring(5);
+			return encryptionService.decryptString(cacheKey, e, realm);
 		} catch(Exception e) {
 			log.warn("Unable to decrypt " + cacheKey + "; returning encrypted", e);
 			return value;
 		}
+	}
+	
+	
+	private Realm resolveRealm(AbstractResource resource) {
+		if(resource instanceof RealmResource) {
+			return ((RealmResource) resource).getRealm();
+		} else if(resource instanceof Realm) {
+			return (Realm) resource;
+		}
+		
+		throw new IllegalStateException("Use of ResourcePropertyStore requires Realm based resource, either Realm or extension of RealmResource");
 	}
 
 }

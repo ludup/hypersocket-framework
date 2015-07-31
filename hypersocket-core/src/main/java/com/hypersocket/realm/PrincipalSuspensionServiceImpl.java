@@ -105,7 +105,7 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 			return;
 		}
 		PermissionsAwareJobData data = new PermissionsAwareJobData(
-				principal.getRealm());
+				principal.getRealm(), "resumeUserJob");
 		data.put("name", principal.getPrincipalName());
 
 		String scheduleId;

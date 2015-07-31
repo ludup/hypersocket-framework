@@ -1,5 +1,7 @@
 package com.hypersocket.realm.events;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.session.Session;
@@ -20,5 +22,9 @@ public class ChangePasswordEvent extends UserEvent {
 			Realm realm, RealmProvider provider) {
 		super(source, EVENT_RESOURCE_KEY, t, session, realm, provider,
 				session.getCurrentPrincipal().getPrincipalName());
+	}
+	
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
 	}
 }

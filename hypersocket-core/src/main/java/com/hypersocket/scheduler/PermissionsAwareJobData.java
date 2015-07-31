@@ -14,15 +14,16 @@ public class PermissionsAwareJobData extends JobDataMap {
 	Principal principal;
 	Locale locale;
 		
-	public PermissionsAwareJobData(Realm currentRealm) {
-		this(currentRealm, null, null);
+	public PermissionsAwareJobData(Realm currentRealm, String jobResourceKey) {
+		this(currentRealm, null, null, jobResourceKey);
 	}
 	
-	public PermissionsAwareJobData(Realm currentRealm, Principal principal, Locale locale) {
+	public PermissionsAwareJobData(Realm currentRealm, Principal principal, Locale locale, String jobResourceKey) {
 		this.currentRealm = currentRealm;
 		this.principal = principal;
 		this.locale = locale;
 		put("realm", currentRealm);
+		put("jobName", jobResourceKey);
 		if(principal!=null) {
 			put("principal", principal);
 		}

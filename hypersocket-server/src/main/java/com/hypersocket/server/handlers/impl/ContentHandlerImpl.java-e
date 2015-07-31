@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -36,6 +35,7 @@ import org.springframework.mail.javamail.ConfigurableMimeFileTypeMap;
 
 import com.hypersocket.server.handlers.HttpRequestHandler;
 import com.hypersocket.server.handlers.HttpResponseProcessor;
+import com.hypersocket.utils.HypersocketUtils;
 
 public abstract class ContentHandlerImpl extends HttpRequestHandler implements ContentHandler {
 
@@ -116,10 +116,13 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 					long ifModifiedSinceDateSeconds = ifModifiedSinceDate.getTime() / 1000;
 					long fileLastModifiedSeconds = getLastModified(path) / 1000;
 					if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {
-					    sendNotModified(response);
+						if(log.isInfoEnabled()) {
+							log.info(path + " has not been modified since " + HypersocketUtils.formatDateTime(ifModifiedSinceDate));
+						}
+						sendNotModified(response);
 					    return;
 					}
-				} catch (ParseException e) {
+				} catch (Throwable e) {
 					response.sendError(HttpStatus.SC_BAD_REQUEST);
 					return;
 				}

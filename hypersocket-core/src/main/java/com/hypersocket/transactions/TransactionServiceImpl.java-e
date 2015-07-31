@@ -37,7 +37,6 @@ public class TransactionServiceImpl implements TransactionService {
 			return result;
 		} catch (Throwable e) {
 			eventService.rollbackDelayedEvents(true);
-			eventService.delayEvents(false);
 			if(transaction instanceof TransactionCallbackWithError) {
 				((TransactionCallbackWithError<T>)transaction).doTransacationError(e);
 			}
@@ -51,6 +50,8 @@ public class TransactionServiceImpl implements TransactionService {
 				throw (AccessDeniedException) e.getCause();
 			}
 			throw new ResourceException(AuthenticationService.RESOURCE_BUNDLE, "error.transactionFailed", e.getMessage());
+		} finally {
+			eventService.delayEvents(false);
 		}
 		
 		

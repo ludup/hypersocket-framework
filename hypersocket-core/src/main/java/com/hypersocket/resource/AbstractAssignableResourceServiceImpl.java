@@ -452,10 +452,10 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			for(T resource : resources) {
+				prepareExport(resource);
 				resource.setId(null);
 				resource.setRealm(null);
 				resource.getRoles().clear();
-				prepareExport(resource);
 			}
 
 			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resources);
@@ -484,9 +484,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 					
 					Collection<T> resources = mapper.readValue(json, mapper.getTypeFactory().constructCollectionType(List.class, getResourceClass()));
 					for(T resource : resources) {
-						resource.setRealm(realm);
-						checkImportName(resource, realm);
-						createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() : resource.getProperties());
+						performImport(resource, realm);
 					}
 					
 					return resources;
@@ -498,6 +496,12 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			}
 		});
 		
+	}
+	
+	protected void performImport(T resource, Realm realm) throws ResourceException, AccessDeniedException {
+		resource.setRealm(realm);
+		checkImportName(resource, realm);
+		createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() : resource.getProperties());
 	}
 	
 	protected void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {

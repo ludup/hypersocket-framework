@@ -9,18 +9,22 @@ import com.hypersocket.triggers.actions.ip.BlockIPTask;
 public class ResumeUserResult extends TaskResult {
 
 	private static final long serialVersionUID = -4411122520620089664L;
-
+	
+	public static final String EVENT_RESOURCE_KEY = "resumeUser.result";
+	
+	public static final String ATTR_RESUMED_USER = "resumeUser.name";
+	
 	public ResumeUserResult(Object source, Realm currentRealm, Task task,
 			String name) {
-		super(source, "resumeUser.name", SystemEventStatus.SUCCESS,
+		super(source, EVENT_RESOURCE_KEY, SystemEventStatus.SUCCESS,
 				currentRealm, task);
-		addAttribute("resumeUser.name", name);
+		addAttribute(ATTR_RESUMED_USER, name);
 	}
 
 	public ResumeUserResult(Object source, Throwable e, Realm currentRealm,
-			Task task, String ipAddress) {
-		super(source, "unblocked.ip", e, currentRealm, task);
-		addAttribute("unblock.ip", ipAddress);
+			Task task, String name) {
+		super(source, EVENT_RESOURCE_KEY, e, currentRealm, task);
+		addAttribute(ATTR_RESUMED_USER, name);
 	}
 
 	@Override

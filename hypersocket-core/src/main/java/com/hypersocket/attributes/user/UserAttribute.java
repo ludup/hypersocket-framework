@@ -38,7 +38,7 @@ public class UserAttribute extends AssignableResource  {
 	@Column(name="encrypted")
 	Boolean encrypted = false;
 	
-	@Column(name="variable_name", unique=true)
+	@Column(name="variable_name")
 	String variableName;
 
 	@Column(name="linked_resource_id")

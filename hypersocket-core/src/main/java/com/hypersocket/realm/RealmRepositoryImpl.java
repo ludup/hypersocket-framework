@@ -15,7 +15,6 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedDetachedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
@@ -32,23 +31,16 @@ public class RealmRepositoryImpl extends
 
 	@Override
 	@Transactional
-	public Realm createRealm(String name, String module,
+	public Realm createRealm(String name, String uuid, String module,
 			Map<String, String> properties, RealmProvider provider) {
 		Realm realm = new Realm();
 		realm.setName(name);
 		realm.setResourceCategory(module);
+		realm.setUuid(uuid);
 
 		save(realm);
 
-		if (!properties.isEmpty()) {
-			for (Map.Entry<String, String> e : properties.entrySet()) {
-				DatabaseProperty p = new DatabaseProperty();
-				p.setResourceId(realm.getId());
-				p.setResourceKey(e.getKey());
-				p.setValue(e.getValue());
-				save(p);
-			}
-		}
+		provider.setValues(realm, properties);
 
 		return realm;
 	}
@@ -70,9 +62,7 @@ public class RealmRepositoryImpl extends
 		boolean isNew = realm.getId() == null;
 		save(realm);
 
-		for (Map.Entry<String, String> e : properties.entrySet()) {
-			provider.setValue(realm, e.getKey(), e.getValue());
-		}
+		provider.setValues(realm, properties);
 
 		if (!isNew) {
 			refresh(realm);

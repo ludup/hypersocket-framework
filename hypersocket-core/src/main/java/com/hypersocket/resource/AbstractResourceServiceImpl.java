@@ -428,9 +428,9 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		
 		try {
 			for(T resource : resources) {
+				prepareExport(resource);
 				resource.setId(null);
 				resource.setRealm(null);
-				prepareExport(resource);
 			}
 
 			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resources);
@@ -444,7 +444,6 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		
 		return transactionService.doInTransaction(new TransactionCallback<Collection<T>>() {
 
-			@SuppressWarnings("unchecked")
 			@Override
 			public Collection<T> doInTransaction(TransactionStatus status) {
 				
@@ -452,16 +451,14 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 				
 					if(dropCurrent) {
 						for(T resource : getResources(realm)) {
-							deleteResource(resource);
+							performImportDropResources(resource);
 						}
 					}
 					ObjectMapper mapper = new ObjectMapper();
 					
 					Collection<T> resources = mapper.readValue(json, mapper.getTypeFactory().constructCollectionType(List.class, getResourceClass()));
 					for(T resource : resources) {
-						resource.setRealm(realm);
-						checkImportName(resource, realm);
-						createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() : resource.getProperties());
+						performImport(resource, realm);
 					}
 					
 					return resources;
@@ -474,6 +471,17 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		});
 		
 	}
+	
+	protected void performImportDropResources(T resource) throws ResourceChangeException, AccessDeniedException {
+		deleteResource(resource);
+	}
+	
+	protected void performImport(T resource, Realm realm) throws ResourceException, AccessDeniedException {
+		resource.setRealm(realm);
+		checkImportName(resource, realm);
+		createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() : resource.getProperties());
+	}
+	
 	protected void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 		
 		try {
