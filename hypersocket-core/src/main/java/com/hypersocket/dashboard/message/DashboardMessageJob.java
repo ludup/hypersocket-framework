@@ -32,7 +32,9 @@ public class DashboardMessageJob implements Job {
 		try {
 			checkMessages();
 		} catch (Throwable e) {
-			log.error("Could not initialize DashboardMessageJob job", e);
+			if(log.isDebugEnabled()){
+				log.debug("Could not initialize DashboardMessageJob job", e);
+			}
 		}
 
 	}
