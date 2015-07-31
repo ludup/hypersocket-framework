@@ -50,8 +50,8 @@
                                  <children>
                                     <ToggleButton fx:id="top" mnemonicParsing="false" text="%top" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
                                     <ToggleButton fx:id="bottom" mnemonicParsing="false" text="%bottom" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
-                                    <ToggleButton fx:id="left" disable="true" mnemonicParsing="false" text="%left" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
-                                    <ToggleButton fx:id="right" disable="true" mnemonicParsing="false" text="%right" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                                    <ToggleButton fx:id="left" mnemonicParsing="false" text="%left" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                                    <ToggleButton fx:id="right" mnemonicParsing="false" text="%right" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
                                     <HBox fx:id="monitorContainer" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                  </children>
                               </GridPane>
@@ -70,6 +70,11 @@
                                        <VBox.margin>
                                           <Insets top="8.0" />
                                        </VBox.margin></CheckBox>
+                                    <CheckBox fx:id="alwaysOnTop" mnemonicParsing="false" text="%alwaysOnTop">
+                                       <VBox.margin>
+                                          <Insets top="8.0" />
+                                       </VBox.margin>
+                                    </CheckBox>
                                  </children>
                               </VBox>
                            </top>

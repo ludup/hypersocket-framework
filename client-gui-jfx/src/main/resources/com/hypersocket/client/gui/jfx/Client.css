@@ -18,7 +18,7 @@
 }
 
 /* Dock icons */
-.dock .button {  
+.dock .button, .group .button {  
 	-fx-padding: 4 4 4 4;
     -fx-background-color: inherit;
 }
@@ -27,7 +27,7 @@
     -fx-background-color: inherit;
 }
 
-.dock .toggle-button:hover, .dock .button:hover {
+.dock .toggle-button:hover, .dock .button:hover, .group .button:hover {
     -fx-background-color: DOCK_BUTTON_HIGHLIGHT_COLOR;
 }
 
@@ -47,6 +47,9 @@
     -fx-effect: innershadow( three-pass-box , derive(-icons-color,-70%) , 0.1em, 0.0 , 0.07em, 0.07em );
     -fx-text-fill: linear-gradient(to bottom, derive(-icons-color,20%) 10%, derive(-icons-color,-40%) 80%);
     */
+}
+
+.group .itemButton {
 }
 
 .dock .launcherIcon {
@@ -75,12 +78,35 @@
 	-fx-font-size: 9;
 }
 
+.pull {
+    -fx-font-family: FontAwesome;
+	-fx-font-size: 16;
+}
+
 .input {
 	-fx-text-fill: DEFAULT_TEXT_COLOR;
 }
 
 .logo {
 	-fx-image: url("hypersocket-icon64x64.png");
+}
+
+/* Text */
+.description {
+	-fx-font-size: 10;
+}
+
+.title {
+	-fx-font-size: 16;
+}
+
+.item {
+	-fx-font-size: 14;
+}
+
+.item .icon {
+	-fx-font-size: 18;
+	-fx-padding: 0 10 0 4;
 }
 
 
@@ -107,4 +133,36 @@
 .warningMessage {
 	-fx-text-fill: black;
     -fx-background-color: #ffdf00;
+}
+
+/* Menus */
+.menu-item .label {
+    -fx-text-fill: black;
+}
+
+.menu-item:focused {
+     -fx-background-color: DOCK_BUTTON_HIGHLIGHT_COLOR;
+}
+
+.menu-item:focused .label {
+    -fx-text-fill: inherit;
+}
+
+.context-menu {
+    -fx-skin: "com.sun.javafx.scene.control.skin.ContextMenuSkin";
+    -fx-background-color: white;
+    -fx-background-insets: 0, 1, 2;
+    -fx-background-radius: 0 0 0 0;
+    -fx-padding: 0.333333em 0.083333em 0.666667em 0.083333em; /* 4 1 8 1 */
+}
+
+/* Status */
+.statusConnected {
+	-fx-text-fill: #aa0000;
+}
+.statusNotConnected {
+	-fx-text-fill: #00aa00;
+}
+.statusError {
+	-fx-text-fill: #777777;
 }

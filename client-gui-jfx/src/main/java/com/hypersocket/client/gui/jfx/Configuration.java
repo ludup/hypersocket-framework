@@ -23,6 +23,7 @@ public class Configuration {
 	private BooleanProperty left = new SimpleBooleanProperty();
 	private BooleanProperty right = new SimpleBooleanProperty();
 	private BooleanProperty autoHide = new SimpleBooleanProperty();
+	private BooleanProperty alwaysOnTop = new SimpleBooleanProperty();
 	private BooleanProperty avoidReserved = new SimpleBooleanProperty();
 	private IntegerProperty size = new SimpleIntegerProperty();
 	private IntegerProperty monitor = new SimpleIntegerProperty();
@@ -86,11 +87,14 @@ public class Configuration {
 
 		autoHide.set(node.getBoolean("autoHide", true));
 		autoHide.addListener(new BooleanPreferenceUpdateChangeListener(node, "autoHide"));
+
+		alwaysOnTop.set(node.getBoolean("alwaysOnTop", false));
+		alwaysOnTop.addListener(new BooleanPreferenceUpdateChangeListener(node, "alwaysOnTop"));
 		
 		avoidReserved.set(node.getBoolean("avoidReserved", true));
 		avoidReserved.addListener(new BooleanPreferenceUpdateChangeListener(node, "avoidReserved"));
 		
-		size.set(node.getInt("size", 64));
+		size.set(node.getInt("size", 48));
 		size.addListener(new ChangeListener<Number>() {
 
 			@Override
@@ -157,6 +161,10 @@ public class Configuration {
 		return autoHide;
 	}
 
+	public BooleanProperty alwaysOnTopProperty() {
+		return alwaysOnTop;
+	}
+
 	public BooleanProperty avoidReservedProperty() {
 		return avoidReserved;
 	}
@@ -195,6 +203,10 @@ public class Configuration {
 
 	public Property<Color> colorProperty() {
 		return color ;
+	}
+
+	public boolean isVertical() {
+		return left.get() || right.get();
 	}
 	
 	static void putColor(String key, Preferences p, Color color) {

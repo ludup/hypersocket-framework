@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.client.HypersocketClient;
+import com.hypersocket.client.rmi.CancelledException;
 import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.extensions.AbstractExtensionUpdater;
@@ -30,8 +31,7 @@ public class ClientUpdater extends AbstractExtensionUpdater {
 	private ExtensionPlace extensionPlace;
 	private Connection connection;
 
-	public ClientUpdater(GUICallback gui,
-			Connection connection,
+	public ClientUpdater(GUICallback gui, Connection connection,
 			HypersocketClient<Connection> hypersocketClient,
 			ExtensionPlace extensionPlace) {
 		super();
@@ -44,8 +44,9 @@ public class ClientUpdater extends AbstractExtensionUpdater {
 	@Override
 	protected Map<ExtensionPlace, List<ExtensionDefinition>> onResolveExtensions()
 			throws IOException {
-		
-		log.info(String.format("Resolving extensions for %s in %s", extensionPlace.getApp(), extensionPlace.getDir()));
+
+		log.info(String.format("Resolving extensions for %s in %s",
+				extensionPlace.getApp(), extensionPlace.getDir()));
 
 		// Client service first
 		String reply = hypersocketClient.getTransport().get(
@@ -60,10 +61,10 @@ public class ClientUpdater extends AbstractExtensionUpdater {
 			for (ExtensionDefinition def : json.getResources()) {
 				defMap.put(def.getId(), def);
 			}
-			
-			ArrayList<ExtensionDefinition> extensionList = new ArrayList<ExtensionDefinition>(ExtensionHelper
-					.processLocalExtensions(defMap, extensionPlace)
-					.values());
+
+			ArrayList<ExtensionDefinition> extensionList = new ArrayList<ExtensionDefinition>(
+					ExtensionHelper.processLocalExtensions(defMap,
+							extensionPlace).values());
 			Map<ExtensionPlace, List<ExtensionDefinition>> map = new HashMap<ExtensionPlace, List<ExtensionDefinition>>();
 			map.put(extensionPlace, extensionList);
 			return map;
@@ -73,7 +74,8 @@ public class ClientUpdater extends AbstractExtensionUpdater {
 
 	@Override
 	protected InputStream downloadFromUrl(URL url) throws IOException {
-		String path = url.getPath().substring(connection.getPath().length() + 5);
+		String path = url.getPath()
+				.substring(connection.getPath().length() + 5);
 		return hypersocketClient.getTransport().getContent(path, 10000);
 	}
 
@@ -83,10 +85,17 @@ public class ClientUpdater extends AbstractExtensionUpdater {
 			gui.onUpdateStart(extensionPlace.getApp(), totalBytesExpected);
 			guiAttached = true;
 		} catch (RemoteException e) {
-			log.error(
-					"Failed to inform client of starting update. No further attempts will be made.",
-					e);
-			guiAttached = false;
+			if (e.getCause() instanceof CancelledException) {
+				try {
+					gui.onUpdateFailure(null, "Cancelled by user.");
+				} catch (RemoteException e2) {
+				}
+			} else {
+				log.error(
+						"Failed to inform client of starting update. No further attempts will be made.",
+						e);
+				guiAttached = false;
+			}
 		}
 	}
 
@@ -94,12 +103,20 @@ public class ClientUpdater extends AbstractExtensionUpdater {
 	protected void onUpdateProgress(long sincelastProgress, long totalSoFar) {
 		if (guiAttached) {
 			try {
-				gui.onUpdateProgress(extensionPlace.getApp(), sincelastProgress, totalSoFar);
+				gui.onUpdateProgress(extensionPlace.getApp(),
+						sincelastProgress, totalSoFar);
 			} catch (RemoteException e) {
-				log.error(
-						"Failed to inform client of update progress. No further attempts will be made.",
-						e);
-				guiAttached = false;
+				if (e.getCause() instanceof CancelledException) {
+					try {
+						gui.onUpdateFailure(null, "Cancelled by user.");
+					} catch (RemoteException e2) {
+					}
+				} else {
+					log.error(
+							"Failed to inform client of update progress. No further attempts will be made.",
+							e);
+					guiAttached = false;
+				}
 			}
 		}
 	}
@@ -108,12 +125,20 @@ public class ClientUpdater extends AbstractExtensionUpdater {
 	protected void onUpdateComplete(long totalBytesTransfered) {
 		if (guiAttached) {
 			try {
-				gui.onUpdateComplete(totalBytesTransfered, extensionPlace.getApp());
+				gui.onUpdateComplete(totalBytesTransfered,
+						extensionPlace.getApp());
 			} catch (RemoteException e) {
-				log.error(
-						"Failed to inform client of update completion. No further attempts will be made.",
-						e);
-				guiAttached = false;
+				if (e.getCause() instanceof CancelledException) {
+					try {
+						gui.onUpdateFailure(null, "Cancelled by user.");
+					} catch (RemoteException e2) {
+					}
+				} else {
+					log.error(
+							"Failed to inform client of update completion. No further attempts will be made.",
+							e);
+					guiAttached = false;
+				}
 			}
 		}
 	}
@@ -141,10 +166,17 @@ public class ClientUpdater extends AbstractExtensionUpdater {
 			try {
 				gui.onExtensionUpdateComplete(extensionPlace.getApp(), def);
 			} catch (RemoteException ex) {
-				log.error(
-						"Failed to inform client of extension update completion. No further attempts will be made.",
-						ex);
-				guiAttached = false;
+				if (ex.getCause() instanceof CancelledException) {
+					try {
+						gui.onUpdateFailure(null, "Cancelled by user.");
+					} catch (RemoteException e) {
+					}
+				} else {
+					log.error(
+							"Failed to inform client of extension update completion. No further attempts will be made.",
+							ex);
+					guiAttached = false;
+				}
 			}
 		}
 	}
