@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +50,8 @@ public class Client extends Application {
 	private boolean vertical;
 
 	private static Object barrier = new Object();
+	private ExecutorService loadQueue = Executors.newSingleThreadExecutor();
+	private boolean waitingForExitChoice;
 
 	public static void initialize() throws InterruptedException {
 		Thread t = new Thread("JavaFX Init Thread") {
@@ -67,12 +71,13 @@ public class Client extends Application {
 	public FramedController openScene(Class<? extends Initializable> controller)
 			throws IOException {
 		return openScene(controller, null);
-	}	
-	
-	public FramedController openScene(Class<? extends Initializable> controller, String fxmlSuffix)
+	}
+
+	public FramedController openScene(
+			Class<? extends Initializable> controller, String fxmlSuffix)
 			throws IOException {
 		URL resource = controller.getResource(controller.getSimpleName()
-				+ (fxmlSuffix == null ? "" : fxmlSuffix ) +".fxml");
+				+ (fxmlSuffix == null ? "" : fxmlSuffix) + ".fxml");
 		FXMLLoader loader = new FXMLLoader();
 		loader.setResources(ResourceBundle.getBundle(controller.getName()));
 		Parent root = loader.load(resource.openStream());
@@ -116,7 +121,8 @@ public class Client extends Application {
 	private void recreateScene() {
 		try {
 			// Open the actual scene
-			FramedController fc = openScene(Dock.class, Configuration.getDefault().isVertical() ? "Vertical" : null);
+			FramedController fc = openScene(Dock.class, Configuration
+					.getDefault().isVertical() ? "Vertical" : null);
 			final Scene scene = fc.getScene();
 
 			// Background colour
@@ -134,6 +140,7 @@ public class Client extends Application {
 	private void setStageBounds() {
 		Configuration cfg = Configuration.getDefault();
 		Rectangle2D bounds = getConfiguredBounds();
+		log.info(String.format("Setting stage bounds to %s", bounds));
 
 		if (cfg.leftProperty().get()) {
 			vertical = true;
@@ -198,7 +205,8 @@ public class Client extends Application {
 						"hypersocket-icon32x32.png")));
 
 		// Open the actual scene
-		FramedController fc = openScene(Dock.class, cfg.isVertical() ? "Vertical" : null);
+		FramedController fc = openScene(Dock.class,
+				cfg.isVertical() ? "Vertical" : null);
 		final Scene scene = fc.getScene();
 
 		// Configure the scene (window)
@@ -353,17 +361,22 @@ public class Client extends Application {
 					ButtonData.CANCEL_CLOSE);
 
 			alert.getButtonTypes().setAll(disconnect, stayConnected, cancel);
+			waitingForExitChoice = true;
+			try {
+				Optional<ButtonType> result = alert.showAndWait();
 
-			Optional<ButtonType> result = alert.showAndWait();
-			if (result.get() == disconnect) {
-				new Thread() {
-					public void run() {
-						bridge.disconnectAll();
-						System.exit(0);
-					}
-				}.start();
-			} else if (result.get() == stayConnected) {
-				System.exit(0);
+				if (result.get() == disconnect) {
+					new Thread() {
+						public void run() {
+							bridge.disconnectAll();
+							System.exit(0);
+						}
+					}.start();
+				} else if (result.get() == stayConnected) {
+					System.exit(0);
+				}
+			} finally {
+				waitingForExitChoice = false;
 			}
 		} else {
 			System.exit(0);
@@ -373,6 +386,10 @@ public class Client extends Application {
 	public static void setColors(Scene scene) {
 		Configuration cfg = Configuration.getDefault();
 		Color newValue = cfg.colorProperty().getValue();
+		if(newValue.getOpacity() == 0) {
+			// Prevent total opacity, as mouse events won't be received 
+			newValue = new Color(newValue.getRed(), newValue.getGreen(), newValue.getBlue(), 1f/255f);
+		}
 		scene.fillProperty().set(newValue);
 		String newCol = "-fx-text-fill: "
 				+ (newValue.getBrightness() < 0.5f ? "#ffffff" : "#000000")
@@ -381,8 +398,21 @@ public class Client extends Application {
 		scene.setFill(newValue);
 	}
 
+	public ExecutorService getLoadQueue() {
+		return loadQueue;
+	}
+
 	public Bridge getBridge() {
 		return bridge;
+	}
+
+	public void clearLoadQueue() {
+		loadQueue.shutdownNow();
+		loadQueue = Executors.newSingleThreadExecutor();
+	}
+
+	public boolean isWaitingForExitChoice() {
+		return waitingForExitChoice;
 	}
 
 }

@@ -11,7 +11,7 @@
    <children>
       <Group StackPane.alignment="CENTER_RIGHT">
          <children>
-            <Label fx:id="pull" alignment="CENTER" opacity="0.0" rotate="90.0" styleClass="pull" text="%pullTop" />
+            <Label fx:id="pull" alignment="CENTER" minWidth="20.0" opacity="0.0" rotate="90.0" styleClass="pull" text="%pullTop" textOverrun="CLIP" />
          </children>
       </Group>
       <BorderPane fx:id="dockContent" cacheShape="false" centerShape="false" scaleShape="false">
