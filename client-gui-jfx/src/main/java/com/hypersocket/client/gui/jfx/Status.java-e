@@ -5,8 +5,6 @@ import java.util.logging.Logger;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.effect.Effect;
-import javafx.scene.effect.Glow;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -35,13 +33,13 @@ public class Status extends AbstractController {
 			hb.getChildren().add(status);
 			switch(item.getServiceStatus()) {
 			case GOOD:
-			      Effect glow = new Glow(0.5);
-			      status.setEffect(glow);
+//			      Effect glow = new Glow(0.5);
+//			      status.setEffect(glow);
 			      status.setStyle("-fx-text-fill: green;");
 			      break;
 			case BAD:
-			      glow = new Glow(0.5);
-			      status.setEffect(glow);
+//			      glow = new Glow(0.5);
+//			      status.setEffect(glow);
 			      status.setStyle("-fx-text-fill: red;");
 			      break;      
 			default:

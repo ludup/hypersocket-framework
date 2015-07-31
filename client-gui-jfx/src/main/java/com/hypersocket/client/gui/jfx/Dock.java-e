@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -61,23 +62,23 @@ public class Dock extends AbstractController implements Listener {
 	 * How wide (or high when vertical mode is supported) will the 'tab' be,
 	 * i.e. the area where the user hovers over to dock to reveal it
 	 */
-	private static final int AUTOHIDE_TAB_SIZE = 80;
+	static final int AUTOHIDE_TAB_SIZE = 80;
 
 	/*
 	 * How height (or wide when vertical mode is supported) will the 'tab' be,
 	 * i.e. the area where the user hovers over to dock to reveal it
 	 */
-	private static final int AUTOHIDE_TAB_OPPOSITE_SIZE = 16;
+	static final int AUTOHIDE_TAB_OPPOSITE_SIZE = 22;
 
 	/* How long the autohide should take to complete (in MS) */
 
-	private static final int AUTOHIDE_DURATION = 125;
+	static final int AUTOHIDE_DURATION = 125;
 
 	/*
 	 * How long after the mouse leaves the dock area, will the dock be hidden
 	 * (in MS)
 	 */
-	private static final int AUTOHIDE_HIDE_TIME = 2000;
+	static final int AUTOHIDE_HIDE_TIME = 2000;
 
 	static Logger log = LoggerFactory.getLogger(Main.class);
 
@@ -178,15 +179,17 @@ public class Dock extends AbstractController implements Listener {
 		slideClip.heightProperty().bind(shortcutContainer.heightProperty());
 		shortcutContainer.setClip(slideClip);
 
-		shortcutContainer.widthProperty().addListener(new ChangeListener<Number>() {
+		shortcutContainer.widthProperty().addListener(
+				new ChangeListener<Number>() {
 
-			@Override
-			public void changed(ObservableValue<? extends Number> observable,
-					Number oldValue, Number newValue) {
-				recentre();
-			}
-		});
-		
+					@Override
+					public void changed(
+							ObservableValue<? extends Number> observable,
+							Number oldValue, Number newValue) {
+						recentre();
+					}
+				});
+
 		/*
 		 * Watch for the width of the inner launchers pane. This will get called
 		 * when launchers are added and removed.
@@ -225,6 +228,8 @@ public class Dock extends AbstractController implements Listener {
 		};
 		cfg.topProperty().addListener(borderChangeListener);
 		cfg.bottomProperty().addListener(borderChangeListener);
+		cfg.leftProperty().addListener(borderChangeListener);
+		cfg.rightProperty().addListener(borderChangeListener);
 
 		dockContent.prefWidthProperty().bind(dockStack.widthProperty());
 
@@ -252,7 +257,8 @@ public class Dock extends AbstractController implements Listener {
 	}
 
 	public boolean arePopupsOpen() {
-		return (signInPopup != null && signInPopup.isShowing())
+		return context.isWaitingForExitChoice()
+				|| (signInPopup != null && signInPopup.isShowing())
 				|| (optionsPopup != null && optionsPopup.isShowing())
 				|| (statusPopup != null && statusPopup.isShowing())
 				|| (resourceGroupPopup != null && resourceGroupPopup
@@ -342,13 +348,14 @@ public class Dock extends AbstractController implements Listener {
 			contextMenu.getItems().add(hide);
 		}
 		MenuItem close = new MenuItem(resources.getString("menu.exit"));
-		close.setOnAction(value -> context.confirmExit());
+		close.setOnAction(value -> {
+			context.confirmExit();
+			maybeHideDock();
+		});
 		close.setStyle(textFill(fg));
 		contextMenu.getItems().add(close);
 		Point2D loc = new Point2D(x + getStage().getX(), y + getStage().getY());
 		contextMenu.show(dockContent, loc.getX(), loc.getY());
-		System.err.println(String.format("ctx show %f, %f", loc.getX(),
-				loc.getY()));
 	}
 
 	private void recentre() {
@@ -667,7 +674,7 @@ public class Dock extends AbstractController implements Listener {
 	}
 
 	private void rebuildIcons() {
-
+		context.clearLoadQueue();
 		shortcuts.getChildren().clear();
 		// Type lastType = null;
 		for (Map.Entry<ResourceGroupKey, ResourceGroupList> ig : icons
@@ -718,6 +725,7 @@ public class Dock extends AbstractController implements Listener {
 	}
 
 	private Button createGroupButton(final ResourceGroupList group) {
+
 		final Button groupButton = new Button();
 		groupButton.setTextOverrun(OverrunStyle.CLIP);
 		groupButton.getStyleClass().add("iconButton");
@@ -739,14 +747,30 @@ public class Dock extends AbstractController implements Listener {
 		// Determine image path from 'logo'
 		String subType = group.getKey().getSubType();
 		if (subType == null) {
-			subType = "fs";
+			subType = group.getKey().getType().name();
 		}
+
+		// Hack for VNC subtypes that end in the display number
+		int idx = subType.lastIndexOf(':');
+		if (idx != -1) {
+			subType = subType.substring(0, idx);
+		}
+		
+		// Only use the first word
+		subType = subType.split("\\s+")[0];
+
+		String tipTextKey = String.format("subType.%s", subType);
+		String tipText = resources.containsKey(tipTextKey) ? resources
+				.getString(tipTextKey) : MessageFormat.format(
+				resources.getString("subType.unknown"), group.getKey()
+						.getType().name());
+
 		String imgPath = String.format("types/%s.png", subType);
 		URL resource = getClass().getResource(imgPath);
 		if (resource == null) {
 			// Fallback
-			// TODO use an 'error' image, because it is an error
-			imgPath = String.format("error.png");
+			tipText += " (" + imgPath + " not found)";
+			imgPath = String.format("types/unknown.png");
 			resource = getClass().getResource(imgPath);
 		}
 
@@ -759,11 +783,6 @@ public class Dock extends AbstractController implements Listener {
 		groupButton.setGraphic(imageView);
 
 		// Tooltip for the sub-type
-		String tipTextKey = String.format("subType.%s", subType);
-		String tipText = resources.containsKey(tipTextKey) ? resources
-				.getString(tipTextKey) : MessageFormat.format(
-				resources.getString("subType.unknown"), group.getKey()
-						.getType().name());
 		groupButton.setTooltip(UIHelpers.createDockButtonToolTip(tipText));
 		UIHelpers.sizeToImage(groupButton);
 		return groupButton;
@@ -786,6 +805,12 @@ public class Dock extends AbstractController implements Listener {
 	}
 
 	void hideDock(boolean hide) {
+		try {
+			throw new Exception();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 		stopDockHiderTrigger();
 
 		if (hide != hidden) {
@@ -847,25 +872,29 @@ public class Dock extends AbstractController implements Listener {
 				stage.setHeight(cfg.sizeProperty().get() - amt);
 				stage.setWidth(Math.max(AUTOHIDE_TAB_SIZE, cfgBounds.getWidth()
 						- barSize));
-				stage.setX((cfgBounds.getWidth() - stage.getWidth()) / 2f);
+				stage.setX(cfgBounds.getMinX()
+						+ ((cfgBounds.getWidth() - stage.getWidth()) / 2f));
 			} else if (cfg.bottomProperty().get()) {
 				stage.setY(cfgBounds.getMaxY() + amt);
 				stage.setHeight(cfg.sizeProperty().get() - amt);
 				stage.setWidth(Math.max(AUTOHIDE_TAB_SIZE, cfgBounds.getWidth()
 						- barSize));
-				stage.setX((cfgBounds.getWidth() - stage.getWidth()) / 2f);
+				stage.setX(cfgBounds.getMinX()
+						+ ((cfgBounds.getWidth() - stage.getWidth()) / 2f));
 			} else if (cfg.leftProperty().get()) {
 				getScene().getRoot().translateXProperty().set(-amt);
 				stage.setWidth(cfg.sizeProperty().get() - amt);
 				stage.setHeight(Math.max(AUTOHIDE_TAB_SIZE,
 						cfgBounds.getHeight() - barSize));
-				stage.setY((cfgBounds.getHeight() - stage.getHeight()) / 2f);
+				stage.setY(cfgBounds.getMinY()
+						+ ((cfgBounds.getHeight() - stage.getHeight()) / 2f));
 			} else if (cfg.rightProperty().get()) {
 				stage.setX(cfgBounds.getMaxX() + amt - cfg.sizeProperty().get());
 				stage.setWidth(cfg.sizeProperty().get() - amt);
 				stage.setHeight(Math.max(AUTOHIDE_TAB_SIZE,
 						cfgBounds.getHeight() - barSize));
-				stage.setY((cfgBounds.getHeight() - stage.getHeight()) / 2f);
+				stage.setY(cfgBounds.getMinY()
+						+ ((cfgBounds.getHeight() - stage.getHeight()) / 2f));
 			} else {
 				throw new UnsupportedOperationException();
 			}
@@ -917,9 +946,14 @@ public class Dock extends AbstractController implements Listener {
 				UIHelpers.sizeToImage((ButtonBase) n);
 			}
 		}
+		setAvailable();
 	}
 
 	private void setAvailable() {
+		for (String s : Arrays.asList("statusNotConnected", "statusConnected",
+				"statusError")) {
+			signIn.getStyleClass().remove(s);
+		}
 		if (context.getBridge().isConnected()) {
 			int connected = 0;
 			try {
@@ -933,17 +967,17 @@ public class Dock extends AbstractController implements Listener {
 				log.info(String.format("Bridge says %d are connected of %d",
 						connected, connections.size()));
 				if (connected > 0) {
-					signIn.setStyle("-fx-text-fill: #00aa00");
+					signIn.getStyleClass().add("statusNotConnected");
 				} else {
-					signIn.setStyle("-fx-text-fill: #aa0000");
+					signIn.getStyleClass().add("statusConnected");
 				}
 			} catch (Exception e) {
 				log.error("Failed to check connection state.", e);
-				signIn.setStyle("-fx-text-fill: #777777");
+				signIn.getStyleClass().add("statusError");
 			}
 		} else {
 			log.info("Bridge says not connected");
-			signIn.setStyle("-fx-text-fill: #777777");
+			signIn.getStyleClass().add("statusError");
 		}
 	}
 

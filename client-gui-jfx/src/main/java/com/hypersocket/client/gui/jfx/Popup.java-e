@@ -1,15 +1,20 @@
 package com.hypersocket.client.gui.jfx;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WritableValue;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import javafx.util.Duration;
 
 public class Popup extends Stage {
 
@@ -118,6 +123,12 @@ public class Popup extends Stage {
 		sizeToScene();
 	}
 
+	@Override
+	public void hide() {
+		super.hide();
+		Client.setColors(getScene());
+	}
+
 	public void setPosition(double position) {
 		this.position = position;
 	}
@@ -145,6 +156,28 @@ public class Popup extends Stage {
 		if (!isShowing()) {
 			sizeToScene();
 
+			Timeline t = new Timeline(new KeyFrame(
+					Duration.millis(Dock.AUTOHIDE_DURATION * 3), new KeyValue(
+							new WritableValue<Number>() {
+								@Override
+								public Number getValue() {
+									Color c = (Color) getScene().fillProperty()
+											.getValue();
+									return c.getOpacity();
+								}
+
+								@Override
+								public void setValue(Number value) {
+									Color c = (Color) getScene().fillProperty()
+											.getValue();
+									getScene().fillProperty().set(
+											new Color(c.getRed(), c.getGreen(),
+													c.getBlue(), value
+															.doubleValue()));
+
+								}
+							}, 1)));
+
 			/*
 			 * Absolute no idea why this runLater() is required, but without it
 			 * sizeToScene calculates an incorrect height.
@@ -153,6 +186,7 @@ public class Popup extends Stage {
 				@Override
 				public void run() {
 					show();
+					t.playFromStart();
 				}
 			});
 		}
@@ -189,7 +223,8 @@ public class Popup extends Stage {
 			setX(getOwner().getX() + getOwner().getWidth());
 			switch (positionType) {
 			case POSITIONED:
-				if (position + getHeight() > getOwner().getHeight() - getHeight())
+				if (position + getHeight() > getOwner().getHeight()
+						- getHeight())
 					setY(getOwner().getHeight() - getHeight());
 				else
 					setY(position);
@@ -201,7 +236,8 @@ public class Popup extends Stage {
 			setX(getOwner().getX() - getWidth());
 			switch (positionType) {
 			case POSITIONED:
-				if (position + getHeight() > getOwner().getHeight() - getHeight())
+				if (position + getHeight() > getOwner().getHeight()
+						- getHeight())
 					setY(getOwner().getHeight() - getHeight());
 				else
 					setY(position);

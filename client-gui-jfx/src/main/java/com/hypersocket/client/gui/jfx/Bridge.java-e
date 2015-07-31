@@ -59,14 +59,15 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 		void ping();
 
 		Map<String, String> showPrompts(List<Prompt> prompts);
-		
+
 		void initUpdate(int apps);
-		
+
 		void initDone(String errorMessage);
 
 		void startingUpdate(String app, long totalBytesExpected);
 
-		void updateProgressed(String app, long sincelastProgress, long totalSoFar);
+		void updateProgressed(String app, long sincelastProgress,
+				long totalSoFar);
 
 		void updateComplete(String app, long totalBytesTransfered);
 
@@ -340,14 +341,16 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 	public int getActiveConnections() {
 		int active = 0;
-		try {
-			for (ConnectionStatus s : clientService.getStatus()) {
-				if (s.getStatus() == ConnectionStatus.CONNECTED) {
-					active++;
+		if (isConnected()) {
+			try {
+				for (ConnectionStatus s : clientService.getStatus()) {
+					if (s.getStatus() == ConnectionStatus.CONNECTED) {
+						active++;
+					}
 				}
+			} catch (RemoteException e) {
+				log.error("Failed to get active connections.", e);
 			}
-		} catch (RemoteException e) {
-			log.error("Failed to get active connections.", e);
 		}
 		return active;
 	}
@@ -372,7 +375,8 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	}
 
 	@Override
-	public void onUpdateStart(String app, long totalBytesExpected) throws RemoteException {
+	public void onUpdateStart(String app, long totalBytesExpected)
+			throws RemoteException {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
@@ -384,8 +388,8 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	}
 
 	@Override
-	public void onUpdateProgress(String app, long sincelastProgress, long totalSoFar)
-			throws RemoteException {
+	public void onUpdateProgress(String app, long sincelastProgress,
+			long totalSoFar) throws RemoteException {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
@@ -410,11 +414,12 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	}
 
 	@Override
-	public void onUpdateFailure(String app, String message) throws RemoteException {
+	public void onUpdateFailure(String app, String message)
+			throws RemoteException {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				for (Listener l : new ArrayList<Listener>(listeners))  {
+				for (Listener l : new ArrayList<Listener>(listeners)) {
 					l.updateFailure(app, message);
 				}
 			}
@@ -452,7 +457,8 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	}
 
 	@Override
-	public void onUpdateDone(final String failureMessage) throws RemoteException {
+	public void onUpdateDone(final String failureMessage)
+			throws RemoteException {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
@@ -461,6 +467,6 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 				}
 			}
 		});
-		
+
 	}
 }
