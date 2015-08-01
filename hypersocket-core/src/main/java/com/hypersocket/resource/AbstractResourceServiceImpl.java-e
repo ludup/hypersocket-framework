@@ -251,8 +251,9 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	protected abstract void fireResourceUpdateEvent(T resource, Throwable t);
 
+	@SafeVarargs
 	@Override
-	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceChangeException,
+	public final void deleteResource(T resource, TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
 
 		if(assertPermissions) {
@@ -471,6 +472,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		});
 		
 	}
+	
 	
 	protected void performImportDropResources(T resource) throws ResourceChangeException, AccessDeniedException {
 		deleteResource(resource);

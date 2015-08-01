@@ -124,8 +124,6 @@ public class UserAttributeCategoryServiceImpl extends AbstractResourceServiceImp
 
 	}
 
-
-	@SuppressWarnings("unchecked")
 	@Override
 	public void deleteAttributeCategory(UserAttributeCategory category)
 			throws AccessDeniedException, ResourceChangeException {

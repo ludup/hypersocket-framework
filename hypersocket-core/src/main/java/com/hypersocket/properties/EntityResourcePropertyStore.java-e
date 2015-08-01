@@ -257,7 +257,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		String methodName = "get" + StringUtils.capitalize(template.getResourceKey());
 		try {
 			
-			Method m = resource.getClass().getMethod(methodName, (Class<?>[])null);
+			resource.getClass().getMethod(methodName, (Class<?>[])null);
 			return true;
 			
 		} catch (NoSuchMethodException e) {
