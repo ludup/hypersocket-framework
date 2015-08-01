@@ -150,7 +150,6 @@ public class FileUploadServiceImpl extends
 		return upload;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void deleteFile(FileUpload fileUpload)
 			throws ResourceChangeException, AccessDeniedException {
@@ -160,7 +159,6 @@ public class FileUploadServiceImpl extends
 					+ "/" + fileUpload.getName());
 			if (file.delete()) {
 				deleteResource(fileUpload);
-
 			} else {
 				throw new ResourceChangeException(RESOURCE_BUNDLE,
 						"error.noValidatorPresent");
