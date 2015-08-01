@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Projections;
@@ -23,8 +25,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
+import com.hypersocket.resource.RealmOrSystemRealmCriteria;
+import com.hypersocket.tables.ColumnSort;
 
 @Repository
 @Transactional
@@ -55,6 +60,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		session.setOsVersion(osVersion);
 		session.setAuthenticationScheme(scheme);
 		session.setTimeout(timeout);
+		session.setPrincipalRealm(principal.getRealm());
 		session.system = false;
 		save(session);
 		return session;
@@ -224,6 +230,51 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	@Override
 	protected Class<Session> getEntityClass() {
 		return Session.class;
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public List<Session> search(Realm realm, final String searchPattern, int start,
+			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
+		return super.search(getEntityClass(), "uuid", "", start,
+				length, sorting, ArrayUtils.addAll(configs,
+						new RealmOrSystemRealmCriteria(realm, "principalRealm"),
+						new CriteriaConfiguration() {
+
+							@Override
+							public void configure(Criteria criteria) {
+								criteria.add(Restrictions.eq("system", false));
+								criteria.add(Restrictions.isNull("signedOut"));
+								
+								if(StringUtils.isNotEmpty(searchPattern)) {
+									criteria = criteria.createCriteria("principal");
+									criteria.add(Restrictions.ilike("name", searchPattern));
+								}
+								
+							}
+				        }));
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public long getResourceCount(Realm realm, final String searchPattern,
+			CriteriaConfiguration... configs) {
+		return getCount(getEntityClass(), "uuid", "",
+				ArrayUtils.addAll(configs, new RealmOrSystemRealmCriteria(
+						realm, "principalRealm"),
+						new CriteriaConfiguration() {
+
+					@Override
+					public void configure(Criteria criteria) {
+						criteria.add(Restrictions.eq("system", false));
+						criteria.add(Restrictions.isNull("signedOut"));
+						
+						if(StringUtils.isNotEmpty(searchPattern)) {
+							criteria = criteria.createCriteria("principal");
+							criteria.add(Restrictions.ilike("name", searchPattern));
+						}
+					}
+		        }));
 	}
 
 }

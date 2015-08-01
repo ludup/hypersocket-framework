@@ -33,6 +33,8 @@
 		resourceBundle="SessionService" weight="800">
 		<property resourceKey="session.timeout" inputType="slider"
 			min="0" max="360" defaultValue="15" weight="0" labelResourceKey="session.timeout.slider.label" />
+		<property resourceKey="session.closeOnShutdown" inputType="switch"
+			defaultValue="false" weight="100" />
 	</propertyCategory>
 	<propertyCategory resourceKey="realm.userProfiles"
 		resourceBundle="RealmService" weight="999999" group="userProfiles">

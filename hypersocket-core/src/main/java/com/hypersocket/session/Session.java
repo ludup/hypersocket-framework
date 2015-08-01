@@ -72,8 +72,12 @@ public class Session extends AbstractEntity<String> {
 	Boolean inheritPermissions;
 	
 	@OneToOne
-	@JoinColumn(name="realm_id")
+	@JoinColumn(name="current_realm_id")
 	Realm currentRealm;
+	
+	@OneToOne
+	@JoinColumn(name="realm_id")
+	Realm realm;
 	
 	@OneToOne
 	@JoinColumn(name="authentication_scheme")
@@ -113,6 +117,10 @@ public class Session extends AbstractEntity<String> {
 	
 	public void setId(String id) {
 		this.id = id;
+	}
+	
+	public String getName() {
+		return getPrincipal().getName();
 	}
 
 	public String getRemoteAddress() {
@@ -315,6 +323,10 @@ public class Session extends AbstractEntity<String> {
 	}
 
 	public Realm getPrincipalRealm() {
-		return principal.getRealm();
+		return realm;
+	}
+
+	public void setPrincipalRealm(Realm realm) {
+		this.realm = realm;
 	}
 }

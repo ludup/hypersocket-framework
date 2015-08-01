@@ -55,6 +55,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 		scheme.setName(name);
 		scheme.setRealm(realm);
 		scheme.setResourceKey(resourceKey);
+		scheme.setResourceCategory("authenticationScheme");
 		scheme.setHidden(hidden);
 		scheme.setType(type);
 		scheme.setMaximumModules(maximumModules);
@@ -123,6 +124,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 
 	@Override
 	public void saveScheme(AuthenticationScheme s) {
+		s.setResourceCategory("authenticationScheme");
 		saveEntity(s);
 	}
 
