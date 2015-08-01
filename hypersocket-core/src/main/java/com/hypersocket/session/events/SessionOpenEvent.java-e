@@ -4,7 +4,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.hypersocket.session.Session;
 
-public class SessionOpenEvent extends SessionEvent {
+public class SessionOpenEvent extends SessionStateEvent {
 
 	private static final long serialVersionUID = 6561037201424298867L;
 

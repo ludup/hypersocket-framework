@@ -34,6 +34,7 @@ import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
@@ -44,6 +45,7 @@ import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.events.SessionClosedEvent;
 import com.hypersocket.session.events.SessionEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
+import com.hypersocket.tables.ColumnSort;
 
 import net.sf.uadetector.ReadableUserAgent;
 import net.sf.uadetector.UserAgentStringParser;
@@ -97,6 +99,12 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			log.info("Loaded User Agent database");
 		}
 
+		PermissionCategory cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE, "session.category");
+		
+		for(SessionPermission perm : SessionPermission.values()) {
+			permissionService.registerPermission(perm, cat);
+		}
+		
 		eventService.registerEvent(SessionEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionOpenEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionClosedEvent.class, RESOURCE_BUNDLE);
@@ -160,6 +168,8 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		if (session == null)
 			return false;
 
+		repository.refresh(session);
+		
 		if (session.getSignedOut() == null) {
 
 			Calendar currentTime = Calendar.getInstance();
@@ -510,7 +520,14 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		try {
 			JobDataMap data = new JobDataMap();
+			data.put("jobName", "firstRunSessionReaperJob");
+			data.put("firstRun", true);
+			
+			schedulerService.scheduleNow(SessionReaperJob.class, data);
+			
+			data = new JobDataMap();
 			data.put("jobName", "sessionReaperJob");
+			
 			schedulerService.scheduleIn(SessionReaperJob.class, data, 60000,
 					60000);
 		} catch (SchedulerException e) {
@@ -519,4 +536,22 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	}
 
+	@Override
+	public List<?> searchResources(Realm realm, String searchPattern, int start, int length,
+			ColumnSort[] sorting) throws AccessDeniedException {
+		
+		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION, SessionPermission.READ);
+		
+		return repository.search(realm, searchPattern, start, length, sorting);
+	}
+
+	@Override
+	public Long getResourceCount(Realm realm, String searchPattern) throws AccessDeniedException {
+		
+		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION, SessionPermission.READ);
+		
+		return repository.getResourceCount(realm, searchPattern);
+	}
+
+	
 }

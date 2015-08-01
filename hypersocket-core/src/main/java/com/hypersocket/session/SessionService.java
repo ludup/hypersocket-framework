@@ -17,6 +17,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.Resource;
+import com.hypersocket.tables.ColumnSort;
 
 public interface SessionService extends PasswordEnabledAuthenticatedService {
 
@@ -84,4 +85,8 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 
 	Map<String, Long> getIPCount(Date startDate, Date endDate)
 			throws AccessDeniedException;
+
+	List<?> searchResources(Realm currentRealm, String searchPattern, int start, int length, ColumnSort[] sorting) throws AccessDeniedException;
+
+	Long getResourceCount(Realm currentRealm, String searchPattern) throws AccessDeniedException;
 }
