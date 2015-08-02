@@ -1,5 +1,6 @@
 package com.hypersocket.tasks.command;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.util.StringUtils;
 
 import com.hypersocket.realm.Realm;
@@ -45,4 +46,7 @@ public class ExecuteCommandResult extends TaskResult {
 		return TaskProviderServiceImpl.RESOURCE_BUNDLE;
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }

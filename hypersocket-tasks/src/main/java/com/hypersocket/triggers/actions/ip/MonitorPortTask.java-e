@@ -84,9 +84,9 @@ public class MonitorPortTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
-		String ipAddress = processTokenReplacements(repository.getValue(task, ATTR_IP), events);
+		String ipAddress = processTokenReplacements(repository.getValue(task, ATTR_IP), event);
 		int port = Integer.valueOf(repository.getValue(task, ATTR_PORT));
 		int timeout = Integer.valueOf(repository.getValue(task, ATTR_TIMEOUT));
 		try {

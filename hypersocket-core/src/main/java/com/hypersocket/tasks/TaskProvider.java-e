@@ -19,7 +19,7 @@ public interface TaskProvider {
 	void validate(Task task, Map<String, String> parameters)
 			throws ValidationException;
 
-	TaskResult execute(Task task, Realm currentRealm, SystemEvent... event)
+	TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException;
 	
 	ResourceTemplateRepository getRepository();

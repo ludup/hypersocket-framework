@@ -10,4 +10,6 @@ public interface Condition {
 	boolean checkCondition(TriggerCondition condition, 
 			TriggerResource trigger,
 			SystemEvent event) throws ValidationException;
+	
+	boolean isValueRequired();
 }

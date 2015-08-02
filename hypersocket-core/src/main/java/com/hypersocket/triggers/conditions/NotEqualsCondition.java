@@ -18,4 +18,8 @@ public class NotEqualsCondition implements Condition {
 				condition.getConditionValue());
 	}
 
+	@Override
+	public boolean isValueRequired() {
+		return true;
+	}
 }

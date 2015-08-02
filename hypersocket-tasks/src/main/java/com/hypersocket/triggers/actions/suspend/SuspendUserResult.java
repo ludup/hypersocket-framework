@@ -2,6 +2,8 @@ package com.hypersocket.triggers.actions.suspend;
 
 import java.util.Date;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.events.SystemEventStatus;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
@@ -43,4 +45,7 @@ public class SuspendUserResult extends TaskResult {
 		return SuspendUserTask.RESOURCE_BUNDLE;
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }

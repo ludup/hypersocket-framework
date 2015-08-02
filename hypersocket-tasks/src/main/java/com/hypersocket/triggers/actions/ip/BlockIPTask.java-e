@@ -93,10 +93,10 @@ public class BlockIPTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 		
-		String ipAddress = processTokenReplacements(repository.getValue(task, "block.ip"), events);
+		String ipAddress = processTokenReplacements(repository.getValue(task, "block.ip"), event);
 		int val = repository.getIntValue(task, "block.length");
 		try {
 			

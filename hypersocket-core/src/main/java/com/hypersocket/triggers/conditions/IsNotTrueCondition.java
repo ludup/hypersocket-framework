@@ -5,7 +5,7 @@ import com.hypersocket.triggers.TriggerCondition;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.ValidationException;
 
-public class ContainsCondition implements Condition {
+public class IsNotTrueCondition implements Condition {
 
 	@Override
 	public boolean checkCondition(TriggerCondition condition, TriggerResource trigger,
@@ -14,13 +14,11 @@ public class ContainsCondition implements Condition {
 			return false;
 		}
 
-		return event.getAttribute(condition.getAttributeKey()).toString()
-				.contains(condition.getConditionValue());
+		return !Boolean.parseBoolean(event.getAttribute(condition.getAttributeKey()).toString());
 	}
 
 	@Override
 	public boolean isValueRequired() {
-		return true;
+		return false;
 	}
-
 }

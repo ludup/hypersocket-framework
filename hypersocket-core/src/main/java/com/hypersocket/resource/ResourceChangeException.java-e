@@ -11,6 +11,10 @@ public class ResourceChangeException extends ResourceException {
 
 	private static final long serialVersionUID = -3617137415580739443L;
 	
+	public ResourceChangeException(ResourceException e) {
+		super(e.getBundle(), e.getResourceKey(), e.getArgs());
+	}
+	
 	public ResourceChangeException(String bundle, String resourceKey, Object... args) {
 		super(bundle, resourceKey, args);
 	}

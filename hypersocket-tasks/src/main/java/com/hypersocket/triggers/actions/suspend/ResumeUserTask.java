@@ -81,10 +81,10 @@ public class ResumeUserTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 
-		String name = processTokenReplacements(repository.getValue(task, "resumeUser.name"), events);
+		String name = processTokenReplacements(repository.getValue(task, "resumeUser.name"), event);
 		try {
 
 			if (log.isInfoEnabled()) {

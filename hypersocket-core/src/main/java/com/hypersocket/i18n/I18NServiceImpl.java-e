@@ -89,15 +89,15 @@ public class I18NServiceImpl extends AbstractAuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public Map<String,String> getResourceJson(Locale locale) {
+	public Map<String,String> getResourceMap(Locale locale) {
 		HashMap<String,String> resources = new HashMap<String,String>();
 		for(String bundle : bundles) {
-			buildBundleJson(bundle, locale, resources);
+			buildBundleMap(bundle, locale, resources);
 		}
 		return resources;
 	}
 	
-	private void buildBundleJson(String bundle, Locale locale, Map<String,String> resources) {
+	private void buildBundleMap(String bundle, Locale locale, Map<String,String> resources) {
 
 		for(String key :  I18N.getResourceKeys(locale, bundle)) {
 			resources.put(key, I18N.getResource(locale, bundle, key));

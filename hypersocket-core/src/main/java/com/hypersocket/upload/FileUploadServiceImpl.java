@@ -78,26 +78,26 @@ public class FileUploadServiceImpl extends
 	}
 
 	@Override
-	public FileUpload createFile(final MultipartFile file, final Realm realm)
+	public FileUpload createFile(final MultipartFile file, final Realm realm, String type)
 			throws ResourceCreationException, AccessDeniedException,
 			IOException {
 
-		return createFile(file, realm, true, new DefaultFileUploadStore(realm));
+		return createFile(file, realm, true, type, new DefaultFileUploadStore(realm));
 	}
 
 	@Override
 	public FileUpload createFile(MultipartFile file, Realm realm,
-			boolean persist, FileUploadStore uploadStore)
+			boolean persist, String type, FileUploadStore uploadStore)
 			throws ResourceCreationException, AccessDeniedException,
 			IOException {
 
 		return createFile(file.getInputStream(), file.getOriginalFilename(),
-				realm, persist, uploadStore);
+				realm, persist, type, uploadStore);
 	}
 
 	@Override
 	public FileUpload createFile(InputStream in, String filename, Realm realm,
-			boolean persist, FileUploadStore uploadStore)
+			boolean persist, String type, FileUploadStore uploadStore)
 			throws ResourceCreationException, AccessDeniedException,
 			IOException {
 
@@ -106,6 +106,7 @@ public class FileUploadServiceImpl extends
 		fileUpload.setFileName(filename);
 		fileUpload.setRealm(realm);
 		fileUpload.setName(uuid);
+		fileUpload.setType(type);
 
 		try {
 
@@ -259,11 +260,11 @@ public class FileUploadServiceImpl extends
 
 	@Override
 	public FileUpload createFile(File outputFile, String filename,
-			Realm realm, boolean persist) throws ResourceCreationException, AccessDeniedException, IOException {
+			Realm realm, boolean persist, String type) throws ResourceCreationException, AccessDeniedException, IOException {
 		
 		InputStream in = new FileInputStream(outputFile);
 		try {
-			return createFile(in, filename, realm, persist, new DefaultFileUploadStore(realm));
+			return createFile(in, filename, realm, persist, type, new DefaultFileUploadStore(realm));
 		} finally {
 			IOUtils.closeQuietly(in);
 		}
