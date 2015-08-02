@@ -47,7 +47,7 @@ public class I18NController extends AuthenticatedController {
 	@ResponseBody
 	@ResponseStatus(value=HttpStatus.OK)
 	public Map<String,String> getResources(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		Map<String,String> results = i18nService.getResourceJson(sessionUtils.getLocale(request));
+		Map<String,String> results = i18nService.getResourceMap(sessionUtils.getLocale(request));
 		results.put("LANG", sessionUtils.getLocale(request).getLanguage());
 		return results;
 	}
@@ -56,7 +56,7 @@ public class I18NController extends AuthenticatedController {
 	@ResponseBody
 	@ResponseStatus(value=HttpStatus.OK)
 	public Map<String,String> getResources(HttpServletRequest request, HttpServletResponse response, @PathVariable String locale) throws IOException {
-		Map<String,String> results = i18nService.getResourceJson(i18nService.getLocale(locale));
+		Map<String,String> results = i18nService.getResourceMap(i18nService.getLocale(locale));
 		results.put("LANG", locale);
 		return results;
 	}	

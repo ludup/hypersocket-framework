@@ -1,7 +1,6 @@
 package com.hypersocket.upload;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -19,7 +18,7 @@ import com.hypersocket.resource.ResourceNotFoundException;
 
 public interface FileUploadService extends AbstractResourceService<FileUpload> {
 
-	public FileUpload createFile(MultipartFile file, Realm realm)
+	public FileUpload createFile(MultipartFile file, Realm realm, String type)
 			throws ResourceCreationException, AccessDeniedException,
 			IOException;
 
@@ -29,11 +28,12 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 			throws ResourceChangeException, AccessDeniedException;
 
 	FileUpload createFile(MultipartFile file, Realm realm, boolean persist,
+			String type,
 			FileUploadStore uploadStore) throws ResourceCreationException,
 			AccessDeniedException, IOException;
 
 	FileUpload createFile(InputStream file, String filename, Realm realm,
-			boolean persist, FileUploadStore uploadStore)
+			boolean persist, String type, FileUploadStore uploadStore)
 			throws ResourceCreationException, AccessDeniedException,
 			IOException;
 
@@ -41,13 +41,13 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 			HttpServletResponse response, boolean forceDownload)
 			throws IOException, AccessDeniedException, ResourceNotFoundException;
 
-	FileUpload createFile(File outputFile, String string, Realm currentRealm,
-			boolean b) throws FileNotFoundException, ResourceCreationException, AccessDeniedException, IOException;
-
 	File getFile(String uuid) throws IOException, ResourceNotFoundException;
 
 	String getContentType(String uuid) throws ResourceNotFoundException,
 			IOException;
 
 	public String getContentType(File file);
+
+	FileUpload createFile(File outputFile, String filename, Realm realm, boolean persist, String type)
+			throws ResourceCreationException, AccessDeniedException, IOException;
 }

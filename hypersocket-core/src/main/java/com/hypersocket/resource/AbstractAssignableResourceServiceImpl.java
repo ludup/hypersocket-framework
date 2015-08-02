@@ -21,7 +21,6 @@ import org.springframework.transaction.support.TransactionCallback;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
-import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Principal;
@@ -34,7 +33,7 @@ import com.hypersocket.transactions.TransactionService;
 @Service
 public abstract class AbstractAssignableResourceServiceImpl<T extends AssignableResource>
 		extends PasswordEnabledAuthenticatedServiceImpl implements
-		AbstractAssignableResourceService<T>, EventPropertyCollector {
+		AbstractAssignableResourceService<T> {
 
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
@@ -106,11 +105,6 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		}
 	}
 	
-	@Override
-	public Set<String> getPropertyNames(String resourceKey, Realm realm) {
-		return getRepository().getPropertyNames(null);
-	}
-
 	protected boolean checkUnique(T resource) throws AccessDeniedException {
 		try {
 			getResourceByName(resource.getName());
@@ -536,4 +530,18 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		}
 	}
 	
+	@Override
+	public void saveMetaData(T resource, String key, String value) throws AccessDeniedException {
+		
+		assertAnyPermission(getUpdatePermission());
+		
+		getRepository().setValue(resource, key, value);
+	}
+	
+	@Override
+	public String getMetaData(T resource, String key, String defaultValue) throws AccessDeniedException {
+		
+		assertAnyPermission(getReadPermission());
+		return getRepository().getValue(resource, key, defaultValue);
+	}
 }

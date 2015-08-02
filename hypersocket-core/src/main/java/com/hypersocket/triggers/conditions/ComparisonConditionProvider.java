@@ -32,6 +32,11 @@ public class ComparisonConditionProvider implements TriggerConditionProvider {
 		supportedConditions.put("condition.startsWith", new StartsWithCondition());
 		supportedConditions.put("condition.endsWith", new EndsWithCondition());
 		supportedConditions.put("condition.contains", new ContainsCondition());
+		supportedConditions.put("condition.isEmpty", new IsEmptyCondition());
+		supportedConditions.put("condition.isNotEmpty", new IsNotEmptyCondition());
+		supportedConditions.put("condition.isNumeric", new IsNotEmptyCondition());
+		supportedConditions.put("condition.isTrue", new IsTrueCondition());
+		supportedConditions.put("condition.isNotTrue", new IsNotTrueCondition());
 		
 		triggerService.registerConditionProvider(this);
 		

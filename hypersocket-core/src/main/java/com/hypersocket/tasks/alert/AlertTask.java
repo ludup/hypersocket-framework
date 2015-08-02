@@ -84,7 +84,7 @@ public class AlertTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 
 		StringBuffer key = new StringBuffer();
@@ -94,7 +94,7 @@ public class AlertTask extends AbstractTaskProvider {
 			if (key.length() > 0) {
 				key.append("|");
 			}
-			key.append(events[0].getAttribute(attr));
+			key.append(event.getAttribute(attr));
 		}
 
 		int threshold = repository.getIntValue(task, ATTR_THRESHOLD);
@@ -149,7 +149,7 @@ public class AlertTask extends AbstractTaskProvider {
 				
 				lastAlertTimestamp.put(alertKey, System.currentTimeMillis());
 				return new AlertEvent(this, "event.alert", true,
-						currentRealm, threshold, timeout, task, events[0]);
+						currentRealm, threshold, timeout, task, event);
 			}
 		}
 		return null;
