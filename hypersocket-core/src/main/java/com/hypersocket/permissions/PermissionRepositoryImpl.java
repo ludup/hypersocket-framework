@@ -105,6 +105,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 		Role role = new Role();
 		role.setName(name);
 		role.setRealm(realm);
+		role.setResourceCategory("role");
 		role.setPersonalRole(personalRole);
 		role.setAllUsers(allUsers);
 		role.setAllPermissions(allPermissions);
@@ -119,6 +120,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	public void updateRole(Role role, Set<Principal> unassignPrincipals,
 			Set<Principal> assignPrincipals, Set<Permission> revokePermissions,
 			Set<Permission> grantPermissions) {
+		role.setResourceCategory("role");
 		save(role);
 		unassignRole(role, unassignPrincipals.toArray(new Principal[0]));
 		assignRole(role, assignPrincipals.toArray(new Principal[0]));
@@ -130,6 +132,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	@Transactional
 	public void saveRole(Role role, Realm realm, Principal[] principals,
 			Collection<Permission> permissions) {
+		role.setResourceCategory("role");
 		save(role);
 		assignRole(role, principals);
 		grantPermissions(role, permissions);
@@ -267,6 +270,7 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	@Override
 	@Transactional
 	public void saveRole(Role role) {
+		role.setResourceCategory("role");
 		save(role);
 	}
 

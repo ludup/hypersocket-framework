@@ -19,15 +19,19 @@ public class FileUpload extends RealmResource {
 	@Column(name = "file_size")
 	Long fileSize;
 
+	@Column(name = "type")
+	String type;
+	
 	public FileUpload() {
 
 	}
 
-	public FileUpload(String fileName, String md5Sum, Long fileSize) {
-		this.fileName = fileName;
-		this.md5Sum = md5Sum;
-		this.fileSize = fileSize;
-	}
+//	public FileUpload(String fileName, String md5Sum, Long fileSize, String type) {
+//		this.fileName = fileName;
+//		this.md5Sum = md5Sum;
+//		this.fileSize = fileSize;
+//		this.type = type;
+//	}
 
 	public String getFileName() {
 		return fileName;
@@ -52,5 +56,15 @@ public class FileUpload extends RealmResource {
 	public void setFileSize(Long fileSize) {
 		this.fileSize = fileSize;
 	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+	
+	
 
 }

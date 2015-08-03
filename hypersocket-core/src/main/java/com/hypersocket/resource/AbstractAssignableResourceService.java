@@ -77,4 +77,7 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	Collection<T> importResources(String json, Realm realm, boolean dropCurrent)
 			throws AccessDeniedException, ResourceException;
 
+	void saveMetaData(T resource, String key, String value) throws AccessDeniedException;
+	
+	String getMetaData(T resource, String key, String defaultValue) throws AccessDeniedException;
 }

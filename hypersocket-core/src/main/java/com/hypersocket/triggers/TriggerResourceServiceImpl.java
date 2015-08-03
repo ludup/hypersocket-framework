@@ -332,7 +332,6 @@ public class TriggerResourceServiceImpl extends
 		return resource;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void deleteResource(final TriggerResource resource)
 			throws ResourceChangeException, AccessDeniedException {

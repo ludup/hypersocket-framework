@@ -63,14 +63,14 @@ public class ExecuteCommandTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 
 		String command = processTokenReplacements(repository.getValue(task,
-				"command.exe"), events);
+				"command.exe"), event);
 		String[] args = repository.getValues(task, "command.args");
 		for(int i=0;i<args.length;i++) {
-			args[i] = processTokenReplacements(args[i], events);
+			args[i] = processTokenReplacements(args[i], event);
 		}
 		CommandExecutor exe = new CommandExecutor(command);
 		exe.addArgs(args);

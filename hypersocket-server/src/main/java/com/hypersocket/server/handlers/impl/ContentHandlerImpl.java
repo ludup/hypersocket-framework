@@ -116,8 +116,8 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 					long ifModifiedSinceDateSeconds = ifModifiedSinceDate.getTime() / 1000;
 					long fileLastModifiedSeconds = getLastModified(path) / 1000;
 					if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {
-						if(log.isInfoEnabled()) {
-							log.info(path + " has not been modified since " + HypersocketUtils.formatDateTime(ifModifiedSinceDate));
+						if(log.isDebugEnabled()) {
+							log.debug(path + " has not been modified since " + HypersocketUtils.formatDateTime(ifModifiedSinceDate));
 						}
 						sendNotModified(response);
 					    return;

@@ -1,27 +1,25 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Hypersocket Limited.
+ * Copyright (c) 2013 Hypersocket Limited.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License v3.0
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.hypersocket.dashboard.message;
+package com.hypersocket.session;
 
 import com.hypersocket.permissions.PermissionType;
 
-public enum DashboardMessagePermission implements PermissionType {
-
-	CREATE("create"), READ("read");
-
+public enum SessionPermission implements PermissionType {
+	
+	READ("session.read"),
+	DELETE("session.delete", READ);
+	
 	private final String val;
-
-	private final static String name = "dashboardMessage";
-
+	
 	private PermissionType[] implies;
-
-	private DashboardMessagePermission(final String val,
-			PermissionType... implies) {
-		this.val = name + "." + val;
+	
+	private SessionPermission(final String val, PermissionType... implies) {
+		this.val = val;
 		this.implies = implies;
 	}
 
@@ -29,7 +27,7 @@ public enum DashboardMessagePermission implements PermissionType {
 	public PermissionType[] impliesPermissions() {
 		return implies;
 	}
-
+	
 	public String toString() {
 		return val;
 	}
@@ -38,7 +36,7 @@ public enum DashboardMessagePermission implements PermissionType {
 	public String getResourceKey() {
 		return val;
 	}
-
+	
 	@Override
 	public boolean isSystem() {
 		return false;

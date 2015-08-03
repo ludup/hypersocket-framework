@@ -1,8 +1,10 @@
 package com.hypersocket.client.gui.jfx;
 
+import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
@@ -19,9 +21,26 @@ public class Main {
 
 	public Main(Runnable restartCallback, Runnable shutdownCallback) {
 		instance = this;
-		
+
 		this.restartCallback = restartCallback;
 		this.shutdownCallback = shutdownCallback;
+
+		// http://stackoverflow.com/questions/24159825/changing-application-dock-icon-javafx-programatically
+		try {
+			if (SystemUtils.IS_OS_MAC_OSX) {
+				Class<?> appClazz = Class.forName("com.apple.eawt.Application");
+				Object app = appClazz.getMethod("getApplication").invoke(null);
+				appClazz.getMethod("setDockIconImage", Image.class)
+						.invoke(app,
+								java.awt.Toolkit
+										.getDefaultToolkit()
+										.getImage(
+												Main.class
+														.getResource("hypersocket-icon128x128.png")));
+			}
+		} catch (Exception e) {
+			// Won't work on Windows or Linux.
+		}
 
 		try {
 			File dir = new File(System.getProperty("user.home"), ".hypersocket");
@@ -36,17 +55,20 @@ public class Main {
 		}
 	}
 
-	/* NOTE: LauncherImpl has to be used, as Application.launch() tests where
-	 * the main() method was invoked from by examining the stack (stupid 
-	 * stupid stupid technique!). Because we are launched from BoostrapMain,
-	 * this is what it detects. To work around this LauncherImpl.launchApplication()
-	 * is used directly, which is an internal API.
+	/*
+	 * NOTE: LauncherImpl has to be used, as Application.launch() tests where
+	 * the main() method was invoked from by examining the stack (stupid stupid
+	 * stupid technique!). Because we are launched from BoostrapMain, this is
+	 * what it detects. To work around this LauncherImpl.launchApplication() is
+	 * used directly, which is an internal API.
 	 */
+	@SuppressWarnings("restriction")
 	public void run() {
 
 		try {
 			// :(
-			com.sun.javafx.application.LauncherImpl.launchApplication(Client.class, null, new String[0]);
+			com.sun.javafx.application.LauncherImpl.launchApplication(
+					Client.class, null, new String[0]);
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error("Failed to start client", e);
@@ -71,8 +93,8 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
-		new Main(new DefaultRestartCallback(),
-			new DefaultShutdownCallback()).run();
+		new Main(new DefaultRestartCallback(), new DefaultShutdownCallback())
+				.run();
 
 	}
 

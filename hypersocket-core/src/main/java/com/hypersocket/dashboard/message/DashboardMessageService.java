@@ -2,21 +2,16 @@ package com.hypersocket.dashboard.message;
 
 import java.util.List;
 
-import com.hypersocket.permissions.AccessDeniedException;
-
 public interface DashboardMessageService {
 
-	List<DashboardMessage> getMessages() throws AccessDeniedException;
+	List<DashboardMessage> getMessages();
 
-	List<DashboardMessage> getUnexpiredMessages(int pageNum)
-			throws AccessDeniedException;
+	List<DashboardMessage> getUnexpiredMessages(int pageNum);
 
-	void saveNewMessages(DashboardMessage[] dashboardMessageList)
-			throws AccessDeniedException;
+	void saveNewMessages(DashboardMessage[] dashboardMessageList);
 
-	DashboardMessage saveNewMessage(DashboardMessage dashboardMessage)
-			throws AccessDeniedException;
+	DashboardMessage saveNewMessage(DashboardMessage dashboardMessage);
 
-	Long getMessageCount() throws AccessDeniedException;
+	Long getMessageCount();
 
 }

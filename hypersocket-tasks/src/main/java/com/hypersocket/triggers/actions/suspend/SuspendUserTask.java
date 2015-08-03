@@ -89,9 +89,9 @@ public class SuspendUserTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
-		String name = processTokenReplacements(repository.getValue(task, "suspendUser.name"), events);
+		String name = processTokenReplacements(repository.getValue(task, "suspendUser.name"), event);
 		Long duration = repository.getLongValue(task, "suspendUser.duration");
 		Date startDate = ((AutomationResource) task).getStartDate();
 		String startTime = ((AutomationResource) task).getStartTime();

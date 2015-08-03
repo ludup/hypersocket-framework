@@ -66,7 +66,7 @@ public class SystemTriggerActionImpl extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 
 		Long delay = repository.getLongValue(task, "operation.delay");
