@@ -48,11 +48,17 @@ public class SessionUtils {
 		Session session = null;
 		
 		if (request.getAttribute(AUTHENTICATED_SESSION) != null) {
-			return (Session) request.getAttribute(AUTHENTICATED_SESSION);
+			session = (Session) request.getAttribute(AUTHENTICATED_SESSION);
+			if(sessionService.isLoggedOn(session, true)) {
+				return session;
+			}
 		}
 		if (request.getSession().getAttribute(AUTHENTICATED_SESSION) != null) {
-			return (Session) request.getSession().getAttribute(
+			session = (Session) request.getSession().getAttribute(
 					AUTHENTICATED_SESSION);
+			if(sessionService.isLoggedOn(session, true)) {
+				return session;
+			}
 		}
 		for (Cookie c : request.getCookies()) {
 			if (c.getName().equals(HYPERSOCKET_API_SESSION)) {

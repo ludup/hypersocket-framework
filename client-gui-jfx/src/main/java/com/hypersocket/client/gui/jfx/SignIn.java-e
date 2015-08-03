@@ -153,6 +153,13 @@ public class SignIn extends AbstractController implements Listener {
 	}
 
 	@Override
+	public void bridgeLost() {
+		super.bridgeLost();
+		abortPrompts();
+	}
+	
+
+	@Override
 	public void finishedConnecting(final Connection connection, Exception e) {
 		if (Objects.equals(connection, foregroundConnection)) {
 			Platform.runLater(new Runnable() {
@@ -531,7 +538,9 @@ public class SignIn extends AbstractController implements Listener {
 			if (saveConnection.isSelected() && sel.getId() == null) {
 				saveConnection(sel);
 			} else if (!saveConnection.isSelected() && sel.getId() != null) {
-				confirmDelete(sel);
+				if(!confirmDelete(sel)) {
+					saveConnection.setSelected(true);
+				}
 			}
 		}
 	}
@@ -550,7 +559,7 @@ public class SignIn extends AbstractController implements Listener {
 		}
 	}
 
-	private void confirmDelete(Connection sel) {
+	private boolean confirmDelete(Connection sel) {
 		Alert alert = new Alert(AlertType.CONFIRMATION);
 		alert.setTitle(resources.getString("delete.confirm.title"));
 		alert.setHeaderText(resources.getString("delete.confirm.header"));
@@ -572,6 +581,10 @@ public class SignIn extends AbstractController implements Listener {
 			} finally {
 				initUi();
 			}
+			return true;
+		}
+		else {
+			return false;
 		}
 	}
 
@@ -637,7 +650,7 @@ public class SignIn extends AbstractController implements Listener {
 		Stage stage = getStage();
 		if (stage != null) {
 			stage.sizeToScene();
-			popup.positionPopup();
+			popup.sizeToScene();
 		}
 	}
 

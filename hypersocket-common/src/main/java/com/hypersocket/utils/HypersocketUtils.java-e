@@ -43,7 +43,7 @@ public class HypersocketUtils {
 
 	static Map<String,SimpleDateFormat> dateFormats = new HashMap<String,SimpleDateFormat>();
 	
-	static DecimalFormat df = new DecimalFormat("#.00");
+	static DecimalFormat df = new DecimalFormat("0.00");
 	
 	public static void resetInterval() {
 		times.set(System.currentTimeMillis());

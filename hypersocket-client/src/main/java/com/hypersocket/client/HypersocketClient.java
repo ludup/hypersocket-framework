@@ -247,7 +247,8 @@ public abstract class HypersocketClient<T> {
 		 */
 //		String json = transport.post("logon", params);
 		
-		int attempts = 3;
+		int maxAttempts = 3;
+		int attempts = maxAttempts;
 		boolean attemptedCached = false;
 		List<Prompt> prompts = new ArrayList<Prompt>();
 		
@@ -276,9 +277,15 @@ public abstract class HypersocketClient<T> {
 			}
 			if (!isLoggedOn() && prompts.size() > 0) {
 				
+				// If failed, and it's not the very first attempt (i.e. the one that triggers username and password entry), show an error
+				if(!success)
+					showError("Incorrect username or password.");
+				
 				Map<String, String> results  = showLogin(prompts);
 				
 				if (results != null) {
+
+					params.putAll(results);
 					
 					if(params.containsKey("username")) {
 						cachedUsername = params.get("username");
@@ -287,7 +294,6 @@ public abstract class HypersocketClient<T> {
 						cachedPassword = params.get("password");
 					}
 					
-					params.putAll(results);
 				} else {
 					disconnect(false);
 					throw new UserCancelledException("User has cancelled authentication");

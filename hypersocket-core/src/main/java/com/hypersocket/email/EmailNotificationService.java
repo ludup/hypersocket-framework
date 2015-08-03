@@ -13,12 +13,6 @@ public interface EmailNotificationService {
 	
 	static final String RESOURCE_BUNDLE = "EmailService";
 	
-	void sendPlainEmail(String subject, String text, Recipient[] recipients)
-			throws MailException;
-
-	void sendHtmlEmail(String subject, String text, Recipient[] recipients)
-			throws MailException;
-
 	boolean validateEmailAddress(String email);
 
 	boolean validateEmailAddresses(String[] emails);
@@ -26,10 +20,7 @@ public interface EmailNotificationService {
 	String populateEmailList(String[] emails, List<Recipient> recipients,
 			RecipientType type) throws ValidationException;
 
-	void sendPlainEmail(String subject, String text, Recipient[] recipients,
-			EmailAttachment[] attachments) throws MailException;
-
-	void sendHtmlEmail(String subject, String text, Recipient[] recipients,
-			EmailAttachment[] attachments) throws MailException;
+	void sendEmail(String subject, String text, String html, Recipient[] recipients, EmailAttachment... attachments)
+			throws MailException;
 
 }

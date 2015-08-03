@@ -18,7 +18,7 @@ public interface I18NService extends AuthenticatedService {
 
 	void registerBundle(String bundle);
 
-	Map<String,String> getResourceJson(Locale locale);
+	Map<String,String> getResourceMap(Locale locale);
 
 	Locale getLocale(String locale);
 	

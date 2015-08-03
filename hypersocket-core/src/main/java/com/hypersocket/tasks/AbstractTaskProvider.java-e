@@ -29,14 +29,14 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	@Autowired
 	TriggerResourceService triggerService;
 	
-	protected String[] processTokenReplacements(String[] values, SystemEvent... events) {
+	protected String[] processTokenReplacements(String[] values, SystemEvent event) {
 		for(int i=0;i<values.length;i++) {
-			values[i] = processTokenReplacements(values[i], events);
+			values[i] = processTokenReplacements(values[i], event);
 		}
 		return values;
 	}
 	
-	protected String processTokenReplacements(String value, SystemEvent... events) {
+	protected String processTokenReplacements(String value, SystemEvent event) {
 		
 		Pattern pattern = Pattern.compile("\\$\\{(.*?)\\}");
 		Matcher matcher = pattern.matcher(value);
@@ -47,23 +47,23 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 		while (matcher.find()) {
 			String attributeName = matcher.group(1);
 			String replacement;
-			for(SystemEvent event : events) {
-				if(event.getAttributes().containsKey(attributeName)) {
-					replacement = event.getAttribute(attributeName);
-				} else if(defaultAttributes.contains(attributeName)) {
-					replacement = triggerService.getDefaultVariableValue(attributeName);
-				} else {
-					log.warn("Failed to find replacement token " + attributeName);
-					continue;	
-				}
-			    builder.append(value.substring(i, matcher.start()));
-			    if (replacement == null) {
-			        builder.append(matcher.group(0));
-			    } else {
-			        builder.append(replacement);
-			    }
-			    i = matcher.end();
+
+			if(event.getAttributes().containsKey(attributeName)) {
+				replacement = event.getAttribute(attributeName);
+			} else if(defaultAttributes.contains(attributeName)) {
+				replacement = triggerService.getDefaultVariableValue(attributeName);
+			} else {
+				log.warn("Failed to find replacement token " + attributeName);
+				continue;	
 			}
+		    builder.append(value.substring(i, matcher.start()));
+		    if (replacement == null) {
+		        builder.append(matcher.group(0));
+		    } else {
+		        builder.append(replacement);
+		    }
+		    i = matcher.end();
+			
 		}
 		
 	    builder.append(value.substring(i, value.length()));

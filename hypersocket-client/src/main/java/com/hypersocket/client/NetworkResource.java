@@ -11,7 +11,7 @@ import java.io.Serializable;
 
 import com.hypersocket.utils.IPAddressValidator;
 
-public class NetworkResource implements Serializable {
+public class NetworkResource implements Serializable,ServiceResource {
 
 	private static final long serialVersionUID = -3525449561878862225L;
 
@@ -22,6 +22,7 @@ public class NetworkResource implements Serializable {
 	String alias;
 	int actualPort;
 	String uri;
+	Status serviceStatus = Status.UNKNOWN;
 
 	public NetworkResource(Long id, String hostname, String destinationHostname, int port, String uri) {
 		this.id = id;
@@ -66,6 +67,20 @@ public class NetworkResource implements Serializable {
 
 	public String getUri() {
 		return uri;
+	}
+
+	@Override
+	public Status getServiceStatus() {
+		return serviceStatus;
+	}
+
+	public void setServiceStatus(Status serviceStatus) {
+		this.serviceStatus = serviceStatus;
+	}
+
+	@Override
+	public String getServiceDescription() {
+		return getDestinationHostname() + ":" + getPort();
 	}
 
 }

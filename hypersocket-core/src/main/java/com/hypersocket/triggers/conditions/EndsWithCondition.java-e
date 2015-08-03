@@ -18,4 +18,8 @@ public class EndsWithCondition implements Condition {
 				.endsWith(condition.getConditionValue());
 	}
 
+	@Override
+	public boolean isValueRequired() {
+		return true;
+	}
 }

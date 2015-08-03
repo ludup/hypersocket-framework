@@ -54,6 +54,7 @@ public class EmailTask extends AbstractTaskProvider {
 	public static final String ATTR_SUBJECT = "email.subject";
 	public static final String ATTR_FORMAT = "email.format";
 	public static final String ATTR_BODY = "email.body";
+	public static final String ATTR_BODY_HTML = "email.bodyHtml";
 	public static final String ATTR_STATIC_ATTACHMENTS = "attach.static";
 	public static final String ATTR_DYNAMIC_ATTACHMENTS = "attach.dynamic";
 	
@@ -104,6 +105,23 @@ public class EmailTask extends AbstractTaskProvider {
 		return new String[] { "sendEmail" };
 	}
 
+	protected void validateEmailField(String field, Map<String, String> parameters, List<TriggerValidationError> invalidAttributes) {
+		
+		String value = parameters
+				.get(ATTR_TO_ADDRESSES);
+		
+		if(!ResourceUtils.isReplacementVariable(value)) {
+			String[] emails = ResourceUtils.explodeValues(value);
+			for (String email : emails) {
+				if(!ResourceUtils.isReplacementVariable(email)) {
+					if (!emailService.validateEmailAddress(email)) {
+						invalidAttributes.add(new TriggerValidationError(
+								ATTR_TO_ADDRESSES, email));
+					}
+				}
+			}
+		}
+	}
 	@Override
 	public void validate(Task task, Map<String, String> parameters)
 			throws ValidationException {
@@ -115,32 +133,12 @@ public class EmailTask extends AbstractTaskProvider {
 			invalidAttributes
 					.add(new TriggerValidationError(ATTR_TO_ADDRESSES));
 		} else {
-			String[] emails = ResourceUtils.explodeValues(parameters
-					.get(ATTR_TO_ADDRESSES));
-			for (String email : emails) {
-				if (!emailService.validateEmailAddress(email)) {
-					invalidAttributes.add(new TriggerValidationError(
-							ATTR_TO_ADDRESSES, email));
-				}
-			}
+			validateEmailField(ATTR_TO_ADDRESSES, parameters, invalidAttributes);
 		}
 
-		String[] emails = ResourceUtils.explodeValues(parameters
-				.get(ATTR_CC_ADDRESSES));
-		for (String email : emails) {
-			if (!emailService.validateEmailAddress(email)) {
-				invalidAttributes.add(new TriggerValidationError(
-						ATTR_CC_ADDRESSES, email));
-			}
-		}
-
-		emails = ResourceUtils.explodeValues(parameters.get(ATTR_BCC_ADDRESSES));
-		for (String email : emails) {
-			if (!emailService.validateEmailAddress(email)) {
-				invalidAttributes.add(new TriggerValidationError(
-						ATTR_BCC_ADDRESSES, email));
-			}
-		}
+		validateEmailField(ATTR_CC_ADDRESSES, parameters, invalidAttributes);
+		validateEmailField(ATTR_BCC_ADDRESSES, parameters, invalidAttributes);
+		
 
 		if (!parameters.containsKey(ATTR_SUBJECT)
 				|| StringUtils.isEmpty(parameters.get(ATTR_SUBJECT))) {
@@ -159,21 +157,23 @@ public class EmailTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 
 		String subject = processTokenReplacements(
-				repository.getValue(task, ATTR_SUBJECT), events);
+				repository.getValue(task, ATTR_SUBJECT), event);
 		String body = processTokenReplacements(
-				repository.getValue(task, ATTR_BODY), events);
+				repository.getValue(task, ATTR_BODY), event);
+		String bodyHtml = processTokenReplacements(
+				repository.getValue(task, ATTR_BODY_HTML), event);
 		List<Recipient> recipients = new ArrayList<Recipient>();
 
 		String to = populateEmailList(task, ATTR_TO_ADDRESSES, recipients,
-				RecipientType.TO, events);
+				RecipientType.TO, event);
 		String cc = populateEmailList(task, ATTR_CC_ADDRESSES, recipients,
-				RecipientType.CC, events);
+				RecipientType.CC, event);
 		String bcc = populateEmailList(task, ATTR_BCC_ADDRESSES, recipients,
-				RecipientType.BCC, events);
+				RecipientType.BCC, event);
 
 		List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
 		
@@ -197,7 +197,7 @@ public class EmailTask extends AbstractTaskProvider {
 			String filename = ResourceUtils.getNamePairKey(path);
 			String filepath = ResourceUtils.getNamePairValue(path);
 
-			filepath = processTokenReplacements(filepath, events);
+			filepath = processTokenReplacements(filepath, event);
 			File file = new File(filepath);
 			if(!file.exists()) {
 				return new EmailTaskResult(this, new FileNotFoundException(filepath + " does not exist"), currentRealm, task, subject, body, to, cc, bcc);
@@ -210,7 +210,7 @@ public class EmailTask extends AbstractTaskProvider {
 		}
 		
 		try {
-			emailService.sendPlainEmail(subject, body,
+			emailService.sendEmail(subject, body, bodyHtml,
 					recipients.toArray(new Recipient[0]), attachments.toArray(new EmailAttachment[0]));
 
 			return new EmailTaskResult(this, task.getRealm(),
@@ -228,11 +228,14 @@ public class EmailTask extends AbstractTaskProvider {
 
 	private String populateEmailList(Task task,
 			String attributeName, List<Recipient> recipients,
-			RecipientType type, SystemEvent... events)
+			RecipientType type, SystemEvent event)
 			throws ValidationException {
 
-		String[] emails = ResourceUtils.explodeValues(processTokenReplacements(
-				repository.getValue(task, attributeName), events));
+		String value = repository.getValue(task, attributeName);
+		if(ResourceUtils.isReplacementVariable(value)) {
+			value = processTokenReplacements(value, event);
+		}
+		String[] emails = ResourceUtils.explodeValues(value);
 		return emailService.populateEmailList(emails, recipients, type);
 	}
 

@@ -18,4 +18,8 @@ public class EqualsCondition implements Condition {
 				condition.getConditionValue());
 	}
 
+	@Override
+	public boolean isValueRequired() {
+		return true;
+	}
 }

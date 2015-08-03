@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.HypersocketVersion;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
+import com.hypersocket.dashboard.message.DashboardMessageService;
 import com.hypersocket.http.HttpUtils;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -46,6 +47,9 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	@Autowired
 	PermissionService permissionService;
 
+	@Autowired
+	DashboardMessageService messageService; 
+	
 	@PostConstruct
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
@@ -76,7 +80,7 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 		this.registerWidget(new OverviewWidget(1,
 				"overview.systemMessages.title", "systemMessages", true) {
 			public boolean hasContent() {
-				return true;
+				return messageService.getMessageCount() > 0;
 			}
 		});
 		this.registerWidget(new OverviewWidget(3, "overview.featureReel.title",

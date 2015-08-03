@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import javax.mail.Message.RecipientType;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 import org.codemonkey.simplejavamail.Email;
 import org.codemonkey.simplejavamail.MailException;
@@ -51,27 +52,10 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	
 	public static final String EMAIL_NAME_PATTERN = "(.*?)<([^>]+)>\\s*,?";
 
-	@Override
-	public void sendPlainEmail(String subject, String text, Recipient[] recipients) throws MailException {
-		sendEmail(subject, text, recipients, null, false);
-	}
 	
 	@Override
-	public void sendHtmlEmail(String subject, String text, Recipient[] recipients) throws MailException {
-		sendEmail(subject, text, recipients,  null, true);
-	}
-	
-	@Override
-	public void sendPlainEmail(String subject, String text, Recipient[] recipients, EmailAttachment[] attachments) throws MailException {
-		sendEmail(subject, text, recipients, attachments, false);
-	}
-	
-	@Override
-	public void sendHtmlEmail(String subject, String text, Recipient[] recipients, EmailAttachment[] attachments) throws MailException {
-		sendEmail(subject, text, recipients,  attachments, true);
-	}
-	
-	private void sendEmail(String subject, String text, Recipient[] recipients, EmailAttachment[] attachments, boolean html) throws MailException {
+	@SafeVarargs
+	public final void sendEmail(String subject, String text, String html, Recipient[] recipients, EmailAttachment... attachments) throws MailException {
 		Email email = new Email();
 		
 		email.setFromAddress(configurationService.getValue(SMTP_FROM_NAME), 
@@ -83,11 +67,11 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		
 		email.setSubject(subject);
 		
-		if(html) {
-			email.setTextHTML(text);
-		} else {
-			email.setText(text);
+		if(StringUtils.isNotBlank(html)) {
+			email.setTextHTML(html);
 		}
+		
+		email.setText(text);
 		
 		if(attachments!=null) {
 			for(EmailAttachment attachment : attachments) {

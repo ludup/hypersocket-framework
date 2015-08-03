@@ -18,4 +18,9 @@ public class ContainsCondition implements Condition {
 				.contains(condition.getConditionValue());
 	}
 
+	@Override
+	public boolean isValueRequired() {
+		return true;
+	}
+
 }

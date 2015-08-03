@@ -55,7 +55,6 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 		repository.loadPropertyTemplates("propertyTemplates.xml");
 		
-		eventPublisher.registerEvent(ConfigurationChangedEvent.class, RESOURCE_BUNDLE);
 	}
 
 	@Override

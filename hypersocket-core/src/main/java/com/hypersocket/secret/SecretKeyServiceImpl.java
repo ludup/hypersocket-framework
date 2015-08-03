@@ -97,6 +97,7 @@ public class SecretKeyServiceImpl extends
 			SecretKeyResource key = new SecretKeyResource();
 			key.setName(name);
 			key.setRealm(realm);
+			key.setResourceCategory("secretKey");
 			key.setKeylength(Math.min(Cipher.getMaxAllowedKeyLength("AES"), 256));
 			
 			SecureRandom rnd = new SecureRandom();

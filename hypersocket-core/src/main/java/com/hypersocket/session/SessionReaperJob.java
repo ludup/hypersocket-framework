@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.TransactionalJob;
 
 public class SessionReaperJob extends TransactionalJob {
@@ -16,6 +17,9 @@ public class SessionReaperJob extends TransactionalJob {
 	
 	@Autowired
 	SessionService sessionService;
+	
+	@Autowired
+	RealmService realmService; 
 	
 	@Override
 	protected Object onExecute(JobExecutionContext context) {
@@ -27,14 +31,23 @@ public class SessionReaperJob extends TransactionalJob {
 			if(log.isDebugEnabled()) {
 				log.debug("There are " + activeSessions.size() + " users connected");
 			}
+			
+			boolean firstRun = context.getTrigger().getJobDataMap().containsKey("firstRun");
+			
 			for(Session session : activeSessions) {
 				if(!session.isSystem()) {
-					sessionService.isLoggedOn(session, false);
+					if(sessionService.isLoggedOn(session, false)) {
+						if(firstRun) {
+							if(realmService.getRealmPropertyBoolean(session.getPrincipalRealm(), "session.closeOnShutdown")) {
+								sessionService.closeSession(session);
+							}
+						}
+					}
 				}
 			}
 		} catch (AccessDeniedException e) {
 			log.error("Access Denied", e);
-		}
+		} 
 		
 		return null;
 	}

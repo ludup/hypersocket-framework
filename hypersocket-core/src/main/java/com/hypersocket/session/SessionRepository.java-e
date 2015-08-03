@@ -13,7 +13,10 @@ import java.util.Map;
 
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntityRepository;
+import com.hypersocket.repository.CriteriaConfiguration;
+import com.hypersocket.tables.ColumnSort;
 
 public interface SessionRepository extends AbstractEntityRepository<Session,String> {
 
@@ -47,4 +50,9 @@ public interface SessionRepository extends AbstractEntityRepository<Session,Stri
 	Map<String, Long> getOSCount(Date startDate, Date endDate);
 
 	Map<String, Long> getIPCount(Date startDate, Date endDate);
+
+	List<Session> search(Realm realm, String searchPattern, int start, int length, ColumnSort[] sorting,
+			CriteriaConfiguration... configs);
+
+	long getResourceCount(Realm realm, String searchPattern, CriteriaConfiguration... configs);
 }

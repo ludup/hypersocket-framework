@@ -18,4 +18,8 @@ public class StartsWithCondition implements Condition {
 				.startsWith(condition.getConditionValue());
 	}
 
+	@Override
+	public boolean isValueRequired() {
+		return true;
+	}
 }

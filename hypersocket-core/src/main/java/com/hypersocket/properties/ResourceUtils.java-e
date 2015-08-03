@@ -99,4 +99,8 @@ public class ResourceUtils {
 		return element;
 	}
 
+	public static boolean isReplacementVariable(String value) {
+		return value.startsWith("${") && value.endsWith("}");
+	}
+
 }

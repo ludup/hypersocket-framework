@@ -4,9 +4,15 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 import javafx.application.Platform;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Control;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.Tooltip;
 import javafx.stage.Stage;
 
 import org.slf4j.Logger;
@@ -37,6 +43,9 @@ public class AbstractController implements FramedController, Listener {
 		this.scene = scene;
 		this.context = jfxhsClient;
 		onConfigure();
+		
+		restyleAllToolTips(scene);		
+		
 		context.getBridge().addListener(this);
 	}
 	
@@ -66,20 +75,6 @@ public class AbstractController implements FramedController, Listener {
 
 	protected void onStateChanged() {
 
-	}
-
-	private void stateChanged() {
-		if (!Platform.isFxApplicationThread()) {
-			Platform.runLater(new Runnable() {
-
-				@Override
-				public void run() {
-					onStateChanged();
-				}
-			});
-		} else {
-			onStateChanged();
-		}
 	}
 
 	@Override
@@ -139,4 +134,52 @@ public class AbstractController implements FramedController, Listener {
 	@Override
 	public void initDone(String errorMessage) {
 	}
+	
+	
+
+	private void restyleAllToolTips(Scene scene) {
+		walkTree(scene.getRoot(), new Consumer<Object>() {
+			@Override
+			public void accept(Object t) {
+				if(t instanceof Control) {
+					Tooltip tooltip = ((Control)t).getTooltip();
+					if(tooltip != null) {
+						// NOTE Bleh. Have to recreate tooltips? How crazy is that
+						Tooltip newTooltip = new Tooltip();
+						newTooltip.setText(tooltip.getText());
+						UIHelpers.styleToolTip(newTooltip);
+						((Control)t).setTooltip(newTooltip);
+					}
+				}				
+			}
+		});
+	}
+
+	private void stateChanged() {
+		if (!Platform.isFxApplicationThread()) {
+			Platform.runLater(new Runnable() {
+
+				@Override
+				public void run() {
+					onStateChanged();
+				}
+			});
+		} else {
+			onStateChanged();
+		}
+	}
+
+    private void walkTree(Object node, Consumer<Object> visitor) {
+        visitor.accept(node);
+        if(node instanceof TabPane) { 
+        	((TabPane )node).getTabs().forEach(n -> walkTree(n, visitor));
+        }
+        else if(node instanceof Tab) {
+        	walkTree(((Tab)node).getContent(), visitor);
+        }
+        else if (node instanceof Parent) {
+            ((Parent) node).getChildrenUnmodifiable()
+                .forEach(n -> walkTree(n, visitor));
+        }
+    }
 }

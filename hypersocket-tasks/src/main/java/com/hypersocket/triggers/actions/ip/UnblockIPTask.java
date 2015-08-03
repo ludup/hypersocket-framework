@@ -76,10 +76,10 @@ public class UnblockIPTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent... events)
+	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 		
-		String ipAddress = processTokenReplacements(repository.getValue(task, "unblock.ip"), events);
+		String ipAddress = processTokenReplacements(repository.getValue(task, "unblock.ip"), event);
 		try {
 			
 			if(log.isInfoEnabled()) {

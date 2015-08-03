@@ -1,5 +1,7 @@
 package com.hypersocket.tasks.email;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.triggers.TaskResult;
@@ -51,4 +53,7 @@ public class EmailTaskResult extends TaskResult {
 		return true;
 	}
 
+	public String[] getResourceKeys() {
+		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
 }

@@ -1,6 +1,5 @@
 package com.hypersocket.triggers;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
@@ -14,7 +13,6 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.scheduler.PermissionsAwareJob;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
-import com.hypersocket.triggers.events.TriggerExecutedEvent;
 
 public abstract class AbstractTriggerJob extends PermissionsAwareJob {
 
@@ -39,26 +37,26 @@ public abstract class AbstractTriggerJob extends PermissionsAwareJob {
 			throws JobExecutionException;
 	
 	protected void processEventTrigger(TriggerResource trigger,
-			SystemEvent... events) throws ValidationException {
+			SystemEvent event) throws ValidationException {
 		if (log.isInfoEnabled()) {
 			log.info("Processing trigger " + trigger.getName());
 		}
 		
 		if(trigger.getResult() != TriggerResultType.EVENT_ANY_RESULT
-				&& events[events.length-1].getStatus().ordinal() != trigger.getResult().ordinal()) {
+				&& event.getStatus().ordinal() != trigger.getResult().ordinal()) {
 			if(log.isInfoEnabled()) {
 				log.info("Not processing trigger " + trigger.getName() + " with result " + trigger.getResult().toString()
-						+ " because event status is " + events[events.length-1].getStatus().toString());
+						+ " because event status is " + event.getStatus().toString());
 			}
 			return;
 		}
 		
-		if (checkConditions(trigger, events)) {
+		if (checkConditions(trigger, event)) {
 			
 			if(log.isInfoEnabled()) {
 				log.info("Performing task " + trigger.getResourceKey());
 			}
-			executeTrigger(trigger, events);
+			executeTrigger(trigger, event);
 			
 		}
 		if (log.isInfoEnabled()) {
@@ -67,11 +65,11 @@ public abstract class AbstractTriggerJob extends PermissionsAwareJob {
 
 	}
 
-	protected boolean checkConditions(TriggerResource trigger, SystemEvent... events)
+	protected boolean checkConditions(TriggerResource trigger, SystemEvent event)
 			throws ValidationException {
 
 		for (TriggerCondition condition : trigger.getAllConditions()) {
-			if (!checkCondition(condition, trigger, events)) {
+			if (!checkCondition(condition, trigger, event)) {
 				if (log.isDebugEnabled()) {
 					log.debug("Trigger " + trigger.getName()
 							+ " failed processing all conditions due to "
@@ -86,7 +84,7 @@ public abstract class AbstractTriggerJob extends PermissionsAwareJob {
 		if (trigger.getAnyConditions().size() > 0) {
 			boolean conditionPassed = false;
 			for (TriggerCondition condition : trigger.getAnyConditions()) {
-				if (checkCondition(condition, trigger, events)) {
+				if (checkCondition(condition, trigger, event)) {
 					conditionPassed = true;
 					break;
 				}
@@ -105,7 +103,7 @@ public abstract class AbstractTriggerJob extends PermissionsAwareJob {
 	}
 
 	private boolean checkCondition(TriggerCondition condition,
-			TriggerResource trigger, SystemEvent... events)
+			TriggerResource trigger, SystemEvent event)
 			throws ValidationException {
 
 		TriggerConditionProvider provider = triggerService
@@ -117,14 +115,10 @@ public abstract class AbstractTriggerJob extends PermissionsAwareJob {
 							+ condition.getConditionKey() + " is not available");
 		}
 		
-		boolean matched = false;
-		for(SystemEvent event : events) {
-			matched |= provider.checkCondition(condition, trigger, event);
-		}
-		return matched;
+		return provider.checkCondition(condition, trigger, event);
 	}
 
-	protected void executeTrigger(TriggerResource trigger, SystemEvent... events)
+	protected void executeTrigger(TriggerResource trigger, SystemEvent event)
 			throws ValidationException {
 
 		TaskProvider provider = taskService
@@ -135,22 +129,32 @@ public abstract class AbstractTriggerJob extends PermissionsAwareJob {
 							+ trigger.getResourceKey() + " is not available");
 		}
 
-		TaskResult outputEvent = provider.execute(trigger, events[0].getCurrentRealm(), events);
+		TaskResult outputEvent = provider.execute(trigger, event.getCurrentRealm(), event);
 
 		if(outputEvent!=null) {
 			if(outputEvent.isPublishable()) {
 				eventService.publishEvent(outputEvent);
 			}
 			
-			SystemEvent[] allEvents = ArrayUtils.add(events, outputEvent);
-			
-			if (!trigger.getChildTriggers().isEmpty()) {
-				for(TriggerResource t : trigger.getChildTriggers()) {
-					processEventTrigger(t, allEvents);
+			if(outputEvent instanceof MultipleTaskResults) {
+				MultipleTaskResults results = (MultipleTaskResults) outputEvent;
+				for(TaskResult result : results.getResults()) {
+					processResult(trigger, result);
 				}
 				
-			} 
+			} else {
+				processResult(trigger, outputEvent);
+			}
 		}
+	}
+	
+	protected void processResult(TriggerResource trigger, TaskResult result) throws ValidationException {
 		
+		if (!trigger.getChildTriggers().isEmpty()) {
+			for(TriggerResource t : trigger.getChildTriggers()) {
+				processEventTrigger(t, result);
+			}
+			
+		} 
 	}
 }
