@@ -54,6 +54,7 @@ public class EmailTask extends AbstractTaskProvider {
 	public static final String ATTR_SUBJECT = "email.subject";
 	public static final String ATTR_FORMAT = "email.format";
 	public static final String ATTR_BODY = "email.body";
+	public static final String ATTR_BODY_HTML = "email.bodyHtml";
 	public static final String ATTR_STATIC_ATTACHMENTS = "attach.static";
 	public static final String ATTR_DYNAMIC_ATTACHMENTS = "attach.dynamic";
 	
@@ -163,6 +164,8 @@ public class EmailTask extends AbstractTaskProvider {
 				repository.getValue(task, ATTR_SUBJECT), event);
 		String body = processTokenReplacements(
 				repository.getValue(task, ATTR_BODY), event);
+		String bodyHtml = processTokenReplacements(
+				repository.getValue(task, ATTR_BODY_HTML), event);
 		List<Recipient> recipients = new ArrayList<Recipient>();
 
 		String to = populateEmailList(task, ATTR_TO_ADDRESSES, recipients,
@@ -207,7 +210,7 @@ public class EmailTask extends AbstractTaskProvider {
 		}
 		
 		try {
-			emailService.sendPlainEmail(subject, body,
+			emailService.sendEmail(subject, body, bodyHtml,
 					recipients.toArray(new Recipient[0]), attachments.toArray(new EmailAttachment[0]));
 
 			return new EmailTaskResult(this, task.getRealm(),
