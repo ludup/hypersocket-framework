@@ -238,7 +238,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		return super.search(getEntityClass(), "uuid", "", start,
 				length, sorting, ArrayUtils.addAll(configs,
-						new RealmOrSystemRealmCriteria(realm, "principalRealm"),
+						new RealmOrSystemRealmCriteria(realm),
 						new CriteriaConfiguration() {
 
 							@Override
@@ -261,7 +261,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 			CriteriaConfiguration... configs) {
 		return getCount(getEntityClass(), "uuid", "",
 				ArrayUtils.addAll(configs, new RealmOrSystemRealmCriteria(
-						realm, "principalRealm"),
+						realm),
 						new CriteriaConfiguration() {
 
 					@Override
