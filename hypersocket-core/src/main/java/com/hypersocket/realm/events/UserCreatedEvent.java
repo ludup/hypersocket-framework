@@ -16,6 +16,9 @@ public class UserCreatedEvent extends UserEvent {
 
 	public static final String EVENT_RESOURCE_KEY = "event.userCreated";
 	
+	public static final String ATTR_PASSWORD = "attr.password";
+	public static final String ATTR_PASSWORD_CHANGE_REQUIRED = "attr.passwordChangeRequired";
+	
 	public UserCreatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
 			List<? extends Principal> associatedPrincipals, Map<String,String> properties) {
@@ -23,6 +26,16 @@ public class UserCreatedEvent extends UserEvent {
 				associatedPrincipals, properties);
 	}
 
+	public UserCreatedEvent(Object source, Session session, Realm realm,
+			RealmProvider provider, Principal principal,
+			List<? extends Principal> associatedPrincipals, Map<String,String> properties,
+			String password, boolean forceChange) {
+		super(source, "event.userCreated", session, realm, provider, principal,
+				associatedPrincipals, properties);
+		addAttribute(ATTR_PASSWORD, password);
+		addAttribute(ATTR_PASSWORD_CHANGE_REQUIRED, String.valueOf(forceChange));
+	}
+	
 	public UserCreatedEvent(Object source, Throwable e, Session session,
 			Realm realm, RealmProvider provider, String principalName,
 			Map<String, String> properties, List<Principal> associatedPrincipals) {

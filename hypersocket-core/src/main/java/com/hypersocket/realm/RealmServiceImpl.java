@@ -386,7 +386,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 			eventService.publishEvent(new UserCreatedEvent(this,
 					getCurrentSession(), realm, provider, principal,
-					principals, properties));
+					principals, properties, password, forceChange));
 
 			return principal;
 		} catch (AccessDeniedException e) {
