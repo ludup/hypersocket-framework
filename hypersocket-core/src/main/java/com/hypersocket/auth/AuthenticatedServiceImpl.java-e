@@ -83,10 +83,11 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	@Override
 	public Realm getCurrentRealm() {
-		if(currentRealm.get()!=null) {
+		if(currentSession.get()==null) {
 			return currentRealm.get();
 		}
-		return getCurrentSession().getPrincipalRealm();
+		
+		return getCurrentSession().getCurrentRealm();
 	}
 
 	@Override
