@@ -7,6 +7,11 @@
 		<property resourceKey="email.body" inputType="textarea" rows="10"
 			cols="100" maxlength="1024" defaultValue="" weight="100" allowEmpty="false" errorResourceKey="error.bodyRequired"/>
 	</propertyCategory>
+	<propertyCategory resourceKey="category.email.html"
+		resourceBundle="TriggerResourceService" weight="2000">
+		<property resourceKey="email.bodyHtml" inputType="html" rows="10"
+			cols="100" maxlength="8000" defaultValue="" weight="100" allowEmpty="true"/>
+	</propertyCategory>
 	<propertyCategory resourceKey="category.email.delivery"
 		resourceBundle="TriggerResourceService" weight="2000">
 		<property resourceKey="email.to" inputType="multipleTextInput"

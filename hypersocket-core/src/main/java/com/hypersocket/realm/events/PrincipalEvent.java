@@ -19,7 +19,7 @@ public class PrincipalEvent extends SessionEvent {
 	
 	public PrincipalEvent(Object source, String resourceKey, boolean success,
 			Session session, Realm realm) {
-		super(source, resourceKey, success, session);
+		super(source, resourceKey, success, session, realm);
 		this.realm = realm;
 		addAttribute(ATTR_REALM_NAME, realm.getName());
 		addAttribute(ATTR_REALM_TYPE, realm.getResourceCategory());
