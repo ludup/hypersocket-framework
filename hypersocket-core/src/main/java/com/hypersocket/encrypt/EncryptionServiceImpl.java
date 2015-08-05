@@ -65,6 +65,11 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 	public void setEncryptor(Encryptor encryptor) {
 		this.encryptor = encryptor;
 	}
+	
+	@Override
+	public Encryptor getEncryptor() {
+		return encryptor;
+	}
 
 	public EncryptionProvider getEncryptionProvider() {
 		return encryptionProvider;

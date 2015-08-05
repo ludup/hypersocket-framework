@@ -7,4 +7,6 @@ public interface EncryptionService extends Encryptor {
 
 	void setEncryptor(Encryptor encryptor);
 
+	Encryptor getEncryptor();
+
 }

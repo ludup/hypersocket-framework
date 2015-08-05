@@ -39,6 +39,12 @@ public class AbstractController implements FramedController, Listener {
 	}
 
 	@Override
+	public final void cleanUp() {
+		context.getBridge().removeListener(this);
+		onCleanUp();
+	}
+
+	@Override
 	public final void configure(Scene scene, Client jfxhsClient) {
 		this.scene = scene;
 		this.context = jfxhsClient;
@@ -68,6 +74,9 @@ public class AbstractController implements FramedController, Listener {
 	}
 
 	protected void onConfigure() {
+	}
+
+	protected void onCleanUp() {
 	}
 
 	protected void onInitialize() {
