@@ -18,7 +18,6 @@ import com.hypersocket.dashboard.message.DashboardMessageService;
 import com.hypersocket.http.HttpUtils;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.SchedulerService;
@@ -54,19 +53,13 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-		PermissionCategory cat = permissionService.registerPermissionCategory(
-				RESOURCE_BUNDLE, "category.overview");
-
-		for (OverviewPermission p : OverviewPermission.values()) {
-			permissionService.registerPermission(p, cat);
-		}
-
 		this.registerWidget(new OverviewWidget(2, "overview.yourSerial.title",
 				"yourSerial", false) {
 			public boolean hasContent() {
 				return true;
 			}
 		});
+		
 		this.registerWidget(new OverviewWidget(4, "overview.usefulLinks.title",
 				"usefulLinks", false) {
 			public boolean hasContent() {
@@ -77,12 +70,14 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 				}
 			}
 		});
+		
 		this.registerWidget(new OverviewWidget(1,
 				"overview.systemMessages.title", "systemMessages", true) {
 			public boolean hasContent() {
 				return messageService.getMessageCount() > 0;
 			}
 		});
+		
 		this.registerWidget(new OverviewWidget(3, "overview.featureReel.title",
 				"featureReel", true) {
 			public boolean hasContent() {
@@ -93,6 +88,7 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 				}
 			}
 		});
+		
 		this.registerWidget(new OverviewWidget(3, "overview.quickSetup.title",
 				"quickSetup", false) {
 			public boolean hasContent() {
@@ -111,7 +107,6 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	}
 
 	public List<OverviewWidget> getWidgets() throws AccessDeniedException {
-		assertPermission(OverviewPermission.READ);
 
 		List<OverviewWidget> visibleWidgets = new ArrayList<OverviewWidget>();
 		for (OverviewWidget w : widgetList) {

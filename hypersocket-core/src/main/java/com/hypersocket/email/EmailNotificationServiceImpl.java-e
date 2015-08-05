@@ -1,11 +1,14 @@
 package com.hypersocket.email;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.mail.Message.RecipientType;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 import org.codemonkey.simplejavamail.Email;
 import org.codemonkey.simplejavamail.MailException;
@@ -23,9 +26,12 @@ import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.triggers.ValidationException;
+import com.hypersocket.upload.FileUploadService;
 
 @Service
 public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceImpl implements EmailNotificationService {
@@ -35,6 +41,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 	@Autowired
 	RealmService realmService; 
+	
+	@Autowired
+	FileUploadService uploadService; 
 	
 	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
 
@@ -52,26 +61,14 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	public static final String EMAIL_NAME_PATTERN = "(.*?)<([^>]+)>\\s*,?";
 
 	@Override
-	public void sendPlainEmail(String subject, String text, Recipient[] recipients) throws MailException {
-		sendEmail(subject, text, recipients, null, false);
+	@SafeVarargs
+	public final void sendEmail(String subject, String text, String html, Recipient[] recipients, EmailAttachment... attachments) throws MailException {
+		sendEmail(getCurrentRealm(), subject, text, html, recipients, attachments);
 	}
 	
 	@Override
-	public void sendHtmlEmail(String subject, String text, Recipient[] recipients) throws MailException {
-		sendEmail(subject, text, recipients,  null, true);
-	}
-	
-	@Override
-	public void sendPlainEmail(String subject, String text, Recipient[] recipients, EmailAttachment[] attachments) throws MailException {
-		sendEmail(subject, text, recipients, attachments, false);
-	}
-	
-	@Override
-	public void sendHtmlEmail(String subject, String text, Recipient[] recipients, EmailAttachment[] attachments) throws MailException {
-		sendEmail(subject, text, recipients,  attachments, true);
-	}
-	
-	private void sendEmail(String subject, String text, Recipient[] recipients, EmailAttachment[] attachments, boolean html) throws MailException {
+	@SafeVarargs
+	public final void sendEmail(Realm realm, String subject, String text, String html, Recipient[] recipients, EmailAttachment... attachments) throws MailException {
 		Email email = new Email();
 		
 		email.setFromAddress(configurationService.getValue(SMTP_FROM_NAME), 
@@ -83,9 +80,23 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		
 		email.setSubject(subject);
 		
-		if(html) {
-			email.setTextHTML(text);
-		} else {
+		String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
+		if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(html)) {
+			try {
+				htmlTemplate = FileUtils.readFileToString(uploadService.getFile(htmlTemplate));
+				htmlTemplate = htmlTemplate.replace("${htmlContent}", html);
+				email.setTextHTML(htmlTemplate);
+			} catch (ResourceNotFoundException e) {
+				log.error("Cannot find HTML template", e);
+			} catch (IOException e) {
+				log.error("Cannot find HTML template", e);
+			}
+			
+		} else if(StringUtils.isNotBlank(html)) {
+			email.setTextHTML(html);
+		}
+		
+		if(StringUtils.isNotBlank(text)) {
 			email.setText(text);
 		}
 		
@@ -95,11 +106,11 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			}
 		}
 		
-		Mailer mail = new Mailer(configurationService.getValue(SMTP_HOST), 
-				configurationService.getIntValue(SMTP_PORT), 
-				configurationService.getValue(SMTP_USERNAME),
-				configurationService.getValue(SMTP_PASSWORD),
-				TransportStrategy.values()[configurationService.getIntValue(SMTP_PROTOCOL)]);
+		Mailer mail = new Mailer(configurationService.getValue(realm, SMTP_HOST), 
+				configurationService.getIntValue(realm, SMTP_PORT), 
+				configurationService.getValue(realm, SMTP_USERNAME),
+				configurationService.getValue(realm, SMTP_PASSWORD),
+				TransportStrategy.values()[configurationService.getIntValue(realm, SMTP_PROTOCOL)]);
 		
 		
 		mail.sendMail(email);

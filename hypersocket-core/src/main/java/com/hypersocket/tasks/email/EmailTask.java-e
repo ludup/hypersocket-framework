@@ -54,6 +54,7 @@ public class EmailTask extends AbstractTaskProvider {
 	public static final String ATTR_SUBJECT = "email.subject";
 	public static final String ATTR_FORMAT = "email.format";
 	public static final String ATTR_BODY = "email.body";
+	public static final String ATTR_BODY_HTML = "email.bodyHtml";
 	public static final String ATTR_STATIC_ATTACHMENTS = "attach.static";
 	public static final String ATTR_DYNAMIC_ATTACHMENTS = "attach.dynamic";
 	
@@ -121,13 +122,14 @@ public class EmailTask extends AbstractTaskProvider {
 			}
 		}
 	}
+	
 	@Override
 	public void validate(Task task, Map<String, String> parameters)
 			throws ValidationException {
 
 		List<TriggerValidationError> invalidAttributes = new ArrayList<TriggerValidationError>();
 
-		if (!parameters.containsKey(ATTR_TO_ADDRESSES)
+		if(!parameters.containsKey(ATTR_TO_ADDRESSES)
 				|| StringUtils.isEmpty(parameters.get(ATTR_TO_ADDRESSES))) {
 			invalidAttributes
 					.add(new TriggerValidationError(ATTR_TO_ADDRESSES));
@@ -139,17 +141,17 @@ public class EmailTask extends AbstractTaskProvider {
 		validateEmailField(ATTR_BCC_ADDRESSES, parameters, invalidAttributes);
 		
 
-		if (!parameters.containsKey(ATTR_SUBJECT)
+		if(!parameters.containsKey(ATTR_SUBJECT)
 				|| StringUtils.isEmpty(parameters.get(ATTR_SUBJECT))) {
 			invalidAttributes.add(new TriggerValidationError(ATTR_SUBJECT));
 		}
 
-		if (!parameters.containsKey(ATTR_BODY)
+		if(!parameters.containsKey(ATTR_BODY)
 				|| StringUtils.isEmpty(parameters.get(ATTR_BODY))) {
 			invalidAttributes.add(new TriggerValidationError(ATTR_BODY));
 		}
 
-		if (!parameters.containsKey(ATTR_FORMAT)
+		if(!parameters.containsKey(ATTR_FORMAT)
 				|| StringUtils.isEmpty(parameters.get(ATTR_FORMAT))) {
 			invalidAttributes.add(new TriggerValidationError(ATTR_FORMAT));
 		}
@@ -163,6 +165,8 @@ public class EmailTask extends AbstractTaskProvider {
 				repository.getValue(task, ATTR_SUBJECT), event);
 		String body = processTokenReplacements(
 				repository.getValue(task, ATTR_BODY), event);
+		String bodyHtml = processTokenReplacements(
+				repository.getValue(task, ATTR_BODY_HTML), event);
 		List<Recipient> recipients = new ArrayList<Recipient>();
 
 		String to = populateEmailList(task, ATTR_TO_ADDRESSES, recipients,
@@ -207,7 +211,7 @@ public class EmailTask extends AbstractTaskProvider {
 		}
 		
 		try {
-			emailService.sendPlainEmail(subject, body,
+			emailService.sendEmail(currentRealm, subject, body, bodyHtml,
 					recipients.toArray(new Recipient[0]), attachments.toArray(new EmailAttachment[0]));
 
 			return new EmailTaskResult(this, task.getRealm(),
