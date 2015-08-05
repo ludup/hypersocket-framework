@@ -207,17 +207,16 @@ public class Client extends Application {
 		// Open the actual scene
 		FramedController fc = openScene(Dock.class,
 				cfg.isVertical() ? "Vertical" : null);
-		final Scene scene = fc.getScene();
 
 		// Configure the scene (window)
 		BooleanProperty alwaysOnTopProperty = cfg.alwaysOnTopProperty();
 
 		// Background colour
-		setColors(scene);
+		setColors(fc.getScene());
 
 		// Finalise and show
 		setStageBounds();
-		primaryStage.setScene(scene);
+		primaryStage.setScene(fc.getScene());
 		primaryStage.show();
 
 		Platform.runLater(new Runnable() {
@@ -281,7 +280,7 @@ public class Client extends Application {
 			@Override
 			public void changed(ObservableValue<? extends Color> observable,
 					Color oldValue, Color newValue) {
-				setColors(scene);
+				setColors(primaryStage.getScene());
 			}
 		});
 
@@ -299,6 +298,7 @@ public class Client extends Application {
 				if (newValue) {
 					boolean newVertical = cfg.isVertical();
 					if (newVertical != vertical) {
+						Dock.getInstance().cleanUp();
 						recreateScene();
 					} else {
 						setStageBounds();
