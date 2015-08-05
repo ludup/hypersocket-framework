@@ -22,6 +22,7 @@ import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
@@ -107,6 +108,11 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 	
 	protected PermissionType getPermission(String name) {
+		
+		if(getPermissionType()==null) {
+			return SystemPermission.SYSTEM_ADMINISTRATION;
+		}
+		
 		try {
 			Field f = getPermissionType().getField(name);
 

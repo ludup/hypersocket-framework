@@ -57,4 +57,15 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 		return isLast;
 	}
 
+	@Override
+	public String toString() {
+		return "AuthenticationRequiredResult [formTemplate=" + formTemplate
+				+ ", lastErrorIsResourceKey=" + lastErrorIsResourceKey
+				+ ", isNew=" + isNew + ", isLast=" + isLast
+				+ ", lastResultSuccessful=" + lastResultSuccessful
+				+ ", bannerMsg=" + bannerMsg + ", errorMsg=" + errorMsg
+				+ ", showLocales=" + showLocales + ", success=" + success
+				+ ", version=" + version + ", principal=" + principal + "]";
+	}
+
 }

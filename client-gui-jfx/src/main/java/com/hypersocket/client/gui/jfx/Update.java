@@ -1,6 +1,9 @@
 package com.hypersocket.client.gui.jfx;
 
+import java.rmi.RemoteException;
 import java.util.logging.Logger;
+
+import com.hypersocket.client.rmi.GUICallback;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -23,6 +26,8 @@ public class Update extends AbstractController {
 	private Timeline awaitingBridgeEstablish;
 	private int appsToUpdate;
 	private int appsUpdated;
+
+	private Popup popup;
 
 	@Override
 	protected void onInitialize() {
@@ -105,9 +110,13 @@ public class Update extends AbstractController {
 	@Override
 	public void updateFailure(String app, String message) {
 		LOG.info(String.format("Failed to update app %s. %s", app, message));
-		this.message.textProperty().set(message);
-		progress.progressProperty().setValue(1);
-		appsUpdated++;
+		resetState();
+		popup.hide();
+		try {
+			context.getBridge().notify(message, GUICallback.NOTIFY_ERROR);
+		} catch (RemoteException e) {
+			// Not actually remote
+		}
 	}
 
 	@Override
@@ -125,6 +134,10 @@ public class Update extends AbstractController {
 		}
 	}
 
+	public void setPopup(Popup popup) {
+		this.popup = popup;
+	}
+
 	private void resetState() {
 		resetAwaingBridgeEstablish();
 		resetAwaingBridgeLoss();
@@ -134,11 +147,29 @@ public class Update extends AbstractController {
 	}
 
 	private void giveUpWaitingForBridgeEstablish() {
+		LOG.info("Given up waiting for bridge to start");
 		resetAwaingBridgeEstablish();
+		popup.hide();
+		try {
+			context.getBridge().notify(
+					resources.getString("givenUpWaitingForBridgeEstablish"),
+					GUICallback.NOTIFY_ERROR);
+		} catch (RemoteException e) {
+			// Not actually remote
+		}
 	}
 
 	private void giveUpWaitingForBridgeStop() {
+		LOG.info("Given up waiting for bridge to stop");
 		resetAwaingBridgeLoss();
+		popup.hide();
+		try {
+			context.getBridge().notify(
+					resources.getString("givenUpWaitingForBridgeStop"),
+					GUICallback.NOTIFY_ERROR);
+		} catch (RemoteException e) {
+			// Not actually remote
+		}
 	}
 
 	private void resetAwaingBridgeLoss() {
@@ -149,9 +180,9 @@ public class Update extends AbstractController {
 	}
 
 	private void resetAwaingBridgeEstablish() {
-		if (awaitingBridgeLoss != null) {
-			awaitingBridgeLoss.stop();
-			awaitingBridgeLoss = null;
+		if (awaitingBridgeEstablish != null) {
+			awaitingBridgeEstablish.stop();
+			awaitingBridgeEstablish = null;
 		}
 	}
 }

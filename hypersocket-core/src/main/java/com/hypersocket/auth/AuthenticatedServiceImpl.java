@@ -86,6 +86,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		if(currentSession.get()==null) {
 			return currentRealm.get();
 		}
+		
 		return getCurrentSession().getCurrentRealm();
 	}
 

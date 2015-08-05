@@ -67,20 +67,30 @@ public class Popup extends Stage {
 				public void changed(
 						ObservableValue<? extends Boolean> observable,
 						Boolean oldValue, Boolean newValue) {
-
-					if (oldValue && !newValue && !isChildFocussed()) {
-						hide();
-						Platform.runLater(new Runnable() {
-							@Override
-							public void run() {
-								if (!parent.focusedProperty().get()
-										&& Configuration.getDefault()
-												.autoHideProperty().get()) {
-									hideParent(parent);
-								}
+					/* NOTE - This may look crazy, but this seems to work-around
+					 * a bug in JavaFX / Mac OS X (1.8.0_51) that occurs when trying to 
+					 * hide a stage whilst processing a focus event. By placing both
+					 * operations on the event queue the problem goes away
+					 */
+					Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							if (oldValue && !newValue && !isChildFocussed()) {
+								hide();
+								Platform.runLater(new Runnable() {
+									@Override
+									public void run() {
+										if (!parent.focusedProperty().get()
+												&& Configuration.getDefault()
+														.autoHideProperty()
+														.get()) {
+											hideParent(parent);
+										}
+									}
+								});
 							}
-						});
-					}
+						}
+					});
 				}
 			});
 		}

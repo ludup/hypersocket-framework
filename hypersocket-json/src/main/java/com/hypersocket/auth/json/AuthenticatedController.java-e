@@ -135,7 +135,7 @@ public class AuthenticatedController {
 				i18nService.getDefaultLocale(), getSystemPrincipal().getRealm());
 	}
 	
-	protected void setupSystemContext(Realm realm) {
+	protected void setupSystemContext(Realm realm) throws AccessDeniedException {
 		setupAuthenticatedContext(sessionService.getSystemSession(),
 				i18nService.getDefaultLocale(), realm);
 	}
@@ -168,13 +168,17 @@ public class AuthenticatedController {
 		clearAuthenticatedContext();
 	}
 	
-	protected void setupAuthenticatedContext(Session pricipal, Locale locale) {
-		authenticationService.setCurrentSession(pricipal, locale);
+	protected void setupAuthenticatedContext(Session session, Locale locale) {
+		authenticationService.setCurrentSession(session, locale);
 	}
 
-	protected void setupAuthenticatedContext(Session pricipal, Locale locale, Realm realm) {
-		authenticationService.setCurrentSession(pricipal, locale);
+	protected void setupAuthenticatedContext(Session session, Locale locale, Realm realm) throws AccessDeniedException {
+		authenticationService.setCurrentSession(session, locale);
 		authenticationService.setCurrentRealm(realm);
+		if(!session.getCurrentRealm().equals(realm)) {
+			sessionService.switchRealm(session, realm);
+		}
+		
 	}
 	
 	protected Realm getCurrentRealm() {

@@ -119,6 +119,9 @@
 }
 
 /* Info messages */
+.messageIcon {
+    -fx-font-family: FontAwesome;
+}
 
 .errorMessage {
 	-fx-text-fill: white;
@@ -159,10 +162,13 @@
 /* Status */
 .statusConnected {
 	-fx-text-fill: #aa0000;
+    -fx-font-family: FontAwesome;
 }
 .statusNotConnected {
 	-fx-text-fill: #00aa00;
+    -fx-font-family: FontAwesome;
 }
 .statusError {
 	-fx-text-fill: #777777;
+    -fx-font-family: FontAwesome;
 }

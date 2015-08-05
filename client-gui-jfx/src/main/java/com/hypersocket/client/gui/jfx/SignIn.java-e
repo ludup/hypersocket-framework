@@ -157,7 +157,6 @@ public class SignIn extends AbstractController implements Listener {
 		super.bridgeLost();
 		abortPrompts();
 	}
-	
 
 	@Override
 	public void finishedConnecting(final Connection connection, Exception e) {
@@ -297,9 +296,7 @@ public class SignIn extends AbstractController implements Listener {
 	@Override
 	protected void onConfigure() {
 		super.onConfigure();
-		context.getBridge().addListener(this);
 		setMessage(null, null);
-
 		initUi();
 	}
 
@@ -352,7 +349,7 @@ public class SignIn extends AbstractController implements Listener {
 		}
 
 		// Start a new one
-		messageHider = new Timeline(new KeyFrame(Duration.millis(10000),
+		messageHider = new Timeline(new KeyFrame(Duration.millis(Dock.MESSAGE_FADE_TIME),
 				ae -> hideMessage()));
 		messageHider.play();
 
@@ -538,7 +535,7 @@ public class SignIn extends AbstractController implements Listener {
 			if (saveConnection.isSelected() && sel.getId() == null) {
 				saveConnection(sel);
 			} else if (!saveConnection.isSelected() && sel.getId() != null) {
-				if(!confirmDelete(sel)) {
+				if (!confirmDelete(sel)) {
 					saveConnection.setSelected(true);
 				}
 			}
@@ -582,8 +579,7 @@ public class SignIn extends AbstractController implements Listener {
 				initUi();
 			}
 			return true;
-		}
-		else {
+		} else {
 			return false;
 		}
 	}
@@ -710,16 +706,18 @@ public class SignIn extends AbstractController implements Listener {
 	}
 
 	private Connection getConnectionForUri(String uri) {
-		try {
-			List<ConnectionStatus> connections = context.getBridge()
-					.getClientService().getStatus();
-			for (ConnectionStatus c : connections) {
-				if (getUri(c.getConnection()).equals(uri)) {
-					return c.getConnection();
+		if (context.getBridge().isConnected()) {
+			try {
+				List<ConnectionStatus> connections = context.getBridge()
+						.getClientService().getStatus();
+				for (ConnectionStatus c : connections) {
+					if (getUri(c.getConnection()).equals(uri)) {
+						return c.getConnection();
+					}
 				}
+			} catch (Exception e) {
+				log.error("Could not find connection for URI.", e);
 			}
-		} catch (Exception e) {
-			log.error("Could not find connection for URI.", e);
 		}
 		return null;
 	}
@@ -781,7 +779,7 @@ public class SignIn extends AbstractController implements Listener {
 
 						if (!serverUrlsList.contains(uri)) {
 							serverUrlsList.add(uri);
-					}
+						}
 					}
 				} catch (Exception e) {
 					log.error("Failed to load connections.", e);
@@ -820,8 +818,8 @@ public class SignIn extends AbstractController implements Listener {
 	}
 
 	void setAvailable() {
-		
-		Platform.runLater(new Runnable(){
+
+		Platform.runLater(new Runnable() {
 			public void run() {
 				if (context.getBridge().isConnected()) {
 					Connection sel = getSelectedConnection();
@@ -831,7 +829,8 @@ public class SignIn extends AbstractController implements Listener {
 								&& context.getBridge().getClientService()
 										.isConnected(sel);
 					} catch (Exception e) {
-						log.warn("Failed to test if connected. Assuming not.", e);
+						log.warn("Failed to test if connected. Assuming not.",
+								e);
 					}
 					optionsUI.setVisible(!disconnecting
 							&& (promptsAvailable || selectionConnected));
@@ -867,7 +866,7 @@ public class SignIn extends AbstractController implements Listener {
 				rebuildContainer();
 			}
 		});
-		
+
 	}
 
 	private void rebuildContainer() {
