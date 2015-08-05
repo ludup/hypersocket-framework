@@ -7,4 +7,5 @@ public interface FramedController extends Initializable {
 
 	Scene getScene();
 	void configure(Scene scene, Client jfxhsClient);
+	void cleanUp();
 }

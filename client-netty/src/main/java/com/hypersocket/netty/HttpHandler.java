@@ -73,14 +73,25 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			state.response = new HttpHandlerResponse(
 					(HttpResponse) e.getMessage());
 			if (!state.response.isChunked()) {
+				if (log.isDebugEnabled()) {
+					log.debug("Non-chunked message successfully received");
+				}
 				state.future.setSuccess();
 			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Chunked message received");
+				}
 				state.readingChunks = true;
 			}
 		} else {
 			HttpChunk chunk = (HttpChunk) e.getMessage();
 
 			state.response.addChunk(chunk);
+
+			if (log.isDebugEnabled()) {
+				log.debug("Read chunk on message receipt (last = " + chunk.isLast());
+			}
+			
 			if (chunk.isLast()) {
 				state.readingChunks = false;
 				state.future.setSuccess();

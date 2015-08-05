@@ -80,6 +80,8 @@ public class ConnectionJob extends TimerTask {
 						c.getHashedPassword(), true);
 				}
 				catch(IOException ioe) {
+					client.disconnect(true);
+					client.connect(c.getHostname(), c.getPort(), c.getPath(), locale);
 					client.login();					
 				}
 			}

@@ -80,6 +80,11 @@ public class Dock extends AbstractController implements Listener {
 	 */
 	static final int AUTOHIDE_HIDE_TIME = 2000;
 
+	/*
+	 * How long to keep popup messages visible (in MS)
+	 */	
+	static final double MESSAGE_FADE_TIME = 10000;
+
 	static Logger log = LoggerFactory.getLogger(Main.class);
 
 	private Popup signInPopup;
@@ -133,6 +138,16 @@ public class Dock extends AbstractController implements Listener {
 	private Popup statusPopup;
 	private Status statusContent;
 
+	private ChangeListener<Number> widthChangeListener;
+
+	private ChangeListener<Number> shortcutsWidthProperty;
+
+	private ChangeListener<Number> sizeChangeListener;
+
+	private ChangeListener<Color> colorChangeListener;
+
+	private ChangeListener<Boolean> borderChangeListener;
+
 	public Dock() {
 		instance = this;
 	}
@@ -142,9 +157,19 @@ public class Dock extends AbstractController implements Listener {
 	}
 
 	@Override
-	protected void onConfigure() {
-		super.onConfigure();
+	protected void onCleanUp() {
+		shortcutContainer.widthProperty().removeListener(widthChangeListener);
+		shortcuts.widthProperty().removeListener(shortcutsWidthProperty);
+		cfg.sizeProperty().removeListener(sizeChangeListener);
+		cfg.colorProperty().removeListener(colorChangeListener);
+		cfg.topProperty().removeListener(borderChangeListener);
+		cfg.bottomProperty().removeListener(borderChangeListener);
+		cfg.leftProperty().removeListener(borderChangeListener);
+		cfg.rightProperty().removeListener(borderChangeListener);
+	}
 
+	@Override
+	protected void onConfigure() {
 		cfg = Configuration.getDefault();
 
 		networkResources.setTooltip(UIHelpers.createDockButtonToolTip(resources
@@ -167,8 +192,6 @@ public class Dock extends AbstractController implements Listener {
 		fileResources.selectedProperty().bindBidirectional(
 				cfg.showFilesProperty());
 
-		context.getBridge().addListener(this);
-
 		slideTransition = new TranslateTransition(Duration.seconds(0.125),
 				shortcuts);
 		slideTransition.setAutoReverse(false);
@@ -179,46 +202,52 @@ public class Dock extends AbstractController implements Listener {
 		slideClip.heightProperty().bind(shortcutContainer.heightProperty());
 		shortcutContainer.setClip(slideClip);
 
-		shortcutContainer.widthProperty().addListener(
-				new ChangeListener<Number>() {
+		widthChangeListener = new ChangeListener<Number>() {
 
-					@Override
-					public void changed(
-							ObservableValue<? extends Number> observable,
-							Number oldValue, Number newValue) {
-						recentre();
-					}
-				});
-
-		/*
-		 * Watch for the width of the inner launchers pane. This will get called
-		 * when launchers are added and removed.
-		 */
-		ChangeListener<? super Number> l = new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
 				recentre();
 			}
 		};
-		shortcuts.widthProperty().addListener(l);
+		shortcutContainer.widthProperty().addListener(widthChangeListener);
 
-		cfg.sizeProperty().addListener(new ChangeListener<Number>() {
+		/*
+		 * Watch for the width of the inner launchers pane. This will get called
+		 * when launchers are added and removed.
+		 */
+		shortcutsWidthProperty = new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable,
+					Number oldValue, Number newValue) {
+				recentre();
+			}
+		};
+		shortcuts.widthProperty().addListener(shortcutsWidthProperty);
+
+		// Button size changes
+		sizeChangeListener = new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
 				recentre();
 				sizeButtons();
 			}
-		});
-		cfg.colorProperty().addListener(new ChangeListener<Color>() {
+		};
+		cfg.sizeProperty().addListener(sizeChangeListener);
+
+		// Colour changes
+		colorChangeListener = new ChangeListener<Color>() {
 			@Override
 			public void changed(ObservableValue<? extends Color> observable,
 					Color oldValue, Color newValue) {
 				styleToolTips();
 			}
-		});
-		ChangeListener<Boolean> borderChangeListener = new ChangeListener<Boolean>() {
+		};
+		cfg.colorProperty().addListener(colorChangeListener);
+
+		// Border changes
+		borderChangeListener = new ChangeListener<Boolean>() {
 
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable,
@@ -286,7 +315,16 @@ public class Dock extends AbstractController implements Listener {
 				// this one too to initialize
 				updateScene.initUpdate(apps);
 
-				updatePopup = new Popup(parent, updateScene.getScene(), false);
+				updatePopup = new Popup(parent, updateScene.getScene(), false) {
+
+					@Override
+					public void hide() {
+						super.hide();
+						scene.getRoot().setDisable(false);
+					}
+					
+				};
+				((Update) updateScene).setPopup(updatePopup);
 			} catch (IOException ioe) {
 				throw new RuntimeException(ioe);
 			}
@@ -295,6 +333,7 @@ public class Dock extends AbstractController implements Listener {
 		hideIfShowing(optionsPopup);
 		hideIfShowing(resourceGroupPopup);
 		scene.getRoot().setDisable(true);
+		hideDock(false);
 		updatePopup.popup();
 
 	}
@@ -755,7 +794,12 @@ public class Dock extends AbstractController implements Listener {
 		if (idx != -1) {
 			subType = subType.substring(0, idx);
 		}
-		
+
+		// Hack for FTP subtypes that end in the display number
+		if(subType.startsWith("ftp")) {
+			subType = "ftp";
+		}
+
 		// Only use the first word
 		subType = subType.split("\\s+")[0];
 
@@ -763,7 +807,7 @@ public class Dock extends AbstractController implements Listener {
 		String tipText = resources.containsKey(tipTextKey) ? resources
 				.getString(tipTextKey) : MessageFormat.format(
 				resources.getString("subType.unknown"), group.getKey()
-						.getType().name());
+						.getType().name(), tipTextKey);
 
 		String imgPath = String.format("types/%s.png", subType);
 		URL resource = getClass().getResource(imgPath);
@@ -805,12 +849,6 @@ public class Dock extends AbstractController implements Listener {
 	}
 
 	void hideDock(boolean hide) {
-		try {
-			throw new Exception();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
 		stopDockHiderTrigger();
 
 		if (hide != hidden) {
@@ -898,6 +936,14 @@ public class Dock extends AbstractController implements Listener {
 			} else {
 				throw new UnsupportedOperationException();
 			}
+		}
+		
+		// The update or the sign in dialog may have been popped, so make sure it is position correctly
+		if(updatePopup != null && updatePopup.isShowing()) {
+			updatePopup.sizeToScene();
+		}
+		if(signInPopup != null && signInPopup.isShowing()) {
+			signInPopup.sizeToScene();
 		}
 
 		// If not fully hidden / revealed, play again
