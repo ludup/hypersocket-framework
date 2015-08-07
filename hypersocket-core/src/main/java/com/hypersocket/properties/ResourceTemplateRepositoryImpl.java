@@ -766,7 +766,9 @@ public abstract class ResourceTemplateRepositoryImpl extends
 
 		Map<String, String> properties = new HashMap<String, String>();
 		for (String name : getPropertyNames(resource)) {
-			properties.put(name, getValue(resource, name));
+			if(propertyTemplates.containsKey(name)) {
+				properties.put(name, getValue(resource, name));
+			}
 		}
 		return properties;
 	}
