@@ -20,17 +20,15 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeService;
+import com.hypersocket.attributes.user.UserAttributeType;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventPropertyCollector;
@@ -69,6 +67,10 @@ import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.upgrade.UpgradeService;
 import com.hypersocket.upgrade.UpgradeServiceListener;
+
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Element;
 
 @Service
 public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl implements
@@ -364,6 +366,26 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		return realmRepository.getRealmById(id);
 	}
 
+	public Map<String,String> filterSecretProperties(Principal principal, RealmProvider provider, Map<String,String> properties) {
+		
+		for(PropertyTemplate template : provider.getPropertyTemplates(principal)) {
+			if(properties.containsKey(template.getResourceKey()) && template.isEncrypted()) {
+				properties.put(template.getResourceKey(), "**********");
+			}
+		}
+		
+		if(principal!=null) {
+			for(UserAttribute attr : userAttributeService.getPersonalResources(principal)) {
+				if(properties.containsKey(attr.getVariableName())) {
+					if(attr.getEncrypted() || attr.getType()==UserAttributeType.PASSWORD) {
+						properties.put(attr.getVariableName(), "**********");
+					}
+				}
+			}
+		}
+		return properties;
+	}
+	
 	@Override
 	public Principal createUser(Realm realm, String username,
 			Map<String, String> properties, List<Principal> principals,
@@ -386,22 +408,22 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 			eventService.publishEvent(new UserCreatedEvent(this,
 					getCurrentSession(), realm, provider, principal,
-					principals, properties, password, forceChange));
+					principals, filterSecretProperties(principal, provider, properties), password, forceChange));
 
 			return principal;
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(new UserCreatedEvent(this, e,
-					getCurrentSession(), realm, provider, username, properties,
+					getCurrentSession(), realm, provider, username, filterSecretProperties(null, provider, properties),
 					principals));
 			throw e;
 		} catch (ResourceCreationException e) {
 			eventService.publishEvent(new UserCreatedEvent(this, e,
-					getCurrentSession(), realm, provider, username, properties,
+					getCurrentSession(), realm, provider, username, filterSecretProperties(null, provider, properties),
 					principals));
 			throw e;
 		} catch (Exception e) {
 			eventService.publishEvent(new UserCreatedEvent(this, e,
-					getCurrentSession(), realm, provider, username, properties,
+					getCurrentSession(), realm, provider, username, filterSecretProperties(null, provider, properties),
 					principals));
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
 					"error.unexpectedError", e.getMessage());
@@ -430,22 +452,22 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 			eventService.publishEvent(new UserUpdatedEvent(this,
 					getCurrentSession(), realm, provider, principal,
-					principals, properties));
+					principals, filterSecretProperties(principal, provider, properties)));
 
 			return principal;
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(new UserUpdatedEvent(this, e,
-					getCurrentSession(), realm, provider, username, properties,
+					getCurrentSession(), realm, provider, username, filterSecretProperties(user, provider, properties),
 					principals));
 			throw e;
 		} catch (ResourceChangeException e) {
 			eventService.publishEvent(new UserUpdatedEvent(this, e,
-					getCurrentSession(), realm, provider, username, properties,
+					getCurrentSession(), realm, provider, username, filterSecretProperties(user, provider, properties),
 					principals));
 			throw e;
 		} catch (Exception e) {
 			eventService.publishEvent(new UserUpdatedEvent(this, e,
-					getCurrentSession(), realm, provider, username, properties,
+					getCurrentSession(), realm, provider, username, filterSecretProperties(user, provider, properties),
 					principals));
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
 					"updateUser.unexpectedError", e.getMessage());
@@ -1377,23 +1399,25 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 				"realm.userEditableProperties");
 
 		Map<String, String> currentProperties = provider.getUserPropertyValues(principal);
+		Map<String, String> changedProperties = new HashMap<String,String>();
 		
 		Collection<PropertyTemplate> userAttributes = userAttributeService.getPropertyTemplates(principal);
 		
 		for (String allowed : editableProperties) {
 			if (properties.containsKey(allowed)) {
-				currentProperties.put(allowed, properties.get(allowed));
+				changedProperties.put(allowed, properties.get(allowed));
 			} 
 		}
 		
 		for(PropertyTemplate t : userAttributes) {
 			if (properties.containsKey(t.getResourceKey())) {
 				if(t.getDisplayMode()==null || !t.getDisplayMode().equals("admin")) {
-					currentProperties.put(t.getResourceKey(), properties.get(t.getResourceKey()));
+					changedProperties.put(t.getResourceKey(), properties.get(t.getResourceKey()));
 				}
 			}
 		}
 
+		currentProperties.putAll(changedProperties);
 		try {
 			assertAnyPermission(ProfilePermission.UPDATE,
 					RealmPermission.UPDATE, UserPermission.UPDATE);
@@ -1401,22 +1425,25 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 			List<Principal> assosiated = provider
 					.getAssociatedPrincipals(principal);
 
+			
 			principal = provider.updateUser(realm, principal,
 					principal.getPrincipalName(), currentProperties,
 					assosiated);
 
 			eventService.publishEvent(new ProfileUpdatedEvent(this,
 					getCurrentSession(), realm, provider, principal,
-					currentProperties));
+					filterSecretProperties(principal, provider, changedProperties)));
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(new ProfileUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, principal
-							.getPrincipalName(), currentProperties));
+							.getPrincipalName(), 
+							filterSecretProperties(principal, provider, changedProperties)));
 			throw e;
 		} catch (ResourceChangeException e) {
 			eventService.publishEvent(new ProfileUpdatedEvent(this, e,
 					getCurrentSession(), realm, provider, principal
-							.getPrincipalName(), currentProperties));
+							.getPrincipalName(), 
+							filterSecretProperties(principal, provider, changedProperties)));
 			throw e;
 		}
 
