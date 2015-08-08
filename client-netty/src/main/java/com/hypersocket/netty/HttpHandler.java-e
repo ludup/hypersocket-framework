@@ -37,22 +37,23 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		state.future = new DefaultChannelFuture(channel, true);
 		channel.setAttachment(state);
 		channel.write(request);
-		if (state.future.awaitUninterruptibly(timeout)) {
-			channel.setAttachment(null);
-			return state.response;
-		} else {
-			if (log.isInfoEnabled()) {
-				log.info("Timeout processing http request channelId="
-						+ channel.getId());
+		while(!state.future.awaitUninterruptibly(timeout)) {
+			if((System.currentTimeMillis() - state.lastActivity) > timeout) {
+				if (log.isInfoEnabled()) {
+					log.info("Timeout processing http request channelId="
+							+ channel.getId());
+				}
+				channel.setAttachment(null);
+				if(state.ex!=null) {
+					throw new IOException("Channel exception", state.ex);
+				}
+				throw new IOException("Timeout processing HTTP request "
+						+ request.getMethod() + " " + request.getUri());
 			}
-			channel.setAttachment(null);
-			if(state.ex!=null) {
-				throw new IOException("Channel exception", state.ex);
-			}
-			throw new IOException("Timeout processing HTTP request "
-					+ request.getMethod() + " " + request.getUri());
 		}
-
+		
+		channel.setAttachment(null);
+		return state.response;
 	}
 
 	@Override
@@ -69,6 +70,9 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 			}
 			return;
 		}
+		
+		state.lastActivity = System.currentTimeMillis();
+		
 		if (!state.readingChunks) {
 			state.response = new HttpHandlerResponse(
 					(HttpResponse) e.getMessage());
@@ -125,6 +129,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 				.getAttachment();
 
 		if (state != null) {
+			state.lastActivity = System.currentTimeMillis();
 			state.ex = e.getCause();
 			state.closed = true;
 		}
@@ -140,6 +145,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		HttpRequestState state = (HttpRequestState) ctx.getChannel()
 				.getAttachment();
 		if(state!=null) {
+			state.lastActivity = System.currentTimeMillis();
 			state.closed = true;
 			state.future.cancel();
 		}
@@ -155,6 +161,7 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		HttpRequestState state = (HttpRequestState) ctx.getChannel()
 				.getAttachment();
 		if(state!=null) {
+			state.lastActivity = System.currentTimeMillis();
 			state.closed = true;
 			state.future.cancel();
 		}
@@ -167,5 +174,6 @@ public class HttpHandler extends SimpleChannelUpstreamHandler {
 		HttpHandlerResponse response;
 		Throwable ex;
 		boolean closed;
+		long lastActivity = System.currentTimeMillis();
 	}
 }
