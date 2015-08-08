@@ -2,9 +2,7 @@ package com.hypersocket.events;
 
 import java.util.List;
 
-import com.hypersocket.auth.AuthenticatedService;
-
-public interface EventService extends AuthenticatedService {
+public interface EventService  {
 
 	void registerEvent(Class<? extends SystemEvent> eventClass,
 			String resourceBundle,

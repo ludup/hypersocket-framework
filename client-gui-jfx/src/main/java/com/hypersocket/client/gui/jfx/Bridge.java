@@ -42,6 +42,8 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	private boolean connected;
 	private List<Listener> listeners = new ArrayList<>();
 
+	static int failedConnectionAttempts = 0;
+	
 	public interface Listener {
 
 		void connecting(Connection connection);
@@ -162,7 +164,7 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 			clientService = (ClientService) registry.lookup("clientService");
 
 			clientService.registerGUI(this);
-
+			failedConnectionAttempts = 0;
 			connected = true;
 			for (Listener l : listeners) {
 				l.bridgeEstablished();
@@ -170,12 +172,21 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 			new RMIStatusThread().start();
 		} catch (Throwable e) {
+			if(failedConnectionAttempts > 30) {
+				log.info("Shutting down client. Cannot connect to service");
+				System.exit(0);
+			}
+			failedConnectionAttempts++;
 			if (log.isDebugEnabled()) {
 				log.debug("Failed to connect to local service on port " + port);
 			}
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e1) {
+				if(log.isInfoEnabled()) {
+					log.info("Interrupted during sleep waiting for service. Exiting");
+				}
+				System.exit(0);
 			}
 			new RMIConnectThread().start();
 		}

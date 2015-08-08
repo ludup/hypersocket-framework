@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 
-import com.hypersocket.i18n.I18NService;
+import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.secret.SecretKeyService;
@@ -25,14 +25,13 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 	
 	@Autowired
 	RealmService realmService; 
-	
-	@Autowired
-	I18NService i18nService; 
-	
+
 	@Autowired
 	@Qualifier("defaultEncryptor")
 	Encryptor encryptor;
 
+	@Autowired
+	ConfigurationService configurationService;
 
 	@Override
 	public String encryptString(String reference, String data, Realm realm) throws IOException {
@@ -51,7 +50,7 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 	@Override
 	public void onApplicationEvent(ContextStartedEvent arg0) {
 		
-		secretKeyService.setCurrentPrincipal(realmService.getSystemPrincipal(), i18nService.getDefaultLocale(), realmService.getDefaultRealm());
+		secretKeyService.setCurrentPrincipal(realmService.getSystemPrincipal(), configurationService.getDefaultLocale(), realmService.getDefaultRealm());
 		try {
 			String text = encryptString("Test Key", "Encryption service has been initialized", realmService.getDefaultRealm());
 			log.info(decryptString("Test Key", text, realmService.getDefaultRealm()) + " " + text);
