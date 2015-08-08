@@ -71,4 +71,6 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	String getValue(AbstractResource resource, String resourceKey, String defaultValue);
 
+	Map<String, PropertyTemplate> getRepositoryTemplates();
+
 }
