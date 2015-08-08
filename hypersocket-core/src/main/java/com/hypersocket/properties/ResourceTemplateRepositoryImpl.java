@@ -626,6 +626,15 @@ public abstract class ResourceTemplateRepositoryImpl extends
 			}
 			
 			if(template==null) {
+				if(resource==null) {
+					System.out.println();
+				}
+				if(resourceKey==null) {
+					System.out.println();
+				}
+				if(value==null) {
+					System.out.println();
+				}
 				configPropertyStore.setProperty(resource, resourceKey, value);
 				return;
 			}
@@ -752,6 +761,15 @@ public abstract class ResourceTemplateRepositoryImpl extends
 			results.addAll(r.getPropertyTemplates(resource));
 		}
 		return Collections.unmodifiableCollection(results);
+	}
+	
+	@Override
+	public Map<String,PropertyTemplate> getRepositoryTemplates() {
+		Map<String,PropertyTemplate> result = new HashMap<String,PropertyTemplate>();
+		for(PropertyTemplate t : activeTemplates) {
+			result.put(t.getResourceKey(), t);
+		}
+		return result;
 	}
 
 	@Override
