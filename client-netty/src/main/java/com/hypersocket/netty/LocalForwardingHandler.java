@@ -146,8 +146,8 @@ public class LocalForwardingHandler extends SimpleChannelUpstreamHandler
 
 	public void onError(Throwable t) {
 
-		if (log.isDebugEnabled()) {
-			log.debug("Received web socket error", t);
+		if (log.isErrorEnabled()) {
+			log.error("Received web socket error", t);
 		}
 
 	}

@@ -12,24 +12,19 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import com.hypersocket.auth.AuthenticatedService;
-
-public interface I18NService extends AuthenticatedService {
+public interface I18NService {
 
 	void registerBundle(String bundle);
 
 	Map<String,String> getResourceMap(Locale locale);
 
 	Locale getLocale(String locale);
-	
-	Locale getDefaultLocale();
-
-	boolean hasUserLocales();
 
 	List<Locale> getSupportedLocales();
 
 	Map<String, Map<String, Message>> getTranslatableMessages();
 
 	Set<String> getBundles();
+
 
 }

@@ -506,7 +506,9 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 		crit = crit.createCriteria("principals")
 				.add(Restrictions.in("id", ids));
 
-		return new HashSet<Role>(crit.list());
+		Set<Role> roles = new HashSet<Role>(crit.list());
+		roles.addAll(getAllUserRoles(principals.get(0).getRealm()));
+		return roles;
 	}
 
 	@Override

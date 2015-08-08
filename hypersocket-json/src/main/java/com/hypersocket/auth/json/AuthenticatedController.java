@@ -132,12 +132,12 @@ public class AuthenticatedController {
 
 	protected void setupSystemContext() {
 		setupAuthenticatedContext(getSystemPrincipal(),
-				i18nService.getDefaultLocale(), getSystemPrincipal().getRealm());
+				configurationService.getDefaultLocale(), getSystemPrincipal().getRealm());
 	}
 	
 	protected void setupSystemContext(Realm realm) throws AccessDeniedException {
 		setupAuthenticatedContext(sessionService.getSystemSession(),
-				i18nService.getDefaultLocale(), realm);
+				configurationService.getDefaultLocale(), realm);
 	}
 	
 	protected void setupAnonymousContext(String remoteAddress,
@@ -151,7 +151,7 @@ public class AuthenticatedController {
 		}
 		
 		Session session = authenticationService.logonAnonymous(remoteAddress, userAgent, parameters);
-		setupAuthenticatedContext(session, i18nService.getDefaultLocale());
+		setupAuthenticatedContext(session, configurationService.getDefaultLocale());
 		
 		if(!session.getCurrentRealm().equals(realm)) {
 			sessionService.switchRealm(session, realm);

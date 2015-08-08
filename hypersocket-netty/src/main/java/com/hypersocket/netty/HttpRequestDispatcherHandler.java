@@ -309,7 +309,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 							.addListener(
 									new CheckCloseStateListener(servletResponse));
 				} catch (Exception e) {
-					e.printStackTrace();
+					log.error("Unexpected exception writing content stream", e);
 				}
 			} else {
 				servletResponse

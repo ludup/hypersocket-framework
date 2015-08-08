@@ -97,6 +97,6 @@ public class HypersocketVersion {
 		if(idx==-1) {
 			throw new IllegalStateException("Product id must consist of string formatted like <brand>-<product>");
 		}
-		return id.substring(0, idx-1);
+		return id.substring(0, idx);
 	} 
 }

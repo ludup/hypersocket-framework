@@ -122,6 +122,4 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	boolean hasPropertyValueSet(Principal principal, String string);
 
-	
-
 }

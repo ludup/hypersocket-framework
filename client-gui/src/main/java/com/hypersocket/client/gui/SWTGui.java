@@ -49,6 +49,7 @@ import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.client.rmi.ConnectionService;
 import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.Resource;
+import com.hypersocket.client.rmi.ResourceLauncherThread;
 import com.hypersocket.client.rmi.ResourceRealm;
 import com.hypersocket.client.rmi.ResourceService;
 import com.hypersocket.extensions.ExtensionDefinition;
@@ -220,10 +221,10 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 										public void handleEvent(Event e) {
 											Resource res = (Resource) e.widget
 													.getData();
-											res.getResourceLauncher().launch();
+											new ResourceLauncherThread(res.getResourceLauncher());
 										}
 									});
-						}
+						} 
 					}
 				}
 			}

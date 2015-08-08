@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.config;
 
+import java.util.Locale;
 import java.util.Map;
 
 import com.hypersocket.auth.AuthenticatedService;
@@ -36,5 +37,9 @@ public interface ConfigurationService extends AuthenticatedService, PropertyTemp
 	Double getDoubleValue(Realm realm, String name);
 
 	void setDoubleValue(Realm realm, String name, Double value);
+
+	boolean hasUserLocales();
+
+	Locale getDefaultLocale();
 
 }

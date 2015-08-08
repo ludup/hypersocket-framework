@@ -302,7 +302,7 @@ public class ClientServiceImpl implements ClientService,
 			}
 		}
 
-		if (updater == null) {
+		if (updater == null || "true".equals(System.getProperty("hypersocket.development.noUpdates"))) {
 			log.info("No updates to do.");
 		} else {
 			log.info("Updating to " + highestVersionAvailable + " via "
