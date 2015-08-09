@@ -3,6 +3,7 @@ package com.hypersocket.client.service.updates;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import com.hypersocket.extensions.AbstractExtensionUpdater;
 import com.hypersocket.extensions.ExtensionDefinition;
 import com.hypersocket.extensions.ExtensionHelper;
 import com.hypersocket.extensions.ExtensionPlace;
+import com.hypersocket.utils.TrustModifier;
 
 public class ClientUpdater extends AbstractExtensionUpdater {
 	static Logger log = LoggerFactory.getLogger(ClientUpdater.class);
@@ -72,12 +74,13 @@ public class ClientUpdater extends AbstractExtensionUpdater {
 		throw new IOException(json.getError());
 	}
 
-//	@Override
-//	protected InputStream downloadFromUrl(URL url) throws IOException {
-//		String path = url.getPath()
-//				.substring(connection.getPath().length() + 5);
-//		return hypersocketClient.getTransport().getContent(path, 10000);
-//	}
+	@Override
+	protected InputStream downloadFromUrl(URL url) throws IOException {
+		URLConnection con = url.openConnection();
+		// TODO make this configurable or have a way to prompt user to verify certificate
+		TrustModifier.relaxHostChecking(con);
+		return con.getInputStream();
+	}
 
 	@Override
 	protected void onUpdateStart(long totalBytesExpected) {
