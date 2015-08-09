@@ -80,13 +80,16 @@ public abstract class AbstractExtensionUpdater {
 					URL url = new URL(def.getRemoteArchiveUrl());
 					
 					File archiveTmp = new File(appTmpFolder , 
-							FileUtils.lastPathElement(url.getFile()));
+							FileUtils.lastPathElement(FileUtils.checkEndsWithNoSlash(url.getFile())));
 					archiveTmp.getParentFile().mkdirs();
 
 					tmpArchives.put(def, archiveTmp);
 
 					OutputStream out = new FileOutputStream(archiveTmp);
-					log.info(String.format("Downloading %s", url));
+					
+					if(log.isInfoEnabled()) {
+						log.info(String.format("Downloading %s", url));
+					}
 					InputStream in = downloadFromUrl(url);
 
 					try {
