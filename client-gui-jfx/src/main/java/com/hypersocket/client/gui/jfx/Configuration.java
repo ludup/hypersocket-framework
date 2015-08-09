@@ -70,7 +70,7 @@ public class Configuration {
 
 	public Configuration(Preferences node) {
 		
-		color.setValue(getColor("color", node, Color.WHITE));
+		color.setValue(getColor("color", node, Color.web("#494B4C")));
 		color.addListener(new ColorPreferenceUpdateChangeListener(node, "color"));
 		
 		showSSO.set(node.getBoolean("showSSO", true));
@@ -88,7 +88,7 @@ public class Configuration {
 		autoHide.set(node.getBoolean("autoHide", true));
 		autoHide.addListener(new BooleanPreferenceUpdateChangeListener(node, "autoHide"));
 
-		alwaysOnTop.set(node.getBoolean("alwaysOnTop", false));
+		alwaysOnTop.set(node.getBoolean("alwaysOnTop", true));
 		alwaysOnTop.addListener(new BooleanPreferenceUpdateChangeListener(node, "alwaysOnTop"));
 		
 		avoidReserved.set(node.getBoolean("avoidReserved", true));
