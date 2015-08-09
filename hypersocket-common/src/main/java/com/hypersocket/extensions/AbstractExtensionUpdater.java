@@ -244,6 +244,9 @@ public abstract class AbstractExtensionUpdater {
 			ExtensionDefinition def) throws IOException {
 
 		InputStream in = new FileInputStream(archiveTmp);
+		if(!archiveFile.getParentFile().exists()) {
+			archiveFile.getParentFile().mkdirs();
+		}
 		if(!archiveFile.exists()) {
 			archiveFile.createNewFile();
 		}
