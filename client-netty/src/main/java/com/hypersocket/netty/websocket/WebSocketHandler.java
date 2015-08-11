@@ -117,8 +117,8 @@ public class WebSocketHandler extends SimpleChannelUpstreamHandler implements
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
 			throws Exception {
-		if (log.isDebugEnabled()) {
-			log.debug("Web socket error id="  + ctx.getChannel().getId(), e.getCause());
+		if (log.isErrorEnabled()) {
+			log.error("Web socket error id="  + ctx.getChannel().getId(), e.getCause());
 		}
 
 		final Throwable t = e.getCause();
