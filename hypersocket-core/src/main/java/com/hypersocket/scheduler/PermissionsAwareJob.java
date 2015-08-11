@@ -42,7 +42,7 @@ public abstract class PermissionsAwareJob implements Job {
 
 		Realm realm = realmService.getSystemRealm();
 		Principal principal = realmService.getSystemPrincipal();
-		Locale locale = i18nService.getDefaultLocale();
+		Locale locale = configurationService.getDefaultLocale();
 		
 		if (context.getTrigger().getJobDataMap() instanceof PermissionsAwareJobData) {
 			PermissionsAwareJobData data = (PermissionsAwareJobData) context

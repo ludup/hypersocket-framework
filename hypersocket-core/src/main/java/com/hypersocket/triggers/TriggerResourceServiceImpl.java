@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
@@ -80,6 +81,9 @@ public class TriggerResourceServiceImpl extends
 	@Autowired
 	TaskProviderService taskService;
 
+	@Autowired
+	ConfigurationService configurationService; 
+	
 	Map<String, TriggerConditionProvider> registeredConditions = new HashMap<String, TriggerConditionProvider>();
 
 	Map<String, ReplacementVariableProvider> replacementVariables = new HashMap<String, ReplacementVariableProvider>();
@@ -425,7 +429,7 @@ public class TriggerResourceServiceImpl extends
 					hasAuthenticatedContext() ? getCurrentPrincipal()
 							: realmService.getSystemPrincipal(),
 					hasAuthenticatedContext() ? getCurrentLocale()
-							: i18nService.getDefaultLocale(),
+							: configurationService.getDefaultLocale(),
 					"triggerExecutionJob");
 
 			data.put("event", event);

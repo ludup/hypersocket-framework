@@ -165,7 +165,7 @@ public class LogonController extends AuthenticatedController {
 										request.getParameterMap())
 								: authenticationService
 										.nextPostAuthenticationStep(state),
-						i18nService.hasUserLocales(), state.isNew(),
+						configurationService.hasUserLocales(), state.isNew(),
 						!state.hasNextStep(), success || state.isNew());
 			}
 		} finally {
@@ -281,13 +281,13 @@ public class LogonController extends AuthenticatedController {
 	private AuthenticationResult getSuccessfulResult(Session session,
 			String info, String homePage) {
 		return new AuthenticationSuccessResult(info,
-				i18nService.hasUserLocales(), session, homePage);
+				configurationService.hasUserLocales(), session, homePage);
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session,
 			String info) {
 		return new AuthenticationSuccessResult(info,
-				i18nService.hasUserLocales(), session, "");
+				configurationService.hasUserLocales(), session, "");
 	}
 
 }

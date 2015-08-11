@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.auth.json.UnauthorizedException;
-import com.hypersocket.i18n.I18NService;
+import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
@@ -41,8 +41,8 @@ public class SessionUtils {
 	SessionService sessionService;
 
 	@Autowired
-	I18NService i18nService;
-
+	ConfigurationService configurationService; 
+	
 	public Session getActiveSession(HttpServletRequest request) {
 		
 		Session session = null;
@@ -186,7 +186,7 @@ public class SessionUtils {
 					return new Locale(c.getValue());
 				}
 			}
-			return i18nService.getDefaultLocale();
+			return configurationService.getDefaultLocale();
 		} else {
 			return new Locale((String) request.getSession().getAttribute(
 					USER_LOCALE));

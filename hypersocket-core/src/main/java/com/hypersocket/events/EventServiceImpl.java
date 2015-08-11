@@ -27,7 +27,7 @@ import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.resource.AssignableResourceEvent;
 
 @Service
-public class EventServiceImpl extends AbstractAuthenticatedServiceImpl implements EventService {
+public class EventServiceImpl implements EventService {
 
 	static Logger log = LoggerFactory.getLogger(EventServiceImpl.class);
 
