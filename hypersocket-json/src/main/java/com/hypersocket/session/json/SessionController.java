@@ -107,11 +107,11 @@ public class SessionController extends ResourceController {
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session, String info, String homePage) {
-		return new AuthenticationSuccessResult(info, i18nService.hasUserLocales(), session, homePage);
+		return new AuthenticationSuccessResult(info, configurationService.hasUserLocales(), session, homePage);
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session) {
-		return new AuthenticationSuccessResult("", i18nService.hasUserLocales(), session, "");
+		return new AuthenticationSuccessResult("", configurationService.hasUserLocales(), session, "");
 	}
 
 	@RequestMapping(value = "session/flash/{type}/{msg}", method = RequestMethod.GET, produces = { "application/json" })

@@ -31,7 +31,8 @@ public class ClientUpdater extends AbstractExtensionUpdater {
 	private boolean guiAttached = true;
 	private HypersocketClient<Connection> hypersocketClient;
 	private ExtensionPlace extensionPlace;
-	private Connection connection;
+	@SuppressWarnings("unused")
+	private Connection connection; // Will probably be used again
 
 	public ClientUpdater(GUICallback gui, Connection connection,
 			HypersocketClient<Connection> hypersocketClient,

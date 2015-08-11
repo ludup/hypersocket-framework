@@ -9,6 +9,7 @@ package com.hypersocket.config;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.events.EventService;
+import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
@@ -43,6 +45,11 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	@Autowired
 	EventService eventPublisher;
 
+	@Autowired
+	I18NService i18nService; 
+	
+	Locale defaultLocale = null;
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -175,8 +182,12 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	}
 	
 	private void fireChangeEvent(String resourceKey, String oldValue, String newValue, boolean hidden) {
+		if(resourceKey.equals("current.locale")) {
+			defaultLocale = i18nService.getLocale(newValue);
+		}
 		eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true,
 				getCurrentSession(), repository.getPropertyTemplate(getCurrentRealm(), resourceKey), oldValue, newValue, hidden));
+		
 	}
 
 	private void fireChangeEvent(String resourceKey, Throwable t) {
@@ -200,4 +211,20 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	public void setValues(String resourceKey, String[] array) throws ResourceChangeException, AccessDeniedException {
 		setValue(resourceKey, ResourceUtils.implodeValues(array));
 	}
+	
+	@Override
+	public boolean hasUserLocales() {
+		return getBooleanValue("user.locales");
+	}
+	
+	@Override
+	public synchronized Locale getDefaultLocale() {
+		if(defaultLocale==null) {
+			String locale = getValue("current.locale");
+			return defaultLocale = i18nService.getLocale(locale);
+		} else {
+			return defaultLocale;
+		}
+	}
+	
 }

@@ -19,14 +19,10 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.certificates.CertificateResourceService;
-import com.hypersocket.config.ConfigurationChangedEvent;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.local.LocalRealmProvider;
@@ -35,7 +31,7 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.SessionService;
 
 @Service
-public class I18NServiceImpl extends AbstractAuthenticatedServiceImpl implements I18NService, ApplicationListener<ConfigurationChangedEvent> {
+public class I18NServiceImpl implements I18NService {
 
 	static Logger log = LoggerFactory.getLogger(I18NServiceImpl.class);
 	
@@ -43,11 +39,6 @@ public class I18NServiceImpl extends AbstractAuthenticatedServiceImpl implements
 	
 	public static final String RESOURCE_BUNDLE = "I18NService";
 	public static final String USER_INTERFACE_BUNDLE = "UserInterface";
-	
-	@Autowired
-	ConfigurationService configurationService;
-	
-	Locale defaultLocale;
 	
 	List<Locale> supportedLocales = new ArrayList<Locale>();
 	
@@ -105,16 +96,6 @@ public class I18NServiceImpl extends AbstractAuthenticatedServiceImpl implements
 	}
 
 	@Override
-	public synchronized Locale getDefaultLocale() {
-		if(defaultLocale==null) {
-			String locale = configurationService.getValue("current.locale");
-			return defaultLocale = getLocale(locale);
-		} else {
-			return defaultLocale;
-		}
-	}
-	
-	@Override
 	public Locale getLocale(String locale) {
 		for(Locale l : Locale.getAvailableLocales()) {
 			if(l.toString().equals(locale)) {
@@ -140,8 +121,6 @@ public class I18NServiceImpl extends AbstractAuthenticatedServiceImpl implements
 		}
 	}
 	
-
-	
 	@Override
 	public Map<String,Map<String,Message>> getTranslatableMessages() {
 		
@@ -158,22 +137,6 @@ public class I18NServiceImpl extends AbstractAuthenticatedServiceImpl implements
 		
 		return messages;
 	}
-	
-	@Override
-	public boolean hasUserLocales() {
-		return configurationService.getBooleanValue("user.locales");
-	}
-
-	@Override
-	public void onApplicationEvent(ConfigurationChangedEvent event) {
-		if(event.getResourceKey().equals(ConfigurationChangedEvent.EVENT_RESOURCE_KEY)) {
-			String resourceKey = (String)event.getAttribute(ConfigurationChangedEvent.ATTR_CONFIG_RESOURCE_KEY);
-			if(resourceKey.equals("current.locale")) {
-				defaultLocale = null;
-				defaultLocale = getDefaultLocale();
-			}
-		}
-	}
 
 	@Override
 	public List<Locale> getSupportedLocales() {
@@ -184,5 +147,5 @@ public class I18NServiceImpl extends AbstractAuthenticatedServiceImpl implements
 	public Set<String> getBundles() {
 		return bundles;
 	}
-	
+
 }
