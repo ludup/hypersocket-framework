@@ -749,14 +749,14 @@ public class Dock extends AbstractController implements Listener {
 			}
 
 			// SSO launchers are not grouped, all others are
-			if (type == Resource.Type.SSO) {
+//			if (type == Resource.Type.SSO) {
 				for (ResourceItem item : ig.getValue().getItems()) {
-					IconButton button = new IconButton(resources, item, context);
+					IconButton button = new IconButton(resources, item, context, ig.getValue());
 					shortcuts.getChildren().add(button);
 				}
-			} else {
-				shortcuts.getChildren().add(createGroupButton(ig.getValue()));
-			}
+//			} else {
+//				shortcuts.getChildren().add(createGroupButton(ig.getValue()));
+//			}
 
 			// lastType = type;
 		}
@@ -783,31 +783,9 @@ public class Dock extends AbstractController implements Listener {
 			}
 		});
 
-		// Determine image path from 'logo'
-		String subType = group.getKey().getSubType();
-		if (subType == null) {
-			subType = group.getKey().getType().name();
-		}
+		String subType = getSubType(group);
 
-		// Hack for VNC subtypes that end in the display number
-		int idx = subType.lastIndexOf(':');
-		if (idx != -1) {
-			subType = subType.substring(0, idx);
-		}
-
-		// Hack for FTP subtypes that end in the display number
-		if(subType.startsWith("ftp")) {
-			subType = "ftp";
-		}
-
-		// Only use the first word
-		subType = subType.split("\\s+")[0];
-
-		String tipTextKey = String.format("subType.%s", subType);
-		String tipText = resources.containsKey(tipTextKey) ? resources
-				.getString(tipTextKey) : MessageFormat.format(
-				resources.getString("subType.unknown"), group.getKey()
-						.getType().name(), tipTextKey);
+		String tipText = getTipText(group, subType);
 
 		String imgPath = String.format("types/%s.png", subType);
 		URL resource = getClass().getResource(imgPath);
@@ -830,6 +808,38 @@ public class Dock extends AbstractController implements Listener {
 		groupButton.setTooltip(UIHelpers.createDockButtonToolTip(tipText));
 		UIHelpers.sizeToImage(groupButton);
 		return groupButton;
+	}
+
+	private String getTipText(final ResourceGroupList group, String subType) {
+		String tipTextKey = String.format("subType.%s", subType);
+		String tipText = resources.containsKey(tipTextKey) ? resources
+				.getString(tipTextKey) : MessageFormat.format(
+				resources.getString("subType.unknown"), group.getKey()
+						.getType().name(), tipTextKey);
+		return tipText;
+	}
+
+	static String getSubType(final ResourceGroupList group) {
+		// Determine image path from 'logo'
+		String subType = group.getKey().getSubType();
+		if (subType == null) {
+			subType = group.getKey().getType().name();
+		}
+
+		// Hack for VNC subtypes that end in the display number
+		int idx = subType.lastIndexOf(':');
+		if (idx != -1) {
+			subType = subType.substring(0, idx);
+		}
+
+		// Hack for FTP subtypes that end in the display number
+		if(subType.startsWith("ftp")) {
+			subType = "ftp";
+		}
+
+		// Only use the first word
+		subType = subType.split("\\s+")[0];
+		return subType;
 	}
 
 	private void maybeHideDock() {
