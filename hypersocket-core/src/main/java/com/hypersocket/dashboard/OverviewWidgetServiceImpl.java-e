@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -128,11 +129,13 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 				List<Link> results = new ArrayList<Link>();
 
-				// Get global links
-				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
+				String content = IOUtils.toString(HttpUtils
 						.doHttpGet("http://updates.hypersocket.com/messages/"
 								+ HypersocketVersion.getBrandId()
-								+ "/links.json", true), Link[].class)));
+								+ "/links.json", true));
+				
+				// Get global links
+				results.addAll(Arrays.asList(mapper.readValue(content, Link[].class)));
 
 				// Get product links
 				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
@@ -143,6 +146,7 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 				cachedLinks = results;
 				lastLinkUpdate = System.currentTimeMillis();
 			} catch (Throwable e) {
+				e.printStackTrace();
 				throw new ResourceException(RESOURCE_BUNDLE,
 						"error.readingArticleList", e.getMessage());
 			}
