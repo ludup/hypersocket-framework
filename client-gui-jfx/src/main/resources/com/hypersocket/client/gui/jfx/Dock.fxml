@@ -44,6 +44,7 @@
                   <Button fx:id="status" mnemonicParsing="false" onAction="#evtStatus" styleClass="iconButton" text="%status" />
                   <Button fx:id="options" mnemonicParsing="false" onAction="#evtOpenOptionsWindow" styleClass="iconButton" text="%options" textOverrun="CLIP" />
                   <Button fx:id="signIn" mnemonicParsing="false" onAction="#evtOpenSignInWindow" styleClass="iconButton" text="%signIn" textOverrun="CLIP" />
+                  <Button fx:id="exit" mnemonicParsing="false" onAction="#evtExit" styleClass="iconButton" text="%exit" textOverrun="CLIP" />
                </children>
             </HBox>
          </right>
