@@ -119,6 +119,8 @@ public class Dock extends AbstractController implements Listener {
 	private StackPane dockStack;
 	@FXML
 	private Label pull;
+	@FXML
+	private Button exit;
 
 	private TranslateTransition slideTransition;
 	private Rectangle slideClip;
@@ -444,6 +446,12 @@ public class Dock extends AbstractController implements Listener {
 			evt.consume();
 		} else if (contextMenu != null)
 			contextMenu.hide();
+	}
+	
+	@FXML
+	private void evtExit(ActionEvent evt) throws Exception {
+		context.confirmExit();
+		maybeHideDock();
 	}
 
 	@FXML
