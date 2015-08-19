@@ -32,6 +32,7 @@ import com.hypersocket.client.rmi.ResourceService;
 import com.hypersocket.client.service.ClientServiceImpl;
 import com.hypersocket.client.service.ConfigurationServiceImpl;
 import com.hypersocket.client.service.ConnectionServiceImpl;
+import com.hypersocket.client.service.GUIRegistry;
 import com.hypersocket.client.service.ResourceServiceImpl;
 
 public class Main {
@@ -183,7 +184,7 @@ public class Main {
 		buildDefaultConnections();
 		
 		clientService = new ClientServiceImpl(connectionService,
-				configurationService, resourceService, restartCallback);
+				configurationService, resourceService, restartCallback, new GUIRegistry());
 
 		return true;
 	

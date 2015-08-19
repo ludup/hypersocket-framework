@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import com.hypersocket.client.ServiceResource;
 import com.hypersocket.client.gui.jfx.Bridge.Listener;
 import com.hypersocket.client.gui.jfx.Popup.PositionType;
+import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.client.rmi.ConnectionStatus;
 import com.hypersocket.client.rmi.GUICallback;
 import com.hypersocket.client.rmi.Resource;
@@ -295,11 +296,6 @@ public class Dock extends AbstractController implements Listener {
 				|| (resourceGroupPopup != null && resourceGroupPopup
 						.isShowing())
 				|| (updatePopup != null && updatePopup.isShowing());
-	}
-
-	@Override
-	public void bridgeEstablished() {
-		super.bridgeEstablished();
 	}
 
 	@Override
@@ -609,14 +605,38 @@ public class Dock extends AbstractController implements Listener {
 		optionsPopup.popup();
 	}
 
-	protected void onStateChanged() {
+	@Override
+	public void finishedConnecting(Connection connection, Exception e) {
+		log.info(String.format("New connection finished connected (%s)", connection.toString()));
+		rebuildAllLaunchers();
+	}
+
+	@Override
+	public void bridgeEstablished() {
+		log.info(String.format("Bridge established, rebuilding all launchers"));
+		rebuildAllLaunchers();
+	}
+
+	@Override
+	public void bridgeLost() {
+		log.info(String.format("Bridge lost, rebuilding all launchers"));
+		rebuildAllLaunchers();
+	}
+
+	@Override
+	public void disconnected(Connection connection, Exception e) {
+		log.info(String.format("Connection disconnected (%s)", connection.toString()));
+		rebuildAllLaunchers();
+	}
+
+	private void rebuildAllLaunchers() {
 		log.info("State changed for dock, rebuilding");
 		setAvailable();
 		rebuildResources();
-		rebuildIcons();
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
+				rebuildIcons();
 				recentre();
 			}
 		});

@@ -66,8 +66,10 @@ public class ConnectionServiceImpl implements ConnectionService {
 		crit.add(Restrictions.eq("id", con.getId()));
 		
 		Connection toDelete = (Connection) crit.uniqueResult();
-		session.delete(toDelete);
-		session.flush();
+		if(toDelete != null) {
+			session.delete(toDelete);
+			session.flush();
+		}
 		trans.commit();
 		
 	}

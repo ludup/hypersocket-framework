@@ -21,6 +21,7 @@ import com.hypersocket.client.rmi.ResourceRealm;
 import com.hypersocket.client.rmi.ResourceService;
 import com.hypersocket.client.rmi.Resource.Type;
 import com.hypersocket.client.service.AbstractServicePlugin;
+import com.hypersocket.client.service.GUIRegistry;
 
 public class BrowserResourcesPlugin extends AbstractServicePlugin {
 
@@ -35,7 +36,7 @@ public class BrowserResourcesPlugin extends AbstractServicePlugin {
 
 	@Override
 	public boolean start(HypersocketClient<?> serviceClient,
-			ResourceService resourceService, GUICallback gui) {
+			ResourceService resourceService, GUIRegistry guiRegistry) {
 
 		this.serviceClient = serviceClient;
 		this.resourceService = resourceService;

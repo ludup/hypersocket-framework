@@ -27,7 +27,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressIndicator;
@@ -56,7 +55,7 @@ public class SignIn extends AbstractController implements Listener {
 	@FXML
 	private BorderPane promptUI;
 	@FXML
-	private BorderPane optionsUI;
+	private VBox optionsUI;
 	@FXML
 	private BorderPane messageContainer;
 	@FXML
@@ -66,11 +65,19 @@ public class SignIn extends AbstractController implements Listener {
 	@FXML
 	private CheckBox saveCredentials;
 	@FXML
-	private Hyperlink disconnect;
+	private CheckBox stayConnected;
 	@FXML
-	private Hyperlink delete;
+	private CheckBox connectOnStartup;
+	// @FXML
+	// private Hyperlink disconnect;
 	@FXML
 	private Button login;
+	@FXML
+	private Button connect;
+	@FXML
+	private Button disconnect;
+	@FXML
+	private Button delete;
 	@FXML
 	private ProgressIndicator spinner;
 	@FXML
@@ -131,7 +138,7 @@ public class SignIn extends AbstractController implements Listener {
 		}
 		if (deleteOnDisconnect) {
 			try {
-				context.getBridge().getConnectionService().delete(connection);
+				doDelete(connection);
 			} catch (RemoteException e1) {
 				log.error("Failed to delete.", e);
 			}
@@ -349,8 +356,8 @@ public class SignIn extends AbstractController implements Listener {
 		}
 
 		// Start a new one
-		messageHider = new Timeline(new KeyFrame(Duration.millis(Dock.MESSAGE_FADE_TIME),
-				ae -> hideMessage()));
+		messageHider = new Timeline(new KeyFrame(
+				Duration.millis(Dock.MESSAGE_FADE_TIME), ae -> hideMessage()));
 		messageHider.play();
 
 	}
@@ -538,6 +545,7 @@ public class SignIn extends AbstractController implements Listener {
 				if (!confirmDelete(sel)) {
 					saveConnection.setSelected(true);
 				}
+				setAvailable();
 			}
 		}
 	}
@@ -546,6 +554,11 @@ public class SignIn extends AbstractController implements Listener {
 		foregroundConnection = context.getBridge().getClientService().save(sel);
 		log.info("Connection saved");
 		setAvailable();
+	}
+
+	@FXML
+	private void evtConnect(ActionEvent evt) throws Exception {
+		urlSelected();
 	}
 
 	@FXML
@@ -570,7 +583,7 @@ public class SignIn extends AbstractController implements Listener {
 					context.getBridge().disconnect(sel);
 					deleteOnDisconnect = true;
 				} else {
-					context.getBridge().getConnectionService().delete(sel);
+					doDelete(sel);
 				}
 				log.info("Connection deleted");
 			} catch (Exception e) {
@@ -582,6 +595,19 @@ public class SignIn extends AbstractController implements Listener {
 		} else {
 			return false;
 		}
+	}
+
+	private void doDelete(Connection sel) throws RemoteException {
+		context.getBridge().getConnectionService().delete(sel);
+		String uri = getUri(sel);
+		Platform.runLater(() -> {
+			adjusting = true;
+			try {
+				serverUrls.itemsProperty().get().remove(uri);
+			} finally {
+				adjusting = false;
+			}
+		});
 	}
 
 	@FXML
@@ -611,6 +637,25 @@ public class SignIn extends AbstractController implements Listener {
 		}
 	}
 
+	@FXML
+	private void evtStayConnected(ActionEvent evt) throws Exception {
+		Connection c = getSelectedConnection();
+		if (c != null) {
+			c.setStayConnected(stayConnected.selectedProperty().get());
+			saveConnection(c);
+		}
+
+	}
+
+	@FXML
+	private void evtConnectOnStartup(ActionEvent evt) throws Exception {
+		Connection c = getSelectedConnection();
+		if (c != null) {
+			c.setConnectAtStartup(connectOnStartup.selectedProperty().get());
+			saveConnection(c);
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	@FXML
 	private void evtLogin(ActionEvent evt) {
@@ -627,9 +672,11 @@ public class SignIn extends AbstractController implements Listener {
 							((ComboBox<String>) en.getValue()).getValue());
 				}
 			}
-			log.info("Sending prompt values ..");
-			for (Map.Entry<String, String> en : promptValues.entrySet()) {
-				log.info(en.getKey() + " = " + en.getValue());
+			if (log.isDebugEnabled()) {
+				log.debug("Sending prompt values ..");
+				for (Map.Entry<String, String> en : promptValues.entrySet()) {
+					log.debug(en.getKey() + " = " + en.getValue());
+				}
 			}
 			credentialsUI.getChildren().clear();
 			promptsAvailable = false;
@@ -655,6 +702,10 @@ public class SignIn extends AbstractController implements Listener {
 				&& connection.getId() != null);
 		saveCredentials.setSelected(connection != null
 				&& !StringUtils.isBlank(connection.getUsername()));
+		connectOnStartup.setSelected(connection != null
+				&& connection.isConnectAtStartup());
+		stayConnected.setSelected(connection != null
+				&& connection.isStayConnected());
 	}
 
 	private void setUserDetails(String uri, Connection connection) {
@@ -800,6 +851,28 @@ public class SignIn extends AbstractController implements Listener {
 				}
 			}
 
+			/*
+			 * This is DUMB, but i can't see another way. It stops invisible
+			 * components being considered for layout (and so taking up space.
+			 * You'd think this might be part of JavaFX, but no ...
+			 * 
+			 * http://stackoverflow.com/questions/12200195/javafx-hbox-hide-item
+			 */
+			disconnect.managedProperty().bind(disconnect.visibleProperty());
+			connect.managedProperty().bind(connect.visibleProperty());
+			delete.managedProperty().bind(delete.visibleProperty());
+
+			optionsUI.managedProperty().bind(optionsUI.visibleProperty());
+			promptUI.managedProperty().bind(promptUI.visibleProperty());
+			progressUI.managedProperty().bind(progressUI.visibleProperty());
+			saveConnection.managedProperty().bind(
+					saveConnection.visibleProperty());
+			stayConnected.managedProperty().bind(
+					stayConnected.visibleProperty());
+			connectOnStartup.managedProperty().bind(
+					connectOnStartup.visibleProperty());
+
+			// Select initial URI
 			log.info("Selecting " + selectedUri);
 			serverUrls.itemsProperty().setValue(serverUrlsList);
 			serverUrls.setValue(selectedUri);
@@ -839,9 +912,13 @@ public class SignIn extends AbstractController implements Listener {
 					serverUrls.editorProperty().get().setDisable(busy);
 					serverUrls.setDisable(busy);
 					saveConnection.setVisible(selectionConnected);
+					stayConnected.setVisible(selectionConnected);
+					connectOnStartup.setVisible(selectionConnected);
 					delete.setVisible(sel != null && !selectionConnected
 							&& sel.getId() != null);
-					delete.setDisable(disconnecting);
+					delete.setDisable(disconnecting || busy);
+					connect.setVisible(!selectionConnected && !promptsAvailable);
+					connect.setDisable(busy);
 					disconnect.setVisible(selectionConnected
 							&& (sel.getId() == null || !saveCredentials
 									.selectedProperty().get()));
@@ -850,6 +927,12 @@ public class SignIn extends AbstractController implements Listener {
 					login.setDisable(selectionConnected);
 					saveCredentials.setDisable(selectionConnected);
 					saveConnection.setDisable(!selectionConnected);
+					stayConnected.setDisable(!saveCredentials
+							.selectedProperty().get()
+							|| !saveCredentials.selectedProperty().get());
+					connectOnStartup.setDisable(!saveCredentials
+							.selectedProperty().get()
+							|| !saveCredentials.selectedProperty().get());
 
 				} else {
 					serverUrls.editorProperty().get().setDisable(false);
@@ -857,11 +940,17 @@ public class SignIn extends AbstractController implements Listener {
 					progressUI.setVisible(false);
 					promptUI.setVisible(false);
 					optionsUI.setVisible(false);
+					stayConnected.setVisible(false);
+					connectOnStartup.setVisible(false);
 					delete.setVisible(false);
 					disconnect.setVisible(false);
 					serverUrls.setDisable(true);
 					login.setDisable(true);
 					saveCredentials.setDisable(false);
+					stayConnected.setDisable(false);
+					connectOnStartup.setDisable(false);
+					connect.setVisible(true);
+					connect.setDisable(false);
 				}
 				rebuildContainer();
 			}
