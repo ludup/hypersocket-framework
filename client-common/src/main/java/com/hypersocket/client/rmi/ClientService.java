@@ -34,5 +34,7 @@ public interface ClientService extends Remote {
 	void scheduleConnect(Connection c) throws RemoteException;
 
 	byte[] getBlob(Connection connection, String path, long timeout)
-			throws IOException;
+			throws IOException, RemoteException;
+
+	void maybeUpdate(Connection c) throws RemoteException;
 }

@@ -27,38 +27,52 @@
             <Insets bottom="8.0" />
          </padding>
       </Label>
-      <ComboBox fx:id="serverUrls" editable="true" onAction="#evtServerUrlSelected" prefHeight="25.0" prefWidth="270.0" promptText="%urlPrompt" styleClass="input">
-         <tooltip>
-            <Tooltip text="%serverURL.tooltip" wrapText="true" />
-         </tooltip></ComboBox>
-      <VBox fx:id="container">
+      <HBox spacing="4.0" VBox.vgrow="ALWAYS">
          <children>
-            <BorderPane fx:id="optionsUI">
-               <right>
-                  <CheckBox fx:id="saveConnection" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#evtSaveConnection" styleClass="info" text="%saveConnection" BorderPane.alignment="CENTER">
+            <ComboBox fx:id="serverUrls" editable="true" maxWidth="1.7976931348623157E308" onAction="#evtServerUrlSelected" promptText="%urlPrompt" styleClass="input" HBox.hgrow="SOMETIMES">
+               <tooltip>
+                  <Tooltip text="%serverURL.tooltip" wrapText="true" />
+               </tooltip>
+            </ComboBox>
+            <Button fx:id="connect" mnemonicParsing="false" onAction="#evtConnect" text="%connect.icon" textOverrun="CLIP" HBox.hgrow="NEVER">
+               <tooltip>
+                  <Tooltip text="%connect.tooltip" />
+               </tooltip>
+            </Button>
+            <Button fx:id="disconnect" mnemonicParsing="false" onAction="#evtDisconnect" text="%disconnect.icon" HBox.hgrow="NEVER">
+               <tooltip>
+                  <Tooltip text="%disconnect.tooltip" />
+               </tooltip>
+            </Button>
+            <Button fx:id="delete" mnemonicParsing="false" onAction="#evtDelete" text="%delete.icon" textOverrun="CLIP" HBox.hgrow="NEVER">
+               <tooltip>
+                  <Tooltip text="%delete.tooltip" />
+               </tooltip>
+            </Button>
+         </children>
+      </HBox>
+      <VBox fx:id="container" maxHeight="999.0" VBox.vgrow="ALWAYS">
+         <children>
+            <VBox fx:id="optionsUI" fillWidth="false" scaleShape="false">
+               <children>
+                  <CheckBox fx:id="saveConnection" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#evtSaveConnection" styleClass="info" text="%saveConnection" VBox.vgrow="NEVER">
                      <padding>
                         <Insets top="8.0" />
                      </padding>
                   </CheckBox>
-               </right>
-               <VBox.margin>
-                  <Insets top="8.0" />
-               </VBox.margin>
-               <left>
-                  <HBox BorderPane.alignment="CENTER">
-                     <children>
-                        <Hyperlink fx:id="delete" onAction="#evtDelete" styleClass="small" text="%delete" visible="false" />
-                        <Hyperlink fx:id="disconnect" onAction="#evtDisconnect" styleClass="small" text="%disconnect" visible="false" />
-                     </children>
-                  </HBox>
-               </left>
-               <styleClass>
-                  <String fx:value="background" />
-                  <String fx:value="optionsUI" />
-               </styleClass>
-            </BorderPane>
-            <BorderPane fx:id="credentialsUI" />
-            <HBox fx:id="progressUI" alignment="CENTER" fillHeight="false" styleClass="progressUI">
+                  <CheckBox fx:id="stayConnected" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#evtStayConnected" styleClass="info" text="%stayConnected" VBox.vgrow="NEVER">
+                     <padding>
+                        <Insets top="8.0" />
+                     </padding>
+                  </CheckBox>
+                  <CheckBox fx:id="connectOnStartup" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#evtConnectOnStartup" styleClass="info" text="%connectOnStartup" VBox.vgrow="NEVER">
+                     <padding>
+                        <Insets top="8.0" />
+                     </padding>
+                  </CheckBox>
+               </children>
+            </VBox>
+            <HBox fx:id="progressUI" alignment="CENTER" maxHeight="999.0" styleClass="progressUI" VBox.vgrow="ALWAYS">
                <children>
                   <ProgressIndicator fx:id="spinner" HBox.hgrow="NEVER" />
                </children>
@@ -66,7 +80,7 @@
                   <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                </padding>
             </HBox>
-            <BorderPane fx:id="promptUI">
+            <BorderPane fx:id="promptUI" VBox.vgrow="NEVER">
                <center>
                   <CheckBox fx:id="saveCredentials" mnemonicParsing="false" onAction="#evtSaveCredentials" styleClass="info" text="%saveCredentials" BorderPane.alignment="CENTER_RIGHT" />
                </center>
@@ -81,7 +95,11 @@
                   <String fx:value="promptUI" />
                </styleClass>
             </BorderPane>
+            <BorderPane fx:id="credentialsUI" VBox.vgrow="SOMETIMES" />
          </children>
+         <padding>
+            <Insets top="8.0" />
+         </padding>
       </VBox>
    </children>
    <padding>

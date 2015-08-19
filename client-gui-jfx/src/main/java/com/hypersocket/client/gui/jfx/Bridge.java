@@ -172,7 +172,8 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 			new RMIStatusThread().start();
 		} catch (Throwable e) {
-			if(failedConnectionAttempts > 30) {
+			int maxAttempts = Integer.parseInt(System.getProperty("hypersocket.maxAttempts", "0"));
+			if(maxAttempts > 0 && failedConnectionAttempts > maxAttempts) {
 				log.info("Shutting down client. Cannot connect to service");
 				System.exit(0);
 			}
@@ -335,6 +336,7 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 	@Override
 	public void ready(Connection connection) throws RemoteException {
+		log.info("Connection " + connection + " is now ready");
 		for (Listener l : new ArrayList<Listener>(listeners)) {
 			l.finishedConnecting(connection, null);
 		}

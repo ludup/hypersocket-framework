@@ -172,3 +172,8 @@
 	-fx-text-fill: #777777;
     -fx-font-family: FontAwesome;
 }
+
+/* Signin */
+.accordion .titled-pane > *.content {
+   -fx-background-color: null;
+}

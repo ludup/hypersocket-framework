@@ -42,8 +42,6 @@ public class ClientServiceImpl implements ClientService,
 
 	static Logger log = LoggerFactory.getLogger(ClientServiceImpl.class);
 
-	GUICallback gui;
-
 	ConnectionService connectionService;
 	ConfigurationService configurationService;
 	ResourceService resourceService;
@@ -59,10 +57,12 @@ public class ClientServiceImpl implements ClientService,
 	Semaphore startupLock = new Semaphore(1);
 	TimerTask updateTask;
 	Runnable restartCallback;
+	GUIRegistry guiRegistry;
 
 	public ClientServiceImpl(ConnectionService connectionService,
 			ConfigurationService configurationService,
-			ResourceService resourceService, Runnable restartCallback) {
+			ResourceService resourceService, Runnable restartCallback,
+			GUIRegistry guiRegistry) {
 
 		try {
 			startupLock.acquire();
@@ -70,6 +70,7 @@ public class ClientServiceImpl implements ClientService,
 			throw new RuntimeException(e);
 		}
 
+		this.guiRegistry = guiRegistry;
 		this.restartCallback = restartCallback;
 		this.connectionService = connectionService;
 		this.configurationService = configurationService;
@@ -96,11 +97,7 @@ public class ClientServiceImpl implements ClientService,
 		}
 
 		try {
-			this.gui = gui;
-			gui.registered();
-			if (log.isInfoEnabled()) {
-				log.info("Registered GUI");
-			}
+			guiRegistry.registerGUI(gui);
 		} finally {
 			startupLock.release();
 		}
@@ -108,30 +105,12 @@ public class ClientServiceImpl implements ClientService,
 
 	@Override
 	public void unregisterGUI(GUICallback gui) throws RemoteException {
-		this.gui = null;
-		gui.unregistered();
-		if (log.isInfoEnabled()) {
-			log.info("Unregistered GUI");
-		}
-	}
-
-	public GUICallback getGUI() {
-		return gui;
+		guiRegistry.unregisterGUI(gui);
 	}
 
 	@Override
 	public void ping() {
 
-	}
-
-	protected void notifyGui(String msg, int type) {
-		try {
-			if (gui != null) {
-				gui.notify(msg, type);
-			}
-		} catch (Throwable e) {
-			log.error("Failed to notify gui", e);
-		}
 	}
 
 	public boolean startService() {
@@ -160,7 +139,7 @@ public class ClientServiceImpl implements ClientService,
 					+ c.getHostname());
 		}
 
-		timer.schedule(new ConnectionJob(createJobData(c)), 500);
+		timer.schedule(createJob(c), 500);
 
 	}
 
@@ -179,31 +158,15 @@ public class ClientServiceImpl implements ClientService,
 		if (connection == null) {
 			log.warn("Ignoring a scheduled connection that no longer exists, probably deleted.");
 		} else {
-			timer.schedule(new ConnectionJob(createJobData(connection)),
+			timer.schedule(createJob(c),
 					reconnectSeconds * 1000);
 		}
 
 	}
 
-	Map<String, Object> createJobData(Connection c) throws RemoteException {
-
-		Locale locale = new Locale(configurationService.getValue("ui.locale",
-				"en"));
-		Integer reconnectSeconds = new Integer(configurationService.getValue(
-				"client.reconnectInSeconds", "30"));
-
-		Map<String, Object> data = new HashMap<String, Object>();
-		data.put("connection", c);
-		data.put("service", this);
-		data.put("bossExecutor", bossExecutor);
-		data.put("workerExecutor", workerExecutor);
-		data.put("resourceService", resourceService);
-		data.put("gui", gui);
-		data.put("locale", locale);
-		data.put("reconnectSeconds", reconnectSeconds);
-		data.put("url", getUrl(c));
-
-		return data;
+	protected ConnectionJob createJob(Connection c) throws RemoteException {
+		return new ConnectionJob(getUrl(c), new Locale(configurationService.getValue("ui.locale",
+				"en")),this, bossExecutor, workerExecutor, resourceService, c, guiRegistry);
 	}
 
 	protected String getUrl(Connection c) {
@@ -211,7 +174,7 @@ public class ClientServiceImpl implements ClientService,
 				+ (c.getPort() != 443 ? ":" + c.getPort() : "") + c.getPath();
 	}
 
-	protected void maybeUpdate(final Connection c) {
+	public void maybeUpdate(final Connection c) {
 		if (updateTask != null)
 			updateTask.cancel();
 		updateTask = new TimerTask() {
@@ -261,10 +224,7 @@ public class ClientServiceImpl implements ClientService,
 		 */
 		activeClients.remove(c);
 		connectingClients.remove(c);
-
-		if (gui != null) {
-			gui.disconnected(c, null);
-		}
+		guiRegistry.disconnected(c, null);
 	}
 
 	@Override
@@ -312,7 +272,7 @@ public class ClientServiceImpl implements ClientService,
 				/*
 				 * For the client service, we use the local 'extension place'
 				 */
-				final ClientUpdater serviceJob = new ClientUpdater(gui, c,
+				final ClientUpdater serviceJob = new ClientUpdater(guiRegistry, c,
 						updater.getValue(), ExtensionPlace.getDefault());
 
 				/*
@@ -320,15 +280,15 @@ public class ClientServiceImpl implements ClientService,
 				 * itself is best placed to know what extensions it has and
 				 * where they stored
 				 */
-				final ClientUpdater guiJob = new ClientUpdater(gui, c,
-						updater.getValue(), gui.getExtensionPlace());
+				final ClientUpdater guiJob = new ClientUpdater(guiRegistry, c,
+						updater.getValue(), guiRegistry.getGUI().getExtensionPlace());
 
 				timer.schedule(new TimerTask() {
 					@Override
 					public void run() {
 
 						try {
-							gui.onUpdateInit(2);
+							guiRegistry.onUpdateInit(2);
 							
 							int updates = 0;
 
@@ -341,12 +301,12 @@ public class ClientServiceImpl implements ClientService,
 							}
 
 							if(updates > 0) {
-								gui.onUpdateDone(null);
+								guiRegistry.onUpdateDone(null);
 								log.info("Update complete, restarting.");
 								restartCallback.run();
 							}
 							else {
-								gui.onUpdateDone("Nothing to update.");
+								guiRegistry.onUpdateDone("Nothing to update.");
 							}
 
 						} catch (IOException e) {
@@ -377,8 +337,7 @@ public class ClientServiceImpl implements ClientService,
 		activeClients.put(client.getAttachment(), client);
 		connectingClients.remove(client.getAttachment());
 		startPlugins(client);
-
-		notifyGui(client.getHost() + " connected", GUICallback.NOTIFY_CONNECT);
+		guiRegistry.notify(client.getHost() + " connected", GUICallback.NOTIFY_CONNECT);
 	}
 
 	protected void stopPlugins(HypersocketClient<Connection> client) {
@@ -439,7 +398,7 @@ public class ClientServiceImpl implements ClientService,
 							.forName(clz);
 
 					ServicePlugin plugin = pluginClz.newInstance();
-					plugin.start(client, resourceService, gui);
+					plugin.start(client, resourceService, guiRegistry);
 
 					connectionPlugins.get(client.getAttachment()).add(plugin);
 				} catch (Throwable e) {
@@ -459,8 +418,7 @@ public class ClientServiceImpl implements ClientService,
 		connectingClients.remove(client.getAttachment());
 
 		stopPlugins(client);
-
-		notifyGui(client.getHost() + " disconnected",
+		guiRegistry.notify(client.getHost() + " disconnected",
 				GUICallback.NOTIFY_DISCONNECT);
 	}
 
