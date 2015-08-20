@@ -73,6 +73,20 @@ public class GUIRegistry {
 
 	}
 
+	public void loadResources(Connection connection) {
+		synchronized (lock) {
+			try {
+				if (gui != null && guiAttached) {
+					log.info("Informing GUI " + connection + " to load resources");
+					gui.loadResources(connection);
+				}
+			} catch (RemoteException re) {
+				log.error("Failed to inform GUI of readyness.", re);
+			}
+		}
+
+	}
+
 	public void failedToConnect(Connection connection, String reply) {
 		synchronized (lock) {
 			try {

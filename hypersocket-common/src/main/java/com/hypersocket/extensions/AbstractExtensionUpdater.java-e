@@ -25,7 +25,18 @@ import com.hypersocket.utils.FileUtils;
 public abstract class AbstractExtensionUpdater {
 
 	static Logger log = LoggerFactory.getLogger(AbstractExtensionUpdater.class);
+	private long transfered;
+	private long totalSize;
 	
+	
+	public long getTransfered() {
+		return transfered;
+	}
+
+	public long getTotalSize() {
+		return totalSize;
+	}
+
 	public final boolean update()
 			throws IOException {
 		
@@ -39,7 +50,7 @@ public abstract class AbstractExtensionUpdater {
 			Map<ExtensionPlace, List<ExtensionDefinition>> updates = new HashMap<ExtensionPlace, List<ExtensionDefinition>>();
 			Map<ExtensionDefinition,File> tmpArchives = new HashMap<ExtensionDefinition,File>();
 			
-			long totalSize = 0;
+			totalSize = 0;
 			for (Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : extensions
 					.entrySet()) {
 				
@@ -68,7 +79,7 @@ public abstract class AbstractExtensionUpdater {
 			}
 			onUpdateStart(totalSize);
 			
-			long transfered = 0;
+			transfered = 0;
 			
 			List<File> toRemove = new ArrayList<>();
 

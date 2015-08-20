@@ -6,6 +6,10 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 public interface ClientService extends Remote {
+	
+	boolean isGUINeedsUpdating() throws RemoteException;
+	
+	boolean isUpdating() throws RemoteException;
 
 	void registerGUI(GUICallback gui) throws RemoteException;
 
@@ -36,5 +40,7 @@ public interface ClientService extends Remote {
 	byte[] getBlob(Connection connection, String path, long timeout)
 			throws IOException, RemoteException;
 
-	void maybeUpdate(Connection c) throws RemoteException;
+//	void maybeUpdate(Connection c) throws RemoteException;
+
+	boolean update(final Connection c) throws RemoteException;
 }

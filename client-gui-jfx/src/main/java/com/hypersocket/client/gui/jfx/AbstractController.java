@@ -97,6 +97,11 @@ public class AbstractController implements FramedController, Listener {
 	}
 
 	@Override
+	public void loadResources(Connection connection) {
+		stateChanged();						
+	}
+
+	@Override
 	public void disconnecting(Connection connection) {
 		stateChanged();						
 	}

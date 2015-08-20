@@ -136,10 +136,21 @@ public class ConnectionJob extends TimerTask {
 						log.info("Logged into " + url);
 					}
 
+					/* Tell the GUI we are now completely connected. The GUI
+					 * should NOT yet load any resources, as we need to check if there are
+					 * any updates to do first
+					 */
 					guiRegistry.ready(connection);
-
-					// Trigger interest in possibly updating
-					clientService.maybeUpdate(connection);
+					
+					/*
+					 * Now check for updates. If there are any, we don't start any plugins
+					 * for this connection, and the GUI will not be told to load its resources
+					 */
+					if(!clientService.update(connection)) {
+						clientService.startPlugins(client);
+						guiRegistry.loadResources(connection);
+					}
+					
 				} else {
 					throw new Exception("Server refused to supply version. "
 							+ json.getMessage());
