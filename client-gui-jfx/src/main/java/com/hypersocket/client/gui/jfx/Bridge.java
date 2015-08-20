@@ -46,6 +46,8 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	
 	public interface Listener {
 
+		void loadResources(Connection connection);
+
 		void connecting(Connection connection);
 
 		void finishedConnecting(Connection connection, Exception e);
@@ -343,6 +345,14 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	}
 
 	@Override
+	public void loadResources(Connection connection) throws RemoteException {
+		log.info("Connection " + connection + " should load resources");
+		for (Listener l : new ArrayList<Listener>(listeners)) {
+			l.loadResources(connection);
+		}
+	}
+
+	@Override
 	public void failedToConnect(Connection connection, String errorMessage)
 			throws RemoteException {
 		log.error(String.format("Failed to connect. %s", errorMessage));
@@ -481,5 +491,14 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 			}
 		});
 
+	}
+
+	public boolean isServiceUpdating() {
+		try {
+			return clientService.isUpdating();
+		}	
+		catch(RemoteException re) {
+			return false;
+		}
 	}
 }

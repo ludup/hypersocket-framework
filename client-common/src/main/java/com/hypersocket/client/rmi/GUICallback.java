@@ -40,6 +40,8 @@ public interface GUICallback extends Serializable, Remote {
 	void transportConnected(Connection connection) throws RemoteException;
 
 	void ready(Connection connection) throws RemoteException;
+
+	void loadResources(Connection connection) throws RemoteException;
 	
 	void onUpdateInit(int expectedApps) throws RemoteException;
 	

@@ -2,6 +2,7 @@ package com.hypersocket.client.gui.jfx;
 
 import java.io.IOException;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,7 +84,7 @@ public class Dock extends AbstractController implements Listener {
 
 	/*
 	 * How long to keep popup messages visible (in MS)
-	 */	
+	 */
 	static final double MESSAGE_FADE_TIME = 10000;
 
 	static Logger log = LoggerFactory.getLogger(Main.class);
@@ -320,7 +321,7 @@ public class Dock extends AbstractController implements Listener {
 						super.hide();
 						scene.getRoot().setDisable(false);
 					}
-					
+
 				};
 				((Update) updateScene).setPopup(updatePopup);
 			} catch (IOException ioe) {
@@ -443,7 +444,7 @@ public class Dock extends AbstractController implements Listener {
 		} else if (contextMenu != null)
 			contextMenu.hide();
 	}
-	
+
 	@FXML
 	private void evtExit(ActionEvent evt) throws Exception {
 		context.confirmExit();
@@ -606,13 +607,18 @@ public class Dock extends AbstractController implements Listener {
 	}
 
 	@Override
-	public void finishedConnecting(Connection connection, Exception e) {
-		log.info(String.format("New connection finished connected (%s)", connection.toString()));
+	public void loadResources(Connection connection) {
 		rebuildAllLaunchers();
 	}
 
 	@Override
-	public void bridgeEstablished() {
+	public void finishedConnecting(Connection connection, Exception e) {
+		log.info(String.format("New connection finished connected (%s)",
+				connection.toString()));
+	}
+
+	@Override
+	public void bridgeEstablished() {		
 		log.info(String.format("Bridge established, rebuilding all launchers"));
 		rebuildAllLaunchers();
 	}
@@ -625,17 +631,18 @@ public class Dock extends AbstractController implements Listener {
 
 	@Override
 	public void disconnected(Connection connection, Exception e) {
-		log.info(String.format("Connection disconnected (%s)", connection.toString()));
+		log.info(String.format("Connection disconnected (%s)",
+				connection.toString()));
 		rebuildAllLaunchers();
 	}
 
 	private void rebuildAllLaunchers() {
 		log.info("State changed for dock, rebuilding");
-		setAvailable();
 		rebuildResources();
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
+				setAvailable();
 				rebuildIcons();
 				recentre();
 			}
@@ -706,7 +713,7 @@ public class Dock extends AbstractController implements Listener {
 
 		serviceResources.clear();
 		icons.clear();
-		if (context.getBridge().isConnected()) {
+		if (context.getBridge().isConnected() && !context.getBridge().isServiceUpdating()) {
 			ResourceService resourceService = context.getBridge()
 					.getResourceService();
 
@@ -777,14 +784,15 @@ public class Dock extends AbstractController implements Listener {
 			}
 
 			// SSO launchers are not grouped, all others are
-//			if (type == Resource.Type.SSO) {
-				for (ResourceItem item : ig.getValue().getItems()) {
-					IconButton button = new IconButton(resources, item, context, ig.getValue());
-					shortcuts.getChildren().add(button);
-				}
-//			} else {
-//				shortcuts.getChildren().add(createGroupButton(ig.getValue()));
-//			}
+			// if (type == Resource.Type.SSO) {
+			for (ResourceItem item : ig.getValue().getItems()) {
+				IconButton button = new IconButton(resources, item, context,
+						ig.getValue());
+				shortcuts.getChildren().add(button);
+			}
+			// } else {
+			// shortcuts.getChildren().add(createGroupButton(ig.getValue()));
+			// }
 
 			// lastType = type;
 		}
@@ -861,7 +869,7 @@ public class Dock extends AbstractController implements Listener {
 		}
 
 		// Hack for FTP subtypes that end in the display number
-		if(subType.startsWith("ftp")) {
+		if (subType.startsWith("ftp")) {
 			subType = "ftp";
 		}
 
@@ -975,12 +983,13 @@ public class Dock extends AbstractController implements Listener {
 				throw new UnsupportedOperationException();
 			}
 		}
-		
-		// The update or the sign in dialog may have been popped, so make sure it is position correctly
-		if(updatePopup != null && updatePopup.isShowing()) {
+
+		// The update or the sign in dialog may have been popped, so make sure
+		// it is position correctly
+		if (updatePopup != null && updatePopup.isShowing()) {
 			updatePopup.sizeToScene();
 		}
-		if(signInPopup != null && signInPopup.isShowing()) {
+		if (signInPopup != null && signInPopup.isShowing()) {
 			signInPopup.sizeToScene();
 		}
 
