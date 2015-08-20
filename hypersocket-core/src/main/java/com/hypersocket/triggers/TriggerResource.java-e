@@ -42,6 +42,9 @@ public class TriggerResource extends Task {
 
 	@Column(name = "resource_key")
 	String resourceKey;
+	
+	@Column(name = "attachment_id")
+	Long attachmentId;
 
 	public TriggerResultType getResult() {
 		return result;
@@ -122,6 +125,12 @@ public class TriggerResource extends Task {
 		this.triggerType = triggerType;
 	}
 	
+	public Long getAttachmentId() {
+		return attachmentId;
+	}
 	
+	public void setAttachmentId(Long attachmentId) {
+		this.attachmentId = attachmentId;
+	}
 	
 }

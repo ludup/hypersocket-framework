@@ -131,11 +131,11 @@ public class AutomationResource extends Task {
 		return taskEnds;
 	}
 
-	public Set<TriggerResource> getTriggers() {
+	public Set<TriggerResource> getChildTriggers() {
 		return triggers;
 	}
 
-	public void setTriggers(Set<TriggerResource> triggers) {
+	public void setChildTriggers(Set<TriggerResource> triggers) {
 		this.triggers = triggers;
 	}
 

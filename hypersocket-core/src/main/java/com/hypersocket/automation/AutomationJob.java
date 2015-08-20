@@ -77,7 +77,7 @@ public class AutomationJob extends AbstractTriggerJob {
 				eventService.publishEvent(result);
 			}
 			
-			for(TriggerResource trigger : resource.getTriggers()) {
+			for(TriggerResource trigger : resource.getChildTriggers()) {
 				processEventTrigger(trigger, result);
 			}
 			

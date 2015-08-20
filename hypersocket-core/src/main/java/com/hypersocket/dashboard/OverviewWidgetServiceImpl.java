@@ -54,12 +54,15 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-		this.registerWidget(new OverviewWidget(2, "overview.yourSerial.title",
-				"yourSerial", false) {
-			public boolean hasContent() {
-				return true;
-			}
-		});
+		/**
+		 * Not required at the current time.
+		 */
+//		this.registerWidget(new OverviewWidget(2, "overview.yourSerial.title",
+//				"yourSerial", false) {
+//			public boolean hasContent() {
+//				return true;
+//			}
+//		});
 		
 		this.registerWidget(new OverviewWidget(4, "overview.usefulLinks.title",
 				"usefulLinks", false) {
