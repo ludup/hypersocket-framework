@@ -54,7 +54,7 @@ import com.hypersocket.triggers.TriggerResultType;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Controller
-public class TriggerResourceController extends ResourceController {
+public class TriggerResourceController extends AbstractTriggerController {
 
 	@Autowired
 	TriggerResourceService resourceService;
@@ -341,7 +341,6 @@ public class TriggerResourceController extends ResourceController {
 		try {
 
 			TriggerResource newResource;
-			boolean isNew = resource.getId() == null;
 
 			Realm realm = sessionUtils.getCurrentRealm(request);
 
@@ -354,31 +353,7 @@ public class TriggerResourceController extends ResourceController {
 						.getParentId());
 			}
 
-			for (TriggerConditionUpdate c : resource.getAllConditions()) {
-				TriggerCondition cond;
-				if (isNew || c.getId() == null) {
-					cond = new TriggerCondition();
-				} else {
-					cond = resourceService.getConditionById(c.getId());
-				}
-				cond.setAttributeKey(c.getAttributeKey());
-				cond.setConditionKey(c.getConditionKey());
-				cond.setConditionValue(c.getConditionValue());
-				allConditions.add(cond);
-			}
-
-			for (TriggerConditionUpdate c : resource.getAnyConditions()) {
-				TriggerCondition cond;
-				if (isNew || c.getId() == null) {
-					cond = new TriggerCondition();
-				} else {
-					cond = resourceService.getConditionById(c.getId());
-				}
-				cond.setAttributeKey(c.getAttributeKey());
-				cond.setConditionKey(c.getConditionKey());
-				cond.setConditionValue(c.getConditionValue());
-				anyConditions.add(cond);
-			}
+			processConditions(resource, allConditions, anyConditions);
 
 			Map<String, String> properties = new HashMap<String, String>();
 			for (PropertyItem i : resource.getProperties()) {
@@ -391,12 +366,12 @@ public class TriggerResourceController extends ResourceController {
 						resource.getName(), resource.getType(), resource.getEvent(),
 						TriggerResultType.valueOf(resource.getResult()),
 						resource.getTask(), properties, allConditions,
-						anyConditions, parentTrigger);
+						anyConditions, parentTrigger, null);
 			} else {
 				newResource = resourceService.createResource(
 						resource.getName(), resource.getType(), resource.getEvent(),
 						TriggerResultType.valueOf(resource.getResult()), resource.getTask(), properties, realm,
-						allConditions, anyConditions, parentTrigger);
+						allConditions, anyConditions, parentTrigger, null);
 			}
 			
 			TriggerResource rootTrigger = newResource;

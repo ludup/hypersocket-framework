@@ -24,9 +24,11 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hypersocket.HypersocketVersion;
 import com.hypersocket.netty.websocket.WebSocket;
 import com.hypersocket.netty.websocket.WebSocketHandler;
 import com.hypersocket.netty.websocket.WebSocketListener;
+import com.hypersocket.utils.HypersocketUtils;
 
 public class HttpClient {
 
@@ -106,7 +108,8 @@ public class HttpClient {
 	private HttpRequest processRequest(HttpRequest request) {
 		request.setHeader("Host", getHost() + ((isSecure() && getPort()==443) || (!isSecure() && getPort()==80) ? "" : ":" + getPort()));
 		request.setHeader("Connection", "keep-alive");
-		request.setHeader("User-Agent", "Hypersocket-Client");
+		request.setHeader("User-Agent", "Hypersocket-Client; " + HypersocketVersion.getVersion() + ";" 
+							+ System.getProperty("os.name") + ";" + System.getProperty("os.version"));
 		if(!StringUtils.isBlank(getCookies())) {
 			request.setHeader("Cookie", getCookies());
 		}
