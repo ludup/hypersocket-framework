@@ -159,19 +159,19 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 			String os = "Unknown";
 			if(values.length > 2) {
-				if(values[3].toLowerCase().startsWith("windows")) {
+				if(values[2].toLowerCase().startsWith("windows")) {
 					os = "Windows";
-				} else if(values[3].toLowerCase().startsWith("mac os x")) {
+				} else if(values[2].toLowerCase().startsWith("mac os x")) {
 					os = "OS X";
-				} else if(values[3].toLowerCase().startsWith("linux")) {
+				} else if(values[2].toLowerCase().startsWith("linux")) {
 					os = "Linux";
 				} else {
-					os = values[3];
+					os = values[2];
 				}
 			}
 			String osVersion = "Unknown";
 			if(values.length > 3) {
-				osVersion = values[4];
+				osVersion = values[3];
 			}
 			
 			session = repository.createSession(remoteAddress, principal,
