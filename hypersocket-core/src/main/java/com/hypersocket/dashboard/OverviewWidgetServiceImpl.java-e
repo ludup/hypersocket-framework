@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -146,7 +147,7 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 								+ HypersocketVersion.getProductId()
 								+ "/links.json", true), Link[].class)));
 
-				cachedLinks = results;
+				cachedLinks = sort(results);
 				lastLinkUpdate = System.currentTimeMillis();
 			} catch (Throwable e) {
 				e.printStackTrace();
@@ -181,7 +182,7 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 								+ HypersocketVersion.getProductId()
 								+ "/videos.json", true), Link[].class)));
 
-				cachedVideos = results;
+				cachedVideos = sort(results);
 				lastVideoUpdate = System.currentTimeMillis();
 			} catch (Throwable e) {
 				throw new ResourceException(RESOURCE_BUNDLE,
@@ -192,6 +193,18 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 		return cachedVideos;
 	}
 
+	private Collection<Link> sort(List<Link> toSort) {
+		Collections.sort(toSort, new Comparator<Link>() {
+
+			@Override
+			public int compare(Link o1, Link o2) {
+				return o1.getWeight().compareTo(o2.getWeight());
+			}
+		});
+		
+		return toSort;
+	}
+	
 	@Override
 	public Collection<Link> getDocumentation() throws ResourceException {
 
@@ -215,7 +228,7 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 								+ HypersocketVersion.getProductId()
 								+ "/documentation.json", true), Link[].class)));
 
-				cachedDocumentation = results;
+				cachedDocumentation = sort(results);
 				lastDocumentationUpdate = System.currentTimeMillis();
 			} catch (Throwable e) {
 				throw new ResourceException(RESOURCE_BUNDLE,
