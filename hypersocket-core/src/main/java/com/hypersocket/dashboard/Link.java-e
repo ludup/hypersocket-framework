@@ -8,6 +8,7 @@ public class Link {
 	String name;
 	String url;
 	String icon;
+	Integer weight = 0;
 	
 	public Link() {
 		
@@ -35,6 +36,14 @@ public class Link {
 
 	public void setIcon(String icon) {
 		this.icon = icon;
+	}
+
+	public Integer getWeight() {
+		return weight;
+	}
+
+	public void setWeight(Integer weight) {
+		this.weight = weight;
 	}
 
 	
