@@ -96,7 +96,8 @@ public class TriggerResourceRepositoryImpl extends
 				}
 				
 				criteria.add(Restrictions.in("event",events));
-				criteria.add(Restrictions.eq("triggerType", TriggerType.TRIGGER));
+				criteria.add(Restrictions.or(Restrictions.isNull("triggerType"), 
+						Restrictions.eq("triggerType", TriggerType.TRIGGER)));
 
 			}
 		});
