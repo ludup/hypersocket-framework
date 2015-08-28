@@ -79,8 +79,8 @@ public class EventServiceImpl implements EventService {
 	@Override
 	public void rollbackDelayedEvents(boolean fireFailedEvents) {
 		
-		if(log.isInfoEnabled()) {
-			log.info("REMOVEME: Rolling back delayed events [" + fireFailedEvents + "]");
+		if(log.isDebugEnabled()) {
+			log.debug("Rolling back delayed events [" + fireFailedEvents + "]");
 		}
 		
 		isDelayingEvents.set(false);
@@ -105,8 +105,8 @@ public class EventServiceImpl implements EventService {
 	
 	protected void delayEvent(SystemEvent event) {
 		
-		if(log.isInfoEnabled()) {
-			log.info("REMOVEME: Delaying event " + event.getResourceKey());
+		if(log.isDebugEnabled()) {
+			log.debug("Delaying event " + event.getResourceKey());
 		}
 		
 		if(delayedEvents.get()==null) {
