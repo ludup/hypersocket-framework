@@ -220,4 +220,6 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean getRealmPropertyBoolean(Realm realm, String string);
 
+	void registerPrincipalProcessor(PrincipalProcessor processor);
+
 }
