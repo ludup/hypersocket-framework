@@ -267,6 +267,7 @@ public class TriggerResourceServiceImpl extends
 			List<TriggerCondition> allConditions,
 			List<TriggerCondition> anyConditions, TriggerResource parent,
 			Long attachment,
+			boolean allRealms,
 			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
 			throws ResourceChangeException, AccessDeniedException {
 
@@ -274,7 +275,7 @@ public class TriggerResourceServiceImpl extends
 		resource.getConditions().clear();
 
 		populateTrigger(name, event, result, task, resource.getRealm(),
-				resource, allConditions, anyConditions, parent, attachment);
+				resource, allConditions, anyConditions, parent, attachment, allRealms);
 
 		updateResource(resource, properties,
 				ArrayUtils.add(ops, 0, new TransactionAdapter<TriggerResource>() {
@@ -305,6 +306,7 @@ public class TriggerResourceServiceImpl extends
 			List<TriggerCondition> anyConditions,
 			TriggerResource parent,
 			Long attachment, 
+			boolean allRealms,
 			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
 			throws ResourceCreationException, AccessDeniedException {
 
@@ -313,7 +315,7 @@ public class TriggerResourceServiceImpl extends
 		resource.setTriggerType(type);
 		
 		populateTrigger(name, event, result, task, realm, resource, allConditions,
-				anyConditions,  parent, attachment);
+				anyConditions,  parent, attachment, allRealms);
 
 		createResource(resource, properties,
 				ArrayUtils.add(ops, 0, new TransactionAdapter<TriggerResource>() {
@@ -370,7 +372,7 @@ public class TriggerResourceServiceImpl extends
 	private void populateTrigger(String name, String event,
 			TriggerResultType result, String task, Realm realm,
 			TriggerResource resource, List<TriggerCondition> allConditions,
-			List<TriggerCondition> anyConditions, TriggerResource parent, Long attachment) {
+			List<TriggerCondition> anyConditions, TriggerResource parent, Long attachment, boolean allRealms) {
 
 		resource.setName(name);
 		resource.setEvent(event);
@@ -380,6 +382,7 @@ public class TriggerResourceServiceImpl extends
 		resource.setParentTrigger(parent);
 		resource.getConditions().clear();
 		resource.setAttachmentId(attachment);
+		resource.setAllRealms(allRealms);
 		
 		for (TriggerCondition c : allConditions) {
 			c.setType(TriggerConditionType.ALL);

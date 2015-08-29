@@ -83,7 +83,8 @@ public class TriggerResourceRepositoryImpl extends
 				 */
 				criteria.add(Restrictions.or(
 						Restrictions.eq("realm", event.getCurrentRealm()),
-						Restrictions.eq("realm", realmService.getSystemRealm())));
+						Restrictions.and(Restrictions.eq("allRealms", true) , 
+								Restrictions.eq("realm", realmService.getSystemRealm()))));
 				
 				criteria.add(Restrictions.isNull("parentTrigger"));
 
