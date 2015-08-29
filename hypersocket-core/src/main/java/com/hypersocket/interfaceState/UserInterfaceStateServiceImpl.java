@@ -32,14 +32,6 @@ public class UserInterfaceStateServiceImpl extends
 	@PostConstruct
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
-
-		PermissionCategory cat = permissionService.registerPermissionCategory(
-				RESOURCE_BUNDLE, "category.userInterfaceStates");
-
-		for (UserInterfaceStatePermission p : UserInterfaceStatePermission
-				.values()) {
-			permissionService.registerPermission(p, cat);
-		}
 	}
 
 	@Override
@@ -57,7 +49,6 @@ public class UserInterfaceStateServiceImpl extends
 	public UserInterfaceState updateState(UserInterfaceState newState,
 			Long top, Long left, String name, boolean specific)
 			throws AccessDeniedException {
-		assertPermission(UserInterfaceStatePermission.UPDATE);
 
 		newState.setTop(top);
 		newState.setLeftpx(left);
@@ -72,7 +63,7 @@ public class UserInterfaceStateServiceImpl extends
 	@Override
 	public UserInterfaceState createState(Long resourceId, Long top, Long left,
 			String name, boolean specific) throws AccessDeniedException {
-		assertPermission(UserInterfaceStatePermission.CREATE);
+
 		UserInterfaceState newState = new UserInterfaceState();
 
 		newState.setResourceId(resourceId);
@@ -91,7 +82,6 @@ public class UserInterfaceStateServiceImpl extends
 	@Override
 	public List<UserInterfaceState> getStates(Long[] resources, boolean specific)
 			throws AccessDeniedException {
-		assertPermission(UserInterfaceStatePermission.READ);
 
 		List<UserInterfaceState> stateList = new ArrayList<UserInterfaceState>();
 		for (Long resourceId : resources) {
