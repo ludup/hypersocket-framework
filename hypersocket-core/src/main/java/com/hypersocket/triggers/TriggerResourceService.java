@@ -28,6 +28,7 @@ public interface TriggerResourceService extends
 			List<TriggerCondition> anyConditions, 
 			TriggerResource parent,
 			Long attachment,
+			boolean allRealms,
 			TransactionAdapter<TriggerResource>... ops)
 			throws ResourceCreationException, AccessDeniedException;
 
@@ -38,6 +39,7 @@ public interface TriggerResourceService extends
 			List<TriggerCondition> allConditions,
 			List<TriggerCondition> anyConditions, TriggerResource parent,
 			Long attachment,
+			boolean allRealms,
 			TransactionAdapter<TriggerResource>... ops)
 			throws ResourceChangeException, AccessDeniedException;
 	
