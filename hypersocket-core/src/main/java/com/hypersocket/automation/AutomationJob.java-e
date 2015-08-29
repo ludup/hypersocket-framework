@@ -10,7 +10,6 @@ import com.hypersocket.automation.events.AutomationTaskFinishedEvent;
 import com.hypersocket.automation.events.AutomationTaskStartedEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
@@ -41,8 +40,6 @@ public class AutomationJob extends AbstractTriggerJob {
 	@Override
 	protected void executeJob(JobExecutionContext context)
 			throws JobExecutionException {
-		
-		PermissionsAwareJobData jobdata = (PermissionsAwareJobData) context.getTrigger().getJobDataMap();
 		
 		Long resourceId = context.getTrigger().getJobDataMap().getLong("resourceId");
 		Realm realm = (Realm) context.getTrigger().getJobDataMap().get("realm");
