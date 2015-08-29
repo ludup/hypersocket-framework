@@ -81,7 +81,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 	Map<String, RealmProvider> providersByModule = new HashMap<String, RealmProvider>();
 
 	List<RealmListener> realmListeners = new ArrayList<RealmListener>();
-
+	List<PrincipalProcessor> principalProcessors = new ArrayList<PrincipalProcessor>();
+	
 	@Autowired
 	RealmRepository realmRepository;
 
@@ -196,6 +197,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		cacheManager.addCache(realmCache);
 	}
 
+	@Override
+	public void registerPrincipalProcessor(PrincipalProcessor processor) {
+		principalProcessors.add(processor);
+	}
+	
 	@Override
 	public void onUpgradeComplete() {
 
@@ -406,6 +412,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 			Principal principal = provider.createUser(realm, username,
 					properties, principals, password, forceChange);
 
+			for(PrincipalProcessor processor : principalProcessors) {
+				processor.afterCreate(principal, properties);
+			}
+
 			eventService.publishEvent(new UserCreatedEvent(this,
 					getCurrentSession(), realm, provider, principal,
 					principals, filterSecretProperties(principal, provider, properties), password, forceChange));
@@ -447,9 +457,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 						"error.realmIsReadOnly");
 			}
 			
+			for(PrincipalProcessor processor : principalProcessors) {
+				processor.beforeUpdate(user, properties);
+			}
+			
 			Principal principal = provider.updateUser(realm, user, username,
 					properties, principals);
 
+			for(PrincipalProcessor processor : principalProcessors) {
+				processor.afterUpdate(principal, properties);
+			}
+			
 			eventService.publishEvent(new UserUpdatedEvent(this,
 					getCurrentSession(), realm, provider, principal,
 					principals, filterSecretProperties(principal, provider, properties)));
@@ -991,6 +1009,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 			
 			Principal principal = provider.createGroup(realm, name, properties, principals);
 			
+			for(PrincipalProcessor processor : principalProcessors) {
+				processor.afterCreate(principal, properties);
+			}
+			
 			eventService.publishEvent(new GroupCreatedEvent(this,
 					getCurrentSession(), realm, provider, principal,
 					principals, new HashMap<String, String>()));
@@ -1037,9 +1059,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 				throw ex;
 			}
 
+			for(PrincipalProcessor processor : principalProcessors) {
+				processor.beforeUpdate(group, properties);
+			}
+			
 			Principal principal = provider.updateGroup(realm, group, name,
 					properties, principals);
 
+			for(PrincipalProcessor processor : principalProcessors) {
+				processor.afterUpdate(principal, properties);
+			}
+			
 			eventService.publishEvent(new GroupUpdatedEvent(this,
 					getCurrentSession(), realm, provider, principal,
 					principals, new HashMap<String, String>()));
