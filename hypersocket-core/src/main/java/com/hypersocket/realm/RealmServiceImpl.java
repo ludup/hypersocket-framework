@@ -395,7 +395,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 	@Override
 	public Principal createUser(Realm realm, String username,
 			Map<String, String> properties, List<Principal> principals,
-			String password, boolean forceChange)
+			String password, boolean forceChange, boolean selfCreated)
 			throws ResourceCreationException, AccessDeniedException {
 
 		RealmProvider provider = getProviderForRealm(realm);
@@ -418,7 +418,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 
 			eventService.publishEvent(new UserCreatedEvent(this,
 					getCurrentSession(), realm, provider, principal,
-					principals, filterSecretProperties(principal, provider, properties), password, forceChange));
+					principals, filterSecretProperties(principal, provider, properties), 
+					password, forceChange, selfCreated));
 
 			return principal;
 		} catch (AccessDeniedException e) {

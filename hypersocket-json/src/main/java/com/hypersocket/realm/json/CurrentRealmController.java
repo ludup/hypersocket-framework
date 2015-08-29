@@ -625,7 +625,7 @@ public class CurrentRealmController extends ResourceController {
 			} else {
 				principal = realmService.createUser(realm, user.getName(),
 						properties, principals, user.getPassword(),
-						user.isForceChange());
+						user.isForceChange(), false);
 			}
 			return new ResourceStatus<Principal>(principal,
 					I18N.getResource(sessionUtils.getLocale(request),
