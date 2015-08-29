@@ -367,7 +367,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		
 		triggerService.createResource(name, TriggerType.AUTOMATION, event,
 				result, task, properties, realm, allConditions,
-				anyConditions, parent, automation.getId(), new TransactionAdapter<TriggerResource>() {
+				anyConditions, parent, automation.getId(), false, new TransactionAdapter<TriggerResource>() {
 			@Override
 			public void afterOperation(TriggerResource resource, Map<String, String> properties) {
 				
@@ -398,7 +398,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		
 		triggerService.updateResource(trigger, name, TriggerType.AUTOMATION, event,
 				result, task, properties, allConditions,
-				anyConditions, parent, automation.getId());
+				anyConditions, parent, automation.getId(), false);
 		
 		repository.refresh(automation);
 		return automation;

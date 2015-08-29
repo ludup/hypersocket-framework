@@ -325,6 +325,7 @@ public class TriggerResourceController extends AbstractTriggerController {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/trigger", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
@@ -365,12 +366,12 @@ public class TriggerResourceController extends AbstractTriggerController {
 						resource.getName(), resource.getType(), resource.getEvent(),
 						TriggerResultType.valueOf(resource.getResult()),
 						resource.getTask(), properties, allConditions,
-						anyConditions, parentTrigger, null);
+						anyConditions, parentTrigger, null, resource.isAllRealms());
 			} else {
 				newResource = resourceService.createResource(
 						resource.getName(), resource.getType(), resource.getEvent(),
 						TriggerResultType.valueOf(resource.getResult()), resource.getTask(), properties, realm,
-						allConditions, anyConditions, parentTrigger, null);
+						allConditions, anyConditions, parentTrigger, null, resource.isAllRealms());
 			}
 			
 			TriggerResource rootTrigger = newResource;

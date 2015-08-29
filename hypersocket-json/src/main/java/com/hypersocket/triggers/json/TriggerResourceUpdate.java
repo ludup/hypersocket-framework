@@ -18,6 +18,7 @@ public class TriggerResourceUpdate {
 	TriggerConditionUpdate[] anyConditions;
 	PropertyItem[] properties;
 	Long parentId;
+	boolean allRealms;
 	
 	public TriggerResourceUpdate() {
 		
@@ -110,6 +111,15 @@ public class TriggerResourceUpdate {
 	public void setType(TriggerType type) {
 		this.type = type;
 	}
+
+	public boolean isAllRealms() {
+		return allRealms;
+	}
+
+	public void setAllRealms(boolean allRealms) {
+		this.allRealms = allRealms;
+	}
+	
 	
 	
 	

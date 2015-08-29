@@ -45,6 +45,9 @@ public class TriggerResource extends Task {
 	
 	@Column(name = "attachment_id")
 	Long attachmentId;
+	
+	@Column(name="all_realms")
+	Boolean allRealms;
 
 	public TriggerResultType getResult() {
 		return result;
@@ -131,6 +134,14 @@ public class TriggerResource extends Task {
 	
 	public void setAttachmentId(Long attachmentId) {
 		this.attachmentId = attachmentId;
+	}
+	
+	public Boolean getAllRealms() {
+		return allRealms==null ? false : allRealms;
+	}
+	
+	public void setAllRealms(Boolean allRealms) {
+		this.allRealms = allRealms;
 	}
 	
 }
