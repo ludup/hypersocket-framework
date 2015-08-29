@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
@@ -27,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
@@ -47,9 +50,17 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		extends ResourceTemplateRepositoryImpl implements
 		AbstractAssignableResourceRepository<T> {
 
-	@Autowired
-	EntityResourcePropertyStore entityPropertyStore;
 
+	protected EntityResourcePropertyStore entityPropertyStore;
+
+	@Autowired
+	EncryptionService encryptionService;
+	
+	@PostConstruct
+	private void postConstruct() {
+		entityPropertyStore = new EntityResourcePropertyStore(encryptionService);
+	}
+	
 	@Override
 	public Collection<T> getAssignedResources(List<Principal> principals) {
 		return getAssignedResources(principals.toArray(new Principal[0]));
@@ -57,6 +68,11 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@Override
 	protected ResourcePropertyStore getPropertyStore() {
+		return entityPropertyStore;
+	}
+	
+	@Override 
+	public EntityResourcePropertyStore getEntityStore() {
 		return entityPropertyStore;
 	}
 

@@ -410,6 +410,9 @@ public abstract class ResourceTemplateRepositoryImpl extends
 
 		if (log.isInfoEnabled()) {
 			log.info("Registering property " + resourceKey);
+			if(resourceKey.equals("description")) {
+				System.out.println();
+			}
 		}
 
 		if (defaultValue != null && defaultValue.startsWith("classpath:")) {

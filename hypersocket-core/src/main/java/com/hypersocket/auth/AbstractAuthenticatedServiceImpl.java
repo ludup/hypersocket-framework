@@ -18,7 +18,6 @@ public abstract class AbstractAuthenticatedServiceImpl extends AuthenticatedServ
 			PermissionStrategy strategy, PermissionType... permissions)
 			throws AccessDeniedException {
 		permissionService.verifyPermission(principal, strategy, permissions);
-
 	}
 
 }

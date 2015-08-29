@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hypersocket.auth.json.AuthenticationRequired;
-import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
@@ -326,6 +325,7 @@ public class TriggerResourceController extends AbstractTriggerController {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/trigger", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
@@ -366,12 +366,12 @@ public class TriggerResourceController extends AbstractTriggerController {
 						resource.getName(), resource.getType(), resource.getEvent(),
 						TriggerResultType.valueOf(resource.getResult()),
 						resource.getTask(), properties, allConditions,
-						anyConditions, parentTrigger, null);
+						anyConditions, parentTrigger, null, resource.isAllRealms());
 			} else {
 				newResource = resourceService.createResource(
 						resource.getName(), resource.getType(), resource.getEvent(),
 						TriggerResultType.valueOf(resource.getResult()), resource.getTask(), properties, realm,
-						allConditions, anyConditions, parentTrigger, null);
+						allConditions, anyConditions, parentTrigger, null, resource.isAllRealms());
 			}
 			
 			TriggerResource rootTrigger = newResource;

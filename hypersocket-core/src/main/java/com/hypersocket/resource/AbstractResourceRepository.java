@@ -3,6 +3,7 @@ package com.hypersocket.resource;
 import java.util.List;
 import java.util.Map;
 
+import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.CriteriaConfiguration;
@@ -32,5 +33,7 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 	long allRealmsResourcesCount();
 
 	void populateEntityFields(T resource, Map<String, String> properties);
+
+	EntityResourcePropertyStore getEntityStore();
 
 }

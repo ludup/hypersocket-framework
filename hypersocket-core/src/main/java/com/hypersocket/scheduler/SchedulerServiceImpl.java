@@ -36,7 +36,6 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
-import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
@@ -73,9 +72,6 @@ public class SchedulerServiceImpl extends
 	SchedulerResourceRepository repository;
 
 	@Autowired
-	EntityResourcePropertyStore entityPropertyStore;
-
-	@Autowired
 	EventService eventService;
 
 	public static Long SEQUENCE_GEN = 0L;
@@ -99,7 +95,7 @@ public class SchedulerServiceImpl extends
 				RESOURCE_BUNDLE, this);
 		eventService.registerEvent(SchedulerResourceDeletedEvent.class,
 				RESOURCE_BUNDLE, this);
-		entityPropertyStore.registerResourceService(SchedulerResource.class,
+		repository.getEntityStore().registerResourceService(SchedulerResource.class,
 				repository);
 	}
 
