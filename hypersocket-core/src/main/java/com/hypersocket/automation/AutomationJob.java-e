@@ -1,11 +1,7 @@
 package com.hypersocket.automation;
 
-import java.util.Set;
-
-import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +16,6 @@ import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.AbstractTriggerJob;
 import com.hypersocket.triggers.TaskResult;
-import com.hypersocket.triggers.TriggerJob;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.ValidationException;
 

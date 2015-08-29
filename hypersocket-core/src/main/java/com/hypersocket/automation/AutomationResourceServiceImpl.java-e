@@ -30,7 +30,6 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
-import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
@@ -73,9 +72,6 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	EventService eventService;
 
 	@Autowired
-	EntityResourcePropertyStore entityPropertyStore;
-
-	@Autowired
 	SchedulerService schedulerService;
 
 	@Autowired
@@ -114,7 +110,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		eventService.registerEvent(AutomationResourceDeletedEvent.class, RESOURCE_BUNDLE, this);
 		eventService.registerEvent(AutomationTaskStartedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(AutomationTaskFinishedEvent.class, RESOURCE_BUNDLE);
-		entityPropertyStore.registerResourceService(AutomationResource.class, repository);
+		repository.getEntityStore().registerResourceService(AutomationResource.class, repository);
 	}
 
 	@Override

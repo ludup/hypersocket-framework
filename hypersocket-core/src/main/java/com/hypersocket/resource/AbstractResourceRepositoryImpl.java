@@ -3,6 +3,8 @@ package com.hypersocket.resource;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
@@ -29,10 +32,22 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		extends ResourceTemplateRepositoryImpl implements
 		AbstractResourceRepository<T> {
 
+	protected EntityResourcePropertyStore entityPropertyStore;
+
 	@Autowired
-	EntityResourcePropertyStore entityPropertyStore;
+	EncryptionService encryptionService;
+	
+	@PostConstruct
+	private void postConstruct() {
+		entityPropertyStore = new EntityResourcePropertyStore(encryptionService);
+	}
 	
 	protected ResourcePropertyStore getPropertyStore() {
+		return entityPropertyStore;
+	}
+	
+	@Override
+	public EntityResourcePropertyStore getEntityStore() {
 		return entityPropertyStore;
 	}
 	

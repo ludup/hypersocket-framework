@@ -12,7 +12,6 @@ import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.PermissionCategory;
 
 @Service
 public class UserInterfaceStateServiceImpl extends
