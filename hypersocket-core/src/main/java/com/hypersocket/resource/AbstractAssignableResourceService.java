@@ -80,4 +80,6 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	void saveMetaData(T resource, String key, String value) throws AccessDeniedException;
 	
 	String getMetaData(T resource, String key, String defaultValue) throws AccessDeniedException;
+
+	long getPersonalResourceCount();
 }
