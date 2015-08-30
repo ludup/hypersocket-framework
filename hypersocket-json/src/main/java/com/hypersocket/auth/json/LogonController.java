@@ -48,11 +48,16 @@ public class LogonController extends AuthenticatedController {
 			RedirectException {
 		AuthenticationState state = (AuthenticationState) request.getSession()
 				.getAttribute(AUTHENTICATION_STATE_KEY);
+		
+		String previousScheme = (String) request.getSession().getAttribute(PREVIOUS_AUTHENTICATION_SCHEME);
+		if(previousScheme==null) {
+			previousScheme = state == null ? AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY
+					: state.getScheme().getResourceKey();
+		}
 		return resetLogon(
 				request,
 				response,
-				state == null ? AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY
-						: state.getScheme().getResourceKey(), redirect);
+				previousScheme, redirect);
 	}
 
 	@RequestMapping(value = "logon/reset/{scheme}", method = RequestMethod.GET, produces = "application/json")
@@ -63,6 +68,14 @@ public class LogonController extends AuthenticatedController {
 			@RequestParam(required = false) Boolean redirect)
 			throws AccessDeniedException, UnauthorizedException, IOException,
 			RedirectException {
+		
+		AuthenticationState currentState = 
+				(AuthenticationState) request.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
+		
+		if(currentState!=null) {
+			request.getSession().setAttribute(PREVIOUS_AUTHENTICATION_SCHEME,currentState.getScheme().getResourceKey());
+		}
+		
 		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, null);
 		AuthenticationResult result = logon(request, response, scheme);
 		if (Boolean.TRUE.equals(redirect)) {
