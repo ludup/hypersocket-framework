@@ -69,7 +69,12 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 		}
 		
 		try {
-			realmService.changePassword(state.getPrincipal(), state.getParameter("password"), password);
+			if(state.hasParameter("password")) {
+				realmService.changePassword(state.getPrincipal(), state.getParameter("password"), password);
+			} else {
+				realmService.setPassword(state.getPrincipal(), password, false);
+			}
+			
 			return AuthenticatorResult.AUTHENTICATION_SUCCESS;
 			
 		} catch (ResourceException e) {
