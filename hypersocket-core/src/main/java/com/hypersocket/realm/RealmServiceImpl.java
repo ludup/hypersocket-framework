@@ -61,6 +61,7 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.SessionServiceImpl;
@@ -1132,11 +1133,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void deleteUser(Realm realm, Principal user)
 			throws ResourceChangeException, AccessDeniedException {
 
-		RealmProvider provider = getProviderForRealm(realm);
+		final RealmProvider provider = getProviderForRealm(realm);
 
 		try {
 			assertAnyPermission(UserPermission.DELETE, RealmPermission.DELETE);
@@ -1151,8 +1153,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl im
 						"error.cannotDeleteSystemAdmin",
 						user.getPrincipalName());
 			}
-
-			provider.deleteUser(user);
+			
+			permissionService.revokePermissions(user, new TransactionAdapter<Principal>() {
+				@Override
+				public void afterOperation(Principal resource, Map<String, String> properties) {
+					try {
+						provider.deleteUser(resource);
+					} catch (ResourceChangeException e) {
+						throw new IllegalStateException(e);
+					}
+				}
+			});
 
 			eventService.publishEvent(new UserDeletedEvent(this,
 					getCurrentSession(), realm, provider, user));
