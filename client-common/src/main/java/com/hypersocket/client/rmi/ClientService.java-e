@@ -41,6 +41,4 @@ public interface ClientService extends Remote {
 			throws IOException, RemoteException;
 
 //	void maybeUpdate(Connection c) throws RemoteException;
-
-	boolean update(final Connection c) throws RemoteException;
 }

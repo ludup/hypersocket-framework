@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import com.hypersocket.Version;
 import com.hypersocket.client.HypersocketClient;
-import com.hypersocket.client.HypersocketClientListener;
 import com.hypersocket.client.rmi.ClientService;
 import com.hypersocket.client.rmi.ConfigurationService;
 import com.hypersocket.client.rmi.Connection;
@@ -37,8 +36,7 @@ import com.hypersocket.client.rmi.ResourceService;
 import com.hypersocket.client.service.updates.ClientUpdater;
 import com.hypersocket.extensions.ExtensionPlace;
 
-public class ClientServiceImpl implements ClientService,
-		HypersocketClientListener<Connection> {
+public class ClientServiceImpl implements ClientService {
 
 	static Logger log = LoggerFactory.getLogger(ClientServiceImpl.class);
 
@@ -51,7 +49,7 @@ public class ClientServiceImpl implements ClientService,
 	Timer timer;
 
 	Map<Connection, HypersocketClient<Connection>> activeClients = new HashMap<Connection, HypersocketClient<Connection>>();
-	Map<Connection, HypersocketClient<Connection>> connectingClients = new HashMap<Connection, HypersocketClient<Connection>>();
+	Map<Connection, TimerTask> connectingClients = new HashMap<Connection, TimerTask>();
 	Map<Connection, Set<ServicePlugin>> connectionPlugins = new HashMap<Connection, Set<ServicePlugin>>();
 
 	Semaphore startupLock = new Semaphore(1);
@@ -105,17 +103,22 @@ public class ClientServiceImpl implements ClientService,
 		}
 
 		try {
-			
+
 			guiRegistry.registerGUI(gui);
-			if(updating && guiNeedsSeparateUpdate) {
-				/* If we register while an update is taking place, try to make the client
-				 * catch up and show the update progress window
+			if (updating && guiNeedsSeparateUpdate) {
+				/*
+				 * If we register while an update is taking place, try to make
+				 * the client catch up and show the update progress window
 				 */
 				guiRegistry.onUpdateInit(appsToUpdate);
-				guiRegistry.onUpdateStart(ExtensionPlace.getDefault().getApp(), serviceUpdateJob.getTotalSize());
-				guiRegistry.onUpdateProgress(ExtensionPlace.getDefault().getApp(), 0, serviceUpdateJob.getTransfered());
-				if(serviceUpdateJob.getTransfered() >= serviceUpdateJob.getTotalSize()) {
-					guiRegistry.onUpdateComplete(ExtensionPlace.getDefault().getApp(), serviceUpdateJob.getTransfered());
+				guiRegistry.onUpdateStart(ExtensionPlace.getDefault().getApp(),
+						serviceUpdateJob.getTotalSize());
+				guiRegistry.onUpdateProgress(ExtensionPlace.getDefault()
+						.getApp(), 0, serviceUpdateJob.getTransfered());
+				if (serviceUpdateJob.getTransfered() >= serviceUpdateJob
+						.getTotalSize()) {
+					guiRegistry.onUpdateComplete(ExtensionPlace.getDefault()
+							.getApp(), serviceUpdateJob.getTransfered());
 				}
 			}
 		} finally {
@@ -153,19 +156,29 @@ public class ClientServiceImpl implements ClientService,
 
 	@Override
 	public void connect(Connection c) throws RemoteException {
-
+		checkValidConnect(c);
 		if (log.isInfoEnabled()) {
 			log.info("Scheduling connect for connection id " + c.getId() + "/"
 					+ c.getHostname());
 		}
 
-		timer.schedule(createJob(c), 500);
+		ConnectionJob task = createJob(c);
+		connectingClients.put(c, task);
+		timer.schedule(task, 500);
+	}
 
+	private void checkValidConnect(Connection c) throws RemoteException {
+		if (connectingClients.containsKey(c)) {
+			throw new RemoteException("Already connecting.");
+		}
+		if (activeClients.containsKey(c)) {
+			throw new RemoteException("Already connected.");
+		}
 	}
 
 	@Override
 	public void scheduleConnect(Connection c) throws RemoteException {
-
+		checkValidConnect(c);
 		if (log.isInfoEnabled()) {
 			log.info("Scheduling connect for connection id " + c.getId() + "/"
 					+ c.getHostname());
@@ -178,15 +191,15 @@ public class ClientServiceImpl implements ClientService,
 		if (connection == null) {
 			log.warn("Ignoring a scheduled connection that no longer exists, probably deleted.");
 		} else {
-			timer.schedule(createJob(c),
-					reconnectSeconds * 1000);
+			timer.schedule(createJob(c), reconnectSeconds * 1000);
 		}
 
 	}
 
 	protected ConnectionJob createJob(Connection c) throws RemoteException {
-		return new ConnectionJob(getUrl(c), new Locale(configurationService.getValue("ui.locale",
-				"en")),this, bossExecutor, workerExecutor, resourceService, c, guiRegistry);
+		return new ConnectionJob(getUrl(c), new Locale(
+				configurationService.getValue("ui.locale", "en")), this,
+				bossExecutor, workerExecutor, resourceService, c, guiRegistry);
 	}
 
 	protected String getUrl(Connection c) {
@@ -223,16 +236,20 @@ public class ClientServiceImpl implements ClientService,
 			log.info("Disconnecting connection with id " + c.getId() + "/"
 					+ c.getHostname());
 		}
-		if (activeClients.containsKey(c)) {
-			activeClients.get(c).disconnect(false);
-		}
 
-		/**
-		 * Force removal here for final chance clean up
-		 */
-		activeClients.remove(c);
-		connectingClients.remove(c);
-		guiRegistry.disconnected(c, null);
+		if (activeClients.containsKey(c)) {
+			activeClients.remove(c).disconnect(false);
+		} else if (connectingClients.containsKey(c)) {
+			connectingClients.get(c).cancel();
+			connectingClients.remove(c);
+
+			/**
+			 * Force removal here for final chance clean up
+			 */
+			guiRegistry.disconnected(c, null);
+		} else {
+			throw new RemoteException("Not connected.");
+		}
 	}
 
 	@Override
@@ -254,7 +271,7 @@ public class ClientServiceImpl implements ClientService,
 		return ret;
 
 	}
-	
+
 	@Override
 	public boolean isGUINeedsUpdating() throws RemoteException {
 		return guiNeedsSeparateUpdate;
@@ -264,22 +281,10 @@ public class ClientServiceImpl implements ClientService,
 		return updating;
 	}
 
-	public boolean update(final Connection c) throws RemoteException {
+	public boolean update(final Connection c, ServiceClient client) throws RemoteException {
 		Version highestVersionAvailable = null;
-		Map.Entry<Connection, HypersocketClient<Connection>> updater = null;
-		for (Map.Entry<Connection, HypersocketClient<Connection>> en : activeClients
-				.entrySet()) {
-			if (c.getUpdateState() == UpdateState.UPDATE_REQUIRED) {
-				Version availableVersion = new Version(c.getServerVersion());
-				if (highestVersionAvailable == null
-						|| availableVersion.compareTo(highestVersionAvailable) > 0) {
-					highestVersionAvailable = availableVersion;
-					updater = en;
-				}
-			}
-		}
-
-		if (updater == null || "true".equals(System.getProperty("hypersocket.development.noUpdates"))) {
+		if (c.getUpdateState() != UpdateState.UPDATE_REQUIRED || "true".equals(System
+						.getProperty("hypersocket.development.noUpdates"))) {
 			log.info("No updates to do.");
 			guiNeedsSeparateUpdate = false;
 		} else {
@@ -289,13 +294,13 @@ public class ClientServiceImpl implements ClientService,
 			try {
 				updating = true;
 				guiNeedsSeparateUpdate = true;
-				
+
 				/*
 				 * For the client service, we use the local 'extension place'
 				 */
 				appsToUpdate = 1;
 				serviceUpdateJob = new ClientUpdater(guiRegistry, c,
-						updater.getValue(), ExtensionPlace.getDefault());
+						client, ExtensionPlace.getDefault());
 
 				/*
 				 * For the GUI, we get the extension place remotely, as the GUI
@@ -304,55 +309,55 @@ public class ClientServiceImpl implements ClientService,
 				 * 
 				 * However, it's possible the GUI is not yet running, so we only
 				 * do this if it is available. If this happens we may need to
-				 * update the GUI as well when it eventually  
-				 * 
+				 * update the GUI as well when it eventually
 				 */
 				ClientUpdater guiJob = null;
-				if(guiRegistry.hasGUI()) {
+				if (guiRegistry.hasGUI()) {
 					appsToUpdate++;
 					guiNeedsSeparateUpdate = false;
 					guiJob = new ClientUpdater(guiRegistry, c,
-							updater.getValue(), guiRegistry.getGUI().getExtensionPlace());
+							client, guiRegistry.getGUI()
+									.getExtensionPlace());
 				}
 
 				try {
 					guiRegistry.onUpdateInit(appsToUpdate);
-					
+
 					int updates = 0;
 
-					if(serviceUpdateJob.update()) {
-						updates++;
-					}
-					
-					if(guiJob != null && guiJob.update()) {
+					if (serviceUpdateJob.update()) {
 						updates++;
 					}
 
-					if(updates > 0) {
-						
+					if (guiJob != null && guiJob.update()) {
+						updates++;
+					}
+
+					if (updates > 0) {
+
 						/*
-						 * If when we started the update, the GUI wasn't attached, but it is now, 
-						 * then instead of restarting immediately, try to update any client extensions too
+						 * If when we started the update, the GUI wasn't
+						 * attached, but it is now, then instead of restarting
+						 * immediately, try to update any client extensions too
 						 */
-						if(guiNeedsSeparateUpdate && guiRegistry.hasGUI()) {
+						if (guiNeedsSeparateUpdate && guiRegistry.hasGUI()) {
 							guiNeedsSeparateUpdate = false;
 							appsToUpdate = 1;
 							guiJob = new ClientUpdater(guiRegistry, c,
-									updater.getValue(), guiRegistry.getGUI().getExtensionPlace());
+									client, guiRegistry.getGUI()
+											.getExtensionPlace());
 							guiRegistry.onUpdateInit(appsToUpdate);
 							guiJob.update();
-							
+
+							guiRegistry.onUpdateDone(null);
+							log.info("Update complete, restarting.");
+							restartCallback.run();
+						} else {
 							guiRegistry.onUpdateDone(null);
 							log.info("Update complete, restarting.");
 							restartCallback.run();
 						}
-						else {						
-							guiRegistry.onUpdateDone(null);
-							log.info("Update complete, restarting.");
-							restartCallback.run();
-						}
-					}
-					else {
+					} else {
 						guiRegistry.onUpdateDone("Nothing to update.");
 					}
 
@@ -380,18 +385,6 @@ public class ClientServiceImpl implements ClientService,
 				added.add(c);
 			}
 		}
-	}
-
-	@Override
-	public void connected(HypersocketClient<Connection> client) {
-		activeClients.put(client.getAttachment(), client);
-		connectingClients.remove(client.getAttachment());
-		guiRegistry.notify(client.getHost() + " connected", GUICallback.NOTIFY_CONNECT);
-	}
-
-	@Override
-	public void ready(HypersocketClient<Connection> client) {
-		startPlugins(client);
 	}
 
 	protected void stopPlugins(HypersocketClient<Connection> client) {
@@ -466,27 +459,6 @@ public class ClientServiceImpl implements ClientService,
 	}
 
 	@Override
-	public void disconnected(HypersocketClient<Connection> client,
-			boolean onError) {
-		activeClients.remove(client.getAttachment());
-		connectingClients.remove(client.getAttachment());
-
-		stopPlugins(client);
-		guiRegistry.notify(client.getHost() + " disconnected",
-				GUICallback.NOTIFY_DISCONNECT);
-	}
-
-	@Override
-	public void connectStarted(HypersocketClient<Connection> client) {
-		connectingClients.put(client.getAttachment(), client);
-	}
-
-	@Override
-	public void connectFailed(Exception e, HypersocketClient<Connection> client) {
-		connectingClients.remove(client.getAttachment());
-	}
-
-	@Override
 	public ConnectionService getConnectionService() throws RemoteException {
 		return connectionService;
 	}
@@ -498,7 +470,8 @@ public class ClientServiceImpl implements ClientService,
 	}
 
 	@Override
-	public byte[] getBlob(Connection connection, String path, long timeout) throws IOException {
+	public byte[] getBlob(Connection connection, String path, long timeout)
+			throws IOException {
 
 		HypersocketClient<Connection> s = null;
 		for (HypersocketClient<Connection> a : activeClients.values()) {
@@ -560,5 +533,25 @@ public class ClientServiceImpl implements ClientService,
 			connectionPlugins.put(newConnection, connectionPlugins.remove(c));
 		}
 		return newConnection;
+	}
+
+	public void finishedConnecting(Connection connection,
+			HypersocketClient<Connection> client) {
+		connectingClients.remove(connection);
+		activeClients.put(connection, client);
+		guiRegistry.started(connection);
+	}
+
+	public void failedToConnect(Connection connection, Throwable jpe) {
+		connectingClients.remove(connection);
+	}
+
+	public void disconnected(Connection connection,
+			HypersocketClient<Connection> client) {
+		activeClients.remove(client.getAttachment());
+		connectingClients.remove(client.getAttachment());
+		stopPlugins(client);
+		guiRegistry.notify(client.getHost() + " disconnected",
+				GUICallback.NOTIFY_DISCONNECT);
 	}
 }

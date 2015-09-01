@@ -1,5 +1,7 @@
 package com.hypersocket.service;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,5 +17,10 @@ public class ServiceManagementServiceImpl extends AbstractAuthenticatedServiceIm
 	@Override
 	public void registerService(ManageableService service) {
 		services.put(service.getResourceKey(), service);
+	}
+	
+	@Override
+	public Collection<ManageableService> getServices() {
+		return Collections.unmodifiableCollection(services.values());
 	}
 }

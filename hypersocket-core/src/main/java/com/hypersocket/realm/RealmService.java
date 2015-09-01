@@ -44,7 +44,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Principal createUser(Realm realm, String username,
 			Map<String, String> properties, List<Principal> principals,
-			String password, boolean forceChange)
+			String password, boolean forceChange, boolean selfCreated)
 			throws ResourceCreationException, AccessDeniedException;
 
 	Principal updateUser(Realm realm, Principal user, String username,
@@ -219,5 +219,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	long getPrincipalCount(Realm realm);
 
 	boolean getRealmPropertyBoolean(Realm realm, String string);
+
+	void registerPrincipalProcessor(PrincipalProcessor processor);
 
 }

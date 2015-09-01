@@ -17,10 +17,6 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +25,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -49,12 +46,19 @@ import com.hypersocket.realm.events.GroupEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.role.events.RoleCreatedEvent;
 import com.hypersocket.role.events.RoleDeletedEvent;
 import com.hypersocket.role.events.RoleEvent;
 import com.hypersocket.role.events.RoleUpdatedEvent;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.transactions.TransactionService;
+
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Element;
 
 @Service
 public class PermissionServiceImpl extends AuthenticatedServiceImpl
@@ -84,6 +88,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	Cache permissionsCache;
 	Cache roleCache;
 
+	@Autowired
+	TransactionService transactionService; 
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -590,6 +597,45 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			permissionsCache.removeAll();
 		}
 		
+	}
+
+	@Override
+	public void revokePermissions(final Principal principal, 
+			@SuppressWarnings("unchecked") final TransactionAdapter<Principal>... ops) 
+					throws ResourceException, AccessDeniedException {
+		
+		transactionService.doInTransaction(new TransactionCallback<Principal>() {
+
+			@Override
+			public Principal doInTransaction(TransactionStatus status) {
+				
+
+				for(TransactionAdapter<Principal> op : ops) {
+					op.beforeOperation(principal, new HashMap<String,String>());
+				}
+
+				try {
+					Role role = repository.getPersonalRole(principal, false);
+					if(role!=null) {
+						deleteRole(role);
+					}
+					
+					for(Role r : getPrincipalRoles(principal)) {
+						repository.unassignRole(r, principal);
+					}
+				} catch (Throwable e) {
+					throw new IllegalStateException(e);
+				}
+			
+				for(TransactionAdapter<Principal> op : ops) {
+					op.afterOperation(principal, new HashMap<String,String>());
+				}
+				
+				return principal;
+			}
+			
+		});
+
 	}
 
 }

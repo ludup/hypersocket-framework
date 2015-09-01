@@ -103,4 +103,6 @@ public interface PermissionRepository extends AbstractRepository<Long> {
 	void createRole(String name, Realm realm, boolean personalRole,
 			boolean allUsers, boolean allPermissions, boolean system,
 			Set<Permission> permissions);
+
+	Role getPersonalRole(Principal principal, boolean createIfNotFound);
 }

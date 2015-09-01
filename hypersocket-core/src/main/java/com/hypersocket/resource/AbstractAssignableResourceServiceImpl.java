@@ -305,6 +305,11 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 
 	@Override
+	public long getPersonalResourceCount() {
+		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(getCurrentPrincipal()), "");
+	}
+	
+	@Override
 	public List<T> searchResources(Realm realm, String search, int start,
 			int length, ColumnSort[] sorting) throws AccessDeniedException {
 

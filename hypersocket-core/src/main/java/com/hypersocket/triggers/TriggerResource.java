@@ -24,8 +24,11 @@ public class TriggerResource extends Task {
 
 	@Column(name = "result")
 	TriggerResultType result;
-
-	@Column(name = "event")
+	
+	@Column(name="trigger_type")
+	TriggerType triggerType = TriggerType.TRIGGER;
+	
+	@Column(name="event")
 	String event;
 
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "trigger", fetch = FetchType.EAGER)
@@ -39,6 +42,12 @@ public class TriggerResource extends Task {
 
 	@Column(name = "resource_key")
 	String resourceKey;
+	
+	@Column(name = "attachment_id")
+	Long attachmentId;
+	
+	@Column(name="all_realms")
+	Boolean allRealms;
 
 	public TriggerResultType getResult() {
 		return result;
@@ -111,4 +120,28 @@ public class TriggerResource extends Task {
 		return childTriggers;
 	}
 
+	public TriggerType getTriggerType() {
+		return triggerType;
+	}
+
+	public void setTriggerType(TriggerType triggerType) {
+		this.triggerType = triggerType;
+	}
+	
+	public Long getAttachmentId() {
+		return attachmentId;
+	}
+	
+	public void setAttachmentId(Long attachmentId) {
+		this.attachmentId = attachmentId;
+	}
+	
+	public Boolean getAllRealms() {
+		return allRealms==null ? false : allRealms;
+	}
+	
+	public void setAllRealms(Boolean allRealms) {
+		this.allRealms = allRealms;
+	}
+	
 }

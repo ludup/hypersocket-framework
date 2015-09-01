@@ -12,25 +12,35 @@ import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.TransactionAdapter;
 
 public interface TriggerResourceService extends
 		AbstractResourceService<TriggerResource> {
 
 	TriggerResource createResource(String name,
-			String event, TriggerResultType result, String task,
+			TriggerType type,
+			String event, 
+			TriggerResultType result, 
+			String task,
 			Map<String, String> properties,
 			Realm realm,
 			List<TriggerCondition> allConditions,
 			List<TriggerCondition> anyConditions, 
-			TriggerResource parent)
+			TriggerResource parent,
+			Long attachment,
+			boolean allRealms,
+			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
 			throws ResourceCreationException, AccessDeniedException;
 
 
-	TriggerResource updateResource(TriggerResource resource, String name,
+	TriggerResource updateResource(TriggerResource resource, String name, TriggerType type,
 			String event, TriggerResultType result, String task,
 			Map<String, String> properties,
 			List<TriggerCondition> allConditions,
-			List<TriggerCondition> anyConditions, TriggerResource parent)
+			List<TriggerCondition> anyConditions, TriggerResource parent,
+			Long attachment,
+			boolean allRealms,
+			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
 			throws ResourceChangeException, AccessDeniedException;
 	
 	void registerConditionProvider(TriggerConditionProvider condition);

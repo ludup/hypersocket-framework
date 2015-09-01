@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+
+<VBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Update">
+   <children>
+      <ImageView fx:id="icon" pickOnBounds="true" preserveRatio="true" styleClass="logo" />
+      <ProgressBar fx:id="progress" progress="0.0" />
+      <Label fx:id="message" alignment="CENTER" text="%updating" wrapText="true" />
+   </children>
+</VBox>

@@ -2,6 +2,7 @@ package com.hypersocket.triggers.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.triggers.TriggerType;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class TriggerResourceUpdate {
@@ -11,11 +12,13 @@ public class TriggerResourceUpdate {
 	String event;
 	String task;
 	String result;
+	TriggerType type;
 	TriggerActionUpdate[] actions;
 	TriggerConditionUpdate[] allConditions;
 	TriggerConditionUpdate[] anyConditions;
 	PropertyItem[] properties;
 	Long parentId;
+	boolean allRealms;
 	
 	public TriggerResourceUpdate() {
 		
@@ -100,5 +103,24 @@ public class TriggerResourceUpdate {
 	public void setTask(String task) {
 		this.task = task;
 	}
+
+	public TriggerType getType() {
+		return type;
+	}
+
+	public void setType(TriggerType type) {
+		this.type = type;
+	}
+
+	public boolean isAllRealms() {
+		return allRealms;
+	}
+
+	public void setAllRealms(boolean allRealms) {
+		this.allRealms = allRealms;
+	}
+	
+	
+	
 	
 }

@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -47,8 +48,10 @@ import com.hypersocket.session.events.SessionEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
 import com.hypersocket.tables.ColumnSort;
 
+import net.sf.uadetector.OperatingSystemFamily;
 import net.sf.uadetector.ReadableUserAgent;
 import net.sf.uadetector.UserAgentStringParser;
+import net.sf.uadetector.internal.data.domain.OperatingSystem;
 import net.sf.uadetector.service.UADetectorServiceFactory;
 
 @Service
@@ -141,19 +144,52 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			AuthenticationScheme completedScheme, String userAgent,
 			Map<String, String> parameters) {
 
+		Session session = null;
+		
 		if (userAgent == null) {
 			userAgent = "Unknown";
+		} else if(userAgent.startsWith("Hypersocket-Client")) {
+			
+			String[] values = userAgent.split(";");
+			
+			String agent = "Hypersocket Client";
+			String agentVersion = "1.0"; 
+			if(values.length > 1) {
+				agentVersion = values[1];
+			}
+			String os = "Unknown";
+			if(values.length > 2) {
+				if(values[2].toLowerCase().startsWith("windows")) {
+					os = "Windows";
+				} else if(values[2].toLowerCase().startsWith("mac os x")) {
+					os = "OS X";
+				} else if(values[2].toLowerCase().startsWith("linux")) {
+					os = "Linux";
+				} else {
+					os = values[2];
+				}
+			}
+			String osVersion = "Unknown";
+			if(values.length > 3) {
+				osVersion = values[3];
+			}
+			
+			session = repository.createSession(remoteAddress, principal,
+					completedScheme, agent, agentVersion, os, osVersion, 
+					configurationService.getIntValue(
+					principal.getRealm(), SESSION_TIMEOUT));
+		} else {
+			ReadableUserAgent ua = parser.parse(userAgent);
+
+			session = repository.createSession(remoteAddress, principal,
+					completedScheme, ua.getFamily().getName(), ua
+							.getVersionNumber().toVersionString(), ua
+							.getOperatingSystem().getFamily().getName(), ua
+							.getOperatingSystem().getVersionNumber()
+							.toVersionString(), configurationService.getIntValue(
+							principal.getRealm(), SESSION_TIMEOUT));
 		}
-		ReadableUserAgent ua = parser.parse(userAgent);
-
-		Session session = repository.createSession(remoteAddress, principal,
-				completedScheme, ua.getFamily().getName(), ua
-						.getVersionNumber().toVersionString(), ua
-						.getOperatingSystem().getFamily().getName(), ua
-						.getOperatingSystem().getVersionNumber()
-						.toVersionString(), configurationService.getIntValue(
-						principal.getRealm(), SESSION_TIMEOUT));
-
+		
 		eventService.publishEvent(new SessionOpenEvent(this, session));
 		return session;
 	}

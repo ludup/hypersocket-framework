@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +32,10 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HypersocketUtils {
+
+	public static final int ONE_MINUTE = 60000;
+	public static final int ONE_HOUR = ONE_MINUTE * 60;
+	public static final int ONE_DAY = ONE_HOUR * 24;
 
 	static Logger log = LoggerFactory.getLogger(HypersocketUtils.class);
 
@@ -120,6 +125,41 @@ public class HypersocketUtils {
 		return dateFormats.get(format).parse(date);
 	}
 	
+	public static Date today() {
+		
+		Calendar date = Calendar.getInstance();
+		date.set(Calendar.HOUR_OF_DAY, 0);
+		date.set(Calendar.MINUTE, 0);
+		date.set(Calendar.SECOND, 0);
+		date.set(Calendar.MILLISECOND, 0);
+		
+		return date.getTime();
+	}
+	
+	public static Date tomorrow() {
+		
+		Calendar date = Calendar.getInstance();
+		date.set(Calendar.HOUR_OF_DAY, 0);
+		date.set(Calendar.MINUTE, 0);
+		date.set(Calendar.SECOND, 0);
+		date.set(Calendar.MILLISECOND, 0);
+		
+		date.add(Calendar.DAY_OF_MONTH, 1);
+		
+		return date.getTime();
+	}
+	
+	public static Date yesterday() {
+		
+		Calendar date = Calendar.getInstance();
+		date.set(Calendar.HOUR_OF_DAY, 0);
+		date.set(Calendar.MINUTE, 0);
+		date.set(Calendar.SECOND, 0);
+		date.set(Calendar.MILLISECOND, 0);
+		
+		date.add(Calendar.DAY_OF_MONTH, -1);
+		return date.getTime();
+	}
 
 	/**
 	 * Strip the port from a host header.

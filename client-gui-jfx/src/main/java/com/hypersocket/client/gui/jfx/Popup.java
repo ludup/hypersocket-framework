@@ -1,5 +1,7 @@
 package com.hypersocket.client.gui.jfx;
 
+import org.controlsfx.control.PopOver;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -21,6 +23,8 @@ public class Popup extends Stage {
 	private boolean sizeObtained;
 	private double position;
 	private PositionType positionType;
+	private boolean dismiss;
+	private PopOver popOver;
 
 	public enum PositionType {
 		POSITIONED, DOCKED
@@ -34,12 +38,29 @@ public class Popup extends Stage {
 		this(parent, scene, dismissOnFocusLost, PositionType.DOCKED);
 	}
 
+	public boolean isDismiss() {
+		return dismiss;
+	}
+
+	public PopOver getPopOver() {
+		return popOver;
+	}
+
+	public void setPopOver(PopOver popOver) {
+		this.popOver = popOver;
+	}
+
+	public void setDismiss(boolean dismiss) {
+		this.dismiss = dismiss;
+	}
+
 	public Popup(Window parent, Scene scene, boolean dismissOnFocusLost,
 			PositionType positionType) {
 		super(
 				Platform.isSupported(ConditionalFeature.TRANSPARENT_WINDOW) ? StageStyle.TRANSPARENT
 						: StageStyle.UNDECORATED);
 
+		this.dismiss = dismissOnFocusLost;
 		this.positionType = positionType;
 
 		initOwner(parent);
@@ -60,17 +81,21 @@ public class Popup extends Stage {
 		};
 		widthProperty().addListener(l);
 
-		if (dismissOnFocusLost) {
-			focusedProperty().addListener(new ChangeListener<Boolean>() {
+		focusedProperty().addListener(new ChangeListener<Boolean>() {
 
-				@Override
-				public void changed(
-						ObservableValue<? extends Boolean> observable,
-						Boolean oldValue, Boolean newValue) {
-					/* NOTE - This may look crazy, but this seems to work-around
-					 * a bug in JavaFX / Mac OS X (1.8.0_51) that occurs when trying to 
-					 * hide a stage whilst processing a focus event. By placing both
-					 * operations on the event queue the problem goes away
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				if (dismiss) {
+					if(popOver != null && popOver.isShowing()) {
+						popOver.hide();
+					}
+					/*
+					 * NOTE - This may look crazy, but this seems to work-around
+					 * a bug in JavaFX / Mac OS X (1.8.0_51) that occurs when
+					 * trying to hide a stage whilst processing a focus event.
+					 * By placing both operations on the event queue the problem
+					 * goes away
 					 */
 					Platform.runLater(new Runnable() {
 						@Override
@@ -92,8 +117,8 @@ public class Popup extends Stage {
 						}
 					});
 				}
-			});
-		}
+			}
+		});
 
 		// Watch for all changes and reposition this popup if appropriate
 		ChangeListener<Boolean> cl = new ChangeListener<Boolean>() {
@@ -131,6 +156,14 @@ public class Popup extends Stage {
 		Client.setColors(scene);
 
 		sizeToScene();
+	}
+
+	public boolean isDismissOnFocusLost() {
+		return dismiss;
+	}
+
+	public void setDismissOnFocusLost(boolean dismiss) {
+		this.dismiss = dismiss;
 	}
 
 	@Override

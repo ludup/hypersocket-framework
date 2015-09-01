@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
@@ -120,7 +121,10 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	public void updateRole(Role role, Set<Principal> unassignPrincipals,
 			Set<Principal> assignPrincipals, Set<Permission> revokePermissions,
 			Set<Permission> grantPermissions) {
-		role.setResourceCategory("role");
+		
+		if(StringUtils.isBlank(role.getResourceCategory())) {
+			role.setResourceCategory("role");
+		}
 		save(role);
 		unassignRole(role, unassignPrincipals.toArray(new Principal[0]));
 		assignRole(role, assignPrincipals.toArray(new Principal[0]));
@@ -132,7 +136,9 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	@Transactional
 	public void saveRole(Role role, Realm realm, Principal[] principals,
 			Collection<Permission> permissions) {
-		role.setResourceCategory("role");
+		if(StringUtils.isBlank(role.getResourceCategory())) {
+			role.setResourceCategory("role");
+		}
 		save(role);
 		assignRole(role, principals);
 		grantPermissions(role, permissions);
@@ -465,10 +471,16 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 		return r;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional
 	public Role getPersonalRole(Principal principal) {
+		return getPersonalRole(principal, true);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional
+	public Role getPersonalRole(Principal principal, boolean createIfNotFound) {
 
 		Criteria crit = createCriteria(Role.class)
 				.setResultTransformer(
@@ -479,8 +491,10 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 
 		Set<Role> roles = new HashSet<Role>(crit.list());
 
-		if (roles.isEmpty()) {
+		if (roles.isEmpty() && createIfNotFound) {
 			return createPersonalRole(principal);
+		} else if(roles.isEmpty()) {
+			return null;
 		} else {
 			return roles.iterator().next();
 		}

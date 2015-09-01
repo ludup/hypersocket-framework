@@ -52,6 +52,8 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 		void finishedConnecting(Connection connection, Exception e);
 
+		void started(Connection connection);
+
 		void disconnecting(Connection connection);
 
 		void disconnected(Connection connection, Exception e);
@@ -62,7 +64,7 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 		void ping();
 
-		Map<String, String> showPrompts(List<Prompt> prompts);
+		Map<String, String> showPrompts(List<Prompt> prompts, int attempts, boolean success);
 
 		void initUpdate(int apps);
 
@@ -284,10 +286,10 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	}
 
 	@Override
-	public Map<String, String> showPrompts(List<Prompt> prompts)
+	public Map<String, String> showPrompts(List<Prompt> prompts, int attempts, boolean success)
 			throws RemoteException {
 		for (Listener l : new ArrayList<Listener>(listeners)) {
-			Map<String, String> m = l.showPrompts(prompts);
+			Map<String, String> m = l.showPrompts(prompts, attempts, success);
 			if (m != null) {
 				return m;
 			}
@@ -325,6 +327,7 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	@Override
 	public void disconnected(Connection connection, String errorMessage)
 			throws RemoteException {
+		log.info("Bridge disconnected " + connection  + " (" + errorMessage + ")");
 		Exception e = errorMessage == null ? null : new Exception(errorMessage);
 		for (Listener l : new ArrayList<Listener>(listeners)) {
 			l.disconnected(connection, e);
@@ -334,6 +337,16 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	@Override
 	public void transportConnected(Connection connection)
 			throws RemoteException {
+	}
+
+	@Override
+	public void started(Connection connection) throws RemoteException {
+		log.info("Connection " + connection + " is now started");
+		for (Listener l : new ArrayList<Listener>(listeners)) {
+			l.started(connection);
+		}
+		notify(connection.getHostname() + " connected",
+				GUICallback.NOTIFY_CONNECT);
 	}
 
 	@Override

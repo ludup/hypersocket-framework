@@ -4,6 +4,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -29,7 +30,6 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
-import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
@@ -43,14 +43,17 @@ import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
+import com.hypersocket.triggers.TriggerCondition;
+import com.hypersocket.triggers.TriggerResource;
+import com.hypersocket.triggers.TriggerResourceService;
+import com.hypersocket.triggers.TriggerResultType;
+import com.hypersocket.triggers.TriggerType;
 
 @Service
-public class AutomationResourceServiceImpl extends
-		AbstractResourceServiceImpl<AutomationResource> implements
-		AutomationResourceService, ApplicationListener<ContextStartedEvent> {
+public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<AutomationResource>
+		implements AutomationResourceService, ApplicationListener<ContextStartedEvent> {
 
-	private static Logger log = LoggerFactory
-			.getLogger(AutomationResourceServiceImpl.class);
+	private static Logger log = LoggerFactory.getLogger(AutomationResourceServiceImpl.class);
 
 	public static final String RESOURCE_BUNDLE = "AutomationResourceService";
 
@@ -69,9 +72,6 @@ public class AutomationResourceServiceImpl extends
 	EventService eventService;
 
 	@Autowired
-	EntityResourcePropertyStore entityPropertyStore;
-
-	@Autowired
 	SchedulerService schedulerService;
 
 	@Autowired
@@ -80,20 +80,21 @@ public class AutomationResourceServiceImpl extends
 	@Autowired
 	RealmRepository realmRepository;
 
+	@Autowired
+	TriggerResourceService triggerService;
+
 	public AutomationResourceServiceImpl() {
 		super("automationResource");
 	}
-	
+
 	@PostConstruct
 	private void postConstruct() {
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-		PermissionCategory cat = permissionService.registerPermissionCategory(
-				RESOURCE_BUNDLE, "category.automation");
+		PermissionCategory cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE, "category.automation");
 
-		for (AutomationResourcePermission p : AutomationResourcePermission
-				.values()) {
+		for (AutomationResourcePermission p : AutomationResourcePermission.values()) {
 			permissionService.registerPermission(p, cat);
 		}
 
@@ -103,20 +104,17 @@ public class AutomationResourceServiceImpl extends
 		 * Register the events. All events have to be registerd so the system
 		 * knows about them.
 		 */
-		eventService.registerEvent(AutomationResourceEvent.class,
-				RESOURCE_BUNDLE, this);
-		eventService.registerEvent(AutomationResourceCreatedEvent.class,
-				RESOURCE_BUNDLE, this);
-		eventService.registerEvent(AutomationResourceUpdatedEvent.class,
-				RESOURCE_BUNDLE, this);
-		eventService.registerEvent(AutomationResourceDeletedEvent.class,
-				RESOURCE_BUNDLE, this);
-		eventService.registerEvent(AutomationTaskStartedEvent.class,
-				RESOURCE_BUNDLE);
-		eventService.registerEvent(AutomationTaskFinishedEvent.class,
-				RESOURCE_BUNDLE);
-		entityPropertyStore.registerResourceService(AutomationResource.class,
-				repository);
+		eventService.registerEvent(AutomationResourceEvent.class, RESOURCE_BUNDLE, this);
+		eventService.registerEvent(AutomationResourceCreatedEvent.class, RESOURCE_BUNDLE, this);
+		eventService.registerEvent(AutomationResourceUpdatedEvent.class, RESOURCE_BUNDLE, this);
+		eventService.registerEvent(AutomationResourceDeletedEvent.class, RESOURCE_BUNDLE, this);
+		eventService.registerEvent(AutomationTaskStartedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(AutomationTaskFinishedEvent.class, RESOURCE_BUNDLE);
+<<<<<<< Updated upstream
+		repository.getEntityStore().registerResourceService(AutomationResource.class, repository);
+=======
+		entityPropertyStore.registerResourceService(AutomationResource.class, repository);
+>>>>>>> Stashed changes
 	}
 
 	@Override
@@ -133,45 +131,37 @@ public class AutomationResourceServiceImpl extends
 	public Class<AutomationResourcePermission> getPermissionType() {
 		return AutomationResourcePermission.class;
 	}
-	
+
 	protected Class<AutomationResource> getResourceClass() {
 		return AutomationResource.class;
 	}
-	
+
 	@Override
 	protected void fireResourceCreationEvent(AutomationResource resource) {
-		eventService.publishEvent(new AutomationResourceCreatedEvent(this,
-				getCurrentSession(), resource));
+		eventService.publishEvent(new AutomationResourceCreatedEvent(this, getCurrentSession(), resource));
 	}
 
 	@Override
-	protected void fireResourceCreationEvent(AutomationResource resource,
-			Throwable t) {
-		eventService.publishEvent(new AutomationResourceCreatedEvent(this,
-				resource, t, getCurrentSession()));
+	protected void fireResourceCreationEvent(AutomationResource resource, Throwable t) {
+		eventService.publishEvent(new AutomationResourceCreatedEvent(this, resource, t, getCurrentSession()));
 	}
 
 	@Override
 	protected void fireResourceUpdateEvent(AutomationResource resource) {
-		eventService.publishEvent(new AutomationResourceUpdatedEvent(this,
-				getCurrentSession(), resource));
+		eventService.publishEvent(new AutomationResourceUpdatedEvent(this, getCurrentSession(), resource));
 	}
 
 	@Override
-	protected void fireResourceUpdateEvent(AutomationResource resource,
-			Throwable t) {
-		eventService.publishEvent(new AutomationResourceUpdatedEvent(this,
-				resource, t, getCurrentSession()));
+	protected void fireResourceUpdateEvent(AutomationResource resource, Throwable t) {
+		eventService.publishEvent(new AutomationResourceUpdatedEvent(this, resource, t, getCurrentSession()));
 	}
 
-	protected void afterDeleteResource(AutomationResource resource)
-			throws ResourceChangeException {
+	protected void afterDeleteResource(AutomationResource resource) throws ResourceChangeException {
 		try {
 			unschedule(resource);
 
 		} catch (SchedulerException e) {
-			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"error.couldNotUnschedule", resource.getName(),
+			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.couldNotUnschedule", resource.getName(),
 					e.getMessage());
 		}
 	}
@@ -179,20 +169,16 @@ public class AutomationResourceServiceImpl extends
 	@Override
 	protected void fireResourceDeletionEvent(AutomationResource resource) {
 
-		eventService.publishEvent(new AutomationResourceDeletedEvent(this,
-				getCurrentSession(), resource));
+		eventService.publishEvent(new AutomationResourceDeletedEvent(this, getCurrentSession(), resource));
 	}
 
 	@Override
-	protected void fireResourceDeletionEvent(AutomationResource resource,
-			Throwable t) {
-		eventService.publishEvent(new AutomationResourceDeletedEvent(this,
-				resource, t, getCurrentSession()));
+	protected void fireResourceDeletionEvent(AutomationResource resource, Throwable t) {
+		eventService.publishEvent(new AutomationResourceDeletedEvent(this, resource, t, getCurrentSession()));
 	}
 
 	@Override
-	public AutomationResource updateResource(AutomationResource resource,
-			String name, Map<String, String> properties)
+	public AutomationResource updateResource(AutomationResource resource, String name, Map<String, String> properties)
 			throws ResourceChangeException, AccessDeniedException {
 
 		resource.setName(name);
@@ -200,8 +186,7 @@ public class AutomationResourceServiceImpl extends
 		updateResource(resource, properties, new TransactionAdapter<AutomationResource>() {
 
 			@Override
-			public void afterOperation(AutomationResource resource,
-					Map<String, String> properties) {
+			public void afterOperation(AutomationResource resource, Map<String, String> properties) {
 				setProperties(resource, properties);
 				schedule(resource);
 			}
@@ -210,10 +195,10 @@ public class AutomationResourceServiceImpl extends
 		return resource;
 	}
 
-	private void setProperties(AutomationResource resource, Map<String,String> properties) {
+	private void setProperties(AutomationResource resource, Map<String, String> properties) {
 		TaskProvider provider = taskService.getTaskProvider(resource);
-		for(String resourceKey : provider.getPropertyNames(resource)) {
-			if(properties.containsKey(resourceKey)) {
+		for (String resourceKey : provider.getPropertyNames(resource)) {
+			if (properties.containsKey(resourceKey)) {
 				provider.getRepository().setValue(resource, resourceKey, properties.get(resourceKey));
 			}
 		}
@@ -232,8 +217,7 @@ public class AutomationResourceServiceImpl extends
 
 		if (!StringUtils.isEmpty(time)) {
 			int idx = time.indexOf(':');
-			c.set(Calendar.HOUR_OF_DAY,
-					Integer.parseInt(time.substring(0, idx)));
+			c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(time.substring(0, idx)));
 			c.set(Calendar.MINUTE, Integer.parseInt(time.substring(idx + 1)));
 			ret = c.getTime();
 		}
@@ -241,8 +225,7 @@ public class AutomationResourceServiceImpl extends
 		return ret;
 	}
 
-	protected void unschedule(AutomationResource resource)
-			throws SchedulerException {
+	protected void unschedule(AutomationResource resource) throws SchedulerException {
 
 		if (scheduleIdsByResource.containsKey(resource.getId())) {
 			String scheduleId = scheduleIdsByResource.remove(resource.getId());
@@ -252,10 +235,8 @@ public class AutomationResourceServiceImpl extends
 
 	protected void schedule(AutomationResource resource) {
 
-		Date start = calculateDateTime(resource.getStartDate(),
-				resource.getStartTime());
-		Date end = calculateDateTime(resource.getEndDate(),
-				resource.getEndTime());
+		Date start = calculateDateTime(resource.getStartDate(), resource.getStartTime());
+		Date end = calculateDateTime(resource.getEndDate(), resource.getEndTime());
 
 		int interval = 0;
 		int repeat = -1;
@@ -283,8 +264,7 @@ public class AutomationResourceServiceImpl extends
 			}
 		}
 
-		PermissionsAwareJobData data = new PermissionsAwareJobData(
-				resource.getRealm(), resource.getName());
+		PermissionsAwareJobData data = new PermissionsAwareJobData(resource.getRealm(), resource.getName());
 		data.put("resourceId", resource.getId());
 
 		try {
@@ -297,11 +277,9 @@ public class AutomationResourceServiceImpl extends
 
 				try {
 					if (start == null || start.before(new Date())) {
-						schedulerService.rescheduleNow(scheduleId, interval,
-								repeat, end);
+						schedulerService.rescheduleNow(scheduleId, interval, repeat, end);
 					} else {
-						schedulerService.rescheduleAt(scheduleId, start,
-								interval, repeat, end);
+						schedulerService.rescheduleAt(scheduleId, start, interval, repeat, end);
 					}
 					return;
 				} catch (NotScheduledException e) {
@@ -314,26 +292,21 @@ public class AutomationResourceServiceImpl extends
 			}
 
 			if (start == null || start.before(new Date())) {
-				scheduleId = schedulerService.scheduleNow(AutomationJob.class,
-						data, interval, repeat, end);
+				scheduleId = schedulerService.scheduleNow(AutomationJob.class, data, interval, repeat, end);
 			} else {
-				scheduleId = schedulerService.scheduleAt(AutomationJob.class,
-						data, start, interval, repeat, end);
+				scheduleId = schedulerService.scheduleAt(AutomationJob.class, data, start, interval, repeat, end);
 			}
 
 			scheduleIdsByResource.put(resource.getId(), scheduleId);
 
 		} catch (SchedulerException e) {
-			log.error(
-					"Failed to schedule automation task " + resource.getName(),
-					e);
+			log.error("Failed to schedule automation task " + resource.getName(), e);
 		}
 	}
 
 	@Override
-	public AutomationResource createResource(String name, Realm realm,
-			Map<String, String> properties) throws ResourceCreationException,
-			AccessDeniedException {
+	public AutomationResource createResource(String name, Realm realm, Map<String, String> properties)
+			throws ResourceCreationException, AccessDeniedException {
 
 		AutomationResource resource = new AutomationResource();
 		resource.setName(name);
@@ -342,8 +315,7 @@ public class AutomationResourceServiceImpl extends
 		createResource(resource, properties, new TransactionAdapter<AutomationResource>() {
 
 			@Override
-			public void afterOperation(AutomationResource resource,
-					Map<String, String> properties) {
+			public void afterOperation(AutomationResource resource, Map<String, String> properties) {
 				setProperties(resource, properties);
 				schedule(resource);
 			}
@@ -353,14 +325,12 @@ public class AutomationResourceServiceImpl extends
 	}
 
 	@Override
-	public Collection<PropertyCategory> getPropertyTemplate(String resourceKey)
-			throws AccessDeniedException {
+	public Collection<PropertyCategory> getPropertyTemplate(String resourceKey) throws AccessDeniedException {
 
 		assertPermission(AutomationResourcePermission.READ);
 
 		TaskProvider provider = taskService.getTaskProvider(resourceKey);
-		Collection<PropertyCategory> results = provider.getRepository()
-				.getPropertyCategories(null);
+		Collection<PropertyCategory> results = provider.getRepository().getPropertyCategories(null);
 
 		results.addAll(repository.getPropertyCategories(null));
 
@@ -368,14 +338,12 @@ public class AutomationResourceServiceImpl extends
 	}
 
 	@Override
-	public Collection<PropertyCategory> getPropertyTemplate(
-			AutomationResource resource) throws AccessDeniedException {
+	public Collection<PropertyCategory> getPropertyTemplate(AutomationResource resource) throws AccessDeniedException {
 
 		assertPermission(AutomationResourcePermission.READ);
 
 		TaskProvider provider = taskService.getTaskProvider(resource);
-		Collection<PropertyCategory> results = provider.getRepository()
-				.getPropertyCategories(resource);
+		Collection<PropertyCategory> results = provider.getRepository().getPropertyCategories(resource);
 
 		results.addAll(repository.getPropertyCategories(resource));
 
@@ -383,10 +351,69 @@ public class AutomationResourceServiceImpl extends
 	}
 
 	@Override
-	public Collection<PropertyCategory> getPropertyTemplate()
-			throws AccessDeniedException {
-		throw new IllegalStateException(
-				"AutomationResource needs provider resource key to return property templates");
+	public Collection<PropertyCategory> getPropertyTemplate() throws AccessDeniedException {
+		throw new IllegalStateException("AutomationResource needs provider resource key to return property templates");
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public AutomationResource createTrigger(String name,
+			String event, 
+			TriggerResultType result, 
+			String task,
+			Map<String, String> properties,
+			Realm realm,
+			List<TriggerCondition> allConditions,
+			List<TriggerCondition> anyConditions, 
+			final TriggerResource parent,
+			final AutomationResource automation)
+			throws ResourceCreationException, AccessDeniedException {
+		
+		triggerService.createResource(name, TriggerType.AUTOMATION, event,
+				result, task, properties, realm, allConditions,
+<<<<<<< Updated upstream
+				anyConditions, parent, automation.getId(), false, new TransactionAdapter<TriggerResource>() {
+=======
+				anyConditions, parent, automation.getId(), new TransactionAdapter<TriggerResource>() {
+>>>>>>> Stashed changes
+			@Override
+			public void afterOperation(TriggerResource resource, Map<String, String> properties) {
+				
+				if(parent==null) {
+					automation.getChildTriggers().add(resource);
+					try {
+						updateResource(automation);
+					} catch (ResourceChangeException e) {
+						throw new IllegalStateException(e);
+					} catch (AccessDeniedException e) {
+						throw new IllegalStateException(e);
+					}
+				}
+			}
+		});
+		
+		repository.refresh(automation);
+		return automation;
+		
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public AutomationResource updateTrigger(TriggerResource trigger, String name, String event,
+			TriggerResultType result, String task, Map<String, String> properties, List<TriggerCondition> allConditions,
+			List<TriggerCondition> anyConditions, final TriggerResource parent, final AutomationResource automation)
+					throws ResourceChangeException, AccessDeniedException {
+		
+		triggerService.updateResource(trigger, name, TriggerType.AUTOMATION, event,
+				result, task, properties, allConditions,
+<<<<<<< Updated upstream
+				anyConditions, parent, automation.getId(), false);
+=======
+				anyConditions, parent, automation.getId());
+>>>>>>> Stashed changes
+		
+		repository.refresh(automation);
+		return automation;
 	}
 
 	@Override
@@ -437,11 +464,11 @@ public class AutomationResourceServiceImpl extends
 		JobDataMap data = new JobDataMap();
 		data.put("jobName", "automationDailyJob");
 		try {
-			schedulerService.scheduleAt(DailySchedulerJob.class, data,
-					c.getTime());
+			schedulerService.scheduleAt(DailySchedulerJob.class, data, c.getTime());
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule daily automation jobs", e);
 		}
 
 	}
+
 }

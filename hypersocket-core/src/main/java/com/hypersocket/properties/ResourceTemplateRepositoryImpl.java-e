@@ -626,23 +626,14 @@ public abstract class ResourceTemplateRepositoryImpl extends
 			}
 			
 			if(template==null) {
-				if(resource==null) {
-					System.out.println();
-				}
-				if(resourceKey==null) {
-					System.out.println();
-				}
-				if(value==null) {
-					System.out.println();
-				}
 				configPropertyStore.setProperty(resource, resourceKey, value);
 				return;
 			}
 		}
 
-		if (template.isReadOnly()) {
-			return;
-		}
+//		if (template.isReadOnly()) {
+//			return;
+//		}
 
 		((ResourcePropertyStore) template.getPropertyStore()).setPropertyValue(
 				template, resource, value);

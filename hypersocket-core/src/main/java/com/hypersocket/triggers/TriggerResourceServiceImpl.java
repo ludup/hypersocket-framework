@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
@@ -260,20 +261,24 @@ public class TriggerResourceServiceImpl extends
 
 	@Override
 	public TriggerResource updateResource(TriggerResource resource,
-			String name, String event, TriggerResultType result, String task,
+			String name, TriggerType type, String event, TriggerResultType result,
+			String task,
 			Map<String, String> properties,
 			List<TriggerCondition> allConditions,
-			List<TriggerCondition> anyConditions, TriggerResource parent)
+			List<TriggerCondition> anyConditions, TriggerResource parent,
+			Long attachment,
+			boolean allRealms,
+			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
 			throws ResourceChangeException, AccessDeniedException {
 
 		resource.setName(name);
 		resource.getConditions().clear();
 
 		populateTrigger(name, event, result, task, resource.getRealm(),
-				resource, allConditions, anyConditions, parent);
+				resource, allConditions, anyConditions, parent, attachment, allRealms);
 
 		updateResource(resource, properties,
-				new TransactionAdapter<TriggerResource>() {
+				ArrayUtils.add(ops, 0, new TransactionAdapter<TriggerResource>() {
 
 					@Override
 					public void afterOperation(TriggerResource resource,
@@ -284,7 +289,7 @@ public class TriggerResourceServiceImpl extends
 								.setValues(resource, properties);
 					}
 
-				});
+				}));
 
 		TaskProvider provider = taskService.getTaskProvider(resource
 				.getResourceKey());
@@ -294,20 +299,26 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	@Override
-	public TriggerResource createResource(String name, String event,
-			TriggerResultType result, String task,
-			Map<String, String> properties, Realm realm,
-			List<TriggerCondition> allConditions,
-			List<TriggerCondition> anyConditions, TriggerResource parent)
+	public TriggerResource createResource(String name, TriggerType type,
+			String event,
+			TriggerResultType result, String task, Map<String, String> properties,
+			Realm realm, List<TriggerCondition> allConditions, 
+			List<TriggerCondition> anyConditions,
+			TriggerResource parent,
+			Long attachment, 
+			boolean allRealms,
+			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
 			throws ResourceCreationException, AccessDeniedException {
 
 		TriggerResource resource = new TriggerResource();
-
-		populateTrigger(name, event, result, task, realm, resource,
-				allConditions, anyConditions, parent);
+		
+		resource.setTriggerType(type);
+		
+		populateTrigger(name, event, result, task, realm, resource, allConditions,
+				anyConditions,  parent, attachment, allRealms);
 
 		createResource(resource, properties,
-				new TransactionAdapter<TriggerResource>() {
+				ArrayUtils.add(ops, 0, new TransactionAdapter<TriggerResource>() {
 
 					@Override
 					public void afterOperation(TriggerResource resource,
@@ -320,7 +331,7 @@ public class TriggerResourceServiceImpl extends
 
 					}
 
-				});
+				}));
 
 		TaskProvider provider = taskService.getTaskProvider(resource
 				.getResourceKey());
@@ -361,7 +372,7 @@ public class TriggerResourceServiceImpl extends
 	private void populateTrigger(String name, String event,
 			TriggerResultType result, String task, Realm realm,
 			TriggerResource resource, List<TriggerCondition> allConditions,
-			List<TriggerCondition> anyConditions, TriggerResource parent) {
+			List<TriggerCondition> anyConditions, TriggerResource parent, Long attachment, boolean allRealms) {
 
 		resource.setName(name);
 		resource.setEvent(event);
@@ -370,7 +381,9 @@ public class TriggerResourceServiceImpl extends
 		resource.setResourceKey(task);
 		resource.setParentTrigger(parent);
 		resource.getConditions().clear();
-
+		resource.setAttachmentId(attachment);
+		resource.setAllRealms(allRealms);
+		
 		for (TriggerCondition c : allConditions) {
 			c.setType(TriggerConditionType.ALL);
 			c.setTrigger(resource);

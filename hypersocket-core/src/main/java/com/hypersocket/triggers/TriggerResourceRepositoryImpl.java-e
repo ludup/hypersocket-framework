@@ -83,11 +83,11 @@ public class TriggerResourceRepositoryImpl extends
 				 */
 				criteria.add(Restrictions.or(
 						Restrictions.eq("realm", event.getCurrentRealm()),
-						Restrictions.eq("realm", realmService.getSystemRealm())));
+						Restrictions.and(Restrictions.eq("allRealms", true) , 
+								Restrictions.eq("realm", realmService.getSystemRealm()))));
 				
 				criteria.add(Restrictions.isNull("parentTrigger"));
-				
-				
+
 				String[] events = event.getResourceKeys();
 				if(!ArrayUtils.contains(events, event.getResourceKey())) {
 					events = ArrayUtils.add(events, event.getResourceKey());
@@ -97,6 +97,9 @@ public class TriggerResourceRepositoryImpl extends
 				}
 				
 				criteria.add(Restrictions.in("event",events));
+				criteria.add(Restrictions.or(Restrictions.isNull("triggerType"), 
+						Restrictions.eq("triggerType", TriggerType.TRIGGER)));
+
 			}
 		});
 

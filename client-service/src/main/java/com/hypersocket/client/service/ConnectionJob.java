@@ -15,6 +15,7 @@ import com.hypersocket.HypersocketVersion;
 import com.hypersocket.Version;
 import com.hypersocket.client.HypersocketClient;
 import com.hypersocket.client.HypersocketClientAdapter;
+import com.hypersocket.client.HypersocketClientListener;
 import com.hypersocket.client.UserCancelledException;
 import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.client.rmi.Connection.UpdateState;
@@ -56,11 +57,32 @@ public class ConnectionJob extends TimerTask {
 			log.info("Connecting to " + url);
 		}
 
+		HypersocketClientListener<Connection> listener = new HypersocketClientAdapter<Connection>() {
+			@Override
+			public void disconnected(
+					HypersocketClient<Connection> client,
+					boolean onError) {
+				clientService.disconnected(connection, client);
+				guiRegistry
+				.disconnected(
+						connection,
+						onError ? "Error occured during connection."
+								: null);
+				if (client.getAttachment().isStayConnected()
+						&& onError) {
+					try {
+						clientService.scheduleConnect(connection);
+					} catch (RemoteException e1) {
+					}
+				}
+			}
+		};
+
 		ServiceClient client = null;
 		try {
 
 			client = new ServiceClient(new NettyClientTransport(boss, worker),
-					locale, clientService, resourceService, connection,
+					locale, listener, resourceService, connection,
 					guiRegistry);
 
 			client.connect(connection.getHostname(), connection.getPort(),
@@ -111,26 +133,7 @@ public class ConnectionJob extends TimerTask {
 					connection.setUpdateState(checkIfUpdateRequired(client,
 							version) ? UpdateState.UPDATE_REQUIRED
 							: UpdateState.UP_TO_DATE);
-
-					client.addListener(new HypersocketClientAdapter<Connection>() {
-						@Override
-						public void disconnected(
-								HypersocketClient<Connection> client,
-								boolean onError) {
-							guiRegistry
-									.disconnected(
-											connection,
-											onError ? "Error occured during connection."
-													: null);
-							if (client.getAttachment().isStayConnected()
-									&& onError) {
-								try {
-									clientService.scheduleConnect(connection);
-								} catch (RemoteException e1) {
-								}
-							}
-						}
-					});
+					client.addListener(listener);
 
 					if (log.isInfoEnabled()) {
 						log.info("Logged into " + url);
@@ -146,10 +149,11 @@ public class ConnectionJob extends TimerTask {
 					 * Now check for updates. If there are any, we don't start any plugins
 					 * for this connection, and the GUI will not be told to load its resources
 					 */
-					if(!clientService.update(connection)) {
+					if(!clientService.update(connection, client)) {
 						clientService.startPlugins(client);
 						guiRegistry.loadResources(connection);
 					}
+					clientService.finishedConnecting(connection, client);
 					
 				} else {
 					throw new Exception("Server refused to supply version. "
@@ -162,6 +166,7 @@ public class ConnectionJob extends TimerTask {
 				}
 				client.disconnect(false);
 				guiRegistry.failedToConnect(connection, reply);
+				clientService.failedToConnect(connection, jpe);
 			}
 
 		} catch (Throwable e) {
@@ -169,6 +174,7 @@ public class ConnectionJob extends TimerTask {
 				log.error("Failed to connect " + url, e);
 			}
 			guiRegistry.failedToConnect(connection, e.getMessage());
+			clientService.failedToConnect(connection, e);
 
 			if (!(e instanceof UserCancelledException)) {
 				if (StringUtils.isNotBlank(connection.getUsername())
@@ -177,12 +183,13 @@ public class ConnectionJob extends TimerTask {
 					if (connection.isStayConnected()) {
 						try {
 							clientService.scheduleConnect(connection);
+							return;
 						} catch (RemoteException e1) {
 						}
 					}
 				}
 			}
-		}
+		} 
 
 	}
 
