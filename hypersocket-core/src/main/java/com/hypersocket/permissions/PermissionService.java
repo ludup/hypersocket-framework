@@ -16,7 +16,9 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.tables.ColumnSort;
 
 public interface PermissionService extends AuthenticatedService {
@@ -85,5 +87,9 @@ public interface PermissionService extends AuthenticatedService {
 			PermissionCategory category);
 
 	void grantPermission(Role everyone, Permission permission) throws AccessDeniedException, ResourceChangeException;
+
+	void revokePermissions(Principal principal, @SuppressWarnings("unchecked") TransactionAdapter<Principal>... ops)
+			throws ResourceException, AccessDeniedException;
+
 
 }

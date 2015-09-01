@@ -59,6 +59,19 @@ public class GUIRegistry {
 		}
 	}
 
+	public void started(Connection connection) {
+		synchronized (lock) {
+			try {
+				if (gui != null && guiAttached) {
+					log.info("Informing GUI " + connection + " to start");
+					gui.started(connection);
+				}
+			} catch (RemoteException re) {
+				log.error("Failed to inform GUI of readyness.", re);
+			}
+		}
+	}
+
 	public void ready(Connection connection) {
 		synchronized (lock) {
 			try {
@@ -92,7 +105,7 @@ public class GUIRegistry {
 			try {
 				if (gui != null && guiAttached) {
 					gui.failedToConnect(connection,
-							"Failed to get version from server " + reply);
+							"Could not connect. " + reply);
 				}
 			} catch (RemoteException re) {
 				log.error("Failed to inform GUI of connection failure.", re);
@@ -105,7 +118,7 @@ public class GUIRegistry {
 		synchronized (lock) {
 			try {
 				if (gui != null && guiAttached) {
-					gui.disconnected(connection, "Failed to disconnect. "
+					gui.disconnected(connection, "Disconnected. "
 							+ message);
 				}
 			} catch (RemoteException re) {

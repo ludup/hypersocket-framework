@@ -278,10 +278,11 @@ public abstract class HypersocketClient<T> {
 			if (!isLoggedOn() && prompts.size() > 0) {
 				
 				// If failed, and it's not the very first attempt (i.e. the one that triggers username and password entry), show an error
-				if(!success)
+				if(!success) {
 					showError("Incorrect username or password.");
+				}
 				
-				Map<String, String> results  = showLogin(prompts);
+				Map<String, String> results  = showLogin(prompts, attempts, success);
 				
 				if (results != null) {
 
@@ -435,8 +436,8 @@ public abstract class HypersocketClient<T> {
 		return transport.get("realm/" + name);
 	}
 	
-	protected abstract Map<String, String> showLogin(List<Prompt> prompts) throws IOException;
-
+	protected abstract Map<String, String> showLogin(List<Prompt> prompts, int attempt, boolean success) throws IOException;
+	
 	public abstract void showWarning(String msg);
 
 	public abstract void showError(String msg);

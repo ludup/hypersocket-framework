@@ -71,8 +71,8 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	public final void sendEmail(Realm realm, String subject, String text, String html, Recipient[] recipients, EmailAttachment... attachments) throws MailException {
 		Email email = new Email();
 		
-		email.setFromAddress(configurationService.getValue(SMTP_FROM_NAME), 
-				configurationService.getValue(SMTP_FROM_ADDRESS));
+		email.setFromAddress(configurationService.getValue(realm, SMTP_FROM_NAME), 
+				configurationService.getValue(realm, SMTP_FROM_ADDRESS));
 		
 		for(Recipient r : recipients) {
 			email.addRecipient(r.getName(), r.getAddress(), r.getType());

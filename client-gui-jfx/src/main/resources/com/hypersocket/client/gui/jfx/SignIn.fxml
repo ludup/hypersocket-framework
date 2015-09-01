@@ -8,46 +8,40 @@
 
 <VBox fx:id="root" alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="background" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.SignIn">
    <children>
-      <BorderPane fx:id="messageContainer">
-         <left>
-            <Label fx:id="messageIcon" alignment="CENTER" prefHeight="28.0" prefWidth="28.0" styleClass="messageIcon" text="*" textAlignment="CENTER" BorderPane.alignment="CENTER" />
-         </left>
-         <center>
-            <Label fx:id="messageText" text="Message Text" wrapText="true" BorderPane.alignment="CENTER_LEFT" />
-         </center>
-         <opaqueInsets>
-            <Insets />
-         </opaqueInsets>
-         <VBox.margin>
-            <Insets bottom="8.0" />
-         </VBox.margin>
-      </BorderPane>
       <Label text="%serverURL">
          <padding>
             <Insets bottom="8.0" />
          </padding>
       </Label>
-      <HBox spacing="4.0" VBox.vgrow="ALWAYS">
+      <HBox alignment="CENTER_LEFT" spacing="4.0" VBox.vgrow="ALWAYS">
          <children>
-            <ComboBox fx:id="serverUrls" editable="true" maxWidth="1.7976931348623157E308" onAction="#evtServerUrlSelected" promptText="%urlPrompt" styleClass="input" HBox.hgrow="SOMETIMES">
-               <tooltip>
-                  <Tooltip text="%serverURL.tooltip" wrapText="true" />
-               </tooltip>
-            </ComboBox>
-            <Button fx:id="connect" mnemonicParsing="false" onAction="#evtConnect" text="%connect.icon" textOverrun="CLIP" HBox.hgrow="NEVER">
+            <ComboBox fx:id="serverUrls" editable="true" maxWidth="1.7976931348623157E308" onAction="#evtServerUrlSelected" promptText="%urlPrompt" styleClass="input" HBox.hgrow="SOMETIMES" />
+            <Button fx:id="connect" maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#evtConnect" text="%connect.icon" textOverrun="CLIP" HBox.hgrow="NEVER">
                <tooltip>
                   <Tooltip text="%connect.tooltip" />
                </tooltip>
+               <styleClass>
+                  <String fx:value="uiButton" />
+                  <String fx:value="iconButton" />
+               </styleClass>
             </Button>
-            <Button fx:id="disconnect" mnemonicParsing="false" onAction="#evtDisconnect" text="%disconnect.icon" HBox.hgrow="NEVER">
+            <Button fx:id="disconnect" maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#evtDisconnect" text="%disconnect.icon" HBox.hgrow="NEVER">
                <tooltip>
                   <Tooltip text="%disconnect.tooltip" />
                </tooltip>
+               <styleClass>
+                  <String fx:value="uiButton" />
+                  <String fx:value="iconButton" />
+               </styleClass>
             </Button>
-            <Button fx:id="delete" mnemonicParsing="false" onAction="#evtDelete" text="%delete.icon" textOverrun="CLIP" HBox.hgrow="NEVER">
+            <Button fx:id="delete" maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#evtDelete" text="%delete.icon" textOverrun="CLIP" HBox.hgrow="NEVER">
                <tooltip>
                   <Tooltip text="%delete.tooltip" />
                </tooltip>
+               <styleClass>
+                  <String fx:value="uiButton" />
+                  <String fx:value="iconButton" />
+               </styleClass>
             </Button>
          </children>
       </HBox>
@@ -85,7 +79,7 @@
                   <CheckBox fx:id="saveCredentials" mnemonicParsing="false" onAction="#evtSaveCredentials" styleClass="info" text="%saveCredentials" BorderPane.alignment="CENTER_RIGHT" />
                </center>
                <left>
-                  <Button fx:id="login" mnemonicParsing="false" onAction="#evtLogin" text="%login" BorderPane.alignment="CENTER" />
+                  <Button fx:id="login" mnemonicParsing="false" onAction="#evtLogin" styleClass="uiButton" text="%login" BorderPane.alignment="CENTER" />
                </left>
                <VBox.margin>
                   <Insets top="8.0" />

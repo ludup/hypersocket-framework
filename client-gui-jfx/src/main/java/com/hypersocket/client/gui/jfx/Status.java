@@ -46,7 +46,7 @@ public class Status extends AbstractController {
 				status.setOpacity(0.5f);
 				break;
 			}
-			
+			 
 
 			// Text
 			Label label = new Label();
@@ -56,9 +56,6 @@ public class Status extends AbstractController {
 			//
 			statusItems.getChildren().add(hb);
 		}
-	}
-
-	public void setPopup(Popup popup) {
 	}
 
 }

@@ -6,25 +6,11 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="background" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Update">
-   <left>
-      <ImageView pickOnBounds="true" preserveRatio="true" styleClass="logo" BorderPane.alignment="CENTER">
-         <BorderPane.margin>
-            <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-         </BorderPane.margin>
-      </ImageView>
-   </left>
-   <center>
-      <BorderPane BorderPane.alignment="CENTER">
-         <bottom>
-            <ProgressBar fx:id="progress" prefWidth="200.0" progress="0.0" BorderPane.alignment="CENTER" />
-         </bottom>
-         <center>
-            <Label fx:id="message" alignment="CENTER" text="%updating" wrapText="true" BorderPane.alignment="CENTER" />
-         </center>
-         <padding>
-            <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-         </padding>
-      </BorderPane>
-   </center>
-</BorderPane>
+
+<HBox alignment="CENTER_LEFT" fillHeight="false" spacing="8.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Update">
+   <children>
+      <ImageView fx:id="icon" pickOnBounds="true" preserveRatio="true" styleClass="logo" HBox.hgrow="ALWAYS" />
+      <ProgressBar fx:id="progress" prefWidth="200.0" progress="0.0" />
+      <Label fx:id="message" alignment="CENTER" text="%updating" wrapText="true" />
+   </children>
+</HBox>

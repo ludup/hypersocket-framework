@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hypersocket.auth.json.AuthenticationRequired;
-import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
@@ -54,7 +53,7 @@ import com.hypersocket.triggers.TriggerResultType;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Controller
-public class TriggerResourceController extends ResourceController {
+public class TriggerResourceController extends AbstractTriggerController {
 
 	@Autowired
 	TriggerResourceService resourceService;
@@ -69,7 +68,7 @@ public class TriggerResourceController extends ResourceController {
 	@RequestMapping(value = "triggers/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableNetworkResources(
+	public BootstrapTableResult tableTriggers(
 			final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
@@ -210,11 +209,11 @@ public class TriggerResourceController extends ResourceController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "triggers/actionResults/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "triggers/taskResults/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<EventDefinition> getPostTriggerEvents(
-			HttpServletRequest request, @PathVariable Long id)
+			HttpServletRequest request, @PathVariable String resourceKey)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
@@ -223,11 +222,9 @@ public class TriggerResourceController extends ResourceController {
 
 			List<EventDefinition> events = new ArrayList<EventDefinition>();
 
-			TriggerResource action = resourceService.getResourceById(id);
-
-			for (String resourceKey : taskService.getTaskProvider(
-					action.getResourceKey()).getResultResourceKeys()) {
-				events.add(eventService.getEventDefinition(resourceKey));
+			for (String result : taskService.getTaskProvider(
+					resourceKey).getResultResourceKeys()) {
+				events.add(eventService.getEventDefinition(result));
 			}
 
 			return new ResourceList<EventDefinition>(events);
@@ -278,7 +275,7 @@ public class TriggerResourceController extends ResourceController {
 	@RequestMapping(value = "triggers/task/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<PropertyCategory> getActionsTemplate(
+	public ResourceList<PropertyCategory> getTaskTemplate(
 			HttpServletRequest request, @PathVariable String resourceKey)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
@@ -328,6 +325,7 @@ public class TriggerResourceController extends ResourceController {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/trigger", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
@@ -343,7 +341,6 @@ public class TriggerResourceController extends ResourceController {
 		try {
 
 			TriggerResource newResource;
-			boolean isNew = resource.getId() == null;
 
 			Realm realm = sessionUtils.getCurrentRealm(request);
 
@@ -356,31 +353,7 @@ public class TriggerResourceController extends ResourceController {
 						.getParentId());
 			}
 
-			for (TriggerConditionUpdate c : resource.getAllConditions()) {
-				TriggerCondition cond;
-				if (isNew || c.getId() == null) {
-					cond = new TriggerCondition();
-				} else {
-					cond = resourceService.getConditionById(c.getId());
-				}
-				cond.setAttributeKey(c.getAttributeKey());
-				cond.setConditionKey(c.getConditionKey());
-				cond.setConditionValue(c.getConditionValue());
-				allConditions.add(cond);
-			}
-
-			for (TriggerConditionUpdate c : resource.getAnyConditions()) {
-				TriggerCondition cond;
-				if (isNew || c.getId() == null) {
-					cond = new TriggerCondition();
-				} else {
-					cond = resourceService.getConditionById(c.getId());
-				}
-				cond.setAttributeKey(c.getAttributeKey());
-				cond.setConditionKey(c.getConditionKey());
-				cond.setConditionValue(c.getConditionValue());
-				anyConditions.add(cond);
-			}
+			processConditions(resource, allConditions, anyConditions);
 
 			Map<String, String> properties = new HashMap<String, String>();
 			for (PropertyItem i : resource.getProperties()) {
@@ -390,16 +363,15 @@ public class TriggerResourceController extends ResourceController {
 			if (resource.getId() != null) {
 				newResource = resourceService.updateResource(
 						resourceService.getResourceById(resource.getId()),
-						resource.getName(), resource.getEvent(),
+						resource.getName(), resource.getType(), resource.getEvent(),
 						TriggerResultType.valueOf(resource.getResult()),
 						resource.getTask(), properties, allConditions,
-						anyConditions, parentTrigger);
+						anyConditions, parentTrigger, null, resource.isAllRealms());
 			} else {
 				newResource = resourceService.createResource(
-						resource.getName(), resource.getEvent(),
-						TriggerResultType.valueOf(resource.getResult()),
-						resource.getTask(), properties, realm, allConditions,
-						anyConditions, parentTrigger);
+						resource.getName(), resource.getType(), resource.getEvent(),
+						TriggerResultType.valueOf(resource.getResult()), resource.getTask(), properties, realm,
+						allConditions, anyConditions, parentTrigger, null, resource.isAllRealms());
 			}
 			
 			TriggerResource rootTrigger = newResource;

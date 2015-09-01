@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.hypersocket.auth.json.AuthenticationRequired;
-import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.automation.AutomationResource;
 import com.hypersocket.automation.AutomationResourceColumns;
@@ -37,18 +36,28 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.ResourceUpdate;
 import com.hypersocket.session.json.SessionTimeoutException;
+import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
+import com.hypersocket.triggers.TriggerCondition;
+import com.hypersocket.triggers.TriggerResource;
+import com.hypersocket.triggers.TriggerResourceService;
+import com.hypersocket.triggers.TriggerResultType;
+import com.hypersocket.triggers.TriggerType;
+import com.hypersocket.triggers.json.AbstractTriggerController;
+import com.hypersocket.triggers.json.TriggerResourceUpdate;
 
 @Controller
-public class AutomationResourceController extends ResourceController {
+public class AutomationResourceController extends AbstractTriggerController {
 
 
 	@Autowired
 	AutomationResourceService resourceService;
 
+	@Autowired
+	TriggerResourceService triggerService; 
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "automations/list", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
@@ -236,6 +245,76 @@ public class AutomationResourceController extends ResourceController {
 		}
 	}
 
+	@AuthenticationRequired
+	@RequestMapping(value = "automations/trigger", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<AutomationResource> createOrUpdateTriggerResource(
+			HttpServletRequest request, HttpServletResponse response,
+			@RequestBody TriggerResourceUpdate resource)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+			AutomationResource parentResource = null;
+			TriggerResource parentTrigger = null;
+			Realm realm = sessionUtils.getCurrentRealm(request);
+			
+			List<TriggerCondition> allConditions = new ArrayList<TriggerCondition>();
+			List<TriggerCondition> anyConditions = new ArrayList<TriggerCondition>();
+			
+			processConditions(resource, allConditions, anyConditions);
+			
+			Map<String, String> properties = new HashMap<String, String>();
+			for (PropertyItem i : resource.getProperties()) {
+				properties.put(i.getId(), i.getValue());
+			}
+			
+			if(resource.getType()==TriggerType.AUTOMATION) {
+				parentResource = resourceService.getResourceById(resource.getParentId());	
+			} else {
+				parentTrigger = triggerService.getResourceById(resource.getParentId());
+			}
+			
+			if(parentResource==null) {
+				TriggerResource tmp = parentTrigger;
+				while(tmp.getParentTrigger()!=null) {
+					tmp = tmp.getParentTrigger();
+				}	
+				parentResource = resourceService.getResourceById(tmp.getAttachmentId());
+			} 
+			
+			if (resource.getId() != null) {
+				parentResource = resourceService.updateTrigger(
+						triggerService.getResourceById(resource.getId()),
+						resource.getName(), resource.getEvent(),
+						TriggerResultType.valueOf(resource.getResult()),
+						resource.getTask(), properties, allConditions,
+						anyConditions, parentTrigger, parentResource);
+			} else {
+				parentResource = resourceService.createTrigger(
+						resource.getName(), resource.getEvent(),
+						TriggerResultType.valueOf(resource.getResult()), resource.getTask(), properties, realm,
+						allConditions, anyConditions, parentTrigger, parentResource);
+			}
+			
+			return new ResourceStatus<AutomationResource>(parentResource,
+					I18N.getResource(sessionUtils.getLocale(request),
+							AutomationResourceServiceImpl.RESOURCE_BUNDLE,
+							resource.getId() != null ? "resource.updated.info"
+									: "resource.created.info", resource
+									.getName()));
+
+		} catch (ResourceException e) {
+			return new ResourceStatus<AutomationResource>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
 	@AuthenticationRequired
 	@RequestMapping(value = "automations/automation/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
@@ -273,4 +352,5 @@ public class AutomationResourceController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+
 }

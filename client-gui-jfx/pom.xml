@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.hypersocket</groupId>
 		<artifactId>hypersocket-framework</artifactId>
-		<version>1.0.1-LOCAL</version>
+		<version>1.0.2-LOCAL</version>
 		<relativePath>..</relativePath>
 	</parent>
 
@@ -68,6 +68,16 @@
 			<artifactId>scenicview</artifactId>
 			<version>8.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.nervepoint</groupId>
+			<artifactId>forker-client</artifactId>
+			<version>1.1-LOCAL</version>
+		</dependency>
+		<dependency>
+			<groupId>controlsfx</groupId>
+			<artifactId>controlsfx</artifactId>
+			<version>8.60.27-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 	<profiles>
@@ -82,6 +92,11 @@
 			<id>ext-releases-local</id>
 			<name>artifactory.javassh.com-releases</name>
 			<url>http://artifactory.javassh.com/ext-releases-local</url>
+		</repository>
+		<repository>
+			<id>ext-snapshots-local</id>
+			<name>artifactory.javassh.com-releases</name>
+			<url>http://artifactory.javassh.com/ext-snapshots-local</url>
 		</repository>
 	</repositories>
 

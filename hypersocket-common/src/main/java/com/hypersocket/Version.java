@@ -49,8 +49,7 @@ public class Version implements Comparable<Version> {
                     String substring = string.substring(8);
                     element = -599 + ( substring.equals("") ? 0 : Integer.parseInt(substring) );
                 } else if (string.toLowerCase().startsWith("local")) {
-                    String substring = string.substring(5);
-                    element = -699 + ( substring.equals("") ? 0 : Integer.parseInt(substring) );
+                    element = Integer.MAX_VALUE;
                 } else if (string.toLowerCase().startsWith("r")) {
                     String substring = string.substring(1);
                     element = ( substring.equals("") ? 0 : Integer.parseInt(substring) );

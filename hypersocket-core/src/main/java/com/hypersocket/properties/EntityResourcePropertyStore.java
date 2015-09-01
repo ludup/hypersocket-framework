@@ -8,13 +8,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.w3c.dom.Element;
 
 import com.hypersocket.encrypt.EncryptionService;
@@ -24,21 +20,16 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.utils.HypersocketUtils;
 
-@Component
 public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 
 	static Logger log = LoggerFactory.getLogger(EntityResourcePropertyStore.class);
 	
-	Map<Class<?>,AbstractResourceRepository<?>> resourceServices = new HashMap<Class<?>,AbstractResourceRepository<?>>();
-	Map<Class<?>,AbstractAssignableResourceRepository<?>> assignableServices = new HashMap<Class<?>,AbstractAssignableResourceRepository<?>>();
+	static Map<Class<?>,AbstractResourceRepository<?>> resourceServices = new HashMap<Class<?>,AbstractResourceRepository<?>>();
+	static Map<Class<?>,AbstractAssignableResourceRepository<?>> assignableServices = new HashMap<Class<?>,AbstractAssignableResourceRepository<?>>();
 	Map<Class<?>, PrimitiveParser<?>> primitiveParsers = new HashMap<Class<?>,PrimitiveParser<?>>();
 	
-	@Autowired
-	EncryptionService encryptionService; 
-
-
-	@PostConstruct
-	private void postConstruct() {
+	public EntityResourcePropertyStore(EncryptionService encryptionService) {
+		
 		primitiveParsers.put(String.class, new StringValue());
 		primitiveParsers.put(Boolean.class, new BooleanValue());
 		primitiveParsers.put(Integer.class, new IntegerValue());

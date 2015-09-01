@@ -9,7 +9,7 @@
    <children>
       <TabPane styleClass="background" tabClosingPolicy="UNAVAILABLE">
         <tabs>
-          <Tab text="%appearance">
+          <Tab styleClass="uiButton" text="%appearance">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" styleClass="background">
                      <children>
@@ -48,10 +48,10 @@
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                 </rowConstraints>
                                  <children>
-                                    <ToggleButton fx:id="top" mnemonicParsing="false" text="%top" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
-                                    <ToggleButton fx:id="bottom" mnemonicParsing="false" text="%bottom" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
-                                    <ToggleButton fx:id="left" mnemonicParsing="false" text="%left" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
-                                    <ToggleButton fx:id="right" mnemonicParsing="false" text="%right" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                                    <ToggleButton fx:id="top" mnemonicParsing="false" styleClass="uiButton" text="%top" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+                                    <ToggleButton fx:id="bottom" mnemonicParsing="false" styleClass="uiButton" text="%bottom" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
+                                    <ToggleButton fx:id="left" mnemonicParsing="false" styleClass="uiButton" text="%left" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                                    <ToggleButton fx:id="right" mnemonicParsing="false" styleClass="uiButton" text="%right" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
                                     <HBox fx:id="monitorContainer" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                  </children>
                               </GridPane>
@@ -83,29 +83,33 @@
                   </AnchorPane>
             </content>
           </Tab>
-            <Tab disable="true" text="%updates">
+            <Tab styleClass="uiButton" text="%applications">
               <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <AnchorPane minHeight="0.0" minWidth="0.0">
                      <children>
-                        <BorderPane layoutX="-12.0" layoutY="-86.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                           <top>
-                              <BorderPane BorderPane.alignment="CENTER">
-                                 <right>
-                                    <Button mnemonicParsing="false" text="%update" BorderPane.alignment="CENTER" />
-                                 </right>
-                                 <center>
-                                    <Label text="Label" BorderPane.alignment="CENTER_LEFT" />
-                                 </center>
+                        <VBox spacing="8.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <RadioButton fx:id="systemBrowser" mnemonicParsing="false" onAction="#evtBrowserChange" text="%systemBrowser" />
+                              <RadioButton fx:id="runCommand" mnemonicParsing="false" onAction="#evtBrowserChange" text="%runCommand" />
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <TextField fx:id="browserCommand" styleClass="uiText" HBox.hgrow="ALWAYS" />
+                                    <Button fx:id="browse" mnemonicParsing="false" onAction="#evtBrowse" styleClass="uiButton" text="%browse" HBox.hgrow="NEVER" />
+                                 </children>
                                  <padding>
-                                    <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                                    <Insets left="24.0" />
                                  </padding>
-                              </BorderPane>
-                           </top>
-                           <center>
-                              <ProgressBar prefWidth="200.0" progress="0.0" BorderPane.alignment="CENTER" />
-                           </center>
-                        </BorderPane>
-                     </children></AnchorPane>
+                              </HBox>
+                           </children>
+                           <padding>
+                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                           </padding>
+                        </VBox>
+                     </children>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </AnchorPane>
               </content>
             </Tab>
         </tabs>

@@ -3,15 +3,19 @@ package com.hypersocket.client.gui.jfx;
 import java.rmi.RemoteException;
 import java.util.logging.Logger;
 
-import com.hypersocket.client.rmi.GUICallback;
-
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.image.ImageView;
 import javafx.util.Duration;
+
+import com.hypersocket.client.gui.jfx.Dock.Mode;
+import com.hypersocket.client.rmi.GUICallback;
 
 public class Update extends AbstractController {
 	final static Logger LOG = Logger.getLogger(Update.class.getName());
@@ -20,6 +24,8 @@ public class Update extends AbstractController {
 	private ProgressBar progress;
 	@FXML
 	private Label message;
+	@FXML
+	private ImageView icon;
 
 	private double totalBytesExpected;
 	private Timeline awaitingBridgeLoss;
@@ -27,10 +33,21 @@ public class Update extends AbstractController {
 	private int appsToUpdate;
 	private int appsUpdated;
 
-	private Popup popup;
-
 	@Override
 	protected void onInitialize() {
+	}
+
+	@Override
+	protected void onConfigure() {
+		Configuration cfg = Configuration.getDefault();
+		cfg.sizeProperty().addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable,
+					Number oldValue, Number newValue) {
+				sizeButtons();
+			}
+		});
+		sizeButtons();
 	}
 
 	@Override
@@ -111,7 +128,6 @@ public class Update extends AbstractController {
 	public void updateFailure(String app, String message) {
 		LOG.info(String.format("Failed to update app %s. %s", app, message));
 		resetState();
-		popup.hide();
 		try {
 			context.getBridge().notify(message, GUICallback.NOTIFY_ERROR);
 		} catch (RemoteException e) {
@@ -134,10 +150,6 @@ public class Update extends AbstractController {
 		}
 	}
 
-	public void setPopup(Popup popup) {
-		this.popup = popup;
-	}
-
 	private void resetState() {
 		resetAwaingBridgeEstablish();
 		resetAwaingBridgeLoss();
@@ -149,7 +161,6 @@ public class Update extends AbstractController {
 	private void giveUpWaitingForBridgeEstablish() {
 		LOG.info("Given up waiting for bridge to start");
 		resetAwaingBridgeEstablish();
-		popup.hide();
 		try {
 			context.getBridge().notify(
 					resources.getString("givenUpWaitingForBridgeEstablish"),
@@ -157,12 +168,12 @@ public class Update extends AbstractController {
 		} catch (RemoteException e) {
 			// Not actually remote
 		}
+		Dock.getInstance().setMode(Mode.IDLE);
 	}
 
 	private void giveUpWaitingForBridgeStop() {
 		LOG.info("Given up waiting for bridge to stop");
 		resetAwaingBridgeLoss();
-		popup.hide();
 		try {
 			context.getBridge().notify(
 					resources.getString("givenUpWaitingForBridgeStop"),
@@ -170,6 +181,7 @@ public class Update extends AbstractController {
 		} catch (RemoteException e) {
 			// Not actually remote
 		}
+		Dock.getInstance().setMode(Mode.IDLE);
 	}
 
 	private void resetAwaingBridgeLoss() {
@@ -184,5 +196,13 @@ public class Update extends AbstractController {
 			awaitingBridgeEstablish.stop();
 			awaitingBridgeEstablish = null;
 		}
+	}
+
+	private void sizeButtons() {
+		int sz = Configuration.getDefault().sizeProperty().get();
+		int df = sz / 8;
+		sz -= df;
+		icon.setFitWidth(sz - df);
+		icon.setFitHeight(sz - df);
 	}
 }
