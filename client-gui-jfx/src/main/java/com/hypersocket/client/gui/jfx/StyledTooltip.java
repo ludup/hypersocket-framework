@@ -27,6 +27,7 @@ public class StyledTooltip extends Tooltip {
 			}
 			ssAdded = true;
 		}
+		
 		super.show(ownerWindow, anchorX, anchorY);
 	}
 }

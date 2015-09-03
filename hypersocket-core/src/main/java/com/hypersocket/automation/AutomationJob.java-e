@@ -1,11 +1,7 @@
 package com.hypersocket.automation;
 
-import java.util.Set;
-
-import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,19 +10,11 @@ import com.hypersocket.automation.events.AutomationTaskFinishedEvent;
 import com.hypersocket.automation.events.AutomationTaskStartedEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.realm.Realm;
-<<<<<<< Updated upstream
-=======
-import com.hypersocket.scheduler.PermissionsAwareJobData;
->>>>>>> Stashed changes
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.AbstractTriggerJob;
 import com.hypersocket.triggers.TaskResult;
-<<<<<<< Updated upstream
-=======
-import com.hypersocket.triggers.TriggerJob;
->>>>>>> Stashed changes
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.ValidationException;
 
@@ -53,11 +41,6 @@ public class AutomationJob extends AbstractTriggerJob {
 	protected void executeJob(JobExecutionContext context)
 			throws JobExecutionException {
 		
-<<<<<<< Updated upstream
-=======
-		PermissionsAwareJobData jobdata = (PermissionsAwareJobData) context.getTrigger().getJobDataMap();
-		
->>>>>>> Stashed changes
 		Long resourceId = context.getTrigger().getJobDataMap().getLong("resourceId");
 		Realm realm = (Realm) context.getTrigger().getJobDataMap().get("realm");
 		

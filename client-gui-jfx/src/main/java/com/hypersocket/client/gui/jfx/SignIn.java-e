@@ -12,6 +12,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Semaphore;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -36,7 +38,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import org.apache.commons.lang.StringUtils;
 import org.controlsfx.control.decoration.Decorator;
@@ -371,29 +375,44 @@ public class SignIn extends AbstractController implements Listener {
 		connectOnStartup.managedProperty().bind(
 				connectOnStartup.visibleProperty());
 		
+		serverUrls.getEditor().textProperty().addListener(new ChangeListener<String>() {
+			@Override
+			public void changed(ObservableValue<? extends String> observable,
+					String oldValue, String newValue) {
+				if(newValue.equals("") && serverUrls.getEditor().isFocused()) {
+					showUrlPopOver();
+				}
+			}
+		});
+		
 		serverUrls.getEditor().focusedProperty().addListener(new ChangeListener<Boolean>() {
 
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
-				if(newValue) {
+				if(newValue && ( popOver == null || !popOver.isShowing())) {
 					showUrlPopOver();
 				}
-//				else {
-//					hideUrlPopOver();
-//				}
-				
 			}
 		});
+		
 	}
 	
 	protected void onSetPopup(Popup popup) {
+
 		popup.showingProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
-				if(newValue)
-					Platform.runLater(() -> showUrlPopOver());
+				/* TODO HACK - Wait 500ms before showing the popover, I can't find a better
+				 * way. Using showingProperty() of the popup() just makes the popover disappear
+				 */
+				if(newValue) {
+					Timeline timeline = new Timeline(new KeyFrame(
+					        Duration.millis(500),
+					        ae -> showUrlPopOver()));
+					timeline.play();
+				}
 			}
 		});
 	}
@@ -401,7 +420,8 @@ public class SignIn extends AbstractController implements Listener {
 	// Private methods
 
 	private void showUrlPopOver() {
-		showPopOver(resources.getString("serverURL.tooltip"), serverUrls);
+		if(!serverUrls.isDisabled() && serverUrls.getEditor().getText().trim().equals(""))
+			showPopOver(resources.getString("serverURL.tooltip"), serverUrls);
 	}
 
 	private void focusNextPrompt(Control c) {

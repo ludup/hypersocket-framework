@@ -48,7 +48,7 @@ import com.nervepoint.forker.client.ForkerBuilder;
 import com.nervepoint.forker.client.ForkerBuilder.IO;
 
 public class Client extends Application {
-	private static int DROP_SHADOW_SIZE = 3;
+	public static int DROP_SHADOW_SIZE = 11;
 
 	static Logger log = LoggerFactory.getLogger(Client.class);
 	static ResourceBundle BUNDLE = ResourceBundle.getBundle(Client.class
@@ -123,14 +123,6 @@ public class Client extends Application {
 					backgroundColour.getGreen(), backgroundColour.getBlue(),
 					1f / 255f);
 		}
-
-		// Background is exactly as is
-		// bui.append(".background {\n");
-		// bui.append("-fx-background-color: ");
-		// bui.append(UIHelpers.toHex(backgroundColour, true));
-		// bui.append("-fx-background-color: inherit");
-		// bui.append(";\n");
-		// bui.append("}\n");
 
 		bui.append("* {\n");
 
@@ -224,17 +216,20 @@ public class Client extends Application {
 		bui.append("-fx-background-color: ");
 		bui.append(UIHelpers.toHex(backgroundColour, false));
 		bui.append(";\n");
-		bui.append("-fx-effect: dropshadow( three-pass-box , ");
-
-		bui.append(UIHelpers.toHex(foregroundColour1, false));
-
-		bui.append(" , 10, 0.0 , 0 , 3 );");
+//		bui.append("-fx-effect: dropshadow( three-pass-box , ");
+//
+//		bui.append(UIHelpers.toHex(foregroundColour1, false));
+//
+//		bui.append(" , 10, 0.0 , 0 , 3 );");
+		
+		bui.append("-fx-effect: dropshadow(gaussian, rgba(0,0,0,.2), 10.0, 0.5, 2.0, 2.0);\n");
+		
 		bui.append(";\n");
 
 		bui.append("}\n");
 		
 		// Root pane
-		bui.append(".rootPane {\n");
+		bui.append(".shadowed {\n");
 		int insets = DROP_SHADOW_SIZE;
 		if(cfg.topProperty().get()) {
 			bui.append("-fx-background-insets: 0 0 " + insets + " 0;\n");
@@ -249,11 +244,13 @@ public class Client extends Application {
 			bui.append("-fx-background-insets: 0 0 0 " + insets + ";\n");
 			bui.append("-fx-padding: 0 0 0 " + insets + ";\n");
 		}
-		bui.append("-fx-effect: dropshadow( three-pass-box , ");
+//		bui.append("-fx-effect: dropshadow( gaussian, ");
 
-		bui.append(UIHelpers.toHex(foregroundColour1, false));
+//		bui.append(UIHelpers.toHex(foregroundColour1, backgroundColour.getOpacity() / 2f));
 
-		bui.append(" , 10, 0.0 , 0 , " + insets + " );");
+		bui.append("-fx-effect: dropshadow(gaussian, " + UIHelpers.toHex(foregroundColour1, backgroundColour.getOpacity() / 2f) + ", " + DROP_SHADOW_SIZE + ", 0.5, 2.0, 2.0);\n");
+//		bui.append(" , 22, 0.0 , 0 , " + insets + " );");
+		
 		bui.append(";\n");
 		bui.append("}\n");
 		
@@ -269,13 +266,6 @@ public class Client extends Application {
 		bui.append(";\n");
 		bui.append("}\n");
 		 
-//		.popover > .border {
-//		    -fx-stroke: linear-gradient(to bottom, rgba(0,0,0, .3), rgba(0, 0, 0, .7)) ;
-//		    -fx-stroke-width: 0.5;
-//		    -fx-fill: rgba(255.0,255.0,255.0, .95);
-//		    -fx-effect: dropshadow(gaussian, rgba(0,0,0,.2), 10.0, 0.5, 2.0, 2.0);
-//		}
-
 		return bui.toString();
 
 	}
@@ -577,9 +567,7 @@ public class Client extends Application {
 	}
 
 	public static void setColors(Scene scene) {
-		Color c = new Color(0, 0, 0, 0);
-		scene.fillProperty().set(c);
-		scene.setFill(c);
+		scene.setFill(new Color(0, 0, 0, 0));
 		applyStyles(scene.getRoot());
 	}
 
