@@ -31,6 +31,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -46,6 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import com.hypersocket.client.ServiceResource;
 import com.hypersocket.client.gui.jfx.Bridge.Listener;
+import com.hypersocket.client.gui.jfx.FlingPane.FlingDirection;
 import com.hypersocket.client.gui.jfx.Popup.PositionType;
 import com.hypersocket.client.rmi.Connection;
 import com.hypersocket.client.rmi.ConnectionStatus;
@@ -71,7 +73,7 @@ public class Dock extends AbstractController implements Listener {
 	 * How height (or wide when vertical mode is supported) will the 'tab' be,
 	 * i.e. the area where the user hovers over to dock to reveal it
 	 */
-	static final int AUTOHIDE_TAB_OPPOSITE_SIZE = 22;
+	static final int AUTOHIDE_TAB_OPPOSITE_SIZE = 18;
 
 	/* How long the autohide should take to complete (in MS) */
 
@@ -88,7 +90,7 @@ public class Dock extends AbstractController implements Listener {
 	 */
 	static final double MESSAGE_FADE_TIME = 10000;
 
-	static Logger log = LoggerFactory.getLogger(Main.class);
+	static Logger log = LoggerFactory.getLogger(Dock.class);
 
 	private Popup signInPopup;
 	private Popup optionsPopup;
@@ -181,7 +183,6 @@ public class Dock extends AbstractController implements Listener {
 				.onAction(new EventHandler<ActionEvent>() {
 					@Override
 					public void handle(ActionEvent arg0) {
-						System.out.println("Notification clicked on!");
 					}
 				});
 	
@@ -235,9 +236,8 @@ public class Dock extends AbstractController implements Listener {
 					final Update updateScene = (Update) context
 							.openScene(Update.class);
 
-					// The update popup will get future update events, but it
-					// needs
-					// this one too to initialize
+					/* The update popup will get future update events, but it
+					 needs this one to initialize */
 					updateScene.initUpdate(appsToUpdate);
 
 					shortcuts.getChildren().clear();
@@ -342,6 +342,12 @@ public class Dock extends AbstractController implements Listener {
 				.getString("web.toolTip")));
 		browserResources.selectedProperty().bindBidirectional(
 				cfg.showWebProperty());
+
+		
+		status.setTooltip(UIHelpers.createDockButtonToolTip(status.getTooltip().getText()));
+		exit.setTooltip(UIHelpers.createDockButtonToolTip(exit.getTooltip().getText()));
+		signIn.setTooltip(UIHelpers.createDockButtonToolTip(signIn.getTooltip().getText()));
+		options.setTooltip(UIHelpers.createDockButtonToolTip(options.getTooltip().getText()));
 	
 		fileResources.setTooltip(UIHelpers.createDockButtonToolTip(resources
 				.getString("files.toolTip")));
@@ -638,12 +644,6 @@ public class Dock extends AbstractController implements Listener {
 		shortcuts.getChildren().clear();
 		
 		
-//		FlingPane fp = new FlingPane();
-//		fp.setFlingDirection(FlingDirection.HORIZONTAL);
-//		shortcuts.getChildren().add(fp);
-//		HBox box = new HBox();
-//		fp.setContent(box);
-		
 		// Type lastType = null;
 		for (Map.Entry<ResourceGroupKey, ResourceGroupList> ig : icons
 				.entrySet()) {
@@ -680,13 +680,8 @@ public class Dock extends AbstractController implements Listener {
 			// SSO launchers are not grouped, all others are
 			// if (type == Resource.Type.SSO) {
 			for (ResourceItem item : ig.getValue().getItems()) {
-				IconButton button = new IconButton(resources, item, context,
-						ig.getValue());
-//				button.setTooltip(UIHelpers.createDockButtonToolTip(b.getTooltip()
-//					.getText()));
-//				recreateTooltip(button);
-				shortcuts.getChildren().add(button);
-//				box.getChildren().add(button);
+				shortcuts.getChildren().add(new IconButton(resources, item, context,
+						ig.getValue()));
 			}
 			// } else {
 			// shortcuts.getChildren().add(createGroupButton(ig.getValue()));
@@ -826,6 +821,8 @@ public class Dock extends AbstractController implements Listener {
 		float barSize = (float) boundsSize * fac;
 
 		// If showing, reverse
+		final boolean fhidden = hidden;
+		
 		if (!hidden) {
 			amt = value - amt;
 			barSize = (float) boundsSize - barSize;
@@ -839,14 +836,14 @@ public class Dock extends AbstractController implements Listener {
 		if (stage != null) {
 			if (cfg.topProperty().get()) {
 				getScene().getRoot().translateYProperty().set(-amt);
-				stage.setHeight(cfg.sizeProperty().get() - amt);
+				stage.setHeight(cfg.sizeProperty().get() - amt + Client.DROP_SHADOW_SIZE);
 				stage.setWidth(Math.max(AUTOHIDE_TAB_SIZE, cfgBounds.getWidth()
 						- barSize));
 				stage.setX(cfgBounds.getMinX()
 						+ ((cfgBounds.getWidth() - stage.getWidth()) / 2f));
 			} else if (cfg.bottomProperty().get()) {
 				stage.setY(cfgBounds.getMaxY() + amt);
-				stage.setHeight(cfg.sizeProperty().get() - amt);
+				stage.setHeight(cfg.sizeProperty().get() - amt + Client.DROP_SHADOW_SIZE);
 				stage.setWidth(Math.max(AUTOHIDE_TAB_SIZE, cfgBounds.getWidth()
 						- barSize));
 				stage.setX(cfgBounds.getMinX()
@@ -884,8 +881,8 @@ public class Dock extends AbstractController implements Listener {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					if (!hidden && stage != null) {
-						stage.toFront();
+					if (!fhidden && stage != null) {
+						stage.requestFocus();
 					}
 					hiding = false;
 				}

@@ -14,6 +14,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
@@ -155,15 +156,23 @@ public class AbstractController implements FramedController, Listener {
 	}
 	
 	protected void showPopOver(String text, Node node) {
+		if(popOver != null && popOver.isShowing()) {
+			System.err.println("Popover already showing");
+			return;
+		}
+		System.err.println("Showing Popover");
+
 		if(popOver == null) {
 			popOver = new PopOver();
+
+			popOver.setConsumeAutoHidingEvents(false);
 			popup.setPopOver(popOver);
+			popOver.getRoot().focusTraversableProperty().set(false);
 			popOver.getRoot().getStylesheets().add(
 					Client.class.getResource(Client.class.getSimpleName() + ".css")
 							.toExternalForm());
 			popOver.getRoot().maxWidthProperty().set(380);
 	    	Client.applyStyles(popOver.getRoot());
-//			popOver.setDetachable(true);
 			
 			Label l = new Label();
 			l.wrapTextProperty().set(true);
@@ -174,7 +183,7 @@ public class AbstractController implements FramedController, Listener {
 		Configuration cfg = Configuration.getDefault();
 		
 		Bounds bounds = node.localToScene(node.getBoundsInLocal());
-		System.out.println("Bounds: " + bounds);
+
 		
 		if(cfg.topProperty().get()) {
 			popOver.arrowLocationProperty().set(ArrowLocation.RIGHT_TOP);
@@ -183,8 +192,15 @@ public class AbstractController implements FramedController, Listener {
 	}
 	
 	protected void hidePopOver() {
+		System.err.println("[REMOVEME] Hiding popover");
+		try {
+			throw new Exception();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 		if(popOver != null) {
-			popOver.hide();
+			popOver.hide(Duration.millis(0));
 		}
 	}
 

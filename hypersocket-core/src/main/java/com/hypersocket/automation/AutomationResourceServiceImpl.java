@@ -110,11 +110,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		eventService.registerEvent(AutomationResourceDeletedEvent.class, RESOURCE_BUNDLE, this);
 		eventService.registerEvent(AutomationTaskStartedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(AutomationTaskFinishedEvent.class, RESOURCE_BUNDLE);
-<<<<<<< Updated upstream
 		repository.getEntityStore().registerResourceService(AutomationResource.class, repository);
-=======
-		entityPropertyStore.registerResourceService(AutomationResource.class, repository);
->>>>>>> Stashed changes
 	}
 
 	@Override
@@ -371,11 +367,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		
 		triggerService.createResource(name, TriggerType.AUTOMATION, event,
 				result, task, properties, realm, allConditions,
-<<<<<<< Updated upstream
 				anyConditions, parent, automation.getId(), false, new TransactionAdapter<TriggerResource>() {
-=======
-				anyConditions, parent, automation.getId(), new TransactionAdapter<TriggerResource>() {
->>>>>>> Stashed changes
 			@Override
 			public void afterOperation(TriggerResource resource, Map<String, String> properties) {
 				
@@ -406,11 +398,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		
 		triggerService.updateResource(trigger, name, TriggerType.AUTOMATION, event,
 				result, task, properties, allConditions,
-<<<<<<< Updated upstream
 				anyConditions, parent, automation.getId(), false);
-=======
-				anyConditions, parent, automation.getId());
->>>>>>> Stashed changes
 		
 		repository.refresh(automation);
 		return automation;

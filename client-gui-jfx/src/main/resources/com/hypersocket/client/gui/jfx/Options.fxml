@@ -5,9 +5,9 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="background" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Options">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Options">
    <children>
-      <TabPane styleClass="background" tabClosingPolicy="UNAVAILABLE">
+      <TabPane styleClass="windowContent" tabClosingPolicy="UNAVAILABLE">
         <tabs>
           <Tab styleClass="uiButton" text="%appearance">
             <content>
@@ -115,4 +115,8 @@
         </tabs>
       </TabPane>
    </children>
+   <styleClass>
+      <String fx:value="background" />
+      <String fx:value="shadowed" />
+   </styleClass>
 </VBox>

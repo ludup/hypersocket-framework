@@ -18,6 +18,7 @@ public class Status extends AbstractController {
 
 	@Override
 	protected void onInitialize() {
+		statusItems.focusTraversableProperty().set(true);
 	}
 
 	public void setResources(List<ServiceResource> group) {

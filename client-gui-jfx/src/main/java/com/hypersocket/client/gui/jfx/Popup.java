@@ -1,22 +1,17 @@
 package com.hypersocket.client.gui.jfx;
 
-import org.controlsfx.control.PopOver;
-
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.beans.value.WritableValue;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-import javafx.util.Duration;
+
+import org.controlsfx.control.PopOver;
 
 public class Popup extends Stage {
 
@@ -25,7 +20,7 @@ public class Popup extends Stage {
 	private PositionType positionType;
 	private boolean dismiss;
 	private PopOver popOver;
-
+	
 	public enum PositionType {
 		POSITIONED, DOCKED
 	}
@@ -62,7 +57,7 @@ public class Popup extends Stage {
 
 		this.dismiss = dismissOnFocusLost;
 		this.positionType = positionType;
-
+		
 		initOwner(parent);
 		setScene(scene);
 		setMinHeight(24);
@@ -87,9 +82,7 @@ public class Popup extends Stage {
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
 				if (dismiss) {
-					if(popOver != null && popOver.isShowing()) {
-						popOver.hide();
-					}
+
 					/*
 					 * NOTE - This may look crazy, but this seems to work-around
 					 * a bug in JavaFX / Mac OS X (1.8.0_51) that occurs when
@@ -105,12 +98,13 @@ public class Popup extends Stage {
 								Platform.runLater(new Runnable() {
 									@Override
 									public void run() {
-										if (!parent.focusedProperty().get()
-												&& Configuration.getDefault()
-														.autoHideProperty()
-														.get()) {
-											hideParent(parent);
-										}
+											if (!parent.focusedProperty().get()
+													&& !Dock.getInstance().arePopupsOpen() && Configuration
+															.getDefault()
+															.autoHideProperty()
+															.get()) {
+												hideParent(parent);
+											}
 									}
 								});
 							}
@@ -199,28 +193,6 @@ public class Popup extends Stage {
 		if (!isShowing()) {
 			sizeToScene();
 
-			Timeline t = new Timeline(new KeyFrame(
-					Duration.millis(Dock.AUTOHIDE_DURATION * 3), new KeyValue(
-							new WritableValue<Number>() {
-								@Override
-								public Number getValue() {
-									Color c = (Color) getScene().fillProperty()
-											.getValue();
-									return c.getOpacity();
-								}
-
-								@Override
-								public void setValue(Number value) {
-									Color c = (Color) getScene().fillProperty()
-											.getValue();
-									getScene().fillProperty().set(
-											new Color(c.getRed(), c.getGreen(),
-													c.getBlue(), value
-															.doubleValue()));
-
-								}
-							}, 1)));
-
 			/*
 			 * Absolute no idea why this runLater() is required, but without it
 			 * sizeToScene calculates an incorrect height.
@@ -229,7 +201,6 @@ public class Popup extends Stage {
 				@Override
 				public void run() {
 					show();
-					t.playFromStart();
 				}
 			});
 		}
@@ -239,7 +210,7 @@ public class Popup extends Stage {
 		super.sizeToScene();
 		Configuration cfg = Configuration.getDefault();
 		if (cfg.topProperty().get()) {
-			setY(getOwner().getY() + getOwner().getHeight());
+			setY(getOwner().getY() + getOwner().getHeight() - Client.DROP_SHADOW_SIZE);
 			switch (positionType) {
 			case POSITIONED:
 				if (position + getWidth() > getOwner().getWidth() - getWidth())

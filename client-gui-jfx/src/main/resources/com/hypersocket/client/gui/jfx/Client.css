@@ -129,16 +129,13 @@
 }
 
 /* Dock window */
-.rootPane {
-  -fx-background-color: -fx-background;
-  /*-
-  -fx-background-radius: 6;
-  -fx-border-radius: 6;
-  -fx-border-color: gray;
-  -fx-border-style: solid;
-  -fx-border-width: 1;*/
-  -fx-effect: dropshadow(three-pass-box, rgba(100, 100, 100, 1), 24, 0.5, 0, 0);
 
+.windowContent {	
+ 	-fx-background-color: -fx-background; 
+}
+
+.shadowed {
+	-fx-background-color: transparent;
 }
 
 .popover > .content {
