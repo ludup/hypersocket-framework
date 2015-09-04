@@ -487,7 +487,14 @@ public class Client extends Application {
 						Dock root = (Dock) fc;
 						if (!newValue && cfg.autoHideProperty().get()
 								&& !root.arePopupsOpen()) {
-							root.hideDock(true);
+							if(root.isAwaitingLaunch())
+								root.onLaunched(() -> root.hideDock(true));
+							else
+								root.hideDock(true);
+						}
+						else if(newValue) {
+							// If now focussed, stop the onLaunched from firing and hiding again
+							root.onLaunched(null);
 						}
 					}
 				});

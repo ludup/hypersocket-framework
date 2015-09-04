@@ -165,11 +165,11 @@ public class GUIRegistry {
 	}
 
 	public void onUpdateProgress(String app, long sincelastProgress,
-			long totalSoFar) {
+			long totalSoFar, long totalBytesExpected) {
 		synchronized (lock) {
 			try {
 				if (gui != null && guiAttached) {
-					gui.onUpdateProgress(app, sincelastProgress, totalSoFar);
+					gui.onUpdateProgress(app, sincelastProgress, totalSoFar, totalBytesExpected);
 				}
 			} catch (RemoteException ex) {
 				failed(app, ex);

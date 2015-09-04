@@ -73,7 +73,7 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 		void startingUpdate(String app, long totalBytesExpected);
 
 		void updateProgressed(String app, long sincelastProgress,
-				long totalSoFar);
+				long totalSoFar, long totalBytesExpected);
 
 		void updateComplete(String app, long totalBytesTransfered);
 
@@ -425,12 +425,12 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 	@Override
 	public void onUpdateProgress(String app, long sincelastProgress,
-			long totalSoFar) throws RemoteException {
+			long totalSoFar, long totalBytesExpected) throws RemoteException {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
 				for (Listener l : new ArrayList<Listener>(listeners)) {
-					l.updateProgressed(app, sincelastProgress, totalSoFar);
+					l.updateProgressed(app, sincelastProgress, totalSoFar, totalBytesExpected);
 				}
 			}
 		});
@@ -508,7 +508,7 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 	public boolean isServiceUpdating() {
 		try {
-			return clientService.isUpdating();
+			return clientService != null && clientService.isUpdating();
 		}	
 		catch(RemoteException re) {
 			return false;

@@ -1,6 +1,8 @@
 package com.hypersocket.client.gui.jfx;
 
 import java.io.File;
+import java.text.MessageFormat;
+import java.util.Calendar;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -10,15 +12,20 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ColorPicker;
+import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 
+import com.hypersocket.HypersocketVersion;
 import com.hypersocket.client.gui.jfx.Configuration.BrowserType;
 import com.sun.javafx.scene.control.skin.ColorPalette;
 import com.sun.javafx.scene.control.skin.ColorPickerSkin;
@@ -65,6 +72,12 @@ public class Options extends AbstractController {
 	private RadioButton runCommand;
 	@FXML
 	private TextField browserCommand;
+	@FXML
+	private Label copyright;
+	@FXML
+	private Label version;
+	@FXML
+	private ImageView logo;
 
 	private Configuration cfg;
 	private FileChooser fileChooser;
@@ -90,6 +103,15 @@ public class Options extends AbstractController {
 		color.valueProperty().bindBidirectional(cfg.colorProperty());
 		color.setSkin(new CustomColorPickerSkin(color));
 
+		cfg.colorProperty().addListener(new ChangeListener<Color>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Color> observable,
+					Color oldValue, Color newValue) {
+				setLogo();
+			}
+		});
+
 		int idx = 1;
 		for (Screen s : Screen.getScreens()) {
 			Button b = new Button();
@@ -114,17 +136,33 @@ public class Options extends AbstractController {
 			systemBrowser.selectedProperty().set(true);
 			break;
 		}
-		browserCommand.textProperty().bindBidirectional(cfg.browserCommandProperty());
-		
+		browserCommand.textProperty().bindBidirectional(
+				cfg.browserCommandProperty());
+
 		// Show a popover when run command is focussed
-		browserCommand.focusedProperty().addListener(new ChangeListener<Boolean>() {
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable,
-					Boolean oldValue, Boolean newValue) {
-				if(newValue)
-					showPopOver(resources.getString("runCommand.tooltip"), browserCommand);
-			}
-		});
+		browserCommand.focusedProperty().addListener(
+				new ChangeListener<Boolean>() {
+					@Override
+					public void changed(
+							ObservableValue<? extends Boolean> observable,
+							Boolean oldValue, Boolean newValue) {
+						if (newValue)
+							showPopOver(
+									resources.getString("runCommand.tooltip"),
+									browserCommand);
+					}
+				});
+
+		// Setup about text
+		Calendar c = Calendar.getInstance();
+		copyright.setText(MessageFormat.format(
+				resources.getString("copyright"),
+				String.valueOf(c.get(Calendar.YEAR))));
+		version.setText(MessageFormat.format(
+				resources.getString("version"),
+				HypersocketVersion.getVersion(context.getBridge()
+						.getExtensionPlace().getApp())));
+		setLogo();
 
 		setAvailable();
 	}
@@ -146,7 +184,8 @@ public class Options extends AbstractController {
 			fileChooser.setTitle("Choose Command");
 			File selectedFile = fileChooser.showOpenDialog(scene.getWindow());
 			if (selectedFile != null) {
-				browserCommand.setText("\"" + selectedFile.getAbsolutePath() + "\"");
+				browserCommand.setText("\"" + selectedFile.getAbsolutePath()
+						+ "\"");
 			}
 		} finally {
 			popup.setDismissOnFocusLost(true);
@@ -164,6 +203,16 @@ public class Options extends AbstractController {
 	void setAvailable() {
 		browserCommand.setDisable(systemBrowser.isSelected());
 		browse.setDisable(systemBrowser.isSelected());
+	}
+
+	void setLogo() {
+		Color c = cfg.colorProperty().getValue();
+		if (c.getBrightness() < 0.5)
+			logo.setImage(new Image(getClass().getResource("logo.png")
+					.toExternalForm()));
+		else
+			logo.setImage(new Image(getClass().getResource("logo-black.png")
+					.toExternalForm()));
 	}
 
 	class CustomColorPickerSkin extends ColorPickerSkin {

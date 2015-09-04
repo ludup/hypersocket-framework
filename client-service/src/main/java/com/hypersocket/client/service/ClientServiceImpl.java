@@ -114,7 +114,7 @@ public class ClientServiceImpl implements ClientService {
 				guiRegistry.onUpdateStart(ExtensionPlace.getDefault().getApp(),
 						serviceUpdateJob.getTotalSize());
 				guiRegistry.onUpdateProgress(ExtensionPlace.getDefault()
-						.getApp(), 0, serviceUpdateJob.getTransfered());
+						.getApp(), 0, serviceUpdateJob.getTransfered(),serviceUpdateJob.getTotalSize());
 				if (serviceUpdateJob.getTransfered() >= serviceUpdateJob
 						.getTotalSize()) {
 					guiRegistry.onUpdateComplete(ExtensionPlace.getDefault()

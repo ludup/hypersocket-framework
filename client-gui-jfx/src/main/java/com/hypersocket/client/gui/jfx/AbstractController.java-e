@@ -123,7 +123,7 @@ public class AbstractController implements FramedController, Listener {
 
 	@Override
 	public void updateProgressed(String app, long sincelastProgress,
-			long totalSoFar) {
+			long totalSoFar, long totalBytesExpected) {
 	}
 
 	@Override
@@ -192,13 +192,6 @@ public class AbstractController implements FramedController, Listener {
 	}
 	
 	protected void hidePopOver() {
-		System.err.println("[REMOVEME] Hiding popover");
-		try {
-			throw new Exception();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
 		if(popOver != null) {
 			popOver.hide(Duration.millis(0));
 		}

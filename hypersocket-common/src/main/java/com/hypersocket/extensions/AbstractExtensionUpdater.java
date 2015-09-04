@@ -113,7 +113,7 @@ public abstract class AbstractExtensionUpdater {
 						long read = 0;
 						while ((b = in.read(buf)) > -1) {
 							out.write(buf, 0, b);
-							onUpdateProgress((long) b, transfered += b);
+							onUpdateProgress((long) b, transfered += b, totalSize);
 							read += b;
 							if (System
 									.getProperty("hypersocket.development.fakeSlowUpdate") != null) {
@@ -238,7 +238,7 @@ public abstract class AbstractExtensionUpdater {
 	
 	protected abstract void onUpdateStart(long totalBytesExpected);
 	
-	protected abstract void onUpdateProgress(long sincelastProgress, long totalSoFar);
+	protected abstract void onUpdateProgress(long sincelastProgress, long totalSoFar, long totalBytesException);
 	
 	protected abstract void onUpdateComplete(long totalBytesTransfered);
 	

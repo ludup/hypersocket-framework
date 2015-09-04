@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.control.*?>
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-
-<HBox alignment="CENTER_LEFT" fillHeight="false" spacing="8.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Update">
+<HBox alignment="CENTER" maxWidth="1.7976931348623157E308" spacing="8.0" styleClass="background" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Update">
    <children>
-      <ImageView fx:id="icon" pickOnBounds="true" preserveRatio="true" styleClass="logo" HBox.hgrow="ALWAYS" />
-      <ProgressBar fx:id="progress" prefWidth="200.0" progress="0.0" />
-      <Label fx:id="message" alignment="CENTER" text="%updating" wrapText="true" />
+      <HBox alignment="CENTER" spacing="8.0">
+         <children>
+            <ImageView fx:id="icon" pickOnBounds="true" preserveRatio="true" styleClass="logo" HBox.hgrow="ALWAYS" />
+            <ProgressBar fx:id="progress" maxWidth="1.7976931348623157E308" prefWidth="200.0" progress="0.0" HBox.hgrow="ALWAYS" />
+            <Label fx:id="message" maxWidth="1.7976931348623157E308" text="%updating" wrapText="true" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
    </children>
 </HBox>

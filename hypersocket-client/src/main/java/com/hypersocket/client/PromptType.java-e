@@ -13,5 +13,6 @@ public enum PromptType {
 	PASSWORD,
 	P,
 	SELECT,
-	HIDDEN
+	HIDDEN,
+	A
 }

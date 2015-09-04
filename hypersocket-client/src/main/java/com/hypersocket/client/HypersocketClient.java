@@ -381,8 +381,14 @@ public abstract class HypersocketClient<T> {
 			while (it.hasNext()) {
 				JSONObject field = it.next();
 
-				PromptType type = PromptType.valueOf(field.get("type")
-						.toString().toUpperCase());
+				PromptType type = PromptType.TEXT;
+				try {
+					type = PromptType.valueOf(field.get("type").toString().toUpperCase());
+				}
+				catch(IllegalArgumentException iae) {
+					log.warn("Unknown prompt type, default to text.", iae);
+				}
+						
 
 				switch (type) {
 				case HIDDEN: {

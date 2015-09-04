@@ -49,7 +49,7 @@ public interface GUICallback extends Serializable, Remote {
 	
 	void onUpdateStart(String app, long totalBytesExpected) throws RemoteException;
 	
-	void onUpdateProgress(String app, long sincelastProgress, long totalSoFar) throws RemoteException;
+	void onUpdateProgress(String app, long sincelastProgress, long totalSoFar, long totalBytesExpected) throws RemoteException;
 	
 	void onUpdateComplete(long totalBytesTransfered, String app) throws RemoteException;
 	

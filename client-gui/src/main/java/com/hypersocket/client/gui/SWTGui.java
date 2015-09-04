@@ -608,7 +608,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 
 	@Override
 	public void onUpdateProgress(final String app,
-			final long sincelastProgress, final long totalSoFar)
+			final long sincelastProgress, final long totalSoFar, long totalBytesExpected)
 			throws RemoteException {
 		if (isUpdateCancelled()) {
 			throw new CancelledException();

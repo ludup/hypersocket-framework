@@ -29,6 +29,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressIndicator;
@@ -38,7 +39,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -251,6 +251,7 @@ public class SignIn extends AbstractController implements Listener {
 					VBox vbox = new VBox();
 					int idx = 0;
 					for (Prompt p : prompts) {
+						System.out.println(">> " + p);
 						Label l = new Label(p.getLabel());
 						vbox.getChildren().add(l);
 						switch (p.getType()) {
@@ -294,6 +295,12 @@ public class SignIn extends AbstractController implements Listener {
 							if (idx == 0) {
 								cb.requestFocus();
 							}
+							break;
+						case A:
+							Hyperlink h = new Hyperlink(p.getLabel());
+							h.getStyleClass().add("input");
+							vbox.getChildren().add(h);
+							promptNodes.put(p, h);
 							break;
 						case P:
 							// TODO What's a P?
@@ -344,6 +351,8 @@ public class SignIn extends AbstractController implements Listener {
 	@Override
 	public void bridgeLost() {
 		Platform.runLater(() -> {
+			waitingForUpdatesOrResources.clear();
+			connecting.clear();
 			abortPrompts();
 			initUi();
 		});

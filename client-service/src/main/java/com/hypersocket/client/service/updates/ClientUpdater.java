@@ -87,9 +87,9 @@ public class ClientUpdater extends AbstractExtensionUpdater {
 	}
 
 	@Override
-	protected void onUpdateProgress(long sincelastProgress, long totalSoFar) {
+	protected void onUpdateProgress(long sincelastProgress, long totalSoFar, long totalBytesExpected) {
 		gui.onUpdateProgress(extensionPlace.getApp(), sincelastProgress,
-				totalSoFar);
+				totalSoFar,totalBytesExpected);
 	}
 
 	@Override

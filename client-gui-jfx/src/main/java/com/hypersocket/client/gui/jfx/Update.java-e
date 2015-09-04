@@ -27,7 +27,6 @@ public class Update extends AbstractController {
 	@FXML
 	private ImageView icon;
 
-	private double totalBytesExpected;
 	private Timeline awaitingBridgeLoss;
 	private Timeline awaitingBridgeEstablish;
 	private int appsToUpdate;
@@ -63,14 +62,14 @@ public class Update extends AbstractController {
 	public void startingUpdate(String app, long totalBytesExpected) {
 		LOG.info(String.format("Starting up of %s, expect %d bytes", app,
 				totalBytesExpected));
-		this.totalBytesExpected = totalBytesExpected;
 		this.message.textProperty().set(resources.getString("updating"));
 		progress.progressProperty().setValue(0);
 	}
 
 	@Override
 	public void updateProgressed(String app, long sincelastProgress,
-			long totalSoFar) {
+			long totalSoFar, long totalBytesExpected) {
+		this.message.textProperty().set(resources.getString("updating"));
 		progress.progressProperty().setValue(
 				(double) totalSoFar / totalBytesExpected);
 	}
@@ -153,7 +152,6 @@ public class Update extends AbstractController {
 	private void resetState() {
 		resetAwaingBridgeEstablish();
 		resetAwaingBridgeLoss();
-		totalBytesExpected = 0;
 		appsToUpdate = 0;
 		appsUpdated = 0;
 	}
