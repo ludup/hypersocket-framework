@@ -9,9 +9,6 @@
 <StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Status">
    <children>
       <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="200.0" styleClass="windowContent">
-         <center>
-            <VBox fx:id="statusItems" BorderPane.alignment="CENTER" />
-         </center>
          <opaqueInsets>
             <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
          </opaqueInsets>
@@ -34,6 +31,17 @@
                </children>
             </VBox>
          </top>
+         <center>
+            <ScrollPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0">
+                     <children>
+                        <VBox fx:id="statusItems" />
+                     </children>
+                  </AnchorPane>
+              </content>
+            </ScrollPane>
+         </center>
       </BorderPane>
    </children>
    <styleClass>

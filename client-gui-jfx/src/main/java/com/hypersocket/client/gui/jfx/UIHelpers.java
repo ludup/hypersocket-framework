@@ -56,7 +56,11 @@ public class UIHelpers {
 				Rectangle2D bnds = Client.getConfiguredBounds();
 
 				if (cfg.leftProperty().get()) {
+					anchorX = bnds.getMinX() + cfg.sizeProperty().doubleValue()
+							+ 8.0 ;
 				} else if (cfg.rightProperty().get()) {
+					anchorX = bnds.getMaxX() - cfg.sizeProperty().doubleValue()
+							- 8.0 - prefWidth(USE_COMPUTED_SIZE);
 				} else if (cfg.bottomProperty().get()) {
 					anchorY = bnds.getMaxY() - cfg.sizeProperty().doubleValue()
 							- 8.0 - prefHeight(USE_COMPUTED_SIZE);
@@ -81,7 +85,6 @@ public class UIHelpers {
 
 	public static void sizeToImage(ButtonBase button) {
 		int sz = Configuration.getDefault().sizeProperty().get();
-		System.out.println("Sizing buttons to " + sz);
 		int df = sz / 8;
 		sz -= df;
 		if (button.getGraphic() != null) {
