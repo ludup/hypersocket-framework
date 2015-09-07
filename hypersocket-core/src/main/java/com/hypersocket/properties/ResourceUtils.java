@@ -103,4 +103,8 @@ public class ResourceUtils {
 		return value.startsWith("${") && value.endsWith("}");
 	}
 
+	public static boolean isEncrypted(String value) {
+		return value.startsWith("!ENC!");
+	}
+
 }

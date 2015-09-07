@@ -226,5 +226,10 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 			return defaultLocale;
 		}
 	}
+
+	@Override
+	public String getDecryptedValue(Realm realm, String resourceKey) {
+		return repository.getDecryptedValue(realm, resourceKey);
+	}
 	
 }

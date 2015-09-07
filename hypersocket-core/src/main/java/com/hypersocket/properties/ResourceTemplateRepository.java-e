@@ -73,4 +73,6 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	Map<String, PropertyTemplate> getRepositoryTemplates();
 
+	String getDecryptedValue(AbstractResource resource, String resourceKey);
+
 }

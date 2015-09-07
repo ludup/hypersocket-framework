@@ -229,7 +229,9 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 				}
 				return HypersocketUtils.parseDate(value, "yyyy-MM-dd");
 			} catch (ParseException e) {
-				log.warn("Failed to parse date value " + value);
+				if(StringUtils.isNotBlank(value)) {
+					log.warn("Failed to parse date value '" + value + "'");
+				}
 				return null;
 			}
 		}

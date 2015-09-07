@@ -109,7 +109,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		Mailer mail = new Mailer(configurationService.getValue(realm, SMTP_HOST), 
 				configurationService.getIntValue(realm, SMTP_PORT), 
 				configurationService.getValue(realm, SMTP_USERNAME),
-				configurationService.getValue(realm, SMTP_PASSWORD),
+				configurationService.getDecryptedValue(realm, SMTP_PASSWORD),
 				TransportStrategy.values()[configurationService.getIntValue(realm, SMTP_PROTOCOL)]);
 		
 		

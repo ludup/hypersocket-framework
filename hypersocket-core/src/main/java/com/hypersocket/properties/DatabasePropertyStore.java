@@ -89,4 +89,5 @@ public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 	public void init(Element element) throws IOException {
 		
 	}
+
 }

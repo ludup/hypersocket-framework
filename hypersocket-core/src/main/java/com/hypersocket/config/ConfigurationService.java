@@ -42,4 +42,6 @@ public interface ConfigurationService extends AuthenticatedService, PropertyTemp
 
 	Locale getDefaultLocale();
 
+	String getDecryptedValue(Realm realm, String resourceKey);
+
 }
