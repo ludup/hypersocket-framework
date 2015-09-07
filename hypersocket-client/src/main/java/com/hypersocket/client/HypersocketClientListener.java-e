@@ -10,4 +10,6 @@ public interface HypersocketClientListener<T> {
 	
 	void disconnected(HypersocketClient<T> client, boolean onError);
 
+	void ready(HypersocketClient<T> client);
+
 }

@@ -10,9 +10,13 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.WeakHashMap;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.util.Duration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +26,12 @@ public class IconButton extends LauncherButton {
 
 	private final static Map<String, Image> iconCache = new WeakHashMap<>();
 
+	private Timeline bouncer = new Timeline();
+	private Timeline shrinker = new Timeline();
+	private Timeline grower = new Timeline();
+
+	private boolean launching;
+
 	public IconButton(ResourceBundle resources, ResourceItem resourceItem,
 			Client context, ResourceGroupList group) {
 		super(resources, resourceItem, context);
@@ -29,8 +39,10 @@ public class IconButton extends LauncherButton {
 		setTooltipText(resourceItem.getResource().getName());
 		String typeName = resourceItem.getResource().getType().name();
 		try {
+			System.out.println(resourceItem.getResource().getName() + " type: " + typeName + " icon: " + resourceItem.getResource().getIcon());
 			if (resourceItem.getResource().getIcon() == null) {
-				String imgPath = String.format("types/type-%s.png", typeName.toLowerCase());
+				String imgPath = String.format("types/type-%s.png",
+						typeName.toLowerCase());
 				URL resource = getClass().getResource(imgPath);
 				if (resource == null) {
 					setText(resources.getString("resource.icon." + typeName));
@@ -99,8 +111,7 @@ public class IconButton extends LauncherButton {
 						private void setImageFromResource(
 								final ImageView imageView, URL resource)
 								throws IOException {
-							InputStream openStream = resource
-									.openStream();
+							InputStream openStream = resource.openStream();
 							try {
 								Image img = new Image(openStream);
 								Platform.runLater(new Runnable() {
@@ -121,6 +132,53 @@ public class IconButton extends LauncherButton {
 			setText("%" + typeName);
 		}
 		sizeToImage();
+
+		// Bouncer for click events
+		double bounceSpeed = 50;
+		bouncer.setCycleCount(3);
+		bouncer.getKeyFrames().addAll(
+				makeKeyFrame(0, 0, 1.0, 1.0),
+				makeKeyFrame(bounceSpeed * 2f, 4, 1.0, 1.0),
+				
+				makeKeyFrame(bounceSpeed * 2.5f, 4, 1.1, 0.9),
+				makeKeyFrame(bounceSpeed * 4.5f, 0, 1.0, 1.0),
+				makeKeyFrame(bounceSpeed * 6.5f, -4, 1.0, 1.0),
+				makeKeyFrame(bounceSpeed * 8.5f, 0, 1.0, 1.0)
+				);
+		bouncer.setOnFinished(value -> {
+			if(launching) {
+				bouncer.play();
+			}
+		});
+		
+		// Grower for hover in
+		grower.getKeyFrames().addAll(makeKeyFrame(0, 0, 1.0, 1.0), makeKeyFrame(100, 0, 1.2, 1.2));
+
+		// Shrinker for hover out
+		shrinker.getKeyFrames().addAll(makeKeyFrame(0, 0, 1.2, 1.2), makeKeyFrame(100, 0, 1.0, 1.0));
+
+		// Monitor mouse activity
+		setOnMouseEntered(value -> {
+			grower.play();
+		});
+		setOnMouseExited(value -> {
+			shrinker.play();
+		});
+	}
+	protected void onInitiateLaunch() {
+		launching = true;
+		bouncer.play();
+	}
+	
+	protected void onFinishLaunch() {
+		launching = false;
+	}
+	
+	private KeyFrame makeKeyFrame(double d, double y, double sx, double sy) {
+		return new KeyFrame(Duration.millis(d), 
+				new KeyValue(translateYProperty(),y), 
+				new KeyValue(scaleXProperty(), sx),
+				new KeyValue(scaleYProperty(), sy));
 	}
 
 	private void configureButton(final ImageView imageView) {

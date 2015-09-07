@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,18 @@ import com.hypersocket.utils.FileUtils;
 public abstract class AbstractExtensionUpdater {
 
 	static Logger log = LoggerFactory.getLogger(AbstractExtensionUpdater.class);
+	private long transfered;
+	private long totalSize;
 	
+	
+	public long getTransfered() {
+		return transfered;
+	}
+
+	public long getTotalSize() {
+		return totalSize;
+	}
+
 	public final boolean update()
 			throws IOException {
 		
@@ -38,7 +50,7 @@ public abstract class AbstractExtensionUpdater {
 			Map<ExtensionPlace, List<ExtensionDefinition>> updates = new HashMap<ExtensionPlace, List<ExtensionDefinition>>();
 			Map<ExtensionDefinition,File> tmpArchives = new HashMap<ExtensionDefinition,File>();
 			
-			long totalSize = 0;
+			totalSize = 0;
 			for (Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : extensions
 					.entrySet()) {
 				
@@ -67,7 +79,9 @@ public abstract class AbstractExtensionUpdater {
 			}
 			onUpdateStart(totalSize);
 			
-			long transfered = 0;
+			transfered = 0;
+			
+			List<File> toRemove = new ArrayList<>();
 
 			for (Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : updates
 					.entrySet()) {
@@ -99,7 +113,7 @@ public abstract class AbstractExtensionUpdater {
 						long read = 0;
 						while ((b = in.read(buf)) > -1) {
 							out.write(buf, 0, b);
-							onUpdateProgress((long) b, transfered += b);
+							onUpdateProgress((long) b, transfered += b, totalSize);
 							read += b;
 							if (System
 									.getProperty("hypersocket.development.fakeSlowUpdate") != null) {
@@ -141,11 +155,7 @@ public abstract class AbstractExtensionUpdater {
 				if(!archivesDirFile.exists() && !archivesDirFile.mkdirs()) {
 					throw new IOException(String.format("Archive directory %s does not exist and could not be created.", archivesDirFile.getAbsolutePath()));
 				}
-				
-				
-				/**
-				 * Rename all the old archives to .bak
-				 */
+
 				File[] archives = archivesDirFile.listFiles(new FilenameFilter() {
 					
 					@Override
@@ -153,49 +163,46 @@ public abstract class AbstractExtensionUpdater {
 						return name.endsWith(".zip");
 					}
 				});
-				if(archives!=null) {
-					for(File prevArchive : archives) {
-						String filename = prevArchive.getName().replace(".zip", ".bak");
-						
-						File backupFile = new File(archivesDirFile, filename);
-						if(!prevArchive.renameTo(backupFile)) {
-							throw new IOException("Could not backup previous archive " + prevArchive.getName());
-						}
-					};
-				}
+				
+				if(archives != null)
+					// Add to the list of files to be removed on success
+					toRemove.addAll(Arrays.asList(archives));
+				
 			}
 			
 			/**
 			 * Now copy over the new archives
 			 */
-			for (Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : updates
-					.entrySet()) {
-				for(ExtensionDefinition def : en.getValue()) {
-					File archiveTmp = tmpArchives.get(def);
-					File archiveFile = new File(en.getKey().getDir(), archiveTmp.getName());
-					completeDownload(tmpArchives.get(def), archiveFile, def);
+			List<File> newFiles = new ArrayList<>();
+			try {
+				for (Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : updates
+						.entrySet()) {
+					for(ExtensionDefinition def : en.getValue()) {
+						File archiveTmp = tmpArchives.get(def);
+						File archiveFile = new File(en.getKey().getDir(), archiveTmp.getName());
+						newFiles.add(archiveFile);
+						completeDownload(tmpArchives.get(def), archiveFile, def);
+					}
 				}
+			}
+			catch(IOException ioe) {
+				// Remove all of the new files created so the old ones continue to be used
+				for(File f : newFiles) {
+					if(f.exists() && !f.delete()) {
+						log.warn(f.getName() + " could not be deleted. The file has been marked to delete up JVM exit, but this may or may not work. This should not affect the upgrade but advisable that its removed.");
+						f.deleteOnExit();
+					}
+				}				
+				throw ioe;
 			}
 			
 			/**
-			 * Finally delete the backups
+			 * Finally delete the current files
 			 */
-			for (Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : updates
-					.entrySet()) {
-				File[] archives = en.getKey().getDir().listFiles(new FilenameFilter() {
-					
-					@Override
-					public boolean accept(File dir, String name) {
-						return name.endsWith(".bak");
-					}
-				});
-				
-				if(archives!=null) {
-					for(File prevArchive : archives ){
-						if(!prevArchive.delete()) {
-							log.warn(prevArchive.getName() + " could not be deleted. This should not affect the upgrade but advisable that its removed.");
-						}
-					};
+			for (File f : toRemove) {
+				if(!f.delete()) {
+					log.warn(f.getName() + " could not be deleted. The file has been marked to delete up JVM exit, but this may or may not work. This should not affect the upgrade but advisable that its removed.");
+					f.deleteOnExit();
 				}
 			}
 			
@@ -231,7 +238,7 @@ public abstract class AbstractExtensionUpdater {
 	
 	protected abstract void onUpdateStart(long totalBytesExpected);
 	
-	protected abstract void onUpdateProgress(long sincelastProgress, long totalSoFar);
+	protected abstract void onUpdateProgress(long sincelastProgress, long totalSoFar, long totalBytesException);
 	
 	protected abstract void onUpdateComplete(long totalBytesTransfered);
 	

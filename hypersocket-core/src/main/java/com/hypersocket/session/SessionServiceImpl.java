@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -47,8 +48,10 @@ import com.hypersocket.session.events.SessionEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
 import com.hypersocket.tables.ColumnSort;
 
+import net.sf.uadetector.OperatingSystemFamily;
 import net.sf.uadetector.ReadableUserAgent;
 import net.sf.uadetector.UserAgentStringParser;
+import net.sf.uadetector.internal.data.domain.OperatingSystem;
 import net.sf.uadetector.service.UADetectorServiceFactory;
 
 @Service

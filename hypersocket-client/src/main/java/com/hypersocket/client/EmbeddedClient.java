@@ -25,7 +25,7 @@ public class EmbeddedClient extends HypersocketClient<Object> {
 	}
 
 	@Override
-	protected Map<String, String> showLogin(List<Prompt> prompts) {
+	protected Map<String, String> showLogin(List<Prompt> prompts, int attempt, boolean success) {
 		throw new UnsupportedOperationException();
 	}
 

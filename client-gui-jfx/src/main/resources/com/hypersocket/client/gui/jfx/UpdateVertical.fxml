@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER" maxHeight="1.7976931348623157E308" styleClass="background" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hypersocket.client.gui.jfx.Update">
+   <children>
+      <VBox alignment="CENTER" prefHeight="320.0" prefWidth="23.0" spacing="8.0">
+         <children>
+            <ImageView fx:id="icon" pickOnBounds="true" preserveRatio="true" styleClass="logo" />
+            <Group nodeOrientation="LEFT_TO_RIGHT">
+               <children>
+                  <ProgressBar fx:id="progress" prefWidth="150.0" progress="0.0" rotate="90.0" />
+               </children>
+            </Group>
+            <Group>
+               <children>
+                  <Label fx:id="message" alignment="CENTER" rotate="90.0" text="%updating" wrapText="true" />
+               </children>
+            </Group>
+         </children>
+      </VBox>
+   </children>
+</VBox>

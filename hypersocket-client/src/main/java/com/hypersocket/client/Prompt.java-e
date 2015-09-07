@@ -52,5 +52,12 @@ public class Prompt implements Serializable {
 	public List<Option> getOptions() {
 		return options;
 	}
+
+	@Override
+	public String toString() {
+		return "Prompt [resourceKey=" + resourceKey + ", defaultValue="
+				+ defaultValue + ", type=" + type + ", options=" + options
+				+ "]";
+	}
 	
 }

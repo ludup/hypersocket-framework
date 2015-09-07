@@ -141,7 +141,10 @@ public class ExtensionHelper {
 															.getVersion());
 											;
 										}
-										remote.setState(ExtensionState.INSTALLED);
+										remote.setState(ExtensionState.valueOf(System
+												.getProperty(
+														"hypersocket.development.fakeExtensionState",
+														ExtensionState.INSTALLED.name())));
 									}
 								}
 							} else {

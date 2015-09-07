@@ -2,6 +2,7 @@ package com.hypersocket.client.gui.jfx;
 
 import java.util.ResourceBundle;
 
+import javafx.application.Platform;
 import javafx.scene.control.OverrunStyle;
 
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ public abstract class LauncherButton extends ImageButton {
 			Client context) {
 		setTextOverrun(OverrunStyle.CLIP);
 		setOnAction((event) -> {
+			onInitiateLaunch();
 			new Thread() {
 				public void run() {
 					launch(resourceItem);
@@ -23,15 +25,37 @@ public abstract class LauncherButton extends ImageButton {
 
 	}
 	
+	protected void onInitiateLaunch() {
+		// Called before the launch on the JFX thread
+	}
+	
 	protected void onBeforeLaunch() {
+		// Called before the launch on the launch thread
+	}
+	
+	protected void onAfterLaunch() {
+		// Called when launch is complete on the launch thread
+	}
+	
+	protected void onFinishLaunch() {
+		// Called when launch is complete on the JFX thread
 	}
 
 	protected void launch(ResourceItem resourceItem) {
 		onBeforeLaunch();
-		new Thread("Launch") {
+		Thread t = new Thread("Launch") {
 			public void run() {
-				resourceItem.getResource().getResourceLauncher().launch();
+				try {
+					resourceItem.getResource().getResourceLauncher().launch();
+				}
+				finally {
+					onAfterLaunch();
+					Platform.runLater(() -> onFinishLaunch());
+				}
+				
 			}
-		}.start();
+		};
+		t.setDaemon(true);
+		t.start();
 	}
 }

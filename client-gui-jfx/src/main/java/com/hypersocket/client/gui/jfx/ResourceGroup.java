@@ -12,8 +12,6 @@ public class ResourceGroup extends AbstractController {
 	@FXML
 	private VBox resourceItems;
 
-	private Popup popup;
-
 	@Override
 	protected void onInitialize() {
 	}
@@ -36,10 +34,6 @@ public class ResourceGroup extends AbstractController {
 			button.setText(item.getResource().getName());
 			resourceItems.getChildren().add(button);
 		}
-	}
-
-	public void setPopup(Popup popup) {
-		this.popup = popup;
 	}
 
 }
