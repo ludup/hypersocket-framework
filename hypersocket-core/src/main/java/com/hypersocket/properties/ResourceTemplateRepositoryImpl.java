@@ -542,6 +542,29 @@ public abstract class ResourceTemplateRepositoryImpl extends
 				.getPropertyValue(template, resource);
 	}
 
+	@Override 
+	public String getDecryptedValue(AbstractResource resource, String resourceKey) {
+		
+		PropertyTemplate template = propertyTemplates.get(resourceKey);
+
+		if (template == null) {
+			
+			for(PropertyResolver r : propertyResolvers) {
+				template = r.getPropertyTemplate(resource, resourceKey);
+				if(template!=null) {
+					break;
+				}
+			}
+			
+			if(template==null) {
+				throw new IllegalStateException("Template required for encrypted property!");
+			}
+		}
+
+		return ((ResourcePropertyStore) template.getPropertyStore())
+				.getDecryptedValue(template, resource);
+	}
+	
 	@Override
 	public Integer getIntValue(AbstractResource resource, String name)
 			throws NumberFormatException {

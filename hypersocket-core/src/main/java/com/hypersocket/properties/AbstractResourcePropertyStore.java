@@ -32,9 +32,9 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 	}
 	
 	protected abstract String lookupPropertyValue(PropertyTemplate template);
-	
+
 	protected abstract void doSetProperty(PropertyTemplate template, String value);
-	
+
 	@Override
 	public void setProperty(PropertyTemplate template, String value) {
 
@@ -97,9 +97,25 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 			c = cachedValues.get(cacheKey);
 		}
 
+		return c;
+	}
+	
+	@Override
+	public String getDecryptedValue(AbstractPropertyTemplate template, AbstractResource resource) {
+		
+		String c;
+		String cacheKey = createCacheKey(template.getResourceKey(), resource);
+		if (!cachedValues.containsKey(cacheKey)) {
+			c = lookupPropertyValue(template, resource);
+			cachedValues.put(cacheKey, c);
+		} else {
+			c = cachedValues.get(cacheKey);
+		}
+
 		if(template.isEncrypted() && c.startsWith("!ENC!")) {
 			c = decryptValue(cacheKey, c, resolveRealm(resource));
 		}
+
 		return c;
 	}
 	

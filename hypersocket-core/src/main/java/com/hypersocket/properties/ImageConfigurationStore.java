@@ -206,4 +206,9 @@ public class ImageConfigurationStore implements ResourcePropertyStore {
 		return resourceKeyImages.containsKey(key);
 	}
 
+	@Override
+	public String getDecryptedValue(AbstractPropertyTemplate template, AbstractResource resource) {
+		throw new UnsupportedOperationException();
+	}
+
 }

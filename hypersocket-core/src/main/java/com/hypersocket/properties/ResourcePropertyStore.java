@@ -6,11 +6,13 @@ import com.hypersocket.resource.AbstractResource;
 
 public interface ResourcePropertyStore extends XmlTemplatePropertyStore {
 
-	public String getPropertyValue(AbstractPropertyTemplate template, AbstractResource resource);
+	String getPropertyValue(AbstractPropertyTemplate template, AbstractResource resource);
 	
-	public void setPropertyValue(AbstractPropertyTemplate template, AbstractResource resource, String value);
+	void setPropertyValue(AbstractPropertyTemplate template, AbstractResource resource, String value);
 
-	public boolean hasPropertyValueSet(AbstractPropertyTemplate template, AbstractResource resource);
+	boolean hasPropertyValueSet(AbstractPropertyTemplate template, AbstractResource resource);
 	
 	Collection<String> getPropertyNames();
+
+	String getDecryptedValue(AbstractPropertyTemplate template, AbstractResource resource);
 }
