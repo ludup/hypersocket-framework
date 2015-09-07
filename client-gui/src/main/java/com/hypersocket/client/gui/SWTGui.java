@@ -517,7 +517,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 	}
 
 	@Override
-	public Map<String, String> showPrompts(final List<Prompt> prompts) {
+	public Map<String, String> showPrompts(final List<Prompt> prompts, int attempts, boolean success) {
 		final Map<String, String> results = new HashMap<String, String>();
 
 		shell.getDisplay().syncExec(new Runnable() {
@@ -584,6 +584,10 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 	}
 
 	@Override
+	public void loadResources(Connection connection) throws RemoteException {
+	}
+
+	@Override
 	public void ready(Connection connection) throws RemoteException {
 		// TODO use these instead of polling in SWT client too
 	}
@@ -604,7 +608,7 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 
 	@Override
 	public void onUpdateProgress(final String app,
-			final long sincelastProgress, final long totalSoFar)
+			final long sincelastProgress, final long totalSoFar, long totalBytesExpected)
 			throws RemoteException {
 		if (isUpdateCancelled()) {
 			throw new CancelledException();
@@ -722,5 +726,11 @@ public class SWTGui extends UnicastRemoteObject implements GUICallback {
 
 	private boolean isUpdateCancelled() {
 		return updateWindow == null || updateWindow.isCancelled();
+	}
+
+	@Override
+	public void started(Connection connection) throws RemoteException {
+		// TODO Auto-generated method stub
+		
 	}
 }

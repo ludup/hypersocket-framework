@@ -24,7 +24,7 @@ public interface GUICallback extends Serializable, Remote {
 
 	void notify(String msg, int type) throws RemoteException;
 
-	Map<String, String> showPrompts(List<Prompt> prompts)
+	Map<String, String> showPrompts(List<Prompt> prompts, int attempts, boolean success)
 			throws RemoteException;
 
 	int executeAsUser(ApplicationLauncherTemplate launcherTemplate,
@@ -40,12 +40,16 @@ public interface GUICallback extends Serializable, Remote {
 	void transportConnected(Connection connection) throws RemoteException;
 
 	void ready(Connection connection) throws RemoteException;
+
+	void started(Connection connection) throws RemoteException;
+
+	void loadResources(Connection connection) throws RemoteException;
 	
 	void onUpdateInit(int expectedApps) throws RemoteException;
 	
 	void onUpdateStart(String app, long totalBytesExpected) throws RemoteException;
 	
-	void onUpdateProgress(String app, long sincelastProgress, long totalSoFar) throws RemoteException;
+	void onUpdateProgress(String app, long sincelastProgress, long totalSoFar, long totalBytesExpected) throws RemoteException;
 	
 	void onUpdateComplete(long totalBytesTransfered, String app) throws RemoteException;
 	

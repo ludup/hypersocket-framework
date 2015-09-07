@@ -46,9 +46,13 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	
 	public interface Listener {
 
+		void loadResources(Connection connection);
+
 		void connecting(Connection connection);
 
 		void finishedConnecting(Connection connection, Exception e);
+
+		void started(Connection connection);
 
 		void disconnecting(Connection connection);
 
@@ -60,7 +64,7 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 		void ping();
 
-		Map<String, String> showPrompts(List<Prompt> prompts);
+		Map<String, String> showPrompts(List<Prompt> prompts, int attempts, boolean success);
 
 		void initUpdate(int apps);
 
@@ -69,7 +73,7 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 		void startingUpdate(String app, long totalBytesExpected);
 
 		void updateProgressed(String app, long sincelastProgress,
-				long totalSoFar);
+				long totalSoFar, long totalBytesExpected);
 
 		void updateComplete(String app, long totalBytesTransfered);
 
@@ -172,7 +176,8 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 			new RMIStatusThread().start();
 		} catch (Throwable e) {
-			if(failedConnectionAttempts > 30) {
+			int maxAttempts = Integer.parseInt(System.getProperty("hypersocket.maxAttempts", "0"));
+			if(maxAttempts > 0 && failedConnectionAttempts > maxAttempts) {
 				log.info("Shutting down client. Cannot connect to service");
 				System.exit(0);
 			}
@@ -281,10 +286,10 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	}
 
 	@Override
-	public Map<String, String> showPrompts(List<Prompt> prompts)
+	public Map<String, String> showPrompts(List<Prompt> prompts, int attempts, boolean success)
 			throws RemoteException {
 		for (Listener l : new ArrayList<Listener>(listeners)) {
-			Map<String, String> m = l.showPrompts(prompts);
+			Map<String, String> m = l.showPrompts(prompts, attempts, success);
 			if (m != null) {
 				return m;
 			}
@@ -322,6 +327,7 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	@Override
 	public void disconnected(Connection connection, String errorMessage)
 			throws RemoteException {
+		log.info("Bridge disconnected " + connection  + " (" + errorMessage + ")");
 		Exception e = errorMessage == null ? null : new Exception(errorMessage);
 		for (Listener l : new ArrayList<Listener>(listeners)) {
 			l.disconnected(connection, e);
@@ -334,9 +340,28 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 	}
 
 	@Override
+	public void started(Connection connection) throws RemoteException {
+		log.info("Connection " + connection + " is now started");
+		for (Listener l : new ArrayList<Listener>(listeners)) {
+			l.started(connection);
+		}
+		notify(connection.getHostname() + " connected",
+				GUICallback.NOTIFY_CONNECT);
+	}
+
+	@Override
 	public void ready(Connection connection) throws RemoteException {
+		log.info("Connection " + connection + " is now ready");
 		for (Listener l : new ArrayList<Listener>(listeners)) {
 			l.finishedConnecting(connection, null);
+		}
+	}
+
+	@Override
+	public void loadResources(Connection connection) throws RemoteException {
+		log.info("Connection " + connection + " should load resources");
+		for (Listener l : new ArrayList<Listener>(listeners)) {
+			l.loadResources(connection);
 		}
 	}
 
@@ -400,12 +425,12 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 
 	@Override
 	public void onUpdateProgress(String app, long sincelastProgress,
-			long totalSoFar) throws RemoteException {
+			long totalSoFar, long totalBytesExpected) throws RemoteException {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
 				for (Listener l : new ArrayList<Listener>(listeners)) {
-					l.updateProgressed(app, sincelastProgress, totalSoFar);
+					l.updateProgressed(app, sincelastProgress, totalSoFar, totalBytesExpected);
 				}
 			}
 		});
@@ -479,5 +504,14 @@ public class Bridge extends UnicastRemoteObject implements GUICallback {
 			}
 		});
 
+	}
+
+	public boolean isServiceUpdating() {
+		try {
+			return clientService != null && clientService.isUpdating();
+		}	
+		catch(RemoteException re) {
+			return false;
+		}
 	}
 }

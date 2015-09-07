@@ -50,14 +50,14 @@ public class CommandExecutor {
 	
 	public int execute() throws IOException {
 		
-		if(log.isInfoEnabled()) {
+		if(log.isDebugEnabled()) {
 			StringBuilder builder = new StringBuilder();
 			for(String s : args) {
 				builder.append(s);
 				builder.append(' ');
 			}
 			
-			log.info("Executing command: " + builder.toString().trim());
+			log.debug("Executing command: " + builder.toString().trim());
 		}
 		pb = new ProcessBuilder(args);
 		
@@ -84,8 +84,8 @@ public class CommandExecutor {
 			throw new IOException(e);
 		}
 		
-		if (log.isInfoEnabled()) {
-			log.info("Command output: " + buffer.toString());
+		if (log.isDebugEnabled()) {
+			log.debug("Command output: " + buffer.toString());
 		}
 		
 		return exitCode;

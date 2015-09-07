@@ -6,15 +6,18 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
-import javafx.application.Platform;
+import javafx.geometry.Bounds;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Control;
+import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.Tooltip;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
+import org.controlsfx.control.PopOver;
+import org.controlsfx.control.PopOver.ArrowLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +33,8 @@ public class AbstractController implements FramedController, Listener {
 	protected ResourceBundle resources;
 	protected URL location;
 	protected Scene scene;
+	protected PopOver popOver;
+	protected Popup popup;
 
 	@Override
 	public final void initialize(URL location, ResourceBundle resources) {
@@ -49,24 +54,19 @@ public class AbstractController implements FramedController, Listener {
 		this.scene = scene;
 		this.context = jfxhsClient;
 		onConfigure();
-		
-		restyleAllToolTips(scene);		
-		
 		context.getBridge().addListener(this);
 	}
-	
+
 	protected Stage getStage() {
 		return (Stage) scene.getWindow();
 	}
 
 	@Override
 	public void bridgeEstablished() {
-		stateChanged();
 	}
 
 	@Override
 	public void bridgeLost() {
-		stateChanged();
 	}
 
 	@Override
@@ -82,28 +82,28 @@ public class AbstractController implements FramedController, Listener {
 	protected void onInitialize() {
 	}
 
-	protected void onStateChanged() {
-
+	@Override
+	public void connecting(Connection connection) {
 	}
 
 	@Override
-	public void connecting(Connection connection) {
-		stateChanged();		
+	public void started(Connection connection) {
 	}
 
 	@Override
 	public void finishedConnecting(Connection connection, Exception e) {
-		stateChanged();				
+	}
+
+	@Override
+	public void loadResources(Connection connection) {
 	}
 
 	@Override
 	public void disconnecting(Connection connection) {
-		stateChanged();						
 	}
 
 	@Override
 	public void disconnected(Connection connection, Exception e) {
-		stateChanged();								
 	}
 
 	@Override
@@ -112,7 +112,8 @@ public class AbstractController implements FramedController, Listener {
 	}
 
 	@Override
-	public Map<String, String> showPrompts(List<Prompt> prompts) {
+	public Map<String, String> showPrompts(List<Prompt> prompts, int attempts,
+			boolean success) {
 		return null;
 	}
 
@@ -121,7 +122,8 @@ public class AbstractController implements FramedController, Listener {
 	}
 
 	@Override
-	public void updateProgressed(String app, long sincelastProgress, long totalSoFar) {
+	public void updateProgressed(String app, long sincelastProgress,
+			long totalSoFar, long totalBytesExpected) {
 	}
 
 	@Override
@@ -143,52 +145,71 @@ public class AbstractController implements FramedController, Listener {
 	@Override
 	public void initDone(String errorMessage) {
 	}
-	
-	
 
-	private void restyleAllToolTips(Scene scene) {
-		walkTree(scene.getRoot(), new Consumer<Object>() {
-			@Override
-			public void accept(Object t) {
-				if(t instanceof Control) {
-					Tooltip tooltip = ((Control)t).getTooltip();
-					if(tooltip != null) {
-						// NOTE Bleh. Have to recreate tooltips? How crazy is that
-						Tooltip newTooltip = new Tooltip();
-						newTooltip.setText(tooltip.getText());
-						UIHelpers.styleToolTip(newTooltip);
-						((Control)t).setTooltip(newTooltip);
-					}
-				}				
-			}
-		});
+	public final void setPopup(Popup popup) {
+		this.popup = popup;
+		onSetPopup(popup);
 	}
+	
+	protected void onSetPopup(Popup popup) {
+		
+	}
+	
+	protected void showPopOver(String text, Node node) {
+		if(popOver != null && popOver.isShowing()) {
+			System.err.println("Popover already showing");
+			return;
+		}
+		System.err.println("Showing Popover");
 
-	private void stateChanged() {
-		if (!Platform.isFxApplicationThread()) {
-			Platform.runLater(new Runnable() {
+		if(popOver == null) {
+			popOver = new PopOver();
 
-				@Override
-				public void run() {
-					onStateChanged();
-				}
-			});
-		} else {
-			onStateChanged();
+			popOver.setConsumeAutoHidingEvents(false);
+			popup.setPopOver(popOver);
+			popOver.getRoot().focusTraversableProperty().set(false);
+			popOver.getRoot().getStylesheets().add(
+					Client.class.getResource(Client.class.getSimpleName() + ".css")
+							.toExternalForm());
+			popOver.getRoot().maxWidthProperty().set(380);
+	    	Client.applyStyles(popOver.getRoot());
+			
+			Label l = new Label();
+			l.wrapTextProperty().set(true);
+			l.setText(text);
+			
+			popOver.setContentNode(l);
+		}
+		Configuration cfg = Configuration.getDefault();
+		
+		Bounds bounds = node.localToScene(node.getBoundsInLocal());
+
+		
+		if(cfg.topProperty().get()) {
+			popOver.arrowLocationProperty().set(ArrowLocation.RIGHT_TOP);
+			popOver.show(popup, popup.getX() - popOver.getRoot().maxWidthProperty().get() - 20, popup.getY() + bounds.getMinY() - (bounds.getHeight() ));
+		}
+	}
+	
+	protected void hidePopOver() {
+		if(popOver != null) {
+			popOver.hide(Duration.millis(0));
 		}
 	}
 
-    private void walkTree(Object node, Consumer<Object> visitor) {
-        visitor.accept(node);
-        if(node instanceof TabPane) { 
-        	((TabPane )node).getTabs().forEach(n -> walkTree(n, visitor));
-        }
-        else if(node instanceof Tab) {
-        	walkTree(((Tab)node).getContent(), visitor);
-        }
-        else if (node instanceof Parent) {
-            ((Parent) node).getChildrenUnmodifiable()
-                .forEach(n -> walkTree(n, visitor));
-        }
-    }
+	protected void walkTree(Object node, Consumer<Object> visitor) {
+		if (node == null) {
+			return;
+		}
+		visitor.accept(node);
+		if (node instanceof TabPane) {
+			((TabPane) node).getTabs().forEach(n -> walkTree(n, visitor));
+		} else if (node instanceof Tab) {
+			walkTree(((Tab) node).getContent(), visitor);
+			walkTree(((Tab) node).getGraphic(), visitor);
+		} else if (node instanceof Parent) {
+			((Parent) node).getChildrenUnmodifiable().forEach(
+					n -> walkTree(n, visitor));
+		}
+	}
 }

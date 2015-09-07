@@ -28,6 +28,7 @@ import com.hypersocket.HypersocketVersion;
 import com.hypersocket.netty.websocket.WebSocket;
 import com.hypersocket.netty.websocket.WebSocketHandler;
 import com.hypersocket.netty.websocket.WebSocketListener;
+import com.hypersocket.utils.HypersocketUtils;
 
 public class HttpClient {
 
