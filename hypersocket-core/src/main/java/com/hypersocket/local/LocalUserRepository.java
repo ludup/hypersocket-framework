@@ -70,4 +70,6 @@ public interface LocalUserRepository extends ResourceTemplateRepository, Abstrac
 	public Collection<? extends Principal> getGroupsByUser(LocalUser principal);
 
 	public Collection<? extends Principal> getUsersByGroup(LocalGroup principal);
+
+	public Collection<? extends Principal> getGroupsByGroup(LocalGroup principal);
 }
