@@ -24,11 +24,10 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	void testConnection(Map<String, String> properties) throws IOException;
 
 	void testConnection(Map<String, String> properties, Realm realm) throws IOException;
-	
+
 	List<Principal> allPrincipals(Realm realm, PrincipalType... types);
 
-	Principal getPrincipalByName(String principalName, Realm realm,
-			PrincipalType... acceptTypes);
+	Principal getPrincipalByName(String principalName, Realm realm, PrincipalType... acceptTypes);
 
 	boolean verifyPassword(Principal principal, char[] password);
 
@@ -36,36 +35,31 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	boolean supportsAccountUnlock(Realm realm);
 
-	Principal createUser(Realm realm, String username,
-			Map<String, String> properties, List<Principal> principals,
-			String password, boolean forceChange)
+	Principal createUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
+			String password, boolean forceChange) throws ResourceCreationException;
+
+	Principal updateUser(Realm realm, Principal user, String username, Map<String, String> properties,
+			List<Principal> principals) throws ResourceChangeException;
+
+	void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon)
 			throws ResourceCreationException;
 
-	Principal updateUser(Realm realm, Principal user, String username,
-			Map<String, String> properties, List<Principal> principals)
-			throws ResourceChangeException;
-
-	void setPassword(Principal principal, String password,
-			boolean forceChangeAtNextLogon) throws ResourceCreationException;
-
-	void setPassword(Principal principal, char[] password,
-			boolean forceChangeAtNextLogon) throws ResourceCreationException;
+	void setPassword(Principal principal, char[] password, boolean forceChangeAtNextLogon)
+			throws ResourceCreationException;
 
 	boolean requiresPasswordChange(Principal principal);
 
 	Principal getPrincipalById(Long id, Realm realm, PrincipalType[] type);
 
-	Principal createGroup(Realm realm, String name,
-			Map<String, String> properties, List<Principal> principals)
-			throws ResourceCreationException;
+	Principal createGroup(Realm realm, String name, Map<String, String> properties, List<Principal> principals,
+			List<Principal> groups) throws ResourceCreationException;
 
-	Principal createGroup(Realm realm, String name, Map<String, String> properties)
-			throws ResourceCreationException;
+	Principal createGroup(Realm realm, String name, Map<String, String> properties) throws ResourceCreationException;
 
 	void deleteGroup(Principal group) throws ResourceChangeException;
 
-	Principal updateGroup(Realm realm, Principal group, String name,
-			Map<String, String> properties, List<Principal> principals) throws ResourceChangeException;
+	Principal updateGroup(Realm realm, Principal group, String name, Map<String, String> properties,
+			List<Principal> principals, List<Principal> groups) throws ResourceChangeException;
 
 	void deleteUser(Principal user) throws ResourceChangeException;
 
@@ -77,13 +71,12 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	String getResourceBundle();
 
-	List<Principal> getAssociatedPrincipals(Principal principal,
-			PrincipalType type);
+	List<Principal> getAssociatedPrincipals(Principal principal, PrincipalType type);
 
 	Long getPrincipalCount(Realm realm, PrincipalType type, String searchPattern);
 
-	List<?> getPrincipals(Realm realm, PrincipalType type,
-			String searchPattern, int start, int length, ColumnSort[] sorting);
+	List<?> getPrincipals(Realm realm, PrincipalType type, String searchPattern, int start, int length,
+			ColumnSort[] sorting);
 
 	Collection<PropertyCategory> getUserProperties(Principal principal);
 
@@ -91,15 +84,13 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Collection<PropertyCategory> getGroupProperties(Principal principal);
 
-	String getAddress(Principal principal, MediaType type)
-			throws MediaNotFoundException;
+	String getAddress(Principal principal, MediaType type) throws MediaNotFoundException;
 
 	String getPrincipalDescription(Principal principal);
 
 	boolean supportsAccountDisable(Realm realm);
 
-	Principal disableAccount(Principal principal)
-			throws ResourceChangeException;
+	Principal disableAccount(Principal principal) throws ResourceChangeException;
 
 	Principal enableAccount(Principal principal) throws ResourceChangeException;
 
@@ -108,7 +99,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	Set<String> getUserPropertyNames(Principal principal);
 
 	String getUserPropertyValue(Principal principal, String name);
-	
+
 	Set<String> getGroupPropertyNames(Principal principal);
 
 	void changePassword(Principal principal, char[] charArray, char[] charArray2)
@@ -117,9 +108,11 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	Set<String> getUserVariableNames(Principal principal);
 
 	Map<String, String> getUserPropertyValues(Principal principal);
-	
+
 	Set<String> getDefaultUserPropertyNames();
 
 	boolean hasPropertyValueSet(Principal principal, String string);
+
+	String getDecryptedValue(Realm realm, String resourceKey);
 
 }

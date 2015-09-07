@@ -10,16 +10,14 @@ package com.hypersocket.local;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.realm.Principal;
@@ -30,10 +28,13 @@ import com.hypersocket.realm.PrincipalType;
 @XmlRootElement(name="group")
 public class LocalGroup extends Principal {
 
-	@ManyToMany(fetch=FetchType.EAGER)
-	@Cascade({CascadeType.SAVE_UPDATE})
+	@OneToMany(fetch=FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})
 	@JoinTable(name = "local_user_groups", joinColumns={@JoinColumn(name="guid")}, inverseJoinColumns={@JoinColumn(name="uuid")})
 	private Set<LocalUser> users = new HashSet<LocalUser>();
+	
+	@OneToMany(fetch=FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})
+	@JoinTable(name = "local_group_groups", joinColumns={@JoinColumn(name="guid")}, inverseJoinColumns={@JoinColumn(name="gguid")})
+	private Set<LocalGroup> groups = new HashSet<LocalGroup>();
 	
 	@Override
 	public PrincipalType getType() {
@@ -47,6 +48,11 @@ public class LocalGroup extends Principal {
 	@JsonIgnore
 	public Set<LocalUser> getUsers() {
 		return users;
+	}
+	
+	@JsonIgnore
+	public Set<LocalGroup> getGroups() {
+		return groups;
 	}
 
 

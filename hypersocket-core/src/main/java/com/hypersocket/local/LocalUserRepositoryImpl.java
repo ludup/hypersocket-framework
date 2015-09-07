@@ -332,4 +332,17 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 			}
 		});
 	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public Collection<? extends Principal> getGroupsByGroup(final LocalGroup principal) {
+		return list(LocalGroup.class, false, new CriteriaConfiguration() {
+		
+			@Override
+			public void configure(Criteria criteria) {
+				criteria = criteria.createCriteria("groups");
+				criteria.add(Restrictions.eq("id", principal.getId()));
+			}
+		});
+	}
 }

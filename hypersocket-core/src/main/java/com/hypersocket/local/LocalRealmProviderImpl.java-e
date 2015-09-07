@@ -356,13 +356,13 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 
 	@Override
 	public Principal createGroup(Realm realm, String name,
-			Map<String, String> properties, List<Principal> principals) throws ResourceCreationException {
+			Map<String, String> properties, List<Principal> principals, List<Principal> groups) throws ResourceCreationException {
 
 		LocalGroup group = new LocalGroup();
 		group.setName(name);
 		group.setRealm(realm);
 
-		userRepository.saveGroup(group);
+		
 
 		if (principals != null) {
 			for (Principal principal : principals) {
@@ -370,9 +370,22 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 					throw new IllegalStateException(
 							"Principal is not of type LocalUser");
 				}
-				userRepository.assign((LocalUser) principal, group);
+				group.getUsers().add((LocalUser)principal);
 			}
 		}
+		
+		if (groups != null) {
+			for (Principal principal : groups) {
+				if (!(principal instanceof LocalGroup)) {
+					throw new IllegalStateException(
+							"Principal is not of type LocalGroup");
+				}
+				group.getGroups().add((LocalGroup)principal);
+			}
+		}
+		
+		userRepository.saveGroup(group);
+		
 		return group;
 	}
 
@@ -391,7 +404,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 
 	@Override
 	public Principal updateGroup(Realm realm, Principal group, String name,
-			Map<String, String> properties, List<Principal> principals) throws ResourceChangeException {
+			Map<String, String> properties, List<Principal> principals, List<Principal> groups) throws ResourceChangeException {
 		if (!(group instanceof LocalGroup)) {
 			throw new IllegalStateException(
 					"Principal is not of type LocalGroup");
@@ -400,24 +413,48 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		LocalGroup grp = (LocalGroup) group;
 		grp.setName(name);
 		grp.getUsers().clear();
-
+		grp.getGroups().clear();
+		
 		for (Principal principal : principals) {
-			if (!(principal instanceof LocalUser)) {
+			if (principal!=null && !(principal instanceof LocalUser)) {
 				throw new IllegalStateException(
 						"Group member principal is not of type LocalUser");
 			}
 			grp.getUsers().add((LocalUser) principal);
+		}
+		
+		for (Principal principal : groups) {
+			if (principal!=null && !(principal instanceof LocalGroup)) {
+				throw new IllegalStateException(
+						"Group member principal is not of type LocalGroup");
+			}
+			if(containsSelf((LocalGroup)group, (LocalGroup) principal)) {
+				throw new ResourceChangeException(LocalRealmProviderImpl.RESOURCE_BUNDLE, "error.groupContainsSelf", principal.getName());
+			}
+			grp.getGroups().add((LocalGroup) principal);
 		}
 
 		userRepository.saveGroup(grp);
 
 		return grp;
 	}
+	
+	private boolean containsSelf(LocalGroup self, LocalGroup group) {
+		if(group.equals(self)) {
+			return true;
+		}
+		for(LocalGroup child : group.getGroups()) {
+			if(containsSelf(self, child)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	@Override
 	public Principal createGroup(Realm realm, String name, Map<String, String> properties)
 			throws ResourceCreationException {
-		return createGroup(realm, name, properties, null);
+		return createGroup(realm, name, properties, null, null);
 	}
 
 	@Override
@@ -451,10 +488,12 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 
 		List<Principal> result = new ArrayList<Principal>();
 		if (principal instanceof LocalUser) {
-			result.addAll(userRepository.getGroupsByUser((LocalUser) principal));
+			LocalUser user = (LocalUser) principal;
+			result.addAll(user.getGroups());
 		} else if (principal instanceof LocalGroup) {
-			result.addAll(userRepository
-					.getUsersByGroup((LocalGroup) principal));
+			LocalGroup group = (LocalGroup) principal;
+			result.addAll(group.getUsers());
+			iterateGroups(group, result, null);
 		} else {
 			throw new IllegalStateException(
 					"Principal is not a LocalUser or LocalGroup!");
@@ -462,6 +501,20 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 
 		return result;
 
+	}
+	
+	private void iterateGroups(LocalGroup group, List<Principal> users, Set<LocalGroup> iterated) {
+		if(iterated==null) {
+			iterated = new HashSet<LocalGroup>();
+		}
+		if(iterated.contains(group)) {
+			return;
+		}
+		iterated.add(group);
+		for(LocalGroup child : group.getGroups()) {
+			users.addAll(child.getUsers());
+			iterateGroups(child, users, iterated);
+		}
 	}
 
 	@Override
@@ -473,14 +526,16 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		switch (type) {
 		case GROUP:
 			if (principal instanceof LocalUser) {
-				result.addAll(userRepository
-						.getGroupsByUser((LocalUser) principal));
+				result.addAll(((LocalGroup)principal).getUsers());
+			} else if(principal instanceof LocalGroup) {
+				result.addAll(((LocalGroup)principal).getGroups());
 			}
 			break;
 		case USER:
 			if (principal instanceof LocalGroup) {
-				result.addAll(userRepository
-						.getUsersByGroup((LocalGroup) principal));
+				LocalGroup group = (LocalGroup) principal;
+				result.addAll(group.getUsers());
+				iterateGroups(group, result, null);
 			}
 			break;
 		default:
@@ -640,6 +695,11 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	@Override
 	public boolean hasPropertyValueSet(Principal principal, String resourceKey) {
 		return userRepository.hasPropertyValueSet(principal, resourceKey);
+	}
+
+	@Override
+	public String getDecryptedValue(Realm realm, String resourceKey) {
+		return getDecryptedValue(realm, resourceKey);
 	}
 
 }

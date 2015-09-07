@@ -9,15 +9,28 @@ package com.hypersocket.realm.json;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.hypersocket.properties.json.PropertyItem;
+
 @XmlRootElement(name="group")
 public class GroupUpdate {
 
 	Long id;
 	String name;
 	Long[] users;
+	Long[] groups;
 	
+	PropertyItem[] properties;
+
 	public GroupUpdate() {
 		
+	}
+
+	public PropertyItem[] getProperties() {
+		return properties;
+	}
+
+	public void setProperties(PropertyItem[] properties) {
+		this.properties = properties;
 	}
 
 	public Long getId() {
@@ -43,5 +56,15 @@ public class GroupUpdate {
 	public void setUsers(Long[] users) {
 		this.users = users;
 	}
+
+	public Long[] getGroups() {
+		return groups;
+	}
+
+	public void setGroups(Long[] groups) {
+		this.groups = groups;
+	}
+	
+	
 
 }
