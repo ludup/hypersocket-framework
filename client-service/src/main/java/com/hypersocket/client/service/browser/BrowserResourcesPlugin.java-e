@@ -15,11 +15,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.client.HypersocketClient;
 import com.hypersocket.client.i18n.I18N;
 import com.hypersocket.client.rmi.BrowserLauncher;
-import com.hypersocket.client.rmi.GUICallback;
+import com.hypersocket.client.rmi.Resource.Type;
 import com.hypersocket.client.rmi.ResourceImpl;
 import com.hypersocket.client.rmi.ResourceRealm;
 import com.hypersocket.client.rmi.ResourceService;
-import com.hypersocket.client.rmi.Resource.Type;
 import com.hypersocket.client.service.AbstractServicePlugin;
 import com.hypersocket.client.service.GUIRegistry;
 
