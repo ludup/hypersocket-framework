@@ -65,8 +65,6 @@ public class CommandExecutor {
 			pb.directory(pwd.getCanonicalFile());
 		}
 		
-		pb.environment().put("PATH", "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin");
-
 		pb.redirectErrorStream(true);
 		
 		Process p = pb.start();

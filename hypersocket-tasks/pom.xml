@@ -12,7 +12,7 @@
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>hypersocket-tasks</artifactId>
-	<name>Hypersocket - Trigger Actions</name>
+	<name>Hypersocket - Trigger Tasks</name>
 
 	<dependencies>
 		<dependency>
