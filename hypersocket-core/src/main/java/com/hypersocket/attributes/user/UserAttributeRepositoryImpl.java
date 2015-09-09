@@ -12,7 +12,7 @@ import com.hypersocket.i18n.Message;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
-import com.hypersocket.repository.DeletedDetachedCriteria;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.resource.AbstractAssignableResourceRepositoryImpl;
 
 @Repository
@@ -58,7 +58,7 @@ public class UserAttributeRepositoryImpl extends
 				attributeName, 
 				getResourceClass(), 
 				new RealmRestriction(realm), 
-				new DeletedDetachedCriteria(false));
+				new DeletedCriteria(false));
 	}
 	
 	

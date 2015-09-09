@@ -7,12 +7,12 @@
  ******************************************************************************/
 package com.hypersocket.properties;
 
-import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 
-import com.hypersocket.repository.DetachedCriteriaConfiguration;
+import com.hypersocket.repository.CriteriaConfiguration;
 
-public class ValueRestriction implements DetachedCriteriaConfiguration {
+public class ValueRestriction implements CriteriaConfiguration {
 
 
 	String value;
@@ -22,7 +22,7 @@ public class ValueRestriction implements DetachedCriteriaConfiguration {
 	}
 	
 	@Override
-	public void configure(DetachedCriteria criteria) {
+	public void configure(Criteria criteria) {
 		criteria.add(Restrictions.eq("value", value));
 	}
 }

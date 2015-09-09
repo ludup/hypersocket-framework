@@ -18,7 +18,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +28,6 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
-import com.hypersocket.repository.DetachedCriteriaConfiguration;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.tables.ColumnSort;
@@ -38,17 +36,17 @@ import com.hypersocket.tables.ColumnSort;
 public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 		implements PermissionRepository {
 
-	DetachedCriteriaConfiguration JOIN_PERMISSIONS = new DetachedCriteriaConfiguration() {
+	CriteriaConfiguration JOIN_PERMISSIONS = new CriteriaConfiguration() {
 		@Override
-		public void configure(DetachedCriteria criteria) {
+		public void configure(Criteria criteria) {
 			criteria.setFetchMode("permissions", FetchMode.SELECT);
 			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		}
 	};
 
-	DetachedCriteriaConfiguration JOIN_PRINCIPALS_PERMISSIONS = new DetachedCriteriaConfiguration() {
+	CriteriaConfiguration JOIN_PRINCIPALS_PERMISSIONS = new CriteriaConfiguration() {
 		@Override
-		public void configure(DetachedCriteria criteria) {
+		public void configure(Criteria criteria) {
 			criteria.setFetchMode("permissions", FetchMode.SELECT);
 			criteria.setFetchMode("principals", FetchMode.SELECT);
 			criteria.setFetchMode("resources", FetchMode.SELECT);
@@ -56,9 +54,9 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 		}
 	};
 
-	DetachedCriteriaConfiguration JOIN_ROLES = new DetachedCriteriaConfiguration() {
+	CriteriaConfiguration JOIN_ROLES = new CriteriaConfiguration() {
 		@Override
-		public void configure(DetachedCriteria criteria) {
+		public void configure(Criteria criteria) {
 			criteria.setFetchMode("roles", FetchMode.SELECT);
 			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		}
@@ -259,9 +257,9 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	public List<Permission> getAllPermissions(final Set<Long> permissions,
 			final boolean includeSystem) {
 		return allEntities(Permission.class,
-				new DetachedCriteriaConfiguration() {
+				new CriteriaConfiguration() {
 					@Override
-					public void configure(DetachedCriteria criteria) {
+					public void configure(Criteria criteria) {
 						if (!includeSystem) {
 							criteria.add(Restrictions.and(
 									Restrictions.eq("system", false),
@@ -400,9 +398,9 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	public List<Role> getRolesForRealm(Realm realm) {
 		return allEntities(Role.class, JOIN_PRINCIPALS_PERMISSIONS,
 				new RealmRestriction(realm),
-				new DetachedCriteriaConfiguration() {
+				new CriteriaConfiguration() {
 					@Override
-					public void configure(DetachedCriteria criteria) {
+					public void configure(Criteria criteria) {
 						criteria.add(Restrictions.eq("personalRole", false));
 						criteria.add(Restrictions.eq("hidden", false));
 					}
@@ -452,10 +450,10 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	public List<Permission> getPermissionsByCategory(
 			final PermissionCategory category) {
 		return allEntities(Permission.class, JOIN_ROLES,
-				new DetachedCriteriaConfiguration() {
+				new CriteriaConfiguration() {
 
 					@Override
-					public void configure(DetachedCriteria criteria) {
+					public void configure(Criteria criteria) {
 						criteria.add(Restrictions.eq("category", category));
 
 					}
@@ -531,9 +529,9 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 
 		return new HashSet<Role>(allEntities(Role.class,
 				JOIN_PRINCIPALS_PERMISSIONS, new RealmRestriction(realm),
-				new DetachedCriteriaConfiguration() {
+				new CriteriaConfiguration() {
 					@Override
-					public void configure(DetachedCriteria criteria) {
+					public void configure(Criteria criteria) {
 						criteria.add(Restrictions.eq("allUsers", true));
 					}
 				}));

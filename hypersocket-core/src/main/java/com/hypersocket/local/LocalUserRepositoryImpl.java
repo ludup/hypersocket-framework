@@ -15,7 +15,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -28,8 +27,7 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
-import com.hypersocket.repository.DeletedDetachedCriteria;
-import com.hypersocket.repository.DetachedCriteriaConfiguration;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.tables.ColumnSort;
@@ -40,19 +38,19 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	@Autowired
 	PermissionService permissionService;
 	
-	final static DetachedCriteriaConfiguration JOIN_GROUPS = new DetachedCriteriaConfiguration() {
+	final static CriteriaConfiguration JOIN_GROUPS = new CriteriaConfiguration() {
 		
 		@Override
-		public void configure(DetachedCriteria criteria) {
+		public void configure(Criteria criteria) {
 			criteria.setFetchMode("groups", FetchMode.JOIN);
 			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);		
 		}
 	};
 	
-	final static DetachedCriteriaConfiguration JOIN_USERS = new DetachedCriteriaConfiguration() {
+	final static CriteriaConfiguration JOIN_USERS = new CriteriaConfiguration() {
 		
 		@Override
-		public void configure(DetachedCriteria criteria) {
+		public void configure(Criteria criteria) {
 			criteria.setFetchMode("users", FetchMode.JOIN);
 			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);		
 		}
@@ -87,7 +85,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 	
 	protected LocalUser getUser(String column, Object value, Realm realm, PrincipalType type) {
-		return get(column, value, LocalUser.class, JOIN_GROUPS, new RealmRestriction(realm), new DeletedDetachedCriteria(false), new PrincipalTypeRestriction(type));
+		return get(column, value, LocalUser.class, JOIN_GROUPS, new RealmRestriction(realm), new DeletedCriteria(false), new PrincipalTypeRestriction(type));
 	}
 	
 	@Transactional(readOnly=true)
@@ -96,7 +94,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 	
 	protected LocalGroup getGroup(String column, Object value, Realm realm) {
-		return get(column, value, LocalGroup.class, JOIN_USERS, new DeletedDetachedCriteria(false), new RealmRestriction(realm));
+		return get(column, value, LocalGroup.class, JOIN_USERS, new DeletedCriteria(false), new RealmRestriction(realm));
 	}
 	
 	@Transactional(readOnly=true)

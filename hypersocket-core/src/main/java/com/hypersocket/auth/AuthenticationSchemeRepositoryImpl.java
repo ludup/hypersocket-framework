@@ -12,18 +12,18 @@ import java.util.List;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.annotation.HypersocketExtension;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
-import com.hypersocket.repository.DeletedDetachedCriteria;
-import com.hypersocket.repository.DetachedCriteriaConfiguration;
+import com.hypersocket.repository.CriteriaConfiguration;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
 
@@ -31,9 +31,9 @@ import com.hypersocket.repository.HiddenCriteria;
 public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepositoryImpl<AuthenticationScheme,Long>
 		implements AuthenticationSchemeRepository {
 
-	DetachedCriteriaConfiguration ORDER_BY_PRIORITY = new DetachedCriteriaConfiguration() {
+	CriteriaConfiguration ORDER_BY_PRIORITY = new CriteriaConfiguration() {
 		@Override
-		public void configure(DetachedCriteria criteria) {
+		public void configure(Criteria criteria) {
 			criteria.setFetchMode("modules", FetchMode.JOIN);
 			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 			criteria.addOrder(Order.asc("priority"));
@@ -41,6 +41,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	};
 
 	@Override
+	@Transactional
 	public AuthenticationScheme createScheme(Realm realm, String name,
 			List<String> templates, String resourceKey, boolean hidden,
 			Integer maximumModules, AuthenticationModuleType type) {
@@ -48,6 +49,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	}
 	
 	@Override
+	@Transactional
 	public AuthenticationScheme createScheme(Realm realm, String name,
 			List<String> templates, String resourceKey, boolean hidden,
 			Integer maximumModules, AuthenticationModuleType type, String allowedModules) {
@@ -76,11 +78,12 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<AuthenticationScheme> allSchemes(Realm realm) {
 		return allEntities(AuthenticationScheme.class, ORDER_BY_PRIORITY, new HiddenCriteria(false), new RealmRestriction(realm));
 	}
 
-	class SchemeRestriction implements DetachedCriteriaConfiguration {
+	class SchemeRestriction implements CriteriaConfiguration {
 
 		AuthenticationScheme scheme;
 
@@ -89,18 +92,20 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 		}
 
 		@Override
-		public void configure(DetachedCriteria criteria) {
+		public void configure(Criteria criteria) {
 			criteria.add(Restrictions.eq("scheme", scheme));
 		}
 	}
 
 	@Override
 	@HypersocketExtension
+	@Transactional(readOnly=true)
 	public AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey) {
 		return get("resourceKey", resourceKey, AuthenticationScheme.class, new RealmRestriction(realm));
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Long getSchemeByResourceKeyCount(final Realm realm, String resourceKey) {
 		return getCount(AuthenticationScheme.class, "resourceKey", resourceKey, new CriteriaConfiguration() {
 			@Override
@@ -112,23 +117,27 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm) {
-		return allEntities(AuthenticationScheme.class, new DeletedDetachedCriteria(
+		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
 				false), new HiddenCriteria(false), new DistinctRootEntity(), new RealmRestriction(realm));
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public AuthenticationScheme getSchemeById(Long id) {
 		return get("id", id, AuthenticationScheme.class);
 	}
 
 	@Override
+	@Transactional
 	public void saveScheme(AuthenticationScheme s) {
 		s.setResourceCategory("authenticationScheme");
 		saveEntity(s);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public AuthenticationScheme getSchemeByName(Realm realm, String name) {
 		return get("name", name, AuthenticationScheme.class, new RealmRestriction(realm));
 	}

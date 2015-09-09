@@ -7,12 +7,12 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
-import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 
-import com.hypersocket.repository.DetachedCriteriaConfiguration;
+import com.hypersocket.repository.CriteriaConfiguration;
 
-public class RealmRestriction implements DetachedCriteriaConfiguration {
+public class RealmRestriction implements CriteriaConfiguration {
 
 	private Realm realm;
 	private String column;
@@ -27,7 +27,7 @@ public class RealmRestriction implements DetachedCriteriaConfiguration {
 	}
 	
 	@Override
-	public void configure(DetachedCriteria criteria) {
+	public void configure(Criteria criteria) {
 		if(realm==null) {
 			criteria.add(Restrictions.isNull(column));
 		} else {

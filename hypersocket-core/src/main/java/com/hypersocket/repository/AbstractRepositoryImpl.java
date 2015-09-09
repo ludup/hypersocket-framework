@@ -17,7 +17,6 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
@@ -53,10 +52,6 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	@Autowired
 	public void setSessionFactory(SessionFactory sessionFactory) {
 	    hibernateTemplate = new HibernateTemplate(this.sessionFactory = sessionFactory);
-	}
-	
-	protected DetachedCriteria createDetachedCriteria(Class<?> entityClass) {
-		return DetachedCriteria.forClass(entityClass);
 	}
 	
 	private void checkDemoMode() {
@@ -152,42 +147,42 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
-	protected <T> List<T> list(String column, Object value, Class<T> cls, boolean caseInsensitive, DetachedCriteriaConfiguration... configs) {
-		DetachedCriteria criteria = createDetachedCriteria(cls);
+	protected <T> List<T> list(String column, Object value, Class<T> cls, boolean caseInsensitive, CriteriaConfiguration... configs) {
+		Criteria criteria = createCriteria(cls);
 		if(caseInsensitive) {
 			criteria.add(Restrictions.eq(column, value).ignoreCase());
 		} else {
 			criteria.add(Restrictions.eq(column, value));
 		}
-		for(DetachedCriteriaConfiguration c : configs) {
+		for(CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		@SuppressWarnings("rawtypes")
-		List results = hibernateTemplate.findByCriteria(criteria);
+		List results = criteria.list();
 		return results;
 	}
 	
 	@Transactional(readOnly=true)
-	protected <T> List<T> list(String column, Object value, Class<T> cls, DetachedCriteriaConfiguration... configs) {
+	protected <T> List<T> list(String column, Object value, Class<T> cls, CriteriaConfiguration... configs) {
 		return list(column, value, cls, false, configs);
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
-	protected <T> T get(String column, Object value, Class<T> cls, boolean caseInsensitive, DetachedCriteriaConfiguration... configs) {
-		DetachedCriteria criteria = createDetachedCriteria(cls);
+	protected <T> T get(String column, Object value, Class<T> cls, boolean caseInsensitive, CriteriaConfiguration... configs) {
+		Criteria criteria = createCriteria(cls);
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		if(caseInsensitive) {
 			criteria.add(Restrictions.eq(column, value).ignoreCase());
 		} else {
 			criteria.add(Restrictions.eq(column, value));
 		}
-		for(DetachedCriteriaConfiguration c : configs) {
+		for(CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
 		@SuppressWarnings("rawtypes")
-		List results = hibernateTemplate.findByCriteria(criteria);
+		List results = criteria.list();
 		if(results.isEmpty()) {
 			return null;
 		} else if(results.size() > 1) {
@@ -200,15 +195,15 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
-	protected <T> T get(Class<T> cls, DetachedCriteriaConfiguration... configs) {
-		DetachedCriteria criteria = createDetachedCriteria(cls);
+	protected <T> T get(Class<T> cls, CriteriaConfiguration... configs) {
+		Criteria criteria = createCriteria(cls);
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 
-		for(DetachedCriteriaConfiguration c : configs) {
+		for(CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
 		@SuppressWarnings("rawtypes")
-		List results = hibernateTemplate.findByCriteria(criteria);
+		List results = criteria.list();
 		if(results.isEmpty()) {
 			return null;
 		} else if(results.size() > 1) {
@@ -218,22 +213,8 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	}
 	
 	@Transactional(readOnly=true)
-	protected <T> T get(String column, Object value, Class<T> cls, DetachedCriteriaConfiguration... configs) {
+	protected <T> T get(String column, Object value, Class<T> cls, CriteriaConfiguration... configs) {
 		return get(column, value, cls, false, configs);
-	}
-	
-	
-	@SuppressWarnings("unchecked")
-	@Transactional(readOnly=true)
-	protected <T> List<T> allEntities(Class<T> cls, DetachedCriteriaConfiguration... configs) {
-		DetachedCriteria criteria = createDetachedCriteria(cls);
-		
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-		criteria.add(Restrictions.eq("deleted", false));
-		for(DetachedCriteriaConfiguration c : configs) {
-			c.configure(criteria);
-		}
-		return (List<T>)hibernateTemplate.findByCriteria(criteria);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -250,13 +231,13 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
-	protected <T> List<T> allDeletedEntities(Class<T> cls, DetachedCriteriaConfiguration... configs) {
-		DetachedCriteria criteria = createDetachedCriteria(cls);
+	protected <T> List<T> allDeletedEntities(Class<T> cls, CriteriaConfiguration... configs) {
+		Criteria criteria = createCriteria(cls);
 		criteria.add(Restrictions.eq("deleted", true));
-		for(DetachedCriteriaConfiguration c : configs) {
+		for(CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
-		return (List<T>)hibernateTemplate.findByCriteria(criteria);
+		return (List<T>)criteria.list();
 	}
 	
 	protected Criteria createCriteria(Class<?> entityClass) {

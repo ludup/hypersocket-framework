@@ -7,12 +7,12 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
-import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 
-import com.hypersocket.repository.DetachedCriteriaConfiguration;
+import com.hypersocket.repository.CriteriaConfiguration;
 
-public class HiddenFilter implements DetachedCriteriaConfiguration {
+public class HiddenFilter implements CriteriaConfiguration {
 
 	boolean showHidden = false;
 	
@@ -24,7 +24,7 @@ public class HiddenFilter implements DetachedCriteriaConfiguration {
 	}
 	
 	@Override
-	public void configure(DetachedCriteria criteria) {
+	public void configure(Criteria criteria) {
 		if(!showHidden) {
 			criteria.add(Restrictions.eq("hidden", false));
 		}

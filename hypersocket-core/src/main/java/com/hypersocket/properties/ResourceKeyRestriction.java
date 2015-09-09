@@ -7,12 +7,12 @@
  ******************************************************************************/
 package com.hypersocket.properties;
 
-import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 
-import com.hypersocket.repository.DetachedCriteriaConfiguration;
+import com.hypersocket.repository.CriteriaConfiguration;
 
-public class ResourceKeyRestriction implements DetachedCriteriaConfiguration {
+public class ResourceKeyRestriction implements CriteriaConfiguration {
 
 	String resourceKey;
 	
@@ -21,7 +21,7 @@ public class ResourceKeyRestriction implements DetachedCriteriaConfiguration {
 	}
 	
 	@Override
-	public void configure(DetachedCriteria criteria) {
+	public void configure(Criteria criteria) {
 		criteria.add(Restrictions.eq("resourceKey", resourceKey));
 
 	}

@@ -8,7 +8,6 @@ import org.w3c.dom.Element;
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.resource.AbstractResource;
 
-@Transactional
 public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 
 	PropertyRepository repository;

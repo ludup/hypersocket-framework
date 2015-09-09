@@ -15,6 +15,8 @@ import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -208,6 +210,13 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	@Override
 	public void addFilter(ContentFilter filter) {
 		filters.add(filter);
+		Collections.sort(filters, new Comparator<ContentFilter>() {
+
+			@Override
+			public int compare(ContentFilter o1, ContentFilter o2) {
+				return o1.getWeight().compareTo(o2.getWeight());
+			}
+		});
 	}
 	
 	private String sanitizeUri(String uri) {
