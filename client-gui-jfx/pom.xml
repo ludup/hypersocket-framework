@@ -91,12 +91,12 @@
 		<repository>
 			<id>ext-releases-local</id>
 			<name>artifactory.javassh.com-releases</name>
-			<url>http://artifactory.javassh.com/ext-releases-local</url>
+			<url>http://artifactory.javassh.com/public-releases</url>
 		</repository>
 		<repository>
 			<id>ext-snapshots-local</id>
 			<name>artifactory.javassh.com-releases</name>
-			<url>http://artifactory.javassh.com/ext-snapshots-local</url>
+			<url>http://artifactory.javassh.com/public-snapshots</url>
 		</repository>
 	</repositories>
 
