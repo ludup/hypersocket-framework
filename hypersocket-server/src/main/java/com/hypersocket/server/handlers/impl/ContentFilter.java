@@ -9,5 +9,7 @@ public interface ContentFilter {
 	InputStream getFilterStream(InputStream resourceStream, HttpServletRequest request);
 
 	boolean filtersPath(String path);
+	
+	Integer getWeight();
 
 }

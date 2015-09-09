@@ -39,7 +39,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
-import com.hypersocket.repository.DeletedDetachedCriteria;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.session.Session;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
@@ -367,12 +367,12 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@Override
 	public T getResourceByName(String name, Realm realm) {
-		return get("name", name, getResourceClass(), new DeletedDetachedCriteria(false), new RealmRestriction(realm));
+		return get("name", name, getResourceClass(), new DeletedCriteria(false), new RealmRestriction(realm));
 	}
 
 	@Override
 	public T getResourceByName(String name, Realm realm, boolean deleted) {
-		return get("name", name, getResourceClass(), new DeletedDetachedCriteria(
+		return get("name", name, getResourceClass(), new DeletedCriteria(
 				deleted), new RealmRestriction(realm));
 	}
 

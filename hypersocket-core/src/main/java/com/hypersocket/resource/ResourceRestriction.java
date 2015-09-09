@@ -7,12 +7,12 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
-import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 
-import com.hypersocket.repository.DetachedCriteriaConfiguration;
+import com.hypersocket.repository.CriteriaConfiguration;
 
-public class ResourceRestriction implements DetachedCriteriaConfiguration {
+public class ResourceRestriction implements CriteriaConfiguration {
 
 	private AbstractResource resource;
 	private String column;
@@ -27,7 +27,7 @@ public class ResourceRestriction implements DetachedCriteriaConfiguration {
 	}
 	
 	@Override
-	public void configure(DetachedCriteria criteria) {
+	public void configure(Criteria criteria) {
 		if(resource==null) {
 			criteria.add(Restrictions.isNull(column));
 		} else {

@@ -7,17 +7,17 @@
  ******************************************************************************/
 package com.hypersocket.repository;
 
-import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.Criteria;
 import org.hibernate.criterion.Order;
 
-public class OrderByDesc implements DetachedCriteriaConfiguration {
+public class OrderByDesc implements CriteriaConfiguration {
 
 	String property;
 	public OrderByDesc(String property) {
 		this.property = property;
 	}
 	@Override
-	public void configure(DetachedCriteria criteria) {
+	public void configure(Criteria criteria) {
 		criteria.addOrder(Order.desc(property));
 	}
 }

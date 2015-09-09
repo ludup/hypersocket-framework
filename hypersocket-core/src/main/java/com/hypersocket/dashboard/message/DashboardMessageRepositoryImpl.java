@@ -4,15 +4,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Criteria;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.repository.CriteriaConfiguration;
-import com.hypersocket.repository.DeletedDetachedCriteria;
-import com.hypersocket.repository.DetachedCriteriaConfiguration;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 
@@ -31,12 +29,12 @@ public class DashboardMessageRepositoryImpl extends
 
 	@Override
 	public List<DashboardMessage> getMessages() {
-		return allEntities(getResourceClass(), new DeletedDetachedCriteria(
+		return allEntities(getResourceClass(), new DeletedCriteria(
 				false), new DistinctRootEntity(),
-				new DetachedCriteriaConfiguration() {
+				new CriteriaConfiguration() {
 
 					@Override
-					public void configure(DetachedCriteria criteria) {
+					public void configure(Criteria criteria) {
 						criteria.addOrder(Order.asc("created"));
 					}
 				});

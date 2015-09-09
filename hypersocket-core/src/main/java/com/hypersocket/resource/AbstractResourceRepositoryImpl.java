@@ -8,7 +8,6 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.ArrayUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -22,9 +21,9 @@ import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
+import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
-import com.hypersocket.repository.DeletedDetachedCriteria;
-import com.hypersocket.repository.DetachedCriteriaConfiguration;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
@@ -60,7 +59,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	@Override
 	@Transactional(readOnly=true)
 	public T getResourceByName(String name, Realm realm, boolean deleted) {
-		return get("name", name, getResourceClass(), new RealmRestriction(realm), new DefaultDetatchedCriteriaConfiguration(), new DeletedDetachedCriteria(
+		return get("name", name, getResourceClass(), new RealmRestriction(realm), new DefaultDetatchedCriteriaConfiguration(), new DeletedCriteria(
 				deleted));
 	}
 
@@ -179,14 +178,11 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		
 	}
 
-	protected void processDefaultCriteria(DetachedCriteria criteria) {
-		
-	}
 
-	class DefaultDetatchedCriteriaConfiguration implements DetachedCriteriaConfiguration {
+	class DefaultDetatchedCriteriaConfiguration implements CriteriaConfiguration {
 
 		@Override
-		public void configure(DetachedCriteria criteria) {
+		public void configure(Criteria criteria) {
 			processDefaultCriteria(criteria);
 		}
 		

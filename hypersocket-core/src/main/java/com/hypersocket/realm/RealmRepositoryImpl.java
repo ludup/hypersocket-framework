@@ -16,7 +16,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.repository.CriteriaConfiguration;
-import com.hypersocket.repository.DeletedDetachedCriteria;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.HiddenFilter;
@@ -75,7 +75,7 @@ public class RealmRepositoryImpl extends
 	@Transactional(readOnly = true)
 	public List<Realm> allRealms() {
 		return allEntities(Realm.class, new HiddenFilter(),
-				new DeletedDetachedCriteria(false), new DistinctRootEntity());
+				new DeletedCriteria(false), new DistinctRootEntity());
 	}
 
 	@Override
@@ -97,7 +97,7 @@ public class RealmRepositoryImpl extends
 	@Transactional(readOnly = true)
 	public List<Realm> allRealms(String resourceKey) {
 		return list("resourceCategory", resourceKey, Realm.class,
-				new HiddenFilter(), new DeletedDetachedCriteria(false),
+				new HiddenFilter(), new DeletedCriteria(false),
 				new DistinctRootEntity());
 	}
 
@@ -120,7 +120,7 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional(readOnly = true)
 	public Realm getRealmByName(String name, boolean deleted) {
-		return get("name", name, Realm.class, new DeletedDetachedCriteria(deleted));
+		return get("name", name, Realm.class, new DeletedCriteria(deleted));
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package com.hypersocket.scheduler;
 
+import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-public abstract class TransactionalJob extends PermissionsAwareJob {
+public abstract class TransactionalJob implements Job {
 
 	@Autowired
 	PlatformTransactionManager transactionManager;
@@ -16,9 +17,14 @@ public abstract class TransactionalJob extends PermissionsAwareJob {
 	public TransactionalJob() {
 	}
 
+	protected abstract void onTransactionComplete();
+
+	protected abstract void onTransactionFailure(Throwable t);
+	
+	protected abstract void onExecute(JobExecutionContext context);
+
 	@Override
-	public void executeJob(final JobExecutionContext context)
-			throws JobExecutionException {
+	public void execute(final JobExecutionContext context) throws JobExecutionException {
 		
 		try {
 			TransactionTemplate txnTemplate = new TransactionTemplate(
@@ -26,20 +32,15 @@ public abstract class TransactionalJob extends PermissionsAwareJob {
 			txnTemplate.afterPropertiesSet();
 			txnTemplate.execute(new TransactionCallback<Object>() {
 				public Object doInTransaction(TransactionStatus status) {
-					return onExecute(context);
+					onExecute(context);
+					return null;
 				}
 			});
 			onTransactionComplete();
 		} catch(Throwable t) {
 			onTransactionFailure(t);
 		}
-
+		
 	}
-	
-	protected abstract void onTransactionComplete();
-
-	protected abstract void onTransactionFailure(Throwable t);
-	
-	protected abstract Object onExecute(JobExecutionContext context);
 
 }

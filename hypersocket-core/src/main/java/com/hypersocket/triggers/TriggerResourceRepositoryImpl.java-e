@@ -8,7 +8,6 @@ import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,12 +123,6 @@ public class TriggerResourceRepositoryImpl extends
 	}
 
 	protected void processDefaultCriteria(Criteria criteria) {
-		criteria.add(Restrictions.isNull("parentTrigger"));
-		criteria.setFetchMode("conditions", FetchMode.SELECT);
-		criteria.setFetchMode("childTriggers", FetchMode.SELECT);
-	}
-
-	protected void processDefaultCriteria(DetachedCriteria criteria) {
 		criteria.add(Restrictions.isNull("parentTrigger"));
 		criteria.setFetchMode("conditions", FetchMode.SELECT);
 		criteria.setFetchMode("childTriggers", FetchMode.SELECT);

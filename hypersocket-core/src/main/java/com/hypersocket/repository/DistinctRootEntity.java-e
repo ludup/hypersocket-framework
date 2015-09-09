@@ -7,13 +7,13 @@
  ******************************************************************************/
 package com.hypersocket.repository;
 
+import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.DetachedCriteria;
 
-public class DistinctRootEntity implements DetachedCriteriaConfiguration {
+public class DistinctRootEntity implements CriteriaConfiguration {
 
 	@Override
-	public void configure(DetachedCriteria criteria) {
+	public void configure(Criteria criteria) {
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 	}
 

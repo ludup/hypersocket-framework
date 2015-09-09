@@ -9,9 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.scheduler.PermissionsAwareJob;
 import com.hypersocket.scheduler.TransactionalJob;
 
-public class SessionReaperJob extends TransactionalJob {
+public class SessionReaperJob extends PermissionsAwareJob {
 
 	static Logger log = LoggerFactory.getLogger(SessionReaperJob.class);
 	
@@ -22,9 +23,8 @@ public class SessionReaperJob extends TransactionalJob {
 	RealmService realmService; 
 	
 	@Override
-	protected Object onExecute(JobExecutionContext context) {
-		
-		
+	protected void executeJob(JobExecutionContext context) {
+
 		try {
 			List<Session> activeSessions = sessionService.getActiveSessions();
 			
@@ -48,8 +48,6 @@ public class SessionReaperJob extends TransactionalJob {
 		} catch (AccessDeniedException e) {
 			log.error("Access Denied", e);
 		} 
-		
-		return null;
 	}
 
 	@Override

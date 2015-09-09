@@ -17,7 +17,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.SessionService;
 
-public abstract class PermissionsAwareJob implements Job {
+public abstract class PermissionsAwareJob extends TransactionalJob {
 
 	static Logger log = LoggerFactory.getLogger(PermissionsAwareJob.class);
 
@@ -37,8 +37,7 @@ public abstract class PermissionsAwareJob implements Job {
 	SessionService sessionService;
 	
 	@Override
-	public void execute(JobExecutionContext context)
-			throws JobExecutionException {
+	public void onExecute(JobExecutionContext context) {
 
 		Realm realm = realmService.getSystemRealm();
 		Principal principal = realmService.getSystemPrincipal();
@@ -85,4 +84,12 @@ public abstract class PermissionsAwareJob implements Job {
 
 	protected abstract void executeJob(JobExecutionContext context)
 			throws JobExecutionException;
+	
+	protected void onTransactionComplete() {
+		
+	}
+
+	protected void onTransactionFailure(Throwable t) {
+		
+	}
 }

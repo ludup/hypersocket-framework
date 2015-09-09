@@ -41,7 +41,7 @@ public class FileUploadServiceImpl extends
 		AbstractResourceServiceImpl<FileUpload> implements FileUploadService {
 
 	public static final String RESOURCE_BUNDLE = "FileUploadService";
-	public static final String UPLOAD_PATH = "conf/uploads/";
+	public static final String DEFAULT_UPLOAD_PATH = "conf/uploads/";
 	
 	static MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
 
@@ -156,8 +156,10 @@ public class FileUploadServiceImpl extends
 			throws ResourceChangeException, AccessDeniedException {
 
 		try {
-			File file = new File(UPLOAD_PATH + fileUpload.getRealm().getId()
-					+ "/" + fileUpload.getName());
+			File file = new File(System.getProperty("hypersocket.uploadPath", DEFAULT_UPLOAD_PATH)
+					+ fileUpload.getRealm().getId()
+					+ "/" 
+					+ fileUpload.getName());
 			if (file.delete()) {
 				deleteResource(fileUpload);
 			} else {
@@ -209,7 +211,9 @@ public class FileUploadServiceImpl extends
 	public File getFile(String uuid) throws IOException, ResourceNotFoundException {
 		FileUpload fileUpload = getFileByUuid(uuid);
 
-		File file = new File(UPLOAD_PATH + "/" + fileUpload.getRealm().getId()
+		File file = new File(
+				System.getProperty("hypersocket.uploadPath", DEFAULT_UPLOAD_PATH)
+				+ "/" + fileUpload.getRealm().getId()
 				+ "/" + fileUpload.getName());
 		
 		return file;
@@ -280,12 +284,14 @@ public class FileUploadServiceImpl extends
 		public long writeFile(String uuid, InputStream in)
 				throws IOException {
 
-			File f = new File("conf/uploads/" + realm.getId() + "/" + uuid);
+			File f = new File(
+					System.getProperty("hypersocket.uploadPath", DEFAULT_UPLOAD_PATH)
+					+ realm.getId() 
+					+ "/" + uuid);
 			f.getParentFile().mkdirs();
 			f.createNewFile();
 
-			OutputStream out = new FileOutputStream(UPLOAD_PATH
-					+ realm.getId() + "/" + uuid);
+			OutputStream out = new FileOutputStream(f);
 
 			try {
 				IOUtils.copyLarge(in, out);

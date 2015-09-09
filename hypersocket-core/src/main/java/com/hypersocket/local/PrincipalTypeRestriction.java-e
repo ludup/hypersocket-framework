@@ -7,13 +7,13 @@
  ******************************************************************************/
 package com.hypersocket.local;
 
-import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 
 import com.hypersocket.realm.PrincipalType;
-import com.hypersocket.repository.DetachedCriteriaConfiguration;
+import com.hypersocket.repository.CriteriaConfiguration;
 
-public class PrincipalTypeRestriction implements DetachedCriteriaConfiguration {
+public class PrincipalTypeRestriction implements CriteriaConfiguration {
 
 	PrincipalType type;
 	
@@ -22,7 +22,7 @@ public class PrincipalTypeRestriction implements DetachedCriteriaConfiguration {
 	}
 	
 	@Override
-	public void configure(DetachedCriteria criteria) {
+	public void configure(Criteria criteria) {
 		criteria.add(Restrictions.eq("type", type));
 	}
 
