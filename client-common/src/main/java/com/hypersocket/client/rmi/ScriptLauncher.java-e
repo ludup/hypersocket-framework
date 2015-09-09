@@ -63,9 +63,11 @@ public class ScriptLauncher implements ResourceLauncher, Serializable {
 			
 			if(log.isInfoEnabled()) {
 				log.info("Script exited with exit code " + exitCode);
-				log.info("---BEGIN CMD OUTPUT----");
-				log.info(cmd.getCommandOutput());
-				log.info("---END CMD OUTPUT----");
+			}
+			if(log.isDebugEnabled()) {
+				log.debug("---BEGIN CMD OUTPUT----");
+				log.debug(cmd.getCommandOutput());
+				log.debug("---END CMD OUTPUT----");
 			}
 			
 			return exitCode;
