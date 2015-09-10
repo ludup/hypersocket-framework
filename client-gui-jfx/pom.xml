@@ -99,7 +99,7 @@
 			<url>http://artifactory.javassh.com/ext-snapshots-local</url>
 		</repository>
 		<repository>
-			<id>ext-snapshots-local</id>
+			<id>ext-releases-local</id>
 			<name>artifactory.javassh.com-ext-releases</name>
 			<url>http://artifactory.javassh.com/ext-releases-local</url>
 		</repository>
