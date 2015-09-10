@@ -44,8 +44,8 @@ import com.hypersocket.client.gui.jfx.fontawesome.AwesomeIcons;
 import com.hypersocket.client.rmi.BrowserLauncher;
 import com.hypersocket.client.rmi.BrowserLauncher.BrowserLauncherFactory;
 import com.hypersocket.client.rmi.ResourceLauncher;
-import com.nervepoint.forker.client.ForkerBuilder;
-import com.nervepoint.forker.client.ForkerBuilder.IO;
+import com.sshtools.forker.client.ForkerBuilder;
+import com.sshtools.forker.client.ForkerBuilder.IO;
 
 public class Client extends Application {
 	public static int DROP_SHADOW_SIZE = 11;

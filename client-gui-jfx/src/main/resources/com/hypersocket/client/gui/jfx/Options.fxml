@@ -61,13 +61,10 @@
                            <top>
                               <VBox styleClass="background" BorderPane.alignment="CENTER">
                                  <children>
-                                    <CheckBox fx:id="avoidReserved" mnemonicParsing="false" text="%avoidReserved">
+                                    <CheckBox fx:id="avoidReserved" mnemonicParsing="false" onMouseEntered="#evtShowTooltipPopover" onMouseExited="#evtHideTooltipPopover" text="%avoidReserved">
                                        <VBox.margin>
                                           <Insets top="8.0" />
-                                       </VBox.margin>
-                                       <tooltip>
-                                          <Tooltip text="%avoidReserved.toolTip" />
-                                       </tooltip></CheckBox>
+                                       </VBox.margin></CheckBox>
                                     <CheckBox fx:id="autoHide" mnemonicParsing="false" text="%autohide">
                                        <VBox.margin>
                                           <Insets top="8.0" />

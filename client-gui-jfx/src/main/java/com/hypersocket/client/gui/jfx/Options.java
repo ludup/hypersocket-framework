@@ -20,6 +20,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -213,6 +214,23 @@ public class Options extends AbstractController {
 		else
 			logo.setImage(new Image(getClass().getResource("logo-black.png")
 					.toExternalForm()));
+	}
+	
+	@FXML
+	private void evtShowTooltipPopover(MouseEvent evt) {
+		System.out.println(evt);;
+		if(evt.getSource() == avoidReserved) {
+			showPopOver(
+					resources.getString("avoidReserved.toolTip"),
+					avoidReserved);
+		}
+	}
+	
+	@FXML
+	private void evtHideTooltipPopover(MouseEvent evt) {
+		if(evt.getSource() == avoidReserved) {
+			hidePopOver();
+		}
 	}
 
 	class CustomColorPickerSkin extends ColorPickerSkin {

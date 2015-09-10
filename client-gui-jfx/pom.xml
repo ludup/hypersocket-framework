@@ -69,9 +69,9 @@
 			<version>8.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.nervepoint</groupId>
+			<groupId>com.sshtools</groupId>
 			<artifactId>forker-client</artifactId>
-			<version>1.1-LOCAL</version>
+			<version>1.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>controlsfx</groupId>
@@ -97,6 +97,11 @@
 			<id>ext-snapshots-local</id>
 			<name>artifactory.javassh.com-releases</name>
 			<url>http://artifactory.javassh.com/public-snapshots</url>
+		</repository>
+		<repository>
+			<id>opensource-snapshots</id>
+			<name>artifactory.javassh.com-releases</name>
+			<url>http://artifactory.javassh.com/opensource-snapshots</url>
 		</repository>
 	</repositories>
 
