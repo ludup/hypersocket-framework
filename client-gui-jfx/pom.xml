@@ -89,18 +89,23 @@
 			<url>https://swt-repo.googlecode.com/svn/repo/</url>
 		</repository>
 		<repository>
-			<id>ext-releases-local</id>
+			<id>public-releases</id>
 			<name>artifactory.javassh.com-releases</name>
 			<url>http://artifactory.javassh.com/public-releases</url>
 		</repository>
 		<repository>
-			<id>ext-snapshots-local</id>
-			<name>artifactory.javassh.com-releases</name>
+			<id>public-snapshots</id>
+			<name>artifactory.javassh.com-snapshots</name>
 			<url>http://artifactory.javassh.com/public-snapshots</url>
 		</repository>
 		<repository>
+			<id>ext-snapshots-local</id>
+			<name>artifactory.javassh.com-ext-snapshots</name>
+			<url>http://artifactory.javassh.com/ext-snapshots-local</url>
+		</repository>
+		<repository>
 			<id>opensource-snapshots</id>
-			<name>artifactory.javassh.com-releases</name>
+			<name>artifactory.javassh.com-oss-snapshots</name>
 			<url>http://artifactory.javassh.com/opensource-snapshots</url>
 		</repository>
 	</repositories>
