@@ -85,9 +85,6 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			if (!nettyRequest.isChunked()) {
 				processRequest(ctx, nettyRequest);
 			} else {
-				if(log.isInfoEnabled()) {
-					log.info("CHANGEME: " + nettyRequest.getUri() + " has chunked content");
-				}
 				ctx.getChannel().setAttachment(ChannelBuffers.dynamicBuffer());
 				currentRequest = nettyRequest;
 				wantsMessage = false;
@@ -99,9 +96,6 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 		} else if (msg instanceof HttpChunk) {
 			
-			if(log.isInfoEnabled()) {
-				log.info("CHANGEME: more chunked content");
-			}
 			HttpChunk chunk = (HttpChunk) msg;
 			ChannelBuffer buffer = (ChannelBuffer) ctx.getChannel()
 					.getAttachment();
