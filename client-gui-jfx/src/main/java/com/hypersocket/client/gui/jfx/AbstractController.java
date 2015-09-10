@@ -157,10 +157,8 @@ public class AbstractController implements FramedController, Listener {
 	
 	protected void showPopOver(String text, Node node) {
 		if(popOver != null && popOver.isShowing()) {
-			System.err.println("Popover already showing");
 			return;
 		}
-		System.err.println("Showing Popover");
 
 		if(popOver == null) {
 			popOver = new PopOver();
@@ -185,9 +183,13 @@ public class AbstractController implements FramedController, Listener {
 		Bounds bounds = node.localToScene(node.getBoundsInLocal());
 
 		
-		if(cfg.topProperty().get()) {
+		if(cfg.topProperty().get() || cfg.bottomProperty().get() || cfg.rightProperty().get()) {
 			popOver.arrowLocationProperty().set(ArrowLocation.RIGHT_TOP);
 			popOver.show(popup, popup.getX() - popOver.getRoot().maxWidthProperty().get() - 20, popup.getY() + bounds.getMinY() - (bounds.getHeight() ));
+		}
+		else {
+			popOver.arrowLocationProperty().set(ArrowLocation.LEFT_TOP);
+			popOver.show(popup, popup.getX() + popup.getWidth() + 5, popup.getY() + bounds.getMinY() - (bounds.getHeight() ));
 		}
 	}
 	
