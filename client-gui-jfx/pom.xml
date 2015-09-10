@@ -64,11 +64,6 @@
 			<version>1.2.1</version>
 		</dependency>
 		<dependency>
-			<groupId>scenicview</groupId>
-			<artifactId>scenicview</artifactId>
-			<version>8.0.0</version>
-		</dependency>
-		<dependency>
 			<groupId>com.sshtools</groupId>
 			<artifactId>forker-client</artifactId>
 			<version>1.1-SNAPSHOT</version>
@@ -102,6 +97,11 @@
 			<id>ext-snapshots-local</id>
 			<name>artifactory.javassh.com-ext-snapshots</name>
 			<url>http://artifactory.javassh.com/ext-snapshots-local</url>
+		</repository>
+		<repository>
+			<id>ext-snapshots-local</id>
+			<name>artifactory.javassh.com-ext-releases</name>
+			<url>http://artifactory.javassh.com/ext-releases-local</url>
 		</repository>
 		<repository>
 			<id>opensource-snapshots</id>
