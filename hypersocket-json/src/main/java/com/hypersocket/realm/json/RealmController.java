@@ -32,6 +32,8 @@ import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.realm.PrincipalColumns;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmColumns;
 import com.hypersocket.realm.RealmProvider;
@@ -309,4 +311,53 @@ public class RealmController extends ResourceController {
 		}
 	}
 
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "realms/users/table/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public BootstrapTableResult tableUsers(final HttpServletRequest request,
+			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			
+			final Realm realm  = realmService.getRealmById(id);
+			
+			BootstrapTableResult r = processDataTablesRequest(request,
+					new BootstrapTablePageProcessor() {
+
+						@Override
+						public Column getColumn(int col) {
+							return PrincipalColumns.values()[col];
+						}
+
+						@Override
+						public List<?> getPage(String searchPattern, int start,
+								int length, ColumnSort[] sorting)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							return realmService.getPrincipals(
+									realm,
+									PrincipalType.USER, searchPattern, start,
+									length, sorting);
+						}
+
+						@Override
+						public Long getTotalCount(String searchPattern)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							return realmService.getPrincipalCount(
+									realm,
+									PrincipalType.USER, searchPattern);
+						}
+					});
+			return r;
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 }
