@@ -55,7 +55,7 @@ public class UserVariableReplacementImpl extends
 
 		RealmProvider provider = realmService.getProviderForRealm(source
 				.getRealm());
-		return provider.getUserPropertyValue(source, name);
+		return provider.getDecryptedValue(source, name);
 
 	}
 
