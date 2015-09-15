@@ -1,5 +1,6 @@
 package com.hypersocket.triggers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,10 +25,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
+import com.hypersocket.http.HttpUtils;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
@@ -61,6 +66,8 @@ public class TriggerResourceServiceImpl extends
 
 	public static final String RESOURCE_BUNDLE = "TriggerResourceService";
 
+	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
+
 	@Autowired
 	TriggerResourceRepository repository;
 
@@ -83,8 +90,8 @@ public class TriggerResourceServiceImpl extends
 	TaskProviderService taskService;
 
 	@Autowired
-	ConfigurationService configurationService; 
-	
+	ConfigurationService configurationService;
+
 	Map<String, TriggerConditionProvider> registeredConditions = new HashMap<String, TriggerConditionProvider>();
 
 	Map<String, ReplacementVariableProvider> replacementVariables = new HashMap<String, ReplacementVariableProvider>();
@@ -260,12 +267,17 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	@Override
-	public TriggerResource updateResource(TriggerResource resource,
-			String name, TriggerType type, String event, TriggerResultType result,
+	public TriggerResource updateResource(
+			TriggerResource resource,
+			String name,
+			TriggerType type,
+			String event,
+			TriggerResultType result,
 			String task,
 			Map<String, String> properties,
 			List<TriggerCondition> allConditions,
-			List<TriggerCondition> anyConditions, TriggerResource parent,
+			List<TriggerCondition> anyConditions,
+			TriggerResource parent,
 			Long attachment,
 			boolean allRealms,
 			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
@@ -275,10 +287,11 @@ public class TriggerResourceServiceImpl extends
 		resource.getConditions().clear();
 
 		populateTrigger(name, event, result, task, resource.getRealm(),
-				resource, allConditions, anyConditions, parent, attachment, allRealms);
+				resource, allConditions, anyConditions, parent, attachment,
+				allRealms);
 
-		updateResource(resource, properties,
-				ArrayUtils.add(ops, 0, new TransactionAdapter<TriggerResource>() {
+		updateResource(resource, properties, ArrayUtils.add(ops, 0,
+				new TransactionAdapter<TriggerResource>() {
 
 					@Override
 					public void afterOperation(TriggerResource resource,
@@ -299,26 +312,31 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	@Override
-	public TriggerResource createResource(String name, TriggerType type,
+	public TriggerResource createResource(
+			String name,
+			TriggerType type,
 			String event,
-			TriggerResultType result, String task, Map<String, String> properties,
-			Realm realm, List<TriggerCondition> allConditions, 
+			TriggerResultType result,
+			String task,
+			Map<String, String> properties,
+			Realm realm,
+			List<TriggerCondition> allConditions,
 			List<TriggerCondition> anyConditions,
 			TriggerResource parent,
-			Long attachment, 
+			Long attachment,
 			boolean allRealms,
 			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
 			throws ResourceCreationException, AccessDeniedException {
 
 		TriggerResource resource = new TriggerResource();
-		
-		resource.setTriggerType(type);
-		
-		populateTrigger(name, event, result, task, realm, resource, allConditions,
-				anyConditions,  parent, attachment, allRealms);
 
-		createResource(resource, properties,
-				ArrayUtils.add(ops, 0, new TransactionAdapter<TriggerResource>() {
+		resource.setTriggerType(type);
+
+		populateTrigger(name, event, result, task, realm, resource,
+				allConditions, anyConditions, parent, attachment, allRealms);
+
+		createResource(resource, properties, ArrayUtils.add(ops, 0,
+				new TransactionAdapter<TriggerResource>() {
 
 					@Override
 					public void afterOperation(TriggerResource resource,
@@ -372,7 +390,8 @@ public class TriggerResourceServiceImpl extends
 	private void populateTrigger(String name, String event,
 			TriggerResultType result, String task, Realm realm,
 			TriggerResource resource, List<TriggerCondition> allConditions,
-			List<TriggerCondition> anyConditions, TriggerResource parent, Long attachment, boolean allRealms) {
+			List<TriggerCondition> anyConditions, TriggerResource parent,
+			Long attachment, boolean allRealms) {
 
 		resource.setName(name);
 		resource.setEvent(event);
@@ -383,7 +402,7 @@ public class TriggerResourceServiceImpl extends
 		resource.getConditions().clear();
 		resource.setAttachmentId(attachment);
 		resource.setAllRealms(allRealms);
-		
+
 		for (TriggerCondition c : allConditions) {
 			c.setType(TriggerConditionType.ALL);
 			c.setTrigger(resource);
@@ -416,8 +435,8 @@ public class TriggerResourceServiceImpl extends
 	private void processEventTriggers(SystemEvent event) {
 
 		// TODO cache triggers to prevent constant database lookup
-		
-		// TODO need some security  to prevent inifinte loops
+
+		// TODO need some security to prevent inifinte loops
 		if (!running) {
 			if (log.isDebugEnabled()) {
 				log.debug("Not processing triggers as the service is not running");
@@ -518,29 +537,29 @@ public class TriggerResourceServiceImpl extends
 		return false;
 	}
 
-	protected void performImport(TriggerResource resource, Realm realm) throws ResourceException, AccessDeniedException {
-		
-		Map<String,String> properties = resource.getProperties();
+	protected void performImport(TriggerResource resource, Realm realm)
+			throws ResourceException, AccessDeniedException {
+
+		Map<String, String> properties = resource.getProperties();
 		resource.setProperties(null);
-		
+
 		super.performImport(resource, realm);
-		
+
 		TaskProvider provider = taskService.getTaskProvider(resource
 				.getResourceKey());
 		provider.getRepository().setValues(resource, properties);
-		
-		for(TriggerResource child : resource.getChildTriggers()) {
+
+		for (TriggerResource child : resource.getChildTriggers()) {
 			child.setParentTrigger(resource);
 			performImport(child, realm);
 		}
 	}
-	
+
 	protected void prepareExport(TriggerResource resource) {
 
 		TaskProvider provider = taskService.getTaskProvider(resource
 				.getResourceKey());
-		resource.setProperties(provider
-					.getTaskProperties(resource));
+		resource.setProperties(provider.getTaskProperties(resource));
 
 		for (TriggerCondition condition : resource.getConditions()) {
 			condition.setId(null);
@@ -553,12 +572,53 @@ public class TriggerResourceServiceImpl extends
 		if (resource.getParentTrigger() != null) {
 			resource.getParentTrigger().setId(null);
 		}
-		
+
 		super.prepareExport(resource);
 	}
-	
-	protected void performImportDropResources(TriggerResource resource) throws ResourceChangeException, AccessDeniedException {
+
+	protected void performImportDropResources(TriggerResource resource)
+			throws ResourceChangeException, AccessDeniedException {
 		deleteResource(resource);
+	}
+
+	@Override
+	public void downloadTemplateImage(String uuid, HttpServletRequest request,
+			HttpServletResponse response) throws IOException {
+
+		request.setAttribute(
+				CONTENT_INPUTSTREAM,
+				HttpUtils.doHttpGet(
+						System.getProperty(
+								"hypersocket.templateServerImageUrl",
+								"https://templates1x.hypersocket.com/hypersocket/api/templates/image/")
+								+ uuid, true));
+
+	}
+
+	@Override
+	public String searchTemplates(String search, int iDisplayStart,
+			int iDisplayLength) throws IOException, AccessDeniedException {
+		assertPermission(TriggerResourcePermission.CREATE);
+
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("sSearch", search);
+		params.put("iDisplayStart", String.valueOf(iDisplayStart));
+		params.put("iDisplayLength", String.valueOf(iDisplayLength));
+		params.put("sEcho", "0");
+		params.put("iSortingCols", "1");
+		params.put("iSortCol_0", "0");
+		params.put("sSortDir_0", "asc");
+
+		String json = HttpUtils
+				.doHttpPost(
+						System.getProperty("hypersocket.templateServerUrl",
+								"https://templates1x.hypersocket.com/hypersocket/api/templates")
+								+ "/"
+								+ (Boolean
+										.getBoolean("hypersocketTriggers.enablePrivate") ? "developer"
+										: "table" + "/3"), params, true);
+
+		return json;
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.hypersocket.triggers.json;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.events.EventDefinition;
@@ -52,6 +54,7 @@ import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.TriggerResultType;
 import com.hypersocket.utils.HypersocketUtils;
 
+
 @Controller
 public class TriggerResourceController extends AbstractTriggerController {
 
@@ -68,10 +71,9 @@ public class TriggerResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "triggers/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableTriggers(
-			final HttpServletRequest request, HttpServletResponse response)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
+	public BootstrapTableResult tableTriggers(final HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
@@ -222,8 +224,8 @@ public class TriggerResourceController extends AbstractTriggerController {
 
 			List<EventDefinition> events = new ArrayList<EventDefinition>();
 
-			for (String result : taskService.getTaskProvider(
-					resourceKey).getResultResourceKeys()) {
+			for (String result : taskService.getTaskProvider(resourceKey)
+					.getResultResourceKeys()) {
 				events.add(eventService.getEventDefinition(result));
 			}
 
@@ -363,23 +365,28 @@ public class TriggerResourceController extends AbstractTriggerController {
 			if (resource.getId() != null) {
 				newResource = resourceService.updateResource(
 						resourceService.getResourceById(resource.getId()),
-						resource.getName(), resource.getType(), resource.getEvent(),
+						resource.getName(), resource.getType(),
+						resource.getEvent(),
 						TriggerResultType.valueOf(resource.getResult()),
 						resource.getTask(), properties, allConditions,
-						anyConditions, parentTrigger, null, resource.isAllRealms());
+						anyConditions, parentTrigger, null,
+						resource.isAllRealms());
 			} else {
 				newResource = resourceService.createResource(
-						resource.getName(), resource.getType(), resource.getEvent(),
-						TriggerResultType.valueOf(resource.getResult()), resource.getTask(), properties, realm,
-						allConditions, anyConditions, parentTrigger, null, resource.isAllRealms());
+						resource.getName(), resource.getType(),
+						resource.getEvent(),
+						TriggerResultType.valueOf(resource.getResult()),
+						resource.getTask(), properties, realm, allConditions,
+						anyConditions, parentTrigger, null,
+						resource.isAllRealms());
 			}
-			
+
 			TriggerResource rootTrigger = newResource;
-			
-			while(rootTrigger.getParentTrigger()!=null) {
+
+			while (rootTrigger.getParentTrigger() != null) {
 				rootTrigger = rootTrigger.getParentTrigger();
 			}
-			
+
 			return new ResourceStatus<TriggerResource>(rootTrigger,
 					I18N.getResource(sessionUtils.getLocale(request),
 							TriggerResourceServiceImpl.RESOURCE_BUNDLE,
@@ -417,29 +424,29 @@ public class TriggerResourceController extends AbstractTriggerController {
 			}
 
 			String preDeletedName = resource.getName();
-			
+
 			TriggerResource rootTrigger = null;
-			
-			if(resource.getParentTrigger()!=null) {
+
+			if (resource.getParentTrigger() != null) {
 				rootTrigger = resource;
-				while(rootTrigger.getParentTrigger()!=null) {
+				while (rootTrigger.getParentTrigger() != null) {
 					rootTrigger = rootTrigger.getParentTrigger();
 				}
 			}
-			
+
 			resourceService.deleteResource(resource);
 
-			if(rootTrigger!=null) {
-				return new ResourceStatus<TriggerResource>(resourceService.getResourceById(rootTrigger.getId()), 
-						I18N.getResource(
-						sessionUtils.getLocale(request),
-						TriggerResourceServiceImpl.RESOURCE_BUNDLE,
-						"resource.deleted.info", preDeletedName));
+			if (rootTrigger != null) {
+				return new ResourceStatus<TriggerResource>(
+						resourceService.getResourceById(rootTrigger.getId()),
+						I18N.getResource(sessionUtils.getLocale(request),
+								TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+								"resource.deleted.info", preDeletedName));
 			} else {
-				return new ResourceStatus<TriggerResource>(true, I18N.getResource(
-						sessionUtils.getLocale(request),
-						TriggerResourceServiceImpl.RESOURCE_BUNDLE,
-						"resource.deleted.info", preDeletedName));
+				return new ResourceStatus<TriggerResource>(true,
+						I18N.getResource(sessionUtils.getLocale(request),
+								TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+								"resource.deleted.info", preDeletedName));
 			}
 
 		} catch (ResourceException e) {
@@ -554,6 +561,82 @@ public class TriggerResourceController extends AbstractTriggerController {
 					sessionUtils.getLocale(request),
 					I18NServiceImpl.USER_INTERFACE_BUNDLE,
 					"resource.import.failure", e.getMessage()));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "triggers/image/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseStatus(value = HttpStatus.OK)
+	public void downloadTemplateImage(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String uuid)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException, IOException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+			resourceService.downloadTemplateImage(uuid, request, response);
+
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "triggers/search", method = { RequestMethod.GET,
+			RequestMethod.POST }, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public BootstrapTableResult search(final HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException,
+			NumberFormatException, IOException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			String json = resourceService.searchTemplates(
+					request.getParameter("sSearch"),
+					Integer.parseInt(request.getParameter("iDisplayStart")),
+					Integer.parseInt(request.getParameter("iDisplayLength")));
+			ObjectMapper mapper = new ObjectMapper();
+
+			return mapper.readValue(json, BootstrapTableResult.class);
+
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "triggers/script", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<TriggerResource> createFromScript(
+			HttpServletRequest request, HttpServletResponse response,
+			@RequestParam String script) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+			TriggerResource newResource = resourceService
+					.importResources(script, getCurrentRealm(), false).iterator()
+					.next();
+
+			return new ResourceStatus<TriggerResource>(newResource,
+					I18N.getResource(sessionUtils.getLocale(request),
+							TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+							"resource.created.info", newResource.getName()));
+
+		} catch (ResourceException e) {
+			return new ResourceStatus<TriggerResource>(false,
+					e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}
