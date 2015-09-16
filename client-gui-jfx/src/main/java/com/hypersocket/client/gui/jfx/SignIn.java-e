@@ -429,8 +429,12 @@ public class SignIn extends AbstractController implements Listener {
 	// Private methods
 
 	private void showUrlPopOver() {
-		if(!serverUrls.isDisabled() && serverUrls.getEditor().getText().trim().equals(""))
-			showPopOver(resources.getString("serverURL.tooltip"), serverUrls);
+		
+		/**
+		 * LDP - removed because its causing crashing as per assembla issue #698
+		 */
+//		if(!serverUrls.isDisabled() && serverUrls.getEditor().getText().trim().equals(""))
+//			showPopOver(resources.getString("serverURL.tooltip"), serverUrls);
 	}
 
 	private void focusNextPrompt(Control c) {
