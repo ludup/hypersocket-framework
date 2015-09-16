@@ -674,7 +674,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	
 	@Override
 	public String getUserPropertyValue(Principal principal, String name) {
-		return userRepository.getValue(principal, name);
+		return userRepository.getDecryptedValue(principal, name);
 	}
 
 	@Override
