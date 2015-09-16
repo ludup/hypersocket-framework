@@ -23,27 +23,18 @@
                         <String fx:value="uiButton" />
                         <String fx:value="iconButton" />
                      </styleClass>
-                     <tooltip>
-                        <Tooltip text="%connect.tooltip" />
-                     </tooltip>
                   </Button>
                   <Button fx:id="disconnect" maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#evtDisconnect" text="%disconnect.icon" HBox.hgrow="NEVER">
                      <styleClass>
                         <String fx:value="uiButton" />
                         <String fx:value="iconButton" />
                      </styleClass>
-                     <tooltip>
-                        <Tooltip text="%disconnect.tooltip" />
-                     </tooltip>
                   </Button>
                   <Button fx:id="delete" maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#evtDelete" text="%delete.icon" textOverrun="CLIP" HBox.hgrow="NEVER">
                      <styleClass>
                         <String fx:value="uiButton" />
                         <String fx:value="iconButton" />
                      </styleClass>
-                     <tooltip>
-                        <Tooltip text="%delete.tooltip" />
-                     </tooltip>
                   </Button>
                </children>
             </HBox>
