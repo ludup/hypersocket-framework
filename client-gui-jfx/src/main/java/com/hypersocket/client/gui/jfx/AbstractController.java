@@ -3,6 +3,7 @@ package com.hypersocket.client.gui.jfx;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
@@ -35,6 +36,8 @@ public class AbstractController implements FramedController, Listener {
 	protected Scene scene;
 	protected PopOver popOver;
 	protected Popup popup;
+
+	private Node popOverNode;
 
 	@Override
 	public final void initialize(URL location, ResourceBundle resources) {
@@ -156,6 +159,14 @@ public class AbstractController implements FramedController, Listener {
 	}
 	
 	protected void showPopOver(String text, Node node) {
+
+		
+		if(!Objects.equals(popOverNode, node)) {
+			hidePopOver();
+			popOverNode = node;
+			
+		}
+		
 		if(popOver != null && popOver.isShowing()) {
 			return;
 		}
@@ -178,6 +189,9 @@ public class AbstractController implements FramedController, Listener {
 			
 			popOver.setContentNode(l);
 		}
+		else {
+			((Label)popOver.getContentNode()).setText(text);
+		}
 		Configuration cfg = Configuration.getDefault();
 		
 		Bounds bounds = node.localToScene(node.getBoundsInLocal());
@@ -185,10 +199,24 @@ public class AbstractController implements FramedController, Listener {
 		
 		if(cfg.topProperty().get() || cfg.bottomProperty().get() || cfg.rightProperty().get()) {
 			popOver.arrowLocationProperty().set(ArrowLocation.RIGHT_TOP);
-			popOver.show(popup, popup.getX() - popOver.getRoot().maxWidthProperty().get() - 20, popup.getY() + bounds.getMinY() - (bounds.getHeight() ));
+			popOver.show(popup, popup.getX() - popOver.getRoot().layoutBoundsProperty().get().getMaxX() - 20, popup.getY() + bounds.getMinY() - (bounds.getHeight() ));
+			
+			/* NOTE: Ugh. Without this manual layout and re-show, the popover will initially be in the wrong place.
+			 * This is because only a max width is set and a layout must occur before we know the true width.
+			 */
+			popOver.getRoot().applyCss();
+			popOver.getRoot().layout();
+			popOver.show(popup, popup.getX() - popOver.getRoot().layoutBoundsProperty().get().getMaxX() - 20, popup.getY() + bounds.getMinY() - (bounds.getHeight() ));
 		}
 		else {
 			popOver.arrowLocationProperty().set(ArrowLocation.LEFT_TOP);
+			popOver.show(popup, popup.getX() + popup.getWidth() + 5, popup.getY() + bounds.getMinY() - (bounds.getHeight() ));
+			
+			/* NOTE: Ugh. Without this manual layout and re-show, the popover will initially be in the wrong place.
+			 * This is because only a max width is set and a layout must occur before we know the true width.
+			 */
+			popOver.getRoot().applyCss();
+			popOver.getRoot().layout();
 			popOver.show(popup, popup.getX() + popup.getWidth() + 5, popup.getY() + bounds.getMinY() - (bounds.getHeight() ));
 		}
 	}

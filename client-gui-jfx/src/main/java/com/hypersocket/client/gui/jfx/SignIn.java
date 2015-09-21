@@ -36,6 +36,7 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -115,7 +116,6 @@ public class SignIn extends AbstractController implements Listener {
 	private boolean adjusting;
 	private boolean deleteOnDisconnect;
 
-
 	/*
 	 * Class methods
 	 */
@@ -164,7 +164,7 @@ public class SignIn extends AbstractController implements Listener {
 			log.info("Started " + connection);
 			waitingForUpdatesOrResources.remove(connection);
 			initUi();
-//			setAvailable();
+			// setAvailable();
 		});
 	}
 
@@ -383,43 +383,50 @@ public class SignIn extends AbstractController implements Listener {
 		stayConnected.managedProperty().bind(stayConnected.visibleProperty());
 		connectOnStartup.managedProperty().bind(
 				connectOnStartup.visibleProperty());
-		
-		serverUrls.getEditor().textProperty().addListener(new ChangeListener<String>() {
-			@Override
-			public void changed(ObservableValue<? extends String> observable,
-					String oldValue, String newValue) {
-				if(newValue.equals("") && serverUrls.getEditor().isFocused()) {
-					showUrlPopOver();
-				}
-			}
-		});
-		
-		serverUrls.getEditor().focusedProperty().addListener(new ChangeListener<Boolean>() {
 
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable,
-					Boolean oldValue, Boolean newValue) {
-				if(newValue && ( popOver == null || !popOver.isShowing())) {
-					showUrlPopOver();
-				}
-			}
-		});
-		
+		serverUrls.getEditor().textProperty()
+				.addListener(new ChangeListener<String>() {
+					@Override
+					public void changed(
+							ObservableValue<? extends String> observable,
+							String oldValue, String newValue) {
+						if (newValue.equals("")
+								&& serverUrls.getEditor().isFocused()) {
+							showUrlPopOver();
+						}
+					}
+				});
+
+		serverUrls.getEditor().focusedProperty()
+				.addListener(new ChangeListener<Boolean>() {
+
+					@Override
+					public void changed(
+							ObservableValue<? extends Boolean> observable,
+							Boolean oldValue, Boolean newValue) {
+						if (newValue
+								&& (popOver == null || !popOver.isShowing())) {
+							showUrlPopOver();
+						}
+					}
+				});
+
 	}
-	
+
 	protected void onSetPopup(Popup popup) {
 
 		popup.showingProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
-				/* TODO HACK - Wait 500ms before showing the popover, I can't find a better
-				 * way. Using showingProperty() of the popup() just makes the popover disappear
+				/*
+				 * TODO HACK - Wait 500ms before showing the popover, I can't
+				 * find a better way. Using showingProperty() of the popup()
+				 * just makes the popover disappear
 				 */
-				if(newValue) {
-					Timeline timeline = new Timeline(new KeyFrame(
-					        Duration.millis(500),
-					        ae -> showUrlPopOver()));
+				if (newValue) {
+					Timeline timeline = new Timeline(new KeyFrame(Duration
+							.millis(500), ae -> showUrlPopOver()));
 					timeline.play();
 				}
 			}
@@ -429,12 +436,9 @@ public class SignIn extends AbstractController implements Listener {
 	// Private methods
 
 	private void showUrlPopOver() {
-		
-		/**
-		 * LDP - removed because its causing crashing as per assembla issue #698
-		 */
-//		if(!serverUrls.isDisabled() && serverUrls.getEditor().getText().trim().equals(""))
-//			showPopOver(resources.getString("serverURL.tooltip"), serverUrls);
+		if (!serverUrls.isDisabled()
+				&& serverUrls.getEditor().getText().trim().equals(""))
+			showPopOver(resources.getString("serverURL.tooltip"), serverUrls);
 	}
 
 	private void focusNextPrompt(Control c) {
@@ -458,11 +462,13 @@ public class SignIn extends AbstractController implements Listener {
 		hidePopOver();
 		abortPrompts();
 		Decorator.removeAllDecorations(serverUrls.getEditor());
-		Connection selectedConnection = getSelectedConnection();
+		Connection selectedConnection = getChosenConnection();
 		String uriString = serverUrls.getEditor().getText();
 		log.info(String.format("Selected URI is %s", uriString));
 
 		if (selectedConnection == null) {
+			log.info("No connection for the selection, creating one");
+
 			// If no connection for this URI was found, it is new, so add it
 			try {
 				Connection newConnection = context.getBridge()
@@ -515,8 +521,9 @@ public class SignIn extends AbstractController implements Listener {
 			// A connection with the URI already exists, is it our foreground
 			// connection?
 
-			log.info(String.format("Selected connection exists for %s",
-					uriString));
+			log.info(String.format("Selected connection exists for %s (%s:%d)",
+					uriString, selectedConnection.getHostname(),
+					selectedConnection.getPort()));
 
 			if (selectedConnection.equals(foregroundConnection)) {
 				try {
@@ -744,6 +751,24 @@ public class SignIn extends AbstractController implements Listener {
 			throw new IllegalStateException("Already disconnecting " + sel);
 		}
 		disconnecting.add(sel);
+		if (sel.getId() == null) {
+			adjusting = true;
+
+			try {
+				log.info("Disconnected temporary connection, clearing");
+				/*
+				 * If this is a temporary connection being deleted, clear it
+				 * from the URL list too and maybe the URL editor
+				 */
+				if (sel.equals(getChosenConnection())) {
+					serverUrls.getEditor().setText("");
+				}
+				serverUrls.itemsProperty().get().remove(getUri(sel));
+			} finally {
+				adjusting = false;
+			}
+		}
+
 		setAvailable();
 		new Thread() {
 			public void run() {
@@ -765,6 +790,7 @@ public class SignIn extends AbstractController implements Listener {
 	}
 
 	private void populateUserDetails(Connection connection) {
+		
 		saveConnection.setSelected(connection != null
 				&& connection.getId() != null);
 		saveCredentials.setSelected(connection != null
@@ -824,6 +850,11 @@ public class SignIn extends AbstractController implements Listener {
 			log.warn("Request to connect an already connected or connecting connection "
 					+ connection);
 		}
+	}
+
+	private Connection getChosenConnection() {
+		String uri = serverUrls.getEditor().getText();
+		return uri == null ? null : getConnectionForUri(uri);
 	}
 
 	private Connection getSelectedConnection() {
@@ -1048,5 +1079,21 @@ public class SignIn extends AbstractController implements Listener {
 		} catch (Exception e) {
 			log.error("Failed to login.", e);
 		}
+	}
+
+	@FXML
+	private void evtShowTooltipPopover(MouseEvent evt) {
+		if (evt.getSource() == connect) {
+			showPopOver(resources.getString("connect.tooltip"), connect);
+		} else if (evt.getSource() == disconnect) {
+			showPopOver(resources.getString("disconnect.tooltip"), disconnect);
+		} else if (evt.getSource() == delete) {
+			showPopOver(resources.getString("delete.tooltip"), delete);
+		}
+	}
+
+	@FXML
+	private void evtHideTooltipPopover(MouseEvent evt) {
+		hidePopOver();
 	}
 }

@@ -18,19 +18,19 @@
             <HBox alignment="CENTER_LEFT" spacing="4.0" VBox.vgrow="ALWAYS">
                <children>
                   <ComboBox fx:id="serverUrls" editable="true" maxWidth="1.7976931348623157E308" onAction="#evtServerUrlSelected" promptText="%urlPrompt" styleClass="input" HBox.hgrow="SOMETIMES" />
-                  <Button fx:id="connect" maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#evtConnect" text="%connect.icon" textOverrun="CLIP" HBox.hgrow="NEVER">
+                  <Button fx:id="connect" maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#evtConnect" onMouseEntered="#evtShowTooltipPopover" onMouseExited="#evtHideTooltipPopover" text="%connect.icon" textOverrun="CLIP" HBox.hgrow="NEVER">
                      <styleClass>
                         <String fx:value="uiButton" />
                         <String fx:value="iconButton" />
                      </styleClass>
                   </Button>
-                  <Button fx:id="disconnect" maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#evtDisconnect" text="%disconnect.icon" HBox.hgrow="NEVER">
+                  <Button fx:id="disconnect" maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#evtDisconnect" onMouseEntered="#evtShowTooltipPopover" onMouseExited="#evtHideTooltipPopover" text="%disconnect.icon" HBox.hgrow="NEVER">
                      <styleClass>
                         <String fx:value="uiButton" />
                         <String fx:value="iconButton" />
                      </styleClass>
                   </Button>
-                  <Button fx:id="delete" maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#evtDelete" text="%delete.icon" textOverrun="CLIP" HBox.hgrow="NEVER">
+                  <Button fx:id="delete" maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#evtDelete" onMouseEntered="#evtShowTooltipPopover" onMouseExited="#evtHideTooltipPopover" text="%delete.icon" textOverrun="CLIP" HBox.hgrow="NEVER">
                      <styleClass>
                         <String fx:value="uiButton" />
                         <String fx:value="iconButton" />
