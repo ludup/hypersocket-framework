@@ -251,7 +251,6 @@ public class SignIn extends AbstractController implements Listener {
 					VBox vbox = new VBox();
 					int idx = 0;
 					for (Prompt p : prompts) {
-						System.out.println(">> " + p);
 						Label l = new Label(p.getLabel());
 						vbox.getChildren().add(l);
 						switch (p.getType()) {
@@ -442,6 +441,7 @@ public class SignIn extends AbstractController implements Listener {
 	}
 
 	private void focusNextPrompt(Control c) {
+		
 		boolean found = c == null;
 		for (Map.Entry<Prompt, Control> en : promptNodes.entrySet()) {
 			if (!found && Objects.equals(en.getValue(), c)) {

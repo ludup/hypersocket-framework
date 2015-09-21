@@ -192,6 +192,8 @@ public class Dock extends AbstractController implements Listener {
 					public void handle(ActionEvent arg0) {
 					}
 				});
+		
+		notificationBuilder.hideCloseButton();
 
 		Configuration cfg = Configuration.getDefault();
 		Color backgroundColour = cfg.colorProperty().getValue();
