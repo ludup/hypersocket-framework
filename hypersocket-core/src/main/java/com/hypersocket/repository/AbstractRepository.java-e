@@ -9,9 +9,6 @@ package com.hypersocket.repository;
 
 import java.util.List;
 
-
-
-
 public interface AbstractRepository<K> {
 
 	public void refresh(Object entity);

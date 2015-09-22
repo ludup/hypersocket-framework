@@ -734,7 +734,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			assertPermission(RealmPermission.UPDATE);
 
-			if (!realm.getName().equals(name)) {
+			if (!realm.getName().equalsIgnoreCase(name)) {
 				if (realmRepository.getRealmByName(name) != null) {
 					throw new ResourceChangeException(RESOURCE_BUNDLE, "error.nameAlreadyExists", name);
 				}
