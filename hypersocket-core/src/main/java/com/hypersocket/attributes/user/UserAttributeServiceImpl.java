@@ -107,7 +107,7 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 		assertPermission(UserAttributePermission.UPDATE);
 
 		attribute.setName(name);
-		if (!attribute.getOldName().equals(name) && attributeRepository.getResourceByName(attribute.getName(), getCurrentRealm()) != null) {
+		if (!attribute.getOldName().equalsIgnoreCase(name) && attributeRepository.getResourceByName(attribute.getName(), getCurrentRealm()) != null) {
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
 					"attribute.nameInUse.error", name);
 		}
