@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.PermissionsAwareJob;
-import com.hypersocket.scheduler.TransactionalJob;
 
 public class SessionReaperJob extends PermissionsAwareJob {
 

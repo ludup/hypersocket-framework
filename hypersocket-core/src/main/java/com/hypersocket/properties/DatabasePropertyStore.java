@@ -2,7 +2,6 @@ package com.hypersocket.properties;
 
 import java.io.IOException;
 
-import org.springframework.transaction.annotation.Transactional;
 import org.w3c.dom.Element;
 
 import com.hypersocket.encrypt.EncryptionService;
