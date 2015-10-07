@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.automation.AutomationResourceService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
@@ -84,6 +85,9 @@ public class TriggerResourceServiceImpl extends
 
 	@Autowired
 	ConfigurationService configurationService; 
+	
+	@Autowired
+	AutomationResourceService automationService;
 	
 	Map<String, TriggerConditionProvider> registeredConditions = new HashMap<String, TriggerConditionProvider>();
 
@@ -163,6 +167,19 @@ public class TriggerResourceServiceImpl extends
 				variableName);
 	}
 
+	@Override
+	protected boolean checkUnique(TriggerResource resource) throws AccessDeniedException {
+		if(super.checkUnique(resource)) {
+			try {
+				automationService.getResourceByName(resource.getName());
+				return false;
+			} catch (ResourceNotFoundException e) {
+				return true;
+			} 
+		}
+		return false;
+	}
+	
 	@Override
 	public List<EventDefinition> getTriggerEvents() {
 		List<EventDefinition> ret = new ArrayList<EventDefinition>();

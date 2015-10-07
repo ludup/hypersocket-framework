@@ -7,13 +7,14 @@
  ******************************************************************************/
 package com.hypersocket.triggers;
 
+import com.hypersocket.automation.AutomationResourcePermission;
 import com.hypersocket.permissions.PermissionType;
 
 
 public enum TriggerResourcePermission implements PermissionType {
 	
 	
-	READ("read"),
+	READ("read", AutomationResourcePermission.READ),
 	CREATE("create", READ),
 	UPDATE("update", READ),
 	DELETE("delete", READ);
