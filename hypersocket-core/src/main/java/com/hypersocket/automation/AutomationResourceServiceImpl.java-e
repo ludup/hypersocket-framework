@@ -37,6 +37,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.NotScheduledException;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
@@ -130,6 +131,19 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 
 	protected Class<AutomationResource> getResourceClass() {
 		return AutomationResource.class;
+	}
+	
+	@Override
+	protected boolean checkUnique(AutomationResource resource) throws AccessDeniedException {
+		if(super.checkUnique(resource)) {
+			try {
+				triggerService.getResourceByName(resource.getName());
+				return false;
+			} catch (ResourceNotFoundException e) {
+				return true;
+			} 
+		}
+		return false;
 	}
 
 	@Override
