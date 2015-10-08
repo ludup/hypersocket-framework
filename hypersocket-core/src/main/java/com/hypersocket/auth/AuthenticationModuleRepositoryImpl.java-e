@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
-import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
 

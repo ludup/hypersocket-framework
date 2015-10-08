@@ -526,7 +526,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		switch (type) {
 		case GROUP:
 			if (principal instanceof LocalUser) {
-				result.addAll(((LocalGroup)principal).getUsers());
+				result.addAll(((LocalUser)principal).getGroups());
 			} else if(principal instanceof LocalGroup) {
 				result.addAll(((LocalGroup)principal).getGroups());
 			}

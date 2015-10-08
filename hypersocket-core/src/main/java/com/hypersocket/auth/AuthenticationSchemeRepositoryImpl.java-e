@@ -22,7 +22,6 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
-import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;

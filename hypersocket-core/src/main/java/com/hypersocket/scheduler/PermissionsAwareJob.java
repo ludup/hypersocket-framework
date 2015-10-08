@@ -2,7 +2,6 @@ package com.hypersocket.scheduler;
 
 import java.util.Locale;
 
-import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
@@ -75,9 +74,7 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 			}
 
 		} catch (Exception e) {
-			log.error(
-					"Could not initialize AuthenticatedService instances of this job",
-					e);
+			throw new IllegalStateException(e);
 		}
 
 	}
