@@ -168,8 +168,8 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	@Override
-	protected boolean checkUnique(TriggerResource resource) throws AccessDeniedException {
-		if(super.checkUnique(resource)) {
+	protected boolean checkUnique(TriggerResource resource, boolean create) throws AccessDeniedException {
+		if(super.checkUnique(resource, create)) {
 			try {
 				automationService.getResourceByName(resource.getName());
 				return false;
@@ -288,7 +288,6 @@ public class TriggerResourceServiceImpl extends
 			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
 			throws ResourceChangeException, AccessDeniedException {
 
-		resource.setName(name);
 		resource.getConditions().clear();
 
 		populateTrigger(name, event, result, task, resource.getRealm(),

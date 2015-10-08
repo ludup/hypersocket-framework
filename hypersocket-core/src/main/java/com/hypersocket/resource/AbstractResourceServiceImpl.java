@@ -132,8 +132,13 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		createResource(resource, new HashMap<String,String>(), ops);
 	}
 	
-	protected boolean checkUnique(T resource) throws AccessDeniedException {
+	protected boolean checkUnique(T resource, boolean create) throws AccessDeniedException {
 		try {
+			if(!create) {
+				if(resource.getOldName().equals(resource.getName())) {
+					return true;
+				}
+			}
 			getResourceByName(resource.getName());
 			return false;
 		} catch (ResourceNotFoundException e) {
@@ -157,7 +162,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		resource.setResourceCategory(resourceCategory);
 		getRepository().populateEntityFields(resource, properties);
 		
-		if(!checkUnique(resource)) {
+		if(!checkUnique(resource, true)) {
 			ResourceCreationException ex = new ResourceCreationException(
 					RESOURCE_BUNDLE_DEFAULT, "generic.alreadyExists.error",
 				resource.getName());
@@ -224,7 +229,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			resource.setRealm(getCurrentRealm());
 		}
 		
-		if(!checkUnique(resource)) {
+		if(!checkUnique(resource, false)) {
 			ResourceChangeException ex = new ResourceChangeException(
 					RESOURCE_BUNDLE_DEFAULT, "generic.alreadyExists.error",
 				resource.getName());

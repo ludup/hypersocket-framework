@@ -150,4 +150,9 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 		throw new IllegalStateException("Cannot access secret key when EncryptionProvider does not support secret keys");
 	}
 
+	@Override
+	public String getName() {
+		return "RSA";
+	}
+
 }
