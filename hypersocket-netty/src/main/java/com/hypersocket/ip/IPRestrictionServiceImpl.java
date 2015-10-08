@@ -34,8 +34,7 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 	@Autowired
 	SystemConfigurationService configurationService;
 	
-	Set<IpFilterRule> ipRules = new HashSet<IpFilterRule>();
-	
+	Set<IpFilterRule> rules = new HashSet<IpFilterRule>();
 
 	@Override
 	public void registerListener(IPRestrictionListener listener) {
@@ -55,11 +54,21 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 		}
 		
 		IpFilterRule rule = new IpSubnetFilterRule(false, cidr);
-		ipRules.add(rule);
+		rules.add(rule);
 		
 		for(IPRestrictionListener listener : listeners) {
 			listener.onBlockIP(addr);
 		}
+	}
+	
+	@Override
+	public synchronized void addRule(IpFilterRule rule) {
+			rules.add(rule);
+	}
+	
+	@Override
+	public synchronized void removeRule(IpFilterRule rule) {
+			rules.remove(rule);
 	}
 	
 	@Override
@@ -91,7 +100,7 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 		}
 		
 		IpFilterRule rule = new IpSubnetFilterRule(false, cidr);
-		ipRules.remove(rule);
+		rules.remove(rule);
 		
 		for(IPRestrictionListener listener : listeners) {
 			listener.onUnblockIP(addr);
@@ -170,15 +179,36 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 	
 	@Override
 	public synchronized boolean isBlockedAddress(InetAddress addr) {
-		for(IpFilterRule rule : ipRules) {
-			if(rule.contains(addr)) {
-				return true;
+		
+		if(!isAllowedAddress(addr)) {
+			return false;
+		}
+		
+		for(IpFilterRule rule : rules) {
+			if(rule.isDenyRule()) {
+				if(rule.contains(addr)) {
+					return true;
+				}
 			}
 		} 
 		return false;
 	}
 	
-
+	@Override
+	public synchronized boolean isAllowedAddress(InetAddress addr) {
+		
+		boolean allowedRulesFound = false;
+		for(IpFilterRule rule : rules) {
+			if(rule.isAllowRule()) {
+				allowedRulesFound = true;
+				if(rule.contains(addr)) {
+					return true;
+				}
+			}
+		} 
+		return !allowedRulesFound;
+	}
+	
 	@Override
 	public synchronized boolean isBlockedAddress(String addr) throws UnknownHostException {
 		return isBlockedAddress(InetAddress.getByName(addr));

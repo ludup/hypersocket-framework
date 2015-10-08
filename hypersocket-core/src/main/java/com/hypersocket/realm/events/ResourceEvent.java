@@ -42,7 +42,9 @@ public class ResourceEvent extends SessionEvent {
 			Session session, RealmResource resource) {
 		super(source, resourceKey, e, session);
 		this.resource = resource;
-		addAttribute(ATTR_RESOURCE_ID, Long.toString(resource.getId()));
+		if(resource.getId()!=null) {
+			addAttribute(ATTR_RESOURCE_ID, Long.toString(resource.getId()));
+		}
 		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
 		addAttribute(ATTR_OLD_RESOURCE_NAME, resource.getOldName());
 		addAttribute(ATTR_CREATED, HypersocketUtils.formatDateTime(resource.getCreateDate()));
