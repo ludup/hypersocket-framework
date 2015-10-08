@@ -2,7 +2,6 @@ package com.hypersocket.encrypt;
 
 import java.io.IOException;
 
-import javax.annotation.PostConstruct;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
@@ -14,9 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.hypersocket.nss.NssEncryptionProvider;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.rsa.RsaEncryptionProvider;
 import com.hypersocket.secret.SecretKeyResource;
 import com.hypersocket.secret.SecretKeyService;
 
@@ -27,19 +24,6 @@ public class DefaultEncryptor implements Encryptor {
 	
 	@Autowired
 	SecretKeyService secretKeyService;
-
-	EncryptionProvider encryptionProvider;
-	
-	@PostConstruct
-	private void postConstruct() throws Exception {
-	
-		try {
-			encryptionProvider = NssEncryptionProvider.getInstance();
-		} catch (Exception e) {
-			log.error("Could not create NSS encryption provider", e);
-			encryptionProvider = RsaEncryptionProvider.getInstance();
-		} 
-	}
 	
 	@Override
 	public String encryptString(String reference, String data, Realm realm)

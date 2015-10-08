@@ -134,8 +134,8 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	}
 	
 	@Override
-	protected boolean checkUnique(AutomationResource resource) throws AccessDeniedException {
-		if(super.checkUnique(resource)) {
+	protected boolean checkUnique(AutomationResource resource, boolean create) throws AccessDeniedException {
+		if(super.checkUnique(resource, create)) {
 			try {
 				triggerService.getResourceByName(resource.getName());
 				return false;

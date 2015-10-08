@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -241,6 +242,14 @@ public class HypersocketUtils {
 			return "";
 		}
 		return str;
+	}
+
+	public static String urlEncode(String message) {
+		try {
+			return URLEncoder.encode(message, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException("System does not appear to support UTF-8!", e);
+		}
 	}
 
 }

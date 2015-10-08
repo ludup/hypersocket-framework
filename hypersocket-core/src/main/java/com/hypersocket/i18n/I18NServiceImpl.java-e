@@ -28,6 +28,8 @@ import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.local.LocalRealmProvider;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.secret.SecretKeyService;
+import com.hypersocket.secret.SecretKeyServiceImpl;
 import com.hypersocket.session.SessionService;
 
 @Service
@@ -56,6 +58,8 @@ public class I18NServiceImpl implements I18NService {
 		registerBundle(PermissionService.RESOURCE_BUNDLE);
 		registerBundle(RealmService.RESOURCE_BUNDLE);
 		registerBundle(SessionService.RESOURCE_BUNDLE);
+		registerBundle(SecretKeyServiceImpl.RESOURCE_BUNDLE);
+		
 		registerBundle(USER_INTERFACE_BUNDLE);
 		
 		supportedLocales.add(Locale.ENGLISH);

@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.encrypt.EncryptionProvider;
-import com.hypersocket.nss.NssEncryptionProvider;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Realm;
@@ -46,6 +45,7 @@ public class SecretKeyServiceImpl extends
 	@Autowired
 	RealmService realmService; 
 	
+	
 	EncryptionProvider encryptionProvider;
 	
 	public SecretKeyServiceImpl() {
@@ -54,17 +54,7 @@ public class SecretKeyServiceImpl extends
 
 	@PostConstruct
 	private void postConstruct() throws Exception {
-	
-		try {
-			encryptionProvider = NssEncryptionProvider.getInstance();
-		} catch (Exception e) {
-			log.error("Could not create NSS encryption provider", e);
-			encryptionProvider = RsaEncryptionProvider.getInstance();
-		} 
-		
-		if(log.isInfoEnabled()) {
-			log.info("Maximum supported cipher size is " + Cipher.getMaxAllowedKeyLength("AES"));
-		}
+		encryptionProvider = RsaEncryptionProvider.getInstance();
 	}
 	
 	@Override
@@ -195,6 +185,14 @@ public class SecretKeyServiceImpl extends
 			key = createSecretKey(reference, realm);
 		}
 		return key;
+	}
+
+	@Override
+	public void setEncryptor(EncryptionProvider encryptionProvider) {
+		if(log.isInfoEnabled()) {
+			log.info("Installed " + encryptionProvider.getName() + " encryption provider");
+		}
+		this.encryptionProvider = encryptionProvider;
 	}
 
 }

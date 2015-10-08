@@ -2,6 +2,7 @@ package com.hypersocket.secret;
 
 import java.io.IOException;
 
+import com.hypersocket.encrypt.EncryptionProvider;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
@@ -20,5 +21,7 @@ public interface SecretKeyService extends AbstractResourceService<SecretKeyResou
 	byte[] generateIvData(SecretKeyResource key) throws IOException;
 
 	SecretKeyResource getSecretKey(String reference, Realm realm) throws ResourceNotFoundException, ResourceCreationException, AccessDeniedException;
+
+	void setEncryptor(EncryptionProvider encryptionProvider);
 
 }

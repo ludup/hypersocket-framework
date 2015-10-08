@@ -21,4 +21,6 @@ public interface EncryptionProvider {
 
 	Provider getProvider();
 
+	String getName();
+
 }
