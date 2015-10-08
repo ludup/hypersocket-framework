@@ -50,7 +50,12 @@ public class ResourceGroupKey implements Comparable<ResourceGroupKey> {
 	@Override
 	public int compareTo(ResourceGroupKey o) {
 		int i = type.compareTo(o.type);
-		return i == 0 ? ( subType == null ? ( o.subType == null ? 0 : -1) : subType.compareTo(o.subType)) : i;
+		if(i == 0) {
+			String s1 = subType == null ? "" : subType;
+			String s2 = o.subType == null ? "" : o.subType;
+			return s1.compareTo(s2);
+		}
+		return i;
 	}
 
 	@Override
