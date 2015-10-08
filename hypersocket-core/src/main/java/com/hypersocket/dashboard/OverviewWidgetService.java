@@ -8,9 +8,9 @@ import com.hypersocket.resource.ResourceException;
 
 public interface OverviewWidgetService {
 
-	public void registerWidget(OverviewWidget widget);
+	public void registerWidget(String resourceKey, OverviewWidget widget);
 
-	public List<OverviewWidget> getWidgets() throws AccessDeniedException;
+	public List<OverviewWidget> getWidgets(String resourceKey) throws AccessDeniedException;
 
 	public Collection<Link> getLinks() throws ResourceException;
 	

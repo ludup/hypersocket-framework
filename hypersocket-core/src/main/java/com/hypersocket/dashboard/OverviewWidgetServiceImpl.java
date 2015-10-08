@@ -5,7 +5,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -29,8 +31,10 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 		implements OverviewWidgetService {
 
 	public static final String RESOURCE_BUNDLE = "OverviewWidgetService";
-	private List<OverviewWidget> widgetList = new ArrayList<OverviewWidget>();
+	private Map<String,List<OverviewWidget>> widgetList = new HashMap<String,List<OverviewWidget>>();
 
+	public static final String HELPZONE = "helpzone";
+	
 	private Collection<Link> cachedLinks = null;
 	private Collection<Link> cachedVideos = null;
 	private Collection<Link> cachedDocumentation = null;
@@ -65,7 +69,7 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 //			}
 //		});
 		
-		this.registerWidget(new OverviewWidget(4, "overview.usefulLinks.title",
+		this.registerWidget(HELPZONE, new OverviewWidget(4, "overview.usefulLinks.title",
 				"usefulLinks", false) {
 			public boolean hasContent() {
 				try {
@@ -76,14 +80,14 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 			}
 		});
 		
-		this.registerWidget(new OverviewWidget(1,
+		this.registerWidget(HELPZONE, new OverviewWidget(1,
 				"overview.systemMessages.title", "systemMessages", true) {
 			public boolean hasContent() {
 				return messageService.getMessageCount() > 0;
 			}
 		});
 		
-		this.registerWidget(new OverviewWidget(3, "overview.featureReel.title",
+		this.registerWidget(HELPZONE, new OverviewWidget(3, "overview.featureReel.title",
 				"featureReel", true) {
 			public boolean hasContent() {
 				try {
@@ -94,7 +98,14 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 			}
 		});
 		
-		this.registerWidget(new OverviewWidget(3, "overview.quickSetup.title",
+		this.registerWidget(HELPZONE, new OverviewWidget(-1, "overview.share.title",
+				"shareTheLove", true) {
+			public boolean hasContent() {
+				return true;
+			}
+		});
+		
+		this.registerWidget(HELPZONE, new OverviewWidget(3, "overview.quickSetup.title",
 				"quickSetup", false) {
 			public boolean hasContent() {
 				try {
@@ -106,15 +117,18 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 		});
 	}
 
-	public void registerWidget(OverviewWidget widget) {
-		widgetList.add(widget);
-		Collections.sort(widgetList);
+	public void registerWidget(String resourceKey, OverviewWidget widget) {
+		if(!widgetList.containsKey(resourceKey)) {
+			widgetList.put(resourceKey, new ArrayList<OverviewWidget>());
+		}
+		widgetList.get(resourceKey).add(widget);
+		Collections.sort(widgetList.get(resourceKey));
 	}
 
-	public List<OverviewWidget> getWidgets() throws AccessDeniedException {
+	public List<OverviewWidget> getWidgets(String resourceKey) throws AccessDeniedException {
 
 		List<OverviewWidget> visibleWidgets = new ArrayList<OverviewWidget>();
-		for (OverviewWidget w : widgetList) {
+		for (OverviewWidget w : widgetList.get(resourceKey)) {
 			if (w.hasContent()) {
 				visibleWidgets.add(w);
 			}
