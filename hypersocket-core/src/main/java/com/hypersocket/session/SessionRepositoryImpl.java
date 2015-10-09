@@ -119,6 +119,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("system", false));
+				criteria.add(Restrictions.not(Restrictions.eq("userAgent", "unknown")));
 			}
 		});
 		
@@ -140,6 +141,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 				criteria.add(Restrictions.ge("created", startDate));
 				criteria.add(Restrictions.lt("created", endDate));
 				criteria.add(Restrictions.eq("system", false));
+				criteria.add(Restrictions.not(Restrictions.eq("userAgent", "unknown")));
 			}
 		});
 		
@@ -182,6 +184,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 				criteria.add(Restrictions.ge("created", startDate));
 				criteria.add(Restrictions.lt("created", endDate));
 				criteria.add(Restrictions.eq("system", false));
+				criteria.add(Restrictions.not(Restrictions.eq("os", "")));
 			}
 		});
 		
