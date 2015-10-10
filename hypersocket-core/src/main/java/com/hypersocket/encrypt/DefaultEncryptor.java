@@ -81,5 +81,10 @@ public class DefaultEncryptor implements Encryptor {
 			throw new IOException(e);
 		}
 	}
+	
+	
+	public String getProviderName() {
+		return "Secret Key Service/" + secretKeyService.getEncryptorProvider().getName();
+	}
 
 }

@@ -22,6 +22,8 @@ public interface SecretKeyService extends AbstractResourceService<SecretKeyResou
 
 	SecretKeyResource getSecretKey(String reference, Realm realm) throws ResourceNotFoundException, ResourceCreationException, AccessDeniedException;
 
-	void setEncryptor(EncryptionProvider encryptionProvider);
+	void setEncryptorProvider(EncryptionProvider encryptionProvider);
+
+	EncryptionProvider getEncryptorProvider();
 
 }

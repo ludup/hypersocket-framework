@@ -188,11 +188,16 @@ public class SecretKeyServiceImpl extends
 	}
 
 	@Override
-	public void setEncryptor(EncryptionProvider encryptionProvider) {
+	public void setEncryptorProvider(EncryptionProvider encryptionProvider) {
 		if(log.isInfoEnabled()) {
 			log.info("Installed " + encryptionProvider.getName() + " encryption provider");
 		}
 		this.encryptionProvider = encryptionProvider;
+	}
+	
+	@Override
+	public EncryptionProvider getEncryptorProvider() {
+		return encryptionProvider;
 	}
 
 }
