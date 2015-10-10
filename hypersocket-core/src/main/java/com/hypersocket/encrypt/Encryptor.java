@@ -10,4 +10,6 @@ public interface Encryptor {
 
 	String encryptString(String reference, String data, Realm realm)
 			throws IOException;
+	
+	String getProviderName();
 }

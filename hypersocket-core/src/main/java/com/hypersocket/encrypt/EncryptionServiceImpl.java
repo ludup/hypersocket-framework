@@ -23,8 +23,6 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 
 	static Logger log = LoggerFactory.getLogger(EncryptionServiceImpl.class);
 	
-	EncryptionProvider encryptionProvider;
-	
 	@Autowired
 	SecretKeyService secretKeyService;
 	
@@ -66,7 +64,7 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 					secretKeyService.setCurrentPrincipal(realmService.getSystemPrincipal(), configurationService.getDefaultLocale(), realmService.getDefaultRealm());
 					try {
 						String text = encryptString("Test Key", "Encryption service has been initialized", realmService.getDefaultRealm());
-						log.info(decryptString("Test Key", text, realmService.getDefaultRealm()) + " " + text);
+						log.info(getProviderName() + " " + decryptString("Test Key", text, realmService.getDefaultRealm()) + " " + text);
 					} catch (Exception e) {
 						log.error("Failed to process test encryption key", e);
 					}
@@ -92,7 +90,7 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 		return encryptor;
 	}
 
-	public EncryptionProvider getEncryptionProvider() {
-		return encryptionProvider;
+	public String getProviderName() {
+		return encryptor.getProviderName();
 	}
 }
