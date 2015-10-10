@@ -54,7 +54,9 @@ public class SecretKeyServiceImpl extends
 
 	@PostConstruct
 	private void postConstruct() throws Exception {
-		encryptionProvider = RsaEncryptionProvider.getInstance();
+		if(encryptionProvider==null) {
+			encryptionProvider = RsaEncryptionProvider.getInstance();
+		}
 	}
 	
 	@Override
