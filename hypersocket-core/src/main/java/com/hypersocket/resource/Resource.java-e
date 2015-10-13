@@ -61,6 +61,10 @@ public abstract class Resource extends AbstractResource {
 		this.name = name;
 	}
 
+	public boolean hasNameChanged() {
+		return oldName!=null && !oldName.equals(name);
+	}
+	
 	public boolean isHidden() {
 		return hidden;
 	}
