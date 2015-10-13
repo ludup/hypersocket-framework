@@ -135,7 +135,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	protected boolean checkUnique(T resource, boolean create) throws AccessDeniedException {
 		try {
 			if(!create) {
-				if(resource.getOldName().equals(resource.getName())) {
+				if(!resource.hasNameChanged()) {
 					return true;
 				}
 			}
