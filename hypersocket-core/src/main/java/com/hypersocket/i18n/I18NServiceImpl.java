@@ -28,7 +28,6 @@ import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.local.LocalRealmProvider;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.secret.SecretKeyService;
 import com.hypersocket.secret.SecretKeyServiceImpl;
 import com.hypersocket.session.SessionService;
 
