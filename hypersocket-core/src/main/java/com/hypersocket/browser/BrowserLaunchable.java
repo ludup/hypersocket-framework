@@ -20,4 +20,6 @@ public interface BrowserLaunchable {
 	String getType();
 	
 	boolean isDisplayInBrowserResourcesTable();
+	
+	Boolean getRequireVPNAccess();
 }
