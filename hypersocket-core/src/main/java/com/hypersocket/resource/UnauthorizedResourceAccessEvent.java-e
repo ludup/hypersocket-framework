@@ -12,9 +12,9 @@ public class UnauthorizedResourceAccessEvent extends ResourceSessionEvent {
 		super(source, EVENT_RESOURCE_KEY, false, session, resource);
 	}
 	
-//	public UnauthorizedResourceAccessEvent(Object source, Long resourceId,
-//			Throwable e, Session session) {
-//		super(source, EVENT_RESOURCE_KEY, e, session);
-//	}
+	public boolean isUsage() {
+		return false;
+	}
+
 
 }

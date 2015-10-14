@@ -6,7 +6,7 @@ import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.events.SessionEvent;
 
-public class ResourceSessionEvent extends SessionEvent {
+public abstract class ResourceSessionEvent extends SessionEvent {
 
 	private static final long serialVersionUID = 5416406167471742408L;
 	
@@ -14,10 +14,13 @@ public class ResourceSessionEvent extends SessionEvent {
 	
 	public static final String ATTR_RESOURCE_NAME = CommonAttributes.ATTR_RESOURCE_NAME;
 	
+	protected Resource resource;
+	
 	public ResourceSessionEvent(Object source, String resourceKey, boolean success,
 			Session session, Resource resource) {
 		super(source, resourceKey, success, session);
 		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
+		this.resource = resource;
 	}
 
 	public ResourceSessionEvent(Object source, String resourceKey, String resourceName, Throwable e,
@@ -29,5 +32,11 @@ public class ResourceSessionEvent extends SessionEvent {
 	public String[] getResourceKeys() {
 		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
 	}
+	
+	public Resource getResource() {
+		return resource;
+	}
+	
+	public abstract boolean isUsage();
 	
 }
