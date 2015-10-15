@@ -49,6 +49,9 @@
 				<prop key="hibernate.dialect">${jdbc.hibernate.dialect}</prop>
 				<prop key="hibernate.hbm2ddl.auto">update</prop>
 				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.connection.useUnicode">true</prop>
+                <prop key="hibernate.connection.characterEncoding">UTF-8</prop>
+                <prop key="hibernate.connection.charSet">UTF-8</prop> 
 			</props>
 		</property>
 	</bean>
