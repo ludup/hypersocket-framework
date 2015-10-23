@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
@@ -249,6 +250,15 @@ public class HypersocketUtils {
 			return URLEncoder.encode(message, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalStateException("System does not appear to support UTF-8!", e);
+		}
+	}
+
+	public static boolean isUUID(String attachment) {
+		 try {
+			UUID.fromString(attachment);
+			return true;
+		} catch (Exception e) {
+			return false;
 		}
 	}
 
