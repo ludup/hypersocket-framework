@@ -28,6 +28,7 @@ import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -39,6 +40,7 @@ import com.hypersocket.triggers.TriggerValidationError;
 import com.hypersocket.triggers.ValidationException;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.upload.FileUploadService;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Component
 public class EmailTask extends AbstractTaskProvider {
@@ -57,6 +59,7 @@ public class EmailTask extends AbstractTaskProvider {
 	public static final String ATTR_BODY_HTML = "email.bodyHtml";
 	public static final String ATTR_STATIC_ATTACHMENTS = "attach.static";
 	public static final String ATTR_DYNAMIC_ATTACHMENTS = "attach.dynamic";
+	public static final String ATTR_EVENT_SOURCE = "attach.event";
 	
 	@Autowired
 	TriggerResourceService triggerService;
@@ -178,12 +181,26 @@ public class EmailTask extends AbstractTaskProvider {
 
 		List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
 		
+		if(repository.getBooleanValue(task, ATTR_EVENT_SOURCE) && event instanceof EmailAttachmentSource) {
+			
+			String[] eventAttachments = ((EmailAttachmentSource)event).getEmailAttachments();
+			for(String attachment : eventAttachments) {
+				try {
+					if(HypersocketUtils.isUUID(attachment)) {
+						addUUIDAttachment(attachment, attachments);
+					} else {
+						addFileAttachment(attachment, attachments, event);
+					}
+				} catch (Exception e) {
+					return new EmailTaskResult(this, e, currentRealm, task, subject, body, to, cc, bcc);
+				}
+			}
+			
+		}
+		
 		for(String uuid : repository.getValues(task, ATTR_STATIC_ATTACHMENTS)) {
 			try {
-				FileUpload upload = uploadService.getFileByUuid(uuid);	
-				attachments.add(new EmailAttachment(upload.getFileName(), 
-						uploadService.getContentType(uuid), 
-						new FileInputStream(uploadService.getFile(uuid))));
+				addUUIDAttachment(uuid, attachments);
 			} catch (ResourceException e) {
 				log.error("Failed to get upload file", e);
 				return new EmailTaskResult(this, e, currentRealm, task, subject, body, to, cc, bcc);
@@ -194,17 +211,8 @@ public class EmailTask extends AbstractTaskProvider {
 		}
 		
 		for(String path : repository.getValues(task,  ATTR_DYNAMIC_ATTACHMENTS)) {
-			
-			String filename = ResourceUtils.getNamePairKey(path);
-			String filepath = ResourceUtils.getNamePairValue(path);
-
-			filepath = processTokenReplacements(filepath, event);
-			File file = new File(filepath);
-			if(!file.exists()) {
-				return new EmailTaskResult(this, new FileNotFoundException(filepath + " does not exist"), currentRealm, task, subject, body, to, cc, bcc);
-			}
 			try {
-				attachments.add(new EmailAttachment(filename, uploadService.getContentType(file), new FileInputStream(file)));
+				addFileAttachment(path, attachments, event);
 			} catch (FileNotFoundException e) {
 				return new EmailTaskResult(this, e, currentRealm, task, subject, body, to, cc, bcc);
 			}
@@ -223,6 +231,28 @@ public class EmailTask extends AbstractTaskProvider {
 		}
 	}
 	
+	private void addUUIDAttachment(String uuid, List<EmailAttachment> attachments) throws ResourceNotFoundException, FileNotFoundException, IOException {
+		FileUpload upload = uploadService.getFileByUuid(uuid);	
+		attachments.add(new EmailAttachment(upload.getFileName(), 
+				uploadService.getContentType(uuid), 
+				new FileInputStream(uploadService.getFile(uuid))));
+	}
+	
+	private void addFileAttachment(String path, List<EmailAttachment> attachments, SystemEvent event) throws FileNotFoundException {
+		
+		String filename = ResourceUtils.getNamePairKey(path);
+		String filepath = ResourceUtils.getNamePairValue(path);
+		
+		filename = processTokenReplacements(filename, event);
+		filepath = processTokenReplacements(filepath, event);
+		File file = new File(filepath);
+		if(!file.exists()) {
+			throw new FileNotFoundException(filepath + " does not exist");
+		}
+		
+		attachments.add(new EmailAttachment(filename, uploadService.getContentType(file), new FileInputStream(file)));
+
+	}
 	public String[] getResultResourceKeys() {
 		return new String[] { EmailTaskResult.EVENT_RESOURCE_KEY };
 	}
