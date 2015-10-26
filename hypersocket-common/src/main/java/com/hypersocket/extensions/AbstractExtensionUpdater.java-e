@@ -90,7 +90,6 @@ public abstract class AbstractExtensionUpdater {
 
 					onExtensionDownloadStarted(def);
 
-
 					URL url = new URL(def.getRemoteArchiveUrl());
 					
 					File archiveTmp = new File(appTmpFolder , 

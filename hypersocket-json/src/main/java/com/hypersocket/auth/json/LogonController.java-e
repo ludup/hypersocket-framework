@@ -154,13 +154,15 @@ public class LogonController extends AuthenticatedController {
 			boolean success = authenticationService.logon(state,
 					decodeParameters(request.getParameterMap()));
 
+			if(state.getSession()!=null) {
+				attachSession(state.getSession(), request, response);
+			}
+			
 			if (state.isAuthenticationComplete()
 					&& !state.hasPostAuthenticationStep()) {
 
 				// We have authenticated!
 				request.getSession().removeAttribute(AUTHENTICATION_STATE_KEY);
-				
-				attachSession(state.getSession(), request, response);
 
 				return getSuccessfulResult(
 						state.getSession(),
@@ -179,7 +181,8 @@ public class LogonController extends AuthenticatedController {
 								: authenticationService
 										.nextPostAuthenticationStep(state),
 						configurationService.hasUserLocales(), state.isNew(),
-						!state.hasNextStep(), success || state.isNew());
+						!state.hasNextStep(), success || state.isNew(),
+						state.isAuthenticationComplete());
 			}
 		} finally {
 			clearSystemContext();
