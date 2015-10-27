@@ -286,6 +286,7 @@ public class AuthenticationServiceImpl extends
 					state.getRealm(),
 					AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY);
 		}
+		
 		state.setScheme(scheme);
 		state.setModules(repository.getModulesForScheme(state.getScheme()));
 
