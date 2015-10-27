@@ -73,14 +73,13 @@ public class UserAttributeCategoryServiceImpl extends AbstractResourceServiceImp
 			int weight) throws ResourceCreationException,
 			AccessDeniedException {
 		assertPermission(UserAttributePermission.CREATE);
-		UserAttributeCategory attributeCategory = new UserAttributeCategory();
 
-		attributeCategory.setName(name);
 		if (attributeCategoryRepository.getResourceByName(name, getCurrentRealm())!=null) {
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
 					"attribute.catInUse.error", name);
 		}
 
+		UserAttributeCategory attributeCategory = new UserAttributeCategory();
 		attributeCategory.setName(name);
 		attributeCategory.setWeight(weight);
 		attributeCategory.setRealm(getCurrentRealm());
