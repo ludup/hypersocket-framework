@@ -139,7 +139,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 					return true;
 				}
 			}
-			getResourceByName(resource.getName());
+			getResourceByName(resource.getName(), resource.getRealm());
 			return false;
 		} catch (ResourceNotFoundException e) {
 			return true;
