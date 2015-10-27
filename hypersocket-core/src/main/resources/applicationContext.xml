@@ -37,9 +37,6 @@
 		</aop:aspect>
 	</aop:config>
 
-	<bean id="upgradeService" class="com.hypersocket.upgrade.UpgradeServiceImpl">
-		<property name="scripts" value="classpath*:upgrade/*" />
-	</bean>
 
 	<context:component-scan base-package="com.hypersocket">
 		<context:include-filter type="regex"
@@ -57,5 +54,10 @@
 	<import resource="database.xml" />
 
 	<tx:annotation-driven transaction-manager="transactionManager" />
+	
+	<bean id="upgradeService" class="com.hypersocket.upgrade.UpgradeServiceImpl">
+		<property name="scripts" value="classpath*:upgrade/*" />
+	</bean>
+
 
 </beans>
