@@ -40,20 +40,13 @@ public class ExtensionHelper {
 	static Logger log = LoggerFactory.getLogger(ExtensionHelper.class);
 
 	public static Map<String, ExtensionDefinition> resolveExtensions(
-			boolean refresh, String updateUrl, String appId, String repo, ExtensionPlace extensionPlace)
-			throws IOException {
-		return resolveExtensions(refresh, updateUrl, appId, repo,
-				HypersocketVersion.getVersion(), extensionPlace);
-	}
-
-	public static Map<String, ExtensionDefinition> resolveExtensions(
 			boolean refresh, String updateUrl, String appId, String repo,
-			String repoVersion, ExtensionPlace extensionPlace) throws IOException {
+			String ourVersion, String serial, ExtensionPlace extensionPlace) throws IOException {
 
 		Map<String, ExtensionDefinition> extsByName = new HashMap<String, ExtensionDefinition>();
 		try {
 			extsByName.putAll(ExtensionHelper.resolveRemoteDependencies(
-					updateUrl, appId, repo, repoVersion));
+					updateUrl, appId, repo, ourVersion, serial));
 		} catch (Exception e) {
 			log.error("Failed to get remote dependencies", e);
 		}
@@ -257,13 +250,13 @@ public class ExtensionHelper {
 	}
 
 	public static Map<String, ExtensionDefinition> resolveRemoteDependencies(
-			String url, String appId, String repo) throws IOException {
+			String url, String appId, String repo, String serial) throws IOException {
 		return resolveRemoteDependencies(url, appId, repo,
-				HypersocketVersion.getVersion());
+				HypersocketVersion.getVersion(), serial);
 	}
 
 	public static Map<String, ExtensionDefinition> resolveRemoteDependencies(
-			String url, String appId, String repo, String version)
+			String url, String appId, String repo, String version, String serial)
 			throws IOException {
 
 		Map<String, ExtensionDefinition> extsByName = new HashMap<String, ExtensionDefinition>();
@@ -271,17 +264,14 @@ public class ExtensionHelper {
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		try {
 
-			String updateUrl = url + "/" + appId + "/" + repo + "/" + version;
+			String updateUrl = url + "/" + appId + "/" + repo + "/" + version + "/" + serial;
 
 			if (log.isInfoEnabled()) {
 				log.info("Checking for updates from " + updateUrl);
 			}
 
 			HttpPost postMethod = new HttpPost(
-					updateUrl
-							+ "/"
-							+ (Boolean.getBoolean("hypersocket.development") ? "DEV_SERIAL"
-									: HypersocketVersion.getSerial()));
+					updateUrl);
 
 			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 
