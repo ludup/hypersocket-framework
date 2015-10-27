@@ -107,7 +107,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	
 	protected boolean checkUnique(T resource) throws AccessDeniedException {
 		try {
-			getResourceByName(resource.getName());
+			getResourceByName(resource.getName(), resource.getRealm());
 			return false;
 		} catch (ResourceNotFoundException e) {
 			return true;
