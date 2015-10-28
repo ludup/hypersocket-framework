@@ -34,6 +34,7 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	private Map<String,List<OverviewWidget>> widgetList = new HashMap<String,List<OverviewWidget>>();
 
 	public static final String HELPZONE = "helpzone";
+	public static final String USERDASH = "userdash";
 	
 	private Collection<Link> cachedLinks = null;
 	private Collection<Link> cachedVideos = null;
@@ -59,16 +60,7 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-		/**
-		 * Not required at the current time.
-		 */
-//		this.registerWidget(new OverviewWidget(2, "overview.yourSerial.title",
-//				"yourSerial", false) {
-//			public boolean hasContent() {
-//				return true;
-//			}
-//		});
-		
+	
 		this.registerWidget(HELPZONE, new OverviewWidget(4, "overview.usefulLinks.title",
 				"usefulLinks", false) {
 			public boolean hasContent() {
@@ -115,6 +107,8 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 				}
 			}
 		});
+		
+		
 	}
 
 	public void registerWidget(String resourceKey, OverviewWidget widget) {

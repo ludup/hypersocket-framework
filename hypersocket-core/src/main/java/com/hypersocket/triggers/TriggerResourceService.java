@@ -9,7 +9,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
