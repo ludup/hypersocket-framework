@@ -536,6 +536,13 @@ public class AuthenticationServiceImpl extends
 			sessionService.setCurrentPassword(session,
 					state.getParameter("password"));
 		}
+		
+		if(permissionService.hasSystemPermission(getCurrentPrincipal())) {
+			if(!realmService.getDefaultRealm().equals(getCurrentPrincipal().getRealm())) {
+				sessionService.switchRealm(session, realmService.getDefaultRealm());
+			}
+		}
+		
 		return session;
 	}
 
