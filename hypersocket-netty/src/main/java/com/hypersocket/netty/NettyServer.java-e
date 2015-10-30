@@ -41,7 +41,6 @@ import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.ipfilter.IpFilterRule;
-import org.jboss.netty.handler.ipfilter.IpFilterRuleHandler;
 import org.jboss.netty.handler.ipfilter.IpSubnetFilterRule;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
@@ -51,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.config.SystemConfigurationService;
+import com.hypersocket.ip.ExtendedIpFilterRuleHandler;
 import com.hypersocket.ip.IPRestrictionListener;
 import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
@@ -70,7 +70,9 @@ public class NettyServer extends HypersocketServerImpl implements IPRestrictionL
 	ExecutorService bossExecutor;
 	ExecutorService workerExecutors;
 	
-	IpFilterRuleHandler ipFilterHandler =  new IpFilterRuleHandler();
+	@Autowired
+	ExtendedIpFilterRuleHandler ipFilterHandler;
+	
 	MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
 	Map<String,List<Channel>> channelsByIPAddress = new HashMap<String,List<Channel>>();
 	
