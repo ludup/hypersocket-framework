@@ -37,6 +37,8 @@
 			min="1" max="1440" defaultValue="15" weight="0" labelResourceKey="session.timeout.slider.label" />
 		<property resourceKey="session.closeOnShutdown" inputType="switch"
 			defaultValue="false" weight="100" />
+		<property resourceKey="session.altHomePage" inputType="text"
+			defaultValue="" weight="300" />
 	</propertyCategory>
 	<propertyCategory resourceKey="realm.userProfiles"
 		resourceBundle="RealmService" weight="999999" group="userProfiles">

@@ -18,6 +18,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.UserVariableReplacement;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 
@@ -87,6 +89,9 @@ public class AuthenticationServiceImpl extends
 	@Autowired
 	I18NService i18nService;
 
+	@Autowired
+	UserVariableReplacement variableReplacement;
+	
 	Map<String, Authenticator> authenticators = new HashMap<String, Authenticator>();
 
 	List<PostAuthenticationStep> postAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
@@ -541,6 +546,12 @@ public class AuthenticationServiceImpl extends
 			if(!realmService.getDefaultRealm().equals(getCurrentPrincipal().getRealm())) {
 				sessionService.switchRealm(session, realmService.getDefaultRealm());
 			}
+		} else {
+			String altHomePage = configurationService.getValue("session.altHomePage");
+			if(StringUtils.isNotBlank(altHomePage)) {
+				altHomePage = variableReplacement.replaceVariables(getCurrentPrincipal(), altHomePage);
+				state.setHomePage(altHomePage);
+			}			
 		}
 		
 		return session;

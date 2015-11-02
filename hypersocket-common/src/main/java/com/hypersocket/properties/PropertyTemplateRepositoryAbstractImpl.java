@@ -300,11 +300,16 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 	private PropertyCategory registerPropertyCategory(String categoryKey,
 			String categoryGroup, String bundle, int weight, String displayMode) {
 
-		if (activeCategories.containsKey(categoryKey)) {
+		if (activeCategories.containsKey(categoryKey) 
+				&& !activeCategories.get(categoryKey).getBundle().equals(bundle)) {
 			throw new IllegalStateException("Cannot register " + categoryKey
 					+ "/" + bundle
 					+ " as the resource key is already registered by bundle "
 					+ activeCategories.get(categoryKey).getBundle());
+		}
+		
+		if(activeCategories.containsKey(categoryKey)) {
+			return activeCategories.get(categoryKey);
 		}
 
 		PropertyCategory category = new PropertyCategory();
