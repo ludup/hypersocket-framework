@@ -1285,6 +1285,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 		if (found != 1) {
 			if (found > 1 && log.isInfoEnabled()) {
+				
+				// Fire Event 
+				
 				log.info("More than one principal found for username " + username);
 			}
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "principal.notFound");

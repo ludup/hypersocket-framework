@@ -127,11 +127,17 @@ public class LogonController extends AuthenticatedController {
 			String flash = (String) request.getSession().getAttribute("flash");
 			request.getSession().removeAttribute("flash");
 
+			AuthenticationState state = (AuthenticationState) request
+					.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
+			
 			try {
-				session = sessionUtils.touchSession(request, response);
-
-				if (session != null) {
-					return getSuccessfulResult(session, flash);
+				
+				if(state==null) {
+					session = sessionUtils.touchSession(request, response);
+	
+					if (session != null) {
+						return getSuccessfulResult(session, flash);
+					}
 				}
 			} catch (UnauthorizedException e) {
 				// We are already in login so just continue
@@ -139,8 +145,6 @@ public class LogonController extends AuthenticatedController {
 				// Previous session has timed out
 			}
 
-			AuthenticationState state = (AuthenticationState) request
-					.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
 
 			if (state == null
 					|| (!StringUtils.isEmpty(scheme) && !state.getScheme()

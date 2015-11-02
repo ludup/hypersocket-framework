@@ -91,5 +91,7 @@ public interface PermissionService extends AuthenticatedService {
 	void revokePermissions(Principal principal, @SuppressWarnings("unchecked") TransactionAdapter<Principal>... ops)
 			throws ResourceException, AccessDeniedException;
 
+	boolean hasPermission(Principal principal, Permission permission);
+
 
 }

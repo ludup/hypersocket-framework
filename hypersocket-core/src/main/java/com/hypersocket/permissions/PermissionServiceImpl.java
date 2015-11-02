@@ -261,8 +261,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Set<Permission> getPrincipalPermissions(Principal principal)
-			throws AccessDeniedException {
+	public Set<Permission> getPrincipalPermissions(Principal principal) {
 
 		if (!permissionsCache.isElementInMemory(principal)
 				|| (permissionsCache.get(principal) == null || permissionsCache
@@ -386,13 +385,19 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@Override
 	public boolean hasSystemPermission(Principal principal) {
-		try {
-			return hasSystemPrincipal(getPrincipalPermissions(principal));
-		} catch (AccessDeniedException e) {
-			return false;
-		}
+		return hasSystemPrincipal(getPrincipalPermissions(principal));
 	}
 
+	@Override
+	public boolean hasPermission(Principal principal, Permission permission) {
+		
+		for(Permission p : getPrincipalPermissions(principal)) {
+			if(p.getResourceKey().equals(permission.getResourceKey())) {
+				return true;
+			}
+		}
+		return false;
+	}
 	protected boolean hasSystemPrincipal(Set<Permission> principalPermissions) {
 		for (Permission p : principalPermissions) {
 			if (p.getResourceKey().equals(
