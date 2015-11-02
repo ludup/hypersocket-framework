@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.permissions.json;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Permission;
@@ -75,5 +78,29 @@ public class PermissionsController extends ResourceController {
 			permissionService.clearPrincipalContext();
 		}
 	}
+	
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "permissions/verify/{permission}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus verifyPermission(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String permission) throws AccessDeniedException,
+			UnauthorizedException, IOException {
+		
+		permissionService.setCurrentSession(
+				sessionUtils.getActiveSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Permission perm = permissionService.getPermission(permission);
+			if(perm==null) {
+				throw new IOException("Unexpected permission resource key" + permission);
+			}
+			return new RequestStatus(permissionService.hasPermission(getCurrentPrincipal(), perm));
+		} finally {
+			permissionService.clearPrincipalContext();
+		}
+	}
 
+	
 }
