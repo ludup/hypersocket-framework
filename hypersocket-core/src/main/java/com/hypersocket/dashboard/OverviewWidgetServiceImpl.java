@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.HypersocketVersion;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.dashboard.message.DashboardMessageService;
-import com.hypersocket.http.HttpUtils;
+import com.hypersocket.http.HttpUtilsImpl;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
@@ -55,6 +55,9 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Autowired
 	DashboardMessageService messageService; 
+	
+	@Autowired
+	HttpUtilsImpl httpUtils;
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -141,7 +144,7 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 				List<Link> results = new ArrayList<Link>();
 
-				String content = IOUtils.toString(HttpUtils
+				String content = IOUtils.toString(httpUtils
 						.doHttpGet("http://updates.hypersocket.com/messages/"
 								+ HypersocketVersion.getBrandId()
 								+ "/links.json", true));
@@ -150,7 +153,7 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 				results.addAll(Arrays.asList(mapper.readValue(content, Link[].class)));
 
 				// Get product links
-				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
+				results.addAll(Arrays.asList(mapper.readValue(httpUtils
 						.doHttpGet("http://updates.hypersocket.com/messages/"
 								+ HypersocketVersion.getProductId()
 								+ "/links.json", true), Link[].class)));
@@ -179,13 +182,13 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 				List<Link> results = new ArrayList<Link>();
 
 				// Get global videos
-				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
+				results.addAll(Arrays.asList(mapper.readValue(httpUtils
 						.doHttpGet("http://updates.hypersocket.com/messages/"
 								+ HypersocketVersion.getBrandId()
 								+ "/videos.json", true), Link[].class)));
 
 				// Get product videos
-				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
+				results.addAll(Arrays.asList(mapper.readValue(httpUtils
 						.doHttpGet("http://updates.hypersocket.com/messages/"
 								+ HypersocketVersion.getProductId()
 								+ "/videos.json", true), Link[].class)));
@@ -225,13 +228,13 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 				List<Link> results = new ArrayList<Link>();
 
 				// Get global documentation
-				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
+				results.addAll(Arrays.asList(mapper.readValue(httpUtils
 						.doHttpGet("http://updates.hypersocket.com/messages/"
 								+ HypersocketVersion.getBrandId()
 								+ "/documentation.json", true), Link[].class)));
 
 				// Get product documentation
-				results.addAll(Arrays.asList(mapper.readValue(HttpUtils
+				results.addAll(Arrays.asList(mapper.readValue(httpUtils
 						.doHttpGet("http://updates.hypersocket.com/messages/"
 								+ HypersocketVersion.getProductId()
 								+ "/documentation.json", true), Link[].class)));

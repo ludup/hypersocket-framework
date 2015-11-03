@@ -29,8 +29,9 @@ import com.hypersocket.automation.AutomationResourceService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
+import com.hypersocket.events.SynchronousEvent;
 import com.hypersocket.events.SystemEvent;
-import com.hypersocket.http.HttpUtils;
+import com.hypersocket.http.HttpUtilsImpl;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
@@ -94,7 +95,13 @@ public class TriggerResourceServiceImpl extends
 	
 	@Autowired
 	AutomationResourceService automationService;
-
+	
+	@Autowired
+	TriggerExecutor triggerExecutor;
+	
+	@Autowired
+	HttpUtilsImpl httpUtils;
+	
 	Map<String, TriggerConditionProvider> registeredConditions = new HashMap<String, TriggerConditionProvider>();
 
 	Map<String, ReplacementVariableProvider> replacementVariables = new HashMap<String, ReplacementVariableProvider>();
@@ -466,27 +473,39 @@ public class TriggerResourceServiceImpl extends
 		}
 
 		List<TriggerResource> triggers = repository.getTriggersForEvent(event);
+		
 		for (TriggerResource trigger : triggers) {
 
 			if (log.isInfoEnabled()) {
 				log.info("Found trigger " + trigger.getName());
 			}
-			JobDataMap data = new PermissionsAwareJobData(
-					event.getCurrentRealm(),
-					hasAuthenticatedContext() ? getCurrentPrincipal()
-							: realmService.getSystemPrincipal(),
-					hasAuthenticatedContext() ? getCurrentLocale()
-							: configurationService.getDefaultLocale(),
-					"triggerExecutionJob");
+			
+			if(event instanceof SynchronousEvent) {
+				try {
+					triggerExecutor.processEventTrigger(trigger, event);
+				} catch (ValidationException e) {
+					log.error("Trigger failed validation", e);
+				}
+				
+			} else {
+			
+				JobDataMap data = new PermissionsAwareJobData(
+						event.getCurrentRealm(),
+						hasAuthenticatedContext() ? getCurrentPrincipal()
+								: realmService.getSystemPrincipal(),
+						hasAuthenticatedContext() ? getCurrentLocale()
+								: configurationService.getDefaultLocale(),
+						"triggerExecutionJob");
 
-			data.put("event", event);
-			data.put("trigger", trigger);
-			data.put("realm", event.getCurrentRealm());
-
-			try {
-				schedulerService.scheduleNow(TriggerJob.class, data);
-			} catch (SchedulerException e) {
-				log.error("Failed to schedule event trigger job", e);
+				data.put("event", event);
+				data.put("trigger", trigger);
+				data.put("realm", event.getCurrentRealm());
+				
+				try {
+					schedulerService.scheduleNow(TriggerJob.class, data);
+				} catch (SchedulerException e) {
+					log.error("Failed to schedule event trigger job", e);
+				}
 			}
 		}
 
@@ -602,7 +621,7 @@ public class TriggerResourceServiceImpl extends
 
 		request.setAttribute(
 				CONTENT_INPUTSTREAM,
-				HttpUtils.doHttpGet(
+				httpUtils.doHttpGet(
 						System.getProperty(
 								"hypersocket.templateServerImageUrl",
 								"https://templates1x.hypersocket.com/hypersocket/api/templates/image/")
@@ -624,7 +643,7 @@ public class TriggerResourceServiceImpl extends
 		params.put("iSortCol_0", "0");
 		params.put("sSortDir_0", "asc");
 
-		String json = HttpUtils
+		String json = httpUtils
 				.doHttpPost(
 						System.getProperty("hypersocket.templateServerUrl",
 								"https://templates1x.hypersocket.com/hypersocket/api/templates")
