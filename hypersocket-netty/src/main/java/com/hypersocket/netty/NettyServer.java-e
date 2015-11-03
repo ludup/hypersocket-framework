@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,8 +39,6 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.ipfilter.IpFilterRule;
-import org.jboss.netty.handler.ipfilter.IpSubnetFilterRule;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
@@ -51,14 +48,13 @@ import org.springframework.stereotype.Component;
 
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.ip.ExtendedIpFilterRuleHandler;
-import com.hypersocket.ip.IPRestrictionListener;
 import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
 import com.hypersocket.server.HypersocketServerImpl;
 import com.hypersocket.server.websocket.TCPForwardingClientCallback;
 
 @Component
-public class NettyServer extends HypersocketServerImpl implements IPRestrictionListener {
+public class NettyServer extends HypersocketServerImpl {
 
 	static Logger log = LoggerFactory.getLogger(NettyServer.class);
 
@@ -88,7 +84,7 @@ public class NettyServer extends HypersocketServerImpl implements IPRestrictionL
 	
 	@PostConstruct
 	private void postConstruct() {
-		ipRestrictionService.registerListener(this);
+		
 	}
 
 	public ClientBootstrap getClientBootstrap() {
@@ -348,46 +344,5 @@ public class NettyServer extends HypersocketServerImpl implements IPRestrictionL
 			}
 			
 		}
-	}
-
-	@Override
-	public void onBlockIP(String addr) {
-		
-		try {
-			String cidr = addr;
-			if(cidr.indexOf('/')==-1) {
-				cidr += "/32";
-			}
-			
-			IpFilterRule rule = new IpSubnetFilterRule(false, cidr);
-			ipFilterHandler.add(rule);
-			
-			synchronized (channelsByIPAddress) {
-				if(channelsByIPAddress.containsKey(addr)) {
-					for(Channel c : channelsByIPAddress.get(addr)) {
-						c.close();
-					}
-				}
-			}
-		} catch (UnknownHostException e) {
-			log.error("Failed to block IP " + addr, e);
-		}
-		
-	}
-
-	@Override
-	public void onUnblockIP(String addr) {
-		
-		try {
-			if(addr.indexOf('/')==-1) {
-				addr += "/32";
-			}
-			
-			IpFilterRule rule = new IpSubnetFilterRule(false, addr);
-			ipFilterHandler.remove(rule);
-		} catch (UnknownHostException e) {
-			log.error("Failed to unblock IP " + addr, e);
-		}
-		
 	}
 }

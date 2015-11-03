@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="resolveIPTask">
+	<propertyCategory resourceKey="category.resolveIPTask"
+		resourceBundle="ResolveIPTask" weight="1000">
+		<property resourceKey="resolveIP.hostnames" inputType="multipleTextInput"
+			weight="0" defaultValue="" />
+	</propertyCategory>
+</propertyTemplates>

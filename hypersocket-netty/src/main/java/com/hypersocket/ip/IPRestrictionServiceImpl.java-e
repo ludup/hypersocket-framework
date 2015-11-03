@@ -2,9 +2,7 @@ package com.hypersocket.ip;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -29,18 +27,12 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 
 	static Logger log = LoggerFactory.getLogger(IPRestrictionServiceImpl.class);
 	
-	List<IPRestrictionListener> listeners = new ArrayList<IPRestrictionListener>();
+	Set<IpFilterRule> allow = new HashSet<IpFilterRule>();
+	Set<IpFilterRule> deny = new HashSet<IpFilterRule>();
 	
 	@Autowired
 	SystemConfigurationService configurationService;
-	
-	Set<IpFilterRule> rules = new HashSet<IpFilterRule>();
 
-	@Override
-	public void registerListener(IPRestrictionListener listener) {
-		listeners.add(listener);
-	}
-	
 	@Override
 	public synchronized void blockIPAddress(String addr) throws UnknownHostException {
 		
@@ -53,22 +45,23 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 			cidr += "/32";
 		}
 		
-		IpFilterRule rule = new IpSubnetFilterRule(false, cidr);
-		rules.add(rule);
-		
-		for(IPRestrictionListener listener : listeners) {
-			listener.onBlockIP(addr);
+		IpSubnetFilterRule rule = new IpSubnetFilterRule(false, cidr);
+		deny.add(rule);
+
+	}
+	
+	public boolean hasAllowRule() {
+		return allow.size() > 0;
+	}
+	
+	@Override
+	public synchronized void clearRules(boolean allowed, boolean blocked) {
+		if(allowed) {
+			allow.clear();
 		}
-	}
-	
-	@Override
-	public synchronized void addRule(IpFilterRule rule) {
-			rules.add(rule);
-	}
-	
-	@Override
-	public synchronized void removeRule(IpFilterRule rule) {
-			rules.remove(rule);
+		if(blocked) {
+			deny.clear();
+		}
 	}
 	
 	@Override
@@ -100,11 +93,40 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 		}
 		
 		IpFilterRule rule = new IpSubnetFilterRule(false, cidr);
-		rules.remove(rule);
+		deny.remove(rule);
 		
-		for(IPRestrictionListener listener : listeners) {
-			listener.onUnblockIP(addr);
+	}
+	
+	@Override
+	public synchronized void disallowIPAddress(String addr) throws UnknownHostException {
+		
+		if(log.isInfoEnabled()) {
+			log.info("Removing allow rule for " + addr);
 		}
+		
+		String cidr = addr;
+		if(cidr.indexOf('/')==-1) {
+			cidr += "/32";
+		}
+
+		IpFilterRule rule = new IpSubnetFilterRule(true, cidr);
+		allow.remove(rule);
+	}
+
+	@Override
+	public synchronized void allowIPAddress(String addr) throws UnknownHostException {
+		
+		if(log.isInfoEnabled()) {
+			log.info("Allowing " + addr);
+		}
+		
+		String cidr = addr;
+		if(cidr.indexOf('/')==-1) {
+			cidr += "/32";
+		}
+		
+		IpFilterRule rule = new IpSubnetFilterRule(true, cidr);
+		allow.add(rule);
 	}
 
 	@Override
@@ -167,9 +189,6 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 		for(String ip : blocked) {
 			try {
 				blockIPAddress(ip);
-				for(IPRestrictionListener listener : listeners) {
-					listener.onBlockIP(ip);
-				}
 			} catch (UnknownHostException e) {
 				log.info("Failed to load blocked ip " + ip, e);
 			}
@@ -179,39 +198,39 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 	
 	@Override
 	public synchronized boolean isBlockedAddress(InetAddress addr) {
-		
-		if(!isAllowedAddress(addr)) {
-			return false;
-		}
-		
-		for(IpFilterRule rule : rules) {
-			if(rule.isDenyRule()) {
-				if(rule.contains(addr)) {
-					return true;
-				}
-			}
-		} 
-		return false;
+		return !isAllowedAddress(addr);
 	}
 	
 	@Override
 	public synchronized boolean isAllowedAddress(InetAddress addr) {
 		
-		boolean allowedRulesFound = false;
-		for(IpFilterRule rule : rules) {
-			if(rule.isAllowRule()) {
-				allowedRulesFound = true;
+		if(allow.size() > 0) {
+			for(IpFilterRule rule : allow) {
 				if(rule.contains(addr)) {
 					return true;
 				}
 			}
-		} 
-		return !allowedRulesFound;
+		}
+		
+		for(IpFilterRule rule : deny) {
+			if(rule.contains(addr)) {
+				return false;
+			}
+		}
+		
+		return allow.size()==0;
 	}
 	
 	@Override
 	public synchronized boolean isBlockedAddress(String addr) throws UnknownHostException {
 		return isBlockedAddress(InetAddress.getByName(addr));
+	}
+
+	@Override
+	public boolean isAllowedAddress(String ip) throws UnknownHostException {
+		
+		InetAddress addr = InetAddress.getByName(ip);
+		return isAllowedAddress(addr);
 	}
 
 

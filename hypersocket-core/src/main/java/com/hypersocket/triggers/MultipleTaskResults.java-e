@@ -3,7 +3,7 @@ package com.hypersocket.triggers;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
 
-public abstract class MultipleTaskResults extends TaskResult {
+public class MultipleTaskResults extends TaskResult {
 
 	private static final long serialVersionUID = -1287105067476106327L;
 
@@ -20,5 +20,10 @@ public abstract class MultipleTaskResults extends TaskResult {
 
 	public TaskResult[] getResults() {
 		return results;
+	}
+
+	@Override
+	public String getResourceBundle() {
+		return TriggerResourceServiceImpl.RESOURCE_BUNDLE;
 	}
 }
