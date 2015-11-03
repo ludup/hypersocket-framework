@@ -2,6 +2,7 @@ package com.hypersocket.http;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
@@ -36,7 +37,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.HttpCoreContext;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -208,10 +211,11 @@ public class HttpUtilsImpl implements HttpUtils {
 	    @Override
 	    public Socket createSocket(final HttpContext context) throws IOException {
 	    	
-	    	/**
-	    	 * TODO bypass
-	    	 */
-	    	if(systemConfigurationService.getBooleanValue("proxy.enabled")) {
+			HttpHost currentHost= (HttpHost) context.getAttribute(HttpCoreContext.HTTP_TARGET_HOST);
+	    	
+	    	if(systemConfigurationService.getBooleanValue("proxy.enabled")
+	    			&& !checkProxyBypass(currentHost.getHostName()) 
+	    			&& !checkProxyBypass(currentHost.getAddress())) {
 		        InetSocketAddress socksaddr = new InetSocketAddress(systemConfigurationService.getValue("proxy.host"),
 		        		systemConfigurationService.getIntValue("proxy.port"));
 		        Proxy proxy = new Proxy(Proxy.Type.valueOf(systemConfigurationService.getValue("proxy.type")), socksaddr);  
@@ -223,6 +227,30 @@ public class HttpUtilsImpl implements HttpUtils {
 
 	}
 	
+	protected boolean checkProxyBypass(String hostname) {
+		
+		String[] bypass = systemConfigurationService.getValues("proxy.bypass");
+		for(String addr : bypass) {
+			
+			if(hostname.equalsIgnoreCase(addr)) {
+				return true;
+			}
+			
+			if(addr.contains(".*")) {
+				if(hostname.matches("^" + addr + "$")) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	protected boolean checkProxyBypass(InetAddress hostname) {
+		
+		return false;
+	}
+	
 	class ProxiedSocketFactory implements ConnectionSocketFactory {
 
 	    public ProxiedSocketFactory() {
@@ -231,11 +259,12 @@ public class HttpUtilsImpl implements HttpUtils {
 
 	    @Override
 	    public Socket createSocket(final HttpContext context) throws IOException {
+
+			HttpHost currentHost= (HttpHost) context.getAttribute(HttpCoreContext.HTTP_TARGET_HOST);
 	    	
-	    	/**
-	    	 * TODO bypass
-	    	 */
-	    	if(systemConfigurationService.getBooleanValue("proxy.enabled")) {
+	    	if(systemConfigurationService.getBooleanValue("proxy.enabled")
+	    			&& !checkProxyBypass(currentHost.getHostName()) 
+	    			&& !checkProxyBypass(currentHost.getAddress())) {
 		        InetSocketAddress socksaddr = new InetSocketAddress(systemConfigurationService.getValue("proxy.host"),
 		        		systemConfigurationService.getIntValue("proxy.port"));
 		        Proxy proxy = new Proxy(Proxy.Type.valueOf(systemConfigurationService.getValue("proxy.type")), socksaddr);  
