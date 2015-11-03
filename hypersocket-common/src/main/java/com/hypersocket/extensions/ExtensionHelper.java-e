@@ -18,13 +18,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -34,6 +29,7 @@ import org.w3c.dom.NodeList;
 
 import com.hypersocket.HypersocketVersion;
 import com.hypersocket.Version;
+import com.hypersocket.utils.HttpUtilsHolder;
 
 public class ExtensionHelper {
 
@@ -44,12 +40,9 @@ public class ExtensionHelper {
 			String ourVersion, String serial, ExtensionPlace extensionPlace) throws IOException {
 
 		Map<String, ExtensionDefinition> extsByName = new HashMap<String, ExtensionDefinition>();
-		try {
-			extsByName.putAll(ExtensionHelper.resolveRemoteDependencies(
+
+		extsByName.putAll(ExtensionHelper.resolveRemoteDependencies(
 					updateUrl, appId, repo, ourVersion, serial));
-		} catch (Exception e) {
-			log.error("Failed to get remote dependencies", e);
-		}
 
 		if (!appId.equals(System.getProperty("hypersocket.id"))) {
 			// If not dealing with the local app ID, then we only want what is
@@ -270,11 +263,6 @@ public class ExtensionHelper {
 				log.info("Checking for updates from " + updateUrl);
 			}
 
-			HttpPost postMethod = new HttpPost(
-					updateUrl);
-
-			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-
 			StringBuffer buf = new StringBuffer();
 			for (String ext : getInstalledExtensions()) {
 				if (buf.length() > 0) {
@@ -282,16 +270,14 @@ public class ExtensionHelper {
 				}
 				buf.append(ext);
 			}
-
-			nvps.add(new BasicNameValuePair("exts", buf.toString()));
-			postMethod.setEntity(new UrlEncodedFormEntity(nvps));
-			HttpResponse response = httpclient.execute(postMethod);
+			
+			Map<String,String> params = new HashMap<String,String>();
+			params.put("exts", buf.toString());
+			String output = HttpUtilsHolder.getInstance().doHttpPost(updateUrl, params, true);
 
 			DocumentBuilderFactory xmlFactory = DocumentBuilderFactory
 					.newInstance();
 			DocumentBuilder xmlBuilder = xmlFactory.newDocumentBuilder();
-
-			String output = IOUtils.toString(response.getEntity().getContent());
 
 			if (log.isInfoEnabled()) {
 				log.info(output);
@@ -318,7 +304,7 @@ public class ExtensionHelper {
 			}
 
 		} catch (Exception ex) {
-			throw new IOException("Failed to resolve remote extensions", ex);
+			throw new IOException("Failed to resolve remote extensions. " + ex.getMessage(), ex);
 		} finally {
 			try {
 				httpclient.close();

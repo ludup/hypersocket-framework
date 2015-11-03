@@ -69,6 +69,15 @@ public class FileUtils {
 		}
 	}
 
+	public static String stripLastPathElement(String path){
+		int idx;
+		if ((idx = path.lastIndexOf('/')) > -1) {
+			return path.substring(0, idx);
+		} else {
+			return path;
+		}
+	}
+	
 	public static String firstPathElement(String mountPath) {
 		int idx;
 		if ((idx = mountPath.indexOf('/')) > -1) {

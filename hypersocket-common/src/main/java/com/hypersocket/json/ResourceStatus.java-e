@@ -33,6 +33,12 @@ public class ResourceStatus<T> {
 		this.success = success;
 		this.message = message;
 	}
+
+	public ResourceStatus(boolean success, T resource, String message) {
+		this.success = success;
+		this.resource = resource;
+		this.message = message;
+	}
 	
 	public ResourceStatus(boolean success) {
 		this(success, null);

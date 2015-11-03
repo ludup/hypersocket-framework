@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.HypersocketVersion;
-import com.hypersocket.http.HttpUtils;
+import com.hypersocket.http.HttpUtilsImpl;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.ResourceException;
 
@@ -25,6 +25,9 @@ public class DashboardMessageJob implements Job {
 	@Autowired
 	DashboardMessageService service;
 
+	@Autowired
+	HttpUtilsImpl httpUtils;
+	
 	static Logger log = LoggerFactory.getLogger(DashboardMessageJob.class);
 
 	public void execute(JobExecutionContext context)
@@ -48,12 +51,12 @@ public class DashboardMessageJob implements Job {
 			List<DashboardMessage> results = new ArrayList<DashboardMessage>();
 			
 			// Get global links
-			results.addAll(Arrays.asList(mapper.readValue(HttpUtils.doHttpGet(
+			results.addAll(Arrays.asList(mapper.readValue(httpUtils.doHttpGet(
 					MESSAGES_URL + HypersocketVersion.getBrandId() + "messages.json",
 					true), DashboardMessage[].class)));
 			
 			// Get product links
-			results.addAll(Arrays.asList(mapper.readValue(HttpUtils.doHttpGet(
+			results.addAll(Arrays.asList(mapper.readValue(httpUtils.doHttpGet(
 					MESSAGES_URL + HypersocketVersion.getProductId() + "/messages.json",
 					true), DashboardMessage[].class)));
 			
