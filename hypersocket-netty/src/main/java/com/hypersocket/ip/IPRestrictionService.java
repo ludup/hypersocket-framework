@@ -3,11 +3,7 @@ package com.hypersocket.ip;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.jboss.netty.handler.ipfilter.IpFilterRule;
-
 public interface IPRestrictionService {
-
-	void registerListener(IPRestrictionListener listener);
 
 	boolean isBlockedAddress(String addr) throws UnknownHostException;
 
@@ -21,8 +17,12 @@ public interface IPRestrictionService {
 
 	boolean isAllowedAddress(InetAddress addr);
 
-	void addRule(IpFilterRule rule);
+	void disallowIPAddress(String addr) throws UnknownHostException;
 
-	void removeRule(IpFilterRule rule);
+	void allowIPAddress(String addr) throws UnknownHostException;
+
+	boolean isAllowedAddress(String ip) throws UnknownHostException;
+
+	void clearRules(boolean allowed, boolean blocked);
 
 }

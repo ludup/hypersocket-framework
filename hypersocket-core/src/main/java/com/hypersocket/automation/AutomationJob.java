@@ -14,6 +14,7 @@ import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.AbstractTriggerJob;
+import com.hypersocket.triggers.MultipleTaskResults;
 import com.hypersocket.triggers.TaskResult;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.ValidationException;
@@ -63,14 +64,23 @@ public class AutomationJob extends AbstractTriggerJob {
 			
 			eventService.publishEvent(event);
 			
-			TaskResult result = provider.execute(resource, event.getCurrentRealm(), event);
+			TaskResult outputEvent = provider.execute(resource, event.getCurrentRealm(), event);
 			
-			if(result!=null && result.isPublishable()) {
-				eventService.publishEvent(result);
-			}
-			
-			for(TriggerResource trigger : resource.getChildTriggers()) {
-				processEventTrigger(trigger, result);
+			if(outputEvent!=null) {
+
+				if(outputEvent instanceof MultipleTaskResults) {
+					MultipleTaskResults results = (MultipleTaskResults) outputEvent;
+					for(TaskResult result : results.getResults()) {
+						for(TriggerResource trigger : resource.getChildTriggers()) {
+							processEventTrigger(trigger, result);
+						}
+					}
+					
+				} else {
+					for(TriggerResource trigger : resource.getChildTriggers()) {
+						processEventTrigger(trigger, outputEvent);
+					}
+				}
 			}
 			
 			eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource));
