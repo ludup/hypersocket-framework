@@ -43,8 +43,8 @@ public class AuthenticatedController {
 
 	static Logger log = LoggerFactory.getLogger(AuthenticatedController.class);
 
-	static final String AUTHENTICATION_STATE_KEY = "authenticationState";
-	static final String PREVIOUS_AUTHENTICATION_SCHEME = "previousAuthScheme";
+	public static final String AUTHENTICATION_STATE_KEY = "authenticationState";
+	public static final String PREVIOUS_AUTHENTICATION_SCHEME = "previousAuthScheme";
 	
 	static final String LOCATION = "Location";
 
