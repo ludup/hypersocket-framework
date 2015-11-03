@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -14,8 +16,11 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 
 @Component
@@ -25,11 +30,17 @@ public class UsernameAndPasswordAuthenticator extends
 	public static final String RESOURCE_KEY = "usernameAndPassword";
 
 	@Autowired
-	RealmService realmService;
-
-	@Autowired
 	AuthenticationService authenticationService;
 
+	@Autowired
+	RealmRepository realmRepository; 
+	
+	@Autowired
+	RealmService realmService;
+	
+	@Autowired
+	SystemConfigurationService systemConfigurationService; 
+	
 	@PostConstruct
 	private void postConstruct() {
 		authenticationService.registerAuthenticator(this);
@@ -39,7 +50,11 @@ public class UsernameAndPasswordAuthenticator extends
 	@SuppressWarnings("rawtypes")
 	public FormTemplate createTemplate(AuthenticationState state, Map params) {
 
-		return new UsernameAndPasswordTemplate(state, params);
+		List<Realm> realms = new ArrayList<Realm>();
+		if(systemConfigurationService.getBooleanValue("auth.chooseRealm")) {
+			realms.addAll(realmRepository.allRealms());
+		}
+		return new UsernameAndPasswordTemplate(state, params, realms, realmService.getDefaultRealm());
 	}
 
 	@Override
