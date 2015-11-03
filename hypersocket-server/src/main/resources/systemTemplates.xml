@@ -7,7 +7,7 @@
 	<propertyStore id="blockedIPStore" bean="blockedIPConfigurationStore"
 		type="com.hypersocket.properties.BlockedIPConfigurationStore">
 	</propertyStore>
-	<propertyCategory resourceKey="category.server" resourceBundle="HypersocketServer" weight="100">
+	<propertyCategory resourceKey="category.server" resourceBundle="HypersocketServer" weight="0">
 		<property resourceKey="application.name" inputType="text"
 			restart="true" defaultValue="Hypersocket" weight="0" alphaNumericSpacesOnly="true"/>
 		<property resourceKey="application.path" inputType="text"
@@ -27,6 +27,8 @@
 			weight="600" store="hypersocketServer" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.ssl" resourceBundle="HypersocketServer" weight="200">
+		<property resourceKey="ssl.strict" inputType="switch"
+			restart="false" defaultValue="false" weight="500" store="hypersocketServer" />
 	    <property resourceKey="ssl.protocols" inputType="multipleSelect"
 			restart="false" url="server/sslProtocols" selectAllIfEmpty="true"
 			weight="100"/>
@@ -34,8 +36,20 @@
 			restart="false" url="server/sslCiphers" selectAllIfEmpty="true"
 			weight="200"/>
 	</propertyCategory>
-	<propertyCategory resourceKey="category.ipRestrictions" resourceBundle="HypersocketServer" weight="300">
+	<propertyCategory resourceKey="category.proxy" resourceBundle="HypersocketServer" weight="300">
+			<property resourceKey="proxy.enabled" inputType="switch" restart="false" defaultValue="false" weight="100" store="hypersocketServer" />
+	   	    <property resourceKey="proxy.host" inputType="text" defaultValue="" weight="200"/>
+	   	    <property resourceKey="proxy.port" inputType="integer" minValue="1" maxValue="65535" defaultValue="" weight="300"/>
+	   	    <property resourceKey="proxy.type" inputType="select" defaultValue="HTTP" options="HTTP,SOCKS" weight="400"/>
+	   	    <property resourceKey="proxy.bypass" inputType="multipleTextInput" defaultValue="" weight="400"/>
+	</propertyCategory>
+	<propertyCategory resourceKey="category.ipRestrictions" resourceBundle="HypersocketServer" weight="400">
 	    <property resourceKey="server.blockIPs" inputType="multipleTextInput"
 			restart="false" weight="100" store="blockedIPStore"/>
+	</propertyCategory>
+		<propertyCategory resourceKey="category.authentication"
+		 resourceBundle="AuthenticationService" weight="0">
+		<property resourceKey="auth.chooseRealm" inputType="switch"
+			defaultValue="false" weight="0" />
 	</propertyCategory>
 </propertyTemplates>

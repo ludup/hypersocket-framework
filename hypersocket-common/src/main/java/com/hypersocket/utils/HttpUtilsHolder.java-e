@@ -1,4 +1,4 @@
-package com.hypersocket.http;
+package com.hypersocket.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,11 +23,21 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
-public class HttpUtils {
+public class HttpUtilsHolder implements HttpUtils {
 
 	static BasicCookieStore cookieStore;
 
-	public static CloseableHttpClient createHttpClient(boolean allowSelfSigned)
+	static HttpUtils instance = new HttpUtilsHolder();
+	
+	public static HttpUtils getInstance() {
+		return instance;
+	}
+	
+	public static void setInstance(HttpUtils instance) {
+		HttpUtilsHolder.instance = instance;
+	}
+	
+	public CloseableHttpClient createHttpClient(boolean allowSelfSigned)
 			throws IOException {
 		CloseableHttpClient httpclient = null;
 
@@ -52,7 +62,7 @@ public class HttpUtils {
 		return httpclient;
 	}
 
-	public static String doHttpPost(String url, Map<String, String> parameters,
+	public String doHttpPost(String url, Map<String, String> parameters,
 			boolean allowSelfSigned) throws IOException {
 
 		CloseableHttpClient client = createHttpClient(allowSelfSigned);
@@ -84,7 +94,7 @@ public class HttpUtils {
 		}
 	}
 
-	public static InputStream doHttpGet(String uri, boolean allowSelfSigned)
+	public InputStream doHttpGet(String uri, boolean allowSelfSigned)
 			throws IOException {
 
 		CloseableHttpClient client = createHttpClient(allowSelfSigned);
@@ -96,7 +106,7 @@ public class HttpUtils {
 
 	}
 
-	public static CloseableHttpResponse doHttpGet(String uri, boolean allowSelfSigned, Map<String,String> headers)
+	public CloseableHttpResponse doHttpGet(String uri, boolean allowSelfSigned, Map<String,String> headers)
 			throws IOException {
 
 		CloseableHttpClient client = createHttpClient(allowSelfSigned);
