@@ -49,7 +49,7 @@
 			includedLabelResourceKey="text.visible" excludedLabelResourceKey="text.notVisible"
 		    url="currentRealm/user/templateNames" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>
 	</propertyCategory>
-	
+
 </propertyTemplates>
 
 		
