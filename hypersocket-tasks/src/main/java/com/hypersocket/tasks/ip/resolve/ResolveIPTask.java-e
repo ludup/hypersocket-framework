@@ -82,23 +82,26 @@ public class ResolveIPTask extends AbstractTaskProvider {
 	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 
-		String[] hostnames = ResourceUtils.explodeValues(processTokenReplacements(repository.getValue(task, "resolveIP.hostnames"), event));
+		String[] values = ResourceUtils.explodeValues(repository.getValue(task, "resolveIP.hostnames"));
 		
 		List<ResolveIPTaskResult> results = new ArrayList<ResolveIPTaskResult>();
 		List<InetAddress> successfull = new ArrayList<InetAddress>();
-		for(String hostname : hostnames) {
+		
+		for(String val : values) {
 			
-			try {
-				InetAddress addr = InetAddress.getByName(hostname);
-				if(log.isDebugEnabled()) {
-					log.debug("Resolved IP " + addr.getHostAddress() + " for host " + hostname);
+			for(String hostname : ResourceUtils.explodeValues(processTokenReplacements(val, event))) {
+				try {
+					InetAddress addr = InetAddress.getByName(hostname);
+					if(log.isDebugEnabled()) {
+						log.debug("Resolved IP " + addr.getHostAddress() + " for host " + hostname);
+					}
+					successfull.add(addr);
+				} catch (UnknownHostException e) {
+					if(log.isErrorEnabled()) {
+						log.error("Unable to resolve IP for host " + hostname, e);
+					}
+					results.add(new ResolveIPTaskResult(this, hostname, e, currentRealm, task));
 				}
-				successfull.add(addr);
-			} catch (UnknownHostException e) {
-				if(log.isErrorEnabled()) {
-					log.error("Unable to resolve IP for host " + hostname, e);
-				}
-				results.add(new ResolveIPTaskResult(this, hostname, e, currentRealm, task));
 			}
 			
 		}
@@ -111,7 +114,8 @@ public class ResolveIPTask extends AbstractTaskProvider {
 			ips.add(addr.getHostAddress());
 		}
 		
-		ResolveIPTaskResult successfullResult = new ResolveIPTaskResult(this, hosts.toArray(new String[0]), ips.toArray(new String[0]), currentRealm, task);
+		ResolveIPTaskResult successfullResult = new ResolveIPTaskResult
+				(this, hosts.toArray(new String[0]), ips.toArray(new String[0]), currentRealm, task);
 		
 		if(results.size() > 0) {
 			results.add(0,  successfullResult);

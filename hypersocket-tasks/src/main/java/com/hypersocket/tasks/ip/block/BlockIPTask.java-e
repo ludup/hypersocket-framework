@@ -101,66 +101,67 @@ public class BlockIPTask extends AbstractTaskProvider {
 	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 		
-		String address = processTokenReplacements(repository.getValue(task, "block.ip"), event);
-		String[] ipAddresses = ResourceUtils.explodeValues(address);
+		String[] values = ResourceUtils.explodeValues(repository.getValue(task, "block.ip"));
 		int val = repository.getIntValue(task, "block.length");
 		List<BlockedIPResult> results = new ArrayList<BlockedIPResult>();
 		
-		for(String ipAddress : ipAddresses) {
-			try {
-				
-				if(log.isInfoEnabled()) {
-					log.info("Blocking IP address "  + ipAddress);
-				}
-				
-				if(ipRestrictionService.isBlockedAddress(ipAddress)) {
-					if(log.isInfoEnabled()) {
-						log.info(ipAddress + " is already blocked.");
-					}
-					
-					if(val > 0) {
-						results.add(new BlockedIPTempResult(this, new IOException(ipAddress + " is already blocked"), currentRealm, task, ipAddress, val));
-					} else {
-						results.add(new BlockedIPPermResult(this, new IOException(ipAddress + " is already blocked"), currentRealm, task, ipAddress));
-					}
-					
-					
-				} else {
-				
-					ipRestrictionService.blockIPAddress(ipAddress, val==0);
+		for(String value : values) {
+			for(String ipAddress : ResourceUtils.explodeValues(processTokenReplacements(value, event))) {
+				try {
 					
 					if(log.isInfoEnabled()) {
-						log.info("Blocked IP address " + ipAddress);
+						log.info("Blocking IP address "  + ipAddress);
 					}
 					
-					blockedIps.add(ipAddress);
-					
-					if(val > 0) {
-						
+					if(ipRestrictionService.isBlockedAddress(ipAddress)) {
 						if(log.isInfoEnabled()) {
-							log.info("Scheduling unblock for IP address " + ipAddress + " in " + val + " minutes");
+							log.info(ipAddress + " is already blocked.");
 						}
 						
-						PermissionsAwareJobData data = new PermissionsAwareJobData(currentRealm, "unblockIP");
-						data.put("addr", ipAddress);
-	
-						String scheduleId = schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000, 0);
+						if(val > 0) {
+							results.add(new BlockedIPTempResult(this, new IOException(ipAddress + " is already blocked"), currentRealm, task, ipAddress, val));
+						} else {
+							results.add(new BlockedIPPermResult(this, new IOException(ipAddress + " is already blocked"), currentRealm, task, ipAddress));
+						}
 						
-						blockedIPUnblockSchedules.put(ipAddress, scheduleId);
-											
-						results.add(new BlockedIPTempResult(this, currentRealm, task, ipAddress, val));
+						
 					} else {
-						
-						results.add(new BlockedIPPermResult(this, currentRealm, task, ipAddress));
-					}
 					
-				}
-			} catch (UnknownHostException | SchedulerException e) {
-				log.error("Failed to fully process block IP request for " + ipAddress, e);
-				if(val > 0) {
-					results.add(new BlockedIPTempResult(this, e, currentRealm, task, ipAddress, val));
-				} else {
-					results.add(new BlockedIPPermResult(this, e, currentRealm, task, ipAddress));
+						ipRestrictionService.blockIPAddress(ipAddress, val==0);
+						
+						if(log.isInfoEnabled()) {
+							log.info("Blocked IP address " + ipAddress);
+						}
+						
+						blockedIps.add(ipAddress);
+						
+						if(val > 0) {
+							
+							if(log.isInfoEnabled()) {
+								log.info("Scheduling unblock for IP address " + ipAddress + " in " + val + " minutes");
+							}
+							
+							PermissionsAwareJobData data = new PermissionsAwareJobData(currentRealm, "unblockIP");
+							data.put("addr", ipAddress);
+		
+							String scheduleId = schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000, 0);
+							
+							blockedIPUnblockSchedules.put(ipAddress, scheduleId);
+												
+							results.add(new BlockedIPTempResult(this, currentRealm, task, ipAddress, val));
+						} else {
+							
+							results.add(new BlockedIPPermResult(this, currentRealm, task, ipAddress));
+						}
+						
+					}
+				} catch (UnknownHostException | SchedulerException e) {
+					log.error("Failed to fully process block IP request for " + ipAddress, e);
+					if(val > 0) {
+						results.add(new BlockedIPTempResult(this, e, currentRealm, task, ipAddress, val));
+					} else {
+						results.add(new BlockedIPPermResult(this, e, currentRealm, task, ipAddress));
+					}
 				}
 			}
 		}
