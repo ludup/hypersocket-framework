@@ -71,12 +71,22 @@ public class AutomationJob extends AbstractTriggerJob {
 				if(outputEvent instanceof MultipleTaskResults) {
 					MultipleTaskResults results = (MultipleTaskResults) outputEvent;
 					for(TaskResult result : results.getResults()) {
+						
+						if(result.isPublishable()) {
+							eventService.publishEvent(result);
+						}
+						
 						for(TriggerResource trigger : resource.getChildTriggers()) {
 							processEventTrigger(trigger, result);
 						}
 					}
 					
 				} else {
+
+					if(outputEvent.isPublishable()) {
+						eventService.publishEvent(outputEvent);
+					}
+					
 					for(TriggerResource trigger : resource.getChildTriggers()) {
 						processEventTrigger(trigger, outputEvent);
 					}

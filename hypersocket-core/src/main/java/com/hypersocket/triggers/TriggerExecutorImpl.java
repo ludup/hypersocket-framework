@@ -133,17 +133,25 @@ public class TriggerExecutorImpl implements TriggerExecutor {
 		TaskResult outputEvent = provider.execute(trigger, event.getCurrentRealm(), event);
 
 		if(outputEvent!=null) {
-			if(outputEvent.isPublishable()) {
-				eventService.publishEvent(outputEvent);
-			}
+			
 			
 			if(outputEvent instanceof MultipleTaskResults) {
 				MultipleTaskResults results = (MultipleTaskResults) outputEvent;
 				for(TaskResult result : results.getResults()) {
+					
+					if(result.isPublishable()) {
+						eventService.publishEvent(result);
+					}
+					
 					processResult(trigger, result);
 				}
 				
 			} else {
+			
+				if(outputEvent.isPublishable()) {
+					eventService.publishEvent(outputEvent);
+				}
+				
 				processResult(trigger, outputEvent);
 			}
 		}
