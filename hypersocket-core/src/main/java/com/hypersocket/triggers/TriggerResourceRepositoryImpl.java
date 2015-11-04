@@ -124,6 +124,7 @@ public class TriggerResourceRepositoryImpl extends
 
 	protected void processDefaultCriteria(Criteria criteria) {
 		criteria.add(Restrictions.isNull("parentTrigger"));
+		criteria.add(Restrictions.eq("triggerType", TriggerType.TRIGGER));
 		criteria.setFetchMode("conditions", FetchMode.SELECT);
 		criteria.setFetchMode("childTriggers", FetchMode.SELECT);
 	}
