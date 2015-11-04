@@ -2,7 +2,7 @@
 <propertyTemplates context="unblockIPTask">
 	<propertyCategory resourceKey="category.block"
 		resourceBundle="BlockIPTask" weight="1000">
-		<property resourceKey="unblock.ip" inputType="text" 
+		<property resourceKey="unblock.ip" inputType="multipleTextInput" 
 			defaultValue="" weight="0"/>
 	</propertyCategory>
 </propertyTemplates>
