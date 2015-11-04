@@ -84,26 +84,27 @@ public class UnblockIPTask extends AbstractTaskProvider {
 	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 		
-		String[] addresses = ResourceUtils.explodeValues(
-					processTokenReplacements(repository.getValue(task, "unblock.ip"), event));
+		String[] values = ResourceUtils.explodeValues(repository.getValue(task, "unblock.ip"));
 		
 		List<UnblockedIPResult> results = new ArrayList<UnblockedIPResult>();
 		
-		for(String ipAddress : addresses) {
-			try {
-				
-				if(log.isInfoEnabled()) {
-					log.info("Unblocking IP address "  + ipAddress);
+		for(String value : values) {
+			for(String ipAddress : ResourceUtils.explodeValues(processTokenReplacements(value, event))) {
+				try {
+					
+					if(log.isInfoEnabled()) {
+						log.info("Unblocking IP address "  + ipAddress);
+					}
+					
+					ipRestrictionService.unblockIPAddress(ipAddress);
+					
+					blockTask.notifyUnblock(ipAddress, false);
+					
+					results.add(new UnblockedIPResult(this, currentRealm, task, ipAddress));
+				} catch (UnknownHostException e) {
+					log.error("Failed to fully process block IP request for " + ipAddress, e);
+					results.add(new UnblockedIPResult(this, e, currentRealm, task, ipAddress));
 				}
-				
-				ipRestrictionService.unblockIPAddress(ipAddress);
-				
-				blockTask.notifyUnblock(ipAddress, false);
-				
-				results.add(new UnblockedIPResult(this, currentRealm, task, ipAddress));
-			} catch (UnknownHostException e) {
-				log.error("Failed to fully process block IP request for " + ipAddress, e);
-				results.add(new UnblockedIPResult(this, e, currentRealm, task, ipAddress));
 			}
 		}
 		
