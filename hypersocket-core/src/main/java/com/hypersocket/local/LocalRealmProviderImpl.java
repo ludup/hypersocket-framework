@@ -39,7 +39,6 @@ import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
-@Transactional
 public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		LocalRealmProvider {
 
@@ -97,6 +96,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<Principal> allPrincipals(Realm realm, PrincipalType... types) {
 
 		ArrayList<Principal> result = new ArrayList<Principal>();
@@ -120,6 +120,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Principal getPrincipalByName(String principalName, Realm realm,
 			PrincipalType... acceptTypes) {
 
@@ -147,6 +148,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public boolean verifyPassword(Principal principal, char[] password) {
 
 		if (log.isDebugEnabled()) {
@@ -185,6 +187,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional
 	public Principal createUser(Realm realm, String username,
 			Map<String, String> properties, List<Principal> principals,
 			String password, boolean forceChange)
@@ -221,6 +224,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional
 	public Principal updateUser(Realm realm, Principal principal,
 			String username, Map<String, String> properties,
 			List<Principal> principals) throws ResourceChangeException {
@@ -260,6 +264,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional
 	public void changePassword(Principal principal, char[] oldPassword,
 			char[] newPassword) throws ResourceChangeException,
 			ResourceCreationException {
@@ -271,6 +276,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 	
 	@Override
+	@Transactional
 	public void setPassword(Principal principal, char[] password,
 			boolean forceChangeAtNextLogon) throws ResourceCreationException {
 
@@ -309,12 +315,14 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional
 	public void setPassword(Principal principal, String password,
 			boolean forceChangeAtNextLogon) throws ResourceCreationException {
 		setPassword(principal, password.toCharArray(), forceChangeAtNextLogon);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Principal getPrincipalById(Long id, Realm realm,
 			PrincipalType[] acceptTypes) {
 
@@ -341,6 +349,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public boolean requiresPasswordChange(Principal principal) {
 		if (principal instanceof LocalUser) {
 			if(principal.getType().equals(PrincipalType.SERVICE)) {
@@ -355,6 +364,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional
 	public Principal createGroup(Realm realm, String name,
 			Map<String, String> properties, List<Principal> principals, List<Principal> groups) throws ResourceCreationException {
 
@@ -390,6 +400,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional
 	public void deleteGroup(Principal group) throws ResourceChangeException {
 
 		if (!(group instanceof LocalGroup)) {
@@ -403,6 +414,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional
 	public Principal updateGroup(Realm realm, Principal group, String name,
 			Map<String, String> properties, List<Principal> principals, List<Principal> groups) throws ResourceChangeException {
 		if (!(group instanceof LocalGroup)) {
@@ -452,12 +464,14 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional
 	public Principal createGroup(Realm realm, String name, Map<String, String> properties)
 			throws ResourceCreationException {
 		return createGroup(realm, name, properties, null, null);
 	}
 
 	@Override
+	@Transactional
 	public void deleteUser(Principal user) {
 
 		if (!(user instanceof LocalUser)) {
@@ -471,6 +485,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional
 	public void deleteRealm(Realm realm) throws ResourceChangeException {
 
 		for (Principal group : userRepository.allGroups(realm)) {
@@ -484,6 +499,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<Principal> getAssociatedPrincipals(Principal principal) {
 
 		List<Principal> result = new ArrayList<Principal>();
@@ -518,6 +534,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<Principal> getAssociatedPrincipals(Principal principal,
 			PrincipalType type) {
 
@@ -546,6 +563,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Long getPrincipalCount(Realm realm, PrincipalType type,
 			String searchPattern) {
 		switch (type) {
@@ -559,6 +577,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<?> getPrincipals(Realm realm, PrincipalType type,
 			String searchPattern, int start, int length, ColumnSort[] sorting) {
 
@@ -577,11 +596,13 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Collection<PropertyCategory> getUserProperties(Principal principal) {
 		return userRepository.getPropertyCategories(principal);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Collection<PropertyCategory> getGroupProperties(Principal principal) {
 		// TODO we need a way to get these from the repository - currently
 		// restricted to only one resource type per repository
@@ -594,6 +615,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public String getAddress(Principal principal, MediaType type)
 			throws MediaNotFoundException {
 
@@ -618,11 +640,13 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public String getPrincipalDescription(Principal principal) {
 		return getValue(principal, LocalRealmProviderImpl.FIELD_FULLNAME);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public boolean supportsAccountUnlock(Realm realm) {
 		return false;
 	}
@@ -651,6 +675,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Set<String> getUserPropertyNames(Principal principal) {
 		return userRepository.getPropertyNames(principal);
 	}
@@ -673,31 +698,37 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public String getUserPropertyValue(Principal principal, String name) {
 		return userRepository.getDecryptedValue(principal, name);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Set<String> getUserVariableNames(Principal principal) {
 		return userRepository.getVariableNames(principal);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Map<String, String> getUserPropertyValues(Principal principal) {
 		return userRepository.getProperties(principal);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Set<String> getDefaultUserPropertyNames() {
 		return defaultProperties;
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public boolean hasPropertyValueSet(Principal principal, String resourceKey) {
 		return userRepository.hasPropertyValueSet(principal, resourceKey);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public String getDecryptedValue(Realm realm, String resourceKey) {
 		return getDecryptedValue(realm, resourceKey);
 	}
