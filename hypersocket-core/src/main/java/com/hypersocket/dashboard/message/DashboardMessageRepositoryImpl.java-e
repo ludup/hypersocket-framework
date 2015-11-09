@@ -15,12 +15,12 @@ import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 
 @Repository
-@Transactional
 public class DashboardMessageRepositoryImpl extends
 		AbstractResourceRepositoryImpl<DashboardMessage> implements
 		DashboardMessageRepository {
 
 	@Override
+	@Transactional
 	public void saveNewMessages(List<DashboardMessage> dashboardMessageList) {
 		for (DashboardMessage message : dashboardMessageList) {
 			save(message);
@@ -28,6 +28,7 @@ public class DashboardMessageRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<DashboardMessage> getMessages() {
 		return allEntities(getResourceClass(), new DeletedCriteria(
 				false), new DistinctRootEntity(),
@@ -41,6 +42,7 @@ public class DashboardMessageRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public DashboardMessage getMessage(DashboardMessage dashboardMessage) {
 		return get("messageId", dashboardMessage.getMessageId(),
 				getResourceClass());
@@ -52,6 +54,7 @@ public class DashboardMessageRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<DashboardMessage> getUnexpiredMessages(final int pageNum) {
 		return allEntities(getResourceClass(), new CriteriaConfiguration() {
 			@Override
@@ -70,6 +73,7 @@ public class DashboardMessageRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Long getMessageCount() {
 		return getCount(getResourceClass(), "name", "",
 				new CriteriaConfiguration() {

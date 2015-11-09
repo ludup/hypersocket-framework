@@ -9,12 +9,12 @@ import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 
 @Repository
-@Transactional
 public class UserInterfaceStateRepositoryImpl extends
 		AbstractResourceRepositoryImpl<UserInterfaceState> implements
 		UserInterfaceStateRepository {
 
 	@Override
+	@Transactional(readOnly=true)
 	public UserInterfaceState getStateByResourceId(final Long resourceId) {
 		return get("resourceId", resourceId, UserInterfaceState.class,
 				new CriteriaConfiguration() {
@@ -27,6 +27,7 @@ public class UserInterfaceStateRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public UserInterfaceState getStateByResourceId(final Long resourceId,
 			final Long principalId) {
 		return get("resourceId", resourceId, UserInterfaceState.class,
@@ -41,6 +42,7 @@ public class UserInterfaceStateRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional
 	public void updateState(UserInterfaceState newState) {
 		save(newState);
 	}

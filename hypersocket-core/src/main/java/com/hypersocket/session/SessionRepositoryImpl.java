@@ -32,7 +32,6 @@ import com.hypersocket.resource.RealmOrSystemRealmCriteria;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
-@Transactional
 public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,String> implements SessionRepository {
 
 	static Logger log = LoggerFactory.getLogger(SessionRepositoryImpl.class);
@@ -42,6 +41,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	}
 	
 	@Override
+	@Transactional
 	public Session createSession(String remoteAddress, 
 			Principal principal, 
 			AuthenticationScheme scheme, 
@@ -67,6 +67,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	}
 
 	@Override
+	@Transactional
 	public void updateSession(Session session) {
 		
 		if(log.isDebugEnabled()) {
@@ -76,11 +77,13 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Session getSessionById(String id) {
 		return get("id", id, Session.class);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<Session> getActiveSessions() {
 		return allEntities(Session.class, new CriteriaConfiguration() {
 			@Override
@@ -92,6 +95,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Long getActiveSessionCount(boolean distinctUsers) {
 		Criteria criteria = createCriteria(Session.class);
 
@@ -109,11 +113,13 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Long getActiveSessionCount() {
 		return getActiveSessionCount(false);
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Map<String,Long> getBrowserCount() {
 		List<?> ret = getCounts(Session.class, "userAgent", new CriteriaConfiguration() {
 			@Override
@@ -133,6 +139,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Map<String,Long> getBrowserCount(final Date startDate, final Date endDate) {
 
 		List<?> ret = getCounts(Session.class, "userAgent", new CriteriaConfiguration() {
@@ -155,6 +162,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Map<String,Long> getIPCount(final Date startDate, final Date endDate) {
 
 		List<?> ret = getCounts(Session.class, "remoteAddress", new CriteriaConfiguration() {
@@ -176,6 +184,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Map<String,Long> getOSCount(final Date startDate, final Date endDate) {
 
 		List<?> ret = getCounts(Session.class, "os", new CriteriaConfiguration() {
@@ -198,6 +207,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Long getSessionCount(final Date startDate, final Date endDate, final boolean distinctUsers) {
 
 		Criteria criteria = createCriteria(Session.class);
@@ -220,6 +230,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public List<Session> getSystemSessions() {
 		return allEntities(Session.class, new CriteriaConfiguration() {
 			@Override

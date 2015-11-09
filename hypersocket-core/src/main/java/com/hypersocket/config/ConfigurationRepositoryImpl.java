@@ -11,7 +11,6 @@ import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.resource.AbstractResource;
 
 @Repository
-@Transactional
 public class ConfigurationRepositoryImpl extends ResourceTemplateRepositoryImpl implements ConfigurationRepository {
 
 	@PostConstruct
@@ -20,6 +19,7 @@ public class ConfigurationRepositoryImpl extends ResourceTemplateRepositoryImpl 
 	}
 
 	@Override
+	@Transactional
 	public void setValues(AbstractResource resource, Map<String, String> values) {
 		
 		for(Map.Entry<String,String> e : values.entrySet()) {

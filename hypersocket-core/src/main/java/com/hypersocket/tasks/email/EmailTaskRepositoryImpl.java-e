@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 
 @Repository
-@Transactional
 public class EmailTaskRepositoryImpl extends ResourceTemplateRepositoryImpl
 		implements EmailTaskRepository {
 

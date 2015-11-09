@@ -12,7 +12,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 
@@ -29,7 +29,7 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.transactions.TransactionService;
 
-@Repository
+@Service
 public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		extends AbstractAuthenticatedServiceImpl implements AbstractResourceService<T>,
 			EventPropertyCollector {

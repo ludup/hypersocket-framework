@@ -44,7 +44,6 @@ import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
 
 @Repository
-@Transactional
 public abstract class AbstractAssignableResourceRepositoryImpl<T extends AssignableResource>
 		extends ResourceTemplateRepositoryImpl implements
 		AbstractAssignableResourceRepository<T> {
@@ -61,6 +60,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Collection<T> getAssignedResources(List<Principal> principals) {
 		return getAssignedResources(principals.toArray(new Principal[0]));
 	}
@@ -77,6 +77,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly=true)
 	public Collection<T> getAssignedResources(Principal... principals) {
 
 		
@@ -112,6 +113,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly=true)
 	public Collection<T> searchAssignedResources(List<Principal> principals,
 			final String searchPattern, final int start, final int length,
 			final ColumnSort[] sorting, CriteriaConfiguration... configs) {
@@ -187,6 +189,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	};
 
 	@Override
+	@Transactional(readOnly=true)
 	public boolean hasAssignedEveryoneRole(Realm realm, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(getResourceClass());
@@ -208,6 +211,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly=true)
 	public Collection<Principal> getAssignedPrincipals(Realm realm, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(getResourceClass());
@@ -238,6 +242,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 		
 	@Override
+	@Transactional(readOnly=true)
 	public Long getAssignedPrincipalCount(Realm realm, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(getResourceClass());
@@ -261,6 +266,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public Long getAssignedResourceCount(List<Principal> principals,
 			final String searchPattern, CriteriaConfiguration... configs) {
 
@@ -312,12 +318,14 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Long getAssignableResourceCount(List<Principal> principals) {
 		return getAssignedResourceCount(principals, "");
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly=true)
 	public List<AssignableResource> getAllAssignableResources(
 			List<Principal> principals) {
 
@@ -336,6 +344,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly=true)
 	public T getResourceByIdAndPrincipals(Long resourceId,
 			List<Principal> principals) {
 
@@ -365,22 +374,26 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public T getResourceByName(String name, Realm realm) {
 		return get("name", name, getResourceClass(), new DeletedCriteria(false), new RealmRestriction(realm));
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public T getResourceByName(String name, Realm realm, boolean deleted) {
 		return get("name", name, getResourceClass(), new DeletedCriteria(
 				deleted), new RealmRestriction(realm));
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public T getResourceById(Long id) {
 		return get("id", id, getResourceClass());
 	}
 
 	@Override
+	@Transactional
 	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceChangeException {
 		beforeDelete(resource);
 		for(TransactionOperation<T> op : ops) {
@@ -449,6 +462,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly=true)
 	public List<T> getResources(Realm realm) {
 
 		Criteria crit = createCriteria(getResourceClass());
@@ -462,6 +476,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@Override
 	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
 	public List<T> allResources() {
 
 		Criteria crit = createCriteria(getResourceClass());
@@ -473,6 +488,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<T> search(Realm realm, String searchPattern, int start,
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		return super.search(getResourceClass(), "name", searchPattern, start,
@@ -483,11 +499,13 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	
 	
 	@Override
+	@Transactional(readOnly=true)
 	public long allRealmsResourcesCount() {
 		return getCount(getResourceClass(), new DeletedCriteria(false));
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public long getResourceCount(Realm realm, String searchPattern,
 			CriteriaConfiguration... configs) {
 		return getCount(getResourceClass(), "name", searchPattern,
