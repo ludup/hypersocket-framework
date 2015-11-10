@@ -3,12 +3,10 @@ package com.hypersocket.automation;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 
 @Repository
-@Transactional
 public class AutomationResourceRepositoryImpl extends
 		AbstractResourceRepositoryImpl<AutomationResource> implements
 		AutomationResourceRepository {

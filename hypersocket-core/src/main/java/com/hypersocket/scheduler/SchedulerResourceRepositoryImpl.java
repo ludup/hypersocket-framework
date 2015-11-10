@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 
 @Repository
-@Transactional
 public class SchedulerResourceRepositoryImpl extends
 		AbstractResourceRepositoryImpl<SchedulerResource> implements
 		SchedulerResourceRepository {

@@ -16,7 +16,6 @@ import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.resource.AbstractAssignableResourceRepositoryImpl;
 
 @Repository
-@Transactional
 public class UserAttributeRepositoryImpl extends
 		AbstractAssignableResourceRepositoryImpl<UserAttribute> implements UserAttributeRepository {
 
@@ -53,6 +52,7 @@ public class UserAttributeRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public UserAttribute getAttributeByVariableName(String attributeName, Realm realm) {
 		return get("variableName", 
 				attributeName, 
