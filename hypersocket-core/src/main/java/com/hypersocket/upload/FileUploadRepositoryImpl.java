@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 
 @Repository
-@Transactional
 public class FileUploadRepositoryImpl extends
 		AbstractResourceRepositoryImpl<FileUpload> implements
 		FileUploadRepository {
@@ -17,6 +16,7 @@ public class FileUploadRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public FileUpload getFileByUuid(String uuid) {
 		return get("name", uuid, FileUpload.class);
 	}
