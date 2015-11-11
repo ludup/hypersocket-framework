@@ -101,8 +101,15 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	@Transactional(readOnly = true)
 	public void refresh(Object entity) {
 		hibernateTemplate.refresh(entity);
+		
 	}
 
+	@Transactional
+	@Override
+	public void evict(Object entity) {
+		hibernateTemplate.evict(entity);
+	}
+	
 	@Transactional
 	public void flush() {
 		hibernateTemplate.flush();
