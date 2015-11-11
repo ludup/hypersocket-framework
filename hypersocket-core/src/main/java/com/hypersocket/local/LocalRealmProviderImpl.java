@@ -192,7 +192,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 			Map<String, String> properties, List<Principal> principals,
 			String password, boolean forceChange)
 			throws ResourceCreationException {
-
+		
 		try {
 			LocalUser user = new LocalUser();
 			user.setName(username);
