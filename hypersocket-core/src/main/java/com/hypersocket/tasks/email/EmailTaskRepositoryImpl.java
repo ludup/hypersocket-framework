@@ -3,7 +3,6 @@ package com.hypersocket.tasks.email;
 import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 

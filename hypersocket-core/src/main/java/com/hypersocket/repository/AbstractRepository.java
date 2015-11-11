@@ -24,4 +24,6 @@ public interface AbstractRepository<K> {
 	List<?> getCounts(Class<?> clz, String groupBy,
 			CriteriaConfiguration... configs);
 
+	void evict(Object entity);
+
 }
