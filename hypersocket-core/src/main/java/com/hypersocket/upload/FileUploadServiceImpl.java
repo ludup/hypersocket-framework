@@ -74,7 +74,12 @@ public class FileUploadServiceImpl extends
 	
 	@Override
 	public String getContentType(String uuid) throws ResourceNotFoundException, IOException {
-		return mimeTypesMap.getContentType(getFile(uuid));
+		FileUpload upload = getFileByUuid(uuid);
+		String contentType = mimeTypesMap.getContentType(upload.getFileName());
+		if(contentType==null) {
+			return "application/octet-stream";
+		}
+		return contentType;
 	}
 
 	@Override
@@ -306,6 +311,10 @@ public class FileUploadServiceImpl extends
 
 	@Override
 	public String getContentType(File file) {
-		return mimeTypesMap.getContentType(file);
+		String contentType = mimeTypesMap.getContentType(file);
+		if(contentType==null) {
+			return "application/octet-stream";
+		}
+		return contentType;
 	}
 }
