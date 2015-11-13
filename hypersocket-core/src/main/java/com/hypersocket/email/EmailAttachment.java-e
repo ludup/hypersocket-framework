@@ -1,5 +1,7 @@
 package com.hypersocket.email;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -10,23 +12,19 @@ public class EmailAttachment implements DataSource {
 
 	String filename;
 	String contentType;
-	InputStream data;
+	File file;
 	
-	public EmailAttachment(String filename, String contentType, InputStream data) {
+	public EmailAttachment(String filename, String contentType, File file) {
 		super();
 		this.filename = filename;
 		this.contentType = contentType;
-		this.data = data;
+		this.file = file;
 	}
 	
 	public String getFilename() {
 		return filename;
 	}
 	
-	public InputStream getData() {
-		return data;
-	}
-
 	@Override
 	public String getContentType() {
 		return contentType;
@@ -34,7 +32,7 @@ public class EmailAttachment implements DataSource {
 
 	@Override
 	public InputStream getInputStream() throws IOException {
-		return data;
+		return new FileInputStream(file);
 	}
 
 	@Override

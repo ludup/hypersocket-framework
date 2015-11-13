@@ -235,7 +235,7 @@ public class EmailTask extends AbstractTaskProvider {
 		FileUpload upload = uploadService.getFileByUuid(uuid);	
 		attachments.add(new EmailAttachment(upload.getFileName(), 
 				uploadService.getContentType(uuid), 
-				new FileInputStream(uploadService.getFile(uuid))));
+				uploadService.getFile(uuid)));
 	}
 	
 	private void addFileAttachment(String path, List<EmailAttachment> attachments, SystemEvent event) throws FileNotFoundException {
@@ -250,7 +250,7 @@ public class EmailTask extends AbstractTaskProvider {
 			throw new FileNotFoundException(filepath + " does not exist");
 		}
 		
-		attachments.add(new EmailAttachment(filename, uploadService.getContentType(file), new FileInputStream(file)));
+		attachments.add(new EmailAttachment(filename, uploadService.getContentType(file), file));
 
 	}
 	public String[] getResultResourceKeys() {
