@@ -15,6 +15,7 @@ public class EmailAttachment implements DataSource {
 	public EmailAttachment(String filename, String contentType, InputStream data) {
 		super();
 		this.filename = filename;
+		this.contentType = contentType;
 		this.data = data;
 	}
 	
