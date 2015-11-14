@@ -125,9 +125,13 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	public List<OverviewWidget> getWidgets(String resourceKey) throws AccessDeniedException {
 
 		List<OverviewWidget> visibleWidgets = new ArrayList<OverviewWidget>();
-		for (OverviewWidget w : widgetList.get(resourceKey)) {
-			if (w.hasContent()) {
-				visibleWidgets.add(w);
+		if(widgetList!=null) {
+			if(widgetList.containsKey(resourceKey)) {
+				for (OverviewWidget w : widgetList.get(resourceKey)) {
+					if (w.hasContent()) {
+						visibleWidgets.add(w);
+					}
+				}
 			}
 		}
 		return visibleWidgets;
