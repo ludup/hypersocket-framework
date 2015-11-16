@@ -2,6 +2,8 @@ package com.hypersocket.realm;
 
 import java.util.Map;
 
+import com.hypersocket.resource.ResourceException;
+
 public class PrincipalProcessorAdapter implements PrincipalProcessor {
 
 	public PrincipalProcessorAdapter() {
@@ -9,17 +11,27 @@ public class PrincipalProcessorAdapter implements PrincipalProcessor {
 	}
 
 	@Override
-	public void beforeUpdate(Principal principal, Map<String, String> properties) {
+	public void beforeUpdate(Principal principal, Map<String, String> properties)  throws ResourceException {
 
 	}
 
 	@Override
-	public void afterUpdate(Principal principal, Map<String, String> properties) {
+	public void afterUpdate(Principal principal, Map<String, String> properties) throws ResourceException {
 
 	}
 
 	@Override
-	public void afterCreate(Principal principal, Map<String, String> properties) {
+	public void afterCreate(Principal principal, Map<String, String> properties) throws ResourceException {
+
+	}
+
+	@Override
+	public void beforeChangePassword(Principal principal, String newPassword) throws ResourceException{
+		
+	}
+
+	@Override
+	public void afterChangePassword(Principal principal, String newPassword) throws ResourceException {
 
 	}
 
