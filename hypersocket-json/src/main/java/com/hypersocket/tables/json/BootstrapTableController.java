@@ -38,14 +38,15 @@ public class BootstrapTableController extends AuthenticatedController {
 			length = Integer.parseInt(request.getParameter("limit"));
 		}
 		
+		
 		List<ColumnSort> sorting = new ArrayList<ColumnSort>();
-		int count = (request.getParameter("iSortingCols") == null ? 0 : Integer
-				.parseInt(request.getParameter("iSortingCols")));
-		for (int i = 0; i < count; i++) {
-			int col = Integer.parseInt(request.getParameter("iSortCol_" + i));
-			String sor = request.getParameter("sSortDir_" + i);
-			sorting.add(new ColumnSort(processor.getColumn(col), Sort
-					.valueOf(sor.toUpperCase())));
+		
+		if(request.getParameter("order")!=null) {
+			
+			String order = request.getParameter("order");
+			String column = request.getParameter("sort");
+			sorting.add(new ColumnSort(processor.getColumn(column), Sort
+						.valueOf(order.toUpperCase())));
 		}
 
 		String searchPattern = "";
@@ -64,8 +65,10 @@ public class BootstrapTableController extends AuthenticatedController {
 			searchPattern += "%";
 		}
 
-		return new BootstrapTableResult(processor.getPage(searchPattern, start,
+		BootstrapTableResult result = new BootstrapTableResult(processor.getPage(searchPattern, start,
 				length, sorting.toArray(new ColumnSort[0])),
 				processor.getTotalCount(searchPattern));
+
+		return result;
 	}
 }

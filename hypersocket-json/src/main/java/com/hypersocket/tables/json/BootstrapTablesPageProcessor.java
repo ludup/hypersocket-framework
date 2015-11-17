@@ -9,7 +9,7 @@ import com.hypersocket.tables.ColumnSort;
 
 public interface BootstrapTablesPageProcessor {
 
-	Column getColumn(int col);
+	Column getColumn(String col);
 
 	Collection<?> getPage(String searchPattern, int start, int length,
 			ColumnSort[] sorting) throws UnauthorizedException,
