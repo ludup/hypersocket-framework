@@ -93,5 +93,7 @@ public interface PermissionService extends AuthenticatedService {
 
 	boolean hasPermission(Principal principal, Permission permission);
 
+	public boolean hasRole(Principal principal, Role customerRole) throws AccessDeniedException;
+
 
 }
