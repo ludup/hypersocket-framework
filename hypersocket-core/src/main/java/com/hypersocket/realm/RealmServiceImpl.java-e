@@ -576,32 +576,47 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void changePassword(Principal principal, String oldPassword, String newPassword)
-			throws ResourceCreationException, ResourceChangeException, AccessDeniedException {
+	public void changePassword(final Principal principal, final String oldPassword, final String newPassword)
+			throws ResourceException, AccessDeniedException {
 
 		assertPermission(PasswordPermission.CHANGE);
-		RealmProvider provider = getProviderForRealm(principal.getRealm());
+		final RealmProvider provider = getProviderForRealm(principal.getRealm());
 
-		try {
-			if (!verifyPassword(principal, oldPassword.toCharArray())) {
-				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.invalidPassword");
+		transactionService.doInTransaction(new TransactionCallbackWithError<Principal>() {
+
+			@Override
+			public Principal doInTransaction(TransactionStatus status) {
+				
+				try {
+				for(PrincipalProcessor proc : principalProcessors) {
+					proc.beforeChangePassword(principal, newPassword);
+				}
+				
+				if (!verifyPassword(principal, oldPassword.toCharArray())) {
+					throw new ResourceChangeException(RESOURCE_BUNDLE, "error.invalidPassword");
+				}
+
+				provider.changePassword(principal, oldPassword.toCharArray(), newPassword.toCharArray());
+
+				setCurrentPassword(newPassword);
+
+				for(PrincipalProcessor proc : principalProcessors) {
+					proc.afterChangePassword(principal, newPassword);
+				}
+				
+				eventService.publishEvent(new ChangePasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider));
+				
+				return principal;
+				} catch(Throwable t) {
+					throw new IllegalStateException(t);
+				}
 			}
 
-			provider.changePassword(principal, oldPassword.toCharArray(), newPassword.toCharArray());
-
-			setCurrentPassword(newPassword);
-
-			eventService.publishEvent(new ChangePasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider));
-
-		} catch (ResourceException ex) {
-			eventService
-					.publishEvent(new ChangePasswordEvent(this, ex, getCurrentSession(), getCurrentRealm(), provider));
-			throw ex;
-		} catch (Throwable t) {
-			eventService
-					.publishEvent(new ChangePasswordEvent(this, t, getCurrentSession(), getCurrentRealm(), provider));
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
-		}
+			@Override
+			public void doTransacationError(Throwable t) {
+				eventService.publishEvent(new ChangePasswordEvent(this, t, getCurrentSession(), getCurrentRealm(), provider));
+			}
+		});
 	}
 
 	@Override
