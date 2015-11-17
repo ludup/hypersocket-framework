@@ -56,8 +56,8 @@ public class UserAttributeController extends ResourceController {
 					new BootstrapTablePageProcessor() {
 
 						@Override
-						public Column getColumn(int col) {
-							return UserAttributeColumns.values()[col];
+						public Column getColumn(String col) {
+							return UserAttributeColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override

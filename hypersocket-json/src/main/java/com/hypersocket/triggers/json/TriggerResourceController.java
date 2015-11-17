@@ -83,8 +83,8 @@ public class TriggerResourceController extends AbstractTriggerController {
 					new BootstrapTablePageProcessor() {
 
 						@Override
-						public Column getColumn(int col) {
-							return TriggerResourceColumns.values()[col];
+						public Column getColumn(String col) {
+							return TriggerResourceColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override

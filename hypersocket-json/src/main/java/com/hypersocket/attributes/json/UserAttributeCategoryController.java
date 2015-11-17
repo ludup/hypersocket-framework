@@ -58,8 +58,8 @@ public class UserAttributeCategoryController extends ResourceController {
 					new BootstrapTablePageProcessor() {
 
 						@Override
-						public Column getColumn(int col) {
-							return UserAttributeCategoryColumns.values()[col];
+						public Column getColumn(String col) {
+							return UserAttributeCategoryColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override

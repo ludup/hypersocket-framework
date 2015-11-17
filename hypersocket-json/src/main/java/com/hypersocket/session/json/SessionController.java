@@ -218,8 +218,8 @@ public class SessionController extends ResourceController {
 			return processDataTablesRequest(request, new BootstrapTablePageProcessor() {
 
 				@Override
-				public Column getColumn(int col) {
-					return SchedulerResourceColumns.values()[col];
+				public Column getColumn(String col) {
+					return SchedulerResourceColumns.valueOf(col.toUpperCase());
 				}
 
 				@Override
