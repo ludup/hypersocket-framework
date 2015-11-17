@@ -57,7 +57,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 			throws ResourceCreationException, AccessDeniedException;
 
 	void changePassword(Principal principal, String oldPassword, String newPassword)
-			throws ResourceCreationException, ResourceChangeException, AccessDeniedException;
+			throws AccessDeniedException, ResourceException;
 
 	Principal getSystemPrincipal();
 

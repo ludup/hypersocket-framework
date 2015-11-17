@@ -105,8 +105,13 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		}
 	}
 	
-	protected boolean checkUnique(T resource) throws AccessDeniedException {
+	protected boolean checkUnique(T resource, boolean create) throws AccessDeniedException {
 		try {
+			if(!create) {
+				if(!resource.hasNameChanged()) {
+					return true;
+				}
+			}
 			getResourceByName(resource.getName(), resource.getRealm());
 			return false;
 		} catch (ResourceNotFoundException e) {
@@ -128,7 +133,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		resource.setResourceCategory(resourceCategory);
 		getRepository().populateEntityFields(resource, properties);
 		
-		if(!checkUnique(resource)) {
+		if(!checkUnique(resource, true)) {
 			ResourceCreationException ex = new ResourceCreationException(RESOURCE_BUNDLE,
 					"generic.alreadyExists.error", resource.getName());
 			fireResourceCreationEvent(resource, ex);
@@ -201,6 +206,15 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		} else {
 			assertPermission(getUpdatePermission());
 		}
+		
+
+		if(!checkUnique(resource, false)) {
+			ResourceChangeException ex = new ResourceChangeException(RESOURCE_BUNDLE,
+					"generic.alreadyExists.error", resource.getName());
+			fireResourceCreationEvent(resource, ex);
+			throw ex;
+		}
+
 		
 		if(resource.getRealm()==null) {
 			resource.setRealm(getCurrentRealm());
