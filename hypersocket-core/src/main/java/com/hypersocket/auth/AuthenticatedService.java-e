@@ -9,6 +9,7 @@ package com.hypersocket.auth;
 
 import java.util.Locale;
 
+import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
@@ -36,5 +37,7 @@ public interface AuthenticatedService {
 	boolean hasSessionContext();
 
 	void setCurrentRealm(Realm realm);
+
+	void elevatePermissions(PermissionType... permissions);
 
 }

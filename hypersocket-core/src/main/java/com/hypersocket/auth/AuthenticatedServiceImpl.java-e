@@ -7,7 +7,9 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 
 import org.slf4j.Logger;
@@ -33,8 +35,23 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	static ThreadLocal<Boolean> isDelayingEvents = new ThreadLocal<Boolean>();
 	static ThreadLocal<LinkedList<SystemEvent>> delayedEvents = new ThreadLocal<LinkedList<SystemEvent>>();
 	
+	static ThreadLocal<List<PermissionType>> elevatedPermissions = new ThreadLocal<List<PermissionType>>();
+	
 	protected abstract void verifyPermission(Principal principal,
 			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException;
+	
+	@Override
+	public void elevatePermissions(PermissionType... permissions) {
+		elevatedPermissions.set(Arrays.asList(permissions));
+	}
+	
+	protected List<PermissionType> getElevatedPermissions() {
+		return elevatedPermissions.get();
+	}
+	
+	protected boolean hasElevatedPermissions() {
+		return elevatedPermissions.get()!=null;
+	}
 	
 	@Override
 	public void setCurrentPrincipal(Principal principal, Locale locale,
@@ -99,6 +116,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		currentPrincipal.set(null);
 		currentSession.set(null);
 		currentRealm.set(null);
+		elevatedPermissions.set(null);
 	}
 	
 	@Override
