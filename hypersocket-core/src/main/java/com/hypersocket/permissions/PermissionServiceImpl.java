@@ -224,6 +224,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 						principals.toArray(new Principal[0]), permissions);
 				for (Principal p : principals) {
 					permissionsCache.remove(p);
+					roleCache.remove(p);
 				}
 				eventService.publishEvent(new RoleCreatedEvent(this,
 						getCurrentSession(), realm, role));
@@ -251,6 +252,68 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		try {
 			repository.assignRole(role, principal);
 			permissionsCache.remove(principal);
+			roleCache.remove(principal);
+			eventService.publishEvent(new RoleUpdatedEvent(this,
+					getCurrentSession(), role.getRealm(), role));
+		} catch (Throwable e) {
+			eventService.publishEvent(new RoleUpdatedEvent(this, role.getName(), e,
+					getCurrentSession(), role.getRealm()));
+		}
+	}
+	
+	@Override
+	public void assignRole(Role role, Principal... principals)
+			throws AccessDeniedException {
+
+		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED,
+				RolePermission.CREATE, RolePermission.UPDATE);
+
+		try {
+			repository.assignRole(role, principals);
+			for(Principal principal : principals) {
+				permissionsCache.remove(principal);
+				roleCache.remove(principal);
+			}
+			eventService.publishEvent(new RoleUpdatedEvent(this,
+					getCurrentSession(), role.getRealm(), role));
+		} catch (Throwable e) {
+			eventService.publishEvent(new RoleUpdatedEvent(this, role.getName(), e,
+					getCurrentSession(), role.getRealm()));
+		}
+	}
+	
+	@Override
+	public void unassignRole(Role role, Principal principal)
+			throws AccessDeniedException {
+
+		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED,
+				RolePermission.UPDATE, RolePermission.UPDATE);
+
+		try {
+			repository.unassignRole(role, principal);
+			permissionsCache.remove(principal);
+			roleCache.remove(principal);
+			eventService.publishEvent(new RoleUpdatedEvent(this,
+					getCurrentSession(), role.getRealm(), role));
+		} catch (Throwable e) {
+			eventService.publishEvent(new RoleUpdatedEvent(this, role.getName(), e,
+					getCurrentSession(), role.getRealm()));
+		}
+	}
+	
+	@Override
+	public void unassignRole(Role role, Principal... principals)
+			throws AccessDeniedException {
+
+		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED,
+				RolePermission.UPDATE, RolePermission.UPDATE);
+
+		try {
+			repository.unassignRole(role, principals);
+			for(Principal principal : principals) {
+				permissionsCache.remove(principal);
+				roleCache.remove(principal);
+			}
 			eventService.publishEvent(new RoleUpdatedEvent(this,
 					getCurrentSession(), role.getRealm(), role));
 		} catch (Throwable e) {
@@ -378,6 +441,13 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 		if (!hasSystemPermission(principal)) {
 			Set<Permission> principalPermissions = getPrincipalPermissions(principal);
+			
+			if(hasElevatedPermissions()) {
+				for(PermissionType perm : getElevatedPermissions()) {
+					principalPermissions.add(getPermission(perm.getResourceKey()));
+				}
+			}
+			
 			verifyPermission(principal, strategy, principalPermissions,
 					permissions);
 		}
@@ -436,6 +506,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		try {
 			repository.deleteRole(role);
 			permissionsCache.removeAll();
+			roleCache.removeAll();
 			eventService.publishEvent(new RoleDeletedEvent(this,
 					getCurrentSession(), role.getRealm(), role));
 		} catch (Throwable te) {
@@ -482,6 +553,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		
 		try {
 			repository.grantPermission(role, permission);
+			permissionsCache.removeAll();
+			roleCache.removeAll();
 			eventService.publishEvent(new RoleUpdatedEvent(this,
 					getCurrentSession(), role.getRealm(), role));
 		} catch (Throwable e) {
@@ -531,6 +604,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			repository.updateRole(role, unassignPrincipals, assignPrincipals,
 					revokePermissions, grantPermissions);
 			permissionsCache.removeAll();
+			roleCache.removeAll();
 			eventService.publishEvent(new RoleUpdatedEvent(this,
 					getCurrentSession(), role.getRealm(), role));
 			return role;
@@ -600,6 +674,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		
 		if(event instanceof GroupEvent || event instanceof UserEvent) {
 			permissionsCache.removeAll();
+			roleCache.removeAll();
 		}
 		
 	}

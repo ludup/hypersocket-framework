@@ -16,8 +16,9 @@ import com.hypersocket.permissions.PermissionType;
  */
 public enum FileUploadPermission implements PermissionType {
 
-	READ("permission.fileUpload.read"), CREATE("permission.fileUpload.create",
-			READ), DELETE("permission.fileUpload.delete", READ);
+	READ("permission.fileUpload.read"), 
+	CREATE("permission.fileUpload.create", READ), 
+	DELETE("permission.fileUpload.delete", READ);
 
 	private final String val;
 
