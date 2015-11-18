@@ -182,6 +182,10 @@ public class AuthenticatedController {
 		
 	}
 	
+	protected boolean hasSessionContext() {
+		return authenticationService.hasSessionContext();
+	}
+	
 	protected Realm getCurrentRealm() {
 		return authenticationService.getCurrentRealm();
 	}
