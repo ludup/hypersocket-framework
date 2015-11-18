@@ -347,7 +347,9 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	@Override
 	public T getResourceByName(String name, Realm realm) throws ResourceNotFoundException, AccessDeniedException {
 		
-		assertPermission(getReadPermission());
+		if(assertPermissions) {
+			assertPermission(getReadPermission());
+		}
 		
 		T resource = getRepository().getResourceByName(name, realm);
 		if (resource == null) {
@@ -360,8 +362,10 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	@Override
 	public T getResourceById(Long id) throws ResourceNotFoundException, AccessDeniedException {
 		
-		assertPermission(getReadPermission());
-
+		if(assertPermissions) {
+			assertPermission(getReadPermission());
+		}
+		
 		T resource = getRepository().getResourceById(id);
 		if (resource == null) {
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE_DEFAULT,
