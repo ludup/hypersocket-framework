@@ -274,7 +274,9 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	@Override
 	@Transactional
 	public void saveRole(Role role) {
-		role.setResourceCategory("role");
+		if(StringUtils.isBlank(role.getResourceCategory())) {
+			role.setResourceCategory("role");
+		}
 		save(role);
 	}
 
