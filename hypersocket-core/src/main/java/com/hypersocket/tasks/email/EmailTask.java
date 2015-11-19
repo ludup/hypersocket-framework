@@ -183,7 +183,8 @@ public class EmailTask extends AbstractTaskProvider {
 		
 		if(repository.getBooleanValue(task, ATTR_EVENT_SOURCE) && event instanceof EmailAttachmentSource) {
 			
-			String attachmentType = repository.getValue(task, ATTR_EVENT_SOURCE_TYPE);
+			String[] attachmentType = ResourceUtils.explodeValues(
+					repository.getValue(task, ATTR_EVENT_SOURCE_TYPE));
 			String[] eventAttachments = ((EmailAttachmentSource)event).getEmailAttachments();
 			for(String attachment : eventAttachments) {
 				try {
@@ -201,7 +202,7 @@ public class EmailTask extends AbstractTaskProvider {
 		
 		for(String uuid : repository.getValues(task, ATTR_STATIC_ATTACHMENTS)) {
 			try {
-				addUUIDAttachment(uuid, "", attachments);
+				addUUIDAttachment(uuid, new String[0], attachments);
 			} catch (ResourceException e) {
 				log.error("Failed to get upload file", e);
 				return new EmailTaskResult(this, e, currentRealm, task, subject, body, to, cc, bcc);
@@ -232,12 +233,20 @@ public class EmailTask extends AbstractTaskProvider {
 		}
 	}
 	
-	private void addUUIDAttachment(String uuid, String typeRequired, List<EmailAttachment> attachments) throws ResourceNotFoundException, FileNotFoundException, IOException {
+	private void addUUIDAttachment(String uuid, String[] typesRequired, List<EmailAttachment> attachments) throws ResourceNotFoundException, FileNotFoundException, IOException {
 		FileUpload upload = uploadService.getFileByUuid(uuid);	
-		if(StringUtils.isBlank(typeRequired) || upload.getType().equalsIgnoreCase(typeRequired)) {
+		if(typesRequired.length==0) {
 			attachments.add(new EmailAttachment(upload.getFileName(), 
-				uploadService.getContentType(uuid), 
-				uploadService.getFile(uuid)));
+					uploadService.getContentType(uuid), 
+					uploadService.getFile(uuid)));
+		} else {
+			for(String typeRequired : typesRequired) {
+				if(upload.getType().equalsIgnoreCase(typeRequired)) {
+					attachments.add(new EmailAttachment(upload.getFileName(), 
+						uploadService.getContentType(uuid), 
+						uploadService.getFile(uuid)));
+				}
+			}
 		}
 	}
 	
