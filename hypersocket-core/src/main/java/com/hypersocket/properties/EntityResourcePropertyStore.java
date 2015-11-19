@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -128,6 +130,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		for(Method m : methods) {
 			if(m.getName().equals(methodName)) {
 				Class<?> clz = m.getParameterTypes()[0];
+				
 				if(primitiveParsers.containsKey(clz)) {
 					try {
 						m.invoke(resource, primitiveParsers.get(clz).parseValue(value));
@@ -162,6 +165,36 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 						throw new IllegalStateException("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
 					}
 					return;
+				}
+				if(Collection.class.isAssignableFrom(clz)) {
+					// We have a collection of entity values
+					PropertyEntity resourceClass = m.getAnnotation(PropertyEntity.class);
+					if(resourceClass!=null) {
+						try {
+							Collection<Object> values = new ArrayList<Object>();
+							if(StringUtils.isEmpty(value)) {
+								m.invoke(resource, values);
+							} else {
+								String[] ids = ResourceUtils.explodeValues(value);
+								for(String id : ids) {
+									Object obj = null;
+									if(assignableServices.containsKey(resourceClass.clz())) {
+										obj = assignableServices.get(resourceClass.clz()).getResourceById(Long.parseLong(id));
+									} else if(resourceServices.containsKey(resourceClass.clz())) {
+										obj = resourceServices.get(resourceClass.clz()).getResourceById(Long.parseLong(id));
+									} else {
+										throw new IllegalStateException("Collection must have a generic type");
+									}
+									values.add(obj);
+								}
+								m.invoke(resource, values);
+							}
+						} catch (Exception e) {
+							log.error("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
+							throw new IllegalStateException("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
+						}
+						return;
+					}
 				}
 				
 			}
