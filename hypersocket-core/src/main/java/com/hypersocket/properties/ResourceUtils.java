@@ -107,4 +107,16 @@ public class ResourceUtils {
 		return value.startsWith("!ENC!");
 	}
 
+	public static <T extends Resource> String implodeResourceValues(Collection<T> entities) {
+		
+		StringBuilder buf = new StringBuilder();
+		for(Resource e : entities) {
+			if(buf.length() > 0) {
+				buf.append("]|[");
+			}
+			buf.append(e.getId());
+		}
+		return buf.toString();
+	}
+
 }
