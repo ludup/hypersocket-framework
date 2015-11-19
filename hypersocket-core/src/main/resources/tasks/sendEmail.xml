@@ -25,7 +25,7 @@
 		resourceBundle="TriggerResourceService" weight="3000">
 		<property resourceKey="attach.event" inputType="switch"
 			weight="0" defaultValue="false"/>
-		<property resourceKey="attach.eventSourceType" inputType="multipleInput"
+		<property resourceKey="attach.eventSourceType" inputType="multipleTextInput"
 			weight="0" defaultValue=""/>
 		<property resourceKey="attach.static" inputType="multipleFileInput"
 			weight="50" defaultValue="" allowEmpty="true" text=""/>
