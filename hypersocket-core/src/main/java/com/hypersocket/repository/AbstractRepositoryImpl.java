@@ -7,12 +7,14 @@
  ******************************************************************************/
 package com.hypersocket.repository;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-
-import javax.swing.SortOrder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
@@ -279,7 +281,6 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			criteria.add(Restrictions.ilike(searchColumn, searchPattern));
 		}
 
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		criteria.setProjection(Projections.rowCount());
 
 		return (long) criteria.uniqueResult();
@@ -295,7 +296,6 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			c.configure(criteria);
 		}
 
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		criteria.setProjection(
 				Projections.projectionList().add(Projections.groupProperty(groupBy)).add(Projections.count(groupBy)));
 		
@@ -373,6 +373,11 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	public <T> List<T> search(Class<T> clz, final String searchColumn, final String searchPattern, final int start,
 			final int length, final ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		Criteria criteria = createCriteria(clz);
+		
+		for (String property : resolveCollectionProperties(clz)) {
+			  criteria.setFetchMode(property, org.hibernate.FetchMode.SELECT);
+			}
+		
 		if (!StringUtils.isEmpty(searchPattern)) {
 			criteria.add(Restrictions.ilike(searchColumn, searchPattern));
 		}
@@ -381,27 +386,30 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			c.configure(criteria);
 		}
 
-		criteria.setProjection(Projections.distinct(Projections.id()));
-
+		for (ColumnSort sort : sorting) {
+			criteria.addOrder(sort.getSort() == Sort.ASC ? Order.asc(sort.getColumn().getColumnName())
+				: Order.desc(sort.getColumn().getColumnName()));
+		}
+		
 		criteria.setFirstResult(start);
 		criteria.setMaxResults(length);
 
-		List<T> ids = (List<T>) criteria.list();
-
-		if (ids.isEmpty()) {
-			return new ArrayList<T>();
-		}
-
-		criteria = createCriteria(clz);
-
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-		criteria.add(Restrictions.in("id", ids));
 
-		for (ColumnSort sort : sorting) {
-			criteria.addOrder(sort.getSort() == Sort.ASC ? Order.asc(sort.getColumn().getColumnName())
-					: Order.desc(sort.getColumn().getColumnName()));
-		}
-		
 		return ((List<T>) criteria.list());
-	};
+	}
+	
+	protected List<String> resolveCollectionProperties(Class<?> type) {
+		  List<String> ret = new ArrayList<String>();
+		  try {
+		   BeanInfo beanInfo = Introspector.getBeanInfo(type);
+		   for (PropertyDescriptor pd : beanInfo.getPropertyDescriptors()) {
+		     if (Collection.class.isAssignableFrom(pd.getPropertyType()))
+		     ret.add(pd.getName());
+		   }
+		  } catch (IntrospectionException e) {
+		    e.printStackTrace();
+		  }
+		  return ret;
+		}
 }

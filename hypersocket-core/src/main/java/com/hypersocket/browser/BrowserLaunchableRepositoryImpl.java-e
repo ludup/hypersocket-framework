@@ -69,12 +69,6 @@ public class BrowserLaunchableRepositoryImpl extends
 			c.configure(criteria);
 		}
 		
-		for (ColumnSort sort : sorting) {
-			criteria.addOrder(sort.getSort() == Sort.ASC ? Order.asc(sort
-					.getColumn().getColumnName()) : Order.desc(sort.getColumn()
-					.getColumnName()));
-		}
-		
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
 		
@@ -99,6 +93,12 @@ public class BrowserLaunchableRepositoryImpl extends
 			
 			criteria = createCriteria(BrowserLaunchable.class);
 			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+			
+			for (ColumnSort sort : sorting) {
+				criteria.addOrder(sort.getSort() == Sort.ASC ? Order.asc(sort
+						.getColumn().getColumnName()).ignoreCase() : Order.desc(sort.getColumn()
+						.getColumnName()).ignoreCase());
+			}
 			
 			criteria.add(Restrictions.in("id", entityIds));
 	

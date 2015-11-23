@@ -1,8 +1,8 @@
 package com.hypersocket.resource;
 
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToOne;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -14,7 +14,7 @@ import com.hypersocket.realm.Realm;
 public abstract class RealmResource extends Resource {
 
 
-	@ManyToOne
+	@OneToOne
 	@JoinColumn(name="realm_id")
 	protected Realm realm;
 

@@ -4,7 +4,7 @@ import com.hypersocket.tables.Column;
 
 public enum SessionColumns implements Column {
 
-	CREATED;
+	CREATEDATE;
 
 	public String getColumnName() {
 		switch (this.ordinal()) {
