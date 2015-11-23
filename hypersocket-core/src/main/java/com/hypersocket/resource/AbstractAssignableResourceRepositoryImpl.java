@@ -155,8 +155,8 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		
 		for (ColumnSort sort : sorting) {
 			criteria.addOrder(sort.getSort() == Sort.ASC ? Order.asc(sort
-					.getColumn().getColumnName()) : Order.desc(sort.getColumn()
-					.getColumnName()));
+					.getColumn().getColumnName()).ignoreCase() : Order.desc(sort.getColumn()
+					.getColumnName()).ignoreCase());
 		}
 		
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));

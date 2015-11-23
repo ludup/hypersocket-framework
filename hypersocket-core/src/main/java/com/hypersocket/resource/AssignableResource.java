@@ -19,6 +19,9 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import com.hypersocket.permissions.Role;
 
 @Entity
@@ -26,6 +29,7 @@ import com.hypersocket.permissions.Role;
 @Table(name="assignable_resources")
 public class AssignableResource extends RealmResource {
 
+	@Fetch(FetchMode.SELECT)
 	@ManyToMany(fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_roles", joinColumns={@JoinColumn(name="resource_id")}, 
 			inverseJoinColumns={@JoinColumn(name="role_id")})
