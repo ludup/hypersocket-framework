@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -54,6 +55,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	
 	Map<String, PropertyCategory> activeCategories = new HashMap<String, PropertyCategory>();
 	Map<String, PropertyTemplate> propertyTemplates = new HashMap<String, PropertyTemplate>();
+	
 	Map<String, PropertyStore> propertyStoresByResourceKey = new HashMap<String, PropertyStore>();
 	Map<String, PropertyStore> propertyStoresById = new HashMap<String, PropertyStore>();
 	Set<PropertyStore> propertyStores = new HashSet<PropertyStore>();
@@ -66,7 +68,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	String resourceXmlPath;
 
 	static Map<String, List<ResourceTemplateRepository>> propertyContexts = new HashMap<String, List<ResourceTemplateRepository>>();
-
+	static Map<String, Set<PropertyTemplate>> propertyTemplatesByType = new HashMap<String, Set<PropertyTemplate>>();
+	
 	public ResourceTemplateRepositoryImpl() {
 		super();
 	}
@@ -301,16 +304,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 						}
 					}
 
-					registerPropertyItem(cat, store, pnode.getAttribute("resourceKey"), generateMetaData(pnode),
-							pnode.getAttribute("mapping"), Integer.parseInt(pnode.getAttribute("weight")),
-							pnode.hasAttribute("hidden") && pnode.getAttribute("hidden").equalsIgnoreCase("true"),
-							pnode.hasAttribute("displayMode") ? pnode.getAttribute("displayMode") : "",
-							pnode.hasAttribute("readOnly") && pnode.getAttribute("readOnly").equalsIgnoreCase("true"),
-							Boolean.getBoolean("hypersocket.development") && pnode.hasAttribute("developmentValue")
-									? pnode.getAttribute("developmentValue") : pnode.getAttribute("defaultValue"),
-							pnode.hasAttribute("variable") && pnode.getAttribute("variable").equalsIgnoreCase("true"),
-							pnode.hasAttribute("encrypted") && pnode.getAttribute("encrypted").equalsIgnoreCase("true"),
-							pnode.hasAttribute("defaultsToProperty") ? pnode.getAttribute("defaultsToProperty") : null);
+					registerPropertyItem(cat, store, pnode);
 				} catch (Throwable e) {
 					log.error("Failed to register property item", e);
 				}
@@ -367,14 +361,27 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		return propertyTemplates.get(resourceKey);
 	}
 
-	private void registerPropertyItem(PropertyCategory category, PropertyStore propertyStore, String resourceKey,
-			String metaData, String mapping, int weight, boolean hidden, String displayMode, boolean readOnly,
-			String defaultValue, boolean isVariable, boolean encrypted, String defaultsToProperty) {
+	private void registerPropertyItem(PropertyCategory category, PropertyStore propertyStore, Element pnode) {
 
+	
+		String resourceKey = pnode.getAttribute("resourceKey");
+		String inputType = pnode.getAttribute("inputType");
+		String mapping = pnode.hasAttribute("mapping") ? pnode.getAttribute("mapping") : "";
+		int weight = pnode.hasAttribute("weight") ? Integer.parseInt(pnode.getAttribute("weight")) : 9999;
+		boolean hidden = pnode.hasAttribute("hidden") && pnode.getAttribute("hidden").equalsIgnoreCase("true");
+		String displayMode = pnode.hasAttribute("displayMode") ? pnode.getAttribute("displayMode") : "";
+		boolean readOnly = pnode.hasAttribute("readOnly") && pnode.getAttribute("readOnly").equalsIgnoreCase("true");
+		String defaultValue = Boolean.getBoolean("hypersocket.development") && pnode.hasAttribute("developmentValue")
+				? pnode.getAttribute("developmentValue") : pnode.hasAttribute("defaultValue") ? pnode.getAttribute("defaultValue") : "";
+		boolean isVariable = pnode.hasAttribute("variable") && pnode.getAttribute("variable").equalsIgnoreCase("true");
+		boolean encrypted = pnode.hasAttribute("encrypted") && pnode.getAttribute("encrypted").equalsIgnoreCase("true");
+		String defaultsToProperty = pnode.hasAttribute("defaultsToProperty") ? pnode.getAttribute("defaultsToProperty") : null;
+		String metaData = generateMetaData(pnode);
+		
 		if (log.isInfoEnabled()) {
 			log.info("Registering property " + resourceKey);
 		}
-
+		
 		if (defaultValue != null && defaultValue.startsWith("classpath:")) {
 			String url = defaultValue.substring(10);
 			InputStream in = getClass().getResourceAsStream(url);
@@ -404,7 +411,6 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			template.setResourceKey(resourceKey);
 		}
 
-		template.setMetaData(metaData);
 		template.setDefaultValue(defaultValue);
 		template.setWeight(weight);
 		template.setHidden(hidden);
@@ -416,11 +422,22 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		template.setDefaultsToProperty(defaultsToProperty);
 		template.setPropertyStore(propertyStore);
 
+		for(int i = 0; i < pnode.getAttributes().getLength(); i++) {
+			Node n = pnode.getAttributes().item(i);
+			if(!isKnownAttributeName(n.getNodeName())) {
+				template.attributes.put(n.getNodeName(), n.getNodeValue());
+			}
+		}
+		
 		propertyStore.registerTemplate(template, resourceXmlPath);
 		category.getTemplates().add(template);
 		activeTemplates.add(template);
 		propertyTemplates.put(resourceKey, template);
-
+		if(!propertyTemplatesByType.containsKey(inputType)) {
+			propertyTemplatesByType.put(inputType, new HashSet<PropertyTemplate>());
+		}
+		propertyTemplatesByType.get(inputType).add(template);
+		
 		Collections.sort(category.getTemplates(), new Comparator<AbstractPropertyTemplate>() {
 			@Override
 			public int compare(AbstractPropertyTemplate cat1, AbstractPropertyTemplate cat2) {
@@ -435,6 +452,16 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 		});
 
+	}
+	
+	protected boolean isKnownAttributeName(String name) {
+		
+		String getMethod = "get" + StringUtils.capitalize(name);
+		try {
+			return PropertyTemplate.class.getMethod(getMethod) != null;
+		} catch (NoSuchMethodException e) {
+			return false;
+		} 
 	}
 
 	private PropertyCategory registerPropertyCategory(String resourceKey, String bundle, int weight,

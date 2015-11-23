@@ -38,7 +38,7 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="category.proxy" resourceBundle="HypersocketServer" weight="300">
 			<property resourceKey="proxy.enabled" inputType="switch" restart="false" defaultValue="false" weight="100" store="hypersocketServer" />
-	   	    <property resourceKey="proxy.host" inputType="text" defaultValue="" weight="200"/>
+	   	    <property resourceKey="proxy.host" inputType="text" defaultValue="3128" weight="200"/>
 	   	    <property resourceKey="proxy.port" inputType="integer" minValue="1" maxValue="65535" defaultValue="" weight="300"/>
 	   	    <property resourceKey="proxy.type" inputType="select" defaultValue="HTTP" options="HTTP,SOCKS" weight="400"/>
 	   	    <property resourceKey="proxy.bypass" inputType="multipleTextInput" defaultValue="" weight="400"/>

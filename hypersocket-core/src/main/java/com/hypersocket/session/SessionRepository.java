@@ -55,4 +55,6 @@ public interface SessionRepository extends AbstractEntityRepository<Session,Stri
 			CriteriaConfiguration... configs);
 
 	long getResourceCount(Realm realm, String searchPattern, CriteriaConfiguration... configs);
+
+	Map<String, Long> getPrincipalUsage(Realm realm, int maximumUsers, Date startDate, Date endDate);
 }

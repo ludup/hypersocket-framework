@@ -89,4 +89,6 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	List<?> searchResources(Realm currentRealm, String searchPattern, int start, int length, ColumnSort[] sorting) throws AccessDeniedException;
 
 	Long getResourceCount(Realm currentRealm, String searchPattern) throws AccessDeniedException;
+
+	Map<String, Long> getPrincipalUsage(Date from, Date now) throws AccessDeniedException;
 }

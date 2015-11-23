@@ -9,6 +9,10 @@ package com.hypersocket.repository;
 
 import java.util.List;
 
+import javax.swing.SortOrder;
+
+import com.hypersocket.tables.Sort;
+
 public interface AbstractRepository<K> {
 
 	public void refresh(Object entity);
@@ -20,6 +24,10 @@ public interface AbstractRepository<K> {
 	Long getCount(Class<?> clz, CriteriaConfiguration... configs);
 
 	Long max(String column, Class<?> clz, CriteriaConfiguration... configs);
+
+	Long min(String column, Class<?> clz, CriteriaConfiguration... configs);
+
+	List<?> sum(Class<?> clz, String groupBy, Sort order, CriteriaConfiguration... configs);
 
 	List<?> getCounts(Class<?> clz, String groupBy,
 			CriteriaConfiguration... configs);
