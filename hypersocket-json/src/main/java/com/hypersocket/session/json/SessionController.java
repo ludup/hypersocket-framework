@@ -25,8 +25,8 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.scheduler.SchedulerResourceColumns;
 import com.hypersocket.session.Session;
+import com.hypersocket.session.SessionColumns;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.tables.BootstrapTableResult;
@@ -218,8 +218,8 @@ public class SessionController extends ResourceController {
 			return processDataTablesRequest(request, new BootstrapTablePageProcessor() {
 
 				@Override
-				public Column getColumn(int col) {
-					return SchedulerResourceColumns.values()[col];
+				public Column getColumn(String col) {
+					return SessionColumns.valueOf(col.toUpperCase());
 				}
 
 				@Override

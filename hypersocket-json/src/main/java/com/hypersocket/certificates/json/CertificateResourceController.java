@@ -86,8 +86,8 @@ public class CertificateResourceController extends ResourceController {
 					new BootstrapTablePageProcessor() {
 
 						@Override
-						public Column getColumn(int col) {
-							return CertificateResourceColumns.values()[col];
+						public Column getColumn(String col) {
+							return CertificateResourceColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override

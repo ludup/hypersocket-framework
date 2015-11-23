@@ -128,8 +128,8 @@ public class RealmController extends ResourceController {
 					new BootstrapTablePageProcessor() {
 
 						@Override
-						public Column getColumn(int col) {
-							return RealmColumns.values()[col];
+						public Column getColumn(String col) {
+							return RealmColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override
@@ -331,8 +331,8 @@ public class RealmController extends ResourceController {
 					new BootstrapTablePageProcessor() {
 
 						@Override
-						public Column getColumn(int col) {
-							return PrincipalColumns.values()[col];
+						public Column getColumn(String col) {
+							return PrincipalColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override

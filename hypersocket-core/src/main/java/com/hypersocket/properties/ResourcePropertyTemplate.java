@@ -26,6 +26,7 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 		this.propertyStore = t.getPropertyStore();
 		this.defaultsToProperty = t.getDefaultsToProperty();
 		this.encrypted = t.isEncrypted();
+		this.metaData = t.metaData;
 		this.attributes.putAll(t.attributes);
 	}
 	
