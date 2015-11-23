@@ -199,7 +199,8 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	public Collection<PropertyCategory> getPropertyCategories(String group)
 			throws AccessDeniedException {
 		assertPermission(ConfigurationPermission.READ);
-		return repository.getPropertyCategories(getCurrentRealm(), group);
+		Collection<PropertyCategory> cats = repository.getPropertyCategories(getCurrentRealm(), group);
+		return cats;
 	}
 
 	@Override

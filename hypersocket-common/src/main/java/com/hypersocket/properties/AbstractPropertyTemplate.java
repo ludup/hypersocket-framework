@@ -1,5 +1,8 @@
 package com.hypersocket.properties;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public abstract class AbstractPropertyTemplate {
@@ -7,7 +10,6 @@ public abstract class AbstractPropertyTemplate {
 	String resourceKey;
 	String defaultValue;
 	String defaultsToProperty;
-	String metaData;
 	int weight;
 	boolean hidden;
 	String displayMode;
@@ -16,6 +18,7 @@ public abstract class AbstractPropertyTemplate {
 	PropertyCategory category;
 	String mapping;
 	PropertyStore propertyStore;
+	Map<String,String> attributes = new HashMap<String,String>();
 	
 	public String getResourceKey() {
 		return resourceKey;
@@ -37,14 +40,6 @@ public abstract class AbstractPropertyTemplate {
 
 	public void setDefaultValue(String defaultValue) {
 		this.defaultValue = defaultValue;
-	}
-
-	public String getMetaData() {
-		return metaData;
-	}
-
-	public void setMetaData(String metaData) {
-		this.metaData = metaData;
 	}
 
 	public Integer getWeight() {
@@ -123,6 +118,10 @@ public abstract class AbstractPropertyTemplate {
 
 	public void setDefaultsToProperty(String defaultsToProperty) {
 		this.defaultsToProperty = defaultsToProperty;
+	}
+	
+	public Map<String,String> getAttributes() {
+		return attributes;
 	}
 
 	@Override

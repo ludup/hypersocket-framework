@@ -415,7 +415,6 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 			template.setResourceKey(resourceKey);
 		}
 
-		template.setMetaData(metaData);
 		template.setDefaultValue(defaultValue);
 		template.setWeight(weight);
 		template.setHidden(hidden);

@@ -18,6 +18,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -151,30 +152,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 					registerPropertyItem(
 							cat,
 							store,
-							pnode.getAttribute("resourceKey"),
-							generateMetaData(pnode),
-							pnode.getAttribute("mapping"),
-							pnode.hasAttribute("weight") ? Integer
-									.parseInt(pnode.getAttribute("weight"))
-									: Integer.MAX_VALUE,
-							pnode.hasAttribute("hidden")
-									&& pnode.getAttribute("hidden")
-											.equalsIgnoreCase("true"),
-							pnode.hasAttribute("displayMode") ? pnode.getAttribute("displayMode") : "",
-							pnode.hasAttribute("readOnly")
-									&& pnode.getAttribute("readOnly")
-											.equalsIgnoreCase("true"),
-							Boolean.getBoolean("hypersocket.development")
-									&& pnode.hasAttribute("developmentValue") ? pnode
-									.getAttribute("developmentValue") : pnode
-									.hasAttribute("defaultValue") ? pnode
-									.getAttribute("defaultValue") : "",
-							pnode.hasAttribute("encrypted")
-									&& pnode.getAttribute("encrypted")
-											.equalsIgnoreCase("true"),
-							pnode.hasAttribute("defaultsToProperty")
-									? pnode.getAttribute("defaultsToProperty")
-									: null);
+							pnode);
 				} catch (Throwable e) {
 					log.error("Failed to register property item", e);
 				}
@@ -256,10 +234,21 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 	}
 
 	private void registerPropertyItem(PropertyCategory category,
-			PropertyStore propertyStore, String resourceKey, String metaData,
-			String mapping, int weight, boolean hidden, String displayMode, boolean readOnly,
-			String defaultValue, boolean encrypted, String defaultsToProperty) {
+			PropertyStore propertyStore, Element pnode) {
 
+		String resourceKey = pnode.getAttribute("resourceKey");
+		String inputType = pnode.getAttribute("inputType");
+		String mapping = pnode.hasAttribute("mapping") ? pnode.getAttribute("mapping") : "";
+		int weight = pnode.hasAttribute("weight") ? Integer.parseInt(pnode.getAttribute("weight")) : 9999;
+		boolean hidden = pnode.hasAttribute("hidden") && pnode.getAttribute("hidden").equalsIgnoreCase("true");
+		String displayMode = pnode.hasAttribute("displayMode") ? pnode.getAttribute("displayMode") : "";
+		boolean readOnly = pnode.hasAttribute("readOnly") && pnode.getAttribute("readOnly").equalsIgnoreCase("true");
+		String defaultValue = Boolean.getBoolean("hypersocket.development") && pnode.hasAttribute("developmentValue")
+				? pnode.getAttribute("developmentValue") : pnode.hasAttribute("defaultValue") ? pnode.getAttribute("defaultValue") : "";
+		boolean encrypted = pnode.hasAttribute("encrypted") && pnode.getAttribute("encrypted").equalsIgnoreCase("true");
+		String defaultsToProperty = pnode.hasAttribute("defaultsToProperty") ? pnode.getAttribute("defaultsToProperty") : null;
+		String metaData = generateMetaData(pnode);
+		
 		PropertyTemplate template = propertyStore
 				.getPropertyTemplate(resourceKey);
 		if (template == null) {
@@ -267,7 +256,6 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 			template.setResourceKey(resourceKey);
 		}
 
-		template.setMetaData(metaData);
 		template.setDefaultValue(defaultValue);
 		template.setWeight(weight);
 		template.setHidden(hidden);
@@ -279,6 +267,13 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		template.setMapping(mapping);
 		template.setPropertyStore(propertyStore);
 
+		for(int i = 0; i < pnode.getAttributes().getLength(); i++) {
+			Node n = pnode.getAttributes().item(i);
+			if(!isKnownAttributeName(n.getNodeName())) {
+				template.attributes.put(n.getNodeName(), n.getNodeValue());
+			}
+		}
+		
 		propertyStore.registerTemplate(template, resourceXmlPath);
 		
 		category.getTemplates().remove(template);
@@ -295,6 +290,16 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 		propertyStoresByResourceKey.put(resourceKey, propertyStore);
 
+	}
+
+	protected boolean isKnownAttributeName(String name) {
+		
+		String getMethod = "get" + StringUtils.capitalize(name); 
+		try {
+			return PropertyTemplate.class.getMethod(getMethod) != null;
+		} catch (NoSuchMethodException e) {
+			return false;
+		} 
 	}
 
 	private PropertyCategory registerPropertyCategory(String categoryKey,

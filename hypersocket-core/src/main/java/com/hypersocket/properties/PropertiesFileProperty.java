@@ -29,10 +29,6 @@ public class PropertiesFileProperty implements Property {
 		return template.getDefaultValue();
 	}
 
-	public String getMetaData() {
-		return template.getMetaData();
-	}
-
 	public int getWeight() {
 		return template.getWeight();
 	}
