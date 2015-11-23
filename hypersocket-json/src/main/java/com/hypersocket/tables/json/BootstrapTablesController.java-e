@@ -30,16 +30,7 @@ public class BootstrapTablesController extends AuthenticatedController {
 				: Integer.parseInt(request.getParameter("limit")));
 
 		List<ColumnSort> sorting = new ArrayList<ColumnSort>();
-		// int count = (request.getParameter("iSortingCols") == null ? 0 :
-		// Integer
-		// .parseInt(request.getParameter("iSortingCols")));
-		// for (int i = 0; i < count; i++) {
-		if (request.getParameter("sort") != null) {
-			int col = Integer.parseInt(request.getParameter("sort"));
-			String sor = request.getParameter("order");
-			sorting.add(new ColumnSort(processor.getColumn(col), Sort
-					.valueOf(sor.toUpperCase())));
-		}
+		
 
 		String searchPattern = request.getParameter("search") == null ? ""
 				: request.getParameter("search");

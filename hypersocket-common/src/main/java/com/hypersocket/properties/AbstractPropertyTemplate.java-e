@@ -18,6 +18,7 @@ public abstract class AbstractPropertyTemplate {
 	PropertyCategory category;
 	String mapping;
 	PropertyStore propertyStore;
+	String metaData;
 	Map<String,String> attributes = new HashMap<String,String>();
 	
 	public String getResourceKey() {
@@ -122,6 +123,14 @@ public abstract class AbstractPropertyTemplate {
 	
 	public Map<String,String> getAttributes() {
 		return attributes;
+	}
+
+	public String getMetaData() {
+		return metaData;
+	}
+
+	public void setMetaData(String metaData) {
+		this.metaData = metaData;
 	}
 
 	@Override

@@ -266,6 +266,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		template.setDefaultsToProperty(defaultsToProperty);
 		template.setMapping(mapping);
 		template.setPropertyStore(propertyStore);
+		template.setMetaData(metaData);
 
 		for(int i = 0; i < pnode.getAttributes().getLength(); i++) {
 			Node n = pnode.getAttributes().item(i);

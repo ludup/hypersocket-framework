@@ -381,11 +381,6 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			c.configure(criteria);
 		}
 
-		for (ColumnSort sort : sorting) {
-			criteria.addOrder(sort.getSort() == Sort.ASC ? Order.asc(sort.getColumn().getColumnName())
-					: Order.desc(sort.getColumn().getColumnName()));
-		}
-
 		criteria.setProjection(Projections.distinct(Projections.id()));
 
 		criteria.setFirstResult(start);
@@ -402,6 +397,11 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		criteria.add(Restrictions.in("id", ids));
 
+		for (ColumnSort sort : sorting) {
+			criteria.addOrder(sort.getSort() == Sort.ASC ? Order.asc(sort.getColumn().getColumnName())
+					: Order.desc(sort.getColumn().getColumnName()));
+		}
+		
 		return ((List<T>) criteria.list());
 	};
 }

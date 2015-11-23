@@ -82,8 +82,8 @@ public class BrowserLaunchableController extends BootstrapTableController {
 					new BootstrapTablePageProcessor() {
 
 						@Override
-						public Column getColumn(int col) {
-							return BrowserLaunchableColumns.values()[col];
+						public Column getColumn(String col) {
+							return BrowserLaunchableColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override

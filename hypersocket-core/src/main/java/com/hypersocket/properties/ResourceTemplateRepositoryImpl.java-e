@@ -421,7 +421,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		template.setEncrypted(encrypted);
 		template.setDefaultsToProperty(defaultsToProperty);
 		template.setPropertyStore(propertyStore);
-
+		template.setMetaData(metaData);
+		
 		for(int i = 0; i < pnode.getAttributes().getLength(); i++) {
 			Node n = pnode.getAttributes().item(i);
 			if(!isKnownAttributeName(n.getNodeName())) {

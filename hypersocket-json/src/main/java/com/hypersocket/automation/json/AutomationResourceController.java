@@ -94,8 +94,8 @@ public class AutomationResourceController extends AbstractTriggerController {
 					new BootstrapTablePageProcessor() {
 
 						@Override
-						public Column getColumn(int col) {
-							return AutomationResourceColumns.values()[col];
+						public Column getColumn(String col) {
+							return AutomationResourceColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override
