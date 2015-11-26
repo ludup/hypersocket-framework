@@ -13,7 +13,6 @@ import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.tables.BootstrapTablesResult;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.Sort;
 
 public class BootstrapTablesController extends AuthenticatedController {
 

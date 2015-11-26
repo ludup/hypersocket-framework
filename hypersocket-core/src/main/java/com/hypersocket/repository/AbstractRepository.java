@@ -9,8 +9,6 @@ package com.hypersocket.repository;
 
 import java.util.List;
 
-import javax.swing.SortOrder;
-
 import com.hypersocket.tables.Sort;
 
 public interface AbstractRepository<K> {
