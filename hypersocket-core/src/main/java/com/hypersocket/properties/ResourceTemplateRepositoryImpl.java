@@ -264,7 +264,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 			PropertyCategory cat = registerPropertyCategory(node.getAttribute("resourceKey"),
 					node.getAttribute("resourceBundle"), Integer.parseInt(node.getAttribute("weight")), false, group,
-					node.getAttribute("displayMode"));
+					node.getAttribute("displayMode"), 
+					node.hasAttribute("system") && Boolean.parseBoolean(node.getAttribute("system")));
 
 			PropertyStore defaultStore = getPropertyStore();
 
@@ -466,7 +467,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	private PropertyCategory registerPropertyCategory(String resourceKey, String bundle, int weight,
-			boolean userCreated, String group, String displayMode) {
+			boolean userCreated, String group, String displayMode, boolean systemOnly) {
 
 		if (activeCategories.containsKey(resourceKey)) {
 			PropertyCategory cat = activeCategories.get(resourceKey);
@@ -489,6 +490,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		category.setDisplayMode(displayMode);
 		category.setWeight(weight);
 		category.setUserCreated(userCreated);
+		category.setSystemOnly(systemOnly);
 
 		activeCategories.put(category.getCategoryKey(), category);
 		return category;
@@ -670,6 +672,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			tmp.setWeight(c.getWeight());
 			tmp.setDisplayMode(c.getDisplayMode());
 			tmp.setUserCreated(c.isUserCreated());
+			tmp.setSystemOnly(c.isSystemOnly());
 			for (AbstractPropertyTemplate t : c.getTemplates()) {
 				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
 			}
@@ -684,6 +687,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				tmp.setWeight(c.getWeight());
 				tmp.setDisplayMode(c.getDisplayMode());
 				tmp.setUserCreated(c.isUserCreated());
+				tmp.setSystemOnly(c.isSystemOnly());
 				for (AbstractPropertyTemplate t : c.getTemplates()) {
 					tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
 				}
@@ -715,6 +719,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			tmp.setWeight(c.getWeight());
 			tmp.setUserCreated(c.isUserCreated());
 			tmp.setDisplayMode(c.getDisplayMode());
+			tmp.setSystemOnly(c.isSystemOnly());
 			for (AbstractPropertyTemplate t : c.getTemplates()) {
 				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
 			}
@@ -732,6 +737,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				tmp.setWeight(c.getWeight());
 				tmp.setDisplayMode(c.getDisplayMode());
 				tmp.setUserCreated(c.isUserCreated());
+				tmp.setSystemOnly(c.isSystemOnly());
 				for (AbstractPropertyTemplate t : c.getTemplates()) {
 					tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
 				}

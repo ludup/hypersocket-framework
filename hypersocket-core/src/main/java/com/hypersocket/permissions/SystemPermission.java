@@ -10,6 +10,7 @@ package com.hypersocket.permissions;
 public enum SystemPermission implements PermissionType {
 
 	SYSTEM_ADMINISTRATION("system.administration", false),
+	SWITCH_REALM("switchRealm.permission", true),
 	SYSTEM("system.permission", true);
 	
 	private final String val;
