@@ -130,7 +130,8 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 							: SYSTEM_GROUP,
 					node.getAttribute("resourceBundle"), Integer.parseInt(node
 							.getAttribute("weight")),
-					node.getAttribute("displayMode"));
+					node.getAttribute("displayMode"),
+					node.hasAttribute("system") && Boolean.parseBoolean(node.getAttribute("system")));
 
 			NodeList properties = node.getElementsByTagName("property");
 
@@ -304,7 +305,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 	}
 
 	private PropertyCategory registerPropertyCategory(String categoryKey,
-			String categoryGroup, String bundle, int weight, String displayMode) {
+			String categoryGroup, String bundle, int weight, String displayMode, boolean systemOnly) {
 
 		if (activeCategories.containsKey(categoryKey) 
 				&& !activeCategories.get(categoryKey).getBundle().equals(bundle)) {
@@ -324,7 +325,8 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		category.setCategoryGroup(categoryGroup);
 		category.setDisplayMode(displayMode);
 		category.setWeight(weight);
-
+		category.setSystemOnly(systemOnly);
+		
 		activeCategories.put(category.getCategoryKey(), category);
 		return category;
 	}

@@ -21,6 +21,7 @@ public class PropertyCategory implements Serializable {
 	String displayMode;
 	int weight;
 	boolean userCreated;
+	boolean systemOnly = false;
 	
 	List<AbstractPropertyTemplate> templates = new ArrayList<AbstractPropertyTemplate>();
 	
@@ -82,6 +83,14 @@ public class PropertyCategory implements Serializable {
 
 	public void setDisplayMode(String displayMode) {
 		this.displayMode = displayMode;
+	}
+
+	public boolean isSystemOnly() {
+		return systemOnly;
+	}
+
+	public void setSystemOnly(boolean systemOnly) {
+		this.systemOnly = systemOnly;
 	}
 	
 	

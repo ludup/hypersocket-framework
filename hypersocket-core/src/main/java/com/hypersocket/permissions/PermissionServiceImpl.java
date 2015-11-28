@@ -102,6 +102,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 						RESOURCE_BUNDLE, "category.permissions");
 				registerPermission(SystemPermission.SYSTEM_ADMINISTRATION, cat);
 				registerPermission(SystemPermission.SYSTEM, cat);
+				registerPermission(SystemPermission.SWITCH_REALM, cat);
 			}
 		});
 
