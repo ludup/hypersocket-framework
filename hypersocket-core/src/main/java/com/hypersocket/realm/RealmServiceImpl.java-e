@@ -360,7 +360,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Realm getRealmById(Long id) throws AccessDeniedException {
 
-		assertPermission(RealmPermission.READ);
+		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
 
 		return realmRepository.getRealmById(id);
 	}
@@ -537,14 +537,14 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public List<Realm> allRealms() throws AccessDeniedException {
-		assertPermission(RealmPermission.READ);
+		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
 
 		return filterRealms(null, false);
 	}
 
 	@Override
 	public List<Realm> allRealms(boolean ignoreMissingProvider) throws AccessDeniedException {
-		assertPermission(RealmPermission.READ);
+		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
 		return filterRealms(null, ignoreMissingProvider);
 	}
 
