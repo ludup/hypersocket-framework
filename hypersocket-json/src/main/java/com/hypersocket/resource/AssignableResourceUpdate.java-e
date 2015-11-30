@@ -10,9 +10,18 @@ public class AssignableResourceUpdate {
 	String name;
 	Long[] roles;
 	PropertyItem[] properties;
+	String logo;
 	
 	public AssignableResourceUpdate() {
 		
+	}
+
+	public String getLogo() {
+		return logo;
+	}
+
+	public void setLogo(String logo) {
+		this.logo = logo;
 	}
 
 	public Long getId() {
@@ -46,7 +55,5 @@ public class AssignableResourceUpdate {
 	public void setProperties(PropertyItem[] properties) {
 		this.properties = properties;
 	}
-	
-	
 	
 }
