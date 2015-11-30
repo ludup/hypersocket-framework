@@ -61,6 +61,13 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<version>2.3.2</version>
 		</dependency>
+		
+		<dependency>
+			<artifactId>icon-generator</artifactId>
+			<groupId>com.sshtools</groupId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		
 	</dependencies>
 
 </project>

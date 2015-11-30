@@ -33,7 +33,7 @@ import com.hypersocket.transactions.TransactionService;
 public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		extends AbstractAuthenticatedServiceImpl implements AbstractResourceService<T>,
 			EventPropertyCollector {
-
+	
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
 
