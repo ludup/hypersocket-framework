@@ -115,4 +115,6 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	String getDecryptedValue(Realm realm, String resourceKey);
 
+	boolean isDisabled(Principal principal);
+
 }

@@ -238,7 +238,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 			PropertyStore propertyStore, Element pnode) {
 
 		String resourceKey = pnode.getAttribute("resourceKey");
-		String inputType = pnode.getAttribute("inputType");
+//		String inputType = pnode.getAttribute("inputType");
 		String mapping = pnode.hasAttribute("mapping") ? pnode.getAttribute("mapping") : "";
 		int weight = pnode.hasAttribute("weight") ? Integer.parseInt(pnode.getAttribute("weight")) : 9999;
 		boolean hidden = pnode.hasAttribute("hidden") && pnode.getAttribute("hidden").equalsIgnoreCase("true");
