@@ -655,6 +655,11 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	public boolean supportsAccountDisable(Realm realm) {
 		return false;
 	}
+	
+	@Override
+	public boolean isDisabled(Principal principal) {
+		return false;
+	}
 
 	@Override
 	public Principal disableAccount(Principal principal)
