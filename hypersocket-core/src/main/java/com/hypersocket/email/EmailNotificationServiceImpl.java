@@ -185,7 +185,6 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		}
 
 		// Not an email address? Is this a principal of the realm?
-		
 		Principal principal = realmService.getPrincipalByName(getCurrentRealm(), val, PrincipalType.USER);
 		
 		if(principal!=null) {
