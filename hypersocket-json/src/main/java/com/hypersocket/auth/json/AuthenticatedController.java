@@ -7,6 +7,9 @@
  ******************************************************************************/
 package com.hypersocket.auth.json;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Enumeration;
@@ -209,11 +212,32 @@ public class AuthenticatedController {
 
 	@ExceptionHandler(Throwable.class)
 	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-	public void handleException(Throwable ex) {
+	public void handleException(HttpServletRequest request, Throwable ex) {
 		// Log this?
 		if (log.isErrorEnabled()) {
 			log.error("Caught internal error", ex);
 		}
+		
+		if(ex instanceof IllegalStateException) {
+			ex = ex.getCause();
+		}
+		
+		StringWriter writer = new StringWriter();
+		PrintWriter pwriter = new PrintWriter(writer);
+		
+		try {
+		ex.printStackTrace(pwriter);
+		request.setAttribute("message", ex.getMessage());
+		request.setAttribute("stacktrace", writer.toString());
+		
+		} finally {
+			pwriter.close();
+			try {
+				writer.close();
+			} catch (IOException e) {
+			}
+		}
+		
 	}
 
 }
