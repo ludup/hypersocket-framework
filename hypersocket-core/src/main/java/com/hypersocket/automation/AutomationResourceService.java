@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.quartz.SchedulerException;
+
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
@@ -44,5 +46,7 @@ public interface AutomationResourceService extends
 			String task, Map<String, String> properties, List<TriggerCondition> allConditions,
 			List<TriggerCondition> anyConditions, TriggerResource parent, AutomationResource resource2)
 					throws ResourceChangeException, AccessDeniedException;
+
+	void runNow(AutomationResource resource) throws SchedulerException;
 
 }
