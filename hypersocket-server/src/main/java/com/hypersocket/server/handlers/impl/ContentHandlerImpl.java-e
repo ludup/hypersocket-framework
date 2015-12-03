@@ -98,7 +98,13 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 				if(log.isDebugEnabled()) {
 					log.debug("Resource not found in " + basePath + " [" + status + "]: " + request.getRequestURI());
 				}
-				response.sendError(status);
+				if(status==HttpStatus.SC_NOT_FOUND) {
+					responseProcessor.send404(request, response);
+				} else if(status==HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+					responseProcessor.send500(request, response);
+				} else {
+					response.sendError(status);
+				}
 				return;
 			}
 			
