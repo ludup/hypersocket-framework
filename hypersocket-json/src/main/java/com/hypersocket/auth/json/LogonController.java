@@ -107,7 +107,7 @@ public class LogonController extends AuthenticatedController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public AuthenticationResult logon(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
-			UnauthorizedException, UnsupportedEncodingException {
+			UnauthorizedException, IOException, RedirectException {
 		return logon(request, response, null);
 	}
 
@@ -117,7 +117,7 @@ public class LogonController extends AuthenticatedController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public AuthenticationResult logon(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String scheme)
-			throws AccessDeniedException, UnauthorizedException, UnsupportedEncodingException {
+			throws AccessDeniedException, UnauthorizedException, IOException, RedirectException {
 
 		setupSystemContext();
 
@@ -136,7 +136,9 @@ public class LogonController extends AuthenticatedController {
 					session = sessionUtils.touchSession(request, response);
 	
 					if (session != null) {
-						return getSuccessfulResult(session, flash);
+						
+						return getSuccessfulResult(session, flash, request, response);
+					
 					}
 				}
 			} catch (UnauthorizedException e) {
@@ -171,9 +173,13 @@ public class LogonController extends AuthenticatedController {
 				return getSuccessfulResult(
 						state.getSession(),
 						flash,
-						state.getHomePage());
+						state.getHomePage(),
+						request, 
+						response);
 			} else {
 
+				checkRedirect(request, response);
+				
 				return new AuthenticationRequiredResult(
 						configurationService.getValue(state.getRealm(),
 								"logon.banner"),
@@ -187,12 +193,20 @@ public class LogonController extends AuthenticatedController {
 						configurationService.hasUserLocales(), state.isNew(),
 						!state.hasNextStep(), success || state.isNew(),
 						state.isAuthenticationComplete());
+				
 			}
 		} finally {
 			clearSystemContext();
 		}
 	}
 
+	protected void checkRedirect(HttpServletRequest request, HttpServletResponse response) throws RedirectException, IOException {
+		
+		if(request.getParameter("redirectTo")!=null) {
+			throw new RedirectException(request.getParameter("redirectTo"));
+		}
+	}
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Map decodeParameters(Map parameterMap) throws UnsupportedEncodingException {
 		
@@ -299,15 +313,24 @@ public class LogonController extends AuthenticatedController {
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session,
-			String info, String homePage) {
+			String info, String homePage, 
+			HttpServletRequest request, 
+			HttpServletResponse response) throws IOException, RedirectException {
+		
+		checkRedirect(request,response);
 		return new AuthenticationSuccessResult(info,
 				configurationService.hasUserLocales(), session, homePage);
+		
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session,
-			String info) {
+			String info, HttpServletRequest request, HttpServletResponse response) throws IOException, RedirectException {
+		
+		checkRedirect(request,response);
+		
 		return new AuthenticationSuccessResult(info,
 				configurationService.hasUserLocales(), session, "");
+		
 	}
 
 }

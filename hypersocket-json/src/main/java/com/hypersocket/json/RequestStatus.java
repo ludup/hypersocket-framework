@@ -7,9 +7,9 @@
  ******************************************************************************/
 package com.hypersocket.json;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@XmlRootElement(name="requestStatus")
+@JsonIgnoreProperties
 public class RequestStatus {
 
 	boolean success = true;
