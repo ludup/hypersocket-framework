@@ -7,10 +7,16 @@
  ******************************************************************************/
 package com.hypersocket.server.handlers;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public interface HttpResponseProcessor {
 
 	void sendResponse(HttpServletRequest request, HttpServletResponse response, boolean chunked);
+
+	void send404(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException;
+
+	void send500(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }
