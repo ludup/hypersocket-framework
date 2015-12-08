@@ -10,7 +10,11 @@ package com.hypersocket.netty;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
@@ -20,6 +24,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.DateUtils;
@@ -55,12 +60,14 @@ import com.hypersocket.server.handlers.WebsocketHandler;
 import com.hypersocket.server.websocket.WebsocketClient;
 import com.hypersocket.server.websocket.WebsocketClientCallback;
 import com.hypersocket.servlet.HypersocketSession;
+import com.hypersocket.utils.ITokenResolver;
+import com.hypersocket.utils.TokenReplacementReader;
 
 public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		implements HttpResponseProcessor {
 
 	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
-
+	
 	private static Logger log = LoggerFactory
 			.getLogger(HttpRequestDispatcherHandler.class);
 
@@ -226,8 +233,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			}
 		}
 
-		nettyResponse.sendError(HttpStatus.SC_NOT_FOUND);
-		nettyResponse.setContentLength(0);
+		
+		send404(servletRequest, nettyResponse);
 		sendResponse(servletRequest, nettyResponse, false);
 
 		if (log.isDebugEnabled()) {
@@ -235,6 +242,37 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		}
 	}
 
+	@Override
+	public void send404(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
+		servletResponse.sendError(HttpStatus.SC_NOT_FOUND);
+		URL url = getClass().getResource("/404.html");
+		if(servletRequest.getAttribute("404.html")!=null) {
+			url = (URL) servletRequest.getAttribute("404.html");
+		}
+		servletRequest.setAttribute(CONTENT_INPUTSTREAM, url.openStream());
+	}
+	
+	@Override
+	public void send500(final HttpServletRequest servletRequest, final HttpServletResponse servletResponse) throws IOException {
+		servletResponse.sendError(HttpStatus.SC_NOT_FOUND);
+		URL url = getClass().getResource("/500.html");
+		if(servletRequest.getAttribute("500.html")!=null) {
+			url = (URL) servletRequest.getAttribute("500.html");
+		}
+		ITokenResolver resolver = new ITokenResolver() {
+			
+			@Override
+			public String resolveToken(String tokenName) {
+				return (String)servletRequest.getAttribute(tokenName);
+			}
+		};
+		
+		TokenReplacementReader reader = new TokenReplacementReader(
+				new InputStreamReader(url.openStream()), Arrays.asList(resolver));
+		servletRequest.setAttribute(CONTENT_INPUTSTREAM, 
+				new ReaderInputStream(reader, Charset.forName("UTF-8")));
+	}
+	
 	private void processWebsocketFrame(WebSocketFrame msg, Channel channel) {
 
 		if (log.isDebugEnabled()) {
@@ -258,6 +296,23 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			final HttpResponseServletWrapper servletResponse, boolean chunked) {
 
 		try {
+			
+			switch(servletResponse.getNettyResponse().getStatus().getCode()) {
+				case HttpStatus.SC_NOT_FOUND:
+				{
+					send404(servletRequest, servletResponse);
+					break;
+				}
+				case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+				{
+					send500(servletRequest, servletResponse);
+					break;
+				}
+				default:
+				{
+				}
+			}
+			
 			addStandardHeaders(servletResponse);
 
 			InputStream content = processContent(
@@ -312,7 +367,9 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 						.addListener(
 								new CheckCloseStateListener(servletResponse));
 			}
-
+			
+		} catch(IOException ex) {
+			log.error("IO Error sending HTTP response", ex);
 		} finally {
 			if (log.isDebugEnabled()) {
 				log.debug("End Response >>>>>>");
