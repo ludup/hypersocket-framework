@@ -9,6 +9,8 @@ package com.hypersocket.repository;
 
 import java.util.List;
 
+import com.hypersocket.tables.Sort;
+
 public interface AbstractRepository<K> {
 
 	public void refresh(Object entity);
@@ -25,5 +27,7 @@ public interface AbstractRepository<K> {
 			CriteriaConfiguration... configs);
 
 	void evict(Object entity);
+
+	List<?> sum(Class<?> clz, String groupBy, Sort order, CriteriaConfiguration... configs);
 
 }
