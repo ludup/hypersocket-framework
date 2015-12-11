@@ -435,6 +435,15 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 	
 	@Override
+	public Map<String,Long> getPrincipalUsage(Date startDate, Date endDate) throws AccessDeniedException {
+		
+		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
+		
+		return repository.getPrincipalUsage(getCurrentRealm(), 5, startDate, endDate);
+		
+	}
+	
+	@Override
 	public <T> SessionResourceToken<T> createSessionToken(T resource) {
 
 		SessionResourceToken<T> token = new SessionResourceToken<T>(

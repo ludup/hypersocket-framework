@@ -18,6 +18,7 @@ import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
@@ -294,6 +295,32 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		criteria.setProjection(
 				Projections.projectionList().add(Projections.groupProperty(groupBy)).add(Projections.count(groupBy)));
+		
+		return criteria.list();
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public List<?> sum(Class<?> clz, String groupBy, Sort order, CriteriaConfiguration... configs) {
+
+		Criteria criteria = createCriteria(clz);
+
+		for (CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		
+		ProjectionList projectionList = Projections.projectionList();
+		projectionList.add(Projections.groupProperty(groupBy));
+		projectionList.add(Projections.sum(groupBy), "sum");
+		criteria.setProjection(projectionList);
+		
+		if(order.equals(Sort.DESC)) {
+			criteria.addOrder(Order.desc("sum"));
+		} else {
+			criteria.addOrder(Order.asc("sum"));
+		}
 		
 		return criteria.list();
 	}

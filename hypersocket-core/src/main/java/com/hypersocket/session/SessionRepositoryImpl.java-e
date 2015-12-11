@@ -30,6 +30,7 @@ import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.RealmOrSystemRealmCriteria;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.tables.Sort;
 
 @Repository
 public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,String> implements SessionRepository {
@@ -291,4 +292,34 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		        }));
 	}
 
+	@Override
+	@Transactional(readOnly=true)
+	public Map<String,Long> getPrincipalUsage(final Realm realm, final int maximumUsers, final Date startDate, final Date endDate) {
+		
+		List<?> ret = sum(Session.class, "principal", Sort.DESC, new RealmOrSystemRealmCriteria(
+				realm), new CriteriaConfiguration() {
+
+					@Override
+					public void configure(Criteria criteria) {
+						
+						criteria.add(Restrictions.or(
+								Restrictions.and(Restrictions.ge("created", startDate), Restrictions.lt("created", endDate)),
+								Restrictions.and(Restrictions.lt("created", startDate), Restrictions.or(
+										Restrictions.ge("signedOut", startDate), Restrictions.isNull("signedOut")))));
+
+						
+						criteria.add(Restrictions.eq("system", false));
+						criteria.setMaxResults(maximumUsers);
+					}
+			
+		});
+		
+		Map<String,Long> results = new HashMap<String,Long>();
+		for(Object obj : ret) {
+			Object[] tmp = (Object[])obj;
+			results.put(((Principal) tmp[0]).getPrincipalDescription(), ((Long)tmp[1] / 60));
+		}
+		
+		return results;
+	}
 }
