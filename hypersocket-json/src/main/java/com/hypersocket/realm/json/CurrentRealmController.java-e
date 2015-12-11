@@ -717,7 +717,7 @@ public class CurrentRealmController extends ResourceController {
 					creds.getPrincipalId(), PrincipalType.USER);
 
 			realmService.setPassword(principal, creds.getPassword(),
-					creds.isForceChange());
+					creds.isForceChange(), !getCurrentPrincipal().equals(principal));
 
 			return new CredentialsStatus(true, I18N.getResource(
 					sessionUtils.getLocale(request),

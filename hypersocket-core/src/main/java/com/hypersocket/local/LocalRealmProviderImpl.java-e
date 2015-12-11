@@ -213,7 +213,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 			userRepository.refresh(user);
 
 			if(password!=null) {
-				setPassword(user, password, forceChange);
+				setPassword(user, password, forceChange, true);
 			}
 			return user;
 		} catch (Exception e) {
@@ -272,13 +272,13 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 			throw new ResourceChangeException(RESOURCE_BUNDLE, "invalid.password");
 		}
 		
-		setPassword(principal, newPassword, false);
+		setPassword(principal, newPassword, false, false);
 	}
 	
 	@Override
 	@Transactional
 	public void setPassword(Principal principal, char[] password,
-			boolean forceChangeAtNextLogon) throws ResourceCreationException {
+			boolean forceChangeAtNextLogon, boolean administrative) throws ResourceCreationException {
 
 		if (!(principal instanceof LocalUser)) {
 			throw new IllegalStateException("Principal is not a LocalUser");
@@ -317,8 +317,8 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	@Override
 	@Transactional
 	public void setPassword(Principal principal, String password,
-			boolean forceChangeAtNextLogon) throws ResourceCreationException {
-		setPassword(principal, password.toCharArray(), forceChangeAtNextLogon);
+			boolean forceChangeAtNextLogon, boolean administrative) throws ResourceCreationException {
+		setPassword(principal, password.toCharArray(), forceChangeAtNextLogon, administrative);
 	}
 
 	@Override
