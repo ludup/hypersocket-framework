@@ -738,4 +738,9 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 		return getDecryptedValue(realm, resourceKey);
 	}
 
+	@Override
+	public boolean canChangePassword(Principal principal) {
+		return true;
+	}
+
 }

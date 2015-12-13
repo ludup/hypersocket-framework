@@ -117,4 +117,6 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	boolean isDisabled(Principal principal);
 
+	boolean canChangePassword(Principal principal);
+
 }
