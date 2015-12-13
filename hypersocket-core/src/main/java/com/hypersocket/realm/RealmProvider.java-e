@@ -41,10 +41,10 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	Principal updateUser(Realm realm, Principal user, String username, Map<String, String> properties,
 			List<Principal> principals) throws ResourceChangeException;
 
-	void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon)
+	void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon, boolean administrative)
 			throws ResourceCreationException;
 
-	void setPassword(Principal principal, char[] password, boolean forceChangeAtNextLogon)
+	void setPassword(Principal principal, char[] password, boolean forceChangeAtNextLogon, boolean administrative)
 			throws ResourceCreationException;
 
 	boolean requiresPasswordChange(Principal principal);
@@ -102,7 +102,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Set<String> getGroupPropertyNames(Principal principal);
 
-	void changePassword(Principal principal, char[] charArray, char[] charArray2)
+	void changePassword(Principal principal, char[] oldPassword, char[] newPassword)
 			throws ResourceChangeException, ResourceCreationException;
 
 	Set<String> getUserVariableNames(Principal principal);
