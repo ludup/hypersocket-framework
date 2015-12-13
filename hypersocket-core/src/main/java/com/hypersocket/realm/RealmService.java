@@ -194,4 +194,6 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Collection<PropertyCategory> getGroupPropertyTemplates(Principal principal) throws AccessDeniedException;
 
+	boolean canChangePassword(Principal currentPrincipal);
+
 }

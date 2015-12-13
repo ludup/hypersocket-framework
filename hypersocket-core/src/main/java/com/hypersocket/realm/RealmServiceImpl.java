@@ -1544,4 +1544,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		RealmProvider provider = getProviderForRealm(realm);
 		return provider.getPrincipalCount(realm, PrincipalType.USER, "");
 	}
+
+	@Override
+	public boolean canChangePassword(Principal principal) {
+		
+		RealmProvider provider = getProviderForRealm(principal.getRealm());
+		
+		return provider.canChangePassword(principal);
+	}
 }
