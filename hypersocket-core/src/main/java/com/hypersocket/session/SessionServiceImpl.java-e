@@ -30,17 +30,21 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.auth.AuthenticationService;
+import com.hypersocket.auth.InvalidAuthenticationContext;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
+import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmPermission;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.events.SessionClosedEvent;
 import com.hypersocket.session.events.SessionEvent;
@@ -312,14 +316,33 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	protected void assertImpersonationPermission() throws AccessDeniedException {
 		if (hasSessionContext()) {
 			if (getCurrentSession().isImpersonating()) {
+				try {
+					if(permissionService.hasRole(getCurrentSession().getPrincipal(), 
+							permissionService.getRole(PermissionService.ROLE_ADMINISTRATOR, 
+									getCurrentSession().getPrincipal().getRealm()))) {
+						return;
+					}
+				} catch (ResourceNotFoundException e) {
+				}
+				
 				verifyPermission(getCurrentSession().getPrincipal(),
 						PermissionStrategy.EXCLUDE_IMPLIED,
 						SystemPermission.SYSTEM_ADMINISTRATION,
 						SystemPermission.SYSTEM);
+				
 				return;
 			}
 		}
 
+		try {
+			if(permissionService.hasRole(getCurrentPrincipal(), 
+					permissionService.getRole(PermissionService.ROLE_ADMINISTRATOR, 
+							getCurrentPrincipal().getRealm()))) {
+				return;
+			}
+		} catch (ResourceNotFoundException e) {
+		}
+		
 		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION,
 				SystemPermission.SYSTEM);
 
