@@ -17,6 +17,8 @@ public class UserVariableReplacementImpl extends
 		defaultReplacements = new HashSet<String>();
 //		defaultReplacements.add("password"); Don't advertise
 		defaultReplacements.add("principalName");
+		defaultReplacements.add("currentUser.email");
+		defaultReplacements.add("currentUser.phone");
 	}
 	
 	@Autowired
@@ -48,6 +50,18 @@ public class UserVariableReplacementImpl extends
 		if (defaultReplacements.contains(name)) {
 			if(name.equals("principalName")) {
 				return source.getPrincipalName();
+			} else if(name.equals("currentUser.email")) {
+				try {
+					return realmService.getPrincipalAddress(source, MediaType.EMAIL);
+				} catch (MediaNotFoundException e) {
+					return "";
+				}
+			} else if(name.equals("currentUser.phone")) {
+				try {
+					return realmService.getPrincipalAddress(source, MediaType.PHONE);
+				} catch (MediaNotFoundException e) {
+					return "";
+				}
 			}
 			throw new IllegalStateException(
 					"We should not be able to reach here. Did you add default replacement without implementing it?");
