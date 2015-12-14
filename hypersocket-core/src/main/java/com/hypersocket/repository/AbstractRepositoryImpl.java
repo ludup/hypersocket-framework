@@ -84,6 +84,9 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 		checkDemoMode();
 
+		if(entity instanceof AbstractEntity<?>) {
+			((AbstractEntity<?>)entity).setLastModified(new Date());
+		}
 		if (!isNew) {
 			hibernateTemplate.merge(entity);
 		} else {
@@ -120,7 +123,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		hibernateTemplate.flush();
 		hibernateTemplate.clear();
 	}
-
+	
 	@Transactional
 	protected void delete(Object entity) {
 

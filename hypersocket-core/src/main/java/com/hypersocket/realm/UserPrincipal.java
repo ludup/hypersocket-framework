@@ -7,8 +7,11 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import java.util.Date;
 
-public interface UserPrincipal {
-
-	public String getPrincipalName();
+public abstract class UserPrincipal extends Principal {
+	
+	public abstract Date getLastPasswordChange();
+	
+	public abstract Date getLastSignOn();
 }

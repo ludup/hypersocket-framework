@@ -10,6 +10,8 @@ package com.hypersocket.local;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,11 +39,12 @@ import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.session.events.SessionOpenEvent;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
 public class LocalRealmProviderImpl extends AbstractRealmProvider implements
-		LocalRealmProvider {
+		LocalRealmProvider, ApplicationListener<SessionOpenEvent> {
 
 	private static Logger log = LoggerFactory
 			.getLogger(LocalRealmProviderImpl.class);
@@ -741,6 +745,18 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	@Override
 	public boolean canChangePassword(Principal principal) {
 		return true;
+	}
+
+	@Override
+	public void onApplicationEvent(SessionOpenEvent event) {
+		
+		if(event.getPrincipal() instanceof LocalUser) {
+			
+			LocalUser user = (LocalUser) event.getPrincipal();
+			user.setLastSignOn(new Date(event.getTimestamp()));
+			userRepository.saveUser(user, new HashMap<String,String>());
+		}
+		
 	}
 
 }
