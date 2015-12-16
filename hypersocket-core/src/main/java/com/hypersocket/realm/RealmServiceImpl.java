@@ -620,7 +620,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon)
+	public void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon, boolean administrative)
 			throws ResourceCreationException, AccessDeniedException {
 
 		if (permissionService.hasSystemPermission(principal)) {
@@ -645,7 +645,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 			}
 
-			provider.setPassword(principal, password.toCharArray(), forceChangeAtNextLogon);
+			provider.setPassword(principal, password.toCharArray(), forceChangeAtNextLogon, administrative);
 
 			eventService.publishEvent(
 					new SetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider, principal));
@@ -1543,5 +1543,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		RealmProvider provider = getProviderForRealm(realm);
 		return provider.getPrincipalCount(realm, PrincipalType.USER, "");
+	}
+
+	@Override
+	public boolean canChangePassword(Principal principal) {
+		
+		RealmProvider provider = getProviderForRealm(principal.getRealm());
+		
+		return provider.canChangePassword(principal);
 	}
 }
