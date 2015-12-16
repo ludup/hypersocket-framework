@@ -23,6 +23,7 @@ import com.hypersocket.attributes.user.events.UserAttributeCreatedEvent;
 import com.hypersocket.attributes.user.events.UserAttributeDeletedEvent;
 import com.hypersocket.attributes.user.events.UserAttributeEvent;
 import com.hypersocket.attributes.user.events.UserAttributeUpdatedEvent;
+import com.hypersocket.auth.FakePrincipal;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -65,6 +66,7 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 	Map<String, PropertyTemplate> propertyTemplates = new HashMap<String, PropertyTemplate>();
 	
 	Map<Principal,Map<String,PropertyTemplate>> userPropertyTemplates = new HashMap<Principal,Map<String,PropertyTemplate>>();
+	FakePrincipal allUsersPrincial = new FakePrincipal("allusers");
 	
 	public UserAttributeServiceImpl() {
 		super("attribute");
@@ -335,7 +337,7 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 	Map<String, PropertyTemplate> getUserTemplates(Principal principal)  {
 		
 		if(principal == null) {
-			return new HashMap<String, PropertyTemplate>();
+			principal = allUsersPrincial;
 		}
 		
 		synchronized (userPropertyTemplates) {
@@ -344,7 +346,13 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 				return userPropertyTemplates.get(principal);
 			}
 			
-			Collection<UserAttribute> attributes = getPersonalResources(principal);
+			Collection<UserAttribute> attributes;
+			if(principal.equals(allUsersPrincial)) {
+				attributes = getResources();
+			} else {
+				attributes = getPersonalResources(principal);
+			}
+			
 			Map<String, PropertyTemplate> results = new HashMap<String, PropertyTemplate>();
 			
 			for(UserAttribute attr : attributes) {

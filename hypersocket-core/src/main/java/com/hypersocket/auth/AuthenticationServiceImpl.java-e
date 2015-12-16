@@ -359,7 +359,7 @@ public class AuthenticationServiceImpl extends
 					.getCurrentModule().getTemplate());
 
 			if (authenticator.isSecretModule()
-					&& state.getPrincipal() instanceof AuthenticationState.FakePrincipal) {
+					&& state.getPrincipal() instanceof FakePrincipal) {
 				state.setLastErrorMsg("error.genericLogonError");
 				state.setLastErrorIsResourceKey(true);
 				eventService.publishEvent(new AuthenticationAttemptEvent(this,
