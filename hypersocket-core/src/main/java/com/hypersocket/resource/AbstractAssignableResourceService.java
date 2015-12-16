@@ -11,6 +11,8 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.tables.ColumnSort;
 
 public interface AbstractAssignableResourceService<T> extends PasswordEnabledAuthenticatedService {
+	
+	String getFingerprint();
 
 	List<T> allResources();
 	

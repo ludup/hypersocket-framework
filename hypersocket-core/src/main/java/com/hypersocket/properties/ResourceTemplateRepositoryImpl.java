@@ -225,7 +225,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 					}
 				}
 			}
-		} else if (root.hasAttribute("context")) {
+		} 
+		
+		if (root.hasAttribute("context")) {
 			context = root.getAttribute("context");
 		}
 
