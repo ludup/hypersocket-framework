@@ -2,6 +2,8 @@ package com.hypersocket.resource;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +37,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		extends PasswordEnabledAuthenticatedServiceImpl implements
 		AbstractAssignableResourceService<T> {
 
+	private static SecureRandom random = new SecureRandom();
+
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
 
@@ -47,6 +51,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	TransactionService transactionService; 
 	
 	String resourceCategory;
+
+	private String fingerprint;
 	
 	protected abstract AbstractAssignableResourceRepository<T> getRepository();
 
@@ -86,6 +92,11 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 	protected PermissionType getReadPermission() {
 		return getPermission("READ");
+	}
+
+	@Override
+	public String getFingerprint() {
+		return fingerprint;
 	}
 
 	@Override
@@ -145,6 +156,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			beforeCreateResource(resource, properties);
 			
 			getRepository().saveResource(resource, properties, ops);
+			updateFingerprint();
 			
 			afterCreateResource(resource, properties);
 
@@ -227,6 +239,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			beforeUpdateResource(resource, properties);
 
 			getRepository().saveResource(resource, properties, ops);
+			updateFingerprint();
+			
 
 			afterUpdateResource(resource, properties);
 
@@ -255,6 +269,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 		try {
 			getRepository().deleteResource(resource, ops);
+			updateFingerprint();
+			
 			fireResourceDeletionEvent(resource);
 		} catch (Throwable t) {
 			fireResourceDeletionEvent(resource, t);
@@ -562,5 +578,9 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		
 		assertAnyPermission(getReadPermission());
 		return getRepository().getValue(resource, key, defaultValue);
+	}
+	
+	protected void updateFingerprint() {
+		fingerprint = new BigInteger(130, random).toString(32);
 	}
 }

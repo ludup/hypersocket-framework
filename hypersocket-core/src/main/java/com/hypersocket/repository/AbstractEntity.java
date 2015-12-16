@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @MappedSuperclass
-@JsonIgnoreProperties({"createDate", "modifiedDate"})
+@JsonIgnoreProperties({"createDate"})
 public abstract class AbstractEntity<T> {
 
 	public abstract T getId();
@@ -36,7 +36,7 @@ public abstract class AbstractEntity<T> {
     private Date created = new Date();
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date modified = new Date();
+    Date modified = new Date();
     
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
