@@ -285,6 +285,11 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 	@Override
 	public List<?> getCounts(Class<?> clz, String groupBy, CriteriaConfiguration... configs) {
+		return getCounts(clz, groupBy, false, 0, configs);
+	}
+	
+	@Override
+	public List<?> getCounts(Class<?> clz, String groupBy, boolean highestFirst, int maxResults, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(clz);
 
@@ -294,8 +299,17 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		criteria.setProjection(
-				Projections.projectionList().add(Projections.groupProperty(groupBy)).add(Projections.count(groupBy)));
+				Projections.projectionList().add(Projections.groupProperty(groupBy)).add(Projections.count(groupBy).as("resourceCount")));
 		
+		if(highestFirst) {
+			criteria.addOrder(Order.desc("resourceCount"));
+		} else {
+			criteria.addOrder(Order.asc("resourceCount"));
+		}
+		
+		if(maxResults > 0) {
+			criteria.setMaxResults(maxResults);
+		}
 		return criteria.list();
 	}
 	

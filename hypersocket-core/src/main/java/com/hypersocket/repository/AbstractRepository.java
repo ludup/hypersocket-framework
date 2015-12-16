@@ -30,4 +30,7 @@ public interface AbstractRepository<K> {
 
 	List<?> sum(Class<?> clz, String groupBy, Sort order, CriteriaConfiguration... configs);
 
+	List<?> getCounts(Class<?> clz, String groupBy, boolean highestFirst, int maxResults,
+			CriteriaConfiguration... configs);
+
 }
