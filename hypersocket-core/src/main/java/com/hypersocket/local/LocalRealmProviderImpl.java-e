@@ -10,6 +10,8 @@ package com.hypersocket.local;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,11 +39,12 @@ import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.session.events.SessionOpenEvent;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
 public class LocalRealmProviderImpl extends AbstractRealmProvider implements
-		LocalRealmProvider {
+		LocalRealmProvider, ApplicationListener<SessionOpenEvent> {
 
 	private static Logger log = LoggerFactory
 			.getLogger(LocalRealmProviderImpl.class);
@@ -213,7 +217,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 			userRepository.refresh(user);
 
 			if(password!=null) {
-				setPassword(user, password, forceChange);
+				setPassword(user, password, forceChange, true);
 			}
 			return user;
 		} catch (Exception e) {
@@ -272,13 +276,13 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 			throw new ResourceChangeException(RESOURCE_BUNDLE, "invalid.password");
 		}
 		
-		setPassword(principal, newPassword, false);
+		setPassword(principal, newPassword, false, false);
 	}
 	
 	@Override
 	@Transactional
 	public void setPassword(Principal principal, char[] password,
-			boolean forceChangeAtNextLogon) throws ResourceCreationException {
+			boolean forceChangeAtNextLogon, boolean administrative) throws ResourceCreationException {
 
 		if (!(principal instanceof LocalUser)) {
 			throw new IllegalStateException("Principal is not a LocalUser");
@@ -317,8 +321,8 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	@Override
 	@Transactional
 	public void setPassword(Principal principal, String password,
-			boolean forceChangeAtNextLogon) throws ResourceCreationException {
-		setPassword(principal, password.toCharArray(), forceChangeAtNextLogon);
+			boolean forceChangeAtNextLogon, boolean administrative) throws ResourceCreationException {
+		setPassword(principal, password.toCharArray(), forceChangeAtNextLogon, administrative);
 	}
 
 	@Override
@@ -736,6 +740,23 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	@Transactional(readOnly=true)
 	public String getDecryptedValue(Realm realm, String resourceKey) {
 		return getDecryptedValue(realm, resourceKey);
+	}
+
+	@Override
+	public boolean canChangePassword(Principal principal) {
+		return true;
+	}
+
+	@Override
+	public void onApplicationEvent(SessionOpenEvent event) {
+		
+		if(event.getPrincipal() instanceof LocalUser) {
+			
+			LocalUser user = (LocalUser) event.getPrincipal();
+			user.setLastSignOn(new Date(event.getTimestamp()));
+			userRepository.saveUser(user, new HashMap<String,String>());
+		}
+		
 	}
 
 }
