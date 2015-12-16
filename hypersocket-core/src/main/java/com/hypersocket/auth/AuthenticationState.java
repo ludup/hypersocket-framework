@@ -246,21 +246,6 @@ public class AuthenticationState {
 	public boolean hasNextStep() {
 		return currentIndex < modules.size() - 1;
 	}
-	
-	class FakePrincipal extends Principal {
-
-		FakePrincipal(String username) {
-			this.setId(-1L);
-			this.setName(username);
-		}
-		@Override
-		public PrincipalType getType() {
-			return PrincipalType.USER;
-		}
-		public String getPrincipalDescription() {
-			return getName();
-		}
-	}
 
 	public void authAttempted() {
 		attempts++;
