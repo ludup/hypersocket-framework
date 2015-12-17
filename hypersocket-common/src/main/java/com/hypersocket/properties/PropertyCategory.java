@@ -11,6 +11,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.codec.binary.StringUtils;
+
 public class PropertyCategory implements Serializable {
 
 	private static final long serialVersionUID = -9161050636516897409L;
@@ -22,6 +24,7 @@ public class PropertyCategory implements Serializable {
 	int weight;
 	boolean userCreated;
 	boolean systemOnly = false;
+	String filter = "default";
 	
 	List<AbstractPropertyTemplate> templates = new ArrayList<AbstractPropertyTemplate>();
 	
@@ -92,6 +95,13 @@ public class PropertyCategory implements Serializable {
 	public void setSystemOnly(boolean systemOnly) {
 		this.systemOnly = systemOnly;
 	}
+
+	public void setFilter(String filter) {
+		this.filter = !"".equals(filter) ? filter : "default";
+	}
 	
+	public String getFilter() {
+		return filter;
+	}
 	
 }
