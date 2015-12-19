@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.criteria.JoinType;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -119,7 +120,6 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			final ColumnSort[] sorting, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(getResourceClass());
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		
 		if (StringUtils.isNotBlank(searchPattern)) {
 			criteria.add(Restrictions.ilike("name", searchPattern));
@@ -129,21 +129,17 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			c.configure(criteria);
 		}
 
+		criteria.setProjection(Projections.distinct(Projections.id()));
+		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+		
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
-		Set<T> everyone = new HashSet<T>(criteria.list());
+		Set<Long> ids = new HashSet<Long>(criteria.list());
 
+		
 		criteria = createCriteria(getResourceClass());
-		
-		ProjectionList projList = Projections.projectionList();
-		projList.add(Projections.property("id"));
-		projList.add(Projections.property("name"));
-		
-		criteria.setProjection(Projections.distinct(projList));
-		criteria.setFirstResult(start);
-		criteria.setMaxResults(length);
 		
 		if (StringUtils.isNotBlank(searchPattern)) {
 			criteria.add(Restrictions.ilike("name", searchPattern));
@@ -152,41 +148,44 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
-		
-		for (ColumnSort sort : sorting) {
-			criteria.addOrder(sort.getSort() == Sort.ASC ? Order.asc(sort
-					.getColumn().getColumnName()) : Order.desc(sort.getColumn()
-					.getColumnName()));
-		}
-		
+
+		criteria.setProjection(Projections.distinct(Projections.id()));
+		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
 		
-		List<Long> ids = new ArrayList<Long>();
+		List<Long> principalIds = new ArrayList<Long>();
 		for(Principal p : principals) {
-			ids.add(p.getId());
+			principalIds.add(p.getId());
 		}
-		criteria.add(Restrictions.in("id", ids));
+		criteria.add(Restrictions.in("id", principalIds));
 		
-		List<Object[]> results = (List<Object[]>)criteria.list();
+		ids.addAll(criteria.list());
 		
-		if(results.size() > 0) {
-			Long[] entityIds = new Long[results.size()];
-			int idx = 0;
-			for(Object[] obj : results) {
-				entityIds[idx++] = (Long) obj[0];
-			}
+		if(ids.size() > 0) {
 			
 			criteria = createCriteria(getResourceClass());
-			criteria.add(Restrictions.in("id", entityIds));
+			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+			criteria.add(Restrictions.in("id", ids));
 	
-			everyone.addAll((List<T>) criteria.list());
+			criteria.setFirstResult(start);
+			criteria.setMaxResults(length);
+			
+			for (ColumnSort sort : sorting) {
+				criteria.addOrder(sort.getSort() == Sort.ASC ? Order.asc(sort
+						.getColumn().getColumnName()) : Order.desc(sort.getColumn()
+						.getColumnName()));
+			}
+			
+			return ((List<T>) criteria.list());
 		}
-		return everyone;
+		
+		return new ArrayList<T>();
 	};
+	
 
 	@Override
 	@Transactional(readOnly=true)
@@ -271,8 +270,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			final String searchPattern, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(getResourceClass());
-		criteria.setProjection(Projections.property("id"));
-		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+		
 		if (StringUtils.isNotBlank(searchPattern)) {
 			criteria.add(Restrictions.ilike("name", searchPattern));
 		}
@@ -281,15 +279,18 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			c.configure(criteria);
 		}
 
+		criteria.setProjection(Projections.distinct(Projections.id()));
+		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+		
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
-		List<?> ids = criteria.list();
+		Set<Long> ids = new HashSet<Long>(criteria.list());
+
 		
 		criteria = createCriteria(getResourceClass());
-		criteria.setProjection(Projections.countDistinct("name"));
-		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+		
 		if (StringUtils.isNotBlank(searchPattern)) {
 			criteria.add(Restrictions.ilike("name", searchPattern));
 		}
@@ -297,24 +298,24 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
-		
-		criteria.add(Restrictions.eq("realm",  principals.get(0).getRealm()));
-		if(ids.size() > 0) {
-			criteria.add(Restrictions.not(Restrictions.in("id", ids)));
-		}
-		
+
+		criteria.setProjection(Projections.distinct(Projections.id()));
+		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
+
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
-		List<Long> pids = new ArrayList<Long>();
-		for(Principal p : principals) {
-			pids.add(p.getId());
-		}
-		criteria.add(Restrictions.in("id", pids));
 		
-		Long count = (Long) criteria.uniqueResult();
-		return count + ids.size();
-
+		List<Long> principalIds = new ArrayList<Long>();
+		for(Principal p : principals) {
+			principalIds.add(p.getId());
+		}
+		criteria.add(Restrictions.in("id", principalIds));
+		
+		ids.addAll(criteria.list());
+		
+		return new Long(ids.size());
 	}
 
 	@Override
