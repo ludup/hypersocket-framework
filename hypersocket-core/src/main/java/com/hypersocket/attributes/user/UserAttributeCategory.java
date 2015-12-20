@@ -35,4 +35,8 @@ public class UserAttributeCategory extends RealmResource implements AttributeCat
 		return attributes;
 	}
 	
+	public String getFilter() {
+		return "custom";
+	}
+	
 }

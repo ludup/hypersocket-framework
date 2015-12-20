@@ -77,7 +77,7 @@ public class UserAttribute extends AssignableResource  {
 	}
 
 	public String generateMetaData() {
-		return "{ \"inputType\": \"" + type.toString().toLowerCase() + "\" }";
+		return "{ \"inputType\": \"" + type.toString().toLowerCase() + "\", \"filter\": \"custom\" }";
 	}
 
 	public String getDescription() {
