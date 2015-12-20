@@ -1,7 +1,10 @@
 package com.hypersocket.browser;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
@@ -32,7 +35,6 @@ public class BrowserLaunchableRepositoryImpl extends
 			final ColumnSort[] sorting, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(BrowserLaunchable.class);
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		
 		if (StringUtils.isNotBlank(searchPattern)) {
 			criteria.add(Restrictions.ilike("name", searchPattern));
@@ -41,25 +43,22 @@ public class BrowserLaunchableRepositoryImpl extends
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
-
-		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
-		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
 		
+		criteria.add(Restrictions.or(
+				Restrictions.eq("displayInBrowserResourcesTable", true), 
+				Restrictions.isNull("displayInBrowserResourcesTable")));
+
+		criteria.setProjection(Projections.distinct(Projections.id()));
+		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+		
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
-		List<BrowserLaunchable> everyone = new ArrayList<BrowserLaunchable>(criteria.list());
+		Set<Long> ids = new HashSet<Long>(criteria.list());
 
+		
 		criteria = createCriteria(BrowserLaunchable.class);
-		
-		
-		ProjectionList projList = Projections.projectionList();
-		projList.add(Projections.property("id"));
-		projList.add(Projections.property("name"));
-		
-		criteria.setProjection(Projections.distinct(projList));
-		criteria.setFirstResult(start);
-		criteria.setMaxResults(length);
 		
 		if (StringUtils.isNotBlank(searchPattern)) {
 			criteria.add(Restrictions.ilike("name", searchPattern));
@@ -69,115 +68,110 @@ public class BrowserLaunchableRepositoryImpl extends
 			c.configure(criteria);
 		}
 		
+		criteria.add(Restrictions.or(
+				Restrictions.eq("displayInBrowserResourcesTable", true), 
+				Restrictions.isNull("displayInBrowserResourcesTable")));
+
+		criteria.setProjection(Projections.distinct(Projections.id()));
+		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
-		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
-		
+
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
 		
-		List<Long> ids = new ArrayList<Long>();
+		List<Long> principalIds = new ArrayList<Long>();
 		for(Principal p : principals) {
-			ids.add(p.getId());
+			principalIds.add(p.getId());
 		}
-		criteria.add(Restrictions.in("id", ids));
+		criteria.add(Restrictions.in("id", principalIds));
 		
-		List<Object[]> results = (List<Object[]>)criteria.list();
-		
-		if(results.size() > 0) {
-			Long[] entityIds = new Long[results.size()];
-			int idx = 0;
-			for(Object[] obj : results) {
-				entityIds[idx++] = (Long) obj[0];
-			}
+		ids.addAll(criteria.list());
 			
-			criteria = createCriteria(BrowserLaunchable.class);
-			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		if(ids.size() > 0) {
+			
+			criteria.add(Restrictions.in("id", ids));
+
+			criteria.setFirstResult(start);
+			criteria.setMaxResults(length);
 			
 			for (ColumnSort sort : sorting) {
 				criteria.addOrder(sort.getSort() == Sort.ASC ? Order.asc(sort
-						.getColumn().getColumnName()).ignoreCase() : Order.desc(sort.getColumn()
-						.getColumnName()).ignoreCase());
+						.getColumn().getColumnName()) : Order.desc(sort.getColumn()
+						.getColumnName()));
 			}
 			
-			criteria.add(Restrictions.in("id", entityIds));
-	
-			everyone.addAll((List<BrowserLaunchable>) criteria.list());
+			return ((List<BrowserLaunchable>) criteria.list());
 		}
-		return everyone;
+		
+		return new ArrayList<BrowserLaunchable>();
 	};
 
+
+	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)
 	public Long getAssignedResourceCount(List<Principal> principals,
 			final String searchPattern, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(BrowserLaunchable.class);
-		criteria.setProjection(Projections.property("id"));
-		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+		
 		if (StringUtils.isNotBlank(searchPattern)) {
 			criteria.add(Restrictions.ilike("name", searchPattern));
 		}
 
-		
-		
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
-
-		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
-		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
 		
+		criteria.add(Restrictions.or(
+				Restrictions.eq("displayInBrowserResourcesTable", true), 
+				Restrictions.isNull("displayInBrowserResourcesTable")));
+
+
+		criteria.setProjection(Projections.distinct(Projections.id()));
+		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+		
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
-		List<?> ids = criteria.list();
-		if(ids==null) {
-			ids = new ArrayList<>();
-		}
+		Set<Long> ids = new HashSet<Long>(criteria.list());
+
+		
 		criteria = createCriteria(BrowserLaunchable.class);
-		criteria.setProjection(Projections.countDistinct("name"));
-		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
+		
 		if (StringUtils.isNotBlank(searchPattern)) {
 			criteria.add(Restrictions.ilike("name", searchPattern));
 		}
 
-		
-		
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
 		
+		criteria.add(Restrictions.or(
+				Restrictions.eq("displayInBrowserResourcesTable", true), 
+				Restrictions.isNull("displayInBrowserResourcesTable")));
+
+
+		criteria.setProjection(Projections.distinct(Projections.id()));
+		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
-		criteria.add(Restrictions.or(Restrictions.eq("displayInBrowserResourcesTable", true), Restrictions.isNull("displayInBrowserResourcesTable")));
-		
-		if(ids.size() > 0) {
-			criteria.add(Restrictions.not(Restrictions.in("id", ids)));
-		}
+
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
-
-		List<Long> pids = new ArrayList<Long>();
+		
+		List<Long> principalIds = new ArrayList<Long>();
 		for(Principal p : principals) {
-			pids.add(p.getId());
+			principalIds.add(p.getId());
 		}
-		criteria.add(Restrictions.in("id", pids));
+		criteria.add(Restrictions.in("id", principalIds));
 		
-		@SuppressWarnings("unchecked")
-		List<Long> list = (List<Long>)criteria.list();
+		ids.addAll(criteria.list());
 		
-		if(list.isEmpty() && ids.size()==0) {
-			return 0L;
-		}
-		
-		long count = ids.size();
-		for(Long l : list) {
-			count += l;
-		}
-		
-		return count;
-
+		return new Long(ids.size());
 	}
 
 	@SuppressWarnings("unchecked")

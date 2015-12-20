@@ -228,7 +228,7 @@ public class UserAttributeCategoryServiceImpl extends AbstractResourceServiceImp
 		category.setCategoryGroup("userAttribute");
 		category.setWeight(weight);
 		category.setUserCreated(true);
-
+		category.setFilter("custom");
 		activeCategories.put(category.getCategoryKey(), category);
 		return category;
 	}
