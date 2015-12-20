@@ -1,7 +1,6 @@
 package com.hypersocket.browser;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,8 +8,6 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
@@ -20,7 +17,6 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.Sort;
 
 @Repository
 public class BrowserLaunchableRepositoryImpl extends
