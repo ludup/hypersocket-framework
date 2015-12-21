@@ -32,4 +32,7 @@ public interface AbstractRepository<K> {
 
 	void evict(Object entity);
 
+	List<?> getCounts(Class<?> clz, String groupBy, boolean highestFirst, int maxResults,
+			CriteriaConfiguration... configs);
+
 }
