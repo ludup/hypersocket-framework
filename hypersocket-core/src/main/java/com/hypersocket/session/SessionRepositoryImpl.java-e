@@ -122,7 +122,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	@Override
 	@Transactional(readOnly=true)
 	public Map<String,Long> getBrowserCount() {
-		List<?> ret = getCounts(Session.class, "userAgent", new CriteriaConfiguration() {
+		List<?> ret = getCounts(Session.class, "userAgent", true, 5, new CriteriaConfiguration() {
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("system", false));
@@ -143,7 +143,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	@Transactional(readOnly=true)
 	public Map<String,Long> getBrowserCount(final Date startDate, final Date endDate) {
 
-		List<?> ret = getCounts(Session.class, "userAgent", new CriteriaConfiguration() {
+		List<?> ret = getCounts(Session.class, "userAgent", true, 5, new CriteriaConfiguration() {
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.ge("created", startDate));
@@ -188,7 +188,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	@Transactional(readOnly=true)
 	public Map<String,Long> getOSCount(final Date startDate, final Date endDate) {
 
-		List<?> ret = getCounts(Session.class, "os", new CriteriaConfiguration() {
+		List<?> ret = getCounts(Session.class, "os", true, 5, new CriteriaConfiguration() {
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.ge("created", startDate));
