@@ -74,6 +74,7 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 			}
 
 		} catch (Exception e) {
+			log.error("Error in job", e);
 			throw new IllegalStateException(e);
 		}
 
