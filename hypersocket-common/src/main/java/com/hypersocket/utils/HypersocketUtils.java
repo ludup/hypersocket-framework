@@ -104,6 +104,10 @@ public class HypersocketUtils {
 		return dateFormats.get(format).format(date);
 	}
 	
+	public static String formatDateTime(Long date) {
+		return formatDateTime(new Date(date));
+	}
+	
 	public static String formatDateTime(Date date) {
 		return formatDate(date, "EEE, d MMM yyyy HH:mm:ss");
 	}
