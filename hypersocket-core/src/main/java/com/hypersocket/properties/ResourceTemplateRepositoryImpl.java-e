@@ -567,7 +567,10 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	@Transactional(readOnly = true)
 	public Date getDateValue(AbstractResource resource, String name) throws NumberFormatException {
-		return new Date(getLongValue(resource, name));
+		try {
+			return new Date(getLongValue(resource, name));
+		} catch(NumberFormatException e) { }
+		return null;
 	}
 
 	@Override
