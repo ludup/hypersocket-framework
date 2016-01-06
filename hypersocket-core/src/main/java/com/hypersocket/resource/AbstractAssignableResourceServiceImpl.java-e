@@ -144,16 +144,14 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		resource.setResourceCategory(resourceCategory);
 		getRepository().populateEntityFields(resource, properties);
 		
-		if(!checkUnique(resource, true)) {
-			ResourceCreationException ex = new ResourceCreationException(RESOURCE_BUNDLE,
-					"generic.alreadyExists.error", resource.getName());
-			fireResourceCreationEvent(resource, ex);
-			throw ex;
-		}
-		
 		try {
-			
+		
 			beforeCreateResource(resource, properties);
+			
+			if(!checkUnique(resource, true)) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE,
+						"generic.alreadyExists.error", resource.getName());
+			}
 			
 			getRepository().saveResource(resource, properties, ops);
 			updateFingerprint();
@@ -216,7 +214,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		if(isAssignedUserAllowedUpdate()) {
 			assertPrincipalAssignment(resource, getUpdatePermission());
 		} else {
-			assertPermission(getUpdatePermission());
+			assertPermission(getUpdatePermission(resource));
 		}
 		
 

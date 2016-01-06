@@ -4,10 +4,10 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
-import com.hypersocket.triggers.TaskResult;
+import com.hypersocket.triggers.AbstractTaskResult;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 
-public class EmailTaskResult extends TaskResult {
+public class EmailTaskResult extends AbstractTaskResult {
 
 	private static final long serialVersionUID = -5374654828955586879L;
 

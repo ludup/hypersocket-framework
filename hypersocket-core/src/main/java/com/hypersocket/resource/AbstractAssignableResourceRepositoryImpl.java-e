@@ -9,21 +9,21 @@ package com.hypersocket.resource;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.criteria.JoinType;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +43,7 @@ import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.session.Session;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Repository
 public abstract class AbstractAssignableResourceRepositoryImpl<T extends AssignableResource>
@@ -460,6 +461,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for(TransactionOperation<T> op : ops) {
 			op.afterOperation(resource, properties);
 		}
+
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -523,6 +525,44 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		public void configure(Criteria criteria) {
 			criteria.setFetchMode("roles", FetchMode.SELECT);
 		}
+	}
+	
+
+	protected Collection<T> searchResources(Realm currentRealm, 
+			String name, 
+			Date createdFrom, Date createdTo, 
+			Date lastUpdatedFrom, Date lastUpdatedTo, 
+			CriteriaConfiguration... configs) {
+	
+		Criteria criteria = createCriteria(getResourceClass());
+		
+		for (String property : resolveCollectionProperties(getResourceClass())) {
+			 criteria.setFetchMode(property, org.hibernate.FetchMode.SELECT);
+		}
+		
+		if (!StringUtils.isEmpty(name)) {
+			criteria.add(Restrictions.ilike("name", name.replace('*', '%')));
+		}
+		
+		criteria.add(Restrictions.eq("realm", currentRealm));
+		
+		if(createdFrom!=null) {
+			criteria.add(Restrictions.and(Restrictions.ge("created", createdFrom),
+					Restrictions.lt("created", createdTo)));
+		}
+		
+		if(lastUpdatedFrom!=null) {
+			criteria.add(Restrictions.and(Restrictions.ge("modified", lastUpdatedFrom),
+					Restrictions.lt("modified", lastUpdatedTo)));
+		}
+
+		for (CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+
+		return ((Collection<T>) criteria.list());
 	}
 
 }

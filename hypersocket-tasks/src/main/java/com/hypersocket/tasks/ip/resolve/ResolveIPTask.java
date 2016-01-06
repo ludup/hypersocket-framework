@@ -23,7 +23,7 @@ import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.MultipleTaskResults;
-import com.hypersocket.triggers.TaskResult;
+import com.hypersocket.triggers.AbstractTaskResult;
 import com.hypersocket.triggers.ValidationException;
 
 @Component
@@ -79,7 +79,7 @@ public class ResolveIPTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	public AbstractTaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 
 		String[] values = ResourceUtils.explodeValues(repository.getValue(task, "resolveIP.hostnames"));
@@ -119,7 +119,7 @@ public class ResolveIPTask extends AbstractTaskProvider {
 		
 		if(results.size() > 0) {
 			results.add(0,  successfullResult);
-			return new MultipleTaskResults(this, currentRealm, task, results.toArray(new TaskResult[0]));
+			return new MultipleTaskResults(this, currentRealm, task, results.toArray(new AbstractTaskResult[0]));
 		} else {
 			return successfullResult;
 		}

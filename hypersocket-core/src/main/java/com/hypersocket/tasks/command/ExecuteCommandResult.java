@@ -6,9 +6,9 @@ import org.springframework.util.StringUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderServiceImpl;
-import com.hypersocket.triggers.TaskResult;
+import com.hypersocket.triggers.AbstractTaskResult;
 
-public class ExecuteCommandResult extends TaskResult {
+public class ExecuteCommandResult extends AbstractTaskResult {
 
 	private static final long serialVersionUID = -7350055708830738608L;
 

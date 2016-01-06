@@ -9,6 +9,7 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.tasks.TaskResult;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 
@@ -55,10 +56,16 @@ public class TriggerExecutorImpl implements TriggerExecutor {
 		if (checkConditions(trigger, event)) {
 			
 			if(log.isInfoEnabled()) {
-				log.info("Performing task " + trigger.getResourceKey());
+				log.info("Trigger conditions match. Performing task for " + trigger.getName() + " [" + trigger.getResourceKey() + "]");
 			}
 			executeTrigger(trigger, event);
 			
+		} else {
+			if(log.isInfoEnabled()) {
+				log.info("Not processing trigger " 
+						+ trigger.getName() 
+						+ " because its conditions do not match the current event attributes");
+			}
 		}
 		if (log.isInfoEnabled()) {
 			log.info("Finished processing trigger " + trigger.getName());
@@ -140,7 +147,7 @@ public class TriggerExecutorImpl implements TriggerExecutor {
 				for(TaskResult result : results.getResults()) {
 					
 					if(result.isPublishable()) {
-						eventService.publishEvent(result);
+						eventService.publishEvent(result.getEvent());
 					}
 					
 					processResult(trigger, result);
@@ -149,7 +156,7 @@ public class TriggerExecutorImpl implements TriggerExecutor {
 			} else {
 			
 				if(outputEvent.isPublishable()) {
-					eventService.publishEvent(outputEvent);
+					eventService.publishEvent(outputEvent.getEvent());
 				}
 				
 				processResult(trigger, outputEvent);
@@ -161,7 +168,7 @@ public class TriggerExecutorImpl implements TriggerExecutor {
 		
 		if (!trigger.getChildTriggers().isEmpty()) {
 			for(TriggerResource t : trigger.getChildTriggers()) {
-				processEventTrigger(t, result);
+				processEventTrigger(t, result.getEvent());
 			}
 			
 		} 

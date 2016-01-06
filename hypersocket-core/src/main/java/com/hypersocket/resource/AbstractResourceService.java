@@ -10,8 +10,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tables.ColumnSort;
 
-public interface AbstractResourceService<T extends RealmResource> extends
-		AuthenticatedService {
+public interface AbstractResourceService<T extends RealmResource> extends AuthenticatedService {
 
 	@SuppressWarnings("unchecked") 
 	void createResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops)

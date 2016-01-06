@@ -176,7 +176,7 @@ public class AutomationResourceController extends AbstractTriggerController {
 			resourceService.runNow(resource);
 			return new RequestStatus(true, I18N.getResource(sessionUtils.getLocale(request), 
 					AutomationResourceServiceImpl.RESOURCE_BUNDLE,
-					"error.failedToStartAutomation", resource.getName()));
+					"info.startedAutomation", resource.getName()));
 		} catch(Exception ex) { 
 			return new RequestStatus(false, I18N.getResource(sessionUtils.getLocale(request), 
 					AutomationResourceServiceImpl.RESOURCE_BUNDLE,

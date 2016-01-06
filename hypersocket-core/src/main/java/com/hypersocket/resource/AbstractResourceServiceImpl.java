@@ -19,6 +19,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
+import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
@@ -32,7 +33,7 @@ import com.hypersocket.transactions.TransactionService;
 @Service
 public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		extends AbstractAuthenticatedServiceImpl implements AbstractResourceService<T>,
-			EventPropertyCollector {
+			EventPropertyCollector, AuthenticatedService {
 	
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);

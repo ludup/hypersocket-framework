@@ -561,7 +561,11 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	@Transactional(readOnly = true)
 	public Long getLongValue(AbstractResource resource, String name) throws NumberFormatException {
+		try {
 		return Long.parseLong(getValue(resource, name));
+		} catch(NumberFormatException e) { 
+		}
+		return null;
 	}
 
 	@Override

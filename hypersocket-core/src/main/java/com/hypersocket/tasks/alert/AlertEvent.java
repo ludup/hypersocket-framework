@@ -6,10 +6,10 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.events.SystemEventStatus;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
-import com.hypersocket.triggers.TaskResult;
+import com.hypersocket.triggers.AbstractTaskResult;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 
-public class AlertEvent extends TaskResult {
+public class AlertEvent extends AbstractTaskResult {
 
 	private static final long serialVersionUID = -8241348099506840665L;
 

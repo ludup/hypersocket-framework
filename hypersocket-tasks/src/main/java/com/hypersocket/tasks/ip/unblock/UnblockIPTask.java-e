@@ -24,7 +24,7 @@ import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.ip.block.BlockIPTask;
 import com.hypersocket.triggers.MultipleTaskResults;
-import com.hypersocket.triggers.TaskResult;
+import com.hypersocket.triggers.AbstractTaskResult;
 import com.hypersocket.triggers.ValidationException;
 
 @Component
@@ -81,7 +81,7 @@ public class UnblockIPTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	public AbstractTaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 		
 		String[] values = ResourceUtils.explodeValues(repository.getValue(task, "unblock.ip"));
@@ -108,7 +108,7 @@ public class UnblockIPTask extends AbstractTaskProvider {
 			}
 		}
 		
-		return new MultipleTaskResults(this, currentRealm, task, results.toArray(new TaskResult[0]));
+		return new MultipleTaskResults(this, currentRealm, task, results.toArray(new AbstractTaskResult[0]));
 	}
 	
 	public String[] getResultResourceKeys() {

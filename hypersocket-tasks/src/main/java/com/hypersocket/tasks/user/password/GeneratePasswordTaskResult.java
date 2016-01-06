@@ -6,9 +6,9 @@ import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
-import com.hypersocket.triggers.TaskResult;
+import com.hypersocket.triggers.AbstractTaskResult;
 
-public class GeneratePasswordTaskResult extends TaskResult {
+public class GeneratePasswordTaskResult extends AbstractTaskResult {
 
 	private static final long serialVersionUID = -1116372315613765218L;
 

@@ -392,8 +392,8 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		Criteria criteria = createCriteria(clz);
 		
 		for (String property : resolveCollectionProperties(clz)) {
-			  criteria.setFetchMode(property, org.hibernate.FetchMode.SELECT);
-			}
+			 criteria.setFetchMode(property, org.hibernate.FetchMode.SELECT);
+		}
 		
 		if (!StringUtils.isEmpty(searchPattern)) {
 			criteria.add(Restrictions.ilike(searchColumn, searchPattern));
