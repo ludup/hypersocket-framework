@@ -22,7 +22,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
-import com.hypersocket.triggers.TaskResult;
+import com.hypersocket.triggers.AbstractTaskResult;
 import com.hypersocket.triggers.ValidationException;
 
 @Component
@@ -84,7 +84,7 @@ public class MonitorPortTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	public AbstractTaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 		String ipAddress = processTokenReplacements(repository.getValue(task, ATTR_IP), event);
 		int port = Integer.valueOf(repository.getValue(task, ATTR_PORT));

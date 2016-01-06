@@ -315,6 +315,13 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 			return;
 		}
 		
+		if(start==null && end==null) {
+			if(resource.getRepeatType()==AutomationRepeatType.NEVER) {
+				log.info("Not scheudling " + resource.getName() + " because it is a non-repeating job with no start or end date/time.");
+				return;
+			}
+		}
+		
 		PermissionsAwareJobData data = new PermissionsAwareJobData(resource.getRealm(), resource.getName());
 		data.put("resourceId", resource.getId());
 

@@ -18,7 +18,7 @@
 		<property resourceKey="smtp.password" inputType="password"
 			weight="400" defaultValue="" encrypted="true" />
 		<property resourceKey="smtp.fromAddress" inputType="text"
-			weight="500" defaultValue="admin@localhost.com" regex="^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$"/>
+			weight="500" defaultValue="admin@localhost.com" validateAll="email" />
 		<property resourceKey="smtp.fromName" inputType="text"
 			weight="600" defaultValue="Server Administrator" />
 		<property resourceKey="email.htmlTemplate" inputType="fileInput"

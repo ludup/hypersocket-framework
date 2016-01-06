@@ -70,8 +70,8 @@ public class ResourceUtils {
 		}
 		return buf.toString();
 	}
-
-	public static String implodeValues(String[] array) {
+	
+	public static String implodeValues(String... array) {
 		return StringUtils.join(array, "]|[");	
 	}
 	
