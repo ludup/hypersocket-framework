@@ -326,6 +326,11 @@ public class AuthenticationServiceImpl extends
 						}
 						break;
 					}
+					case INSUFFICIENT_DATA_NO_ERROR: {
+							state.setLastErrorMsg(null);
+							state.setLastErrorIsResourceKey(false);
+						break;
+					}
 					case AUTHENTICATION_SUCCESS: {
 
 						state.nextPostAuthenticationStep();
@@ -371,6 +376,11 @@ public class AuthenticationServiceImpl extends
 						state.setLastErrorMsg("error.insufficentData");
 						state.setLastErrorIsResourceKey(true);
 					}
+					break;
+				}
+				case INSUFFICIENT_DATA_NO_ERROR: {
+					state.setLastErrorMsg(null);
+					state.setLastErrorIsResourceKey(false);
 					break;
 				}
 				case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
