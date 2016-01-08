@@ -11,12 +11,11 @@ import com.hypersocket.automation.events.AutomationTaskStartedEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.scheduler.SchedulerService;
-import com.hypersocket.tasks.TaskResult;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
+import com.hypersocket.tasks.TaskResult;
 import com.hypersocket.triggers.AbstractTriggerJob;
 import com.hypersocket.triggers.MultipleTaskResults;
-import com.hypersocket.triggers.AbstractTaskResult;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.ValidationException;
 

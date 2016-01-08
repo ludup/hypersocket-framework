@@ -30,7 +30,6 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.properties.PropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
