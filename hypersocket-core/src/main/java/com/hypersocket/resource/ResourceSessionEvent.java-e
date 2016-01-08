@@ -38,5 +38,9 @@ public abstract class ResourceSessionEvent extends SessionEvent {
 	}
 	
 	public abstract boolean isUsage();
+
+	public String getResourceName() {
+		return getAttribute(ATTR_RESOURCE_NAME);
+	}
 	
 }
