@@ -11,8 +11,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.codec.binary.StringUtils;
-
 public class PropertyCategory implements Serializable {
 
 	private static final long serialVersionUID = -9161050636516897409L;

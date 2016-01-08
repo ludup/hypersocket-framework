@@ -19,7 +19,6 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
@@ -43,7 +42,6 @@ import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.session.Session;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
-import com.hypersocket.utils.HypersocketUtils;
 
 @Repository
 public abstract class AbstractAssignableResourceRepositoryImpl<T extends AssignableResource>
@@ -562,7 +560,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 
-		return ((Collection<T>) criteria.list());
+		return criteria.list();
 	}
 
 }

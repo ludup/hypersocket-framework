@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import com.hypersocket.encrypt.EncryptionService;
-import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.AbstractResourceRepository;
