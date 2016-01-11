@@ -264,6 +264,34 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 					"error.updateFailed", principal.getPrincipalName(),
 					e.getMessage());
 		}
+	}
+	
+	@Override
+	@Transactional
+	public Principal updateUserProperties(Principal principal,
+			Map<String, String> properties) throws ResourceChangeException {
+
+		try {
+
+			if (!(principal instanceof LocalUser)) {
+				throw new IllegalStateException(
+						"principal is not of type LocalUser");
+			}
+
+			// Get again so we have it within a transaction so lazy loading works.
+			LocalUser user = (LocalUser) userRepository.getUserById(principal.getId(), principal.getRealm());
+
+			userRepository.saveUser(user, properties);
+
+			userRepository.flush();
+			userRepository.refresh(user);
+
+			return user;
+		} catch (Exception e) {
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"error.updateFailed", principal.getPrincipalName(),
+					e.getMessage());
+		}
 
 	}
 

@@ -196,4 +196,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean canChangePassword(Principal currentPrincipal);
 
+	Principal updateUserProperties(Principal user, Map<String, String> properties)
+			throws ResourceChangeException, AccessDeniedException;
+
 }

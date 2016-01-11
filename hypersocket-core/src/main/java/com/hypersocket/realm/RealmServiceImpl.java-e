@@ -429,6 +429,50 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
+	public Principal updateUserProperties(Principal user, 
+			Map<String, String> properties) throws ResourceChangeException, AccessDeniedException {
+
+		final RealmProvider provider = getProviderForRealm(user.getRealm());
+
+		List<Principal> associated = getAssociatedPrincipals(user);
+		try {
+
+			assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
+
+			if (provider.isReadOnly(user.getRealm())) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
+			}
+
+			for (PrincipalProcessor processor : principalProcessors) {
+				processor.beforeUpdate(user, properties);
+			}
+
+			Principal principal = provider.updateUserProperties(user, properties);
+
+			for (PrincipalProcessor processor : principalProcessors) {
+				processor.afterUpdate(principal, properties);
+			}
+
+			eventService.publishEvent(new UserUpdatedEvent(this, getCurrentSession(), principal.getRealm(), provider, principal,
+					associated, filterSecretProperties(principal, provider, properties)));
+
+			return principal;
+		} catch (AccessDeniedException e) {
+			eventService.publishEvent(new UserUpdatedEvent(this, e, getCurrentSession(), user.getRealm(), provider, user.getPrincipalName(),
+					filterSecretProperties(user, provider, properties), associated));
+			throw e;
+		} catch (ResourceChangeException e) {
+			eventService.publishEvent(new UserUpdatedEvent(this, e, getCurrentSession(), user.getRealm(), provider, user.getPrincipalName(),
+					filterSecretProperties(user, provider, properties), associated));
+			throw e;
+		} catch (Exception e) {
+			eventService.publishEvent(new UserUpdatedEvent(this, e, getCurrentSession(), user.getRealm(), provider, user.getPrincipalName(),
+					filterSecretProperties(user, provider, properties), associated));
+			throw new ResourceChangeException(RESOURCE_BUNDLE, "updateUser.unexpectedError", e.getMessage());
+		}
+	}
+	
+	@Override
 	public Principal updateUser(Realm realm, Principal user, String username, Map<String, String> properties,
 			List<Principal> principals) throws ResourceChangeException, AccessDeniedException {
 
