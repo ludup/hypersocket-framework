@@ -119,4 +119,6 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	boolean canChangePassword(Principal principal);
 
+	Principal updateUserProperties(Principal principal, Map<String, String> properties) throws ResourceChangeException;
+
 }
