@@ -119,4 +119,14 @@ public class ResourceUtils {
 		return buf.toString();
 	}
 
+	public static List<NameValuePair> explodeNamePairs(String values) {
+		
+		String[] pairs = explodeValues(values);
+		List<NameValuePair> result = new ArrayList<NameValuePair>();
+		for(String pair : pairs) {
+			result.add(new NameValuePair(pair));
+		}
+		return result;
+	}
+
 }
