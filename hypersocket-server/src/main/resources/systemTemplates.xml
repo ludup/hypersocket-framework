@@ -14,15 +14,15 @@
 			restart="true" defaultValue="hypersocket" weight="100" />
 		<property resourceKey="ui.path" inputType="text" restart="true"
 			defaultValue="ui" weight="200" />
-		<property resourceKey="http.port" inputType="integer" minValue="1"
+		<property resourceKey="http.port" inputType="hidden" minValue="1"
 			maxValue="65535" restart="true" defaultValue="80" weight="300"
 			store="hypersocketServer" />
-		<property resourceKey="https.port" inputType="integer" minValue="1"
+		<property resourceKey="https.port" inputType="hidden" minValue="1"
 			maxValue="65535" restart="true" defaultValue="443" weight="400"
 			store="hypersocketServer" />
-		<property resourceKey="require.https" inputType="switch"
+		<property resourceKey="require.https" inputType="hidden"
 			restart="false" defaultValue="true" weight="500" store="hypersocketServer" />
-		<property resourceKey="listening.interfaces" inputType="multipleSelect"
+		<property resourceKey="listening.interfaces" inputType="hidden"
 			restart="false" url="server/networkInterfaces" selectAllIfEmpty="true"
 			weight="600" store="hypersocketServer" />
 	</propertyCategory>

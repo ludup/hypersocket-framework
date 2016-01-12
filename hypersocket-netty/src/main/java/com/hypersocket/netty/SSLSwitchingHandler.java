@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.netty;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import javax.servlet.ServletException;
@@ -25,22 +26,18 @@ import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hypersocket.server.interfaces.HTTPInterfaceResource;
+import com.hypersocket.server.interfaces.HTTPProtocol;
+
 public class SSLSwitchingHandler extends FrameDecoder {
 
-//	static OrderedMemoryAwareThreadPoolExecutor executor = new OrderedMemoryAwareThreadPoolExecutor(
-//			200, 1048576, 1073741824, 100, TimeUnit.MILLISECONDS,
-//			Executors.defaultThreadFactory());
 
 	static Logger log = LoggerFactory.getLogger(SSLSwitchingHandler.class);
 
 	NettyServer server;
-	int httpPort;
-	int httpsPort;
-
-	public SSLSwitchingHandler(NettyServer server, int httpPort, int httpsPort) {
+	
+	public SSLSwitchingHandler(NettyServer server) {
 		this.server = server;
-		this.httpPort = httpPort;
-		this.httpsPort = httpsPort;
 	}
 	
 	@Override
@@ -59,9 +56,9 @@ public class SSLSwitchingHandler extends FrameDecoder {
 			return null;
 		}
 
-		InetSocketAddress sockAddr = (InetSocketAddress) channel.getLocalAddress();
-		if (sockAddr.getPort() == httpsPort) {
-			enableSsl(ctx);
+		HTTPInterfaceResource interfaceResource = (HTTPInterfaceResource) channel.getParent().getAttachment();
+		if (interfaceResource.getProtocol()==HTTPProtocol.HTTPS) {
+			enableSsl(interfaceResource, ctx);
 		} else {
 			enablePlainHttp(ctx);
 		} 
@@ -70,43 +67,9 @@ public class SSLSwitchingHandler extends FrameDecoder {
 		return buffer.readBytes(buffer.readableBytes());
 	}
 
-//	private boolean isSsl(int magic1) {
-//		switch (magic1) {
-//		case 20:
-//		case 21:
-//		case 22:
-//		case 23:
-//		case 255:
-//			return true;
-//		default:
-//			return magic1 >= 128;
-//		}
-//	}
 
-//	private boolean isHttp(int magic1, int magic2) {
-//		return magic1 == 'G' && magic2 == 'E' || // GET
-//				magic1 == 'P' && magic2 == 'O' || // POST / POLL
-//				magic1 == 'P' && magic2 == 'U' || // PUT
-//				magic1 == 'H' && magic2 == 'E' || // HEAD
-//				magic1 == 'O' && magic2 == 'P' || // OPTIONS
-//				magic1 == 'P' && magic2 == 'A' || // PATCH
-//				magic1 == 'D' && magic2 == 'E' || // DELETE
-//				magic1 == 'T' && magic2 == 'R' || // TRACE
-//				magic1 == 'P' && magic2 == 'R' || // PROPFIND / PROPPATCH
-//				magic1 == 'M' && magic2 == 'K' || // MKCOL
-//				magic1 == 'M' && magic2 == 'O' || // MOVE
-//				magic1 == 'C' && magic2 == 'O' || // COPY / CONNECT
-//				magic1 == 'L' && magic2 == 'O' || // LOCK
-//				magic1 == 'U' && magic2 == 'N' || // UNLOCK / UNSUBSCRIBE
-//				magic1 == 'B' && magic2 == 'M' || // BMOVE
-//				magic1 == 'B' && magic2 == 'R' || // BRPOPFIND / BPROPATCH
-//				magic1 == 'N' && magic2 == 'O' || // NOTIFY
-//				magic1 == 'S' && magic2 == 'E' || // SEARCH
-//				magic1 == 'S' && magic2 == 'U' || // SUBSCRIIBE
-//				magic1 == 'X' && magic2 == '-'; // X-MS-ENUMATTS
-//	}
 
-	private void enableSsl(ChannelHandlerContext ctx) {
+	private void enableSsl(HTTPInterfaceResource resource, ChannelHandlerContext ctx) throws IOException {
 
 		if (!(ctx.getChannel().getLocalAddress() instanceof InetSocketAddress)) {
 			throw new IllegalStateException(
@@ -120,7 +83,8 @@ public class SSLSwitchingHandler extends FrameDecoder {
 		p.addLast(
 				"ssl",
 				new SslHandler(server
-						.createSSLEngine((InetSocketAddress) ctx.getChannel()
+						.createSSLEngine(resource,
+								(InetSocketAddress) ctx.getChannel()
 								.getLocalAddress(), (InetSocketAddress) ctx
 								.getChannel().getRemoteAddress())));
 		p.addLast("decoder", new HttpRequestDecoder());

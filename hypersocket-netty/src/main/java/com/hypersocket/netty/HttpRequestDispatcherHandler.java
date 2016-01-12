@@ -57,6 +57,8 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.server.handlers.HttpRequestHandler;
 import com.hypersocket.server.handlers.HttpResponseProcessor;
 import com.hypersocket.server.handlers.WebsocketHandler;
+import com.hypersocket.server.interfaces.HTTPInterfaceResource;
+import com.hypersocket.server.interfaces.HTTPProtocol;
 import com.hypersocket.server.websocket.WebsocketClient;
 import com.hypersocket.server.websocket.WebsocketClientCallback;
 import com.hypersocket.servlet.HypersocketSession;
@@ -125,6 +127,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			HttpRequest nettyRequest)
 			throws IOException {
 
+		HTTPInterfaceResource interfaceResource = (HTTPInterfaceResource) ctx.getChannel().getParent().getAttachment();
+		
 		HttpResponseServletWrapper nettyResponse = new HttpResponseServletWrapper(
 				new DefaultHttpResponse(HttpVersion.HTTP_1_1,
 						HttpResponseStatus.OK),
@@ -132,7 +136,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 		HypersocketSession session = server.setupHttpSession(
 				nettyRequest.getHeaders("Cookie"), 
-				!server.isPlainPort((InetSocketAddress) ctx.getChannel().getLocalAddress()),
+				interfaceResource.getProtocol()==HTTPProtocol.HTTPS,
 				nettyResponse);
 
 		InetSocketAddress remoteAddress = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
@@ -152,8 +156,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		HttpRequestServletWrapper servletRequest = new HttpRequestServletWrapper(
 				nettyRequest, (InetSocketAddress) ctx.getChannel()
 						.getLocalAddress(), remoteAddress, 
-						!server.isPlainPort((InetSocketAddress) ctx.getChannel().getLocalAddress()) , server
-						.getServletConfig().getServletContext(), session);
+						interfaceResource.getProtocol()==HTTPProtocol.HTTPS, 
+						server.getServletConfig().getServletContext(), session);
 
 		Request.set(servletRequest);
 		
@@ -178,8 +182,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		}
 
 		if (ctx.getChannel().getLocalAddress() instanceof InetSocketAddress) {
-			if (server.isPlainPort((InetSocketAddress) ctx.getChannel()
-					.getLocalAddress()) && server.isHttpsRequired()) {
+			
+			if (interfaceResource.getProtocol()==HTTPProtocol.HTTP && interfaceResource.getRedirectHTTPS()) {
 				// Redirect the plain port to SSL
 				String host = nettyRequest.getHeader(HttpHeaders.HOST);
 				if(host==null) {
@@ -191,8 +195,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					}
 					nettyResponse.sendRedirect("https://"
 							+ host
-							+ (server.getHttpsPort() != 443 ? ":"
-									+ String.valueOf(server.getHttpsPort()) : "")
+							+ (interfaceResource.getRedirectPort() != 443 ? ":"
+									+ String.valueOf(interfaceResource.getRedirectPort()) : "")
 							+ nettyRequest.getUri());
 				}
 				sendResponse(servletRequest, nettyResponse, false);

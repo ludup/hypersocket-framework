@@ -26,10 +26,7 @@ public interface HypersocketServer {
 
 	final static String RESOURCE_BUNDLE = "HypersocketServer";
 	
-	public abstract int getHttpPort();
 
-	public abstract int getHttpsPort();
-	
 	public abstract List<HttpRequestHandler> getHttpHandlers();
 
 	public abstract List<WebsocketHandler> getWebsocketHandlers();
@@ -59,12 +56,6 @@ public interface HypersocketServer {
 	public void init(ApplicationContext applicationContext) throws AccessDeniedException, ServletException, IOException;
 	
 	public void connect(TCPForwardingClientCallback callback);
-
-	boolean isPlainPort(InetSocketAddress localAddress);
-
-	boolean isSSLPort(InetSocketAddress localAddress);
-
-	boolean isHttpsRequired();
 
 	ApplicationContext getApplicationContext();
 
