@@ -63,4 +63,6 @@ public interface CertificateResourceService extends
 	CertificateResource replacePrivateKey(CertificateResource resourceById, MultipartFile key,
 			String passphrase, MultipartFile file, MultipartFile bundle) throws InvalidPassphraseException, ResourceChangeException;
 
+	KeyStore getResourceKeystore(CertificateResource resource) throws ResourceCreationException;
+
 }

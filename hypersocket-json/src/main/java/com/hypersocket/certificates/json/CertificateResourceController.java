@@ -58,9 +58,9 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.ResourceUpdate;
 import com.hypersocket.session.json.SessionTimeoutException;
+import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller
@@ -69,6 +69,25 @@ public class CertificateResourceController extends ResourceController {
 	@Autowired
 	CertificateResourceService resourceService;
 
+	@AuthenticationRequired
+	@RequestMapping(value = "certificates/list", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<CertificateResource> getResources(
+			HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			return new ResourceList<CertificateResource>(
+					resourceService.allResources());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody

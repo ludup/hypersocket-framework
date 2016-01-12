@@ -12,7 +12,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -20,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -50,7 +50,11 @@ import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.ip.ExtendedIpFilterRuleHandler;
 import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.server.HypersocketServerImpl;
+import com.hypersocket.server.interfaces.HTTPInterfaceResource;
+import com.hypersocket.server.interfaces.HTTPInterfaceResourceRepository;
+import com.hypersocket.server.interfaces.HTTPProtocol;
 import com.hypersocket.server.websocket.TCPForwardingClientCallback;
 
 @Component
@@ -63,8 +67,7 @@ public class NettyServer extends HypersocketServerImpl {
 	Set<Channel> httpChannels;
 	Set<Channel> httpsChannels;
 	
-	ExecutorService bossExecutor;
-	ExecutorService workerExecutors;
+	ExecutorService executor;
 	
 	@Autowired
 	ExtendedIpFilterRuleHandler ipFilterHandler;
@@ -100,10 +103,12 @@ public class NettyServer extends HypersocketServerImpl {
 		
 		System.setProperty("hypersocket.netty.debug", "true");
 		
+		executor = Executors.newCachedThreadPool(new NettyThreadFactory());
+		
 		clientBootstrap = new ClientBootstrap(
 				new NioClientSocketChannelFactory(
-						bossExecutor = Executors.newCachedThreadPool(new NettyThreadFactory()),
-						workerExecutors = Executors.newCachedThreadPool(new NettyThreadFactory())));
+						executor,
+						executor));
 
 		clientBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 			public ChannelPipeline getPipeline() throws Exception {
@@ -116,8 +121,8 @@ public class NettyServer extends HypersocketServerImpl {
 		// Configure the server.
 		serverBootstrap = new ServerBootstrap(
 				new NioServerSocketChannelFactory(
-						Executors.newCachedThreadPool(),
-						Executors.newCachedThreadPool()));
+						executor,
+						executor));
 
 		// Set up the event pipeline factory.
 		serverBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
@@ -129,7 +134,7 @@ public class NettyServer extends HypersocketServerImpl {
 				pipeline.addLast("ipFilter", ipFilterHandler);
 				pipeline.addLast("channelMonitor", monitorChannelHandler);
 				pipeline.addLast("switcherA", new SSLSwitchingHandler(
-						NettyServer.this, getHttpPort(), getHttpsPort()));
+						NettyServer.this));
 				return pipeline;
 			}
 		});
@@ -142,11 +147,36 @@ public class NettyServer extends HypersocketServerImpl {
 		httpChannels = new HashSet<Channel>();
 		httpsChannels = new HashSet<Channel>();
 		
-		bindInterface(getHttpPort(), httpChannels);
-		bindInterface(getHttpsPort(), httpsChannels);
+		HTTPInterfaceResourceRepository interfaceRepository = 
+				(HTTPInterfaceResourceRepository) getApplicationContext().getBean("HTTPInterfaceResourceRepositoryImpl");
+		
+		if(interfaceRepository==null) {
+			throw new IOException("Cannot get interface configuration from application context!");
+		}
+		
+		for(HTTPInterfaceResource resource : interfaceRepository.allInterfaces()) {
+			bindInterface(resource);
+		}
 		
 		if(httpChannels.size()==0 && httpsChannels.size()==0) {
-			throw new IOException("Failed to startup any listening interfaces!");
+			
+			if(log.isInfoEnabled()) {
+				log.info("Failed to startup any interfaces. Creating emergency listeners");
+			}
+			
+			HTTPInterfaceResource tmp = new HTTPInterfaceResource();
+			tmp.setInterfaces("127.0.0.1");
+			tmp.setPort(0);
+			tmp.setProtocol(HTTPProtocol.HTTP.toString());
+			
+			bindInterface(tmp);
+			
+			HTTPInterfaceResource tmp2 = new HTTPInterfaceResource();
+			tmp2.setInterfaces("::");
+			tmp2.setPort(8080);
+			tmp2.setProtocol(HTTPProtocol.HTTP.toString());
+			
+			bindInterface(tmp2);
 		}
 	}
 
@@ -163,27 +193,34 @@ public class NettyServer extends HypersocketServerImpl {
 		if(httpsChannels==null) {
 			throw new IllegalStateException("You cannot get the actual port in use because the server is not started");
 		}
-		return ((InetSocketAddress)httpChannels.iterator().next().getLocalAddress()).getPort();
+		return ((InetSocketAddress)httpsChannels.iterator().next().getLocalAddress()).getPort();
 	}
 	
-	protected void bindInterface(Integer port, Set<Channel> channels) throws IOException {
+	protected void bindInterface(HTTPInterfaceResource interfaceResource) throws IOException {
 			
 		Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
 		
 		Set<String> interfacesToBind = new HashSet<String>(
-				Arrays.asList(configurationService.getValues("listening.interfaces")));
+				ResourceUtils.explodeCollectionValues(interfaceResource.getInterfaces()));
 		
 		if(interfacesToBind.isEmpty()) {
 			
 			if(log.isInfoEnabled()) {
 				log.info("Binding server to all interfaces on port " 
-						+ port);
+						+ interfaceResource.getPort());
 			}
-			Channel ch = serverBootstrap.bind(new InetSocketAddress(port));
-			channels.add(ch);
+			Channel ch = serverBootstrap.bind(new InetSocketAddress(interfaceResource.getPort()));
+			ch.setAttachment(interfaceResource);
+			switch(interfaceResource.getProtocol()) {
+			case HTTP:
+				httpChannels.add(ch);
+				break;
+			default:
+				httpsChannels.add(ch);
+			}
 			
 			if(log.isInfoEnabled()) {
-				log.info("Bound to port "
+				log.info("Bound " + interfaceResource.getProtocol() + " to port "
 						+ ((InetSocketAddress)ch.getLocalAddress()).getPort());
 			}
 		} else {
@@ -198,19 +235,27 @@ public class NettyServer extends HypersocketServerImpl {
 					if(interfacesToBind.contains(inetAddress.getHostAddress())) {
 						try {
 							if(log.isInfoEnabled()) {
-								log.info("Binding server to interface " 
+								log.info("Binding " + interfaceResource.getProtocol() + " server to interface " 
 										+ i.getDisplayName() 
 										+ " " 
 										+ inetAddress.getHostAddress() 
 										+ ":" 
-										+ port);
+										+ interfaceResource.getPort());
 							}
 							
-							Channel ch = serverBootstrap.bind(new InetSocketAddress(inetAddress, port));
-							channels.add(ch);
+							Channel ch = serverBootstrap.bind(new InetSocketAddress(inetAddress, interfaceResource.getPort()));
+							
+							ch.setAttachment(interfaceResource);
+							switch(interfaceResource.getProtocol()) {
+							case HTTP:
+								httpChannels.add(ch);
+								break;
+							default:
+								httpsChannels.add(ch);
+							}
 							
 							if(log.isInfoEnabled()) {
-								log.info("Bound to " 
+								log.info("Bound " + interfaceResource.getProtocol() + " to " 
 										+ inetAddress.getHostAddress() 
 										+ ":" 
 										+ ((InetSocketAddress)ch.getLocalAddress()).getPort());

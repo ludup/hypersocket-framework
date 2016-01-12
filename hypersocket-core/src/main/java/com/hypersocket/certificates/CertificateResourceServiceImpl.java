@@ -119,6 +119,7 @@ public class CertificateResourceServiceImpl extends
 		eventService.registerEvent(CertificateResourceDeletedEvent.class,
 				RESOURCE_BUNDLE, this);
 
+		repository.getEntityStore().registerResourceService(CertificateResource.class, repository);
 	}
 
 	@Override
@@ -693,6 +694,11 @@ public class CertificateResourceServiceImpl extends
 
 	}
 
+	@Override
+	public KeyStore getResourceKeystore(CertificateResource resource) throws ResourceCreationException {
+		return getResourceKeystore(resource, "hypersocket", "changeit");
+	}
+	
 	@Override
 	public KeyStore getResourceKeystore(CertificateResource resource,
 			String alias, String password) throws ResourceCreationException {
