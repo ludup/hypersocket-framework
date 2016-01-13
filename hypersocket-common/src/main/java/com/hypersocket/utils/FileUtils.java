@@ -173,4 +173,8 @@ public class FileUtils {
 		}
 	}
 
+	public static boolean hasParents(String sourcePath) {
+		return sourcePath.indexOf('/') > -1;
+	}
+
 }
