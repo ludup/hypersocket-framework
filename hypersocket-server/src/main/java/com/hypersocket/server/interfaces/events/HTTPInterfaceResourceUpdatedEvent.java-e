@@ -8,13 +8,8 @@ import com.hypersocket.session.Session;
 public class HTTPInterfaceResourceUpdatedEvent extends
 		HTTPInterfaceResourceEvent {
 
-	/**
-	 * TODO rename to suit your resource and replace hTTPInterface with lower case
-	 * name of your resource.
-	 * 
-	 * You typically add attributes to the base HTTPInterfaceResourceEvent
-	 * class so these can be reused across all resource events.
-	 */
+	private static final long serialVersionUID = -8007834648855709309L;
+
 	public static final String EVENT_RESOURCE_KEY = "hTTPInterface.updated";
 
 	public HTTPInterfaceResourceUpdatedEvent(Object source,

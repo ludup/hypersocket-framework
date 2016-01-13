@@ -57,16 +57,27 @@ public class ResourceUtils {
 	}
 	
 	public static <T extends Resource> String createCommaSeparatedString(Collection<T> resources) {
-		return createDelimitedString(resources, ",");
+		return createDelimitedResourceString(resources, ",");
 	}
 	
-	public static <T extends Resource> String createDelimitedString(Collection<T> resources, String delimiter) {
+	public static <T extends Resource> String createDelimitedResourceString(Collection<T> resources, String delimiter) {
 		StringBuffer buf = new StringBuffer();
 		for(Resource r : resources) {
 			if(buf.length() > 0) {
 				buf.append(delimiter);
 			}
 			buf.append(r.getName());
+		}
+		return buf.toString();
+	}
+	
+	public static String createDelimitedString(Collection<String> resources, String delimiter) {
+		StringBuffer buf = new StringBuffer();
+		for(String r : resources) {
+			if(buf.length() > 0) {
+				buf.append(delimiter);
+			}
+			buf.append(r);
 		}
 		return buf.toString();
 	}
