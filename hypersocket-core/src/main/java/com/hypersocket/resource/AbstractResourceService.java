@@ -77,4 +77,6 @@ public interface AbstractResourceService<T extends RealmResource> extends Authen
 	Collection<T> importResources(String json, Realm realm, boolean dropCurrent)
 			throws AccessDeniedException, ResourceException;
 
+	String getFingerprint();
+
 }
