@@ -2,6 +2,8 @@ package com.hypersocket.resource;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,6 +36,8 @@ import com.hypersocket.transactions.TransactionService;
 public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		extends AbstractAuthenticatedServiceImpl implements AbstractResourceService<T>,
 			EventPropertyCollector, AuthenticatedService {
+
+	private static SecureRandom random = new SecureRandom();
 	
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
@@ -46,6 +50,8 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	RealmService realm;
 
 	boolean assertPermissions = true;
+
+	String fingerprint;
 	
 	@Autowired
 	TransactionService transactionService; 
@@ -174,6 +180,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		try {
 			beforeCreateResource(resource, properties);
 			getRepository().saveResource(resource, properties, ops);
+			updateFingerprint();
 			afterCreateResource(resource, properties);
 			fireResourceCreationEvent(resource);
 		} catch (Throwable t) {
@@ -244,6 +251,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		try {
 			beforeUpdateResource(resource, properties);
 			getRepository().saveResource(resource, properties, ops);
+			updateFingerprint();
 			afterUpdateResource(resource, properties);
 			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {
@@ -280,6 +288,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		try {
 			beforeDeleteResource(resource);
 			getRepository().deleteResource(resource, ops);
+			updateFingerprint();
 			afterDeleteResource(resource);
 			fireResourceDeletionEvent(resource);
 		} catch (Throwable t) {
@@ -493,7 +502,11 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		});
 		
 	}
-	
+
+	@Override
+	public final String getFingerprint() {
+		return fingerprint;
+	}
 	
 	protected void performImportDropResources(T resource) throws ResourceChangeException, AccessDeniedException {
 		deleteResource(resource);
@@ -514,6 +527,10 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		} catch(ResourceNotFoundException e) {
 			return;
 		}
+	}
+	
+	protected final void updateFingerprint() {
+		fingerprint = new BigInteger(130, random).toString(32);
 	}
 	
 }
