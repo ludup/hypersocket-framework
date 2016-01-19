@@ -29,7 +29,7 @@
 			weight="0" defaultValue=""/>
 		<property resourceKey="attach.static" inputType="multipleFileInput"
 			weight="50" defaultValue="" allowEmpty="true" text=""/>
-		<property resourceKey="attach.dynamic" inputType="namePairs"
+		<property resourceKey="attach.dynamic" inputType="namePairs" showEmptyRow="false"
 			weight="100" defaultValue="" onlyName="false" text=""/>
 	</propertyCategory>
 </propertyTemplates>
