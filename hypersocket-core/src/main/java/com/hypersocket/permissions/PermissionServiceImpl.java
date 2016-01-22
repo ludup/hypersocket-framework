@@ -505,6 +505,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public void deleteRole(Role role) throws AccessDeniedException, ResourceChangeException {
 		assertPermission(RolePermission.DELETE);
 		try {
+			role.getPrincipals().clear();
+			role.getPermissions().clear();
+			repository.saveRole(role);
 			repository.deleteRole(role);
 			permissionsCache.removeAll();
 			roleCache.removeAll();
