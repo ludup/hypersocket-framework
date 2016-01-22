@@ -401,6 +401,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 			}
 
+			for (PrincipalProcessor processor : principalProcessors) {
+				processor.beforeCreate(realm, username, properties);
+			}
+			
 			Principal principal = provider.createUser(realm, username, properties, principals, password, forceChange);
 
 			for (PrincipalProcessor processor : principalProcessors) {

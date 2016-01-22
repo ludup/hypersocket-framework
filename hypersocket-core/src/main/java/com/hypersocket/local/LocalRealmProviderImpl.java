@@ -252,7 +252,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 					user.getGroups().add((LocalGroup) p);
 				}
 			}
-
+			
 			userRepository.saveUser(user, properties);
 
 			userRepository.flush();
