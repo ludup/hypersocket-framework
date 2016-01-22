@@ -274,10 +274,7 @@ public class EmailTask extends AbstractTaskProvider {
 			RecipientType type, SystemEvent event)
 			throws ValidationException {
 
-		String value = repository.getValue(task, attributeName);
-		if(ResourceUtils.isReplacementVariable(value)) {
-			value = processTokenReplacements(value, event);
-		}
+		String value = processTokenReplacements(repository.getValue(task, attributeName), event);
 		String[] emails = ResourceUtils.explodeValues(value);
 		return emailService.populateEmailList(emails, recipients, type);
 	}
