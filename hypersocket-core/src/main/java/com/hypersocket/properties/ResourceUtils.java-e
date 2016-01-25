@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hypersocket.resource.Resource;
+import com.hypersocket.utils.HypersocketUtils;
 
 public class ResourceUtils {
 
@@ -110,6 +111,17 @@ public class ResourceUtils {
 		return element;
 	}
 
+	public static String[] getNamePairArray(String[] source) {
+		if(source==null) {
+			return null;
+		}
+		String[] dest = new String[source.length];
+		for(int i=0;i<source.length;i++) {
+			dest[i] = HypersocketUtils.urlDecode(source[i]);
+		}
+		return dest;
+	}
+	
 	public static boolean isReplacementVariable(String value) {
 		return value.startsWith("${") && value.endsWith("}");
 	}
