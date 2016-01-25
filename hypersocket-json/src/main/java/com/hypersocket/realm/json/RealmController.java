@@ -214,8 +214,8 @@ public class RealmController extends ResourceController {
 		} finally {
 			clearAuthenticatedContext();
 		}
-
 	}
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "realms/realm", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
