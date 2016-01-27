@@ -58,12 +58,6 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	private void postConstruct() {
 		entityPropertyStore = new EntityResourcePropertyStore(encryptionService);
 	}
-	
-	@Override
-	@Transactional(readOnly=true)
-	public Collection<T> getAssignedResources(List<Principal> principals) {
-		return getAssignedResources(principals.toArray(new Principal[0]));
-	}
 
 	@Override
 	protected ResourcePropertyStore getPropertyStore() {
@@ -78,14 +72,19 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)
-	public Collection<T> getAssignedResources(Principal... principals) {
+	public Collection<T> getAssignedResources(List<Principal> principals, CriteriaConfiguration... configs) {
 
 		
 		Criteria criteria = createCriteria(getResourceClass());
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		
-		criteria.add(Restrictions.eq("realm", principals[0].getRealm()));
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria.add(Restrictions.eq("deleted", false));
+		
+		for(CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
@@ -100,8 +99,13 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		
-		criteria.add(Restrictions.eq("realm", principals[0].getRealm()));
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria.add(Restrictions.eq("deleted", false));
+		
+		for(CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
