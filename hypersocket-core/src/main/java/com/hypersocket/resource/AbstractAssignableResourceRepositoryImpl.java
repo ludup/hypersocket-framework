@@ -85,7 +85,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		
 		criteria.add(Restrictions.eq("realm", principals[0].getRealm()));
-		
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
@@ -101,7 +101,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		
 		criteria.add(Restrictions.eq("realm", principals[0].getRealm()));
-
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
@@ -132,6 +132,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
 		
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
@@ -152,7 +153,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
 
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
-
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
@@ -220,6 +221,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 
 		criteria.add(Restrictions.eq("realm", realm));
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		
@@ -251,6 +253,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 
 		criteria.add(Restrictions.eq("realm", realm));
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		
@@ -283,6 +286,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
 		
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
@@ -302,7 +306,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.setProjection(Projections.distinct(Projections.id()));
 		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
-
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
@@ -336,6 +340,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 		Criteria crit = createCriteria(AssignableResource.class);
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		crit.add(Restrictions.eq("deleted", false));
 		crit = crit.createCriteria("roles");
 		crit = crit.createCriteria("principals");
 		crit.add(Restrictions.in("id", ids));
@@ -543,6 +548,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 		
 		criteria.add(Restrictions.eq("realm", currentRealm));
+		criteria.add(Restrictions.eq("deleted", false));
 		
 		if(createdFrom!=null) {
 			criteria.add(Restrictions.and(Restrictions.ge("created", createdFrom),
