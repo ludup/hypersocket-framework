@@ -201,6 +201,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 
 		criteria.add(Restrictions.eq("realm", realm));
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
