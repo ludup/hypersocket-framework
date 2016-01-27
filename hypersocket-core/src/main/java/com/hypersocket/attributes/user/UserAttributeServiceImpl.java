@@ -31,6 +31,7 @@ import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.properties.ResourcePropertyTemplate;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AbstractAssignableResourceServiceImpl;
@@ -290,14 +291,27 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 		if(resource == null) {
 			return new ArrayList<PropertyCategory>();
 		}
+		
 		Map<String,PropertyTemplate> userTemplates = getUserTemplates(checkResource(resource));
-		Set<PropertyCategory> results = new HashSet<PropertyCategory>();
+		Map<Integer,PropertyCategory> results = new HashMap<Integer,PropertyCategory>();
 		
 		for(PropertyTemplate t : userTemplates.values()) {
-			results.add(t.getCategory());
+			if(!results.containsKey(t.getCategory().getId())) {
+				PropertyCategory cat = new PropertyCategory();
+				cat.setBundle(t.getCategory().getBundle());
+				cat.setCategoryKey(t.getCategory().getCategoryKey());
+				cat.setWeight(t.getCategory().getWeight());
+				cat.setDisplayMode(t.getCategory().getDisplayMode());
+				cat.setUserCreated(true);
+				cat.setSystemOnly(t.getCategory().isSystemOnly());
+				cat.setFilter(t.getCategory().getFilter());
+				
+				results.put(cat.getId(), cat);
+			}
+			results.get(t.getCategory().getId()).getTemplates().add(t);
 		}
 		
-		return results;
+		return results.values();
 	}
 
 	@Override
