@@ -693,18 +693,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 		for (PropertyResolver r : propertyResolvers) {
 			for (PropertyCategory c : r.getPropertyCategories(resource)) {
-				PropertyCategory tmp = new PropertyCategory();
-				tmp.setBundle(c.getBundle());
-				tmp.setCategoryKey(c.getCategoryKey());
-				tmp.setWeight(c.getWeight());
-				tmp.setDisplayMode(c.getDisplayMode());
-				tmp.setUserCreated(c.isUserCreated());
-				tmp.setSystemOnly(c.isSystemOnly());
-				tmp.setFilter(c.getFilter());
-				for (AbstractPropertyTemplate t : c.getTemplates()) {
-					tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
-				}
-				cats.add(tmp);
+				cats.add(c);
 			}
 		}
 
