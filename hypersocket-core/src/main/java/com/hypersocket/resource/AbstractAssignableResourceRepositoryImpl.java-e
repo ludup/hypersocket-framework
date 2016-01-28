@@ -30,6 +30,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.encrypt.EncryptionService;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
@@ -69,6 +70,29 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		return entityPropertyStore;
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly=true)
+	public Collection<T> getAssignedResources(Role role, CriteriaConfiguration... configs) {
+
+		
+		Criteria criteria = createCriteria(getResourceClass());
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		
+		criteria.add(Restrictions.eq("realm", role.getRealm()));
+		criteria.add(Restrictions.eq("deleted", false));
+		
+		for(CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		
+		criteria = criteria.createCriteria("roles");
+		criteria.add(Restrictions.eq("id", role.getId()));
+		
+		return criteria.list();
+
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)

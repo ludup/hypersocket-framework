@@ -84,4 +84,8 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	String getMetaData(T resource, String key, String defaultValue) throws AccessDeniedException;
 
 	long getPersonalResourceCount();
+
+	Collection<T> getPersonalResources(Principal principal, boolean resolveAssosicatedPrincipals);
+
+	Collection<T> getPersonalRoleResources(Principal principal);
 }

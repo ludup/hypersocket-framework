@@ -313,8 +313,23 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	@Override
+	public Collection<T> getPersonalRoleResources(Principal principal) {
+		return getRepository().getAssignedResources(permissionService.getPersonalRole(principal));
+	}
+	
+	@Override
 	public Collection<T> getPersonalResources(Principal principal) {
 		return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(principal));
+	}
+	
+	@Override
+	public Collection<T> getPersonalResources(Principal principal, boolean resolveAssosicatedPrincipals) {
+		if(resolveAssosicatedPrincipals) {
+			return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(principal));
+		} else {
+			return getRepository().getAssignedResources(Arrays.asList(principal));
+		}
+		
 	}
 
 	@Override
