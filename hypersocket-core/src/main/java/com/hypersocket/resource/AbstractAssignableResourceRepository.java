@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -68,5 +69,7 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	EntityResourcePropertyStore getEntityStore();
 
 	Collection<T> getAssignedResources(List<Principal> principals, CriteriaConfiguration... configs);
+
+	Collection<T> getAssignedResources(Role role, CriteriaConfiguration... configs);
 	
 }
