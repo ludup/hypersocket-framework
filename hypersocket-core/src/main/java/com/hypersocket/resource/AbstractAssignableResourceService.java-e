@@ -61,11 +61,6 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 
 	String exportAllResoures() throws ResourceExportException;
 
-	String exportResources(Collection<T> resources)
-			throws ResourceExportException;
-
-	String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException;
-
 	T getResourceByName(String name, Realm realm)
 			throws ResourceNotFoundException, AccessDeniedException;
 
@@ -88,4 +83,8 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	Collection<T> getPersonalResources(Principal principal, boolean resolveAssosicatedPrincipals);
 
 	Collection<T> getPersonalRoleResources(Principal principal);
+
+	String exportResources(Collection<T> resources, boolean stripIdentity) throws ResourceExportException;
+
+	String exportResources(boolean stripIdentity, @SuppressWarnings("unchecked") T... resources) throws ResourceExportException;
 }

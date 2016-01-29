@@ -456,18 +456,18 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	public String exportResoure(Long id) throws ResourceNotFoundException,
 			ResourceExportException, AccessDeniedException {
 		final T resource = getResourceById(id);
-		return exportResources(resource);
+		return exportResources(true, resource);
 	}
 
 	@Override
 	public String exportAllResoures() throws ResourceExportException {
 		List<T> list = getResources();
-		return exportResources(list);
+		return exportResources(list, true);
 	}
 	
 	@Override
-	public String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException {
-		return exportResources(Arrays.asList(resources));
+	public String exportResources(boolean stripIdentity, @SuppressWarnings("unchecked") T... resources) throws ResourceExportException {
+		return exportResources(Arrays.asList(resources), stripIdentity);
 	}
 	
 	protected boolean isExportingAdditionalProperties() {
@@ -475,6 +475,10 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	protected void prepareExport(T resource) {
+		prepareExport(resource, true);
+	}
+	
+	protected void prepareExport(T resource, boolean stripIdentity) {
 		if(isExportingAdditionalProperties()) {
 			resource.setProperties(getRepository().getProperties(resource));
 		}
@@ -485,7 +489,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	@Override
-	public String exportResources(Collection<T> resources) throws ResourceExportException {
+	public String exportResources(Collection<T> resources, boolean stripIdentity) throws ResourceExportException {
 
 		if(resources.isEmpty()) {
 			throw new ResourceExportException(RESOURCE_BUNDLE, "error.nothingToExport");
@@ -494,10 +498,12 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			for(T resource : resources) {
-				prepareExport(resource);
-				resource.setId(null);
-				resource.setRealm(null);
-				resource.getRoles().clear();
+				prepareExport(resource, stripIdentity);
+				if(stripIdentity) {
+					resource.setId(null);
+					resource.setRealm(null);
+					resource.getRoles().clear();
+				}
 			}
 
 			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resources);
