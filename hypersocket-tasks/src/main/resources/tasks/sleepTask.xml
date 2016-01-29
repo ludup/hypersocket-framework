@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="sleepTask">
+	<propertyCategory resourceKey="category.sleepTask"
+		resourceBundle="SleepTask" weight="1000">
+		<property resourceKey="sleep.milli" inputType="integer"
+			weight="10" defaultValue="" size="50" minValue="1" maxValue="3600000" />
+	</propertyCategory>
+</propertyTemplates>
