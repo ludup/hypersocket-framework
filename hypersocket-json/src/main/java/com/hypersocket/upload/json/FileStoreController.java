@@ -40,15 +40,15 @@ import com.hypersocket.upload.FileUploadServiceImpl;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Controller
-public class FileUploadController extends ResourceController {
+public class FileStoreController extends ResourceController {
 
-	static Logger log = LoggerFactory.getLogger(FileUploadController.class);
+	static Logger log = LoggerFactory.getLogger(FileStoreController.class);
 	
 	@Autowired
 	FileUploadService resourceService;
 
 	@AuthenticationRequired
-	@RequestMapping(value = "fileUpload/metainfo/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "files/file/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<FileUpload> getFile(final HttpServletRequest request,
@@ -69,7 +69,7 @@ public class FileUploadController extends ResourceController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "fileUpload/file", method = RequestMethod.POST, produces = { "application/json" })
+	@RequestMapping(value = "files/file", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<FileUpload> createFile(HttpServletRequest request,
@@ -108,7 +108,7 @@ public class FileUploadController extends ResourceController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "fileUpload/file/{uuid}", method = RequestMethod.DELETE, produces = { "application/json" })
+	@RequestMapping(value = "files/file/{uuid}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<FileUpload> deleteFile(
@@ -150,7 +150,7 @@ public class FileUploadController extends ResourceController {
 	}
 
 	@AuthenticationRequired
-	@RequestMapping(value = "fileUpload/file/{uuid}", method = RequestMethod.GET)
+	@RequestMapping(value = "files/download/{uuid}", method = RequestMethod.GET)
 	@ResponseStatus(value = HttpStatus.OK)
 	public void downloadFile(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String uuid)
@@ -169,7 +169,7 @@ public class FileUploadController extends ResourceController {
 	}
 	
 	@AuthenticationRequired
-	@RequestMapping(value = "fileUpload/export/{id}", method = RequestMethod.GET, produces = { "text/plain" })
+	@RequestMapping(value = "files/export/{id}", method = RequestMethod.GET, produces = { "text/plain" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
 	public String export(HttpServletRequest request,
@@ -195,7 +195,7 @@ public class FileUploadController extends ResourceController {
 	}
 	
 	@AuthenticationRequired
-	@RequestMapping(value = "fileUpload/export", method = RequestMethod.GET, produces = { "text/plain" })
+	@RequestMapping(value = "files/export", method = RequestMethod.GET, produces = { "text/plain" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
 	public String exportAll(HttpServletRequest request,
@@ -220,7 +220,7 @@ public class FileUploadController extends ResourceController {
 	}
 	
 	@AuthenticationRequired
-	@RequestMapping(value = "fileUpload/import", method = { RequestMethod.POST }, produces = { "application/json" })
+	@RequestMapping(value = "files/import", method = { RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<FileUpload> importLaunchers(
