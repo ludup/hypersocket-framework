@@ -1,5 +1,6 @@
 package com.hypersocket.scheduler;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -85,9 +86,17 @@ public class SchedulerServiceImpl extends
 
 	@PostConstruct
 	private void postConstruct() throws SchedulerException {
+		
+		
+		File quartzProperties = new File(HypersocketUtils.getConfigDir(), "quartz.properties");
+		if(quartzProperties.exists()) {
+			System.setProperty("org.quartz.properties", quartzProperties.getAbsolutePath());
+		}
+		
 		scheduler = StdSchedulerFactory.getDefaultScheduler();
 		scheduler.setJobFactory(autowireJobFactory);
 		scheduler.start();
+		
 		repository.loadPropertyTemplates("schedulerResourceTemplate.xml");
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 		eventService.registerEvent(SchedulerResourceEvent.class,

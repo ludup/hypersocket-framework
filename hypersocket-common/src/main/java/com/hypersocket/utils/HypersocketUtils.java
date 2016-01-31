@@ -2,6 +2,7 @@ package com.hypersocket.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -59,6 +60,10 @@ public class HypersocketUtils {
 		resetInterval();
 	}
 
+	public static File getConfigDir() {
+		return new File(System.getProperty(
+				"hypersocket.conf", "conf"));
+	}
 	/**
 	 * Encapsulate a part of a string by a given character.useful in hiding part of a password
 	 * 
