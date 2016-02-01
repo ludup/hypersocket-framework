@@ -527,10 +527,11 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Transactional(readOnly=true)
 	public List<T> search(Realm realm, String searchPattern, int start,
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
-		return super.search(getResourceClass(), "name", searchPattern, start,
+		List<T> results = super.search(getResourceClass(), "name", searchPattern, start,
 				length, sorting, ArrayUtils.addAll(configs, new DeletedCriteria(false),
 						new RoleSelectMode(), new RealmCriteria(
 								realm)));
+		return results;
 	}
 	
 	
@@ -544,9 +545,10 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Transactional(readOnly=true)
 	public long getResourceCount(Realm realm, String searchPattern,
 			CriteriaConfiguration... configs) {
-		return getCount(getResourceClass(), "name", searchPattern,
+		long count = getCount(getResourceClass(), "name", searchPattern,
 				ArrayUtils.addAll(configs, new RoleSelectMode(), new DeletedCriteria(false),
 						new RealmCriteria(realm)));
+		return count;
 	}
 
 	protected abstract Class<T> getResourceClass();
