@@ -296,6 +296,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)
 	public Long getAssignedResourceCount(List<Principal> principals,
@@ -346,7 +347,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 		criteria.add(Restrictions.in("id", principalIds));
 		
-		ids.addAll(criteria.list());
+		ids.addAll((List<Long>)criteria.list());
 		
 		return new Long(ids.size());
 	}
@@ -562,6 +563,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 	
 
+	@SuppressWarnings("unchecked")
 	protected Collection<T> searchResources(Realm currentRealm, 
 			String name, 
 			Date createdFrom, Date createdTo, 
@@ -597,7 +599,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 
-		return criteria.list();
+		return (Collection<T>) criteria.list();
 	}
 
 }
