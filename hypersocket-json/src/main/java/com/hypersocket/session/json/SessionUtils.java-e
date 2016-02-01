@@ -240,4 +240,8 @@ public class SessionUtils {
 		throw new UnauthorizedException();
 	}
 
+	public boolean hasActiveSession(HttpServletRequest request) {
+		return getActiveSession(request)!=null;
+	}
+
 }

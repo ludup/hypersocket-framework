@@ -196,7 +196,7 @@ public class LogonController extends AuthenticatedController {
 				
 			}
 		} finally {
-			clearSystemContext();
+			clearAuthenticatedContext();
 		}
 	}
 
