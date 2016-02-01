@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -308,7 +307,7 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 				
 				results.put(cat.getId(), cat);
 			}
-			results.get(t.getCategory().getId()).getTemplates().add(t);
+			results.get(t.getCategory().getId()).getTemplates().add(new ResourcePropertyTemplate(t, resource));
 		}
 		
 		return results.values();
