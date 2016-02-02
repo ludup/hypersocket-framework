@@ -280,4 +280,12 @@ public class HypersocketUtils {
 		}
 	}
 
+	public static String stripQuery(String url) {
+		int idx = url.indexOf('?');
+		if(idx > -1) {
+			url = url.substring(0,  idx);
+		}
+		return url;
+	}
+
 }

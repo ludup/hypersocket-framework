@@ -131,19 +131,6 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 			if(m.getName().equals(methodName)) {
 				Class<?> clz = m.getParameterTypes()[0];
 				
-//				if(Principal.class.isAssignableFrom(clz)) {
-//					try {
-//						if(StringUtils.isEmpty(value)) {
-//							m.invoke(resource, (Object)null);
-//						} else {
-//							m.invoke(resource, realmService.getPrincipalById(Long.parseLong(value)));
-//						}
-//						return;
-//					} catch (Exception e) {
-//						log.error("Could not set " + template.getResourceKey() + " principal value " + value + " for resource " + resource.getClass().getName(), e);
-//						throw new IllegalStateException("Could not set " + template.getResourceKey() + " principal value " + value + " for resource " + resource.getClass().getName(), e);
-//					}
-//				}
 				if(primitiveParsers.containsKey(clz)) {
 					try {
 						m.invoke(resource, primitiveParsers.get(clz).parseValue(value));
