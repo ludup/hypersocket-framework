@@ -27,4 +27,7 @@ public interface EmailNotificationService {
 	void sendEmail(Realm realm, String subject, String text, String html, Recipient[] recipients,
 			EmailAttachment... attachments) throws MailException;
 
+	void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail,
+			Recipient[] recipients, EmailAttachment... attachments) throws MailException;
+
 }

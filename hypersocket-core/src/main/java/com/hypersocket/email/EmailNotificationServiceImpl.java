@@ -69,6 +69,12 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	@Override
 	@SafeVarargs
 	public final void sendEmail(Realm realm, String subject, String text, String html, Recipient[] recipients, EmailAttachment... attachments) throws MailException {
+		sendEmail(realm, subject, text, html, null, null, recipients, attachments);
+	}
+	
+	@Override
+	@SafeVarargs
+	public final void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail, Recipient[] recipients, EmailAttachment... attachments) throws MailException {
 		Email email = new Email();
 		
 		email.setFromAddress(configurationService.getValue(realm, SMTP_FROM_NAME), 
@@ -79,6 +85,10 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		}
 		
 		email.setSubject(subject);
+		
+		if(StringUtils.isNotBlank(replyToName) && StringUtils.isNotBlank(replyToEmail)) {
+			email.setReplyToAddress(replyToName, replyToEmail);
+		}
 		
 		String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
 		if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(html)) {

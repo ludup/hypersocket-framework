@@ -220,8 +220,12 @@ public class EmailTask extends AbstractTaskProvider {
 			}
 		}
 		
+		String replyToName = processTokenReplacements(repository.getValue(task, "email.replyToName"), event);
+		String replyToEmail = processTokenReplacements(repository.getValue(task, "email.replyToEmail"), event);
+		
 		try {
 			emailService.sendEmail(currentRealm, subject, body, bodyHtml,
+					replyToName, replyToEmail, 
 					recipients.toArray(new Recipient[0]), attachments.toArray(new EmailAttachment[0]));
 
 			return new EmailTaskResult(this, task.getRealm(),
