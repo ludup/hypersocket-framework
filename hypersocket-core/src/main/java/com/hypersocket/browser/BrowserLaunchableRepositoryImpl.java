@@ -37,7 +37,7 @@ public class BrowserLaunchableRepositoryImpl extends
 		 * length and starting position.
 		 */
 		List<BrowserLaunchable> resources = getPersonalResources(principals);
-		return resources.subList(start, start+length);
+		return resources.subList(start, Math.min(start+length, resources.size()));
 	};
 
 
