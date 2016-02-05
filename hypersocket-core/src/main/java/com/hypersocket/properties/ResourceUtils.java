@@ -21,24 +21,19 @@ public class ResourceUtils {
 		if(StringUtils.isBlank(values)) {
 			return new String[] { };
 		}
-		String delim = null;
-		for(String str : DELIMS) {
-			if(values.contains(str)) {
-				delim = str;
-			}
-		}
-		
 		List<String> ret = new ArrayList<String>();
 		
-		if(delim!=null) {
-			StringTokenizer t = new StringTokenizer(values, delim);
-			
-			while (t.hasMoreTokens()) {
-				ret.add(t.nextToken());
+
+		StringTokenizer t = new StringTokenizer(values, "]|[");
+		
+		while (t.hasMoreTokens()) {
+			String val = t.nextToken();
+			StringTokenizer t2 = new StringTokenizer(val, "\r\n");
+			while(t2.hasMoreTokens()) {
+				ret.add(t2.nextToken());
 			}
-		} else {
-			ret.add(values);
 		}
+	
 		return ret.toArray(new String[0]);
 	}
 	
