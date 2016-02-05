@@ -135,7 +135,7 @@ public class HttpUtilsHolder implements HttpUtils {
 			if (b == -1) {
 				client.close();
 			}
-			return b;
+			return b & 0xFF;
 		}
 
 		public int read(byte[] buf, int off, int len) throws IOException {

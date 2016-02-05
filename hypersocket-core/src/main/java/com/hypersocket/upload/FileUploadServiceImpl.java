@@ -86,12 +86,25 @@ public class FileUploadServiceImpl extends
 	
 	@Override
 	public String getContentType(String uuid) throws ResourceNotFoundException, IOException {
-		FileUpload upload = getFileByUuid(uuid);
-		String contentType = mimeTypesMap.getContentType(upload.getFileName());
-		if(contentType==null) {
-			return "application/octet-stream";
+		return getContentType(uuid, true);
+	}
+	
+	@Override
+	public String getContentType(String uuid, boolean isUUID) throws ResourceNotFoundException, IOException {
+		if(isUUID) {
+			FileUpload upload = getFileByUuid(uuid);
+			String contentType = mimeTypesMap.getContentType(upload.getFileName());
+			if(contentType==null) {
+				return "application/octet-stream";
+			}
+			return contentType;
+		} else {
+			String contentType = mimeTypesMap.getContentType(uuid);
+			if(contentType==null) {
+				return "application/octet-stream";
+			}
+			return contentType;
 		}
-		return contentType;
 	}
 
 	@Override
@@ -199,18 +212,16 @@ public class FileUploadServiceImpl extends
 		File file = getFile(uuid);
 		
 		InputStream in = new FileInputStream(file);
+		String contentType = mimeTypesMap.getContentType(fileUpload.getFileName());
+		response.setContentType(contentType);
 
+		if(forceDownload) {
+			response.setHeader("Content-disposition", "attachment; filename="
+				+ fileUpload.getFileName());
+		}
 
-			String contentType = mimeTypesMap.getContentType(fileUpload.getFileName());
-			response.setContentType(contentType);
-
-			if(forceDownload) {
-				response.setHeader("Content-disposition", "attachment; filename="
-					+ fileUpload.getFileName());
-			}
-
-			// Let the HTTP server handle it.
-			request.setAttribute(CONTENT_INPUTSTREAM, in);
+		// Let the HTTP server handle it.
+		request.setAttribute(CONTENT_INPUTSTREAM, in);
 	}
 	
 	@Override
