@@ -50,6 +50,7 @@ public class BootstrapTableController extends AuthenticatedController {
 		}
 
 		String searchPattern = "";
+		String searchColumn = "";
 		
 		if(request.getParameter("sSearch") != null) {
 			searchPattern = request.getParameter("sSearch");
@@ -57,17 +58,17 @@ public class BootstrapTableController extends AuthenticatedController {
 			searchPattern = request.getParameter("search");
 		}
 		
-		if (searchPattern.indexOf('*') > -1) {
-			searchPattern = searchPattern.replace('*', '%');
+		if(request.getParameter("searchColumn") != null) {
+			searchColumn = request.getParameter("searchColumn");
 		}
 
-		if (searchPattern.indexOf('%') == -1) {
-			searchPattern += "%";
-		}
-
-		BootstrapTableResult result = new BootstrapTableResult(processor.getPage(searchPattern, start,
-				length, sorting.toArray(new ColumnSort[0])),
-				processor.getTotalCount(searchPattern));
+		BootstrapTableResult result = new BootstrapTableResult(processor.getPage(
+				searchColumn,
+				searchPattern, 
+				start,
+				length, 
+				sorting.toArray(new ColumnSort[0])),
+				processor.getTotalCount(searchColumn, searchPattern));
 
 		return result;
 	}

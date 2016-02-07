@@ -14,7 +14,9 @@ import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
@@ -276,12 +278,14 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 		Criteria criteria = createCriteria(clz);
 
+		Map<String,Criteria> assosications = new HashMap<String,Criteria>();
+		
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
 
-		if (!StringUtils.isEmpty(searchPattern)) {
-			criteria.add(Restrictions.ilike(searchColumn, searchPattern));
+		if(StringUtils.isNotBlank(searchPattern) && HibernateUtils.isNotWildcard(searchPattern)) {
+			HibernateUtils.configureSearch(searchColumn, searchPattern, criteria, clz, assosications);
 		}
 
 		criteria.setProjection(Projections.rowCount());
@@ -387,16 +391,18 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly = true)
-	public <T> List<T> search(Class<T> clz, final String searchColumn, final String searchPattern, final int start,
+	public <T> List<T> search(Class<T> clz, String searchColumn, String searchPattern, final int start,
 			final int length, final ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		Criteria criteria = createCriteria(clz);
+		
+		Map<String,Criteria> assosications = new HashMap<String,Criteria>();
 		
 		for (String property : resolveCollectionProperties(clz)) {
 			 criteria.setFetchMode(property, org.hibernate.FetchMode.SELECT);
 		}
 		
-		if (!StringUtils.isEmpty(searchPattern)) {
-			criteria.add(Restrictions.ilike(searchColumn, searchPattern));
+		if(StringUtils.isNotBlank(searchPattern) && HibernateUtils.isNotWildcard(searchPattern)) {
+			HibernateUtils.configureSearch(searchColumn, searchPattern, criteria, clz, assosications);
 		}
 
 		for (CriteriaConfiguration c : configs) {
@@ -404,8 +410,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		}
 
 		for (ColumnSort sort : sorting) {
-			criteria.addOrder(sort.getSort() == Sort.ASC ? Order.asc(sort.getColumn().getColumnName())
-				: Order.desc(sort.getColumn().getColumnName()));
+			HibernateUtils.configureSort(sort, criteria, assosications);
 		}
 		
 		criteria.setFirstResult(start);

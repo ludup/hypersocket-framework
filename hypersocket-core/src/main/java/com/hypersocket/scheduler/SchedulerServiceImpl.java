@@ -475,7 +475,7 @@ public class SchedulerServiceImpl extends
 	}
 
 	@Override
-	public List<SchedulerResource> searchResources(Realm realm, String search,
+	public List<SchedulerResource> searchResources(Realm realm, String searchColumn, String search,
 			int start, int length, ColumnSort[] sorting)
 			throws AccessDeniedException {
 		List<SchedulerResource> list = new ArrayList<SchedulerResource>();
@@ -598,7 +598,7 @@ public class SchedulerServiceImpl extends
 	}
 
 	@Override
-	public long getResourceCount(Realm realm, String search)
+	public long getResourceCount(Realm realm, String searchColumn, String search)
 			throws AccessDeniedException {
 		return cachedResources.size();
 	}

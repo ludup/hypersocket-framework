@@ -63,21 +63,21 @@ public class UserAttributeCategoryController extends ResourceController {
 						}
 
 						@Override
-						public List<?> getPage(String searchPattern, int start,
+						public List<?> getPage(String searchColumn, String searchPattern, int start,
 								int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return service.searchResources(sessionUtils.getCurrentRealm(request),
-									searchPattern, start, length, sorting);
+									searchColumn, searchPattern, start, length, sorting);
 
 						}
 
 						@Override
-						public Long getTotalCount(String searchPattern)
+						public Long getTotalCount(String searchColumn, String searchPattern)
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return service
-									.getResourceCount(sessionUtils.getCurrentRealm(request), searchPattern);
+									.getResourceCount(sessionUtils.getCurrentRealm(request), searchColumn, searchPattern);
 						}
 					});
 		} finally {

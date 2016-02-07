@@ -353,21 +353,21 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	@Override
-	public List<T> searchResources(Realm realm, String search, int start,
+	public List<T> searchResources(Realm realm, String searchColumn, String search, int start,
 			int length, ColumnSort[] sorting) throws AccessDeniedException {
 
 		assertPermission(getReadPermission());
 
-		return getRepository().search(realm, search, start, length, sorting);
+		return getRepository().search(realm, searchColumn, search, start, length, sorting);
 	}
 
 	@Override
-	public long getResourceCount(Realm realm, String search)
+	public long getResourceCount(Realm realm, String searchColumn, String search)
 			throws AccessDeniedException {
 
 		assertPermission(getReadPermission());
 
-		return getRepository().getResourceCount(realm, search);
+		return getRepository().getResourceCount(realm, searchColumn, search);
 	}
 
 	@Override

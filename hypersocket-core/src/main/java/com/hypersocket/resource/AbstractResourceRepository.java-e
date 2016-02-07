@@ -24,10 +24,10 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 
 	List<T> getResources(Realm realm);
 
-	List<T> search(Realm realm, String searchPattern, int start, int length,
+	List<T> search(Realm realm, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting, CriteriaConfiguration... configs);
 
-	long getResourceCount(Realm realm, String searchPattern,
+	long getResourceCount(Realm realm, String searchColumn, String searchPattern,
 			CriteriaConfiguration... configs);
 
 	long allRealmsResourcesCount();

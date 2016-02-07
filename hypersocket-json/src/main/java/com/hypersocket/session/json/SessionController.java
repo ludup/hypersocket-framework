@@ -223,14 +223,14 @@ public class SessionController extends ResourceController {
 				}
 
 				@Override
-				public List<?> getPage(String searchPattern, int start, int length, ColumnSort[] sorting)
+				public List<?> getPage(String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting)
 						throws UnauthorizedException, AccessDeniedException {
 					return sessionService.searchResources(sessionUtils.getCurrentRealm(request), searchPattern, start,
 							length, sorting);
 				}
 
 				@Override
-				public Long getTotalCount(String searchPattern) throws UnauthorizedException, AccessDeniedException {
+				public Long getTotalCount(String searchColumn, String searchPattern) throws UnauthorizedException, AccessDeniedException {
 					return sessionService.getResourceCount(sessionUtils.getCurrentRealm(request), searchPattern);
 				}
 			});
