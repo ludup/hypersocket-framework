@@ -30,11 +30,11 @@ public interface AbstractResourceService<T extends RealmResource> extends Authen
 
 	List<T> getResources(Realm realm) throws AccessDeniedException;
 
-	List<T> searchResources(Realm realm, String search, int start, int length,
+	List<T> searchResources(Realm realm, String searchColumn, String search, int start, int length,
 			ColumnSort[] sorting) throws AccessDeniedException;
 
-	long getResourceCount(Realm realm, String search)
-			throws AccessDeniedException;
+
+	long getResourceCount(Realm realm, String searchColumn, String search) throws AccessDeniedException;
 
 	List<T> allResources();
 
@@ -78,5 +78,6 @@ public interface AbstractResourceService<T extends RealmResource> extends Authen
 			throws AccessDeniedException, ResourceException;
 
 	String getFingerprint();
+
 
 }

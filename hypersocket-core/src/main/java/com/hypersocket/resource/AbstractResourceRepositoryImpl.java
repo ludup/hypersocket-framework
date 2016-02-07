@@ -150,18 +150,18 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<T> search(Realm realm, String searchPattern, int start,
+	public List<T> search(Realm realm, String searchColumn, String searchPattern, int start,
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
-		return super.search(getResourceClass(), "name", searchPattern, start,
+		return super.search(getResourceClass(), searchColumn, searchPattern, start,
 				length, sorting, ArrayUtils.addAll(configs,
 						new RealmCriteria(realm), new DefaultCriteriaConfiguration()));
 	}
 
 	@Override
 	@Transactional(readOnly=true)
-	public long getResourceCount(Realm realm, String searchPattern,
+	public long getResourceCount(Realm realm, String searchColumn, String searchPattern,
 			CriteriaConfiguration... configs) {
-		return getCount(getResourceClass(), "name", searchPattern,
+		return getCount(getResourceClass(), searchColumn, searchPattern,
 				ArrayUtils.addAll(configs, new RealmCriteria(
 						realm), new DefaultCriteriaConfiguration()));
 	}

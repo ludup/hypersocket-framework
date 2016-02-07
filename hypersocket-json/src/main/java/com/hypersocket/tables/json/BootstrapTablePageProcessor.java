@@ -11,8 +11,8 @@ public interface BootstrapTablePageProcessor {
 
 	Column getColumn(String column);
 	
-	Collection<?> getPage(String searchPattern, int start, int length, ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException;
+	Collection<?> getPage(String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException;
 	
-	Long getTotalCount(String searchPattern) throws UnauthorizedException, AccessDeniedException;
+	Long getTotalCount(String searchColumn, String searchPattern) throws UnauthorizedException, AccessDeniedException;
 
 }
