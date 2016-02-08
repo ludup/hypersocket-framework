@@ -45,6 +45,11 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		elevatedPermissions.set(Arrays.asList(permissions));
 	}
 	
+	@Override
+	public void clearElevatedPermissions() {
+		elevatedPermissions.remove();
+	}
+	
 	protected List<PermissionType> getElevatedPermissions() {
 		return elevatedPermissions.get();
 	}
