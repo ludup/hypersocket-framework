@@ -34,6 +34,7 @@ public class server_1_DOT_2_DOT_0 implements Runnable {
 	@Autowired
 	SessionService sessionService; 
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
 

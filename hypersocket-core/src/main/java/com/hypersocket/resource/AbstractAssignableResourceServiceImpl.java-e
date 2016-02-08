@@ -305,7 +305,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	@Override
-	public Collection<T> searchPersonalResources(Principal principal, String search, int start,
+	public Collection<T> searchPersonalResources(Principal principal, String searchColumn, String search, int start,
 			int length, ColumnSort[] sorting) {
 
 		List<Principal> principals = realmService.getAssociatedPrincipals(principal);
@@ -338,7 +338,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	@Override
-	public long getPersonalResourceCount(Principal principal, String search) {
+	public long getPersonalResourceCount(Principal principal, String searchColumn, String search) {
 		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(principal), search);
 	}
 	

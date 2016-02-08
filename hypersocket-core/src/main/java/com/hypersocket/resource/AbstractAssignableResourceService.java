@@ -42,10 +42,10 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	long getResourceCount(Realm realm, String searchColumn, String search)
 			throws AccessDeniedException;
 
-	Collection<T> searchPersonalResources(Principal principal, String search,
+	Collection<T> searchPersonalResources(Principal principal, String searchColumn, String search,
 			int start, int length, ColumnSort[] sorting);
 
-	long getPersonalResourceCount(Principal principal, String search);
+	long getPersonalResourceCount(Principal principal, String searchColumn, String search);
 
 	Collection<T> getPersonalResources(Principal principal);
 	
