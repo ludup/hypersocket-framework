@@ -6,8 +6,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.security.SecureRandom;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -48,6 +50,7 @@ public class HypersocketUtils {
 	static Map<String,SimpleDateFormat> dateFormats = new HashMap<String,SimpleDateFormat>();
 	
 	static DecimalFormat df = new DecimalFormat("0.00");
+	static SecureRandom random = new SecureRandom();
 	
 	public static void resetInterval() {
 		times.set(System.currentTimeMillis());
@@ -287,5 +290,13 @@ public class HypersocketUtils {
 		}
 		return url;
 	}
+
+	public static boolean isIPAddress(String ip) {
+		return IPAddressValidator.getInstance().validate(ip);
+	}
+	
+	public static String generateRandomAlphaNumericString(int length) {
+	    return new BigInteger(130, random).toString(32).substring(0,  length);
+	  }
 
 }
