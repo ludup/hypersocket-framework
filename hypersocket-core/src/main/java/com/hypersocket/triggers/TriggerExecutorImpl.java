@@ -1,20 +1,28 @@
 package com.hypersocket.triggers;
 
+import org.quartz.JobDataMap;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationService;
+import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
+import com.hypersocket.events.SynchronousEvent;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
-import com.hypersocket.tasks.TaskResult;
+import com.hypersocket.realm.RealmService;
+import com.hypersocket.scheduler.PermissionsAwareJobData;
+import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
+import com.hypersocket.tasks.TaskResult;
 
 @Component
-public class TriggerExecutorImpl implements TriggerExecutor {
+public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implements TriggerExecutor {
 
 	static Logger log = LoggerFactory.getLogger(TriggerExecutor.class);
 	
@@ -33,7 +41,48 @@ public class TriggerExecutorImpl implements TriggerExecutor {
 	@Autowired
 	TaskProviderService taskService; 
 	
+	@Autowired
+	SchedulerService schedulerService; 
+	
+	@Autowired
+	ConfigurationService configurationService; 
+	
+	@Autowired
+	RealmService realmService;
+	
 	public TriggerExecutorImpl() {
+	}
+	
+	@Override
+	public void scheduleOrExecuteTrigger(TriggerResource trigger, SystemEvent event) throws ValidationException {
+		
+		if(event instanceof SynchronousEvent) {
+			try {
+				processEventTrigger(trigger, event);
+			} catch (ValidationException e) {
+				log.error("Trigger failed validation", e);
+			}
+			
+		} else {
+		
+			JobDataMap data = new PermissionsAwareJobData(
+					event.getCurrentRealm(),
+					hasAuthenticatedContext() ? getCurrentPrincipal()
+							: realmService.getSystemPrincipal(),
+					hasAuthenticatedContext() ? getCurrentLocale()
+							: configurationService.getDefaultLocale(),
+					"triggerExecutionJob");
+
+			data.put("event", event);
+			data.put("trigger", trigger);
+			data.put("realm", event.getCurrentRealm());
+			
+			try {
+				schedulerService.scheduleNow(TriggerJob.class, data);
+			} catch (SchedulerException e) {
+				log.error("Failed to schedule event trigger job", e);
+			}
+		}
 	}
 
 	@Override
@@ -140,7 +189,6 @@ public class TriggerExecutorImpl implements TriggerExecutor {
 		TaskResult outputEvent = provider.execute(trigger, event.getCurrentRealm(), event);
 
 		if(outputEvent!=null) {
-			
 			
 			if(outputEvent instanceof MultipleTaskResults) {
 				MultipleTaskResults results = (MultipleTaskResults) outputEvent;
