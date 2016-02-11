@@ -49,7 +49,7 @@ public class Permission extends AbstractEntity<Long> {
 	@Column(name="system", nullable=false)
 	boolean system;
 	
-	@ManyToMany(fetch=FetchType.EAGER)
+	@ManyToMany(fetch=FetchType.LAZY)
 	@JoinTable(name = "role_permissions", joinColumns={@JoinColumn(name="permission_id")}, inverseJoinColumns={@JoinColumn(name="role_id")})
 	Set<Role> roles = new HashSet<Role>();
 	
@@ -85,11 +85,6 @@ public class Permission extends AbstractEntity<Long> {
 
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
-	}
-	
-	@JsonIgnore
-	public Set<Role> getRoles() {
-		return roles;
 	}
 
 	public void setSystem(boolean system) {
