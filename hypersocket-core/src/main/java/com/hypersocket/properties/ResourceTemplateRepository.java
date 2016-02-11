@@ -75,4 +75,6 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	String getDecryptedValue(AbstractResource resource, String resourceKey);
 
+	Long[] getLongValues(AbstractResource resource, String name);
+
 }
