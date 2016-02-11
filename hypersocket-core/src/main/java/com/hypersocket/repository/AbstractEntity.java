@@ -63,6 +63,10 @@ public abstract class AbstractEntity<T> {
 		modified = new Date();
 	}
 	
+	public void setCreatedDate(Date created) {
+		this.created = created;
+	}
+	
 	@Override
 	public int hashCode() {
 		HashCodeBuilder builder = new HashCodeBuilder(31, 17);
