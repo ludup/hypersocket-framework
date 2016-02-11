@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.hypersocket.auth.AuthenticationServiceImpl;
 import com.hypersocket.auth.AuthenticationState;
+import com.hypersocket.auth.FallbackAuthenticationRequired;
 import com.hypersocket.json.AuthenticationRequiredResult;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -195,6 +196,8 @@ public class LogonController extends AuthenticatedController {
 						state.isAuthenticationComplete());
 				
 			}
+		} catch(FallbackAuthenticationRequired e) {
+			return resetLogon(request, response, "fallback", false);
 		} finally {
 			clearAuthenticatedContext();
 		}

@@ -301,7 +301,7 @@ public class AuthenticationServiceImpl extends
 	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean logon(AuthenticationState state, Map parameterMap)
-			throws AccessDeniedException {
+			throws AccessDeniedException, FallbackAuthenticationRequired {
 
 		state.setLastErrorMsg(null);
 		state.setLastErrorIsResourceKey(false);
@@ -363,6 +363,10 @@ public class AuthenticationServiceImpl extends
 			Authenticator authenticator = authenticators.get(state
 					.getCurrentModule().getTemplate());
 
+			if(authenticator==null) {
+				throw new FallbackAuthenticationRequired();
+			}
+			
 			if (authenticator.isSecretModule()
 					&& state.getPrincipal() instanceof AuthenticationState.FakePrincipal) {
 				state.setLastErrorMsg("error.genericLogonError");
