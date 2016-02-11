@@ -352,8 +352,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			permissionsCache.put(new Element(principal, principalPermissions));
 		}
 
-		return (Set<Permission>) permissionsCache.get(principal)
-				.getObjectValue();
+		return (Set<Permission>) permissionsCache.get(principal).getObjectValue();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -362,8 +361,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			throws AccessDeniedException {
 
 		if (!roleCache.isElementInMemory(principal)
-				|| (roleCache.get(principal) == null || roleCache
-						.isExpired(roleCache.get(principal)))) {
+				|| (roleCache.get(principal) == null 
+				|| roleCache.isExpired(roleCache.get(principal)))) {
+			
 			roleCache.put(new Element(principal, repository
 					.getRolesForPrincipal(realmService
 							.getAssociatedPrincipals(principal))));

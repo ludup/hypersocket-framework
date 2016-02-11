@@ -32,7 +32,7 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 
 	@SuppressWarnings("rawtypes")
 	boolean logon(AuthenticationState state, Map parameterMap)
-			throws AccessDeniedException;
+			throws AccessDeniedException, FallbackAuthenticationRequired;
 
 	@SuppressWarnings("rawtypes")
 	FormTemplate nextAuthenticationTemplate(AuthenticationState state,
