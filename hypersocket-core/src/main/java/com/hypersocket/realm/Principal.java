@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlElement;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.Fetch;
@@ -41,7 +42,7 @@ public abstract class Principal extends RealmResource {
 	Set<Role> roles = new HashSet<Role>();
 	
 	@Fetch(FetchMode.SELECT)
-	@OneToMany(fetch = FetchType.EAGER, mappedBy="principal")
+	@OneToMany(fetch = FetchType.LAZY, mappedBy="principal")
 	Set<PrincipalSuspension> suspensions;
 	
 	@JsonIgnore
@@ -74,7 +75,11 @@ public abstract class Principal extends RealmResource {
 		builder.append(getName(), r.getName());
 	}
 	
+	@JsonIgnore
 	public boolean isSuspended() {
+		if(!Hibernate.isInitialized(suspensions)) {
+			Hibernate.initialize(suspensions);
+		}
 		if(suspensions!=null) {
 			for(PrincipalSuspension s : suspensions) {
 				if(s.isActive()) {
