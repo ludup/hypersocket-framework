@@ -22,7 +22,6 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.permissions.Role;
 
 @Entity
@@ -39,7 +38,6 @@ public class AssignableResource extends RealmResource {
 	public AssignableResource() {
 	}
 	
-	@JsonIgnore
 	public Set<Role> getRoles() {
 		return roles;
 	}
