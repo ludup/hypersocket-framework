@@ -322,8 +322,10 @@ public class CertificateResourceServiceImpl extends
 		return X509CertificateUtils.generateSelfSignedCertificate(
 				properties.get("commonName"),
 				properties.get("organizationalUnit"),
-				properties.get("organization"), properties.get("location"),
-				properties.get("state"), properties.get("country"), pair,
+				properties.get("organization"), 
+				properties.get("location"),
+				properties.get("state"), 
+				properties.get("country"), pair,
 				signatureType);
 	}
 
@@ -425,13 +427,20 @@ public class CertificateResourceServiceImpl extends
 	public void updateCertificate(CertificateResource resource,
 			MultipartFile file, MultipartFile bundle)
 			throws ResourceChangeException {
+		
+	}
+	
+	@Override
+	public void updateCertificate(CertificateResource resource,
+			InputStream file, InputStream bundle)
+			throws ResourceChangeException {
 
 		try {
 			X509Certificate cert = X509CertificateUtils
-					.loadCertificateFromPEM(file.getInputStream());
+					.loadCertificateFromPEM(file);
 
 			X509Certificate[] ca = X509CertificateUtils
-					.loadCertificateChainFromPEM(bundle.getInputStream());
+					.loadCertificateChainFromPEM(bundle);
 
 			X509CertificateUtils.validateChain(ca, cert);
 
@@ -491,6 +500,15 @@ public class CertificateResourceServiceImpl extends
 	public CertificateResource replacePrivateKey(CertificateResource resource,
 			MultipartFile key, String passphrase, MultipartFile file,
 			MultipartFile bundle) throws ResourceChangeException,
+			InvalidPassphraseException, IOException {
+		return replacePrivateKey(resource, key.getInputStream(), passphrase, 
+				file.getInputStream(), bundle.getInputStream());
+	}
+	
+	@Override
+	public CertificateResource replacePrivateKey(CertificateResource resource,
+			InputStream key, String passphrase, InputStream file,
+			InputStream bundle) throws ResourceChangeException,
 			InvalidPassphraseException {
 
 		try {
@@ -511,17 +529,29 @@ public class CertificateResourceServiceImpl extends
 			MultipartFile bundle) throws InvalidPassphraseException,
 			CertificateException, IOException, FileFormatException,
 			MismatchedCertificateException {
-
-		X509Certificate cert = X509CertificateUtils.loadCertificateFromPEM(file
-				.getInputStream());
+		doInternalPrivateKey(resource, key.getInputStream(), 
+				passphrase, 
+				file.getInputStream(), 
+				bundle.getInputStream());
+		
+	}
+	
+	
+	private void doInternalPrivateKey(CertificateResource resource,
+			InputStream key, String passphrase, InputStream file,
+			InputStream bundle) throws InvalidPassphraseException,
+			CertificateException, IOException, FileFormatException,
+			MismatchedCertificateException {
+		
+		X509Certificate cert = X509CertificateUtils.loadCertificateFromPEM(file);
 
 		X509Certificate[] ca = X509CertificateUtils
-				.loadCertificateChainFromPEM(bundle.getInputStream());
+				.loadCertificateChainFromPEM(bundle);
 
 		X509CertificateUtils.validateChain(ca, cert);
 
-		KeyPair pair = X509CertificateUtils.loadKeyPairFromPEM(
-				key.getInputStream(), passphrase.toCharArray());
+		KeyPair pair = X509CertificateUtils.loadKeyPairFromPEM(key, 
+				passphrase.toCharArray());
 
 		if (!pair.getPublic().equals(cert.getPublicKey())) {
 			throw new MismatchedCertificateException(
@@ -587,6 +617,13 @@ public class CertificateResourceServiceImpl extends
 	@Override
 	public CertificateResource replacePfx(CertificateResource resource,
 			MultipartFile pfx, String passphrase) throws AccessDeniedException,
+			ResourceChangeException, IOException {
+		return replacePfx(resource, pfx.getInputStream(), passphrase);
+	}
+	
+	@Override
+	public CertificateResource replacePfx(CertificateResource resource,
+			InputStream pfx, String passphrase) throws AccessDeniedException,
 			ResourceChangeException {
 
 		try {
@@ -613,11 +650,21 @@ public class CertificateResourceServiceImpl extends
 			NoSuchAlgorithmException, CertificateException,
 			NoSuchProviderException, IOException,
 			MismatchedCertificateException {
+		internalDoPfx(resource, pfx, passphrase);
+	}
+	
+	private void internalDoPfx(CertificateResource resource, InputStream pfx,
+			String passphrase) throws AccessDeniedException,
+			UnrecoverableKeyException, KeyStoreException,
+			NoSuchAlgorithmException, CertificateException,
+			NoSuchProviderException, IOException,
+			MismatchedCertificateException {
+		
 		KeyStore keystore = null;
 
 		try {
 			keystore = X509CertificateUtils.loadKeyStoreFromPFX(
-					pfx.getInputStream(), passphrase.toCharArray());
+					pfx, passphrase.toCharArray());
 		} catch (IOException ie) {
 			throw new KeyStoreException(ie.getMessage());
 		}
