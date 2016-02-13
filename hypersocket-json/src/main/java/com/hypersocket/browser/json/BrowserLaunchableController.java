@@ -20,6 +20,7 @@ import com.hypersocket.browser.BrowserLaunchable;
 import com.hypersocket.browser.BrowserLaunchableColumns;
 import com.hypersocket.browser.BrowserLaunchableService;
 import com.hypersocket.json.ResourceList;
+import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.session.json.SessionUtils;
@@ -37,6 +38,23 @@ public class BrowserLaunchableController extends BootstrapTableController {
 
 	@Autowired
 	SessionUtils sessionUtils;
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "browser/fingerprint", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<String> getFingerprint(
+			HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			return new ResourceStatus<String>(true, resourceService.getFingerprint());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "browser/myResources", method = RequestMethod.GET, produces = { "application/json" })
@@ -82,12 +100,12 @@ public class BrowserLaunchableController extends BootstrapTableController {
 					new BootstrapTablePageProcessor() {
 
 						@Override
-						public Column getColumn(int col) {
-							return BrowserLaunchableColumns.values()[col];
+						public Column getColumn(String col) {
+							return BrowserLaunchableColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override
-						public List<?> getPage(String searchPattern, int start,
+						public List<?> getPage(String searchColumn, String searchPattern, int start,
 								int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
@@ -97,7 +115,7 @@ public class BrowserLaunchableController extends BootstrapTableController {
 						}
 
 						@Override
-						public Long getTotalCount(String searchPattern)
+						public Long getTotalCount(String searchColumn, String searchPattern)
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.getPersonalResourceCount(

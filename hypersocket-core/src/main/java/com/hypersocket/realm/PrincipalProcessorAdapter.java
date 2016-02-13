@@ -35,4 +35,9 @@ public class PrincipalProcessorAdapter implements PrincipalProcessor {
 
 	}
 
+	@Override
+	public void beforeCreate(Realm realm, String username, Map<String, String> properties) throws ResourceException {
+		
+	}
+
 }

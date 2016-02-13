@@ -13,23 +13,27 @@
 			cols="100" maxlength="8000" defaultValue="" weight="100" allowEmpty="true"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email.delivery"
-		resourceBundle="TriggerResourceService" weight="2000">
+		resourceBundle="TriggerResourceService" weight="3000">
 		<property resourceKey="email.to" inputType="multipleTextInput"
 			weight="50" defaultValue="" allowEmpty="false" validateAll="email" errorResourceKey="error.toRequired"/>
 		<property resourceKey="email.cc" inputType="multipleTextInput"
 			weight="60" defaultValue="" validateAll="email" />
 		<property resourceKey="email.bcc" inputType="multipleTextInput"
 			weight="70" defaultValue="" validateAll="email" />
+		<property resourceKey="email.replyToName" inputType="text"
+			weight="80" defaultValue="" size="255" allowEmpty="false"/>
+		<property resourceKey="email.replyToEmail" inputType="text"
+			weight="90" defaultValue="" size="255" validateAll="email"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email.attachments"
-		resourceBundle="TriggerResourceService" weight="3000">
+		resourceBundle="TriggerResourceService" weight="4000">
 		<property resourceKey="attach.event" inputType="switch"
 			weight="0" defaultValue="false"/>
 		<property resourceKey="attach.eventSourceType" inputType="multipleTextInput"
 			weight="0" defaultValue=""/>
 		<property resourceKey="attach.static" inputType="multipleFileInput"
 			weight="50" defaultValue="" allowEmpty="true" text=""/>
-		<property resourceKey="attach.dynamic" inputType="namePairs"
+		<property resourceKey="attach.dynamic" inputType="namePairs" showEmptyRow="false"
 			weight="100" defaultValue="" onlyName="false" text=""/>
 	</propertyCategory>
 </propertyTemplates>

@@ -1,5 +1,7 @@
 package com.hypersocket.certificates;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyStore;
 import java.util.Collection;
@@ -58,9 +60,20 @@ public interface CertificateResourceService extends
 			String string, String string2) throws ResourceCreationException;
 
 	CertificateResource replacePfx(CertificateResource resource, MultipartFile key,
-			String passphrase) throws AccessDeniedException, ResourceChangeException;
+			String passphrase) throws AccessDeniedException, ResourceChangeException, IOException;
 
 	CertificateResource replacePrivateKey(CertificateResource resourceById, MultipartFile key,
-			String passphrase, MultipartFile file, MultipartFile bundle) throws InvalidPassphraseException, ResourceChangeException;
+			String passphrase, MultipartFile file, MultipartFile bundle) throws InvalidPassphraseException, ResourceChangeException, IOException;
+
+	KeyStore getResourceKeystore(CertificateResource resource) throws ResourceCreationException;
+
+	void updateCertificate(CertificateResource resource, InputStream file, InputStream bundle)
+			throws ResourceChangeException;
+
+	CertificateResource replacePfx(CertificateResource resource, InputStream pfx, String passphrase)
+			throws AccessDeniedException, ResourceChangeException;
+
+	CertificateResource replacePrivateKey(CertificateResource resource, InputStream key, String passphrase,
+			InputStream file, InputStream bundle) throws ResourceChangeException, InvalidPassphraseException;
 
 }

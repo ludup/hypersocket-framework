@@ -2,6 +2,8 @@ package com.hypersocket.resource;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +37,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		extends PasswordEnabledAuthenticatedServiceImpl implements
 		AbstractAssignableResourceService<T> {
 
+	private static SecureRandom random = new SecureRandom();
+
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
 
@@ -47,6 +51,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	TransactionService transactionService; 
 	
 	String resourceCategory;
+
+	private String fingerprint;
 	
 	protected abstract AbstractAssignableResourceRepository<T> getRepository();
 
@@ -86,6 +92,11 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 	protected PermissionType getReadPermission() {
 		return getPermission("READ");
+	}
+
+	@Override
+	public String getFingerprint() {
+		return fingerprint;
 	}
 
 	@Override
@@ -133,18 +144,17 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		resource.setResourceCategory(resourceCategory);
 		getRepository().populateEntityFields(resource, properties);
 		
-		if(!checkUnique(resource, true)) {
-			ResourceCreationException ex = new ResourceCreationException(RESOURCE_BUNDLE,
-					"generic.alreadyExists.error", resource.getName());
-			fireResourceCreationEvent(resource, ex);
-			throw ex;
-		}
-		
 		try {
-			
+		
 			beforeCreateResource(resource, properties);
 			
+			if(!checkUnique(resource, true)) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE,
+						"generic.alreadyExists.error", resource.getName());
+			}
+			
 			getRepository().saveResource(resource, properties, ops);
+			updateFingerprint();
 			
 			afterCreateResource(resource, properties);
 
@@ -204,7 +214,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		if(isAssignedUserAllowedUpdate()) {
 			assertPrincipalAssignment(resource, getUpdatePermission());
 		} else {
-			assertPermission(getUpdatePermission());
+			assertPermission(getUpdatePermission(resource));
 		}
 		
 
@@ -227,6 +237,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			beforeUpdateResource(resource, properties);
 
 			getRepository().saveResource(resource, properties, ops);
+			updateFingerprint();
+			
 
 			afterUpdateResource(resource, properties);
 
@@ -255,6 +267,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 		try {
 			getRepository().deleteResource(resource, ops);
+			updateFingerprint();
+			
 			fireResourceDeletionEvent(resource);
 		} catch (Throwable t) {
 			fireResourceDeletionEvent(resource, t);
@@ -291,7 +305,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	@Override
-	public Collection<T> searchPersonalResources(Principal principal, String search, int start,
+	public Collection<T> searchPersonalResources(Principal principal, String searchColumn, String search, int start,
 			int length, ColumnSort[] sorting) {
 
 		List<Principal> principals = realmService.getAssociatedPrincipals(principal);
@@ -299,8 +313,23 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	@Override
+	public Collection<T> getPersonalRoleResources(Principal principal) {
+		return getRepository().getAssignedResources(permissionService.getPersonalRole(principal));
+	}
+	
+	@Override
 	public Collection<T> getPersonalResources(Principal principal) {
 		return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(principal));
+	}
+	
+	@Override
+	public Collection<T> getPersonalResources(Principal principal, boolean resolveAssosicatedPrincipals) {
+		if(resolveAssosicatedPrincipals) {
+			return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(principal));
+		} else {
+			return getRepository().getAssignedResources(Arrays.asList(principal));
+		}
+		
 	}
 
 	@Override
@@ -309,7 +338,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	@Override
-	public long getPersonalResourceCount(Principal principal, String search) {
+	public long getPersonalResourceCount(Principal principal, String searchColumn, String search) {
 		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(principal), search);
 	}
 	
@@ -324,21 +353,21 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	@Override
-	public List<T> searchResources(Realm realm, String search, int start,
+	public List<T> searchResources(Realm realm, String searchColumn, String search, int start,
 			int length, ColumnSort[] sorting) throws AccessDeniedException {
 
 		assertPermission(getReadPermission());
 
-		return getRepository().search(realm, search, start, length, sorting);
+		return getRepository().search(realm, searchColumn, search, start, length, sorting);
 	}
 
 	@Override
-	public long getResourceCount(Realm realm, String search)
+	public long getResourceCount(Realm realm, String searchColumn, String search)
 			throws AccessDeniedException {
 
 		assertPermission(getReadPermission());
 
-		return getRepository().getResourceCount(realm, search);
+		return getRepository().getResourceCount(realm, searchColumn, search);
 	}
 
 	@Override
@@ -427,18 +456,18 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	public String exportResoure(Long id) throws ResourceNotFoundException,
 			ResourceExportException, AccessDeniedException {
 		final T resource = getResourceById(id);
-		return exportResources(resource);
+		return exportResources(true, resource);
 	}
 
 	@Override
 	public String exportAllResoures() throws ResourceExportException {
 		List<T> list = getResources();
-		return exportResources(list);
+		return exportResources(list, true);
 	}
 	
 	@Override
-	public String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException {
-		return exportResources(Arrays.asList(resources));
+	public String exportResources(boolean stripIdentity, @SuppressWarnings("unchecked") T... resources) throws ResourceExportException {
+		return exportResources(Arrays.asList(resources), stripIdentity);
 	}
 	
 	protected boolean isExportingAdditionalProperties() {
@@ -446,6 +475,10 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	protected void prepareExport(T resource) {
+		prepareExport(resource, true);
+	}
+	
+	protected void prepareExport(T resource, boolean stripIdentity) {
 		if(isExportingAdditionalProperties()) {
 			resource.setProperties(getRepository().getProperties(resource));
 		}
@@ -456,7 +489,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	@Override
-	public String exportResources(Collection<T> resources) throws ResourceExportException {
+	public String exportResources(Collection<T> resources, boolean stripIdentity) throws ResourceExportException {
 
 		if(resources.isEmpty()) {
 			throw new ResourceExportException(RESOURCE_BUNDLE, "error.nothingToExport");
@@ -465,10 +498,12 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			for(T resource : resources) {
-				prepareExport(resource);
-				resource.setId(null);
-				resource.setRealm(null);
-				resource.getRoles().clear();
+				prepareExport(resource, stripIdentity);
+				if(stripIdentity) {
+					resource.setId(null);
+					resource.setRealm(null);
+					resource.getRoles().clear();
+				}
 			}
 
 			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resources);
@@ -562,5 +597,9 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		
 		assertAnyPermission(getReadPermission());
 		return getRepository().getValue(resource, key, defaultValue);
+	}
+	
+	protected void updateFingerprint() {
+		fingerprint = new BigInteger(130, random).toString(32);
 	}
 }

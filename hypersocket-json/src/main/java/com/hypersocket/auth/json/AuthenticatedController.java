@@ -163,10 +163,6 @@ public class AuthenticatedController {
 
 	}
 
-	protected void clearSystemContext() {
-		clearAuthenticatedContext();
-	}
-
 	protected void clearAnonymousContext() {
 		sessionService.closeSession(authenticationService.getCurrentSession());
 		clearAuthenticatedContext();

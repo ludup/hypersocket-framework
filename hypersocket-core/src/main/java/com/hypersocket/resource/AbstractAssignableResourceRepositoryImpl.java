@@ -9,13 +9,13 @@ package com.hypersocket.resource;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.criteria.JoinType;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +23,6 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +30,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.encrypt.EncryptionService;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
@@ -59,12 +59,6 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	private void postConstruct() {
 		entityPropertyStore = new EntityResourcePropertyStore(encryptionService);
 	}
-	
-	@Override
-	@Transactional(readOnly=true)
-	public Collection<T> getAssignedResources(List<Principal> principals) {
-		return getAssignedResources(principals.toArray(new Principal[0]));
-	}
 
 	@Override
 	protected ResourcePropertyStore getPropertyStore() {
@@ -79,13 +73,41 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)
-	public Collection<T> getAssignedResources(Principal... principals) {
+	public Collection<T> getAssignedResources(Role role, CriteriaConfiguration... configs) {
 
 		
 		Criteria criteria = createCriteria(getResourceClass());
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		
-		criteria.add(Restrictions.eq("realm", principals[0].getRealm()));
+		criteria.add(Restrictions.eq("realm", role.getRealm()));
+		criteria.add(Restrictions.eq("deleted", false));
+		
+		for(CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		
+		criteria = criteria.createCriteria("roles");
+		criteria.add(Restrictions.eq("id", role.getId()));
+		
+		return criteria.list();
+
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly=true)
+	public Collection<T> getAssignedResources(List<Principal> principals, CriteriaConfiguration... configs) {
+
+		
+		Criteria criteria = createCriteria(getResourceClass());
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
+		criteria.add(Restrictions.eq("deleted", false));
+		
+		for(CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
 		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
@@ -101,8 +123,13 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		
-		criteria.add(Restrictions.eq("realm", principals[0].getRealm()));
-
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
+		criteria.add(Restrictions.eq("deleted", false));
+		
+		for(CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+		
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
@@ -133,6 +160,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
 		
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
@@ -151,8 +179,9 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 		criteria.setProjection(Projections.distinct(Projections.id()));
 		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
-		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 
+		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
@@ -200,6 +229,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 
 		criteria.add(Restrictions.eq("realm", realm));
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
@@ -220,6 +250,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 
 		criteria.add(Restrictions.eq("realm", realm));
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		
@@ -251,6 +282,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 
 		criteria.add(Restrictions.eq("realm", realm));
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		
@@ -264,6 +296,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)
 	public Long getAssignedResourceCount(List<Principal> principals,
@@ -283,6 +316,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
 		
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
@@ -302,7 +336,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.setProjection(Projections.distinct(Projections.id()));
 		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
-
+		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", false));
 		criteria = criteria.createCriteria("principals");
@@ -313,7 +347,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 		criteria.add(Restrictions.in("id", principalIds));
 		
-		ids.addAll(criteria.list());
+		ids.addAll((List<Long>)criteria.list());
 		
 		return new Long(ids.size());
 	}
@@ -336,6 +370,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 		Criteria crit = createCriteria(AssignableResource.class);
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		crit.add(Restrictions.eq("deleted", false));
 		crit = crit.createCriteria("roles");
 		crit = crit.createCriteria("principals");
 		crit.add(Restrictions.in("id", ids));
@@ -459,6 +494,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for(TransactionOperation<T> op : ops) {
 			op.afterOperation(resource, properties);
 		}
+
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -490,12 +526,13 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<T> search(Realm realm, String searchPattern, int start,
+	public List<T> search(Realm realm, String searchColumn, String searchPattern, int start,
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
-		return super.search(getResourceClass(), "name", searchPattern, start,
+		List<T> results = super.search(getResourceClass(), searchColumn, searchPattern, start,
 				length, sorting, ArrayUtils.addAll(configs, new DeletedCriteria(false),
 						new RoleSelectMode(), new RealmCriteria(
 								realm)));
+		return results;
 	}
 	
 	
@@ -507,11 +544,12 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@Override
 	@Transactional(readOnly=true)
-	public long getResourceCount(Realm realm, String searchPattern,
+	public long getResourceCount(Realm realm, String searchColumn, String searchPattern,
 			CriteriaConfiguration... configs) {
-		return getCount(getResourceClass(), "name", searchPattern,
+		long count = getCount(getResourceClass(), searchColumn, searchPattern,
 				ArrayUtils.addAll(configs, new RoleSelectMode(), new DeletedCriteria(false),
 						new RealmCriteria(realm)));
+		return count;
 	}
 
 	protected abstract Class<T> getResourceClass();
@@ -522,6 +560,46 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		public void configure(Criteria criteria) {
 			criteria.setFetchMode("roles", FetchMode.SELECT);
 		}
+	}
+	
+
+	@SuppressWarnings("unchecked")
+	protected Collection<T> searchResources(Realm currentRealm, 
+			String name, 
+			Date createdFrom, Date createdTo, 
+			Date lastUpdatedFrom, Date lastUpdatedTo, 
+			CriteriaConfiguration... configs) {
+	
+		Criteria criteria = createCriteria(getResourceClass());
+		
+		for (String property : resolveCollectionProperties(getResourceClass())) {
+			 criteria.setFetchMode(property, org.hibernate.FetchMode.SELECT);
+		}
+		
+		if (!StringUtils.isEmpty(name)) {
+			criteria.add(Restrictions.ilike("name", name.replace('*', '%')));
+		}
+		
+		criteria.add(Restrictions.eq("realm", currentRealm));
+		criteria.add(Restrictions.eq("deleted", false));
+		
+		if(createdFrom!=null) {
+			criteria.add(Restrictions.and(Restrictions.ge("created", createdFrom),
+					Restrictions.lt("created", createdTo)));
+		}
+		
+		if(lastUpdatedFrom!=null) {
+			criteria.add(Restrictions.and(Restrictions.ge("modified", lastUpdatedFrom),
+					Restrictions.lt("modified", lastUpdatedTo)));
+		}
+
+		for (CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+
+		return (Collection<T>) criteria.list();
 	}
 
 }

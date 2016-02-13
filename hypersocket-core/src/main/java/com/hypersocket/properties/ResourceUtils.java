@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hypersocket.resource.Resource;
+import com.hypersocket.utils.HypersocketUtils;
 
 public class ResourceUtils {
 
@@ -20,24 +21,19 @@ public class ResourceUtils {
 		if(StringUtils.isBlank(values)) {
 			return new String[] { };
 		}
-		String delim = null;
-		for(String str : DELIMS) {
-			if(values.contains(str)) {
-				delim = str;
-			}
-		}
-		
 		List<String> ret = new ArrayList<String>();
 		
-		if(delim!=null) {
-			StringTokenizer t = new StringTokenizer(values, delim);
-			
-			while (t.hasMoreTokens()) {
-				ret.add(t.nextToken());
+
+		StringTokenizer t = new StringTokenizer(values, "]|[");
+		
+		while (t.hasMoreTokens()) {
+			String val = t.nextToken();
+			StringTokenizer t2 = new StringTokenizer(val, "\r\n");
+			while(t2.hasMoreTokens()) {
+				ret.add(t2.nextToken());
 			}
-		} else {
-			ret.add(values);
 		}
+	
 		return ret.toArray(new String[0]);
 	}
 	
@@ -57,10 +53,10 @@ public class ResourceUtils {
 	}
 	
 	public static <T extends Resource> String createCommaSeparatedString(Collection<T> resources) {
-		return createDelimitedString(resources, ",");
+		return createDelimitedResourceString(resources, ",");
 	}
 	
-	public static <T extends Resource> String createDelimitedString(Collection<T> resources, String delimiter) {
+	public static <T extends Resource> String createDelimitedResourceString(Collection<T> resources, String delimiter) {
 		StringBuffer buf = new StringBuffer();
 		for(Resource r : resources) {
 			if(buf.length() > 0) {
@@ -70,8 +66,19 @@ public class ResourceUtils {
 		}
 		return buf.toString();
 	}
-
-	public static String implodeValues(String[] array) {
+	
+	public static String createDelimitedString(Collection<String> resources, String delimiter) {
+		StringBuffer buf = new StringBuffer();
+		for(String r : resources) {
+			if(buf.length() > 0) {
+				buf.append(delimiter);
+			}
+			buf.append(r);
+		}
+		return buf.toString();
+	}
+	
+	public static String implodeValues(String... array) {
 		return StringUtils.join(array, "]|[");	
 	}
 	
@@ -99,6 +106,17 @@ public class ResourceUtils {
 		return element;
 	}
 
+	public static String[] getNamePairArray(String[] source) {
+		if(source==null) {
+			return null;
+		}
+		String[] dest = new String[source.length];
+		for(int i=0;i<source.length;i++) {
+			dest[i] = HypersocketUtils.urlDecode(source[i]);
+		}
+		return dest;
+	}
+	
 	public static boolean isReplacementVariable(String value) {
 		return value.startsWith("${") && value.endsWith("}");
 	}
@@ -117,6 +135,16 @@ public class ResourceUtils {
 			buf.append(e.getId());
 		}
 		return buf.toString();
+	}
+
+	public static List<NameValuePair> explodeNamePairs(String values) {
+		
+		String[] pairs = explodeValues(values);
+		List<NameValuePair> result = new ArrayList<NameValuePair>();
+		for(String pair : pairs) {
+			result.add(new NameValuePair(pair));
+		}
+		return result;
 	}
 
 }

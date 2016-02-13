@@ -136,7 +136,7 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 			loadBlockedIPs();
 		} else if(event instanceof ConfigurationChangedEvent) {
 			ConfigurationChangedEvent c = (ConfigurationChangedEvent)event;
-			if(c.getAttribute(ConfigurationChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("server.blockIPs")) {
+			if("server.blockIPs".equals(c.getAttribute(ConfigurationChangedEvent.ATTR_CONFIG_RESOURCE_KEY))) {
 				String[] oldValues = c.getAttribute(ConfigurationChangedEvent.ATTR_OLD_VALUE).split("\\r\\n");
 				String[] newValues = c.getAttribute(ConfigurationChangedEvent.ATTR_NEW_VALUE).split("\\r\\n");
 				

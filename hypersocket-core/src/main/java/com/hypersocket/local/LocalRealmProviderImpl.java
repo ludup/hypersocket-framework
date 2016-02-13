@@ -10,6 +10,8 @@ package com.hypersocket.local;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,11 +39,12 @@ import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.session.events.SessionOpenEvent;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
 public class LocalRealmProviderImpl extends AbstractRealmProvider implements
-		LocalRealmProvider {
+		LocalRealmProvider, ApplicationListener<SessionOpenEvent> {
 
 	private static Logger log = LoggerFactory
 			.getLogger(LocalRealmProviderImpl.class);
@@ -248,6 +252,34 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 					user.getGroups().add((LocalGroup) p);
 				}
 			}
+			
+			userRepository.saveUser(user, properties);
+
+			userRepository.flush();
+			userRepository.refresh(user);
+
+			return user;
+		} catch (Exception e) {
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"error.updateFailed", principal.getPrincipalName(),
+					e.getMessage());
+		}
+	}
+	
+	@Override
+	@Transactional
+	public Principal updateUserProperties(Principal principal,
+			Map<String, String> properties) throws ResourceChangeException {
+
+		try {
+
+			if (!(principal instanceof LocalUser)) {
+				throw new IllegalStateException(
+						"principal is not of type LocalUser");
+			}
+
+			// Get again so we have it within a transaction so lazy loading works.
+			LocalUser user = (LocalUser) userRepository.getUserById(principal.getId(), principal.getRealm());
 
 			userRepository.saveUser(user, properties);
 
@@ -655,6 +687,11 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	public boolean supportsAccountDisable(Realm realm) {
 		return false;
 	}
+	
+	@Override
+	public boolean isDisabled(Principal principal) {
+		return false;
+	}
 
 	@Override
 	public Principal disableAccount(Principal principal)
@@ -731,6 +768,23 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	@Transactional(readOnly=true)
 	public String getDecryptedValue(Realm realm, String resourceKey) {
 		return getDecryptedValue(realm, resourceKey);
+	}
+
+	@Override
+	public boolean canChangePassword(Principal principal) {
+		return true;
+	}
+
+	@Override
+	public void onApplicationEvent(SessionOpenEvent event) {
+		
+		if(event.getPrincipal() instanceof LocalUser) {
+			
+			LocalUser user = (LocalUser) event.getPrincipal();
+			user.setLastSignOn(new Date(event.getTimestamp()));
+			userRepository.saveUser(user, new HashMap<String,String>());
+		}
+		
 	}
 
 }

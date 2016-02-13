@@ -40,4 +40,6 @@ public interface AuthenticatedService {
 
 	void elevatePermissions(PermissionType... permissions);
 
+	void clearElevatedPermissions();
+
 }

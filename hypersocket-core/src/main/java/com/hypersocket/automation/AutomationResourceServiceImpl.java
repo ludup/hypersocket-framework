@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -49,6 +50,7 @@ import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResultType;
 import com.hypersocket.triggers.TriggerType;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Service
 public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<AutomationResource>
@@ -217,7 +219,8 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	protected Date calculateDateTime(Date from, String time) {
 
 		Calendar c = Calendar.getInstance();
-
+		c.setTime(HypersocketUtils.today());
+		
 		Date ret = null;
 
 		if (from != null) {
@@ -241,6 +244,15 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 			String scheduleId = scheduleIdsByResource.remove(resource.getId());
 			schedulerService.cancelNow(scheduleId);
 		}
+	}
+	
+	@Override
+	public void runNow(AutomationResource resource) throws SchedulerException {
+		
+		PermissionsAwareJobData data = new PermissionsAwareJobData(resource.getRealm(), resource.getName());
+		data.put("resourceId", resource.getId());
+		
+		schedulerService.scheduleNow(AutomationJob.class, data);
 	}
 
 	protected void schedule(AutomationResource resource) {
@@ -274,6 +286,42 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 			}
 		}
 
+		Date now = new Date();
+		if(start!=null && start.before(now)) {
+			if(end!=null && end.before(now)) {
+				// Start tomorrow, end tomorrow
+				if(resource.getStartDate()==null) {
+					start = DateUtils.addDays(start, 1);
+				}
+				if(resource.getEndDate()==null) {
+					end = DateUtils.addDays(end, 1);
+				}
+			} else if(interval == 0) {
+				// Start tomorrow?
+				if(resource.getStartDate()==null) {
+					start = DateUtils.addDays(start, 1);
+				}
+			} else if(interval > 0) {
+				while(start.before(now)) {
+					start = DateUtils.addMilliseconds(start, interval);
+				}
+			}
+		}
+		
+		if(start!=null && start.before(now)) {
+			if(log.isInfoEnabled()) {
+				log.info("Not scheduling " + resource.getName() + " because its schedule is in the past.");
+			}
+			return;
+		}
+		
+		if(start==null && end==null) {
+			if(resource.getRepeatType()==AutomationRepeatType.NEVER) {
+				log.info("Not scheudling " + resource.getName() + " because it is a non-repeating job with no start or end date/time.");
+				return;
+			}
+		}
+		
 		PermissionsAwareJobData data = new PermissionsAwareJobData(resource.getRealm(), resource.getName());
 		data.put("resourceId", resource.getId());
 
@@ -286,7 +334,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 				scheduleId = scheduleIdsByResource.get(resource.getId());
 
 				try {
-					if (start == null || start.before(new Date())) {
+					if (start == null) {
 						schedulerService.rescheduleNow(scheduleId, interval, repeat, end);
 					} else {
 						schedulerService.rescheduleAt(scheduleId, start, interval, repeat, end);

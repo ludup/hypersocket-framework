@@ -11,6 +11,7 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -23,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @MappedSuperclass
-@JsonIgnoreProperties({"createDate", "modifiedDate"})
+@JsonIgnoreProperties({"createDate"})
 public abstract class AbstractEntity<T> {
 
 	public abstract T getId();
@@ -36,7 +37,7 @@ public abstract class AbstractEntity<T> {
     private Date created = new Date();
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date modified = new Date();
+    Date modified = new Date();
     
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
@@ -57,8 +58,13 @@ public abstract class AbstractEntity<T> {
 	}
 	
 	@PreUpdate
+	@PrePersist
 	public void updateModifiedTimestamp() {
 		modified = new Date();
+	}
+	
+	public void setCreatedDate(Date created) {
+		this.created = created;
 	}
 	
 	@Override

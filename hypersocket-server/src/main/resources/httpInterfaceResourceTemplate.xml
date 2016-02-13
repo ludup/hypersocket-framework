@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="httpInterfaceResource">
+	<propertyCategory resourceKey="category.interface" resourceBundle="HypersocketServer" weight="0">
+		<property resourceKey="interfaces" inputType="multipleSelect"
+			restart="false" url="server/networkInterfaces" selectAllIfEmpty="false"	weight="0" />
+		<property resourceKey="port" inputType="integer" minValue="1"
+			maxValue="65535" restart="true" defaultValue="80" weight="100" />
+	</propertyCategory>
+	<propertyCategory resourceKey="category.protocol" resourceBundle="HypersocketServer" weight="100">
+		<property resourceKey="protocol" inputType="select" 
+			options="HTTP,HTTPS" defaultValue="HTTPS" weight="200" />
+		<property resourceKey="certificate" inputType="select" emptySelectionAllowed="true" valueAttr="id"
+			url="certificates/list" defaultValue="" weight="300" visibilityDependsOn="protocol" visibilityDependsValue="HTTPS"/>
+		<property resourceKey="redirectHTTPS" inputType="switch" defaultValue="true" weight="400"  visibilityDependsOn="protocol" visibilityDependsValue="HTTP"/>
+		<property resourceKey="redirectPort" inputType="integer" minValue="1"
+			maxValue="65535" restart="true" defaultValue="80" weight="500" visibilityDependsOn="protocol" visibilityDependsValue="HTTP"/>
+	</propertyCategory>
+</propertyTemplates>

@@ -18,6 +18,6 @@ public class OrderByAsc implements CriteriaConfiguration {
 	}
 	@Override
 	public void configure(Criteria criteria) {
-		criteria.addOrder(Order.asc(property));
+		criteria.addOrder(Order.asc(property).ignoreCase());
 	}
 }

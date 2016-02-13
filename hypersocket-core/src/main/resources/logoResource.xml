@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<propertyTemplates>
+	<propertyCategory resourceKey="resource.logo"
+		resourceBundle="UserInterface" weight="0">
+		<property resourceKey="resourceLogo" inputType="logoInput" weight="0"
+			defaultValue="" />
+	</propertyCategory>
+</propertyTemplates>

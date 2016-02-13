@@ -8,6 +8,7 @@
 package com.hypersocket.local;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,6 +20,8 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.annotations.Cascade;
@@ -32,7 +35,7 @@ import com.hypersocket.realm.UserPrincipal;
 @Entity
 @Table(name = "local_users")
 @XmlRootElement(name="user")
-public class LocalUser extends Principal implements UserPrincipal, Serializable {
+public class LocalUser extends UserPrincipal implements Serializable {
 	
 	private static final long serialVersionUID = 4490274955679793663L;
 
@@ -47,6 +50,9 @@ public class LocalUser extends Principal implements UserPrincipal, Serializable 
 	@OneToOne(mappedBy="user", optional=true)
 	@Cascade({CascadeType.DELETE})
 	LocalUserCredentials credentials;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	Date lastSignOn;
 	
 	@JsonIgnore
 	public Set<LocalGroup> getGroups() {
@@ -69,6 +75,23 @@ public class LocalUser extends Principal implements UserPrincipal, Serializable 
 	@JsonIgnore
 	public Set<Principal> getAssociatedPrincipals() {
 		return new HashSet<Principal>(groups);
+	}
+
+	@Override
+	public Date getLastPasswordChange() {
+		if(credentials!=null) {
+			return credentials.getModifiedDate();
+		}
+		return null;
+	}
+
+	@Override
+	public Date getLastSignOn() {
+		return lastSignOn;
+	}
+
+	public void setLastSignOn(Date lastSignOn) {
+		this.lastSignOn = lastSignOn;
 	}
 	
 }

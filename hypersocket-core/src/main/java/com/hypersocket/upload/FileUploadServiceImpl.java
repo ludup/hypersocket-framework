@@ -49,6 +49,8 @@ public class FileUploadServiceImpl extends
 	
 	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
 	
+	FileStore defaultStore = new DefaultFileStore();
+	
 	@Autowired
 	FileUploadRepository repository;
 
@@ -73,13 +75,36 @@ public class FileUploadServiceImpl extends
 	}
 	
 	@Override
+	public FileStore getDefaultStore() {
+		return defaultStore;
+	}
+	
+	@Override
+	public void setDefaultStore(FileStore defaultStore) {
+		this.defaultStore = defaultStore;
+	}
+	
+	@Override
 	public String getContentType(String uuid) throws ResourceNotFoundException, IOException {
-		FileUpload upload = getFileByUuid(uuid);
-		String contentType = mimeTypesMap.getContentType(upload.getFileName());
-		if(contentType==null) {
-			return "application/octet-stream";
+		return getContentType(uuid, true);
+	}
+	
+	@Override
+	public String getContentType(String uuid, boolean isUUID) throws ResourceNotFoundException, IOException {
+		if(isUUID) {
+			FileUpload upload = getFileByUuid(uuid);
+			String contentType = mimeTypesMap.getContentType(upload.getFileName());
+			if(contentType==null) {
+				return "application/octet-stream";
+			}
+			return contentType;
+		} else {
+			String contentType = mimeTypesMap.getContentType(uuid);
+			if(contentType==null) {
+				return "application/octet-stream";
+			}
+			return contentType;
 		}
-		return contentType;
 	}
 
 	@Override
@@ -87,12 +112,12 @@ public class FileUploadServiceImpl extends
 			throws ResourceCreationException, AccessDeniedException,
 			IOException {
 
-		return createFile(file, realm, true, type, new DefaultFileUploadStore(realm));
+		return createFile(file, realm, true, type, getDefaultStore());
 	}
 
 	@Override
 	public FileUpload createFile(MultipartFile file, Realm realm,
-			boolean persist, String type, FileUploadStore uploadStore)
+			boolean persist, String type, FileStore uploadStore)
 			throws ResourceCreationException, AccessDeniedException,
 			IOException {
 
@@ -102,7 +127,7 @@ public class FileUploadServiceImpl extends
 
 	@Override
 	public FileUpload createFile(InputStream in, String filename, Realm realm,
-			boolean persist, String type, FileUploadStore uploadStore)
+			boolean persist, String type, FileStore uploadStore)
 			throws ResourceCreationException, AccessDeniedException,
 			IOException {
 
@@ -123,7 +148,7 @@ public class FileUploadServiceImpl extends
 
 				din = new DigestInputStream(in, md5);
 
-				fileUpload.setFileSize(uploadStore.writeFile(uuid, din));
+				fileUpload.setFileSize(uploadStore.writeFile(realm, uuid, din));
 
 				String md5String = Hex.encodeHexString(md5.digest());
 				fileUpload.setMd5Sum(md5String);
@@ -187,29 +212,16 @@ public class FileUploadServiceImpl extends
 		File file = getFile(uuid);
 		
 		InputStream in = new FileInputStream(file);
+		String contentType = mimeTypesMap.getContentType(fileUpload.getFileName());
+		response.setContentType(contentType);
 
+		if(forceDownload) {
+			response.setHeader("Content-disposition", "attachment; filename="
+				+ fileUpload.getFileName());
+		}
 
-			String contentType = mimeTypesMap.getContentType(fileUpload.getFileName());
-			response.setContentType(contentType);
-
-			if(forceDownload) {
-				response.setHeader("Content-disposition", "attachment; filename="
-					+ fileUpload.getFileName());
-			}
-
-			if (file.length() < 1024000) {
-				try  {
-					IOUtils.copy(in,  response.getOutputStream());
-					response.flushBuffer();
-				} catch(IOException ex) {
-					log.error("Failed to copy file", ex);
-				} finally {
-					in.close();
-				}
-			} else {
-				// Let the HTTP server handle it.
-				request.setAttribute(CONTENT_INPUTSTREAM, in);
-			}
+		// Let the HTTP server handle it.
+		request.setAttribute(CONTENT_INPUTSTREAM, in);
 	}
 	
 	@Override
@@ -273,20 +285,18 @@ public class FileUploadServiceImpl extends
 		
 		InputStream in = new FileInputStream(outputFile);
 		try {
-			return createFile(in, filename, realm, persist, type, new DefaultFileUploadStore(realm));
+			return createFile(in, filename, realm, persist, type, getDefaultStore());
 		} finally {
 			IOUtils.closeQuietly(in);
 		}
 	}
 
-	class DefaultFileUploadStore implements FileUploadStore {
+	class DefaultFileStore implements FileStore {
 		
-		Realm realm;
-		DefaultFileUploadStore(Realm realm) {
-			this.realm = realm;
+		DefaultFileStore() {
 		}
 		
-		public long writeFile(String uuid, InputStream in)
+		public long writeFile(Realm realm, String uuid, InputStream in)
 				throws IOException {
 
 			File f = new File(

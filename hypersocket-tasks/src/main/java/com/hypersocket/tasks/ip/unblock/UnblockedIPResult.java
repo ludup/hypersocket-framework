@@ -6,9 +6,9 @@ import com.hypersocket.events.SystemEventStatus;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.ip.block.BlockIPTask;
-import com.hypersocket.triggers.TaskResult;
+import com.hypersocket.triggers.AbstractTaskResult;
 
-public class UnblockedIPResult extends TaskResult {
+public class UnblockedIPResult extends AbstractTaskResult {
 
 	private static final long serialVersionUID = 5303654508133707273L;
 	

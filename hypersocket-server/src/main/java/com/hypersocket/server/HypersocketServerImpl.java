@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +57,7 @@ import com.hypersocket.server.events.WebappCreatedEvent;
 import com.hypersocket.server.handlers.HttpRequestHandler;
 import com.hypersocket.server.handlers.WebsocketHandler;
 import com.hypersocket.server.handlers.impl.APIRequestHandler;
+import com.hypersocket.server.interfaces.HTTPInterfaceResource;
 import com.hypersocket.servlet.HypersocketServletConfig;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
@@ -76,6 +78,8 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	private HypersocketServletConfig servletConfig;
 	
 	private List<String> controllerPackages = new ArrayList<String>();
+	
+	private Map<HTTPInterfaceResource,SSLContext> sslContexts = new HashMap<HTTPInterfaceResource,SSLContext>();
 	
 	@Autowired
 	EventService eventService;
@@ -99,7 +103,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	@Autowired
 	SessionFactory sessionFactory;
 	
-	SSLContext defaultSSLContext;
 	String[] enabledCipherSuites;
 	String[] enabledProtocols;
 	
@@ -115,52 +118,11 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	public void registerControllerPackage(String controllerPackage) {
 		controllerPackages.add(controllerPackage);
 	}
-	
-	@Override
-	public boolean isPlainPort(InetSocketAddress localAddress) {
-		if(Boolean.getBoolean("hypersocket.development")) {
-			return localAddress.getPort() == 8080;
-		} else {
-			if(configurationService.getIntValue("http.port") > 0) {
-				return localAddress.getPort() == configurationService.getIntValue("http.port");
-			}
-			return true;
-		}
-	}
 
-	@Override
-	public boolean isSSLPort(InetSocketAddress localAddress) {
-		if(Boolean.getBoolean("hypersocket.development")) {
-			return localAddress.getPort() == 8443;
-		} else {
-			return localAddress.getPort() == configurationService.getIntValue("https.port");
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.hypersocket.server.HypersocketServer#getHttpPort()
-	 */
-	@Override
-	public int getHttpPort() {
-		return Boolean.getBoolean("hypersocket.development") ? 8080 : configurationService.getIntValue("http.port");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.hypersocket.server.HypersocketServer#getHttpsPort()
-	 */
-	@Override
-	public int getHttpsPort() {
-		return Boolean.getBoolean("hypersocket.development") ? 8443 : configurationService.getIntValue("https.port");
-	}
-
-	public SSLContext getSSLContext(InetSocketAddress localAddress,
-			InetSocketAddress remoteAddress) {
-		// TODO lookup context based on localAddress / maybe even remote address????
-		return defaultSSLContext;
+	public SSLContext getSSLContext(HTTPInterfaceResource resource, 
+			InetSocketAddress localAddress,
+			InetSocketAddress remoteAddress) throws FileNotFoundException, IOException {
+		return initializeSSL(resource);
 	}
 
 	/*
@@ -222,8 +184,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		
 		eventService.publishEvent(new ServerStartingEvent(this, realmService.getSystemPrincipal().getRealm()));
 		
-		initializeSSL();
-		
 		registerConfiguration();
 		
 		rebuildEnabledCipherSuites();
@@ -274,20 +234,26 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	}
 
 	@Override
-	public boolean isHttpsRequired() {
-		return configurationService.getBooleanValue("require.https");
-	}
-
-	@Override
 	public String[] getSSLProtocols() {
-		SSLEngine engine = defaultSSLContext.createSSLEngine();
-		return engine.getSupportedProtocols();
+
+		try {
+			SSLEngine engine = SSLContext.getDefault().createSSLEngine();
+			return engine.getSupportedProtocols();
+		} catch (NoSuchAlgorithmException e) {
+			throw new IllegalStateException();
+		}
 	}
 
 	@Override
 	public String[] getSSLCiphers() {
-		SSLEngine engine = defaultSSLContext.createSSLEngine();
-		return engine.getSupportedCipherSuites();
+		
+		try {
+			SSLEngine engine = SSLContext.getDefault().createSSLEngine();
+			return engine.getSupportedCipherSuites();
+		} catch (NoSuchAlgorithmException e) {
+			throw new IllegalStateException();
+		}
+		
 	}
 
 	/*
@@ -481,8 +447,12 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		return getBasePath();
 	}
 
-	public void initializeSSL() throws FileNotFoundException, IOException {
+	public synchronized SSLContext initializeSSL(HTTPInterfaceResource resource) throws FileNotFoundException, IOException {
 
+		if(sslContexts.containsKey(resource)) {
+			return sslContexts.get(resource);
+		}
+		
 		CertificateResourceService certificateService = (CertificateResourceService) applicationContext
 				.getBean("certificateResourceServiceImpl");
 		RealmService realmService = (RealmService) applicationContext
@@ -499,10 +469,10 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 				log.info("Initializing SSL contexts");
 			}
 
-			KeyStore ks = certificateService.getDefaultCertificate();
+			KeyStore ks = certificateService.getResourceKeystore(resource.getCertificate());
 
 			// Get the default context
-			defaultSSLContext = SSLContext.getInstance("TLS");
+			SSLContext defaultSSLContext = SSLContext.getInstance("TLS");
 
 			// KeyManager's decide which key material to use.
 			KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
@@ -512,6 +482,9 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 			if (log.isInfoEnabled()) {
 				log.info("Completed SSL initialization");
 			}
+			
+			sslContexts.put(resource, defaultSSLContext);
+			return defaultSSLContext;
 		} catch (Exception ex) {
 			log.error("SSL initalization failed", ex);
 			throw new IOException("SSL initialization failed: "
@@ -530,7 +503,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		
 		try {
 			String[] ciphers = configurationService.getValues("ssl.ciphers");
-			SSLEngine engine = defaultSSLContext.createSSLEngine();
+			SSLEngine engine = SSLContext.getDefault().createSSLEngine();
 			
 			if (ciphers!=null && ciphers.length > 0) {
 	
@@ -565,15 +538,17 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 					}
 				}
 			}
-		} catch(IllegalStateException ex) {
+		} catch(Throwable ex) {
 			
 		}
 	}
 
-	public SSLEngine createSSLEngine(InetSocketAddress localAddress,
-			InetSocketAddress remoteAddress) {
+	public SSLEngine createSSLEngine(
+			HTTPInterfaceResource resource,
+			InetSocketAddress localAddress,
+			InetSocketAddress remoteAddress) throws FileNotFoundException, IOException {
 		
-		SSLEngine engine = getSSLContext(localAddress, remoteAddress).createSSLEngine();
+		SSLEngine engine = getSSLContext(resource, localAddress, remoteAddress).createSSLEngine();
 
 		engine.setUseClientMode(false);
 		engine.setWantClientAuth(false);
