@@ -73,27 +73,27 @@ public class SchedulerController extends ResourceController {
 					new BootstrapTablePageProcessor() {
 
 						@Override
-						public Column getColumn(int col) {
-							return SchedulerResourceColumns.values()[col];
+						public Column getColumn(String col) {
+							return SchedulerResourceColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override
-						public List<?> getPage(String searchPattern, int start,
+						public List<?> getPage(String searchColumn, String searchPattern, int start,
 								int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return schedulerService.searchResources(
 									sessionUtils.getCurrentRealm(request),
-									searchPattern, start, length, sorting);
+									searchColumn, searchPattern, start, length, sorting);
 						}
 
 						@Override
-						public Long getTotalCount(String searchPattern)
+						public Long getTotalCount(String searchColumn, String searchPattern)
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return schedulerService.getResourceCount(
 									sessionUtils.getCurrentRealm(request),
-									searchPattern);
+									searchColumn, searchPattern);
 						}
 					});
 		} finally {

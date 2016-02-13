@@ -222,8 +222,9 @@ public class ConfigurationController extends AuthenticatedController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			return new ResourceList<PropertyCategory>(
+			ResourceList<PropertyCategory> result =  new ResourceList<PropertyCategory>(
 					systemConfigurationService.getPropertyCategories(group));
+			return result;
 		} finally {
 			clearAuthenticatedContext();
 		}

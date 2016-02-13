@@ -2,6 +2,8 @@ package com.hypersocket.resource;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,6 +21,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
+import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
@@ -32,8 +35,10 @@ import com.hypersocket.transactions.TransactionService;
 @Service
 public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		extends AbstractAuthenticatedServiceImpl implements AbstractResourceService<T>,
-			EventPropertyCollector {
+			EventPropertyCollector, AuthenticatedService {
 
+	private static SecureRandom random = new SecureRandom();
+	
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
 
@@ -45,6 +50,8 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	RealmService realm;
 
 	boolean assertPermissions = true;
+
+	String fingerprint;
 	
 	@Autowired
 	TransactionService transactionService; 
@@ -173,6 +180,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		try {
 			beforeCreateResource(resource, properties);
 			getRepository().saveResource(resource, properties, ops);
+			updateFingerprint();
 			afterCreateResource(resource, properties);
 			fireResourceCreationEvent(resource);
 		} catch (Throwable t) {
@@ -243,6 +251,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		try {
 			beforeUpdateResource(resource, properties);
 			getRepository().saveResource(resource, properties, ops);
+			updateFingerprint();
 			afterUpdateResource(resource, properties);
 			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {
@@ -279,6 +288,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		try {
 			beforeDeleteResource(resource);
 			getRepository().deleteResource(resource, ops);
+			updateFingerprint();
 			afterDeleteResource(resource);
 			fireResourceDeletionEvent(resource);
 		} catch (Throwable t) {
@@ -308,25 +318,25 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 
 	@Override
-	public List<T> searchResources(Realm realm, String search, int start,
+	public List<T> searchResources(Realm realm, String searchColumn, String search, int start,
 			int length, ColumnSort[] sorting) throws AccessDeniedException {
 
 		if(assertPermissions) {
 			assertPermission(getReadPermission());
 		}
 
-		return getRepository().search(realm, search, start, length, sorting);
+		return getRepository().search(realm, searchColumn, search, start, length, sorting);
 	}
 
 	@Override
-	public long getResourceCount(Realm realm, String search)
+	public long getResourceCount(Realm realm, String searchColumn, String search)
 			throws AccessDeniedException {
 
 		if(assertPermissions) {
 			assertPermission(getReadPermission());
 		}
 
-		return getRepository().getResourceCount(realm, search);
+		return getRepository().getResourceCount(realm, searchColumn, search);
 	}
 
 	@Override
@@ -492,7 +502,11 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		});
 		
 	}
-	
+
+	@Override
+	public final String getFingerprint() {
+		return fingerprint;
+	}
 	
 	protected void performImportDropResources(T resource) throws ResourceChangeException, AccessDeniedException {
 		deleteResource(resource);
@@ -513,6 +527,10 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		} catch(ResourceNotFoundException e) {
 			return;
 		}
+	}
+	
+	protected final void updateFingerprint() {
+		fingerprint = new BigInteger(130, random).toString(32);
 	}
 	
 }

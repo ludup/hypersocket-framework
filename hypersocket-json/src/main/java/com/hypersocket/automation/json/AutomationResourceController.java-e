@@ -25,6 +25,7 @@ import com.hypersocket.automation.AutomationResourceColumns;
 import com.hypersocket.automation.AutomationResourceService;
 import com.hypersocket.automation.AutomationResourceServiceImpl;
 import com.hypersocket.i18n.I18N;
+import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.json.SelectOption;
@@ -94,27 +95,27 @@ public class AutomationResourceController extends AbstractTriggerController {
 					new BootstrapTablePageProcessor() {
 
 						@Override
-						public Column getColumn(int col) {
-							return AutomationResourceColumns.values()[col];
+						public Column getColumn(String col) {
+							return AutomationResourceColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override
-						public List<?> getPage(String searchPattern, int start,
+						public List<?> getPage(String searchColumn, String searchPattern, int start,
 								int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.searchResources(
 									sessionUtils.getCurrentRealm(request),
-									searchPattern, start, length, sorting);
+									searchColumn, searchPattern, start, length, sorting);
 						}
 
 						@Override
-						public Long getTotalCount(String searchPattern)
+						public Long getTotalCount(String searchColumn, String searchPattern)
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.getResourceCount(
 									sessionUtils.getCurrentRealm(request),
-									searchPattern);
+									searchColumn, searchPattern);
 						}
 					});
 		} finally {
@@ -160,6 +161,30 @@ public class AutomationResourceController extends AbstractTriggerController {
 		}
 	}
 	
+	@AuthenticationRequired
+	@RequestMapping(value = "automations/run/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus runResource(
+			HttpServletRequest request, @PathVariable Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException, ResourceNotFoundException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			AutomationResource resource = resourceService.getResourceById(id);
+			resourceService.runNow(resource);
+			return new RequestStatus(true, I18N.getResource(sessionUtils.getLocale(request), 
+					AutomationResourceServiceImpl.RESOURCE_BUNDLE,
+					"info.startedAutomation", resource.getName()));
+		} catch(Exception ex) { 
+			return new RequestStatus(false, I18N.getResource(sessionUtils.getLocale(request), 
+					AutomationResourceServiceImpl.RESOURCE_BUNDLE,
+					"error.failedToStartAutomation", ex.getMessage()));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 	@AuthenticationRequired
 	@RequestMapping(value = "automations/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody

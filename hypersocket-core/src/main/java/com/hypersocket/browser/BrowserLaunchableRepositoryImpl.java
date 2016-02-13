@@ -29,6 +29,7 @@ public class BrowserLaunchableRepositoryImpl extends
 			final String searchPattern, final int start, final int length,
 			final ColumnSort[] sorting, CriteriaConfiguration... configs) {
 
+
 		/**
 		 * There appears to be no way around this. DISTINCT_ROOT_ENTITY is
 		 * returning max results * number of implementations of BrowserLaunchable
@@ -36,8 +37,7 @@ public class BrowserLaunchableRepositoryImpl extends
 		 * length and starting position.
 		 */
 		List<BrowserLaunchable> resources = getPersonalResources(principals);
-		return resources.subList(start, start+length);
-		
+		return resources.subList(start, Math.min(start+length, resources.size()));
 	};
 
 

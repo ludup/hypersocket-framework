@@ -1,5 +1,7 @@
 package com.hypersocket.browser;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -18,6 +20,9 @@ public class BrowserLaunchableServiceImpl extends
 		AbstractAuthenticatedServiceImpl implements BrowserLaunchableService {
 
 	public static final String RESOURCE_BUNDLE = "BrowserLaunchable";
+	
+	private static SecureRandom random = new SecureRandom();
+	private String fingerprint;
 
 	@Autowired
 	BrowserLaunchableRepository repository;
@@ -53,5 +58,15 @@ public class BrowserLaunchableServiceImpl extends
 
 		return repository.getAssignedResourceCount(
 				realmService.getAssociatedPrincipals(principal), search);
+	}
+
+	@Override
+	public String getFingerprint() {
+		return fingerprint;
+	}
+
+	@Override
+	public void updateFingerprint() {
+		fingerprint = new BigInteger(130, random).toString(32);
 	}
 }

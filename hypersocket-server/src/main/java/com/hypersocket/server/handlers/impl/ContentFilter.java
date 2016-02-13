@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 
 public interface ContentFilter {
 
-	InputStream getFilterStream(InputStream resourceStream, HttpServletRequest request);
+	InputStream getFilterStream(InputStream resourceStream, HttpServletRequest request) throws RedirectException;
 
 	boolean filtersPath(String path);
 	

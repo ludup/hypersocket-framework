@@ -11,6 +11,8 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.tables.ColumnSort;
 
 public interface AbstractAssignableResourceService<T> extends PasswordEnabledAuthenticatedService {
+	
+	String getFingerprint();
 
 	List<T> allResources();
 	
@@ -34,16 +36,16 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 			TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException;
 
-	List<T> searchResources(Realm realm, String search, int start, int length,
+	List<T> searchResources(Realm realm, String searchColumn, String search, int start, int length,
 			ColumnSort[] sorting) throws AccessDeniedException;
 
-	long getResourceCount(Realm realm, String search)
+	long getResourceCount(Realm realm, String searchColumn, String search)
 			throws AccessDeniedException;
 
-	Collection<T> searchPersonalResources(Principal principal, String search,
+	Collection<T> searchPersonalResources(Principal principal, String searchColumn, String search,
 			int start, int length, ColumnSort[] sorting);
 
-	long getPersonalResourceCount(Principal principal, String search);
+	long getPersonalResourceCount(Principal principal, String searchColumn, String search);
 
 	Collection<T> getPersonalResources(Principal principal);
 	
@@ -58,11 +60,6 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 			ResourceExportException, AccessDeniedException;
 
 	String exportAllResoures() throws ResourceExportException;
-
-	String exportResources(Collection<T> resources)
-			throws ResourceExportException;
-
-	String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException;
 
 	T getResourceByName(String name, Realm realm)
 			throws ResourceNotFoundException, AccessDeniedException;
@@ -82,4 +79,12 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	String getMetaData(T resource, String key, String defaultValue) throws AccessDeniedException;
 
 	long getPersonalResourceCount();
+
+	Collection<T> getPersonalResources(Principal principal, boolean resolveAssosicatedPrincipals);
+
+	Collection<T> getPersonalRoleResources(Principal principal);
+
+	String exportResources(Collection<T> resources, boolean stripIdentity) throws ResourceExportException;
+
+	String exportResources(boolean stripIdentity, @SuppressWarnings("unchecked") T... resources) throws ResourceExportException;
 }

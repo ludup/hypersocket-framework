@@ -23,12 +23,14 @@ public interface AbstractRepository<K> {
 
 	Long max(String column, Class<?> clz, CriteriaConfiguration... configs);
 
+	Long min(String column, Class<?> clz, CriteriaConfiguration... configs);
+
+	List<?> sum(Class<?> clz, String groupBy, Sort order, CriteriaConfiguration... configs);
+
 	List<?> getCounts(Class<?> clz, String groupBy,
 			CriteriaConfiguration... configs);
 
 	void evict(Object entity);
-
-	List<?> sum(Class<?> clz, String groupBy, Sort order, CriteriaConfiguration... configs);
 
 	List<?> getCounts(Class<?> clz, String groupBy, boolean highestFirst, int maxResults,
 			CriteriaConfiguration... configs);

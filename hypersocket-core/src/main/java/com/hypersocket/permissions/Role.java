@@ -31,26 +31,17 @@ import com.hypersocket.resource.RealmResource;
 public class Role extends RealmResource {
 
 	@ManyToMany(fetch=FetchType.EAGER)
+	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
 	@JoinTable(name = "role_permissions", 
 		joinColumns = {@JoinColumn(name="role_id")}, 
 		inverseJoinColumns = {@JoinColumn(name="permission_id")})
 	private Set<Permission> permissions = new HashSet<Permission>();
 
 	@ManyToMany(fetch=FetchType.EAGER)
-	@Cascade({CascadeType.SAVE_UPDATE})
+	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
 	@JoinTable(name = "role_principals", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
 	Set<Principal> principals = new HashSet<Principal>();
-	
-	/**
-	 * Causes too many joins when many resources are used
-	 */
-//	@ManyToMany(fetch=FetchType.EAGER)
-//	@Cascade({CascadeType.SAVE_UPDATE})
-//	@JoinTable(name = "resource_roles", 
-//		joinColumns = {@JoinColumn(name="role_id")}, 
-//		inverseJoinColumns = {@JoinColumn(name="resource_id")})
-//	private Set<AssignableResource> resources = new HashSet<AssignableResource>();
-//	
+
 	@Column(name="all_users", nullable=false)
 	boolean allUsers;
 	
@@ -75,11 +66,6 @@ public class Role extends RealmResource {
 	public void setPrincipals(Set<Principal> principals) {
 		this.principals = principals;
 	}
-	
-//	@JsonIgnore
-//	public Set<AssignableResource> getResources() {
-//		return resources;
-//	}
 	
 	public boolean isAllUsers() {
 		return allUsers;

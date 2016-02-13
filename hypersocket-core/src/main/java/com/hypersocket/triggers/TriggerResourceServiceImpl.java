@@ -480,33 +480,12 @@ public class TriggerResourceServiceImpl extends
 				log.info("Found trigger " + trigger.getName());
 			}
 			
-			if(event instanceof SynchronousEvent) {
-				try {
-					triggerExecutor.processEventTrigger(trigger, event);
-				} catch (ValidationException e) {
-					log.error("Trigger failed validation", e);
-				}
-				
-			} else {
-			
-				JobDataMap data = new PermissionsAwareJobData(
-						event.getCurrentRealm(),
-						hasAuthenticatedContext() ? getCurrentPrincipal()
-								: realmService.getSystemPrincipal(),
-						hasAuthenticatedContext() ? getCurrentLocale()
-								: configurationService.getDefaultLocale(),
-						"triggerExecutionJob");
-
-				data.put("event", event);
-				data.put("trigger", trigger);
-				data.put("realm", event.getCurrentRealm());
-				
-				try {
-					schedulerService.scheduleNow(TriggerJob.class, data);
-				} catch (SchedulerException e) {
-					log.error("Failed to schedule event trigger job", e);
-				}
+			try {
+				triggerExecutor.scheduleOrExecuteTrigger(trigger, event);
+			} catch (ValidationException e) {
+				log.error("Trigger execution failed", e);
 			}
+			
 		}
 
 	}

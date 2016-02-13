@@ -25,8 +25,8 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.scheduler.SchedulerResourceColumns;
 import com.hypersocket.session.Session;
+import com.hypersocket.session.SessionColumns;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.tables.BootstrapTableResult;
@@ -218,19 +218,19 @@ public class SessionController extends ResourceController {
 			return processDataTablesRequest(request, new BootstrapTablePageProcessor() {
 
 				@Override
-				public Column getColumn(int col) {
-					return SchedulerResourceColumns.values()[col];
+				public Column getColumn(String col) {
+					return SessionColumns.valueOf(col.toUpperCase());
 				}
 
 				@Override
-				public List<?> getPage(String searchPattern, int start, int length, ColumnSort[] sorting)
+				public List<?> getPage(String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting)
 						throws UnauthorizedException, AccessDeniedException {
 					return sessionService.searchResources(sessionUtils.getCurrentRealm(request), searchPattern, start,
 							length, sorting);
 				}
 
 				@Override
-				public Long getTotalCount(String searchPattern) throws UnauthorizedException, AccessDeniedException {
+				public Long getTotalCount(String searchColumn, String searchPattern) throws UnauthorizedException, AccessDeniedException {
 					return sessionService.getResourceCount(sessionUtils.getCurrentRealm(request), searchPattern);
 				}
 			});

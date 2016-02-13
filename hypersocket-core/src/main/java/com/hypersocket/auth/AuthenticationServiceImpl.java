@@ -301,7 +301,7 @@ public class AuthenticationServiceImpl extends
 	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean logon(AuthenticationState state, Map parameterMap)
-			throws AccessDeniedException {
+			throws AccessDeniedException, FallbackAuthenticationRequired {
 
 		state.setLastErrorMsg(null);
 		state.setLastErrorIsResourceKey(false);
@@ -324,6 +324,11 @@ public class AuthenticationServiceImpl extends
 							state.setLastErrorMsg("error.insufficentData");
 							state.setLastErrorIsResourceKey(true);
 						}
+						break;
+					}
+					case INSUFFICIENT_DATA_NO_ERROR: {
+							state.setLastErrorMsg(null);
+							state.setLastErrorIsResourceKey(false);
 						break;
 					}
 					case AUTHENTICATION_SUCCESS: {
@@ -358,6 +363,10 @@ public class AuthenticationServiceImpl extends
 			Authenticator authenticator = authenticators.get(state
 					.getCurrentModule().getTemplate());
 
+			if(authenticator==null) {
+				throw new FallbackAuthenticationRequired();
+			}
+			
 			if (authenticator.isSecretModule()
 					&& state.getPrincipal() instanceof FakePrincipal) {
 				state.setLastErrorMsg("error.genericLogonError");
@@ -371,6 +380,11 @@ public class AuthenticationServiceImpl extends
 						state.setLastErrorMsg("error.insufficentData");
 						state.setLastErrorIsResourceKey(true);
 					}
+					break;
+				}
+				case INSUFFICIENT_DATA_NO_ERROR: {
+					state.setLastErrorMsg(null);
+					state.setLastErrorIsResourceKey(false);
 					break;
 				}
 				case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {

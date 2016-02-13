@@ -1,7 +1,10 @@
 package com.hypersocket.scheduler;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +50,7 @@ import com.hypersocket.scheduler.events.SchedulerResourceDeletedEvent;
 import com.hypersocket.scheduler.events.SchedulerResourceEvent;
 import com.hypersocket.scheduler.events.SchedulerResourceUpdatedEvent;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.tables.Sort;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Service
@@ -82,9 +86,17 @@ public class SchedulerServiceImpl extends
 
 	@PostConstruct
 	private void postConstruct() throws SchedulerException {
+		
+		
+		File quartzProperties = new File(HypersocketUtils.getConfigDir(), "quartz.properties");
+		if(quartzProperties.exists()) {
+			System.setProperty("org.quartz.properties", quartzProperties.getAbsolutePath());
+		}
+		
 		scheduler = StdSchedulerFactory.getDefaultScheduler();
 		scheduler.setJobFactory(autowireJobFactory);
 		scheduler.start();
+		
 		repository.loadPropertyTemplates("schedulerResourceTemplate.xml");
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 		eventService.registerEvent(SchedulerResourceEvent.class,
@@ -463,7 +475,7 @@ public class SchedulerServiceImpl extends
 	}
 
 	@Override
-	public List<SchedulerResource> searchResources(Realm realm, String search,
+	public List<SchedulerResource> searchResources(Realm realm, String searchColumn, String search,
 			int start, int length, ColumnSort[] sorting)
 			throws AccessDeniedException {
 		List<SchedulerResource> list = new ArrayList<SchedulerResource>();
@@ -520,6 +532,21 @@ public class SchedulerServiceImpl extends
 		} catch (SchedulerException e) {
 			log.error("Error in getting Scheduler list ", e);
 		}
+		
+		Collections.sort(list, new Comparator<SchedulerResource>() {
+
+			@Override
+			public int compare(SchedulerResource o1, SchedulerResource o2) {
+				return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+			}
+			
+		});
+		
+		if(sorting.length > 0) {
+			if(sorting[0].getSort()==Sort.DESC) {
+				Collections.reverse(list);
+			}
+		}
 		return getPage(list, start, length);
 	}
 
@@ -571,7 +598,7 @@ public class SchedulerServiceImpl extends
 	}
 
 	@Override
-	public long getResourceCount(Realm realm, String search)
+	public long getResourceCount(Realm realm, String searchColumn, String search)
 			throws AccessDeniedException {
 		return cachedResources.size();
 	}

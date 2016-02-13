@@ -17,6 +17,7 @@ public abstract class SessionEvent extends SystemEvent {
 	
 	public static final String ATTR_UUID = "attr.uuid";
 	public static final String ATTR_PRINCIPAL_NAME = CommonAttributes.ATTR_PRINCIPAL_NAME;
+	public static final String ATTR_PRINCIPAL_DESC = "attr.principalDesc";
 	public static final String ATTR_PRINCIPAL_REALM = CommonAttributes.ATTR_PRINCIPAL_REALM;
 	public static final String ATTR_IP_ADDRESS = CommonAttributes.ATTR_IP_ADDRESS;
 	
@@ -33,6 +34,7 @@ public abstract class SessionEvent extends SystemEvent {
 		this.session = session;
 		addAttribute(ATTR_UUID, session.getId());
 		addAttribute(ATTR_PRINCIPAL_NAME, session.getCurrentPrincipal().getPrincipalName());
+		addAttribute(ATTR_PRINCIPAL_DESC, session.getCurrentPrincipal().getPrincipalDescription());
 		addAttribute(ATTR_PRINCIPAL_REALM, realm.getName());
 		addAttribute(ATTR_IP_ADDRESS, session.getRemoteAddress());
 	}
@@ -43,6 +45,7 @@ public abstract class SessionEvent extends SystemEvent {
 		this.session = session;
 		addAttribute(ATTR_UUID, session.getId());
 		addAttribute(ATTR_PRINCIPAL_NAME, session.getCurrentPrincipal().getPrincipalName());
+		addAttribute(ATTR_PRINCIPAL_DESC, session.getCurrentPrincipal().getPrincipalDescription());
 		addAttribute(ATTR_PRINCIPAL_REALM, session.getCurrentRealm().getName());
 		addAttribute(ATTR_IP_ADDRESS, session.getRemoteAddress());
 	}

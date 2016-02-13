@@ -115,4 +115,10 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	String getDecryptedValue(Realm realm, String resourceKey);
 
+	boolean isDisabled(Principal principal);
+
+	boolean canChangePassword(Principal principal);
+
+	Principal updateUserProperties(Principal principal, Map<String, String> properties) throws ResourceChangeException;
+
 }

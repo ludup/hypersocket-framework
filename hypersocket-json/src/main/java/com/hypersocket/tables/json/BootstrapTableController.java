@@ -38,17 +38,19 @@ public class BootstrapTableController extends AuthenticatedController {
 			length = Integer.parseInt(request.getParameter("limit"));
 		}
 		
+		
 		List<ColumnSort> sorting = new ArrayList<ColumnSort>();
-		int count = (request.getParameter("iSortingCols") == null ? 0 : Integer
-				.parseInt(request.getParameter("iSortingCols")));
-		for (int i = 0; i < count; i++) {
-			int col = Integer.parseInt(request.getParameter("iSortCol_" + i));
-			String sor = request.getParameter("sSortDir_" + i);
-			sorting.add(new ColumnSort(processor.getColumn(col), Sort
-					.valueOf(sor.toUpperCase())));
+		
+		if(request.getParameter("order")!=null) {
+			
+			String order = request.getParameter("order");
+			String column = request.getParameter("sort");
+			sorting.add(new ColumnSort(processor.getColumn(column), Sort
+						.valueOf(order.toUpperCase())));
 		}
 
 		String searchPattern = "";
+		String searchColumn = "";
 		
 		if(request.getParameter("sSearch") != null) {
 			searchPattern = request.getParameter("sSearch");
@@ -56,16 +58,18 @@ public class BootstrapTableController extends AuthenticatedController {
 			searchPattern = request.getParameter("search");
 		}
 		
-		if (searchPattern.indexOf('*') > -1) {
-			searchPattern = searchPattern.replace('*', '%');
+		if(request.getParameter("searchColumn") != null) {
+			searchColumn = request.getParameter("searchColumn");
 		}
 
-		if (searchPattern.indexOf('%') == -1) {
-			searchPattern += "%";
-		}
+		BootstrapTableResult result = new BootstrapTableResult(processor.getPage(
+				searchColumn,
+				searchPattern, 
+				start,
+				length, 
+				sorting.toArray(new ColumnSort[0])),
+				processor.getTotalCount(searchColumn, searchPattern));
 
-		return new BootstrapTableResult(processor.getPage(searchPattern, start,
-				length, sorting.toArray(new ColumnSort[0])),
-				processor.getTotalCount(searchPattern));
+		return result;
 	}
 }

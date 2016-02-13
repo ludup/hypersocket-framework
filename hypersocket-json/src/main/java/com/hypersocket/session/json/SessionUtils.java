@@ -164,6 +164,7 @@ public class SessionUtils {
 		return session;
 
 	}
+	
 
 	public void addAPISession(HttpServletRequest request,
 			HttpServletResponse response, Session session) {
@@ -237,6 +238,10 @@ public class SessionUtils {
 		}
 
 		throw new UnauthorizedException();
+	}
+
+	public boolean hasActiveSession(HttpServletRequest request) {
+		return getActiveSession(request)!=null;
 	}
 
 }

@@ -169,7 +169,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 
     }
 	
-	public InputStream getInputStream(String path, HttpServletRequest request) throws FileNotFoundException {
+	public InputStream getInputStream(String path, HttpServletRequest request) throws FileNotFoundException, RedirectException {
 		
 		InputStream original = getResourceStream(path);
 		for(ContentFilter filter : filters) {

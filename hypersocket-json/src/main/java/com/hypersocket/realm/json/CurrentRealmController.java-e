@@ -135,12 +135,12 @@ public class CurrentRealmController extends ResourceController {
 					new BootstrapTablePageProcessor() {
 
 						@Override
-						public Column getColumn(int col) {
-							return PrincipalColumns.values()[col];
+						public Column getColumn(String col) {
+							return PrincipalColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override
-						public List<?> getPage(String searchPattern, int start,
+						public List<?> getPage(String searchColumn, String searchPattern, int start,
 								int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
@@ -151,7 +151,7 @@ public class CurrentRealmController extends ResourceController {
 						}
 
 						@Override
-						public Long getTotalCount(String searchPattern)
+						public Long getTotalCount(String searchColumn, String searchPattern)
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return realmService.getPrincipalCount(
@@ -181,12 +181,12 @@ public class CurrentRealmController extends ResourceController {
 					new BootstrapTablePageProcessor() {
 
 						@Override
-						public Column getColumn(int col) {
-							return PrincipalColumns.values()[col];
+						public Column getColumn(String col) {
+							return PrincipalColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override
-						public List<?> getPage(String searchPattern, int start,
+						public List<?> getPage(String searchColumn, String searchPattern, int start,
 								int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
@@ -197,7 +197,7 @@ public class CurrentRealmController extends ResourceController {
 						}
 
 						@Override
-						public Long getTotalCount(String searchPattern)
+						public Long getTotalCount(String searchColumn, String searchPattern)
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return realmService.getPrincipalCount(
@@ -481,6 +481,27 @@ public class CurrentRealmController extends ResourceController {
 		}
 	}
 
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/user/variableNames", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<String> getUserVariableNames(
+			HttpServletRequest request)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<String>(
+				realmService.getUserVariableNames(getCurrentRealm(), null));
+
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/user/variables", method = {
 			RequestMethod.GET, RequestMethod.POST }, produces = { "application/json" })

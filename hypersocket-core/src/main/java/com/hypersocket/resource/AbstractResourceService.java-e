@@ -10,8 +10,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tables.ColumnSort;
 
-public interface AbstractResourceService<T extends RealmResource> extends
-		AuthenticatedService {
+public interface AbstractResourceService<T extends RealmResource> extends AuthenticatedService {
 
 	@SuppressWarnings("unchecked") 
 	void createResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops)
@@ -31,11 +30,11 @@ public interface AbstractResourceService<T extends RealmResource> extends
 
 	List<T> getResources(Realm realm) throws AccessDeniedException;
 
-	List<T> searchResources(Realm realm, String search, int start, int length,
+	List<T> searchResources(Realm realm, String searchColumn, String search, int start, int length,
 			ColumnSort[] sorting) throws AccessDeniedException;
 
-	long getResourceCount(Realm realm, String search)
-			throws AccessDeniedException;
+
+	long getResourceCount(Realm realm, String searchColumn, String search) throws AccessDeniedException;
 
 	List<T> allResources();
 
@@ -77,5 +76,8 @@ public interface AbstractResourceService<T extends RealmResource> extends
 
 	Collection<T> importResources(String json, Realm realm, boolean dropCurrent)
 			throws AccessDeniedException, ResourceException;
+
+	String getFingerprint();
+
 
 }

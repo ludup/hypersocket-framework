@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,8 +30,8 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.properties.PropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.properties.ResourcePropertyTemplate;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AbstractAssignableResourceServiceImpl;
@@ -293,14 +292,27 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 		if(resource == null) {
 			return new ArrayList<PropertyCategory>();
 		}
+		
 		Map<String,PropertyTemplate> userTemplates = getUserTemplates(checkResource(resource));
-		Set<PropertyCategory> results = new HashSet<PropertyCategory>();
+		Map<Integer,PropertyCategory> results = new HashMap<Integer,PropertyCategory>();
 		
 		for(PropertyTemplate t : userTemplates.values()) {
-			results.add(t.getCategory());
+			if(!results.containsKey(t.getCategory().getId())) {
+				PropertyCategory cat = new PropertyCategory();
+				cat.setBundle(t.getCategory().getBundle());
+				cat.setCategoryKey(t.getCategory().getCategoryKey());
+				cat.setWeight(t.getCategory().getWeight());
+				cat.setDisplayMode(t.getCategory().getDisplayMode());
+				cat.setUserCreated(true);
+				cat.setSystemOnly(t.getCategory().isSystemOnly());
+				cat.setFilter(t.getCategory().getFilter());
+				
+				results.put(cat.getId(), cat);
+			}
+			results.get(t.getCategory().getId()).getTemplates().add(new ResourcePropertyTemplate(t, resource));
 		}
 		
-		return results;
+		return results.values();
 	}
 
 	@Override
@@ -379,24 +391,25 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 	}
 
 	void registerPropertyItem(PropertyCategory cat, UserAttribute attr) {
-		registerPropertyItem(cat, attributeRepository.getDatabasePropertyStore(), attr.getVariableName(),
-				attr.generateMetaData(), "", attr.getWeight(),
-				attr.getHidden(), attr.getDisplayMode(), attr.getReadOnly(), attr.getDefaultValue(),
-				true, attr.getEncrypted(), null);
-	}
-
-	void registerPropertyItem(PropertyCategory category,
-			PropertyStore propertyStore, String resourceKey, String metaData,
-			String mapping, int weight, boolean hidden, String displayMode, boolean readOnly,
-			String defaultValue, boolean isVariable, boolean encrypted,
-			String defaultsToProperty) {
+//		registerPropertyItem(cat, attributeRepository.getDatabasePropertyStore(), attr.getVariableName(),
+//				attr.generateMetaData(), "", attr.getWeight(),
+//				attr.getHidden(), attr.getDisplayMode(), attr.getReadOnly(), attr.getDefaultValue(),
+//				true, attr.getEncrypted(), null);
+//	}
+//
+//	void registerPropertyItem(PropertyCategory category,
+//			PropertyStore propertyStore, String resourceKey, String metaData,
+//			String mapping, int weight, boolean hidden, String displayMode, boolean readOnly,
+//			String defaultValue, boolean isVariable, boolean encrypted,
+//			String defaultsToProperty) {
 
 		if (log.isInfoEnabled()) {
-			log.info("Registering property " + resourceKey);
+			log.info("Registering property " + attr.getVariableName());
 		}
 		
-		if (defaultValue != null && defaultValue.startsWith("classpath:")) {
-			String url = defaultValue.substring(10);
+		String defaultValue =  attr.getDefaultValue();
+		if (attr.getDefaultValue() != null && attr.getDefaultValue().startsWith("classpath:")) {
+			String url = attr.getDefaultValue().substring(10);
 			InputStream in = getClass().getResourceAsStream(url);
 			try {
 				if (in != null) {
@@ -417,30 +430,32 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 		}
 
 
-		PropertyTemplate template = propertyTemplates.get(resourceKey);
+		PropertyTemplate template = propertyTemplates.get(attr.getVariableName());
 		if (template == null) {
 			template = new PropertyTemplate();
-			template.setResourceKey(resourceKey);
+			template.setResourceKey(attr.getVariableName());
 		}
 
-		template.setMetaData(metaData);
+		template.getAttributes().put("inputType", attr.getType().toString().toLowerCase());
+		template.getAttributes().put("filter", "custom");
+		
 		template.setDefaultValue(defaultValue);
-		template.setWeight(weight);
-		template.setHidden(hidden);
-		template.setDisplayMode(displayMode);
-		template.setReadOnly(readOnly);
-		template.setMapping(mapping);
-		template.setCategory(category);
-		template.setEncrypted(encrypted);
-		template.setDefaultsToProperty(defaultsToProperty);
-		template.setPropertyStore(propertyStore);
+		template.setWeight(attr.getWeight());
+		template.setHidden(attr.getHidden());
+		template.setDisplayMode(attr.getDisplayMode().equalsIgnoreCase("admin") ? "admin" : "");
+		template.setReadOnly(attr.getReadOnly());
+		template.setMapping("");
+		template.setCategory(cat);
+		template.setEncrypted(attr.getEncrypted());
+		template.setDefaultsToProperty("");
+		template.setPropertyStore(attributeRepository.getDatabasePropertyStore());
 
-		category.getTemplates().remove(template);
-		category.getTemplates().add(template);
+		cat.getTemplates().remove(template);
+		cat.getTemplates().add(template);
 
-		propertyTemplates.put(resourceKey, template);
+		propertyTemplates.put(attr.getVariableName(), template);
 
-		Collections.sort(category.getTemplates(),
+		Collections.sort(cat.getTemplates(),
 				new Comparator<AbstractPropertyTemplate>() {
 					@Override
 					public int compare(AbstractPropertyTemplate cat1,

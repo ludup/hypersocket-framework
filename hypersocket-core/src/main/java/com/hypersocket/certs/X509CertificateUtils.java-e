@@ -42,6 +42,7 @@ import java.util.List;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.apache.commons.io.IOUtils;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -180,6 +181,7 @@ public class X509CertificateUtils {
 			return certs.toArray(new X509Certificate[0]);
 
 		} finally {
+			IOUtils.closeQuietly(certfile);
 			parser.close();
 		}
 	}
@@ -201,6 +203,7 @@ public class X509CertificateUtils {
 			}
 
 		} finally {
+			IOUtils.closeQuietly(certfile);
 			parser.close();
 		}
 	}
@@ -239,11 +242,13 @@ public class X509CertificateUtils {
 			NoSuchAlgorithmException, CertificateException, IOException,
 			NoSuchProviderException, UnrecoverableKeyException {
 
-		KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
-
-		keystore.load(pfxfile, passphrase);
-
-		return keystore;
+		try {
+			KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+			keystore.load(pfxfile, passphrase);
+			return keystore;
+		} finally {
+			IOUtils.closeQuietly(pfxfile);
+		}
 	}
 
 	public static KeyPair loadKeyPairFromPEM(InputStream keyfile,
@@ -296,6 +301,7 @@ public class X509CertificateUtils {
 		} catch (IOException ex) {
 			throw new CertificateException("Failed to read from key file", ex);
 		} finally {
+			IOUtils.closeQuietly(keyfile);
 			try {
 				parser.close();
 			} catch (IOException e) {

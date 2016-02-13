@@ -7,10 +7,16 @@
  ******************************************************************************/
 package com.hypersocket.repository;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
@@ -80,6 +86,9 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 		checkDemoMode();
 
+		if(entity instanceof AbstractEntity<?>) {
+			((AbstractEntity<?>)entity).setLastModified(new Date());
+		}
 		if (!isNew) {
 			hibernateTemplate.merge(entity);
 		} else {
@@ -116,7 +125,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		hibernateTemplate.flush();
 		hibernateTemplate.clear();
 	}
-
+	
 	@Transactional
 	protected void delete(Object entity) {
 
@@ -269,15 +278,16 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 		Criteria criteria = createCriteria(clz);
 
+		Map<String,Criteria> assosications = new HashMap<String,Criteria>();
+		
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
 		}
 
-		if (!StringUtils.isEmpty(searchPattern)) {
-			criteria.add(Restrictions.ilike(searchColumn, searchPattern));
+		if(StringUtils.isNotBlank(searchPattern) && HibernateUtils.isNotWildcard(searchPattern)) {
+			HibernateUtils.configureSearch(searchColumn, searchPattern, criteria, clz, assosications);
 		}
 
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		criteria.setProjection(Projections.rowCount());
 
 		return (long) criteria.uniqueResult();
@@ -358,14 +368,41 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			return new Long(result);
 		}
 	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Long min(String column, Class<?> clz, CriteriaConfiguration... configs) {
+
+		Criteria criteria = createCriteria(clz);
+
+		for (CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+
+		criteria.setProjection(Projections.projectionList().add(Projections.min(column)));
+
+		Integer result = (Integer) criteria.uniqueResult();
+		if (result == null) {
+			return 0L;
+		} else {
+			return new Long(result);
+		}
+	}
 
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly = true)
-	public <T> List<T> search(Class<T> clz, final String searchColumn, final String searchPattern, final int start,
+	public <T> List<T> search(Class<T> clz, String searchColumn, String searchPattern, final int start,
 			final int length, final ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		Criteria criteria = createCriteria(clz);
-		if (!StringUtils.isEmpty(searchPattern)) {
-			criteria.add(Restrictions.ilike(searchColumn, searchPattern));
+		
+		Map<String,Criteria> assosications = new HashMap<String,Criteria>();
+		
+		for (String property : resolveCollectionProperties(clz)) {
+			 criteria.setFetchMode(property, org.hibernate.FetchMode.SELECT);
+		}
+		
+		if(StringUtils.isNotBlank(searchPattern) && HibernateUtils.isNotWildcard(searchPattern)) {
+			HibernateUtils.configureSearch(searchColumn, searchPattern, criteria, clz, assosications);
 		}
 
 		for (CriteriaConfiguration c : configs) {
@@ -373,26 +410,28 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		}
 
 		for (ColumnSort sort : sorting) {
-			criteria.addOrder(sort.getSort() == Sort.ASC ? Order.asc(sort.getColumn().getColumnName())
-					: Order.desc(sort.getColumn().getColumnName()));
+			HibernateUtils.configureSort(sort, criteria, assosications);
 		}
-
-		criteria.setProjection(Projections.distinct(Projections.id()));
-
+		
 		criteria.setFirstResult(start);
 		criteria.setMaxResults(length);
 
-		List<T> ids = (List<T>) criteria.list();
-
-		if (ids.isEmpty()) {
-			return new ArrayList<T>();
-		}
-
-		criteria = createCriteria(clz);
-
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-		criteria.add(Restrictions.in("id", ids));
 
 		return ((List<T>) criteria.list());
-	};
+	}
+	
+	protected List<String> resolveCollectionProperties(Class<?> type) {
+		  List<String> ret = new ArrayList<String>();
+		  try {
+		   BeanInfo beanInfo = Introspector.getBeanInfo(type);
+		   for (PropertyDescriptor pd : beanInfo.getPropertyDescriptors()) {
+		     if (Collection.class.isAssignableFrom(pd.getPropertyType()))
+		     ret.add(pd.getName());
+		   }
+		  } catch (IntrospectionException e) {
+		    e.printStackTrace();
+		  }
+		  return ret;
+		}
 }

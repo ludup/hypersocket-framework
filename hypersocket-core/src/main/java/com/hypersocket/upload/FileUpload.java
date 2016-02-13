@@ -1,10 +1,7 @@
 package com.hypersocket.upload;
 
-import java.sql.Blob;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import com.hypersocket.resource.RealmResource;
@@ -24,10 +21,6 @@ public class FileUpload extends RealmResource {
 
 	@Column(name = "type")
 	String type;
-	
-	@Lob
-	@Column(name="content", length=Integer.MAX_VALUE)
-	Blob content;
 	
 	public FileUpload() {
 
@@ -64,15 +57,4 @@ public class FileUpload extends RealmResource {
 	public void setType(String type) {
 		this.type = type;
 	}
-
-	public Blob getContent() {
-		return content;
-	}
-
-	public void setContent(Blob content) {
-		this.content = content;
-	}
-	
-	
-
 }

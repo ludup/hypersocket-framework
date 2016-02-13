@@ -29,10 +29,10 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tasks.AbstractTaskProvider;
+import com.hypersocket.tasks.TaskResult;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskProviderServiceImpl;
-import com.hypersocket.triggers.TaskResult;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.TriggerValidationError;
@@ -220,8 +220,12 @@ public class EmailTask extends AbstractTaskProvider {
 			}
 		}
 		
+		String replyToName = processTokenReplacements(repository.getValue(task, "email.replyToName"), event);
+		String replyToEmail = processTokenReplacements(repository.getValue(task, "email.replyToEmail"), event);
+		
 		try {
 			emailService.sendEmail(currentRealm, subject, body, bodyHtml,
+					replyToName, replyToEmail, 
 					recipients.toArray(new Recipient[0]), attachments.toArray(new EmailAttachment[0]));
 
 			return new EmailTaskResult(this, task.getRealm(),
@@ -274,10 +278,7 @@ public class EmailTask extends AbstractTaskProvider {
 			RecipientType type, SystemEvent event)
 			throws ValidationException {
 
-		String value = repository.getValue(task, attributeName);
-		if(ResourceUtils.isReplacementVariable(value)) {
-			value = processTokenReplacements(value, event);
-		}
+		String value = processTokenReplacements(repository.getValue(task, attributeName), event);
 		String[] emails = ResourceUtils.explodeValues(value);
 		return emailService.populateEmailList(emails, recipients, type);
 	}
