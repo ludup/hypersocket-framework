@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.attributes.user.UserAttributeService;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmProvider;
 
 

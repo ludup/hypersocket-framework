@@ -74,19 +74,4 @@ public abstract class Principal extends RealmResource {
 		builder.append(getRealm(), r.getRealm());
 		builder.append(getName(), r.getName());
 	}
-	
-	@JsonIgnore
-	public boolean isSuspended() {
-		if(!Hibernate.isInitialized(suspensions)) {
-			Hibernate.initialize(suspensions);
-		}
-		if(suspensions!=null) {
-			for(PrincipalSuspension s : suspensions) {
-				if(s.isActive()) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
 }

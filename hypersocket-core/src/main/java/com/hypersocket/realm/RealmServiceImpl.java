@@ -21,6 +21,7 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeService;
 import com.hypersocket.attributes.user.UserAttributeType;
@@ -125,6 +127,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Autowired
 	TransactionService transactionService;
 
+	@Autowired
+	PrincipalSuspensionRepository suspensionRepository; 
+	
 	CacheManager cacheManager;
 	Cache realmCache;
 
@@ -522,12 +527,16 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public boolean verifyPrincipal(final Principal principal) throws ResourceException, AccessDeniedException {
-		return transactionService.doInTransaction(new TransactionCallback<Boolean>() {
-			@Override
-			public Boolean doInTransaction(TransactionStatus status) {
-				return !principal.isSuspended();
+		
+		Collection<PrincipalSuspension> suspensions = suspensionRepository.getSuspensions(principal);
+		
+		for(PrincipalSuspension s : suspensions) {
+			if(s.isActive()) {
+				return false;
 			}
-		});
+		}
+
+		return true;
 	}
 
 	@Override
