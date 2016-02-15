@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 
 import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeService;
@@ -520,8 +521,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean verifyPrincipal(Principal principal) {
-		return !principal.isSuspended();
+	public boolean verifyPrincipal(final Principal principal) throws ResourceException, AccessDeniedException {
+		return transactionService.doInTransaction(new TransactionCallback<Boolean>() {
+			@Override
+			public Boolean doInTransaction(TransactionStatus status) {
+				return !principal.isSuspended();
+			}
+		});
 	}
 
 	@Override
