@@ -1,5 +1,6 @@
 package com.hypersocket.realm;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
@@ -20,8 +21,8 @@ public class PrincipalSuspensionRepositoryImpl extends
 
 	@Override
 	@Transactional(readOnly = true)
-	public PrincipalSuspension getSuspension(Principal principal) {
-		return get("principal", principal, PrincipalSuspension.class);
+	public Collection<PrincipalSuspension> getSuspensions(Principal principal) {
+		return list("principal", principal, PrincipalSuspension.class);
 	}
 
 	@Override
