@@ -215,11 +215,11 @@ public class UserAttributeCategoryServiceImpl extends AbstractResourceServiceImp
 	public PropertyCategory registerPropertyCategory(UserAttributeCategory c) {
 		return registerPropertyCategory(
 				"attributeCategory" + String.valueOf(c.getId()),
-				"UserAttributes", c.getWeight());
+				"UserAttributes", c.getWeight(), c.isHidden());
 	}
 	
 	PropertyCategory registerPropertyCategory(String resourceKey,
-			String bundle, int weight) {
+			String bundle, int weight, boolean hidden) {
 
 		PropertyCategory category = new PropertyCategory();
 		category.setBundle(bundle);
@@ -229,6 +229,7 @@ public class UserAttributeCategoryServiceImpl extends AbstractResourceServiceImp
 		category.setWeight(weight);
 		category.setUserCreated(true);
 		category.setFilter("custom");
+		category.setHidden(hidden);
 		activeCategories.put(category.getCategoryKey(), category);
 		return category;
 	}

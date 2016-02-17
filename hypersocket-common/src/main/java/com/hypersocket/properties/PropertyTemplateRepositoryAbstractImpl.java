@@ -132,7 +132,8 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 							.getAttribute("weight")),
 					node.getAttribute("displayMode"),
 					node.hasAttribute("system") && Boolean.parseBoolean(node.getAttribute("system")),
-					node.getAttribute("filter"));
+					node.getAttribute("filter"),
+					node.hasAttribute("hidden") && Boolean.parseBoolean(node.getAttribute("hidden")));
 
 			NodeList properties = node.getElementsByTagName("property");
 
@@ -306,7 +307,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 	}
 
 	private PropertyCategory registerPropertyCategory(String categoryKey,
-			String categoryGroup, String bundle, int weight, String displayMode, boolean systemOnly, String filter) {
+			String categoryGroup, String bundle, int weight, String displayMode, boolean systemOnly, String filter, boolean hidden) {
 
 		if (activeCategories.containsKey(categoryKey) 
 				&& !activeCategories.get(categoryKey).getBundle().equals(bundle)) {
@@ -328,6 +329,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		category.setWeight(weight);
 		category.setSystemOnly(systemOnly);
 		category.setFilter(filter);
+		category.setHidden(hidden);
 		
 		activeCategories.put(category.getCategoryKey(), category);
 		return category;
