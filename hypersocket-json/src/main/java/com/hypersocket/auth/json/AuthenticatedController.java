@@ -134,8 +134,9 @@ public class AuthenticatedController {
 		return realmService.getSystemPrincipal();
 	}
 
-	protected void setupSystemContext() {
-		setupAuthenticatedContext(getSystemPrincipal(),
+	protected void setupSystemContext() throws AccessDeniedException {
+		
+		setupAuthenticatedContext(sessionService.getSystemSession(),
 				configurationService.getDefaultLocale(), getSystemPrincipal().getRealm());
 	}
 	

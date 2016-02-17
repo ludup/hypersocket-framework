@@ -1,6 +1,7 @@
 package com.hypersocket.realm;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,21 +41,24 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 
 		String name = principal.getPrincipalName();
 
-		PrincipalSuspension principalSuspension;
+		Collection<PrincipalSuspension> principalSuspensions = repository.getSuspensions(principal);
 		
-		principalSuspension = repository.getSuspension(principal);
+		PrincipalSuspension principalSuspension = null;
 		
-		if(principalSuspension==null) {
+		if(principalSuspensions.isEmpty()) {
 			principalSuspension = new PrincipalSuspension();
 			principalSuspension.setPrincipal(principal);
 			principalSuspension.setName(name);
 			principalSuspension.setRealm(principal.getRealm());
-
+			
+		} else {
+			principalSuspension = principalSuspensions.iterator().next();
 		}
 		
 		principalSuspension.setStartTime(startDate);
 		principalSuspension.setDuration(duration);
-		
+	
+
 		if (suspendedUserResumeSchedules.containsKey(name)) {
 			if (log.isInfoEnabled()) {
 				log.info(name
@@ -125,12 +129,12 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 
 	@Override
 	public PrincipalSuspension deletePrincipalSuspension(Principal principal) {
-		PrincipalSuspension suspension = repository
-				.getSuspension(principal);
-
+		Collection<PrincipalSuspension> suspensions = repository
+				.getSuspensions(principal);
+		PrincipalSuspension suspension = suspensions.iterator().next();
 		repository.deletePrincipalSuspension(suspension);
-
 		return suspension;
+
 	}
 
 	public void notifyResume(String name, boolean onSchedule) {
@@ -151,7 +155,11 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 
 	@Override
 	public PrincipalSuspension getSuspension(Principal principal) {
-		return repository.getSuspension(principal);
+		Collection<PrincipalSuspension> suspensions = repository.getSuspensions(principal);
+		if(suspensions.isEmpty()) {
+			return null;
+		}
+		return suspensions.iterator().next();
 	}
 
 	@Override

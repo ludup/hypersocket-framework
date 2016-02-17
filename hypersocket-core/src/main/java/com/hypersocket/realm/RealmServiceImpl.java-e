@@ -124,6 +124,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Autowired
 	TransactionService transactionService;
 
+	@Autowired
+	PrincipalSuspensionRepository suspensionRepository; 
+	
 	CacheManager cacheManager;
 	Cache realmCache;
 
@@ -520,8 +523,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean verifyPrincipal(Principal principal) {
-		return !principal.isSuspended();
+	public boolean verifyPrincipal(final Principal principal) throws ResourceException, AccessDeniedException {
+		
+		Collection<PrincipalSuspension> suspensions = suspensionRepository.getSuspensions(principal);
+		
+		for(PrincipalSuspension s : suspensions) {
+			if(s.isActive()) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	@Override

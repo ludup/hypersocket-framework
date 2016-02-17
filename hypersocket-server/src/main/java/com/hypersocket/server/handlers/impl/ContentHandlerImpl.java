@@ -214,6 +214,11 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	}
 
 	@Override
+	public void removeAlias(String alias) {
+		aliases.remove(alias);
+	}
+	
+	@Override
 	public void addFilter(ContentFilter filter) {
 		filters.add(filter);
 		Collections.sort(filters, new Comparator<ContentFilter>() {

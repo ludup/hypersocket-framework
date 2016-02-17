@@ -191,8 +191,8 @@ public class EventServiceImpl implements EventService {
 							checkResourceKey(attributeName, resourceBundle, resources);
 							eventDefinitions.get(resourceKey)
 									.getAttributeNames().add(attributeName);
-							if (log.isInfoEnabled()) {
-								log.info("Added attribute " + attributeName);
+							if (log.isDebugEnabled()) {
+								log.debug("Added attribute " + attributeName);
 							}
 						} catch (IllegalArgumentException e) {
 						} catch (IllegalAccessException e) {
@@ -221,10 +221,10 @@ public class EventServiceImpl implements EventService {
 								resourceKey, 
 								"", 
 								""));
-				
-				log.error("Missing resource key " + resourceBundle + "/"
-						+ resourceKey);
 			}
+			
+			log.error("Missing resource key " + resourceBundle + "/"
+					+ resourceKey);
 			
 			return false;
 

@@ -101,8 +101,8 @@ public class SystemConfigurationServiceImpl extends
 
 	@Override
 	public void setValue(String name, Boolean value)
-			throws AccessDeniedException {
-		setValue(name, value);
+			throws AccessDeniedException, ResourceChangeException {
+		setValue(name, value.toString());
 	}
 
 	@Override

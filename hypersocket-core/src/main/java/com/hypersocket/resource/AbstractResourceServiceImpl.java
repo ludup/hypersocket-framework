@@ -47,7 +47,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	final String resourceCategory;
 	
 	@Autowired
-	RealmService realm;
+	RealmService realmService;
 
 	boolean assertPermissions = true;
 
@@ -234,7 +234,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		}
 
 		if(resource.getRealm()==null) {
-			resource.setRealm(getCurrentRealm());
+			resource.setRealm(isSystemResource() ? realmService.getSystemRealm() : getCurrentRealm());
 		}
 		
 		if(!checkUnique(resource, false)) {
@@ -313,7 +313,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		if(assertPermissions) {
 			assertPermission(getReadPermission());
 		}
-		return getRepository().getResources(realm);
+		return getRepository().getResources(isSystemResource() ? realmService.getSystemRealm() : realm);
 
 	}
 
@@ -325,7 +325,11 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			assertPermission(getReadPermission());
 		}
 
-		return getRepository().search(realm, searchColumn, search, start, length, sorting);
+		return getRepository().search(isSystemResource() ? realmService.getSystemRealm() : realm, searchColumn, search, start, length, sorting);
+	}
+	
+	protected boolean isSystemResource() {
+		return false;
 	}
 
 	@Override
@@ -336,17 +340,17 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			assertPermission(getReadPermission());
 		}
 
-		return getRepository().getResourceCount(realm, searchColumn, search);
+		return getRepository().getResourceCount(isSystemResource() ? realmService.getSystemRealm() : realm, searchColumn, search);
 	}
 
 	@Override
 	public List<T> allResources() {
-		return getRepository().getResources(getCurrentRealm());
+		return getRepository().getResources(isSystemResource() ? realmService.getSystemRealm() : getCurrentRealm());
 	}
 
 	@Override
 	public T getResourceByName(String name) throws ResourceNotFoundException {
-		T resource = getRepository().getResourceByName(name, getCurrentRealm());
+		T resource = getRepository().getResourceByName(name, isSystemResource() ? realmService.getSystemRealm() : getCurrentRealm());
 		if (resource == null) {
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE_DEFAULT,
 					"error.invalidResourceName", name);
@@ -361,7 +365,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			assertPermission(getReadPermission());
 		}
 		
-		T resource = getRepository().getResourceByName(name, realm);
+		T resource = getRepository().getResourceByName(name, isSystemResource() ? realmService.getSystemRealm() : realm);
 		if (resource == null) {
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE_DEFAULT,
 					"error.invalidResourceName", name);
@@ -481,7 +485,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 				try {
 				
 					if(dropCurrent) {
-						for(T resource : getResources(realm)) {
+						for(T resource : getResources(isSystemResource() ? realmService.getSystemRealm() : realm)) {
 							performImportDropResources(resource);
 						}
 					}
@@ -489,7 +493,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 					
 					Collection<T> resources = mapper.readValue(json, mapper.getTypeFactory().constructCollectionType(List.class, getResourceClass()));
 					for(T resource : resources) {
-						performImport(resource, realm);
+						performImport(resource, isSystemResource() ? realmService.getSystemRealm() : realm);
 					}
 					
 					return resources;
@@ -514,15 +518,15 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	
 	protected void performImport(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 		resource.setRealm(realm);
-		checkImportName(resource, realm);
+		checkImportName(resource, isSystemResource() ? realmService.getSystemRealm() : realm);
 		createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() : resource.getProperties());
 	}
 	
 	protected void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 		
 		try {
-			prepareImport(resource, realm);
-			getResourceByName(resource.getName(), realm);
+			prepareImport(resource, isSystemResource() ? realmService.getSystemRealm() : realm);
+			getResourceByName(resource.getName(), isSystemResource() ? realmService.getSystemRealm() : realm);
 			resource.setName(resource.getName() + " [imported]");
 		} catch(ResourceNotFoundException e) {
 			return;

@@ -16,7 +16,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 
@@ -245,21 +244,6 @@ public class AuthenticationState {
 	
 	public boolean hasNextStep() {
 		return currentIndex < modules.size() - 1;
-	}
-	
-	class FakePrincipal extends Principal {
-
-		FakePrincipal(String username) {
-			this.setId(-1L);
-			this.setName(username);
-		}
-		@Override
-		public PrincipalType getType() {
-			return PrincipalType.USER;
-		}
-		public String getPrincipalDescription() {
-			return getName();
-		}
 	}
 
 	public void authAttempted() {

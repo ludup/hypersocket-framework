@@ -34,4 +34,6 @@ public interface ContentHandler {
 
 	void addFilter(ContentFilter filter);
 
+	void removeAlias(String string);
+
 }

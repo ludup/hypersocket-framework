@@ -21,7 +21,6 @@ import javax.xml.bind.annotation.XmlElement;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.hibernate.Hibernate;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.Fetch;
@@ -73,20 +72,5 @@ public abstract class Principal extends RealmResource {
 		Principal r = (Principal) obj;
 		builder.append(getRealm(), r.getRealm());
 		builder.append(getName(), r.getName());
-	}
-	
-	@JsonIgnore
-	public boolean isSuspended() {
-		if(!Hibernate.isInitialized(suspensions)) {
-			Hibernate.initialize(suspensions);
-		}
-		if(suspensions!=null) {
-			for(PrincipalSuspension s : suspensions) {
-				if(s.isActive()) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 }

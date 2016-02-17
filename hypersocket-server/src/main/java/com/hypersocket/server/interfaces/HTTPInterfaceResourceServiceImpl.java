@@ -19,6 +19,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.server.interfaces.events.HTTPInterfaceResourceCreatedEvent;
 import com.hypersocket.server.interfaces.events.HTTPInterfaceResourceDeletedEvent;
 import com.hypersocket.server.interfaces.events.HTTPInterfaceResourceEvent;
@@ -79,6 +80,11 @@ public class HTTPInterfaceResourceServiceImpl extends
 				this);
 
 		repository.getEntityStore().registerResourceService(HTTPInterfaceResource.class, repository);
+	}
+	
+	@Override
+	protected boolean isSystemResource() {
+		return true;
 	}
 
 	@Override
@@ -156,6 +162,14 @@ public class HTTPInterfaceResourceServiceImpl extends
 		updateResource(resource, properties);
 
 		return resource;
+	}
+	
+	@Override
+	protected void beforeDeleteResource(HTTPInterfaceResource resource) throws ResourceChangeException {
+		if(repository.allRealmsResourcesCount()==1) {
+			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.oneInterfaceRequired");
+		}
+		super.beforeDeleteResource(resource);
 	}
 
 	@Override

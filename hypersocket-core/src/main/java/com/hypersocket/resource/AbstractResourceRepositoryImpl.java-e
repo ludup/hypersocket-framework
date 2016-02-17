@@ -168,6 +168,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 
 	
 	@Override
+	@Transactional(readOnly=true)
 	public long allRealmsResourcesCount() {
 		return getCount(getResourceClass(), new DeletedCriteria(false), new DefaultCriteriaConfiguration());
 	}

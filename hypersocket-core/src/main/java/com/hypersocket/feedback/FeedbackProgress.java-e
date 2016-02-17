@@ -22,16 +22,16 @@ public class FeedbackProgress {
 		return uuid;
 	}
 	
-	public synchronized void update(FeedbackStatus status, String resourceKey) {
-		feedback.addLast(new Feedback(feedback.size(), status, resourceKey, false));
+	public synchronized void update(FeedbackStatus status, String resourceKey, String... args) {
+		feedback.addLast(new Feedback(feedback.size(), status, resourceKey, false, null, args));
 	}
 
-	public synchronized void complete(String resourceKey) {
-		feedback.addLast(new Feedback(feedback.size(), FeedbackStatus.SUCCESS, resourceKey, true));
+	public synchronized void complete(String resourceKey, String... args) {
+		feedback.addLast(new Feedback(feedback.size(), FeedbackStatus.SUCCESS, resourceKey, true, null, args));
 	}
 
-	public synchronized void failed(String resourceKey, Throwable t) {
-		feedback.addLast(new Feedback(feedback.size(), FeedbackStatus.ERROR, resourceKey, true));
+	public synchronized void failed(String resourceKey, Throwable t, String... args) {
+		feedback.addLast(new Feedback(feedback.size(), FeedbackStatus.ERROR, resourceKey, true, t, args));
 	}
 	
 	public synchronized List<Feedback> getFeedback() {

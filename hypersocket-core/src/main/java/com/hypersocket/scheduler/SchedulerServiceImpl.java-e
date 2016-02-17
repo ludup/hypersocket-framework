@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.DateBuilder;
 import org.quartz.Job;
 import org.quartz.JobBuilder;
@@ -514,14 +515,14 @@ public class SchedulerServiceImpl extends
 									.formatDate(triggersOfJob.get(0)
 											.getNextFireTime(),
 											"yyyy/MM/dd HH:mm"));
-							String searchCritria = search.substring(0,
-									search.length() - 1);
-							if (searchCritria.equals("")) {
+							if (StringUtils.isBlank(search)) {
 								list.add(schedulerResource);
-							} else if (schedulerResource.getName()
-									.toUpperCase()
-									.startsWith(searchCritria.toUpperCase())) {
-								list.add(schedulerResource);
+							} else {
+								String searchCritria = search.substring(0,
+										search.length() - 1);
+								if (schedulerResource.getName().toUpperCase().startsWith(searchCritria.toUpperCase())) {
+									list.add(schedulerResource);
+								}
 							}
 						}
 					} else {
