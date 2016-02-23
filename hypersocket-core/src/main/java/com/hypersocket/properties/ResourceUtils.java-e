@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.util.EncodingUtils;
 
 import com.hypersocket.resource.Resource;
 import com.hypersocket.utils.HypersocketUtils;
@@ -133,6 +134,20 @@ public class ResourceUtils {
 				buf.append("]|[");
 			}
 			buf.append(e.getId());
+		}
+		return buf.toString();
+	}
+	
+	public static <T extends Resource> String implodeNamePairValues(Collection<T> entities) {
+		
+		StringBuilder buf = new StringBuilder();
+		for(Resource e : entities) {
+			if(buf.length() > 0) {
+				buf.append("]|[");
+			}
+			buf.append(e.getId());
+			buf.append("=");
+			buf.append(HypersocketUtils.urlEncode(e.getName()));
 		}
 		return buf.toString();
 	}
