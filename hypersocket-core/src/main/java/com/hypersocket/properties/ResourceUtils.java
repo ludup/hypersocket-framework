@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.util.EncodingUtils;
 
 import com.hypersocket.resource.Resource;
 import com.hypersocket.utils.HypersocketUtils;
