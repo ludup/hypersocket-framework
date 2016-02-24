@@ -15,7 +15,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -28,11 +28,11 @@ import com.hypersocket.realm.PrincipalType;
 @XmlRootElement(name="group")
 public class LocalGroup extends Principal {
 
-	@OneToMany(fetch=FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})
+	@ManyToMany(fetch=FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})
 	@JoinTable(name = "local_user_groups", joinColumns={@JoinColumn(name="guid")}, inverseJoinColumns={@JoinColumn(name="uuid")})
 	private Set<LocalUser> users = new HashSet<LocalUser>();
 	
-	@OneToMany(fetch=FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})
+	@ManyToMany(fetch=FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})
 	@JoinTable(name = "local_group_groups", joinColumns={@JoinColumn(name="guid")}, inverseJoinColumns={@JoinColumn(name="gguid")})
 	private Set<LocalGroup> groups = new HashSet<LocalGroup>();
 	

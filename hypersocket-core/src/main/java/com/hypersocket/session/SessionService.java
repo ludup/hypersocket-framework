@@ -91,4 +91,6 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	Long getResourceCount(Realm currentRealm, String searchPattern) throws AccessDeniedException;
 
 	Map<String, Long> getPrincipalUsage(Date from, Date now) throws AccessDeniedException;
+
+	void executeInSystemContext(Runnable r);
 }
