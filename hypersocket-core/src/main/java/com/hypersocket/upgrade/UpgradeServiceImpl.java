@@ -264,12 +264,26 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 						}
 						continue;
 					} 
+					if(line.startsWith("TRY")) {
+						ignoreErrors = true;
+						continue;
+					}
+					if(line.startsWith("CATCH")) {
+						ignoreErrors = false;
+						continue;
+					}
 					
 					if(!line.startsWith("/*") && !line.startsWith("//")) {
 						if(line.endsWith(";")) {
 							line = line.substring(0, line.length()-1);
 							statement += line;
-							sessionFactory.getCurrentSession().createSQLQuery(statement).executeUpdate();
+							try {
+								sessionFactory.getCurrentSession().createSQLQuery(statement).executeUpdate();
+							} catch (Throwable e) {
+								if(!ignoreErrors) {
+									throw e;
+								}
+							} 
 							statement = "";
 						} else {
 							statement += line + "\n";
