@@ -18,6 +18,7 @@ import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.session.SessionService;
 
 @Service
 public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionService, ApplicationListener<ContextStartedEvent> {
@@ -29,10 +30,11 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	
 	@Autowired
 	PrincipalSuspensionRepository repository;
-
+	
+	@Autowired
+	SessionService sessionService; 
+	
 	Map<String, String> suspendedUserResumeSchedules = new HashMap<String, String>();
-	
-	
 	
 	@Override
 	public PrincipalSuspension createPrincipalSuspension(Principal principal,
@@ -165,14 +167,22 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	@Override
 	public void onApplicationEvent(ContextStartedEvent event) {
 		
-		for(PrincipalSuspension s : repository.getSuspensions()) {
-			try {
-				if (s.getDuration() > 0) {
-					scheduleResume(s.getPrincipal(), s.getStartTime(), s.getDuration());
+		sessionService.executeInSystemContext(new Runnable() {
+
+			@Override
+			public void run() {
+				for(PrincipalSuspension s : repository.getSuspensions()) {
+					try {
+						if (s.getDuration() > 0) {
+							scheduleResume(s.getPrincipal(), s.getStartTime(), s.getDuration());
+						}
+					} catch (ResourceCreationException e) {
+						log.error("Could not schedule resumption of user account " + s.getPrincipal().getName(), e);
+					}
 				}
-			} catch (ResourceCreationException e) {
-				log.error("Could not schedule resumption of user account " + s.getPrincipal().getName(), e);
 			}
-		}
+			
+		});
+		
 	}
 }

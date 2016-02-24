@@ -19,7 +19,6 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
-import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.server.interfaces.events.HTTPInterfaceResourceCreatedEvent;
 import com.hypersocket.server.interfaces.events.HTTPInterfaceResourceDeletedEvent;
 import com.hypersocket.server.interfaces.events.HTTPInterfaceResourceEvent;

@@ -1,0 +1,3 @@
+EXIT IF FRESH
+ALTER TABLE local_user_groups DROP CONSTRAINT local_user_groups_uuid_key;
+ALTER TABLE local_group_groups DROP CONSTRAINT local_group_groups_gguid_key;

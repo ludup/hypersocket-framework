@@ -39,6 +39,7 @@ import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.session.SessionService;
 import com.hypersocket.session.events.SessionOpenEvent;
 import com.hypersocket.tables.ColumnSort;
 
@@ -69,7 +70,7 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 
 	@Autowired
 	PasswordEncryptionService encryptionService;
-
+	
 	PropertyCategory userDetailsCategory;
 
 	Set<String> defaultProperties = new HashSet<String>();
@@ -776,15 +777,15 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	}
 
 	@Override
-	public void onApplicationEvent(SessionOpenEvent event) {
-		
+	public void onApplicationEvent(final SessionOpenEvent event) {
+	
 		if(event.getPrincipal() instanceof LocalUser) {
 			
 			LocalUser user = (LocalUser) event.getPrincipal();
 			user.setLastSignOn(new Date(event.getTimestamp()));
 			userRepository.saveUser(user, new HashMap<String,String>());
 		}
-		
+				
 	}
 
 }
