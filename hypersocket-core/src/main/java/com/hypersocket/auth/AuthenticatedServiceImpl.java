@@ -40,6 +40,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	protected abstract void verifyPermission(Principal principal,
 			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException;
 	
+	
 	@Override
 	public void elevatePermissions(PermissionType... permissions) {
 		elevatedPermissions.set(Arrays.asList(permissions));
@@ -105,7 +106,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	@Override
 	public Realm getCurrentRealm() {
-		if(currentSession.get()==null) {
+		if(currentRealm.get()!=null) {
 			return currentRealm.get();
 		}
 		

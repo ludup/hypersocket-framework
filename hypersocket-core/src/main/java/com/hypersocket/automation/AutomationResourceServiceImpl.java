@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -43,6 +44,7 @@ import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.NotScheduledException;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.session.SessionService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.TriggerCondition;
@@ -86,6 +88,9 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	@Autowired
 	TriggerResourceService triggerService;
 
+	@Autowired
+	SessionService sessionService;
+	
 	public AutomationResourceServiceImpl() {
 		super("automationResource");
 	}
@@ -481,15 +486,23 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 			log.info("Scheduling one time only or repetitive automation resources");
 		}
 
-		for (Realm realm : realmRepository.allRealms()) {
-			for (AutomationResource resource : repository.getResources(realm)) {
-				if (!resource.isDailyJob()) {
-					schedule(resource);
-				}
-			}
-		}
+		sessionService.executeInSystemContext(new Runnable() {
 
-		scheduleDailyJobs();
+			@Override
+			public void run() {
+			
+				for (Realm realm : realmRepository.allRealms()) {
+					for (AutomationResource resource : repository.getResources(realm)) {
+						if (!resource.isDailyJob()) {
+							schedule(resource);
+						}
+					}
+				}
+		
+				scheduleDailyJobs();
+			}
+			
+		});
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -580,32 +581,39 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void onApplicationEvent(ContextStartedEvent event) {
 
-		if (log.isInfoEnabled()) {
-			log.info("Scheduling session reaper job");
-		}
+		executeInSystemContext(new Runnable() {
 
-		for (Session session : repository.getSystemSessions()) {
-			if (systemSession != null && systemSession.equals(session)) {
-				continue;
+			@Override
+			public void run() {
+				if (log.isInfoEnabled()) {
+					log.info("Scheduling session reaper job");
+				}
+
+				for (Session session : repository.getSystemSessions()) {
+					if (systemSession != null && systemSession.equals(session)) {
+						continue;
+					}
+					closeSession(session);
+				}
+
+				try {
+					JobDataMap data = new JobDataMap();
+					data.put("jobName", "firstRunSessionReaperJob");
+					data.put("firstRun", true);
+					
+					schedulerService.scheduleNow(SessionReaperJob.class, data);
+					
+					data = new JobDataMap();
+					data.put("jobName", "sessionReaperJob");
+					
+					schedulerService.scheduleIn(SessionReaperJob.class, data, 60000,
+							60000);
+				} catch (SchedulerException e) {
+					log.error("Failed to schedule session reaper job", e);
+				} 
 			}
-			closeSession(session);
-		}
-
-		try {
-			JobDataMap data = new JobDataMap();
-			data.put("jobName", "firstRunSessionReaperJob");
-			data.put("firstRun", true);
 			
-			schedulerService.scheduleNow(SessionReaperJob.class, data);
-			
-			data = new JobDataMap();
-			data.put("jobName", "sessionReaperJob");
-			
-			schedulerService.scheduleIn(SessionReaperJob.class, data, 60000,
-					60000);
-		} catch (SchedulerException e) {
-			log.error("Failed to schedule session reaper job", e);
-		}
+		});
 
 	}
 
@@ -626,5 +634,15 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return repository.getResourceCount(realm, searchPattern);
 	}
 
+	@Override
+	public void executeInSystemContext(Runnable r) {
+		
+		setCurrentSession(getSystemSession(), Locale.getDefault());
+		try {
+			r.run();
+		} finally {
+			clearPrincipalContext();
+		}
 	
+	}
 }
