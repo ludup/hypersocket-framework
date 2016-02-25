@@ -23,7 +23,7 @@ public interface AuthenticatedService {
 	void setCurrentSession(Session session, Locale locale);
 	
 	void setCurrentPrincipal(Principal principal, Locale locale, Realm realm);
-	
+
 	void clearPrincipalContext();
 	
 	boolean hasAuthenticatedContext();
