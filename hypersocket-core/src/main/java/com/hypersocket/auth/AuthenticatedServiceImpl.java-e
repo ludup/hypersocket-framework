@@ -31,7 +31,8 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	static ThreadLocal<Session> currentSession = new ThreadLocal<Session>();
 	static ThreadLocal<Realm> currentRealm = new ThreadLocal<Realm>();
 	static ThreadLocal<Locale> currentLocale = new ThreadLocal<Locale>();
-
+	static ThreadLocal<Integer> currentReferences = new ThreadLocal<Integer>();
+	
 	static ThreadLocal<Boolean> isDelayingEvents = new ThreadLocal<Boolean>();
 	static ThreadLocal<LinkedList<SystemEvent>> delayedEvents = new ThreadLocal<LinkedList<SystemEvent>>();
 	
@@ -65,6 +66,15 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		currentPrincipal.set(principal);
 		currentRealm.set(realm);
 		currentLocale.set(locale);
+		
+		if(currentReferences.get()==null) {
+			currentReferences.set(new Integer(1));
+		} else {
+			currentReferences.set(currentReferences.get() + 1);
+		}
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("There are now %d context references", currentReferences.get()));
+		}
 	}
 	
 	@Override
@@ -72,10 +82,23 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		if(log.isDebugEnabled()) {
 			log.debug("Setting current session context " + session.getId());
 		}
+		if(session.getCurrentPrincipal()==null) {
+			throw new InvalidAuthenticationContext("Session does not have a current principal!");
+		}
 		currentPrincipal.set(session.getCurrentPrincipal());
 		currentSession.set(session);
 		currentRealm.set(session.getCurrentRealm());
 		currentLocale.set(locale);
+		
+		if(currentReferences.get()==null) {
+			currentReferences.set(new Integer(1));
+		} else {
+			currentReferences.set(currentReferences.get() + 1);
+			
+		}
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("There are now %d context references", currentReferences.get()));
+		}
 	}
 	
 	@Override
@@ -86,7 +109,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	@Override
 	public Principal getCurrentPrincipal() {
 		if(currentPrincipal.get()==null) {
-			throw new InvalidAuthenticationContext("No principal is attached to the current context!");
+			return getCurrentSession().getCurrentPrincipal();
 		}
 		return currentPrincipal.get();
 	}
@@ -115,13 +138,25 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 
 	@Override
 	public void clearPrincipalContext() {
+		
+		if(currentReferences.get() > 1) {
+			if(log.isDebugEnabled()) {
+				log.debug("Clearing authenticated context reference.");
+			}
+			currentReferences.set(currentReferences.get() - 1);
+			if(log.isDebugEnabled()) {
+				log.debug(String.format("There are %d context references left", currentReferences.get()));
+			}
+			return;
+		}
 		if(log.isDebugEnabled()) {
-			log.debug("Clearing authenticated context.");
+			log.debug(String.format("There are no context references left"));
 		}
 		currentLocale.set(null);
 		currentPrincipal.set(null);
 		currentSession.set(null);
 		currentRealm.set(null);
+		currentReferences.set(null);
 		elevatedPermissions.set(null);
 	}
 	
