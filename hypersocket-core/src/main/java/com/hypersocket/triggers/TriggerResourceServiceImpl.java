@@ -45,6 +45,7 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.session.SessionService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.events.TriggerExecutedEvent;
@@ -94,6 +95,9 @@ public class TriggerResourceServiceImpl extends
 	
 	@Autowired
 	TriggerExecutor triggerExecutor;
+	
+	@Autowired
+	SessionService sessionService; 
 	
 	@Autowired
 	HttpUtilsImpl httpUtils;
@@ -442,12 +446,20 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	@Override
-	public void onApplicationEvent(SystemEvent event) {
-		try {
-			processEventTriggers(event);
-		} catch (Throwable t) {
-			log.error("Failed to process triggers", t);
-		}
+	public void onApplicationEvent(final SystemEvent event) {
+		sessionService.executeInSystemContext(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					processEventTriggers(event);
+				} catch (Throwable t) {
+					log.error("Failed to process triggers", t);
+				}
+			}
+			
+		});
+		
 	}
 
 	private void processEventTriggers(SystemEvent event) {

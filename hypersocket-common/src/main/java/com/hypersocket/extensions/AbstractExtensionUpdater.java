@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -20,7 +22,9 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hypersocket.HypersocketVersion;
 import com.hypersocket.utils.FileUtils;
+import com.hypersocket.utils.HypersocketUtils;
 
 public abstract class AbstractExtensionUpdater {
 
@@ -46,6 +50,12 @@ public abstract class AbstractExtensionUpdater {
 		
 		try {
 			File tmpFolder = Files.createTempDirectory("hypersocket").toFile();
+			File backupFolder = new File(HypersocketUtils.getConfigDir().getParent(), "backups");
+			backupFolder = new File(backupFolder, HypersocketVersion.getVersion());
+			FileUtils.deleteFolder(backupFolder);
+			if(!backupFolder.exists()) {
+				backupFolder.mkdirs();
+			}
 			Map<ExtensionPlace, List<ExtensionDefinition>> extensions = onResolveExtensions();
 			Map<ExtensionPlace, List<ExtensionDefinition>> updates = new HashMap<ExtensionPlace, List<ExtensionDefinition>>();
 			Map<ExtensionDefinition,File> tmpArchives = new HashMap<ExtensionDefinition,File>();
@@ -163,9 +173,10 @@ public abstract class AbstractExtensionUpdater {
 					}
 				});
 				
-				if(archives != null)
+				if(archives != null) {
 					// Add to the list of files to be removed on success
 					toRemove.addAll(Arrays.asList(archives));
+				}
 				
 			}
 			
@@ -199,10 +210,16 @@ public abstract class AbstractExtensionUpdater {
 			 * Finally delete the current files
 			 */
 			for (File f : toRemove) {
-				if(!f.delete()) {
-					log.warn(f.getName() + " could not be deleted. The file has been marked to delete up JVM exit, but this may or may not work. This should not affect the upgrade but advisable that its removed.");
-					f.deleteOnExit();
+				try {
+					Files.move(f.toPath(), new File(backupFolder, f.getName()).toPath());
+				} catch(IOException ex) {
+					log.error(String.format("Failed to move %s to backup folder", f.getName()));
+					if(!f.delete()) {
+						log.warn(f.getName() + " could not be deleted. The file has been marked to delete upon JVM exit, but this may or may not work. This should not affect the upgrade but advisable that its removed.");
+						f.deleteOnExit();
+					}
 				}
+				
 			}
 			
 			onUpdateComplete(totalSize);

@@ -171,12 +171,18 @@ public class LogonController extends AuthenticatedController {
 				// We have authenticated!
 				request.getSession().removeAttribute(AUTHENTICATION_STATE_KEY);
 
-				return getSuccessfulResult(
-						state.getSession(),
-						flash,
-						state.getHomePage(),
-						request, 
-						response);
+				setupAuthenticatedContext(state.getSession(), state.getLocale());
+				
+				try {
+					return getSuccessfulResult(
+							state.getSession(),
+							flash,
+							state.getHomePage(),
+							request, 
+							response);
+				} finally {
+					clearAuthenticatedContext();
+				}
 			} else {
 
 				checkRedirect(request, response);
