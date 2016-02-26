@@ -1,6 +1,6 @@
 package com.hypersocket.interfaceState;
 
-import java.util.List;
+import java.util.Map;
 
 import com.hypersocket.permissions.AccessDeniedException;
 
@@ -8,15 +8,11 @@ public interface UserInterfaceStateService {
 
 	UserInterfaceState getStateByResourceId(Long resourceId);
 
-	UserInterfaceState getSpecificStateByResourceId(Long resourceId);
+	UserInterfaceState getState(String name) throws AccessDeniedException;
 
-	UserInterfaceState updateState(UserInterfaceState newState, Long top,
-			Long left, String name, boolean specific) throws AccessDeniedException;
+	UserInterfaceState updateState(UserInterfaceState newState,
+			String preferences) throws AccessDeniedException;
 
-	UserInterfaceState createState(Long resourceId, Long top, Long left,
-			String name, boolean specific) throws AccessDeniedException;
-
-	List<UserInterfaceState> getStates(Long[] resources, boolean specific)
-			throws AccessDeniedException;
-
+	UserInterfaceState createState(Long principalId, String preferences,
+			String name) throws AccessDeniedException;
 }

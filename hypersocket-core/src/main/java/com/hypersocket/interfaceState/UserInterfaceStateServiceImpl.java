@@ -1,8 +1,5 @@
 package com.hypersocket.interfaceState;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +15,8 @@ public class UserInterfaceStateServiceImpl extends
 		AbstractAuthenticatedServiceImpl implements UserInterfaceStateService {
 
 	public static final String RESOURCE_BUNDLE = "UserInterfaceStateService";
+	
+	public static final String RESOURCE_CATEGORY_TABLE_STATE = "tableState";
 
 	@Autowired
 	UserInterfaceStateRepository repository;
@@ -39,62 +38,34 @@ public class UserInterfaceStateServiceImpl extends
 	}
 
 	@Override
-	public UserInterfaceState getSpecificStateByResourceId(Long resourceId) {
-		return repository.getStateByResourceId(resourceId,
-				getCurrentPrincipal().getId());
+	public UserInterfaceState getState(String name)
+			throws AccessDeniedException {
+		return repository.getResourceByName(name, getCurrentRealm());
 	}
 
 	@Override
 	public UserInterfaceState updateState(UserInterfaceState newState,
-			Long top, Long left, String name, boolean specific)
-			throws AccessDeniedException {
+			String preferences) throws AccessDeniedException {
 
-		newState.setTop(top);
-		newState.setLeftpx(left);
-		newState.setName(name);
-		if (specific) {
-			newState.setPrincipalId(getCurrentPrincipal().getId());
-		}
+		newState.setPreferences(preferences);
 		repository.updateState(newState);
-		return newState;
+		return getStateByResourceId(newState.getId());
 	}
 
 	@Override
-	public UserInterfaceState createState(Long resourceId, Long top, Long left,
-			String name, boolean specific) throws AccessDeniedException {
+	public UserInterfaceState createState(Long principalId, String preferences,
+			String name) throws AccessDeniedException {
 
 		UserInterfaceState newState = new UserInterfaceState();
 
-		newState.setResourceId(resourceId);
-		newState.setTop(top);
-		newState.setLeftpx(left);
-		newState.setName(name);
-		if (specific) {
-			newState.setPrincipalId(getCurrentPrincipal().getId());
-		}
+		newState.setName(name + "_" + principalId);
+		newState.setPreferences(preferences);
+		newState.setPrincipalId(principalId);
+		newState.setResourceCategory(RESOURCE_CATEGORY_TABLE_STATE);
+		newState.setRealm(getCurrentRealm());
 		repository.updateState(newState);
+		newState = repository.getResourceByName(name + "_" + principalId, getCurrentRealm());
+		return getStateByResourceId(newState.getId());
 
-		return this.getStateByResourceId(resourceId);
-
-	}
-
-	@Override
-	public List<UserInterfaceState> getStates(Long[] resources, boolean specific)
-			throws AccessDeniedException {
-
-		List<UserInterfaceState> stateList = new ArrayList<UserInterfaceState>();
-		for (Long resourceId : resources) {
-			UserInterfaceState state;
-			if (specific) {
-				state = getSpecificStateByResourceId(resourceId);
-			} else {
-				state = getStateByResourceId(resourceId);
-			}
-
-			if (state != null) {
-				stateList.add(state);
-			}
-		}
-		return stateList;
 	}
 }
