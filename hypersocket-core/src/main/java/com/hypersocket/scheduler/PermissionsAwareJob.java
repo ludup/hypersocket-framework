@@ -40,7 +40,7 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 
 		Realm realm = realmService.getSystemRealm();
 		Principal principal = realmService.getSystemPrincipal();
-		Locale locale = configurationService.getDefaultLocale();
+		Locale locale = Locale.getDefault();
 		
 		if (context.getTrigger().getJobDataMap() instanceof PermissionsAwareJobData) {
 			PermissionsAwareJobData data = (PermissionsAwareJobData) context
@@ -62,10 +62,8 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 						+ realm.getName() + "/" + principal.getName());
 			}
 
-			authenticationService.setCurrentSession(sessionService.getSystemSession(), 
-					locale);
-			authenticationService.setCurrentPrincipal(principal,
-					locale, realm);
+			authenticationService.setCurrentSession(sessionService.getSystemSession(), locale);
+			authenticationService.setCurrentPrincipal(principal, locale, realm);
 
 			try {
 				executeJob(context);

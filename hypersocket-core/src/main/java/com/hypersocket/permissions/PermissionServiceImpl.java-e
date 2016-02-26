@@ -90,7 +90,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@Autowired
 	TransactionService transactionService; 
-	
+
 	@PostConstruct
 	private void postConstruct() {
 
@@ -189,7 +189,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		}
 		return result;
 	}
-
+	
 	@Override
 	public Role createRole(String name, Realm realm)
 			throws AccessDeniedException, ResourceCreationException {

@@ -1,6 +1,7 @@
 package com.hypersocket.encrypt;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.secret.SecretKeyService;
+import com.hypersocket.session.SessionService;
 import com.hypersocket.transactions.TransactionService;
 
 public class EncryptionServiceImpl implements EncryptionService, ApplicationListener<ContextStartedEvent> {
@@ -38,6 +40,9 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 
 	@Autowired
 	TransactionService transactionService; 
+	
+	@Autowired
+	SessionService sessionService; 
 	
 	@Override
 	public String encryptString(String reference, String data, Realm realm) throws IOException {
@@ -61,14 +66,21 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 
 				@Override
 				public Object doInTransaction(TransactionStatus status) {
-					secretKeyService.setCurrentPrincipal(realmService.getSystemPrincipal(), configurationService.getDefaultLocale(), realmService.getDefaultRealm());
-					try {
-						String text = encryptString("Test Key", "Encryption service has been initialized", realmService.getDefaultRealm());
-						log.info(getProviderName() + " " + decryptString("Test Key", text, realmService.getDefaultRealm()) + " " + text);
-					} catch (Exception e) {
-						log.error("Failed to process test encryption key", e);
-					}
-					secretKeyService.clearPrincipalContext();
+					
+					sessionService.executeInSystemContext(new Runnable() {
+
+						@Override
+						public void run() {
+							try {
+								String text = encryptString("Test Key", "Encryption service has been initialized", realmService.getDefaultRealm());
+								log.info(getProviderName() + " " + decryptString("Test Key", text, realmService.getDefaultRealm()) + " " + text);
+							} catch (Exception e) {
+								log.error("Failed to process test encryption key", e);
+							}
+						}
+						
+					});
+					
 					return null;
 				}
 			});
