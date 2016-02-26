@@ -15,7 +15,7 @@ public class UserInterfaceStateServiceImpl extends
 		AbstractAuthenticatedServiceImpl implements UserInterfaceStateService {
 
 	public static final String RESOURCE_BUNDLE = "UserInterfaceStateService";
-	
+
 	public static final String RESOURCE_CATEGORY_TABLE_STATE = "tableState";
 
 	@Autowired
@@ -40,7 +40,7 @@ public class UserInterfaceStateServiceImpl extends
 	@Override
 	public UserInterfaceState getState(String name)
 			throws AccessDeniedException {
-		return repository.getResourceByName(name, getCurrentRealm());
+		return repository.getState(name, getCurrentPrincipal().getId(), RESOURCE_CATEGORY_TABLE_STATE, getCurrentRealm());
 	}
 
 	@Override
@@ -58,13 +58,13 @@ public class UserInterfaceStateServiceImpl extends
 
 		UserInterfaceState newState = new UserInterfaceState();
 
-		newState.setName(name + "_" + principalId);
+		newState.setName(name);
 		newState.setPreferences(preferences);
 		newState.setPrincipalId(principalId);
 		newState.setResourceCategory(RESOURCE_CATEGORY_TABLE_STATE);
 		newState.setRealm(getCurrentRealm());
 		repository.updateState(newState);
-		newState = repository.getResourceByName(name + "_" + principalId, getCurrentRealm());
+		newState = getState(name);
 		return getStateByResourceId(newState.getId());
 
 	}

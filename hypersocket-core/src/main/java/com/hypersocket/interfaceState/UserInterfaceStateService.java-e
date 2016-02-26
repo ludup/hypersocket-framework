@@ -1,7 +1,5 @@
 package com.hypersocket.interfaceState;
 
-import java.util.Map;
-
 import com.hypersocket.permissions.AccessDeniedException;
 
 public interface UserInterfaceStateService {

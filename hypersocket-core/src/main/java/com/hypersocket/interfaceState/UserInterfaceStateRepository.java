@@ -1,5 +1,6 @@
 package com.hypersocket.interfaceState;
 
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
 
 public interface UserInterfaceStateRepository extends
@@ -9,4 +10,6 @@ public interface UserInterfaceStateRepository extends
 
 	void updateState(UserInterfaceState newState);
 
+	UserInterfaceState getState(String name, Long principalId,
+			String resourceCategory, Realm realm);
 }

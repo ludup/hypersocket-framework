@@ -96,8 +96,13 @@ public class UserInterfaceStateController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 			UserInterfaceState userInterfaceState = service.getState(name);
-			return new ResourceStatus<UserInterfaceState>(userInterfaceState,
-					userInterfaceState.getName());
+			if(userInterfaceState != null){
+				return new ResourceStatus<UserInterfaceState>(userInterfaceState,
+						userInterfaceState.getName());
+			}else{
+				return new ResourceStatus<UserInterfaceState>(false,
+						name);
+			}
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -117,7 +122,7 @@ public class UserInterfaceStateController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 			UserInterfaceState newState = service.getState(userInterfaceState
-					.getName() + "_" + getCurrentPrincipal().getId());
+					.getName());
 			if (newState != null) {
 				newState = service.updateState(newState,
 						userInterfaceState.getPreferences());
