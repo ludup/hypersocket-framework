@@ -57,8 +57,8 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 		
 		try {
 
-			if (log.isInfoEnabled() && !principal.equals(realmService.getSystemPrincipal())) {
-				log.info("Executing permissions aware job as "
+			if (log.isDebugEnabled()) {
+				log.debug("Executing permissions aware job as "
 						+ realm.getName() + "/" + principal.getName());
 			}
 

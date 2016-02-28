@@ -120,7 +120,8 @@ public class LogonController extends AuthenticatedController {
 			HttpServletResponse response, @PathVariable String scheme)
 			throws AccessDeniedException, UnauthorizedException, IOException, RedirectException {
 
-		setupSystemContext();
+		setupSystemContext(realmService.getRealmByHost(request.getServerName()));
+
 
 		try {
 			Session session;

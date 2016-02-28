@@ -133,12 +133,6 @@ public class AuthenticatedController {
 	protected Principal getSystemPrincipal() {
 		return realmService.getSystemPrincipal();
 	}
-
-	protected void setupSystemContext() throws AccessDeniedException {
-		
-		setupAuthenticatedContext(sessionService.getSystemSession(),
-				configurationService.getDefaultLocale(), getSystemPrincipal().getRealm());
-	}
 	
 	protected void setupSystemContext(Realm realm) throws AccessDeniedException {
 		setupAuthenticatedContext(sessionService.getSystemSession(),
@@ -146,7 +140,9 @@ public class AuthenticatedController {
 	}
 	
 	protected void setupAnonymousContext(String remoteAddress,
-			String serverName, String userAgent, Map<String, String> parameters)
+			String serverName, 
+			String userAgent, 
+			Map<String, String> parameters)
 			throws AccessDeniedException {
 		
 		Realm realm = realmService.getRealmByHost(serverName);
@@ -155,12 +151,11 @@ public class AuthenticatedController {
 			log.info("Logging anonymous onto the " + realm.getName() + " realm [" + serverName + "]");
 		}
 		
-		Session session = authenticationService.logonAnonymous(remoteAddress, userAgent, parameters);
-		setupAuthenticatedContext(session, configurationService.getDefaultLocale());
+		Session session = authenticationService.logonAnonymous(
+				remoteAddress, 
+				userAgent, parameters, serverName);
 		
-		if(!session.getCurrentRealm().equals(realm)) {
-			sessionService.switchRealm(session, realm);
-		}
+		setupAuthenticatedContext(session, configurationService.getDefaultLocale());
 
 	}
 
@@ -175,11 +170,7 @@ public class AuthenticatedController {
 
 	protected void setupAuthenticatedContext(Session session, Locale locale, Realm realm) throws AccessDeniedException {
 		authenticationService.setCurrentSession(session, locale);
-		authenticationService.setCurrentRealm(realm);
-		if(!session.getCurrentRealm().equals(realm)) {
-			sessionService.switchRealm(session, realm);
-		}
-		
+		authenticationService.setCurrentRealm(realm);		
 	}
 	
 	protected boolean hasSessionContext() {

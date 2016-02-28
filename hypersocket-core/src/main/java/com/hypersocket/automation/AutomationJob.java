@@ -64,6 +64,7 @@ public class AutomationJob extends AbstractTriggerJob {
 			
 			eventService.publishEvent(event);
 			
+			
 			TaskResult outputEvent = provider.execute(resource, event.getCurrentRealm(), event);
 			
 			if(outputEvent!=null) {

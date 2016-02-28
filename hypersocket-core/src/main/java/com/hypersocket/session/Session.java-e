@@ -188,7 +188,7 @@ public class Session extends AbstractEntity<String> {
 
 	public Realm getCurrentRealm() {
 		if (currentRealm == null) {
-			return principal.getRealm();
+			return realm;
 		} else {
 			return currentRealm;
 		}
