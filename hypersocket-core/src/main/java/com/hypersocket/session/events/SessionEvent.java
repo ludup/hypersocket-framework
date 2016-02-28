@@ -41,7 +41,12 @@ public abstract class SessionEvent extends SystemEvent {
 	
 	public SessionEvent(Object source, String resourceKey, Throwable e,
 			Session session) {
-		super(source, resourceKey, e, session.getCurrentPrincipal().getRealm());
+		this(source, resourceKey, e, session, session.getCurrentRealm());
+	}
+	
+	public SessionEvent(Object source, String resourceKey, Throwable e,
+			Session session, Realm currentRealm) {
+		super(source, resourceKey, e, currentRealm);
 		this.session = session;
 		addAttribute(ATTR_UUID, session.getId());
 		addAttribute(ATTR_PRINCIPAL_NAME, session.getCurrentPrincipal().getPrincipalName());

@@ -27,7 +27,8 @@ public interface SessionRepository extends AbstractEntityRepository<Session,Stri
 			String userAgentVersion, 
 			String os, 
 			String osVersion,
-			int timeout);
+			int timeout,
+			Realm realm);
 	
 	public Session getSessionById(String id);
 	

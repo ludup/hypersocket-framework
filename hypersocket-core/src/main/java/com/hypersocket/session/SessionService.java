@@ -31,6 +31,10 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 			AuthenticationScheme completedScheme, String userAgent,
 			Map<String, String> parameters);
 
+	Session openSession(String remoteAddress, Principal principal,
+			AuthenticationScheme completedScheme, String userAgent,
+			Map<String, String> parameters, Realm realm);
+	
 	void closeSession(Session session);
 
 	void switchRealm(Session session, Realm realm) throws AccessDeniedException;
