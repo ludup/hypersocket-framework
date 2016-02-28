@@ -20,9 +20,11 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
@@ -54,6 +56,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
     ConfigurableMimeFileTypeMap mimeTypesMap = new ConfigurableMimeFileTypeMap();
     
     Map<String,String> aliases = new HashMap<String,String>();
+    Set<String> dynamic = new HashSet<String>();
     List<ContentFilter> filters = new ArrayList<ContentFilter>();
     
     protected ContentHandlerImpl(String name, int priority) {
@@ -113,26 +116,28 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			}
 			
 			// Cache Validation
-			String ifModifiedSince = request.getHeader(HttpHeaders.IF_MODIFIED_SINCE);
-			if (ifModifiedSince != null && !ifModifiedSince.equals("")) {
-			    SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
-			    try {
-					Date ifModifiedSinceDate = dateFormatter.parse(ifModifiedSince);
-
-					// Only compare up to the second because the datetime format we send to the client does
-					// not have milliseconds
-					long ifModifiedSinceDateSeconds = ifModifiedSinceDate.getTime() / 1000;
-					long fileLastModifiedSeconds = getLastModified(path) / 1000;
-					if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {
-						if(log.isDebugEnabled()) {
-							log.debug(path + " has not been modified since " + HypersocketUtils.formatDateTime(ifModifiedSinceDate));
+			if(!isDynamic(path)) {
+				String ifModifiedSince = request.getHeader(HttpHeaders.IF_MODIFIED_SINCE);
+				if (ifModifiedSince != null && !ifModifiedSince.equals("")) {
+				    SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
+				    try {
+						Date ifModifiedSinceDate = dateFormatter.parse(ifModifiedSince);
+	
+						// Only compare up to the second because the datetime format we send to the client does
+						// not have milliseconds
+						long ifModifiedSinceDateSeconds = ifModifiedSinceDate.getTime() / 1000;
+						long fileLastModifiedSeconds = getLastModified(path) / 1000;
+						if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {
+							if(log.isDebugEnabled()) {
+								log.debug(path + " has not been modified since " + HypersocketUtils.formatDateTime(ifModifiedSinceDate));
+							}
+							sendNotModified(response);
+						    return;
 						}
-						sendNotModified(response);
-					    return;
+					} catch (Throwable e) {
+						response.sendError(HttpStatus.SC_BAD_REQUEST);
+						return;
 					}
-				} catch (Throwable e) {
-					response.sendError(HttpStatus.SC_BAD_REQUEST);
-					return;
 				}
 			}
 
@@ -195,6 +200,10 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	@Override
 	public abstract int getResourceStatus(String path);
   
+	protected boolean isDynamic(String path) {
+		return dynamic.contains(path);
+	}
+	
 	protected String translatePath(String path) throws RedirectException {
 		
 		for(Map.Entry<String, String> alias : aliases.entrySet()) {
@@ -208,6 +217,11 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 		return path;
 	}
 
+	@Override
+	public void addDynamicPage(String path) {
+		dynamic.add(path);
+	}
+	
 	@Override
 	public void addAlias(String alias, String path) {
 		aliases.put(alias, path);
