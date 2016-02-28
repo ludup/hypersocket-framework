@@ -50,7 +50,8 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 			String userAgentVersion,
 			String os,
 			String osVersion,
-			int timeout) {
+			int timeout,
+			Realm realm) {
 
 		Session session = new Session();
 		session.setPrincipal(principal);
@@ -61,7 +62,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		session.setOsVersion(osVersion);
 		session.setAuthenticationScheme(scheme);
 		session.setTimeout(timeout);
-		session.setPrincipalRealm(principal.getRealm());
+		session.setPrincipalRealm(realm);
 		session.system = false;
 		save(session);
 		return session;

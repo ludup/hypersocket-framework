@@ -144,6 +144,13 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public Session openSession(String remoteAddress, Principal principal,
 			AuthenticationScheme completedScheme, String userAgent,
 			Map<String, String> parameters) {
+		return openSession(remoteAddress, principal, completedScheme, userAgent, parameters, principal.getRealm());
+	}
+	
+	@Override
+	public Session openSession(String remoteAddress, Principal principal,
+			AuthenticationScheme completedScheme, String userAgent,
+			Map<String, String> parameters, Realm realm) {
 
 		Session session = null;
 		
@@ -178,7 +185,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			session = repository.createSession(remoteAddress, principal,
 					completedScheme, agent, agentVersion, os, osVersion, 
 					configurationService.getIntValue(
-					principal.getRealm(), SESSION_TIMEOUT));
+					realm, SESSION_TIMEOUT), realm);
 		} else {
 			ReadableUserAgent ua = parser.parse(userAgent);
 
@@ -188,7 +195,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 							.getOperatingSystem().getFamily().getName(), ua
 							.getOperatingSystem().getVersionNumber()
 							.toVersionString(), configurationService.getIntValue(
-							principal.getRealm(), SESSION_TIMEOUT));
+							realm, SESSION_TIMEOUT), realm);
 		}
 		
 		eventService.publishEvent(new SessionOpenEvent(this, session));
