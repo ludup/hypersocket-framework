@@ -75,6 +75,10 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("There are now %d context references", currentReferences.get()));
 		}
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("Context realm=%s prinipal=%s", getCurrentRealm().getName(),
+					getCurrentPrincipal().getName()));
+		}
 	}
 	
 	@Override
@@ -94,16 +98,26 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 			currentReferences.set(new Integer(1));
 		} else {
 			currentReferences.set(currentReferences.get() + 1);
-			
 		}
+		
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("There are now %d context references", currentReferences.get()));
+		}
+		
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("Context realm=%s principal=%s session=%s", getCurrentRealm().getName(),
+					getCurrentPrincipal().getName(), getCurrentSession().getId()));
 		}
 	}
 	
 	@Override
 	public void setCurrentRealm(Realm realm) {
 		currentRealm.set(realm);
+
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("Context realm=%s principal=/%s", getCurrentRealm().getName(),
+					getCurrentPrincipal().getName()));
+		}
 	}
 
 	@Override

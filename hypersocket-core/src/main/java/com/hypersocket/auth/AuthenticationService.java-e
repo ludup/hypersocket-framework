@@ -55,7 +55,9 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 	AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey) throws AccessDeniedException;
 
 	Session logonAnonymous(String remoteAddress,
-			String userAgent, Map<String, String> parameters) throws AccessDeniedException;
+			String userAgent, 
+			Map<String, String> parameters, 
+			String serverName) throws AccessDeniedException;
 
 	Authenticator getAuthenticator(String resourceKey);
 

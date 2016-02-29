@@ -38,6 +38,9 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	
 	protected String processTokenReplacements(String value, SystemEvent event) {
 		
+		if(value==null) {
+			return null;
+		}
 		Pattern pattern = Pattern.compile("\\$\\{(.*?)\\}");
 		Matcher matcher = pattern.matcher(value);
 

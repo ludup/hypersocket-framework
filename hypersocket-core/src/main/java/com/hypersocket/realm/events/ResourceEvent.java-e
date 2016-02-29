@@ -24,7 +24,7 @@ public class ResourceEvent extends SessionEvent {
 	
 	public ResourceEvent(Object source, String resourceKey, boolean success,
 			Session session, RealmResource resource) {
-		super(source, resourceKey, success, session);
+		super(source, resourceKey, success, session, resource.getRealm());
 		this.resource = resource;
 		addAttribute(ATTR_RESOURCE_ID, Long.toString(resource.getId()));
 		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
@@ -40,7 +40,7 @@ public class ResourceEvent extends SessionEvent {
 
 	public ResourceEvent(Object source, String resourceKey, Throwable e,
 			Session session, RealmResource resource) {
-		super(source, resourceKey, e, session);
+		super(source, resourceKey, e, session, resource.getRealm());
 		this.resource = resource;
 		if(resource.getId()!=null) {
 			addAttribute(ATTR_RESOURCE_ID, Long.toString(resource.getId()));
