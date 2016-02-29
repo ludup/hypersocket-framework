@@ -724,13 +724,13 @@ public class AuthenticationServiceImpl extends
 
 	@Override
 	public Session logonAnonymous(String remoteAddress, String userAgent,
-			Map<String, String> parameters) throws AccessDeniedException {
+			Map<String, String> parameters, String serverName) throws AccessDeniedException {
 
 		Session session = sessionService.openSession(remoteAddress,
 				realmService.getSystemPrincipal(), schemeRepository
 						.getSchemeByResourceKey(realmService.getSystemRealm(),
 								ANONYMOUS_AUTHENTICATION_RESOURCE_KEY),
-				userAgent, parameters);
+				userAgent, parameters, realmService.getRealmByHost(serverName));
 		return session;
 	}
 

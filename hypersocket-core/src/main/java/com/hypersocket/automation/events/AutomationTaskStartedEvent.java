@@ -21,13 +21,13 @@ public class AutomationTaskStartedEvent extends
 			AutomationResource resource) {
 		super(source, EVENT_RESOURCE_KEY, true, resource.getRealm());
 		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
-		addAttribute(ATTR_REALM_NAME, resource.getRealm());
+		addAttribute(ATTR_REALM_NAME, resource.getRealm().getName());
 	}
 
 	public AutomationTaskStartedEvent(Object source,
 			Realm realm, Throwable e) {
 		super(source, EVENT_RESOURCE_KEY, e, realm);
-		addAttribute(ATTR_REALM_NAME, realm);
+		addAttribute(ATTR_REALM_NAME, realm.getName());
 	}
 
 	@Override
