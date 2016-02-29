@@ -10,10 +10,10 @@ import com.hypersocket.resource.RealmResource;
 @Table(name = "user_interface_state")
 public class UserInterfaceState extends RealmResource {
 
-//	@Column(name = "resourceId")
-//	Long resourceId;
+	@Column(name = "bind_resource_id")
+	Long bindResourceId;
 
-	@Column(name = "principalId")
+	@Column(name = "principal_id")
 	Long principalId;
 
 	@Column(name = "preferences")
@@ -23,20 +23,20 @@ public class UserInterfaceState extends RealmResource {
 
 	}
 
-	public UserInterfaceState(/*Long resourceId, */Long principalId,
+	public UserInterfaceState(Long bindResourceId, Long principalId,
 			String preferences) {
-//		this.resourceId = resourceId;
+		this.bindResourceId = bindResourceId;
 		this.principalId = principalId;
 		this.preferences = preferences;
 	}
 
-//	public Long getResourceId() {
-//		return resourceId;
-//	}
-//
-//	public void setResourceId(Long resourceId) {
-//		this.resourceId = resourceId;
-//	}
+	public Long getBindResourceId() {
+		return bindResourceId;
+	}
+
+	public void setBindResourceId(Long bindResourceId) {
+		this.bindResourceId = bindResourceId;
+	}
 
 	public Long getPrincipalId() {
 		return principalId;
