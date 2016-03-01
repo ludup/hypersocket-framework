@@ -167,7 +167,11 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			
 			response.setStatus(HttpStatus.SC_OK);
 		} catch (RedirectException e) {
-			response.sendRedirect(server.resolvePath(basePath + (e.getMessage().startsWith("/") ? "" : "/") + e.getMessage()));
+			if(e.getMessage().startsWith("/") && !e.getMessage().equals("/")) {
+				response.sendRedirect(e.getMessage());
+			} else {
+				response.sendRedirect(server.resolvePath(basePath + (e.getMessage().startsWith("/") ? "" : "/") + e.getMessage()));
+			}
 		} finally {
 			responseProcessor.sendResponse(request, response, false);
 		}
