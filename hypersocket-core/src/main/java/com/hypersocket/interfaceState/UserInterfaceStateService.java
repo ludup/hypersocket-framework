@@ -9,17 +9,14 @@ public interface UserInterfaceStateService {
 
 	UserInterfaceState getStateByResourceId(Long resourceId);
 
-	UserInterfaceState getState(String name) throws AccessDeniedException;
-
-	UserInterfaceState getState(String name, Principal principal)
-			throws AccessDeniedException;
+	UserInterfaceState getStateByName(String name) throws AccessDeniedException;
 
 	UserInterfaceState updateState(UserInterfaceState newState,
 			String preferences) throws AccessDeniedException;
 
-	UserInterfaceState createState(Principal principal, Long bindResourceId,
-			String preferences, String name) throws AccessDeniedException;
+	UserInterfaceState createState(Principal principal, String preferences,
+			String name) throws AccessDeniedException;
 
-	Collection<UserInterfaceState> getStates(Long[] resources, boolean specific)
+	Collection<UserInterfaceState> getStates(String[] resources, boolean specific)
 			throws AccessDeniedException;
 }

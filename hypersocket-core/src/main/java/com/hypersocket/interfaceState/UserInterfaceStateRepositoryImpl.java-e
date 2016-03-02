@@ -22,34 +22,6 @@ public class UserInterfaceStateRepositoryImpl extends
 
 	@Override
 	@Transactional(readOnly = true)
-	public UserInterfaceState getStateByBindResourceId(final Long bindResourceId) {
-		UserInterfaceState userInterface = get("bindResourceId",
-				bindResourceId, UserInterfaceState.class,
-				new CriteriaConfiguration() {
-					@Override
-					public void configure(Criteria criteria) {
-						criteria.add(Restrictions.isNull("principalId"));
-					}
-				});
-		return userInterface;
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public UserInterfaceState getStateByBindResourceId(
-			final Long bindResourceId, final Long principalId) {
-		return get("bindResourceId", bindResourceId, UserInterfaceState.class,
-				new CriteriaConfiguration() {
-					@Override
-					public void configure(Criteria criteria) {
-						criteria.add(Restrictions
-								.eq("principalId", principalId));
-					}
-				});
-	}
-
-	@Override
-	@Transactional(readOnly = true)
 	public UserInterfaceState getState(final String name,
 			final Long principalId, final String resourceCategory,
 			final Realm realm) {

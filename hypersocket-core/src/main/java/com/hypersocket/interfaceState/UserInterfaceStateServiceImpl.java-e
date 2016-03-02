@@ -42,17 +42,9 @@ public class UserInterfaceStateServiceImpl extends
 	}
 
 	@Override
-	public UserInterfaceState getState(String name, Principal principal)
+	public UserInterfaceState getStateByName(String name)
 			throws AccessDeniedException {
-		return repository.getState(name, principal.getId(),
-				RESOURCE_CATEGORY_TABLE_STATE, getCurrentRealm());
-	}
-
-	@Override
-	public UserInterfaceState getState(String name)
-			throws AccessDeniedException {
-		return repository.getState(name, RESOURCE_CATEGORY_TABLE_STATE,
-				getCurrentRealm());
+		return repository.getResourceByName(name, getCurrentRealm());
 	}
 
 	@Override
@@ -66,45 +58,36 @@ public class UserInterfaceStateServiceImpl extends
 
 	@Override
 	public UserInterfaceState createState(Principal principal,
-			Long bindResourceId, String preferences, String name)
-			throws AccessDeniedException {
+			String preferences, String name) throws AccessDeniedException {
 
 		UserInterfaceState newState = new UserInterfaceState();
-
-		newState.setName(name);
 		newState.setPreferences(preferences);
 		if (principal != null) {
-			newState.setPrincipalId(principal.getId());
-		}
-		if (bindResourceId != null) {
-			newState.setBindResourceId(bindResourceId);
+			newState.setName(name + "_" + principal.getId());
+		} else {
+			newState.setName(name);
 		}
 		newState.setResourceCategory(RESOURCE_CATEGORY_TABLE_STATE);
 		newState.setRealm(getCurrentRealm());
 		repository.updateState(newState);
 
 		if (principal != null) {
-			newState = getState(name, principal);
+			newState = repository.getResourceByName(
+					name + "_" + principal.getId(), getCurrentRealm());
 		} else {
-			newState = getState(name);
+			newState = getStateByName(name);
 		}
 		return getStateByResourceId(newState.getId());
 
 	}
 
 	@Override
-	public Collection<UserInterfaceState> getStates(Long[] resources,
+	public Collection<UserInterfaceState> getStates(String[] resources,
 			boolean specific) throws AccessDeniedException {
 		Collection<UserInterfaceState> userInterfaceStateList = new ArrayList<UserInterfaceState>();
-		for (Long bindResourceId : resources) {
+		for (String resourceName : resources) {
 			UserInterfaceState state;
-			if (specific) {
-				state = repository.getStateByBindResourceId(bindResourceId,
-						getCurrentPrincipal().getId());
-			} else {
-				state = repository.getStateByBindResourceId(bindResourceId);
-			}
-
+			state = getStateByName(resourceName);
 			if (state != null) {
 				userInterfaceStateList.add(state);
 			}

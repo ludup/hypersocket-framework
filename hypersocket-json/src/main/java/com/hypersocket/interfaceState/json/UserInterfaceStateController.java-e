@@ -36,7 +36,7 @@ public class UserInterfaceStateController extends ResourceController {
 	public ResourceList<UserInterfaceState> getStates(
 			HttpServletRequest request,
 			@PathVariable("specific") boolean specific,
-			@PathVariable("resources") Long[] resources)
+			@PathVariable("resources") String[] resources)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
@@ -67,10 +67,10 @@ public class UserInterfaceStateController extends ResourceController {
 				newState = service.getStateByResourceId(userInterfaceState
 						.getResourceId());
 			} else if (userInterfaceState.isSpecific()) {
-				newState = service.getState(userInterfaceState.getName(),
-						getCurrentPrincipal());
+				newState = service.getStateByName(userInterfaceState.getName()
+						+ "_" + getCurrentPrincipal().getId());
 			} else {
-				newState = service.getState(userInterfaceState.getName());
+				newState = service.getStateByName(userInterfaceState.getName());
 			}
 
 			if (newState != null) {
@@ -78,12 +78,10 @@ public class UserInterfaceStateController extends ResourceController {
 						userInterfaceState.getPreferences());
 			} else if (userInterfaceState.isSpecific()) {
 				newState = service.createState(getCurrentPrincipal(),
-						userInterfaceState.getBindResourceId(),
 						userInterfaceState.getPreferences(),
 						userInterfaceState.getName());
 			} else {
 				newState = service.createState(null,
-						userInterfaceState.getBindResourceId(),
 						userInterfaceState.getPreferences(),
 						userInterfaceState.getName());
 			}
@@ -109,8 +107,8 @@ public class UserInterfaceStateController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			UserInterfaceState userInterfaceState = service.getState(name,
-					getCurrentPrincipal());
+			UserInterfaceState userInterfaceState = service.getStateByName(name
+					+ "_" + getCurrentPrincipal().getId());
 			if (userInterfaceState != null) {
 				return new ResourceStatus<UserInterfaceState>(
 						userInterfaceState, userInterfaceState.getName());
