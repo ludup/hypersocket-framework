@@ -8,11 +8,6 @@ public interface UserInterfaceStateRepository extends
 
 	UserInterfaceState getStateByResourceId(Long resourceId);
 
-	UserInterfaceState getStateByBindResourceId(Long bindResourceId);
-
-	UserInterfaceState getStateByBindResourceId(Long bindResourceId,
-			Long principalId);
-
 	void updateState(UserInterfaceState newState);
 
 	UserInterfaceState getState(String name, Long principalId,

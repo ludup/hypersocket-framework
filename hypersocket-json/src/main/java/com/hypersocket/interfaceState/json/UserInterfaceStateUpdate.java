@@ -2,9 +2,7 @@ package com.hypersocket.interfaceState.json;
 
 public class UserInterfaceStateUpdate {
 
-	Long bindResourceId;
 	Long resourceId;
-	Long principalId;
 	String name;
 	String preferences;
 	boolean specific;
@@ -13,38 +11,20 @@ public class UserInterfaceStateUpdate {
 
 	}
 
-	public UserInterfaceStateUpdate(Long bindResourceId, Long resourceId, Long principalId,
-			String name, String preferences, boolean specific) {
-		this.bindResourceId = bindResourceId;
+	public UserInterfaceStateUpdate(Long resourceId, String name,
+			String preferences, boolean specific) {
 		this.resourceId = resourceId;
-		this.principalId = principalId;
 		this.name = name;
 		this.preferences = preferences;
 		this.specific = specific;
 	}
-	
-	public Long getBindResourceId() {
-		return bindResourceId;
-	}
 
-	public void setBindResourceId(Long bindResourceId) {
-		this.bindResourceId = bindResourceId;
-	}
-	
 	public Long getResourceId() {
 		return resourceId;
 	}
 
 	public void setResourceId(Long resourceId) {
 		this.resourceId = resourceId;
-	}
-
-	public Long getPrincipalId() {
-		return principalId;
-	}
-
-	public void setPrincipalId(Long principalId) {
-		this.principalId = principalId;
 	}
 
 	public String getName() {
@@ -70,4 +50,5 @@ public class UserInterfaceStateUpdate {
 	public void setSpecific(boolean specific) {
 		this.specific = specific;
 	}
+
 }
