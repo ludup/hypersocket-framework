@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -73,11 +71,11 @@ public abstract class AbstractExtensionUpdater {
 					
 					// If this extension place is for cached anciliary apps such as HS client, they are always installed
 					if (en.getKey().isDownloadAllExtensions() && def.getState() == ExtensionState.NOT_INSTALLED) {
+						log.info(String.format("Making %s updateable because this extension place (%s) requires that all extensions are downloaded.", def.getId(), en.getKey().getApp()));
 						def.setState(ExtensionState.UPDATABLE);
 					}
 					
-					if(def.getState() == ExtensionState.UPDATABLE
-							|| (installMissing() && def.getState() == ExtensionState.NOT_INSTALLED)) {
+					if(def.getState() == ExtensionState.UPDATABLE) {
 						toUpdate.add(def);
 						totalSize += def.getSize();
 					}
@@ -129,7 +127,12 @@ public abstract class AbstractExtensionUpdater {
 								Thread.sleep(1000);
 							}
 						}
-						if(read != def.getRemoteArchiveSize()) {
+						
+						//
+						// TODO because no extension definition, we don't have a size, so can't check it
+						//
+						
+						if(def.getRemoteArchiveSize() != null && read != def.getRemoteArchiveSize()) {
 							throw new IOException("Corrupt download for extension "
 									+ def.getId() + ". Size is " + read + " bytes, expected " + def.getRemoteArchiveSize() + " bytes");
 						}
@@ -143,7 +146,7 @@ public abstract class AbstractExtensionUpdater {
 					String generatedMd5 = DigestUtils.md5Hex(in);
 					IOUtils.closeQuietly(in);
 
-					if (!generatedMd5.equals(def.getHash())) {
+					if (def.getHash().length() > 0 && !generatedMd5.equals(def.getHash())) {
 						if (log.isErrorEnabled()) {
 							log.error("Install of extension " + def.getId()
 									+ " failed. Corrupt download");
@@ -261,10 +264,6 @@ public abstract class AbstractExtensionUpdater {
 	protected abstract void onUpdateFailure(Throwable e);
 	
 	protected abstract void onExtensionUpdateComplete(ExtensionDefinition def);
-	
-	protected boolean installMissing() {
-		return false;
-	}
 	
 	private void completeDownload(File archiveTmp, File archiveFile,
 			ExtensionDefinition def) throws IOException {
