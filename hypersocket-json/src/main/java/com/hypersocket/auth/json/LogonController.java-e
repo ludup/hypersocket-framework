@@ -122,7 +122,6 @@ public class LogonController extends AuthenticatedController {
 
 		setupSystemContext(realmService.getRealmByHost(request.getServerName()));
 
-
 		try {
 			Session session;
 
