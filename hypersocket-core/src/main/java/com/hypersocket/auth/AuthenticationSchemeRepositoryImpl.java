@@ -44,14 +44,20 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	public AuthenticationScheme createScheme(Realm realm, String name,
 			List<String> templates, String resourceKey, boolean hidden,
 			Integer maximumModules, AuthenticationModuleType type) {
-		return createScheme(realm, name, templates, resourceKey, hidden, maximumModules, type, null);
+		return createScheme(realm, name, templates, resourceKey, hidden, maximumModules, type, null, null);
 	}
 	
 	@Override
 	@Transactional
-	public AuthenticationScheme createScheme(Realm realm, String name,
-			List<String> templates, String resourceKey, boolean hidden,
-			Integer maximumModules, AuthenticationModuleType type, String allowedModules) {
+	public AuthenticationScheme createScheme(Realm realm, 
+			String name,
+			List<String> templates, 
+			String resourceKey, 
+			boolean hidden,
+			Integer maximumModules, 
+			AuthenticationModuleType type, 
+			String allowedModules, 
+			String lastButtonResourceKey) {
 		AuthenticationScheme scheme = new AuthenticationScheme();
 		scheme.setName(name);
 		scheme.setRealm(realm);
@@ -61,6 +67,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 		scheme.setType(type);
 		scheme.setMaximumModules(maximumModules);
 		scheme.setAllowedModules(allowedModules);
+		scheme.setLastButtonResourceKey(lastButtonResourceKey);
 		
 		saveEntity(scheme);
 

@@ -199,7 +199,8 @@ public class LogonController extends AuthenticatedController {
 										.nextPostAuthenticationStep(state),
 						configurationService.hasUserLocales(), state.isNew(),
 						!state.hasNextStep(), success || state.isNew(),
-						state.isAuthenticationComplete());
+						state.isAuthenticationComplete(),
+						state.getScheme().getLastButtonResourceKey());
 				
 			}
 		} catch(FallbackAuthenticationRequired e) {

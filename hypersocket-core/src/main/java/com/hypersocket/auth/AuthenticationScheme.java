@@ -32,6 +32,9 @@ public class AuthenticationScheme extends RealmResource {
 	@Column(name = "allowed_modules")
 	String allowedModules;
 	
+	@Column(name = "last_button_resource_key")
+	String lastButtonResourceKey;
+	
 	public String getResourceKey() {
 		return resourceKey;
 	}
@@ -78,6 +81,14 @@ public class AuthenticationScheme extends RealmResource {
 	
 	public void setAllowedModules(String allowedModules) {
 		this.allowedModules = allowedModules;
+	}
+
+	public String getLastButtonResourceKey() {
+		return lastButtonResourceKey == null ? "text.logon" : lastButtonResourceKey;
+	}
+	
+	public void setLastButtonResourceKey(String lastButtonResourceKey) {
+		this.lastButtonResourceKey = lastButtonResourceKey;
 	}
 	
 	
