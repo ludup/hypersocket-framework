@@ -328,6 +328,10 @@ public class Session extends AbstractEntity<String> {
 	public Principal getInheritedPrincipal() {
 		return getPrincipal();
 	}
+	
+	public boolean isClosed() {
+		return signedOut!=null;
+	}
 
 	public boolean isSystem() {
 		return system != null && system;

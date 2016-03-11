@@ -267,8 +267,8 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public void closeSession(Session session) {
 
 		if (session.getSignedOut() != null) {
-			throw new IllegalArgumentException(
-					"Attempting to close a session which is already closed!");
+			log.error("Attempting to close a session which is already closed!");
+			return;
 		}
 
 		if (nonCookieSessions.containsKey(session.getNonCookieKey())) {
