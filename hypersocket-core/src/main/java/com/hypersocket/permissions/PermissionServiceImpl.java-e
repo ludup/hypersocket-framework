@@ -592,15 +592,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 						}
 
 					});
-			Set<Principal> assignPrincipals = getEntitiesNotIn(
-					role.getPrincipals(), principals,
-					new EntityMatch<Principal>() {
-						@Override
-						public boolean validate(Principal t) {
-							return getCurrentRealm().equals(t.getRealm());
-						}
-
-					});
+			
+			Set<Principal> assignPrincipals = new HashSet<Principal>();
+			assignPrincipals.addAll(principals);
+			assignPrincipals.removeAll(role.getPrincipals());
 			Set<Permission> revokePermissions = getEntitiesNotIn(permissions,
 					role.getPermissions(), null);
 			Set<Permission> grantPermissions = getEntitiesNotIn(
