@@ -93,8 +93,9 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 			}
 		});
 		
-		this.registerWidget(HELPZONE, new OverviewWidget(-1, "overview.share.title",
-				"shareTheLove", true) {
+		
+		this.registerWidget(HELPZONE, new OverviewWidget(-1, "overview.gettingStarted.title",
+				System.getProperty("hypersocket.id", "hypersocket-vpn"), true) {
 			public boolean hasContent() {
 				return true;
 			}
