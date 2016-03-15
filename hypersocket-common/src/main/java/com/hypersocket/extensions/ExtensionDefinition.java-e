@@ -6,7 +6,9 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -45,12 +47,13 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>,
 	Properties remoteProperties;
 	boolean system;
 	String version;
+	Map<String, List<String>> appExtensions = new HashMap<String, List<String>>();
 
 	public ExtensionDefinition() {
 
 	}
 
-	ExtensionDefinition(String id, String license, String licenseUrl,
+	public ExtensionDefinition(String id, String license, String licenseUrl,
 			String depends, long lastModified, String image, String vendor,
 			String url, int weight, long size, String hash, boolean isSystem,
 			String version) {
@@ -72,6 +75,8 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>,
 		while (t.hasMoreTokens()) {
 			dependencies.add(t.nextToken());
 		}
+		
+		
 	}
 
 	ExtensionDefinition(Properties props, long lastModified, File archiveFile,
@@ -88,6 +93,28 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>,
 				.parseBoolean(props.getProperty("extension.system", "false")),
 				version);
 		this.archiveFile = archiveFile;
+
+		//extension.appExtension.client=client-fs:hypersocket-fts
+		for(Object keyObj : props.keySet()) {
+			String key = (String)keyObj;
+			if(key.startsWith("extension.appExtension.")) {
+				int idx = key.lastIndexOf('.');
+				
+				// The sub-application this is associated with
+				String app = key.substring(idx + 1);
+				List<String> extensions = appExtensions.get(app);
+				if(extensions == null) {
+					extensions = new ArrayList<String>();
+					appExtensions.put(app, extensions);
+				}
+				
+				// Iterate over all of the extensions to this app
+				for(String appExtension : props.getProperty(key).split(",")) {
+					extensions.add(appExtension);
+				}
+			}
+		}
+		
 	}
 
 	ExtensionDefinition(Element node, String remoteDefinitionBase,
@@ -117,6 +144,20 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>,
 		} catch (IOException ex) {
 			throw new IOException(ex);
 		}
+	}
+
+	/**
+	 * Get the dynamic extensions map. This is arranged so the 
+	 * outer map is keyed by product (or 'app') name. The inner
+	 * map is keyed by the extension ID, with the value being the 
+	 * product the extension belongs 
+	 * 
+	 * TODO The owning product is no longer required 
+	 * 
+	 * @return
+	 */
+	public Map<String, List<String>> getDynamicExtensions() {
+		return appExtensions;
 	}
 
 	public Properties getRemoteProperties() {

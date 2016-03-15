@@ -153,15 +153,17 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	@Override
 	public void clearPrincipalContext() {
 		
-		if(currentReferences.get() > 1) {
-			if(log.isDebugEnabled()) {
-				log.debug("Clearing authenticated context reference.");
+		if(currentReferences.get() != null) {
+			if(currentReferences.get() > 1) {
+				if(log.isDebugEnabled()) {
+					log.debug("Clearing authenticated context reference.");
+				}
+				currentReferences.set(currentReferences.get() - 1);
+				if(log.isDebugEnabled()) {
+					log.debug(String.format("There are %d context references left", currentReferences.get()));
+				}
+				return;
 			}
-			currentReferences.set(currentReferences.get() - 1);
-			if(log.isDebugEnabled()) {
-				log.debug(String.format("There are %d context references left", currentReferences.get()));
-			}
-			return;
 		}
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("There are no context references left"));

@@ -17,13 +17,16 @@ public class FeedbackServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	SchedulerService schedulerService;
 	
 	@Override
-	public void startJob(FeedbackProgress progress, Class<? extends FeedbackEnabledJob> jobClz, PermissionsAwareJobData data, String jobResourceKey) throws SchedulerException {
+	public FeedbackProgress startJob( Class<? extends FeedbackEnabledJob> jobClz, PermissionsAwareJobData data, String jobResourceKey) throws SchedulerException {
 		
+		FeedbackProgress progress = new FeedbackProgress();
 		String uuid = UUID.randomUUID().toString();
 		progress.init(uuid, this);
 		data.put(FeedbackEnabledJob.FEEDBACK_ITEM, progress);
 		
 		schedulerService.scheduleNow(jobClz, data);
+		
+		return progress;
 	}
 
 	

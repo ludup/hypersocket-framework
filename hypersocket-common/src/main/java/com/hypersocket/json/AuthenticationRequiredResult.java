@@ -17,6 +17,7 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 	boolean isLast;
 	boolean lastResultSuccessful;
 	boolean inPostAuthentication;
+	String lastButtonResourceKey;
 	
 	public AuthenticationRequiredResult() {
 
@@ -25,7 +26,8 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 	public AuthenticationRequiredResult(String bannerMsg, String errorMsg,
 			boolean lastErrorIsResourceKey, FormTemplate formTemplate,
 			boolean showLocales, boolean isNew, boolean isLast,
-			boolean lastResultSuccessful, boolean inPostAuthentication) {
+			boolean lastResultSuccessful, boolean inPostAuthentication,
+			String lastButtonResourceKey) {
 		super(bannerMsg, errorMsg, showLocales);
 		this.formTemplate = formTemplate;
 		this.lastErrorIsResourceKey = lastErrorIsResourceKey;
@@ -33,6 +35,7 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 		this.isLast = isLast;
 		this.lastResultSuccessful = lastResultSuccessful;
 		this.inPostAuthentication = inPostAuthentication;
+		this.lastButtonResourceKey = lastButtonResourceKey;
 	}
 
 	public FormTemplate getFormTemplate() {
@@ -61,6 +64,10 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 	
 	public boolean isPostAuthentication() {
 		return inPostAuthentication;
+	}
+	
+	public String getLastButtonResourceKey() {
+		return lastButtonResourceKey;
 	}
 
 	@Override
