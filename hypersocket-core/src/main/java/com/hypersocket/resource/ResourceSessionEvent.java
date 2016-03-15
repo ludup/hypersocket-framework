@@ -3,6 +3,7 @@ package com.hypersocket.resource;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.hypersocket.events.CommonAttributes;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.events.SessionEvent;
 
@@ -19,6 +20,13 @@ public abstract class ResourceSessionEvent extends SessionEvent {
 	public ResourceSessionEvent(Object source, String resourceKey, boolean success,
 			Session session, Resource resource) {
 		super(source, resourceKey, success, session);
+		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
+		this.resource = resource;
+	}
+	
+	public ResourceSessionEvent(Object source, String resourceKey, boolean success,
+			Session session, Resource resource, Realm currentRealm) {
+		super(source, resourceKey, success, session, currentRealm);
 		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
 		this.resource = resource;
 	}
