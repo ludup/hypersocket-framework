@@ -46,6 +46,16 @@ public class UserInterfaceStateServiceImpl extends
 			throws AccessDeniedException {
 		return repository.getResourceByName(name, getCurrentRealm());
 	}
+	
+	@Override
+	public UserInterfaceState getStateByName(String name, boolean specific)
+			throws AccessDeniedException {
+		if(specific){
+			return getStateByName(name + "_" + getCurrentPrincipal().getId());
+		}else{
+			return getStateByName(name);
+		}
+	}
 
 	@Override
 	public UserInterfaceState updateState(UserInterfaceState newState,
@@ -87,7 +97,11 @@ public class UserInterfaceStateServiceImpl extends
 		Collection<UserInterfaceState> userInterfaceStateList = new ArrayList<UserInterfaceState>();
 		for (String resourceName : resources) {
 			UserInterfaceState state;
-			state = getStateByName(resourceName);
+			if(specific){
+				state = getStateByName(resourceName + "_" + getCurrentPrincipal().getId());
+			}else{
+				state = getStateByName(resourceName);
+			}
 			if (state != null) {
 				userInterfaceStateList.add(state);
 			}

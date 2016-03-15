@@ -30,7 +30,7 @@ public class UserInterfaceStateController extends ResourceController {
 	UserInterfaceStateService service;
 
 	@AuthenticationRequired
-	@RequestMapping(value = "interfaceState/stateList/{specific}/{resources}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "interfaceState/state/{specific}/{resources}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<UserInterfaceState> getStates(
@@ -53,7 +53,7 @@ public class UserInterfaceStateController extends ResourceController {
 	@RequestMapping(value = "interfaceState/state", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceStatus<UserInterfaceState> saveTableState(
+	public ResourceStatus<UserInterfaceState> saveState(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestBody UserInterfaceStateUpdate userInterfaceState)
 			throws AccessDeniedException, UnauthorizedException,
@@ -66,11 +66,8 @@ public class UserInterfaceStateController extends ResourceController {
 			if (userInterfaceState.getResourceId() != null) {
 				newState = service.getStateByResourceId(userInterfaceState
 						.getResourceId());
-			} else if (userInterfaceState.isSpecific()) {
-				newState = service.getStateByName(userInterfaceState.getName()
-						+ "_" + getCurrentPrincipal().getId());
 			} else {
-				newState = service.getStateByName(userInterfaceState.getName());
+				newState = service.getStateByName(userInterfaceState.getName(), userInterfaceState.isSpecific());
 			}
 
 			if (newState != null) {
@@ -95,29 +92,4 @@ public class UserInterfaceStateController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
-
-	@AuthenticationRequired
-	@RequestMapping(value = "interfaceState/tableState/{name}", method = RequestMethod.GET, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceStatus<UserInterfaceState> getTableStates(
-			HttpServletRequest request, @PathVariable("name") String name)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			UserInterfaceState userInterfaceState = service.getStateByName(name
-					+ "_" + getCurrentPrincipal().getId());
-			if (userInterfaceState != null) {
-				return new ResourceStatus<UserInterfaceState>(
-						userInterfaceState, userInterfaceState.getName());
-			} else {
-				return new ResourceStatus<UserInterfaceState>(false, name);
-			}
-		} finally {
-			clearAuthenticatedContext();
-		}
-	}
-
 }
