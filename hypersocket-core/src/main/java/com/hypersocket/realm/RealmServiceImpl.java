@@ -497,10 +497,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
 
-			if (provider.isReadOnly(realm)) {
-				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
-			}
-
 			for (PrincipalProcessor processor : principalProcessors) {
 				processor.beforeUpdate(user, properties);
 			}

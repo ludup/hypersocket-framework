@@ -690,7 +690,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	@Override
-	public Collection<PropertyCategory> getPropertyCategories(AbstractResource resource) {
+	public Collection<PropertyCategory> getPropertyCategories(AbstractResource resource, PropertyFilter... filters) {
 
 		List<PropertyCategory> cats = new ArrayList<PropertyCategory>();
 
@@ -705,7 +705,11 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			tmp.setFilter(c.getFilter());
 			tmp.setHidden(c.isHidden());
 			for (AbstractPropertyTemplate t : c.getTemplates()) {
-				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
+				ResourcePropertyTemplate template = new ResourcePropertyTemplate(t, resource);
+				for(PropertyFilter filter : filters) {
+					filter.filterProperty(template);
+				}
+				tmp.getTemplates().add(template);
 			}
 			cats.add(tmp);
 		}

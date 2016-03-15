@@ -30,7 +30,7 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	void setValue(AbstractResource resource, String name, Date value);
 	
-	Collection<PropertyCategory> getPropertyCategories(AbstractResource resource);
+	Collection<PropertyCategory> getPropertyCategories(AbstractResource resource, PropertyFilter... filters);
 	
 	String[] getValues(AbstractResource resource, String name);
 
