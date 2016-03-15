@@ -1,7 +1,7 @@
 package com.hypersocket.interfaceState;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 
@@ -12,12 +12,15 @@ import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.Principal;
 
 @Service
 public class UserInterfaceStateServiceImpl extends
 		AbstractAuthenticatedServiceImpl implements UserInterfaceStateService {
 
 	public static final String RESOURCE_BUNDLE = "UserInterfaceStateService";
+
+	public static final String RESOURCE_CATEGORY_TABLE_STATE = "userInterfaceState";
 
 	@Autowired
 	UserInterfaceStateRepository repository;
@@ -39,62 +42,70 @@ public class UserInterfaceStateServiceImpl extends
 	}
 
 	@Override
-	public UserInterfaceState getSpecificStateByResourceId(Long resourceId) {
-		return repository.getStateByResourceId(resourceId,
-				getCurrentPrincipal().getId());
+	public UserInterfaceState getStateByName(String name)
+			throws AccessDeniedException {
+		return repository.getResourceByName(name, getCurrentRealm());
+	}
+	
+	@Override
+	public UserInterfaceState getStateByName(String name, boolean specific)
+			throws AccessDeniedException {
+		if(specific){
+			return getStateByName(name + "_" + getCurrentPrincipal().getId());
+		}else{
+			return getStateByName(name);
+		}
 	}
 
 	@Override
 	public UserInterfaceState updateState(UserInterfaceState newState,
-			Long top, Long left, String name, boolean specific)
-			throws AccessDeniedException {
+			String preferences) throws AccessDeniedException {
 
-		newState.setTop(top);
-		newState.setLeftpx(left);
-		newState.setName(name);
-		if (specific) {
-			newState.setPrincipalId(getCurrentPrincipal().getId());
-		}
+		newState.setPreferences(preferences);
 		repository.updateState(newState);
-		return newState;
+		return getStateByResourceId(newState.getId());
 	}
 
 	@Override
-	public UserInterfaceState createState(Long resourceId, Long top, Long left,
-			String name, boolean specific) throws AccessDeniedException {
+	public UserInterfaceState createState(Principal principal,
+			String preferences, String name) throws AccessDeniedException {
 
 		UserInterfaceState newState = new UserInterfaceState();
-
-		newState.setResourceId(resourceId);
-		newState.setTop(top);
-		newState.setLeftpx(left);
-		newState.setName(name);
-		if (specific) {
-			newState.setPrincipalId(getCurrentPrincipal().getId());
+		newState.setPreferences(preferences);
+		if (principal != null) {
+			newState.setName(name + "_" + principal.getId());
+		} else {
+			newState.setName(name);
 		}
+		newState.setResourceCategory(RESOURCE_CATEGORY_TABLE_STATE);
+		newState.setRealm(getCurrentRealm());
 		repository.updateState(newState);
 
-		return this.getStateByResourceId(resourceId);
+		if (principal != null) {
+			newState = repository.getResourceByName(
+					name + "_" + principal.getId(), getCurrentRealm());
+		} else {
+			newState = getStateByName(name);
+		}
+		return getStateByResourceId(newState.getId());
 
 	}
 
 	@Override
-	public List<UserInterfaceState> getStates(Long[] resources, boolean specific)
-			throws AccessDeniedException {
-
-		List<UserInterfaceState> stateList = new ArrayList<UserInterfaceState>();
-		for (Long resourceId : resources) {
+	public Collection<UserInterfaceState> getStates(String[] resources,
+			boolean specific) throws AccessDeniedException {
+		Collection<UserInterfaceState> userInterfaceStateList = new ArrayList<UserInterfaceState>();
+		for (String resourceName : resources) {
 			UserInterfaceState state;
-			if (specific) {
-				state = getSpecificStateByResourceId(resourceId);
-			} else {
-				state = getStateByResourceId(resourceId);
+			if(specific){
+				state = getStateByName(resourceName + "_" + getCurrentPrincipal().getId());
+			}else{
+				state = getStateByName(resourceName);
 			}
-
 			if (state != null) {
-				stateList.add(state);
+				userInterfaceStateList.add(state);
 			}
 		}
-		return stateList;
+		return userInterfaceStateList;
 	}
 }
