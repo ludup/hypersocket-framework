@@ -557,14 +557,22 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	@Transactional(readOnly = true)
 	public Integer getIntValue(AbstractResource resource, String name) throws NumberFormatException {
-		return Integer.parseInt(getValue(resource, name));
+		String val = getValue(resource, name);
+		if(val==null) {
+			return null;
+		}
+		return Integer.parseInt(val);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public Long getLongValue(AbstractResource resource, String name) throws NumberFormatException {
+		/**
+		 * I don't like this but it needs some thorough testing to re-factor to same as 
+		 * getIntValue or getDoubleValue
+		 */
 		try {
-		return Long.parseLong(getValue(resource, name));
+			return Long.parseLong(getValue(resource, name));
 		} catch(NumberFormatException e) { 
 		}
 		return null;
@@ -573,6 +581,10 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	@Transactional(readOnly = true)
 	public Date getDateValue(AbstractResource resource, String name) throws NumberFormatException {
+		/**
+		 * I don't like this but it needs some thorough testing to re-factor to same as 
+		 * getIntValue or getDoubleValue
+		 */
 		try {
 			return new Date(getLongValue(resource, name));
 		} catch(NumberFormatException e) { }
@@ -582,7 +594,11 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	@Transactional(readOnly = true)
 	public Double getDoubleValue(AbstractResource resource, String resourceKey) {
-		return Double.parseDouble(getValue(resource, resourceKey));
+		String val = getValue(resource, resourceKey);
+		if(val==null) {
+			return null;
+		}
+		return Double.parseDouble(val);
 	}
 
 	@Override

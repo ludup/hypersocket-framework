@@ -31,8 +31,7 @@ public interface AuthenticationSchemeRepository extends AbstractEntityRepository
 
 	Long getSchemeByResourceKeyCount(Realm realm, String resourceKey);
 
-	AuthenticationScheme createScheme(Realm realm, String name,
-			List<String> templates, String resourceKey, boolean hidden,
-			Integer maximumModules, AuthenticationModuleType type,
-			String allowedModules);
+	AuthenticationScheme createScheme(Realm realm, String name, List<String> templates, String resourceKey,
+			boolean hidden, Integer maximumModules, AuthenticationModuleType type, String allowedModules,
+			String lastButtonResourceKey);
 }
