@@ -10,6 +10,8 @@ public interface UserInterfaceStateService {
 	UserInterfaceState getStateByResourceId(Long resourceId);
 
 	UserInterfaceState getStateByName(String name) throws AccessDeniedException;
+	
+	UserInterfaceState getStateByName(String name, boolean specific) throws AccessDeniedException;
 
 	UserInterfaceState updateState(UserInterfaceState newState,
 			String preferences) throws AccessDeniedException;
