@@ -122,15 +122,15 @@ public class LogonController extends AuthenticatedController {
 
 		setupSystemContext(realmService.getRealmByHost(request.getServerName()));
 
+		AuthenticationState state = (AuthenticationState) request
+				.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
+		
 		try {
 			Session session;
 
 			String flash = (String) request.getSession().getAttribute("flash");
 			request.getSession().removeAttribute("flash");
 
-			AuthenticationState state = (AuthenticationState) request
-					.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
-			
 			try {
 				
 				if(state==null) {
@@ -205,6 +205,25 @@ public class LogonController extends AuthenticatedController {
 			}
 		} catch(FallbackAuthenticationRequired e) {
 			return resetLogon(request, response, "fallback", false);
+		} catch(Throwable t) {
+			
+			state.setLastErrorMsg(t.getMessage());
+			state.setLastErrorIsResourceKey(false);
+			
+			return new AuthenticationRequiredResult(
+					configurationService.getValue(state.getRealm(),
+							"logon.banner"),
+					state.getLastErrorMsg(),
+					state.getLastErrorIsResourceKey(),
+					!state.isAuthenticationComplete() ? authenticationService
+							.nextAuthenticationTemplate(state,
+									request.getParameterMap())
+							: authenticationService
+									.nextPostAuthenticationStep(state),
+					configurationService.hasUserLocales(), state.isNew(),
+					!state.hasNextStep(), state.isNew(),
+					state.isAuthenticationComplete(),
+					state.getScheme().getLastButtonResourceKey());
 		} finally {
 			clearAuthenticatedContext();
 		}

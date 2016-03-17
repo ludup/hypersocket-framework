@@ -599,8 +599,8 @@ public class AuthenticationServiceImpl extends
 			throw new IllegalStateException(
 					"There are no post authentcation steps to process!");
 		}
-
-		return state.getCurrentPostAuthenticationStep().createTemplate(state);
+		return modifyTemplate(state,
+				state.getCurrentPostAuthenticationStep().createTemplate(state));
 	}
 
 	@Override
