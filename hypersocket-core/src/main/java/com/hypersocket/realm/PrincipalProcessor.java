@@ -18,5 +18,9 @@ public interface PrincipalProcessor {
 	
 	void afterChangePassword(Principal principal, String newPassword) throws ResourceException;
 
+	void beforeSetPassword(Principal principal, String password) throws ResourceException;
+
+	void afterSetPassword(Principal principal, String password) throws ResourceException;
+
 	
 }

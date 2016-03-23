@@ -652,25 +652,25 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			public Principal doInTransaction(TransactionStatus status) {
 				
 				try {
-				for(PrincipalProcessor proc : principalProcessors) {
-					proc.beforeChangePassword(principal, newPassword);
-				}
-				
-				if (!verifyPassword(principal, oldPassword.toCharArray())) {
-					throw new ResourceChangeException(RESOURCE_BUNDLE, "error.invalidPassword");
-				}
-
-				provider.changePassword(principal, oldPassword.toCharArray(), newPassword.toCharArray());
-
-				setCurrentPassword(newPassword);
-
-				for(PrincipalProcessor proc : principalProcessors) {
-					proc.afterChangePassword(principal, newPassword);
-				}
-				
-				eventService.publishEvent(new ChangePasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider));
-				
-				return principal;
+					for(PrincipalProcessor proc : principalProcessors) {
+						proc.beforeChangePassword(principal, newPassword);
+					}
+					
+					if (!verifyPassword(principal, oldPassword.toCharArray())) {
+						throw new ResourceChangeException(RESOURCE_BUNDLE, "error.invalidPassword");
+					}
+	
+					provider.changePassword(principal, oldPassword.toCharArray(), newPassword.toCharArray());
+	
+					setCurrentPassword(newPassword);
+	
+					for(PrincipalProcessor proc : principalProcessors) {
+						proc.afterChangePassword(principal, newPassword);
+					}
+					
+					eventService.publishEvent(new ChangePasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider));
+					
+					return principal;
 				} catch(Throwable t) {
 					throw new IllegalStateException(t);
 				}
@@ -685,7 +685,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon, boolean administrative)
-			throws ResourceCreationException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		if (permissionService.hasSystemPermission(principal)) {
 			try {
@@ -709,12 +709,20 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 			}
 
+			for(PrincipalProcessor proc : principalProcessors) {
+				proc.beforeSetPassword(principal, password);
+			}
+			
 			provider.setPassword(principal, password.toCharArray(), forceChangeAtNextLogon, administrative);
 
+			for(PrincipalProcessor proc : principalProcessors) {
+				proc.afterSetPassword(principal, password);
+			}
+			
 			eventService.publishEvent(
 					new SetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider, principal));
 
-		} catch (ResourceCreationException ex) {
+		} catch (ResourceException ex) {
 			eventService.publishEvent(new SetPasswordEvent(this, ex, getCurrentSession(), getCurrentRealm(), provider,
 					principal.getPrincipalName()));
 			throw ex;
