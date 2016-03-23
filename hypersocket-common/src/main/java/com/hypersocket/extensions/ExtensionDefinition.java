@@ -156,6 +156,7 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>,
 	 * 
 	 * @return
 	 */
+	@JsonIgnore
 	public Map<String, List<String>> getDynamicExtensions() {
 		return appExtensions;
 	}
