@@ -14,6 +14,7 @@ import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
@@ -89,4 +90,6 @@ public interface PermissionService extends AuthenticatedService {
 	boolean hasPermission(Principal principal, Permission permission);
 
 	public boolean hasRole(Principal principal, Role customerRole) throws AccessDeniedException;
+
+	public void assertResourceAccess(AssignableResource resource, Principal principal) throws AccessDeniedException;
 }
