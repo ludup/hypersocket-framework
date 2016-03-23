@@ -747,7 +747,7 @@ public class CurrentRealmController extends ResourceController {
 
 		} catch(AccessDeniedException ex) { 
 			return new CredentialsStatus(false, ex.getMessage());
-		} catch (ResourceCreationException e) {
+		} catch (ResourceException e) {
 			return new CredentialsStatus(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();

@@ -57,7 +57,10 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	@Override
 	@Transactional(readOnly=true)
 	public T getResourceByName(String name, Realm realm, boolean deleted) {
-		return get("name", name, getResourceClass(), new RealmRestriction(realm), new DefaultDetatchedCriteriaConfiguration(), new DeletedCriteria(
+		return get("name", name, getResourceClass(), 
+				new RealmRestriction(realm), 
+				new DefaultDetatchedCriteriaConfiguration(), 
+				new DeletedCriteria(
 				deleted));
 	}
 
@@ -154,7 +157,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		return super.search(getResourceClass(), searchColumn, searchPattern, start,
 				length, sorting, ArrayUtils.addAll(configs,
-						new RealmCriteria(realm), new DefaultCriteriaConfiguration()));
+						new RealmCriteria(realm), new DeletedCriteria(false), new DefaultCriteriaConfiguration()));
 	}
 
 	@Override
@@ -163,7 +166,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 			CriteriaConfiguration... configs) {
 		return getCount(getResourceClass(), searchColumn, searchPattern,
 				ArrayUtils.addAll(configs, new RealmCriteria(
-						realm), new DefaultCriteriaConfiguration()));
+						realm), new DeletedCriteria(false), new DefaultCriteriaConfiguration()));
 	}
 
 	
