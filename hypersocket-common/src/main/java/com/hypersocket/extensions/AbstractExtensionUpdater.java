@@ -195,11 +195,15 @@ public abstract class AbstractExtensionUpdater {
 						File archiveFile = new File(en.getKey().getDir(), archiveTmp.getName());
 						newFiles.add(archiveFile);
 						completeDownload(tmpArchives.get(def), archiveFile, def);
+						
+						/* Make sure any new extensions with identical versions are not deleted */
+						toRemove.remove(archiveFile);
 					}
 				}
 			}
 			catch(IOException ioe) {
 				// Remove all of the new files created so the old ones continue to be used
+				log.warn("An error occured downloading extensions, reverting to preview extensions");
 				for(File f : newFiles) {
 					if(f.exists() && !f.delete()) {
 						log.warn(f.getName() + " could not be deleted. The file has been marked to delete up JVM exit, but this may or may not work. This should not affect the upgrade but advisable that its removed.");
@@ -285,10 +289,11 @@ public abstract class AbstractExtensionUpdater {
 		}
 		
 		archiveFile.setLastModified(def.getLastModified()*1000);
+		log.info("Deleting temporary file " + archiveTmp);
 		archiveTmp.delete();
 
 		if(log.isInfoEnabled()) {
-			log.info("Install of extension " + def.getId() + " completed ok");
+			log.info("Install of extension " + def.getId() + " to " + archiveFile + " completed ok");
 		}
 		
 		onExtensionUpdateComplete(def);

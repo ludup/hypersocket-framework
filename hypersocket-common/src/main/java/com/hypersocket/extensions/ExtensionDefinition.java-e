@@ -149,10 +149,7 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>,
 	/**
 	 * Get the dynamic extensions map. This is arranged so the 
 	 * outer map is keyed by product (or 'app') name. The inner
-	 * map is keyed by the extension ID, with the value being the 
-	 * product the extension belongs 
-	 * 
-	 * TODO The owning product is no longer required 
+	 * list containing the extension IDs. 
 	 * 
 	 * @return
 	 */

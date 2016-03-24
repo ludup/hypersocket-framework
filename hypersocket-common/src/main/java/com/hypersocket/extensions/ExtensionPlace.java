@@ -77,7 +77,7 @@ public class ExtensionPlace implements Serializable {
 	public static ExtensionPlace getDefault() {
 		List<URL> u = new ArrayList<URL>();
 		try {
-			Enumeration<URL> urls = ExtensionDefinition.class.getClassLoader()
+			Enumeration<URL> urls = ( Thread.currentThread().getContextClassLoader() == null ? ExtensionDefinition.class.getClassLoader() : Thread.currentThread().getContextClassLoader() )
 					.getResources("extension.def");
 			if (!urls.hasMoreElements()) {
 				if (LOG.isInfoEnabled()) {
