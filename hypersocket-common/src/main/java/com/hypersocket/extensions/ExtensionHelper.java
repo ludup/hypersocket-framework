@@ -63,7 +63,9 @@ public class ExtensionHelper {
 
 		try {
 
-			Iterator<URL> urls = extensionsPlace.getUrls().iterator();
+			List<URL> urlsList = extensionsPlace.getUrls();
+			log.info(String.format("Extension place %s has %d urls", extensionsPlace.getApp(), urlsList.size()));
+			Iterator<URL> urls = urlsList.iterator();
 
 			while (urls.hasNext()) {
 				URL url = urls.next();
