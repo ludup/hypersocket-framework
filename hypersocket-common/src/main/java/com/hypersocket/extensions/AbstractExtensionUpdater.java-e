@@ -77,12 +77,15 @@ public abstract class AbstractExtensionUpdater {
 					
 					if(def.getState() == ExtensionState.UPDATABLE) {
 						toUpdate.add(def);
+						
+						// Note, size will be zero for dynamic extensions
+						
 						totalSize += def.getSize();
 					}
 				}
 			}
 			
-			if(totalSize == 0) {
+			if(updates.isEmpty()) {
 				return false;
 			}
 			onUpdateStart(totalSize);
