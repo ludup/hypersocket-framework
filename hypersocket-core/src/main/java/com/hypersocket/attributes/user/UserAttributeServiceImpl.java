@@ -16,6 +16,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.attributes.user.events.UserAttributeCreatedEvent;
@@ -39,10 +40,11 @@ import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.TransactionAdapter;
+import com.hypersocket.role.events.RoleEvent;
 
 @Service
 public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceImpl<UserAttribute> implements
-		UserAttributeService {
+		UserAttributeService, ApplicationListener<RoleEvent> {
 
 	static Logger log = LoggerFactory.getLogger(UserAttributeServiceImpl.class);
 	public static final String RESOURCE_BUNDLE = "UserAttributes";
@@ -476,5 +478,13 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 		assertPermission(UserAttributePermission.READ);
 		
 		return attributeRepository.getAttributeByVariableName(attributeName, getCurrentRealm());
+	}
+
+	@Override
+	public void onApplicationEvent(RoleEvent event) {
+		/**
+		 * Really quick hack. We will do better.
+		 */
+		userPropertyTemplates.clear();
 	}
 }
