@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
@@ -59,6 +60,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	@Autowired
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		hibernateTemplate = new HibernateTemplate(this.sessionFactory = sessionFactory);
+		hibernateTemplate.setCacheQueries(true);
 	}
 
 	private void checkDemoMode() {
@@ -259,11 +261,11 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	}
 
 	protected Criteria createCriteria(Class<?> entityClass) {
-		return sessionFactory.getCurrentSession().createCriteria(entityClass);
+		return sessionFactory.getCurrentSession().createCriteria(entityClass).setCacheable(true).setCacheMode(CacheMode.NORMAL);
 	}
 
 	protected Criteria createCriteria(Class<?> entityClass, String alias) {
-		return sessionFactory.getCurrentSession().createCriteria(entityClass, alias);
+		return sessionFactory.getCurrentSession().createCriteria(entityClass, alias).setCacheable(true).setCacheMode(CacheMode.NORMAL);
 	}
 
 	@Override
