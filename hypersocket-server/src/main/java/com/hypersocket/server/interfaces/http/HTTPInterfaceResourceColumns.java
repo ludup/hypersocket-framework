@@ -1,4 +1,4 @@
-package com.hypersocket.server.interfaces;
+package com.hypersocket.server.interfaces.http;
 
 import com.hypersocket.tables.Column;
 

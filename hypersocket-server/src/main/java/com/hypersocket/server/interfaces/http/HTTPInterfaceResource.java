@@ -1,4 +1,4 @@
-package com.hypersocket.server.interfaces;
+package com.hypersocket.server.interfaces.http;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
