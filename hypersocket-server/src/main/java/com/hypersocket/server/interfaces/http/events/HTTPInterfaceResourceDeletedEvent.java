@@ -1,23 +1,23 @@
-package com.hypersocket.server.interfaces.events;
+package com.hypersocket.server.interfaces.http.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.hypersocket.server.interfaces.HTTPInterfaceResource;
+import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.session.Session;
 
-public class HTTPInterfaceResourceUpdatedEvent extends
+public class HTTPInterfaceResourceDeletedEvent extends
 		HTTPInterfaceResourceEvent {
 
-	private static final long serialVersionUID = -8007834648855709309L;
+	private static final long serialVersionUID = -6817358126984800977L;
 
-	public static final String EVENT_RESOURCE_KEY = "hTTPInterface.updated";
+	public static final String EVENT_RESOURCE_KEY = "hTTPInterface.deleted";
 
-	public HTTPInterfaceResourceUpdatedEvent(Object source,
+	public HTTPInterfaceResourceDeletedEvent(Object source,
 			Session session, HTTPInterfaceResource resource) {
 		super(source, EVENT_RESOURCE_KEY, session, resource);
 	}
 
-	public HTTPInterfaceResourceUpdatedEvent(Object source,
+	public HTTPInterfaceResourceDeletedEvent(Object source,
 			HTTPInterfaceResource resource, Throwable e, Session session) {
 		super(source, EVENT_RESOURCE_KEY, resource, e, session);
 	}

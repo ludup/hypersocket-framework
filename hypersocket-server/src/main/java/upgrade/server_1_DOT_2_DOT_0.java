@@ -10,9 +10,9 @@ import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.certificates.CertificateResourceServiceImpl;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.server.interfaces.HTTPInterfaceResource;
-import com.hypersocket.server.interfaces.HTTPInterfaceResourceRepository;
-import com.hypersocket.server.interfaces.HTTPProtocol;
+import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
+import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceRepository;
+import com.hypersocket.server.interfaces.http.HTTPProtocol;
 import com.hypersocket.session.SessionService;
 
 public class server_1_DOT_2_DOT_0 implements Runnable {

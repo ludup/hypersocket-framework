@@ -1,4 +1,4 @@
-package com.hypersocket.server.interfaces.json;
+package com.hypersocket.server.interfaces.http.json;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,14 +30,14 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.ResourceUpdate;
-import com.hypersocket.server.interfaces.HTTPInterfaceResource;
-import com.hypersocket.server.interfaces.HTTPInterfaceResourceColumns;
-import com.hypersocket.server.interfaces.HTTPInterfaceResourceService;
-import com.hypersocket.server.interfaces.HTTPInterfaceResourceServiceImpl;
+import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
+import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceColumns;
+import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceService;
+import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceServiceImpl;
 import com.hypersocket.session.json.SessionTimeoutException;
+import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller

@@ -57,7 +57,7 @@ import com.hypersocket.server.events.WebappCreatedEvent;
 import com.hypersocket.server.handlers.HttpRequestHandler;
 import com.hypersocket.server.handlers.WebsocketHandler;
 import com.hypersocket.server.handlers.impl.APIRequestHandler;
-import com.hypersocket.server.interfaces.HTTPInterfaceResource;
+import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.servlet.HypersocketServletConfig;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;

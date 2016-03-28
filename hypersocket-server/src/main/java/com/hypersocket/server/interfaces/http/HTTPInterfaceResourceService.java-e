@@ -1,4 +1,4 @@
-package com.hypersocket.server.interfaces;
+package com.hypersocket.server.interfaces.http;
 
 import java.util.Collection;
 import java.util.Map;

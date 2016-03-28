@@ -26,8 +26,8 @@ import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hypersocket.server.interfaces.HTTPInterfaceResource;
-import com.hypersocket.server.interfaces.HTTPProtocol;
+import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
+import com.hypersocket.server.interfaces.http.HTTPProtocol;
 
 public class SSLSwitchingHandler extends FrameDecoder {
 

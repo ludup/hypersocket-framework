@@ -51,9 +51,9 @@ import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.server.HypersocketServerImpl;
-import com.hypersocket.server.interfaces.HTTPInterfaceResource;
-import com.hypersocket.server.interfaces.HTTPInterfaceResourceRepository;
-import com.hypersocket.server.interfaces.HTTPProtocol;
+import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
+import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceRepository;
+import com.hypersocket.server.interfaces.http.HTTPProtocol;
 import com.hypersocket.server.websocket.TCPForwardingClientCallback;
 
 @Component
