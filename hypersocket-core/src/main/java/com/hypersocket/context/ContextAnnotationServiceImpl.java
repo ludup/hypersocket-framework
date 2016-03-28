@@ -1,5 +1,7 @@
 package com.hypersocket.context;
 
+import java.util.Locale;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -27,7 +29,7 @@ public class ContextAnnotationServiceImpl implements ContextAnnotationService {
 	public Object process(ProceedingJoinPoint pjp) throws Throwable {
 		
 		Session session = sessionService.getSystemSession();
-		authenticationService.setCurrentSession(session, configurationService.getDefaultLocale());
+		authenticationService.setCurrentSession(session, Locale.getDefault());
 		
 		try {
 			return pjp.proceed();
