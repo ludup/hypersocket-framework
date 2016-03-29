@@ -40,12 +40,11 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
+import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller
@@ -747,7 +746,7 @@ public class CurrentRealmController extends ResourceController {
 
 		} catch(AccessDeniedException ex) { 
 			return new CredentialsStatus(false, ex.getMessage());
-		} catch (ResourceCreationException e) {
+		} catch (ResourceException e) {
 			return new CredentialsStatus(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();

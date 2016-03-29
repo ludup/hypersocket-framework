@@ -40,4 +40,14 @@ public class PrincipalProcessorAdapter implements PrincipalProcessor {
 		
 	}
 
+	@Override
+	public void beforeSetPassword(Principal principal, String password) throws ResourceException {
+
+	}
+
+	@Override
+	public void afterSetPassword(Principal principal, String password) throws ResourceException {
+
+	}
+
 }

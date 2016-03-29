@@ -183,7 +183,9 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 									} else if(resourceServices.containsKey(resourceClass.clz())) {
 										obj = resourceServices.get(resourceClass.clz()).getResourceById(Long.parseLong(id));
 									} else {
-										throw new IllegalStateException("Collection must have a generic type");
+										throw new IllegalStateException(String.format
+												("Collection type %s does not appear to be registered with entity store", 
+												resourceClass.clz().getSimpleName()));
 									}
 									values.add(obj);
 								}

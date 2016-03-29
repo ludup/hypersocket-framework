@@ -44,6 +44,7 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
 import com.hypersocket.realm.events.GroupEvent;
 import com.hypersocket.realm.events.UserEvent;
+import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
@@ -592,15 +593,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 						}
 
 					});
-			Set<Principal> assignPrincipals = getEntitiesNotIn(
-					role.getPrincipals(), principals,
-					new EntityMatch<Principal>() {
-						@Override
-						public boolean validate(Principal t) {
-							return getCurrentRealm().equals(t.getRealm());
-						}
-
-					});
+			
+			Set<Principal> assignPrincipals = new HashSet<Principal>();
+			assignPrincipals.addAll(principals);
+			assignPrincipals.removeAll(role.getPrincipals());
 			Set<Permission> revokePermissions = getEntitiesNotIn(permissions,
 					role.getPermissions(), null);
 			Set<Permission> grantPermissions = getEntitiesNotIn(
@@ -731,6 +727,23 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public void assertResourceAccess(AssignableResource resource, Principal principal) throws AccessDeniedException {
+		
+		boolean found = false;
+		Set<Role> principalRoles = getPrincipalRoles(principal);
+		for(Role role : resource.getRoles()) {
+			if(principalRoles.contains(role)) {
+				found = true;
+				break;
+			}
+		}
+		
+		if(!found) {
+			throw new AccessDeniedException();
+		}
 	}
 
 }

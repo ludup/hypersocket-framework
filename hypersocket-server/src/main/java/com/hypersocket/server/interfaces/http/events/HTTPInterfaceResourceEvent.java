@@ -1,10 +1,10 @@
-package com.hypersocket.server.interfaces.events;
+package com.hypersocket.server.interfaces.http.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.events.ResourceEvent;
-import com.hypersocket.server.interfaces.HTTPInterfaceResource;
+import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.session.Session;
 
 public class HTTPInterfaceResourceEvent extends ResourceEvent {

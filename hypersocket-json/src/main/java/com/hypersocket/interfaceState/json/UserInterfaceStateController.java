@@ -16,10 +16,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
-import com.hypersocket.i18n.I18N;
 import com.hypersocket.interfaceState.UserInterfaceState;
 import com.hypersocket.interfaceState.UserInterfaceStateService;
-import com.hypersocket.interfaceState.UserInterfaceStateServiceImpl;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -38,14 +36,14 @@ public class UserInterfaceStateController extends ResourceController {
 	public ResourceList<UserInterfaceState> getStates(
 			HttpServletRequest request,
 			@PathVariable("specific") boolean specific,
-			@PathVariable("resources") Long[] resources)
+			@PathVariable("resources") String[] resources)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			return new ResourceList<UserInterfaceState>(
-					service.getStates(resources, specific));
+			return new ResourceList<UserInterfaceState>(service.getStates(
+					resources, specific));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -57,41 +55,38 @@ public class UserInterfaceStateController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<UserInterfaceState> saveState(
 			HttpServletRequest request, HttpServletResponse response,
-			@RequestBody UserInterfaceStateUpdate userInterfaceStateUpdate)
+			@RequestBody UserInterfaceStateUpdate userInterfaceState)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-
-			UserInterfaceState newState = service
-					.getStateByResourceId(userInterfaceStateUpdate
-							.getResourceId());
+			UserInterfaceState newState;
+			if (userInterfaceState.getResourceId() != null) {
+				newState = service.getStateByResourceId(userInterfaceState
+						.getResourceId());
+			} else {
+				newState = service.getStateByName(userInterfaceState.getName(), userInterfaceState.isSpecific());
+			}
 
 			if (newState != null) {
 				newState = service.updateState(newState,
-						userInterfaceStateUpdate.getTop(),
-						userInterfaceStateUpdate.getLeftpx(),
-						userInterfaceStateUpdate.getName(),
-						userInterfaceStateUpdate.isSpecific());
+						userInterfaceState.getPreferences());
+			} else if (userInterfaceState.isSpecific()) {
+				newState = service.createState(getCurrentPrincipal(),
+						userInterfaceState.getPreferences(),
+						userInterfaceState.getName());
 			} else {
-				newState = service.createState(
-						userInterfaceStateUpdate.getResourceId(),
-						userInterfaceStateUpdate.getTop(),
-						userInterfaceStateUpdate.getLeftpx(),
-						userInterfaceStateUpdate.getName(),
-						userInterfaceStateUpdate.isSpecific());
+				newState = service.createState(null,
+						userInterfaceState.getPreferences(),
+						userInterfaceState.getName());
 			}
+
 			return new ResourceStatus<UserInterfaceState>(newState,
-					I18N.getResource(sessionUtils.getLocale(request),
-							UserInterfaceStateServiceImpl.RESOURCE_BUNDLE,
-							newState.getId() != null ? "attribute.updated.info"
-									: "attribute.created.info", newState
-									.getName()));
-			// } catch (ResourceException e) {
-			// return new ResourceStatus<UserInterfaceState>(false,
-			// e.getMessage());
+					newState.getName());
+		} catch (Exception e) {
+			return new ResourceStatus<UserInterfaceState>(false, e.getMessage());
 
 		} finally {
 			clearAuthenticatedContext();

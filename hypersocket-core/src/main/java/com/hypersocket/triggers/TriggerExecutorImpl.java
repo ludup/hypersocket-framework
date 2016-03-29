@@ -10,10 +10,13 @@ import org.springframework.stereotype.Component;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SynchronousEvent;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
@@ -65,10 +68,20 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 			
 		} else {
 		
+			Principal principal = realmService.getSystemPrincipal();
+			
+			if(event.hasAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME)) {
+				principal = realmService.getPrincipalByName(
+						event.getCurrentRealm(), 
+						event.getAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME),
+						PrincipalType.USER);
+			} else if(hasAuthenticatedContext()) {
+				principal = getCurrentPrincipal();
+			}
+			
 			JobDataMap data = new PermissionsAwareJobData(
 					event.getCurrentRealm(),
-					hasAuthenticatedContext() ? getCurrentPrincipal()
-							: realmService.getSystemPrincipal(),
+					principal,
 					hasAuthenticatedContext() ? getCurrentLocale()
 							: configurationService.getDefaultLocale(),
 					"triggerExecutionJob");

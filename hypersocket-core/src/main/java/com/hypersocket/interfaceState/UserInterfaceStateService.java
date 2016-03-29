@@ -1,22 +1,24 @@
 package com.hypersocket.interfaceState;
 
-import java.util.List;
+import java.util.Collection;
 
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.Principal;
 
 public interface UserInterfaceStateService {
 
 	UserInterfaceState getStateByResourceId(Long resourceId);
 
-	UserInterfaceState getSpecificStateByResourceId(Long resourceId);
+	UserInterfaceState getStateByName(String name) throws AccessDeniedException;
+	
+	UserInterfaceState getStateByName(String name, boolean specific) throws AccessDeniedException;
 
-	UserInterfaceState updateState(UserInterfaceState newState, Long top,
-			Long left, String name, boolean specific) throws AccessDeniedException;
+	UserInterfaceState updateState(UserInterfaceState newState,
+			String preferences) throws AccessDeniedException;
 
-	UserInterfaceState createState(Long resourceId, Long top, Long left,
-			String name, boolean specific) throws AccessDeniedException;
+	UserInterfaceState createState(Principal principal, String preferences,
+			String name) throws AccessDeniedException;
 
-	List<UserInterfaceState> getStates(Long[] resources, boolean specific)
+	Collection<UserInterfaceState> getStates(String[] resources, boolean specific)
 			throws AccessDeniedException;
-
 }

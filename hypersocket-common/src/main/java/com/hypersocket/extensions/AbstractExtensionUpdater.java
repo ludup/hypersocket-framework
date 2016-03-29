@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -73,18 +71,21 @@ public abstract class AbstractExtensionUpdater {
 					
 					// If this extension place is for cached anciliary apps such as HS client, they are always installed
 					if (en.getKey().isDownloadAllExtensions() && def.getState() == ExtensionState.NOT_INSTALLED) {
+						log.info(String.format("Making %s updateable because this extension place (%s) requires that all extensions are downloaded.", def.getId(), en.getKey().getApp()));
 						def.setState(ExtensionState.UPDATABLE);
 					}
 					
-					if(def.getState() == ExtensionState.UPDATABLE
-							|| (installMissing() && def.getState() == ExtensionState.NOT_INSTALLED)) {
+					if(def.getState() == ExtensionState.UPDATABLE) {
 						toUpdate.add(def);
+						
+						// Note, size will be zero for dynamic extensions
+						
 						totalSize += def.getSize();
 					}
 				}
 			}
 			
-			if(totalSize == 0) {
+			if(updates.isEmpty()) {
 				return false;
 			}
 			onUpdateStart(totalSize);
@@ -129,7 +130,12 @@ public abstract class AbstractExtensionUpdater {
 								Thread.sleep(1000);
 							}
 						}
-						if(read != def.getRemoteArchiveSize()) {
+						
+						//
+						// TODO because no extension definition, we don't have a size, so can't check it
+						//
+						
+						if(def.getRemoteArchiveSize() != null && read != def.getRemoteArchiveSize()) {
 							throw new IOException("Corrupt download for extension "
 									+ def.getId() + ". Size is " + read + " bytes, expected " + def.getRemoteArchiveSize() + " bytes");
 						}
@@ -143,7 +149,7 @@ public abstract class AbstractExtensionUpdater {
 					String generatedMd5 = DigestUtils.md5Hex(in);
 					IOUtils.closeQuietly(in);
 
-					if (!generatedMd5.equals(def.getHash())) {
+					if (def.getHash().length() > 0 && !generatedMd5.equals(def.getHash())) {
 						if (log.isErrorEnabled()) {
 							log.error("Install of extension " + def.getId()
 									+ " failed. Corrupt download");
@@ -192,11 +198,15 @@ public abstract class AbstractExtensionUpdater {
 						File archiveFile = new File(en.getKey().getDir(), archiveTmp.getName());
 						newFiles.add(archiveFile);
 						completeDownload(tmpArchives.get(def), archiveFile, def);
+						
+						/* Make sure any new extensions with identical versions are not deleted */
+						toRemove.remove(archiveFile);
 					}
 				}
 			}
 			catch(IOException ioe) {
 				// Remove all of the new files created so the old ones continue to be used
+				log.warn("An error occured downloading extensions, reverting to preview extensions");
 				for(File f : newFiles) {
 					if(f.exists() && !f.delete()) {
 						log.warn(f.getName() + " could not be deleted. The file has been marked to delete up JVM exit, but this may or may not work. This should not affect the upgrade but advisable that its removed.");
@@ -262,10 +272,6 @@ public abstract class AbstractExtensionUpdater {
 	
 	protected abstract void onExtensionUpdateComplete(ExtensionDefinition def);
 	
-	protected boolean installMissing() {
-		return false;
-	}
-	
 	private void completeDownload(File archiveTmp, File archiveFile,
 			ExtensionDefinition def) throws IOException {
 
@@ -286,10 +292,11 @@ public abstract class AbstractExtensionUpdater {
 		}
 		
 		archiveFile.setLastModified(def.getLastModified()*1000);
+		log.info("Deleting temporary file " + archiveTmp);
 		archiveTmp.delete();
 
 		if(log.isInfoEnabled()) {
-			log.info("Install of extension " + def.getId() + " completed ok");
+			log.info("Install of extension " + def.getId() + " to " + archiveFile + " completed ok");
 		}
 		
 		onExtensionUpdateComplete(def);

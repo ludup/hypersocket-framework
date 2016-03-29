@@ -3,6 +3,7 @@ package com.hypersocket.upload;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.hypersocket.resource.RealmResource;
 
@@ -21,6 +22,9 @@ public class FileUpload extends RealmResource {
 
 	@Column(name = "type")
 	String type;
+	
+	@Transient
+	String url;
 	
 	public FileUpload() {
 
@@ -56,5 +60,13 @@ public class FileUpload extends RealmResource {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+	
+	void setUrl(String url) {
+		this.url = url;
+	}
+	
+	public String getUrl() {
+		return url;
 	}
 }

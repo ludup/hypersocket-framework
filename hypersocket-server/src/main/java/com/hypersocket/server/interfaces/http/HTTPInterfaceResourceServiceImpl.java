@@ -1,4 +1,4 @@
-package com.hypersocket.server.interfaces;
+package com.hypersocket.server.interfaces.http;
 
 import java.util.Collection;
 import java.util.Map;
@@ -19,10 +19,10 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
-import com.hypersocket.server.interfaces.events.HTTPInterfaceResourceCreatedEvent;
-import com.hypersocket.server.interfaces.events.HTTPInterfaceResourceDeletedEvent;
-import com.hypersocket.server.interfaces.events.HTTPInterfaceResourceEvent;
-import com.hypersocket.server.interfaces.events.HTTPInterfaceResourceUpdatedEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceCreatedEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceDeletedEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceUpdatedEvent;
 
 @Service
 public class HTTPInterfaceResourceServiceImpl extends

@@ -24,7 +24,7 @@ public abstract class FeedbackEnabledJob extends PermissionsAwareJob {
 		startJob(context, feedbackService.getFeedbackProgress(uuid));
 	}
 	
-	protected abstract void startJob(JobExecutionContext context, FeedbackProgress progress);
+	protected abstract void startJob(JobExecutionContext context, FeedbackProgress progress) throws JobExecutionException;
 
 	protected void onTransactionComplete() {
 		progress.complete(getCompleteResourceKey());

@@ -2,7 +2,6 @@ package com.hypersocket.dashboard.message;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import javax.annotation.PostConstruct;
 
@@ -15,12 +14,10 @@ import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
-import com.hypersocket.automation.AutomationResource;
 import com.hypersocket.dashboard.message.events.DashboardMessageCreatedEvent;
 import com.hypersocket.dashboard.message.events.DashboardMessageEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
-import com.hypersocket.realm.Realm;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.SessionService;
 
