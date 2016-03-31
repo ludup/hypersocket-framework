@@ -5,7 +5,6 @@ import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.scheduler.PermissionsAwareJob;
 import com.hypersocket.scheduler.PermissionsAwareJobNonTransactional;
 
 public abstract class TrackedJobNonTransactional extends PermissionsAwareJobNonTransactional {
