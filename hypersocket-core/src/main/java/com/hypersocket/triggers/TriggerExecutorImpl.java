@@ -57,11 +57,15 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 	}
 	
 	@Override
-	public void scheduleOrExecuteTrigger(TriggerResource trigger, SystemEvent event) throws ValidationException {
+	public void scheduleOrExecuteTrigger(TriggerResource trigger, SystemEvent sourceEvent) throws ValidationException {
 		
-		if(event instanceof SynchronousEvent) {
+		if(sourceEvent instanceof SynchronousEvent || sourceEvent instanceof TaskResultCallback) {
 			try {
-				processEventTrigger(trigger, event);
+				if(log.isInfoEnabled()) {
+					log.info(String.format("Processing synchronous event %s with trigger %s", 
+							sourceEvent.getResourceKey(), trigger.getName()));
+				}
+				processEventTrigger(trigger, sourceEvent, sourceEvent);
 			} catch (ValidationException e) {
 				log.error("Trigger failed validation", e);
 			}
@@ -70,25 +74,26 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 		
 			Principal principal = realmService.getSystemPrincipal();
 			
-			if(event.hasAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME)) {
+			if(sourceEvent.hasAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME)) {
 				principal = realmService.getPrincipalByName(
-						event.getCurrentRealm(), 
-						event.getAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME),
+						sourceEvent.getCurrentRealm(), 
+						sourceEvent.getAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME),
 						PrincipalType.USER);
 			} else if(hasAuthenticatedContext()) {
 				principal = getCurrentPrincipal();
 			}
 			
 			JobDataMap data = new PermissionsAwareJobData(
-					event.getCurrentRealm(),
+					sourceEvent.getCurrentRealm(),
 					principal,
 					hasAuthenticatedContext() ? getCurrentLocale()
 							: configurationService.getDefaultLocale(),
 					"triggerExecutionJob");
 
-			data.put("event", event);
+			data.put("event", sourceEvent);
+			data.put("sourceEvent", sourceEvent);
 			data.put("trigger", trigger);
-			data.put("realm", event.getCurrentRealm());
+			data.put("realm", sourceEvent.getCurrentRealm());
 			
 			try {
 				schedulerService.scheduleNow(TriggerJob.class, data);
@@ -100,27 +105,27 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 
 	@Override
 	public void processEventTrigger(TriggerResource trigger,
-			SystemEvent event) throws ValidationException {
+			SystemEvent result, SystemEvent sourceEvent) throws ValidationException {
 		
 		if (log.isInfoEnabled()) {
 			log.info("Processing trigger " + trigger.getName());
 		}
 		
 		if(trigger.getResult() != TriggerResultType.EVENT_ANY_RESULT
-				&& event.getStatus().ordinal() != trigger.getResult().ordinal()) {
+				&& result.getStatus().ordinal() != trigger.getResult().ordinal()) {
 			if(log.isInfoEnabled()) {
 				log.info("Not processing trigger " + trigger.getName() + " with result " + trigger.getResult().toString()
-						+ " because event status is " + event.getStatus().toString());
+						+ " because event status is " + result.getStatus().toString());
 			}
 			return;
 		}
 		
-		if (checkConditions(trigger, event)) {
+		if (checkConditions(trigger, result)) {
 			
 			if(log.isInfoEnabled()) {
 				log.info("Trigger conditions match. Performing task for " + trigger.getName() + " [" + trigger.getResourceKey() + "]");
 			}
-			executeTrigger(trigger, event);
+			executeTrigger(trigger, result, sourceEvent);
 			
 		} else {
 			if(log.isInfoEnabled()) {
@@ -188,7 +193,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 		return provider.checkCondition(condition, trigger, event);
 	}
 
-	protected void executeTrigger(TriggerResource trigger, SystemEvent event)
+	protected void executeTrigger(TriggerResource trigger, SystemEvent lastResult, SystemEvent sourceEvent)
 			throws ValidationException {
 
 		TaskProvider provider = taskService
@@ -199,7 +204,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 							+ trigger.getResourceKey() + " is not available");
 		}
 
-		TaskResult outputEvent = provider.execute(trigger, event.getCurrentRealm(), event);
+		TaskResult outputEvent = provider.execute(trigger, lastResult.getCurrentRealm(), lastResult);
 
 		if(outputEvent!=null) {
 			
@@ -211,7 +216,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 						eventService.publishEvent(result.getEvent());
 					}
 					
-					processResult(trigger, result);
+					processResult(trigger, result, sourceEvent);
 				}
 				
 			} else {
@@ -220,16 +225,24 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 					eventService.publishEvent(outputEvent.getEvent());
 				}
 				
-				processResult(trigger, outputEvent);
+				processResult(trigger, outputEvent, sourceEvent);
 			}
 		}
 	}
 	
-	protected void processResult(TriggerResource trigger, TaskResult result) throws ValidationException {
+	protected void processResult(TriggerResource trigger, TaskResult result, SystemEvent sourceEvent) throws ValidationException {
+		
+		if(sourceEvent instanceof TaskResultCallback) {
+			TaskResultCallback callbackEvent = (TaskResultCallback) sourceEvent;
+			try {
+				callbackEvent.processResult(result);
+			} catch (Throwable e) {
+			}
+		}
 		
 		if (!trigger.getChildTriggers().isEmpty()) {
 			for(TriggerResource t : trigger.getChildTriggers()) {
-				processEventTrigger(t, result.getEvent());
+				processEventTrigger(t, result.getEvent(), sourceEvent);
 			}
 			
 		} 

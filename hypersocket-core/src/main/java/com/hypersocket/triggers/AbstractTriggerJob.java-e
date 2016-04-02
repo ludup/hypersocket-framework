@@ -39,7 +39,7 @@ public abstract class AbstractTriggerJob extends PermissionsAwareJob {
 			throws JobExecutionException;
 	
 	protected void processEventTrigger(TriggerResource trigger,
-			SystemEvent event) throws ValidationException {
-		triggerExecutor.processEventTrigger(trigger, event);
+			SystemEvent event, SystemEvent originalEvent) throws ValidationException {
+		triggerExecutor.processEventTrigger(trigger, event, originalEvent);
 	}
 }
