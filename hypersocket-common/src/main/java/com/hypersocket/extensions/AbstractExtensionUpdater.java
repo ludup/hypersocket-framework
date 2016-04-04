@@ -182,7 +182,7 @@ public abstract class AbstractExtensionUpdater {
 								String bn = FilenameUtils.getBaseName(name);
 								boolean found = false;
 								for(ExtensionDefinition d : placeUpdates) {
-									if(bn.matches(d.getId() + "-(\\d*-?)+.*")) {
+									if(bn.matches(d.getId() + "-(\\d+\\.?)+.*")) {
 										found = true;
 										if(d.getState() == ExtensionState.UPDATABLE) {
 											// The extension was updated or installed, we can move any previous version
