@@ -462,7 +462,7 @@ public class TriggerResourceServiceImpl extends
 		
 	}
 
-	private void processEventTriggers(SystemEvent event) {
+	private void processEventTriggers(SystemEvent sourceEvent) {
 
 		// TODO cache triggers to prevent constant database lookup
 
@@ -476,11 +476,11 @@ public class TriggerResourceServiceImpl extends
 
 		if (log.isInfoEnabled()) {
 			log.info("Looking for triggers for events "
-					+ StringUtils.join(event.getResourceKeys(), ",") + " "
-					+ event.getStatus().toString());
+					+ StringUtils.join(sourceEvent.getResourceKeys(), ",") + " "
+					+ sourceEvent.getStatus().toString());
 		}
 
-		List<TriggerResource> triggers = repository.getTriggersForEvent(event);
+		List<TriggerResource> triggers = repository.getTriggersForEvent(sourceEvent);
 		
 		for (TriggerResource trigger : triggers) {
 
@@ -489,7 +489,7 @@ public class TriggerResourceServiceImpl extends
 			}
 			
 			try {
-				triggerExecutor.scheduleOrExecuteTrigger(trigger, event);
+				triggerExecutor.scheduleOrExecuteTrigger(trigger, sourceEvent);
 			} catch (ValidationException e) {
 				log.error("Trigger execution failed", e);
 			}
