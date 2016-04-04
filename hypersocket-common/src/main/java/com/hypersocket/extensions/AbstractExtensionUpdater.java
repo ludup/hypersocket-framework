@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +99,7 @@ public abstract class AbstractExtensionUpdater {
 
 			for (Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : updates.entrySet()) {
 				File appTmpFolder = new File(tmpFolder, en.getKey().getApp());
-				List<ExtensionDefinition> placeUpdates = en.getValue();
+				final List<ExtensionDefinition> placeUpdates = en.getValue();
 				if (!placeUpdates.isEmpty()) {
 					for (ExtensionDefinition def : placeUpdates) {
 
@@ -177,14 +178,35 @@ public abstract class AbstractExtensionUpdater {
 
 						@Override
 						public boolean accept(File dir, String name) {
-							return name.endsWith(".zip");
+							if(name.endsWith(".zip")) {
+								String bn = FilenameUtils.getBaseName(name);
+								boolean found = false;
+								for(ExtensionDefinition d : placeUpdates) {
+									if(bn.matches(d.getId() + "-(\\d*-?)+.*")) {
+										found = true;
+										if(d.getState() == ExtensionState.UPDATABLE) {
+											// The extension was updated or installed, we can move any previous version
+											return true;
+										}
+										
+										break;
+									}
+								}
+								
+								if(!found) {
+									// The extension no longer exists, so we can move it out 
+									return true;
+								}
+							}
+							return false;
 						}
 					});
 
 					if (archives != null) {
 						// Add to the list of files to be removed on success
-						toRemove.addAll(Arrays.asList(archives));
-						log.info("Considering " + archives + " for removal");
+						List<File> toRemoveList = Arrays.asList(archives);
+						toRemove.addAll(toRemoveList);
+						log.info("Considering " + toRemoveList + " for removal");
 					}
 				}
 
