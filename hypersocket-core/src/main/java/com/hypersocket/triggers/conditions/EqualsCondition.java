@@ -13,6 +13,10 @@ public class EqualsCondition implements Condition {
 		if (!event.hasAttribute(condition.getAttributeKey())) {
 			return false;
 		}
+		
+		if(event.getAttribute(condition.getAttributeKey())==null) {
+			return false;
+		}
 
 		return event.getAttribute(condition.getAttributeKey()).equals(
 				condition.getConditionValue());

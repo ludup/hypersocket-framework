@@ -2,6 +2,7 @@ package com.hypersocket.scheduler;
 
 import java.util.Locale;
 
+import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
@@ -17,9 +18,9 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 
-public abstract class PermissionsAwareJob extends TransactionalJob {
+public abstract class PermissionsAwareJobNonTransactional implements Job {
 
-	static Logger log = LoggerFactory.getLogger(PermissionsAwareJob.class);
+	static Logger log = LoggerFactory.getLogger(PermissionsAwareJobNonTransactional.class);
 
 	@Autowired
 	RealmService realmService;
@@ -37,7 +38,7 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 	SessionService sessionService;
 	
 	@Override
-	public void onExecute(JobExecutionContext context) {
+	public void execute(JobExecutionContext context) {
 
 		Realm realm = realmService.getSystemRealm();
 		Principal principal = realmService.getSystemPrincipal();
@@ -93,11 +94,11 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 	protected abstract void executeJob(JobExecutionContext context)
 			throws JobExecutionException;
 	
-	protected void onTransactionComplete() {
+	protected void onJobComplete() {
 		
 	}
 
-	protected void onTransactionFailure(Throwable t) {
+	protected void onJobError(Throwable t) {
 		
 	}
 }
