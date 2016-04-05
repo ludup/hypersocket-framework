@@ -54,7 +54,7 @@ public abstract class AbstractExtensionUpdater {
 			if (!backupFolder.exists()) {
 				backupFolder.mkdirs();
 			}
-			Map<ExtensionPlace, List<ExtensionDefinition>> extensions = onResolveExtensions();
+			final Map<ExtensionPlace, List<ExtensionDefinition>> extensions = onResolveExtensions();
 			Map<ExtensionPlace, List<ExtensionDefinition>> updates = new HashMap<ExtensionPlace, List<ExtensionDefinition>>();
 			Map<ExtensionDefinition, File> tmpArchives = new HashMap<ExtensionDefinition, File>();
 
@@ -97,7 +97,7 @@ public abstract class AbstractExtensionUpdater {
 
 			List<File> toRemove = new ArrayList<>();
 
-			for (Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : updates.entrySet()) {
+			for (final Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : updates.entrySet()) {
 				File appTmpFolder = new File(tmpFolder, en.getKey().getApp());
 				final List<ExtensionDefinition> placeUpdates = en.getValue();
 				if (!placeUpdates.isEmpty()) {
@@ -181,11 +181,12 @@ public abstract class AbstractExtensionUpdater {
 							if(name.endsWith(".zip")) {
 								String bn = FilenameUtils.getBaseName(name);
 								boolean found = false;
-								for(ExtensionDefinition d : placeUpdates) {
+								for(ExtensionDefinition d : extensions.get(en.getKey())) {
 									if(bn.matches(d.getId() + "-(\\d+\\.?)+.*")) {
 										found = true;
 										if(d.getState() == ExtensionState.UPDATABLE) {
 											// The extension was updated or installed, we can move any previous version
+											log.info(name + " was updated, will removed");
 											return true;
 										}
 										
@@ -195,9 +196,12 @@ public abstract class AbstractExtensionUpdater {
 								
 								if(!found) {
 									// The extension no longer exists, so we can move it out 
+									log.info(name + " is no longer used by any extension, will remove");
 									return true;
 								}
 							}
+							log.info(name + " was not updated or obsoleted, will not remove");
+							
 							return false;
 						}
 					});
