@@ -13,6 +13,7 @@ public class TriggerJob extends AbstractTriggerJob {
 	public void executeJob(JobExecutionContext context)
 			throws JobExecutionException {
 
+		SystemEvent source = (SystemEvent) context.getTrigger().getJobDataMap().get("sourceEvent");
 		SystemEvent event = (SystemEvent) context.getTrigger().getJobDataMap().get("event");
 		
 		if(log.isInfoEnabled()) {
@@ -23,7 +24,7 @@ public class TriggerJob extends AbstractTriggerJob {
 				.getJobDataMap().get("trigger");
 
 		try {
-			processEventTrigger(trigger, event);
+			processEventTrigger(trigger, event, source);
 		} catch (Throwable e) {
 			eventService.publishEvent(new TriggerExecutedEvent(this, trigger, e));
 		} 

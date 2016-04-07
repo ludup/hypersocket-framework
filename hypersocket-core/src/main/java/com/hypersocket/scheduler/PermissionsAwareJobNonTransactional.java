@@ -2,6 +2,7 @@ package com.hypersocket.scheduler;
 
 import java.util.Locale;
 
+import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
@@ -13,21 +14,17 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 
-public abstract class PermissionsAwareJob extends TransactionalJob {
+public abstract class PermissionsAwareJobNonTransactional implements Job {
 
-	static Logger log = LoggerFactory.getLogger(PermissionsAwareJob.class);
+	static Logger log = LoggerFactory.getLogger(PermissionsAwareJobNonTransactional.class);
 
 	@Autowired
 	RealmService realmService;
 
-	@Autowired
-	RealmRepository realmRepository;
-	
 	@Autowired
 	I18NService i18nService;
 
@@ -41,26 +38,27 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 	SessionService sessionService;
 	
 	@Override
-	public void onExecute(JobExecutionContext context) {
+	public void execute(JobExecutionContext context) {
 
 		Realm realm = realmService.getSystemRealm();
 		Principal principal = realmService.getSystemPrincipal();
 		Locale locale = Locale.getDefault();
-				
+		
+		if (context.getTrigger().getJobDataMap() instanceof PermissionsAwareJobData) {
+			PermissionsAwareJobData data = (PermissionsAwareJobData) context
+					.getTrigger().getJobDataMap();
+			realm = data.getCurrentRealm();
+			if (data.getCurrentPrincipal() != null) {
+				principal = data.getCurrentPrincipal();
+			}
+			if(data.getLocale() != null) {
+				locale = data.getLocale();
+			}
+		}
+
+		
 		try {
 
-			if (context.getTrigger().getJobDataMap() instanceof PermissionsAwareJobData) {
-				PermissionsAwareJobData data = (PermissionsAwareJobData) context
-						.getTrigger().getJobDataMap();
-				realm = realmRepository.getRealmById((Long) data.get("realm"));
-				if (data.getCurrentPrincipal() != null) {
-					principal = data.getCurrentPrincipal();
-				}
-				if(data.getLocale() != null) {
-					locale = data.getLocale();
-				}
-			}
-			
 			if (log.isDebugEnabled()) {
 				log.debug("Executing permissions aware job as "
 						+ realm.getName() + "/" + principal.getName());
@@ -96,11 +94,11 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 	protected abstract void executeJob(JobExecutionContext context)
 			throws JobExecutionException;
 	
-	protected void onTransactionComplete() {
+	protected void onJobComplete() {
 		
 	}
 
-	protected void onTransactionFailure(Throwable t) {
+	protected void onJobError(Throwable t) {
 		
 	}
 }

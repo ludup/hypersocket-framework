@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +30,7 @@ public abstract class AbstractExtensionUpdater {
 	static Logger log = LoggerFactory.getLogger(AbstractExtensionUpdater.class);
 	private long transfered;
 	private long totalSize;
-	
-	
+
 	public long getTransfered() {
 		return transfered;
 	}
@@ -39,211 +39,248 @@ public abstract class AbstractExtensionUpdater {
 		return totalSize;
 	}
 
-	public final boolean update()
-			throws IOException {
-		
-		if(log.isInfoEnabled()) {
+	public final boolean update() throws IOException {
+
+		if (log.isInfoEnabled()) {
 			log.info("Checking updatable extensions");
 		}
-		
+
+		int totalUpdates = 0;
 		try {
 			File tmpFolder = Files.createTempDirectory("hypersocket").toFile();
 			File backupFolder = new File(HypersocketUtils.getConfigDir().getParent(), "backups");
 			backupFolder = new File(backupFolder, HypersocketVersion.getVersion());
 			FileUtils.deleteFolder(backupFolder);
-			if(!backupFolder.exists()) {
+			if (!backupFolder.exists()) {
 				backupFolder.mkdirs();
 			}
-			Map<ExtensionPlace, List<ExtensionDefinition>> extensions = onResolveExtensions();
+			final Map<ExtensionPlace, List<ExtensionDefinition>> extensions = onResolveExtensions();
 			Map<ExtensionPlace, List<ExtensionDefinition>> updates = new HashMap<ExtensionPlace, List<ExtensionDefinition>>();
-			Map<ExtensionDefinition,File> tmpArchives = new HashMap<ExtensionDefinition,File>();
-			
+			Map<ExtensionDefinition, File> tmpArchives = new HashMap<ExtensionDefinition, File>();
+
 			totalSize = 0;
-			for (Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : extensions
-					.entrySet()) {
-				
+			for (Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : extensions.entrySet()) {
+
 				List<ExtensionDefinition> toUpdate = new ArrayList<ExtensionDefinition>();
 				updates.put(en.getKey(), toUpdate);
-				
+
 				for (ExtensionDefinition def : en.getValue()) {
-					log.info(String.format("Checking %s - State %s (%d bytes)",
-							def.getId(), def.getState(), def.getSize()));
-					
-					// If this extension place is for cached anciliary apps such as HS client, they are always installed
+					log.info(String.format("Checking %s - State %s (%d bytes)", def.getId(), def.getState(),
+							def.getSize()));
+
+					// If this extension place is for cached anciliary apps such
+					// as HS client, they are always installed
 					if (en.getKey().isDownloadAllExtensions() && def.getState() == ExtensionState.NOT_INSTALLED) {
-						log.info(String.format("Making %s updateable because this extension place (%s) requires that all extensions are downloaded.", def.getId(), en.getKey().getApp()));
+						log.info(String.format(
+								"Making %s updateable because this extension place (%s) requires that all extensions are downloaded.",
+								def.getId(), en.getKey().getApp()));
 						def.setState(ExtensionState.UPDATABLE);
 					}
-					
-					if(def.getState() == ExtensionState.UPDATABLE) {
+
+					if (def.getState() == ExtensionState.UPDATABLE) {
 						toUpdate.add(def);
-						
+						totalUpdates++;
+
 						// Note, size will be zero for dynamic extensions
-						
+
 						totalSize += def.getSize();
 					}
 				}
 			}
-			
-			if(updates.isEmpty()) {
+
+			if (totalUpdates == 0) {
 				return false;
 			}
 			onUpdateStart(totalSize);
-			
+
 			transfered = 0;
-			
+
 			List<File> toRemove = new ArrayList<>();
 
-			for (Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : updates
-					.entrySet()) {
+			for (final Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : updates.entrySet()) {
 				File appTmpFolder = new File(tmpFolder, en.getKey().getApp());
-				for (ExtensionDefinition def : en.getValue()) {
+				final List<ExtensionDefinition> placeUpdates = en.getValue();
+				if (!placeUpdates.isEmpty()) {
+					for (ExtensionDefinition def : placeUpdates) {
 
-					onExtensionDownloadStarted(def);
+						onExtensionDownloadStarted(def);
 
-					URL url = new URL(def.getRemoteArchiveUrl());
-					
-					File archiveTmp = new File(appTmpFolder , 
-							FileUtils.lastPathElement(FileUtils.checkEndsWithNoSlash(url.getFile())));
-					archiveTmp.getParentFile().mkdirs();
+						URL url = new URL(def.getRemoteArchiveUrl());
 
-					tmpArchives.put(def, archiveTmp);
+						File archiveTmp = new File(appTmpFolder,
+								FileUtils.lastPathElement(FileUtils.checkEndsWithNoSlash(url.getFile())));
+						archiveTmp.getParentFile().mkdirs();
 
-					OutputStream out = new FileOutputStream(archiveTmp);
-					
-					if(log.isInfoEnabled()) {
-						log.info(String.format("Downloading %s", url));
-					}
-					InputStream in = downloadFromUrl(url);
+						tmpArchives.put(def, archiveTmp);
 
-					try {
+						OutputStream out = new FileOutputStream(archiveTmp);
 
-						byte[] buf = new byte[32768];
-						int b;
-						long read = 0;
-						while ((b = in.read(buf)) > -1) {
-							out.write(buf, 0, b);
-							onUpdateProgress((long) b, transfered += b, totalSize);
-							read += b;
-							if (System
-									.getProperty("hypersocket.development.fakeSlowUpdate") != null) {
-								Thread.sleep(1000);
+						if (log.isInfoEnabled()) {
+							log.info(String.format("Downloading %s", url));
+						}
+						InputStream in = downloadFromUrl(url);
+
+						try {
+
+							byte[] buf = new byte[32768];
+							int b;
+							long read = 0;
+							while ((b = in.read(buf)) > -1) {
+								out.write(buf, 0, b);
+								onUpdateProgress((long) b, transfered += b, totalSize);
+								read += b;
+								if (System.getProperty("hypersocket.development.fakeSlowUpdate") != null) {
+									Thread.sleep(1000);
+								}
 							}
-						}
-						
-						//
-						// TODO because no extension definition, we don't have a size, so can't check it
-						//
-						
-						if(def.getRemoteArchiveSize() != null && read != def.getRemoteArchiveSize()) {
-							throw new IOException("Corrupt download for extension "
-									+ def.getId() + ". Size is " + read + " bytes, expected " + def.getRemoteArchiveSize() + " bytes");
+
+							//
+							// TODO because no extension definition, we don't
+							// have a size, so can't check it
+							//
+
+							if (def.getRemoteArchiveSize() != null && read != def.getRemoteArchiveSize()) {
+								throw new IOException("Corrupt download for extension " + def.getId() + ". Size is "
+										+ read + " bytes, expected " + def.getRemoteArchiveSize() + " bytes");
+							}
+
+						} finally {
+							FileUtils.closeQuietly(in);
+							FileUtils.closeQuietly(out);
 						}
 
-					} finally {
-						FileUtils.closeQuietly(in);
-						FileUtils.closeQuietly(out);
+						in = new FileInputStream(archiveTmp);
+						String generatedMd5 = DigestUtils.md5Hex(in);
+						IOUtils.closeQuietly(in);
+
+						if (def.getHash().length() > 0 && !generatedMd5.equals(def.getHash())) {
+							if (log.isErrorEnabled()) {
+								log.error("Install of extension " + def.getId() + " failed. Corrupt download");
+							}
+							throw new IOException("Corrupt download for extension " + def.getId() + ". Hash is "
+									+ generatedMd5 + ", expected " + def.getHash());
+						}
+
+						onExtensionDownloaded(def);
 					}
 
-					in = new FileInputStream(archiveTmp);
-					String generatedMd5 = DigestUtils.md5Hex(in);
-					IOUtils.closeQuietly(in);
+					/**
+					 * If we reached here all extensions have updated
+					 */
+					File archivesDirFile = en.getKey().getDir();
+					if (!archivesDirFile.exists() && !archivesDirFile.mkdirs()) {
+						throw new IOException(
+								String.format("Archive directory %s does not exist and could not be created.",
+										archivesDirFile.getAbsolutePath()));
+					}
 
-					if (def.getHash().length() > 0 && !generatedMd5.equals(def.getHash())) {
-						if (log.isErrorEnabled()) {
-							log.error("Install of extension " + def.getId()
-									+ " failed. Corrupt download");
+					File[] archives = archivesDirFile.listFiles(new FilenameFilter() {
+
+						@Override
+						public boolean accept(File dir, String name) {
+							if(name.endsWith(".zip")) {
+								String bn = FilenameUtils.getBaseName(name);
+								boolean found = false;
+								for(ExtensionDefinition d : extensions.get(en.getKey())) {
+									if(bn.matches(d.getId() + "-(\\d+\\.?)+.*")) {
+										found = true;
+										if(d.getState() == ExtensionState.UPDATABLE) {
+											// The extension was updated or installed, we can move any previous version
+											log.info(name + " was updated, will removed");
+											return true;
+										}
+										
+										break;
+									}
+								}
+								
+								if(!found) {
+									// The extension no longer exists, so we can move it out 
+									log.info(name + " is no longer used by any extension, will remove");
+									return true;
+								}
+							}
+							log.info(name + " was not updated or obsoleted, will not remove");
+							
+							return false;
 						}
-						throw new IOException("Corrupt download for extension "
-								+ def.getId() + ". Hash is " + generatedMd5 + ", expected " + def.getHash());
+					});
+
+					if (archives != null) {
+						// Add to the list of files to be removed on success
+						List<File> toRemoveList = Arrays.asList(archives);
+						toRemove.addAll(toRemoveList);
+						log.info("Considering " + toRemoveList + " for removal");
 					}
-
-					onExtensionDownloaded(def);
-				}
-				
-
-				
-				/**
-				 * If we reached here all extensions have updated
-				 */
-				File archivesDirFile = en.getKey().getDir();
-				if(!archivesDirFile.exists() && !archivesDirFile.mkdirs()) {
-					throw new IOException(String.format("Archive directory %s does not exist and could not be created.", archivesDirFile.getAbsolutePath()));
 				}
 
-				File[] archives = archivesDirFile.listFiles(new FilenameFilter() {
-					
-					@Override
-					public boolean accept(File dir, String name) {
-						return name.endsWith(".zip");
-					}
-				});
-				
-				if(archives != null) {
-					// Add to the list of files to be removed on success
-					toRemove.addAll(Arrays.asList(archives));
-				}
-				
 			}
-			
+
 			/**
 			 * Now copy over the new archives
 			 */
 			List<File> newFiles = new ArrayList<>();
 			try {
-				for (Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : updates
-						.entrySet()) {
-					for(ExtensionDefinition def : en.getValue()) {
+				for (Map.Entry<ExtensionPlace, List<ExtensionDefinition>> en : updates.entrySet()) {
+					for (ExtensionDefinition def : en.getValue()) {
 						File archiveTmp = tmpArchives.get(def);
 						File archiveFile = new File(en.getKey().getDir(), archiveTmp.getName());
 						newFiles.add(archiveFile);
 						completeDownload(tmpArchives.get(def), archiveFile, def);
-						
-						/* Make sure any new extensions with identical versions are not deleted */
+
+						/*
+						 * Make sure any new extensions with identical versions
+						 * are not deleted
+						 */
 						toRemove.remove(archiveFile);
+
+						log.info("Will not remove " + archiveFile);
 					}
 				}
-			}
-			catch(IOException ioe) {
-				// Remove all of the new files created so the old ones continue to be used
+			} catch (IOException ioe) {
+				// Remove all of the new files created so the old ones continue
+				// to be used
 				log.warn("An error occured downloading extensions, reverting to preview extensions");
-				for(File f : newFiles) {
-					if(f.exists() && !f.delete()) {
-						log.warn(f.getName() + " could not be deleted. The file has been marked to delete up JVM exit, but this may or may not work. This should not affect the upgrade but advisable that its removed.");
+				for (File f : newFiles) {
+					if (f.exists() && !f.delete()) {
+						log.warn(f.getName()
+								+ " could not be deleted. The file has been marked to delete up JVM exit, but this may or may not work. This should not affect the upgrade but advisable that its removed.");
 						f.deleteOnExit();
 					}
-				}				
+				}
 				throw ioe;
 			}
-			
+
 			/**
 			 * Finally delete the current files
 			 */
 			for (File f : toRemove) {
+				log.info("Moving " + f + " to backup");
 				try {
 					Files.move(f.toPath(), new File(backupFolder, f.getName()).toPath());
-				} catch(IOException ex) {
+				} catch (IOException ex) {
 					log.error(String.format("Failed to move %s to backup folder", f.getName()));
-					if(!f.delete()) {
-						log.warn(f.getName() + " could not be deleted. The file has been marked to delete upon JVM exit, but this may or may not work. This should not affect the upgrade but advisable that its removed.");
+					if (!f.delete()) {
+						log.warn(f.getName()
+								+ " could not be deleted. The file has been marked to delete upon JVM exit, but this may or may not work. This should not affect the upgrade but advisable that its removed.");
 						f.deleteOnExit();
 					}
 				}
-				
+
 			}
-			
+
 			onUpdateComplete(totalSize);
-			
-		} catch(Throwable e) {
-			if(log.isErrorEnabled()) {
+
+		} catch (Throwable e) {
+			if (log.isErrorEnabled()) {
 				log.error("Updating extensions failed", e);
 			}
-			
+
 			onUpdateFailure(e);
-			
+
 			throw new IOException(e);
 		}
-		
+
 		return true;
 	}
 
@@ -251,56 +288,55 @@ public abstract class AbstractExtensionUpdater {
 		InputStream in = url.openStream();
 		return in;
 	}
-	
+
 	protected void onExtensionDownloadStarted(ExtensionDefinition def) {
-		
+
 	}
 
 	protected void onExtensionDownloaded(ExtensionDefinition def) {
-		
+
 	}
-	
+
 	protected abstract Map<ExtensionPlace, List<ExtensionDefinition>> onResolveExtensions() throws IOException;
-	
+
 	protected abstract void onUpdateStart(long totalBytesExpected);
-	
+
 	protected abstract void onUpdateProgress(long sincelastProgress, long totalSoFar, long totalBytesException);
-	
+
 	protected abstract void onUpdateComplete(long totalBytesTransfered);
-	
+
 	protected abstract void onUpdateFailure(Throwable e);
-	
+
 	protected abstract void onExtensionUpdateComplete(ExtensionDefinition def);
-	
-	private void completeDownload(File archiveTmp, File archiveFile,
-			ExtensionDefinition def) throws IOException {
+
+	private void completeDownload(File archiveTmp, File archiveFile, ExtensionDefinition def) throws IOException {
 
 		InputStream in = new FileInputStream(archiveTmp);
-		if(!archiveFile.getParentFile().exists()) {
+		if (!archiveFile.getParentFile().exists()) {
 			archiveFile.getParentFile().mkdirs();
 		}
-		if(!archiveFile.exists()) {
+		if (!archiveFile.exists()) {
 			archiveFile.createNewFile();
 		}
 		OutputStream out = new FileOutputStream(archiveFile);
-		
+
 		try {
 			IOUtils.copy(in, out);
 		} finally {
 			IOUtils.closeQuietly(in);
 			IOUtils.closeQuietly(out);
 		}
-		
-		archiveFile.setLastModified(def.getLastModified()*1000);
+
+		archiveFile.setLastModified(def.getLastModified() * 1000);
 		log.info("Deleting temporary file " + archiveTmp);
 		archiveTmp.delete();
 
-		if(log.isInfoEnabled()) {
+		if (log.isInfoEnabled()) {
 			log.info("Install of extension " + def.getId() + " to " + archiveFile + " completed ok");
 		}
-		
+
 		onExtensionUpdateComplete(def);
-	
+
 	}
 
 }

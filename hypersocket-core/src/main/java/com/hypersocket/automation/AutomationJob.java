@@ -90,7 +90,7 @@ public class AutomationJob extends AbstractTriggerJob {
 						}
 						
 						for(TriggerResource trigger : resource.getChildTriggers()) {
-							processEventTrigger(trigger, result.getEvent());
+							processEventTrigger(trigger, result.getEvent(), event);
 						}
 					}
 					
@@ -101,7 +101,7 @@ public class AutomationJob extends AbstractTriggerJob {
 					}
 					
 					for(TriggerResource trigger : resource.getChildTriggers()) {
-						processEventTrigger(trigger, outputEvent.getEvent());
+						processEventTrigger(trigger, outputEvent.getEvent(), event);
 					}
 				}
 			}
