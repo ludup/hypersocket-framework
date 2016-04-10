@@ -27,6 +27,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.context.SystemContextRequired;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18N;
@@ -97,6 +98,7 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 	protected abstract boolean isReconciledResource(T resource);
 	
 	@Override
+	@SystemContextRequired
 	public synchronized void onApplicationEvent(final SystemEvent event) {
 
 		if (!isTriggerEvent(event)
@@ -105,106 +107,104 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 			return;
 		}
 		
-		sessionService.executeInSystemContext(new Runnable() {
+	
+		if (event.getResourceKey()
+				.equals("event.serverStarted")) {
+			
+			scheduleReconciles();
+			
+		} else if (getResourceCreatedEventClass().isAssignableFrom(event.getClass())) {
+			
+			if(event.isSuccess()) {
+				T resource = getResourceFromEvent(event);
+				if(isReconciledResource(resource)) {
+					scheduleReconcile(resource, true);
+				}
+			}
 
-			@Override
-			public void run() {
-				if (event.getResourceKey()
-						.equals("event.serverStarted")) {
-					
-					for(T resource : getReconcilingResources()) {
-						
-						if(isReconciledResource(resource)) {
-							boolean upToDate = getRepository().getBooleanValue(resource, "reconcile.isUpToDate");
-							
-							if(upToDate) {
-								String nextDue = getRepository().getValue(resource, "reconcile.nextReconcileDue");
-								try {
-									if(StringUtils.isNotBlank(nextDue)) {
-										Date nextDueDate = HypersocketUtils.parseDate(nextDue, "EEE, d MMM yyyy HH:mm:ss");
-										if(nextDueDate.after(new Date())) {
-											scheduleReconcileAt(resource, nextDueDate);
-											return;
-										}
-									} 
-								} catch (ParseException e) {
-									log.error("Failed to parse date " + nextDue, e);
-								}
-							}
-							
-							/**
-							 * If we reached here we need to schedule the reconcile now.				
-							 */
-							scheduleReconcile(resource, upToDate);
-						}
-						
-					}
-				
-					
-				} else if (getResourceCreatedEventClass().isAssignableFrom(event.getClass())) {
-					
-					if(event.isSuccess()) {
-						T resource = getResourceFromEvent(event);
-						if(isReconciledResource(resource)) {
-							scheduleReconcile(resource, true);
-						}
-					}
-		
-				} else if(getResourceUpdatedEventClass().isAssignableFrom(event.getClass())) {
-					
-					if(event.isSuccess()) {
-						T resource = getResourceFromEvent(event);
-						if(isReconciledResource(resource)) {
-							rescheduleReconcile(resource);
-						}
-					}
-				} else if(getResourceDeletedEventClass().isAssignableFrom(event.getClass())) {
-					
-					if(event.isSuccess()) {
-						T resource = getResourceFromEvent(event);
-						if(isReconciledResource(resource)) {
-							unscheduleReconcile(resource);
-						}
-					}
-					
-				} else if (event instanceof ReconcileCompleteEvent) {
-					T resource = getResourceFromEvent(event);
-					
-					/**
-					 * If resource was not previously up to date then reschedule because
-					 * we have different reconcile schedules for success and failure.
-					 */
-					boolean upToDate = getRepository().getBooleanValue(resource, "reconcile.upToDate");
-					if(!upToDate && event.isSuccess()) {
-						rescheduleReconcile(resource, true);
-						getRepository().setValue(resource, "reconcile.upToDate", true);
-					}else if(upToDate && !event.isSuccess()) {
-						rescheduleReconcile(resource, false);
-						getRepository().setValue(resource, "reconcile.upToDate", false);
-					}
-					
-					
-				}  else if (event instanceof ReconcileStartedEvent) {
-					
-					if(!event.isSuccess()) {
-						T resource = getResourceFromEvent(event);
-						if(isReconciledResource(resource)) {
-							/**
-							 * If the realm was previously up to date then reschedule reconcile because
-							 * we have different reconcile schedules for success and failure
-							 */
-							boolean upToDate = getRepository().getBooleanValue(resource, "reconcile.upToDate");
-							if(upToDate) {
-								rescheduleReconcile(resource, false);
-								getRepository().setValue(resource, "reconcile.upToDate", false);
-							}
-						}
-					}
-				
+		} else if(getResourceUpdatedEventClass().isAssignableFrom(event.getClass())) {
+			
+			if(event.isSuccess()) {
+				T resource = getResourceFromEvent(event);
+				if(isReconciledResource(resource)) {
+					rescheduleReconcile(resource);
+				}
+			}
+		} else if(getResourceDeletedEventClass().isAssignableFrom(event.getClass())) {
+			
+			if(event.isSuccess()) {
+				T resource = getResourceFromEvent(event);
+				if(isReconciledResource(resource)) {
+					unscheduleReconcile(resource);
 				}
 			}
 			
-		});
+		} else if (event instanceof ReconcileCompleteEvent) {
+			T resource = getResourceFromEvent(event);
+			
+			/**
+			 * If resource was not previously up to date then reschedule because
+			 * we have different reconcile schedules for success and failure.
+			 */
+			boolean upToDate = getRepository().getBooleanValue(resource, "reconcile.upToDate");
+			if(!upToDate && event.isSuccess()) {
+				rescheduleReconcile(resource, true);
+				getRepository().setValue(resource, "reconcile.upToDate", true);
+			}else if(upToDate && !event.isSuccess()) {
+				rescheduleReconcile(resource, false);
+				getRepository().setValue(resource, "reconcile.upToDate", false);
+			}
+			
+			
+		}  else if (event instanceof ReconcileStartedEvent) {
+			
+			if(!event.isSuccess()) {
+				T resource = getResourceFromEvent(event);
+				if(isReconciledResource(resource)) {
+					/**
+					 * If the realm was previously up to date then reschedule reconcile because
+					 * we have different reconcile schedules for success and failure
+					 */
+					boolean upToDate = getRepository().getBooleanValue(resource, "reconcile.upToDate");
+					if(upToDate) {
+						rescheduleReconcile(resource, false);
+						getRepository().setValue(resource, "reconcile.upToDate", false);
+					}
+				}
+			}
+		
+		}
+
+	}
+	
+	private void scheduleReconciles() {
+		for(T resource : getReconcilingResources()) {
+			
+			if(isReconciledResource(resource)) {
+				boolean upToDate = getRepository().getBooleanValue(resource, "reconcile.isUpToDate");
+				
+				if(upToDate) {
+					String nextDue = getRepository().getValue(resource, "reconcile.nextReconcileDue");
+					try {
+						if(StringUtils.isNotBlank(nextDue)) {
+							Date nextDueDate = HypersocketUtils.parseDate(nextDue, "EEE, d MMM yyyy HH:mm:ss");
+							if(nextDueDate.after(new Date())) {
+								scheduleReconcileAt(resource, nextDueDate);
+								return;
+							}
+						} 
+					} catch (ParseException e) {
+						log.error("Failed to parse date " + nextDue, e);
+					}
+				}
+				
+				/**
+				 * If we reached here we need to schedule the reconcile now.				
+				 */
+				scheduleReconcile(resource, upToDate);
+			}
+			
+		}
 	}
 	
 	private void scheduleReconcileAt(T resource, Date startDate) {

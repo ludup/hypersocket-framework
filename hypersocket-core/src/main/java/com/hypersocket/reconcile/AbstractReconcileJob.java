@@ -27,7 +27,7 @@ public abstract class AbstractReconcileJob<T extends Resource> extends Permissio
 	protected abstract void fireReconcileFailedEvent(T resource, Throwable t);
 	
 	protected T resource; 
-	
+
 	@Override
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {
 		
@@ -40,7 +40,7 @@ public abstract class AbstractReconcileJob<T extends Resource> extends Permissio
 			if (log.isInfoEnabled()) {
 				log.info("Starting reconcile for resource " + resource.getName());
 			}
-			
+
 			getReconcileService().lockResource(resource);
 			
 			fireReconcileStartedEvent(resource);
