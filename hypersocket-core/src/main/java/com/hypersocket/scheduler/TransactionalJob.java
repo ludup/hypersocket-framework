@@ -9,8 +9,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import com.hypersocket.reconcile.ReconcileStatus;
-
 public abstract class TransactionalJob implements Job {
 
 	@Autowired
