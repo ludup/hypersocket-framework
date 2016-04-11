@@ -92,4 +92,6 @@ public interface PermissionService extends AuthenticatedService {
 	public boolean hasRole(Principal principal, Role customerRole) throws AccessDeniedException;
 
 	public void assertResourceAccess(AssignableResource resource, Principal principal) throws AccessDeniedException;
+	
+	public Role createRoleAndAssignPrincipals(String roleName, Realm realm,Principal...principals) throws ResourceException,AccessDeniedException;
 }
