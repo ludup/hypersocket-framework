@@ -205,6 +205,8 @@ public class LogonController extends AuthenticatedController {
 			}
 		} catch(FallbackAuthenticationRequired e) {
 			return resetLogon(request, response, "fallback", false);
+		} catch(RedirectException e) {
+			throw e;
 		} catch(Throwable t) {
 			
 			state.setLastErrorMsg(t.getMessage());
