@@ -118,47 +118,53 @@ public abstract class AbstractExtensionUpdater {
 						if (log.isInfoEnabled()) {
 							log.info(String.format("Downloading %s", url));
 						}
-						InputStream in = downloadFromUrl(url);
-
 						try {
+							InputStream in = downloadFromUrl(url);
 
-							byte[] buf = new byte[32768];
-							int b;
-							long read = 0;
-							while ((b = in.read(buf)) > -1) {
-								out.write(buf, 0, b);
-								onUpdateProgress((long) b, transfered += b, totalSize);
-								read += b;
-								if (System.getProperty("hypersocket.development.fakeSlowUpdate") != null) {
-									Thread.sleep(1000);
+							try {
+
+								byte[] buf = new byte[32768];
+								int b;
+								long read = 0;
+								while ((b = in.read(buf)) > -1) {
+									out.write(buf, 0, b);
+									onUpdateProgress((long) b, transfered += b, totalSize);
+									read += b;
+									if (System.getProperty("hypersocket.development.fakeSlowUpdate") != null) {
+										Thread.sleep(1000);
+									}
 								}
+
+								//
+								// TODO because no extension definition, we
+								// don't
+								// have a size, so can't check it
+								//
+
+								if (def.getRemoteArchiveSize() != null && read != def.getRemoteArchiveSize()) {
+									throw new IOException("Corrupt download for extension " + def.getId() + ". Size is "
+											+ read + " bytes, expected " + def.getRemoteArchiveSize() + " bytes");
+								}
+
+							} finally {
+								FileUtils.closeQuietly(in);
 							}
-
-							//
-							// TODO because no extension definition, we don't
-							// have a size, so can't check it
-							//
-
-							if (def.getRemoteArchiveSize() != null && read != def.getRemoteArchiveSize()) {
-								throw new IOException("Corrupt download for extension " + def.getId() + ". Size is "
-										+ read + " bytes, expected " + def.getRemoteArchiveSize() + " bytes");
-							}
-
 						} finally {
-							FileUtils.closeQuietly(in);
 							FileUtils.closeQuietly(out);
 						}
 
-						in = new FileInputStream(archiveTmp);
-						String generatedMd5 = DigestUtils.md5Hex(in);
-						IOUtils.closeQuietly(in);
-
-						if (def.getHash().length() > 0 && !generatedMd5.equals(def.getHash())) {
-							if (log.isErrorEnabled()) {
-								log.error("Install of extension " + def.getId() + " failed. Corrupt download");
+						InputStream in = new FileInputStream(archiveTmp);
+						try {
+							String generatedMd5 = DigestUtils.md5Hex(in);
+							if (def.getHash().length() > 0 && !generatedMd5.equals(def.getHash())) {
+								if (log.isErrorEnabled()) {
+									log.error("Install of extension " + def.getId() + " failed. Corrupt download");
+								}
+								throw new IOException("Corrupt download for extension " + def.getId() + ". Hash is "
+										+ generatedMd5 + ", expected " + def.getHash());
 							}
-							throw new IOException("Corrupt download for extension " + def.getId() + ". Hash is "
-									+ generatedMd5 + ", expected " + def.getHash());
+						} finally {
+							IOUtils.closeQuietly(in);
 						}
 
 						onExtensionDownloaded(def);
@@ -178,30 +184,33 @@ public abstract class AbstractExtensionUpdater {
 
 						@Override
 						public boolean accept(File dir, String name) {
-							if(name.endsWith(".zip")) {
+							if (name.endsWith(".zip")) {
 								String bn = FilenameUtils.getBaseName(name);
 								boolean found = false;
-								for(ExtensionDefinition d : extensions.get(en.getKey())) {
-									if(bn.matches(d.getId() + "-(\\d+\\.?)+.*")) {
+								for (ExtensionDefinition d : extensions.get(en.getKey())) {
+									if (bn.matches(d.getId() + "-(\\d+\\.?)+.*")) {
 										found = true;
-										if(d.getState() == ExtensionState.UPDATABLE) {
-											// The extension was updated or installed, we can move any previous version
+										if (d.getState() == ExtensionState.UPDATABLE) {
+											// The extension was updated or
+											// installed, we can move any
+											// previous version
 											log.info(name + " was updated, will removed");
 											return true;
 										}
-										
+
 										break;
 									}
 								}
-								
-								if(!found) {
-									// The extension no longer exists, so we can move it out 
+
+								if (!found) {
+									// The extension no longer exists, so we can
+									// move it out
 									log.info(name + " is no longer used by any extension, will remove");
 									return true;
 								}
 							}
 							log.info(name + " was not updated or obsoleted, will not remove");
-							
+
 							return false;
 						}
 					});
@@ -312,27 +321,30 @@ public abstract class AbstractExtensionUpdater {
 	private void completeDownload(File archiveTmp, File archiveFile, ExtensionDefinition def) throws IOException {
 
 		InputStream in = new FileInputStream(archiveTmp);
-		if (!archiveFile.getParentFile().exists()) {
-			archiveFile.getParentFile().mkdirs();
-		}
-		if (!archiveFile.exists()) {
-			archiveFile.createNewFile();
-		}
-		OutputStream out = new FileOutputStream(archiveFile);
-
 		try {
-			IOUtils.copy(in, out);
+			if (!archiveFile.getParentFile().exists()) {
+				archiveFile.getParentFile().mkdirs();
+			}
+			if (!archiveFile.exists()) {
+				archiveFile.createNewFile();
+			}
+			OutputStream out = new FileOutputStream(archiveFile);
+
+			try {
+				IOUtils.copy(in, out);
+			} finally {
+				IOUtils.closeQuietly(out);
+			}
+
+			archiveFile.setLastModified(def.getLastModified() * 1000);
+			log.info("Deleting temporary file " + archiveTmp);
+			archiveTmp.delete();
+
+			if (log.isInfoEnabled()) {
+				log.info("Install of extension " + def.getId() + " to " + archiveFile + " completed ok");
+			}
 		} finally {
 			IOUtils.closeQuietly(in);
-			IOUtils.closeQuietly(out);
-		}
-
-		archiveFile.setLastModified(def.getLastModified() * 1000);
-		log.info("Deleting temporary file " + archiveTmp);
-		archiveTmp.delete();
-
-		if (log.isInfoEnabled()) {
-			log.info("Install of extension " + def.getId() + " to " + archiveFile + " completed ok");
 		}
 
 		onExtensionUpdateComplete(def);
