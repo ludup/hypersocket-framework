@@ -2,6 +2,7 @@ package com.hypersocket.interfaceState;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 
@@ -13,6 +14,7 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
 
 @Service
 public class UserInterfaceStateServiceImpl extends
@@ -21,6 +23,8 @@ public class UserInterfaceStateServiceImpl extends
 	public static final String RESOURCE_BUNDLE = "UserInterfaceStateService";
 
 	public static final String RESOURCE_CATEGORY_TABLE_STATE = "userInterfaceState";
+	
+	List<UserInterfaceStateListener> listeners = new ArrayList<UserInterfaceStateListener>();
 
 	@Autowired
 	UserInterfaceStateRepository repository;
@@ -48,6 +52,11 @@ public class UserInterfaceStateServiceImpl extends
 	}
 	
 	@Override
+	public UserInterfaceState getStateByName(String name, Realm realm){
+		return repository.getResourceByName(name, realm);
+	}
+	
+	@Override
 	public UserInterfaceState getStateByName(String name, boolean specific)
 			throws AccessDeniedException {
 		if(specific){
@@ -63,6 +72,9 @@ public class UserInterfaceStateServiceImpl extends
 
 		newState.setPreferences(preferences);
 		repository.updateState(newState);
+		for (UserInterfaceStateListener listener : listeners) {
+			listener.modifyState(newState);
+		}
 		return getStateByResourceId(newState.getId());
 	}
 
@@ -87,6 +99,9 @@ public class UserInterfaceStateServiceImpl extends
 		} else {
 			newState = getStateByName(name);
 		}
+		for (UserInterfaceStateListener listener : listeners) {
+			listener.modifyState(newState);
+		}
 		return getStateByResourceId(newState.getId());
 
 	}
@@ -107,5 +122,10 @@ public class UserInterfaceStateServiceImpl extends
 			}
 		}
 		return userInterfaceStateList;
+	}
+	
+	@Override
+	public void registerListener(UserInterfaceStateListener listener) {
+		listeners.add(listener);
 	}
 }
