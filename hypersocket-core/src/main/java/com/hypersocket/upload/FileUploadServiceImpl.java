@@ -127,6 +127,14 @@ public class FileUploadServiceImpl extends
 
 	@Override
 	public FileUpload createFile(InputStream in, String filename, Realm realm,
+			boolean persist)
+			throws ResourceCreationException, AccessDeniedException,
+			IOException {
+		return createFile(in, filename, realm, persist, mimeTypesMap.getContentType(filename), defaultStore);
+	}
+	
+	@Override
+	public FileUpload createFile(InputStream in, String filename, Realm realm,
 			boolean persist, String type, FileStore uploadStore)
 			throws ResourceCreationException, AccessDeniedException,
 			IOException {
