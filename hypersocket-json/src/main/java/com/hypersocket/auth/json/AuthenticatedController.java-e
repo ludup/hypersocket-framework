@@ -14,6 +14,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -27,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.hypersocket.auth.AuthenticationModule;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.BrowserEnvironment;
@@ -87,7 +89,16 @@ public class AuthenticatedController {
 		AuthenticationState state = authenticationService
 				.createAuthenticationState(scheme, request.getRemoteAddr(),
 						environment, sessionUtils.getLocale(request));
-		
+		List<AuthenticationModule> modules = state.getModules();
+		for(AuthenticationModule module : modules) {
+			if(authenticationService.getAuthenticator(module.getTemplate())==null) {
+				
+				state = createAuthenticationState("fallback", request, response);
+				state.setLastErrorIsResourceKey(true);
+				state.setLastErrorMsg("revertedFallback.adminOnly");
+				return state;
+			}
+		}
 		Enumeration<?> names = request.getParameterNames();
 		while(names.hasMoreElements()) {
 			String name = (String) names.nextElement();

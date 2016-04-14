@@ -149,6 +149,7 @@ public class LogonController extends AuthenticatedController {
 			}
 
 
+			boolean createdState = false;
 			if (state == null
 					|| (!StringUtils.isEmpty(scheme) && !state.getScheme()
 							.getResourceKey().equals(scheme))) {
@@ -156,11 +157,15 @@ public class LogonController extends AuthenticatedController {
 				state = createAuthenticationState(
 						scheme == null ? AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY
 								: scheme, request, response);
+				createdState = true;
 			}
 
-			boolean success = authenticationService.logon(state,
+			boolean success = false;
+			
+			if(!createdState) {
+				success = authenticationService.logon(state,
 					decodeParameters(request.getParameterMap()));
-
+			}
 			if(state.getSession()!=null) {
 				attachSession(state.getSession(), request, response);
 			}
@@ -209,8 +214,13 @@ public class LogonController extends AuthenticatedController {
 			throw e;
 		} catch(Throwable t) {
 			
+			if(log.isErrorEnabled()) {
+				log.error("Error in authentication flow", t);
+			}
 			state.setLastErrorMsg(t.getMessage());
 			state.setLastErrorIsResourceKey(false);
+			
+			resetLogon(request, response, false);
 			
 			return new AuthenticationRequiredResult(
 					configurationService.getValue(state.getRealm(),
