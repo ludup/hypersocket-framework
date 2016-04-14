@@ -21,7 +21,7 @@ public class ReplacementUtils {
 		while (matcher.find()) {
 			String attributeName = matcher.group(1);
 			if(!replacements.containsKey(attributeName)) {
-				log.warn("Failed to find replacement token " + attributeName);
+				log.debug("Replacement token " + attributeName + " not in list to replace from");
 				continue;
 			}
 		    String replacement = replacements.get(attributeName);
