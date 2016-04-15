@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
+import javax.cache.Cache;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationPermission;
+import com.hypersocket.cache.CacheService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18N;
@@ -57,10 +59,6 @@ import com.hypersocket.role.events.RoleUpdatedEvent;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.transactions.TransactionService;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
-
 @Service
 public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		implements PermissionService, ApplicationListener<SystemEvent> {
@@ -85,12 +83,16 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	Set<Long> nonSystemPermissionIds = new HashSet<Long>();
 	Map<String, PermissionType> registeredPermissions = new HashMap<String, PermissionType>();
 
-	CacheManager cacheManager;
-	Cache permissionsCache;
-	Cache roleCache;
+	@SuppressWarnings("rawtypes")
+	Cache<Object, Set> permissionsCache;
+	@SuppressWarnings("rawtypes")
+	Cache<Object,Set> roleCache;
 
 	@Autowired
 	TransactionService transactionService; 
+	
+	@Autowired
+	CacheService cacheService;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -107,13 +109,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			}
 		});
 
-		cacheManager = CacheManager.newInstance();
-		permissionsCache = new Cache("permissionsCache", 5000, false, false,
-				60 * 60, 60 * 60);
-		cacheManager.addCache(permissionsCache);
+		permissionsCache = cacheService.getCache("permissionsCache", Object.class, Set.class);
 
-		roleCache = new Cache("roleCache", 5000, false, false, 60 * 60, 60 * 60);
-		cacheManager.addCache(roleCache);
+		roleCache = cacheService.getCache("roleCache", Object.class, Set.class);
 
 		realmService.registerRealmListener(new RealmAdapter() {
 
@@ -328,9 +326,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public Set<Permission> getPrincipalPermissions(Principal principal) {
 
-		if (!permissionsCache.isElementInMemory(principal)
-				|| (permissionsCache.get(principal) == null || permissionsCache
-						.isExpired(permissionsCache.get(principal)))) {
+		if (!permissionsCache.containsKey(principal)) {
 
 			List<Principal> principals = realmService
 					.getAssociatedPrincipals(principal);
@@ -350,10 +346,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				}
 			}
 
-			permissionsCache.put(new Element(principal, principalPermissions));
+			permissionsCache.put(principal, principalPermissions);
 		}
 
-		return (Set<Permission>) permissionsCache.get(principal).getObjectValue();
+		return (Set<Permission>) permissionsCache.get(principal);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -361,16 +357,14 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public Set<Role> getPrincipalRoles(Principal principal)
 			throws AccessDeniedException {
 
-		if (!roleCache.isElementInMemory(principal)
-				|| (roleCache.get(principal) == null 
-				|| roleCache.isExpired(roleCache.get(principal)))) {
+		if (!roleCache.containsKey(principal)) {
 			
-			roleCache.put(new Element(principal, repository
+			roleCache.put(principal, repository
 					.getRolesForPrincipal(realmService
-							.getAssociatedPrincipals(principal))));
+							.getAssociatedPrincipals(principal)));
 		}
 
-		return (Set<Role>) roleCache.get(principal).getObjectValue();
+		return (Set<Role>) roleCache.get(principal);
 	}
 
 	private void recurseImpliedPermissions(PermissionType t,

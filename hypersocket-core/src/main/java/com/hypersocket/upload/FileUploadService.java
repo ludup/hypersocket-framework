@@ -56,4 +56,6 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 	void setDefaultStore(FileStore defaultStore);
 
 	String getContentType(String uuid, boolean isUUID) throws ResourceNotFoundException, IOException;
+
+	String getFilenameContentType(String filename) throws ResourceNotFoundException, IOException;
 }

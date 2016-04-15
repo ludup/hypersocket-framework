@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
@@ -29,7 +28,6 @@ import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
-import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +63,7 @@ public class SchedulerServiceImpl extends
 
 	static Logger log = LoggerFactory.getLogger(SchedulerServiceImpl.class);
 
+	@Autowired
 	Scheduler scheduler;
 
 	@Autowired
@@ -93,10 +92,6 @@ public class SchedulerServiceImpl extends
 		if(quartzProperties.exists()) {
 			System.setProperty("org.quartz.properties", quartzProperties.getAbsolutePath());
 		}
-		
-		scheduler = StdSchedulerFactory.getDefaultScheduler();
-		scheduler.setJobFactory(autowireJobFactory);
-		scheduler.start();
 		
 		repository.loadPropertyTemplates("schedulerResourceTemplate.xml");
 		i18nService.registerBundle(RESOURCE_BUNDLE);
@@ -269,11 +264,19 @@ public class SchedulerServiceImpl extends
 			Date start, int interval, int repeat, Date end)
 			throws SchedulerException {
 
-		if(data==null || !data.containsKey("jobName")) {
+		if(data==null || !data.containsKey("jobName") || !data.containsKey("identity")) {
 			throw new IllegalArgumentException("JobDataMap must be present with at least jobName data key");
 		}
 		
-		String uuid = UUID.randomUUID().toString();
+		String uuid = data.getString("identity");
+		
+		if(scheduler.checkExists(new JobKey(uuid))){
+			if (log.isInfoEnabled()){
+				log.info(String.format("The job with identity %s already exists will not be scheduled again !!!!!!!.", uuid));
+			}
+			
+			return uuid;
+		}
 
 		if (log.isInfoEnabled()) {
 			log.info("Scheduling job with id "

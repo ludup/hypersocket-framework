@@ -328,6 +328,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		
 		PermissionsAwareJobData data = new PermissionsAwareJobData(resource.getRealm(), resource.getName());
 		data.put("resourceId", resource.getId());
+		data.put("identity", resource.getId());
 
 		try {
 
@@ -525,6 +526,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		c.add(Calendar.DAY_OF_MONTH, 1);
 		JobDataMap data = new JobDataMap();
 		data.put("jobName", "automationDailyJob");
+		data.put("identity", "automationDailyJob");
 		try {
 			schedulerService.scheduleAt(DailySchedulerJob.class, data, c.getTime());
 		} catch (SchedulerException e) {

@@ -125,6 +125,7 @@ public class DashboardMessageServiceImpl extends
 				try {
 					JobDataMap data = new JobDataMap();
 					data.put("jobName", "dashboardMessageJob");
+					data.put("identity", "dashboardMessageJob");
 					schedulerService.scheduleNow(DashboardMessageJob.class, data,
 							600000);
 

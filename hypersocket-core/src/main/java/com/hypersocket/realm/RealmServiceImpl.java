@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
+import javax.cache.Cache;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeService;
 import com.hypersocket.attributes.user.UserAttributeType;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
+import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
@@ -71,10 +73,6 @@ import com.hypersocket.transactions.TransactionCallbackWithError;
 import com.hypersocket.transactions.TransactionService;
 import com.hypersocket.upgrade.UpgradeService;
 import com.hypersocket.upgrade.UpgradeServiceListener;
-
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
 
 @Service
 public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
@@ -127,8 +125,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Autowired
 	PrincipalSuspensionRepository suspensionRepository; 
 	
-	CacheManager cacheManager;
-	Cache realmCache;
+	Cache<String, Object> realmCache;
+	
+	@Autowired
+	CacheService cacheService;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -186,9 +186,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		upgradeService.registerListener(this);
 
-		cacheManager = CacheManager.newInstance();
-		realmCache = new Cache("realmCache", 5000, false, false, 60 * 60, 60 * 60);
-		cacheManager.addCache(realmCache);
+		realmCache = cacheService.getCache("realmCache", String.class, Object.class);
 	}
 
 	@Override
@@ -330,15 +328,14 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			return defaultRealm;
 		}
 
-		if (!realmCache.isElementInMemory(host)
-				|| (realmCache.get(host) == null || realmCache.isExpired(realmCache.get(host)))) {
+		if (!realmCache.containsKey(host)) {
 			for (Realm r : internalAllRealms()) {
 				RealmProvider provider = getProviderForRealm(r);
 				String[] realmHosts = provider.getValues(r, "realm.host");
 				for (String realmHost : realmHosts) {
 					if (realmHost != null && !"".equals(realmHost)) {
 						if (realmHost.equalsIgnoreCase(host)) {
-							realmCache.put(new Element(host, r));
+							realmCache.put(host, r);
 							if(log.isInfoEnabled()) {
 								log.info(String.format("Returning resolved value for host %s realm %s", host, r.getName()));
 							}
@@ -350,7 +347,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			return defaultRealm;
 		}
 
-		Realm realm = (Realm) realmCache.get(host).getObjectValue();
+		Realm realm = (Realm) realmCache.get(host);
 		
 		if(log.isInfoEnabled()) {
 			log.info(String.format("Returning cached value for host %s realm %s", host, realm.getName()));

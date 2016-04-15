@@ -1,13 +1,23 @@
 package com.hypersocket.feedback;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class FeedbackProgress {
+import com.hypersocket.util.SpringApplicationContextProvider;
 
+public class FeedbackProgress implements Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8164835181440211990L;
 	String uuid;
-	FeedbackService feedbackService;
+	transient FeedbackService feedbackService;
 	LinkedList<Feedback> feedback = new LinkedList<Feedback>();
 	
 	public FeedbackProgress() {		
@@ -37,4 +47,16 @@ public class FeedbackProgress {
 	public synchronized List<Feedback> getFeedback() {
 		return new ArrayList<Feedback>(feedback);
 	}
+	
+	private void writeObject(ObjectOutputStream stream) throws IOException {
+        stream.writeObject(uuid);
+        stream.writeObject(feedback);
+    }
+
+    @SuppressWarnings("unchecked")
+	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+        uuid = (String) stream.readObject();
+        feedback = (LinkedList<Feedback>) stream.readObject();
+        feedbackService = SpringApplicationContextProvider.getApplicationContext().getBean("feedbackServiceImpl",FeedbackService.class);
+    }
 }

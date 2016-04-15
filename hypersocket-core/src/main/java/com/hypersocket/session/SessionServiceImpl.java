@@ -606,15 +606,16 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				try {
 					JobDataMap data = new JobDataMap();
 					data.put("jobName", "firstRunSessionReaperJob");
+					data.put("identity", "firstRunSessionReaperJob");
 					data.put("firstRun", true);
 					
 					schedulerService.scheduleNow(SessionReaperJob.class, data);
 					
 					data = new JobDataMap();
 					data.put("jobName", "sessionReaperJob");
+					data.put("identity", "sessionReaperJob");
 					
-					schedulerService.scheduleIn(SessionReaperJob.class, data, 60000,
-							60000);
+					schedulerService.scheduleIn(SessionReaperJob.class, data, 60000, 60000);
 				} catch (SchedulerException e) {
 					log.error("Failed to schedule session reaper job", e);
 				} 
