@@ -71,7 +71,7 @@ public class I18NController extends AuthenticatedController {
 		List<SelectOption> locales = new ArrayList<SelectOption>();
 
 		for (Locale l : i18nService.getSupportedLocales()) {
-			locales.add(new SelectOption(l.getLanguage(), l.getLanguage()));
+			locales.add(new SelectOption(l.getLanguage(), l.getDisplayLanguage()));
 		}
 		return new ResourceList<SelectOption>(locales);
 	}
