@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.session;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -29,6 +30,9 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
+import com.decibel.uasparser.OnlineUpdater;
+import com.decibel.uasparser.UASparser;
+import com.decibel.uasparser.UserAgentInfo;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
@@ -50,10 +54,6 @@ import com.hypersocket.session.events.SessionClosedEvent;
 import com.hypersocket.session.events.SessionEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
 import com.hypersocket.tables.ColumnSort;
-
-import net.sf.uadetector.ReadableUserAgent;
-import net.sf.uadetector.UserAgentStringParser;
-import net.sf.uadetector.service.UADetectorServiceFactory;
 
 @Service
 public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
@@ -83,8 +83,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	public static String TOKEN_PREFIX = "_TOK";
 
-	UserAgentStringParser parser;
-
+	UASparser parser;
+	OnlineUpdater updater;
+	
 	Map<Session, List<ResourceSession<?>>> resourceSessions = new HashMap<Session, List<ResourceSession<?>>>();
 	Map<String, SessionResourceToken<?>> sessionTokens = new HashMap<String, SessionResourceToken<?>>();
 
@@ -98,7 +99,10 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		if (log.isInfoEnabled()) {
 			log.info("Loading User Agent database");
 		}
-		parser = UADetectorServiceFactory.getCachingAndUpdatingParser();
+		
+		parser = new UASparser();
+		updater = new OnlineUpdater(parser, "");
+		
 		if (log.isInfoEnabled()) {
 			log.info("Loaded User Agent database");
 		}
@@ -187,15 +191,25 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					configurationService.getIntValue(
 					realm, SESSION_TIMEOUT), realm);
 		} else {
-			ReadableUserAgent ua = parser.parse(userAgent);
+			UserAgentInfo info;
+			try {
+				info = parser.parse(userAgent);
+				session = repository.createSession(remoteAddress, principal,
+						completedScheme, 
+						info.getUaFamily(), 
+						info.getBrowserVersionInfo(), 
+						info.getOsFamily(),
+						info.getOsName(), configurationService.getIntValue(
+								realm, SESSION_TIMEOUT), realm);
+				
+			} catch (IOException e) {
+				session = repository.createSession(remoteAddress, principal,
+						completedScheme, "Unknown", "Unknown", "Unknown", "Unknown", 
+						configurationService.getIntValue(
+						realm, SESSION_TIMEOUT), realm);
+			}
 
-			session = repository.createSession(remoteAddress, principal,
-					completedScheme, ua.getFamily().getName(), ua
-							.getVersionNumber().toVersionString(), ua
-							.getOperatingSystem().getFamily().getName(), ua
-							.getOperatingSystem().getVersionNumber()
-							.toVersionString(), configurationService.getIntValue(
-							realm, SESSION_TIMEOUT), realm);
+			
 		}
 		
 		eventService.publishEvent(new SessionOpenEvent(this, session));
