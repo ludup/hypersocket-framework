@@ -206,7 +206,7 @@ public class LogoController extends ResourceController {
 		// Build icon
 		IconBuilder builder = new IconBuilder().width(size).height(size)
 				.shape(shape).textCase(TextCase.UPPER).color(rgb)
-				.border(size / 24);
+				.border(0);
 		if (shape == IconShape.ROUNDED) {
 			builder.roundRect(size / 4);
 		}
