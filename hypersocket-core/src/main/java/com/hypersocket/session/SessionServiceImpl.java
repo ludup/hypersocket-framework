@@ -116,8 +116,13 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		eventService.registerEvent(SessionEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionOpenEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionClosedEvent.class, RESOURCE_BUNDLE);
-		
 	
+	}
+	
+	@Override
+	public void setUAParser(UASparser parser, OnlineUpdater updater) {
+		this.parser = parser;
+		this.updater = updater;
 	}
 
 	private Session createSystemSession() {
@@ -200,8 +205,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						info.getBrowserVersionInfo(), 
 						info.getOsFamily(),
 						info.getOsName(), configurationService.getIntValue(
-								realm, SESSION_TIMEOUT), realm);
-				
+								realm, SESSION_TIMEOUT), realm);	
 			} catch (IOException e) {
 				session = repository.createSession(remoteAddress, principal,
 						completedScheme, "Unknown", "Unknown", "Unknown", "Unknown", 
