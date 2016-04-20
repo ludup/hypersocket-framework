@@ -8,6 +8,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,9 @@ public class DefaultEncryptor implements Encryptor {
 			SecretKeyResource key;
 			
 			key = secretKeyService.getSecretKey(reference, realm);
-
+			if(key==null) {
+				key = secretKeyService.createSecretKey(reference, realm);
+			}
 			SecretKey secretKeySpec = new SecretKeySpec(secretKeyService.generateSecreyKeyData(key), "AES");
 			byte[] iv = secretKeyService.generateIvData(key);
 
@@ -60,8 +63,14 @@ public class DefaultEncryptor implements Encryptor {
 	public String decryptString(String reference, String data, Realm realm)
 			throws IOException {
 		try {
+			if(StringUtils.isBlank(data)) {
+				return "";
+			}
+			
 			SecretKeyResource key = secretKeyService.getSecretKey(reference, realm);
-
+			if(key==null) {
+				return "";
+			}
 			byte[] keydata = secretKeyService.generateSecreyKeyData(key);
 
 			SecretKey secretKeySpec = new SecretKeySpec(keydata, "AES");

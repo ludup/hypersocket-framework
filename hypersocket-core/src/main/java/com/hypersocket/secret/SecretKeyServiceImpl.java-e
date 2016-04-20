@@ -183,9 +183,6 @@ public class SecretKeyServiceImpl extends
 	@Override
 	public SecretKeyResource getSecretKey(String reference, Realm realm) throws ResourceNotFoundException, ResourceCreationException, AccessDeniedException {
 		SecretKeyResource key = repository.getResourceByName(reference, realm);
-		if(key==null) {
-			key = createSecretKey(reference, realm);
-		}
 		return key;
 	}
 
