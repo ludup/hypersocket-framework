@@ -1,7 +1,7 @@
 package com.hypersocket.server.forward.url;
 
-import com.hypersocket.resource.AbstractResourceRepository;
+import com.hypersocket.resource.AbstractAssignableResourceRepository;
 
-public interface URLForwardingResourceRepository extends AbstractResourceRepository<URLForwardingResource> {
+public interface URLForwardingResourceRepository extends AbstractAssignableResourceRepository<URLForwardingResource> {
 
 }

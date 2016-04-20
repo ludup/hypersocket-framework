@@ -1,8 +1,8 @@
 package com.hypersocket.server.forward.url;
 
-import com.hypersocket.resource.AbstractResourceService;
+import com.hypersocket.resource.AbstractAssignableResourceService;
 import com.hypersocket.server.forward.ForwardingService;
 
-public interface URLForwardingResourceService extends AbstractResourceService<URLForwardingResource>, ForwardingService<URLForwardingResource> {
+public interface URLForwardingResourceService extends AbstractAssignableResourceService<URLForwardingResource>, ForwardingService<URLForwardingResource> {
 
 }

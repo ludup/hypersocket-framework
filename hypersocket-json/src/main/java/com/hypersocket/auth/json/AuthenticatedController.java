@@ -147,7 +147,7 @@ public class AuthenticatedController {
 	
 	protected void setupSystemContext(Realm realm) throws AccessDeniedException {
 		setupAuthenticatedContext(sessionService.getSystemSession(),
-				configurationService.getDefaultLocale(), realm);
+				Locale.getDefault(), realm);
 	}
 	
 	protected void setupAnonymousContext(String remoteAddress,
