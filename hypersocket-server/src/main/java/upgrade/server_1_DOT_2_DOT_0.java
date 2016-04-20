@@ -1,6 +1,7 @@
 package upgrade;
 
 import java.util.HashMap;
+import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,7 @@ public class server_1_DOT_2_DOT_0 implements Runnable {
 	@Override
 	public void run() {
 
-		certificateService.setCurrentSession(sessionService.getSystemSession(), sessionService.getCurrentLocale());
+		certificateService.setCurrentSession(sessionService.getSystemSession(), Locale.getDefault());
 		try {
 			
 			certificateService.getDefaultCertificate();
