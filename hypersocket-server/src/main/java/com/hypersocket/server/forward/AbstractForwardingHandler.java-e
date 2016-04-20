@@ -106,9 +106,11 @@ public abstract class AbstractForwardingHandler<T extends ForwardingResource> im
 
 		} catch(AccessDeniedException ex) { 
 			// TODO Log event
+			log.error("Cannot accept tunnel", ex);
 			throw ex;
 		} catch (ResourceNotFoundException e) {
 			// TODO Log event
+			log.error("Cannot find resource", e);
 			throw new AccessDeniedException("Resource not found");
 		} finally {
 			getService().clearPrincipalContext();
