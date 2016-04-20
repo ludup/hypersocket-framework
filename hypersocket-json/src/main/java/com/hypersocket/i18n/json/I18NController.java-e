@@ -16,6 +16,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -43,24 +44,45 @@ public class I18NController extends AuthenticatedController {
 	@Autowired
 	SessionUtils sessionUtils;
 	
+	@SuppressWarnings("unchecked")
 	@RequestMapping(value="i18n", method = RequestMethod.GET, produces = {"application/json"})
 	@ResponseBody
 	@ResponseStatus(value=HttpStatus.OK)
-	public Map<String,String> getResources(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		Map<String,String> results = i18nService.getResourceMap(sessionUtils.getLocale(request));
-		results.put("LANG", sessionUtils.getLocale(request).getLanguage());
-		return results;
+	public Map<String,String> getResources(HttpServletRequest request, HttpServletResponse response) throws IOException, AccessDeniedException {
+		
+		setupAnonymousContext(request.getRemoteAddr(), 
+				request.getServerName(), 
+				request.getHeader(HttpHeaders.USER_AGENT),
+				request.getParameterMap());
+		try {
+			Map<String,String> results = i18nService.getResourceMap(sessionUtils.getLocale(request));
+			results.put("LANG", sessionUtils.getLocale(request).getLanguage());
+			return results;
+		} finally {
+			clearAuthenticatedContext();
+		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	@RequestMapping(value="i18n/{locale}", method = RequestMethod.GET, produces = {"application/json"})
 	@ResponseBody
 	@ResponseStatus(value=HttpStatus.OK)
-	public Map<String,String> getResources(HttpServletRequest request, HttpServletResponse response, @PathVariable String locale) throws IOException {
-		Map<String,String> results = i18nService.getResourceMap(i18nService.getLocale(locale));
-		results.put("LANG", locale);
-		return results;
+	public Map<String,String> getResources(HttpServletRequest request, HttpServletResponse response, @PathVariable String locale) throws IOException, AccessDeniedException {
+		
+		setupAnonymousContext(request.getRemoteAddr(), 
+				request.getServerName(), 
+				request.getHeader(HttpHeaders.USER_AGENT),
+				request.getParameterMap());
+		try {
+			Map<String,String> results = i18nService.getResourceMap(i18nService.getLocale(locale));
+			results.put("LANG", locale);
+			return results;
+		} finally {
+			clearAuthenticatedContext();
+		}
 	}	
 	
+	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "i18n/locales", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -68,12 +90,20 @@ public class I18NController extends AuthenticatedController {
 			HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException {
 
-		List<SelectOption> locales = new ArrayList<SelectOption>();
-
-		for (Locale l : i18nService.getSupportedLocales()) {
-			locales.add(new SelectOption(l.getLanguage(), l.getDisplayLanguage()));
+		setupAnonymousContext(request.getRemoteAddr(), 
+				request.getServerName(), 
+				request.getHeader(HttpHeaders.USER_AGENT),
+				request.getParameterMap());
+		try {
+			List<SelectOption> locales = new ArrayList<SelectOption>();
+	
+			for (Locale l : i18nService.getSupportedLocales()) {
+				locales.add(new SelectOption(l.getLanguage(), l.getDisplayLanguage()));
+			}
+			return new ResourceList<SelectOption>(locales);
+		} finally {
+			clearAuthenticatedContext();
 		}
-		return new ResourceList<SelectOption>(locales);
 	}
 	
 }

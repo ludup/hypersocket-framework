@@ -64,8 +64,7 @@ public abstract class PermissionsAwareJobNonTransactional implements Job {
 						+ realm.getName() + "/" + principal.getName());
 			}
 
-			authenticationService.setCurrentSession(sessionService.getSystemSession(), locale);
-			authenticationService.setCurrentPrincipal(principal, locale, realm);
+			authenticationService.setCurrentSession(sessionService.getSystemSession(), realm, principal, locale);
 
 			try {
 				executeJob(context);

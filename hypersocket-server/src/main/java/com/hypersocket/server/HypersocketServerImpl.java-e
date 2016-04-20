@@ -61,6 +61,7 @@ import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.servlet.HypersocketServletConfig;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
+import com.hypersocket.session.SessionService;
 
 public abstract class HypersocketServerImpl implements HypersocketServer, 
 				ApplicationListener<SystemEvent> {
@@ -83,6 +84,9 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	
 	@Autowired
 	EventService eventService;
+	
+	@Autowired
+	SessionService sessionService; 
 	
 	List<HttpRequestHandler> httpHandlers = Collections
 			.synchronizedList(new ArrayList<HttpRequestHandler>());
@@ -459,9 +463,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 				.getBean("realmServiceImpl");
 
 		
-		certificateService.setCurrentPrincipal(realmService
-				.getSystemPrincipal(), Locale.getDefault(),
-				realmService.getSystemPrincipal().getRealm());
+		certificateService.setCurrentSession(sessionService.getSystemSession(), Locale.getDefault());
 		
 		try {
 

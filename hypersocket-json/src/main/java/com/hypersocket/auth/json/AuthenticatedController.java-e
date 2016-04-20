@@ -162,16 +162,11 @@ public class AuthenticatedController {
 			log.info("Logging anonymous onto the " + realm.getName() + " realm [" + serverName + "]");
 		}
 		
-		Session session = authenticationService.logonAnonymous(
-				remoteAddress, 
-				userAgent, parameters, serverName);
-		
-		setupAuthenticatedContext(session, configurationService.getDefaultLocale());
+		setupAuthenticatedContext(sessionService.getSystemSession(), Locale.getDefault());
 
 	}
 
 	protected void clearAnonymousContext() {
-		sessionService.closeSession(authenticationService.getCurrentSession());
 		clearAuthenticatedContext();
 	}
 	
@@ -180,8 +175,7 @@ public class AuthenticatedController {
 	}
 
 	protected void setupAuthenticatedContext(Session session, Locale locale, Realm realm) throws AccessDeniedException {
-		authenticationService.setCurrentSession(session, locale);
-		authenticationService.setCurrentRealm(realm);		
+		authenticationService.setCurrentSession(session, realm, locale);	
 	}
 	
 	protected boolean hasSessionContext() {
@@ -200,10 +194,10 @@ public class AuthenticatedController {
 		return authenticationService.getCurrentSession();
 	}
 
-	protected void setupAuthenticatedContext(Principal principal,
-			Locale locale, Realm realm) {
-		authenticationService.setCurrentPrincipal(principal, locale, realm);
-	}
+//	protected void setupAuthenticatedContext(Principal principal,
+//			Locale locale, Realm realm) {
+//		authenticationService.setCurrentPrincipal(principal, locale, realm);
+//	}
 
 	protected void clearAuthenticatedContext() {
 		authenticationService.clearPrincipalContext();
