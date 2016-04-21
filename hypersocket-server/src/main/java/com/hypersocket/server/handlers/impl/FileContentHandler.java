@@ -18,12 +18,12 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FileContentHandler extends ContentHandlerImpl {
+public abstract class FileContentHandler extends ContentHandlerImpl {
 
 	static Logger log = LoggerFactory.getLogger(FileContentHandler.class);
 	
 	List<File> baseDirs = new ArrayList<File>();
-
+	
 	public FileContentHandler(String name, int priority, File baseDir) {
 		super(name, priority);
 		addBaseDir(baseDir);

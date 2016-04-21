@@ -24,6 +24,7 @@ public class ClasspathContentHandler extends ContentHandlerImpl {
 
 	static Logger log = org.slf4j.LoggerFactory.getLogger(ClasspathContentHandler.class);
 	String classpathPrefix;
+	String basePath;
 	
 	public ClasspathContentHandler(String classpathPrefix, int priority) {
 		super("classpath:" + classpathPrefix, priority);
@@ -32,6 +33,14 @@ public class ClasspathContentHandler extends ContentHandlerImpl {
 	
 	public String getResourceName() {
 		return "classpath";
+	}
+	
+	public void setBasePath(String basePath) {
+		this.basePath = basePath;
+	}
+	
+	public String getBasePath() {
+		return basePath;
 	}
 	
 	@Override

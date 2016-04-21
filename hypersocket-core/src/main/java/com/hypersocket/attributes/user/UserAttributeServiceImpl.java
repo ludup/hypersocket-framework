@@ -394,17 +394,6 @@ public class UserAttributeServiceImpl extends AbstractAssignableResourceServiceI
 	}
 
 	void registerPropertyItem(PropertyCategory cat, UserAttribute attr) {
-//		registerPropertyItem(cat, attributeRepository.getDatabasePropertyStore(), attr.getVariableName(),
-//				attr.generateMetaData(), "", attr.getWeight(),
-//				attr.getHidden(), attr.getDisplayMode(), attr.getReadOnly(), attr.getDefaultValue(),
-//				true, attr.getEncrypted(), null);
-//	}
-//
-//	void registerPropertyItem(PropertyCategory category,
-//			PropertyStore propertyStore, String resourceKey, String metaData,
-//			String mapping, int weight, boolean hidden, String displayMode, boolean readOnly,
-//			String defaultValue, boolean isVariable, boolean encrypted,
-//			String defaultsToProperty) {
 
 		if (log.isInfoEnabled()) {
 			log.info("Registering property " + attr.getVariableName());
