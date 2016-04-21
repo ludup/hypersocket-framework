@@ -162,7 +162,7 @@ public class LogonController extends AuthenticatedController {
 
 			boolean success = false;
 			
-			if(request.getParameterMap().size() > 1 || !createdState) {
+			if(request.getParameterMap().size() > 1 || !createdState ||  request.getHeader("Authorization") != null) {
 				success = authenticationService.logon(state,
 					decodeParameters(request.getParameterMap()));
 			}
