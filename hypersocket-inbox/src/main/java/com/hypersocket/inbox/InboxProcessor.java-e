@@ -184,7 +184,7 @@ public class InboxProcessor {
 		String port = "993";
 
 		String userName = "lee@ninevehcottages.com";
-		String password = "p13av#pq23";
+		String password = "xxxxxxx";
 
 		InboxProcessor receiver = new InboxProcessor();
 		receiver.downloadEmails(protocol, host, port, userName, password, true, new EmailProcessor() {
