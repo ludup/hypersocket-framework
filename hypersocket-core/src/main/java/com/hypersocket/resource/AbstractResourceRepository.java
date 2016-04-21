@@ -32,7 +32,7 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 
 	long allRealmsResourcesCount();
 
-	void populateEntityFields(T resource, Map<String, String> properties);
+	boolean populateEntityFields(T resource, Map<String, String> properties);
 
 	EntityResourcePropertyStore getEntityStore();
 

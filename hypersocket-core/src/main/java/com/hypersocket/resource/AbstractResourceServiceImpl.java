@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -229,12 +230,15 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public final void updateResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
 		
+		boolean changedDefault = false, changed = false;
+		
 		if(assertPermissions) {
 			assertPermission(getUpdatePermission(resource));
 		}
 
 		if(resource.getRealm()==null) {
 			resource.setRealm(isSystemResource() ? realmService.getSystemRealm() : getCurrentRealm());
+			changed = changedDefault = true;
 		}
 		
 		if(!checkUnique(resource, false)) {
@@ -245,26 +249,50 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			throw ex;
 		}
 		
-		resource.setResourceCategory(resourceCategory);
-		getRepository().populateEntityFields(resource, properties);
+		if(!Objects.equals(resource.getResourceCategory(), resourceCategory)) {
+			resource.setResourceCategory(resourceCategory);
+			changed = changedDefault = true;
+		}
 		
-		try {
-			beforeUpdateResource(resource, properties);
-			getRepository().saveResource(resource, properties, ops);
-			updateFingerprint();
-			afterUpdateResource(resource, properties);
-			fireResourceUpdateEvent(resource);
-		} catch (Throwable t) {
-			fireResourceUpdateEvent(resource, t);
-			if (t instanceof ResourceChangeException) {
-				throw (ResourceChangeException) t;
-			} else {
-				throw new ResourceChangeException(RESOURCE_BUNDLE_DEFAULT,
-						"generic.update.error", t.getMessage());
+		if(populateOtherFields(resource, properties)) {
+			/* These are NOT considered 'default' changes, so generic update event will not be
+			 *  fired, it is up to sub-classes overriding populateOtherFields() to do this.
+			 */
+			changed = true;
+		}
+		
+		if(getRepository().populateEntityFields(resource, properties)) {
+			changed = changedDefault = true;
+		}
+				
+		if(changed) {
+			try {
+				beforeUpdateResource(resource, properties);
+				getRepository().saveResource(resource, properties, ops);
+				updateFingerprint();
+				afterUpdateResource(resource, properties);
+				if(changedDefault)
+					fireResourceUpdateEvent(resource);
+			} catch (Throwable t) {
+				if(changedDefault)
+					fireResourceUpdateEvent(resource, t);
+				if (t instanceof ResourceChangeException) {
+					throw (ResourceChangeException) t;
+				} else {
+					throw new ResourceChangeException(RESOURCE_BUNDLE_DEFAULT,
+							"generic.update.error", t.getMessage());
+				}
 			}
 		}
 	}
-	
+
+	protected boolean populateOtherFields(T resource, Map<String, String> properties) {
+		/* Populate other fields for updates, intended for when specific events for changes to
+		 * a resource are required 
+		 */
+		return false;
+	}
+
 	@Override
 	@SafeVarargs
 	public final void updateResource(T resource, TransactionOperation<T>... ops) throws ResourceChangeException,

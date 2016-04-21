@@ -151,6 +151,16 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly = true)
+	protected <T> List<T> query(String query, Object... args) {
+		Query q = createQuery(query, false);
+		for(int i = 0 ; i < args.length; i++) {
+			q.setParameter(i, args[i]);
+		}
+		return q.list();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Transactional(readOnly = true)
 	protected <T> Collection<T> list(Class<T> cls, CriteriaConfiguration... configs) {
 		Criteria criteria = createCriteria(cls);
 		for (CriteriaConfiguration c : configs) {

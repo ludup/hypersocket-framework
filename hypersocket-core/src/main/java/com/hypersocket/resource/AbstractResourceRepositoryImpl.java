@@ -2,6 +2,7 @@ package com.hypersocket.resource;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 
@@ -94,17 +95,31 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	}
 	
 	@Override
-	public void populateEntityFields(T resource, Map<String,String> properties) {
-		
+	public boolean populateEntityFields(T resource, Map<String,String> properties) {
+		boolean changed = false;
 		for(String resourceKey : getPropertyNames(resource)) {
 			if(properties.containsKey(resourceKey)) {
 				PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
 				if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
-					setValue(resource, resourceKey, properties.get(resourceKey));
+					String val = getValue(resource, resourceKey);
+					String newVal = properties.get(resourceKey);
+					
+					/* NOTE - I am not 100% sure about this. What if a value IS changing to (or from) null? */
+					if(val == null) 
+						val = "";
+					if(newVal == null) 
+						newVal = "";
+					
+					if(!Objects.equals(val, newVal)) {
+						changed = true;
+					}
+					
+					setValue(resource, resourceKey, newVal);
 					properties.remove(resourceKey);
 				}
 			}
 		}
+		return changed;
 	}
 	
 	@Override
