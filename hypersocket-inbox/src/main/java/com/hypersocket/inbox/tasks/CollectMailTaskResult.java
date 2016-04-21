@@ -16,16 +16,16 @@ import com.hypersocket.triggers.AbstractTaskResult;
 public class CollectMailTaskResult extends AbstractTaskResult {
 
 	public static final String EVENT_RESOURCE_KEY = "collectMail.result";
-	public static final String EVENT_FROM = "collectMail.from";
-	public static final String EVENT_REPLY_TO = "collectMail.replyTo";
-	public static final String EVENT_TO = "collectMail.to";
-	public static final String EVENT_CC = "collectMail.cc";
-	public static final String EVENT_SUBJECT = "collectMail.subject";
-	public static final String EVENT_TEXT_CONTENT = "collectMail.textContent";
-	public static final String EVENT_HTML_CONTENT = "collectMail.htmlContent";
-	public static final String EVENT_DATE_SENT = "collectMail.dateSent";
-	public static final String EVENT_DATE_RECEIVED = "collectMail.dateReceived";
-	public static final String EVENT_ATTACHMENTS = "collectMail.attachments";
+	public static final String EVENT_FROM = "attr.from";
+	public static final String EVENT_REPLY_TO = "attr.replyTo";
+	public static final String EVENT_TO = "attr.to";
+	public static final String EVENT_CC = "attr.cc";
+	public static final String EVENT_SUBJECT = "attr.subject";
+	public static final String EVENT_TEXT_CONTENT = "attr.textContent";
+	public static final String EVENT_HTML_CONTENT = "attr.htmlContent";
+	public static final String EVENT_DATE_SENT = "attr.dateSent";
+	public static final String EVENT_DATE_RECEIVED = "attr.dateReceived";
+	public static final String EVENT_ATTACHMENTS = "attr.attachments";
 
 	public CollectMailTaskResult(Object source, boolean success, Realm currentRealm, Task task, Address[] from,
 			Address[] replyTo, Address[] to, Address[] cc, String subject, String textContent, String htmlContent,
