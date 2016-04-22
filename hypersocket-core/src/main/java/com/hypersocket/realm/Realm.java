@@ -22,6 +22,11 @@ import com.hypersocket.resource.Resource;
 @XmlRootElement(name="realm")
 public class Realm extends Resource {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5087610813626724784L;
+
 	@Column(name="default_realm")
 	boolean defaultRealm = false;
 	

@@ -26,6 +26,11 @@ import com.hypersocket.repository.AbstractEntity;
 public class LocalUserCredentials extends AbstractEntity<Long> {
 
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3299749715239030009L;
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="id")

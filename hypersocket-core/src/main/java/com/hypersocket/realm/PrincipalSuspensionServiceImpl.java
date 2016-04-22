@@ -3,8 +3,6 @@ package com.hypersocket.realm;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -34,8 +32,6 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	@Autowired
 	SessionService sessionService; 
 	
-	Map<String, String> suspendedUserResumeSchedules = new HashMap<String, String>();
-	
 	@Override
 	public PrincipalSuspension createPrincipalSuspension(Principal principal,
 			Date startDate, Long duration) throws ResourceNotFoundException,
@@ -60,25 +56,23 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 		principalSuspension.setStartTime(startDate);
 		principalSuspension.setDuration(duration);
 	
-
-		if (suspendedUserResumeSchedules.containsKey(name)) {
-			if (log.isInfoEnabled()) {
-				log.info(name
-						+ " is already suspended. Rescheduling to new parameters");
-			}
-
-			String scheduleId = suspendedUserResumeSchedules.get(name);
-
-			if (log.isInfoEnabled()) {
-				log.info("Cancelling existing schedule for " + name);
-			}
-
-			try {
+		String scheduleId = principal.getId().toString();
+		
+		try {
+			if (schedulerService.jobExists(scheduleId)) {
+				if (log.isInfoEnabled()) {
+					log.info(String.format("%s with scheduleId %s is already suspended. Rescheduling to new parameters",scheduleId,name));
+				}
+	
+				if (log.isInfoEnabled()) {
+					log.info(String.format("Cancelling existing schedule for %s with scheduleId %s",name,scheduleId));
+				}
+				
 				schedulerService.cancelNow(scheduleId);
-			} catch (Exception e) {
-				log.error("Failed to cancel suspend schedule for " + name, e);
+	
 			}
-
+		} catch (Exception e) {
+			log.error("Failed to cancel suspend schedule for " + name, e);
 		}
 
 		repository.saveSuspension(principalSuspension);
@@ -114,19 +108,16 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 				principal.getRealm(), "resumeUserJob");
 		data.put("name", principal.getPrincipalName());
 
-		String scheduleId;
+		String scheduleId = principal.getId().toString();
 		
 		
 		try {
-			scheduleId = schedulerService.scheduleAt(ResumeUserJob.class,
-					data, c.getTime());
+			schedulerService.scheduleAt(ResumeUserJob.class, scheduleId, data, c.getTime());
 		} catch (SchedulerException e) {
 			throw new ResourceCreationException(RealmService.RESOURCE_BUNDLE,
 					"error.suspendUser.schedule", e.getMessage());
 		}
 
-		suspendedUserResumeSchedules.put(principal.getName(), scheduleId);
-		
 	}
 
 	@Override
@@ -139,17 +130,13 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 
 	}
 
-	public void notifyResume(String name, boolean onSchedule) {
-
-		String scheduleId = suspendedUserResumeSchedules.remove(name);
+	public void notifyResume(String scheduleId, String name, boolean onSchedule) {
 
 		if (!onSchedule && scheduleId != null) {
 			try {
 				schedulerService.cancelNow(scheduleId);
 			} catch (SchedulerException e) {
-				log.error(
-						"Failed to cancel resume job for user "
-								+ name.toString(), e);
+				log.error("Failed to cancel resume job for user " + name.toString(), e);
 			}
 		}
 

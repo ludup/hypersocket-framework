@@ -30,6 +30,11 @@ import com.hypersocket.resource.RealmResource;
 @XmlRootElement(name="role")
 public class Role extends RealmResource {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -9007753723140808832L;
+
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
 	@JoinTable(name = "role_permissions", 

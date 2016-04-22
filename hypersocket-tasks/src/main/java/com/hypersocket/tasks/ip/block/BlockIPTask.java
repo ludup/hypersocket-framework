@@ -3,11 +3,8 @@ package com.hypersocket.tasks.ip.block;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -30,8 +27,8 @@ import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.ip.unblock.UnblockIPJob;
-import com.hypersocket.triggers.MultipleTaskResults;
 import com.hypersocket.triggers.AbstractTaskResult;
+import com.hypersocket.triggers.MultipleTaskResults;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.ValidationException;
 
@@ -43,9 +40,6 @@ public class BlockIPTask extends AbstractTaskProvider {
 	public static final String RESOURCE_BUNDLE = "BlockIPTask";
 	
 	public static final String RESOURCE_KEY = "blockIP";
-	
-	Map<String,String> blockedIPUnblockSchedules = new HashMap<String,String>();
-	Set<String> blockedIps = new HashSet<String>();
 	
 	@Autowired
 	BlockIPTaskRepository repository; 
@@ -133,8 +127,6 @@ public class BlockIPTask extends AbstractTaskProvider {
 							log.info("Blocked IP address " + ipAddress);
 						}
 						
-						blockedIps.add(ipAddress);
-						
 						if(val > 0) {
 							
 							if(log.isInfoEnabled()) {
@@ -144,10 +136,10 @@ public class BlockIPTask extends AbstractTaskProvider {
 							PermissionsAwareJobData data = new PermissionsAwareJobData(currentRealm, "unblockIP");
 							data.put("addr", ipAddress);
 		
-							String scheduleId = schedulerService.scheduleIn(UnblockIPJob.class, data, val * 60000, 0);
+							String scheduleId = currentRealm.getName() + "_" + ipAddress;
+									
+							schedulerService.scheduleIn(UnblockIPJob.class, scheduleId, data, val * 60000, 0);
 							
-							blockedIPUnblockSchedules.put(ipAddress, scheduleId);
-												
 							results.add(new BlockedIPTempResult(this, currentRealm, task, ipAddress, val));
 						} else {
 							
@@ -178,16 +170,13 @@ public class BlockIPTask extends AbstractTaskProvider {
 		return repository;
 	}
 
-	public void notifyUnblock(String addr, boolean onSchedule) {
+	public void notifyUnblock(String schduleId, boolean onSchedule) {
 		
-		blockedIps.remove(addr);
-		String scheduleId = blockedIPUnblockSchedules.remove(addr);
-		
-		if(!onSchedule && scheduleId!=null) {
+		if(!onSchedule && schduleId != null) {
 			try {
-				schedulerService.cancelNow(scheduleId);
+				schedulerService.cancelNow(schduleId);
 			} catch (SchedulerException e) {
-				log.error("Failed to cancel unblock job for ip address " + addr.toString(), e);
+				log.error("Failed to cancel unblock job for ip address " + schduleId.toString(), e);
 			}
 		}
 		

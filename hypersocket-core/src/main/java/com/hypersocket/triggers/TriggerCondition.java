@@ -19,6 +19,11 @@ import com.hypersocket.repository.AbstractEntity;
 @Table(name="trigger_resource_conditions")
 public class TriggerCondition extends AbstractEntity<Long> {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2977989517578121712L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
 	@Column(name="id")

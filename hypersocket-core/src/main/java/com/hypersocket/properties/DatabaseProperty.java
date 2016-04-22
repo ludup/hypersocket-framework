@@ -24,6 +24,11 @@ import com.hypersocket.repository.AbstractEntity;
 	    @UniqueConstraint(columnNames={"resourceKey", "resource"})})
 public class DatabaseProperty extends AbstractEntity<Long> implements ResourceProperty {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5255957700370043100L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="property_id")

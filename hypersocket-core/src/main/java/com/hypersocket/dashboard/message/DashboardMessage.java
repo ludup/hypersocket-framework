@@ -16,6 +16,11 @@ import com.hypersocket.resource.Resource;
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class DashboardMessage extends Resource {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2791708877112002145L;
+
 	@Column(name="message_id")
 	String messageId;
 	

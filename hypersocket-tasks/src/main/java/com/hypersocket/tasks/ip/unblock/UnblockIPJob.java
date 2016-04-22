@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.ip.IPRestrictionService;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.scheduler.PermissionsAwareJob;
+import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.tasks.ip.block.BlockIPTask;
 
 public class UnblockIPJob extends PermissionsAwareJob {
@@ -42,7 +44,9 @@ public class UnblockIPJob extends PermissionsAwareJob {
 			
 			ipRestrictionService.unblockIPAddress(addr);
 			
-			blockIPTask.notifyUnblock(addr, true);
+			Realm currentRealm = ((PermissionsAwareJobData) context.getTrigger().getJobDataMap()).getCurrentRealm();
+			
+			blockIPTask.notifyUnblock(currentRealm.getName() + "_" + addr, true);
 			
 			if(log.isInfoEnabled()) {
 				log.info("Unblocked IP address " + addr.toString());

@@ -85,12 +85,15 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	UserAgentStringParser parser;
 
-	Map<Session, List<ResourceSession<?>>> resourceSessions = new HashMap<Session, List<ResourceSession<?>>>();
-	Map<String, SessionResourceToken<?>> sessionTokens = new HashMap<String, SessionResourceToken<?>>();
+	Map<Session, List<ResourceSession<?>>> resourceSessions = new HashMap<Session, List<ResourceSession<?>>>();//repsitory rdp
+	Map<String, SessionResourceToken<?>> sessionTokens = new HashMap<String, SessionResourceToken<?>>();// copy sessions add to db
 
-	Map<String, Session> nonCookieSessions = new HashMap<String, Session>();
+	Map<String, Session> nonCookieSessions = new HashMap<String, Session>();//webdav no session cookies add to database
+	
+	//all entity repository way
 
-	Session systemSession;
+	Session systemSession; //repository database
+	//system is started when system comes up, put in database
 
 	@PostConstruct
 	private void postConstruct() throws AccessDeniedException {
@@ -604,18 +607,13 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				}
 
 				try {
-					JobDataMap data = new JobDataMap();
-					data.put("jobName", "firstRunSessionReaperJob");
-					data.put("identity", "firstRunSessionReaperJob");
-					data.put("firstRun", true);
-					
-					schedulerService.scheduleNow(SessionReaperJob.class, data);
-					
-					data = new JobDataMap();
-					data.put("jobName", "sessionReaperJob");
-					data.put("identity", "sessionReaperJob");
-					
-					schedulerService.scheduleIn(SessionReaperJob.class, data, 60000, 60000);
+					if(schedulerService.jobDoesNotExists("sessionReaperJob")){
+						JobDataMap data = new JobDataMap();
+						data = new JobDataMap();
+						data.put("jobName", "sessionReaperJob");
+						
+						schedulerService.scheduleIn(SessionReaperJob.class, "sessionReaperJob", data, 60000, 60000);
+					}
 				} catch (SchedulerException e) {
 					log.error("Failed to schedule session reaper job", e);
 				} 

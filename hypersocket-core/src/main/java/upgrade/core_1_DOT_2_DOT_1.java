@@ -31,14 +31,13 @@ public class core_1_DOT_2_DOT_1 implements Runnable {
 		}
 
 		try {
-			JobDataMap data = new JobDataMap();
-			data.put("jobName", "firstRunSessionReaperJob");
-			data.put("identity", "firstRunSessionReaperJob");
-			data.put("firstRun", true);
-			
-			// If exists/....
-			
-			schedulerService.scheduleNow(SessionReaperJob.class, data);
+			if(schedulerService.jobDoesNotExists("firstRunSessionReaperJob")){
+				JobDataMap data = new JobDataMap();
+				data.put("jobName", "firstRunSessionReaperJob");
+				data.put("firstRun", true);
+				
+				schedulerService.scheduleNow(SessionReaperJob.class, "firstRunSessionReaperJob", data);
+			}
 
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule session reaper job", e);

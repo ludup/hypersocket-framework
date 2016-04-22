@@ -14,6 +14,10 @@ import com.hypersocket.realm.Realm;
 public abstract class RealmResource extends Resource {
 
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7483847758596964348L;
 	@OneToOne
 	@JoinColumn(name="realm_id")
 	protected Realm realm;

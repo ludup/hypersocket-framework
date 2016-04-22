@@ -22,6 +22,11 @@ import com.hypersocket.utils.HypersocketUtils;
 @Table(name="automations")
 public class AutomationResource extends Task {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2363415972604814835L;
+
 	@Column(name="resource_key")
 	String resourceKey;
 	

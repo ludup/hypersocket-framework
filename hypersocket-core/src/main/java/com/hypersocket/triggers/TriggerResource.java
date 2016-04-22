@@ -22,6 +22,11 @@ import com.hypersocket.tasks.Task;
 @JsonDeserialize(using = TriggerResourceDeserializer.class)
 public class TriggerResource extends Task {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4055884752102231593L;
+
 	@Column(name = "result")
 	TriggerResultType result;
 	

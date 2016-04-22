@@ -13,7 +13,7 @@ public interface PrincipalSuspensionService {
 
 	PrincipalSuspension deletePrincipalSuspension(Principal principal);
 
-	public void notifyResume(String name, boolean onSchedule);
+	public void notifyResume(String scheduleId, String name, boolean onSchedule);
 
 	PrincipalSuspension getSuspension(Principal principal);
 

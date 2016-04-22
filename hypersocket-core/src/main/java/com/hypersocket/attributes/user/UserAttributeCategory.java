@@ -16,6 +16,11 @@ import com.hypersocket.resource.RealmResource;
 @Table(name = "user_attribute_categories")
 public class UserAttributeCategory extends RealmResource implements AttributeCategory {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7065921752886263209L;
+
 	@Column(name = "weight", nullable = false)
 	Integer weight = new Integer(0);
 

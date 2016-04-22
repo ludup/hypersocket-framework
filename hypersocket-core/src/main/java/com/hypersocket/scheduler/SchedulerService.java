@@ -20,32 +20,41 @@ public interface SchedulerService extends
 
 	public static final String RESOURCE_BUNDLE = "SchedulerService";
 
-	String scheduleNow(Class<? extends Job> clz, JobDataMap data, int interval)
+	void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data, int interval)
 			throws SchedulerException;
 
-	String scheduleNow(Class<? extends Job> clz, JobDataMap data, int interval,
+	void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data, int interval,
 			int repeat) throws SchedulerException;
 
-	String scheduleNow(Class<? extends Job> clz, JobDataMap data)
+	void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data)
 			throws SchedulerException;
 
-	String scheduleAt(Class<? extends Job> clz, JobDataMap data, Date start)
+	void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data, Date start)
 			throws SchedulerException;
 
-	String scheduleAt(Class<? extends Job> clz, JobDataMap data, Date start,
+	void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data, Date start,
 			int interval) throws SchedulerException;
 
-	String scheduleAt(Class<? extends Job> clz, JobDataMap data, Date start,
+	void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data, Date start,
 			int interval, int repeat) throws SchedulerException;
 
-	String scheduleIn(Class<? extends Job> clz, JobDataMap data, int millis)
+	void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data, int millis)
 			throws SchedulerException;
 
-	String scheduleIn(Class<? extends Job> clz, JobDataMap data, int millis,
+	void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data, int millis,
 			int interval) throws SchedulerException;
 
-	String scheduleIn(Class<? extends Job> clz, JobDataMap data, int millis,
+	void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data, int millis,
 			int interval, int repeat) throws SchedulerException;
+	
+	void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data, int millis,
+			int interval, Date ends) throws SchedulerException;
+
+	void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data, int interval,
+			int repeat, Date ends) throws SchedulerException;
+
+	void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data, Date start,
+			int interval, int repeat, Date ends) throws SchedulerException;
 
 	void rescheduleIn(String scheduleId, int millis, int interval, int repeat)
 			throws SchedulerException, NotScheduledException;
@@ -86,15 +95,6 @@ public interface SchedulerService extends
 	void rescheduleNow(String scheduleId, int interval, int repeat, Date end)
 			throws SchedulerException, NotScheduledException;
 
-	String scheduleIn(Class<? extends Job> clz, JobDataMap data, int millis,
-			int interval, Date ends) throws SchedulerException;
-
-	String scheduleNow(Class<? extends Job> clz, JobDataMap data, int interval,
-			int repeat, Date ends) throws SchedulerException;
-
-	String scheduleAt(Class<? extends Job> clz, JobDataMap data, Date start,
-			int interval, int repeat, Date ends) throws SchedulerException;
-
 	SchedulerResource updateResource(SchedulerResource resource,
 			String name, Map<String, String> properties)
 			throws ResourceChangeException, AccessDeniedException;
@@ -107,5 +107,9 @@ public interface SchedulerService extends
 
 	SchedulerResource createResource(String name, String uuid, Realm realm, Map<String, String> properties)
 			throws ResourceCreationException, AccessDeniedException;
-
+	
+	public boolean jobExists(String scheduleId) throws SchedulerException;
+	
+	public boolean jobDoesNotExists(String scheduleId) throws SchedulerException;
+	
 }

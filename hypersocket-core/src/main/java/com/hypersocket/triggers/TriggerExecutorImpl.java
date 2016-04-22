@@ -1,5 +1,7 @@
 package com.hypersocket.triggers;
 
+import java.util.UUID;
+
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -17,6 +19,7 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
@@ -74,9 +77,10 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 		
 			Principal principal = realmService.getSystemPrincipal();
 			
+			Realm currentRealm = sourceEvent.getCurrentRealm();
 			if(sourceEvent.hasAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME)) {
 				principal = realmService.getPrincipalByName(
-						sourceEvent.getCurrentRealm(), 
+						currentRealm, 
 						sourceEvent.getAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME),
 						PrincipalType.USER);
 			} else if(hasAuthenticatedContext()) {
@@ -84,7 +88,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 			}
 			
 			JobDataMap data = new PermissionsAwareJobData(
-					sourceEvent.getCurrentRealm(),
+					currentRealm,
 					principal,
 					hasAuthenticatedContext() ? getCurrentLocale()
 							: configurationService.getDefaultLocale(),
@@ -93,10 +97,12 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 			data.put("event", sourceEvent);
 			data.put("sourceEvent", sourceEvent);
 			data.put("trigger", trigger);
-			data.put("realm", sourceEvent.getCurrentRealm());
+			data.put("realm", currentRealm);
 			
 			try {
-				schedulerService.scheduleNow(TriggerJob.class, data);
+				String scheduleId = UUID.randomUUID().toString();
+				
+				schedulerService.scheduleNow(TriggerJob.class, scheduleId, data);
 			} catch (SchedulerException e) {
 				log.error("Failed to schedule event trigger job", e);
 			}

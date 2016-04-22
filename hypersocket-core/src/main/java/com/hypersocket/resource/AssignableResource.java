@@ -29,6 +29,10 @@ import com.hypersocket.permissions.Role;
 @Table(name="assignable_resources")
 public class AssignableResource extends RealmResource {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7293251973484666341L;
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Fetch(FetchMode.SELECT)
 	@JoinTable(name = "resource_roles", joinColumns={@JoinColumn(name="resource_id")}, 

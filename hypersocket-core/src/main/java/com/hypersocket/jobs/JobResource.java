@@ -11,6 +11,11 @@ import com.hypersocket.resource.RealmResource;
 @Table(name="jobs")
 public class JobResource extends RealmResource {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5348826725565924228L;
+
 	@OneToOne
 	JobResource parentJob;
 

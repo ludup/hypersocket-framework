@@ -33,6 +33,11 @@ import com.hypersocket.session.Session;
 @Table(name="assignable_resource_sessions")
 public abstract class AssignableResourceSession<T extends AssignableResource> extends AbstractEntity<Long> {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 720402107508666208L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
 	@Column(name="id")

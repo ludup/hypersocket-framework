@@ -6,6 +6,10 @@ import com.hypersocket.resource.AssignableResource;
 
 public class SchedulerResource extends AssignableResource {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1135368254952147043L;
 	String started;
 	int intervals;
 	Date end;

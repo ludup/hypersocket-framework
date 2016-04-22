@@ -5,6 +5,11 @@ import com.hypersocket.realm.PrincipalType;
 
 public class FakePrincipal extends Principal {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4101680957356008739L;
+
 	public FakePrincipal() {
 		this.setId(-1L);
 		this.setName("user1");

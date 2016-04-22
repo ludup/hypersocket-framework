@@ -11,6 +11,11 @@ import com.hypersocket.resource.RealmResource;
 @Table(name = "uploaded_files")
 public class FileUpload extends RealmResource {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8896410295739619520L;
+
 	@Column(name = "file_name")
 	String fileName;
 

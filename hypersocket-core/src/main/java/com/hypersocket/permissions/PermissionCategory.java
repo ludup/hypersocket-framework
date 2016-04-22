@@ -30,6 +30,11 @@ import com.hypersocket.repository.AbstractEntity;
 @XmlRootElement(name="permissionCategory")
 public class PermissionCategory extends AbstractEntity<Long> {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -9024441856361180370L;
+
 	@Id
 	@GeneratedValue
 	@Column(name="id")

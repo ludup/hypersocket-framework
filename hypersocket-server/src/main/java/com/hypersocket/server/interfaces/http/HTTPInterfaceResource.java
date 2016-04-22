@@ -12,6 +12,11 @@ import com.hypersocket.resource.RealmResource;
 @Table(name="http_interfaces")
 public class HTTPInterfaceResource extends RealmResource {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1892731372161390416L;
+
 	@Column(name="interfaces", length=1024)
 	String interfaces;
 	
