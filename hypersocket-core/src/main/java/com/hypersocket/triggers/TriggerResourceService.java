@@ -17,6 +17,7 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
+import com.hypersocket.tables.ColumnSort;
 
 public interface TriggerResourceService extends
 		AbstractResourceService<TriggerResource> {
@@ -89,4 +90,9 @@ public interface TriggerResourceService extends
 
 	String searchTemplates(String search, int iDisplayStart,
 			int iDisplayLength) throws IOException, AccessDeniedException;
+	
+	List<?> searchEvents(Realm realm, String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting)
+			throws AccessDeniedException;
+	
+	Long getEventCount(Realm realm, String searchColumn, String searchPattern) throws AccessDeniedException;
 }

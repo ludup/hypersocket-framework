@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
+import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +16,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.SystemEvent;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
+import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 
@@ -127,5 +132,36 @@ public class TriggerResourceRepositoryImpl extends
 		criteria.add(Restrictions.eq("triggerType", TriggerType.TRIGGER));
 		criteria.setFetchMode("conditions", FetchMode.SELECT);
 		criteria.setFetchMode("childTriggers", FetchMode.SELECT);
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public List<EventDefinition> searchEvents(final Realm realm, String searchColumn, String searchPattern,
+			int start, int length, ColumnSort[] sorting) {
+		return search(EventDefinition.class, "name", searchPattern, start, length,
+				sorting, new CriteriaConfiguration() {
+
+					@Override
+					public void configure(Criteria criteria) {
+						criteria.add(Restrictions.eq("hidden", false));
+						criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+						criteria.add(Restrictions.eq("realm", realm));
+					}
+				});
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Long countEvents(final Realm realm, String columnName, String searchPattern) {
+		return getCount(Role.class, columnName, searchPattern,
+				new CriteriaConfiguration() {
+
+					@Override
+					public void configure(Criteria criteria) {
+						criteria.add(Restrictions.eq("hidden", false));
+						criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+						criteria.add(Restrictions.eq("realm", realm));
+					}
+				});
 	}
 }

@@ -37,6 +37,7 @@ import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.RolePermission;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
@@ -46,6 +47,7 @@ import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.SessionService;
+import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.events.TriggerExecutedEvent;
@@ -641,5 +643,58 @@ public class TriggerResourceServiceImpl extends
 
 		return json;
 	}
+	
+	@Override
+	public List<?> searchEvents(Realm realm, String searchColumn, String searchPattern, int start, int length,
+			ColumnSort[] sorting) throws AccessDeniedException {
+		assertPermission(RolePermission.READ);
 
+		return repository.searchEvents(realm, searchColumn, searchPattern, start,
+				length, sorting);
+	}
+
+	@Override
+	public Long getEventCount(Realm realm, String columnName, String searchPattern) throws AccessDeniedException {
+		assertPermission(RolePermission.READ);
+
+		return repository.countEvents(getCurrentRealm(), columnName, searchPattern);
+	}
+	
+	@Override
+	public List<EventDefinition> getTriggerEvents(String pattern) {
+		List<EventDefinition> ret = new ArrayList<EventDefinition>();
+		for (EventDefinition def : eventService.getEvents()) {
+			if(def.getI18nNamespace().indexOf("pattern") < -1){
+				ret.add(new EventDefinition(def, def.getI18nNamespace(),
+						getEventAttributes(def)));				
+			}
+		}
+		Collections.sort(ret, new Comparator<EventDefinition>() {
+
+			@Override
+			public int compare(EventDefinition o1, EventDefinition o2) {
+				return o2.getResourceKey().compareTo(o1.getResourceKey());
+			}
+		});
+		return ret;
+	}
+	
+	@Override
+	public List<EventDefinition> getTriggerEventCount(String pattern) {
+		List<EventDefinition> ret = new ArrayList<EventDefinition>();
+		for (EventDefinition def : eventService.getEvents()) {
+			if(def.getI18nNamespace().indexOf("pattern") < -1){
+				ret.add(new EventDefinition(def, def.getI18nNamespace(),
+						getEventAttributes(def)));				
+			}
+		}
+		Collections.sort(ret, new Comparator<EventDefinition>() {
+
+			@Override
+			public int compare(EventDefinition o1, EventDefinition o2) {
+				return o2.getResourceKey().compareTo(o1.getResourceKey());
+			}
+		});
+		return ret.size();
+	}
 }
