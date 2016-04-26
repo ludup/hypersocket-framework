@@ -680,7 +680,7 @@ public class TriggerResourceServiceImpl extends
 	}
 	
 	@Override
-	public List<EventDefinition> getTriggerEventCount(String pattern) {
+	public Long getTriggerEventCount(String pattern) {
 		List<EventDefinition> ret = new ArrayList<EventDefinition>();
 		for (EventDefinition def : eventService.getEvents()) {
 			if(def.getI18nNamespace().indexOf("pattern") < -1){
@@ -695,6 +695,6 @@ public class TriggerResourceServiceImpl extends
 				return o2.getResourceKey().compareTo(o1.getResourceKey());
 			}
 		});
-		return ret.size();
+		return new Long(ret.size());
 	}
 }

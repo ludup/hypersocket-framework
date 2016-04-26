@@ -95,4 +95,8 @@ public interface TriggerResourceService extends
 			throws AccessDeniedException;
 	
 	Long getEventCount(Realm realm, String searchColumn, String searchPattern) throws AccessDeniedException;
+	
+	List<EventDefinition> getTriggerEvents(String pattern);
+	
+	Long getTriggerEventCount(String pattern);
 }
