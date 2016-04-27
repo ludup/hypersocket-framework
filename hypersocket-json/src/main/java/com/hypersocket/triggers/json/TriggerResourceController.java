@@ -667,18 +667,14 @@ public class TriggerResourceController extends AbstractTriggerController {
 								int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return resourceService.searchEvents(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern, start, length, sorting);
+							return resourceService.getTriggerEvents(searchPattern, sessionUtils.getLocale(request));
 						}
 
 						@Override
 						public Long getTotalCount(String searchColumn, String searchPattern)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return resourceService.getEventCount(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern);
+							return resourceService.getTriggerEventCount(searchPattern, sessionUtils.getLocale(request));
 						}
 					});
 		} finally {

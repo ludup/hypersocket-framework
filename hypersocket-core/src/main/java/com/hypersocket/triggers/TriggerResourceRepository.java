@@ -21,9 +21,4 @@ public interface TriggerResourceRepository extends
 	TriggerCondition getConditionById(Long id);
 
 	Collection<TriggerResource> getActionsByResourceKey(String resourceKey);
-
-	List<EventDefinition> searchEvents(Realm realm, String searchColumn, String searchPattern, int start,
-			int length, ColumnSort[] sorting);
-	
-	Long countEvents(Realm realm, String columnName, String searchPattern);
 }

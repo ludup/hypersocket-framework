@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,6 +30,7 @@ import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.http.HttpUtilsImpl;
+import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
@@ -645,26 +647,10 @@ public class TriggerResourceServiceImpl extends
 	}
 	
 	@Override
-	public List<?> searchEvents(Realm realm, String searchColumn, String searchPattern, int start, int length,
-			ColumnSort[] sorting) throws AccessDeniedException {
-		assertPermission(RolePermission.READ);
-
-		return repository.searchEvents(realm, searchColumn, searchPattern, start,
-				length, sorting);
-	}
-
-	@Override
-	public Long getEventCount(Realm realm, String columnName, String searchPattern) throws AccessDeniedException {
-		assertPermission(RolePermission.READ);
-
-		return repository.countEvents(getCurrentRealm(), columnName, searchPattern);
-	}
-	
-	@Override
-	public List<EventDefinition> getTriggerEvents(String pattern) {
+	public List<EventDefinition> getTriggerEvents(String pattern, Locale locale) {
 		List<EventDefinition> ret = new ArrayList<EventDefinition>();
 		for (EventDefinition def : eventService.getEvents()) {
-			if(def.getI18nNamespace().indexOf("pattern") < -1){
+			if(I18N.getResource(locale, def.getResourceBundle(), def.getResourceKey()).indexOf(pattern) > -1){
 				ret.add(new EventDefinition(def, def.getI18nNamespace(),
 						getEventAttributes(def)));				
 			}
@@ -680,10 +666,10 @@ public class TriggerResourceServiceImpl extends
 	}
 	
 	@Override
-	public Long getTriggerEventCount(String pattern) {
+	public Long getTriggerEventCount(String pattern, Locale locale) {
 		List<EventDefinition> ret = new ArrayList<EventDefinition>();
 		for (EventDefinition def : eventService.getEvents()) {
-			if(def.getI18nNamespace().indexOf("pattern") < -1){
+			if(I18N.getResource(locale, def.getResourceBundle(), def.getResourceKey()).indexOf(pattern) > -1){
 				ret.add(new EventDefinition(def, def.getI18nNamespace(),
 						getEventAttributes(def)));				
 			}

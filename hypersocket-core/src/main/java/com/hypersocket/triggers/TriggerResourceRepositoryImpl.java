@@ -133,35 +133,4 @@ public class TriggerResourceRepositoryImpl extends
 		criteria.setFetchMode("conditions", FetchMode.SELECT);
 		criteria.setFetchMode("childTriggers", FetchMode.SELECT);
 	}
-	
-	@Override
-	@Transactional(readOnly = true)
-	public List<EventDefinition> searchEvents(final Realm realm, String searchColumn, String searchPattern,
-			int start, int length, ColumnSort[] sorting) {
-		return search(EventDefinition.class, "name", searchPattern, start, length,
-				sorting, new CriteriaConfiguration() {
-
-					@Override
-					public void configure(Criteria criteria) {
-						criteria.add(Restrictions.eq("hidden", false));
-						criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-						criteria.add(Restrictions.eq("realm", realm));
-					}
-				});
-	}
-	
-	@Override
-	@Transactional(readOnly = true)
-	public Long countEvents(final Realm realm, String columnName, String searchPattern) {
-		return getCount(Role.class, columnName, searchPattern,
-				new CriteriaConfiguration() {
-
-					@Override
-					public void configure(Criteria criteria) {
-						criteria.add(Restrictions.eq("hidden", false));
-						criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-						criteria.add(Restrictions.eq("realm", realm));
-					}
-				});
-	}
 }
