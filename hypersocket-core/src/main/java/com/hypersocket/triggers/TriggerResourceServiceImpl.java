@@ -39,7 +39,6 @@ import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.realm.RolePermission;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
@@ -49,7 +48,6 @@ import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.SessionService;
-import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.events.TriggerExecutedEvent;
@@ -650,7 +648,7 @@ public class TriggerResourceServiceImpl extends
 	public List<EventDefinition> getTriggerEvents(String pattern, Locale locale) {
 		List<EventDefinition> ret = new ArrayList<EventDefinition>();
 		for (EventDefinition def : eventService.getEvents()) {
-			if(I18N.getResource(locale, def.getResourceBundle(), def.getResourceKey()).indexOf(pattern) > -1){
+			if(I18N.getResource(locale, def.getResourceBundle(), def.getResourceKey()).toLowerCase().indexOf(pattern.toLowerCase()) > -1){
 				ret.add(new EventDefinition(def, def.getI18nNamespace(),
 						getEventAttributes(def)));				
 			}
@@ -669,7 +667,7 @@ public class TriggerResourceServiceImpl extends
 	public Long getTriggerEventCount(String pattern, Locale locale) {
 		List<EventDefinition> ret = new ArrayList<EventDefinition>();
 		for (EventDefinition def : eventService.getEvents()) {
-			if(I18N.getResource(locale, def.getResourceBundle(), def.getResourceKey()).indexOf(pattern) > -1){
+			if(I18N.getResource(locale, def.getResourceBundle(), def.getResourceKey()).toLowerCase().indexOf(pattern.toLowerCase()) > -1){
 				ret.add(new EventDefinition(def, def.getI18nNamespace(),
 						getEventAttributes(def)));				
 			}
