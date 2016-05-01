@@ -45,6 +45,7 @@ import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
+import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.TriggerCondition;
 import com.hypersocket.triggers.TriggerResource;
@@ -224,7 +225,10 @@ public class TriggerResourceController extends AbstractTriggerController {
 
 			List<EventDefinition> events = new ArrayList<EventDefinition>();
 
-			for (String result : taskService.getTaskProvider(resourceKey)
+			final TaskProvider taskProvider = taskService.getTaskProvider(resourceKey);
+			if(taskProvider == null)
+				throw new ResourceNotFoundException(TriggerResourceServiceImpl.RESOURCE_BUNDLE, "error.notfound", resourceKey);
+			for (String result : taskProvider
 					.getResultResourceKeys()) {
 				events.add(eventService.getEventDefinition(result));
 			}

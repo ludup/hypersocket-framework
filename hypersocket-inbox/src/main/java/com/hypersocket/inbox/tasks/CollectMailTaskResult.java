@@ -34,7 +34,7 @@ public class CollectMailTaskResult extends AbstractTaskResult {
 
 		// Not thread safe
 		DateFormat rfc2113 = new SimpleDateFormat("EEE, dd MMM yyyyy HH:mm:ss z");
-
+		
 		addAttribute(EVENT_FROM, StringUtils.join(from, ','));
 		addAttribute(EVENT_REPLY_TO, StringUtils.join(replyTo, ','));
 		addAttribute(EVENT_TO, StringUtils.join(to, ','));

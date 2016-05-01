@@ -148,6 +148,19 @@ public class ResourceUtils {
 		}, entities);
 	}
 	
+	public static String implodeNamePairs(Collection<NameValuePair> pairs) {
+		StringBuilder buf = new StringBuilder();
+		for(NameValuePair pair : pairs) {
+			if(buf.length() > 0) {
+				buf.append("]|[");
+			}
+			buf.append(pair.getName());
+			buf.append("=");
+			buf.append(HypersocketUtils.urlEncode(pair.getValue()));
+		}
+		return buf.toString();
+	}
+	
 	public static <T extends Resource> String implodeNamePairValues(NameValueImploder<T> imploder, Collection<T> entities) {
 		
 		StringBuilder buf = new StringBuilder();

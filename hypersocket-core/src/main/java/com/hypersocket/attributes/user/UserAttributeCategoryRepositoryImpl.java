@@ -1,8 +1,10 @@
 package com.hypersocket.attributes.user;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.hibernate.Criteria;
+import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,15 @@ public class UserAttributeCategoryRepositoryImpl extends
 		return UserAttributeCategory.class;
 	}
 
+	@Override
+	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
+	public List<UserAttributeCategory> allResources() {
+		Criteria crit = createCriteria(getResourceClass());
+		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		crit.add(Restrictions.eq("deleted", false));
+		return (List<UserAttributeCategory>) crit.list();
+	}
 
 	protected void afterSave(UserAttributeCategory resource, java.util.Map<String,String> properties) {
 		

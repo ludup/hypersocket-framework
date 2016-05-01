@@ -7,12 +7,16 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import com.hypersocket.tasks.Task;
 import com.hypersocket.triggers.TriggerResource;
@@ -49,6 +53,8 @@ public class AutomationResource extends Task {
 	String notes;
 	
 	@OneToMany(fetch=FetchType.EAGER)
+	@JoinTable(name="automations_trigger_resources")
+	@Fetch(FetchMode.SELECT)
 	Set<TriggerResource> triggers = new HashSet<TriggerResource>();
 	
 	public String getResourceKey() {

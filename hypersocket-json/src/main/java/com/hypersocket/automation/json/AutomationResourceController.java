@@ -44,6 +44,7 @@ import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 import com.hypersocket.triggers.TriggerCondition;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.TriggerResourceService;
+import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.TriggerResultType;
 import com.hypersocket.triggers.TriggerType;
 import com.hypersocket.triggers.json.AbstractTriggerController;
@@ -378,4 +379,71 @@ public class AutomationResourceController extends AbstractTriggerController {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	@AuthenticationRequired
+	@RequestMapping(value = "automations/trigger/{id}/{triggerId}", method = RequestMethod.DELETE, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<TriggerResource> deleteTrigger(
+			HttpServletRequest request, HttpServletResponse response,
+			@PathVariable("id") Long id, @PathVariable("triggerId") Long triggerId) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+			TriggerResource resource = triggerService.getResourceById(triggerId);
+
+			if (resource == null) {
+				return new ResourceStatus<TriggerResource>(false,
+						I18N.getResource(sessionUtils.getLocale(request),
+								TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+								"error.invalidResourceId", triggerId));
+			}
+			
+			AutomationResource automation = resourceService.getResourceById(id);
+			if (automation == null) {
+				return new ResourceStatus<TriggerResource>(false,
+						I18N.getResource(sessionUtils.getLocale(request),
+								TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+								"error.invalidResourceId", triggerId));
+			}
+			
+			String preDeletedName = resource.getName();
+
+			TriggerResource rootTrigger = null;
+
+			if (resource.getParentTrigger() != null) {
+				rootTrigger = resource;
+				while (rootTrigger.getParentTrigger() != null) {
+					rootTrigger = rootTrigger.getParentTrigger();
+				}
+			}
+			else {
+				automation.getChildTriggers().remove(resource);
+				resourceService.updateResource(automation);
+			}
+
+			triggerService.deleteResource(resource);
+
+			if (rootTrigger != null) {
+				return new ResourceStatus<TriggerResource>(
+						triggerService.getResourceById(rootTrigger.getId()),
+						I18N.getResource(sessionUtils.getLocale(request),
+								TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+								"trigger.deleted.info", preDeletedName));
+			} else {
+				return new ResourceStatus<TriggerResource>(true,
+						I18N.getResource(sessionUtils.getLocale(request),
+								TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+								"trigger.deleted.info", preDeletedName));
+			}
+
+		} catch (ResourceException e) {
+			return new ResourceStatus<TriggerResource>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 }

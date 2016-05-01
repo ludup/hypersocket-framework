@@ -45,7 +45,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	static Logger log = LoggerFactory.getLogger(AbstractRepositoryImpl.class);
 
 	private HibernateTemplate hibernateTemplate;
-	private SessionFactory sessionFactory;
+	protected SessionFactory sessionFactory;
 
 	private boolean requiresDemoWrite = false;
 
@@ -152,11 +152,16 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly = true)
 	protected <T> List<T> query(String query, Object... args) {
+		Query q = buildQuery(query, args);
+		return q.list();
+	}
+
+	protected Query buildQuery(String query, Object... args) {
 		Query q = createQuery(query, false);
 		for(int i = 0 ; i < args.length; i++) {
 			q.setParameter(i, args[i]);
 		}
-		return q.list();
+		return q;
 	}
 
 	@SuppressWarnings("unchecked")

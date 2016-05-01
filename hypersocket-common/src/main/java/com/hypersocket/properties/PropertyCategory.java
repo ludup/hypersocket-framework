@@ -24,6 +24,7 @@ public class PropertyCategory implements Serializable {
 	boolean systemOnly = false;
 	boolean hidden;
 	String filter = "default";
+	String name = null;
 	
 	List<AbstractPropertyTemplate> templates = new ArrayList<AbstractPropertyTemplate>();
 	
@@ -109,6 +110,14 @@ public class PropertyCategory implements Serializable {
 
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
+	}
+
+	public String getName() {
+		return name;		
+	}
+
+	public void setName(String name) {
+		this.name = name;		
 	}
 	
 	

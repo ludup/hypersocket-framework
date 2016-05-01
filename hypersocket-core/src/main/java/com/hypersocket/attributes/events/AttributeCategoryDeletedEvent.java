@@ -1,23 +1,23 @@
-package com.hypersocket.attributes.user.events;
+package com.hypersocket.attributes.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.hypersocket.attributes.user.UserAttributeCategory;
+import com.hypersocket.attributes.RealmAttributeCategory;
 import com.hypersocket.session.Session;
 
-public class UserAttributeCategoryDeletedEvent extends UserAttributeCategoryEvent {
+public class AttributeCategoryDeletedEvent extends AttributeCategoryEvent {
 
 	private static final long serialVersionUID = 6089611302300354505L;
 
 	public static final String EVENT_RESOURCE_KEY = "event.categoryDeleted";
 
-	public UserAttributeCategoryDeletedEvent(Object source, Session session,
-			UserAttributeCategory category) {
+	public AttributeCategoryDeletedEvent(Object source, Session session,
+			RealmAttributeCategory category) {
 		super(source, EVENT_RESOURCE_KEY, true, session, category);
 	}
 
-	public UserAttributeCategoryDeletedEvent(Object source, Throwable e,
-			Session session, UserAttributeCategory category) {
+	public AttributeCategoryDeletedEvent(Object source, Throwable e,
+			Session session, RealmAttributeCategory category) {
 		super(source, EVENT_RESOURCE_KEY, e, session, category);
 	}
 

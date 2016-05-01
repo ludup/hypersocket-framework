@@ -27,9 +27,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 
+import com.hypersocket.attributes.AttributeType;
 import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeService;
-import com.hypersocket.attributes.user.UserAttributeType;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventPropertyCollector;
@@ -388,7 +388,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		if (principal != null) {
 			for (UserAttribute attr : userAttributeService.getPersonalResources(principal)) {
 				if (properties.containsKey(attr.getVariableName())) {
-					if (attr.getEncrypted() || attr.getType() == UserAttributeType.PASSWORD) {
+					if (attr.getEncrypted() || attr.getType() == AttributeType.PASSWORD) {
 						properties.put(attr.getVariableName(), "**********");
 					}
 				}

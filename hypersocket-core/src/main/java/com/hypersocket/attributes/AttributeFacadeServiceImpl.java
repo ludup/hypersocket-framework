@@ -1,5 +1,6 @@
 package com.hypersocket.attributes;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +13,13 @@ import com.hypersocket.attributes.user.UserAttributeService;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Role;
+import com.hypersocket.properties.NameValuePair;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 
 @Service
-public class AttributeServiceImpl extends AbstractAuthenticatedServiceImpl
-		implements AttributeService {
+public class AttributeFacadeServiceImpl extends AbstractAuthenticatedServiceImpl
+		implements AttributeFacadeService {
 
 	@Autowired
 	UserAttributeCategoryService categoryService;
@@ -75,6 +77,6 @@ public class AttributeServiceImpl extends AbstractAuthenticatedServiceImpl
 
 		return attributeService.createAttribute(name, category, description,
 				defaultValue, weight, type, readOnly ? "admin" : "", false, encrypted, variableName,
-				new HashSet<Role>());
+				new HashSet<Role>(), new ArrayList<NameValuePair>());
 	}
 }

@@ -43,14 +43,15 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
 
-	static final String RESOURCE_BUNDLE_DEFAULT = "AssignableResourceService";
+	protected static final String RESOURCE_BUNDLE_DEFAULT = "AssignableResourceService";
 
-	final String resourceCategory;
+	protected final String resourceCategory;
 	
 	@Autowired
+	protected
 	RealmService realmService;
 
-	boolean assertPermissions = true;
+	protected boolean assertPermissions = true;
 
 	String fingerprint;
 	
@@ -230,7 +231,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public final void updateResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
 		
-		boolean changedDefault = false, changed = false;
+		boolean changedDefault = false;
 		
 		if(assertPermissions) {
 			assertPermission(getUpdatePermission(resource));
@@ -238,7 +239,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 		if(resource.getRealm()==null) {
 			resource.setRealm(isSystemResource() ? realmService.getSystemRealm() : getCurrentRealm());
-			changed = changedDefault = true;
+			changedDefault = true;
 		}
 		
 		if(!checkUnique(resource, false)) {
@@ -251,46 +252,48 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		
 		if(!Objects.equals(resource.getResourceCategory(), resourceCategory)) {
 			resource.setResourceCategory(resourceCategory);
-			changed = changedDefault = true;
+			changedDefault = true;
 		}
 		
-		if(populateOtherFields(resource, properties)) {
-			/* These are NOT considered 'default' changes, so generic update event will not be
-			 *  fired, it is up to sub-classes overriding populateOtherFields() to do this.
-			 */
-			changed = true;
+		final List<PropertyChange> changes = getRepository().populateEntityFields(resource, properties);
+		if(changes.size() > 0) {
+			changedDefault = changedDefault || fireNonStandardEvents(resource, changes);
 		}
-		
-		if(getRepository().populateEntityFields(resource, properties)) {
-			changed = changedDefault = true;
-		}
+		else
+			changedDefault = true;
 				
-		if(changed) {
-			try {
-				beforeUpdateResource(resource, properties);
-				getRepository().saveResource(resource, properties, ops);
-				updateFingerprint();
-				afterUpdateResource(resource, properties);
-				if(changedDefault)
-					fireResourceUpdateEvent(resource);
-			} catch (Throwable t) {
-				if(changedDefault)
-					fireResourceUpdateEvent(resource, t);
-				if (t instanceof ResourceChangeException) {
-					throw (ResourceChangeException) t;
-				} else {
-					throw new ResourceChangeException(RESOURCE_BUNDLE_DEFAULT,
-							"generic.update.error", t.getMessage());
-				}
+		try {
+			beforeUpdateResource(resource, properties);
+			getRepository().saveResource(resource, properties, ops);
+			updateFingerprint();
+			afterUpdateResource(resource, properties);
+			if(changedDefault)
+				fireResourceUpdateEvent(resource);
+		} catch (Throwable t) {
+			if(changedDefault)
+				fireResourceUpdateEvent(resource, t);
+			if (t instanceof ResourceChangeException) {
+				throw (ResourceChangeException) t;
+			} else {
+				throw new ResourceChangeException(RESOURCE_BUNDLE_DEFAULT,
+						"generic.update.error", t.getMessage());
 			}
 		}
 	}
 
-	protected boolean populateOtherFields(T resource, Map<String, String> properties) {
-		/* Populate other fields for updates, intended for when specific events for changes to
-		 * a resource are required 
-		 */
-		return false;
+	/**
+	 * 
+	 * If the resource wants to fire particular events for particular property changes,
+	 * then it should override this method. The list of resourceKey's for the properties
+	 * will be  supplied, and a boolean indicating whether the default resource change
+	 * event should be fired.
+	 * 
+	 * @param changes list of resourceKey changes
+	 * @param resource resource being updated
+	 * @return fire default resource change event
+	 */
+	protected boolean fireNonStandardEvents(T resource, List<PropertyChange> changes) {
+		return true;
 	}
 
 	@Override

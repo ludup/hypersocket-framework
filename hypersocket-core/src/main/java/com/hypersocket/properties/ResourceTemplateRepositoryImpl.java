@@ -703,6 +703,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			tmp.setUserCreated(c.isUserCreated());
 			tmp.setSystemOnly(c.isSystemOnly());
 			tmp.setFilter(c.getFilter());
+			tmp.setName(c.getName());
 			tmp.setHidden(c.isHidden());
 			for (AbstractPropertyTemplate t : c.getTemplates()) {
 				ResourcePropertyTemplate template = new ResourcePropertyTemplate(t, resource);
@@ -746,6 +747,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			tmp.setDisplayMode(c.getDisplayMode());
 			tmp.setSystemOnly(c.isSystemOnly());
 			tmp.setFilter(c.getFilter());
+			tmp.setName(c.getName());
 			tmp.setHidden(c.isHidden());
 			for (AbstractPropertyTemplate t : c.getTemplates()) {
 				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
@@ -766,6 +768,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				tmp.setFilter(c.getFilter());
 				tmp.setUserCreated(c.isUserCreated());
 				tmp.setSystemOnly(c.isSystemOnly());
+				tmp.setName(c.getName());
 				tmp.setHidden(c.isHidden());
 				for (AbstractPropertyTemplate t : c.getTemplates()) {
 					tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));

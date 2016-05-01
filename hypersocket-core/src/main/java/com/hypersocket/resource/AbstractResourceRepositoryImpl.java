@@ -1,8 +1,10 @@
 package com.hypersocket.resource;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -95,12 +97,13 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	}
 	
 	@Override
-	public boolean populateEntityFields(T resource, Map<String,String> properties) {
-		boolean changed = false;
-		for(String resourceKey : getPropertyNames(resource)) {
+	public List<PropertyChange> populateEntityFields(T resource, Map<String,String> properties) {
+		List<PropertyChange> changedProperties = new ArrayList<>();
+		final Set<String> propertyNames = getPropertyNames(resource);
+		for(String resourceKey : propertyNames) {
 			if(properties.containsKey(resourceKey)) {
 				PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
-				if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
+//				if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
 					String val = getValue(resource, resourceKey);
 					String newVal = properties.get(resourceKey);
 					
@@ -111,15 +114,15 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 						newVal = "";
 					
 					if(!Objects.equals(val, newVal)) {
-						changed = true;
+						changedProperties.add(new PropertyChange(resourceKey, val, newVal));
 					}
 					
 					setValue(resource, resourceKey, newVal);
 					properties.remove(resourceKey);
-				}
+//				}
 			}
 		}
-		return changed;
+		return changedProperties;
 	}
 	
 	@Override

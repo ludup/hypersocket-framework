@@ -1,6 +1,11 @@
 package com.hypersocket.attributes.json;
 
-public class UserAttributeUpdate {
+import java.util.Collection;
+import java.util.List;
+
+import com.hypersocket.properties.NameValuePair;
+
+public class AttributeUpdate {
 
 	private Long id;
 	private String name;
@@ -13,13 +18,14 @@ public class UserAttributeUpdate {
 	private Boolean readOnly;
 	private Boolean encrypted;
 	private String variableName;
+	private List<NameValuePair> options;
 	Long[] roles;
 	
-	public UserAttributeUpdate() {
+	public AttributeUpdate() {
 
 	}
 
-	public UserAttributeUpdate(Long id, String name, Long category,
+	public AttributeUpdate(Long id, String name, Long category,
 			String description, String defaultValue, int weight, String type,
 			String displayMode, Boolean readOnly, Boolean encrypted, String variableName) {
 		this.id = id;
@@ -130,6 +136,9 @@ public class UserAttributeUpdate {
 	public void setDisplayMode(String displayMode) {
 		this.displayMode = displayMode;
 	}
-	
+
+	public Collection<NameValuePair> getOptions() {
+		return options;
+	}
 	
 }

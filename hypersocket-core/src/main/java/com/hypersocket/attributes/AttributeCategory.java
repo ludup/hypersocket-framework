@@ -1,11 +1,10 @@
 package com.hypersocket.attributes;
 
+public interface AttributeCategory<T extends AbstractAttribute<?>> {
 
-public interface AttributeCategory {
-	
 	Long getId();
-	
+
 	String getName();
-	
+
 	Integer getWeight();
 }
