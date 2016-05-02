@@ -30,7 +30,10 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 	public PropertiesFileConfigurationStore() {
 	}
 	
-
+	public boolean isDefaultStore() {
+		return false;
+	}
+	
 	@Override
 	public void init(Element element) throws IOException {
 		

@@ -1,12 +1,21 @@
 <?xml version="1.0" ?>
 <propertyTemplates extends="userTemplate.xml">
-	<propertyCategory resourceKey="local.userDetails"
-		resourceBundle="LocalRealm" weight="0">
+	<propertyCategory resourceKey="local.userDetails" hidden="true"
+		resourceBundle="LocalRealm" weight="0" store="db">
 		<property resourceKey="user.fullname" inputType="text" weight="0"
 			defaultValue="" />
 		<property resourceKey="user.email" inputType="text" weight="10" allowEmpty="true" validateAll="email"
 			defaultValue="" />
 		<property resourceKey="user.mobile" inputType="text" weight="20"
+			defaultValue="" />
+	</propertyCategory>
+	<propertyCategory resourceKey="local.userDetailsE"
+		resourceBundle="LocalRealm" weight="0">
+		<property resourceKey="fullname" inputType="text" weight="0"
+			defaultValue="" />
+		<property resourceKey="email" inputType="text" weight="10" allowEmpty="true" validateAll="email"
+			defaultValue="" />
+		<property resourceKey="mobile" inputType="text" weight="20"
 			defaultValue="" />
 	</propertyCategory>
 </propertyTemplates>

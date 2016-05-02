@@ -198,6 +198,15 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 			throws ResourceCreationException {
 		
 		try {
+			
+			Principal principal = getPrincipalByName(username,
+					realm, 
+					PrincipalType.USER, PrincipalType.SYSTEM, PrincipalType.SERVICE);
+			
+			if(principal!=null) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.principalExists", username);
+			}
+			
 			LocalUser user = new LocalUser();
 			user.setName(username);
 			user.setResourceCategory(USER_RESOURCE_CATEGORY);

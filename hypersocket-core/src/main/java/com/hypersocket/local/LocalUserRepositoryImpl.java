@@ -8,8 +8,11 @@
 package com.hypersocket.local;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
@@ -20,7 +23,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.properties.EntityResourcePropertyStore;
+import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
@@ -37,6 +44,21 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 
 	@Autowired
 	PermissionService permissionService;
+	
+	@Autowired
+	EncryptionService encryptionService;
+
+	EntityResourcePropertyStore entityPropertyStore;
+	
+	@PostConstruct
+	private void postConstruct() {
+		entityPropertyStore = new EntityResourcePropertyStore(encryptionService);
+	}
+	
+	@Override
+	protected ResourcePropertyStore getPropertyStore() {
+		return entityPropertyStore;
+	}
 	
 	final static CriteriaConfiguration JOIN_GROUPS = new CriteriaConfiguration() {
 		
@@ -167,15 +189,30 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 			throw new IllegalArgumentException("No realm set for new user " + user.getPrincipalName());
 		}
 
+		Map<String,String> dbProperties = new HashMap<String,String>();
+		Map<String,String> entityProperties = new HashMap<String,String>();
+		if (properties != null) {
+			for(PropertyTemplate t : getPropertyTemplates(user.getId()==null ? null : user)) {
+				if(t.getPropertyStore().isDefaultStore()) {
+					dbProperties.put(t.getResourceKey(), properties.get(t.getResourceKey()));
+				} else {
+					entityProperties.put(t.getResourceKey(), properties.get(t.getResourceKey()));
+				}
+			};
+		}
+		// Save properties
+		for (Map.Entry<String, String> e : entityProperties.entrySet()) {
+			setValue(user,
+					e.getKey(),
+					e.getValue());
+		}
+				
 		save(user);
 		
-		// Save properties
-		if (properties != null) {
-			for (Map.Entry<String, String> e : properties.entrySet()) {
-				setValue(user,
-						e.getKey(),
-						e.getValue());
-			}
+		for (Map.Entry<String, String> e : dbProperties.entrySet()) {
+			setValue(user,
+					e.getKey(),
+					e.getValue());
 		}
 	}
 
