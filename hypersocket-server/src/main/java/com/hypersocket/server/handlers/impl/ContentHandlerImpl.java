@@ -47,6 +47,8 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	
 	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
 	
+	String basePath;
+	
 	public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
     public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
     public static final int HTTP_CACHE_SECONDS = 60;
@@ -63,10 +65,12 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	
 	@Override
 	public boolean handlesRequest(HttpServletRequest request) {
-		return request.getRequestURI().startsWith(server.resolvePath(getBasePath()));
+		return request.getRequestURI().startsWith(server.resolvePath(basePath));
 	}
 	
-	public abstract String getBasePath();
+	public void setBasePath(String basePath) {
+		this.basePath = basePath;
+	}
 
 	@Override
 	public void handleHttpRequest(HttpServletRequest request,
@@ -86,8 +90,6 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 				response.sendError(HttpStatus.SC_FORBIDDEN);
 			    return;
 			}
-			
-			String basePath = getBasePath();
 			
 			if(log.isDebugEnabled()) {
 				log.debug("Resolving " + getResourceName() + " resource in " + basePath + ": " + request.getRequestURI());
@@ -168,7 +170,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			if(e.getMessage().startsWith("/") && !e.getMessage().equals("/")) {
 				response.sendRedirect(e.getMessage());
 			} else {
-				response.sendRedirect(server.resolvePath(getBasePath() + (e.getMessage().startsWith("/") ? "" : "/") + e.getMessage()));
+				response.sendRedirect(server.resolvePath(basePath + (e.getMessage().startsWith("/") ? "" : "/") + e.getMessage()));
 			}
 		} finally {
 			responseProcessor.sendResponse(request, response, false);
@@ -258,7 +260,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
             }
         }
 
-        uri = uri.replaceAll(server.resolvePath(getBasePath()), "");
+        uri = uri.replaceAll(server.resolvePath(basePath), "");
 
         return uri;
     }
@@ -324,10 +326,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
      *            file to extract content type
      */
     private void setContentTypeHeader(HttpServletResponse response, String path) {
-        response.setHeader(HttpHeaders.CONTENT_TYPE, getContentType(path));
+        response.setHeader(HttpHeaders.CONTENT_TYPE, mimeTypesMap.getContentType(path));
     }
 
-    protected String getContentType(String path) {
-    	return mimeTypesMap.getContentType(path);
-    }
 }
