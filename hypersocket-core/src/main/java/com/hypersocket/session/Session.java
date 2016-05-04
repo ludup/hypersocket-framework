@@ -150,6 +150,7 @@ public class Session extends AbstractEntity<String> {
 						- getCreateDate().getTime()).doubleValue()
 				/ 1000).setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue();
 	}
+	
 	Principal getPrincipal() {
 		return principal;
 	}

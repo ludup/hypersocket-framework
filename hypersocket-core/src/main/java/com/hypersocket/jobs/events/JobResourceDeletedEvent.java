@@ -9,6 +9,10 @@ public class JobResourceDeletedEvent extends
 		JobResourceEvent {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8721556313766105978L;
+	/**
 	 * TODO rename to suit your resource and replace job with lower case
 	 * name of your resource.
 	 * 
