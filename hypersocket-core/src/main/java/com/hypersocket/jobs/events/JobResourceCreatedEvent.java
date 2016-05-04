@@ -9,6 +9,10 @@ public class JobResourceCreatedEvent extends
 		JobResourceEvent {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3888399996190675339L;
+	/**
 	 * TODO rename to suit your resource and replace job with lower case
 	 * name of your resource.
 	 * 

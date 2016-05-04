@@ -8,6 +8,10 @@ import com.hypersocket.session.Session;
 
 public class JobResourceEvent extends ResourceEvent {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 921710635139797086L;
 	public static final String EVENT_RESOURCE_KEY = "job.event";
 	
 	public JobResourceEvent(Object source, String resourceKey,
