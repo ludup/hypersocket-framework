@@ -54,6 +54,15 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	@Temporal(TemporalType.TIMESTAMP)
 	Date lastSignOn;
 	
+	@Column(name="fullname")
+	String fullname;
+	
+	@Column(name="email")
+	String email;
+	
+	@Column(name="mobile")
+	String mobile;
+	
 	@JsonIgnore
 	public Set<LocalGroup> getGroups() {
 		return groups;
@@ -65,7 +74,7 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	}
 	
 	public String getPrincipalDescription() {
-		return getName();
+		return getFullname();
 	}
 	
 	public void setType(PrincipalType type) {
@@ -93,5 +102,30 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	public void setLastSignOn(Date lastSignOn) {
 		this.lastSignOn = lastSignOn;
 	}
+
+	public String getFullname() {
+		return fullname;
+	}
+
+	public void setFullname(String fullname) {
+		this.fullname = fullname;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getMobile() {
+		return mobile;
+	}
+
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+	
 	
 }
