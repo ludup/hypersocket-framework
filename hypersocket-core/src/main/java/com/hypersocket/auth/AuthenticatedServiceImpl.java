@@ -216,5 +216,13 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	public boolean hasSessionContext() {
 		return currentSession.get() != null;
 	}
+	
+	@Override
+	public boolean isSystemContext() {
+		if(hasSessionContext()) {
+			return getCurrentSession().isSystem();
+		}
+		return false;
+	}
 
 }
