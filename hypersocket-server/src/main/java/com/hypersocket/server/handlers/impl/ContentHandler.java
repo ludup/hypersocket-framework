@@ -28,7 +28,7 @@ public interface ContentHandler {
 	public abstract long getLastModified(String path)
 			throws FileNotFoundException;
 
-	public abstract int getResourceStatus(String path);
+	public abstract int getResourceStatus(String path) throws RedirectException;
 
 	public abstract void addAlias(String alias, String path);
 

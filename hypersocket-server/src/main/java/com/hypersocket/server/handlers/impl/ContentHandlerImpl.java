@@ -200,7 +200,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	public abstract long getLastModified(String path) throws FileNotFoundException;
 
 	@Override
-	public abstract int getResourceStatus(String path);
+	public abstract int getResourceStatus(String path) throws RedirectException;
   
 	protected boolean isDynamic(String path) {
 		return dynamic.contains(path);
