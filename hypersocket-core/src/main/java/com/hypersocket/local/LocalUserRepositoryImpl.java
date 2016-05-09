@@ -193,10 +193,12 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		Map<String,String> entityProperties = new HashMap<String,String>();
 		if (properties != null) {
 			for(PropertyTemplate t : getPropertyTemplates(user.getId()==null ? null : user)) {
-				if(t.getPropertyStore().isDefaultStore()) {
-					dbProperties.put(t.getResourceKey(), properties.get(t.getResourceKey()));
-				} else {
-					entityProperties.put(t.getResourceKey(), properties.get(t.getResourceKey()));
+				if(properties.containsKey(t.getResourceKey())) {
+					if(t.getPropertyStore().isDefaultStore()) {
+						dbProperties.put(t.getResourceKey(), properties.get(t.getResourceKey()));
+					} else {
+						entityProperties.put(t.getResourceKey(), properties.get(t.getResourceKey()));
+					}
 				}
 			};
 		}
