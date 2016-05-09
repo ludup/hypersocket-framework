@@ -459,9 +459,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		
 		CertificateResourceService certificateService = (CertificateResourceService) applicationContext
 				.getBean("certificateResourceServiceImpl");
-		RealmService realmService = (RealmService) applicationContext
-				.getBean("realmServiceImpl");
-
 		
 		certificateService.setCurrentSession(sessionService.getSystemSession(), Locale.getDefault());
 		

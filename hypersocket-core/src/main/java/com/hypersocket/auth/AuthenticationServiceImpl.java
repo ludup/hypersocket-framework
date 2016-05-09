@@ -541,6 +541,24 @@ public class AuthenticationServiceImpl extends
 						.createTemplate(state, params));
 	}
 
+	@Override
+	@SuppressWarnings("rawtypes")
+	public FormTemplate getAuthenticationTemplate(String resourceKey,
+			AuthenticationState state,
+			Map params) {
+		if (!authenticators.containsKey(resourceKey)) {
+			if (log.isErrorEnabled()) {
+				log.error(state.getCurrentModule().getTemplate()
+						+ " is not a valid authentication template");
+			}
+			throw new IllegalStateException(state.getCurrentModule()
+					.getTemplate() + " is not a valid authenticator");
+		}
+		return modifyTemplate(state,
+				authenticators.get(resourceKey)
+						.createTemplate(state, params));
+	}
+	
 	protected FormTemplate modifyTemplate(AuthenticationState state,
 			FormTemplate template) {
 
