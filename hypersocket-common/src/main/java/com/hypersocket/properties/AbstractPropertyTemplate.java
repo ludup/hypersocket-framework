@@ -1,8 +1,6 @@
 package com.hypersocket.properties;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -24,11 +22,6 @@ public abstract class AbstractPropertyTemplate {
 	String name;
 	String description;
 	Map<String,String> attributes = new HashMap<String,String>();
-	List<PropertyOption> options = new ArrayList<>();
-	
-	public List<PropertyOption> getOptions() {
-		return options;
-	}
 
 	public String getName() {
 		return name;

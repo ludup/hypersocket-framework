@@ -15,6 +15,7 @@ import com.hypersocket.attributes.RealmAttributeCategory;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.i18n.I18N;
+import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Role;
@@ -37,6 +38,22 @@ public abstract class AbstractAttributeController<A extends AbstractAttribute<C>
 	protected AbstractAttributeController(String resourceBundle, String prefix) {
 		this.resourceBundle = resourceBundle;
 		this.prefix = prefix;
+	}
+	
+	public ResourceList<A> listAttributes(
+			HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			return new ResourceList<A>(
+					service.getResources(sessionUtils
+							.getCurrentRealm(request)));
+		} finally {
+			clearAuthenticatedContext();
+		}
 	}
 
 	public BootstrapTableResult tableAttributes(final HttpServletRequest request)

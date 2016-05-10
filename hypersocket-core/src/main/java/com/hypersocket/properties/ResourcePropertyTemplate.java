@@ -30,7 +30,7 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 		this.description = t.getDescription();
 		this.metaData = t.metaData;
 		this.attributes.putAll(t.attributes);
-		this.options.addAll(t.getOptions());
+//		this.options.addAll(t.getOptions());
 	}
 	
 	public void setPropertyStore(ResourcePropertyStore propertyStore) {

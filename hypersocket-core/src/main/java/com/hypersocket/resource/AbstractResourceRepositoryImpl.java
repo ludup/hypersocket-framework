@@ -102,12 +102,14 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		final Set<String> propertyNames = getPropertyNames(resource);
 		for(String resourceKey : propertyNames) {
 			if(properties.containsKey(resourceKey)) {
+				int x =1;
 				PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
 //				if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
 					String val = getValue(resource, resourceKey);
 					String newVal = properties.get(resourceKey);
 					
 					/* NOTE - I am not 100% sure about this. What if a value IS changing to (or from) null? */
+					
 					if(val == null) 
 						val = "";
 					if(newVal == null) 

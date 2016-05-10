@@ -9,13 +9,17 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Node;
 
 import com.hypersocket.attributes.user.events.UserAttributeCreatedEvent;
 import com.hypersocket.attributes.user.events.UserAttributeDeletedEvent;
@@ -402,9 +406,34 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		template.setReadOnly(attr.getReadOnly());
 		template.setMapping("");
 		template.setCategory(cat);
-		for(NameValuePair nvp : attr.getOptions()) {
-			template.getOptions().add(new PropertyOption(nvp.getValue(), nvp.getName(), nvp.getValue()));
+		if(!attr.getOptions().isEmpty()) {
+			StringBuffer buf = new StringBuffer();
+			StringBuffer attrBuf = new StringBuffer();
+			buf.append("{");
+			buf.append("\"");
+			buf.append("options");
+			buf.append("\": ");
+			buf.append("[");
+			int pair = 0;
+			for(NameValuePair nvp : attr.getOptions()) {
+				if(pair > 0) {
+					buf.append(",");
+					attrBuf.append(",");
+				}
+				attrBuf.append(nvp.getValue());
+				buf.append("{ \"name\": \"");
+				buf.append(StringEscapeUtils.escapeEcmaScript(nvp.getName()));
+				buf.append("\", \"value\": \"");
+				buf.append(StringEscapeUtils.escapeEcmaScript(nvp.getValue()));
+				buf.append("\"}");
+				pair++;
+			}
+			buf.append("]");
+			buf.append("}");
+			template.setMetaData(buf.toString());
+			template.getAttributes().put("options", StringEscapeUtils.escapeEcmaScript(attrBuf.toString()));
 		}
+		
 		template.setEncrypted(attr.getEncrypted());
 		template.setDefaultsToProperty("");
 		template.setPropertyStore(getStore());

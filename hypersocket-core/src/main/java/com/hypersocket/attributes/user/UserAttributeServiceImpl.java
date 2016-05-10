@@ -106,7 +106,7 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 
 			Collection<UserAttribute> attributes;
 			if (principal.equals(allUsersPrincial)) {
-				attributes = getResources();
+				attributes = getRepository().getResources(principal.getRealm());
 			} else {
 				attributes = getPersonalResources(principal);
 			}
