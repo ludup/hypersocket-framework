@@ -2,11 +2,11 @@
 <propertyTemplates extends="userTemplate.xml">
 	<propertyCategory resourceKey="local.userDetails" hidden="true"
 		resourceBundle="LocalRealm" weight="0" store="db">
-		<property resourceKey="user.fullname" inputType="text" weight="0"
+		<property resourceKey="user.fullname" inputType="text" weight="0" hidden="true"
 			defaultValue="" />
-		<property resourceKey="user.email" inputType="text" weight="10" allowEmpty="true" validateAll="email"
+		<property resourceKey="user.email" inputType="text" weight="10" allowEmpty="true" validateAll="email" hidden="true"
 			defaultValue="" />
-		<property resourceKey="user.mobile" inputType="text" weight="20"
+		<property resourceKey="user.mobile" inputType="text" weight="20" hidden="true"
 			defaultValue="" />
 	</propertyCategory>
 	<propertyCategory resourceKey="local.userDetailsE"
