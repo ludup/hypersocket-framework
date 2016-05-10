@@ -1,2 +1,7 @@
 /.settings/
 /client-common/
+/client-gui/
+/client-gui-jfx/
+/client-netty/
+/client-service/
+/hypersocket-client/
