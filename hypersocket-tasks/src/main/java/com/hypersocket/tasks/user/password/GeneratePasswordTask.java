@@ -14,11 +14,13 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -90,11 +92,6 @@ public class GeneratePasswordTask extends AbstractTaskProvider {
 	public AbstractTaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 
-		
-		PasswordGenerator generator = new PasswordGenerator();
-
-		List<CharacterRule> rules = new ArrayList<CharacterRule>();
-		
 		String principalName = processTokenReplacements(repository.getValue(task, "generatePassword.principal"), event);
 		Principal principal = realmService.getPrincipalByName(
 				task.getRealm(), 
@@ -113,33 +110,46 @@ public class GeneratePasswordTask extends AbstractTaskProvider {
 		int minLowercase = repository.getIntValue(task, "generatePassword.minLower");
 		int minUppcase = repository.getIntValue(task, "generatePassword.minUpper");
 		int minNonAlpha = repository.getIntValue(task, "generatePassword.minSymbols");
-		
-		if(minDigis > 0) {
-			rules.add(new DigitCharacterRule(minDigis));
-		}
-		if(minLowercase > 0) {
-			rules.add(new LowercaseCharacterRule(minLowercase));
-		}
-		if(minUppcase > 0) {
-			rules.add(new UppercaseCharacterRule(minUppcase));
-		}
-		if(minNonAlpha > 0) {
-			rules.add(new NonAlphanumericCharacterRule(minNonAlpha));
-		}
-		
-		String password = generator.generatePassword(repository.getIntValue(task, "generatePassword.length"), rules);
-		
+
 		try {
+			String password = generatePassword(minDigis, minLowercase, minUppcase, minNonAlpha, 
+				repository.getIntValue(task, "generatePassword.length"));
+		
 			realmService.setPassword(principal, password, 
 					repository.getBooleanValue(task, "generatePassword.forceChange"), 
 					true);
-		
-			return new GeneratePasswordTaskResult(this, true, currentRealm, task, principal, password);
 			
-		} catch (Throwable e) {
-			return new GeneratePasswordTaskResult(this, e, currentRealm, task, principalName);
-		}
+			return new GeneratePasswordTaskResult(this, true, currentRealm, task, principal, password);
 		
+		} catch(Throwable t) {
+			return new GeneratePasswordTaskResult(this, t, currentRealm, task, principalName);
+		}
+	}
+	
+	public String generatePassword(int digits, 
+			int lower, 
+			int upper, 
+			int symbols, 
+			int maxLength) throws AccessDeniedException, ResourceException {
+		
+		List<CharacterRule> rules = new ArrayList<CharacterRule>();
+		
+		if(digits > 0) {
+			rules.add(new DigitCharacterRule(digits));
+		}
+		if(lower > 0) {
+			rules.add(new LowercaseCharacterRule(lower));
+		}
+		if(upper > 0) {
+			rules.add(new UppercaseCharacterRule(upper));
+		}
+		if(symbols > 0) {
+			rules.add(new NonAlphanumericCharacterRule(symbols));
+		}
+	
+		PasswordGenerator generator = new PasswordGenerator();
+		String password = generator.generatePassword(maxLength, rules);
+		return password;
 	}
 	
 	public String[] getResultResourceKeys() {
