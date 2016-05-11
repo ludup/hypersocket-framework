@@ -477,8 +477,6 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 	protected boolean hasSystemPrincipal(Set<Permission> principalPermissions) {
 		for (Permission p : principalPermissions) {
-			
-			log.info(p.getResourceKey());
 			if (p.getResourceKey().equals(
 					SystemPermission.SYSTEM.getResourceKey())
 					|| p.getResourceKey().equals(
