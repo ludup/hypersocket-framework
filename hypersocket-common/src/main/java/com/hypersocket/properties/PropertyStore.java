@@ -11,4 +11,6 @@ public interface PropertyStore {
 
 	public PropertyTemplate getPropertyTemplate(String resourceKey);
 
+	public boolean isDefaultStore();
+
 }

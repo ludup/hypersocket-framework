@@ -32,7 +32,8 @@ public abstract class ServletRequestHandler extends HttpRequestHandler {
     
 	@Override
 	public void handleHttpRequest(HttpServletRequest request,
-			HttpServletResponse response, HttpResponseProcessor responseProcessor) {
+			HttpServletResponse response, 
+			HttpResponseProcessor responseProcessor) {
 		try {
 			servlet.service(request, response);	
 			responseProcessor.sendResponse(request, response, false);

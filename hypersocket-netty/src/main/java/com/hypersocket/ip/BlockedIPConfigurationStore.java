@@ -25,6 +25,10 @@ public class BlockedIPConfigurationStore implements PropertyStore {
 		confFile =  new File(System.getProperty("hypersocket.conf", "conf"), "blockedIPs.txt");
 	}
 
+	public boolean isDefaultStore() {
+		return false;
+	}
+	
 	@Override
 	public synchronized String getPropertyValue(PropertyTemplate template) {
 		if(!confFile.exists()) {

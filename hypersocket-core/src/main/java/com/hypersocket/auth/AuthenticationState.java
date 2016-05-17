@@ -8,6 +8,7 @@
 package com.hypersocket.auth;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -23,8 +24,9 @@ public class AuthenticationState {
 
 	AuthenticationScheme scheme;
 	String remoteAddress;
-	Integer currentIndex = new Integer(0);
 	List<AuthenticationModule> modules;
+	List<String> incompleteModules = new ArrayList<String>();
+	List<String> completeModules = new ArrayList<String>();
 	List<PostAuthenticationStep> sessionPostAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
 	List<PostAuthenticationStep> nonSessionPostAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
 	String lastErrorMsg;
@@ -37,6 +39,8 @@ public class AuthenticationState {
 	int attempts = 0;
 	Locale locale;
 	String homePage = "";
+	String currentModule = null;
+	String lastAuthenticationModule = null;
 	
 	Map<String, String> parameters = new HashMap<String, String>();
 	Map<String, Object> environment = new HashMap<String, Object>();
@@ -47,14 +51,21 @@ public class AuthenticationState {
 	}
 
 	public AuthenticationModule getCurrentModule() {
-		if (currentIndex >= modules.size())
+		if (incompleteModules.isEmpty())
 			throw new IllegalStateException(
-					"Current index is greater than the number of modules");
-		return modules.get(currentIndex);
+					"There are no more authentication modules");
+		for(AuthenticationModule module : modules) {
+			if(module.getTemplate().equals(currentModule)) {
+				return module;
+			}
+		}
+		throw new IllegalStateException("Unexpected end of authentication modules!");
 	}
 
 	public void clean() {
-		currentIndex = 0;
+		incompleteModules.clear();
+		completeModules.clear();
+		setModules(modules);
 		attempts = 0;
 		lastErrorMsg = null;
 		lastErrorIsResourceKey = false;
@@ -68,20 +79,30 @@ public class AuthenticationState {
 		return attempts <= 1;
 	}
 
-	public Integer getCurrentIndex() {
-		return currentIndex;
+	public Collection<String> getIncompleteModules() {
+		return new ArrayList<String>(incompleteModules);
 	}
-
+	
 	public boolean isAuthenticationComplete() {
-		return currentIndex >= modules.size();
+		return incompleteModules.isEmpty();
 	}
 
 	void nextModule() {
-		this.currentIndex++;
+		lastAuthenticationModule = currentModule;
+		incompleteModules.remove(currentModule);
+		completeModules.add(lastAuthenticationModule);
+		if(incompleteModules.size() > 0) {
+			currentModule = incompleteModules.get(0);
+		}
 	}
 	
 	void revertModule() {
-		this.currentIndex--;
+		if(lastAuthenticationModule==null) {
+			throw new IllegalStateException("revertModule can only be called once after nextModule");
+		}
+		incompleteModules.add(0,  lastAuthenticationModule);
+		currentModule = lastAuthenticationModule;
+		lastAuthenticationModule = null;
 	}
 
 	public AuthenticationScheme getScheme() {
@@ -181,6 +202,14 @@ public class AuthenticationState {
 
 	public void setModules(List<AuthenticationModule> modules) {
 		this.modules = modules;
+		for(AuthenticationModule module : modules) {
+			incompleteModules.add(module.getTemplate());
+		}
+		this.currentModule = incompleteModules.get(0);
+	}
+	
+	public void setCurrentModule(String module) {
+		this.currentModule = module;
 	}
 	
 	public void setLastErrorIsResourceKey(boolean lastErrorIsResourceKey) {
@@ -243,7 +272,7 @@ public class AuthenticationState {
 	}
 	
 	public boolean hasNextStep() {
-		return currentIndex < modules.size() - 1;
+		return incompleteModules.size() > 1;
 	}
 
 	public void authAttempted() {

@@ -38,6 +38,10 @@ public class ImageConfigurationStore implements ResourcePropertyStore {
 		
 	}
 
+	public boolean isDefaultStore() {
+		return false;
+	}
+	
 	@Override
 	public String getPropertyValue(PropertyTemplate template) {
 		if(!resourceKeyImages.containsKey(template.getResourceKey())) {

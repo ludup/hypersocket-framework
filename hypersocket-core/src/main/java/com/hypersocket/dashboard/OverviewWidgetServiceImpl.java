@@ -23,7 +23,6 @@ import com.hypersocket.http.HttpUtilsImpl;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
-import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.SchedulerService;
 
@@ -66,10 +65,6 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-	
-//		menuService.registerMenu(new MenuRegistration(RESOURCE_BUNDLE, MENU_DASHBOARD_HELPZONE,
-//				"fa-graduation-cap", "helpzone", 0, SystemPermission.SYSTEM_ADMINISTRATION, null,
-//				null, null), MenuService.MENU_DASHBOARD);
 		
 		this.registerWidget(HELPZONE, new OverviewWidget(4, "overview.usefulLinks.title",
 				"usefulLinks", false) {
@@ -99,13 +94,6 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 				}
 			}
 		});
-		
-//		this.registerWidget(HELPZONE, new OverviewWidget(-1, "overview.gettingStarted.title",
-//				System.getProperty("hypersocket.id", "hypersocket-vpn"), true) {
-//			public boolean hasContent() {
-//				return true;
-//			}
-//		});
 		
 		this.registerWidget(HELPZONE, new OverviewWidget(3, "overview.quickSetup.title",
 				"quickSetup", false) {

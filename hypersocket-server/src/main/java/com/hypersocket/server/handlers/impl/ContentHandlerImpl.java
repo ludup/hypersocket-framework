@@ -62,8 +62,8 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
     }
 	
 	@Override
-	public boolean handlesRequest(HttpServletRequest request) {
-		return request.getRequestURI().startsWith(server.resolvePath(getBasePath()));
+	public boolean handlesRequest(String path) {
+		return path.startsWith(server.resolvePath(getBasePath()));
 	}
 	
 	public abstract String getBasePath();
@@ -139,6 +139,9 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 				}
 			}
 
+			setContentTypeHeader(response, path);
+			setDateAndCacheHeaders(response, path);
+			
 			long fileLength = getResourceLength(path);
 			long actualLength = 0;
 			InputStream in = getInputStream(path, request);
@@ -160,8 +163,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 				request.setAttribute(CONTENT_INPUTSTREAM, in);
 			}
 			
-			setContentTypeHeader(response, path);
-			setDateAndCacheHeaders(response, path);
+			
 			
 			response.setStatus(HttpStatus.SC_OK);
 		} catch (RedirectException e) {
@@ -200,7 +202,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	public abstract long getLastModified(String path) throws FileNotFoundException;
 
 	@Override
-	public abstract int getResourceStatus(String path);
+	public abstract int getResourceStatus(String path) throws RedirectException;
   
 	protected boolean isDynamic(String path) {
 		return dynamic.contains(path);

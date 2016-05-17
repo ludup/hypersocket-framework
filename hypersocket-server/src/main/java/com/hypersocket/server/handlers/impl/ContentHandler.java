@@ -11,7 +11,7 @@ import com.hypersocket.server.handlers.HttpResponseProcessor;
 
 public interface ContentHandler {
 
-	public abstract boolean handlesRequest(HttpServletRequest request);
+	public abstract boolean handlesRequest(String path);
 
 	public abstract void handleHttpRequest(HttpServletRequest request,
 			HttpServletResponse response,
@@ -28,7 +28,7 @@ public interface ContentHandler {
 	public abstract long getLastModified(String path)
 			throws FileNotFoundException;
 
-	public abstract int getResourceStatus(String path);
+	public abstract int getResourceStatus(String path) throws RedirectException;
 
 	public abstract void addAlias(String alias, String path);
 
