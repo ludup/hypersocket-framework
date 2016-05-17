@@ -42,6 +42,10 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		setEncryptionService(encryptionService);
 	}
 	
+	public boolean isDefaultStore() {
+		return false;
+	}
+	
 	public void registerResourceService(Class<?> clz, AbstractResourceRepository<?> service) {
 		resourceServices.put(clz, service);
 	}

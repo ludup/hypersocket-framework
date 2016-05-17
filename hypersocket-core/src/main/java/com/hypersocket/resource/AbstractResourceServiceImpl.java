@@ -385,6 +385,8 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE_DEFAULT,
 					"error.invalidResourceId", id);
 		}
+		
+		
 		return resource;
 	}
 	

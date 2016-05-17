@@ -257,6 +257,13 @@ public class HypersocketUtils {
 		}
 		return str;
 	}
+	
+	public static String checkNull(String str, String def) {
+		if(str==null) {
+			return def;
+		}
+		return str;
+	}
 
 	public static String urlEncode(String message) {
 		try {

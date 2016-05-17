@@ -42,7 +42,7 @@ public abstract class PasswordEnabledAuthenticatedServiceImpl
 		if(currentSession.get()==null) {
 			throw new IllegalStateException("Cannot determine current session for getCurrentPassword");
 		}
-		Session session = currentSession.get();
+		Session session = currentSession.get().peek();
 		try {
 			return encryptionService.decryptString("sessionState",
 					session.getStateParameter("password"),
@@ -58,7 +58,7 @@ public abstract class PasswordEnabledAuthenticatedServiceImpl
 		if(currentSession.get()==null) {
 			throw new IllegalStateException("Cannot determine current session for setCurrentPassword");
 		}
-		setCurrentPassword(currentSession.get(), password);
+		setCurrentPassword(currentSession.get().peek(), password);
 	}
 	
 	public void setCurrentPassword(Session session, String password) {

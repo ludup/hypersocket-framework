@@ -92,7 +92,6 @@ public class I18NServiceImpl implements I18NService {
 	}
 	
 	private void buildBundleMap(String bundle, Locale locale, Map<String,String> resources) {
-
 		for(String key :  I18N.getResourceKeys(locale, bundle)) {
 			resources.put(key, I18N.getResource(locale, bundle, key));
 		}

@@ -147,7 +147,11 @@ public class I18N {
 	}
 	
 	private static File getOverrideFile(Locale locale, String bundle) {
-		if (locale.equals(Locale.ENGLISH)) {
+		/**
+		 * We only care about English language, not variant so this should
+		 * work for en_GB, en and en_US etc.
+		 */
+		if (locale.getLanguage().equals(Locale.ENGLISH.getLanguage())) {
 			return new File(overideDirector, bundle
 					+ ".properties");
 		} else {

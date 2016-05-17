@@ -8,9 +8,12 @@
 package com.hypersocket.auth;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.Stack;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,16 +30,15 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 
 	static Logger log = LoggerFactory.getLogger(AuthenticatedServiceImpl.class);
 
-	static ThreadLocal<Principal> currentPrincipal = new ThreadLocal<Principal>();
-	static ThreadLocal<Session> currentSession = new ThreadLocal<Session>();
-	static ThreadLocal<Realm> currentRealm = new ThreadLocal<Realm>();
-	static ThreadLocal<Locale> currentLocale = new ThreadLocal<Locale>();
-	static ThreadLocal<Integer> currentReferences = new ThreadLocal<Integer>();
-	
+	static ThreadLocal<Stack<Principal>> currentPrincipal = new ThreadLocal<Stack<Principal>>();
+	static ThreadLocal<Stack<Session>> currentSession = new ThreadLocal<Stack<Session>>();
+	static ThreadLocal<Stack<Realm>> currentRealm = new ThreadLocal<Stack<Realm>>();
+	static ThreadLocal<Stack<Locale>> currentLocale = new ThreadLocal<Stack<Locale>>();
+		
 	static ThreadLocal<Boolean> isDelayingEvents = new ThreadLocal<Boolean>();
 	static ThreadLocal<LinkedList<SystemEvent>> delayedEvents = new ThreadLocal<LinkedList<SystemEvent>>();
 	
-	static ThreadLocal<List<PermissionType>> elevatedPermissions = new ThreadLocal<List<PermissionType>>();
+	static ThreadLocal<Set<PermissionType>> elevatedPermissions = new ThreadLocal<Set<PermissionType>>();
 	
 	protected abstract void verifyPermission(Principal principal,
 			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException;
@@ -44,7 +46,12 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	@Override
 	public void elevatePermissions(PermissionType... permissions) {
-		elevatedPermissions.set(Arrays.asList(permissions));
+		Set<PermissionType> elevated = elevatedPermissions.get();
+		if(elevated==null) {
+			elevated = new HashSet<PermissionType>();
+			elevatedPermissions.set(elevated);
+		}
+		elevated.addAll(Arrays.asList(permissions));
 	}
 	
 	@Override
@@ -52,7 +59,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		elevatedPermissions.remove();
 	}
 	
-	protected List<PermissionType> getElevatedPermissions() {
+	protected Set<PermissionType> getElevatedPermissions() {
 		return elevatedPermissions.get();
 	}
 	
@@ -61,47 +68,36 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	}
 	
 	@Override
-	public void setCurrentPrincipal(Principal principal, Locale locale,
-			Realm realm) {
-		currentPrincipal.set(principal);
-		currentRealm.set(realm);
-		currentLocale.set(locale);
-		
-		if(currentReferences.get()==null) {
-			currentReferences.set(new Integer(1));
-		} else {
-			currentReferences.set(currentReferences.get() + 1);
-		}
-		if(log.isDebugEnabled()) {
-			log.debug(String.format("There are now %d context references", currentReferences.get()));
-		}
-		if(log.isDebugEnabled()) {
-			log.debug(String.format("Context realm=%s prinipal=%s", getCurrentRealm().getName(),
-					getCurrentPrincipal().getName()));
-		}
+	public void setCurrentSession(Session session, Locale locale) {
+		setCurrentSession(session, session.getCurrentRealm(), locale);
 	}
 	
 	@Override
-	public void setCurrentSession(Session session, Locale locale) {
+	public void setCurrentSession(Session session, Realm realm, Locale locale) {
+		setCurrentSession(session, realm, session.getCurrentPrincipal(), locale);
+	}
+	
+	@Override
+	public void setCurrentSession(Session session, Realm realm, Principal principal, Locale locale) {
 		if(log.isDebugEnabled()) {
 			log.debug("Setting current session context " + session.getId());
 		}
 		if(session.getCurrentPrincipal()==null) {
 			throw new InvalidAuthenticationContext("Session does not have a current principal!");
 		}
-		currentPrincipal.set(session.getCurrentPrincipal());
-		currentSession.set(session);
-		currentRealm.set(session.getCurrentRealm());
-		currentLocale.set(locale);
-		
-		if(currentReferences.get()==null) {
-			currentReferences.set(new Integer(1));
-		} else {
-			currentReferences.set(currentReferences.get() + 1);
+		if(currentSession.get()==null) {
+			currentSession.set(new Stack<Session>());
+			currentPrincipal.set(new Stack<Principal>());
+			currentRealm.set(new Stack<Realm>());
+			currentLocale.set(new Stack<Locale>());
 		}
+		currentPrincipal.get().push(session.getCurrentPrincipal());
+		currentSession.get().push(session);
+		currentRealm.get().push(realm);
+		currentLocale.get().push(locale);
 		
 		if(log.isDebugEnabled()) {
-			log.debug(String.format("There are now %d context references", currentReferences.get()));
+			log.debug(String.format("There are now %d context references", currentSession.get().size()));
 		}
 		
 		if(log.isDebugEnabled()) {
@@ -110,22 +106,13 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		}
 	}
 	
-	@Override
-	public void setCurrentRealm(Realm realm) {
-		currentRealm.set(realm);
-
-		if(log.isDebugEnabled()) {
-			log.debug(String.format("Context realm=%s principal=/%s", getCurrentRealm().getName(),
-					getCurrentPrincipal().getName()));
-		}
-	}
 
 	@Override
 	public Principal getCurrentPrincipal() {
 		if(currentPrincipal.get()==null) {
-			return getCurrentSession().getCurrentPrincipal();
+			throw new InvalidAuthenticationContext("No session is attached to the current context!");
 		}
-		return currentPrincipal.get();
+		return currentPrincipal.get().peek();
 	}
 	
 	@Override
@@ -133,34 +120,37 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		if(currentSession.get()==null) {
 			throw new InvalidAuthenticationContext("No session is attached to the current context!");
 		}
-		return currentSession.get();
+		return currentSession.get().peek();
 	}
 
 	@Override
 	public Locale getCurrentLocale() {
-		return currentLocale.get();
+		if(currentLocale.get()==null) {
+			throw new InvalidAuthenticationContext("No session is attached to the current context!");
+		}
+		return currentLocale.get().peek();
 	}
 	
 	@Override
 	public Realm getCurrentRealm() {
-		if(currentRealm.get()!=null) {
-			return currentRealm.get();
+		if(currentRealm.get()==null) {
+			throw new InvalidAuthenticationContext("No session is attached to the current context!");
 		}
-		
-		return getCurrentSession().getCurrentRealm();
+		return currentRealm.get().peek();
 	}
 
 	@Override
 	public void clearPrincipalContext() {
 		
-		if(currentReferences.get() != null) {
-			if(currentReferences.get() > 1) {
+		if(currentSession.get() != null) {
+			currentSession.get().pop();
+			currentPrincipal.get().pop();
+			currentLocale.get().pop();
+			currentRealm.get().pop();
+			elevatedPermissions.remove();
+			if(currentSession.get().size() > 0) {
 				if(log.isDebugEnabled()) {
-					log.debug("Clearing authenticated context reference.");
-				}
-				currentReferences.set(currentReferences.get() - 1);
-				if(log.isDebugEnabled()) {
-					log.debug(String.format("There are %d context references left", currentReferences.get()));
+					log.debug(String.format("There are %d context references left", currentSession.get().size()));
 				}
 				return;
 			}
@@ -168,20 +158,16 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("There are no context references left"));
 		}
-		currentLocale.set(null);
-		currentPrincipal.set(null);
-		currentSession.set(null);
-		currentRealm.set(null);
-		currentReferences.set(null);
-		elevatedPermissions.set(null);
+		currentLocale.remove();
+		currentPrincipal.remove();
+		currentSession.remove();
+		currentRealm.remove();
+		elevatedPermissions.remove();
 	}
 	
 	@Override
 	public String getCurrentUsername() {
-		if(currentPrincipal.get()==null) {
-			throw new IllegalStateException("Cannot determine current principal for getCurrentUsername");
-		}
-		return currentPrincipal.get().getPrincipalName();
+		return getCurrentPrincipal().getPrincipalName();
 	}
 	
 	protected void assertPermission(PermissionType permission)

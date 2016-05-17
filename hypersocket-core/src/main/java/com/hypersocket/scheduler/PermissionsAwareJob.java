@@ -66,8 +66,7 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 						+ realm.getName() + "/" + principal.getName());
 			}
 
-			authenticationService.setCurrentSession(sessionService.getSystemSession(), locale);
-			authenticationService.setCurrentPrincipal(principal, locale, realm);
+			authenticationService.setCurrentSession(sessionService.getSystemSession(), realm, principal, locale);
 
 			try {
 				executeJob(context);
