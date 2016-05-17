@@ -291,7 +291,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public String[] getRealmPropertyArray(Realm realm, String resourceKey) {
-		return getRealmProperty(realm, resourceKey).split("\\]\\|\\[");
+		String value = getRealmProperty(realm, resourceKey);
+		if(StringUtils.isNotBlank(value)) {
+			return value.split("\\]\\|\\[");
+		} else {
+			return new String[0];
+		}
 	}
 
 	@Override

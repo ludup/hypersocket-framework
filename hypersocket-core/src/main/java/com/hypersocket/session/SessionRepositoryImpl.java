@@ -31,6 +31,7 @@ import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.RealmOrSystemRealmCriteria;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Repository
 public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,String> implements SessionRepository {
@@ -56,10 +57,10 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		Session session = new Session();
 		session.setPrincipal(principal);
 		session.setRemoteAddress(remoteAddress);
-		session.setUserAgent(userAgent);
-		session.setUserAgentVersion(userAgentVersion);
-		session.setOs(os);
-		session.setOsVersion(osVersion);
+		session.setUserAgent(HypersocketUtils.checkNull(userAgent, "unknown"));
+		session.setUserAgentVersion(HypersocketUtils.checkNull(userAgentVersion, "unknown"));
+		session.setOs(HypersocketUtils.checkNull(os, "unknown"));
+		session.setOsVersion(HypersocketUtils.checkNull(osVersion, "unknown"));
 		session.setAuthenticationScheme(scheme);
 		session.setTimeout(timeout);
 		session.setPrincipalRealm(realm);

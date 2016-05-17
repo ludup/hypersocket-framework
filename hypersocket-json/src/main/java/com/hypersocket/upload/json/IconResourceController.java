@@ -16,22 +16,17 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.upload.FileUploadService;
+import com.hypersocket.utils.HypersocketUtils;
 import com.sshtools.icongenerator.AwesomeIcon;
 import com.sshtools.icongenerator.Colors;
 import com.sshtools.icongenerator.IconBuilder;
@@ -39,14 +34,17 @@ import com.sshtools.icongenerator.IconBuilder.IconShape;
 import com.sshtools.icongenerator.IconBuilder.TextCase;
 import com.sshtools.icongenerator.java2d.Java2DIconCanvas;
 
-@Controller
-public class LogoController extends ResourceController {
+public abstract class IconResourceController<T extends Resource> extends ResourceController {
 
+	
 	static Logger log = LoggerFactory.getLogger(LogoController.class);
 	static MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
 	static Map<String, AwesomeIcon> map = new HashMap<String, AwesomeIcon>();
 	
 	final static ResourceList<IconEntry> ICON_LIST = new ResourceList<IconEntry>(new ArrayList<IconEntry>());
+	
+	@Autowired
+	FileUploadService fileService; 
 	
 	static {
 		for(AwesomeIcon a : AwesomeIcon.values()) {
@@ -57,54 +55,21 @@ public class LogoController extends ResourceController {
 			ICON_LIST.getResources().add(e);
 		}
 	}
-
-	@Autowired
-	FileUploadService resourceService;
-
-	/**
-	 * Generates an icon. Each icon is made up 3 separate elements, the final value
-	 * of each by default are calculated based on patterns in the 'type' and 'name'
-	 * parts of the path, although the behaviour of each may be customised to use
-	 * different algorithms or fixed values.
-	 * <p>
-	 * The format of the path is ..
-	 * <p>
-	 * <code>logo/[type]/[name]/[icon_size]_[shape]_[colour]_[text]</code>
-	 * <p>
-	 * <ul>
-	 * <li>[type]. This is 'type' name to use when generating icon attributes from the type name. Can be anything, but in practic
-	 * is currently one of BROWSER,SSO,NETWORK,FILE or default.</li>
-	 * <li>[name]. This is 'name' to use when generating icon attributes from the resource name.</li>
-	 * <li>[icon_size]. The size in pixels of the icon to generate.</li>
-	 * <li>[shape]. May be one auto, autotype, autoname, rounded, rectangle, round.</li>
-	 * <li>[color]. May be one auto, autotype, autoname or a hex colour.</li>
-	 * <li>[text]. May be one auto, autoicon, autotext, or icon[hex] or up to 3 characters or digits of text.</li>
-	 * </ul> 
-	 * 
-	 * @param request
-	 * @param response
-	 * @param type
-	 * @param name
-	 * @param spec
-	 * @param ext
-	 * @throws AccessDeniedException
-	 * @throws UnauthorizedException
-	 * @throws SessionTimeoutException
-	 * @throws IOException
-	 * @throws ResourceNotFoundException
-	 */
-	@RequestMapping(value = "logo/{type}/{name}/{spec}.{ext}", method = RequestMethod.GET)
-	@ResponseStatus(value = HttpStatus.OK)
-	public void downloadLogo(HttpServletRequest request,
-			HttpServletResponse response, @PathVariable String type,
-			@PathVariable String name, @PathVariable String spec,
-			@PathVariable String ext) throws AccessDeniedException,
+	
+	protected void downloadLogo(String url, String type, T resource, 
+			HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException, IOException,
 			ResourceNotFoundException {
 
-		name = URLDecoder.decode(name, "UTF-8");
-		type = URLDecoder.decode(type, "UTF-8");
-
+		if(HypersocketUtils.isUUID(url)) {
+			fileService.downloadURIFile(url, request, response, false);
+			return;
+		} 
+		
+		url = HypersocketUtils.urlDecode(url.substring(7));
+		String name = resource.getName();
+		String ext;
+		String spec = "spec";
 		String reversed = "";
 		for (int i = type.length() - 1; i >= 0; i--) {
 			reversed = reversed + type.charAt(i);
@@ -113,13 +78,16 @@ public class LogoController extends ResourceController {
 			type = type + reversed;
 
 		// Extract file extension
-
-		String[] arr = spec.split("_+");
+		String[] arr = url.split("_+");
 		if (arr.length < 4) {
 			throw new ResourceNotFoundException(
 					I18NServiceImpl.USER_INTERFACE_BUNDLE, "error.notFound");
 		}
 
+		String[] tmp = arr[3].split("\\.");
+		arr[3] = tmp[0];
+		ext = tmp[1];
+		
 		// Parse spec
 		int size = Integer.parseInt(arr[0]);
 		IconShape shape = isAuto(arr[1]) ? IconShape.values()[Math
@@ -230,15 +198,6 @@ public class LogoController extends ResourceController {
 	}
 	
 
-	@RequestMapping(value = "icons/list", method = RequestMethod.GET, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<IconEntry> listIcons(HttpServletRequest request,
-			HttpServletResponse response) throws AccessDeniedException,
-			UnauthorizedException {
-		return ICON_LIST;
-	}
-	
 	static boolean isAuto(String value) {
 		return value.equalsIgnoreCase("auto")
 				|| value.equalsIgnoreCase("autoname")
@@ -264,5 +223,4 @@ public class LogoController extends ResourceController {
 		}
 		return b.toString();
 	}
-
 }

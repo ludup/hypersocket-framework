@@ -11,6 +11,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.decibel.uasparser.OnlineUpdater;
+import com.decibel.uasparser.UASparser;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -97,4 +99,6 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	Map<String, Long> getPrincipalUsage(Date from, Date now) throws AccessDeniedException;
 
 	void executeInSystemContext(Runnable r);
+
+	void setUAParser(UASparser parser, OnlineUpdater updater);
 }
