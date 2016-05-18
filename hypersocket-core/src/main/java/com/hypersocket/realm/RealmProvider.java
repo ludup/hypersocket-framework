@@ -33,7 +33,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	boolean isReadOnly(Realm realm);
 
-	boolean supportsAccountUnlock(Realm realm);
+	boolean supportsAccountUnlock(Realm realm) throws IOException;
 
 	Principal createUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
 			String password, boolean forceChange) throws ResourceCreationException;
@@ -88,7 +88,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	String getPrincipalDescription(Principal principal);
 
-	boolean supportsAccountDisable(Realm realm);
+	boolean supportsAccountDisable(Realm realm) throws IOException;
 
 	Principal disableAccount(Principal principal) throws ResourceChangeException;
 
