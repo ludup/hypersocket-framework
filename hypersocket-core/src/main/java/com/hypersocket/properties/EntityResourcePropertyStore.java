@@ -1,4 +1,4 @@
-package com.hypersocket.cloud.company;
+package com.hypersocket.properties;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
