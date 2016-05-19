@@ -8,9 +8,11 @@
 package com.hypersocket.auth;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.Stack;
 
 import org.slf4j.Logger;
@@ -36,7 +38,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	static ThreadLocal<Boolean> isDelayingEvents = new ThreadLocal<Boolean>();
 	static ThreadLocal<LinkedList<SystemEvent>> delayedEvents = new ThreadLocal<LinkedList<SystemEvent>>();
 	
-	static ThreadLocal<List<PermissionType>> elevatedPermissions = new ThreadLocal<List<PermissionType>>();
+	static ThreadLocal<Set<PermissionType>> elevatedPermissions = new ThreadLocal<Set<PermissionType>>();
 	
 	protected abstract void verifyPermission(Principal principal,
 			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException;
@@ -44,7 +46,12 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	@Override
 	public void elevatePermissions(PermissionType... permissions) {
-		elevatedPermissions.set(Arrays.asList(permissions));
+		Set<PermissionType> elevated = elevatedPermissions.get();
+		if(elevated==null) {
+			elevated = new HashSet<PermissionType>();
+			elevatedPermissions.set(elevated);
+		}
+		elevated.addAll(Arrays.asList(permissions));
 	}
 	
 	@Override
@@ -52,20 +59,13 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		elevatedPermissions.remove();
 	}
 	
-	protected List<PermissionType> getElevatedPermissions() {
+	protected Set<PermissionType> getElevatedPermissions() {
 		return elevatedPermissions.get();
 	}
 	
 	protected boolean hasElevatedPermissions() {
 		return elevatedPermissions.get()!=null;
 	}
-	
-//	@Override
-//	public void setCurrentPrincipal(Principal principal, 
-//			Locale locale,
-//			Realm realm) {
-//		setCurrentSession(sessionService.getSystemSession(), realm, principal, locale);
-//	}
 	
 	@Override
 	public void setCurrentSession(Session session, Locale locale) {
@@ -106,15 +106,6 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		}
 	}
 	
-//	@Override
-//	public void setCurrentRealm(Realm realm) {
-//		currentRealm.set(realm);
-//
-//		if(log.isDebugEnabled()) {
-//			log.debug(String.format("Context realm=%s principal=/%s", getCurrentRealm().getName(),
-//					getCurrentPrincipal().getName()));
-//		}
-//	}
 
 	@Override
 	public Principal getCurrentPrincipal() {
@@ -156,7 +147,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 			currentPrincipal.get().pop();
 			currentLocale.get().pop();
 			currentRealm.get().pop();
-			elevatedPermissions.set(null); 
+			elevatedPermissions.remove();
 			if(currentSession.get().size() > 0) {
 				if(log.isDebugEnabled()) {
 					log.debug(String.format("There are %d context references left", currentSession.get().size()));
@@ -167,11 +158,11 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("There are no context references left"));
 		}
-		currentLocale.set(null);
-		currentPrincipal.set(null);
-		currentSession.set(null);
-		currentRealm.set(null);
-		elevatedPermissions.set(null);
+		currentLocale.remove();
+		currentPrincipal.remove();
+		currentSession.remove();
+		currentRealm.remove();
+		elevatedPermissions.remove();
 	}
 	
 	@Override

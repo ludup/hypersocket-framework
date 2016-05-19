@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -291,7 +292,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public String[] getRealmPropertyArray(Realm realm, String resourceKey) {
-		return getRealmProperty(realm, resourceKey).split("\\]\\|\\[");
+		String value = getRealmProperty(realm, resourceKey);
+		if(StringUtils.isNotBlank(value)) {
+			return value.split("\\]\\|\\[");
+		} else {
+			return new String[0];
+		}
 	}
 
 	@Override
@@ -299,6 +305,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		RealmProvider provider = getProviderForRealm(realm);
 		return provider.getValue(realm, resourceKey);
+	}
+	
+	@Override
+	public Map<String,String> getRealmProperties(Realm realm) {
+		RealmProvider provider = getProviderForRealm(realm);
+		return provider.getProperties(realm);
 	}
 
 	@Override
@@ -1461,7 +1473,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean supportsAccountUnlock(Realm realm) {
+	public boolean supportsAccountUnlock(Realm realm) throws IOException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -1469,7 +1481,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean supportsAccountDisable(Realm realm) {
+	public boolean supportsAccountDisable(Realm realm) throws IOException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
