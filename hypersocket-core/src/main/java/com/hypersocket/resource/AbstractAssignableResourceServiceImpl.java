@@ -606,7 +606,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	@Override
-	public Collection<PropertyCategory> getResourceProperties(T resource) {
+	public Collection<PropertyCategory> getResourceProperties(T resource) throws AccessDeniedException {
 		return getRepository().getPropertyCategories(resource);
 	}
 	

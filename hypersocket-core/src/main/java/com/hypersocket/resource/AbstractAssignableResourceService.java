@@ -91,7 +91,7 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 
 	Collection<PropertyCategory> getResourceTemplate();
 
-	Collection<PropertyCategory> getResourceProperties(T resource);
+	Collection<PropertyCategory> getResourceProperties(T resource) throws AccessDeniedException;
 
 	String getResourceProperty(T resource, String resourceKey);
 
