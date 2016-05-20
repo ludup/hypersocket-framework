@@ -22,8 +22,8 @@ public class DefaultServletRequestHandler extends ServletRequestHandler {
 	}
 
 	@Override
-	public boolean handlesRequest(HttpServletRequest request) {
-		return request.getRequestURI().startsWith(server.resolvePath(server.getAttribute(getName(), getName())));
+	public boolean handlesRequest(String request) {
+		return request.startsWith(server.resolvePath(server.getAttribute(getName(), getName())));
 	}
 
 }

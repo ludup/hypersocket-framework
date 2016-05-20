@@ -62,8 +62,8 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
     }
 	
 	@Override
-	public boolean handlesRequest(HttpServletRequest request) {
-		return request.getRequestURI().startsWith(server.resolvePath(getBasePath()));
+	public boolean handlesRequest(String request) {
+		return request.startsWith(server.resolvePath(getBasePath()));
 	}
 	
 	public abstract String getBasePath();
