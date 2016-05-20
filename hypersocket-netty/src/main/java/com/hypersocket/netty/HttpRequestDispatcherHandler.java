@@ -228,7 +228,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				if(log.isDebugEnabled()) {
 					log.debug("Checking HTTP handler: " + handler.getName());
 				}
-				if (handler.handlesRequest(servletRequest.getRequestURI())) {
+				if (handler.handlesRequest(servletRequest)) {
 					if(log.isDebugEnabled()) {
 						log.debug(handler.getName() + " is processing HTTP request");
 					}

@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.automation.events.AutomationTaskFinishedEvent;
 import com.hypersocket.automation.events.AutomationTaskStartedEvent;
 import com.hypersocket.events.EventService;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
@@ -35,6 +37,9 @@ public class AutomationJob extends AbstractTriggerJob {
 	@Autowired
 	SchedulerService schedulerService; 
 	
+	@Autowired
+	RealmService realmService;
+	
 	public AutomationJob() {
 	}
 
@@ -43,12 +48,19 @@ public class AutomationJob extends AbstractTriggerJob {
 			throws JobExecutionException {
 		
 		Long resourceId = context.getTrigger().getJobDataMap().getLong("resourceId");
-		Realm realm = (Realm) context.getTrigger().getJobDataMap().get("realm");
+		Long realmId = context.getTrigger().getJobDataMap().getLong("realm");
 		
 		AutomationResource resource;
+		Realm realm = null;
+		try {
+			realm = realmService.getRealmById(realmId);
+		} catch (AccessDeniedException e) {
+			log.error("Could not find realm id " + resourceId + " to execute job", e);
+		}
 		
 		try {
 			resource = automationService.getResourceById(resourceId);
+			
 		} catch (Exception e) {
 			log.error("Could not find resource id " + resourceId + " to execute job", e);
 			eventService.publishEvent(new AutomationTaskStartedEvent(this, realm, e));

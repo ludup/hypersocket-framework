@@ -221,8 +221,6 @@ public class LogonController extends AuthenticatedController {
 			state.setLastErrorMsg(t.getMessage());
 			state.setLastErrorIsResourceKey(false);
 			
-//			resetLogon(request, response, false);
-			
 			return new AuthenticationRequiredResult(
 					configurationService.getValue(state.getRealm(),
 							"logon.banner"),

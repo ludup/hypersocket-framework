@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tables.ColumnSort;
@@ -87,4 +88,16 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	String exportResources(Collection<T> resources, boolean stripIdentity) throws ResourceExportException;
 
 	String exportResources(boolean stripIdentity, @SuppressWarnings("unchecked") T... resources) throws ResourceExportException;
+
+	Collection<PropertyCategory> getResourceTemplate();
+
+	Collection<PropertyCategory> getResourceProperties(T resource) throws AccessDeniedException;
+
+	String getResourceProperty(T resource, String resourceKey);
+
+	boolean getResourceBooleanProperty(T resource, String resourceKey);
+
+	Long getResourceLongProperty(T resource, String resourceKey);
+
+	int getResourceIntProperty(T resource, String resourceKey);
 }
