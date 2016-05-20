@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -135,6 +136,28 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 			if(m.getName().equals(methodName)) {
 				Class<?> clz = m.getParameterTypes()[0];
 				
+				if(clz.isEnum()){
+					try {
+						Enum<?>[] enumConstants = (Enum<?>[]) resource.getClass().getDeclaredField(template.getResourceKey()).getType().getEnumConstants();
+						if(NumberUtils.isNumber(value)){//ordinal
+							Enum<?> enumConstant = enumConstants[Integer.parseInt(value)];
+							m.invoke(resource, enumConstant);
+							return;  
+						}else{//name
+							for (Enum<?> enumConstant : enumConstants) {
+								if(enumConstant.name().equals(value)){
+									m.invoke(resource, enumConstant);
+									return;
+								}
+							}
+						}
+						throw new IllegalArgumentException(String.format("Matching enum value could not be fetched for value %s", value));
+						
+					} catch (NoSuchFieldException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+						log.error("Could not set " + template.getResourceKey() + " enum value " + value + " for resource " + resource.getClass().getName(), e);
+						throw new IllegalStateException("Could not set " + template.getResourceKey() + " enum value " + value + " for resource " + resource.getClass().getName(), e);
+					}
+				}
 				if(primitiveParsers.containsKey(clz)) {
 					try {
 						m.invoke(resource, primitiveParsers.get(clz).parseValue(value));
@@ -276,7 +299,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		}
 		
 	}
-
+	
 	@Override
 	public void init(Element element) throws IOException {
 		
