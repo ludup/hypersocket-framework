@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -599,6 +600,35 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		return getRepository().getValue(resource, key, defaultValue);
 	}
 	
+	@Override
+	public Collection<PropertyCategory> getResourceTemplate() {
+		return getRepository().getPropertyCategories(null);
+	}
+	
+	@Override
+	public Collection<PropertyCategory> getResourceProperties(T resource) throws AccessDeniedException {
+		return getRepository().getPropertyCategories(resource);
+	}
+	
+	@Override
+	public String getResourceProperty(T resource, String resourceKey) {
+		return getRepository().getValue(resource, resourceKey);
+	}
+	
+	@Override
+	public boolean getResourceBooleanProperty(T resource, String resourceKey) {
+		return getRepository().getBooleanValue(resource, resourceKey);
+	}
+	
+	@Override
+	public int getResourceIntProperty(T resource, String resourceKey) {
+		return getRepository().getIntValue(resource, resourceKey);
+	}
+
+	@Override
+	public Long getResourceLongProperty(T resource, String resourceKey) {
+		return getRepository().getLongValue(resource, resourceKey);
+	}
 	protected void updateFingerprint() {
 		fingerprint = new BigInteger(130, random).toString(32);
 	}

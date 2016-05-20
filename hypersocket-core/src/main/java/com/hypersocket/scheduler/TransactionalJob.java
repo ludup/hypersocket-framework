@@ -23,32 +23,35 @@ public abstract class TransactionalJob implements Job {
 	
 	protected abstract void onExecute(JobExecutionContext context);
 
-	protected boolean isTransactionRequired() {
-		return true;
+	protected void beforeTransaction() { 
+		
+	}
+	
+	protected void afterTransaction(boolean transactionFailed) {
+		
 	}
 	
 	@Override
 	public void execute(final JobExecutionContext context) throws JobExecutionException {
-		
-		if(!isTransactionRequired()) {
-			onExecute(context);
-		} else {
-			try {
-				TransactionTemplate txnTemplate = new TransactionTemplate(
-						transactionManager);
-				txnTemplate.afterPropertiesSet();
-				txnTemplate.execute(new TransactionCallback<Object>() {
-					public Object doInTransaction(TransactionStatus status) {
-						onExecute(context);
-						return null;
-					}
-				});
-				onTransactionComplete();
-			} catch(Throwable t) {
-				onTransactionFailure(t);
-			}
+
+		beforeTransaction();
+		boolean transactionFailed = false;
+		try {
+			TransactionTemplate txnTemplate = new TransactionTemplate(
+					transactionManager);
+			txnTemplate.afterPropertiesSet();
+			txnTemplate.execute(new TransactionCallback<Object>() {
+				public Object doInTransaction(TransactionStatus status) {
+					onExecute(context);
+					return null;
+				}
+			});
+			onTransactionComplete();
+		} catch(Throwable t) {
+			onTransactionFailure(t);
+			transactionFailed = true;
 		}
 		
+		afterTransaction(transactionFailed);
 	}
-
 }
