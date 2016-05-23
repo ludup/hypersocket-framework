@@ -8,7 +8,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,7 +29,6 @@ import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.http.HttpUtilsImpl;
-import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
@@ -643,42 +641,5 @@ public class TriggerResourceServiceImpl extends
 
 		return json;
 	}
-	
-	@Override
-	public List<EventDefinition> getTriggerEvents(String pattern, Locale locale) {
-		List<EventDefinition> ret = new ArrayList<EventDefinition>();
-		for (EventDefinition def : eventService.getEvents()) {
-			if(I18N.getResource(locale, def.getResourceBundle(), def.getResourceKey()).toLowerCase().indexOf(pattern.toLowerCase()) > -1){
-				ret.add(new EventDefinition(def, def.getI18nNamespace(),
-						getEventAttributes(def)));				
-			}
-		}
-		Collections.sort(ret, new Comparator<EventDefinition>() {
 
-			@Override
-			public int compare(EventDefinition o1, EventDefinition o2) {
-				return o2.getResourceKey().compareTo(o1.getResourceKey());
-			}
-		});
-		return ret;
-	}
-	
-	@Override
-	public Long getTriggerEventCount(String pattern, Locale locale) {
-		List<EventDefinition> ret = new ArrayList<EventDefinition>();
-		for (EventDefinition def : eventService.getEvents()) {
-			if(I18N.getResource(locale, def.getResourceBundle(), def.getResourceKey()).toLowerCase().indexOf(pattern.toLowerCase()) > -1){
-				ret.add(new EventDefinition(def, def.getI18nNamespace(),
-						getEventAttributes(def)));				
-			}
-		}
-		Collections.sort(ret, new Comparator<EventDefinition>() {
-
-			@Override
-			public int compare(EventDefinition o1, EventDefinition o2) {
-				return o2.getResourceKey().compareTo(o1.getResourceKey());
-			}
-		});
-		return new Long(ret.size());
-	}
 }

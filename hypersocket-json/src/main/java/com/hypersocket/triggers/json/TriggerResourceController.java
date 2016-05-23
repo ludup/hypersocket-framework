@@ -197,8 +197,7 @@ public class TriggerResourceController extends AbstractTriggerController {
 				sessionUtils.getLocale(request));
 		try {
 
-			List<TriggerResource> triggers = resourceService
-					.getParentTriggers(id);
+			List<TriggerResource> triggers = resourceService.getParentTriggers(id);
 			List<EventDefinition> events = new ArrayList<EventDefinition>();
 			for (TriggerResource trigger : triggers) {
 				events.add(eventService.getEventDefinition(trigger.getEvent()));
@@ -637,46 +636,6 @@ public class TriggerResourceController extends AbstractTriggerController {
 		} catch (ResourceException e) {
 			return new ResourceStatus<TriggerResource>(false,
 					e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
-		}
-	}
-	
-	@AuthenticationRequired
-	@RequestMapping(value = "triggers/eventsTable", method = RequestMethod.GET, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableEvents(final HttpServletRequest request,
-			HttpServletResponse response) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
-
-						@Override
-						public Column getColumn(String col) {
-							return TriggerResourceColumns.valueOf(col.toUpperCase());
-						}
-
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.getTriggerEvents(searchPattern, sessionUtils.getLocale(request));
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.getTriggerEventCount(searchPattern, sessionUtils.getLocale(request));
-						}
-					});
 		} finally {
 			clearAuthenticatedContext();
 		}

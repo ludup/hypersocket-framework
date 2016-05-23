@@ -306,12 +306,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		RealmProvider provider = getProviderForRealm(realm);
 		return provider.getValue(realm, resourceKey);
 	}
-	
-	@Override
-	public Map<String,String> getRealmProperties(Realm realm) {
-		RealmProvider provider = getProviderForRealm(realm);
-		return provider.getProperties(realm);
-	}
 
 	@Override
 	public String getDecryptedValue(Realm realm, String resourceKey) {

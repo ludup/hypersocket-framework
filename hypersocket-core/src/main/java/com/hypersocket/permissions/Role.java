@@ -79,10 +79,6 @@ public class Role extends RealmResource {
 		return personalRole!=null && personalRole.booleanValue();
 	}
 	
-	public void setPersonalRole(boolean personalRole) {
-		this.personalRole = personalRole;
-	}
-
 	public boolean isAllPermissions() {
 		return allPermissions;
 	}

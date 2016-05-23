@@ -36,6 +36,11 @@ public abstract class ResourceSessionEvent extends SessionEvent {
 		super(source, resourceKey, e, session);
 		addAttribute(ATTR_RESOURCE_NAME, resourceName);
 	}
+	
+	public ResourceSessionEvent(Object source, String resourceKey, Throwable e,
+			Session session) {
+		super(source, resourceKey, e, session);
+	}
 
 	public String[] getResourceKeys() {
 		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);

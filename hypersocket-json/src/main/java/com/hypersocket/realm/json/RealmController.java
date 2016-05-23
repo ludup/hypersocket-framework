@@ -61,7 +61,7 @@ public class RealmController extends ResourceController {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
-
+		
 		try {
 			return realmService.getRealmById(id);
 		} finally {

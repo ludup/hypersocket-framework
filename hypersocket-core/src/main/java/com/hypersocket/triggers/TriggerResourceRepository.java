@@ -3,11 +3,8 @@ package com.hypersocket.triggers;
 import java.util.Collection;
 import java.util.List;
 
-import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.SystemEvent;
-import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
-import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tasks.TaskProvider;
 
 
@@ -21,4 +18,6 @@ public interface TriggerResourceRepository extends
 	TriggerCondition getConditionById(Long id);
 
 	Collection<TriggerResource> getActionsByResourceKey(String resourceKey);
+
+
 }

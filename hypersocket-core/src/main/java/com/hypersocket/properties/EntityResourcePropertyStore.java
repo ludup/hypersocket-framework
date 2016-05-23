@@ -3,6 +3,8 @@ package com.hypersocket.properties;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -64,6 +67,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		throw new UnsupportedOperationException("Entity resource property store requires an entity resource to set property value");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected String lookupPropertyValue(AbstractPropertyTemplate template,
 			AbstractResource resource) {
@@ -82,6 +86,15 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 					return null;
 				} else {
 					return r.getId().toString();
+				}
+			} else if(Collection.class.isAssignableFrom(m.getReturnType())) { 
+				Class<?> type = (Class<?>) ((ParameterizedType)m.getGenericReturnType()).getActualTypeArguments()[0];
+				if(type.isEnum()) {
+					return ResourceUtils.implodeEnumValues((Collection<Enum<?>>) m.invoke(resource));
+				} else if(Resource.class.isAssignableFrom(type)) {
+					return ResourceUtils.implodeResourceValues((Collection<? extends Resource>) m.invoke(resource));
+				} else {
+					throw new IllegalStateException("Unhandled Collection type!");
 				}
 			} else {
 				Object obj = m.invoke(resource);
@@ -134,7 +147,29 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		for(Method m : methods) {
 			if(m.getName().equals(methodName)) {
 				Class<?> clz = m.getParameterTypes()[0];
-				
+				Type clzType = (Type)clz;
+				if(clz.isEnum()){
+					try {
+						Enum<?>[] enumConstants = (Enum<?>[]) resource.getClass().getDeclaredField(template.getResourceKey()).getType().getEnumConstants();
+						if(NumberUtils.isNumber(value)){//ordinal
+							Enum<?> enumConstant = enumConstants[Integer.parseInt(value)];
+							m.invoke(resource, enumConstant);
+							return;  
+						}else{//name
+							for (Enum<?> enumConstant : enumConstants) {
+								if(enumConstant.name().equals(value)){
+									m.invoke(resource, enumConstant);
+									return;
+								}
+							}
+						}
+						throw new IllegalArgumentException(String.format("Matching enum value could not be fetched for value %s", value));
+						
+					} catch (NoSuchFieldException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+						log.error("Could not set " + template.getResourceKey() + " enum value " + value + " for resource " + resource.getClass().getName(), e);
+						throw new IllegalStateException("Could not set " + template.getResourceKey() + " enum value " + value + " for resource " + resource.getClass().getName(), e);
+					}
+				}
 				if(primitiveParsers.containsKey(clz)) {
 					try {
 						m.invoke(resource, primitiveParsers.get(clz).parseValue(value));
@@ -172,8 +207,24 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 				}
 				if(Collection.class.isAssignableFrom(clz)) {
 					// We have a collection of entity values
-					PropertyEntity resourceClass = m.getAnnotation(PropertyEntity.class);
-					if(resourceClass!=null) {
+					
+					Class<?> type = (Class<?>) ((ParameterizedType) m.getGenericParameterTypes()[0]).getActualTypeArguments()[0];
+					if(type.isEnum()) {
+						try {
+							Collection<Object> values = new ArrayList<Object>();
+							if(!StringUtils.isEmpty(value)) {
+								String[] ids = ResourceUtils.explodeValues(value);
+								for(String id : ids) {
+									values.add(getEnum(id, type));
+								}
+							}
+							m.invoke(resource, values);
+							return;
+						} catch (Exception e) {
+							log.error("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
+							throw new IllegalStateException("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
+						}
+					}  else if(Resource.class.isAssignableFrom(type)) {
 						try {
 							Collection<Object> values = new ArrayList<Object>();
 							if(StringUtils.isEmpty(value)) {
@@ -182,14 +233,14 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 								String[] ids = ResourceUtils.explodeValues(value);
 								for(String id : ids) {
 									Object obj = null;
-									if(assignableServices.containsKey(resourceClass.clz())) {
-										obj = assignableServices.get(resourceClass.clz()).getResourceById(Long.parseLong(id));
-									} else if(resourceServices.containsKey(resourceClass.clz())) {
-										obj = resourceServices.get(resourceClass.clz()).getResourceById(Long.parseLong(id));
+									if(assignableServices.containsKey(type)) {
+										obj = assignableServices.get(type).getResourceById(Long.parseLong(id));
+									} else if(resourceServices.containsKey(type)) {
+										obj = resourceServices.get(type).getResourceById(Long.parseLong(id));
 									} else {
 										throw new IllegalStateException(String.format
 												("Collection type %s does not appear to be registered with entity store", 
-												resourceClass.clz().getSimpleName()));
+												type.getSimpleName()));
 									}
 									values.add(obj);
 								}
@@ -200,6 +251,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 							throw new IllegalStateException("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
 						}
 						return;
+					} else {
+						throw new IllegalStateException("Unhandled Collection type!");
 					}
 				}
 				
@@ -211,7 +264,20 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		}
 	}
 
-	
+	@SuppressWarnings("unchecked")
+	private <T> T getEnum(String value, Class<T> enumType) {
+		Enum<?>[] enumConstants = (Enum<?>[]) enumType.getEnumConstants();
+		if(NumberUtils.isNumber(value)){//ordinal
+			return (T) enumConstants[Integer.parseInt(value)];
+		}else{
+			for (Enum<?> enumConstant : enumConstants) {
+				if(enumConstant.name().equals(value)){
+					return (T) enumConstant;
+				}
+			}
+		}
+		throw new IllegalStateException(String.format("Cannot find enum value %s", value));
+	}
 	interface PrimitiveParser<T> {
 		T parseValue(String value);
 	}
@@ -276,7 +342,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		}
 		
 	}
-
+	
 	@Override
 	public void init(Element element) throws IOException {
 		

@@ -3,7 +3,6 @@ package com.hypersocket.triggers;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,7 +17,6 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
-import com.hypersocket.tables.ColumnSort;
 
 public interface TriggerResourceService extends
 		AbstractResourceService<TriggerResource> {
@@ -91,8 +89,4 @@ public interface TriggerResourceService extends
 
 	String searchTemplates(String search, int iDisplayStart,
 			int iDisplayLength) throws IOException, AccessDeniedException;
-	
-	List<EventDefinition> getTriggerEvents(String pattern, Locale locale);
-	
-	Long getTriggerEventCount(String pattern, Locale locale);
 }
