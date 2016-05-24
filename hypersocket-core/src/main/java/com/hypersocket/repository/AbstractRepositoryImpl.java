@@ -192,10 +192,12 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			CriteriaConfiguration... configs) {
 		Criteria criteria = createCriteria(cls);
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-		if (caseInsensitive) {
-			criteria.add(Restrictions.eq(column, value).ignoreCase());
-		} else {
-			criteria.add(Restrictions.eq(column, value));
+		if(StringUtils.isNotBlank(column)) {
+			if (caseInsensitive) {
+				criteria.add(Restrictions.eq(column, value).ignoreCase());
+			} else {
+				criteria.add(Restrictions.eq(column, value));
+			}
 		}
 		for (CriteriaConfiguration c : configs) {
 			c.configure(criteria);
@@ -213,28 +215,14 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		return (T) results.get(0);
 	}
 
-	@SuppressWarnings("unchecked")
-	@Transactional(readOnly = true)
-	protected <T> T get(Class<T> cls, CriteriaConfiguration... configs) {
-		Criteria criteria = createCriteria(cls);
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-
-		for (CriteriaConfiguration c : configs) {
-			c.configure(criteria);
-		}
-		@SuppressWarnings("rawtypes")
-		List results = criteria.list();
-		if (results.isEmpty()) {
-			return null;
-		} else if (results.size() > 1) {
-			throw new IllegalStateException("Too many results returned in get request class=" + cls.getName());
-		}
-		return (T) results.get(0);
-	}
-
 	@Transactional(readOnly = true)
 	protected <T> T get(String column, Object value, Class<T> cls, CriteriaConfiguration... configs) {
 		return get(column, value, cls, false, configs);
+	}
+	
+	@Transactional(readOnly = true)
+	protected <T> T get(Class<T> cls, CriteriaConfiguration... configs) {
+		return get("", "", cls, false, configs);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -411,8 +399,10 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			c.configure(criteria);
 		}
 
-		for (ColumnSort sort : sorting) {
-			HibernateUtils.configureSort(sort, criteria, assosications);
+		if(sorting!=null) {
+			for (ColumnSort sort : sorting) {
+				HibernateUtils.configureSort(sort, criteria, assosications);
+			}
 		}
 		
 		criteria.setFirstResult(start);

@@ -11,7 +11,7 @@ import com.hypersocket.server.handlers.HttpResponseProcessor;
 
 public interface ContentHandler {
 
-	public abstract boolean handlesRequest(String path);
+	public abstract boolean handlesRequest(String request);
 
 	public abstract void handleHttpRequest(HttpServletRequest request,
 			HttpServletResponse response,

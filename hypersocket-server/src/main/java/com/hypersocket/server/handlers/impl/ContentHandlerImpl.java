@@ -62,8 +62,8 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
     }
 	
 	@Override
-	public boolean handlesRequest(String path) {
-		return path.startsWith(server.resolvePath(getBasePath()));
+	public boolean handlesRequest(String request) {
+		return request.startsWith(server.resolvePath(getBasePath()));
 	}
 	
 	public abstract String getBasePath();
@@ -139,9 +139,6 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 				}
 			}
 
-			setContentTypeHeader(response, path);
-			setDateAndCacheHeaders(response, path);
-			
 			long fileLength = getResourceLength(path);
 			long actualLength = 0;
 			InputStream in = getInputStream(path, request);
@@ -163,7 +160,8 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 				request.setAttribute(CONTENT_INPUTSTREAM, in);
 			}
 			
-			
+			setContentTypeHeader(response, path);
+			setDateAndCacheHeaders(response, path);
 			
 			response.setStatus(HttpStatus.SC_OK);
 		} catch (RedirectException e) {

@@ -13,6 +13,7 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
@@ -24,6 +25,9 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 	@Autowired
 	RealmService realmService;
 
+	@Autowired
+	RealmRepository realmRepository;
+	
 	@Autowired
 	I18NService i18nService;
 
@@ -42,22 +46,21 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 		Realm realm = realmService.getSystemRealm();
 		Principal principal = realmService.getSystemPrincipal();
 		Locale locale = Locale.getDefault();
-		
-		if (context.getTrigger().getJobDataMap() instanceof PermissionsAwareJobData) {
-			PermissionsAwareJobData data = (PermissionsAwareJobData) context
-					.getTrigger().getJobDataMap();
-			realm = data.getCurrentRealm();
-			if (data.getCurrentPrincipal() != null) {
-				principal = data.getCurrentPrincipal();
-			}
-			if(data.getLocale() != null) {
-				locale = data.getLocale();
-			}
-		}
-
-		
+				
 		try {
 
+			if (context.getTrigger().getJobDataMap() instanceof PermissionsAwareJobData) {
+				PermissionsAwareJobData data = (PermissionsAwareJobData) context
+						.getTrigger().getJobDataMap();
+				realm = realmRepository.getRealmById((Long) data.get("realm"));
+				if (data.getCurrentPrincipal() != null) {
+					principal = data.getCurrentPrincipal();
+				}
+				if(data.getLocale() != null) {
+					locale = data.getLocale();
+				}
+			}
+			
 			if (log.isDebugEnabled()) {
 				log.debug("Executing permissions aware job as "
 						+ realm.getName() + "/" + principal.getName());

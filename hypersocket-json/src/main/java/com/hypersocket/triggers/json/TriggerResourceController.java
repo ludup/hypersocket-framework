@@ -197,8 +197,7 @@ public class TriggerResourceController extends AbstractTriggerController {
 				sessionUtils.getLocale(request));
 		try {
 
-			List<TriggerResource> triggers = resourceService
-					.getParentTriggers(id);
+			List<TriggerResource> triggers = resourceService.getParentTriggers(id);
 			List<EventDefinition> events = new ArrayList<EventDefinition>();
 			for (TriggerResource trigger : triggers) {
 				events.add(eventService.getEventDefinition(trigger.getEvent()));

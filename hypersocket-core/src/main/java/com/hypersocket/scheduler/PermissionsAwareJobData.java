@@ -22,7 +22,7 @@ public class PermissionsAwareJobData extends JobDataMap {
 		this.currentRealm = currentRealm;
 		this.principal = principal;
 		this.locale = locale;
-		put("realm", currentRealm);
+		put("realm", currentRealm.getId());
 		put("jobName", jobResourceKey);
 		if(principal!=null) {
 			put("principal", principal);

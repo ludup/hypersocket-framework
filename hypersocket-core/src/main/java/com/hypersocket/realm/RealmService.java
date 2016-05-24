@@ -200,6 +200,4 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Principal updateUserProperties(Principal user, Map<String, String> properties)
 			throws ResourceChangeException, AccessDeniedException;
 
-	Map<String, String> getRealmProperties(Realm realm);
-
 }

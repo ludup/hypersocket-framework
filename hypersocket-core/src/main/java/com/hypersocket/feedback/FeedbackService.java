@@ -10,4 +10,10 @@ public interface FeedbackService extends AuthenticatedService {
 	FeedbackProgress startJob(Class<? extends FeedbackEnabledJob> jobClz, PermissionsAwareJobData data,
 			String jobResourceKey) throws SchedulerException;
 
+	FeedbackProgress createFeedbackProgress();
+
+	FeedbackProgress getFeedbackProgress(String uuid);
+
+	void closeFeedbackProgress(FeedbackProgress progress);
+
 }

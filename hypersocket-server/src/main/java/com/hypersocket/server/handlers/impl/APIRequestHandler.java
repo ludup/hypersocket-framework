@@ -25,8 +25,8 @@ public class APIRequestHandler extends ServletRequestHandler {
 	}
 
 	@Override
-	public boolean handlesRequest(String path) {
-		return path.startsWith(
+	public boolean handlesRequest(String request) {
+		return request.startsWith(
 				server.resolvePath(server.getAttribute(
 						HypersocketServerImpl.API_PATH,
 						HypersocketServerImpl.API_PATH)));
