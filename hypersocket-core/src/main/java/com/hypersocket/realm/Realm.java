@@ -9,6 +9,7 @@ package com.hypersocket.realm;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -27,6 +28,9 @@ public class Realm extends Resource {
 	
 	@Column(name="uuid")
 	String uuid;
+	
+	@Column(name="owner_id")
+	Long owner; 
 	
 	public boolean isDefaultRealm() {
 		return defaultRealm;
@@ -51,5 +55,13 @@ public class Realm extends Resource {
 	protected void doEqualsOnKeys(EqualsBuilder builder, Object obj) {
 		Realm r = (Realm) obj;
 		builder.append(getName(), r.getName());
+	}
+
+	public Long getOwner() {
+		return owner;
+	}
+
+	public void setOwner(Long owner) {
+		this.owner = owner;
 	}
 }

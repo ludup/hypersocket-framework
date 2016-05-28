@@ -242,7 +242,7 @@ public class RealmController extends ResourceController {
 						realm.getName(), properties);
 			} else {
 				newRealm = realmService.createRealm(realm.getName(),
-						realm.getType(), properties);
+						realm.getType(), null, properties);
 			}
 			return new ResourceStatus<Realm>(newRealm, I18N.getResource(
 					sessionUtils.getLocale(request),
