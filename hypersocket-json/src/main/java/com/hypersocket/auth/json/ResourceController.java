@@ -17,13 +17,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.json.BootstrapTableController;
 
 @Controller
-public class ResourceController extends BootstrapTableController {
+public class ResourceController extends BootstrapTableController<Resource> {
 
 	static Logger log = LoggerFactory.getLogger(ResourceController.class);
 	
