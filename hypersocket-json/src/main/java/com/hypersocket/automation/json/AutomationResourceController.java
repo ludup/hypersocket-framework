@@ -44,6 +44,7 @@ import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 import com.hypersocket.triggers.TriggerCondition;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.TriggerResourceService;
+import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.TriggerResultType;
 import com.hypersocket.triggers.TriggerType;
 import com.hypersocket.triggers.json.AbstractTriggerController;
@@ -378,4 +379,54 @@ public class AutomationResourceController extends AbstractTriggerController {
 		}
 	}
 
+	@AuthenticationRequired
+	@RequestMapping(value = "automations/trigger/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<TriggerResource> deleteTrigger(
+			HttpServletRequest request, HttpServletResponse response,
+			@PathVariable("id") Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+			TriggerResource resource = triggerService.getResourceById(id);
+
+			if (resource == null) {
+				return new ResourceStatus<TriggerResource>(false,
+						I18N.getResource(sessionUtils.getLocale(request),
+								TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+								"error.invalidResourceId", id));
+			}
+
+			String preDeletedName = resource.getName();
+
+			TriggerResource rootTrigger = null;
+
+			if (resource.getParentTrigger() != null) {
+				rootTrigger = resource;
+				while (rootTrigger.getParentTrigger() != null) {
+					rootTrigger = rootTrigger.getParentTrigger();
+				}
+			}
+
+			AutomationResource automation = resourceService.getResourceById(resource.getAttachmentId());
+			
+			automation.getChildTriggers().remove(resource);
+			resourceService.updateResource(automation);
+			triggerService.deleteResource(resource);
+
+			return new ResourceStatus<TriggerResource>(true,
+						I18N.getResource(sessionUtils.getLocale(request),
+								TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+								"resource.deleted.info", preDeletedName));
+		
+		} catch (ResourceException e) {
+			return new ResourceStatus<TriggerResource>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 }
