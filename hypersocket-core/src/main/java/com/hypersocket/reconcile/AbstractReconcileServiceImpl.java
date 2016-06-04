@@ -16,6 +16,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
@@ -67,12 +69,16 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 	@Autowired
 	SessionService sessionService; 
 	
-	
 	Map<T, String> reconcileSchedules = new HashMap<T, String>();
 	Set<T> reconcilingResources = new HashSet<T>();
 	
 	public AbstractReconcileServiceImpl() {
 
+	}
+	
+	@PostConstruct
+	private void postConstruct() {
+		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}
 
 	protected abstract boolean isTriggerEvent(SystemEvent event);

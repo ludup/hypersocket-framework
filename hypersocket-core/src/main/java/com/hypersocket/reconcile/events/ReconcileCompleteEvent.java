@@ -9,7 +9,7 @@ public class ReconcileCompleteEvent<T extends Resource> extends ReconcileEvent<T
 
 	private static final long serialVersionUID = 3838982900684851453L;
 
-	public static final String EVENT_RESOURCE_KEY = "reconcile.completed";
+	public static final String EVENT_RESOURCE_KEY = "resourceReconcile.completed";
 	
 	public static final String ATTR_RECONCILE_TIME_MS = "reconcile.timeMs";
 
