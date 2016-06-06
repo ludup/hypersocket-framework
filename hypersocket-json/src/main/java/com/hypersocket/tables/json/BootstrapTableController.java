@@ -1,5 +1,6 @@
 package com.hypersocket.tables.json;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,15 +12,16 @@ import org.slf4j.LoggerFactory;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.tables.BootstrapTableResourceProcessor;
 import com.hypersocket.tables.BootstrapTableResult;
+import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
 
-public class BootstrapTableController extends AuthenticatedController {
+public class BootstrapTableController<T> extends AuthenticatedController {
 
 	Logger log = LoggerFactory.getLogger(BootstrapTableController.class);
 
-	protected BootstrapTableResult processDataTablesRequest(
+	protected BootstrapTableResult<T> processDataTablesRequest(
 			HttpServletRequest request, BootstrapTablePageProcessor processor)
 			throws NumberFormatException, UnauthorizedException,
 			AccessDeniedException {
@@ -62,7 +64,7 @@ public class BootstrapTableController extends AuthenticatedController {
 			searchColumn = request.getParameter("searchColumn");
 		}
 
-		BootstrapTableResult result = new BootstrapTableResult(processor.getPage(
+		BootstrapTableResult<T> result = new BootstrapTableResult<T>(processor.getPage(
 				searchColumn,
 				searchPattern, 
 				start,
@@ -70,6 +72,13 @@ public class BootstrapTableController extends AuthenticatedController {
 				sorting.toArray(new ColumnSort[0])),
 				processor.getTotalCount(searchColumn, searchPattern));
 
+		if(processor instanceof BootstrapTableResourceProcessor) {
+			try {
+				result.setResource(((BootstrapTableResourceProcessor<T>)processor).getResource());
+			} catch (FileNotFoundException e) {
+				throw new IllegalStateException(e);
+			}
+		}
 		return result;
 	}
 }

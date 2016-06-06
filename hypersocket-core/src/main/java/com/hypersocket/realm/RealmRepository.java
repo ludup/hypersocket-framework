@@ -31,7 +31,7 @@ public interface RealmRepository extends
 			RealmProvider provider);
 
 	Realm createRealm(String name, String uuid, String module,
-			Map<String, String> properties, RealmProvider provider);
+			Long owner, Map<String, String> properties, RealmProvider provider);
 
 	Realm getRealmByName(String name, boolean deleted);
 
@@ -47,5 +47,7 @@ public interface RealmRepository extends
 	public Realm getDefaultRealm();
 
 	public Realm setDefaultRealm(Realm realm);
+
+	Realm getRealmByOwner(Long owner);
 
 }
