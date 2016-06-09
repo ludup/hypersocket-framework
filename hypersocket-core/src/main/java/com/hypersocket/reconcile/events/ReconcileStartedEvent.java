@@ -9,7 +9,7 @@ public class ReconcileStartedEvent<T extends Resource> extends ReconcileEvent<T>
 
 	private static final long serialVersionUID = 6524528273858765454L;
 	
-	public static final String EVENT_RESOURCE_KEY = "reconcile.started";
+	public static final String EVENT_RESOURCE_KEY = "resourceReconcile.started";
 	
 	public ReconcileStartedEvent(Object source,
 			boolean success, Realm realm, T resource) {

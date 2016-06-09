@@ -14,6 +14,10 @@ public class Request {
 		return threadRequests.get();
 	}
 	
+	public static boolean isAvailable() {
+		return threadRequests.get()!=null;
+	}
+	
 	static void remove() {
 		threadRequests.remove();
 	}

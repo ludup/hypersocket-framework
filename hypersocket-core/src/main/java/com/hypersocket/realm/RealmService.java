@@ -30,7 +30,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	void registerRealmProvider(RealmProvider provider);
 
-	Realm createRealm(String name, String module, Map<String, String> properties)
+	Realm createRealm(String name, String module, Long owner, Map<String, String> properties)
 			throws AccessDeniedException, ResourceCreationException;
 
 	void deleteRealm(String name) throws ResourceChangeException, ResourceNotFoundException, AccessDeniedException;
@@ -199,5 +199,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Principal updateUserProperties(Principal user, Map<String, String> properties)
 			throws ResourceChangeException, AccessDeniedException;
+
+	Realm getRealmByOwner(Long owner) throws AccessDeniedException;
 
 }
