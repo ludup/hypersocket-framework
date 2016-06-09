@@ -5,10 +5,11 @@ import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
-public class BootstrapTableResult {
+public class BootstrapTableResult<T> {
 
 	long total;
 	Collection<?> rows;
+	T resource;
 	
 	public BootstrapTableResult() {
 		
@@ -33,6 +34,14 @@ public class BootstrapTableResult {
 
 	public void setRows(Collection<?> rows) {
 		this.rows = rows;
+	}
+
+	public T getResource() {
+		return resource;
+	}
+
+	public void setResource(T resource) {
+		this.resource = resource;
 	}
 
 
