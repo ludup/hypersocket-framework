@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	void registerRealmProvider(RealmProvider provider);
 
-	Realm createRealm(String name, String module, Map<String, String> properties)
+	Realm createRealm(String name, String module, Long owner, Map<String, String> properties)
 			throws AccessDeniedException, ResourceCreationException;
 
 	void deleteRealm(String name) throws ResourceChangeException, ResourceNotFoundException, AccessDeniedException;
@@ -132,9 +133,9 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean isReadOnly(Realm realm);
 
-	boolean supportsAccountUnlock(Realm realm);
+	boolean supportsAccountUnlock(Realm realm) throws IOException;
 
-	boolean supportsAccountDisable(Realm realm);
+	boolean supportsAccountDisable(Realm realm) throws IOException;
 
 	Principal disableAccount(Principal principal) throws ResourceChangeException, AccessDeniedException;
 
@@ -198,5 +199,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Principal updateUserProperties(Principal user, Map<String, String> properties)
 			throws ResourceChangeException, AccessDeniedException;
+
+	Realm getRealmByOwner(Long owner) throws AccessDeniedException;
 
 }

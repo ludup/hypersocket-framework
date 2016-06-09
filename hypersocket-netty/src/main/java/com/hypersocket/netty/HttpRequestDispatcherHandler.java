@@ -212,9 +212,11 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 								new WebsocketConnectCallback(ctx.getChannel(),
 										servletRequest, nettyResponse, handler), this);
 					} catch (AccessDeniedException ex) {
+						log.error("Failed to open tunnel", ex);
 						nettyResponse.setStatus(HttpStatus.SC_FORBIDDEN);
 						sendResponse(servletRequest, nettyResponse, false);
 					} catch (UnauthorizedException ex) {
+						log.error("Failed to open tunnel", ex);
 						nettyResponse.setStatus(HttpStatus.SC_UNAUTHORIZED);
 						sendResponse(servletRequest, nettyResponse, false);
 					}
@@ -226,7 +228,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				if(log.isDebugEnabled()) {
 					log.debug("Checking HTTP handler: " + handler.getName());
 				}
-				if (handler.handlesRequest(servletRequest)) {
+				if (handler.handlesRequest(servletRequest.getRequestURI())) {
 					if(log.isDebugEnabled()) {
 						log.debug(handler.getName() + " is processing HTTP request");
 					}

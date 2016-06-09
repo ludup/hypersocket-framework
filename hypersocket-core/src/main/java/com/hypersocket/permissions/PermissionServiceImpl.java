@@ -353,7 +353,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			permissionsCache.put(new Element(principal, principalPermissions));
 		}
 
-		return (Set<Permission>) permissionsCache.get(principal).getObjectValue();
+		
+		return new HashSet<Permission>((Set<Permission>)permissionsCache.get(principal).getObjectValue());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -393,8 +394,14 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		if (principal == null) {
 			throw new AccessDeniedException();
 		}
+		
+		if(hasElevatedPermissions()) {
+			for(PermissionType perm : getElevatedPermissions()) {
+				principalPermissions.add(getPermission(perm.getResourceKey()));
+			}
+		}
 
-		if (!hasSystemPermission(principal)) {
+		if (!hasSystemPrincipal(principalPermissions)) {
 
 			Set<PermissionType> derivedPrincipalPermissions = new HashSet<PermissionType>();
 			for (Permission t : principalPermissions) {
@@ -440,24 +447,22 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			}
 			throw new AccessDeniedException();
 		}
-
-		if (!hasSystemPermission(principal)) {
-			Set<Permission> principalPermissions = getPrincipalPermissions(principal);
-			
-			if(hasElevatedPermissions()) {
-				for(PermissionType perm : getElevatedPermissions()) {
-					principalPermissions.add(getPermission(perm.getResourceKey()));
-				}
-			}
-			
-			verifyPermission(principal, strategy, principalPermissions,
-					permissions);
-		}
+		
+		Set<Permission> principalPermissions = getPrincipalPermissions(principal);
+		
+		verifyPermission(principal, strategy, principalPermissions,	permissions);
 	}
 
 	@Override
 	public boolean hasSystemPermission(Principal principal) {
-		return hasSystemPrincipal(getPrincipalPermissions(principal));
+		
+		Set<Permission> principalPermissions = getPrincipalPermissions(principal);
+		if(hasElevatedPermissions()) {
+			for(PermissionType perm : getElevatedPermissions()) {
+				principalPermissions.add(getPermission(perm.getResourceKey()));
+			}
+		}
+		return hasSystemPrincipal(principalPermissions);
 	}
 
 	@Override

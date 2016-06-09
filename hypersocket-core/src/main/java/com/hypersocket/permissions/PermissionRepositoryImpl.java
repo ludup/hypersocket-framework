@@ -17,6 +17,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
+import org.hibernate.Query;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
@@ -30,6 +31,7 @@ import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
+import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
@@ -242,7 +244,23 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 
 	@Override
 	@Transactional
-	public void deleteRole(Role role) {
+	public void deleteRole(final Role role) {
+		
+		Collection<AssignableResource> resources = list(AssignableResource.class, new CriteriaConfiguration() {	
+			@Override
+			public void configure(Criteria criteria) {
+				criteria = criteria.createCriteria("roles");
+				criteria.add(Restrictions.eq("id", role.getId()));
+			}
+		});
+		
+		for(AssignableResource resource : resources) {
+			resource.getRoles().remove(role);
+			save(resource);
+		}
+		
+		flush();
+		
 		delete(role);
 	}
 

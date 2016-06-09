@@ -1,8 +1,11 @@
 package com.hypersocket.repository;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
 
+import com.hypersocket.resource.Resource;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
 
@@ -127,7 +131,13 @@ public class HibernateUtils {
 		}
 	}
 
-	
+	public static Collection<Long> getResourceIds(Collection<? extends Resource> resources) {
+		List<Long> ids = new ArrayList<Long>();
+		for(Resource r : resources) {
+			ids.add(r.getId());
+		}
+		return ids;
+	}
 	
 	public static boolean isNotWildcard(String searchPattern) {
 		switch(searchPattern) {

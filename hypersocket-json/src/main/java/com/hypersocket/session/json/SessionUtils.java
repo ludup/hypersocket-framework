@@ -187,7 +187,7 @@ public class SessionUtils {
 					return new Locale(c.getValue());
 				}
 			}
-			return configurationService.getDefaultLocale();
+			return Locale.getDefault();
 		} else {
 			return new Locale((String) request.getSession().getAttribute(
 					USER_LOCALE));

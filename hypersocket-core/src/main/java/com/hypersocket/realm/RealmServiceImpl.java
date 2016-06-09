@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -58,6 +59,7 @@ import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
+import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
@@ -291,7 +293,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public String[] getRealmPropertyArray(Realm realm, String resourceKey) {
-		return getRealmProperty(realm, resourceKey).split("\\]\\|\\[");
+		String value = getRealmProperty(realm, resourceKey);
+		if(StringUtils.isNotBlank(value)) {
+			return value.split("\\]\\|\\[");
+		} else {
+			return new String[0];
+		}
 	}
 
 	@Override
@@ -374,6 +381,14 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
 
 		return realmRepository.getRealmById(id);
+	}
+	
+	@Override
+	public Realm getRealmByOwner(Long owner) throws AccessDeniedException {
+
+		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
+
+		return realmRepository.getRealmByOwner(owner);
 	}
 
 	public Map<String, String> filterSecretProperties(Principal principal, RealmProvider provider,
@@ -755,7 +770,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Realm createRealm(String name, String module, Map<String, String> properties)
+	public Realm createRealm(String name, String module, Long owner, Map<String, String> properties)
 			throws AccessDeniedException, ResourceCreationException {
 
 		try {
@@ -772,7 +787,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			realmProvider.testConnection(properties);
 
-			Realm realm = realmRepository.createRealm(name, UUID.randomUUID().toString(), module, properties,
+			Realm realm = realmRepository.createRealm(name, 
+					UUID.randomUUID().toString(), 
+					module, 
+					owner, 
+					properties,
 					realmProvider);
 
 			configurationService.setValue(realm, "realm.userEditableProperties",
@@ -1461,7 +1480,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean supportsAccountUnlock(Realm realm) {
+	public boolean supportsAccountUnlock(Realm realm) throws IOException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -1469,7 +1488,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean supportsAccountDisable(Realm realm) {
+	public boolean supportsAccountDisable(Realm realm) throws IOException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 

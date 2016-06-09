@@ -6,7 +6,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class FileUtils {
 
@@ -56,7 +58,7 @@ public class FileUtils {
 		if (!path.startsWith(rootPath)) {
 			throw new IOException(path + " is not a child path of " + rootPath);
 		} else {
-			return path.substring(rootPath.length());
+			return checkEndsWithNoSlash(path.substring(rootPath.length()));
 		}
 	}
 	
@@ -71,8 +73,9 @@ public class FileUtils {
 
 	public static String stripLastPathElement(String path){
 		int idx;
-		if ((idx = path.lastIndexOf('/')) > -1) {
-			return path.substring(0, idx);
+		String thePath = checkEndsWithNoSlash(path);
+		if ((idx = thePath.lastIndexOf('/')) > -1) {
+			return checkEndsWithSlash(thePath.substring(0, idx));
 		} else {
 			return path;
 		}
@@ -166,6 +169,7 @@ public class FileUtils {
 
 	public static String lastPathElement(String originalFilename) {
 		int idx;
+		originalFilename = checkEndsWithNoSlash(originalFilename);
 		if ((idx = originalFilename.lastIndexOf('/')) > -1) {
 			return originalFilename.substring(idx+1);
 		} else {
@@ -175,6 +179,20 @@ public class FileUtils {
 
 	public static boolean hasParents(String sourcePath) {
 		return sourcePath.indexOf('/') > -1;
+	}
+
+	public static List<String> generatePaths(String fullpath) {
+		
+		List<String> paths = new ArrayList<String>();
+		String tmp = "/";
+		for(String p : fullpath.split("/")) {
+			if(p.equals("")) {
+				continue;
+			}
+			tmp += p + "/";
+			paths.add(tmp);
+		}
+		return paths;
 	}
 
 }

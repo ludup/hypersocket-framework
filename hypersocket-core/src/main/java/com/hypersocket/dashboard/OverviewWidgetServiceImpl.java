@@ -36,6 +36,8 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	public static final String HELPZONE = "helpzone";
 	public static final String USERDASH = "userdash";
 	
+	static final String MENU_DASHBOARD_HELPZONE = "helpzone"; 
+	
 	private Collection<Link> cachedLinks = null;
 	private Collection<Link> cachedVideos = null;
 	private Collection<Link> cachedDocumentation = null;
@@ -63,7 +65,7 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-	
+		
 		this.registerWidget(HELPZONE, new OverviewWidget(4, "overview.usefulLinks.title",
 				"usefulLinks", false) {
 			public boolean hasContent() {
@@ -90,14 +92,6 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 				} catch (ResourceException e) {
 					return false;
 				}
-			}
-		});
-		
-		
-		this.registerWidget(HELPZONE, new OverviewWidget(-1, "overview.gettingStarted.title",
-				System.getProperty("hypersocket.id", "hypersocket-vpn"), true) {
-			public boolean hasContent() {
-				return true;
 			}
 		});
 		

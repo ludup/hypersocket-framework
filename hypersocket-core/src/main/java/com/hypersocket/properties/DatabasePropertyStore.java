@@ -16,6 +16,10 @@ public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 		setEncryptionService(encryptionService);
 	}
 
+	public boolean isDefaultStore() {
+		return true;
+	}
+	
 	@Override
 	protected String lookupPropertyValue(AbstractPropertyTemplate template,
 			AbstractResource resource) {

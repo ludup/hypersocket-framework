@@ -694,8 +694,8 @@ public class AuthenticationServiceImpl extends
 				} else {
 					idx = username.indexOf('/');
 					if (idx > -1) {
-						realmName = username.substring(idx + 1);
-						username = username.substring(0, idx);
+						realmName = username.substring(0, idx);
+						username = username.substring(idx + 1);
 					}
 				}
 
