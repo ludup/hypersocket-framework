@@ -19,7 +19,7 @@ public abstract class AbstractReconcileNonTransactionalJob<T extends Resource> e
 	
 	protected abstract T getResource(Long id) throws ResourceNotFoundException, AccessDeniedException;
 	
-	protected abstract void doReconcile(T resource) throws Exception;
+	protected abstract void doReconcile(T resource, boolean initial) throws Exception;
 	
 	protected abstract void fireReconcileStartedEvent(T resource);
 	
@@ -35,6 +35,7 @@ public abstract class AbstractReconcileNonTransactionalJob<T extends Resource> e
 		try {
 			
 			Long resourceId = (Long) context.getTrigger().getJobDataMap().get("resourceId");
+			Boolean initial = (Boolean) context.getTrigger().getJobDataMap().get("initial");
 			
 			resource = getResource(resourceId);
 			
@@ -46,7 +47,7 @@ public abstract class AbstractReconcileNonTransactionalJob<T extends Resource> e
 			
 			fireReconcileStartedEvent(resource);
 			
-			doReconcile(resource);
+			doReconcile(resource, initial);
 		
 			fireReconcileCompletedEvent(resource);
 			

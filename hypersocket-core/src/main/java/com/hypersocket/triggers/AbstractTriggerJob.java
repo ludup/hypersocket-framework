@@ -11,9 +11,10 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.scheduler.PermissionsAwareJob;
+import com.hypersocket.scheduler.PermissionsAwareJobNonTransactional;
 import com.hypersocket.tasks.TaskProviderService;
 
-public abstract class AbstractTriggerJob extends PermissionsAwareJob {
+public abstract class AbstractTriggerJob extends PermissionsAwareJobNonTransactional {
 
 	@Autowired
 	TriggerResourceService triggerService;

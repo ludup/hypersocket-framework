@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -16,6 +18,7 @@ import com.hypersocket.utils.HypersocketUtils;
 public class ResourceUtils {
 
 	static final String[] DELIMS = { "]|[", "\r\n" };
+	static Pattern pattern = Pattern.compile("\\$\\{(.*?)\\}");
 	
 	public static String[] explodeValues(String values) {
 		if(StringUtils.isBlank(values)) {
@@ -119,6 +122,11 @@ public class ResourceUtils {
 	
 	public static boolean isReplacementVariable(String value) {
 		return value.startsWith("${") && value.endsWith("}");
+	}
+	
+	public static boolean containsReplacementVariable(String value) {
+		Matcher m = pattern.matcher(value);
+		return m.find();
 	}
 
 	public static boolean isEncrypted(String value) {
