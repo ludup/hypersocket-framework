@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @MappedSuperclass
-@JsonIgnoreProperties({"createDate"})
+@JsonIgnoreProperties(ignoreUnknown=true, value={"createDate", "modifiedDate"})
 public abstract class AbstractEntity<T> {
 
 	public abstract T getId();
