@@ -124,7 +124,7 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 			if(event.isSuccess()) {
 				T resource = getResourceFromEvent(event);
 				if(isReconciledResource(resource)) {
-					scheduleReconcile(resource, true);
+					scheduleReconcile(resource, false, true);
 				}
 			}
 
@@ -207,7 +207,7 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 				/**
 				 * If we reached here we need to schedule the reconcile now.				
 				 */
-				scheduleReconcile(resource, upToDate);
+				scheduleReconcile(resource, upToDate, false);
 			}
 			
 		}
@@ -251,12 +251,14 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 		}
 	}
 	
-	private void scheduleReconcile(T resource, boolean upToDate) {
+	private void scheduleReconcile(T resource, boolean upToDate, boolean initial) {
 		try {
 
 			JobDataMap data = new JobDataMap();
 			data.put("resourceId", resource.getId());
 			data.put("jobName", "reconcileResourceJob");
+			data.put("initial", new Boolean(initial));
+			
 			reconcileSchedules.put(resource,
 					schedulerService.scheduleIn(
 							getReconcileJobClass(), 
@@ -276,7 +278,7 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 	private void rescheduleReconcile(T resource) {
 		unscheduleReconcile(resource);
 		scheduleReconcile(resource, 
-				getRepository().getBooleanValue(resource, "reconcile.upToDate"));
+				getRepository().getBooleanValue(resource, "reconcile.upToDate"), false);
 	}
 	
 	@Override
@@ -313,7 +315,7 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 		} catch (SchedulerException e) {
 			log.error(String.format("Failed to reschedule a reconcile for realm %s adding back to unscheduled resource queue", resource.getName(), e));
 		} catch (NotScheduledException e) {
-			scheduleReconcile(resource, success);
+			scheduleReconcile(resource, success, false);
 		}		
 	}
 	

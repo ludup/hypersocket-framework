@@ -24,8 +24,10 @@ public class ReconcileEvent<T extends Resource> extends SystemEvent {
 		this.resource = resource;
 	}
 
-	public ReconcileEvent(Object source, String resourceKey, Throwable e, Realm realm) {
+	public ReconcileEvent(Object source, String resourceKey, Throwable e, T resource, Realm realm) {
 		super(source, resourceKey, e, realm);
+		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
+		this.resource = resource;
 	}
 
 	@Override

@@ -19,8 +19,8 @@ public class ReconcileCompleteEvent<T extends Resource> extends ReconcileEvent<T
 	}
 	
 	public ReconcileCompleteEvent(Object source,
-			Throwable t, Realm realm) {
-		super(source, EVENT_RESOURCE_KEY, t, realm);
+			Throwable t, T resource, Realm realm) {
+		super(source, EVENT_RESOURCE_KEY, t, resource, realm);
 	}
 
 	public String[] getResourceKeys() {
