@@ -123,10 +123,11 @@ public class DashboardMessageServiceImpl extends
 			public void run() {
 			
 				try {
-					JobDataMap data = new JobDataMap();
-					data.put("jobName", "dashboardMessageJob");
-					schedulerService.scheduleNow(DashboardMessageJob.class, data,
-							600000);
+					if(schedulerService.jobDoesNotExists("dashboardMessageJob")){
+						JobDataMap data = new JobDataMap();
+						data.put("jobName", "dashboardMessageJob");
+						schedulerService.scheduleNow(DashboardMessageJob.class, "dashboardMessageJob", data, 10 * 60 * 1000);
+					}
 
 				} catch (SchedulerException e) {
 					log.error("Failed to schedule DashboardMessageJob", e);

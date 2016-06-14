@@ -69,7 +69,6 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 	@Autowired
 	SessionService sessionService; 
 	
-	Map<T, String> reconcileSchedules = new HashMap<T, String>();
 	Set<T> reconcilingResources = new HashSet<T>();
 	
 	public AbstractReconcileServiceImpl() {
@@ -220,15 +219,22 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 			JobDataMap data = new JobDataMap();
 			data.put("resourceId", resource.getId());
 			data.put("jobName", "reconcileResourceJob");
-			reconcileSchedules.put(resource,
-					schedulerService.scheduleAt(
+			
+			if(schedulerService.jobDoesNotExists(resource.getId().toString())) {
+				schedulerService.scheduleAt(
 							getReconcileJobClass(), 
+							resource.getId().toString(),
 							data,
 							startDate,
-							getReconcileSuccessInterval(resource)));
+							getReconcileSuccessInterval(resource));
+			} else {
+				schedulerService.rescheduleAt(resource.getId().toString(), 
+						startDate,
+						getReconcileSuccessInterval(resource));
+			}
 			
 			updateResourceSchedule(resource);
-		} catch (SchedulerException e) {
+		} catch (SchedulerException | NotScheduledException e) {
 			log.error("Failed to schedule reconcile for resource " + resource.getName(),
 					e);
 		}
@@ -243,7 +249,7 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 		data.put("jobName", "reconcileResourceJob");
 		
 		try {
-			schedulerService.scheduleNow(getReconcileJobClass(), data);
+			schedulerService.scheduleNow(getReconcileJobClass(), resource.getId().toString(), data);
 			return true;
 		} catch (SchedulerException e) {
 			log.error("Failed to start immediate reconcile for resource " + resource.getName(), e);
@@ -259,14 +265,18 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 			data.put("jobName", "reconcileResourceJob");
 			data.put("initial", new Boolean(initial));
 			
-			reconcileSchedules.put(resource,
+			if(schedulerService.jobDoesNotExists(resource.getId().toString())) {
+
 					schedulerService.scheduleIn(
 							getReconcileJobClass(), 
+							resource.getId().toString(),
 							data,
 							5000,
 							(upToDate ? 
 							getReconcileSuccessInterval(resource)
-							: getReconcileFailureInterval(resource))));
+							: getReconcileFailureInterval(resource)));
+			
+			}
 			
 			updateResourceSchedule(resource);
 		} catch (SchedulerException e) {
@@ -284,11 +294,11 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 	@Override
 	public void updateResourceSchedule(T resource) throws SchedulerException {
 
-		Date previousReconcile = schedulerService.getPreviousSchedule(reconcileSchedules.get(resource));
+		Date previousReconcile = schedulerService.getPreviousSchedule(resource.getId().toString());
 		
 		getRepository().setValue(resource, "reconcile.nextReconcileDue", 
 				HypersocketUtils.formatDate(
-						schedulerService.getNextSchedule(reconcileSchedules.get(resource)), 
+						schedulerService.getNextSchedule(resource.getId().toString()), 
 							"EEE, d MMM yyyy HH:mm:ss"));
 		getRepository().setValue(resource, "reconcile.lastReconcilePerformed", 
 				HypersocketUtils.formatDate(
@@ -307,7 +317,7 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 		
 		try {
 			schedulerService.rescheduleIn(
-							reconcileSchedules.get(resource),
+							resource.getId().toString(),
 							(success ? getReconcileSuccessInterval(resource) : getReconcileFailureInterval(resource)));
 			
 			updateResourceSchedule(resource);
@@ -321,10 +331,8 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 	
 	private void unscheduleReconcile(T resource) {
 
-		String scheduleId = reconcileSchedules.get(resource);
 		try {
-			schedulerService.cancelNow(scheduleId);
-			reconcileSchedules.remove(resource);
+			schedulerService.cancelNow(resource.getId().toString());
 			
 			getRepository().setValue(resource, "reconcile.nextReconcileDue", 
 					I18N.getResource(Locale.getDefault(), RESOURCE_BUNDLE, "reconcile.notScheduled"));

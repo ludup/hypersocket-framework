@@ -3,9 +3,9 @@ package com.hypersocket.automation;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
@@ -60,8 +60,6 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	private static Logger log = LoggerFactory.getLogger(AutomationResourceServiceImpl.class);
 
 	public static final String RESOURCE_BUNDLE = "AutomationResourceService";
-
-	private Map<Long, String> scheduleIdsByResource = new HashMap<Long, String>();
 
 	@Autowired
 	AutomationResourceRepository repository;
@@ -244,9 +242,8 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 
 	protected void unschedule(AutomationResource resource) throws SchedulerException {
 
-		if (scheduleIdsByResource.containsKey(resource.getId())) {
-			String scheduleId = scheduleIdsByResource.remove(resource.getId());
-			schedulerService.cancelNow(scheduleId);
+		if (schedulerService.jobExists(resource.getId().toString())) {
+			schedulerService.cancelNow(resource.getId().toString());
 		}
 	}
 	
@@ -256,7 +253,9 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		PermissionsAwareJobData data = new PermissionsAwareJobData(resource.getRealm(), resource.getName());
 		data.put("resourceId", resource.getId());
 		
-		schedulerService.scheduleNow(AutomationJob.class, data);
+		String scheduleId = String.format("run_now_%s_%s", UUID.randomUUID().toString(),resource.getId().toString());
+		
+		schedulerService.scheduleNow(AutomationJob.class, scheduleId, data);
 	}
 
 	protected void schedule(AutomationResource resource) {
@@ -331,11 +330,9 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 
 		try {
 
-			String scheduleId;
+			String scheduleId = resource.getId().toString();
 
-			if (scheduleIdsByResource.containsKey(resource.getId())) {
-
-				scheduleId = scheduleIdsByResource.get(resource.getId());
+			if (schedulerService.jobExists(scheduleId)) {
 
 				try {
 					if (start == null) {
@@ -348,18 +345,15 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 					if (log.isInfoEnabled()) {
 						log.info("Attempted to reschedule job but it was not scheduled.");
 					}
-					scheduleIdsByResource.remove(resource.getId());
 				}
 
 			}
 
 			if (start == null || start.before(new Date())) {
-				scheduleId = schedulerService.scheduleNow(AutomationJob.class, data, interval, repeat, end);
+				schedulerService.scheduleNow(AutomationJob.class, scheduleId, data, interval, repeat, end);
 			} else {
-				scheduleId = schedulerService.scheduleAt(AutomationJob.class, data, start, interval, repeat, end);
+				schedulerService.scheduleAt(AutomationJob.class, scheduleId, data, start, interval, repeat, end);
 			}
-
-			scheduleIdsByResource.put(resource.getId(), scheduleId);
 
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule automation task " + resource.getName(), e);
@@ -519,14 +513,17 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 			}
 		}
 
-		Calendar c = Calendar.getInstance();
-		c.set(Calendar.HOUR, 0);
-		c.set(Calendar.MINUTE, 0);
-		c.add(Calendar.DAY_OF_MONTH, 1);
-		JobDataMap data = new JobDataMap();
-		data.put("jobName", "automationDailyJob");
 		try {
-			schedulerService.scheduleAt(DailySchedulerJob.class, data, c.getTime());
+			if(schedulerService.jobDoesNotExists("automationDailyJob")){
+				Calendar c = Calendar.getInstance();
+				c.set(Calendar.HOUR, 0);
+				c.set(Calendar.MINUTE, 0);
+				c.add(Calendar.DAY_OF_MONTH, 1);
+				JobDataMap data = new JobDataMap();
+				data.put("jobName", "automationDailyJob");
+				
+				schedulerService.scheduleAt(DailySchedulerJob.class, "automationDailyJob", data, c.getTime(), HypersocketUtils.ONE_DAY);
+			}
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule daily automation jobs", e);
 		}

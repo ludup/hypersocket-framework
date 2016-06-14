@@ -7,6 +7,6 @@ import com.hypersocket.realm.Realm;
 
 public interface FileStore {
 
-	long writeFile(Realm realm, String uuid, InputStream in) throws IOException;
+	long writeFile(Realm realm, String filename, String uuid, InputStream in) throws IOException;
 
 }

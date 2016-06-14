@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
@@ -29,7 +28,6 @@ import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
-import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +63,7 @@ public class SchedulerServiceImpl extends
 
 	static Logger log = LoggerFactory.getLogger(SchedulerServiceImpl.class);
 
+	@Autowired
 	Scheduler scheduler;
 
 	@Autowired
@@ -82,8 +81,6 @@ public class SchedulerServiceImpl extends
 	public static Long SEQUENCE_GEN = 0L;
 	Map<String, SchedulerResource> cachedResources = new HashMap<String, SchedulerResource>();
 
-	Map<String, JobKey> jobKeys = new HashMap<String, JobKey>();
-	Map<String, TriggerKey> triggerKeys = new HashMap<String, TriggerKey>();
 
 	@PostConstruct
 	private void postConstruct() throws SchedulerException {
@@ -93,10 +90,6 @@ public class SchedulerServiceImpl extends
 		if(quartzProperties.exists()) {
 			System.setProperty("org.quartz.properties", quartzProperties.getAbsolutePath());
 		}
-		
-		scheduler = StdSchedulerFactory.getDefaultScheduler();
-		scheduler.setJobFactory(autowireJobFactory);
-		scheduler.start();
 		
 		repository.loadPropertyTemplates("schedulerResourceTemplate.xml");
 		i18nService.registerBundle(RESOURCE_BUNDLE);
@@ -113,83 +106,83 @@ public class SchedulerServiceImpl extends
 	}
 
 	@Override
-	public String scheduleNow(Class<? extends Job> clz, JobDataMap data)
+	public void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data)
 			throws SchedulerException {
-		return scheduleNow(clz, data, 0, 0);
+		scheduleNow(clz,scheduleId, data, 0, 0);
 	}
 
 	@Override
-	public String scheduleNow(Class<? extends Job> clz, JobDataMap data,
+	public void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data,
 			int interval, int repeat) throws SchedulerException {
-		return schedule(clz, data, null, interval, repeat, null);
+		schedule(clz, scheduleId, data, null, interval, repeat, null);
 	}
 
 	@Override
-	public String scheduleNow(Class<? extends Job> clz, JobDataMap data,
+	public void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data,
 			int interval) throws SchedulerException {
-		return scheduleNow(clz, data, interval,
+		scheduleNow(clz, scheduleId, data, interval,
 				SimpleTrigger.REPEAT_INDEFINITELY);
 	}
 
 	@Override
-	public String scheduleNow(Class<? extends Job> clz, JobDataMap data,
+	public void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data,
 			int interval, int repeat, Date ends) throws SchedulerException {
-		return schedule(clz, data, null, interval, repeat, null);
+		schedule(clz, scheduleId, data, null, interval, repeat, null);
 	}
 
 	@Override
-	public String scheduleAt(Class<? extends Job> clz, JobDataMap data,
+	public void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data,
 			Date start) throws SchedulerException {
-		return schedule(clz, data, start, 0, 0, null);
+		schedule(clz, scheduleId, data, start, 0, 0, null);
 	}
 
 	@Override
-	public String scheduleAt(Class<? extends Job> clz, JobDataMap data,
+	public void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data,
 			Date start, int interval) throws SchedulerException {
-		return schedule(clz, data, start, interval,
+		schedule(clz, scheduleId, data, start, interval,
 				SimpleTrigger.REPEAT_INDEFINITELY, null);
 	}
 
 	@Override
-	public String scheduleAt(Class<? extends Job> clz, JobDataMap data,
+	public void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data,
 			Date start, int interval, int repeat) throws SchedulerException {
-		return schedule(clz, data, start, interval, repeat, null);
+		schedule(clz, scheduleId, data, start, interval, repeat, null);
 	}
 
 	@Override
-	public String scheduleAt(Class<? extends Job> clz, JobDataMap data,
+	public void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data,
 			Date start, int interval, int repeat, Date ends)
 			throws SchedulerException {
-		return schedule(clz, data, start, interval, repeat, ends);
+		schedule(clz, scheduleId, data, start, interval, repeat, ends);
 	}
 
 	@Override
-	public String scheduleIn(Class<? extends Job> clz, JobDataMap data,
+	public void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data,
 			int millis) throws SchedulerException {
-		return scheduleIn(clz, data, millis, 0,
+		scheduleIn(clz, scheduleId, data, millis, 0,
 				SimpleTrigger.REPEAT_INDEFINITELY);
 	}
 
 	@Override
-	public String scheduleIn(Class<? extends Job> clz, JobDataMap data,
+	public void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data,
 			int millis, int interval) throws SchedulerException {
-		return schedule(clz, data, DateBuilder.futureDate(millis,
+		schedule(clz, scheduleId, data, DateBuilder.futureDate(millis,
 				DateBuilder.IntervalUnit.MILLISECOND), interval,
 				SimpleTrigger.REPEAT_INDEFINITELY, null);
 	}
 
 	@Override
-	public String scheduleIn(Class<? extends Job> clz, JobDataMap data,
+	public void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data,
 			int millis, int interval, Date ends) throws SchedulerException {
-		return schedule(clz, data, DateBuilder.futureDate(millis,
+		schedule(clz, scheduleId, data, DateBuilder.futureDate(millis,
 				DateBuilder.IntervalUnit.MILLISECOND), interval,
 				SimpleTrigger.REPEAT_INDEFINITELY, ends);
 	}
 
 	@Override
-	public String scheduleIn(Class<? extends Job> clz, JobDataMap data,
+	public void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data,
 			int millis, int interval, int repeat) throws SchedulerException {
-		return scheduleAt(clz, data, DateBuilder.futureDate(millis,
+		scheduleAt(clz, scheduleId, data, DateBuilder.futureDate(millis,
 				DateBuilder.IntervalUnit.MILLISECOND), interval, repeat);
 	}
 
@@ -265,19 +258,27 @@ public class SchedulerServiceImpl extends
 		reschedule(scheduleId, null, interval, repeat, end);
 	}
 
-	protected String schedule(Class<? extends Job> clz, JobDataMap data,
+	protected void schedule(Class<? extends Job> clz, String scheduleId, JobDataMap data,
 			Date start, int interval, int repeat, Date end)
 			throws SchedulerException {
 
-		if(data==null || !data.containsKey("jobName")) {
+		if(data == null || !data.containsKey("jobName")) {
 			throw new IllegalArgumentException("JobDataMap must be present with at least jobName data key");
 		}
 		
-		String uuid = UUID.randomUUID().toString();
+		if(scheduleId == null){
+			throw new IllegalArgumentException("Schedule id cannot be null");
+		}
+		
+		if(jobExists(scheduleId)){
+			if (log.isInfoEnabled()){
+				log.info(String.format("The job with identity %s already exists will not be scheduled again !!!!!!!.", scheduleId));
+			}
+		}
 
 		if (log.isInfoEnabled()) {
 			log.info("Scheduling job with id "
-					+ uuid
+					+ scheduleId
 					+ " to start "
 					+ (start == null ? "now" : "at "
 							+ HypersocketUtils.formatDateTime(start))
@@ -289,12 +290,9 @@ public class SchedulerServiceImpl extends
 					+ (end != null ? " until "
 							+ HypersocketUtils.formatDateTime(end) : ""));
 		}
-		JobDetail job = JobBuilder.newJob(clz).withIdentity(uuid).build();
-
-		jobKeys.put(uuid, job.getKey());
+		JobDetail job = JobBuilder.newJob(clz).withIdentity(scheduleId).build();
 
 		Trigger trigger = createTrigger(data, start, interval, repeat, end);
-		triggerKeys.put(uuid, trigger.getKey());
 		
 		Map<String, String> properties = new HashMap<String, String>();
 		properties.put(
@@ -304,14 +302,23 @@ public class SchedulerServiceImpl extends
 						start, "yyyy/MM/dd HH:mm")));
 		properties.put("intervals", String.valueOf((interval / 60000)));
 		try {
-			createResource(data.getString("jobName"), uuid, getCurrentRealm(), properties);
+			createResource(data.getString("jobName"), scheduleId, getCurrentRealm(), properties);
 			scheduler.scheduleJob(job, trigger);
 		} catch (ResourceCreationException e) {
 			log.error("Error in create resource for schedule ", e);
 		} catch (Exception e) {
 			log.error("Error in create resource for schedule ", e);
 		}
-		return uuid;
+	}
+
+	@Override
+	public boolean jobExists(String scheduleId) throws SchedulerException {
+		return scheduler.checkExists(new JobKey(scheduleId));
+	}
+	
+	@Override
+	public boolean jobDoesNotExists(String scheduleId) throws SchedulerException {
+		return !jobExists(scheduleId);
 	}
 
 	protected Trigger createTrigger(JobDataMap data, Date start, int interval,
@@ -359,15 +366,14 @@ public class SchedulerServiceImpl extends
 					+ (end != null ? " until "
 							+ HypersocketUtils.formatDateTime(end) : ""));
 		}
-		TriggerKey triggerKey = triggerKeys.get(id);
+		TriggerKey triggerKey = scheduler.getTriggersOfJob(new JobKey(id)).get(0).getKey();
 
-		if (scheduler.checkExists(triggerKey)) {
+		if (triggerKey != null) {
 
 			Trigger oldTrigger = scheduler.getTrigger(triggerKey);
 			Trigger trigger = createTrigger(oldTrigger.getJobDataMap(), start,
 					interval, repeat, end);
 			scheduler.rescheduleJob(triggerKey, trigger);
-			triggerKeys.put(id, trigger.getKey());
 			Map<String, String> properties = new HashMap<String, String>();
 			properties.put(
 					"started",
@@ -401,8 +407,8 @@ public class SchedulerServiceImpl extends
 			log.info("Cancelling job with id " + id);
 		}
 
-		triggerKeys.remove(id);
-		JobKey jobKey = jobKeys.remove(id);
+		JobKey jobKey = new JobKey(id);
+		
 		cachedResources.remove(id);
 		if (scheduler.checkExists(jobKey)) {
 			scheduler.deleteJob(jobKey);
@@ -411,15 +417,15 @@ public class SchedulerServiceImpl extends
 
 	@Override
 	public Date getNextSchedule(String id) throws SchedulerException {
-
-		Trigger trigger = scheduler.getTrigger(triggerKeys.get(id));
+		List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(new JobKey(id));
+		Trigger trigger = triggersOfJob.get(0);
 		return trigger.getNextFireTime();
 	}
 
 	@Override
 	public Date getPreviousSchedule(String id) throws SchedulerException {
-
-		Trigger trigger = scheduler.getTrigger(triggerKeys.get(id));
+		List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(new JobKey(id));
+		Trigger trigger = triggersOfJob.get(0);
 		return trigger.getPreviousFireTime();
 	}
 

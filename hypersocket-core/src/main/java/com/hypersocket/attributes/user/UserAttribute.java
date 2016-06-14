@@ -11,6 +11,11 @@ import com.hypersocket.attributes.AbstractAttribute;
 public class UserAttribute extends AbstractAttribute<UserAttributeCategory> {
 
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1593338282182807922L;
+
 	@ManyToOne
 	UserAttributeCategory category;
 	

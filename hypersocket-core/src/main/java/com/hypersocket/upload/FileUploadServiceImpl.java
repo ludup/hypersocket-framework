@@ -90,6 +90,11 @@ public class FileUploadServiceImpl extends
 	}
 	
 	@Override
+	public String getFilenameContentType(String filename) throws ResourceNotFoundException, IOException {
+		return getContentType(filename, false);
+	} 
+	
+	@Override
 	public String getContentType(String uuid, boolean isUUID) throws ResourceNotFoundException, IOException {
 		if(isUUID) {
 			FileUpload upload = getFileByUuid(uuid);
@@ -156,7 +161,7 @@ public class FileUploadServiceImpl extends
 
 				din = new DigestInputStream(in, md5);
 
-				fileUpload.setFileSize(uploadStore.writeFile(realm, uuid, din));
+				fileUpload.setFileSize(uploadStore.writeFile(realm, filename, uuid, din));
 
 				String md5String = Hex.encodeHexString(md5.digest());
 				fileUpload.setMd5Sum(md5String);
@@ -304,7 +309,7 @@ public class FileUploadServiceImpl extends
 		DefaultFileStore() {
 		}
 		
-		public long writeFile(Realm realm, String uuid, InputStream in)
+		public long writeFile(Realm realm, String filename, String uuid, InputStream in)
 				throws IOException {
 
 			File f = new File(

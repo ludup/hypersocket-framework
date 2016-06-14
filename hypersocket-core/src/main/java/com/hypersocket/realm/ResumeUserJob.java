@@ -44,8 +44,14 @@ public class ResumeUserJob extends PermissionsAwareJob {
 
 		if (principal != null) {
 			suspensionService.deletePrincipalSuspension(principal);
-
-			suspensionService.notifyResume(name, true);
+			
+			String scheduleId = context.getJobDetail().getKey().getName();
+			
+			if (log.isInfoEnabled()) {
+				log.info("Notifying resume for job with id " + scheduleId);
+			}
+			
+			suspensionService.notifyResume(scheduleId, name, true);
 
 			if (log.isInfoEnabled()) {
 				log.info("Resumed user " + name.toString());

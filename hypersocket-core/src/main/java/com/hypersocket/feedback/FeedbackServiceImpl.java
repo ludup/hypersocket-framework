@@ -26,7 +26,7 @@ public class FeedbackServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		FeedbackProgress progress = createFeedbackProgress();
 		data.put(FeedbackEnabledJob.FEEDBACK_ITEM, progress.getUuid());
 		
-		schedulerService.scheduleNow(jobClz, data);
+		schedulerService.scheduleNow(jobClz, progress.getUuid(), data);
 		
 		return progress;
 	}

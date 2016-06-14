@@ -17,6 +17,11 @@ import com.hypersocket.resource.Resource;
 @Table(name = "suspensions")
 public class PrincipalSuspension extends Resource {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5328311844604003267L;
+
 	@ManyToOne
 	@JoinColumn(name = "realm_id")
 	protected Realm realm;

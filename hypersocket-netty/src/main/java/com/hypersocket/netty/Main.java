@@ -25,6 +25,8 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.profile.ProfileLoaderClassPathXmlApplicationContext;
+import com.hypersocket.profile.ProfileNameFinder;
 import com.hypersocket.server.HypersocketServer;
 import com.hypersocket.upgrade.UpgradeService;
 
@@ -159,8 +161,14 @@ public class Main {
 			log.info("Creating spring application context");
 		}
 
-		applicationContext = new ClassPathXmlApplicationContext(
-				"classpath*:/applicationContext.xml");
+		String[] profiles = ProfileNameFinder.findProfiles();
+		String configLocation = "classpath*:/applicationContext.xml";
+		
+		if(profiles.length == 0){
+			applicationContext = new ClassPathXmlApplicationContext(configLocation);
+		}else{
+			applicationContext = new ProfileLoaderClassPathXmlApplicationContext(configLocation, profiles);
+		}
 
 		if (log.isInfoEnabled()) {
 			log.info("Obtaining platform transaction manager");

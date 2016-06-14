@@ -17,6 +17,11 @@ import com.hypersocket.resource.RealmResource;
 @Table(name = "auth_schemes")
 public class AuthenticationScheme extends RealmResource {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 96922791807675582L;
+
 	@Column(name = "resourceKey")
 	String resourceKey;
 

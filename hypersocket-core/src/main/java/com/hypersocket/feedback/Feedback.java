@@ -1,11 +1,16 @@
 package com.hypersocket.feedback;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Feedback {
+public class Feedback implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 106680764431465306L;
 	int index;
 	boolean finished;
 	String resourceKey;

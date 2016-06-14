@@ -10,6 +10,11 @@ import com.hypersocket.resource.RealmResource;
 @Table(name="templates")
 public class TemplateResource extends RealmResource {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5189102854329906423L;
+
 	@Column(name="logo")
 	String templateLogo;
 	

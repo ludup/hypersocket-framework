@@ -11,6 +11,11 @@ import java.util.Date;
 
 public abstract class UserPrincipal extends Principal {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6916181436630638375L;
+
 	public abstract Date getLastPasswordChange();
 	
 	public abstract Date getLastSignOn();

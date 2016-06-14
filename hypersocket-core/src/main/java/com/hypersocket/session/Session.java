@@ -43,6 +43,11 @@ import com.hypersocket.utils.HypersocketUtils;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Session extends AbstractEntity<String> {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -830036435585689895L;
+
 	static Logger log = Logger.getLogger(Session.class);
 
 	@Id

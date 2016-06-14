@@ -98,7 +98,7 @@ public class UnblockIPTask extends AbstractTaskProvider {
 					
 					ipRestrictionService.unblockIPAddress(ipAddress);
 					
-					blockTask.notifyUnblock(ipAddress, false);
+					blockTask.notifyUnblock(currentRealm.getName() + "_" + ipAddress, false);
 					
 					results.add(new UnblockedIPResult(this, currentRealm, task, ipAddress));
 				} catch (UnknownHostException e) {

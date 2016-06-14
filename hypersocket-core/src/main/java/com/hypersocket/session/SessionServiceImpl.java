@@ -90,9 +90,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	Map<String, SessionResourceToken<?>> sessionTokens = new HashMap<String, SessionResourceToken<?>>();
 
 	Map<String, Session> nonCookieSessions = new HashMap<String, Session>();
-
+	
 	Session systemSession;
-
+	
 	@PostConstruct
 	private void postConstruct() throws AccessDeniedException {
 
@@ -622,17 +622,13 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				}
 
 				try {
-					JobDataMap data = new JobDataMap();
-					data.put("jobName", "firstRunSessionReaperJob");
-					data.put("firstRun", true);
-					
-					schedulerService.scheduleNow(SessionReaperJob.class, data);
-					
-					data = new JobDataMap();
-					data.put("jobName", "sessionReaperJob");
-					
-					schedulerService.scheduleIn(SessionReaperJob.class, data, 60000,
-							60000);
+					if(schedulerService.jobDoesNotExists("sessionReaperJob")){
+						JobDataMap data = new JobDataMap();
+						data = new JobDataMap();
+						data.put("jobName", "sessionReaperJob");
+						
+						schedulerService.scheduleIn(SessionReaperJob.class, "sessionReaperJob", data, 60000, 60000);
+					}
 				} catch (SchedulerException e) {
 					log.error("Failed to schedule session reaper job", e);
 				} 

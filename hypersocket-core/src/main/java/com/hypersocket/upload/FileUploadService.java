@@ -57,6 +57,8 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 
 	String getContentType(String uuid, boolean isUUID) throws ResourceNotFoundException, IOException;
 
+	String getFilenameContentType(String filename) throws ResourceNotFoundException, IOException;
+	
 	FileUpload createFile(InputStream in, String filename, Realm realm, boolean persist)
 			throws ResourceCreationException, AccessDeniedException, IOException;
 }

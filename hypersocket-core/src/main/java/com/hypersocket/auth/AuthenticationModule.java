@@ -23,6 +23,11 @@ import com.hypersocket.repository.AbstractEntity;
 @XmlRootElement(name = "authenticationSchemeModules")
 public class AuthenticationModule extends AbstractEntity<Long> {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1206533209868713440L;
+
 	@Id
 	@GeneratedValue
 	@Column(name = "module_id")

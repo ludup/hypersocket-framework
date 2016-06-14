@@ -10,6 +10,11 @@ import com.hypersocket.resource.RealmResource;
 @Table(name="secret_keys")
 public class SecretKeyResource extends RealmResource {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5968935969005380460L;
+
 	@Column(name="keydata", length=8000)
 	String keydata;
 	

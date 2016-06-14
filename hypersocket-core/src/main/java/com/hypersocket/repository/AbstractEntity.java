@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.repository;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -24,8 +25,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @MappedSuperclass
+
 @JsonIgnoreProperties(ignoreUnknown=true, value={"createDate", "modifiedDate"})
-public abstract class AbstractEntity<T> {
+public abstract class AbstractEntity<T> implements Serializable{
+
+	private static final long serialVersionUID = -8808550521563073042L;
 
 	public abstract T getId();
 	

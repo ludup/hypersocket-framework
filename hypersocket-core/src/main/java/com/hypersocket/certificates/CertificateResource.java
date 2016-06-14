@@ -11,6 +11,11 @@ import com.hypersocket.resource.RealmResource;
 @Table(name="ssl_certificates")
 public class CertificateResource extends RealmResource {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2494558616152991393L;
+
 	@Column(name="type")
 	CertificateType type;
 	

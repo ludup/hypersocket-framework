@@ -19,6 +19,11 @@ import com.hypersocket.constraint.Constraint;
 @Table(name="resource_constraints")
 public class ResourceConstraint extends Constraint {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3523484879300303259L;
+
 	@ManyToOne
 	@JoinColumn(name="resource_id")
 	Resource resource;
