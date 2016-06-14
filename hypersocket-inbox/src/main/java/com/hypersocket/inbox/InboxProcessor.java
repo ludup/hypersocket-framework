@@ -65,7 +65,10 @@ public class InboxProcessor {
 
 			// opens the inbox folder
 			Folder folderInbox = store.getFolder("INBOX");
-			folderInbox.open(Folder.READ_ONLY);
+			if(allMessages)
+				folderInbox.open(Folder.READ_ONLY);
+			else
+				folderInbox.open(Folder.READ_WRITE);
 
 			// fetches new messages from server
 			Message[] messages;
@@ -77,6 +80,9 @@ public class InboxProcessor {
 
 			for (int i = 0; i < messages.length; i++) {
 				Message msg = messages[i];
+				
+				if(!allMessages)
+					msg.setFlag(Flag.SEEN, true);
 
 				String contentType = msg.getContentType().toLowerCase();
 				String textContent = "";

@@ -9,7 +9,7 @@ public class JobResourceCreatedEvent extends
 		JobResourceEvent {
 
 	private static final long serialVersionUID = -3888399996190675339L;
-	
+
 	public static final String EVENT_RESOURCE_KEY = "job.created";
 	
 	public JobResourceCreatedEvent(Object source,

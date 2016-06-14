@@ -1,10 +1,6 @@
 package com.hypersocket.attributes.user;
 
-import com.hypersocket.resource.AbstractResourceRepository;
+import com.hypersocket.attributes.AttributeCategoryRepository;
 
-public interface UserAttributeCategoryRepository extends
-		AbstractResourceRepository<UserAttributeCategory> {
-
-	Long getMaximumCategoryWeight();
-
+public interface UserAttributeCategoryRepository extends AttributeCategoryRepository<UserAttributeCategory> {
 }

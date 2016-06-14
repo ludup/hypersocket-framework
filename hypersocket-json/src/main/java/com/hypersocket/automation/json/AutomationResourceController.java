@@ -379,27 +379,38 @@ public class AutomationResourceController extends AbstractTriggerController {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@AuthenticationRequired
-	@RequestMapping(value = "automations/trigger/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
+	@RequestMapping(value = "automations/trigger/{id}/{triggerId}", method = RequestMethod.DELETE, produces = { "application/json" })
+
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<TriggerResource> deleteTrigger(
 			HttpServletRequest request, HttpServletResponse response,
-			@PathVariable("id") Long id) throws AccessDeniedException,
+			@PathVariable("id") Long id, @PathVariable("triggerId") Long triggerId) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
 
-			TriggerResource resource = triggerService.getResourceById(id);
+			TriggerResource resource = triggerService.getResourceById(triggerId);
 
 			if (resource == null) {
 				return new ResourceStatus<TriggerResource>(false,
 						I18N.getResource(sessionUtils.getLocale(request),
 								TriggerResourceServiceImpl.RESOURCE_BUNDLE,
-								"error.invalidResourceId", id));
+								"error.invalidResourceId", triggerId));
 			}
+			
+			AutomationResource automation = resourceService.getResourceById(id);
+			if (automation == null) {
+				return new ResourceStatus<TriggerResource>(false,
+						I18N.getResource(sessionUtils.getLocale(request),
+								TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+								"error.invalidResourceId", triggerId));
+			}
+			
 
 			String preDeletedName = resource.getName();
 
@@ -410,19 +421,26 @@ public class AutomationResourceController extends AbstractTriggerController {
 				while (rootTrigger.getParentTrigger() != null) {
 					rootTrigger = rootTrigger.getParentTrigger();
 				}
+			} else {
+				automation.getChildTriggers().remove(resource);
+				resourceService.updateResource(automation);
 			}
 
-			AutomationResource automation = resourceService.getResourceById(resource.getAttachmentId());
-			
-			automation.getChildTriggers().remove(resource);
-			resourceService.updateResource(automation);
 			triggerService.deleteResource(resource);
 
-			return new ResourceStatus<TriggerResource>(true,
+			if (rootTrigger != null) {
+				return new ResourceStatus<TriggerResource>(
+						triggerService.getResourceById(rootTrigger.getId()),
 						I18N.getResource(sessionUtils.getLocale(request),
 								TriggerResourceServiceImpl.RESOURCE_BUNDLE,
-								"resource.deleted.info", preDeletedName));
-		
+								"trigger.deleted.info", preDeletedName));
+			} else {
+				return new ResourceStatus<TriggerResource>(true,
+						I18N.getResource(sessionUtils.getLocale(request),
+								TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+								"trigger.deleted.info", preDeletedName));
+			}
+
 		} catch (ResourceException e) {
 			return new ResourceStatus<TriggerResource>(false, e.getMessage());
 		} finally {

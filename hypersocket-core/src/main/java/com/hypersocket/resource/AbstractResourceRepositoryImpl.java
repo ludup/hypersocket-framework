@@ -1,7 +1,10 @@
 package com.hypersocket.resource;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -94,17 +97,34 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	}
 	
 	@Override
-	public void populateEntityFields(T resource, Map<String,String> properties) {
-		
-		for(String resourceKey : getPropertyNames(resource)) {
+	public List<PropertyChange> populateEntityFields(T resource, Map<String,String> properties) {
+		List<PropertyChange> changedProperties = new ArrayList<>();
+		final Set<String> propertyNames = getPropertyNames(resource);
+		for(String resourceKey : propertyNames) {
 			if(properties.containsKey(resourceKey)) {
+				int x =1;
 				PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
-				if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
-					setValue(resource, resourceKey, properties.get(resourceKey));
+//				if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
+					String val = getValue(resource, resourceKey);
+					String newVal = properties.get(resourceKey);
+					
+					/* NOTE - I am not 100% sure about this. What if a value IS changing to (or from) null? */
+					
+					if(val == null) 
+						val = "";
+					if(newVal == null) 
+						newVal = "";
+					
+					if(!Objects.equals(val, newVal)) {
+						changedProperties.add(new PropertyChange(resourceKey, val, newVal));
+					}
+					
+					setValue(resource, resourceKey, newVal);
 					properties.remove(resourceKey);
-				}
+//				}
 			}
 		}
+		return changedProperties;
 	}
 	
 	@Override

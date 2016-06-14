@@ -9,6 +9,7 @@
 		<property resourceKey="user.mobile" inputType="text" weight="20" hidden="true"
 			defaultValue="" />
 	</propertyCategory>
+
 	<propertyCategory resourceKey="local.userDetailsE"
 		resourceBundle="LocalRealm" weight="0">
 		<property resourceKey="fullname" inputType="text" weight="0"

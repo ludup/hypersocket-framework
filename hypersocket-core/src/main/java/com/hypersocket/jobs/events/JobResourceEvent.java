@@ -9,18 +9,12 @@ import com.hypersocket.session.Session;
 public class JobResourceEvent extends ResourceEvent {
 
 	private static final long serialVersionUID = 921710635139797086L;
+
 	public static final String EVENT_RESOURCE_KEY = "job.event";
 	
 	public JobResourceEvent(Object source, String resourceKey,
 			Session session, JobResource resource) {
 		super(source, resourceKey, true, session, resource);
-
-		/**
-		 * TODO add attributes of your resource here. Make sure all attributes
-		 * have a constant string definition like the commented out example above,
-		 * its important for its name to start with ATTR_ as this is picked up during 
-		 * the registration process
-		 */
 	}
 
 	public JobResourceEvent(Object source, String resourceKey,

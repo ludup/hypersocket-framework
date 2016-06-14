@@ -146,15 +146,39 @@ public class ResourceUtils {
 	}
 	
 	public static <T extends Resource> String implodeNamePairValues(Collection<T> entities) {
-		
+		return implodeNamePairValues(new NameValueImploder<T>() {
+			public String getId(T t) {
+				return String.valueOf(t.getId());
+			}
+			public String getName(T t) {
+				return t.getName();
+			}
+		}, entities);
+	}
+	
+	public static String implodeNamePairs(Collection<NameValuePair> pairs) {
 		StringBuilder buf = new StringBuilder();
-		for(Resource e : entities) {
+		for(NameValuePair pair : pairs) {
 			if(buf.length() > 0) {
 				buf.append("]|[");
 			}
-			buf.append(e.getId());
+			buf.append(pair.getName());
 			buf.append("=");
-			buf.append(HypersocketUtils.urlEncode(e.getName()));
+			buf.append(HypersocketUtils.urlEncode(pair.getValue()));
+		}
+		return buf.toString();
+	}
+	
+	public static <T extends Resource> String implodeNamePairValues(NameValueImploder<T> imploder, Collection<T> entities) {
+		
+		StringBuilder buf = new StringBuilder();
+		for(T e : entities) {
+			if(buf.length() > 0) {
+				buf.append("]|[");
+			}
+			buf.append(imploder.getId(e));
+			buf.append("=");
+			buf.append(HypersocketUtils.urlEncode(imploder.getName(e)));
 		}
 		return buf.toString();
 	}

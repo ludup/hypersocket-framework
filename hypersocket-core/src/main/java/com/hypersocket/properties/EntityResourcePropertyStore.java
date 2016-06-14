@@ -232,6 +232,11 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 							} else {
 								String[] ids = ResourceUtils.explodeValues(value);
 								for(String id : ids) {
+									int iidx = id.indexOf('=');
+									if(iidx != -1) {
+										id = id.substring(0, iidx);
+									}
+									
 									Object obj = null;
 									if(assignableServices.containsKey(type)) {
 										obj = assignableServices.get(type).getResourceById(Long.parseLong(id));

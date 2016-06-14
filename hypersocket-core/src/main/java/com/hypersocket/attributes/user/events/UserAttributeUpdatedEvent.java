@@ -2,7 +2,7 @@ package com.hypersocket.attributes.user.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.hypersocket.attributes.user.UserAttribute;
+import com.hypersocket.attributes.AbstractAttribute;
 import com.hypersocket.session.Session;
 
 public class UserAttributeUpdatedEvent extends UserAttributeEvent {
@@ -13,13 +13,11 @@ public class UserAttributeUpdatedEvent extends UserAttributeEvent {
 
 	public static final String EVENT_RESOURCE_KEY = "event.userAttributeUpdated";
 
-	public UserAttributeUpdatedEvent(Object source, Session session,
-			UserAttribute attribute) {
+	public UserAttributeUpdatedEvent(Object source, Session session, AbstractAttribute<?> attribute) {
 		super(source, EVENT_RESOURCE_KEY, true, session, attribute);
 	}
 
-	public UserAttributeUpdatedEvent(Object source, Throwable e, Session session,
-			UserAttribute attribute) {
+	public UserAttributeUpdatedEvent(Object source, Throwable e, Session session, AbstractAttribute<?> attribute) {
 		super(source, EVENT_RESOURCE_KEY, e, session, attribute);
 	}
 
