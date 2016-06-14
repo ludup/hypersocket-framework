@@ -2,7 +2,6 @@ package com.hypersocket.attributes.user;
 
 import java.util.Set;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
@@ -16,9 +15,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class UserAttributeCategory extends AbstractAttributeCategory<UserAttribute> {
 	
 	private static final long serialVersionUID = -7065921752886263209L;
-
-	@Column(name = "weight", nullable = false)
-	Integer weight = new Integer(0);
 
 	@OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
 	protected Set<UserAttribute> attributes;

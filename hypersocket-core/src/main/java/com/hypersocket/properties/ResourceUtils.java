@@ -195,11 +195,13 @@ public class ResourceUtils {
 
 	public static <T extends Enum<?>> String implodeEnumValues(Collection<T> collection) {
 		StringBuilder buf = new StringBuilder();
-		for(Enum<?> e : collection) {
-			if(buf.length() > 0) {
-				buf.append("]|[");
+		if(collection != null) {
+			for(Enum<?> e : collection) {
+				if(buf.length() > 0) {
+					buf.append("]|[");
+				}
+				buf.append(e.ordinal());
 			}
-			buf.append(e.ordinal());
 		}
 		return buf.toString();
 	}
