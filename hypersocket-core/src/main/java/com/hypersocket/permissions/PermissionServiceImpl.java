@@ -502,7 +502,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		Role role = repository.getRoleByName(name, realm);
 		if (role == null) {
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE,
-					"error.realmNotFound", name);
+					"error.role.notFound", name);
 		}
 		return role;
 	}
@@ -751,4 +751,42 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		}
 	}
 
+	/**
+	 * Creates role and assigns principals (users) to the newly created role.
+	 * 
+	 * @param	roleName			role is created with this name
+	 * @param	realm				realm to which the role and to be assigned principals belong
+	 * @param	principals			list of principals to be added to role created
+	 * 
+	 * @throws	AccessDeniedException
+	 * @throws	ResourceException
+	 * 
+	 * @return	newly created role instance
+	 *  
+	 */
+	@Override
+	public Role createRoleAndAssignPrincipals(final String roleName, final Realm realm, final Principal...principals) throws ResourceException, AccessDeniedException {
+
+		return transactionService.doInTransaction(new TransactionCallback<Role>() {
+
+			@Override
+			public Role doInTransaction(TransactionStatus ts) {
+				try {
+					if (log.isInfoEnabled()){
+						log.info(String.format("Creating role with name %s in realm %s.", roleName, realm.getName()));
+					}
+
+					Role role = createRole(roleName, realm);
+
+					assignRole(role, principals);
+
+					return role;
+				} catch (AccessDeniedException | ResourceCreationException e) {
+					throw new IllegalStateException(e);
+				}
+			}
+			
+		});
+	}
+	
 }
