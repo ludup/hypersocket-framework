@@ -22,6 +22,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.resource.AbstractResourceRepository;
 
 @Component
 public class UsernameAndPasswordAuthenticator extends
@@ -33,14 +34,14 @@ public class UsernameAndPasswordAuthenticator extends
 	AuthenticationService authenticationService;
 
 	@Autowired
-	RealmRepository realmRepository; 
-	
+	RealmRepository realmRepository;
+
 	@Autowired
 	RealmService realmService;
-	
+
 	@Autowired
-	SystemConfigurationService systemConfigurationService; 
-	
+	SystemConfigurationService systemConfigurationService;
+
 	@PostConstruct
 	private void postConstruct() {
 		authenticationService.registerAuthenticator(this);
@@ -51,10 +52,11 @@ public class UsernameAndPasswordAuthenticator extends
 	public FormTemplate createTemplate(AuthenticationState state, Map params) {
 
 		List<Realm> realms = new ArrayList<Realm>();
-		if(systemConfigurationService.getBooleanValue("auth.chooseRealm")) {
+		if (systemConfigurationService.getBooleanValue("auth.chooseRealm")) {
 			realms.addAll(realmRepository.allRealms());
 		}
-		return new UsernameAndPasswordTemplate(state, params, realms, realmService.getDefaultRealm());
+		return new UsernameAndPasswordTemplate(state, params, realms,
+				realmService.getDefaultRealm());
 	}
 
 	@Override
@@ -116,13 +118,23 @@ public class UsernameAndPasswordAuthenticator extends
 			password = state
 					.getParameter(UsernameAndPasswordTemplate.PASSWORD_FIELD);
 		}
-		boolean success = realmService.verifyPassword(principal, password.toCharArray());
-		
-		if(success) {
+		boolean success = realmService.verifyPassword(principal,
+				password.toCharArray());
+
+		if (success) {
 			state.addParameter("password", password);
 		}
-		
+
 		return success;
 	}
 
+	@Override
+	public AbstractResourceRepository<AuthenticationScheme> getRepository() {
+		return null;
+	}
+	
+	@Override
+	public boolean isPropertiesModule() {
+		return false;
+	}
 }
