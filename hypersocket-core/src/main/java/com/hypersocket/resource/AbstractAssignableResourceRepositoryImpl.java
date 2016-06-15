@@ -589,8 +589,8 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 		
 		if(lastUpdatedFrom!=null) {
-			criteria.add(Restrictions.and(Restrictions.ge("modified", lastUpdatedFrom),
-					Restrictions.lt("modified", lastUpdatedTo)));
+			criteria.add(Restrictions.and(Restrictions.ge("modifiedDate", lastUpdatedFrom),
+					Restrictions.lt("modifiedDate", lastUpdatedTo)));
 		}
 
 		for (CriteriaConfiguration c : configs) {
