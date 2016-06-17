@@ -47,6 +47,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	String queryString;
 	String pathInfo;
 	String url;
+	String uri;
 	InetSocketAddress localAddress;
 	InetSocketAddress remoteAddress;
 	Cookie[] cookies;
@@ -64,33 +65,12 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 		this.request = request;
 		this.localAddress = localAddress;
 		this.remoteAddress = remoteAddress;
-		this.url = (secure ? "https://" : "http://") + request.getHeader(HttpHeaders.HOST) + request.getUri();
+		
 		this.secure = secure;
 		this.context = context;
 		this.session = session;
 		
-		// Parse the URL
-		int doubleSlashPos = url.lastIndexOf("://");
-		int startPathPos = url.indexOf("/", doubleSlashPos + 1) + 1;
-
-		int questionMarkPos = url.lastIndexOf('?');
-		if (questionMarkPos == url.length() - 1) {
-			queryString = "";
-			if (startPathPos < questionMarkPos) {
-				pathInfo = url.substring(startPathPos, questionMarkPos);
-			}
-		} else if (questionMarkPos != -1) {
-			queryString = url.substring(questionMarkPos + 1);
-			if (startPathPos < questionMarkPos) {
-				pathInfo = url.substring(startPathPos, questionMarkPos);
-			}
-			processParameters(queryString);
-		} else {
-			queryString = null;
-			if (startPathPos < url.length()) {
-				pathInfo = url.substring(startPathPos);
-			}
-		}
+		parseUri(request.getUri());
 
 		String contentType = request.getHeader(HttpHeaders.CONTENT_TYPE);
 		
@@ -112,6 +92,58 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 		}
 	}
 	
+	void parseUri(String uri) {
+		
+		boolean firstPass = url == null;
+		
+		this.url = (secure ? "https://" : "http://") + request.getHeader(HttpHeaders.HOST) + uri;
+
+		if(uri.indexOf('?') > -1) {
+	         uri = uri.substring(0, uri.indexOf('?'));
+	    }
+		
+		this.uri = uri;
+		
+		int doubleSlashPos = url.lastIndexOf("://");
+		int startPathPos = url.indexOf("/", doubleSlashPos + 1) + 1;
+
+		int questionMarkPos = url.lastIndexOf('?');
+		
+		if(firstPass) {
+			if (questionMarkPos == url.length() - 1) {
+				queryString = "";
+				if (startPathPos < questionMarkPos) {
+					pathInfo = url.substring(startPathPos, questionMarkPos);
+				}
+			} else if (questionMarkPos != -1) {
+				queryString = url.substring(questionMarkPos + 1);
+				if (startPathPos < questionMarkPos) {
+					pathInfo = url.substring(startPathPos, questionMarkPos);
+				}
+				processParameters(queryString);
+			} else {
+				queryString = null;
+				if (startPathPos < url.length()) {
+					pathInfo = url.substring(startPathPos);
+				}
+			} 
+		} else {
+			if (questionMarkPos == url.length() - 1) {
+				if (startPathPos < questionMarkPos) {
+					pathInfo = url.substring(startPathPos, questionMarkPos);
+				}
+			} else if (questionMarkPos != -1) {
+				if (startPathPos < questionMarkPos) {
+					pathInfo = url.substring(startPathPos, questionMarkPos);
+				}
+			} else {
+				if (startPathPos < url.length()) {
+					pathInfo = url.substring(startPathPos);
+				}
+			} 
+		}
+	}
+			
 	private void processParameters(String params) {
 		StringTokenizer paramsParser = new StringTokenizer(params, "&");
 		while (paramsParser.hasMoreTokens()) {
@@ -421,21 +453,12 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public String getRequestURI() {
-		String uri = request.getUri();
-		if (url.indexOf('?') == -1) {
-	         return uri;
-	      } else {
-	         return uri.substring(0, uri.indexOf('?'));
-	      }
+		return uri;
 	}
 
 	@Override
 	public StringBuffer getRequestURL() {
-		if (url.indexOf('?') == -1) {
-	         return new StringBuffer(url);
-	      } else {
-	         return new StringBuffer(url.substring(0, url.indexOf('?')));
-	      }
+		return new StringBuffer(url);
 	}
 
 	@Override

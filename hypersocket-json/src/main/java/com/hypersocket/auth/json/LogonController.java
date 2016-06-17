@@ -51,14 +51,14 @@ public class LogonController extends AuthenticatedController {
 				.getAttribute(AUTHENTICATION_STATE_KEY);
 		
 		String previousScheme = (String) request.getSession().getAttribute(PREVIOUS_AUTHENTICATION_SCHEME);
-		if(previousScheme==null) {
-			previousScheme = state == null ? AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY
-					: state.getScheme().getResourceKey();
+		if(previousScheme==null) {	
+			previousScheme = state == null ? null : state.getScheme().getResourceKey();
 		}
 		return resetLogon(
 				request,
 				response,
-				previousScheme, redirect);
+				previousScheme, 
+				redirect);
 	}
 
 	@RequestMapping(value = "logon/reset/{scheme}", method = RequestMethod.GET, produces = "application/json")
@@ -154,9 +154,7 @@ public class LogonController extends AuthenticatedController {
 					|| (!StringUtils.isEmpty(scheme) && !state.getScheme()
 							.getResourceKey().equals(scheme))) {
 				// We have not got login state so create
-				state = createAuthenticationState(
-						scheme == null ? AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY
-								: scheme, request, response);
+				state = createAuthenticationState(scheme, request, response);
 				createdState = true;
 			}
 
