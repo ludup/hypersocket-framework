@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -112,6 +113,9 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	
 	boolean stopping = false;
 	
+	Map<Pattern,String> urlRewrite = new HashMap<Pattern,String>();
+	Map<String,String> aliases = new HashMap<String,String>();
+	
 	public HypersocketServerImpl() {
 		Security.addProvider(new BouncyCastleProvider());
 		controllerPackages.add("com.hypersocket.json.**");
@@ -129,6 +133,26 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		return initializeSSL(resource);
 	}
 
+	@Override
+	public void addUrlRewrite(String regex, String rewrite) {
+		urlRewrite.put(Pattern.compile(regex), rewrite);
+	}
+	
+	@Override
+	public Map<Pattern,String> getUrlRewrites() {
+		return urlRewrite;
+	}
+	
+	@Override
+	public void addAlias(String alias, String path) {
+		aliases.put(alias, path);
+	}
+	
+	@Override
+	public Map<String,String> getAliases() {
+		return aliases;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 

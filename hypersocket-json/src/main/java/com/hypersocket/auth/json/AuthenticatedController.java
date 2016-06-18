@@ -85,6 +85,13 @@ public class AuthenticatedController {
 						request.getHeader(env.toString()));
 			}
 		}
+		
+		String originalUri = (String)request.getAttribute("browserRequestUri");
+		if(originalUri!=null) {
+			environment.put("originalUri", originalUri);
+		}
+		environment.put("uri", request.getRequestURI());
+		environment.put("url", request.getRequestURL().toString());
 
 		AuthenticationState state = authenticationService
 				.createAuthenticationState(scheme, request.getRemoteAddr(),

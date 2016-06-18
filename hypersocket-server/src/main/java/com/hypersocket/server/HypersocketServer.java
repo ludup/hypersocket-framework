@@ -9,6 +9,8 @@ package com.hypersocket.server;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -87,5 +89,13 @@ public interface HypersocketServer {
 	int getActualHttpsPort();
 
 	void registerControllerPackage(String controllerPackage);
+
+	void addUrlRewrite(String regex, String rewrite);
+
+	Map<Pattern, String> getUrlRewrites();
+
+	void addAlias(String alias, String path);
+	
+	Map<String,String> getAliases();
 
 }

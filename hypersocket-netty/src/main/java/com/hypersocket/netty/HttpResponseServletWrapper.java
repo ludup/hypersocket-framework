@@ -229,6 +229,11 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 		setStatus(302);
 	    setHeader(HttpHeaders.LOCATION, location);
 	}
+	
+	public void sendRedirect(String location, boolean permanent) throws IOException {
+		setStatus(permanent ? 301 : 302);
+	    setHeader(HttpHeaders.LOCATION, location);
+	}
 
 	@Override
 	public void setDateHeader(String name, long date) {

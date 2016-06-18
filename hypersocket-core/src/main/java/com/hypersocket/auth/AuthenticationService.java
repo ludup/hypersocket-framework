@@ -24,7 +24,7 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 	void registerAuthenticator(Authenticator authenticator);
 
 	AuthenticationScheme getDefaultScheme(String remoteAddress,
-			Map<String, String> environment, Realm realm);
+			Map<String, Object> environment, Realm realm);
 
 	AuthenticationState createAuthenticationState(String scheme,
 			String remoteAddress, Map<String, Object> environment, Locale locale)
@@ -68,6 +68,8 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 	Principal resolvePrincipalAndRealm(AuthenticationState state,
 			String username) throws AccessDeniedException,
 			PrincipalNotFoundException;
+
+	void setAuthenticationSchemeSelector(AuthenticationSchemeSelector authenticationSelector);
 
 
 }

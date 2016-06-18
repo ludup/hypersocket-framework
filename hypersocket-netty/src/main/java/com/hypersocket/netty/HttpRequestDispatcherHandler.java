@@ -17,7 +17,10 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.ServletException;
@@ -69,6 +72,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		implements HttpResponseProcessor {
 
 	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
+	public static final String BROWSER_URI = "browserRequestUri";
 	
 	private static Logger log = LoggerFactory
 			.getLogger(HttpRequestDispatcherHandler.class);
@@ -159,6 +163,36 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 						interfaceResource.getProtocol()==HTTPProtocol.HTTPS, 
 						server.getServletConfig().getServletContext(), session);
 
+		String reverseUri = servletRequest.getRequestURI();
+		reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
+		reverseUri = reverseUri.replace(server.getUserInterfacePath(), "${uiPath}");
+		reverseUri = reverseUri.replace(server.getBasePath(), "${basePath}");
+		
+		Map<Pattern,String> rewrites = server.getUrlRewrites();
+		for(Pattern regex : rewrites.keySet()) {
+			Matcher matcher = regex.matcher(reverseUri);
+			if(matcher.matches()) {
+				String uri = processReplacements(rewrites.get(regex));
+				uri = matcher.replaceAll(uri);
+				servletRequest.setAttribute(BROWSER_URI, nettyRequest.getUri());
+				servletRequest.parseUri(uri);
+				break;
+			}
+		}
+		
+		Map<String,String> aliases = server.getAliases();
+		if(aliases.containsKey(reverseUri)) {
+			String path = processReplacements(aliases.get(reverseUri));
+			if(path.startsWith("redirect:")) {
+				nettyResponse.sendRedirect(path.substring(9), true);
+				sendResponse(servletRequest, nettyResponse, false);
+				return;
+			} else {
+				servletRequest.setAttribute(BROWSER_URI, nettyRequest.getUri());
+				servletRequest.parseUri(path);
+			}
+		}
+		
 		Request.set(servletRequest);
 		
 		if (log.isDebugEnabled()) {
@@ -246,6 +280,12 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		if (log.isDebugEnabled()) {
 			log.debug("Leaving HttpRequestDispatcherHandler processRequest");
 		}
+	}
+	
+	protected String processReplacements(String path) {
+		path = path.replace("${apiPath}", server.getApiPath());
+		path = path.replace("${uiPath}", server.getBasePath());
+		return path.replace("${basePath}", server.getUiPath());
 	}
 
 	@Override

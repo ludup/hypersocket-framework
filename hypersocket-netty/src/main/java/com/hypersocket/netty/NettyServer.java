@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
@@ -331,8 +332,7 @@ public class NettyServer extends HypersocketServerImpl {
 		};
 		
 		t.start();
-		
-		
+
 	}
 	
 	class NettyThreadFactory implements ThreadFactory {

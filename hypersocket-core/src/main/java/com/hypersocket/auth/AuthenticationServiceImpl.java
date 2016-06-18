@@ -36,6 +36,7 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
@@ -100,7 +101,8 @@ public class AuthenticationServiceImpl extends
 	List<AuthenticationServiceListener> listeners = new ArrayList<AuthenticationServiceListener>();
 
 	Permission logonPermission;
-
+	AuthenticationSchemeSelector authenticationSelector;
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -192,11 +194,16 @@ public class AuthenticationServiceImpl extends
 
 	@Override
 	public AuthenticationScheme getDefaultScheme(String remoteAddress,
-			Map<String, String> environment, Realm realm) {
+			Map<String, Object> environment, Realm realm) {
 		List<AuthenticationScheme> schemes = schemeRepository.allSchemes(realm);
 		if (schemes.size() == 0)
 			throw new IllegalArgumentException(
 					"There are no authentication schemes configured!");
+		for(AuthenticationScheme scheme : schemes) {
+			if(scheme.getResourceKey().equals(BROWSER_AUTHENTICATION_RESOURCE_KEY)) {
+				return scheme;
+			}
+		}
 		return schemes.get(0);
 	}
 
@@ -281,8 +288,18 @@ public class AuthenticationServiceImpl extends
 			state.setRealm(realmService.getDefaultRealm());
 		}
 
-		AuthenticationScheme scheme = getSchemeByResourceKey(state.getRealm(),
-				schemeResourceKey);
+		AuthenticationScheme scheme = selectScheme(schemeResourceKey, remoteAddress, environment, state.getRealm());
+		
+		if(scheme==null) {
+			if(schemeResourceKey!=null) {
+				scheme = getSchemeByResourceKey(
+						state.getRealm(),
+						schemeResourceKey);
+			} else {
+				scheme = getDefaultScheme(remoteAddress, environment, state.getRealm());
+			}
+		}
+
 		if (scheme == null) {
 			if (log.isWarnEnabled()) {
 				log.warn(schemeResourceKey
@@ -297,6 +314,14 @@ public class AuthenticationServiceImpl extends
 		state.setModules(repository.getModulesForScheme(state.getScheme()));
 
 		return state;
+	}
+
+	private AuthenticationScheme selectScheme(String schemeResourceKey, String remoteAddress,
+			Map<String, Object> environment, Realm realm) throws AccessDeniedException {
+		if(authenticationSelector!=null) {
+			return authenticationSelector.selectScheme(schemeResourceKey, remoteAddress, environment, realm);
+		}
+		return null;
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -620,6 +645,14 @@ public class AuthenticationServiceImpl extends
 	}
 
 	@Override
+	public void setAuthenticationSchemeSelector(AuthenticationSchemeSelector authenticationSelector) {
+		if(this.authenticationSelector!=null) {
+			throw new IllegalStateException("You cannot set a scheme selector when its already set!");
+		}
+		this.authenticationSelector = authenticationSelector;
+	}
+	
+	@Override
 	public Map<String, Authenticator> getAuthenticators(String schemeResourceKey) {
 		Map<String, Authenticator> tmp = new HashMap<String, Authenticator>();
 		AuthenticationScheme scheme = schemeRepository.getSchemeByResourceKey(
@@ -716,6 +749,34 @@ public class AuthenticationServiceImpl extends
 			}
 		}
 
+		if(!state.getScheme().getAllowedRoles().isEmpty()) {
+			boolean found = false;
+			for(Role role : state.getScheme().getAllowedRoles()) {
+				if(role.getPrincipals().contains(principal)) {
+					found = true;
+					break;
+				}
+			}
+			
+			if(!found) {
+				throw new PrincipalNotFoundException("You cannot logon using the current scheme [not allowed]");
+			}
+		}
+		
+		if(!state.getScheme().getDeniedRoles().isEmpty()) {
+			boolean found = false;
+			for(Role role : state.getScheme().getDeniedRoles()) {
+				if(role.getPrincipals().contains(principal)) {
+					found = true;
+					break;
+				}
+			}
+			
+			if(found) {
+				throw new PrincipalNotFoundException("You cannot logon using the current scheme [denied]");
+			}
+		}
+		
 		state.setRealm(principal.getRealm());
 		state.setPrincipal(principal);
 
