@@ -98,4 +98,6 @@ public interface HypersocketServer {
 	
 	Map<String,String> getAliases();
 
+	void removeAlias(String alias);
+
 }

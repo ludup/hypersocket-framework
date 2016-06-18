@@ -176,6 +176,12 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 
     }
 	
+	protected String processReplacements(String path) {
+		path = path.replace("${apiPath}", server.getApiPath());
+		path = path.replace("${uiPath}", server.getUiPath());
+		return path.replace("${basePath}", server.getBasePath());
+	}
+	
 	public InputStream getInputStream(String path, HttpServletRequest request) throws FileNotFoundException, RedirectException {
 		
 		InputStream original = getResourceStream(path);
@@ -209,11 +215,13 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	protected String translatePath(String path) throws RedirectException {
 		
 		for(Map.Entry<String, String> alias : aliases.entrySet()) {
-			if(path.matches(alias.getKey())) {
-				if(alias.getValue().startsWith("redirect:")) {
-					throw new RedirectException(alias.getValue().substring(9));
+			String a = processReplacements(alias.getKey());
+			String toPath = processReplacements(alias.getValue());
+			if(path.matches(a)) {
+				if(toPath.startsWith("redirect:")) {
+					throw new RedirectException(toPath.substring(9));
 				}
-				return alias.getValue();
+				return toPath;
 			}
 		}
 		return path;

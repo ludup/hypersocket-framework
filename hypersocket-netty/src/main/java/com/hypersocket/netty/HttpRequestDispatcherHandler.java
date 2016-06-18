@@ -165,7 +165,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 		String reverseUri = servletRequest.getRequestURI();
 		reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
-		reverseUri = reverseUri.replace(server.getUserInterfacePath(), "${uiPath}");
+		reverseUri = reverseUri.replace(server.getUiPath(), "${uiPath}");
 		reverseUri = reverseUri.replace(server.getBasePath(), "${basePath}");
 		
 		Map<Pattern,String> rewrites = server.getUrlRewrites();
@@ -284,8 +284,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 	
 	protected String processReplacements(String path) {
 		path = path.replace("${apiPath}", server.getApiPath());
-		path = path.replace("${uiPath}", server.getBasePath());
-		return path.replace("${basePath}", server.getUiPath());
+		path = path.replace("${uiPath}", server.getUiPath());
+		return path.replace("${basePath}", server.getBasePath());
 	}
 
 	@Override

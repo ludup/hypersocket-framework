@@ -63,6 +63,7 @@ import com.hypersocket.servlet.HypersocketServletConfig;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
 import com.hypersocket.session.SessionService;
+import com.hypersocket.utils.FileUtils;
 
 public abstract class HypersocketServerImpl implements HypersocketServer, 
 				ApplicationListener<SystemEvent> {
@@ -151,6 +152,11 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	@Override
 	public Map<String,String> getAliases() {
 		return aliases;
+	}
+	
+	@Override
+	public void removeAlias(String alias) {
+		aliases.remove(alias);
 	}
 	
 	/*
