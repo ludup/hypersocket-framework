@@ -149,6 +149,11 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	}
 	
 	@Override
+	public void removeAlias(String alias) {
+		aliases.remove(alias);
+	}
+	
+	@Override
 	public Map<String,String> getAliases() {
 		return aliases;
 	}
