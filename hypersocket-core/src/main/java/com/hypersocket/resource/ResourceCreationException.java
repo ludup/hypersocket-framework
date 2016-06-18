@@ -11,10 +11,10 @@ package com.hypersocket.resource;
 public class ResourceCreationException extends ResourceException {
 
 	private static final long serialVersionUID = 7411495296618455618L;
-
-	String bundle;
-	String resourceKey;
-	Object[] args;
+	
+	public ResourceCreationException(ResourceException e) {
+		super(e.getBundle(), e.getResourceKey(), e.getArgs());
+	}
 	
 	public ResourceCreationException(String bundle, String resourceKey, Object... args) {
 		super(bundle, resourceKey, args);

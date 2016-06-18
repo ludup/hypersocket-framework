@@ -7,10 +7,21 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
+import com.hypersocket.permissions.Role;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
@@ -40,6 +51,18 @@ public class AuthenticationScheme extends RealmResource {
 	@Column(name = "last_button_resource_key")
 	String lastButtonResourceKey;
 	
+	@ManyToMany(fetch=FetchType.EAGER)
+	@Fetch(FetchMode.SELECT)
+	@JoinTable(name = "scheme_allowed_roles", joinColumns={@JoinColumn(name="resource_id")}, 
+			inverseJoinColumns={@JoinColumn(name="role_id")})
+	Set<Role> allowedRoles = new HashSet<Role>();
+	
+	@ManyToMany(fetch=FetchType.EAGER)
+	@Fetch(FetchMode.SELECT)
+	@JoinTable(name = "scheme_denied_roles", joinColumns={@JoinColumn(name="resource_id")}, 
+			inverseJoinColumns={@JoinColumn(name="role_id")})
+	Set<Role> deniedRoles = new HashSet<Role>();
+
 	public String getResourceKey() {
 		return resourceKey;
 	}
@@ -96,7 +119,13 @@ public class AuthenticationScheme extends RealmResource {
 		this.lastButtonResourceKey = lastButtonResourceKey;
 	}
 	
-	
+	public Set<Role> getAllowedRoles() {
+		return allowedRoles;
+	}
+
+	public Set<Role> getDeniedRoles() {
+		return deniedRoles;
+	}
 	
 
 }

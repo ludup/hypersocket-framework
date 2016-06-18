@@ -27,6 +27,7 @@ public interface PermissionService extends AuthenticatedService {
 	static final String RESOURCE_BUNDLE = "PermissionService";
 	static final String ROLE_ADMINISTRATOR = "Administrator";
 	static final String ROLE_EVERYONE = "Everyone";
+	static final String ROLE_SYSTEM_ADMINISTRATOR = "System Administrator";
 
 	public PermissionCategory registerPermissionCategory(String resourceBundle, String resourceKey);
 
