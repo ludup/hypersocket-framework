@@ -235,6 +235,9 @@ public class Session extends AbstractEntity<String> {
 	@JsonIgnore
 	public boolean isReadyForUpdate() {
 		// We save our state every minute
+		if(getModifiedDate()==null) {
+			return true;
+		}
 		return System.currentTimeMillis() - getModifiedDate().getTime() > 60000L;
 	}
 

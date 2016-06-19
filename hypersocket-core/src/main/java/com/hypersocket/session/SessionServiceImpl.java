@@ -236,9 +236,10 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			Calendar currentTime = Calendar.getInstance();
 			Calendar c = Calendar.getInstance();
-			c.setTime(session.getLastUpdated());
-			c.add(Calendar.MINUTE, session.getTimeout());
-
+			if(session.getLastUpdated()!=null) {
+				c.setTime(session.getLastUpdated());
+				c.add(Calendar.MINUTE, session.getTimeout());
+			}
 			if (log.isDebugEnabled()) {
 				log.debug("Checking session timeout currentTime="
 						+ currentTime.getTime() + " lastUpdated="
