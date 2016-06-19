@@ -5,6 +5,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,7 +22,10 @@ import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.RequestStatus;
+import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -37,6 +41,9 @@ import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 @Controller
 public class SessionController extends ResourceController {
 
+	@Autowired
+	PermissionService permissionService; 
+	
 	@RequestMapping(value = "session/touch", method = { RequestMethod.GET }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -94,6 +101,33 @@ public class SessionController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "session/switchRole/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Role> switchRole(HttpServletRequest request, HttpServletResponse response,
+			@PathVariable("id") Long id) throws UnauthorizedException, AccessDeniedException, ResourceNotFoundException,
+					SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+
+		try {
+			Session session = sessionUtils.getActiveSession(request);
+
+			Role role = permissionService.getRoleById(id, getCurrentRealm());
+
+			if (role == null) {
+				throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE, "error.invalidRealm", id);
+			}
+
+			sessionService.setCurrentRole(role);
+
+			return new ResourceStatus<Role>(role);
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 
 	@RequestMapping(value = "session/switchLanguage/{lang}", method = RequestMethod.GET, produces = {
 			"application/json" })
@@ -107,11 +141,11 @@ public class SessionController extends ResourceController {
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session, String info, String homePage) {
-		return new AuthenticationSuccessResult(info, configurationService.hasUserLocales(), session, homePage);
+		return new AuthenticationSuccessResult(info, configurationService.hasUserLocales(), session, homePage, sessionService.getCurrentRole());
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session) {
-		return new AuthenticationSuccessResult("", configurationService.hasUserLocales(), session, "");
+		return new AuthenticationSuccessResult("", configurationService.hasUserLocales(), session, "", sessionService.getCurrentRole());
 	}
 
 	@RequestMapping(value = "session/flash/{type}/{msg}", method = RequestMethod.GET, produces = { "application/json" })

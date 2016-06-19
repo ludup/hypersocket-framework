@@ -357,7 +357,7 @@ public class LogonController extends AuthenticatedController {
 		
 		checkRedirect(request,response);
 		return new AuthenticationSuccessResult(info,
-				configurationService.hasUserLocales(), session, homePage);
+				configurationService.hasUserLocales(), session, homePage, sessionService.getCurrentRole());
 		
 	}
 
@@ -367,7 +367,7 @@ public class LogonController extends AuthenticatedController {
 		checkRedirect(request,response);
 		
 		return new AuthenticationSuccessResult(info,
-				configurationService.hasUserLocales(), session, "");
+				configurationService.hasUserLocales(), session, "", sessionService.getCurrentRole());
 		
 	}
 

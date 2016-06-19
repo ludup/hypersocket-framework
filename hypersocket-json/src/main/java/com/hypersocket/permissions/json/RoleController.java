@@ -154,6 +154,25 @@ public class RoleController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "roles/personal", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<Role> listPersonalRoles(HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<Role>(
+					permissionService.getPrincipalRoles(getCurrentPrincipal()));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/table", method = RequestMethod.GET, produces = { "application/json" })

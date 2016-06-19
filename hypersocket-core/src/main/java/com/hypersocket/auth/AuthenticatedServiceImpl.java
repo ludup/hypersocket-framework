@@ -10,7 +10,6 @@ package com.hypersocket.auth;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.Stack;
@@ -22,6 +21,7 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
@@ -34,7 +34,8 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	static ThreadLocal<Stack<Session>> currentSession = new ThreadLocal<Stack<Session>>();
 	static ThreadLocal<Stack<Realm>> currentRealm = new ThreadLocal<Stack<Realm>>();
 	static ThreadLocal<Stack<Locale>> currentLocale = new ThreadLocal<Stack<Locale>>();
-		
+	static ThreadLocal<Role> currentRole = new ThreadLocal<Role>();
+	
 	static ThreadLocal<Boolean> isDelayingEvents = new ThreadLocal<Boolean>();
 	static ThreadLocal<LinkedList<SystemEvent>> delayedEvents = new ThreadLocal<LinkedList<SystemEvent>>();
 	
@@ -43,6 +44,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	protected abstract void verifyPermission(Principal principal,
 			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException;
 	
+	protected abstract Set<Role> getPrincipalRoles(Principal principal) throws AccessDeniedException;
 	
 	@Override
 	public void elevatePermissions(PermissionType... permissions) {
@@ -65,6 +67,10 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	protected boolean hasElevatedPermissions() {
 		return elevatedPermissions.get()!=null;
+	}
+	
+	public void setCurrentRole(Role role) {
+		currentRole.set(role);
 	}
 	
 	@Override
@@ -137,6 +143,18 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 			throw new InvalidAuthenticationContext("No session is attached to the current context!");
 		}
 		return currentRealm.get().peek();
+	}
+	
+	@Override
+	public Role getCurrentRole() {
+		if(currentRole.get()==null) {
+			try {
+				return getPrincipalRoles(getCurrentPrincipal()).iterator().next();
+			} catch (AccessDeniedException e) {
+				throw new InvalidAuthenticationContext("User is unable to read their own roles!");
+			}
+		}
+		return currentRole.get();
 	}
 
 	@Override

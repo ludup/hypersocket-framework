@@ -119,7 +119,7 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 		realmRepository.saveRealm(realm, new HashMap<String,String>(), localRealmProvider);
 
 		configurationRepository.setValue(realm, "realm.userEditableProperties",
-				ResourceUtils.implodeValues(Arrays.asList("user.email", "user.fullname", "user.mobile")));
+				ResourceUtils.implodeValues(Arrays.asList("email", "fullname", "mobile")));
 		
 		// Create a system user
 		LocalUser system = new LocalUser();

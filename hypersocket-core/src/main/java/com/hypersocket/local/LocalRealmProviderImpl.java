@@ -53,9 +53,9 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	public final static String USER_RESOURCE_CATEGORY = "localUser";
 	public final static String GROUP_RESOURCE_CATEGORY = "localGroup";
 
-	public final static String FIELD_FULLNAME = "user.fullname";
-	public final static String FIELD_EMAIL = "user.email";
-	public final static String FIELD_MOBILE = "user.mobile";
+	public final static String FIELD_FULLNAME = "fullname";
+	public final static String FIELD_EMAIL = "email";
+	public final static String FIELD_MOBILE = "mobile";
 	public final static String FIELD_PASSWORD_ENCODING = "password.encoding";
 
 	@Autowired
@@ -77,9 +77,9 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 	@PostConstruct
 	private void registerProvider() throws Exception {
 
-		defaultProperties.add("user.fullname");
-		defaultProperties.add("user.email");
-		defaultProperties.add("user.mobile");
+		defaultProperties.add("fullname");
+		defaultProperties.add("email");
+		defaultProperties.add("mobile");
 		
 		realmService.registerRealmProvider(this);
 

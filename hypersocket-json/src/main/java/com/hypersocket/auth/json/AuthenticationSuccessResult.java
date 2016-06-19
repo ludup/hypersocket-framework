@@ -8,21 +8,24 @@
 package com.hypersocket.auth.json;
 
 import com.hypersocket.json.AuthenticationResult;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.session.Session;
 
 public class AuthenticationSuccessResult extends AuthenticationResult {
 
 	Session session;
+	Role currentRole;
 	String homePage;
 	
 	public AuthenticationSuccessResult() {
 
 	}
 
-	public AuthenticationSuccessResult(String bannerMsg, boolean showLocales, Session session, String homePage) {
+	public AuthenticationSuccessResult(String bannerMsg, boolean showLocales, Session session, String homePage, Role currentRole) {
 		super(bannerMsg, null, showLocales);
 		this.session = session;
 		this.homePage = homePage;
+		this.currentRole = currentRole;
 		setSuccess(true);
 	}
 
@@ -37,4 +40,10 @@ public class AuthenticationSuccessResult extends AuthenticationResult {
 	public void setSession(Session session) {
 		this.session = session;
 	}
+
+	public Role getCurrentRole() {
+		return currentRole;
+	}
+	
+	
 }

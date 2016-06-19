@@ -508,11 +508,11 @@ public class AbstractServerTest {
 		x.setForceChange(forceChange);
 		x.setPassword(password);
 		PropertyItem propItem1 = new PropertyItem();
-		propItem1.setId("user.fullname");
+		propItem1.setId("fullname");
 		propItem1.setValue(username);
 
 		PropertyItem propItem2 = new PropertyItem();
-		propItem2.setId("user.email");
+		propItem2.setId("email");
 		propItem2.setValue("");
 
 		PropertyItem[] propArray = { propItem1, propItem2 };

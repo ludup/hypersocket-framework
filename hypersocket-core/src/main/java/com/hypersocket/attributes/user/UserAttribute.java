@@ -10,10 +10,6 @@ import com.hypersocket.attributes.AbstractAttribute;
 @Table(name = "user_attributes")
 public class UserAttribute extends AbstractAttribute<UserAttributeCategory> {
 
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1593338282182807922L;
 
 	@ManyToOne

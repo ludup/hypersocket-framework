@@ -9,7 +9,9 @@ package com.hypersocket.auth;
 
 import java.util.Locale;
 
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
@@ -41,6 +43,10 @@ public interface AuthenticatedService {
 	void setCurrentSession(Session session, Realm realm, Locale locale);
 
 	void setCurrentSession(Session session, Realm realm, Principal principal, Locale locale);
+
+	Role getCurrentRole();
+	
+	void setCurrentRole(Role role);
 
 //	void setCurrentPrincipal(Principal principal, Locale locale, Realm realm);
 }

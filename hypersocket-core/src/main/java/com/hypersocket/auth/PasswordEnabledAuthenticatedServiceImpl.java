@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.session.Session;
 
@@ -32,9 +35,15 @@ public abstract class PasswordEnabledAuthenticatedServiceImpl
 	static Logger log = LoggerFactory
 			.getLogger(PasswordEnabledAuthenticatedServiceImpl.class);
 	
+	@Override
 	protected void verifyPermission(Principal principal,
 			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException {
 		permissionService.verifyPermission(principal, strategy, permissions);
+	}
+	
+	@Override
+	protected Set<Role> getPrincipalRoles(Principal principal) throws AccessDeniedException {
+		return permissionService.getPrincipalRoles(principal);
 	}
 	
 	@Override
