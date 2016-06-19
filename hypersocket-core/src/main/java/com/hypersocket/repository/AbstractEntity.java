@@ -37,6 +37,7 @@ public abstract class AbstractEntity<T> {
     private Date created = new Date();
 
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="modified")
     Date modifiedDate = new Date();
     
 	public void setDeleted(boolean deleted) {
