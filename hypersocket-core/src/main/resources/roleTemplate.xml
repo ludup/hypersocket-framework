@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="role">
+<!-- 	<propertyCategory resourceKey="role.options"  -->
+<!-- 		resourceBundle="PermissionService" weight="0" store="db"> -->
+<!-- 		<property resourceKey="role.comment" inputType="text" weight="0" defaultValue="" /> -->
+<!-- 	</propertyCategory> -->
+</propertyTemplates>
