@@ -6,11 +6,15 @@
 			</h2>
 			<ul id="interfaceTabContentTabs" class="nav nav-tabs">
 				<li class="active interfaceTab"><a href="#tabHttpInterfaces" data-resourcekey="httpInterfaces.title"><span localize="httpInterfaces.title"></span></a></li>
+				<li class="interfaceTab"><a href="#tabFtpInterfaces" data-resourcekey="ftpInterfaces.title"><span localize="ftpInterfaces.title"></span></a></li>
 			</ul>
 		</div>
 		<div class="panel-body">
 			<div id="interfaceTabContentContent" class="tab-content">
 				<div id="tabHttpInterfaces" class="tab-pane active">
+
+				</div>
+				<div id="tabFtpInterfaces" class="tab-pane">
 
 				</div>
 			</div>
@@ -22,6 +26,7 @@
 	$(document).ready(function() {
 		
 		$('#tabHttpInterfaces').load(uiPath + '/content/httpInterfaces.html');
+		$('#tabFtpInterfaces').load(uiPath + '/content/fTPInterfaces.html');
 		
 		getJSON('interfaces/list', null, function(data) {
 		
