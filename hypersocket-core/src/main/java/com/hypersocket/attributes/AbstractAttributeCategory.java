@@ -1,10 +1,7 @@
-package com.hypersocket.attributes.user;
+package com.hypersocket.attributes;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
-
-import com.hypersocket.attributes.AbstractAttribute;
-import com.hypersocket.attributes.RealmAttributeCategory;
 
 @MappedSuperclass
 public abstract class AbstractAttributeCategory<A extends AbstractAttribute<?>> extends RealmAttributeCategory<A> {

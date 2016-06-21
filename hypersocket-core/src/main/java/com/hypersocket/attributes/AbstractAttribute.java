@@ -140,6 +140,10 @@ public abstract class AbstractAttribute<C extends RealmAttributeCategory<?>> ext
 	}
 
 	public void setOptions(Collection<NameValuePair> options) {
+		if(options==null) {
+			this.options = "";
+			return;
+		}
 		this.options = ResourceUtils.implodeNamePairs(options);
 	}
 

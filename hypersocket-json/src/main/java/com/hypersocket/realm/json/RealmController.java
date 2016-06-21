@@ -14,6 +14,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +33,7 @@ import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalColumns;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -39,17 +41,21 @@ import com.hypersocket.realm.RealmColumns;
 import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RealmServiceImpl;
+import com.hypersocket.realm.UserVariableReplacement;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
+import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller
 public class RealmController extends ResourceController {
 
+	@Autowired
+	UserVariableReplacement userVariableReplacement;
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "realms/realm/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
@@ -209,7 +215,8 @@ public class RealmController extends ResourceController {
 
 		try {
 			return new ResourceList<String>(
-				realmService.getUserVariableNames(realmService.getRealmById(id), null));
+					userVariableReplacement.getVariableNames(
+							realmService.getRealmById(id)));
 
 		} finally {
 			clearAuthenticatedContext();

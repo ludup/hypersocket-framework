@@ -6,6 +6,8 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.permissions.PermissionService;
+
 @Component
 public class UserVariableReplacementImpl extends
 		AbstractVariableReplacementImpl<Principal> implements
@@ -23,6 +25,9 @@ public class UserVariableReplacementImpl extends
 	
 	@Autowired
 	RealmService realmService;
+	
+	@Autowired
+	PermissionService permissionService; 
 
 	public static Set<String> getDefaultReplacements() {
 		return defaultReplacements;
@@ -36,8 +41,32 @@ public class UserVariableReplacementImpl extends
 		} 
 		RealmProvider provider = realmService.getProviderForRealm(principal
 				.getRealm());
+		
 		return defaultReplacements.contains(name)
-				|| provider.getUserPropertyNames(principal).contains(name);
+				|| provider.getUserPropertyNames(principal).contains(name)
+				|| permissionService.getRolePropertyNames().contains(name);
+	}
+	
+	@Override
+	public Set<String> getVariableNames(Realm realm) {
+		
+		RealmProvider provider = realmService.getProviderForRealm(realm);
+		Set<String> names = new HashSet<String>(defaultReplacements);
+		names.addAll(permissionService.getRolePropertyNames());
+		names.addAll(provider.getUserPropertyNames(null));
+		
+		return names;
+	}
+	
+	@Override
+	public Set<String> getVariableNames(Principal principal) {
+		
+		RealmProvider provider = realmService.getProviderForRealm(principal.getRealm());
+		Set<String> names = new HashSet<String>(defaultReplacements);
+		names.addAll(permissionService.getRolePropertyNames());
+		names.addAll(provider.getUserPropertyNames(principal));
+		
+		return names;
 	}
 
 	@Override
@@ -67,9 +96,14 @@ public class UserVariableReplacementImpl extends
 					"We should not be able to reach here. Did you add default replacement without implementing it?");
 		}
 
-		RealmProvider provider = realmService.getProviderForRealm(source
-				.getRealm());
-		return provider.getUserPropertyValue(source, name);
+		if(permissionService.getRolePropertyNames().contains(name)) {
+			return permissionService.getRoleProperty(permissionService.getCurrentRole(), name);
+		} else {
+			RealmProvider provider = realmService.getProviderForRealm(source
+					.getRealm());
+			return provider.getUserPropertyValue(source, name);
+		
+		}
 
 	}
 

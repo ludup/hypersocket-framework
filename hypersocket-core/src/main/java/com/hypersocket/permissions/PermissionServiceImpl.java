@@ -30,6 +30,9 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.hypersocket.attributes.AttributeRepository;
+import com.hypersocket.attributes.role.RoleAttributeRepository;
+import com.hypersocket.attributes.role.RoleAttributeService;
 import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.cache.CacheService;
@@ -37,6 +40,7 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.PasswordPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.ProfilePermission;
@@ -94,6 +98,12 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Autowired
 	CacheService cacheService;
 
+	@Autowired
+	RoleAttributeService attributeService; 
+	
+	@Autowired
+	RoleAttributeRepository attributeRepository;
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -145,7 +155,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				perms.add(getPermission(PasswordPermission.CHANGE.getResourceKey()));
 
 				repository.createRole(ROLE_EVERYONE, realm, false, true, false,
-						true, perms);
+						true, perms, new HashMap<String,String>());
 
 			}
 
@@ -154,6 +164,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		eventService.registerEvent(RoleCreatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(RoleUpdatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(RoleDeletedEvent.class, RESOURCE_BUNDLE);
+		
+	
+		repository.loadPropertyTemplates("roleTemplate.xml");
 	}
 
 	@Override
@@ -206,7 +219,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@Override
 	public Role createRole(String name, Realm realm,
-			List<Principal> principals, List<Permission> permissions)
+			List<Principal> principals, List<Permission> permissions, Map<String,String> properties)
 			throws AccessDeniedException, ResourceCreationException {
 
 		assertPermission(RolePermission.CREATE);
@@ -221,7 +234,15 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				role.setName(name);
 				role.setRealm(realm);
 				repository.saveRole(role, realm,
-						principals.toArray(new Principal[0]), permissions);
+						principals.toArray(new Principal[0]), permissions, properties,
+						new TransactionAdapter<Role>() {
+
+							@Override
+							public void afterOperation(Role resource, Map<String, String> properties) {
+								saveRoleAttributes(resource, properties);
+							}
+					
+				});
 				for (Principal p : principals) {
 					permissionsCache.remove(p);
 					roleCache.remove(p);
@@ -569,7 +590,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	
 	@Override
 	public Role updateRole(Role role, String name, List<Principal> principals,
-			List<Permission> permissions) throws AccessDeniedException,
+			List<Permission> permissions, Map<String,String> properties) throws AccessDeniedException,
 			ResourceChangeException {
 
 		assertPermission(RolePermission.UPDATE);
@@ -600,7 +621,15 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			Set<Permission> grantPermissions = getEntitiesNotIn(
 					role.getPermissions(), permissions, null);
 			repository.updateRole(role, unassignPrincipals, assignPrincipals,
-					revokePermissions, grantPermissions);
+					revokePermissions, grantPermissions, properties,
+					new TransactionAdapter<Role>() {
+
+				@Override
+				public void afterOperation(Role resource, Map<String, String> properties) {
+					saveRoleAttributes(resource, properties);
+				}
+		
+			});
 			permissionsCache.removeAll();
 			roleCache.removeAll();
 			eventService.publishEvent(new RoleUpdatedEvent(this,
@@ -656,15 +685,6 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public Role getPersonalRole(Principal principal) {
 		return repository.getPersonalRole(principal);
-	}
-
-	@Override
-	public List<PropertyCategory> getRoleTemplates()
-			throws AccessDeniedException {
-
-		assertPermission(RolePermission.READ);
-
-		return new ArrayList<PropertyCategory>();
 	}
 
 	@Override
@@ -757,7 +777,6 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	 * @return	newly created role instance
 	 *  
 	 */
-	@Override
 	public Role createRoleAndAssignPrincipals(final String roleName, final Realm realm, final Principal...principals) throws ResourceException, AccessDeniedException {
 
 		return transactionService.doInTransaction(new TransactionCallback<Role>() {
@@ -781,5 +800,65 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			
 		});
 	}
+
+	@Override
+	public String getRoleProperty(Role resource, String resourceKey) {
+		
+		return repository.getValue(resource, resourceKey);
+	}
+
+	@Override
+	public boolean getRoleBooleanProperty(Role resource, String resourceKey) {
+		
+		return repository.getBooleanValue(resource, resourceKey);
+	}
+
+	@Override
+	public Long getRoleLongProperty(Role resource, String resourceKey) {
+		
+		return repository.getLongValue(resource, resourceKey);
+	}
+
+	@Override
+	public int getRoleIntProperty(Role resource, String resourceKey) {
+		
+		return repository.getIntValue(resource, resourceKey);
+	}
+
+	@Override
+	public Collection<PropertyCategory> getRoleTemplate() throws AccessDeniedException {
+		assertPermission(RolePermission.READ);
+
+		List<PropertyCategory> cats = new ArrayList<PropertyCategory>();
+		cats.addAll(repository.getPropertyCategories(null));
+		cats.addAll(attributeService.getPropertyCategories(null));
+		return cats;
+	}
+
+	@Override
+	public Collection<PropertyCategory> getRoleProperties(Role role) throws AccessDeniedException {
+		assertPermission(RolePermission.READ);
+
+		List<PropertyCategory> cats = new ArrayList<PropertyCategory>();
+
+		cats.addAll(repository.getPropertyCategories(role));
+		cats.addAll(attributeService.getPropertyCategories(role));
 	
+		return cats;
+	}
+	
+	protected void saveRoleAttributes(Role role, Map<String,String> properties) {
+		
+		for(PropertyTemplate template : attributeService.getPropertyTemplates(role)) {
+			if(properties.containsKey(template.getResourceKey())) {
+			
+				attributeRepository.setValue(role, template.getResourceKey(), properties.get(template.getResourceKey()));
+			}
+		}
+	}
+
+	@Override
+	public Set<String> getRolePropertyNames() {
+		return attributeRepository.getPropertyNames(null);
+	}
 }
