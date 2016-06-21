@@ -9,14 +9,15 @@ package com.hypersocket.permissions;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.repository.AbstractRepository;
+import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.tables.ColumnSort;
 
-public interface PermissionRepository extends AbstractRepository<Long> {
+public interface PermissionRepository extends AbstractResourceRepository<Role> {
 
 	public PermissionCategory createCategory(String resourceBundle,
 			String resourceKey);
@@ -94,15 +95,15 @@ public interface PermissionRepository extends AbstractRepository<Long> {
 	Set<Role> getAllUserRoles(Realm realm);
 
 	void saveRole(Role role, Realm realm, Principal[] principals,
-			Collection<Permission> permissions);
+			Collection<Permission> permissions, Map<String,String> properties);
 
 	void updateRole(Role role, Set<Principal> unassignPrincipals,
 			Set<Principal> assignPrincipals, Set<Permission> revokePermissions,
-			Set<Permission> grantPermissions);
+			Set<Permission> grantPermissions, Map<String,String> properties);
 
 	void createRole(String name, Realm realm, boolean personalRole,
 			boolean allUsers, boolean allPermissions, boolean system,
-			Set<Permission> permissions);
+			Set<Permission> permissions, Map<String,String> properties);
 
 	Role getPersonalRole(Principal principal, boolean createIfNotFound);
 }

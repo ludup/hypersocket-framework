@@ -7,7 +7,9 @@
  ******************************************************************************/
 package com.hypersocket.permissions;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.hypersocket.auth.AuthenticatedService;
@@ -56,10 +58,10 @@ public interface PermissionService extends AuthenticatedService {
 
 	public List<Permission> allPermissions();
 
-	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions)
+	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions, Map<String,String> properties)
 			throws AccessDeniedException, ResourceCreationException;
 
-	Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions)
+	Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions, Map<String,String> properties)
 			throws AccessDeniedException, ResourceChangeException;
 
 	public Role getRoleById(Long id, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
@@ -79,7 +81,17 @@ public interface PermissionService extends AuthenticatedService {
 
 	Set<Role> getPrincipalRoles(Principal principal) throws AccessDeniedException;
 
-	List<PropertyCategory> getRoleTemplates() throws AccessDeniedException;
+	String getRoleProperty(Role resource, String resourceKey);
+
+	boolean getRoleBooleanProperty(Role resource, String resourceKey);
+
+	Long getRoleLongProperty(Role resource, String resourceKey);
+
+	int getRoleIntProperty(Role resource, String resourceKey);
+	
+	Collection<PropertyCategory> getRoleTemplate() throws AccessDeniedException;
+	
+	Collection<PropertyCategory> getRoleProperties(Role role) throws AccessDeniedException;
 
 	Permission registerPermission(PermissionType type, PermissionCategory category);
 

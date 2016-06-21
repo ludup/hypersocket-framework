@@ -1,7 +1,9 @@
 package com.hypersocket.permissions.json;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,6 +29,7 @@ import com.hypersocket.permissions.Permission;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -35,9 +38,9 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
+import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller
@@ -98,7 +101,25 @@ public class RoleController extends ResourceController {
 
 		try {
 			return new ResourceList<PropertyCategory>(
-					permissionService.getRoleTemplates());
+					permissionService.getRoleTemplate());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "roles/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<PropertyCategory> getRoleProperties(
+			HttpServletRequest request, @PathVariable Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException, ResourceNotFoundException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<PropertyCategory>(
+					permissionService.getRoleProperties(permissionService.getRoleById(id, getCurrentRealm())));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -228,14 +249,19 @@ public class RoleController extends ResourceController {
 			for (Long perm : role.getPermissions()) {
 				permissions.add(permissionService.getPermissionById(perm));
 			}
+			
+			Map<String, String> values = new HashMap<String, String>();
+			for (PropertyItem item : role.getProperties()) {
+				values.put(item.getId(), item.getValue());
+			}
 
 			if (role.getId() == null) {
 				newRole = permissionService.createRole(role.getName(), realm,
-						principals, permissions);
+						principals, permissions, values);
 			} else {
 				newRole = permissionService.updateRole(
 						permissionService.getRoleById(role.getId(), realm),
-						role.getName(), principals, permissions);
+						role.getName(), principals, permissions, values);
 			}
 
 			return new ResourceStatus<Role>(newRole, I18N.getResource(

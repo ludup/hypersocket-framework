@@ -7,7 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.permissions;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -147,7 +146,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				perms.add(getPermission(PasswordPermission.CHANGE.getResourceKey()));
 
 				repository.createRole(ROLE_EVERYONE, realm, false, true, false,
-						true, perms);
+						true, perms, new HashMap<String,String>());
 
 			}
 
@@ -156,6 +155,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		eventService.registerEvent(RoleCreatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(RoleUpdatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(RoleDeletedEvent.class, RESOURCE_BUNDLE);
+		
+	
+		repository.loadPropertyTemplates("roleTemplate.xml");
 	}
 
 	@Override
@@ -208,7 +210,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@Override
 	public Role createRole(String name, Realm realm,
-			List<Principal> principals, List<Permission> permissions)
+			List<Principal> principals, List<Permission> permissions, Map<String,String> properties)
 			throws AccessDeniedException, ResourceCreationException {
 
 		assertPermission(RolePermission.CREATE);
@@ -223,7 +225,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				role.setName(name);
 				role.setRealm(realm);
 				repository.saveRole(role, realm,
-						principals.toArray(new Principal[0]), permissions);
+						principals.toArray(new Principal[0]), permissions, properties);
 				for (Principal p : principals) {
 					permissionsCache.remove(p);
 					roleCache.remove(p);
@@ -576,7 +578,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	
 	@Override
 	public Role updateRole(Role role, String name, List<Principal> principals,
-			List<Permission> permissions) throws AccessDeniedException,
+			List<Permission> permissions, Map<String,String> properties) throws AccessDeniedException,
 			ResourceChangeException {
 
 		assertPermission(RolePermission.UPDATE);
@@ -607,7 +609,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			Set<Permission> grantPermissions = getEntitiesNotIn(
 					role.getPermissions(), permissions, null);
 			repository.updateRole(role, unassignPrincipals, assignPrincipals,
-					revokePermissions, grantPermissions);
+					revokePermissions, grantPermissions, properties);
 			permissionsCache.removeAll();
 			roleCache.removeAll();
 			eventService.publishEvent(new RoleUpdatedEvent(this,
@@ -663,15 +665,6 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public Role getPersonalRole(Principal principal) {
 		return repository.getPersonalRole(principal);
-	}
-
-	@Override
-	public List<PropertyCategory> getRoleTemplates()
-			throws AccessDeniedException {
-
-		assertPermission(RolePermission.READ);
-
-		return new ArrayList<PropertyCategory>();
 	}
 
 	@Override
@@ -749,6 +742,45 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		if(!found) {
 			throw new AccessDeniedException();
 		}
+	}
+
+
+	@Override
+	public String getRoleProperty(Role resource, String resourceKey) {
+		
+		return repository.getValue(resource, resourceKey);
+	}
+
+	@Override
+	public boolean getRoleBooleanProperty(Role resource, String resourceKey) {
+		
+		return repository.getBooleanValue(resource, resourceKey);
+	}
+
+	@Override
+	public Long getRoleLongProperty(Role resource, String resourceKey) {
+		
+		return repository.getLongValue(resource, resourceKey);
+	}
+
+	@Override
+	public int getRoleIntProperty(Role resource, String resourceKey) {
+		
+		return repository.getIntValue(resource, resourceKey);
+	}
+
+	@Override
+	public Collection<PropertyCategory> getRoleTemplate() throws AccessDeniedException {
+		assertPermission(RolePermission.READ);
+
+		return repository.getPropertyCategories(null);
+	}
+
+	@Override
+	public Collection<PropertyCategory> getRoleProperties(Role role) throws AccessDeniedException {
+		assertPermission(RolePermission.READ);
+
+		return repository.getPropertyCategories(role);
 	}
 
 }

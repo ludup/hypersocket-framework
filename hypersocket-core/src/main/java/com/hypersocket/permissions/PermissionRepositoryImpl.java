@@ -12,12 +12,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
-import org.hibernate.Query;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
@@ -27,15 +27,15 @@ import com.hypersocket.properties.ResourceKeyRestriction;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
-import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
+import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
-public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
+public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Role>
 		implements PermissionRepository {
 
 	CriteriaConfiguration JOIN_PERMISSIONS = new CriteriaConfiguration() {
@@ -120,12 +120,12 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	@Transactional
 	public void updateRole(Role role, Set<Principal> unassignPrincipals,
 			Set<Principal> assignPrincipals, Set<Permission> revokePermissions,
-			Set<Permission> grantPermissions) {
+			Set<Permission> grantPermissions, Map<String,String> properties) {
 		
 		if(StringUtils.isBlank(role.getResourceCategory())) {
 			role.setResourceCategory("role");
 		}
-		save(role);
+		saveResource(role, properties);
 		unassignRole(role, unassignPrincipals.toArray(new Principal[0]));
 		assignRole(role, assignPrincipals.toArray(new Principal[0]));
 		revokePermission(role, revokePermissions);
@@ -135,11 +135,11 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	@Override
 	@Transactional
 	public void saveRole(Role role, Realm realm, Principal[] principals,
-			Collection<Permission> permissions) {
+			Collection<Permission> permissions, Map<String,String> properties) {
 		if(StringUtils.isBlank(role.getResourceCategory())) {
 			role.setResourceCategory("role");
 		}
-		save(role);
+		saveResource(role, properties);
 		assignRole(role, principals);
 		grantPermissions(role, permissions);
 	}
@@ -148,11 +148,12 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 	@Override
 	public void createRole(String name, Realm realm, boolean personalRole,
 			boolean allUsers, boolean allPermissions, boolean system,
-			Set<Permission> permissions) {
+			Set<Permission> permissions, Map<String,String> properties) {
 		Role role = createRole(name, realm, personalRole, allUsers,
 				allPermissions, system);
 		role.setPermissions(permissions);
-		save(role);
+		saveResource(role, properties);
+		
 	}
 	@Override
 	@Transactional(readOnly = true)
@@ -555,6 +556,11 @@ public class PermissionRepositoryImpl extends AbstractRepositoryImpl<Long>
 						criteria.add(Restrictions.eq("allUsers", true));
 					}
 				}));
+	}
+
+	@Override
+	protected Class<Role> getResourceClass() {
+		return Role.class;
 	}
 
 
