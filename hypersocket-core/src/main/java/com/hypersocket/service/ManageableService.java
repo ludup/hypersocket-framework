@@ -7,7 +7,7 @@ public interface ManageableService {
 
 	void stop();
 	
-	void start();
+	boolean start();
 	
 	String getResourceKey();
 	
