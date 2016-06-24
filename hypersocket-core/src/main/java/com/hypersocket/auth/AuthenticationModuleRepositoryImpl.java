@@ -19,6 +19,7 @@ import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
+import com.hypersocket.repository.OrderByAsc;
 
 @Repository
 public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepositoryImpl<AuthenticationModule,Long>
@@ -64,7 +65,7 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 	@Transactional(readOnly=true)
 	public List<AuthenticationModule> getAuthenticationModules() {
 		return allEntities(AuthenticationModule.class, new DeletedCriteria(
-				false), new DistinctRootEntity());
+				false), new DistinctRootEntity(), new OrderByAsc("idx"));
 	}
 
 	@Transactional(readOnly=true)
@@ -76,8 +77,7 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 
 					@Override
 					public void configure(Criteria criteria) {
-						criteria.add(Restrictions.eq("scheme",
-								authenticationScheme));
+						criteria.add(Restrictions.eq("scheme", authenticationScheme));
 						criteria.addOrder(Order.asc("idx"));
 					}
 				});
