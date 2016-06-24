@@ -195,7 +195,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		
 		Request.set(servletRequest);
 		
-		if (log.isDebugEnabled()) {
+		if (log.isDebugEnabled()) { 
 			synchronized (log) {
 				log.debug("Begin Request <<<<<<<<<");
 				log.debug(servletRequest.getMethod() + " "
