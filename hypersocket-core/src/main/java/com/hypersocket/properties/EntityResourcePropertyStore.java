@@ -35,7 +35,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	
 	public EntityResourcePropertyStore(EncryptionService encryptionService) {
 		
-		primitiveParsers.put(String.class, new StringValue());
+		//primitiveParsers.put(String.class, new StringValue());
 		primitiveParsers.put(Boolean.class, new BooleanValue());
 		primitiveParsers.put(Integer.class, new IntegerValue());
 		primitiveParsers.put(Long.class, new LongValue());
@@ -286,9 +286,17 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	interface PrimitiveParser<T> {
 		T parseValue(String value);
 	}
+	interface StringParser {
+		String parseValue(String value, PropertyTemplate template);
+	}
 	
-	class StringValue implements PrimitiveParser<String> {
-		public String parseValue(String value) {
+	class StringValue implements StringParser {
+		public String parseValue(String value, PropertyTemplate template) {
+			if(template.isEncrypted()) {
+				if(!ResourceUtils.isEncrypted(value)) {
+					value = encryptionService.encryptString(HypersocketUtils.base64Encode(template.getResourceKey()), value, template.getR)
+				}
+			}
 			return value;
 		}
 	}
