@@ -99,8 +99,10 @@ public abstract class AbstractAttributeController<A extends AbstractAttribute<C>
 			A newAttribute;
 
 			Set<Role> roles = new HashSet<Role>();
-			for (Long id : attribute.getRoles()) {
-				roles.add(permissionRepository.getRoleById(id));
+			if(attribute.getRoles()!=null) {
+				for (Long id : attribute.getRoles()) {
+					roles.add(permissionRepository.getRoleById(id));
+				}
 			}
 
 			if (attribute.getId() != null) {

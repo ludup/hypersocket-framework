@@ -153,7 +153,7 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 			template.setResourceKey(attr.getVariableName());
 		}
 
-		template.getAttributes().put("inputType", attr.getType().toString().toLowerCase());
+		template.getAttributes().put("inputType", attr.getType().getInputType());
 		template.getAttributes().put("filter", "custom");
 		
 		template.setDefaultValue(defaultValue);

@@ -1,5 +1,8 @@
 package com.hypersocket.resource;
 
+import java.util.UUID;
+
+import javax.persistence.Column;
 import javax.persistence.JoinColumn;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToOne;
@@ -13,15 +16,12 @@ import com.hypersocket.realm.Realm;
 @MappedSuperclass
 public abstract class RealmResource extends Resource {
 
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 7483847758596964348L;
+
 	@OneToOne
 	@JoinColumn(name="realm_id")
 	protected Realm realm;
-
+	
 	@JsonIgnore
 	public Realm getRealm() {
 		return realm;
@@ -30,7 +30,7 @@ public abstract class RealmResource extends Resource {
 	public void setRealm(Realm realm) {
 		this.realm = realm;
 	}
-
+	
 	protected void doHashCodeOnKeys(HashCodeBuilder builder) {
 		super.doHashCodeOnKeys(builder);
 		builder.append(realm==null ? -1 : realm.getId());

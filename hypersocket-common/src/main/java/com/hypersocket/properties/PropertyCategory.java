@@ -25,6 +25,8 @@ public class PropertyCategory implements Serializable {
 	boolean hidden;
 	String filter = "default";
 	String name = null;
+	String visibilityDependsOn = "";
+	String visibilityDependsValue = "";
 	
 	List<AbstractPropertyTemplate> templates = new ArrayList<AbstractPropertyTemplate>();
 	
@@ -118,6 +120,22 @@ public class PropertyCategory implements Serializable {
 
 	public void setName(String name) {
 		this.name = name;		
+	}
+
+	public String getVisibilityDependsOn() {
+		return visibilityDependsOn;
+	}
+
+	public void setVisibilityDependsOn(String visibilityDependsOn) {
+		this.visibilityDependsOn = visibilityDependsOn;
+	}
+
+	public String getVisibilityDependsValue() {
+		return visibilityDependsValue;
+	}
+
+	public void setVisibilityDependsValue(String visibilityDependsValue) {
+		this.visibilityDependsValue = visibilityDependsValue;
 	}
 	
 	

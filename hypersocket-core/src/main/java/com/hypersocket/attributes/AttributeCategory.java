@@ -7,4 +7,8 @@ public interface AttributeCategory<T extends AbstractAttribute<?>> {
 	String getName();
 
 	Integer getWeight();
+	
+	String getVisibilityDependsOn();
+	
+	String getVisibilityDependsValue();
 }

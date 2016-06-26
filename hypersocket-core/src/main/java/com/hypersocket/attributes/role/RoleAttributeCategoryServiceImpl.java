@@ -36,8 +36,9 @@ public class RoleAttributeCategoryServiceImpl extends AbstractAttributeCategoryS
 
 
 	@Override
-	protected PropertyCategory registerPropertyCategory(String resourceKey, String bundle, int weight, boolean hidden, String name) {
-		final PropertyCategory cat = super.registerPropertyCategory(resourceKey, bundle, weight, hidden, name);
+	protected PropertyCategory registerPropertyCategory(String resourceKey, String bundle, int weight, boolean hidden, String name, String visibilityDependsOn,
+			String visibilityDependsValue) {
+		final PropertyCategory cat = super.registerPropertyCategory(resourceKey, bundle, weight, hidden, name, visibilityDependsOn, visibilityDependsValue);
 		cat.setCategoryGroup("userAttribute");
 		return cat;
 	}
