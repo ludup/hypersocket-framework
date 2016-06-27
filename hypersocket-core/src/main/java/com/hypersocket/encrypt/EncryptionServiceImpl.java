@@ -13,6 +13,7 @@ import org.springframework.transaction.support.TransactionCallback;
 
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
@@ -44,16 +45,21 @@ public class EncryptionServiceImpl implements EncryptionService, ApplicationList
 	SessionService sessionService; 
 	
 	@Override
+	public Realm getSystemRealm() {
+		return realmService.getSystemRealm();
+	}
+	
+	@Override
 	public String encryptString(String reference, String data, Realm realm) throws IOException {
 		
-		return encryptor.encryptString(reference, data, realm);
+		return ResourceUtils.addEncryptedTag(encryptor.encryptString(reference, data, realm));
 
 	}
 	
 	@Override
 	public String decryptString(String reference, String data, Realm realm) throws IOException{
 		
-		return encryptor.decryptString(reference, data, realm);
+		return encryptor.decryptString(reference, ResourceUtils.removeEncryptedTag(data), realm);
 	}
 
 

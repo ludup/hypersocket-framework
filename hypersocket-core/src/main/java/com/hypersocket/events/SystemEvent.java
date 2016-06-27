@@ -45,7 +45,7 @@ public abstract class SystemEvent extends AbstractEvent {
 		this.resourceKey = resourceKey;
 		this.exception = e;
 		this.currentRealm = currentRealm;
-		addAttribute(ATTR_EXCEPTION_TEXT, e.getMessage());
+		addAttribute(ATTR_EXCEPTION_TEXT, e==null ? "" : e.getMessage());
 	}
 	
 	public Realm getCurrentRealm() {

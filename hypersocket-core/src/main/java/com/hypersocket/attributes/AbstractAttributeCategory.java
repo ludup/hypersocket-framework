@@ -1,10 +1,7 @@
-package com.hypersocket.attributes.user;
+package com.hypersocket.attributes;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
-
-import com.hypersocket.attributes.AbstractAttribute;
-import com.hypersocket.attributes.RealmAttributeCategory;
 
 @MappedSuperclass
 public abstract class AbstractAttributeCategory<A extends AbstractAttribute<?>> extends RealmAttributeCategory<A> {
@@ -12,6 +9,12 @@ public abstract class AbstractAttributeCategory<A extends AbstractAttribute<?>> 
 	@Column(name = "weight", nullable = false)
 	Integer weight = new Integer(0);
 
+	@Column(name="visibility_depends_on")
+	String visibilityDependsOn;
+	
+	@Column(name="visibility_depends_value")
+	String visibilityDependsValue;
+	
 	public AbstractAttributeCategory() {
 		super();
 	}
@@ -27,5 +30,15 @@ public abstract class AbstractAttributeCategory<A extends AbstractAttribute<?>> 
 	public String getFilter() {
 		return "custom";
 	}
+
+	public String getVisibilityDependsOn() {
+		return visibilityDependsOn;
+	}
+
+	public String getVisibilityDependsValue() {
+		return visibilityDependsValue;
+	}
+	
+	
 
 }

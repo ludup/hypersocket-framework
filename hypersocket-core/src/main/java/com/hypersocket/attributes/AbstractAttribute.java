@@ -6,6 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.Table;
 
 import com.hypersocket.properties.NameValuePair;
 import com.hypersocket.properties.ResourceUtils;
@@ -13,6 +14,7 @@ import com.hypersocket.resource.AssignableResource;
 
 @Entity
 @Inheritance(strategy=InheritanceType.JOINED)
+@Table(name = "abstract_attributes")
 public abstract class AbstractAttribute<C extends RealmAttributeCategory<?>> extends AssignableResource  {
 	
 	@Column(name="description")
@@ -140,6 +142,10 @@ public abstract class AbstractAttribute<C extends RealmAttributeCategory<?>> ext
 	}
 
 	public void setOptions(Collection<NameValuePair> options) {
+		if(options==null) {
+			this.options = "";
+			return;
+		}
 		this.options = ResourceUtils.implodeNamePairs(options);
 	}
 

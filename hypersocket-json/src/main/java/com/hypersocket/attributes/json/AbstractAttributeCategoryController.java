@@ -68,7 +68,7 @@ public abstract class AbstractAttributeCategoryController<A extends AbstractAttr
 	}
 
 	protected ResourceStatus<T> createOrUpdateAttributeCategory(HttpServletRequest request,
-			UserAttributeCategoryUpdate attributeCategory)
+			AbstractCategoryUpdate attributeCategory)
 			throws UnauthorizedException, SessionTimeoutException, AccessDeniedException {
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 

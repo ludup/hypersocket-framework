@@ -112,7 +112,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 			c = cachedValues.get(cacheKey);
 		}
 
-		if(template.isEncrypted() && c.startsWith("!ENC!")) {
+		if(template.isEncrypted() && ResourceUtils.isEncrypted(c)) {
 			c = decryptValue(cacheKey, c, resolveRealm(resource));
 		}
 
@@ -129,7 +129,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
 		cachedValues.remove(cacheKey);
 		
-		if(template.isEncrypted() && !value.startsWith("!ENC!")) {
+		if(template.isEncrypted() && !ResourceUtils.isEncrypted(value)) {
 			value = encryptValue(cacheKey, value, resolveRealm(resource));
 			doSetProperty(template, resource, value);
 		} else {
@@ -141,7 +141,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 	
 	private String encryptValue(String cacheKey, String value, Realm realm) {
 		try {
-			return "!ENC!" + encryptionService.encryptString(cacheKey, value, realm);
+			return encryptionService.encryptString(cacheKey, value, realm);
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not encrypt property value. Check the logs for more detail.", e);
 		}

@@ -563,7 +563,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		String pwd = new String(password);
 		if (pwd.startsWith(SessionServiceImpl.TOKEN_PREFIX)) {
 			Principal tokenPrincipal = sessionService.getSessionTokenResource(pwd, Principal.class);
-			return tokenPrincipal.equals(principal);
+			return tokenPrincipal!=null && tokenPrincipal.equals(principal);
 		} else {
 			return getProviderForRealm(principal.getRealm()).verifyPassword(principal, password);
 		}

@@ -601,16 +601,14 @@ public class AuthenticationServiceImpl extends
 				sessionService.switchRealm(session,
 						realmService.getDefaultRealm());
 			}
-		} else {
-			String altHomePage = configurationService
-					.getValue("session.altHomePage");
-			if (StringUtils.isNotBlank(altHomePage)) {
-				altHomePage = variableReplacement.replaceVariables(
-						getCurrentPrincipal(), altHomePage);
-				state.setHomePage(altHomePage);
-			}
-		}
-
+		} 
+		
+		String altHomePage = configurationService.getValue("session.altHomePage");
+		if(StringUtils.isNotBlank(altHomePage)) {
+			altHomePage = variableReplacement.replaceVariables(getCurrentPrincipal(), altHomePage);
+			state.setHomePage(altHomePage);
+		} 
+		
 		return session;
 	}
 

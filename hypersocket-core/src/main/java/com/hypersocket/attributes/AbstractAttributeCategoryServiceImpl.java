@@ -230,11 +230,11 @@ public abstract class AbstractAttributeCategoryServiceImpl<A extends AbstractAtt
 	public PropertyCategory registerPropertyCategory(T c) {
 		return registerPropertyCategory(
 				"attributeCategory" + String.valueOf(c.getId()),
-				resourceBundle, c.getWeight(), c.isHidden(), c.getName());
+				resourceBundle, c.getWeight(), c.isHidden(), c.getName(), c.getVisibilityDependsOn(), c.getVisibilityDependsValue());
 	}
 	
 	protected PropertyCategory registerPropertyCategory(String resourceKey,
-			String bundle, int weight, boolean hidden, String name) {
+			String bundle, int weight, boolean hidden, String name, String visibilityDependsOn, String visibilityDependsValue) {
 
 		PropertyCategory category = new PropertyCategory();
 		category.setName(name);
@@ -245,6 +245,8 @@ public abstract class AbstractAttributeCategoryServiceImpl<A extends AbstractAtt
 		category.setUserCreated(true);
 		category.setFilter("custom");
 		category.setHidden(hidden);
+		category.setVisibilityDependsOn(visibilityDependsOn);
+		category.setVisibilityDependsValue(visibilityDependsValue);
 		activeCategories.put(category.getCategoryKey(), category);
 		return category;
 	}

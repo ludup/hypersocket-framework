@@ -9,17 +9,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Node;
 
 import com.hypersocket.attributes.user.events.UserAttributeCreatedEvent;
 import com.hypersocket.attributes.user.events.UserAttributeDeletedEvent;
@@ -32,7 +29,7 @@ import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.NameValuePair;
 import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.properties.PropertyOption;
+import com.hypersocket.properties.PropertyResolver;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourcePropertyTemplate;
@@ -46,7 +43,7 @@ import com.hypersocket.role.events.RoleEvent;
 
 @Service
 public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C>, C extends RealmAttributeCategory<A>, R extends AbstractResource> extends AbstractAssignableResourceServiceImpl<A> implements
-		AttributeService<A, C>, ApplicationListener<RoleEvent> {
+		AttributeService<A, C>, ApplicationListener<RoleEvent>, PropertyResolver {
 
 	static Logger log = LoggerFactory.getLogger(AbstractAttributeServiceImpl.class);
 	public static final String RESOURCE_BUNDLE = "UserAttributes";
@@ -92,6 +89,8 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		for(A attr : attributeRepository.allResources()) {
 			registerAttribute(attr);
 		}
+		
+		attributeRepository.registerPropertyResolver(this);
 	}
 
 
@@ -285,10 +284,6 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	public Collection<PropertyCategory> getPropertyCategories(
 			AbstractResource resource) {
 		
-		if(resource == null) {
-			return new ArrayList<PropertyCategory>();
-		}
-		
 		Map<String,PropertyTemplate> userTemplates = getAttributeTemplates(checkResource(resource));
 		Map<Integer,PropertyCategory> results = new HashMap<Integer,PropertyCategory>();
 		
@@ -304,6 +299,8 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 				cat.setSystemOnly(t.getCategory().isSystemOnly());
 				cat.setHidden(t.getCategory().isHidden());
 				cat.setFilter(t.getCategory().getFilter());
+				cat.setVisibilityDependsValue(t.getCategory().getVisibilityDependsValue());
+				cat.setVisibilityDependsOn(t.getCategory().getVisibilityDependsOn());
 				cat.setName(t.getCategory().getName());
 				
 				results.put(cat.getId(), cat);

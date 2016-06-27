@@ -10,13 +10,13 @@ public interface AttributeFacadeService extends AuthenticatedService {
 
 	Long getMaximumCategoryWeight() throws AccessDeniedException;
 
-	AttributeCategory getCategoryByName(String name)
+	AttributeCategory<?> getCategoryByName(String name)
 			throws ResourceNotFoundException, AccessDeniedException;
 
-	Long getMaximumAttributeWeight(AttributeCategory cat)
+	Long getMaximumAttributeWeight(AttributeCategory<?> cat)
 			throws AccessDeniedException;
 
-	AttributeCategory createAttributeCategory(String name, String context,
+	AttributeCategory<?> createAttributeCategory(String name, String context,
 			int weight) throws ResourceCreationException, AccessDeniedException;
 
 	UserAttribute getAttributeByName(String name)

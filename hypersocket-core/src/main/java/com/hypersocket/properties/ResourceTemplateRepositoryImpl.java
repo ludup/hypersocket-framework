@@ -269,7 +269,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 					node.getAttribute("displayMode"), 
 					node.hasAttribute("system") && Boolean.parseBoolean(node.getAttribute("system")),
 					node.getAttribute("filter"),
-					node.hasAttribute("hidden") && Boolean.parseBoolean(node.getAttribute("hidden")));
+					node.hasAttribute("hidden") && Boolean.parseBoolean(node.getAttribute("hidden")),
+					node.getAttribute("visibilityDependsOn"),
+					node.getAttribute("visibilityDependsValue"));
 
 			PropertyStore defaultStore = getPropertyStore();
 
@@ -473,7 +475,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	private PropertyCategory registerPropertyCategory(String resourceKey, String bundle, int weight,
-			boolean userCreated, String group, String displayMode, boolean systemOnly, String filter, boolean hidden) {
+			boolean userCreated, String group, String displayMode, boolean systemOnly, String filter, boolean hidden,
+			String visibilityDependsOn, String visibilityDependsValue) {
 
 		if (activeCategories.containsKey(resourceKey)) {
 			PropertyCategory cat = activeCategories.get(resourceKey);
@@ -499,6 +502,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		category.setSystemOnly(systemOnly);
 		category.setFilter(filter);
 		category.setHidden(hidden);
+		category.setVisibilityDependsOn(visibilityDependsOn);
+		category.setVisibilityDependsValue(visibilityDependsValue);
 
 		activeCategories.put(category.getCategoryKey(), category);
 		return category;
@@ -707,6 +712,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			tmp.setFilter(c.getFilter());
 			tmp.setName(c.getName());
 			tmp.setHidden(c.isHidden());
+			tmp.setVisibilityDependsOn(c.getVisibilityDependsOn());
+			tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
 			for (AbstractPropertyTemplate t : c.getTemplates()) {
 				ResourcePropertyTemplate template = new ResourcePropertyTemplate(t, resource);
 				for(PropertyFilter filter : filters) {
@@ -751,6 +758,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			tmp.setFilter(c.getFilter());
 			tmp.setName(c.getName());
 			tmp.setHidden(c.isHidden());
+			tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
+			tmp.setVisibilityDependsOn(c.getVisibilityDependsOn());
 			for (AbstractPropertyTemplate t : c.getTemplates()) {
 				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
 			}
@@ -772,6 +781,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				tmp.setSystemOnly(c.isSystemOnly());
 				tmp.setName(c.getName());
 				tmp.setHidden(c.isHidden());
+				tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
+				tmp.setVisibilityDependsOn(c.getVisibilityDependsOn());
 				for (AbstractPropertyTemplate t : c.getTemplates()) {
 					tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
 				}

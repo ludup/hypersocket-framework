@@ -1,4 +1,4 @@
-package com.hypersocket.attributes.user;
+package com.hypersocket.profile;
 
 import java.util.Map;
 

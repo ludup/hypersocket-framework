@@ -8,6 +8,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hypersocket.attributes.AbstractAttributeCategory;
 
 @Entity
 @Table(name = "user_attribute_categories")

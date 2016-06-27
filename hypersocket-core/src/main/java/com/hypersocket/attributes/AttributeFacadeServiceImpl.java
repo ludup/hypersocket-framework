@@ -36,14 +36,14 @@ public class AttributeFacadeServiceImpl extends AbstractAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Long getMaximumAttributeWeight(AttributeCategory cat)
+	public Long getMaximumAttributeWeight(AttributeCategory<?> cat)
 			throws AccessDeniedException {
 		return attributeService
 				.getMaximumAttributeWeight((UserAttributeCategory) cat);
 	}
 
 	@Override
-	public AttributeCategory getCategoryByName(String name)
+	public AttributeCategory<?> getCategoryByName(String name)
 			throws ResourceNotFoundException, AccessDeniedException {
 		try {
 			return categoryService.getResourceByName(name, getCurrentRealm());
@@ -53,7 +53,7 @@ public class AttributeFacadeServiceImpl extends AbstractAuthenticatedServiceImpl
 	}
 
 	@Override
-	public AttributeCategory createAttributeCategory(String name,
+	public AttributeCategory<?> createAttributeCategory(String name,
 			String context, int weight) throws ResourceCreationException,
 			AccessDeniedException {
 		return categoryService.createAttributeCategory(name, weight);

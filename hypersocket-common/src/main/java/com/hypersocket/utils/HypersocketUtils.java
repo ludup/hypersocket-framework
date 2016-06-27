@@ -204,6 +204,14 @@ public class HypersocketUtils {
 			throw new IllegalStateException("System does not support UTF-8 encoding!");
 		}
 	}
+	
+	public static String base64Encode(String resourceKey) {
+		try {
+			return base64Encode(resourceKey.getBytes("UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException("System does not appear to support UTF-8!", e);
+		}
+	}
 
 	public static byte[] base64Decode(String property) throws IOException {
 		return Base64.decodeBase64(property.getBytes("UTF-8"));
@@ -305,5 +313,7 @@ public class HypersocketUtils {
 	public static String generateRandomAlphaNumericString(int length) {
 	    return new BigInteger(130, random).toString(32).substring(0,  length);
 	  }
+
+	
 
 }

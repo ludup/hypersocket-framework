@@ -143,8 +143,9 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			resource.setRealm(getCurrentRealm());
 		}
 		resource.setResourceCategory(resourceCategory);
-		getRepository().populateEntityFields(resource, properties);
-		
+		if(!properties.isEmpty()) {
+			getRepository().populateEntityFields(resource, properties);
+		}
 		try {
 		
 			beforeCreateResource(resource, properties);

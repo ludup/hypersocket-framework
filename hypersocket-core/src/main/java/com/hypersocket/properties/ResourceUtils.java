@@ -130,7 +130,7 @@ public class ResourceUtils {
 	}
 
 	public static boolean isEncrypted(String value) {
-		return value.startsWith("!ENC!");
+		return value.startsWith(getEncryptedTag());
 	}
 
 	public static <T extends Resource> String implodeResourceValues(Collection<T> entities) {
@@ -204,6 +204,18 @@ public class ResourceUtils {
 			}
 		}
 		return buf.toString();
+	}
+
+	public static String getEncryptedTag() {
+		return "!ENC!";
+	}
+	
+	public static String addEncryptedTag(String value) {
+		return getEncryptedTag() + value;
+	}
+	
+	public static String removeEncryptedTag(String value) {
+		return value.replaceFirst(getEncryptedTag(), "");
 	}
 
 }

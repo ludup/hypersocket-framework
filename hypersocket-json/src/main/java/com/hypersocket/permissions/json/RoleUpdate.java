@@ -9,6 +9,8 @@ package com.hypersocket.permissions.json;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.hypersocket.properties.json.PropertyItem;
+
 @XmlRootElement(name="role")
 public class RoleUpdate {
 
@@ -17,6 +19,7 @@ public class RoleUpdate {
 	Long[] users;
 	Long[] groups;
 	Long[] permissions;
+	PropertyItem[] properties;
 	
 	public RoleUpdate() {
 		
@@ -60,6 +63,14 @@ public class RoleUpdate {
 
 	public void setPermissions(Long[] permissions) {
 		this.permissions = permissions;
+	}
+
+	public PropertyItem[] getProperties() {
+		return properties;
+	}
+
+	public void setProperties(PropertyItem[] properties) {
+		this.properties = properties;
 	}
 	
 	

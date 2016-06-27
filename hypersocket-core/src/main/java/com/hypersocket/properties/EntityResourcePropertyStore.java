@@ -19,9 +19,11 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import com.hypersocket.encrypt.EncryptionService;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.AbstractResourceRepository;
+import com.hypersocket.resource.RealmResource;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.utils.HypersocketUtils;
 
@@ -32,10 +34,11 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	static Map<Class<?>,AbstractResourceRepository<?>> resourceServices = new HashMap<Class<?>,AbstractResourceRepository<?>>();
 	static Map<Class<?>,AbstractAssignableResourceRepository<?>> assignableServices = new HashMap<Class<?>,AbstractAssignableResourceRepository<?>>();
 	Map<Class<?>, PrimitiveParser<?>> primitiveParsers = new HashMap<Class<?>,PrimitiveParser<?>>();
+	StringValue stringParser = new StringValue();
 	
 	public EntityResourcePropertyStore(EncryptionService encryptionService) {
 		
-		primitiveParsers.put(String.class, new StringValue());
+		//primitiveParsers.put(String.class, new StringValue());
 		primitiveParsers.put(Boolean.class, new BooleanValue());
 		primitiveParsers.put(Integer.class, new IntegerValue());
 		primitiveParsers.put(Long.class, new LongValue());
@@ -169,8 +172,15 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 						log.error("Could not set " + template.getResourceKey() + " enum value " + value + " for resource " + resource.getClass().getName(), e);
 						throw new IllegalStateException("Could not set " + template.getResourceKey() + " enum value " + value + " for resource " + resource.getClass().getName(), e);
 					}
-				}
-				if(primitiveParsers.containsKey(clz)) {
+				} else if(String.class.equals(clz)) {
+					try {
+						m.invoke(resource, stringParser.parseValue(value, resource, template));
+					} catch (Exception e) {
+						log.error("Could not set " + template.getResourceKey() + " String value " + value + " for resource " + resource.getClass().getName(), e);
+						throw new IllegalStateException("Could not set " + template.getResourceKey() + " String value " + value + " for resource " + resource.getClass().getName(), e);
+					}
+					return;
+				} else if (primitiveParsers.containsKey(clz)) {
 					try {
 						m.invoke(resource, primitiveParsers.get(clz).parseValue(value));
 					} catch (Exception e) {
@@ -178,8 +188,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 						throw new IllegalStateException("Could not set " + template.getResourceKey() + " primitive value " + value + " for resource " + resource.getClass().getName(), e);
 					}
 					return;
-				}
-				if(resourceServices.containsKey(clz)) {
+				} else if(resourceServices.containsKey(clz)) {
 					try {
 						if(StringUtils.isEmpty(value)) {
 							m.invoke(resource, (Object)null);
@@ -191,8 +200,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 						throw new IllegalStateException("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
 					}
 					return;
-				}
-				if(assignableServices.containsKey(clz)) {
+				} else if(assignableServices.containsKey(clz)) {
 					try {
 						if(StringUtils.isEmpty(value)) {
 							m.invoke(resource, (Object)null);
@@ -204,8 +212,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 						throw new IllegalStateException("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
 					}
 					return;
-				}
-				if(Collection.class.isAssignableFrom(clz)) {
+				} else if(Collection.class.isAssignableFrom(clz)) {
 					// We have a collection of entity values
 					
 					Class<?> type = (Class<?>) ((ParameterizedType) m.getGenericParameterTypes()[0]).getActualTypeArguments()[0];
@@ -257,8 +264,10 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 						}
 						return;
 					} else {
-						throw new IllegalStateException("Unhandled Collection type!");
+						throw new IllegalStateException("Unhandled collection type!");
 					}
+				} else {
+					throw new IllegalStateException("Unhandled parameter type!");
 				}
 				
 			}
@@ -287,8 +296,21 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		T parseValue(String value);
 	}
 	
-	class StringValue implements PrimitiveParser<String> {
-		public String parseValue(String value) {
+	class StringValue {
+		public String parseValue(String value, AbstractResource resource, AbstractPropertyTemplate template) {
+			Realm realm = encryptionService.getSystemRealm();
+			if(resource instanceof RealmResource) {
+				realm = ((RealmResource)resource).getRealm();
+			}
+			if(template.isEncrypted()) {
+				if(!ResourceUtils.isEncrypted(value)) {
+					try {
+						value = encryptionService.encryptString(resource.getUUID(), value, realm);
+					} catch (IOException e) {
+						return value;
+					}
+				}
+			}
 			return value;
 		}
 	}
