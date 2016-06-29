@@ -72,7 +72,7 @@ public abstract class PermissionsAwareJobNonTransactional implements Job {
 				authenticationService.clearPrincipalContext();
 			}
 
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			log.error("Error in job", e);
 			throw new IllegalStateException(e);
 		}

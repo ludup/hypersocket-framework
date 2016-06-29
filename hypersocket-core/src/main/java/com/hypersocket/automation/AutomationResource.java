@@ -48,6 +48,9 @@ public class AutomationResource extends Task {
 	@Column(name="notes", length=8000)
 	String notes;
 	
+	@Column(name="transactional")
+	Boolean transactional;
+	
 	@OneToMany(fetch=FetchType.EAGER)
 	Set<TriggerResource> triggers = new HashSet<TriggerResource>();
 	
@@ -137,6 +140,14 @@ public class AutomationResource extends Task {
 
 	public void setChildTriggers(Set<TriggerResource> triggers) {
 		this.triggers = triggers;
+	}
+
+	public Boolean getTransactional() {
+		return transactional == null ? Boolean.FALSE : transactional;
+	}
+
+	public void setTransactional(Boolean transactional) {
+		this.transactional = transactional;
 	}
 
 	public boolean isDailyJob() {

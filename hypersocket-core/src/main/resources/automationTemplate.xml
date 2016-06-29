@@ -22,6 +22,12 @@
 		<property inputType="integer" resourceKey="repeatValue"
 			defaultValue="0" weight="600" minValue="0" maxValue="9999" />
 	</propertyCategory>
+	<propertyCategory resourceKey="category.transaction"
+		resourceBundle="AutomationResourceService" weight="99991" group="automation">
+		<property inputType="switch" resourceKey="transactional" defaultValue="false" weight="100" />
+		<property inputType="integer" resourceKey="repeatValue"
+			defaultValue="0" weight="600" minValue="0" maxValue="9999" />
+	</propertyCategory>
 	<propertyCategory resourceKey="category.notes"
 		resourceBundle="AutomationResourceService" weight="99992" group="automation">
 		<property inputType="textarea" resourceKey="notes"
