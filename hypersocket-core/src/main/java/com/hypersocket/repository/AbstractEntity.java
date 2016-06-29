@@ -33,7 +33,7 @@ public abstract class AbstractEntity<T> {
 	boolean deleted;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(updatable=false)
+	@Column(name="created")
     private Date created = new Date();
 
     @Temporal(TemporalType.TIMESTAMP)
