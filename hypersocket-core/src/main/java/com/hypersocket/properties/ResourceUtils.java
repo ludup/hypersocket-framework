@@ -180,4 +180,12 @@ public class ResourceUtils {
 		return buf.toString();
 	}
 
+	public static boolean isNamePair(String id) {
+		return id.indexOf("=") > 0;
+	}
+
+	public static String encodeNamePair(String key, String value) {
+		return key + "=" + value;
+	}
+
 }
