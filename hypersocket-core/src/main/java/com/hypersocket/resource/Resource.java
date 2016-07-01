@@ -26,9 +26,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Table(name="resources")
 public abstract class Resource extends AbstractResource {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 6795842573539622186L;
 
 	@Column(name="name", nullable=false)

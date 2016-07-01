@@ -1,8 +1,5 @@
 package com.hypersocket.resource;
 
-import java.util.UUID;
-
-import javax.persistence.Column;
 import javax.persistence.JoinColumn;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToOne;
