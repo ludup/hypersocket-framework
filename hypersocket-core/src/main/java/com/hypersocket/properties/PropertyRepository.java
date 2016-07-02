@@ -29,4 +29,6 @@ public interface PropertyRepository extends AbstractRepository<Long> {
 
 	void deletePropertiesForResource(AbstractResource resource);
 
+	void deleteProperties(AbstractResource resource, String... resourceKeys);
+
 }
