@@ -662,15 +662,28 @@ public class LocalRealmProviderImpl extends AbstractRealmProvider implements
 
 		switch (type) {
 		case EMAIL:
-			String email = userRepository.getValue(principal,
-					LocalRealmProviderImpl.FIELD_EMAIL);
+			String email = ((LocalUser)principal).getEmail();
+			if (!StringUtils.isEmpty(email)) {
+				return email;
+			}
+			/**
+			 * Look for older attribute
+			 */
+			email = userRepository.getValue(principal, "user.email");
 			if (!StringUtils.isEmpty(email)) {
 				return email;
 			}
 			break;
 		case PHONE:
-			String phone = userRepository.getValue(principal,
-					LocalRealmProviderImpl.FIELD_MOBILE);
+			String phone = ((LocalUser)principal).getMobile();
+			if (!StringUtils.isEmpty(phone)) {
+				return phone;
+			}
+			/**
+			 * Look for older attribute
+			 */
+			phone = userRepository.getValue(principal,
+					"user.mobile");
 			if (!StringUtils.isEmpty(phone)) {
 				return phone;
 			}

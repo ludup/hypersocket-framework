@@ -9,6 +9,7 @@ package com.hypersocket.properties;
 
 import java.util.List;
 
+import org.hibernate.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,9 +76,15 @@ public abstract class PropertyRepositoryImpl extends AbstractRepositoryImpl<Long
 		}
 	}
 	
-//	@Transactional(readOnly=true)
-//	public List<UserAttributeCategory> getAttributeCategories(String context) {
-//		return list("context", context, UserAttributeCategory.class);
-//	}
+	@Override
+	@Transactional
+	public void deleteProperties(AbstractResource resource, String... resourceKeys) {
+		
+		Query query = createQuery("delete from DatabaseProperty where resourceKey in (:resourceKeys) and resource = :resource", true);
+		query.setParameterList("resourceKeys", resourceKeys);
+		query.setParameter("resource", resource.getId());
+		
+		query.executeUpdate();
+	}
 	
 }

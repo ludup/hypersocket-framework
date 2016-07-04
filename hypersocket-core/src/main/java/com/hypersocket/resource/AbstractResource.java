@@ -14,9 +14,6 @@ import com.hypersocket.repository.AbstractEntity;
 @MappedSuperclass
 public abstract class AbstractResource extends AbstractEntity<Long> {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 306989572401186385L;
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)

@@ -218,4 +218,12 @@ public class ResourceUtils {
 		return value.replaceFirst(getEncryptedTag(), "");
 	}
 
+	public static boolean isNamePair(String id) {
+		return id.indexOf("=") > -1;
+	}
+
+	public static String encodeNamePair(String key, String value) {
+		return key + "=" + value;
+	}
+
 }

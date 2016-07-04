@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationService;
@@ -17,15 +19,18 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.events.SynchronousEvent;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskResult;
+import com.hypersocket.transactions.TransactionService;
 
 @Component
 public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implements TriggerExecutor {
@@ -55,6 +60,9 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 	
 	@Autowired
 	RealmService realmService;
+	
+	@Autowired
+	TransactionService transactionService;
 	
 	public TriggerExecutorImpl() {
 	}
@@ -199,10 +207,10 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 		return provider.checkCondition(condition, trigger, event);
 	}
 
-	protected void executeTrigger(TriggerResource trigger, SystemEvent lastResult, SystemEvent sourceEvent)
+	protected void executeTrigger(final TriggerResource trigger, final SystemEvent lastResult, SystemEvent sourceEvent)
 			throws ValidationException {
 
-		TaskProvider provider = taskService
+		final TaskProvider provider = taskService
 				.getTaskProvider(trigger.getResourceKey());
 		if (provider == null) {
 			throw new ValidationException(
@@ -210,29 +218,44 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 							+ trigger.getResourceKey() + " is not available");
 		}
 
-		TaskResult outputEvent = provider.execute(trigger, lastResult.getCurrentRealm(), lastResult);
-
-		if(outputEvent!=null) {
-			
-			if(outputEvent instanceof MultipleTaskResults) {
-				MultipleTaskResults results = (MultipleTaskResults) outputEvent;
-				for(TaskResult result : results.getResults()) {
-					
-					if(result.isPublishable()) {
-						eventService.publishEvent(result.getEvent());
+		try {
+			TaskResult outputEvent = transactionService.doInTransaction(new TransactionCallback<TaskResult>() {
+	
+				@Override
+				public TaskResult doInTransaction(TransactionStatus status) {
+					try {
+						return  provider.execute(trigger, lastResult.getCurrentRealm(), lastResult);
+					} catch (ValidationException e) {
+						throw new IllegalStateException(e);
+					}
+				}
+				
+			});
+	
+			if(outputEvent!=null) {
+				
+				if(outputEvent instanceof MultipleTaskResults) {
+					MultipleTaskResults results = (MultipleTaskResults) outputEvent;
+					for(TaskResult result : results.getResults()) {
+						
+						if(result.isPublishable()) {
+							eventService.publishEvent(result.getEvent());
+						}
+						
+						processResult(trigger, result, sourceEvent);
 					}
 					
-					processResult(trigger, result, sourceEvent);
-				}
+				} else {
 				
-			} else {
-			
-				if(outputEvent.isPublishable()) {
-					eventService.publishEvent(outputEvent.getEvent());
+					if(outputEvent.isPublishable()) {
+						eventService.publishEvent(outputEvent.getEvent());
+					}
+					
+					processResult(trigger, outputEvent, sourceEvent);
 				}
-				
-				processResult(trigger, outputEvent, sourceEvent);
 			}
+		} catch(ResourceException | AccessDeniedException e) {
+			throw new IllegalStateException(e);
 		}
 	}
 	
