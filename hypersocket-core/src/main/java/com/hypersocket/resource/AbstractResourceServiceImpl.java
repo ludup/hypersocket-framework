@@ -353,7 +353,12 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	@Override
 	public T getResourceByName(String name) throws ResourceNotFoundException {
-		T resource = getRepository().getResourceByName(name, isSystemResource() ? realmService.getSystemRealm() : getCurrentRealm());
+		return getResourceByName(name, false);
+	}
+	
+	@Override
+	public T getResourceByName(String name, boolean searchAllRealms) throws ResourceNotFoundException {
+		T resource = getRepository().getResourceByName(name, searchAllRealms ? null : isSystemResource() ? realmService.getSystemRealm() : getCurrentRealm());
 		if (resource == null) {
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE_DEFAULT,
 					"error.invalidResourceName", name);

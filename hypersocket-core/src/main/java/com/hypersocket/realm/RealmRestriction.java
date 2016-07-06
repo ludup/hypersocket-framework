@@ -28,9 +28,7 @@ public class RealmRestriction implements CriteriaConfiguration {
 	
 	@Override
 	public void configure(Criteria criteria) {
-		if(realm==null) {
-			criteria.add(Restrictions.isNull(column));
-		} else {
+		if(realm!=null) {
 			criteria.add(Restrictions.eq(column, realm));
 		}
 	}

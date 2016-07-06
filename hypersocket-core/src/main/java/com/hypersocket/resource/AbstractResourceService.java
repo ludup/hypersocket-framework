@@ -79,5 +79,8 @@ public interface AbstractResourceService<T extends RealmResource> extends Authen
 
 	String getFingerprint();
 
+	T getResourceByName(String name, 
+			boolean searchAllRealms) throws ResourceNotFoundException;
+
 
 }
