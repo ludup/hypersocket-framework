@@ -158,6 +158,28 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		return aliases;
 	}
 	
+	protected String processReplacements(String str) {
+		str = str.replace("${uiPath}", getUiPath());
+		str = str.replace("${basePath}", getBasePath());
+		return str;
+	}
+	@Override
+	public boolean isAliasFor(String alias, String page) {
+		
+		alias = processReplacements(alias);
+		page = processReplacements(page);
+		
+		for(String a : aliases.keySet()) {
+			
+			String p = processReplacements(aliases.get(a));
+			a = processReplacements(a);
+			
+			if(alias.equals(a) && page.equals(p)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	/*
 	 * (non-Javadoc)
 	 * 
