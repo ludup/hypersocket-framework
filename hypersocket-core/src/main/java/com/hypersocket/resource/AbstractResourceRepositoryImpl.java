@@ -63,8 +63,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		return get("name", name, getResourceClass(), 
 				new RealmRestriction(realm), 
 				new DefaultDetatchedCriteriaConfiguration(), 
-				new DeletedCriteria(
-				deleted));
+				new DeletedCriteria(deleted));
 	}
 
 	@Override
