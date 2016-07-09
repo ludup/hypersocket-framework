@@ -21,7 +21,7 @@ public abstract class AbstractResource extends AbstractEntity<Long> {
 	Long id;
 
 	@Column(name = "reference", updatable=false)
-	String reference = UUID.randomUUID().toString();
+	protected String reference = UUID.randomUUID().toString();
 	
 	public Long getId() {
 		return id;
