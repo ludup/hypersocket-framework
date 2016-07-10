@@ -139,6 +139,14 @@ public class HibernateUtils {
 		return ids;
 	}
 	
+	public static Collection<Long> getResourceIds(Resource... resources) {
+		List<Long> ids = new ArrayList<Long>();
+		for(Resource r : resources) {
+			ids.add(r.getId());
+		}
+		return ids;
+	}
+	
 	public static boolean isNotWildcard(String searchPattern) {
 		switch(searchPattern) {
 		case "*":

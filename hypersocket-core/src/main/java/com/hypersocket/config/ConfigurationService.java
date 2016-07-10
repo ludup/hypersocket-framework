@@ -44,4 +44,6 @@ public interface ConfigurationService extends AuthenticatedService, PropertyTemp
 
 	String getDecryptedValue(Realm realm, String resourceKey);
 
+	void setValues(Realm realm, String string, String[] editable) throws ResourceChangeException, AccessDeniedException;
+
 }
