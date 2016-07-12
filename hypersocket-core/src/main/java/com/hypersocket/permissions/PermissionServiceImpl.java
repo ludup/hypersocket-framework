@@ -30,7 +30,6 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import com.hypersocket.attributes.AttributeRepository;
 import com.hypersocket.attributes.role.RoleAttributeRepository;
 import com.hypersocket.attributes.role.RoleAttributeService;
 import com.hypersocket.auth.AuthenticatedServiceImpl;
@@ -89,6 +88,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@SuppressWarnings("rawtypes")
 	Cache<Object, Set> permissionsCache;
+	
 	@SuppressWarnings("rawtypes")
 	Cache<Object,Set> roleCache;
 

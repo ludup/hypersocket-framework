@@ -53,6 +53,10 @@ public abstract class Principal extends RealmResource {
 	public Realm getRealm() {
 		return super.getRealm();
 	}
+	
+	public boolean isPrimaryAccount() {
+		return super.getRealm().getOwner()==null;
+	}
 
 	public abstract PrincipalType getType();
 

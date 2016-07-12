@@ -232,5 +232,10 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	public String getDecryptedValue(Realm realm, String resourceKey) {
 		return repository.getDecryptedValue(realm, resourceKey);
 	}
+
+	@Override
+	public void setValues(Realm realm, String resourceKey, String[] values) throws ResourceChangeException, AccessDeniedException {
+		setValue(realm, resourceKey, ResourceUtils.implodeValues(values));
+	}
 	
 }

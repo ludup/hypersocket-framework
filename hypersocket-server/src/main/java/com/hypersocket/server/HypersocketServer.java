@@ -100,4 +100,5 @@ public interface HypersocketServer {
 
 	void removeAlias(String alias);
 
+	boolean isAliasFor(String redirectPage, String uri);
 }

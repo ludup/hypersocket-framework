@@ -182,7 +182,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 					return;
 				} else if (primitiveParsers.containsKey(clz)) {
 					try {
-						m.invoke(resource, primitiveParsers.get(clz).parseValue(value));
+						m.invoke(resource, StringUtils.isBlank(value) ? null : primitiveParsers.get(clz).parseValue(value));
 					} catch (Exception e) {
 						log.error("Could not set " + template.getResourceKey() + " primitive value " + value + " for resource " + resource.getClass().getName(), e);
 						throw new IllegalStateException("Could not set " + template.getResourceKey() + " primitive value " + value + " for resource " + resource.getClass().getName(), e);
