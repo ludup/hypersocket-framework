@@ -91,7 +91,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 			currentRealm.set(new Stack<Realm>());
 			currentLocale.set(new Stack<Locale>());
 		}
-		currentPrincipal.get().push(session.getCurrentPrincipal());
+		currentPrincipal.get().push(principal);
 		currentSession.get().push(session);
 		currentRealm.get().push(realm);
 		currentLocale.get().push(locale);
