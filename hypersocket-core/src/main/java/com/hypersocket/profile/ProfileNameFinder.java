@@ -11,22 +11,30 @@ import org.springframework.core.type.filter.TypeFilter;
 
 public class ProfileNameFinder {
 	
+	@SuppressWarnings({ "rawtypes" })
 	public static String[] findProfiles(){
-		Set<String> profiles = new HashSet<>();
-		BeanDefinitionRegistry bdr = new SimpleBeanDefinitionRegistry();
-		ClassPathBeanDefinitionScanner s = new ClassPathBeanDefinitionScanner(bdr);
-
-		TypeFilter tf = new AssignableTypeFilter(ProfileNameProvider.class);
-		s.addIncludeFilter(tf);
-		s.setIncludeAnnotationConfig(false);
-		s.scan("com.hypersocket.profile");       
-		String[] beans = bdr.getBeanDefinitionNames();
-		for (String string : beans) {
-			String beanClassName = bdr.getBeanDefinition(string).getBeanClassName();
-			profiles.add(beanClassName.substring(beanClassName.lastIndexOf(".") + 1));
+		try{
+			Set<String> profiles = new HashSet<>();
+			BeanDefinitionRegistry bdr = new SimpleBeanDefinitionRegistry();
+			ClassPathBeanDefinitionScanner s = new ClassPathBeanDefinitionScanner(bdr);
+	
+			TypeFilter tf = new AssignableTypeFilter(ProfileNameProvider.class);
+			s.addIncludeFilter(tf);
+			s.setIncludeAnnotationConfig(false);
+			s.scan("com.hypersocket.profile");       
+			String[] beans = bdr.getBeanDefinitionNames();
+			for (String string : beans) {
+				String beanClassName = bdr.getBeanDefinition(string).getBeanClassName();
+				Class klass = Class.forName(beanClassName);
+				if(ProfileNameProvider.class.isAssignableFrom(klass)){
+					profiles.add(klass.getSimpleName());
+				}
+			}
+			
+			return profiles.toArray(new String[0]);
+		}catch(Exception e){
+			throw new IllegalStateException(e);
 		}
-		
-		return profiles.toArray(new String[0]);
 	}
 
 }
