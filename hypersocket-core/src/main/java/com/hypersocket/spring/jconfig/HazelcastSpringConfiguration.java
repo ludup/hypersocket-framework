@@ -31,14 +31,17 @@ import com.hazelcast.hibernate.HazelcastLocalCacheRegionFactory;
 public class HazelcastSpringConfiguration {
 	
 	@Autowired ApplicationContext applicationContext; 
-	@Autowired Environment environment; 
+	@Autowired Environment environment;
+	
+	@Value("${user.dir}") 
+	String userDir; 
+	
 
 	@Bean
-    Config config(ApplicationContext applicationContext, NetworkConfig networkConfig) {
+    Config config(NetworkConfig networkConfig) {
         Config config = new Config();
         config.setInstanceName(applicationContext.getId());
         config.setNetworkConfig(networkConfig);
-        //config.getGroupConfig().setName(String.format("group_%s", applicationContext.getId()));
         config.setProperty( "hazelcast.logging.type", "log4j" );
         return config;
     }
@@ -50,12 +53,10 @@ public class HazelcastSpringConfiguration {
     }
  
     @Bean
-    NetworkConfig networkConfig(@Value("${hazelcast.port:5900}") int port, JoinConfig joinConfig) {
+    NetworkConfig networkConfig(JoinConfig joinConfig) {
         NetworkConfig networkConfig = new NetworkConfig();
         networkConfig.setJoin(joinConfig);
-        networkConfig.setPort(port);
         networkConfig.setPortAutoIncrement(true);
-        networkConfig.addOutboundPortDefinition("55000-55100");
         networkConfig.setReuseAddress(true);
         return networkConfig;
     }
@@ -79,38 +80,33 @@ public class HazelcastSpringConfiguration {
     CacheManager cacheManager(HazelcastInstance instance) throws URISyntaxException{
     	CachingProvider cachingProvider = Caching.getCachingProvider("com.hazelcast.cache.impl.HazelcastServerCachingProvider", null);
 
-    	// Create Properties instance pointing to a named HazelcastInstance
-    	//Properties properties = new Properties();
-    	//properties.setProperty(HazelcastCachingProvider.HAZELCAST_INSTANCE_NAME, instance.getName());
-
     	Properties properties = HazelcastCachingProvider.propertiesByInstanceName(applicationContext.getId());
     	
     	URI cacheManagerName = new URI("hypersocket-cache-manager");
     	return cachingProvider.getCacheManager(cacheManagerName, null, properties);
     } 
- 
+    
     private void tcpIpConfig(JoinConfig joinConfig) {
         TcpIpConfig tcpIpConfig = new TcpIpConfig();
-        if(environment.acceptsProfiles("HA")){
-        	tcpIpConfig.setEnabled(true);
-        	tcpIpConfig.addMember("127.0.0.1");
-        }else{
-        	tcpIpConfig.setEnabled(false);
-        }
-        
+        tcpIpConfig.setEnabled(false);
         joinConfig.setTcpIpConfig(tcpIpConfig);
     }
     
     private void multicastConfig(JoinConfig joinConfig) {
         MulticastConfig multicastConfig = new MulticastConfig();
-        multicastConfig.setEnabled(false);
+        if(environment.acceptsProfiles("HA")){
+        	multicastConfig.setEnabled(true);
+        	multicastConfig.setMulticastTimeoutSeconds(10);
+        }else{
+        	multicastConfig.setEnabled(false);
+        }
         joinConfig.setMulticastConfig(multicastConfig);
     }
     
-    private void awsConfig(JoinConfig joinConfig){
+
+	private void awsConfig(JoinConfig joinConfig){
     	AwsConfig awsConfig = new AwsConfig();
     	awsConfig.setEnabled(false);
     	joinConfig.setAwsConfig(awsConfig);
     }
- 
 }
