@@ -97,7 +97,7 @@ public class QuartzSpringConfiguration {
 	@Qualifier("quartzProperties")
 	public Properties quartzProperties() {
 		PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
-		propertiesFactoryBean.setLocation(new FileSystemResource(userDir + "/conf/quartz-ha.properties"));
+		propertiesFactoryBean.setLocation(new FileSystemResource(userDir + "/conf/quartz.properties"));
 		Properties properties = null;
 		try {
 			propertiesFactoryBean.afterPropertiesSet();
