@@ -22,4 +22,9 @@ public class CacheService {
 		Cache<K, V> cache = cacheManager.getCache(name,key,value);
 		return cache == null ? cacheManager.createCache(name, config) : cache;
 	}
+	
+	public CacheManager getCacheManager(){
+		return this.cacheManager;
+	}
+	
 }
