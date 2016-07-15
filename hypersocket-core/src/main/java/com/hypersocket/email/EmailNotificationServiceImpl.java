@@ -55,8 +55,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	final static String SMTP_FROM_ADDRESS = "smtp.fromAddress";
 	final static String SMTP_FROM_NAME = "smtp.fromName";
 	
-	public static final String EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
-			+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+	public static final String EMAIL_PATTERN = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 	
 	public static final String EMAIL_NAME_PATTERN = "(.*?)<([^>]+)>\\s*,?";
 
