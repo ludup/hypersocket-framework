@@ -16,6 +16,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlElement;
 
@@ -34,9 +35,6 @@ import com.hypersocket.resource.RealmResource;
 @Table(name = "principals")
 public abstract class Principal extends RealmResource {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2289438956153713201L;
 
 	@ManyToMany(fetch = FetchType.LAZY)
@@ -48,6 +46,15 @@ public abstract class Principal extends RealmResource {
 	@Fetch(FetchMode.SELECT)
 	@OneToMany(fetch = FetchType.LAZY, mappedBy="principal")
 	Set<PrincipalSuspension> suspensions;
+	
+	@Fetch(FetchMode.SELECT)
+	@OneToMany(fetch = FetchType.LAZY)
+	@JoinTable(name="principal_links")
+	Set<Principal> linkedPrincipals;
+	
+	@OneToOne
+	@JoinColumn(name="parent_principal")
+	Principal parentPrincipal;
 	
 	@JsonIgnore
 	public Realm getRealm() {
@@ -67,6 +74,10 @@ public abstract class Principal extends RealmResource {
 		return getName();
 	}
 	
+	public boolean isLinked() {
+		return parentPrincipal!=null;
+	}
+	
 	@JsonIgnore
 	public Set<PrincipalSuspension> getSuspensions() {
 		return suspensions;
@@ -82,4 +93,23 @@ public abstract class Principal extends RealmResource {
 		builder.append(getRealm(), r.getRealm());
 		builder.append(getName(), r.getName());
 	}
+
+	@JsonIgnore
+	public Set<Principal> getLinkedPrincipals() {
+		return linkedPrincipals;
+	}
+
+	public void setLinkedPrincipals(Set<Principal> linkedPrincipals) {
+		this.linkedPrincipals = linkedPrincipals;
+	}
+
+	public Principal getParentPrincipal() {
+		return parentPrincipal;
+	}
+
+	public void setParentPrincipal(Principal parentPrincipal) {
+		this.parentPrincipal = parentPrincipal;
+	}
+	
+	
 }

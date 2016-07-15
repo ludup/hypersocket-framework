@@ -746,6 +746,25 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		}
 		return false;
 	}
+	
+	@Override
+	public boolean hasRole(Principal principal, Collection<Role> roles) throws AccessDeniedException {
+		
+		Collection<Role> principalRoles = getPrincipalRoles(principal);
+		for(Role r : principalRoles) {
+			if(roles.contains(r)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean hasEveryoneRole(Collection<Role> roles, Realm realm) throws AccessDeniedException, ResourceNotFoundException {
+		
+		Role everyone = getRole(ROLE_EVERYONE, realm);
+		return roles.contains(everyone);
+	}
 
 	@Override
 	public void assertResourceAccess(AssignableResource resource, Principal principal) throws AccessDeniedException {

@@ -102,11 +102,15 @@ public interface PermissionService extends AuthenticatedService {
 
 	boolean hasPermission(Principal principal, Permission permission);
 
-	public boolean hasRole(Principal principal, Role customerRole) throws AccessDeniedException;
+	public boolean hasRole(Principal principal, Role role) throws AccessDeniedException;
 
 	public void assertResourceAccess(AssignableResource resource, Principal principal) throws AccessDeniedException;
 	
 	public Role createRoleAndAssignPrincipals(String roleName, Realm realm,Principal...principals) throws ResourceException,AccessDeniedException;
 
 	public Set<String> getRolePropertyNames();
+
+	public boolean hasRole(Principal principal, Collection<Role> roles) throws AccessDeniedException;
+
+	boolean hasEveryoneRole(Collection<Role> roles, Realm realm) throws AccessDeniedException, ResourceNotFoundException;
 }

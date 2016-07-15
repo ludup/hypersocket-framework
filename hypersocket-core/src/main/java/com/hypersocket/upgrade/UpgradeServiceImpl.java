@@ -34,6 +34,7 @@ import javax.script.SimpleScriptContext;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
+import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -92,26 +93,32 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			return databaseType;
 		}
 		try {
-			@SuppressWarnings("deprecation")
-			Connection connection = sessionFactory.getCurrentSession().connection();
-			DatabaseMetaData metaData = connection.getMetaData();
-			databaseType = metaData.getDatabaseProductName();
-			if(databaseType.equals("Apache Derby")) {
-				return databaseType = "derby";
-			} else if(databaseType.equals("MySQL")) {
-				return databaseType = "mysql";
-			} else if(databaseType.equals("PostgreSQL")) {
-				return databaseType = "postgres";
-			} else if(databaseType.equals("Microsoft SQL Server")) {
-				return databaseType = "mssql";
-			} else {
-				log.info(databaseType + " is not a supported database type");
-			}
+			sessionFactory.getCurrentSession().doWork(new Work() {
+
+				@Override
+				public void execute(Connection connection) throws SQLException {
+					DatabaseMetaData metaData = connection.getMetaData();
+					databaseType = metaData.getDatabaseProductName();
+					if(databaseType.equals("Apache Derby")) {
+						databaseType = "derby";
+					} else if(databaseType.equals("MySQL")) {
+						databaseType = "mysql";
+					} else if(databaseType.equals("PostgreSQL")) {
+						databaseType = "postgres";
+					} else if(databaseType.equals("Microsoft SQL Server")) {
+						databaseType = "mssql";
+					} else {
+						log.info(databaseType + " is not a supported database type");
+						databaseType = "unknown";
+					}
+				}
+				
+			});
+			
+			return databaseType;
 		} catch (HibernateException e) {
 			log.error("Could not determine database type", e);
-		} catch (SQLException e) {
-			log.error("Could not determine database type", e);
-		}
+		} 
 		return "unknown";
 	}
 
