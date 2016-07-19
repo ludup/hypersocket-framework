@@ -25,7 +25,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -97,7 +97,7 @@ public class QuartzSpringConfiguration {
 	@Qualifier("quartzProperties")
 	public Properties quartzProperties() {
 		PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
-		propertiesFactoryBean.setLocation(new FileSystemResource(userDir + "/conf/quartz.properties"));
+		propertiesFactoryBean.setLocation(new ClassPathResource("/conf/quartz.properties"));
 		Properties properties = null;
 		try {
 			propertiesFactoryBean.afterPropertiesSet();
@@ -136,7 +136,7 @@ public class QuartzSpringConfiguration {
 			if(executeScript){
 				statement = connection.createStatement();
 				
-				File file = new File(userDir + getDatabaseFile(databaseProductName));
+				File file = new ClassPathResource(getDatabaseFile(databaseProductName)).getFile();
 				log.info(String.format("Reading sql file from location %s", file.getAbsolutePath()));
 				
 				LineIterator iterator = FileUtils.lineIterator(file, "UTF-8");
@@ -148,7 +148,9 @@ public class QuartzSpringConfiguration {
 				connection.commit();
 			}
 		}catch(BatchUpdateException e) {
-			connection.rollback();
+			if(connection != null){
+				connection.rollback();
+			}
 	        log.error(String.format("Quartz script import failed SQLException: %s SQLState: %s Message: %s Vendor error code: %s", e.getMessage()
 	        		, e.getSQLState(), e.getMessage(), e.getErrorCode()), e);
 	        throw new IllegalStateException(e);
