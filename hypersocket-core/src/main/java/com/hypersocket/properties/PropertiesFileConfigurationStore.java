@@ -56,7 +56,7 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 	}
 
 	
-	private void saveProperties() throws IOException {
+	protected void saveProperties() throws IOException {
 		
 		FileOutputStream out = new FileOutputStream(propertiesFile);
 		
