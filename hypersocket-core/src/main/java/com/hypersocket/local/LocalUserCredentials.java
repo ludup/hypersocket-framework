@@ -97,7 +97,7 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 	}
 	
 	protected void doHashCodeOnKeys(HashCodeBuilder builder) {
-		builder.append(user.getId()==null ? -1 : user.getId());
+		builder.append(user==null || user.getId()==null ? -1 : user.getId());
 	}
 	
 	protected void doEqualsOnKeys(EqualsBuilder builder, Object obj) {

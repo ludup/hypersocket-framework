@@ -1,7 +1,6 @@
 package com.hypersocket.realm.json;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,20 +11,19 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.hypersocket.account.linking.AccountLinkingService;
+import com.hypersocket.account.linking.AccountLinkingServiceImpl;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.i18n.I18N;
-import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -38,7 +36,6 @@ import com.hypersocket.realm.PrincipalSuspensionService;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.realm.UserVariableReplacement;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceException;
@@ -56,6 +53,9 @@ public class OwnerRealmController extends ResourceController {
 
 	@Autowired
 	UserVariableReplacement userVariableReplacement;
+	
+	@Autowired
+	AccountLinkingService linkingService; 
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "ownerRealm/{id}/groups/list", method = RequestMethod.GET, produces = { "application/json" })
@@ -740,6 +740,75 @@ public class OwnerRealmController extends ResourceController {
 							user.getId() != null ? "info.user.updated"
 									: "info.user.created", principal
 									.getPrincipalName()));
+
+		} catch (ResourceException e) {
+			return new ResourceStatus<Principal>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "ownerRealm/{id}/linkAccount/{secondary}/{primary}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Principal> linkAccount(
+			HttpServletRequest request, HttpServletResponse response,
+			@PathVariable Long id,
+			@PathVariable Long secondary,
+			@PathVariable Long primary) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+			Realm realm = realmService.getRealmById(id);
+			
+			Principal primaryPrincipal = realmService.getPrincipalById(getCurrentRealm(), primary, PrincipalType.USER);
+			Principal secondaryPrincipal = realmService.getPrincipalById(realm, secondary, PrincipalType.USER);
+			
+			linkingService.linkAccounts(primaryPrincipal, secondaryPrincipal);
+			
+			return new ResourceStatus<Principal>(secondaryPrincipal,
+					I18N.getResource(sessionUtils.getLocale(request),
+							AccountLinkingServiceImpl.RESOURCE_BUNDLE,
+							"info.linkedAccount", secondaryPrincipal.getPrincipalName(),
+							primaryPrincipal.getPrincipalName()));
+
+		} catch (ResourceException e) {
+			return new ResourceStatus<Principal>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "ownerRealm/{id}/unlinkAccount/{secondary}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Principal> unlinkAccount(
+			HttpServletRequest request, HttpServletResponse response,
+			@PathVariable Long id,
+			@PathVariable Long secondary) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+			Realm realm = realmService.getRealmById(id);
+			
+			Principal secondaryPrincipal = realmService.getPrincipalById(realm, secondary, PrincipalType.USER);
+			Principal primaryPrincipal = secondaryPrincipal.getParentPrincipal();
+			
+			linkingService.unlinkAccounts(primaryPrincipal, secondaryPrincipal);
+			
+			return new ResourceStatus<Principal>(secondaryPrincipal,
+					I18N.getResource(sessionUtils.getLocale(request),
+							AccountLinkingServiceImpl.RESOURCE_BUNDLE,
+							"info.unlinkedAccount", secondaryPrincipal.getPrincipalName(),
+							primaryPrincipal.getPrincipalName()));
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<Principal>(false, e.getMessage());
