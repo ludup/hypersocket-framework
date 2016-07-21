@@ -11,7 +11,8 @@ import javax.cache.Caching;
 import javax.cache.spi.CachingProvider;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.cache.RegionFactory;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.hibernate.cache.spi.RegionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,14 +58,18 @@ public class HazelcastSpringConfiguration {
     }
 	
 	
-	@Bean(destroyMethod = "shutdown")
+	@Bean(name="hazelcastInstance", destroyMethod = "shutdown")
     HazelcastInstance hazelcast(Config config) {
         return Hazelcast.newHazelcastInstance(config);
     }
  
     @Bean
-    NetworkConfig networkConfig(JoinConfig joinConfig) {
+    NetworkConfig networkConfig(JoinConfig joinConfig, @Qualifier("hazelcastProperties") Properties hazelcastProperties) {
         NetworkConfig networkConfig = new NetworkConfig();
+        String port = hazelcastProperties.getProperty("ha.hazelcast.port");
+    	if(StringUtils.isNotEmpty(port) && NumberUtils.isNumber(port)){
+    		networkConfig.setPort(Integer.parseInt(port));
+    	}
         networkConfig.setJoin(joinConfig);
         networkConfig.setPortAutoIncrement(true);
         networkConfig.setReuseAddress(true);
