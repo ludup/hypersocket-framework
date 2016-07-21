@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.SpringVersion;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -158,7 +159,7 @@ public class Main {
 	protected void createApplicationContext() {
 
 		if (log.isInfoEnabled()) {
-			log.info("Creating spring application context");
+			log.info(String.format("Creating spring application context with version %s", SpringVersion.getVersion()));
 		}
 
 		String[] profiles = ProfileNameFinder.findProfiles();

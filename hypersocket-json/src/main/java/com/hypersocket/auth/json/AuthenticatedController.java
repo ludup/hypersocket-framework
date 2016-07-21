@@ -160,7 +160,7 @@ public class AuthenticatedController {
 	protected void setupAnonymousContext(String remoteAddress,
 			String serverName, 
 			String userAgent, 
-			Map<String, String> parameters)
+			Map<String, String[]> parameters)
 			throws AccessDeniedException {
 		
 		Realm realm = realmService.getRealmByHost(serverName);
