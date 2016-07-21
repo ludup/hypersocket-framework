@@ -39,7 +39,7 @@
 	</bean>
 	
 	<bean id="transactionManager"
-		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		class="org.springframework.orm.hibernate5.HibernateTransactionManager">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory" />
 		</property>
@@ -49,7 +49,7 @@
 		<property name="dataSource">
 			<ref bean="dataSource" />
 		</property>
-		<property name="cacheRegionFactory" ref="regionFactory" />
+		<property name="regionFactory" ref="regionFactory" />
 		<property name="packagesToScan" value="com.hypersocket.**" />
 		<property name="hibernateProperties">
 			<props>
@@ -65,6 +65,9 @@
 				<prop key="hibernate.cache.use_minimal_puts">true</prop>
 				<prop key="hibernate.cache.use_second_level_cache">true</prop>
 				<prop key="hibernate.cache.default_cache_concurrency_strategy">read-write</prop>
+				<!-- 
+					<prop key="hibernate.cache.region.factory_class">THIS REQUIRED PROPERTY FOR CACHING IS CONFIGURED IN HypersocketAnnotationSessionFactoryBean</prop> 
+				-->
 	
 			</props>
 		</property>
