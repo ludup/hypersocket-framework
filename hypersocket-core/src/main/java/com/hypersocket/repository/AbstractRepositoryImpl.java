@@ -31,6 +31,7 @@ import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 	static Logger log = LoggerFactory.getLogger(AbstractRepositoryImpl.class);
 
+	private HibernateTemplate hibernateTemplate;
 	protected SessionFactory sessionFactory;
 
 	private boolean requiresDemoWrite = false;
@@ -57,7 +59,8 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 	@Autowired
 	public void setSessionFactory(SessionFactory sessionFactory) {
-		this.sessionFactory = sessionFactory;
+		hibernateTemplate = new HibernateTemplate(this.sessionFactory = sessionFactory);
+		hibernateTemplate.setCacheQueries(true);
 	}
 
 	private void checkDemoMode() {
@@ -74,9 +77,9 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		entity.setLastModified(new Date());
 
 		if (entity.getId() != null) {
-			sessionFactory.getCurrentSession().merge(entity);
+			hibernateTemplate.merge(entity);
 		} else {
-			sessionFactory.getCurrentSession().saveOrUpdate(entity);
+			hibernateTemplate.saveOrUpdate(entity);
 		}
 	}
 
@@ -89,14 +92,14 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			((AbstractEntity<?>)entity).setLastModified(new Date());
 		}
 		if (!isNew) {
-			sessionFactory.getCurrentSession().merge(entity);
+			hibernateTemplate.merge(entity);
 		} else {
-			sessionFactory.getCurrentSession().saveOrUpdate(entity);
+			hibernateTemplate.saveOrUpdate(entity);
 		}
 	}
 
 	protected <T> T load(Class<T> entityClass, Long id) {
-		return sessionFactory.getCurrentSession().load(entityClass, id);
+		return hibernateTemplate.load(entityClass, id);
 	}
 
 	protected Query createQuery(String hql, boolean isWritable) {
@@ -109,20 +112,20 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 	@Transactional(readOnly = true)
 	public void refresh(Object entity) {
-		sessionFactory.getCurrentSession().refresh(entity);
+		hibernateTemplate.refresh(entity);
 		
 	}
 
 	@Transactional
 	@Override
 	public void evict(Object entity) {
-		sessionFactory.getCurrentSession().evict(entity);
+		hibernateTemplate.evict(entity);
 	}
 	
 	@Transactional
 	public void flush() {
-		sessionFactory.getCurrentSession().flush();
-		sessionFactory.getCurrentSession().clear();
+		hibernateTemplate.flush();
+		hibernateTemplate.clear();
 	}
 	
 	@Transactional
@@ -130,7 +133,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 		checkDemoMode();
 
-		sessionFactory.getCurrentSession().delete(entity);
+		hibernateTemplate.delete(entity);
 	}
 
 	@SuppressWarnings("unchecked")
