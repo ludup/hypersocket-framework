@@ -6,11 +6,11 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
-           http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+           http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
            http://www.springframework.org/schema/context
-           http://www.springframework.org/schema/context/spring-context-3.1.xsd
+           http://www.springframework.org/schema/context/spring-context-4.3.xsd
            http://www.springframework.org/schema/tx
-           http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
+           http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
 
 	<bean id="propertyConfigurer"
 		class="com.hypersocket.util.OverridePropertyPlaceholderConfigurer">
@@ -59,6 +59,9 @@
 				<prop key="hibernate.connection.useUnicode">true</prop>
 				<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
 				<prop key="hibernate.connection.charSet">UTF-8</prop>
+				
+				<!-- https://hibernate.atlassian.net/browse/HHH-9106 -->
+				<prop key="hibernate.event.merge.entity_copy_observer">allow</prop>
 	
 				<!-- Hibernate 2nd Level Configuration -->
 				<prop key="hibernate.cache.use_query_cache">true</prop>
