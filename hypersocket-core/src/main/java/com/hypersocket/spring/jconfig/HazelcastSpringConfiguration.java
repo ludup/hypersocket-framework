@@ -66,10 +66,17 @@ public class HazelcastSpringConfiguration {
     @Bean
     NetworkConfig networkConfig(JoinConfig joinConfig, @Qualifier("hazelcastProperties") Properties hazelcastProperties) {
         NetworkConfig networkConfig = new NetworkConfig();
+        
         String port = hazelcastProperties.getProperty("ha.hazelcast.port");
     	if(StringUtils.isNotEmpty(port) && NumberUtils.isNumber(port)){
     		networkConfig.setPort(Integer.parseInt(port));
     	}
+    	
+    	String outBoundPortDef = hazelcastProperties.getProperty("ha.hazelcast.outbound.port.range");
+    	if(StringUtils.isNotEmpty(outBoundPortDef)){
+    		networkConfig.addOutboundPortDefinition(outBoundPortDef);
+    	}
+    	
         networkConfig.setJoin(joinConfig);
         networkConfig.setPortAutoIncrement(true);
         networkConfig.setReuseAddress(true);
