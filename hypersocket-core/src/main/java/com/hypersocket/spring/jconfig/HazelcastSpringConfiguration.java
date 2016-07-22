@@ -11,6 +11,7 @@ import javax.cache.Caching;
 import javax.cache.spi.CachingProvider;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.hibernate.cache.RegionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,9 +63,20 @@ public class HazelcastSpringConfiguration {
         return Hazelcast.newHazelcastInstance(config);
     }
  
-    @Bean
-    NetworkConfig networkConfig(JoinConfig joinConfig) {
+	@Bean
+    NetworkConfig networkConfig(JoinConfig joinConfig, @Qualifier("hazelcastProperties") Properties hazelcastProperties) {
         NetworkConfig networkConfig = new NetworkConfig();
+        
+        String port = hazelcastProperties.getProperty("ha.hazelcast.port");
+    	if(StringUtils.isNotEmpty(port) && NumberUtils.isNumber(port)){
+    		networkConfig.setPort(Integer.parseInt(port));
+    	}
+    	
+    	String outBoundPortDef = hazelcastProperties.getProperty("ha.hazelcast.outbound.port.range");
+    	if(StringUtils.isNotEmpty(outBoundPortDef)){
+    		networkConfig.addOutboundPortDefinition(outBoundPortDef);
+    	}
+    	
         networkConfig.setJoin(joinConfig);
         networkConfig.setPortAutoIncrement(true);
         networkConfig.setReuseAddress(true);
