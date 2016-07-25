@@ -43,6 +43,13 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 		}
 		
 		this.propertiesFile = new File(filename.item(0).getTextContent().replace("${hypersocket.conf}", System.getProperty("hypersocket.conf", "conf")));
+		
+		String createAttribute = element.getAttribute("create");
+		if("true".equals(createAttribute) && !this.propertiesFile.exists()){
+			if(!this.propertiesFile.createNewFile()){
+				log.error(String.format("Problem in creating file %s", this.propertiesFile.getAbsolutePath()));
+			}
+		}
 
 		properties = new Properties();
 
