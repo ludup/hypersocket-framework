@@ -165,8 +165,8 @@ public class AuthenticatedController {
 		
 		Realm realm = realmService.getRealmByHost(serverName);
 		
-		if(log.isInfoEnabled()) {
-			log.info("Logging anonymous onto the " + realm.getName() + " realm [" + serverName + "]");
+		if(log.isDebugEnabled()) {
+			log.debug("Logging anonymous onto the " + realm.getName() + " realm [" + serverName + "]");
 		}
 		
 		setupAuthenticatedContext(sessionService.getSystemSession(), Locale.getDefault(), realm);
