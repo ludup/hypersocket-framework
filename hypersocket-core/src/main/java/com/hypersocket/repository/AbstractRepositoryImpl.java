@@ -398,6 +398,14 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	@Transactional(readOnly = true)
 	public <T> List<T> search(Class<T> clz, String searchColumn, String searchPattern, final int start,
 			final int length, final ColumnSort[] sorting, CriteriaConfiguration... configs) {
+		
+		if(length < 0) {
+			throw new IllegalArgumentException("Search length cannot be negative");
+		} 
+		if(length == 0) {
+			return new ArrayList<T>();
+		}
+		
 		Criteria criteria = createCriteria(clz);
 		
 		Map<String,Criteria> assosications = new HashMap<String,Criteria>();
