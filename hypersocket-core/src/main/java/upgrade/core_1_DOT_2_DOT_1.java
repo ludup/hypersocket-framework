@@ -22,7 +22,9 @@ import com.hypersocket.local.LocalUserRepository;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionReaperJob;
+import com.hypersocket.session.SessionService;
 
 
 public class core_1_DOT_2_DOT_1 implements Runnable {
@@ -37,6 +39,9 @@ public class core_1_DOT_2_DOT_1 implements Runnable {
 	
 	@Autowired
 	SchedulerService schedulerService;
+	
+	@Autowired
+	SessionService sessionService;
 	
 	@SuppressWarnings("unchecked")
 	@Override
@@ -64,13 +69,15 @@ public class core_1_DOT_2_DOT_1 implements Runnable {
 		if (log.isInfoEnabled()) {
 			log.info("Scheduling session reaper job");
 		}
-
+		
 		try {
 			if(schedulerService.jobDoesNotExists("firstRunSessionReaperJob")){
 				JobDataMap data = new JobDataMap();
 				data.put("jobName", "firstRunSessionReaperJob");
 				data.put("firstRun", true);
 				
+				Session session = sessionService.getSystemSession();
+				sessionService.setCurrentSession(session, session.getCurrentRealm(), session.getCurrentPrincipal(), null);
 				schedulerService.scheduleNow(SessionReaperJob.class, "firstRunSessionReaperJob", data);
 			}
 
