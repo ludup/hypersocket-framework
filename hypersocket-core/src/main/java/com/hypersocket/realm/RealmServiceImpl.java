@@ -344,8 +344,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					if (realmHost != null && !"".equals(realmHost)) {
 						if (realmHost.equalsIgnoreCase(host)) {
 							realmCache.put(new Element(host, r));
-							if(log.isInfoEnabled()) {
-								log.info(String.format("Returning resolved value for host %s realm %s", host, r.getName()));
+							if(log.isDebugEnabled()) {
+								log.debug(String.format("Returning resolved value for host %s realm %s", host, r.getName()));
 							}
 							return r;
 						}
@@ -357,8 +357,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		Realm realm = (Realm) realmCache.get(host).getObjectValue();
 		
-		if(log.isInfoEnabled()) {
-			log.info(String.format("Returning cached value for host %s realm %s", host, realm.getName()));
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("Returning cached value for host %s realm %s", host, realm.getName()));
 		}
 		return realm;
 	}

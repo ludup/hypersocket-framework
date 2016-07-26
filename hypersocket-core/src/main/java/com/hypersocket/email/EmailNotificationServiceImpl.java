@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 import org.codemonkey.simplejavamail.Email;
+import org.codemonkey.simplejavamail.EmailAddressValidationCriteria;
 import org.codemonkey.simplejavamail.MailException;
 import org.codemonkey.simplejavamail.Mailer;
 import org.codemonkey.simplejavamail.Recipient;
@@ -105,9 +106,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			email.setTextHTML(html);
 		}
 		
-		if(StringUtils.isNotBlank(text)) {
-			email.setText(text);
-		}
+		email.setText(text);
 		
 		if(attachments!=null) {
 			for(EmailAttachment attachment : attachments) {
@@ -120,7 +119,6 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				configurationService.getValue(realm, SMTP_USERNAME),
 				configurationService.getDecryptedValue(realm, SMTP_PASSWORD),
 				TransportStrategy.values()[configurationService.getIntValue(realm, SMTP_PROTOCOL)]);
-		
 		
 		mail.sendMail(email);
 	}
