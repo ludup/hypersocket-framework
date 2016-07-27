@@ -1,5 +1,7 @@
 package com.hypersocket.transactions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,8 @@ import com.hypersocket.resource.ResourceNotFoundException;
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
+	static Logger log = LoggerFactory.getLogger(TransactionServiceImpl.class);
+	
 	@Autowired
 	@Qualifier("transactionManager")
 	PlatformTransactionManager txManager;
@@ -36,6 +40,7 @@ public class TransactionServiceImpl implements TransactionService {
 			eventService.publishDelayedEvents();
 			return result;
 		} catch (Throwable e) {
+			log.error("Error in transaction", e);
 			eventService.rollbackDelayedEvents(true);
 			if(transaction instanceof TransactionCallbackWithError) {
 				((TransactionCallbackWithError<T>)transaction).doTransacationError(e);
@@ -49,6 +54,7 @@ public class TransactionServiceImpl implements TransactionService {
 			} else if(e.getCause() instanceof AccessDeniedException) {
 				throw (AccessDeniedException) e.getCause();
 			}
+			
 			throw new ResourceException(AuthenticationService.RESOURCE_BUNDLE, "error.transactionFailed", e.getMessage());
 		} finally {
 			eventService.delayEvents(false);
