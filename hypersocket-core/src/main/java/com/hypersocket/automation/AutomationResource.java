@@ -101,8 +101,8 @@ public class AutomationResource extends Task {
 		return repeatType;
 	}
 	
-	public void setRepeatType(String repeatType) {
-		this.repeatType = AutomationRepeatType.valueOf(repeatType);
+	public void setRepeatType(AutomationRepeatType repeatType) {
+		this.repeatType = repeatType;
 	}
 	
 	public Integer getRepeatValue() {

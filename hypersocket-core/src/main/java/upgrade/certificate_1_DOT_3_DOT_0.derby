@@ -1,0 +1,3 @@
+ALTER TABLE ssl_certificates MODIFY private_key LONGTEXT NOT NULL;
+ALTER TABLE ssl_certificates MODIFY certificate LONGTEXT;
+ALTER TABLE ssl_certificates MODIFY bundle LONGTEXT;

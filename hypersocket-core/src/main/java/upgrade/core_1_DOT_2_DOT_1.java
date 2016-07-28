@@ -10,8 +10,6 @@ package upgrade;
 
 import java.util.Collection;
 
-import org.quartz.JobDataMap;
-import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +19,6 @@ import com.hypersocket.local.LocalUser;
 import com.hypersocket.local.LocalUserRepository;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
-import com.hypersocket.scheduler.SchedulerService;
-import com.hypersocket.session.SessionReaperJob;
 
 
 public class core_1_DOT_2_DOT_1 implements Runnable {
@@ -35,9 +31,7 @@ public class core_1_DOT_2_DOT_1 implements Runnable {
 	@Autowired
 	RealmRepository realmRepository;
 	
-	@Autowired
-	SchedulerService schedulerService;
-	
+		
 	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
@@ -64,19 +58,6 @@ public class core_1_DOT_2_DOT_1 implements Runnable {
 		if (log.isInfoEnabled()) {
 			log.info("Scheduling session reaper job");
 		}
-
-		try {
-			if(schedulerService.jobDoesNotExists("firstRunSessionReaperJob")){
-				JobDataMap data = new JobDataMap();
-				data.put("jobName", "firstRunSessionReaperJob");
-				data.put("firstRun", true);
-				
-				schedulerService.scheduleNow(SessionReaperJob.class, "firstRunSessionReaperJob", data);
-			}
-
-		} catch (SchedulerException e) {
-			log.error("Failed to schedule session reaper job", e);
-		} 
 		
 	}
 
