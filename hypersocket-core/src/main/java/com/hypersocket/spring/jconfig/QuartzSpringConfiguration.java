@@ -1,7 +1,7 @@
 package com.hypersocket.spring.jconfig;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -13,7 +13,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,6 +118,7 @@ public class QuartzSpringConfiguration {
 		Boolean autoCommitStatus = null;
 		Statement statement = null;
 		boolean executeScript = true;
+		InputStream inputStreamOfDatabaseFile = null;
 		try{
 			connection = dataSource.getConnection();
 			String databaseProductName = connection.getMetaData().getDatabaseProductName();
@@ -136,10 +137,11 @@ public class QuartzSpringConfiguration {
 			if(executeScript){
 				statement = connection.createStatement();
 				
-				File file = new ClassPathResource(getDatabaseFile(databaseProductName)).getFile();
-				log.info(String.format("Reading sql file from location %s", file.getAbsolutePath()));
+				String databaseFile = getDatabaseFile(databaseProductName);
+				inputStreamOfDatabaseFile = new ClassPathResource(databaseFile).getInputStream();
+				log.info(String.format("Reading sql file from location %s", databaseFile));
 				
-				LineIterator iterator = FileUtils.lineIterator(file, "UTF-8");
+				LineIterator iterator = IOUtils.lineIterator(inputStreamOfDatabaseFile, "UTF-8");
 				while (iterator.hasNext()) {
 					String sql = (String) iterator.next();
 					statement.addBatch(sql);
@@ -164,6 +166,10 @@ public class QuartzSpringConfiguration {
 					connection.setAutoCommit(autoCommitStatus);
 				}
 				connection.close();
+			}
+			
+			if(inputStreamOfDatabaseFile != null){
+				IOUtils.closeQuietly(inputStreamOfDatabaseFile);
 			}
 		}
 		
