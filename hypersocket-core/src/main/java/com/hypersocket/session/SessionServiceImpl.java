@@ -537,7 +537,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			SessionResourceToken<T> token = (SessionResourceToken<T>) sessionTokens
 					.get(shortCode);
 
-			if (token.getResource().getClass().equals(resourceClz) && isLoggedOn(token.getSession(), true)) {
+			if (resourceClz.isAssignableFrom(token.getResource().getClass()) && isLoggedOn(token.getSession(), true)) {
 				return token.getResource();
 			}
 		}
