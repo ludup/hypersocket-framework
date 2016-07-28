@@ -84,7 +84,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	}
 	
 	protected void saveObject(Object entity) {
-		hibernateTemplate.save(entity);
+		hibernateTemplate.saveOrUpdate(entity);
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
