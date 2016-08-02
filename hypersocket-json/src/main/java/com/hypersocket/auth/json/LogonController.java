@@ -129,6 +129,7 @@ public class LogonController extends AuthenticatedController {
 			Session session;
 
 			String flash = (String) request.getSession().getAttribute("flash");
+			
 			request.getSession().removeAttribute("flash");
 
 			try {
@@ -158,6 +159,12 @@ public class LogonController extends AuthenticatedController {
 				createdState = true;
 			}
 
+			String redirectHome = (String) request.getSession().getAttribute("redirectHome");
+			if(redirectHome!=null) {
+				state.setHomePage(redirectHome);
+				request.getSession().removeAttribute("redirectHome");
+			}
+			
 			boolean success = false;
 			
 			if(request.getParameterMap().size() > 1 || !createdState ||  request.getHeader("Authorization") != null) {
@@ -194,7 +201,7 @@ public class LogonController extends AuthenticatedController {
 				return new AuthenticationRequiredResult(
 						configurationService.getValue(state.getRealm(),
 								"logon.banner"),
-						state.getLastErrorMsg(),
+						flash!=null ? flash : state.getLastErrorMsg(),
 						state.getLastErrorIsResourceKey(),
 						!state.isAuthenticationComplete() ? authenticationService
 								.nextAuthenticationTemplate(state,

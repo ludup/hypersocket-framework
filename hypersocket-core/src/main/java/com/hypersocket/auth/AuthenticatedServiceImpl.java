@@ -10,7 +10,6 @@ package com.hypersocket.auth;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.Stack;
@@ -38,7 +37,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	static ThreadLocal<Boolean> isDelayingEvents = new ThreadLocal<Boolean>();
 	static ThreadLocal<LinkedList<SystemEvent>> delayedEvents = new ThreadLocal<LinkedList<SystemEvent>>();
 	
-	static ThreadLocal<Set<PermissionType>> elevatedPermissions = new ThreadLocal<Set<PermissionType>>();
+	static ThreadLocal<Stack<Set<PermissionType>>> elevatedPermissions = new ThreadLocal<Stack<Set<PermissionType>>>();
 	
 	protected abstract void verifyPermission(Principal principal,
 			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException;
@@ -46,25 +45,30 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	@Override
 	public void elevatePermissions(PermissionType... permissions) {
-		Set<PermissionType> elevated = elevatedPermissions.get();
-		if(elevated==null) {
-			elevated = new HashSet<PermissionType>();
-			elevatedPermissions.set(elevated);
+		if(elevatedPermissions.get()==null) {
+			throw new IllegalStateException("No session in context to elevate permissions on");
 		}
+		Set<PermissionType> elevated = elevatedPermissions.get().peek();
 		elevated.addAll(Arrays.asList(permissions));
 	}
 	
 	@Override
 	public void clearElevatedPermissions() {
-		elevatedPermissions.remove();
+		if(elevatedPermissions.get()==null) {
+			throw new IllegalStateException("No session in context to elevate permissions on");
+		}
+		elevatedPermissions.get().peek().clear();
 	}
 	
 	protected Set<PermissionType> getElevatedPermissions() {
-		return elevatedPermissions.get();
+		if(elevatedPermissions.get()==null) {
+			throw new IllegalStateException("No session in context to elevate permissions on");
+		}
+		return elevatedPermissions.get().peek();
 	}
 	
 	protected boolean hasElevatedPermissions() {
-		return elevatedPermissions.get()!=null;
+		return elevatedPermissions.get()!=null && !elevatedPermissions.get().isEmpty();
 	}
 	
 	@Override
@@ -90,11 +94,13 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 			currentPrincipal.set(new Stack<Principal>());
 			currentRealm.set(new Stack<Realm>());
 			currentLocale.set(new Stack<Locale>());
+			elevatedPermissions.set(new Stack<Set<PermissionType>>());
 		}
 		currentPrincipal.get().push(principal);
 		currentSession.get().push(session);
 		currentRealm.get().push(realm);
 		currentLocale.get().push(locale);
+		elevatedPermissions.get().push(new HashSet<PermissionType>());
 		
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("There are now %d context references", currentSession.get().size()));
@@ -147,7 +153,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 			currentPrincipal.get().pop();
 			currentLocale.get().pop();
 			currentRealm.get().pop();
-			elevatedPermissions.remove();
+			elevatedPermissions.get().pop();
 			if(currentSession.get().size() > 0) {
 				if(log.isDebugEnabled()) {
 					log.debug(String.format("There are %d context references left", currentSession.get().size()));

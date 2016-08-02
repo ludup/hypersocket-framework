@@ -148,7 +148,7 @@ public class ImageConfigurationStore implements ResourcePropertyStore {
 	public String getPropertyValue(AbstractPropertyTemplate template,
 			AbstractResource resource) {
 		
-		String key = resource.getId() + File.separator + template.getResourceKey();
+		String key = (resource == null ? "<null>" : resource.getId()) + File.separator + template.getResourceKey();
 		
 		if(!resourceKeyImages.containsKey(key)) {
 			return null;

@@ -36,7 +36,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	List<Realm> allRealms() throws AccessDeniedException;
 
-	Realm getRealmByName(String realm) throws AccessDeniedException;
+	Realm getRealmByName(String realm);
 
 	Realm getRealmByHost(String host);
 
