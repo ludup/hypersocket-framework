@@ -274,9 +274,11 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			PropertyStore defaultStore = getPropertyStore();
 
 			if (node.hasAttribute("store")) {
-				defaultStore = propertyStoresById.get(node.getAttribute("store"));
-				if (defaultStore == null) {
-					throw new IOException("PropertyStore " + node.getAttribute("store") + " does not exist!");
+				if(!node.getAttribute("store").equals("default")) {
+					defaultStore = propertyStoresById.get(node.getAttribute("store"));
+					if (defaultStore == null) {
+						throw new IOException("PropertyStore " + node.getAttribute("store") + " does not exist!");
+					}
 				}
 			}
 
@@ -303,9 +305,13 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 					PropertyStore store = defaultStore;
 					if (pnode.hasAttribute("store")) {
-						store = propertyStoresById.get(pnode.getAttribute("store"));
-						if (store == null) {
-							throw new IOException("PropertyStore " + pnode.getAttribute("store") + " does not exist!");
+						if(pnode.getAttribute("store").equals("default")) {
+							store = getPropertyStore();
+						} else {
+							store = propertyStoresById.get(pnode.getAttribute("store"));
+							if (store == null) {
+								throw new IOException("PropertyStore " + pnode.getAttribute("store") + " does not exist!");
+							}
 						}
 					}
 

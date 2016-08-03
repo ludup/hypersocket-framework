@@ -3,6 +3,8 @@ package com.hypersocket.properties;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public abstract class AbstractPropertyTemplate {
@@ -157,6 +159,10 @@ public abstract class AbstractPropertyTemplate {
 		} else if (!resourceKey.equals(other.resourceKey))
 			return false;
 		return true;
+	}
+
+	public boolean hasMapping() {
+		return StringUtils.isNotBlank(mapping);
 	}
 	
 	
