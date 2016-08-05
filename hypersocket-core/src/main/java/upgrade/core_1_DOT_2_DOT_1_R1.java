@@ -39,8 +39,6 @@ public class core_1_DOT_2_DOT_1_R1 implements Runnable {
 	@Override
 	public void run() {
 
-		configurationService.setCurrentSession(sessionService.getSystemSession(), Locale.getDefault());
-		
 		try {
 			for(Realm realm : realmRepository.allRealms(LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY)) {
 				String[] editable = configurationService.getValues(realm, "realm.userEditableProperties");
@@ -56,9 +54,7 @@ public class core_1_DOT_2_DOT_1_R1 implements Runnable {
 			}
 		} catch(Throwable t) {
 			log.error("Failed to process user update", t);
-		} finally {
-			configurationService.clearPrincipalContext();
-		}
+		} 
 	}
 
 

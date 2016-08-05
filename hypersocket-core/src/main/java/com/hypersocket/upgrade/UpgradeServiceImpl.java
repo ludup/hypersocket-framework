@@ -44,8 +44,9 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 
 import com.hypersocket.Version;
+import com.hypersocket.session.SessionService;
 
-public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAware {
+public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAware, Runnable {
 
 	private final static Logger log = LoggerFactory.getLogger(UpgradeServiceImpl.class);
 
@@ -53,6 +54,9 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	private final ScriptEngineManager manager;
 	private ApplicationContext springContext;
 	private SessionFactory sessionFactory;
+	
+	@Autowired
+	SessionService sessionService; 
 	
 	List<UpgradeServiceListener> listeners = new ArrayList<UpgradeServiceListener>();
 	
@@ -127,31 +131,40 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	}
 
 	public void upgrade() throws IOException, ScriptException {
+		sessionService.executeInSystemContext(this);		
+	}
+	
+	public void run() {
 		
-		if(log.isInfoEnabled()) {
-			log.info("Starting upgrade");
-		}
-		fresh = sessionFactory.getCurrentSession()
-				.createCriteria(Upgrade.class).list().size() == 0;
-		
-		if(log.isInfoEnabled()) {
-			if(fresh) {
-				log.info("Database is fresh");
-			} else {
-				log.info("Upgrading existing database");
+		try {
+			if(log.isInfoEnabled()) {
+				log.info("Starting upgrade");
 			}
-		}
-		List<UpgradeOp> ops = buildUpgradeOps();
-		Map<String, Object> beans = new HashMap<String, Object>();
-		
-		// Do all the SQL upgrades first
-		doOps(ops, beans, "sql", getDatabaseType());
+			
+			fresh = sessionFactory.getCurrentSession()
+					.createCriteria(Upgrade.class).list().size() == 0;
+			
+			if(log.isInfoEnabled()) {
+				if(fresh) {
+					log.info("Database is fresh");
+				} else {
+					log.info("Upgrading existing database");
+				}
+			}
+			List<UpgradeOp> ops = buildUpgradeOps();
+			Map<String, Object> beans = new HashMap<String, Object>();
+			
+			// Do all the SQL upgrades first
+			doOps(ops, beans, "sql", getDatabaseType());
 
-		doOps(ops, beans, "js", "class");
-		
-		for(UpgradeServiceListener listener : listeners) {
-			listener.onUpgradeComplete();
-		}
+			doOps(ops, beans, "js", "class");
+			
+			for(UpgradeServiceListener listener : listeners) {
+				listener.onUpgradeComplete();
+			}
+		} catch (Throwable e) {
+			throw new IllegalStateException(e);
+		} 
 	}
 
 	protected void doOps(List<UpgradeOp> ops, Map<String, Object> beans, String... languages) throws ScriptException, IOException {

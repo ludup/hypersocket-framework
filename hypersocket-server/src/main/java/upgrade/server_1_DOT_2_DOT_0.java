@@ -39,9 +39,7 @@ public class server_1_DOT_2_DOT_0 implements Runnable {
 	@Override
 	public void run() {
 
-		certificateService.setCurrentSession(sessionService.getSystemSession(), Locale.getDefault());
 		try {
-			
 			certificateService.getDefaultCertificate();
 			
 			HTTPInterfaceResource http = new HTTPInterfaceResource();
@@ -66,8 +64,6 @@ public class server_1_DOT_2_DOT_0 implements Runnable {
 			repository.saveResource(https, new HashMap<String,String>());
 		} catch (Throwable e) {
 			log.error("Error converting to new HTTP interface settings. Use emergency port access to re-configure your server.", e);
-		} finally {
-			certificateService.clearPrincipalContext();
 		}
 		
 	}

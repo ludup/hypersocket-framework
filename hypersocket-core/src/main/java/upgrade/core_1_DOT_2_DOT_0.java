@@ -26,7 +26,6 @@ public class core_1_DOT_2_DOT_0 implements Runnable {
 	public void run() {
 
 		try {
-			
 			updateSessionStats();
 		} catch(Throwable t) {
 			throw new RuntimeException(t);
