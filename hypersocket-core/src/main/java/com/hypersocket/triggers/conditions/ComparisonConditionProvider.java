@@ -31,6 +31,8 @@ public class ComparisonConditionProvider implements TriggerConditionProvider {
 		supportedConditions.put("condition.notEquals", new NotEqualsCondition());
 		supportedConditions.put("condition.startsWith", new StartsWithCondition());
 		supportedConditions.put("condition.endsWith", new EndsWithCondition());
+		supportedConditions.put("condition.doesNotStartWith", new DoesNotStartsWithCondition());
+		supportedConditions.put("condition.doesNotEndWith", new DoesNotEndsWithCondition());
 		supportedConditions.put("condition.contains", new ContainsCondition());
 		supportedConditions.put("condition.isEmpty", new IsEmptyCondition());
 		supportedConditions.put("condition.isNotEmpty", new IsNotEmptyCondition());

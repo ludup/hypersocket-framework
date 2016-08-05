@@ -280,7 +280,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Realm getRealmByName(String realm) throws AccessDeniedException {
+	public Realm getRealmByName(String realm) {
 		return realmRepository.getRealmByName(realm);
 	}
 

@@ -79,7 +79,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 			return template.getDefaultValue();
 		}
 		Throwable t;
-		String methodName = "get" + StringUtils.capitalize(template.getResourceKey());
+		String methodName = "get" + StringUtils.capitalize(template.hasMapping() ? template.getMapping() : template.getResourceKey());
 		try {
 			
 			Method m = resource.getClass().getMethod(methodName, (Class<?>[])null);
@@ -146,7 +146,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		}
 		Method[] methods = resource.getClass().getMethods();
 		
-		String methodName = "set" + StringUtils.capitalize(template.getResourceKey());
+		String methodName = "set" + StringUtils.capitalize(template.hasMapping() ? template.getMapping() : template.getResourceKey());
 		for(Method m : methods) {
 			if(m.getName().equals(methodName)) {
 				Class<?> clz = m.getParameterTypes()[0];

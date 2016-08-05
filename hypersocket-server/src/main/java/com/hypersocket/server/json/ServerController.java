@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -126,6 +127,23 @@ public class ServerController extends AuthenticatedController {
 		List<MultiselectElement> protocols = new ArrayList<MultiselectElement>();
 
 		for (String proto : server.getSSLProtocols()) {
+			protocols.add(new MultiselectElement(proto, proto));
+		}
+		return new ResourceList<MultiselectElement>(protocols);
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "server/timezones", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<MultiselectElement> getTimezones(
+			HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException {
+
+
+		List<MultiselectElement> protocols = new ArrayList<MultiselectElement>();
+
+		for (String proto : TimeZone.getAvailableIDs()) {
 			protocols.add(new MultiselectElement(proto, proto));
 		}
 		return new ResourceList<MultiselectElement>(protocols);

@@ -1,6 +1,6 @@
 package com.hypersocket.tables.json;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,8 +75,8 @@ public class BootstrapTableController<T> extends AuthenticatedController {
 		if(processor instanceof BootstrapTableResourceProcessor) {
 			try {
 				result.setResource(((BootstrapTableResourceProcessor<T>)processor).getResource());
-			} catch (FileNotFoundException e) {
-				throw new IllegalStateException(e);
+			} catch (IOException e) {
+				throw new IllegalStateException(e.getMessage(), e);
 			}
 		}
 		return result;

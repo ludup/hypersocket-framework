@@ -137,7 +137,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 		checkDemoMode();
 
-		hibernateTemplate.delete(entity);
+		hibernateTemplate.delete(hibernateTemplate.merge(entity));
 	}
 
 	@SuppressWarnings("unchecked")
