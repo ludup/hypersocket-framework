@@ -12,13 +12,14 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 
-public abstract class PermissionsAwareJob extends TransactionalJob {
+public abstract class PermissionsAwareJob extends TransactionalJob implements Runnable {
 
 	static Logger log = LoggerFactory.getLogger(PermissionsAwareJob.class);
 
@@ -40,24 +41,38 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 	@Autowired
 	SessionService sessionService;
 	
+	JobExecutionContext context;
+	
 	@Override
 	public void onExecute(JobExecutionContext context) {
-
+		this.context = context;
+		sessionService.executeInSystemContext(this);
+	}
+	
+	public void run() {
 		Realm realm = realmService.getSystemRealm();
 		Principal principal = realmService.getSystemPrincipal();
 		Locale locale = Locale.getDefault();
-				
+		Session session = sessionService.getSystemSession();
+		
 		try {
 
 			if (context.getTrigger().getJobDataMap() instanceof PermissionsAwareJobData) {
 				PermissionsAwareJobData data = (PermissionsAwareJobData) context
 						.getTrigger().getJobDataMap();
-				realm = realmRepository.getRealmById((Long) data.get("realm"));
-				if (data.getCurrentPrincipal() != null) {
-					principal = data.getCurrentPrincipal();
+				if(data.containsKey("session")) {
+					session = sessionService.getSession(data.getString("session"));
+					realm = session.getCurrentRealm();
+					principal = session.getCurrentPrincipal();
 				}
-				if(data.getLocale() != null) {
-					locale = data.getLocale();
+				if(data.containsKey("realm")) {
+					realm = realmRepository.getRealmById(data.getLong("realm"));
+				}
+				if(data.containsKey("principal")) {
+					principal = realmService.getPrincipalById(realm, data.getLong("principal"), PrincipalType.USER);
+				}
+				if(data.containsKey("locale")) {
+					locale = Locale.forLanguageTag(data.getString("locale"));
 				}
 			}
 			
@@ -66,7 +81,7 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 						+ realm.getName() + "/" + principal.getName());
 			}
 
-			authenticationService.setCurrentSession(sessionService.getSystemSession(), realm, principal, locale);
+			authenticationService.setCurrentSession(session, realm, principal, locale);
 
 			try {
 				executeJob(context);

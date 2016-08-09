@@ -43,6 +43,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 
 import com.hypersocket.Version;
+import com.hypersocket.session.SessionService;
 
 public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAware {
 
@@ -54,6 +55,9 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	private SessionFactory sessionFactory;
 	
 	List<UpgradeServiceListener> listeners = new ArrayList<UpgradeServiceListener>();
+	
+	@Autowired
+	SessionService sessionService; 
 	
 	String databaseType = null;
 	boolean fresh = true;
@@ -120,30 +124,36 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	}
 
 	public void upgrade() throws IOException, ScriptException {
-		
-		if(log.isInfoEnabled()) {
-			log.info("Starting upgrade");
-		}
-		fresh = sessionFactory.getCurrentSession()
-				.createCriteria(Upgrade.class).list().size() == 0;
-		
-		if(log.isInfoEnabled()) {
-			if(fresh) {
-				log.info("Database is fresh");
-			} else {
-				log.info("Upgrading existing database");
-			}
-		}
-		List<UpgradeOp> ops = buildUpgradeOps();
-		Map<String, Object> beans = new HashMap<String, Object>();
-		
-		// Do all the SQL upgrades first
-		doOps(ops, beans, "sql", getDatabaseType());
 
-		doOps(ops, beans, "js", "class");
-		
-		for(UpgradeServiceListener listener : listeners) {
-			listener.onUpgradeComplete();
+		try {
+			if(log.isInfoEnabled()) {
+				log.info("Starting upgrade");
+			}
+			fresh = sessionFactory.getCurrentSession()
+					.createCriteria(Upgrade.class).list().size() == 0;
+			
+			if(log.isInfoEnabled()) {
+				if(fresh) {
+					log.info("Database is fresh");
+				} else {
+					log.info("Upgrading existing database");
+				}
+			}
+			
+			
+			List<UpgradeOp> ops = buildUpgradeOps();
+			Map<String, Object> beans = new HashMap<String, Object>();
+			
+			// Do all the SQL upgrades first
+			doOps(ops, beans, "sql", getDatabaseType());
+
+			doOps(ops, beans, "js", "class");
+			
+			for(UpgradeServiceListener listener : listeners) {
+				listener.onUpgradeComplete();
+			}
+		} catch (Throwable e) {
+			throw new IllegalStateException(e);
 		}
 	}
 

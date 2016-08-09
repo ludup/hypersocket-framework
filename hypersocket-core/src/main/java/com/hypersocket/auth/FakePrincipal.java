@@ -1,5 +1,7 @@
 package com.hypersocket.auth;
 
+import com.hypersocket.local.LocalRealmProvider;
+import com.hypersocket.local.LocalRealmProviderImpl;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 
@@ -15,6 +17,10 @@ public class FakePrincipal extends Principal {
 		this.setName(username);
 	}
 	
+	public String getIcon() {
+		return "fa-database";
+	}
+	
 	@Override
 	public PrincipalType getType() {
 		return PrincipalType.USER;
@@ -22,5 +28,9 @@ public class FakePrincipal extends Principal {
 	
 	public String getPrincipalDescription() {
 		return getName();
+	}
+	
+	public String getRealmModule() {
+		return LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY;
 	}
 }

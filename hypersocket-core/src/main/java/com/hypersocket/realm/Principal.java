@@ -10,6 +10,7 @@ package com.hypersocket.realm;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -44,12 +45,25 @@ public abstract class Principal extends RealmResource {
 	@OneToMany(fetch = FetchType.LAZY, mappedBy="principal")
 	Set<PrincipalSuspension> suspensions;
 	
+	@Column(name="principal_type")
+	PrincipalType principalType;
+	
 	@JsonIgnore
 	public Realm getRealm() {
 		return super.getRealm();
 	}
 
 	public abstract PrincipalType getType();
+
+	public abstract String getIcon();
+	
+	public final PrincipalType getPrincipalType() {
+		return principalType;
+	}
+	
+	public void setPrincipalType(PrincipalType type) {
+		this.principalType = type;
+	}
 
 	public abstract String getPrincipalDescription();
 	
@@ -73,4 +87,6 @@ public abstract class Principal extends RealmResource {
 		builder.append(getRealm(), r.getRealm());
 		builder.append(getName(), r.getName());
 	}
+	
+	public abstract String getRealmModule();
 }

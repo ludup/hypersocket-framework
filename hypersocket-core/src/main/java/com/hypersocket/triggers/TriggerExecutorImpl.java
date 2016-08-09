@@ -101,7 +101,6 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 			data.put("event", sourceEvent);
 			data.put("sourceEvent", sourceEvent);
 			data.put("trigger", trigger);
-			data.put("realm", sourceEvent.getCurrentRealm());
 			
 			try {
 				schedulerService.scheduleNow(TriggerJob.class, data);

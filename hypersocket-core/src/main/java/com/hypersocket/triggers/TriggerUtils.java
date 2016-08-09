@@ -1,6 +1,5 @@
 package com.hypersocket.triggers;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +22,7 @@ public class TriggerUtils {
 	@SuppressWarnings("unchecked")
 	public void createTrigger(Realm realm, 
 			String name, String eventResourceKey, boolean allRealms, 
-			TriggerResultType onResult, String taskResourceKey, Map<String,String> taskProperties) {
+			TriggerResultType onResult, String taskResourceKey, Map<String,String> taskProperties, TriggerCondition... conditions ) {
 		TriggerResource trigger = new TriggerResource();
 
 		trigger.setRealm(realm);
@@ -33,7 +32,12 @@ public class TriggerUtils {
 		trigger.setAllRealms(allRealms);
 		trigger.setResult(onResult);
 		trigger.setResourceKey(taskResourceKey);
-
+	
+		for(TriggerCondition condition : conditions) {
+			condition.setTrigger(trigger);
+			trigger.getConditions().add(condition);
+		}
+		
 		triggerRepository.saveResource(trigger, taskProperties,
 				new TransactionAdapter<TriggerResource>() {
 					@Override

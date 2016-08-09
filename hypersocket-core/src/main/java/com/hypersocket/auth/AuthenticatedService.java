@@ -41,6 +41,4 @@ public interface AuthenticatedService {
 	void setCurrentSession(Session session, Realm realm, Locale locale);
 
 	void setCurrentSession(Session session, Realm realm, Principal principal, Locale locale);
-
-//	void setCurrentPrincipal(Principal principal, Locale locale, Realm realm);
 }

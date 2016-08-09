@@ -63,6 +63,13 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	@Column(name="mobile")
 	String mobile;
 	
+	@Column(name="realm_category")
+	String realmCategory;
+	
+	public String getIcon() {
+		return "fa-database";
+	}
+	
 	@JsonIgnore
 	public Set<LocalGroup> getGroups() {
 		return groups;
@@ -125,6 +132,18 @@ public class LocalUser extends UserPrincipal implements Serializable {
 
 	public void setMobile(String mobile) {
 		this.mobile = mobile;
+	}
+	
+	public String getRealmModule() {
+		return LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY;
+	}
+
+	public String getRealmCategory() {
+		return realmCategory;
+	}
+
+	public void setRealmCategory(String realmCategory) {
+		this.realmCategory = realmCategory;
 	}
 	
 	

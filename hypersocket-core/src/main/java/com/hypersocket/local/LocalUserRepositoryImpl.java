@@ -86,6 +86,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		user.setName(username);
 		user.setResourceCategory(LocalRealmProviderImpl.USER_RESOURCE_CATEGORY);
 		user.setRealm(realm);
+		user.setPrincipalType(PrincipalType.USER);
 		save(user);
 		
 		return user;
@@ -102,6 +103,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		LocalGroup group = new LocalGroup();
 		group.setName(name);
 		group.setRealm(realm);
+		group.setPrincipalType(PrincipalType.GROUP);
 		save(group);
 		return group;
 	}

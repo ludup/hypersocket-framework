@@ -6,42 +6,39 @@ import org.quartz.JobDataMap;
 
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.session.Session;
 
 public class PermissionsAwareJobData extends JobDataMap {
 
 	private static final long serialVersionUID = -2512176436464687235L;
-	Realm currentRealm;
-	Principal principal;
-	Locale locale;
 		
 	public PermissionsAwareJobData(Realm currentRealm, String jobResourceKey) {
-		this(currentRealm, null, null, jobResourceKey);
+		this(null, currentRealm, null, null, jobResourceKey);
 	}
 	
+	public PermissionsAwareJobData(Session session, String jobResourceKey) {
+		this(session, null, null, null, jobResourceKey);
+	}
 	public PermissionsAwareJobData(Realm currentRealm, Principal principal, Locale locale, String jobResourceKey) {
-		this.currentRealm = currentRealm;
-		this.principal = principal;
-		this.locale = locale;
-		put("realm", currentRealm.getId());
+		this(null, currentRealm, principal, locale, jobResourceKey);
+	}
+	
+	public PermissionsAwareJobData(Session session, Realm currentRealm, Principal principal, Locale locale, String jobResourceKey) {
+		
 		put("jobName", jobResourceKey);
+		
+		if(session!=null) {
+			put("session", session.getId());
+		}
+		if(currentRealm!=null) {
+			put("realm", currentRealm.getId());
+		}
 		if(principal!=null) {
-			put("principal", principal);
+			put("principal", principal.getId());
 		}
 		if(locale!=null) {
-			put("locale", locale);
+			put("locale", locale.toLanguageTag());
 		}
-	}
-	
-	public Realm getCurrentRealm() {
-		return currentRealm;
-	}
-
-	public Principal getCurrentPrincipal() {
-		return principal;
-	}
-
-	public Locale getLocale() {
-		return locale;
 	}
 	
 }
