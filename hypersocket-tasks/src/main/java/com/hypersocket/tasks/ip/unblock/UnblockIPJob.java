@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.scheduler.PermissionsAwareJob;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.tasks.ip.block.BlockIPTask;
@@ -20,6 +21,9 @@ public class UnblockIPJob extends PermissionsAwareJob {
 	
 	@Autowired
 	IPRestrictionService ipRestrictionService;
+	
+	@Autowired
+	RealmRepository realmRepository; 
 	
 	@Autowired
 	BlockIPTask blockIPTask;
@@ -44,7 +48,7 @@ public class UnblockIPJob extends PermissionsAwareJob {
 			
 			ipRestrictionService.unblockIPAddress(addr);
 			
-			Realm currentRealm = ((PermissionsAwareJobData) context.getTrigger().getJobDataMap()).getCurrentRealm();
+			Realm currentRealm = realmRepository.getRealmById(context.getTrigger().getJobDataMap().getLong("realm"));
 			
 			blockIPTask.notifyUnblock(currentRealm.getName() + "_" + addr, true);
 			

@@ -22,6 +22,8 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 	@SuppressWarnings("unchecked") 
 	void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops);
 
+	void saveResource(T resource);
+	
 	List<T> getResources(Realm realm);
 
 	List<T> search(Realm realm, String searchColumn, String searchPattern, int start, int length,

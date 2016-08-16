@@ -15,6 +15,7 @@ import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalRepository;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -83,8 +84,8 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 					secondary.setParentPrincipal(principal);
 					principal.getLinkedPrincipals().add(secondary);
 					
-					repository.savePrincipal(principal);
-					repository.savePrincipal(secondary);
+					repository.saveResource(principal);
+					repository.saveResource(secondary);
 					
 					return principal;
 				} catch (AccessDeniedException e) {
@@ -136,8 +137,8 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 					secondary.setParentPrincipal(null);
 					principal.getLinkedPrincipals().remove(secondary);
 					
-					repository.savePrincipal(principal);
-					repository.savePrincipal(secondary);
+					repository.saveResource(principal);
+					repository.saveResource(secondary);
 					
 					return principal;
 				} catch (AccessDeniedException e) {

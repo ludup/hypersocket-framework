@@ -149,6 +149,10 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		}
 		
 	}
+	
+	public void saveResource(T resource) {
+		saveObject(resource);
+	}
 
 
 	@SuppressWarnings("unchecked")

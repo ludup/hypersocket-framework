@@ -152,7 +152,7 @@ public class OwnerRealmController extends ResourceController {
 								int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return realmService.getPrincipals(
+							return realmService.searchPrincipals(
 									ownerRealm,
 									PrincipalType.USER, searchPattern, start,
 									length, sorting);
@@ -162,7 +162,7 @@ public class OwnerRealmController extends ResourceController {
 						public Long getTotalCount(String searchColumn, String searchPattern)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return realmService.getPrincipalCount(
+							return realmService.getSearchPrincipalsCount(
 									ownerRealm,
 									PrincipalType.USER, searchPattern);
 						}
@@ -200,7 +200,7 @@ public class OwnerRealmController extends ResourceController {
 								int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return realmService.getPrincipals(
+							return realmService.searchPrincipals(
 									ownerRealm,
 									PrincipalType.GROUP, searchPattern, start,
 									length, sorting);
@@ -210,7 +210,7 @@ public class OwnerRealmController extends ResourceController {
 						public Long getTotalCount(String searchColumn, String searchPattern)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return realmService.getPrincipalCount(
+							return realmService.getSearchPrincipalsCount(
 									ownerRealm,
 									PrincipalType.GROUP, searchPattern);
 						}
