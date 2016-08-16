@@ -11,7 +11,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 import org.codemonkey.simplejavamail.Email;
-import org.codemonkey.simplejavamail.EmailAddressValidationCriteria;
 import org.codemonkey.simplejavamail.MailException;
 import org.codemonkey.simplejavamail.Mailer;
 import org.codemonkey.simplejavamail.Recipient;

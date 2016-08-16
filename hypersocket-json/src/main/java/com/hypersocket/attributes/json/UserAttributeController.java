@@ -45,7 +45,7 @@ public class UserAttributeController extends AbstractAttributeController<UserAtt
 	@RequestMapping(value = "userAttributes/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableAttributes(final HttpServletRequest request, HttpServletResponse response)
+	public BootstrapTableResult<?> tableAttributes(final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		return super.tableAttributes(request);
 	}

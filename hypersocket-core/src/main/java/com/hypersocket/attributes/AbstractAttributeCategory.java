@@ -6,6 +6,8 @@ import javax.persistence.MappedSuperclass;
 @MappedSuperclass
 public abstract class AbstractAttributeCategory<A extends AbstractAttribute<?>> extends RealmAttributeCategory<A> {
 
+	private static final long serialVersionUID = -8751695909133262852L;
+
 	@Column(name = "weight", nullable = false)
 	Integer weight = new Integer(0);
 

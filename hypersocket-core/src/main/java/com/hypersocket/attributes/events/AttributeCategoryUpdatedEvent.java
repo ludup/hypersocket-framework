@@ -13,11 +13,11 @@ public class AttributeCategoryUpdatedEvent extends AttributeCategoryEvent {
 
 	public static final String EVENT_RESOURCE_KEY = "event.categoryUpdated";
 
-	public AttributeCategoryUpdatedEvent(Object source, Session session, RealmAttributeCategory category) {
+	public AttributeCategoryUpdatedEvent(Object source, Session session, RealmAttributeCategory<?> category) {
 		super(source, EVENT_RESOURCE_KEY, true, session, category);
 	}
 
-	public AttributeCategoryUpdatedEvent(Object source, Throwable e, Session session, RealmAttributeCategory category) {
+	public AttributeCategoryUpdatedEvent(Object source, Throwable e, Session session, RealmAttributeCategory<?> category) {
 		super(source, EVENT_RESOURCE_KEY, e, session, category);
 	}
 

@@ -44,7 +44,6 @@ public class I18NController extends AuthenticatedController {
 	@Autowired
 	SessionUtils sessionUtils;
 	
-	@SuppressWarnings("unchecked")
 	@RequestMapping(value="i18n", method = RequestMethod.GET, produces = {"application/json"})
 	@ResponseBody
 	@ResponseStatus(value=HttpStatus.OK)
@@ -63,7 +62,6 @@ public class I18NController extends AuthenticatedController {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	@RequestMapping(value="i18n/{locale}", method = RequestMethod.GET, produces = {"application/json"})
 	@ResponseBody
 	@ResponseStatus(value=HttpStatus.OK)
@@ -82,7 +80,6 @@ public class I18NController extends AuthenticatedController {
 		}
 	}	
 	
-	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "i18n/locales", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)

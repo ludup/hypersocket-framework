@@ -122,7 +122,7 @@ public class RealmController extends ResourceController {
 	@RequestMapping(value = "realms/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableRealms(final HttpServletRequest request,
+	public BootstrapTableResult<?> tableRealms(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
@@ -323,7 +323,7 @@ public class RealmController extends ResourceController {
 	@RequestMapping(value = "realms/users/table/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableUsers(final HttpServletRequest request,
+	public BootstrapTableResult<?> tableUsers(final HttpServletRequest request,
 			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
@@ -334,7 +334,7 @@ public class RealmController extends ResourceController {
 			
 			final Realm realm  = realmService.getRealmById(id);
 			
-			BootstrapTableResult r = processDataTablesRequest(request,
+			BootstrapTableResult<?> r = processDataTablesRequest(request,
 					new BootstrapTablePageProcessor() {
 
 						@Override

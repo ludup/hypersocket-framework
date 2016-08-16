@@ -48,7 +48,7 @@ public class RoleAttributeCategoryController extends AbstractAttributeCategoryCo
 			"application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableAttributeCategories(final HttpServletRequest request, HttpServletResponse response)
+	public BootstrapTableResult<?> tableAttributeCategories(final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		return super.tableAttributeCategories(request);
 	}

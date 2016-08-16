@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.scheduler.PermissionsAwareJob;
 import com.hypersocket.scheduler.PermissionsAwareJobNonTransactional;
 
 public abstract class AbstractReconcileNonTransactionalJob<T extends Resource> extends PermissionsAwareJobNonTransactional {

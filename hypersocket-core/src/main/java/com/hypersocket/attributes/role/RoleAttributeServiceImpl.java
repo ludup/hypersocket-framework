@@ -21,13 +21,11 @@ import com.hypersocket.attributes.user.events.UserAttributeCreatedEvent;
 import com.hypersocket.attributes.user.events.UserAttributeDeletedEvent;
 import com.hypersocket.attributes.user.events.UserAttributeEvent;
 import com.hypersocket.attributes.user.events.UserAttributeUpdatedEvent;
-import com.hypersocket.auth.FakePrincipal;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
-import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.role.events.RoleEvent;
 

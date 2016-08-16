@@ -37,7 +37,7 @@ public abstract class AbstractAttributeCategoryController<A extends AbstractAttr
 		this.resourceBundle = resourceBundle;
 	}
 
-	protected BootstrapTableResult tableAttributeCategories(final HttpServletRequest request)
+	protected BootstrapTableResult<?> tableAttributeCategories(final HttpServletRequest request)
 			throws UnauthorizedException, SessionTimeoutException, AccessDeniedException {
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 		try {

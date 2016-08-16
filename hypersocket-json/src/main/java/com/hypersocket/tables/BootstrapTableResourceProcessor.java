@@ -1,6 +1,5 @@
 package com.hypersocket.tables;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import com.hypersocket.permissions.AccessDeniedException;

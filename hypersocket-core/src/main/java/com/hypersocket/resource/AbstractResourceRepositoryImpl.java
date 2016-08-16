@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
-import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Realm;
@@ -101,8 +100,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		final Set<String> propertyNames = getPropertyNames(resource);
 		for(String resourceKey : propertyNames) {
 			if(properties.containsKey(resourceKey)) {
-				int x =1;
-				PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
+//				PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
 //				if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
 					String val = getValue(resource, resourceKey);
 					String newVal = properties.get(resourceKey);

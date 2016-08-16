@@ -92,7 +92,7 @@ public class CertificateResourceController extends ResourceController {
 	@RequestMapping(value = "certificates/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableNetworkResources(
+	public BootstrapTableResult<?> tableNetworkResources(
 			final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {

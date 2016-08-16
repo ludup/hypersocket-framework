@@ -1,6 +1,5 @@
 package com.hypersocket.auth;
 
-import com.hypersocket.local.LocalRealmProvider;
 import com.hypersocket.local.LocalRealmProviderImpl;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;

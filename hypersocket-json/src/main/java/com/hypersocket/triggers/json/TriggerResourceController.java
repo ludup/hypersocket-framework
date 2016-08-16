@@ -72,7 +72,7 @@ public class TriggerResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "triggers/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableTriggers(final HttpServletRequest request,
+	public BootstrapTableResult<?> tableTriggers(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
@@ -593,7 +593,7 @@ public class TriggerResourceController extends AbstractTriggerController {
 			RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult search(final HttpServletRequest request,
+	public BootstrapTableResult<?> search(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException,
 			NumberFormatException, IOException {
@@ -649,7 +649,7 @@ public class TriggerResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "triggers/eventsTable", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableEvents(final HttpServletRequest request,
+	public BootstrapTableResult<?> tableEvents(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 

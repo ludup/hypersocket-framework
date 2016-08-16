@@ -56,7 +56,7 @@ public abstract class AbstractAttributeController<A extends AbstractAttribute<C>
 		}
 	}
 
-	public BootstrapTableResult tableAttributes(final HttpServletRequest request)
+	public BootstrapTableResult<?> tableAttributes(final HttpServletRequest request)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));

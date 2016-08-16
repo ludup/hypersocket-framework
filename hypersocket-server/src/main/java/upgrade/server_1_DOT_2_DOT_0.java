@@ -15,8 +15,9 @@ import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceRepository;
 import com.hypersocket.server.interfaces.http.HTTPProtocol;
 import com.hypersocket.session.SessionService;
+import com.hypersocket.upgrade.PermissionsAwareUpgradeScript;
 
-public class server_1_DOT_2_DOT_0 implements Runnable {
+public class server_1_DOT_2_DOT_0 extends PermissionsAwareUpgradeScript {
 
 	static Logger log = LoggerFactory.getLogger(server_1_DOT_2_DOT_0.class);
 	
@@ -34,10 +35,9 @@ public class server_1_DOT_2_DOT_0 implements Runnable {
 	
 	@Autowired
 	SessionService sessionService; 
-	
-	@SuppressWarnings("unchecked")
+
 	@Override
-	public void run() {
+	protected void doUpgrade() {
 
 		try {
 			certificateService.getDefaultCertificate();
@@ -60,8 +60,8 @@ public class server_1_DOT_2_DOT_0 implements Runnable {
 			https.setCertificate(certificateService.getResourceByName(CertificateResourceServiceImpl.DEFAULT_CERTIFICATE_NAME, 
 					realmService.getSystemRealm()));
 			
-			repository.saveResource(http, new HashMap<String,String>());
-			repository.saveResource(https, new HashMap<String,String>());
+			repository.saveResource(http);
+			repository.saveResource(https);
 		} catch (Throwable e) {
 			log.error("Error converting to new HTTP interface settings. Use emergency port access to re-configure your server.", e);
 		}

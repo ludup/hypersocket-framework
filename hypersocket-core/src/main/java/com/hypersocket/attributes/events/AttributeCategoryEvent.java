@@ -14,13 +14,13 @@ public class AttributeCategoryEvent extends ResourceEvent {
 	public static final String ATTR_CATEGORY_NAME = "attr.categoryName";
 
 	public AttributeCategoryEvent(Object source, String resourceKey,
-			boolean success, Session session, RealmAttributeCategory category) {
+			boolean success, Session session, RealmAttributeCategory<?> category) {
 		super(source, resourceKey, success, session, category);
 		addAttribute(ATTR_CATEGORY_NAME, category.getName());
 	}
 
 	public AttributeCategoryEvent(Object source, String resourceKey,
-			Throwable e, Session session, RealmAttributeCategory category) {
+			Throwable e, Session session, RealmAttributeCategory<?> category) {
 		super(source, resourceKey, e, session, category);
 		addAttribute(ATTR_CATEGORY_NAME, category.getName());
 	}

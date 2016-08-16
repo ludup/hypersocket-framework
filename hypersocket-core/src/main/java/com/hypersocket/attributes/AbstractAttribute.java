@@ -17,6 +17,8 @@ import com.hypersocket.resource.AssignableResource;
 @Table(name = "abstract_attributes")
 public abstract class AbstractAttribute<C extends RealmAttributeCategory<?>> extends AssignableResource  {
 	
+	private static final long serialVersionUID = 8883188306254264069L;
+
 	@Column(name="description")
 	String description;
 	

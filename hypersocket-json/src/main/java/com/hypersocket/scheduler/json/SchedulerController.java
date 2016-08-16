@@ -61,7 +61,7 @@ public class SchedulerController extends ResourceController {
 	@RequestMapping(value = "schedulers/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableResources(final HttpServletRequest request,
+	public BootstrapTableResult<?> tableResources(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 

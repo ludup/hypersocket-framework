@@ -9,6 +9,7 @@ package com.hypersocket.netty;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map.Entry;
@@ -298,6 +299,26 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 	
 	public boolean isCloseOnComplete() {
 		return closeOnComplete;
+	}
+
+	@Override
+	public int getStatus() {
+		return response.getStatus() != null ? response.getStatus().getCode() : 0;
+	}
+
+	@Override
+	public String getHeader(String name) {
+		return response.getHeader(name);
+	}
+
+	@Override
+	public Collection<String> getHeaders(String name) {
+		return response.getHeaders(name);
+	}
+
+	@Override
+	public Collection<String> getHeaderNames() {
+		return response.getHeaderNames();
 	}
 
 

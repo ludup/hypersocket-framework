@@ -31,7 +31,7 @@ import com.hypersocket.tables.json.BootstrapTableController;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller
-public class BrowserLaunchableController extends BootstrapTableController {
+public class BrowserLaunchableController extends BootstrapTableController<Void> {
 
 	@Autowired
 	BrowserLaunchableService resourceService;
@@ -87,7 +87,7 @@ public class BrowserLaunchableController extends BootstrapTableController {
 	@RequestMapping(value = "browser/personal", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableNetworkResources(
+	public BootstrapTableResult<?> tableNetworkResources(
 			final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {

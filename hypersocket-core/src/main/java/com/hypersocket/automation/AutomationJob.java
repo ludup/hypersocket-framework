@@ -19,7 +19,6 @@ import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskResult;
-import com.hypersocket.transactions.TransactionCallbackWithError;
 import com.hypersocket.transactions.TransactionService;
 import com.hypersocket.triggers.AbstractTriggerJob;
 import com.hypersocket.triggers.MultipleTaskResults;

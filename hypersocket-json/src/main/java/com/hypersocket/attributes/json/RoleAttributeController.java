@@ -45,7 +45,7 @@ public class RoleAttributeController extends AbstractAttributeController<RoleAtt
 	@RequestMapping(value = "roleAttributes/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableAttributes(final HttpServletRequest request, HttpServletResponse response)
+	public BootstrapTableResult<?> tableAttributes(final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		return super.tableAttributes(request);
 	}

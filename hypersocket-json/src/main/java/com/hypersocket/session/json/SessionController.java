@@ -243,7 +243,7 @@ public class SessionController extends ResourceController {
 	@RequestMapping(value = "session/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableResources(final HttpServletRequest request, HttpServletResponse response)
+	public BootstrapTableResult<?> tableResources(final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));

@@ -28,7 +28,6 @@ import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
-import com.hypersocket.local.LocalRealmProviderImpl;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.json.PropertyItem;
@@ -127,7 +126,7 @@ public class CurrentRealmController extends ResourceController {
 	@RequestMapping(value = "currentRealm/users/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableUsers(final HttpServletRequest request,
+	public BootstrapTableResult<?> tableUsers(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
@@ -138,7 +137,7 @@ public class CurrentRealmController extends ResourceController {
 		final String module = request.getParameter("module");
 
 		try {
-			BootstrapTableResult r = processDataTablesRequest(request,
+			BootstrapTableResult<?> r = processDataTablesRequest(request,
 					new BootstrapTablePageProcessor() {
 
 						@Override
@@ -178,7 +177,7 @@ public class CurrentRealmController extends ResourceController {
 	@RequestMapping(value = "currentRealm/groups/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableGroups(final HttpServletRequest request,
+	public BootstrapTableResult<?> tableGroups(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 

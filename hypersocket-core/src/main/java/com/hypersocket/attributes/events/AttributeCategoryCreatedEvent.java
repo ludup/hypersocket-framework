@@ -12,12 +12,12 @@ public class AttributeCategoryCreatedEvent extends AttributeCategoryEvent {
 	public static final String EVENT_RESOURCE_KEY = "event.categoryCreated";
 
 	public AttributeCategoryCreatedEvent(Object source, Session session,
-			RealmAttributeCategory category) {
+			RealmAttributeCategory<?> category) {
 		super(source, EVENT_RESOURCE_KEY, true, session, category);
 	}
 
 	public AttributeCategoryCreatedEvent(Object source, Throwable e,
-			Session session, RealmAttributeCategory category) {
+			Session session, RealmAttributeCategory<?> category) {
 		super(source, EVENT_RESOURCE_KEY, e, session, category);
 	}
 

@@ -199,7 +199,7 @@ public class RoleController extends ResourceController {
 	@RequestMapping(value = "roles/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult tableRoles(final HttpServletRequest request,
+	public BootstrapTableResult<?> tableRoles(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 

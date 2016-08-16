@@ -12,12 +12,12 @@ public class AttributeCategoryDeletedEvent extends AttributeCategoryEvent {
 	public static final String EVENT_RESOURCE_KEY = "event.categoryDeleted";
 
 	public AttributeCategoryDeletedEvent(Object source, Session session,
-			RealmAttributeCategory category) {
+			RealmAttributeCategory<?> category) {
 		super(source, EVENT_RESOURCE_KEY, true, session, category);
 	}
 
 	public AttributeCategoryDeletedEvent(Object source, Throwable e,
-			Session session, RealmAttributeCategory category) {
+			Session session, RealmAttributeCategory<?> category) {
 		super(source, EVENT_RESOURCE_KEY, e, session, category);
 	}
 

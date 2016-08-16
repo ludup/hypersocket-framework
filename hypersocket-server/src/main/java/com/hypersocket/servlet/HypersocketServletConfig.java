@@ -42,7 +42,9 @@ public class HypersocketServletConfig implements ServletConfig {
 		return initParameters.getProperty(name);
 	}
 
-	public Enumeration<Object> getInitParameterNames() {
-		return initParameters.keys();
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Enumeration<String> getInitParameterNames() {
+		Enumeration params = initParameters.keys();
+		return params;
 	}
 }

@@ -20,12 +20,9 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hypersocket.attributes.role.RoleAttributeService;
-import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourceKeyRestriction;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;

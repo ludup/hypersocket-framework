@@ -9,7 +9,6 @@ package com.hypersocket.auth;
 
 import java.util.Locale;
 
-import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;

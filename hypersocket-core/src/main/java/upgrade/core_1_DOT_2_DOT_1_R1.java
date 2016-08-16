@@ -7,8 +7,6 @@
  ******************************************************************************/
 package upgrade;
 
-import java.util.Locale;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +17,9 @@ import com.hypersocket.local.LocalUserRepository;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.session.SessionService;
+import com.hypersocket.upgrade.PermissionsAwareUpgradeScript;
 
-public class core_1_DOT_2_DOT_1_R1 implements Runnable {
+public class core_1_DOT_2_DOT_1_R1 extends PermissionsAwareUpgradeScript {
 
 	static Logger log = LoggerFactory.getLogger(core_1_DOT_2_DOT_1_R1.class);
 	
@@ -37,7 +36,7 @@ public class core_1_DOT_2_DOT_1_R1 implements Runnable {
 	SessionService sessionService; 
 	
 	@Override
-	public void run() {
+	protected void doUpgrade() {
 
 		try {
 			for(Realm realm : realmRepository.allRealms(LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY)) {

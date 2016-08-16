@@ -104,8 +104,6 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 	
 	protected void doEqualsOnKeys(EqualsBuilder builder, Object obj) {
 		LocalUserCredentials creds = (LocalUserCredentials) obj;
-		if(user!=null) {
-			builder.append(user.getId(), creds.getUser().getId());
-		}
+		builder.append(user==null ? -1 : user.getId(), creds==null ? -1 : creds.getUser().getId());
 	}
 }

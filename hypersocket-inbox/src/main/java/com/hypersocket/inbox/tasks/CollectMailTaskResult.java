@@ -15,6 +15,8 @@ import com.hypersocket.triggers.AbstractTaskResult;
 
 public class CollectMailTaskResult extends AbstractTaskResult {
 
+	private static final long serialVersionUID = -8776154664692553132L;
+
 	public static final String EVENT_RESOURCE_KEY = "collectMail.result";
 	public static final String EVENT_FROM = "attr.from";
 	public static final String EVENT_REPLY_TO = "attr.replyTo";
