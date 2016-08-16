@@ -1,0 +1,3 @@
+ALTER TABLE ssl_certificates MODIFY private_key TEXT NOT NULL;
+ALTER TABLE ssl_certificates MODIFY certificate TEXT;
+ALTER TABLE ssl_certificates MODIFY bundle TEXT;

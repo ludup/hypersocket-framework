@@ -10,7 +10,6 @@
 	xmlns:p="http://www.springframework.org/schema/p"
 	xmlns:aop="http://www.springframework.org/schema/aop" 
 	xmlns:tx="http://www.springframework.org/schema/tx"
-	xmlns:hz="http://www.hazelcast.com/schema/spring"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
            http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
            http://www.springframework.org/schema/context
@@ -20,9 +19,7 @@
            http://www.springframework.org/schema/aop
            http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
            http://www.springframework.org/schema/tx 
-     	   http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
-     	   http://www.hazelcast.com/schema/spring
-     	   https://hazelcast.com/schema/spring/hazelcast-spring-3.6.xsd">
+     	   http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
 	<bean id="annotationService" class="com.hypersocket.annotation.AnnotationServiceImpl" />
     <bean id="contextAnnotationService" class="com.hypersocket.context.ContextAnnotationServiceImpl" />
@@ -61,32 +58,5 @@
 	<bean id="upgradeService" class="com.hypersocket.upgrade.UpgradeServiceImpl">
 		<property name="scripts" value="classpath*:upgrade/*" />
 	</bean>
-
-	<!-- DEFAULT PROFILE -->
-		<bean id="schedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
-			<!-- reference to our 'autowiring job factory bean', defined above: -->
-			<property name="jobFactory" ref="autowiringSpringBeanJobFactory" />
-		
-			<!-- I will not explain the next three properties, just use it as shown: -->
-			<property name="autoStartup" value="true" />
-			<property name="schedulerName" value="quartzScheduler" />
-			<property name="applicationContextSchedulerContextKey" value="applicationContext" />
-	
-		</bean>
-		
-		<hz:hazelcast id="instance">
-			<hz:config>
-				<hz:network port="5701" port-auto-increment="true">
-					<hz:join>
-						<hz:multicast enabled="false" />
-					</hz:join>
-				</hz:network>
-			</hz:config>
-		</hz:hazelcast>
-		
-		<hz:hibernate-region-factory id="regionFactory" instance-ref="instance"/>
-		
-		<hz:cache-manager id="hazelcastJCacheCacheManager" instance-ref="instance" name="hazelcastJCacheCacheManager"/>
-		
 
 </beans>

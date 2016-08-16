@@ -14,6 +14,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.hypersocket.repository.AbstractEntity;
@@ -21,6 +22,7 @@ import com.hypersocket.repository.AbstractEntity;
 @Entity
 @Inheritance(strategy=InheritanceType.JOINED)
 @XmlRootElement(name="constraint")
+@Table(name = "`constraint`")
 public abstract class Constraint extends AbstractEntity<Long> {
 
 	/**

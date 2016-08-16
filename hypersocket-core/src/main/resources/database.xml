@@ -45,29 +45,28 @@
 		</property>
 	</bean>
 	
-	<!-- DEFAULT PROFILE -->
-		<bean id="sessionFactory" class="com.hypersocket.util.HypersocketAnnotationSessionFactoryBean">
-			<property name="dataSource">
-				<ref bean="dataSource" />
-			</property>
-			<property name="cacheRegionFactory" ref="regionFactory" />
-			<property name="packagesToScan" value="com.hypersocket.**" />
-			<property name="hibernateProperties">
-				<props>
-					<prop key="hibernate.dialect">${jdbc.hibernate.dialect}</prop>
-					<prop key="hibernate.hbm2ddl.auto">update</prop>
-					<prop key="hibernate.show_sql">false</prop>
-					<prop key="hibernate.connection.useUnicode">true</prop>
-					<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
-					<prop key="hibernate.connection.charSet">UTF-8</prop>
-		
-					<!-- Hibernate 2nd Level Configuration -->
-					<prop key="hibernate.cache.use_query_cache">true</prop>
-					<prop key="hibernate.cache.use_minimal_puts">true</prop>
-					<prop key="hibernate.cache.use_second_level_cache">true</prop>
-					<prop key="hibernate.cache.default_cache_concurrency_strategy">read-write</prop>
-		
-				</props>
-			</property>
-		</bean>
+	<bean id="sessionFactory" class="com.hypersocket.util.HypersocketAnnotationSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<property name="cacheRegionFactory" ref="regionFactory" />
+		<property name="packagesToScan" value="com.hypersocket.**" />
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${jdbc.hibernate.dialect}</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.connection.useUnicode">true</prop>
+				<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
+				<prop key="hibernate.connection.charSet">UTF-8</prop>
+	
+				<!-- Hibernate 2nd Level Configuration -->
+				<prop key="hibernate.cache.use_query_cache">true</prop>
+				<prop key="hibernate.cache.use_minimal_puts">true</prop>
+				<prop key="hibernate.cache.use_second_level_cache">true</prop>
+				<prop key="hibernate.cache.default_cache_concurrency_strategy">read-write</prop>
+	
+			</props>
+		</property>
+	</bean>
 </beans>

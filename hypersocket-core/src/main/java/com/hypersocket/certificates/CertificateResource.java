@@ -2,6 +2,7 @@ package com.hypersocket.certificates;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -37,13 +38,16 @@ public class CertificateResource extends RealmResource {
 	@Column(name="c")
 	String country;
 
-	@Column(name="private_key", nullable=false, length=8000 /*SQL server limit */)
+	@Column(name="private_key", nullable=false)
+	@Lob
 	String privateKey;
 	
-	@Column(name="certificate", nullable=true, length=8000 /*SQL server limit */)
+	@Column(name="certificate", nullable=true)
+	@Lob
 	String certificate;
 	
-	@Column(name="bundle", nullable=true, length=8000 /*SQL server limit */)
+	@Column(name="bundle", nullable=true)
+	@Lob
 	String bundle;
 	
 	@Column(name="signature_type")
