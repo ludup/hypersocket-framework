@@ -21,7 +21,7 @@
 
 	$(document).ready(function() {
 		
-		$('#tabHttpInterfaces').load(uiPath + '/content/httpInterfaces.html');
+		$('#tabHttpInterfaces').load('${uiPath}/content/httpInterfaces.html');
 		
 		getJSON('interfaces/list', null, function(data) {
 		
@@ -30,7 +30,7 @@
 				$.each(data.resources, function(idx, obj) {
 					$('#interfaceTabContentTabs').append('<li class="interfaceTab"><a href="#tab' + obj + '" data-resourcekey="' + obj + '.title"><span localize="' + obj + '.title"></span></a></li>');	
 					$('#interfaceTabContentContent').append('<div id="tab' + obj + '" class="tab-pane"></div>');
-					$('#tab' + obj).load(uiPath + '/content/' + obj + '.html');
+					$('#tab' + obj).load('${uiPath}/content/' + obj + '.html');
 				});
 				
 			}
