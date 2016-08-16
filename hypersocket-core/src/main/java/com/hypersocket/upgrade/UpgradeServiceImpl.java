@@ -46,7 +46,7 @@ import org.springframework.core.io.Resource;
 import com.hypersocket.Version;
 import com.hypersocket.session.SessionService;
 
-public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAware, Runnable {
+public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAware {
 
 	private final static Logger log = LoggerFactory.getLogger(UpgradeServiceImpl.class);
 
@@ -131,10 +131,6 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	}
 
 	public void upgrade() throws IOException, ScriptException {
-		sessionService.executeInSystemContext(this);		
-	}
-	
-	public void run() {
 		
 		try {
 			if(log.isInfoEnabled()) {
