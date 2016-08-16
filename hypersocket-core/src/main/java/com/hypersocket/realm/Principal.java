@@ -10,6 +10,7 @@ package com.hypersocket.realm;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -55,6 +56,9 @@ public abstract class Principal extends RealmResource {
 	@OneToOne
 	@JoinColumn(name="parent_principal")
 	Principal parentPrincipal;
+
+	@Column(name="principal_type")
+	PrincipalType principalType;
 	
 	@JsonIgnore
 	public Realm getRealm() {
@@ -66,6 +70,16 @@ public abstract class Principal extends RealmResource {
 	}
 
 	public abstract PrincipalType getType();
+
+	public abstract String getIcon();
+	
+	public final PrincipalType getPrincipalType() {
+		return principalType;
+	}
+	
+	public void setPrincipalType(PrincipalType type) {
+		this.principalType = type;
+	}
 
 	public abstract String getPrincipalDescription();
 	
@@ -111,5 +125,5 @@ public abstract class Principal extends RealmResource {
 		this.parentPrincipal = parentPrincipal;
 	}
 	
-	
+	public abstract String getRealmModule();
 }

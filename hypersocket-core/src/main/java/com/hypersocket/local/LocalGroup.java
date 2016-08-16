@@ -46,6 +46,10 @@ public class LocalGroup extends Principal {
 		return PrincipalType.GROUP;
 	}
 	
+	public String getIcon() {
+		return "fa-database";
+	}
+	
 	public String getPrincipalDescription() {
 		return getName();
 	}
@@ -60,5 +64,7 @@ public class LocalGroup extends Principal {
 		return groups;
 	}
 
-
+	public String getRealmModule() {
+		return LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY;
+	}
 }

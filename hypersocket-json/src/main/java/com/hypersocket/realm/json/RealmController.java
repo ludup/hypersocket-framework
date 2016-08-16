@@ -347,9 +347,11 @@ public class RealmController extends ResourceController {
 								int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return realmService.getPrincipals(
+							return realmService.searchPrincipals(
 									realm,
-									PrincipalType.USER, searchPattern, start,
+									PrincipalType.USER, 
+									realm.getResourceCategory(),
+									searchPattern, start,
 									length, sorting);
 						}
 
@@ -357,9 +359,11 @@ public class RealmController extends ResourceController {
 						public Long getTotalCount(String searchColumn, String searchPattern)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return realmService.getPrincipalCount(
+							return realmService.getSearchPrincipalsCount(
 									realm,
-									PrincipalType.USER, searchPattern);
+									PrincipalType.USER, 
+									realm.getResourceCategory(),
+									searchPattern);
 						}
 					});
 			return r;

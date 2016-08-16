@@ -198,10 +198,12 @@ public class Main {
 			public Object doInTransaction(TransactionStatus status) {
 				UpgradeService upgradeService = (UpgradeService) applicationContext
 						.getBean("upgradeService");
+				
 				try {
 					if (log.isInfoEnabled()) {
 						log.info("Starting upgrade");
 					}
+					
 					upgradeService.upgrade();
 
 					if (log.isInfoEnabled()) {

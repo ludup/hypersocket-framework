@@ -125,6 +125,7 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 		LocalUser system = new LocalUser();
 		system.setName("system");
 		system.setType(PrincipalType.SYSTEM);
+		system.setPrincipalType(PrincipalType.SYSTEM);
 		system.setRealm(realm);
 		system.setSystem(true);
 		system.setHidden(true);

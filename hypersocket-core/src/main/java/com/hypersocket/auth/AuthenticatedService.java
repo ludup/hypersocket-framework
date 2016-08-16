@@ -48,5 +48,4 @@ public interface AuthenticatedService {
 	
 	void setCurrentRole(Role role);
 
-//	void setCurrentPrincipal(Principal principal, Locale locale, Realm realm);
 }

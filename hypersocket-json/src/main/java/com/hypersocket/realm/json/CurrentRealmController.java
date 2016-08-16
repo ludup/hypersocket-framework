@@ -28,6 +28,7 @@ import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
+import com.hypersocket.local.LocalRealmProviderImpl;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.json.PropertyItem;
@@ -133,6 +134,9 @@ public class CurrentRealmController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
+		final Realm currentRealm = sessionUtils.getCurrentRealm(request);
+		final String module = request.getParameter("module");
+
 		try {
 			BootstrapTableResult r = processDataTablesRequest(request,
 					new BootstrapTablePageProcessor() {
@@ -147,9 +151,9 @@ public class CurrentRealmController extends ResourceController {
 								int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return realmService.getPrincipals(
-									sessionUtils.getCurrentRealm(request),
-									PrincipalType.USER, searchPattern, start,
+							return realmService.searchPrincipals(
+									currentRealm,
+									PrincipalType.USER, module, searchPattern, start,
 									length, sorting);
 						}
 
@@ -157,9 +161,11 @@ public class CurrentRealmController extends ResourceController {
 						public Long getTotalCount(String searchColumn, String searchPattern)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return realmService.getPrincipalCount(
-									sessionUtils.getCurrentRealm(request),
-									PrincipalType.USER, searchPattern);
+							return realmService.getSearchPrincipalsCount(
+									currentRealm,
+									PrincipalType.USER, 
+									module, 
+									searchPattern);
 						}
 					});
 			return r;
@@ -179,6 +185,7 @@ public class CurrentRealmController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
+		final Realm currentRealm = sessionUtils.getCurrentRealm(request);
 		try {
 			return processDataTablesRequest(request,
 					new BootstrapTablePageProcessor() {
@@ -193,9 +200,11 @@ public class CurrentRealmController extends ResourceController {
 								int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return realmService.getPrincipals(
+							return realmService.searchPrincipals(
 									sessionUtils.getCurrentRealm(request),
-									PrincipalType.GROUP, searchPattern, start,
+									PrincipalType.GROUP,
+									currentRealm.getResourceCategory(),
+									searchPattern, start,
 									length, sorting);
 						}
 
@@ -203,9 +212,11 @@ public class CurrentRealmController extends ResourceController {
 						public Long getTotalCount(String searchColumn, String searchPattern)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return realmService.getPrincipalCount(
+							return realmService.getSearchPrincipalsCount(
 									sessionUtils.getCurrentRealm(request),
-									PrincipalType.GROUP, searchPattern);
+									PrincipalType.GROUP, 
+									currentRealm.getResourceCategory(),
+									searchPattern);
 						}
 					});
 		} finally {

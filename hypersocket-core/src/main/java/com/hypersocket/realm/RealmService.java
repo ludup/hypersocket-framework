@@ -97,11 +97,6 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	List<Realm> allRealms(Class<? extends RealmProvider> clz);
 
-	List<?> getPrincipals(Realm realm, PrincipalType type, String searchPattern, int start, int length,
-			ColumnSort[] sorting) throws AccessDeniedException;
-
-	Long getPrincipalCount(Realm realm, PrincipalType type, String searchPattern) throws AccessDeniedException;
-
 	Collection<PropertyCategory> getRealmPropertyTemplates(String module) throws AccessDeniedException;
 
 	boolean findUniquePrincipal(String user);
@@ -201,5 +196,21 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 			throws ResourceChangeException, AccessDeniedException;
 
 	Realm getRealmByOwner(Long owner) throws AccessDeniedException;
+
+	List<?> searchPrincipals(Realm realm, PrincipalType type, String module, String searchPattern, int start,
+			int length, ColumnSort[] sorting) throws AccessDeniedException;
+
+	Long getSearchPrincipalsCount(Realm realm, PrincipalType type, String module, String searchPattern)
+			throws AccessDeniedException;
+
+	Principal createLocalUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
+			String password, boolean forceChange, boolean selfCreated)
+			throws ResourceCreationException, AccessDeniedException;
+
+	Long getSearchPrincipalsCount(Realm realm, PrincipalType type, String searchPattern) throws AccessDeniedException;
+
+	List<?> searchPrincipals(Realm realm, PrincipalType type, String searchPattern, int start, int length,
+			ColumnSort[] sorting) throws AccessDeniedException;
+
 
 }

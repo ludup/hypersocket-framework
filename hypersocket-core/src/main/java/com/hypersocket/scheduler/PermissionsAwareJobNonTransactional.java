@@ -13,12 +13,14 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 
-public abstract class PermissionsAwareJobNonTransactional implements Job {
+public abstract class PermissionsAwareJobNonTransactional implements Job, Runnable {
 
 	static Logger log = LoggerFactory.getLogger(PermissionsAwareJobNonTransactional.class);
 
@@ -37,34 +39,51 @@ public abstract class PermissionsAwareJobNonTransactional implements Job {
 	@Autowired
 	SessionService sessionService;
 	
+	@Autowired
+	RealmRepository realmRepository;
+
+	JobExecutionContext context;
+	
 	@Override
 	public void execute(JobExecutionContext context) {
-
+		this.context = context;
+		sessionService.executeInSystemContext(this);
+	}
+	
+	public void run() {
+		
 		Realm realm = realmService.getSystemRealm();
 		Principal principal = realmService.getSystemPrincipal();
 		Locale locale = Locale.getDefault();
-		
-		if (context.getTrigger().getJobDataMap() instanceof PermissionsAwareJobData) {
-			PermissionsAwareJobData data = (PermissionsAwareJobData) context
-					.getTrigger().getJobDataMap();
-			realm = data.getCurrentRealm();
-			if (data.getCurrentPrincipal() != null) {
-				principal = data.getCurrentPrincipal();
-			}
-			if(data.getLocale() != null) {
-				locale = data.getLocale();
-			}
-		}
-
+		Session session = sessionService.getSystemSession();
 		
 		try {
 
+			if (context.getTrigger().getJobDataMap() instanceof PermissionsAwareJobData) {
+				PermissionsAwareJobData data = (PermissionsAwareJobData) context
+						.getTrigger().getJobDataMap();
+				if(data.containsKey("session")) {
+					session = sessionService.getSession(data.getString("session"));
+					realm = session.getCurrentRealm();
+					principal = session.getCurrentPrincipal();
+				}
+				if(data.containsKey("realm")) {
+					realm = realmRepository.getRealmById(data.getLong("realm"));
+				}
+				if(data.containsKey("principal")) {
+					principal = realmService.getPrincipalById(realm, data.getLong("principal"), PrincipalType.USER);
+				}
+				if(data.containsKey("locale")) {
+					locale = Locale.forLanguageTag(data.getString("locale"));
+				}
+			}
+			
 			if (log.isDebugEnabled()) {
 				log.debug("Executing permissions aware job as "
 						+ realm.getName() + "/" + principal.getName());
 			}
 
-			authenticationService.setCurrentSession(sessionService.getSystemSession(), realm, principal, locale);
+			authenticationService.setCurrentSession(session, realm, principal, locale);
 
 			try {
 				executeJob(context);
