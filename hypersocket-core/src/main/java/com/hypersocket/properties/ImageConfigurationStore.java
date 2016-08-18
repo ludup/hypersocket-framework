@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -165,35 +166,50 @@ public class ImageConfigurationStore implements ResourcePropertyStore {
 			AbstractResource resource, String value) {
 		
 		String key = resource.getId() + File.separator + template.getResourceKey();
-		String filename = key;
-		int idx;
-		if((idx = value.indexOf(';')) > -1) {
-			filename = resource.getId() + File.separator + value.substring(0, idx);
-			value = value.substring(idx+1);
+		
+		if(StringUtils.isBlank(value)) {
+			
+			if(resourceKeyImages.containsKey(key)) {
+				String filename = (String) resourceKeyImages.remove(key);
+				File imageFile = new File(imageResources, filename);
+				imageFile.delete();
+				try {
+					resourceKeyImages.store(new FileOutputStream(resourceKeyImagesFile), "");
+				} catch (IOException e1) {
+					throw new IllegalStateException("Failed to save image.properties", e1);
+				}
+			}
+			
+		} else {
+			String filename = key;
+			int idx;
+			if((idx = value.indexOf(';')) > -1) {
+				filename = resource.getId() + File.separator + value.substring(0, idx);
+				value = value.substring(idx+1);
+			}
+			
+			resourceKeyImages.put(key, filename);
+			try {
+				resourceKeyImages.store(new FileOutputStream(resourceKeyImagesFile), "");
+			} catch (IOException e1) {
+				throw new IllegalStateException("Failed to save image.properties", e1);
+			}
+			
+			File imageFile = new File(imageResources, filename);
+			imageFile.getParentFile().mkdirs();
+			
+			FileOutputStream out;
+			try {
+				out = new FileOutputStream(imageFile);
+				IOUtils.copy(
+						new ByteArrayInputStream(HypersocketUtils.base64Decode(value)), out);
+			} catch (Exception e) {
+				log.error(
+						"Failed to write image for resource "
+								+ template.getResourceKey(), e);
+				throw new IllegalStateException("");
+			} 
 		}
-		
-		resourceKeyImages.put(key, filename);
-		try {
-			resourceKeyImages.store(new FileOutputStream(resourceKeyImagesFile), "");
-		} catch (IOException e1) {
-			throw new IllegalStateException("Failed to save image.properties", e1);
-		}
-		
-		File imageFile = new File(imageResources, filename);
-		imageFile.getParentFile().mkdirs();
-		
-		FileOutputStream out;
-		try {
-			out = new FileOutputStream(imageFile);
-			IOUtils.copy(
-					new ByteArrayInputStream(HypersocketUtils.base64Decode(value)), out);
-		} catch (Exception e) {
-			log.error(
-					"Failed to write image for resource "
-							+ template.getResourceKey(), e);
-			throw new IllegalStateException("");
-		} 
-
 		
 	}
 
