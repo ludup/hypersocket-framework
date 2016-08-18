@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.SessionFactory;
 import org.hibernate.cache.spi.RegionFactory;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ public class HypersocketAnnotationSessionFactoryBean extends
 		LocalSessionFactoryBean{
 	
 	private RegionFactory regionFactory;
+	private DatabaseInformation databaseInformation;
 
 	static Logger log = LoggerFactory.getLogger(HypersocketAnnotationSessionFactoryBean.class);
 	
@@ -74,6 +76,20 @@ public class HypersocketAnnotationSessionFactoryBean extends
 	
 	@Override
 	public void afterPropertiesSet() throws IOException {
+		String key = "hibernate.id.new_generator_mappings";
+		if(databaseInformation.isClean()){
+			log.info("No tables found in database from application was clean on start up, setting id gen value as true");
+			getHibernateProperties().put(key, true);
+		}else {
+			String ormOnStartUp = databaseInformation.getOrmOnOld();
+			if(StringUtils.isEmpty(ormOnStartUp)){
+				log.info("Tables found in database, orm on old value is empty, setting id gen value as false");
+				getHibernateProperties().put(key, false);
+			}else{
+				log.info(String.format("Tables found in database, orm on old value is not empty, setting id gen value as %s", ormOnStartUp));
+				getHibernateProperties().put(key, Boolean.parseBoolean(ormOnStartUp));
+			}
+		}  
 		getHibernateProperties().put("hibernate.cache.region.factory_class", regionFactory);
 		super.afterPropertiesSet();
 	}
@@ -84,5 +100,13 @@ public class HypersocketAnnotationSessionFactoryBean extends
 
 	public void setRegionFactory(RegionFactory regionFactory) {
 		this.regionFactory = regionFactory;
+	}
+
+	public DatabaseInformation getDatabaseInformation() {
+		return databaseInformation;
+	}
+
+	public void setDatabaseInformation(DatabaseInformation databaseInformation) {
+		this.databaseInformation = databaseInformation;
 	}
 }

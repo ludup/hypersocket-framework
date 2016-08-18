@@ -50,6 +50,7 @@
 			<ref bean="dataSource" />
 		</property>
 		<property name="regionFactory" ref="regionFactory" />
+		<property name="databaseInformation" ref="databaseInformation" />
 		<property name="packagesToScan" value="com.hypersocket.**" />
 		<property name="hibernateProperties">
 			<props>
@@ -59,6 +60,7 @@
 				<prop key="hibernate.connection.useUnicode">true</prop>
 				<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
 				<prop key="hibernate.connection.charSet">UTF-8</prop>
+				<!-- <prop key="hibernate.id.new_generator_mappings">false</prop> -->
 				
 				<!-- https://hibernate.atlassian.net/browse/HHH-9106 -->
 				<prop key="hibernate.event.merge.entity_copy_observer">allow</prop>
@@ -69,7 +71,8 @@
 				<prop key="hibernate.cache.use_second_level_cache">true</prop>
 				<prop key="hibernate.cache.default_cache_concurrency_strategy">read-write</prop>
 				<!-- 
-					<prop key="hibernate.cache.region.factory_class">THIS REQUIRED PROPERTY FOR CACHING IS CONFIGURED IN HypersocketAnnotationSessionFactoryBean</prop> 
+					<prop key="hibernate.cache.region.factory_class">THIS REQUIRED PROPERTY FOR CACHING IS CONFIGURED IN HypersocketAnnotationSessionFactoryBean</prop>
+					<prop key="hibernate.id.new_generator_mappings">THIS REQUIRED PROPERTY FOR SEQUENCE GENERATOR STRATEGY FOR LEGACY NAD NEW DB IS CONFIGURED IN HypersocketAnnotationSessionFactoryBean</prop> 
 				-->
 	
 			</props>
