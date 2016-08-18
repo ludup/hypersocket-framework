@@ -50,7 +50,7 @@ public abstract class Principal extends RealmResource {
 	
 	@Fetch(FetchMode.SELECT)
 	@OneToMany(fetch = FetchType.LAZY)
-	@JoinTable(name="principal_links")
+	@JoinTable(name="principal_links", joinColumns = { @JoinColumn(name = "principals_resource_id") }, inverseJoinColumns = { @JoinColumn(name = "linkedPrincipals_resource_id") })
 	Set<Principal> linkedPrincipals;
 	
 	@OneToOne
