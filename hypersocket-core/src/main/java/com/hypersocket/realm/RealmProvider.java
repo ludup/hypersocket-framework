@@ -70,6 +70,8 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	String getModule();
 
 	String getResourceBundle();
+	
+	boolean canCreate();
 
 	List<Principal> getAssociatedPrincipals(Principal principal, PrincipalType type);
 

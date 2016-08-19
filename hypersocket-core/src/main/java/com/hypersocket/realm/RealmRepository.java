@@ -12,6 +12,7 @@ import java.util.Map;
 
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.RealmResource;
+import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
 
 public interface RealmRepository extends
@@ -31,7 +32,8 @@ public interface RealmRepository extends
 			RealmProvider provider);
 
 	Realm createRealm(String name, String uuid, String module,
-			Map<String, String> properties, RealmProvider provider);
+			Map<String, String> properties, RealmProvider provider,
+			TransactionOperation<Realm> ... ops);
 
 	Realm getRealmByName(String name, boolean deleted);
 
