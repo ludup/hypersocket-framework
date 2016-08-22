@@ -2,7 +2,7 @@ package com.hypersocket.server.interfaces.http.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.server.interfaces.events.InterfaceResourceEvent;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.session.Session;
 

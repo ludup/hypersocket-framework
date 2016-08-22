@@ -635,8 +635,11 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 			}
 			
 		}
+		
+		processApplicationEvent(event);
 	}
 	
+	protected abstract void processApplicationEvent(SystemEvent event);
 	@Override
 	public ApplicationContext getApplicationContext() {
 		return applicationContext;

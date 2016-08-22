@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
@@ -47,6 +46,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.config.SystemConfigurationService;
+import com.hypersocket.events.EventService;
+import com.hypersocket.events.SystemEvent;
 import com.hypersocket.ip.ExtendedIpFilterRuleHandler;
 import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
@@ -55,7 +56,14 @@ import com.hypersocket.server.HypersocketServerImpl;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceRepository;
 import com.hypersocket.server.interfaces.http.HTTPProtocol;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceCreatedEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceDeletedEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceUpdatedEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceStartedEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceStoppedEvent;
 import com.hypersocket.server.websocket.TCPForwardingClientCallback;
+import com.hypersocket.session.SessionService;
 
 @Component
 public class NettyServer extends HypersocketServerImpl {
@@ -64,8 +72,8 @@ public class NettyServer extends HypersocketServerImpl {
 
 	private ClientBootstrap clientBootstrap = null;
 	private ServerBootstrap serverBootstrap = null;
-	Set<Channel> httpChannels;
-	Set<Channel> httpsChannels;
+	Map<HTTPInterfaceResource,Set<Channel>> httpChannels;
+	Map<HTTPInterfaceResource,Set<Channel>> httpsChannels;
 	
 	ExecutorService executor;
 	
@@ -80,6 +88,12 @@ public class NettyServer extends HypersocketServerImpl {
 	
 	@Autowired
 	SystemConfigurationService configurationService; 
+	
+	@Autowired
+	EventService eventService; 
+	
+	@Autowired
+	SessionService sessionService;
 	
 	public NettyServer() {
 
@@ -144,8 +158,8 @@ public class NettyServer extends HypersocketServerImpl {
 		serverBootstrap.setOption("child.sendBufferSize", 1048576);
 		serverBootstrap.setOption("backlog", 5000);
 		
-		httpChannels = new HashSet<Channel>();
-		httpsChannels = new HashSet<Channel>();
+		httpChannels = new HashMap<HTTPInterfaceResource,Set<Channel>>();
+		httpsChannels = new HashMap<HTTPInterfaceResource,Set<Channel>>();
 		
 		HTTPInterfaceResourceRepository interfaceRepository = 
 				(HTTPInterfaceResourceRepository) getApplicationContext().getBean("HTTPInterfaceResourceRepositoryImpl");
@@ -185,7 +199,7 @@ public class NettyServer extends HypersocketServerImpl {
 		if(httpChannels==null) {
 			throw new IllegalStateException("You cannot get the actual port in use because the server is not started");
 		}
-		return ((InetSocketAddress)httpChannels.iterator().next().getLocalAddress()).getPort();
+		return ((InetSocketAddress)httpChannels.values().iterator().next().iterator().next().getLocalAddress()).getPort();
 	}
 
 	@Override
@@ -193,7 +207,43 @@ public class NettyServer extends HypersocketServerImpl {
 		if(httpsChannels==null) {
 			throw new IllegalStateException("You cannot get the actual port in use because the server is not started");
 		}
-		return ((InetSocketAddress)httpsChannels.iterator().next().getLocalAddress()).getPort();
+		return ((InetSocketAddress)httpsChannels.values().iterator().next().iterator().next().getLocalAddress()).getPort();
+	}
+	
+	protected void unbindInterface(HTTPInterfaceResource interfaceResource) {
+		
+		Set<Channel> channels = httpChannels.get(interfaceResource);
+		
+		closeChannels(interfaceResource, channels);
+		
+		channels = httpsChannels.get(interfaceResource);
+		
+		closeChannels(interfaceResource, channels);
+	}
+	
+	protected void closeChannels(HTTPInterfaceResource interfaceResource, Set<Channel> channels) {
+		
+		for(Channel channel : channels) {
+			InetSocketAddress addr = (InetSocketAddress) channel.getLocalAddress();
+			try {
+				channel.disconnect().await(5000);
+				
+				eventService.publishEvent(new HTTPInterfaceStoppedEvent(this, 
+						sessionService.getSystemSession(), 
+						interfaceResource, addr.getAddress().getHostAddress(), addr.getPort()));
+				
+			} catch (InterruptedException e) {
+				
+				eventService.publishEvent(new HTTPInterfaceStoppedEvent(this, 
+						interfaceResource,
+						e, 
+						sessionService.getSystemSession(),
+						addr.getAddress().getHostAddress(), addr.getPort()));
+			}
+			
+		}
+		
+		channels.clear();
 	}
 	
 	protected void bindInterface(HTTPInterfaceResource interfaceResource) throws IOException {
@@ -203,25 +253,41 @@ public class NettyServer extends HypersocketServerImpl {
 		Set<String> interfacesToBind = new HashSet<String>(
 				ResourceUtils.explodeCollectionValues(interfaceResource.getInterfaces()));
 		
+		httpChannels.put(interfaceResource, new HashSet<Channel>());
+		httpsChannels.put(interfaceResource, new HashSet<Channel>());
+		
 		if(interfacesToBind.isEmpty()) {
 			
-			if(log.isInfoEnabled()) {
-				log.info("Binding server to all interfaces on port " 
-						+ interfaceResource.getPort());
-			}
-			Channel ch = serverBootstrap.bind(new InetSocketAddress(interfaceResource.getPort()));
-			ch.setAttachment(interfaceResource);
-			switch(interfaceResource.getProtocol()) {
-			case HTTP:
-				httpChannels.add(ch);
-				break;
-			default:
-				httpsChannels.add(ch);
-			}
-			
-			if(log.isInfoEnabled()) {
-				log.info("Bound " + interfaceResource.getProtocol() + " to port "
-						+ ((InetSocketAddress)ch.getLocalAddress()).getPort());
+			try {
+				if(log.isInfoEnabled()) {
+					log.info("Binding server to all interfaces on port " 
+							+ interfaceResource.getPort());
+				}
+				Channel ch = serverBootstrap.bind(new InetSocketAddress(interfaceResource.getPort()));
+				ch.setAttachment(interfaceResource);
+				switch(interfaceResource.getProtocol()) {
+				case HTTP:
+					httpChannels.get(interfaceResource).add(ch);
+					break;
+				default:
+					httpsChannels.get(interfaceResource).add(ch);
+				}
+				
+				eventService.publishEvent(new HTTPInterfaceStartedEvent(this, 
+						sessionService.getSystemSession(), 
+						interfaceResource,
+						((InetSocketAddress)ch.getLocalAddress()).getAddress().getHostAddress()));
+				
+				if(log.isInfoEnabled()) {
+					log.info("Bound " + interfaceResource.getProtocol() + " to port "
+							+ ((InetSocketAddress)ch.getLocalAddress()).getPort());
+				}
+			} catch (Exception e1) {
+				eventService.publishEvent(new HTTPInterfaceStartedEvent(this, 
+						interfaceResource,
+						e1, 
+						sessionService.getSystemSession(),
+						"::"));
 			}
 		} else {
 			while(e.hasMoreElements())  {
@@ -248,11 +314,16 @@ public class NettyServer extends HypersocketServerImpl {
 							ch.setAttachment(interfaceResource);
 							switch(interfaceResource.getProtocol()) {
 							case HTTP:
-								httpChannels.add(ch);
+								httpChannels.get(interfaceResource).add(ch);
 								break;
 							default:
-								httpsChannels.add(ch);
+								httpsChannels.get(interfaceResource).add(ch);
 							}
+							
+							eventService.publishEvent(new HTTPInterfaceStartedEvent(this, 
+									sessionService.getSystemSession(), 
+									interfaceResource,
+									((InetSocketAddress)ch.getLocalAddress()).getAddress().getHostAddress()));
 							
 							if(log.isInfoEnabled()) {
 								log.info("Bound " + interfaceResource.getProtocol() + " to " 
@@ -262,6 +333,13 @@ public class NettyServer extends HypersocketServerImpl {
 							}
 						
 						} catch(ChannelException ex) {
+							
+							eventService.publishEvent(new HTTPInterfaceStartedEvent(this, 
+									interfaceResource,
+									ex, 
+									sessionService.getSystemSession(),
+									inetAddress.getHostAddress()));
+							
 							log.error("Failed to bind port", ex);
 						}
 					}
@@ -388,5 +466,30 @@ public class NettyServer extends HypersocketServerImpl {
 			}
 			
 		}
+	}
+	
+	protected void processApplicationEvent(final SystemEvent event) {
+		
+		if(event instanceof HTTPInterfaceResourceEvent) {
+			executor.execute(new Runnable() {
+				public void run() {
+					try {
+						HTTPInterfaceResource resource = (HTTPInterfaceResource) ((HTTPInterfaceResourceEvent) event).getResource();
+						
+						if(event instanceof HTTPInterfaceResourceCreatedEvent) {
+							bindInterface(resource);
+						} else if(event instanceof HTTPInterfaceResourceUpdatedEvent) {
+							unbindInterface(resource);
+							bindInterface(resource);
+						} else if(event instanceof HTTPInterfaceResourceDeletedEvent) {
+							bindInterface(resource);
+						}
+					
+					} catch (IOException e) {
+						log.error("Failed to reconfigure interfaces", e);
+					} 
+				}
+			});
+		} 
 	}
 }
