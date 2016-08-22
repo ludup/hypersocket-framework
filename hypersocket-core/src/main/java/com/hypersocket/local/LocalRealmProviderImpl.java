@@ -74,5 +74,8 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl {
 		return REALM_RESOURCE_CATEGORY;
 	}
 
+	public boolean canCreate() {
+		return true;
+	}
 
 }

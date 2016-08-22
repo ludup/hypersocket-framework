@@ -195,15 +195,14 @@ public class AuthenticationServiceImpl extends
 	@Override
 	public AuthenticationScheme getDefaultScheme(String remoteAddress,
 			Map<String, Object> environment, Realm realm) {
+		AuthenticationScheme scheme = schemeRepository.getSchemeByResourceKey(realm, BROWSER_AUTHENTICATION_RESOURCE_KEY);
+		if(scheme!=null) {
+			return scheme;
+		}
 		List<AuthenticationScheme> schemes = schemeRepository.allSchemes(realm);
 		if (schemes.size() == 0)
 			throw new IllegalArgumentException(
 					"There are no authentication schemes configured!");
-		for(AuthenticationScheme scheme : schemes) {
-			if(scheme.getResourceKey().equals(BROWSER_AUTHENTICATION_RESOURCE_KEY)) {
-				return scheme;
-			}
-		}
 		return schemes.get(0);
 	}
 

@@ -31,6 +31,8 @@ import org.springframework.transaction.TransactionStatus;
 import com.hypersocket.attributes.AttributeType;
 import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeService;
+import com.hypersocket.attributes.user.UserAttributeType;
+import com.hypersocket.auth.InvalidAuthenticationContext;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.ConfigurationService;
@@ -206,7 +208,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				for (Realm realm : realmRepository.allRealms()) {
 					for (RealmListener listener : realmListeners) {
 						if (!listener.hasCreatedDefaultResources(realm)) {
-							listener.onCreateRealm(realm);
+							try {
+								listener.onCreateRealm(realm);
+							} catch (ResourceCreationException e) {
+								log.error("Failed to create default resources in realm", e);
+							}
 						}
 					}
 				}
@@ -808,21 +814,26 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				throw ex;
 			}
 
-			RealmProvider realmProvider = getProviderForRealm(module);
+			final RealmProvider realmProvider = getProviderForRealm(module);
 
 			realmProvider.testConnection(properties);
 
-			Realm realm = realmRepository.createRealm(name, 
-					UUID.randomUUID().toString(), 
-					module, 
-					owner, 
-					properties,
-					realmProvider);
+			@SuppressWarnings("unchecked")
+			Realm realm = realmRepository.createRealm(name, UUID.randomUUID().toString(), module, properties,
+					realmProvider, new TransactionAdapter<Realm>() {
+				@Override
+				public void afterOperation(Realm realm, Map<String,String> properties) {
+					try {
+						configurationService.setValue(realm, "realm.userEditableProperties",
+								ResourceUtils.implodeValues(realmProvider.getDefaultUserPropertyNames()));
 
-			configurationService.setValue(realm, "realm.userEditableProperties",
-					ResourceUtils.implodeValues(realmProvider.getDefaultUserPropertyNames()));
+						fireRealmCreate(realm);
 
-			fireRealmCreate(realm);
+					} catch (Throwable e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					} 
+				}
+			});
 
 			eventService.publishEvent(new RealmCreatedEvent(this, getCurrentSession(), realm));
 
@@ -900,33 +911,39 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return realm;
 	}
 
-	private void fireRealmUpdate(Realm realm) {
+	private void fireRealmUpdate(Realm realm) throws ResourceChangeException {
 
 		for (RealmListener l : realmListeners) {
 			try {
 				l.onUpdateRealm(realm);
+			} catch(ResourceChangeException e) { 
+				throw e;
 			} catch (Throwable t) {
 				log.error("Caught error in RealmListener", t);
 			}
 		}
 	}
 
-	private void fireRealmCreate(Realm realm) {
+	private void fireRealmCreate(Realm realm) throws ResourceCreationException {
 
 		for (RealmListener l : realmListeners) {
 			try {
 				l.onCreateRealm(realm);
+			} catch(ResourceCreationException e) { 
+				throw e;
 			} catch (Throwable t) {
 				log.error("Caught error in RealmListener", t);
 			}
 		}
 	}
 
-	private void fireRealmDelete(Realm realm) {
+	private void fireRealmDelete(Realm realm) throws ResourceChangeException {
 
 		for (RealmListener l : realmListeners) {
 			try {
 				l.onDeleteRealm(realm);
+			} catch(ResourceChangeException e) { 
+				throw e;
 			} catch (Throwable t) {
 				log.error("Caught error in RealmListener", t);
 			}
