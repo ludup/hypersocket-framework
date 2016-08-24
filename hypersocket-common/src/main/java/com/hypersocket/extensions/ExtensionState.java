@@ -1,5 +1,7 @@
 package com.hypersocket.extensions;
 
-public enum ExtensionState {
+import java.io.Serializable;
+
+public enum ExtensionState implements Serializable {
 	NOT_INSTALLED, INSTALLED, UPDATABLE
 }

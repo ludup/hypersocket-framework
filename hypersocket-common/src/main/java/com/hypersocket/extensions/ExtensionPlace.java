@@ -1,6 +1,7 @@
 package com.hypersocket.extensions;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
@@ -77,13 +78,13 @@ public class ExtensionPlace implements Serializable {
 	public static ExtensionPlace getDefault() {
 		List<URL> u = new ArrayList<URL>();
 		try {
-			Enumeration<URL> urls = ( Thread.currentThread().getContextClassLoader() == null ? ExtensionDefinition.class.getClassLoader() : Thread.currentThread().getContextClassLoader() )
+			Enumeration<URL> urls = ( Thread.currentThread().getContextClassLoader() == null ? ExtensionVersion.class.getClassLoader() : Thread.currentThread().getContextClassLoader() )
 					.getResources("extension.def");
 			if (!urls.hasMoreElements()) {
 				if (LOG.isInfoEnabled()) {
 					LOG.info("No extension.def resources could be found on the classpath");
 				}
-				urls = ExtensionDefinition.class.getClassLoader().getResources(
+				urls = ExtensionVersion.class.getClassLoader().getResources(
 						"/extension.def");
 			}
 			while (urls.hasMoreElements())
@@ -101,5 +102,14 @@ public class ExtensionPlace implements Serializable {
 					"Could not load extension definitions for default extensions directory.");
 		}
 	}
+
+	public File resolveLocalArchive(String extensionId) throws FileNotFoundException {
+
+		if(bootstrapArchives.containsKey(extensionId)) {
+			return bootstrapArchives.get(extensionId);
+		}
+		throw new FileNotFoundException();
+	}
+	
 
 }
