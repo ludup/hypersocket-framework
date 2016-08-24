@@ -35,7 +35,7 @@ public class ExtensionHelper {
 			String ourVersion, String serial, ExtensionPlace extensionPlace, boolean resolveInstalled) throws IOException {
 
 		Map<String, ExtensionVersion> extsByName = ExtensionHelper.resolveRemoteDependencies(
-				updateUrl, repos, System.getProperty("hypersocket.devVersion", ourVersion), serial);
+				updateUrl, repos, ourVersion, serial);
 		
 		for(ExtensionVersion ext : extsByName.values()) {
 			ext.setState(ExtensionState.NOT_INSTALLED);
@@ -77,10 +77,17 @@ public class ExtensionHelper {
 					if (currentArchive == null) {
 						log.warn("No bootstrap archive detected for "
 								+ extensionId);
-						ExtensionVersion local = new ExtensionVersion();
-						loadLocalExtension(local, props, currentArchive);
-						local.setState(ExtensionState.INSTALLED);
-						extsByName.put(extensionId, local);
+						
+						if(extsByName.containsKey(extensionId)) {
+							ExtensionVersion remote = extsByName.get(extensionId);
+							remote.setState(ExtensionState.INSTALLED);
+							extsByName.put(extensionId, remote);
+						} else {
+							ExtensionVersion local = new ExtensionVersion();
+							loadLocalExtension(local, props, currentArchive);
+							local.setState(ExtensionState.INSTALLED);
+							extsByName.put(extensionId, local);
+						}
 						continue;
 					} else {
 						try {

@@ -18,6 +18,7 @@ import java.util.Map;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,9 +70,11 @@ public abstract class AbstractExtensionUpdater {
 					if(getUpdateTarget().equals(v.getTarget())) {
 						updates.add(v);
 						for(String depend : v.getDependsOn()) {
-							ExtensionVersion dep = allExtensions.get(depend);
-							if(dep.getState()==ExtensionState.UPDATABLE || dep.getState()==ExtensionState.NOT_INSTALLED) {
-								updates.add(dep);
+							if(StringUtils.isNotBlank(depend)) {
+								ExtensionVersion dep = allExtensions.get(depend);
+								if(dep.getState()==ExtensionState.UPDATABLE || dep.getState()==ExtensionState.NOT_INSTALLED) {
+									updates.add(dep);
+								}
 							}
 						}
 					}
@@ -81,9 +84,11 @@ public abstract class AbstractExtensionUpdater {
 						if(v.isMandatory()) {
 							updates.add(v);
 							for(String depend : v.getDependsOn()) {
-								ExtensionVersion dep = allExtensions.get(depend);
-								if(dep.getState()==ExtensionState.UPDATABLE || dep.getState()==ExtensionState.NOT_INSTALLED) {
-									updates.add(dep);
+								if(StringUtils.isNotBlank(depend)) {
+									ExtensionVersion dep = allExtensions.get(depend);
+									if(dep.getState()==ExtensionState.UPDATABLE || dep.getState()==ExtensionState.NOT_INSTALLED) {
+										updates.add(dep);
+									}
 								}
 							}
 						}

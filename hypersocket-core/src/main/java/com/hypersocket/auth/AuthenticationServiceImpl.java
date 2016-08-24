@@ -61,6 +61,8 @@ public class AuthenticationServiceImpl extends
 	public static final String ANONYMOUS_AUTHENTICATION_SCHEME = "Anonymous";
 	public static final String ANONYMOUS_AUTHENTICATION_RESOURCE_KEY = "anonymous";
 
+	public static final String FALLBACK_AUTHENTICATION_RESOURCE_KEY = "fallback";
+	
 	private static Logger log = LoggerFactory
 			.getLogger(AuthenticationServiceImpl.class);
 
@@ -123,6 +125,35 @@ public class AuthenticationServiceImpl extends
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
 		setupRealms();
+		
+		setupFallback();
+	}
+	
+	private void setupFallback() {
+
+		realmService.registerRealmListener(new RealmAdapter() {
+
+			public boolean hasCreatedDefaultResources(Realm realm) {
+				return schemeRepository.getSchemeByResourceKeyCount(realm,
+						FALLBACK_AUTHENTICATION_RESOURCE_KEY) > 0;
+			}
+
+			public void onCreateRealm(Realm realm) {
+
+				if (log.isInfoEnabled()) {
+					log.info("Creating unlicensed authentication scheme for realm "
+							+ realm.getName());
+				}
+
+				List<String> modules = new ArrayList<String>();
+				modules.add(FallbackAuthenticator.RESOURCE_KEY);
+
+				schemeRepository.createScheme(realm, "fallback", modules,
+						"fallback", true, 1, AuthenticationModuleType.BASIC);
+
+			}
+		});
+
 	}
 
 	private void setupRealms() {
