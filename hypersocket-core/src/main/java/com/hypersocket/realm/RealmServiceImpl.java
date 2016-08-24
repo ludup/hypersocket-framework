@@ -31,8 +31,6 @@ import org.springframework.transaction.TransactionStatus;
 import com.hypersocket.attributes.AttributeType;
 import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeService;
-import com.hypersocket.attributes.user.UserAttributeType;
-import com.hypersocket.auth.InvalidAuthenticationContext;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.ConfigurationService;
@@ -820,7 +818,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			@SuppressWarnings("unchecked")
 			Realm realm = realmRepository.createRealm(name, UUID.randomUUID().toString(), module, properties,
-					realmProvider, new TransactionAdapter<Realm>() {
+					realmProvider, owner, new TransactionAdapter<Realm>() {
 				@Override
 				public void afterOperation(Realm realm, Map<String,String> properties) {
 					try {

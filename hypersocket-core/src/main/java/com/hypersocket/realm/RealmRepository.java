@@ -33,6 +33,7 @@ public interface RealmRepository extends
 
 	Realm createRealm(String name, String uuid, String module,
 			Map<String, String> properties, RealmProvider provider,
+			Long owner,
 			TransactionOperation<Realm> ... ops);
 
 	Realm getRealmByName(String name, boolean deleted);
