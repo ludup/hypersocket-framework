@@ -6,6 +6,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.hypersocket.certificates.CertificateResource;
+import com.hypersocket.server.interfaces.InterfaceResource;
 
 @Entity
 @Table(name="http_interfaces")
