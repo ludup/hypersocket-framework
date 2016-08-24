@@ -3,11 +3,10 @@ package com.hypersocket.server.interfaces.http.events;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.hypersocket.properties.ResourceUtils;
-import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.session.Session;
 
-public class HTTPInterfaceResourceEvent extends ResourceEvent {
+public class HTTPInterfaceResourceEvent extends InterfaceResourceEvent {
 
 	private static final long serialVersionUID = -5515325639125356195L;
 	
@@ -22,9 +21,7 @@ public class HTTPInterfaceResourceEvent extends ResourceEvent {
 	
 	public HTTPInterfaceResourceEvent(Object source, String resourceKey,
 			Session session, HTTPInterfaceResource resource) {
-		super(source, resourceKey, true, session, resource);
-		addAttribute(ATTR_INTERFACES, ResourceUtils.createDelimitedString(ResourceUtils.explodeCollectionValues(resource.getInterfaces()), "\r\n"));
-		addAttribute(ATTR_PORT, String.valueOf(resource.getPort()));
+		super(source, resourceKey, session, resource);
 		addAttribute(ATTR_PROTOCOL, resource.getProtocol().toString());
 		switch(resource.getProtocol()) {
 		case HTTPS:
@@ -39,7 +36,7 @@ public class HTTPInterfaceResourceEvent extends ResourceEvent {
 
 	public HTTPInterfaceResourceEvent(Object source, String resourceKey,
 			HTTPInterfaceResource resource, Throwable e, Session session) {
-		super(source, resourceKey, e, session, resource);
+		super(source, resourceKey, resource, e, session);
 	}
 	
 	public String[] getResourceKeys() {

@@ -484,18 +484,17 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			boolean userCreated, String group, String displayMode, boolean systemOnly, String filter, boolean hidden,
 			String visibilityDependsOn, String visibilityDependsValue) {
 
-		if (activeCategories.containsKey(resourceKey)) {
-			PropertyCategory cat = activeCategories.get(resourceKey);
-			if (cat.getBundle().equals(bundle)) {
-				return cat;
-			}
-			throw new IllegalStateException("Cannot register " + resourceKey + "/" + bundle
-					+ " as the resource key is already registered by bundle "
-					+ activeCategories.get(resourceKey).getBundle());
-		}
+		String categoryKey = resourceKey + "/" + bundle;
+//		if (activeCategories.containsKey(categoryKey)) {
+//			PropertyCategory cat = activeCategories.get(categoryKey);
+//			return cat;
+//			throw new IllegalStateException("Cannot register " + resourceKey + "/" + bundle
+//					+ " as the resource key is already registered by bundle "
+//					+ activeCategories.get(resourceKey).getBundle());
+//		}
 
-		if (activeCategories.containsKey(resourceKey)) {
-			return activeCategories.get(resourceKey);
+		if (activeCategories.containsKey(categoryKey)) {
+			return activeCategories.get(categoryKey);
 		}
 
 		PropertyCategory category = new PropertyCategory();
@@ -511,7 +510,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		category.setVisibilityDependsOn(visibilityDependsOn);
 		category.setVisibilityDependsValue(visibilityDependsValue);
 
-		activeCategories.put(category.getCategoryKey(), category);
+		activeCategories.put(categoryKey, category);
 		return category;
 	}
 
@@ -705,71 +704,102 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public Collection<PropertyCategory> getPropertyCategories(AbstractResource resource, PropertyFilter... filters) {
 
-		List<PropertyCategory> cats = new ArrayList<PropertyCategory>();
+		Map<String,PropertyCategory> cats = new HashMap<String,PropertyCategory>();
 
 		for (PropertyCategory c : activeCategories.values()) {
-			PropertyCategory tmp = new PropertyCategory();
-			tmp.setBundle(c.getBundle());
-			tmp.setCategoryKey(c.getCategoryKey());
-			tmp.setWeight(c.getWeight());
-			tmp.setDisplayMode(c.getDisplayMode());
-			tmp.setUserCreated(c.isUserCreated());
-			tmp.setSystemOnly(c.isSystemOnly());
-			tmp.setFilter(c.getFilter());
-			tmp.setName(c.getName());
-			tmp.setHidden(c.isHidden());
-			tmp.setVisibilityDependsOn(c.getVisibilityDependsOn());
-			tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
-			for (AbstractPropertyTemplate t : c.getTemplates()) {
-				ResourcePropertyTemplate template = new ResourcePropertyTemplate(t, resource);
-				for(PropertyFilter filter : filters) {
-					filter.filterProperty(template);
-				}
-				tmp.getTemplates().add(template);
+
+			PropertyCategory tmp;
+			
+			if(!cats.containsKey(c.getCategoryKey())) {
+				tmp = new PropertyCategory();
+				tmp.setBundle(c.getBundle());
+				tmp.setCategoryKey(c.getCategoryKey());
+				tmp.setWeight(c.getWeight());
+				tmp.setDisplayMode(c.getDisplayMode());
+				tmp.setUserCreated(c.isUserCreated());
+				tmp.setSystemOnly(c.isSystemOnly());
+				tmp.setFilter(c.getFilter());
+				tmp.setName(c.getName());
+				tmp.setHidden(c.isHidden());
+				tmp.setVisibilityDependsOn(c.getVisibilityDependsOn());
+				tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
+			} else {
+				tmp = cats.get(c.getCategoryKey());
 			}
-			cats.add(tmp);
+
+			for (AbstractPropertyTemplate t : c.getTemplates()) {
+				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
+			}
+			cats.put(c.getCategoryKey(), tmp);
 		}
 
 		for (PropertyResolver r : propertyResolvers) {
 			for (PropertyCategory c : r.getPropertyCategories(resource)) {
-				cats.add(c);
+				PropertyCategory tmp;
+				
+				if(!cats.containsKey(c.getCategoryKey())) {
+					tmp = new PropertyCategory();
+					tmp.setBundle(c.getBundle());
+					tmp.setCategoryKey(c.getCategoryKey());
+					tmp.setWeight(c.getWeight());
+					tmp.setUserCreated(c.isUserCreated());
+					tmp.setDisplayMode(c.getDisplayMode());
+					tmp.setSystemOnly(c.isSystemOnly());
+					tmp.setFilter(c.getFilter());
+					tmp.setHidden(c.isHidden());
+				} else {
+					tmp = cats.get(c.getCategoryKey());
+				}
+				for (AbstractPropertyTemplate t : c.getTemplates()) {
+					tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
+				}
+				cats.put(c.getCategoryKey(), tmp);
 			}
 		}
 
-		Collections.sort(cats, new Comparator<PropertyCategory>() {
+		List<PropertyCategory> list = new ArrayList<PropertyCategory>(cats.values());
+		Collections.sort(list, new Comparator<PropertyCategory>() {
 			@Override
 			public int compare(PropertyCategory cat1, PropertyCategory cat2) {
 				return cat1.getWeight().compareTo(cat2.getWeight());
 			}
 		});
 
-		return cats;
+		return list;
 	}
 
 	@Override
 	public Collection<PropertyCategory> getPropertyCategories(AbstractResource resource, String group) {
 
-		List<PropertyCategory> cats = new ArrayList<PropertyCategory>();
+		Map<String,PropertyCategory> cats = new HashMap<String,PropertyCategory>();
 		for (PropertyCategory c : activeCategories.values()) {
 			if (!c.getCategoryGroup().equals(group)) {
 				continue;
 			}
-			PropertyCategory tmp = new PropertyCategory();
-			tmp.setBundle(c.getBundle());
-			tmp.setCategoryKey(c.getCategoryKey());
-			tmp.setWeight(c.getWeight());
-			tmp.setUserCreated(c.isUserCreated());
-			tmp.setDisplayMode(c.getDisplayMode());
-			tmp.setSystemOnly(c.isSystemOnly());
-			tmp.setFilter(c.getFilter());
-			tmp.setName(c.getName());
-			tmp.setHidden(c.isHidden());
-			tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
-			tmp.setVisibilityDependsOn(c.getVisibilityDependsOn());
+
+			PropertyCategory tmp;
+			
+			if(!cats.containsKey(c.getCategoryKey())) {
+				tmp = new PropertyCategory();
+				tmp.setBundle(c.getBundle());
+				tmp.setCategoryKey(c.getCategoryKey());
+				tmp.setWeight(c.getWeight());
+				tmp.setUserCreated(c.isUserCreated());
+				tmp.setDisplayMode(c.getDisplayMode());
+				tmp.setSystemOnly(c.isSystemOnly());
+				tmp.setFilter(c.getFilter());
+				tmp.setName(c.getName());
+				tmp.setHidden(c.isHidden());
+				tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
+				tmp.setVisibilityDependsOn(c.getVisibilityDependsOn());
+			} else {
+				tmp = cats.get(c.getCategoryKey());
+			}
+			
 			for (AbstractPropertyTemplate t : c.getTemplates()) {
 				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
 			}
-			cats.add(tmp);
+			cats.put(c.getCategoryKey(), tmp);
 		}
 
 		for (PropertyResolver r : propertyResolvers) {
@@ -777,32 +807,41 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				if (!c.getCategoryGroup().equals(group)) {
 					continue;
 				}
-				PropertyCategory tmp = new PropertyCategory();
-				tmp.setBundle(c.getBundle());
-				tmp.setCategoryKey(c.getCategoryKey());
-				tmp.setWeight(c.getWeight());
-				tmp.setDisplayMode(c.getDisplayMode());
-				tmp.setFilter(c.getFilter());
-				tmp.setUserCreated(c.isUserCreated());
-				tmp.setSystemOnly(c.isSystemOnly());
-				tmp.setName(c.getName());
-				tmp.setHidden(c.isHidden());
-				tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
-				tmp.setVisibilityDependsOn(c.getVisibilityDependsOn());
+				PropertyCategory tmp;
+				
+				if(!cats.containsKey(c.getCategoryKey())) {
+					tmp = new PropertyCategory();
+					tmp.setBundle(c.getBundle());
+					tmp.setCategoryKey(c.getCategoryKey());
+					tmp.setWeight(c.getWeight());
+					tmp.setDisplayMode(c.getDisplayMode());
+					tmp.setFilter(c.getFilter());
+					tmp.setUserCreated(c.isUserCreated());
+					tmp.setSystemOnly(c.isSystemOnly());
+					tmp.setName(c.getName());
+					tmp.setHidden(c.isHidden());
+					tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
+					tmp.setVisibilityDependsOn(c.getVisibilityDependsOn());
+				} else {
+					tmp = cats.get(c.getCategoryKey());
+				}
+
 				for (AbstractPropertyTemplate t : c.getTemplates()) {
 					tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
 				}
-				cats.add(tmp);
+				cats.put(c.getCategoryKey(), tmp);
 			}
 		}
-		Collections.sort(cats, new Comparator<PropertyCategory>() {
+		
+		List<PropertyCategory> list = new ArrayList<PropertyCategory>(cats.values());
+		Collections.sort(list, new Comparator<PropertyCategory>() {
 			@Override
 			public int compare(PropertyCategory cat1, PropertyCategory cat2) {
 				return cat1.getWeight().compareTo(cat2.getWeight());
 			}
 		});
 
-		return cats;
+		return list;
 	}
 
 	@Override
