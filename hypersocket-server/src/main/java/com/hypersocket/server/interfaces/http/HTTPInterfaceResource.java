@@ -6,19 +6,10 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.hypersocket.certificates.CertificateResource;
-import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name="http_interfaces")
-public class HTTPInterfaceResource extends RealmResource {
-
-	private static final long serialVersionUID = 1892731372161390416L;
-
-	@Column(name="interfaces", length=1024)
-	String interfaces;
-	
-	@Column(name="port")
-	Integer port;
+public class HTTPInterfaceResource extends InterfaceResource {
 	
 	@Column(name="protocol")
 	HTTPProtocol protocol;
@@ -31,22 +22,6 @@ public class HTTPInterfaceResource extends RealmResource {
 	
 	@Column(name="redirect_port")
 	Integer redirectPort;
-	
-	public String getInterfaces() {
-		return interfaces;
-	}
-
-	public void setInterfaces(String interfaces) {
-		this.interfaces = interfaces;
-	}
-
-	public Integer getPort() {
-		return port;
-	}
-
-	public void setPort(Integer port) {
-		this.port = port;
-	}
 
 	public HTTPProtocol getProtocol() {
 		return protocol;
