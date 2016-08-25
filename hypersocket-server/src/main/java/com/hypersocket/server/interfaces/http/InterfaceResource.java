@@ -28,7 +28,7 @@ public class InterfaceResource extends RealmResource {
 	}
 
 	public Integer getPort() {
-		return port;
+		return port == null ? 22 : port;
 	}
 
 	public void setPort(Integer port) {
