@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.auth.PasswordEncryptionService;
@@ -143,6 +142,11 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 				break;
 		}
 		return principal;
+	}
+	
+	@Override
+	public Principal getPrincipalByEmail(Realm realm, String email) {
+		return userRepository.getUserByEmail(email, realm);
 	}
 
 	@Override

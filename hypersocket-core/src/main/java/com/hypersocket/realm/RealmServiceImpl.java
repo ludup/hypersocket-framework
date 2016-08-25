@@ -1044,6 +1044,21 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 		return principal;
 	}
+	
+	@Override
+	public Principal getPrincipalByEmail(Realm realm, String email) throws AccessDeniedException, ResourceNotFoundException {
+
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
+
+		Principal principal = getProviderForRealm(realm).getPrincipalByEmail(realm, email);
+		if(principal==null) {
+			principal = getLocalProvider().getPrincipalByEmail(realm, email);
+		}
+		if(principal==null) {
+			throw new ResourceNotFoundException(RESOURCE_BUNDLE,"error.noPrincipalForEmail", email);
+		}
+		return principal;
+	}	
 
 	@Override
 	public boolean requiresPasswordChange(Principal principal, Realm realm) {

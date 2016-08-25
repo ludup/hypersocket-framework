@@ -209,4 +209,6 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	List<?> searchPrincipals(Realm realm, PrincipalType type, String searchPattern, int start, int length,
 			ColumnSort[] sorting) throws AccessDeniedException;
 
+	Principal getPrincipalByEmail(Realm realm, String email) throws AccessDeniedException, ResourceNotFoundException;
+
 }
