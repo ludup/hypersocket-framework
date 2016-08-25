@@ -1,9 +1,4 @@
 <?xml version="1.0" ?>
 <propertyTemplates>
-	<propertyCategory resourceKey="category.interface" resourceBundle="HypersocketServer" weight="0">
-		<property resourceKey="interfaces" inputType="multipleSelect"
-			restart="false" url="server/networkInterfaces" selectAllIfEmpty="false"	weight="50" />
-		<property resourceKey="port" inputType="integer" minValue="1"
-			maxValue="65535" restart="true" defaultValue="22" weight="100" />
-	</propertyCategory>
+	
 </propertyTemplates>

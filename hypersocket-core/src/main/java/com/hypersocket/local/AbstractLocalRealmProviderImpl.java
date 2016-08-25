@@ -143,6 +143,11 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		}
 		return principal;
 	}
+	
+	@Override
+	public Principal getPrincipalByEmail(Realm realm, String email) {
+		return userRepository.getUserByEmail(email, realm);
+	}
 
 	@Override
 	@Transactional(readOnly=true)

@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
@@ -45,6 +46,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	@Autowired
 	FileUploadService uploadService; 
 	
+	@Autowired
+	EmailTrackerService trackerService; 
+	
 	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
 
 	final static String SMTP_HOST = "smtp.host";
@@ -61,57 +65,19 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 	@Override
 	@SafeVarargs
-	public final void sendEmail(String subject, String text, String html, Recipient[] recipients, EmailAttachment... attachments) throws MailException {
+	public final void sendEmail(String subject, String text, String html, Recipient[] recipients, EmailAttachment... attachments) throws MailException, AccessDeniedException {
 		sendEmail(getCurrentRealm(), subject, text, html, recipients, attachments);
 	}
 	
 	@Override
 	@SafeVarargs
-	public final void sendEmail(Realm realm, String subject, String text, String html, Recipient[] recipients, EmailAttachment... attachments) throws MailException {
+	public final void sendEmail(Realm realm, String subject, String text, String html, Recipient[] recipients, EmailAttachment... attachments) throws MailException, AccessDeniedException {
 		sendEmail(realm, subject, text, html, null, null, recipients, attachments);
 	}
 	
 	@Override
 	@SafeVarargs
-	public final void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail, Recipient[] recipients, EmailAttachment... attachments) throws MailException {
-		Email email = new Email();
-		
-		email.setFromAddress(configurationService.getValue(realm, SMTP_FROM_NAME), 
-				configurationService.getValue(realm, SMTP_FROM_ADDRESS));
-		
-		for(Recipient r : recipients) {
-			email.addRecipient(r.getName(), r.getAddress(), r.getType());
-		}
-		
-		email.setSubject(subject);
-		
-		if(StringUtils.isNotBlank(replyToName) && StringUtils.isNotBlank(replyToEmail)) {
-			email.setReplyToAddress(replyToName, replyToEmail);
-		}
-		
-		String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
-		if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(html)) {
-			try {
-				htmlTemplate = FileUtils.readFileToString(uploadService.getFile(htmlTemplate));
-				htmlTemplate = htmlTemplate.replace("${htmlContent}", html);
-				email.setTextHTML(htmlTemplate);
-			} catch (ResourceNotFoundException e) {
-				log.error("Cannot find HTML template", e);
-			} catch (IOException e) {
-				log.error("Cannot find HTML template", e);
-			}
-			
-		} else if(StringUtils.isNotBlank(html)) {
-			email.setTextHTML(html);
-		}
-		
-		email.setText(text);
-		
-		if(attachments!=null) {
-			for(EmailAttachment attachment : attachments) {
-				email.addAttachment(attachment.getName(), attachment);
-			}
-		}
+	public final void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail, Recipient[] recipients, EmailAttachment... attachments) throws MailException, AccessDeniedException {
 		
 		Mailer mail = new Mailer(configurationService.getValue(realm, SMTP_HOST), 
 				configurationService.getIntValue(realm, SMTP_PORT), 
@@ -119,7 +85,56 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				configurationService.getDecryptedValue(realm, SMTP_PASSWORD),
 				TransportStrategy.values()[configurationService.getIntValue(realm, SMTP_PROTOCOL)]);
 		
-		mail.sendMail(email);
+		for(Recipient r : recipients) {
+		
+			Email email = new Email();
+			
+			email.setFromAddress(configurationService.getValue(realm, SMTP_FROM_NAME), 
+					configurationService.getValue(realm, SMTP_FROM_ADDRESS));
+			
+			email.addRecipient(r.getName(), r.getAddress(), r.getType());
+			
+			email.setSubject(subject);
+			
+			if(StringUtils.isNotBlank(replyToName) && StringUtils.isNotBlank(replyToEmail)) {
+				email.setReplyToAddress(replyToName, replyToEmail);
+			}
+			
+			String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
+			if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(html)) {
+				try {
+					htmlTemplate = FileUtils.readFileToString(uploadService.getFile(htmlTemplate));
+					htmlTemplate = htmlTemplate.replace("${htmlContent}", html);
+					
+					String trackingImage = configurationService.getValue(realm, "email.trackingImage");
+					if(StringUtils.isNotBlank(trackingImage)) {
+						String trackingUri = trackerService.generateTrackingUri(subject, r.getName(), r.getAddress(), realm);
+						htmlTemplate = htmlTemplate.replace("${trackingImage}", trackingUri);
+					}
+					System.out.println(htmlTemplate);
+					email.setTextHTML(htmlTemplate);
+				} catch (ResourceNotFoundException e) {
+					log.error("Cannot find HTML template", e);
+				} catch (IOException e) {
+					log.error("Cannot find HTML template", e);
+				}
+				
+			} else if(StringUtils.isNotBlank(html)) {
+				email.setTextHTML(html);
+			}
+			
+			email.setText(text);
+			
+			if(attachments!=null) {
+				for(EmailAttachment attachment : attachments) {
+					email.addAttachment(attachment.getName(), attachment);
+				}
+			}
+			
+			mail.sendMail(email);
+		}
+		
+		
 	}
 	
 	@Override

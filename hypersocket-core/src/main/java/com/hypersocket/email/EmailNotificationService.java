@@ -7,6 +7,7 @@ import javax.mail.Message.RecipientType;
 import org.codemonkey.simplejavamail.MailException;
 import org.codemonkey.simplejavamail.Recipient;
 
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.triggers.ValidationException;
 
@@ -22,12 +23,12 @@ public interface EmailNotificationService {
 			RecipientType type) throws ValidationException;
 
 	void sendEmail(String subject, String text, String html, Recipient[] recipients, EmailAttachment... attachments)
-			throws MailException;
+			throws MailException, AccessDeniedException;
 
 	void sendEmail(Realm realm, String subject, String text, String html, Recipient[] recipients,
-			EmailAttachment... attachments) throws MailException;
+			EmailAttachment... attachments) throws MailException, AccessDeniedException;
 
 	void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail,
-			Recipient[] recipients, EmailAttachment... attachments) throws MailException;
+			Recipient[] recipients, EmailAttachment... attachments) throws MailException, AccessDeniedException;
 
 }
