@@ -22,13 +22,13 @@ public interface EmailNotificationService {
 	String populateEmailList(String[] emails, List<Recipient> recipients,
 			RecipientType type) throws ValidationException;
 
-	void sendEmail(String subject, String text, String html, Recipient[] recipients, EmailAttachment... attachments)
-			throws MailException, AccessDeniedException;
+	void sendEmail(String subject, String text, String html, Recipient[] recipients, boolean track, EmailAttachment... attachments)
+			throws MailException, AccessDeniedException, ValidationException;
 
-	void sendEmail(Realm realm, String subject, String text, String html, Recipient[] recipients,
-			EmailAttachment... attachments) throws MailException, AccessDeniedException;
+	void sendEmail(Realm realm, String subject, String text, String html, Recipient[] recipients, boolean track, 
+			EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException;
 
 	void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail,
-			Recipient[] recipients, EmailAttachment... attachments) throws MailException, AccessDeniedException;
+			Recipient[] recipients, boolean track, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException;
 
 }

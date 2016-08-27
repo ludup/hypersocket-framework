@@ -46,6 +46,28 @@ public class EmailTrackerServiceImpl implements EmailTrackerService {
 	}
 	
 	@Override
+	public String generateNonTrackingUri(String uuid, Realm realm) throws AccessDeniedException {
+		
+		String externalHostname = realmService.getRealmHostname(realm);
+		if(StringUtils.isBlank(externalHostname)) {
+			externalHostname = configurationService.getValue(realm,"email.externalHostname");
+		}
+		if(StringUtils.isBlank(externalHostname)) {
+			throw new AccessDeniedException("External hostname cannot be resolved for tracking image");
+		}
+		if(externalHostname.startsWith("http")) {
+			return String.format("%s/%s/api/files/download/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
+				systemConfigurationService.getValue("application.path"),
+				uuid);
+		} else {
+			return String.format("https://%s/%s/api/files/download/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
+					systemConfigurationService.getValue("application.path"),
+					uuid);
+		}
+		
+	}
+	
+	@Override
 	public String generateTrackingUri(String subject, String name, String emailAddress, Realm realm) throws AccessDeniedException {
 		
 		Principal principal = null;

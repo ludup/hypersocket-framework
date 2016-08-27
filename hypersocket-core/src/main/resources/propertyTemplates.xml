@@ -28,7 +28,8 @@
 		<property resourceKey="email.htmlTemplate" inputType="fileInput"
 			weight="700" defaultValue="" />
 		<property resourceKey="email.trackingImage" inputType="fileInput" weight="700" defaultValue="" />
-		<property resourceKey="email.externalHostname" inputType="text" weight="700" defaultValue="" />
+		<property resourceKey="email.archiveAddress" inputType="text" weight="800" defaultValue="" />
+		<property resourceKey="email.externalHostname" inputType="text" weight="900" defaultValue="" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.localization"
 		resourceBundle="I18NService" weight="700">
