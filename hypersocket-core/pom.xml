@@ -36,8 +36,8 @@
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
-		    <artifactId>javax.servlet-api</artifactId>
-		    <version>3.0.1</version>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.0.1</version>
 		</dependency>
 
 		<dependency>
@@ -103,10 +103,10 @@
 			<version>${org.springframework.version}</version>
 		</dependency>
 		<dependency>
-	       <groupId>org.springframework</groupId>
-	       <artifactId>spring-context-support</artifactId>
-	       <version>${org.springframework.version}</version>
-		</dependency> 
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+			<version>${org.springframework.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
@@ -122,71 +122,42 @@
 			<artifactId>aspectjweaver</artifactId>
 			<version>${aspectj.version}</version>
 		</dependency>
-		<!-- <dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib</artifactId>
-			<version>2.2.2</version>
-		</dependency> -->
 
 		<dependency>
-		    <groupId>com.mchange</groupId>
-		    <artifactId>c3p0</artifactId>
-		    <version>0.9.5.2</version>
+			<groupId>com.mchange</groupId>
+			<artifactId>c3p0</artifactId>
+			<version>0.9.5.2</version>
 		</dependency>
 
-		<!-- <dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-			<version>2.10.1</version>
-		</dependency> -->
-		
 		<!-- Cache -->
 		<dependency>
 			<groupId>javax.cache</groupId>
 			<artifactId>cache-api</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-		
-		<!-- <dependency>
-		    <groupId>com.hazelcast</groupId>
-		    <artifactId>hazelcast-all</artifactId>
-		    <version>3.7-EA</version>
-		</dependency> -->
-		
+
 		<dependency>
-		    <groupId>com.hazelcast</groupId>
-		    <artifactId>hazelcast-hibernate5</artifactId>
-		    <version>1.0</version>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast-hibernate5</artifactId>
+			<version>1.0</version>
 		</dependency>
 
 		<dependency>
-		    <groupId>com.hazelcast</groupId>
-		    <artifactId>hazelcast</artifactId>
-		    <version>3.7-EA</version>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast</artifactId>
+			<version>3.7-EA</version>
 		</dependency>
-		
+
 		<dependency>
-		    <groupId>com.hazelcast</groupId>
-		    <artifactId>hazelcast-client</artifactId>
-		    <version>3.7-EA</version>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast-client</artifactId>
+			<version>3.7-EA</version>
 		</dependency>
-		
-		<!-- <dependency>
-		    <groupId>com.hazelcast</groupId>
-		    <artifactId>hazelcast-cloud</artifactId>
-		    <version>3.7-EA</version>
-		</dependency> -->
-		
-		<!-- <dependency>
-		    <groupId>com.hazelcast</groupId>
-		    <artifactId>hazelcast-hibernate4</artifactId>
-		    <version>3.6.2</version>
-		</dependency> -->
-		
+
 		<dependency>
-		    <groupId>com.hazelcast</groupId>
-		    <artifactId>hazelcast-spring</artifactId>
-		    <version>3.7-EA</version>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast-spring</artifactId>
+			<version>3.7-EA</version>
 		</dependency>
 
 		<!-- Jackson -->
@@ -261,18 +232,18 @@
 			<version>5.0.9.Final</version>
 		</dependency>
 
-		<!-- <dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-ehcache</artifactId>
-			<version>3.6.10.Final</version>
-			<exclusions>
-				<exclusion>
-					<groupId>net.sf.ehcache</groupId>
-					<artifactId>ehcache-core</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.hibernate</groupId> -->
+<!-- 			<artifactId>hibernate-entitymanager</artifactId> -->
+<!-- 			<version>5.0.9.Final</version> -->
+<!-- 		</dependency> -->
 
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-search-orm</artifactId>
+			<version>5.5.4.Final</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>javassist</groupId>
 			<artifactId>javassist</artifactId>
@@ -309,7 +280,7 @@
 			<artifactId>javax.mail-api</artifactId>
 			<version>1.5.3</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>javax.mail</artifactId>
@@ -321,13 +292,13 @@
 			<artifactId>commons-codec</artifactId>
 			<version>1.7</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.quartz-scheduler</groupId>
 			<artifactId>quartz</artifactId>
 			<version>2.2.2</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>me.atlis</groupId>
 			<artifactId>decibelinsight-uasparser</artifactId>

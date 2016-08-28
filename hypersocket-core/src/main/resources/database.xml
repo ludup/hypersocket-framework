@@ -72,6 +72,10 @@
 					<prop key="hibernate.cache.region.factory_class">THIS REQUIRED PROPERTY FOR CACHING IS CONFIGURED IN HypersocketAnnotationSessionFactoryBean</prop> 
 				-->
 	
+				<!-- Search indexing -->
+				<prop key="hibernate.search.default.directory_provider">filesystem</prop>
+
+				<prop key="hibernate.search.default.indexBase">conf/lucene/indexes</prop>
 			</props>
 		</property>
 	</bean>

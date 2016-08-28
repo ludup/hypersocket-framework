@@ -149,7 +149,6 @@ public class FileStoreController extends ResourceController {
 		}
 	}
 
-	@AuthenticationRequired
 	@RequestMapping(value = "files/download/{uuid}", method = RequestMethod.GET)
 	@ResponseStatus(value = HttpStatus.OK)
 	public void downloadFile(HttpServletRequest request,
@@ -157,15 +156,7 @@ public class FileStoreController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, IOException, ResourceNotFoundException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-
 			resourceService.downloadURIFile(uuid, request, response, true);
-
-		} finally {
-			clearAuthenticatedContext();
-		}
 	}
 	
 	@AuthenticationRequired

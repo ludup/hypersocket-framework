@@ -903,6 +903,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			eventService.publishEvent(new RealmUpdatedEvent(this, e, getCurrentSession(), realm));
 			throw e;
 		} catch (Throwable t) {
+			log.error("Unexpected error", t);
 			eventService.publishEvent(new RealmUpdatedEvent(this, t, getCurrentSession(), realm));
 			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
 		}

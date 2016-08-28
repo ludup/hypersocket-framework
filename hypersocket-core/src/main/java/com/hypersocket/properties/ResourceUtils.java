@@ -130,7 +130,7 @@ public class ResourceUtils {
 	}
 
 	public static boolean isEncrypted(String value) {
-		return value.startsWith(getEncryptedTag());
+		return value!=null && value.startsWith(getEncryptedTag());
 	}
 
 	public static <T extends Resource> String implodeResourceValues(Collection<T> entities) {

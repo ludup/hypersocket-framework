@@ -882,6 +882,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		}
 		return results;
 	}
+	
 	@Override
 	@Transactional(readOnly = true)
 	public Map<String, String> getProperties(AbstractResource resource) {
@@ -890,6 +891,24 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		for (String name : getPropertyNames(resource)) {
 			if (propertyTemplates.containsKey(name)) {
 				properties.put(name, getValue(resource, name));
+			}
+		}
+		return properties;
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Map<String, String> getProperties(AbstractResource resource, boolean decrypt) {
+
+		Map<String, String> properties = new HashMap<String, String>();
+		for (String name : getPropertyNames(resource)) {
+			if (propertyTemplates.containsKey(name)) {
+				PropertyTemplate t = propertyTemplates.get(name);
+				if(t.isEncrypted()) {
+					properties.put(name, getDecryptedValue(resource, t.getResourceKey()));
+				} else {
+					properties.put(name, getValue(resource, name));
+				}
 			}
 		}
 		return properties;

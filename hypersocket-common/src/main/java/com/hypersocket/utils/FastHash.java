@@ -9,20 +9,16 @@ import net.jpountz.xxhash.XXHashFactory;
 public class FastHash {
 
 	StreamingXXHash32 hash32;
-	boolean print = false;
+
 	public FastHash() {
 		XXHashFactory factory = XXHashFactory.fastestInstance();
 		int seed = 0x9747b28f; 
 		hash32 = factory.newStreamingHash32(seed);
 	}
 	
-	public void setPrint(boolean print) {
-		this.print = print;
-	}
-	
 	public void putString(String str) {
-		if(print) {
-			System.out.println(str);
+		if(str==null) {
+			str = "NULL";
 		}
 		byte[] b;
 		try {
@@ -37,9 +33,6 @@ public class FastHash {
 	}
 	
 	public void putBoolean(boolean b) {
-		if(print) {
-			System.out.println(b ? "1" : "0");
-		}
 		hash32.update(new byte[] { (byte) (b ? 1 : 0)}, 0, 1);
 	}
 	
