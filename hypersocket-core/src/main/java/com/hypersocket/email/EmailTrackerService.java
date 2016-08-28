@@ -2,6 +2,7 @@ package com.hypersocket.email;
 
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.resource.ResourceNotFoundException;
 
 public interface EmailTrackerService {
 
@@ -9,6 +10,6 @@ public interface EmailTrackerService {
 
 	String generateTrackingUri(String subject, String name, String emailAddress, Realm realm) throws AccessDeniedException;
 
-	String generateNonTrackingUri(String uuid, Realm realm) throws AccessDeniedException;
+	String generateNonTrackingUri(String uuid, Realm realm) throws AccessDeniedException, ResourceNotFoundException;
 
 }
