@@ -54,7 +54,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	boolean secure;
 	HttpSession session;
 	ServletContext context;
-
+	HttpRequestChunkStream chunkedInputStream = null;
 	
 	public HttpRequestServletWrapper(HttpRequest request,
 			InetSocketAddress localAddress, 
@@ -224,6 +224,12 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public ServletInputStream getInputStream() throws IOException {
+		if(request.isChunked()) {
+			if(chunkedInputStream==null) {
+				chunkedInputStream = new HttpRequestChunkStream();
+			}
+			return chunkedInputStream;
+		}
 		return new ChannelBufferServletInputStream(request.getContent());
 	}
 
@@ -501,6 +507,23 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	@Override
 	public boolean isRequestedSessionIdFromUrl() {
 		return false;
+	}
+
+	public void dispose() {
+		request.setContent(null);
+		request = null;
+		attributes = null;
+		parameters = null;
+		charset = null;
+		queryString = null;
+		pathInfo = null;
+		url = null;
+		uri = null;
+		localAddress = null;
+		remoteAddress = null;
+		cookies = null;
+		session = null;
+		context = null;
 	}
 
 }

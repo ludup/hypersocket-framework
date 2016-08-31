@@ -91,34 +91,21 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			throws Exception {
 		Object msg = e.getMessage();
 
-		if (wantsMessage && msg instanceof HttpRequest) {
-
+		if(msg instanceof HttpRequest) {
+		
 			HttpRequest nettyRequest = (HttpRequest) msg;
-
-			if (!nettyRequest.isChunked()) {
-				processRequest(ctx, nettyRequest);
-			} else {
-				ctx.getChannel().setAttachment(ChannelBuffers.dynamicBuffer());
-				currentRequest = nettyRequest;
-				wantsMessage = false;
-			}
+			dispatchRequest(ctx, nettyRequest);
 
 		} else if (msg instanceof WebSocketFrame) {
 
 			processWebsocketFrame((WebSocketFrame) msg, ctx.getChannel());
 
 		} else if (msg instanceof HttpChunk) {
-			
+	
 			HttpChunk chunk = (HttpChunk) msg;
-			ChannelBuffer buffer = (ChannelBuffer) ctx.getChannel()
-					.getAttachment();
-			buffer.writeBytes(chunk.getContent());
+			HttpRequestServletWrapper servletRequest = (HttpRequestServletWrapper) ctx.getChannel().getAttachment();
+			((HttpRequestChunkStream)servletRequest.getInputStream()).setCurrentChunk(chunk);
 
-			if (chunk.isLast()) {
-				processRequest(ctx, currentRequest);
-				currentRequest = null;
-				wantsMessage = true;
-			}
 		} else {
 			if (log.isErrorEnabled()) {
 				log.error("Received invalid MessageEvent " + msg.toString());
@@ -126,159 +113,194 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		}
 
 	}
-
-	private void processRequest(ChannelHandlerContext ctx,
-			HttpRequest nettyRequest)
-			throws IOException {
-
-		HTTPInterfaceResource interfaceResource = (HTTPInterfaceResource) ctx.getChannel().getParent().getAttachment();
-		
-		HttpResponseServletWrapper nettyResponse = new HttpResponseServletWrapper(
-				new DefaultHttpResponse(HttpVersion.HTTP_1_1,
-						HttpResponseStatus.OK),
-				ctx.getChannel(), nettyRequest);
-
-		HypersocketSession session = server.setupHttpSession(
-				nettyRequest.getHeaders("Cookie"), 
-				interfaceResource.getProtocol()==HTTPProtocol.HTTPS,
-				nettyResponse);
-
-		InetSocketAddress remoteAddress = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
-		if(nettyRequest.containsHeader("X-Forwarded-For")) {
-			String[] ips = nettyRequest.getHeader("X-Forwarded-For").split(",");
-			remoteAddress = new InetSocketAddress(ips[0], remoteAddress.getPort());
-		} else if(nettyRequest.containsHeader("Forwarded")) {
-			StringTokenizer t = new StringTokenizer(nettyRequest.getHeader("Forwarded"), ";");
-			while(t.hasMoreTokens()) {
-				String[] pair = t.nextToken().split("=");
-				if(pair.length == 2 && pair[0].equalsIgnoreCase("for")) {
-					remoteAddress = new InetSocketAddress(pair[1], remoteAddress.getPort());
-				}
-			}
-		}
-		
-		HttpRequestServletWrapper servletRequest = new HttpRequestServletWrapper(
-				nettyRequest, (InetSocketAddress) ctx.getChannel()
-						.getLocalAddress(), remoteAddress, 
-						interfaceResource.getProtocol()==HTTPProtocol.HTTPS, 
-						server.getServletConfig().getServletContext(), session);
-
-		String reverseUri = servletRequest.getRequestURI();
-		reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
-		reverseUri = reverseUri.replace(server.getUiPath(), "${uiPath}");
-		reverseUri = reverseUri.replace(server.getBasePath(), "${basePath}");
-		
-		Map<Pattern,String> rewrites = server.getUrlRewrites();
-		for(Pattern regex : rewrites.keySet()) {
-			Matcher matcher = regex.matcher(reverseUri);
-			if(matcher.matches()) {
-				String uri = processReplacements(rewrites.get(regex));
-				uri = matcher.replaceAll(uri);
-				servletRequest.setAttribute(BROWSER_URI, nettyRequest.getUri());
-				servletRequest.parseUri(uri);
-				break;
-			}
-		}
-		
-		Map<String,String> aliases = server.getAliases();
-		if(aliases.containsKey(reverseUri)) {
-			String path = processReplacements(aliases.get(reverseUri));
-			if(path.startsWith("redirect:")) {
-				nettyResponse.sendRedirect(path.substring(9), true);
-				sendResponse(servletRequest, nettyResponse, false);
-				return;
-			} else {
-				servletRequest.setAttribute(BROWSER_URI, nettyRequest.getUri());
-				servletRequest.parseUri(path);
-			}
-		}
-		
-		Request.set(servletRequest);
-		
-		if (log.isDebugEnabled()) {
-			synchronized (log) {
-				log.debug("Begin Request <<<<<<<<<");
-				log.debug(servletRequest.getMethod() + " "
-						+ servletRequest.getRequestURI() + " "
-						+ servletRequest.getProtocol());
-				Enumeration<String> headerNames = servletRequest
-						.getHeaderNames();
-				while (headerNames.hasMoreElements()) {
-					String header = headerNames.nextElement();
-					Enumeration<String> values = servletRequest
-							.getHeaders(header);
-					while (values.hasMoreElements()) {
-						log.debug(header + ": " + values.nextElement());
-					}
-				}
-				log.debug("End Request <<<<<<<<<");
-			}
-		}
-
-		if (ctx.getChannel().getLocalAddress() instanceof InetSocketAddress) {
-			
-			if (interfaceResource.getProtocol()==HTTPProtocol.HTTP && interfaceResource.getRedirectHTTPS()) {
-				// Redirect the plain port to SSL
-				String host = nettyRequest.getHeader(HttpHeaders.HOST);
-				if(host==null) {
-					nettyResponse.sendError(400, "No Host Header");
-				} else {
-					int idx;
-					if ((idx = host.indexOf(':')) > -1) {
-						host = host.substring(0, idx);
-					}
-					nettyResponse.sendRedirect("https://"
-							+ host
-							+ (interfaceResource.getRedirectPort() != 443 ? ":"
-									+ String.valueOf(interfaceResource.getRedirectPort()) : "")
-							+ nettyRequest.getUri());
-				}
-				sendResponse(servletRequest, nettyResponse, false);
-				return;
-			}
-		}
-
-		if (nettyRequest.containsHeader("Upgrade")) {
-			for (WebsocketHandler handler : server.getWebsocketHandlers()) {
-				if (handler.handlesRequest(servletRequest)) {
-					try {
-						handler.acceptWebsocket(servletRequest, nettyResponse,
-								new WebsocketConnectCallback(ctx.getChannel(),
-										servletRequest, nettyResponse, handler), this);
-					} catch (AccessDeniedException ex) {
-						log.error("Failed to open tunnel", ex);
-						nettyResponse.setStatus(HttpStatus.SC_FORBIDDEN);
-						sendResponse(servletRequest, nettyResponse, false);
-					} catch (UnauthorizedException ex) {
-						log.error("Failed to open tunnel", ex);
-						nettyResponse.setStatus(HttpStatus.SC_UNAUTHORIZED);
-						sendResponse(servletRequest, nettyResponse, false);
-					}
-					return;
-				}
-			}
+	
+	private void dispatchRequest(ChannelHandlerContext ctx,
+			HttpRequest nettyRequest) {
+		if(nettyRequest.isChunked()) {
+			server.getExecutor().submit(new RequestWorker(ctx, nettyRequest));
 		} else {
-			for (HttpRequestHandler handler : server.getHttpHandlers()) {
-				if(log.isDebugEnabled()) {
-					log.debug("Checking HTTP handler: " + handler.getName());
-				}
-				if (handler.handlesRequest(servletRequest)) {
-					if(log.isDebugEnabled()) {
-						log.debug(handler.getName() + " is processing HTTP request");
+			new RequestWorker(ctx, nettyRequest).run();
+		}
+	}
+
+	class RequestWorker implements Runnable {
+
+		ChannelHandlerContext ctx;
+		HttpRequest nettyRequest;
+		HttpRequestServletWrapper servletRequest;
+		HypersocketSession session;
+		HttpResponseServletWrapper nettyResponse;
+		HTTPInterfaceResource interfaceResource;
+		
+		RequestWorker(ChannelHandlerContext ctx,
+			HttpRequest nettyRequest) {
+			this.ctx = ctx;
+			this.nettyRequest = nettyRequest;
+			
+			interfaceResource = (HTTPInterfaceResource) ctx.getChannel().getParent().getAttachment();
+			
+			nettyResponse = new HttpResponseServletWrapper(
+					new DefaultHttpResponse(HttpVersion.HTTP_1_1,
+							HttpResponseStatus.OK),
+					ctx.getChannel(), nettyRequest);
+	
+			session = server.setupHttpSession(
+					nettyRequest.getHeaders("Cookie"), 
+					interfaceResource.getProtocol()==HTTPProtocol.HTTPS,
+					nettyResponse);
+	
+			InetSocketAddress remoteAddress = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
+			if(nettyRequest.containsHeader("X-Forwarded-For")) {
+				String[] ips = nettyRequest.getHeader("X-Forwarded-For").split(",");
+				remoteAddress = new InetSocketAddress(ips[0], remoteAddress.getPort());
+			} else if(nettyRequest.containsHeader("Forwarded")) {
+				StringTokenizer t = new StringTokenizer(nettyRequest.getHeader("Forwarded"), ";");
+				while(t.hasMoreTokens()) {
+					String[] pair = t.nextToken().split("=");
+					if(pair.length == 2 && pair[0].equalsIgnoreCase("for")) {
+						remoteAddress = new InetSocketAddress(pair[1], remoteAddress.getPort());
 					}
-					handler.handleHttpRequest(servletRequest, nettyResponse,
-							this);
-					return;
 				}
 			}
+			
+			servletRequest = new HttpRequestServletWrapper(
+					nettyRequest, (InetSocketAddress) ctx.getChannel()
+							.getLocalAddress(), remoteAddress, 
+							interfaceResource.getProtocol()==HTTPProtocol.HTTPS, 
+							server.getServletConfig().getServletContext(), session);
+			
+			if(nettyRequest.isChunked()) {
+				ctx.getChannel().setAttachment(servletRequest);
+			}
 		}
-
 		
-		send404(servletRequest, nettyResponse);
-		sendResponse(servletRequest, nettyResponse, false);
-
-		if (log.isDebugEnabled()) {
-			log.debug("Leaving HttpRequestDispatcherHandler processRequest");
+		public void run() {
+		
+			try {
+				
+		
+				String reverseUri = servletRequest.getRequestURI();
+				reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
+				reverseUri = reverseUri.replace(server.getUiPath(), "${uiPath}");
+				reverseUri = reverseUri.replace(server.getBasePath(), "${basePath}");
+				
+				Map<Pattern,String> rewrites = server.getUrlRewrites();
+				for(Pattern regex : rewrites.keySet()) {
+					Matcher matcher = regex.matcher(reverseUri);
+					if(matcher.matches()) {
+						String uri = processReplacements(rewrites.get(regex));
+						uri = matcher.replaceAll(uri);
+						servletRequest.setAttribute(BROWSER_URI, nettyRequest.getUri());
+						servletRequest.parseUri(uri);
+						break;
+					}
+				}
+				
+				Map<String,String> aliases = server.getAliases();
+				if(aliases.containsKey(reverseUri)) {
+					String path = processReplacements(aliases.get(reverseUri));
+					if(path.startsWith("redirect:")) {
+						nettyResponse.sendRedirect(path.substring(9), true);
+						sendResponse(servletRequest, nettyResponse, false);
+						return;
+					} else {
+						servletRequest.setAttribute(BROWSER_URI, nettyRequest.getUri());
+						servletRequest.parseUri(path);
+					}
+				}
+				
+				Request.set(servletRequest);
+				
+				if (log.isDebugEnabled()) {
+					synchronized (log) {
+						log.debug("Begin Request <<<<<<<<<");
+						log.debug(servletRequest.getMethod() + " "
+								+ servletRequest.getRequestURI() + " "
+								+ servletRequest.getProtocol());
+						Enumeration<String> headerNames = servletRequest
+								.getHeaderNames();
+						while (headerNames.hasMoreElements()) {
+							String header = headerNames.nextElement();
+							Enumeration<String> values = servletRequest
+									.getHeaders(header);
+							while (values.hasMoreElements()) {
+								log.debug(header + ": " + values.nextElement());
+							}
+						}
+						log.debug("End Request <<<<<<<<<");
+					}
+				}
+		
+				if (ctx.getChannel().getLocalAddress() instanceof InetSocketAddress) {
+					
+					if (interfaceResource.getProtocol()==HTTPProtocol.HTTP && interfaceResource.getRedirectHTTPS()) {
+						// Redirect the plain port to SSL
+						String host = nettyRequest.getHeader(HttpHeaders.HOST);
+						if(host==null) {
+							nettyResponse.sendError(400, "No Host Header");
+						} else {
+							int idx;
+							if ((idx = host.indexOf(':')) > -1) {
+								host = host.substring(0, idx);
+							}
+							nettyResponse.sendRedirect("https://"
+									+ host
+									+ (interfaceResource.getRedirectPort() != 443 ? ":"
+											+ String.valueOf(interfaceResource.getRedirectPort()) : "")
+									+ nettyRequest.getUri());
+						}
+						sendResponse(servletRequest, nettyResponse, false);
+						return;
+					}
+				}
+		
+				if (nettyRequest.containsHeader("Upgrade")) {
+					for (WebsocketHandler handler : server.getWebsocketHandlers()) {
+						if (handler.handlesRequest(servletRequest)) {
+							try {
+								handler.acceptWebsocket(servletRequest, nettyResponse,
+										new WebsocketConnectCallback(ctx.getChannel(),
+												servletRequest, nettyResponse, handler), 
+										HttpRequestDispatcherHandler.this);
+							} catch (AccessDeniedException ex) {
+								log.error("Failed to open tunnel", ex);
+								nettyResponse.setStatus(HttpStatus.SC_FORBIDDEN);
+								sendResponse(servletRequest, nettyResponse, false);
+							} catch (UnauthorizedException ex) {
+								log.error("Failed to open tunnel", ex);
+								nettyResponse.setStatus(HttpStatus.SC_UNAUTHORIZED);
+								sendResponse(servletRequest, nettyResponse, false);
+							}
+							return;
+						}
+					}
+				} else {
+					for (HttpRequestHandler handler : server.getHttpHandlers()) {
+						if(log.isDebugEnabled()) {
+							log.debug("Checking HTTP handler: " + handler.getName());
+						}
+						if (handler.handlesRequest(servletRequest)) {
+							if(log.isDebugEnabled()) {
+								log.debug(handler.getName() + " is processing HTTP request");
+							}
+							handler.handleHttpRequest(servletRequest, nettyResponse,
+									HttpRequestDispatcherHandler.this);
+							return;
+						}
+					}
+				}
+		
+				
+				send404(servletRequest, nettyResponse);
+				sendResponse(servletRequest, nettyResponse, false);
+		
+				if (log.isDebugEnabled()) {
+					log.debug("Leaving HttpRequestDispatcherHandler processRequest");
+				}
+			} catch(Throwable t) {
+				log.error("Error in HTTP request worker", t);
+				ctx.getChannel().close();
+			}
 		}
 	}
 	
@@ -420,7 +442,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			if (log.isDebugEnabled()) {
 				log.debug("End Response >>>>>>");
 			}
-			
+			servletRequest.dispose();
+			servletResponse.dispose();
 			Request.remove();
 		}
 
