@@ -300,5 +300,15 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 		return closeOnComplete;
 	}
 
+	public void dispose() {
+		response = null;
+		charset = null;
+		locale = null;
+		buffer = null;
+		out = null;
+		channel = null;
+		request = null;
+	}
+
 
 }

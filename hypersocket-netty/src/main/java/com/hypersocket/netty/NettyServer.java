@@ -38,6 +38,8 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.execution.ExecutionHandler;
+import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
@@ -83,6 +85,9 @@ public class NettyServer extends HypersocketServerImpl {
 	MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
 	Map<String,List<Channel>> channelsByIPAddress = new HashMap<String,List<Channel>>();
 	
+	ExecutionHandler executionHandler = new ExecutionHandler(
+            new OrderedMemoryAwareThreadPoolExecutor(16, 1048576, 1048576));
+	
 	@Autowired
 	IPRestrictionService ipRestrictionService; 
 	
@@ -110,6 +115,11 @@ public class NettyServer extends HypersocketServerImpl {
 
 	public ServerBootstrap getServerBootstrap() {
 		return serverBootstrap;
+	}
+	
+	@Override
+	public ExecutorService getExecutor() {
+		return executor;
 	}
 
 	@Override
