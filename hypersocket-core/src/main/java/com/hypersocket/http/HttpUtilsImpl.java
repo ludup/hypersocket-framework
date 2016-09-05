@@ -68,7 +68,6 @@ public class HttpUtilsImpl implements HttpUtils {
 	@Override
 	public CloseableHttpClient createHttpClient(boolean allowSelfSigned)
 			throws IOException {
-		
 		CloseableHttpClient httpclient = null;
 		
 		boolean strict = systemConfigurationService.getBooleanValue("ssl.strict");
