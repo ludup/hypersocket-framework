@@ -122,7 +122,7 @@ public class NettyServer extends HypersocketServerImpl /* implements ObjectSizeE
 	            		configurationService.getIntValue("netty.maxChannels"), 
 	            		configurationService.getIntValue("netty.maxChannelMemory"), 
 	            		configurationService.getIntValue("netty.maxTotalMemory"),
-	            		30,
+	            		60 * 5,
 	            		TimeUnit.SECONDS,
 	            		nettyThreadFactory));
 		
