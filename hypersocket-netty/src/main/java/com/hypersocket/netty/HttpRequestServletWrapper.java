@@ -62,7 +62,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	boolean secure;
 	HttpSession session;
 	ServletContext context;
-
+	HttpRequestChunkStream chunkedInputStream = null;
 	
 	public HttpRequestServletWrapper(HttpRequest request,
 			InetSocketAddress localAddress, 
@@ -232,6 +232,12 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public ServletInputStream getInputStream() throws IOException {
+		if(request.isChunked()) {
+			if(chunkedInputStream==null) {
+				chunkedInputStream = new HttpRequestChunkStream();
+			}
+			return chunkedInputStream;
+		}
 		return new ChannelBufferServletInputStream(request.getContent());
 	}
 
@@ -518,14 +524,12 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public AsyncContext startAsync() throws IllegalStateException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse)
 			throws IllegalStateException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -546,38 +550,49 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public DispatcherType getDispatcherType() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public void login(String username, String password) throws ServletException {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void logout() throws ServletException {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public Collection<Part> getParts() throws IOException, ServletException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Part getPart(String name) throws IOException, ServletException {
-		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public void dispose() {
+		request.setContent(null);
+		request = null;
+		attributes = null;
+		parameters = null;
+		charset = null;
+		queryString = null;
+		pathInfo = null;
+		url = null;
+		uri = null;
+		localAddress = null;
+		remoteAddress = null;
+		cookies = null;
+		session = null;
+		context = null;
 	}
 
 }

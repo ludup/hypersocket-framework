@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<propertyTemplates>
+	<propertyCategory resourceKey="category.netty"
+		 resourceBundle="NettyServer" weight="9999">
+		<property resourceKey="netty.receiveBuffer" inputType="integer" minValue="0" maxValue="99999999999"
+			defaultValue="1048576" weight="100" restart="true" />
+		<property resourceKey="netty.sendBuffer" inputType="integer" minValue="0" maxValue="99999999999"
+			defaultValue="1048576" weight="200" restart="true" />
+		<property resourceKey="netty.backlog" inputType="integer" minValue="0" maxValue="99999"
+			defaultValue="500" weight="500" restart="true" />
+		<property resourceKey="netty.maxChannels" inputType="integer" minValue="10" maxValue="99999"
+			defaultValue="1000" weight="700" restart="true" />
+		<property resourceKey="netty.maxChannelMemory" inputType="integer" minValue="0" maxValue="99999999999"
+			defaultValue="1048576" weight="800" restart="true" />
+		<property resourceKey="netty.maxTotalMemory" inputType="integer" minValue="0" maxValue="99999999999"
+			defaultValue="52428800" weight="900" restart="true" />
+	</propertyCategory>
+</propertyTemplates>

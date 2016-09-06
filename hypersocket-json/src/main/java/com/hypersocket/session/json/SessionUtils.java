@@ -224,19 +224,35 @@ public class SessionUtils {
 				shortCode, resourceClz);
 
 		if(token!=null) {
-			if (request.getRemoteAddr().equals(
+
+			if (!request.getRemoteAddr().equals(
 					token.getSession().getRemoteAddress())) {
-				
-				// Preserve the session for future lookups in this request and session
-				request.setAttribute(AUTHENTICATED_SESSION, token.getSession());
-				request.getSession().setAttribute(AUTHENTICATED_SESSION, token.getSession());
-	
-				addAPISession(request, response, token.getSession());
-				
-				return token;
+				if(log.isInfoEnabled()) {
+					log.info(String.format("Session token %s for %s does not belong to %s", 
+							shortCode, 
+							request.getRemoteAddr(),
+							token.getSession().getRemoteAddress()));
+				}
+				throw new UnauthorizedException();
 			}
+			
+			if(log.isInfoEnabled()) {
+				log.info(String.format("Session token %s is valid", shortCode));
+			}
+			
+			// Preserve the session for future lookups in this request and session
+			request.setAttribute(AUTHENTICATED_SESSION, token.getSession());
+			request.getSession().setAttribute(AUTHENTICATED_SESSION, token.getSession());
+
+			addAPISession(request, response, token.getSession());
+			
+			return token;
+			
 		}
 
+		if(log.isInfoEnabled()) {
+			log.info(String.format("Session token %s is invalid", shortCode));
+		}
 		throw new UnauthorizedException();
 	}
 

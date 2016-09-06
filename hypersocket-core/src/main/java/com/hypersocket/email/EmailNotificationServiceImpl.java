@@ -1,6 +1,8 @@
 package com.hypersocket.email;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -65,19 +67,19 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 	@Override
 	@SafeVarargs
-	public final void sendEmail(String subject, String text, String html, Recipient[] recipients, EmailAttachment... attachments) throws MailException, AccessDeniedException {
-		sendEmail(getCurrentRealm(), subject, text, html, recipients, attachments);
+	public final void sendEmail(String subject, String text, String html, Recipient[] recipients, boolean track, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
+		sendEmail(getCurrentRealm(), subject, text, html, recipients, track, attachments);
 	}
 	
 	@Override
 	@SafeVarargs
-	public final void sendEmail(Realm realm, String subject, String text, String html, Recipient[] recipients, EmailAttachment... attachments) throws MailException, AccessDeniedException {
-		sendEmail(realm, subject, text, html, null, null, recipients, attachments);
+	public final void sendEmail(Realm realm, String subject, String text, String html, Recipient[] recipients, boolean track, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
+		sendEmail(realm, subject, text, html, null, null, recipients, track, attachments);
 	}
 	
 	@Override
 	@SafeVarargs
-	public final void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail, Recipient[] recipients, EmailAttachment... attachments) throws MailException, AccessDeniedException {
+	public final void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail, Recipient[] recipients, boolean track, EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
 		
 		Mailer mail = new Mailer(configurationService.getValue(realm, SMTP_HOST), 
 				configurationService.getIntValue(realm, SMTP_PORT), 
@@ -85,56 +87,81 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				configurationService.getDecryptedValue(realm, SMTP_PASSWORD),
 				TransportStrategy.values()[configurationService.getIntValue(realm, SMTP_PROTOCOL)]);
 		
+		String archiveAddress = configurationService.getValue(realm, "email.archiveAddress");
+		List<Recipient> archiveRecipients = new ArrayList<Recipient>();
+
+		if(StringUtils.isNotBlank(archiveAddress)) {
+			populateEmailList(new String[] {archiveAddress} , archiveRecipients, RecipientType.TO);
+		}
+
 		for(Recipient r : recipients) {
-		
-			Email email = new Email();
-			
-			email.setFromAddress(configurationService.getValue(realm, SMTP_FROM_NAME), 
-					configurationService.getValue(realm, SMTP_FROM_ADDRESS));
-			
-			email.addRecipient(r.getName(), r.getAddress(), r.getType());
-			
-			email.setSubject(subject);
-			
-			if(StringUtils.isNotBlank(replyToName) && StringUtils.isNotBlank(replyToEmail)) {
-				email.setReplyToAddress(replyToName, replyToEmail);
-			}
-			
-			String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
-			if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(html)) {
-				try {
-					htmlTemplate = FileUtils.readFileToString(uploadService.getFile(htmlTemplate));
-					htmlTemplate = htmlTemplate.replace("${htmlContent}", html);
-					
-					String trackingImage = configurationService.getValue(realm, "email.trackingImage");
-					if(StringUtils.isNotBlank(trackingImage)) {
-						String trackingUri = trackerService.generateTrackingUri(subject, r.getName(), r.getAddress(), realm);
-						htmlTemplate = htmlTemplate.replace("${trackingImage}", trackingUri);
-					}
-					System.out.println(htmlTemplate);
-					email.setTextHTML(htmlTemplate);
-				} catch (ResourceNotFoundException e) {
-					log.error("Cannot find HTML template", e);
-				} catch (IOException e) {
-					log.error("Cannot find HTML template", e);
-				}
-				
-			} else if(StringUtils.isNotBlank(html)) {
-				email.setTextHTML(html);
-			}
-			
-			email.setText(text);
-			
-			if(attachments!=null) {
-				for(EmailAttachment attachment : attachments) {
-					email.addAttachment(attachment.getName(), attachment);
-				}
-			}
-			
-			mail.sendMail(email);
+			send(realm, mail, subject, text, html, replyToName, replyToEmail, track, r, attachments);
 		}
 		
+		if(!archiveAddress.isEmpty()) {
+			send(realm, mail, subject, text, html, replyToName, replyToEmail, false, archiveRecipients.get(0), attachments);
+		}
+	
+	}
+	
+	private void send(Realm realm, 
+			Mailer mail,
+			String subject, 
+			String plainText, 
+			String htmlText, 
+			String replyToName, 
+			String replyToEmail, 
+			boolean track,
+			Recipient r, 
+			EmailAttachment... attachments) throws AccessDeniedException {
 		
+		Email email = new Email();
+		
+		email.setFromAddress(configurationService.getValue(realm, SMTP_FROM_NAME), 
+				configurationService.getValue(realm, SMTP_FROM_ADDRESS));
+		
+		email.addRecipient(r.getName(), r.getAddress(), RecipientType.TO);
+		
+		email.setSubject(subject);
+		
+		if(StringUtils.isNotBlank(replyToName) && StringUtils.isNotBlank(replyToEmail)) {
+			email.setReplyToAddress(replyToName, replyToEmail);
+		}
+		
+		String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
+		if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(htmlText)) {
+			try {
+				htmlTemplate = FileUtils.readFileToString(uploadService.getFile(htmlTemplate));
+				htmlTemplate = htmlTemplate.replace("${htmlContent}", htmlText);
+				
+				String trackingImage = configurationService.getValue(realm, "email.trackingImage");
+				if(track && StringUtils.isNotBlank(trackingImage)) {
+					String trackingUri = trackerService.generateTrackingUri(subject, r.getName(), r.getAddress(), realm);
+					htmlTemplate = htmlTemplate.replace("${trackingImage}", trackingUri);
+				} else {
+					String trackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);
+					htmlTemplate = htmlTemplate.replace("${trackingImage}", trackingUri);
+				}
+				email.setTextHTML(htmlTemplate);
+			} catch (ResourceNotFoundException e) {
+				log.error("Cannot find HTML template", e);
+			} catch (IOException e) {
+				log.error("Cannot find HTML template", e);
+			}
+			
+		} else if(StringUtils.isNotBlank(htmlText)) {
+			email.setTextHTML(htmlText);
+		}
+		
+		email.setText(plainText);
+		
+		if(attachments!=null) {
+			for(EmailAttachment attachment : attachments) {
+				email.addAttachment(attachment.getName(), attachment);
+			}
+		}
+		
+		mail.sendMail(email);
 	}
 	
 	@Override

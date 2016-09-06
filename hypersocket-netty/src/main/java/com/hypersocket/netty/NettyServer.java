@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -38,6 +39,8 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.execution.ExecutionHandler;
+import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
@@ -48,6 +51,7 @@ import org.springframework.stereotype.Component;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
+import com.hypersocket.i18n.I18NService;
 import com.hypersocket.ip.ExtendedIpFilterRuleHandler;
 import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
@@ -66,8 +70,10 @@ import com.hypersocket.server.websocket.TCPForwardingClientCallback;
 import com.hypersocket.session.SessionService;
 
 @Component
-public class NettyServer extends HypersocketServerImpl {
+public class NettyServer extends HypersocketServerImpl /* implements ObjectSizeEstimator*/  {
 
+	static final String RESOURCE_BUNDLE = "NettyServer";
+	
 	static Logger log = LoggerFactory.getLogger(NettyServer.class);
 
 	private ClientBootstrap clientBootstrap = null;
@@ -83,6 +89,8 @@ public class NettyServer extends HypersocketServerImpl {
 	MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
 	Map<String,List<Channel>> channelsByIPAddress = new HashMap<String,List<Channel>>();
 	
+	ExecutionHandler executionHandler;
+	
 	@Autowired
 	IPRestrictionService ipRestrictionService; 
 	
@@ -95,6 +103,11 @@ public class NettyServer extends HypersocketServerImpl {
 	@Autowired
 	SessionService sessionService;
 	
+	@Autowired
+	I18NService i18nService;
+	
+	NettyThreadFactory nettyThreadFactory;
+	
 	public NettyServer() {
 
 	}
@@ -102,6 +115,18 @@ public class NettyServer extends HypersocketServerImpl {
 	@PostConstruct
 	private void postConstruct() {
 		
+		nettyThreadFactory = new NettyThreadFactory();
+		
+		executionHandler = new ExecutionHandler(
+	            new OrderedMemoryAwareThreadPoolExecutor(
+	            		configurationService.getIntValue("netty.maxChannels"), 
+	            		configurationService.getIntValue("netty.maxChannelMemory"), 
+	            		configurationService.getIntValue("netty.maxTotalMemory"),
+	            		60 * 5,
+	            		TimeUnit.SECONDS,
+	            		nettyThreadFactory));
+		
+		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}
 
 	public ClientBootstrap getClientBootstrap() {
@@ -110,6 +135,11 @@ public class NettyServer extends HypersocketServerImpl {
 
 	public ServerBootstrap getServerBootstrap() {
 		return serverBootstrap;
+	}
+	
+	@Override
+	public ExecutorService getExecutor() {
+		return executor;
 	}
 
 	@Override
@@ -154,9 +184,12 @@ public class NettyServer extends HypersocketServerImpl {
 		});
 
 		
-		serverBootstrap.setOption("child.receiveBufferSize", 1048576);
-		serverBootstrap.setOption("child.sendBufferSize", 1048576);
-		serverBootstrap.setOption("backlog", 5000);
+		serverBootstrap.setOption("child.receiveBufferSize", 
+				configurationService.getIntValue("netty.receiveBuffer"));
+		serverBootstrap.setOption("child.sendBufferSize", 
+				configurationService.getIntValue("netty.sendBuffer"));
+		serverBootstrap.setOption("backlog", 
+				configurationService.getIntValue("netty.backlog"));
 		
 		httpChannels = new HashMap<HTTPInterfaceResource,Set<Channel>>();
 		httpsChannels = new HashMap<HTTPInterfaceResource,Set<Channel>>();
@@ -492,4 +525,31 @@ public class NettyServer extends HypersocketServerImpl {
 			});
 		} 
 	}
+
+//	@Override
+//	public int estimateSize(Object obj) {
+//		
+//		int size = 0;
+//		
+//		if(obj instanceof HttpRequest) {
+//			HttpRequest request = (HttpRequest) obj;
+//		
+//			size = (int) HttpHeaders.getContentLength(request, 1024);
+//		}
+//		
+//		if(obj instanceof HttpChunk) {
+//			HttpChunk chunk = (HttpChunk) obj;
+//			size = chunk.getContent().readableBytes();
+//		}
+//		
+//		if(obj instanceof WebSocketFrame) {
+//			WebSocketFrame frame = (WebSocketFrame) obj;
+//			size = frame.getBinaryData().readableBytes();
+//		}
+//		
+//		if(log.isInfoEnabled()) {
+//			log.info(String.format("Incoming message is %d bytes in size", size));
+//		}
+//		return size;
+//	}
 }

@@ -18,6 +18,8 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.upload.FileUpload;
+import com.hypersocket.upload.FileUploadService;
 import com.hypersocket.utils.FileUtils;
 
 @Service
@@ -40,8 +42,38 @@ public class EmailTrackerServiceImpl implements EmailTrackerService {
 	@Autowired
 	SystemConfigurationService systemConfigurationService; 
 	
+	@Autowired
+	FileUploadService fileService;
+	
 	@PostConstruct
 	private void postConstruct() {
+		
+	}
+	
+	@Override
+	public String generateNonTrackingUri(String uuid, Realm realm) throws AccessDeniedException, ResourceNotFoundException {
+		
+		String externalHostname = realmService.getRealmHostname(realm);
+		if(StringUtils.isBlank(externalHostname)) {
+			externalHostname = configurationService.getValue(realm,"email.externalHostname");
+		}
+		if(StringUtils.isBlank(externalHostname)) {
+			throw new AccessDeniedException("External hostname cannot be resolved for tracking image");
+		}
+		
+		FileUpload file = fileService.getFileByUuid(uuid);
+		
+		if(externalHostname.startsWith("http")) {
+			return String.format("%s/%s/api/files/public/%s/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
+				systemConfigurationService.getValue("application.path"),
+				uuid,
+				file.getFileName());
+		} else {
+			return String.format("https://%s/%s/api/files/public/%s/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
+					systemConfigurationService.getValue("application.path"),
+					uuid,
+					file.getFileName());
+		}
 		
 	}
 	

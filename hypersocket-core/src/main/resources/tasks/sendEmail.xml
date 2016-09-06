@@ -16,10 +16,7 @@
 		resourceBundle="TriggerResourceService" weight="3000">
 		<property resourceKey="email.to" inputType="multipleTextInput"
 			weight="50" defaultValue="" allowEmpty="false" validateAll="email" errorResourceKey="error.toRequired"/>
-		<property resourceKey="email.cc" inputType="multipleTextInput"
-			weight="60" defaultValue="" validateAll="email" />
-		<property resourceKey="email.bcc" inputType="multipleTextInput"
-			weight="70" defaultValue="" validateAll="email" />
+		<property resourceKey="email.track" inputType="switch" weight="0" defaultValue="true"/>
 		<property resourceKey="email.replyToName" inputType="text"
 			weight="80" defaultValue="" size="255" allowEmpty="true"/>
 		<property resourceKey="email.replyToEmail" inputType="text"

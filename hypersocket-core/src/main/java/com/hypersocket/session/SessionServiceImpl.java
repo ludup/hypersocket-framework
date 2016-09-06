@@ -8,6 +8,8 @@
 package com.hypersocket.session;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.rmi.server.RemoteObjectInvocationHandler;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -21,6 +23,7 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
+import org.bouncycastle.util.encoders.Base64;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -550,41 +553,38 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			String authenticationSchemeResourceKey)
 			throws AccessDeniedException {
 
-		String key = createNonCookieSessionKey(remoteAddr, requestHeader,
-				authenticationSchemeResourceKey);
-
-		Session session = nonCookieSessions.get(key);
-
-		if (session != null) {
-			if (!isLoggedOn(session, true)) {
-				throw new AccessDeniedException();
+		try {
+			int idx = requestHeader.indexOf(' ');
+			if(idx > -1) {
+				requestHeader = requestHeader.substring(idx+1);
 			}
-			return session;
+			String auth = new String(Base64.decode(requestHeader), "UTF-8");
+			idx = auth.indexOf(':');
+			String token = auth;
+			if(idx > -1) {
+				token = auth.substring(idx+1);
+			}
+			Session session = nonCookieSessions.get(token);
+
+			if (session != null) {
+				if (!isLoggedOn(session, true)) {
+					throw new AccessDeniedException();
+				}
+				return session;
+			}
+			throw new AccessDeniedException();
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException(e);
 		}
-		throw new AccessDeniedException();
 	}
 
 	@Override
 	public void registerNonCookieSession(String remoteAddr,
-			String requestHeader, String authenticationSchemeResourceKey,
+			String token, String authenticationSchemeResourceKey,
 			Session session) {
 
-		String key = createNonCookieSessionKey(remoteAddr, requestHeader,
-				authenticationSchemeResourceKey);
-
-		session.setNonCookieKey(key);
-		nonCookieSessions.put(key, session);
-	}
-
-	private String createNonCookieSessionKey(String remoteAddr,
-			String requestHeader, String authenticationSchemeResourceKey) {
-		StringBuffer buf = new StringBuffer();
-		buf.append(remoteAddr);
-		buf.append("|");
-		buf.append(requestHeader);
-		buf.append("|");
-		buf.append(authenticationSchemeResourceKey);
-		return buf.toString();
+		session.setNonCookieKey(token);
+		nonCookieSessions.put(token, session);
 	}
 
 	@Override

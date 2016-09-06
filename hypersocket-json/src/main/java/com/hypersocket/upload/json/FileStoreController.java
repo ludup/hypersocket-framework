@@ -159,6 +159,35 @@ public class FileStoreController extends ResourceController {
 			resourceService.downloadURIFile(uuid, request, response, true);
 	}
 	
+	@RequestMapping(value = "files/public/{uuid}/{filename}", method = RequestMethod.GET)
+	@ResponseStatus(value = HttpStatus.OK)
+	public void downloadPublicFile(HttpServletRequest request,
+			HttpServletResponse response, 
+			@PathVariable String uuid,
+			@PathVariable String filename /* Not used */)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException, IOException, ResourceNotFoundException {
+
+		/**
+		 * TODO only files that are declared public
+		 */
+		resourceService.downloadURIFile(uuid, request, response, true);
+	}
+	
+	@RequestMapping(value = "files/public/{uuid}", method = RequestMethod.GET)
+	@ResponseStatus(value = HttpStatus.OK)
+	public void downloadPublicFile(HttpServletRequest request,
+			HttpServletResponse response, 
+			@PathVariable String uuid)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException, IOException, ResourceNotFoundException {
+
+		/**
+		 * TODO only files that are declared public
+		 */
+		resourceService.downloadURIFile(uuid, request, response, true);
+	}
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "files/export/{id}", method = RequestMethod.GET, produces = { "text/plain" })
 	@ResponseStatus(value = HttpStatus.OK)
@@ -171,10 +200,7 @@ public class FileStoreController extends ResourceController {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
-		try {
-			Thread.sleep(1000);
-		} catch (Exception e) {
-		}
+
 		try {
 			response.setHeader("Content-Disposition", "attachment; filename=\""
 					+ resourceService.getResourceCategory() + "-"
