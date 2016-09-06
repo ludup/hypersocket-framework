@@ -142,7 +142,6 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 					String trackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);
 					htmlTemplate = htmlTemplate.replace("${trackingImage}", trackingUri);
 				}
-				System.out.println(htmlTemplate);
 				email.setTextHTML(htmlTemplate);
 			} catch (ResourceNotFoundException e) {
 				log.error("Cannot find HTML template", e);

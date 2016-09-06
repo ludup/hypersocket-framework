@@ -50,8 +50,6 @@ public class EmailTask extends AbstractTaskProvider {
 	public static final String ACTION_RESOURCE_KEY = "sendEmail";
 
 	public static final String ATTR_TO_ADDRESSES = "email.to";
-	public static final String ATTR_CC_ADDRESSES = "email.cc";
-	public static final String ATTR_BCC_ADDRESSES = "email.bcc";
 	public static final String ATTR_SUBJECT = "email.subject";
 	public static final String ATTR_FORMAT = "email.format";
 	public static final String ATTR_BODY = "email.body";
@@ -140,10 +138,6 @@ public class EmailTask extends AbstractTaskProvider {
 			validateEmailField(ATTR_TO_ADDRESSES, parameters, invalidAttributes);
 		}
 
-		validateEmailField(ATTR_CC_ADDRESSES, parameters, invalidAttributes);
-		validateEmailField(ATTR_BCC_ADDRESSES, parameters, invalidAttributes);
-		
-
 		if(!parameters.containsKey(ATTR_SUBJECT)
 				|| StringUtils.isEmpty(parameters.get(ATTR_SUBJECT))) {
 			invalidAttributes.add(new TriggerValidationError(ATTR_SUBJECT));
@@ -174,10 +168,6 @@ public class EmailTask extends AbstractTaskProvider {
 
 		String to = populateEmailList(task, ATTR_TO_ADDRESSES, recipients,
 				RecipientType.TO, event);
-		String cc = populateEmailList(task, ATTR_CC_ADDRESSES, recipients,
-				RecipientType.CC, event);
-		String bcc = populateEmailList(task, ATTR_BCC_ADDRESSES, recipients,
-				RecipientType.BCC, event);
 
 		List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
 		
@@ -194,7 +184,7 @@ public class EmailTask extends AbstractTaskProvider {
 						addFileAttachment(attachment, attachments, event);
 					}
 				} catch (Exception e) {
-					return new EmailTaskResult(this, e, currentRealm, task, subject, body, to, cc, bcc);
+					return new EmailTaskResult(this, e, currentRealm, task, subject, body, to);
 				}
 			}
 			
@@ -205,10 +195,10 @@ public class EmailTask extends AbstractTaskProvider {
 				addUUIDAttachment(uuid, new String[0], attachments);
 			} catch (ResourceException e) {
 				log.error("Failed to get upload file", e);
-				return new EmailTaskResult(this, e, currentRealm, task, subject, body, to, cc, bcc);
+				return new EmailTaskResult(this, e, currentRealm, task, subject, body, to);
 			} catch (IOException e) {
 				log.error("Failed to get upload file", e);
-				return new EmailTaskResult(this, e, currentRealm, task, subject, body, to, cc, bcc);
+				return new EmailTaskResult(this, e, currentRealm, task, subject, body, to);
 			}
 		}
 		
@@ -216,7 +206,7 @@ public class EmailTask extends AbstractTaskProvider {
 			try {
 				addFileAttachment(path, attachments, event);
 			} catch (FileNotFoundException e) {
-				return new EmailTaskResult(this, e, currentRealm, task, subject, body, to, cc, bcc);
+				return new EmailTaskResult(this, e, currentRealm, task, subject, body, to);
 			}
 		}
 		
@@ -230,11 +220,11 @@ public class EmailTask extends AbstractTaskProvider {
 					recipients.toArray(new Recipient[0]), track, attachments.toArray(new EmailAttachment[0]));
 
 			return new EmailTaskResult(this, task.getRealm(),
-					task, subject, body, to, cc, bcc);
+					task, subject, body, to);
 
 		} catch (Exception ex) {
 			log.error("Failed to send email", ex);
-			return new EmailTaskResult(this, ex, currentRealm, task, subject, body, to, cc, bcc);
+			return new EmailTaskResult(this, ex, currentRealm, task, subject, body, to);
 		}
 	}
 	

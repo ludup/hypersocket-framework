@@ -16,31 +16,24 @@ public class EmailTaskResult extends AbstractTaskResult {
 	public static final String ATTR_SUBJECT = "attr.subject";
 	public static final String ATTR_BODY = "attr.body";
 	public static final String ATTR_TO = "attr.to";
-	public static final String ATTR_CC = "attr.cc";
-	public static final String ATTR_BCC = "attr.bcc";
 
 	public EmailTaskResult(Object source, Realm currentRealm,
-			Task task, String subject, String body, String to,
-			String cc, String bcc) {
+			Task task, String subject, String body, String to) {
 		super(source, EVENT_RESOURCE_KEY, true, currentRealm, task);
-		addAttributes(subject, body, to, cc, bcc);
+		addAttributes(subject, body, to);
 	}
 
-	private void addAttributes(String subject, String body, String to,
-			String cc, String bcc) {
+	private void addAttributes(String subject, String body, String to) {
 		addAttribute(ATTR_SUBJECT, subject);
 		addAttribute(ATTR_BODY, body);
 		addAttribute(ATTR_TO, to);
-		addAttribute(ATTR_CC, cc);
-		addAttribute(ATTR_BCC, bcc);
 
 	}
 
 	public EmailTaskResult(Object source, Throwable e, Realm currentRealm,
-			Task task, String subject, String body, String to,
-			String cc, String bcc) {
+			Task task, String subject, String body, String to) {
 		super(source, EVENT_RESOURCE_KEY, e, currentRealm, task);
-		addAttributes(subject, body, to, cc, bcc);
+		addAttributes(subject, body, to);
 	}
 
 	@Override
