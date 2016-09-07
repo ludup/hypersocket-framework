@@ -47,10 +47,6 @@ public class PrincipalEvent extends SessionEvent {
 		addAttribute(ATTR_REALM_TYPE, realmType);
 	}
 
-	public Realm getRealm() {
-		return realm;
-	}
-
 	public String[] getResourceKeys() {
 		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
 	}

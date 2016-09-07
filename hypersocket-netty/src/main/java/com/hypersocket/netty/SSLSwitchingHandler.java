@@ -90,7 +90,7 @@ public class SSLSwitchingHandler extends FrameDecoder {
 		p.addLast("decoder", new HttpRequestDecoder());
 		p.addLast("encoder", new HttpResponseEncoder());
 		p.addLast("chunkedWriter", new ChunkedWriteHandler());
-		p.addLast("", server.executionHandler);
+//		p.addLast("executionHandler", server.executionHandler);
 		try {
 			p.addLast("http", new HttpRequestDispatcherHandler(server));
 		} catch (ServletException e) {

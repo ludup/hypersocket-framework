@@ -123,11 +123,9 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		attribute.setReadOnly(readOnly);
 		attribute.setEncrypted(encrypted);
 		attribute.setVariableName(variableName);
-		attribute.getRoles().clear();
-		attribute.getRoles().addAll(roles);
 		attribute.setOptions(options);
 		
-		updateResource(attribute, new HashMap<String,String>(), new TransactionAdapter<A>() {
+		updateResource(attribute, roles, new HashMap<String,String>(), new TransactionAdapter<A>() {
 			public void afterOperation(A resource, Map<String,String> properties) {
 				registerAttribute(resource);		
 			}

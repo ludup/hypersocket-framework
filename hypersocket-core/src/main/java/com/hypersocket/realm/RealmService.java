@@ -214,4 +214,10 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Principal getPrincipalByEmail(Realm realm, String email) throws AccessDeniedException, ResourceNotFoundException;
 
+	Principal getDeletedPrincipalById(Realm realm, Long id, PrincipalType... type) throws AccessDeniedException;
+
+	Principal createSecondaryUser(Realm realm, String username, Map<String, String> properties,
+			List<Principal> principals, String password, boolean forceChange, boolean selfCreated,
+			Principal parentPrincipal) throws ResourceCreationException, AccessDeniedException;
+
 }

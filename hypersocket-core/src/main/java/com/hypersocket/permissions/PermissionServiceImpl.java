@@ -8,6 +8,7 @@
 package com.hypersocket.permissions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -275,7 +276,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			permissionsCache.remove(principal);
 			roleCache.remove(principal);
 			eventService.publishEvent(new RoleUpdatedEvent(this,
-					getCurrentSession(), role.getRealm(), role));
+					getCurrentSession(), role.getRealm(), role, Arrays.asList(principal), new ArrayList<Principal>()));
 		} catch (Throwable e) {
 			eventService.publishEvent(new RoleUpdatedEvent(this, role.getName(), e,
 					getCurrentSession(), role.getRealm()));
@@ -296,7 +297,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				roleCache.remove(principal);
 			}
 			eventService.publishEvent(new RoleUpdatedEvent(this,
-					getCurrentSession(), role.getRealm(), role));
+					getCurrentSession(), role.getRealm(), role, Arrays.asList(principals), 
+					new ArrayList<Principal>()));
 		} catch (Throwable e) {
 			eventService.publishEvent(new RoleUpdatedEvent(this, role.getName(), e,
 					getCurrentSession(), role.getRealm()));
@@ -315,7 +317,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			permissionsCache.remove(principal);
 			roleCache.remove(principal);
 			eventService.publishEvent(new RoleUpdatedEvent(this,
-					getCurrentSession(), role.getRealm(), role));
+					getCurrentSession(), role.getRealm(), role, new ArrayList<Principal>(), Arrays.asList(principal)));
 		} catch (Throwable e) {
 			eventService.publishEvent(new RoleUpdatedEvent(this, role.getName(), e,
 					getCurrentSession(), role.getRealm()));
@@ -336,7 +338,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				roleCache.remove(principal);
 			}
 			eventService.publishEvent(new RoleUpdatedEvent(this,
-					getCurrentSession(), role.getRealm(), role));
+					getCurrentSession(), role.getRealm(), role, new ArrayList<Principal>(), Arrays.asList(principals)));
 		} catch (Throwable e) {
 			eventService.publishEvent(new RoleUpdatedEvent(this, role.getName(), e,
 					getCurrentSession(), role.getRealm()));
@@ -580,7 +582,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			permissionsCache.removeAll();
 			roleCache.removeAll();
 			eventService.publishEvent(new RoleUpdatedEvent(this,
-					getCurrentSession(), role.getRealm(), role));
+					getCurrentSession(), role.getRealm(), role, new ArrayList<Principal>(), new ArrayList<Principal>()));
 		} catch (Throwable e) {
 			eventService.publishEvent(new RoleUpdatedEvent(this,
 					role.getName(), e, getCurrentSession(), role.getRealm()));
@@ -633,7 +635,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			permissionsCache.removeAll();
 			roleCache.removeAll();
 			eventService.publishEvent(new RoleUpdatedEvent(this,
-					getCurrentSession(), role.getRealm(), role));
+					getCurrentSession(), role.getRealm(), role, assignPrincipals, unassignPrincipals));
 			return role;
 		} catch (Throwable te) {
 			eventService.publishEvent(new RoleUpdatedEvent(this,

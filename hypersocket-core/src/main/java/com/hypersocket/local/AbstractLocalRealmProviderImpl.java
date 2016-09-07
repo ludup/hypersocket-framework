@@ -249,7 +249,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			}
 
 			// Get again so we have it within a transaction so lazy loading works.
-			LocalUser user = (LocalUser) userRepository.getUserById(principal.getId(), principal.getRealm());
+			LocalUser user = (LocalUser) userRepository.getUserById(principal.getId(), principal.getRealm(), false);
 			user.setName(username);
 			user.setRealm(realm);
 
@@ -287,7 +287,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			}
 
 			// Get again so we have it within a transaction so lazy loading works.
-			LocalUser user = (LocalUser) userRepository.getUserById(principal.getId(), principal.getRealm());
+			LocalUser user = (LocalUser) userRepository.getUserById(principal.getId(), principal.getRealm(), false);
 
 			userRepository.saveUser(user, properties);
 
@@ -370,10 +370,10 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		for (PrincipalType type : acceptTypes) {
 			switch (type) {
 			case USER:
-				principal = userRepository.getUserById(id, realm);
+				principal = userRepository.getUserById(id, realm, false);
 				break;
 			case GROUP:
-				principal = userRepository.getGroupById(id, realm);
+				principal = userRepository.getGroupById(id, realm, false);
 				break;
 			case SERVICE:
 				break;
@@ -388,6 +388,31 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		return principal;
 	}
 
+	@Override
+	@Transactional(readOnly=true)
+	public Principal getDeletedPrincipalById(Long id, Realm realm,
+			PrincipalType[] acceptTypes) {
+
+		Principal principal = null;
+		for (PrincipalType type : acceptTypes) {
+			switch (type) {
+			case USER:
+				principal = userRepository.getUserById(id, realm, true);
+				break;
+			case GROUP:
+				principal = userRepository.getGroupById(id, realm, true);
+				break;
+			case SERVICE:
+			case SYSTEM:
+				break;
+			}
+			if (principal != null)
+				break;
+		}
+		return principal;
+	}
+
+	
 	@Override
 	@Transactional(readOnly=true)
 	public boolean requiresPasswordChange(Principal principal) {

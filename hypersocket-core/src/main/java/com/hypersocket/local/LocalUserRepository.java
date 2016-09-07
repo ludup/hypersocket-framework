@@ -48,9 +48,9 @@ public interface LocalUserRepository extends ResourceTemplateRepository, Abstrac
 	public Principal getUserByNameAndType(String principalName, Realm realm,
 			PrincipalType system);
 
-	public Principal getUserById(Long id, Realm realm);
+	public Principal getUserById(Long id, Realm realm, boolean deleted);
 
-	public Principal getGroupById(Long id, Realm realm);
+	public Principal getGroupById(Long id, Realm realm, boolean deleted);
 
 	public Principal getUserByIdAndType(Long id, Realm realm,
 			PrincipalType system);

@@ -51,6 +51,8 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Principal getPrincipalById(Long id, Realm realm, PrincipalType[] type);
 
+	Principal getDeletedPrincipalById(Long id, Realm realm, PrincipalType[] type);
+	
 	Principal createGroup(Realm realm, String name, Map<String, String> properties, List<Principal> principals,
 			List<Principal> groups) throws ResourceCreationException;
 

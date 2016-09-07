@@ -15,8 +15,7 @@ import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 
-public interface SchedulerService extends
-		AbstractResourceService<SchedulerResource> {
+public interface SchedulerService {
 
 	public static final String RESOURCE_BUNDLE = "SchedulerService";
 
@@ -95,19 +94,6 @@ public interface SchedulerService extends
 	void rescheduleNow(String scheduleId, int interval, int repeat, Date end)
 			throws SchedulerException, NotScheduledException;
 
-	SchedulerResource updateResource(SchedulerResource resource,
-			String name, Map<String, String> properties)
-			throws ResourceChangeException, AccessDeniedException;
-
-	Collection<PropertyCategory> getPropertyTemplate()
-			throws AccessDeniedException;
-
-	Collection<PropertyCategory> getPropertyTemplate(SchedulerResource resource)
-			throws AccessDeniedException;
-
-	SchedulerResource createResource(String name, String uuid, Realm realm, Map<String, String> properties)
-			throws ResourceCreationException, AccessDeniedException;
-	
 	public boolean jobExists(String scheduleId) throws SchedulerException;
 	
 	public boolean jobDoesNotExists(String scheduleId) throws SchedulerException;

@@ -3,9 +3,11 @@ package com.hypersocket.resource;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -33,7 +35,7 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 			AccessDeniedException, ResourceCreationException;
 
 	@SuppressWarnings("unchecked") 
-	void updateResource(T resource, Map<String,String> properties,
+	void updateResource(T resource, Set<Role> roles, Map<String,String> properties,
 			TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException;
 

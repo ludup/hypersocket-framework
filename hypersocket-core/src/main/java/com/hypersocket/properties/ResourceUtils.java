@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.utils.HypersocketUtils;
 
@@ -224,6 +225,14 @@ public class ResourceUtils {
 
 	public static String encodeNamePair(String key, String value) {
 		return key + "=" + value;
+	}
+
+	public static Long[] createResourceIdArray(Collection<? extends Resource> resources) {
+		List<Long> ids = new ArrayList<Long>();
+		for(Resource r : resources) {
+			ids.add(r.getId());
+		}
+		return ids.toArray(new Long[0]);
 	}
 
 }

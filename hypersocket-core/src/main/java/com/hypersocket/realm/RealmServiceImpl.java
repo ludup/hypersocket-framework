@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 
+import com.hypersocket.account.linking.AccountLinkingService;
 import com.hypersocket.attributes.AttributeType;
 import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeService;
@@ -133,6 +134,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Autowired
 	PrincipalRepository principalRepository; 
+	
+	@Autowired
+	AccountLinkingService linkingService;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -425,7 +429,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		
 		RealmProvider provider = getLocalProvider();
 		
-		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, provider);
+		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, null, provider);
 	}
 	
 	private RealmProvider getLocalProvider() {
@@ -436,13 +440,21 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public Principal createUser(Realm realm, String username, Map<String, String> properties,
 			List<Principal> principals, String password, boolean forceChange, boolean selfCreated)
 					throws ResourceCreationException, AccessDeniedException {
-		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, getProviderForRealm(realm));
+		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, null, getProviderForRealm(realm));
+		
+	}
+	
+	@Override
+	public Principal createSecondaryUser(Realm realm, String username, Map<String, String> properties,
+			List<Principal> principals, String password, boolean forceChange, boolean selfCreated, Principal parentPrincipal)
+					throws ResourceCreationException, AccessDeniedException {
+		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, parentPrincipal, getProviderForRealm(realm));
 		
 	}
 
 	
 	protected Principal createUser(Realm realm, String username, Map<String, String> properties,
-			List<Principal> principals, String password, boolean forceChange, boolean selfCreated, RealmProvider provider)
+			List<Principal> principals, String password, boolean forceChange, boolean selfCreated, Principal parent, RealmProvider provider)
 					throws ResourceCreationException, AccessDeniedException {
 
 		try {
@@ -463,6 +475,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				processor.afterCreate(principal, properties);
 			}
 
+			if(parent!=null) {
+				linkingService.linkAccounts(parent, principal);
+			}
+			
 			eventService.publishEvent(new UserCreatedEvent(this, getCurrentSession(), realm, provider, principal,
 					principals, filterSecretProperties(principal, provider, properties), password, forceChange,
 					selfCreated));
@@ -961,7 +977,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 
 			List<Realm> realms = realmRepository.allRealms();
-			if (realms.size() == 1) {
+			if (realm.getOwner()==null && realms.size() == 1) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.zeroRealms", realm.getName());
 			}
 
@@ -1047,6 +1063,21 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		Principal principal = getProviderForRealm(realm).getPrincipalById(id, realm, type);
 		if(principal==null) {
 			return getLocalProvider().getPrincipalById(id, realm, type);
+		}
+		return principal;
+	}
+	
+	@Override
+	public Principal getDeletedPrincipalById(Realm realm, Long id, PrincipalType... type) throws AccessDeniedException {
+
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
+
+		if (type.length == 0) {
+			type = PrincipalType.ALL_TYPES;
+		}
+		Principal principal = getProviderForRealm(realm).getDeletedPrincipalById(id, realm, type);
+		if(principal==null) {
+			return getLocalProvider().getDeletedPrincipalById(id, realm, type);
 		}
 		return principal;
 	}

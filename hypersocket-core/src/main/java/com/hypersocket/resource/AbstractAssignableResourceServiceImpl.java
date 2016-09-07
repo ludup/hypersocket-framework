@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
@@ -155,6 +156,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 						"generic.alreadyExists.error", resource.getName());
 			}
 			
+			resource.setAssignedRoles(resource.getRoles());
+			
 			getRepository().saveResource(resource, properties, ops);
 			updateFingerprint();
 			
@@ -200,7 +203,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	public final void updateResource(T resource,  
 			TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
-		updateResource(resource, new HashMap<String,String>(), ops);
+		updateResource(resource, null, new HashMap<String,String>(), ops);
 	}
 	
 	protected boolean isAssignedUserAllowedUpdate() {
@@ -209,7 +212,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	
 	@SafeVarargs
 	@Override
-	public final void updateResource(T resource, Map<String,String> properties,  
+	public final void updateResource(T resource, Set<Role> roles, Map<String,String> properties,  
 			TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
 		
@@ -231,6 +234,27 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		if(resource.getRealm()==null) {
 			resource.setRealm(getCurrentRealm());
 		}
+		
+		Set<Role> assigned = new HashSet<Role>();
+		if(roles!=null) {
+			assigned.addAll(roles);
+			assigned.removeAll(resource.getRoles());
+		}
+		
+		Set<Role> unassigned = new HashSet<Role>();
+		if(roles!=null) {
+			unassigned.addAll(resource.getRoles());
+			unassigned.removeAll(roles);
+		}
+		
+		if(roles!=null) {
+			resource.getRoles().clear();
+			resource.getRoles().addAll(roles);
+		}
+		
+		resource.setAssignedRoles(assigned);
+		resource.setUnassignedRoles(unassigned);
+		
 		getRepository().populateEntityFields(resource, properties);
 		
 		
@@ -258,7 +282,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 	
 	protected abstract void fireResourceUpdateEvent(T resource);
-
+	
 	protected abstract void fireResourceUpdateEvent(T resource, Throwable t);
 
 	@Override
@@ -268,6 +292,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		assertPermission(getDeletePermission(resource));
 
 		try {
+			resource.setUnassignedRoles(resource.getRoles());
+			
 			getRepository().deleteResource(resource, ops);
 			updateFingerprint();
 			

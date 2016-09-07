@@ -1,5 +1,6 @@
 package com.hypersocket.role.events;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -23,14 +24,21 @@ public class RoleEvent extends PrincipalEvent {
 	public static final String ATTR_ASSOCIATED_PERMISSIONS = "attr.associatedPermissions";
 	public static final String ATTR_PERMISSIONS = "attr.Permissions";
 
+	Role role;
+	
 	public RoleEvent(Object source, String resourceKey, Session session,
 			Realm realm, Role role) {
 		super(source, resourceKey, true, session, realm);
+		this.role = role;
 		addAttribute(ATTR_ROLE_NAME, role.getName());
 		addAssociatedPrincipals(role.getPrincipals());
 		addAssociatedPermissions(role.getPermissions());
 		addPermissions(role.getPermissions());
 
+	}
+	
+	public Role getRole() {
+		return role;
 	}
 
 	public RoleEvent(Object source, String resourceKey, String roleName,
@@ -44,21 +52,14 @@ public class RoleEvent extends PrincipalEvent {
 	}
 
 	private void addAssociatedPrincipals(Set<Principal> associatedPrincipals) {
-		StringBuffer buf = new StringBuffer();
-		for (Principal p : associatedPrincipals) {
-			if (buf.length() > 0) {
-				buf.append(',');
-			}
-			buf.append(p.getPrincipalName());
-		}
-		addAttribute(ATTR_ASSOCIATED_PRINCIPALS, buf.toString());
+		addAttribute(ATTR_ASSOCIATED_PRINCIPALS, createPrincipalList(associatedPrincipals));
 	}
 
 	private void addAssociatedPermissions(Set<Permission> associatedPermissions) {
 		StringBuffer buf = new StringBuffer();
 		for (Permission p : associatedPermissions) {
 			if (buf.length() > 0) {
-				buf.append(",");
+				buf.append("\r\n");
 			}
 			buf.append(I18NServiceImpl.tagForConversion(
 					PermissionService.RESOURCE_BUNDLE, p.getResourceKey()));
@@ -70,10 +71,21 @@ public class RoleEvent extends PrincipalEvent {
 		StringBuffer buf = new StringBuffer();
 		for (Permission p : associatedPermissions) {
 			if (buf.length() > 0) {
-				buf.append(',');
+				buf.append("\r\n");
 			}
 			buf.append(p.getResourceKey());
 		}
 		addAttribute(ATTR_PERMISSIONS, buf.toString());
+	}
+
+	protected String createPrincipalList(Collection<Principal> principals) {
+		StringBuffer buf = new StringBuffer();
+		for(Principal p : principals) {
+			if(buf.length() > 0) {
+				buf.append("\r\n");
+			}
+			buf.append(p.getPrincipalName());
+		}
+		return buf.toString();
 	}
 }

@@ -109,22 +109,22 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		return group;
 	}
 	
-	protected LocalUser getUser(String column, Object value, Realm realm, PrincipalType type) {
-		return get(column, value, LocalUser.class, JOIN_GROUPS, new RealmRestriction(realm), new DeletedCriteria(false), new PrincipalTypeRestriction(type));
+	protected LocalUser getUser(String column, Object value, Realm realm, PrincipalType type, boolean deleted) {
+		return get(column, value, LocalUser.class, JOIN_GROUPS, new RealmRestriction(realm), new DeletedCriteria(deleted), new PrincipalTypeRestriction(type));
 	}
 	
 	@Transactional(readOnly=true)
 	public LocalUser getUserByName(String username, Realm realm) {
-		return getUser("name", username, realm, PrincipalType.USER);
+		return getUser("name", username, realm, PrincipalType.USER, false);
 	}
 	
-	protected LocalGroup getGroup(String column, Object value, Realm realm) {
-		return get(column, value, LocalGroup.class, JOIN_USERS, new DeletedCriteria(false), new RealmRestriction(realm));
+	protected LocalGroup getGroup(String column, Object value, Realm realm, boolean deleted) {
+		return get(column, value, LocalGroup.class, JOIN_USERS, new DeletedCriteria(deleted), new RealmRestriction(realm));
 	}
 	
 	@Transactional(readOnly=true)
 	public LocalGroup getGroupByName(String name, Realm realm) {
-		return getGroup("name", name, realm);
+		return getGroup("name", name, realm, false);
 	}
 
 	@Override
@@ -237,26 +237,26 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	@Transactional(readOnly=true)
 	public Principal getUserByNameAndType(String principalName, Realm realm,
 			PrincipalType type) {
-		return getUser("name", principalName, realm, type);
+		return getUser("name", principalName, realm, type, false);
 	}
 
 	@Override
 	@Transactional(readOnly=true)
-	public Principal getUserById(Long id, Realm realm) {
-		return getUser("id", id, realm, PrincipalType.USER);
+	public Principal getUserById(Long id, Realm realm, boolean deleted) {
+		return getUser("id", id, realm, PrincipalType.USER, deleted);
 	}
 
 	@Override
 	@Transactional(readOnly=true)
-	public Principal getGroupById(Long id, Realm realm) {
-		return getGroup("id", id, realm);
+	public Principal getGroupById(Long id, Realm realm, boolean deleted) {
+		return getGroup("id", id, realm, deleted);
 	}
 
 	@Override
 	@Transactional(readOnly=true)
 	public Principal getUserByIdAndType(Long id, Realm realm,
 			PrincipalType type) {
-		return getUser("id", id, realm, type);
+		return getUser("id", id, realm, type, false);
 	}
 
 	@Override

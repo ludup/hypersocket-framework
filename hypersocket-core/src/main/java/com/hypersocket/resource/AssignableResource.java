@@ -18,10 +18,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.permissions.Role;
 
 @Entity
@@ -29,9 +31,6 @@ import com.hypersocket.permissions.Role;
 @Table(name="assignable_resources")
 public class AssignableResource extends RealmResource {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 7293251973484666341L;
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Fetch(FetchMode.SELECT)
@@ -39,6 +38,12 @@ public class AssignableResource extends RealmResource {
 			inverseJoinColumns={@JoinColumn(name="role_id")})
 	Set<Role> roles = new HashSet<Role>();
 
+	@Transient
+	Set<Role> assignedRoles;
+	
+	@Transient
+	Set<Role> unassignedRoles;
+	
 	public AssignableResource() {
 	}
 	
@@ -49,5 +54,25 @@ public class AssignableResource extends RealmResource {
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
 	}
+
+	@JsonIgnore
+	public Set<Role> getAssignedRoles() {
+		return assignedRoles;
+	}
+
+	public void setAssignedRoles(Set<Role> assignedRoles) {
+		this.assignedRoles = assignedRoles;
+	}
+
+	@JsonIgnore
+	public Set<Role> getUnassignedRoles() {
+		return unassignedRoles;
+	}
+
+	public void setUnassignedRoles(Set<Role> unassignedRoles) {
+		this.unassignedRoles = unassignedRoles;
+	}
+	
+	
 	
 }
