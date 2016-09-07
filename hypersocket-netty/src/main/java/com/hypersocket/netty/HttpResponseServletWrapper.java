@@ -299,16 +299,4 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 	public boolean isCloseOnComplete() {
 		return closeOnComplete;
 	}
-
-	public void dispose() {
-		response = null;
-		charset = null;
-		locale = null;
-		buffer = null;
-		out = null;
-		channel = null;
-		request = null;
-	}
-
-
 }

@@ -36,13 +36,22 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.DownstreamMessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
+import org.jboss.netty.channel.UpstreamMessageEvent;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.codec.http.HttpChunk;
+import org.jboss.netty.handler.codec.http.HttpHeaders;
+import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
+import org.jboss.netty.handler.execution.ChannelDownstreamEventRunnable;
+import org.jboss.netty.handler.execution.ChannelUpstreamEventRunnable;
 import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
+import org.jboss.netty.util.ObjectSizeEstimator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +79,7 @@ import com.hypersocket.server.websocket.TCPForwardingClientCallback;
 import com.hypersocket.session.SessionService;
 
 @Component
-public class NettyServer extends HypersocketServerImpl /* implements ObjectSizeEstimator*/  {
+public class NettyServer extends HypersocketServerImpl implements ObjectSizeEstimator  {
 
 	static final String RESOURCE_BUNDLE = "NettyServer";
 	
@@ -124,6 +133,7 @@ public class NettyServer extends HypersocketServerImpl /* implements ObjectSizeE
 	            		configurationService.getIntValue("netty.maxTotalMemory"),
 	            		60 * 5,
 	            		TimeUnit.SECONDS,
+	            		this,
 	            		nettyThreadFactory));
 		
 		i18nService.registerBundle(RESOURCE_BUNDLE);
@@ -526,30 +536,63 @@ public class NettyServer extends HypersocketServerImpl /* implements ObjectSizeE
 		} 
 	}
 
-//	@Override
-//	public int estimateSize(Object obj) {
-//		
-//		int size = 0;
-//		
-//		if(obj instanceof HttpRequest) {
-//			HttpRequest request = (HttpRequest) obj;
-//		
-//			size = (int) HttpHeaders.getContentLength(request, 1024);
-//		}
-//		
-//		if(obj instanceof HttpChunk) {
-//			HttpChunk chunk = (HttpChunk) obj;
-//			size = chunk.getContent().readableBytes();
-//		}
-//		
-//		if(obj instanceof WebSocketFrame) {
-//			WebSocketFrame frame = (WebSocketFrame) obj;
-//			size = frame.getBinaryData().readableBytes();
-//		}
-//		
-//		if(log.isInfoEnabled()) {
-//			log.info(String.format("Incoming message is %d bytes in size", size));
-//		}
-//		return size;
-//	}
+	@Override
+	public int estimateSize(Object obj) {
+		
+		int size = 1024;
+		if(obj instanceof ChannelUpstreamEventRunnable) {
+			ChannelUpstreamEventRunnable e = (ChannelUpstreamEventRunnable) obj;
+			if(e.getEvent() instanceof UpstreamMessageEvent) {
+				UpstreamMessageEvent evt = (UpstreamMessageEvent) e.getEvent();
+				
+				if(evt.getMessage() instanceof HttpRequest) {
+					HttpRequest request = (HttpRequest) evt.getMessage();
+				
+					size = (int) HttpHeaders.getContentLength(request, 1024);
+				}
+				
+				if(evt.getMessage() instanceof HttpChunk) {
+					HttpChunk chunk = (HttpChunk) evt.getMessage();
+					size = chunk.getContent().readableBytes();
+				}
+				
+				if(evt.getMessage() instanceof WebSocketFrame) {
+					WebSocketFrame frame = (WebSocketFrame) evt.getMessage();
+					size = frame.getBinaryData().readableBytes();
+				}
+			}
+			if(log.isDebugEnabled()) {
+				log.debug(String.format("Incoming message is %d bytes in size", size));
+			}
+		} else if(obj instanceof ChannelDownstreamEventRunnable) {
+			ChannelDownstreamEventRunnable e = (ChannelDownstreamEventRunnable) obj;
+			if(e.getEvent() instanceof DownstreamMessageEvent) {
+				
+				DownstreamMessageEvent evt = (DownstreamMessageEvent) e.getEvent();
+			
+				if(evt.getMessage() instanceof HttpRequest) {
+					HttpRequest request = (HttpRequest) evt.getMessage();
+				
+					size = (int) HttpHeaders.getContentLength(request, 1024);
+				}
+				
+				if(evt.getMessage() instanceof HttpChunk) {
+					HttpChunk chunk = (HttpChunk) evt.getMessage();
+					size = chunk.getContent().readableBytes();
+				}
+				
+				if(evt.getMessage() instanceof WebSocketFrame) {
+					WebSocketFrame frame = (WebSocketFrame) evt.getMessage();
+					size = frame.getBinaryData().readableBytes();
+				}
+				
+				if(log.isDebugEnabled()) {
+					log.debug(String.format("Outgoing message is %d bytes in size", size));
+				}
+			}
+		}
+
+		
+		return size;
+	}
 }

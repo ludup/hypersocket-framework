@@ -78,8 +78,6 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			.getLogger(HttpRequestDispatcherHandler.class);
 
 	private NettyServer server;
-	private HttpRequest currentRequest = null;
-	private boolean wantsMessage = true;
 	
 	public HttpRequestDispatcherHandler(NettyServer server)
 			throws ServletException {
@@ -103,6 +101,11 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		} else if (msg instanceof HttpChunk) {
 	
 			HttpChunk chunk = (HttpChunk) msg;
+			
+			if(log.isDebugEnabled()) {
+				log.debug(String.format("Received HTTP chunk of %d bytes", ((HttpChunk) msg).getContent().readableBytes()));
+			}
+			
 			HttpRequestServletWrapper servletRequest = (HttpRequestServletWrapper) ctx.getChannel().getAttachment();
 			((HttpRequestChunkStream)servletRequest.getInputStream()).setCurrentChunk(chunk);
 
@@ -178,7 +181,6 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		
 			try {
 				
-		
 				String reverseUri = servletRequest.getRequestURI();
 				reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
 				reverseUri = reverseUri.replace(server.getUiPath(), "${uiPath}");
@@ -442,8 +444,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			if (log.isDebugEnabled()) {
 				log.debug("End Response >>>>>>");
 			}
-			servletRequest.dispose();
-			servletResponse.dispose();
+
 			Request.remove();
 		}
 
