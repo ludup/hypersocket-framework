@@ -321,6 +321,11 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 	}
 	
 	@Override
+	public void send401(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
+		servletResponse.sendError(HttpStatus.SC_UNAUTHORIZED);
+	}
+	
+	@Override
 	public void send500(final HttpServletRequest servletRequest, final HttpServletResponse servletResponse) throws IOException {
 		servletResponse.sendError(HttpStatus.SC_NOT_FOUND);
 		URL url = getClass().getResource("/500.html");
