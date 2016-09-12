@@ -211,4 +211,6 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Principal getPrincipalByEmail(Realm realm, String email) throws AccessDeniedException, ResourceNotFoundException;
 
+	String getProfileProperty(Principal principal, String string);
+
 }

@@ -304,7 +304,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)
-	public Long getAssignedResourceCount(List<Principal> principals,
+	public Long getAssignedResourceCount(Collection<Principal> principals,
 			final String searchPattern, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(getResourceClass());
@@ -320,7 +320,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.setProjection(Projections.distinct(Projections.id()));
 		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
 		
-		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
+		criteria.add(Restrictions.eq("realm", principals.iterator().next().getRealm()));
 		criteria.add(Restrictions.eq("deleted", false));
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
@@ -359,7 +359,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@Override
 	@Transactional(readOnly=true)
-	public Long getAssignableResourceCount(List<Principal> principals) {
+	public Long getAssignableResourceCount(Collection<Principal> principals) {
 		return getAssignedResourceCount(principals, "");
 	}
 

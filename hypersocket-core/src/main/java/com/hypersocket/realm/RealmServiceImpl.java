@@ -29,7 +29,6 @@ import org.springframework.transaction.TransactionStatus;
 import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeService;
 import com.hypersocket.attributes.user.UserAttributeType;
-import com.hypersocket.auth.InvalidAuthenticationContext;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventPropertyCollector;
@@ -1695,6 +1694,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (MediaNotFoundException e) {
 			return "";
 		}
+	}
+	
+	@Override
+	public String getProfileProperty(Principal principal, String resourceKey) {
+		
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserPropertyValue(principal, resourceKey);
 	}
 
 	@Override
