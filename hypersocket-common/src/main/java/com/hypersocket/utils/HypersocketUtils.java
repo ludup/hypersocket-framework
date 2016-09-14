@@ -13,11 +13,7 @@ import java.security.SecureRandom;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
@@ -312,8 +308,21 @@ public class HypersocketUtils {
 	
 	public static String generateRandomAlphaNumericString(int length) {
 	    return new BigInteger(130, random).toString(32).substring(0,  length);
-	  }
+	}
 
-	
+
+	public static <T> List<T> nullSafe(List<T> list){
+		if(list == null){
+			return Collections.<T>emptyList();
+		}
+		return list;
+	}
+
+	public static <T> Set<T> nullSafe(Set<T> set){
+		if(set == null){
+			return Collections.<T>emptySet();
+		}
+		return set;
+	}
 
 }
