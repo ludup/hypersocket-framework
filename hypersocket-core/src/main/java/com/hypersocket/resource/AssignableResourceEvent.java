@@ -1,6 +1,7 @@
 package com.hypersocket.resource;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -13,7 +14,7 @@ import com.hypersocket.session.Session;
 public abstract class AssignableResourceEvent extends ResourceEvent {
 
 	public static final String EVENT_RESOURCE_KEY = "assignable.event";
-	
+
 	private static final long serialVersionUID = -81919926673011642L;
 
 	public static final String ATTR_ROLES = "attr.roles";
@@ -24,23 +25,23 @@ public abstract class AssignableResourceEvent extends ResourceEvent {
 	Collection<Role> assignedRoles;
 
 	public AssignableResourceEvent(Object source, String resourceKey,
-			boolean success, Session session, AssignableResource resource) {
+								   boolean success, Session session, AssignableResource resource) {
 		super(source, resourceKey, success, session, resource);
 		addRoleAttribute(resource);
 		assignedRoles = resource.getAssignedRoles();
 		unassignedRoles = resource.getUnassignedRoles();
-		addAttribute(ATTR_ASSIGNED_ROLES, createRoleList(assignedRoles));
-		addAttribute(ATTR_UNASSIGNED_ROLES, createRoleList(unassignedRoles));
+		addAttribute(ATTR_ASSIGNED_ROLES, createRoleList(assignedRoles == null ? Collections.<Role>emptyList() : assignedRoles));
+		addAttribute(ATTR_UNASSIGNED_ROLES, createRoleList(unassignedRoles == null ? Collections.<Role>emptyList() : unassignedRoles));
 	}
 
 	public AssignableResourceEvent(Object source, String resourceKey,
-			AssignableResource resource, Throwable e, Session session) {
+								   AssignableResource resource, Throwable e, Session session) {
 		super(source, resourceKey, e, session, resource);
 		addRoleAttribute(resource);
 		assignedRoles = resource.getAssignedRoles();
 		unassignedRoles = resource.getUnassignedRoles();
-		addAttribute(ATTR_ASSIGNED_ROLES, createRoleList(assignedRoles));
-		addAttribute(ATTR_UNASSIGNED_ROLES, createRoleList(unassignedRoles));
+		addAttribute(ATTR_ASSIGNED_ROLES, createRoleList(assignedRoles == null ? Collections.<Role>emptyList() : assignedRoles));
+		addAttribute(ATTR_UNASSIGNED_ROLES, createRoleList(unassignedRoles == null ? Collections.<Role>emptyList() : unassignedRoles));
 	}
 
 	private void addRoleAttribute(AssignableResource resource) {
@@ -51,7 +52,7 @@ public abstract class AssignableResourceEvent extends ResourceEvent {
 	public String[] getResourceKeys() {
 		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
 	}
-	
+
 	private String createRoleList(Collection<Role> roles) {
 		StringBuffer buf = new StringBuffer();
 		for(Role r : roles) {
