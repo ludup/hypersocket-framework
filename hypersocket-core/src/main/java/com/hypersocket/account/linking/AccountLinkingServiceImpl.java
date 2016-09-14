@@ -43,6 +43,7 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.events.RealmDeletedEvent;
 import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserDeletedEvent;
+import com.hypersocket.resource.AssignableResourceEvent;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -169,10 +170,29 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 		}
 	}
 	
+	@EventListener 
+	public synchronized void handleResourceAssignment(AssignableResourceEvent event) {
+		
+		if(event.isSuccess()) {
+			for(AccountLinkingRules rules : getPrimaryRules(event.getCurrentRealm())) {
+				if(rules.isAssignmentEvent(event)) {
+					for(Role assigned : event.getAssignedRoles()) {
+						processRoleAssignmentEvent(event.getCurrentRealm(), assigned, assigned.getPrincipals());
+					}
+				} else if(rules.isUnassignmentEvent(event)) {
+					for(Role unassigned : event.getUnassignedRoles()) {
+						processRoleUnassignmentEvent(event.getCurrentRealm(), unassigned, unassigned.getPrincipals());
+					}
+				}
+			}
+			
+		}
+	}
+	
 	private void processRoleAssignmentEvent(Realm realm, Role role, Collection<Principal> principals) {
 		if(!principals.isEmpty() && primaryRules.containsKey(realm)) {
 			for(AccountLinkingRules rules : getPrimaryRules(realm)) {
-				if(rules.isAutomaticLinking() && rules.isAccountLinkedToRole()) {
+				if(rules.isAutomaticLinking() && rules.isAssignmentEnabled()) {
 					
 					JobDataMap data = new JobDataMap();
 					data.put("primaryRealmId", realm.getId());
@@ -193,7 +213,7 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 		
 		if(!principals.isEmpty() && primaryRules.containsKey(realm)) {
 			for(AccountLinkingRules rules : getPrimaryRules(realm)) {
-				if(rules.isAutomaticLinking() && rules.isAccountLinkedToRole()) {
+				if(rules.isAutomaticLinking() && rules.isAssignmentEnabled()) {
 					
 					JobDataMap data = new JobDataMap();
 					data.put("primaryRealmId", realm.getId());

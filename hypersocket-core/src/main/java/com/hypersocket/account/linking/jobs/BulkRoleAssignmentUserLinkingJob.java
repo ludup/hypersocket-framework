@@ -19,8 +19,7 @@ public class BulkRoleAssignmentUserLinkingJob extends AbstractSecondaryUserLinki
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {
 		
 		Long primaryRealmId = context.getTrigger().getJobDataMap().getLong("primaryRealmId");
-		String roleName = context.getTrigger().getJobDataMap().getString("roleName");
-		
+		String roleName = context.getTrigger().getJobDataMap().getString("roleName");	
 		Long[] ids = (Long[]) context.getTrigger().getJobDataMap().get("assignedIds");
 		
 		try {
@@ -35,7 +34,7 @@ public class BulkRoleAssignmentUserLinkingJob extends AbstractSecondaryUserLinki
 			Set<Principal> processedPrincipals = new HashSet<Principal>();
 			
 			for(AccountLinkingRules rules : linkingService.getPrimaryRules(primaryRealm)) {
-				if(rules.isAutomaticLinking() && rules.isAccountLinkedToRole()) {
+				if(rules.isAutomaticLinking() && rules.isAssignmentEnabled()) {
 					
 					for(Long id : ids) {
 						

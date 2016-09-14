@@ -1,12 +1,11 @@
 package com.hypersocket.resource;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.hypersocket.permissions.Role;
-import com.hypersocket.properties.ResourceUtils;
-import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.session.Session;
 
@@ -28,9 +27,23 @@ public abstract class AssignableResourceEvent extends ResourceEvent {
 		super(source, resourceKey, success, session, resource);
 		addRoleAttribute(resource);
 		assignedRoles = resource.getAssignedRoles();
+		if(assignedRoles==null) {
+			assignedRoles = Collections.<Role>emptyList();
+		}
 		unassignedRoles = resource.getUnassignedRoles();
+		if(unassignedRoles==null) {
+			unassignedRoles = Collections.<Role>emptyList();
+		}
 		addAttribute(ATTR_ASSIGNED_ROLES, createRoleList(assignedRoles));
 		addAttribute(ATTR_UNASSIGNED_ROLES, createRoleList(unassignedRoles));
+	}
+	
+	public Collection<Role> getAssignedRoles() {
+		return assignedRoles;
+	}
+	
+	public Collection<Role> getUnassignedRoles() {
+		return unassignedRoles;
 	}
 
 	public AssignableResourceEvent(Object source, String resourceKey,
@@ -38,7 +51,13 @@ public abstract class AssignableResourceEvent extends ResourceEvent {
 		super(source, resourceKey, e, session, resource);
 		addRoleAttribute(resource);
 		assignedRoles = resource.getAssignedRoles();
+		if(assignedRoles==null) {
+			assignedRoles = Collections.<Role>emptyList();
+		}
 		unassignedRoles = resource.getUnassignedRoles();
+		if(unassignedRoles==null) {
+			unassignedRoles = Collections.<Role>emptyList();
+		}
 		addAttribute(ATTR_ASSIGNED_ROLES, createRoleList(assignedRoles));
 		addAttribute(ATTR_UNASSIGNED_ROLES, createRoleList(unassignedRoles));
 	}

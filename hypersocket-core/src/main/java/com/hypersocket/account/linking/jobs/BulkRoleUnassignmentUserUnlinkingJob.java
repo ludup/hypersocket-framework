@@ -34,7 +34,7 @@ public class BulkRoleUnassignmentUserUnlinkingJob extends AbstractSecondaryUserU
 			Set<Principal> processedPrincipals = new HashSet<Principal>();
 			
 			for(AccountLinkingRules rules : linkingService.getPrimaryRules(primaryRealm)) {
-				if(rules.isAutomaticLinking() && rules.isAccountLinkedToRole()) {
+				if(rules.isAutomaticLinking() && rules.isAssignmentEnabled()) {
 					
 					for(Long id : ids) {
 						
