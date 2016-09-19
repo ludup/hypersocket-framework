@@ -320,14 +320,4 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 	public Collection<String> getHeaderNames() {
 		return response.getHeaderNames();
 	}
-	
-	public void dispose() {
-		response = null;
-		charset = null;
-		locale = null;
-		buffer = null;
-		out = null;
-		channel = null;
-		request = null;
-	}
 }

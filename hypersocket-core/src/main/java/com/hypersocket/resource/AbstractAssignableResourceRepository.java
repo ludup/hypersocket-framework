@@ -43,9 +43,9 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	long getResourceCount(Realm realm, String searchColumn, String searchPattern, CriteriaConfiguration... configs);
 	
-	Long getAssignableResourceCount(List<Principal> principal);
+	Long getAssignableResourceCount(Collection<Principal> principal);
 
-	Long getAssignedResourceCount(List<Principal> principals, String searchPattern, CriteriaConfiguration... configs);
+	Long getAssignedResourceCount(Collection<Principal> principals, String searchPattern, CriteriaConfiguration... configs);
 
 	Collection<T> searchAssignedResources(List<Principal> principals, String searchPattern, int start, int length,
 			ColumnSort[] sorting, CriteriaConfiguration... configs);

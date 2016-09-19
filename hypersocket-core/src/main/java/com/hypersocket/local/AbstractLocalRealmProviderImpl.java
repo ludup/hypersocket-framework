@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.auth.PasswordEncryptionType;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
@@ -783,6 +784,10 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	@Transactional(readOnly=true)
 	public String getUserPropertyValue(Principal principal, String name) {
+		PropertyTemplate template = userRepository.getPropertyTemplate(principal, name);
+		if(template==null || !template.isEncrypted()) {
+			return userRepository.getValue(principal, name);
+		}
 		return userRepository.getDecryptedValue(principal, name);
 	}
 

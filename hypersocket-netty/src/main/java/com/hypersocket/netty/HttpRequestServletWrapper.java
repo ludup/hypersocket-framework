@@ -577,22 +577,4 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	public Part getPart(String name) throws IOException, ServletException {
 		return null;
 	}
-	
-	public void dispose() {
-		request.setContent(null);
-		request = null;
-		attributes = null;
-		parameters = null;
-		charset = null;
-		queryString = null;
-		pathInfo = null;
-		url = null;
-		uri = null;
-		localAddress = null;
-		remoteAddress = null;
-		cookies = null;
-		session = null;
-		context = null;
-	}
-
 }

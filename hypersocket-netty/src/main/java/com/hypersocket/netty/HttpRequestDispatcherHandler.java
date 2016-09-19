@@ -78,8 +78,6 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			.getLogger(HttpRequestDispatcherHandler.class);
 
 	private NettyServer server;
-	private HttpRequest currentRequest = null;
-	private boolean wantsMessage = true;
 	
 	public HttpRequestDispatcherHandler(NettyServer server)
 			throws ServletException {
@@ -103,6 +101,11 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		} else if (msg instanceof HttpChunk) {
 	
 			HttpChunk chunk = (HttpChunk) msg;
+			
+			if(log.isDebugEnabled()) {
+				log.debug(String.format("Received HTTP chunk of %d bytes", ((HttpChunk) msg).getContent().readableBytes()));
+			}
+			
 			HttpRequestServletWrapper servletRequest = (HttpRequestServletWrapper) ctx.getChannel().getAttachment();
 			((HttpRequestChunkStream)servletRequest.getInputStream()).setCurrentChunk(chunk);
 
@@ -196,7 +199,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 						}
 					}
 				}
-
+					
 				String reverseUri = servletRequest.getRequestURI();
 				reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
 				reverseUri = reverseUri.replace(server.getUiPath(), "${uiPath}");
@@ -339,6 +342,11 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 	}
 	
 	@Override
+	public void send401(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
+		servletResponse.sendError(HttpStatus.SC_UNAUTHORIZED);
+	}
+	
+	@Override
 	public void send500(final HttpServletRequest servletRequest, final HttpServletResponse servletResponse) throws IOException {
 		servletResponse.sendError(HttpStatus.SC_NOT_FOUND);
 		URL url = getClass().getResource("/500.html");
@@ -460,8 +468,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			if (log.isDebugEnabled()) {
 				log.debug("End Response >>>>>>");
 			}
-			servletRequest.dispose();
-			servletResponse.dispose();
+
 			Request.remove();
 		}
 

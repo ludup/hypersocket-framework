@@ -220,4 +220,5 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 			List<Principal> principals, String password, boolean forceChange, boolean selfCreated,
 			Principal parentPrincipal) throws ResourceCreationException, AccessDeniedException;
 
+	String getProfileProperty(Principal principal, String string);
 }

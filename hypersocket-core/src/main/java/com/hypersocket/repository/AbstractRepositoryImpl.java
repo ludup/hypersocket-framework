@@ -234,6 +234,21 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		return (T) results.get(0);
 	}
 
+	@SuppressWarnings("unchecked")
+	@Transactional(readOnly = true)
+	protected <T> List<T> query(String query, Object... args) {
+		Query q = buildQuery(query, args);
+		return q.list();
+	}
+
+	protected Query buildQuery(String query, Object... args) {
+		Query q = createQuery(query, false);
+		for(int i = 0 ; i < args.length; i++) {
+			q.setParameter(i, args[i]);
+		}
+		return q;
+	}
+	
 	@Transactional(readOnly = true)
 	protected <T> T get(String column, Object value, Class<T> cls, CriteriaConfiguration... configs) {
 		return get(column, value, cls, false, configs);

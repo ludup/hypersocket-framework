@@ -19,4 +19,6 @@ public interface HttpResponseProcessor {
 	void send404(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException;
 
 	void send500(HttpServletRequest request, HttpServletResponse response) throws IOException;
+
+	void send401(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }
