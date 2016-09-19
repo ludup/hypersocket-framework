@@ -92,6 +92,10 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 				if(type.isEnum()) {
 					return ResourceUtils.implodeEnumValues((Collection<Enum<?>>) m.invoke(resource));
 				} else if(Resource.class.isAssignableFrom(type)) {
+					String inputType = template.getAttributes().get("inputType");
+					if(inputType!=null && inputType.equals("multipleSearchInput")) {
+						return ResourceUtils.implodeNamePairValues((Collection<? extends Resource>) m.invoke(resource));
+					}
 					return ResourceUtils.implodeResourceValues((Collection<? extends Resource>) m.invoke(resource));
 				} else {
 					throw new IllegalStateException("Unhandled Collection type!");
