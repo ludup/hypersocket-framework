@@ -2,6 +2,7 @@ package com.hypersocket.server.handlers.impl;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 
 import com.hypersocket.server.HypersocketServer;
 
@@ -21,8 +22,8 @@ public class DefaultServletRequestHandler extends ServletRequestHandler {
 	}
 
 	@Override
-	public boolean handlesRequest(String request) {
-		return request.startsWith(server.resolvePath(server.getAttribute(getName(), getName())));
+	public boolean handlesRequest(HttpServletRequest request) {
+		return request.getRequestURI().startsWith(server.resolvePath(server.getAttribute(getName(), getName())));
 	}
 
 }

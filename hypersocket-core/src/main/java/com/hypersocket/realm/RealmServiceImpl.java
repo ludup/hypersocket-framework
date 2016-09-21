@@ -1734,6 +1734,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			return "";
 		}
 	}
+	
+	@Override
+	public String getProfileProperty(Principal principal, String resourceKey) {
+		
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserPropertyValue(principal, resourceKey);
+	}
 
 	@Override
 	public Map<String, String> getUserPropertyValues(Principal principal, String... variableNames) {

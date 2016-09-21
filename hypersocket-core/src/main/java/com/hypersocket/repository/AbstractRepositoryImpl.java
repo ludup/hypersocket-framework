@@ -233,7 +233,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		}
 		return (T) results.get(0);
 	}
-
+	
 	@Transactional(readOnly = true)
 	protected <T> T get(String column, Object value, Class<T> cls, CriteriaConfiguration... configs) {
 		return get(column, value, cls, false, configs);
