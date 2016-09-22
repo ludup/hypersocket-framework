@@ -441,8 +441,13 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 
 	protected void assertResourceAssignment(Principal principal,
-			Resource resource) throws AccessDeniedException {
+			Resource resource, boolean allowSystem) throws AccessDeniedException {
 
+		if(allowSystem) {
+			if(permissionService.hasSystemPermission(getCurrentPrincipal())) {
+				return;
+			}
+		}
 		for (Resource r : getResources(principal)) {
 			if (r.equals(resource)) {
 				return;
