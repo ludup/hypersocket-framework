@@ -2,6 +2,7 @@ package com.hypersocket.upload;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +36,7 @@ import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.util.CloseOnEOFInputStream;
 
 @Service
 public class FileUploadServiceImpl extends
@@ -222,9 +224,7 @@ public class FileUploadServiceImpl extends
 
 		FileUpload fileUpload = getFileByUuid(uuid);
 
-		File file = getFile(uuid);
-		
-		InputStream in = new FileInputStream(file);
+		InputStream in = getInputStream(uuid);
 		String contentType = mimeTypesMap.getContentType(fileUpload.getFileName());
 		response.setContentType(contentType);
 
@@ -238,14 +238,15 @@ public class FileUploadServiceImpl extends
 	}
 	
 	@Override
-	public File getFile(String uuid) throws IOException, ResourceNotFoundException {
-		FileUpload fileUpload = getFileByUuid(uuid);
-
-		File file = new File(
-				System.getProperty("hypersocket.uploadPath", DEFAULT_UPLOAD_PATH)
-				+ "/" + fileUpload.getRealm().getId()
-				+ "/" + fileUpload.getName());
-		
+	public File createTempFile(String uuid) throws IOException {
+		File file = File.createTempFile("task", "template");
+		file.deleteOnExit();
+		FileOutputStream out = new FileOutputStream(uuid);
+		try {
+			IOUtils.copy(new CloseOnEOFInputStream(getInputStream(uuid)), out);
+		} finally {
+			IOUtils.closeQuietly(out);
+		}
 		return file;
 	}
 
@@ -330,6 +331,16 @@ public class FileUploadServiceImpl extends
 
 			return f.length();
 		}
+
+		@Override
+		public InputStream getInputStream(FileUpload upload) throws IOException {
+			
+			File f = new File(
+					System.getProperty("hypersocket.uploadPath", DEFAULT_UPLOAD_PATH)
+					+ upload.getRealm().getId() 
+					+ "/" + upload.getName());
+			return new FileInputStream(f);
+		}
 	}
 
 	@Override
@@ -339,5 +350,14 @@ public class FileUploadServiceImpl extends
 			return "application/octet-stream";
 		}
 		return contentType;
+	}
+
+	@Override
+	public InputStream getInputStream(String uuid) throws IOException {
+		try {
+			return defaultStore.getInputStream(getFileByUuid(uuid));
+		} catch (ResourceNotFoundException e) {
+			throw new IOException(e.getMessage(), e);
+		}
 	}
 }

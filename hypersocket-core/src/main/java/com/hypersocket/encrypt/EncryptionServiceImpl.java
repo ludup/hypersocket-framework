@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 
@@ -21,6 +22,7 @@ import com.hypersocket.secret.SecretKeyService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.transactions.TransactionService;
 
+@Service
 public class EncryptionServiceImpl implements EncryptionService, ApplicationListener<ContextStartedEvent> {
 
 	static Logger log = LoggerFactory.getLogger(EncryptionServiceImpl.class);

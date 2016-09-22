@@ -14,7 +14,7 @@
 		<property resourceKey="jdbc.vendor" inputType="select" defaultValue="MYSQL" options="MYSQL" store="databaseConfiguration"
 			allowEmpty="false" weight="100" />
 		<property resourceKey="jdbc.database" inputType="text" store="databaseConfiguration"
-			allowEmpty="false" weight="200" defaultValue="" />	
+			allowEmpty="false" weight="200" defaultValue="hypersocket" />	
 		<property resourceKey="jdbc.host" inputType="text" store="databaseConfiguration"
 			allowEmpty="false" weight="300" defaultValue="" />
 		<property resourceKey="jdbc.port" inputType="integer" store="databaseConfiguration"
