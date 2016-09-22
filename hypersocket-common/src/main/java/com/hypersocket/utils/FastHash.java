@@ -20,9 +20,6 @@ public class FastHash {
 		if(str==null) {
 			str = "NULL";
 		}
-		if(str==null) {
-			str = "NULL";
-		}
 		byte[] b;
 		try {
 			b = str.getBytes("UTF-8");

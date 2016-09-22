@@ -2,6 +2,7 @@ package com.hypersocket.account.linking;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -540,12 +541,16 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 	
 	@Override
 	public Collection<AccountLinkingRules> getPrimaryRules(Realm realm) {
-		return primaryRules.get(realm);
+		Collection<AccountLinkingRules> rules =  primaryRules.get(realm);
+		if(rules==null) {
+			rules = Collections.<AccountLinkingRules>emptyList();
+		}
+		return rules;
 	}
 	
 	@Override
 	public AccountLinkingRules getPrimaryRules(Realm primary, Realm secondary) throws ResourceNotFoundException {
-		for(AccountLinkingRules rule : primaryRules.get(primary)) {
+		for(AccountLinkingRules rule :getPrimaryRules(primary)) {
 			if(rule.getSecondaryRealm().equals(secondary)) {
 				return rule;
 			}

@@ -5,10 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hypersocket.account.linking.AccountLinkingRules;
 import com.hypersocket.account.linking.AccountLinkingService;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.PermissionsAwareJob;
