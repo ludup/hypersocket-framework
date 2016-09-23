@@ -39,7 +39,7 @@ public class SecondaryUserDeletionEventJob extends AbstractSecondaryUserUnlinkin
 				log.info(String.format("Secondary account %s has been deleted", secondaryPrincipal.getPrincipalName()));
 			}
 			
-			unlinkAccount(secondaryPrincipal, realm);
+			unlinkAccount(secondaryPrincipal, realm, false);
 		
 		} catch(Throwable t) {
 			throw new IllegalStateException(t.getMessage(), t);

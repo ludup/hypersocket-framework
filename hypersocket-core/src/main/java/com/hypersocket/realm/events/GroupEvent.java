@@ -24,7 +24,7 @@ public abstract class GroupEvent extends PrincipalEvent {
 	private Principal principal;
 
 	public GroupEvent(Object source, String resourceKey, Session session,
-			Realm realm, RealmProvider provider, Principal principal, Map<String,String> properties) {
+			Realm realm, RealmProvider provider, Principal principal) {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
 		addAttribute(ATTR_GROUP_NAME, principal.getName());
@@ -32,14 +32,11 @@ public abstract class GroupEvent extends PrincipalEvent {
 
 	public GroupEvent(Object source, String resourceKey, Session session,
 			Realm realm, RealmProvider provider, Principal principal,
-			List<Principal> associatedPrincipals, Map<String, String> properties) {
+			List<Principal> associatedPrincipals) {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
 		addAttribute(ATTR_GROUP_NAME, principal.getName());
 		addAssociatedPrincipals(associatedPrincipals);
-		for (String prop : properties.keySet()) {
-			addAttribute(prop, properties.get(prop));
-		}
 	}
 
 	public GroupEvent(Object source, String resourceKey, Throwable e,

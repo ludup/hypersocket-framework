@@ -29,10 +29,10 @@ public class SecondaryUserCreationEventJob extends AbstractSecondaryUserLinkingJ
 		Long realmId = context.getTrigger().getJobDataMap().getLong("realmId");
 		
 		try {
-			Realm primaryrealm = realmService.getRealmById(realmId);
-			Principal secondaryPrincipal = realmService.getPrincipalById(primaryrealm, principalId, PrincipalType.USER);
+			Realm secondaryRealm = realmService.getRealmById(realmId);
+			Principal secondaryPrincipal = realmService.getPrincipalById(secondaryRealm, principalId, PrincipalType.USER);
 			
-			linkAccount(secondaryPrincipal, primaryrealm);
+			linkAccount(secondaryPrincipal, secondaryRealm);
 		
 		} catch(Throwable t) {
 			throw new IllegalStateException(t.getMessage(), t);

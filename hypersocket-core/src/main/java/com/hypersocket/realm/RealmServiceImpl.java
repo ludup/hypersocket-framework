@@ -1103,8 +1103,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Principal createGroup(Realm realm, String name, Map<String, String> properties, List<Principal> principals,
-			List<Principal> groups) throws ResourceCreationException, AccessDeniedException {
+	public Principal createGroup(Realm realm, String name, Map<String, String> properties, 
+			final List<Principal> principals,
+			final List<Principal> groups) throws ResourceCreationException, AccessDeniedException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -1129,8 +1130,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				processor.afterCreate(principal, properties);
 			}
 
-			eventService.publishEvent(new GroupCreatedEvent(this, getCurrentSession(), realm, provider, principal,
-					principals, new HashMap<String, String>()));
+			eventService.publishEvent(new GroupCreatedEvent(this, 
+					getCurrentSession(), 
+					realm, 
+					provider, 
+					principal,
+					principals));
 			return principal;
 
 		} catch (AccessDeniedException e) {
@@ -1168,7 +1173,26 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					name);
 			throw ex;
 		}
-
+		
+//		Collection<Principal> existingUsers = getAssociatedPrincipals(group, PrincipalType.USER);
+//		Collection<Principal> existingGroups = getAssociatedPrincipals(group, PrincipalType.GROUP);
+//		
+//		final Collection<Principal> assignedUsers = new ArrayList<Principal>();
+//		assignedUsers.addAll(principals);
+//		assignedUsers.removeAll(existingUsers);
+//		
+//		final Collection<Principal> unassignedUsers = new ArrayList<Principal>();
+//		unassignedUsers.addAll(existingUsers);
+//		unassignedUsers.removeAll(principals);
+//		
+//		final Collection<Principal> assignedGroups = new ArrayList<Principal>();
+//		assignedGroups.addAll(groups);
+//		assignedGroups.removeAll(existingGroups);
+//		
+//		final Collection<Principal> unassignedGroups = new ArrayList<Principal>();
+//		unassignedGroups.addAll(existingGroups);
+//		unassignedGroups.removeAll(groups);
+		
 		return transactionService.doInTransaction(new TransactionCallbackWithError<Principal>() {
 
 			@Override
@@ -1185,8 +1209,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						processor.afterUpdate(principal, properties);
 					}
 
-					eventService.publishEvent(new GroupUpdatedEvent(this, getCurrentSession(), realm, provider,
-							principal, principals, new HashMap<String, String>()));
+					eventService.publishEvent(new GroupUpdatedEvent(this, 
+							getCurrentSession(), 
+							realm, provider,
+							principal, principals));
 
 					return principal;
 				} catch (ResourceChangeException e) {
@@ -1220,8 +1246,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			provider.deleteGroup(group);
 
-			eventService.publishEvent(new GroupDeletedEvent(this, getCurrentSession(), realm, provider, group,
-					new HashMap<String, String>()));
+			eventService.publishEvent(new GroupDeletedEvent(this, getCurrentSession(), realm, provider, group));
 
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(
