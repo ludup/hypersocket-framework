@@ -147,7 +147,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 		user.setName("newUser");
 		user.setPassword("newUserPass");
 		user.setProperties(new PropertyItem[0]);
-		user.setGroups(new Long[0]);
+		user.setGroups(new String[0]);
 
 		doPostJson("/hypersocket/api/currentRealm/user", user);
 

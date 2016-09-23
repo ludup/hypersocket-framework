@@ -28,6 +28,7 @@ import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalColumns;
@@ -717,8 +718,9 @@ public class OwnerRealmController extends ResourceController {
 			Realm realm = realmService.getRealmById(id);
 
 			List<Principal> principals = new ArrayList<Principal>();
-			for (Long group : user.getGroups()) {
-				principals.add(realmService.getPrincipalById(realm, group,
+			for (String group : user.getGroups()) {
+				principals.add(realmService.getPrincipalById(realm, 
+						Long.parseLong(ResourceUtils.getNamePairKey(group)),
 						PrincipalType.GROUP));
 			}
 
