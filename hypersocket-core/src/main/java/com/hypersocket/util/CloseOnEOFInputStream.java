@@ -3,6 +3,11 @@ package com.hypersocket.util;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Close a stream when it reaches EOF.
+ * @author lee
+ *
+ */
 public class CloseOnEOFInputStream extends InputStream {
 
 	InputStream in;
