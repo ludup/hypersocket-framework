@@ -1,6 +1,7 @@
 package com.hypersocket.tasks.email;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,16 +30,17 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tasks.AbstractTaskProvider;
-import com.hypersocket.tasks.TaskResult;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskProviderServiceImpl;
+import com.hypersocket.tasks.TaskResult;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.TriggerValidationError;
 import com.hypersocket.triggers.ValidationException;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.upload.FileUploadService;
+import com.hypersocket.util.CloseOnEOFInputStream;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Component
@@ -233,13 +235,13 @@ public class EmailTask extends AbstractTaskProvider {
 		if(typesRequired.length==0) {
 			attachments.add(new EmailAttachment(upload.getFileName(), 
 					uploadService.getContentType(uuid), 
-					uploadService.getFile(uuid)));
+					new CloseOnEOFInputStream(uploadService.getInputStream(uuid))));
 		} else {
 			for(String typeRequired : typesRequired) {
 				if(upload.getType().equalsIgnoreCase(typeRequired)) {
 					attachments.add(new EmailAttachment(upload.getFileName(), 
 						uploadService.getContentType(uuid), 
-						uploadService.getFile(uuid)));
+						new CloseOnEOFInputStream(uploadService.getInputStream(uuid))));
 				}
 			}
 		}
@@ -257,7 +259,8 @@ public class EmailTask extends AbstractTaskProvider {
 			throw new FileNotFoundException(filepath + " does not exist");
 		}
 		
-		attachments.add(new EmailAttachment(filename, uploadService.getContentType(file), file));
+		attachments.add(new EmailAttachment(filename, uploadService.getContentType(file), 
+				new CloseOnEOFInputStream(new FileInputStream(file))));
 
 	}
 	public String[] getResultResourceKeys() {

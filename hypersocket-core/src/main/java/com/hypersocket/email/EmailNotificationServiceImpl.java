@@ -2,7 +2,6 @@ package com.hypersocket.email;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,6 +9,7 @@ import java.util.regex.Pattern;
 import javax.mail.Message.RecipientType;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 import org.codemonkey.simplejavamail.Email;
@@ -131,7 +131,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
 		if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(htmlText)) {
 			try {
-				htmlTemplate = FileUtils.readFileToString(uploadService.getFile(htmlTemplate));
+				htmlTemplate = IOUtils.toString(uploadService.getInputStream(htmlTemplate), "UTF-8");
 				htmlTemplate = htmlTemplate.replace("${htmlContent}", htmlText);
 				
 				String trackingImage = configurationService.getValue(realm, "email.trackingImage");

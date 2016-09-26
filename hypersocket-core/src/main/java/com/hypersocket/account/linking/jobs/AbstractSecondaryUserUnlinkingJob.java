@@ -1,14 +1,13 @@
 package com.hypersocket.account.linking.jobs;
 
+import org.quartz.JobDataMap;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hypersocket.account.linking.AccountLinkingRules;
 import com.hypersocket.account.linking.AccountLinkingService;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.PermissionsAwareJob;
@@ -24,7 +23,7 @@ public abstract class AbstractSecondaryUserUnlinkingJob extends PermissionsAware
 	RealmService realmService; 
 	
 
-	protected void unlinkAccount(Principal secondaryPrincipal, Realm primaryRealm) throws JobExecutionException {
+	protected void unlinkAccount(Principal secondaryPrincipal, Realm primaryRealm, boolean disable) throws JobExecutionException {
 		
 		try {
 
@@ -37,6 +36,13 @@ public abstract class AbstractSecondaryUserUnlinkingJob extends PermissionsAware
 				
 				linkingService.unlinkAccounts(secondaryPrincipal.getParentPrincipal(), secondaryPrincipal);
 				
+				if(disable && realmService.supportsAccountDisable(secondaryPrincipal.getRealm())) {
+					if(log.isInfoEnabled()) {
+						log.info(String.format("Disabling account %s/%s", secondaryPrincipal.getRealm().getName(),
+								secondaryPrincipal.getPrincipalName()));
+					}
+					realmService.disableAccount(secondaryPrincipal);
+				}
 			}
 
 		} catch(Throwable t) {

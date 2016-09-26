@@ -111,7 +111,7 @@ public class BulkRoleUnassignmentUserUnlinkingJob extends AbstractSecondaryUserU
 					}
 					return;
 				}
-				unlinkAccount(secondaryPrincipal, primaryPrincipal.getRealm());
+				unlinkAccount(secondaryPrincipal, primaryPrincipal.getRealm(), rules.isDisableAccountRequired());				
 			}
 		} 
 	}

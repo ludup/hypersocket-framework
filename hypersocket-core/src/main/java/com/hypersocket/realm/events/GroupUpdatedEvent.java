@@ -1,7 +1,6 @@
 package com.hypersocket.realm.events;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -18,9 +17,9 @@ public class GroupUpdatedEvent extends GroupEvent {
 	
 	public GroupUpdatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
-			List<Principal> associatedPrincipals, Map<String,String> properties) {
+			List<Principal> associatedPrincipals) {
 		super(source, "event.groupUpdated", session, realm, provider, principal,
-				associatedPrincipals, properties);
+				associatedPrincipals);
 	}
 
 	public GroupUpdatedEvent(Object source, Throwable e, Session session,
@@ -33,4 +32,5 @@ public class GroupUpdatedEvent extends GroupEvent {
 	public String[] getResourceKeys() {
 		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
 	}
+
 }

@@ -2,6 +2,7 @@ package com.hypersocket.account.linking;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -126,7 +127,9 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 					secondary.getName()));
 		}
 		
+		boolean disable = false;
 		if(secondaryRules.containsKey(secondary)) {
+			disable = secondaryRules.get(secondary).isDisableAccountRequired();
 			secondaryRules.remove(secondary);
 			for(AccountLinkingRules rules : primaryRules.get(primary)) {
 				if(rules.getSecondaryRealm().equals(secondary)) {
@@ -140,7 +143,7 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 			JobDataMap data = new JobDataMap();
 			data.put("primaryRealmId", primary.getId());
 			data.put("secondaryRealmId", secondary.getId());
-			
+			data.put("disableAccount", new Boolean(disable));
 			schedulerService.scheduleNow(BulkSecondaryUserUnlinkingJob.class, UUID.randomUUID().toString(), data);
 		}
 	}
@@ -238,18 +241,22 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 		
 		if(event.isSuccess()) {
 			
-			JobDataMap data = new JobDataMap();
-			data.put("realmId", event.getPrincipal().getRealm().getId());
-			data.put("principalId", event.getPrincipal().getId());
-			
 			if(secondaryRules.containsKey(event.getPrincipal().getRealm()) && !event.getPrincipal().isLinked()) {
 				AccountLinkingRules rules = secondaryRules.get(event.getPrincipal().getRealm());
 				if(rules.isAutomaticLinking()) {
-					try {
-						schedulerService.scheduleNow(SecondaryUserCreationEventJob.class, 
-								UUID.randomUUID().toString(), data);
-					} catch (SchedulerException e) {
-						log.error("Failed to schedule secondary user unlink");
+					if(realmService.getPrincipalByName(rules.getPrimaryRealm(), 
+							rules.generatePrimaryPrincipalName(event.getPrincipal()), 
+							PrincipalType.USER)!=null) {
+						try {
+							JobDataMap data = new JobDataMap();
+							data.put("principalId", event.getPrincipal().getId());
+							data.put("realmId", rules.getSecondaryRealm().getId());
+							
+							schedulerService.scheduleNow(SecondaryUserCreationEventJob.class, 
+									UUID.randomUUID().toString(), data);
+						} catch (SchedulerException e) {
+							log.error("Failed to schedule secondary user unlink");
+						}
 					}
 				}
 				
@@ -272,6 +279,9 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 									event.getPrincipal().getName()));
 						}
 						
+						JobDataMap data = new JobDataMap();
+						data.put("principalId", event.getPrincipal().getId());
+						data.put("realmId", rules.getPrimaryRealm().getId());
 						data.put("secondaryRealmId", rules.getSecondaryRealm().getId());
 						
 						try {
@@ -543,12 +553,16 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 	
 	@Override
 	public Collection<AccountLinkingRules> getPrimaryRules(Realm realm) {
-		return primaryRules.get(realm);
+		Collection<AccountLinkingRules> rules =  primaryRules.get(realm);
+		if(rules==null) {
+			rules = Collections.<AccountLinkingRules>emptyList();
+		}
+		return rules;
 	}
 	
 	@Override
 	public AccountLinkingRules getPrimaryRules(Realm primary, Realm secondary) throws ResourceNotFoundException {
-		for(AccountLinkingRules rule : primaryRules.get(primary)) {
+		for(AccountLinkingRules rule :getPrimaryRules(primary)) {
 			if(rule.getSecondaryRealm().equals(secondary)) {
 				return rule;
 			}
