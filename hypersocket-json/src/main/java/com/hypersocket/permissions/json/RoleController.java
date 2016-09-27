@@ -29,6 +29,7 @@ import com.hypersocket.permissions.Permission;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
@@ -254,13 +255,15 @@ public class RoleController extends ResourceController {
 			Realm realm = sessionUtils.getCurrentRealm(request);
 
 			List<Principal> principals = new ArrayList<Principal>();
-			for (Long user : role.getUsers()) {
-				principals.add(realmService.getPrincipalById(realm, user,
+			for (String user : role.getUsers()) {
+				principals.add(realmService.getPrincipalById(realm, 
+						Long.parseLong(ResourceUtils.getNamePairKey(user)),
 						PrincipalType.USER));
 			}
 
-			for (Long group : role.getGroups()) {
-				principals.add(realmService.getPrincipalById(realm, group,
+			for (String group : role.getGroups()) {
+				principals.add(realmService.getPrincipalById(realm, 
+						Long.parseLong(ResourceUtils.getNamePairKey(group)),
 						PrincipalType.GROUP));
 			}
 

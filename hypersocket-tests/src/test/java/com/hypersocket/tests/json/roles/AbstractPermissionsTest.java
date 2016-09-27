@@ -51,8 +51,8 @@ public class AbstractPermissionsTest extends AbstractServerTest {
 				.getResourceKey()) };
 
 		role.setPermissions(permissions);
-		role.setUsers(new Long[0]);
-		role.setGroups(new Long[0]);
+		role.setUsers(new String[0]);
+		role.setGroups(new String[0]);
 
 		JsonRoleResourceStatus json = getMapper().readValue(
 				doPostJson("/hypersocket/api/roles/role", role),
