@@ -72,7 +72,7 @@
 					<prop key="hibernate.cache.region.factory_class">THIS REQUIRED PROPERTY FOR CACHING IS CONFIGURED IN HypersocketAnnotationSessionFactoryBean</prop> 
 				-->
 
-				<!-- In HA, in case you need override not to happen please set following property to true
+				<!-- In HA, in case you need override not to happen please set following property to false
 				 hypersocket.hibernate.search.ha, in this case all properties in this file will take effect,
 				 no auto configuration will take place, listeners will be registered though, i.e
 				 hibernate.search.autoregister_listeners will be true
@@ -83,7 +83,7 @@
 				<prop key="hibernate.search.default.directory_provider">filesystem</prop>
 				<prop key="hibernate.search.default.indexBase">conf/lucene/indexes</prop>
 
-				<!--<prop key="hypersocket.hibernate.search.ha">true</prop>-->
+				<prop key="hypersocket.hibernate.search.ha">false</prop>
 
 
 				<!--
