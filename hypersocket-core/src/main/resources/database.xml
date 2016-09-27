@@ -71,11 +71,30 @@
 				<!-- 
 					<prop key="hibernate.cache.region.factory_class">THIS REQUIRED PROPERTY FOR CACHING IS CONFIGURED IN HypersocketAnnotationSessionFactoryBean</prop> 
 				-->
-	
-				<!-- Search indexing -->
-				<prop key="hibernate.search.default.directory_provider">filesystem</prop>
 
+				<!-- In HA, in case you need override not to happen please set following property to true
+				 hypersocket.hibernate.search.ha, in this case all properties in this file will take effect,
+				 no auto configuration will take place, listeners will be registered though, i.e
+				 hibernate.search.autoregister_listeners will be true
+				-->
+
+				<!-- In HA both these properties will be overridden by elastic search properties and
+				hibernate.search.autoregister_listeners will be set to false -->
+				<prop key="hibernate.search.default.directory_provider">filesystem</prop>
 				<prop key="hibernate.search.default.indexBase">conf/lucene/indexes</prop>
+
+				<!--<prop key="hypersocket.hibernate.search.ha">true</prop>-->
+
+
+				<!--
+				HA will auto configure below properties with values as below.
+
+				<prop key="hibernate.search.default.indexmanager">elasticsearch</prop>
+				<prop key="hibernate.search.default.elasticsearch.host">From database default https://127.0.0.1:9200</prop>
+				<prop key="hibernate.search.default.elasticsearch.index_schema_management_strategy">MERGE</prop>
+				<prop key="hibernate.search.default.elasticsearch.index_management_wait_timeout">10000</prop>
+				<prop key="hibernate.search.default.elasticsearch.required_index_status">yellow</prop>
+				<prop key="hibernate.search.default.elasticsearch.refresh_after_write">false</prop>-->
 			</props>
 		</property>
 	</bean>
