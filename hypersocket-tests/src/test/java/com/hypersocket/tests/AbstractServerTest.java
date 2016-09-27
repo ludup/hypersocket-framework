@@ -496,11 +496,11 @@ public class AbstractServerTest {
 	protected static JsonResourceStatus createUser(String realm,
 			String username, String password, boolean forceChange)
 			throws Exception {
-		return createUser(realm, username, password, forceChange, new Long[0]);
+		return createUser(realm, username, password, forceChange, new String[0]);
 	}
 
 	protected static JsonResourceStatus createUser(String realm,
-			String username, String password, boolean forceChange, Long[] groups)
+			String username, String password, boolean forceChange, String[] groups)
 			throws Exception {
 		UserUpdate x = new UserUpdate();
 		x.setName(username);

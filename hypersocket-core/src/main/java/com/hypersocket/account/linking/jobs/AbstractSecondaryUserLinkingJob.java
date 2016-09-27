@@ -29,7 +29,7 @@ public abstract class AbstractSecondaryUserLinkingJob extends PermissionsAwareJo
 		try {
 
 			AccountLinkingRules rules = linkingService.getSecondaryRules(primaryRealm);
-			if(!rules.isAutomaticLinking()) {
+			if(rules==null || !rules.isAutomaticLinking()) {
 				
 				if(log.isInfoEnabled()) {
 					log.info(String.format("Automatic linking IS NOT enabled from realm %s to %s", 
@@ -70,7 +70,7 @@ public abstract class AbstractSecondaryUserLinkingJob extends PermissionsAwareJo
 			}
 			
 			linkingService.linkAccounts(primaryPrincipal, secondaryPrincipal);
-		
+			
 
 		} catch(Throwable t) {
 			throw new IllegalStateException(t.getMessage(), t);

@@ -9,4 +9,6 @@ public interface FileStore {
 
 	long writeFile(Realm realm, String filename, String uuid, InputStream in) throws IOException;
 
+	InputStream getInputStream(FileUpload fileByUuid) throws IOException;
+
 }

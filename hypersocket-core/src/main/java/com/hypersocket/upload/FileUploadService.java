@@ -41,8 +41,6 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 			HttpServletResponse response, boolean forceDownload)
 			throws IOException, AccessDeniedException, ResourceNotFoundException;
 
-	File getFile(String uuid) throws IOException, ResourceNotFoundException;
-
 	String getContentType(String uuid) throws ResourceNotFoundException,
 			IOException;
 
@@ -61,4 +59,8 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 	
 	FileUpload createFile(InputStream in, String filename, Realm realm, boolean persist)
 			throws ResourceCreationException, AccessDeniedException, IOException;
+
+	public InputStream getInputStream(String uuid) throws IOException;
+
+	File createTempFile(String uuid) throws IOException;
 }

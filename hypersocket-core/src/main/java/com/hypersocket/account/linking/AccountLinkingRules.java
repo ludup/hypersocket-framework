@@ -46,6 +46,8 @@ public interface AccountLinkingRules {
 
 	boolean isSecondaryAccountRequired(Principal primaryPrincipal);
 
+	boolean isDisableAccountRequired();
+
 	
 
 }
