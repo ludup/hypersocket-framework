@@ -16,8 +16,8 @@ public class RoleUpdate {
 
 	Long id;
 	String name;
-	Long[] users;
-	Long[] groups;
+	String[] users;
+	String[] groups;
 	Long[] permissions;
 	PropertyItem[] properties;
 	
@@ -41,19 +41,19 @@ public class RoleUpdate {
 		this.name = name;
 	}
 
-	public Long[] getUsers() {
+	public String[] getUsers() {
 		return users;
 	}
 
-	public void setUsers(Long[] users) {
+	public void setUsers(String[] users) {
 		this.users = users;
 	}
 
-	public Long[] getGroups() {
+	public String[] getGroups() {
 		return groups;
 	}
 
-	public void setGroups(Long[] groups) {
+	public void setGroups(String[] groups) {
 		this.groups = groups;
 	}
 

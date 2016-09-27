@@ -614,8 +614,8 @@ public class AbstractServerTest {
 		role.setName(rolename);
 		// role.setPermissions(new Long[0]);
 		role.setPermissions(permissions);
-		role.setUsers(new Long[0]);
-		role.setGroups(new Long[0]);
+		role.setUsers(new String[0]);
+		role.setGroups(new String[0]);
 
 		String newRoleJson = doPostJson("/hypersocket/api/roles/role", role);
 		JsonRoleResourceStatus newRoleJsonResourceStatus = mapper.readValue(
@@ -638,9 +638,9 @@ public class AbstractServerTest {
 
 		roleUpdate.setName(jsonRole.getName());
 		roleUpdate.setId(jsonRole.getId());
-		Long[] roleUsers = { jsonUser.getResource().getId() };
+		String[] roleUsers = { jsonUser.getResource().getId() + "=" };
 		roleUpdate.setUsers(roleUsers);
-		roleUpdate.setGroups(new Long[0]);
+		roleUpdate.setGroups(new String[0]);
 		Long[] permissions = new Long[jsonRole.getPermissions().length];
 		for (int x = 0; x < permissions.length; x++) {
 			permissions[x] = jsonRole.getPermissions()[x].getId();
@@ -653,7 +653,7 @@ public class AbstractServerTest {
 
 	}
 
-	protected static void addUsersToRole(JsonRole jsonRole, Long[] users)
+	protected static void addUsersToRole(JsonRole jsonRole, String[] users)
 			throws Exception {
 
 		RoleUpdate roleUpdate = new RoleUpdate();
@@ -661,7 +661,7 @@ public class AbstractServerTest {
 		roleUpdate.setName(jsonRole.getName());
 		roleUpdate.setId(jsonRole.getId());
 		roleUpdate.setUsers(users);
-		roleUpdate.setGroups(new Long[0]);
+		roleUpdate.setGroups(new String[0]);
 		Long[] permissions = new Long[jsonRole.getPermissions().length];
 		for (int x = 0; x < permissions.length; x++) {
 			permissions[x] = jsonRole.getPermissions()[x].getId();
@@ -681,9 +681,9 @@ public class AbstractServerTest {
 
 		roleUpdate.setName(jsonRole.getName());
 		roleUpdate.setId(jsonRole.getId());
-		Long[] roleGroups = { jsonGroup.getResource().getId() };
+		String[] roleGroups = { jsonGroup.getResource().getId() + "=" };
 		roleUpdate.setGroups(roleGroups);
-		roleUpdate.setUsers(new Long[0]);
+		roleUpdate.setUsers(new String[0]);
 		Long[] permissions = new Long[jsonRole.getPermissions().length];
 		for (int x = 0; x < permissions.length; x++) {
 			permissions[x] = jsonRole.getPermissions()[x].getId();
@@ -736,8 +736,8 @@ public class AbstractServerTest {
 		role.setId(jsonRole.getId());
 		role.setName("Everyone");
 		role.setPermissions(new Long[0]);
-		role.setUsers(new Long[0]);
-		role.setGroups(new Long[0]);
+		role.setUsers(new String[0]);
+		role.setGroups(new String[0]);
 
 		String newRoleJson = doPostJson("/hypersocket/api/roles/role", role);
 		JsonRoleResourceStatus newRoleJsonResourceStatus = mapper.readValue(
