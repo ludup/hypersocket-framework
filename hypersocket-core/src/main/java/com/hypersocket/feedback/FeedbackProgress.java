@@ -12,9 +12,6 @@ import com.hypersocket.util.SpringApplicationContextProvider;
 
 public class FeedbackProgress implements Serializable{
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 8164835181440211990L;
 	String uuid;
 	transient FeedbackService feedbackService;

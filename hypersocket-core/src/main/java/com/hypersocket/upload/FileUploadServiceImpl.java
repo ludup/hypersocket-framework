@@ -37,6 +37,7 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.util.CloseOnEOFInputStream;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Service
 public class FileUploadServiceImpl extends
@@ -99,7 +100,7 @@ public class FileUploadServiceImpl extends
 	@Override
 	public String getContentType(String uuid, boolean isUUID) throws ResourceNotFoundException, IOException {
 		if(isUUID) {
-			FileUpload upload = getFileByUuid(uuid);
+			FileUpload upload = getFileUpload(uuid);
 			String contentType = mimeTypesMap.getContentType(upload.getFileName());
 			if(contentType==null) {
 				return "application/octet-stream";
@@ -152,6 +153,12 @@ public class FileUploadServiceImpl extends
 		fileUpload.setRealm(realm);
 		fileUpload.setName(uuid);
 		fileUpload.setType(type);
+		String shortCode;
+		do {
+			shortCode = HypersocketUtils.generateRandomAlphaNumericString(6);
+		} while(repository.getFileByShortCode(shortCode)!=null);
+		
+		fileUpload.setShortCode(shortCode);
 		
 		try {
 
@@ -187,9 +194,18 @@ public class FileUploadServiceImpl extends
 
 	}
 
+//	@Override
+//	public FileUpload getFileByUuid(String uuid) throws ResourceNotFoundException {
+//		FileUpload upload = repository.getFileByUuid(uuid);
+//		if(upload==null) {
+//			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.fileNotFound", uuid);
+//		}
+//		return upload;
+//	}
+	
 	@Override
-	public FileUpload getFileByUuid(String uuid) throws ResourceNotFoundException {
-		FileUpload upload = repository.getFileByUuid(uuid);
+	public FileUpload getFileUpload(String uuid) throws ResourceNotFoundException {
+		FileUpload upload = repository.getFileUpload(uuid);
 		if(upload==null) {
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.fileNotFound", uuid);
 		}
@@ -222,7 +238,7 @@ public class FileUploadServiceImpl extends
 	public void downloadURIFile(String uuid, HttpServletRequest request, HttpServletResponse response, boolean forceDownload)
 			throws IOException, AccessDeniedException, ResourceNotFoundException {
 
-		FileUpload fileUpload = getFileByUuid(uuid);
+		FileUpload fileUpload = getFileUpload(uuid);
 
 		InputStream in = getInputStream(uuid);
 		String contentType = mimeTypesMap.getContentType(fileUpload.getFileName());
@@ -355,7 +371,7 @@ public class FileUploadServiceImpl extends
 	@Override
 	public InputStream getInputStream(String uuid) throws IOException {
 		try {
-			return defaultStore.getInputStream(getFileByUuid(uuid));
+			return defaultStore.getInputStream(getFileUpload(uuid));
 		} catch (ResourceNotFoundException e) {
 			throw new IOException(e.getMessage(), e);
 		}
