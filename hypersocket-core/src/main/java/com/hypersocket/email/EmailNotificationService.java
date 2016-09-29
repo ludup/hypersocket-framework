@@ -19,16 +19,16 @@ public interface EmailNotificationService {
 
 	boolean validateEmailAddresses(String[] emails);
 
-	String populateEmailList(String[] emails, List<Recipient> recipients,
+	String populateEmailList(String[] emails, List<RecipientHolder> recipients,
 			RecipientType type) throws ValidationException;
 
-	void sendEmail(String subject, String text, String html, Recipient[] recipients, boolean track, EmailAttachment... attachments)
+	void sendEmail(String subject, String text, String html, RecipientHolder[] recipients, boolean track, EmailAttachment... attachments)
 			throws MailException, AccessDeniedException, ValidationException;
 
-	void sendEmail(Realm realm, String subject, String text, String html, Recipient[] recipients, boolean track, 
+	void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients, boolean track, 
 			EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException;
 
 	void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail,
-			Recipient[] recipients, boolean track, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException;
+			RecipientHolder[] recipients, boolean track, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException;
 
 }

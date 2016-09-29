@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.EmailNotificationService;
+import com.hypersocket.email.RecipientHolder;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.PropertyCategory;
@@ -29,10 +30,10 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tasks.AbstractTaskProvider;
-import com.hypersocket.tasks.TaskResult;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskProviderServiceImpl;
+import com.hypersocket.tasks.TaskResult;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.TriggerValidationError;
@@ -164,7 +165,7 @@ public class EmailTask extends AbstractTaskProvider {
 				repository.getValue(task, ATTR_BODY), event);
 		String bodyHtml = processTokenReplacements(
 				repository.getValue(task, ATTR_BODY_HTML), event);
-		List<Recipient> recipients = new ArrayList<Recipient>();
+		List<RecipientHolder> recipients = new ArrayList<RecipientHolder>();
 
 		String to = populateEmailList(task, ATTR_TO_ADDRESSES, recipients,
 				RecipientType.TO, event);
@@ -217,7 +218,7 @@ public class EmailTask extends AbstractTaskProvider {
 		try {
 			emailService.sendEmail(currentRealm, subject, body, bodyHtml,
 					replyToName, replyToEmail, 
-					recipients.toArray(new Recipient[0]), track, attachments.toArray(new EmailAttachment[0]));
+					recipients.toArray(new RecipientHolder[0]), track, attachments.toArray(new EmailAttachment[0]));
 
 			return new EmailTaskResult(this, task.getRealm(),
 					task, subject, body, to);
@@ -265,7 +266,7 @@ public class EmailTask extends AbstractTaskProvider {
 	}
 
 	private String populateEmailList(Task task,
-			String attributeName, List<Recipient> recipients,
+			String attributeName, List<RecipientHolder> recipients,
 			RecipientType type, SystemEvent event)
 			throws ValidationException {
 
