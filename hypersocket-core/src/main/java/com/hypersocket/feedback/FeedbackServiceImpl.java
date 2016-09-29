@@ -21,7 +21,7 @@ public class FeedbackServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	Map<String,FeedbackProgress> feedbacks = new HashMap<String,FeedbackProgress>();
 	
 	@Override
-	public FeedbackProgress startJob( Class<? extends FeedbackEnabledJob> jobClz, PermissionsAwareJobData data, String jobResourceKey) throws SchedulerException {
+	public FeedbackProgress startJob( Class<? extends FeedbackEnabledJob> jobClz, PermissionsAwareJobData data) throws SchedulerException {
 		
 		FeedbackProgress progress = createFeedbackProgress();
 		data.put(FeedbackEnabledJob.FEEDBACK_ITEM, progress.getUuid());

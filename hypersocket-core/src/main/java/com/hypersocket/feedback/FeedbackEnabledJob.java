@@ -13,7 +13,7 @@ public abstract class FeedbackEnabledJob extends PermissionsAwareJob {
 	@Autowired
 	FeedbackService feedbackService; 
 	
-	FeedbackProgress progress;
+	protected FeedbackProgress progress;
 	
 	public FeedbackEnabledJob() {
 	}
@@ -21,7 +21,7 @@ public abstract class FeedbackEnabledJob extends PermissionsAwareJob {
 	@Override
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {
 		String uuid = (String) context.getTrigger().getJobDataMap().get(FEEDBACK_ITEM);
-		startJob(context, feedbackService.getFeedbackProgress(uuid));
+		startJob(context, progress = feedbackService.getFeedbackProgress(uuid));
 	}
 	
 	protected abstract void startJob(JobExecutionContext context, FeedbackProgress progress) throws JobExecutionException;
@@ -31,7 +31,7 @@ public abstract class FeedbackEnabledJob extends PermissionsAwareJob {
 	}
 
 	protected void onTransactionFailure(Throwable t) {
-		progress.failed(getFailedResourceKey(), t);
+		progress.failed(getFailedResourceKey(), t, t.getCause()!=null ? t.getCause().getMessage() : t.getMessage());
 	}
 
 	protected String getCompleteResourceKey() {

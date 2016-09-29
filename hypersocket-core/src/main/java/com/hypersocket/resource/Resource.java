@@ -40,6 +40,9 @@ public abstract class Resource extends AbstractResource {
 	@Column(name="system", nullable=false)
 	boolean system = false;
 	
+	@Column(name="read_only", nullable=true)
+	Boolean readOnly = false;
+	
 	@Transient
 	String oldName;
 	
@@ -105,6 +108,12 @@ public abstract class Resource extends AbstractResource {
 	public void setProperties(Map<String, String> properties) {
 		this.properties = properties;
 	}
-	
-	
+
+	public Boolean getReadOnly() {
+		return readOnly == null ? Boolean.FALSE : readOnly;
+	}
+
+	public void setReadOnly(Boolean readOnly) {
+		this.readOnly = readOnly == null ? Boolean.FALSE : readOnly;
+	}
 }

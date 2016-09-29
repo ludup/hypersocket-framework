@@ -22,7 +22,7 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 			throws ResourceCreationException, AccessDeniedException,
 			IOException;
 
-	public FileUpload getFileByUuid(String uuid) throws ResourceNotFoundException;
+//	public FileUpload getFileByUuid(String uuid) throws ResourceNotFoundException;
 
 	public void deleteFile(FileUpload fileUpload)
 			throws ResourceChangeException, AccessDeniedException;
@@ -63,4 +63,6 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 	public InputStream getInputStream(String uuid) throws IOException;
 
 	File createTempFile(String uuid) throws IOException;
+
+	FileUpload getFileUpload(String uuid) throws ResourceNotFoundException;
 }

@@ -61,7 +61,7 @@ public class EmailTrackerServiceImpl implements EmailTrackerService {
 			throw new AccessDeniedException("External hostname cannot be resolved for tracking image");
 		}
 		
-		FileUpload file = fileService.getFileByUuid(uuid);
+		FileUpload file = fileService.getFileUpload(uuid);
 		
 		if(externalHostname.startsWith("http")) {
 			return String.format("%s/%s/api/files/public/%s/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
