@@ -51,7 +51,11 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 			}
 		}
 
-		properties = new Properties();
+		properties = readProperties(propertiesFile);
+	}
+
+	protected Properties readProperties(File propertiesFile) throws IOException {
+		Properties properties = new Properties();
 
 		FileInputStream in = new FileInputStream(propertiesFile);
 
@@ -60,9 +64,11 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 		} finally {
 			FileUtils.closeQuietly(in);
 		}
+
+		return properties;
 	}
 
-	
+
 	protected void saveProperties() throws IOException {
 		
 		FileOutputStream out = new FileOutputStream(propertiesFile);
