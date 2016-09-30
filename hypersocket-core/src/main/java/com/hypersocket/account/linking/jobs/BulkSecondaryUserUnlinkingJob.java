@@ -13,7 +13,7 @@ public class BulkSecondaryUserUnlinkingJob extends AbstractSecondaryUserUnlinkin
 		
 		Long primaryRealmId = context.getTrigger().getJobDataMap().getLong("primaryRealmId");
 		Long secondaryRealmId = context.getTrigger().getJobDataMap().getLong("secondaryRealmId");
-		Boolean disableAccount = context.getTrigger().getJobDataMap().getBooleanFromString("disableAccount");
+		Boolean disableAccount = context.getTrigger().getJobDataMap().getBoolean("disableAccount");
 		try {
 			
 			Realm primaryRealm = realmService.getRealmById(primaryRealmId);

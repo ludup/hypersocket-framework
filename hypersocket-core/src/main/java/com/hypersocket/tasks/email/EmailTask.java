@@ -231,7 +231,7 @@ public class EmailTask extends AbstractTaskProvider {
 	}
 	
 	private void addUUIDAttachment(String uuid, String[] typesRequired, List<EmailAttachment> attachments) throws ResourceNotFoundException, FileNotFoundException, IOException {
-		FileUpload upload = uploadService.getFileByUuid(uuid);	
+		FileUpload upload = uploadService.getFileUpload(uuid);	
 		if(typesRequired.length==0) {
 			attachments.add(new EmailAttachment(upload.getFileName(), 
 					uploadService.getContentType(uuid), 

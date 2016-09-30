@@ -59,7 +59,7 @@ public class FileStoreController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			return new ResourceStatus<FileUpload>(resourceService.getFileByUuid(uuid));
+			return new ResourceStatus<FileUpload>(resourceService.getFileUpload(uuid));
 
 		} catch(ResourceException ex) { 
 			return new ResourceStatus<FileUpload>(false, ex.getMessage());
@@ -119,7 +119,7 @@ public class FileStoreController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			FileUpload fileUpload = resourceService.getFileByUuid(uuid);
+			FileUpload fileUpload = resourceService.getFileUpload(uuid);
 			if (fileUpload == null) {
 				return new ResourceStatus<FileUpload>(false, I18N.getResource(
 						sessionUtils.getLocale(request),
@@ -168,9 +168,6 @@ public class FileStoreController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, IOException, ResourceNotFoundException {
 
-		/**
-		 * TODO only files that are declared public
-		 */
 		resourceService.downloadURIFile(uuid, request, response, true);
 	}
 	
