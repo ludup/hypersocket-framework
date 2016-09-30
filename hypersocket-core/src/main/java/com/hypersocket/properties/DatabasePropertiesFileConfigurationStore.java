@@ -3,6 +3,7 @@ package com.hypersocket.properties;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +49,11 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 		templateLocationMap.put(POSTGRES, getTemplateLocation(baseLocation, "1"));
 		templateLocationMap.put(MSSQL, getTemplateLocation(baseLocation, "2"));
 		templateLocationMap.put(DERBY, getTemplateLocation(baseLocation, "3"));
+	}
+
+	public void init(Element element) throws IOException {
+		super.init(element);
+		fillUpMissingKeys();
 	}
 	
 	 private File getTemplateLocation(String baseLocation, String code){
@@ -98,9 +104,17 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 			}else if(JDBC_DATABASE.equals(template.getResourceKey())){
 				properties.put(JDBC_DATABASE, value);
 			}else if(JDBC_HOST.equals(template.getResourceKey())){
-				properties.put(JDBC_HOST, value);
+				if(DERBY.equals(currentVendor)) {
+					properties.put(JDBC_HOST, null);
+				}else{
+					properties.put(JDBC_HOST, value);
+				}
 			}else if(JDBC_PORT.equals(template.getResourceKey())){
-				properties.put(JDBC_PORT, value);
+				if(DERBY.equals(currentVendor)) {
+					properties.put(JDBC_PORT, null);
+				}else{
+					properties.put(JDBC_PORT, value);
+				}
 			}
 
 			if(properties.containsKey(JDBC_VENDOR) && properties.containsKey(JDBC_HOST) && properties.containsKey(JDBC_PORT) && properties.containsKey(JDBC_DATABASE)){
@@ -126,16 +140,20 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 		String key = template.getResourceKey();
 		if(properties.containsKey(key)) {
 			return properties.getProperty(key);
-		} else if(JDBC_VENDOR.equals(key)){
-			return fillUpMissingKeys(template, JDBCURIParser.SCHEME);
-		}else if(JDBC_HOST.equals(key)){
-			return fillUpMissingKeys(template, JDBCURIParser.HOST);
-		}else if(JDBC_PORT.equals(key)){
-			return fillUpMissingKeys(template, JDBCURIParser.PORT);
-		}else if(JDBC_DATABASE.equals(key)){
-			return fillUpMissingKeys(template, JDBCURIParser.DATABASE);
 		} else {
 			return template.getDefaultValue();
+		}
+	}
+
+
+	private void fillUpMissingKeys(){
+		String jdbcUrl = properties.getProperty(JDBC_URL);
+		if(StringUtils.isNotBlank(jdbcUrl)) {
+			Map<String, String> tokens = JDBCURIParser.parse(jdbcUrl);
+			properties.setProperty(JDBC_VENDOR, tokens.get(JDBCURIParser.SCHEME));
+			properties.setProperty(JDBC_HOST, tokens.get(JDBCURIParser.HOST));
+			properties.setProperty(JDBC_PORT, tokens.get(JDBCURIParser.PORT));
+			properties.setProperty(JDBC_DATABASE, tokens.get(JDBCURIParser.DATABASE));
 		}
 	}
 
@@ -149,17 +167,6 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 			currentVendor = getPropertyValue(propertyTemplate);
 		}
 		return currentVendor;
-	}
-
-	private String fillUpMissingKeys(PropertyTemplate template, String partToFill){
-		String jdbcUrl = properties.getProperty(JDBC_URL);
-		if(StringUtils.isNotBlank(jdbcUrl)) {
-			String key = template.getResourceKey();
-			String value = JDBCURIParser.parse(jdbcUrl).get(partToFill);
-			properties.setProperty(key, value);
-			return value;
-		}
-		return template.getDefaultValue();
 	}
 
 	/**
@@ -238,7 +245,7 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 		}
 
 		private static String processEmbeddedDerbyDatabase(String value) {
-			return value.split(":")[0];
+			return value.split(";")[0];
 		}
 
 		private static String mapDatabase(String scheme) {
