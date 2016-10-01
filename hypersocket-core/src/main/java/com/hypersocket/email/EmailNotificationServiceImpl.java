@@ -102,7 +102,12 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			send(realm, mail, 
 					recipeintSubject, 
 					receipientText, 
-					receipientHtml, replyToName, replyToEmail, track, r, attachments);
+					receipientHtml, 
+					replyToName, 
+					replyToEmail, 
+					track, 
+					r, 
+					attachments);
 			
 			if(!archiveAddress.isEmpty()) {
 				send(realm, mail, recipeintSubject, receipientText, receipientHtml, 
@@ -146,7 +151,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			email.setReplyToAddress(replyToName, replyToEmail);
 		}
 		
-		String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
+		String htmlTemplate = replaceRecipientInfo(configurationService.getValue(realm, "email.htmlTemplate"), r);
 		if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(htmlText)) {
 			try {
 				htmlTemplate = FileUtils.readFileToString(uploadService.getFile(htmlTemplate));

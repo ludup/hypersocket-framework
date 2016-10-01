@@ -39,7 +39,7 @@ public class RecipientHolder {
 			if(idx > 0) {
 				String firstName = name.substring(0,  idx);
 				int idx2 = name.indexOf(' ', idx+1);
-				if(salutations.contains(firstName) && idx2 > 0) {
+				if(salutations.contains(firstName.toUpperCase()) && idx2 > 0) {
 					firstName = name.substring(idx+1, idx2);
 				}
 				return firstName;

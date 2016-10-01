@@ -46,7 +46,7 @@ public abstract class Principal extends RealmResource {
 	Set<PrincipalSuspension> suspensions;
 	
 	@Column(name="principal_type")
-	PrincipalType principalType;
+	PrincipalType principalType = getType();
 	
 	@JsonIgnore
 	public Realm getRealm() {
