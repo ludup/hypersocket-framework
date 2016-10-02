@@ -99,6 +99,29 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			String receipientText = replaceRecipientInfo(text, r);
 			String receipientHtml = replaceRecipientInfo(html, r);
 			
+			String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
+			if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(receipientHtml)) {
+				try {
+					htmlTemplate = FileUtils.readFileToString(uploadService.getFile(htmlTemplate));
+					htmlTemplate = replaceRecipientInfo(htmlTemplate.replace("${htmlContent}", receipientHtml), r);
+					
+					String trackingImage = configurationService.getValue(realm, "email.trackingImage");
+					if(track && StringUtils.isNotBlank(trackingImage)) {
+						String trackingUri = trackerService.generateTrackingUri(subject, r.getName(), r.getEmail(), realm);
+						htmlTemplate = htmlTemplate.replace("${trackingImage}", trackingUri);
+					} else {
+						String trackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);
+						htmlTemplate = htmlTemplate.replace("${trackingImage}", trackingUri);
+					}
+
+					receipientHtml = htmlTemplate;
+				} catch (ResourceNotFoundException e) {
+					log.error("Cannot find HTML template", e);
+				} catch (IOException e) {
+					log.error("Cannot find HTML template", e);
+				}	
+			}
+			
 			send(realm, mail, 
 					recipeintSubject, 
 					receipientText, 
@@ -151,28 +174,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			email.setReplyToAddress(replyToName, replyToEmail);
 		}
 		
-		String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
-		if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(htmlText)) {
-			try {
-				htmlTemplate = FileUtils.readFileToString(uploadService.getFile(htmlTemplate));
-				htmlTemplate = replaceRecipientInfo(htmlTemplate.replace("${htmlContent}", htmlText), r);
-				
-				String trackingImage = configurationService.getValue(realm, "email.trackingImage");
-				if(track && StringUtils.isNotBlank(trackingImage)) {
-					String trackingUri = trackerService.generateTrackingUri(subject, r.getName(), r.getEmail(), realm);
-					htmlTemplate = htmlTemplate.replace("${trackingImage}", trackingUri);
-				} else {
-					String trackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);
-					htmlTemplate = htmlTemplate.replace("${trackingImage}", trackingUri);
-				}
-				email.setTextHTML(htmlTemplate);
-			} catch (ResourceNotFoundException e) {
-				log.error("Cannot find HTML template", e);
-			} catch (IOException e) {
-				log.error("Cannot find HTML template", e);
-			}
-			
-		} else if(StringUtils.isNotBlank(htmlText)) {
+		if(StringUtils.isNotBlank(htmlText)) {
 			email.setTextHTML(htmlText);
 		}
 		
@@ -185,6 +187,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		}
 		
 		mail.sendMail(email);
+
 	}
 	
 	@Override
