@@ -151,11 +151,11 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			email.setReplyToAddress(replyToName, replyToEmail);
 		}
 		
-		String htmlTemplate = replaceRecipientInfo(configurationService.getValue(realm, "email.htmlTemplate"), r);
+		String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
 		if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(htmlText)) {
 			try {
 				htmlTemplate = FileUtils.readFileToString(uploadService.getFile(htmlTemplate));
-				htmlTemplate = htmlTemplate.replace("${htmlContent}", htmlText);
+				htmlTemplate = replaceRecipientInfo(htmlTemplate.replace("${htmlContent}", htmlText), r);
 				
 				String trackingImage = configurationService.getValue(realm, "email.trackingImage");
 				if(track && StringUtils.isNotBlank(trackingImage)) {
