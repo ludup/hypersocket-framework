@@ -1,24 +1,28 @@
 package com.hypersocket.util;
 
+import com.hypersocket.cache.HypersocketCacheRegionFactoryServiceInitiator;
+import org.hibernate.SessionFactory;
+import org.hibernate.cache.spi.RegionFactory;
+import org.hibernate.search.hcore.impl.HibernateSearchIntegrator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBuilder;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.hibernate.SessionFactory;
-import org.hibernate.cache.spi.RegionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBuilder;
-
-import com.hypersocket.cache.HypersocketCacheRegionFactoryServiceInitiator;
-
 public class HypersocketAnnotationSessionFactoryBean extends
 		LocalSessionFactoryBean{
+
+	@Autowired Environment environment;
 	
 	private RegionFactory regionFactory;
 
@@ -74,6 +78,10 @@ public class HypersocketAnnotationSessionFactoryBean extends
 	
 	@Override
 	public void afterPropertiesSet() throws IOException {
+		if(environment.getActiveProfiles() != null && Arrays.asList(environment.getActiveProfiles()).contains("HA")) {
+			//needed to be done else default integrator from hibernate search will register everything before hypersocket search integrator
+			getHibernateProperties().put(HibernateSearchIntegrator.AUTO_REGISTER, false);
+		}
 		getHibernateProperties().put("hibernate.cache.region.factory_class", regionFactory);
 		super.afterPropertiesSet();
 	}
