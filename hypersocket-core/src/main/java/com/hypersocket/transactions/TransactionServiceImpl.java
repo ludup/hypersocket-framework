@@ -62,5 +62,26 @@ public class TransactionServiceImpl implements TransactionService {
 		
 		
 	}
+	
+	@Override
+	public <T> T doInTransaction(TransactionCallbackWithError<T> transaction) throws ResourceException {
+		
+		TransactionTemplate tmpl = new TransactionTemplate(txManager);
+		eventService.delayEvents(true);
+		try {
+			T result = tmpl.execute(transaction);
+			eventService.publishDelayedEvents();
+			return result;
+		} catch (Throwable e) {
+			log.error("Error in transaction", e);
+			eventService.rollbackDelayedEvents(true);
+			transaction.doTransacationError(e);
+			throw new ResourceException(AuthenticationService.RESOURCE_BUNDLE, "error.transactionFailed", e.getMessage());
+		} finally {
+			eventService.delayEvents(false);
+		}
+		
+		
+	}
 
 }

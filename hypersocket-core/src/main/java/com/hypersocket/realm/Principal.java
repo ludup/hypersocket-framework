@@ -19,6 +19,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -58,7 +59,7 @@ public abstract class Principal extends RealmResource {
 	Principal parentPrincipal;
 
 	@Column(name="principal_type")
-	PrincipalType principalType;
+	PrincipalType principalType = getType();
 	
 	@JsonIgnore
 	public Realm getRealm() {
