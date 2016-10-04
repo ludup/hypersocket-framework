@@ -71,6 +71,14 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		return get("id", id, getResourceClass());
 	}
 
+	protected void beforeDelete(T resource) {
+		
+	}
+	
+	protected void afterDelete(T resource) {
+		
+	}
+	
 	@Override
 	@Transactional
 	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) {
@@ -79,7 +87,11 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 			op.beforeOperation(resource, null);
 		}
 		
+		beforeDelete(resource);
+		
 		delete(resource);
+		
+		afterDelete(resource);
 		
 		for(TransactionOperation<T> op : ops) {
 			op.afterOperation(resource, null);
