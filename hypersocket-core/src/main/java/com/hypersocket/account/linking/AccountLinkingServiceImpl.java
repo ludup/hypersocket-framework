@@ -177,14 +177,17 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 	public synchronized void handleResourceAssignment(AssignableResourceEvent event) {
 		
 		if(event.isSuccess()) {
-			for(AccountLinkingRules rules : getPrimaryRules(event.getCurrentRealm())) {
-				if(rules.isAssignmentEvent(event)) {
-					for(Role assigned : event.getAssignedRoles()) {
-						processRoleAssignmentEvent(event.getCurrentRealm(), assigned, assigned.getPrincipals());
-					}
-				} else if(rules.isUnassignmentEvent(event)) {
-					for(Role unassigned : event.getUnassignedRoles()) {
-						processRoleUnassignmentEvent(event.getCurrentRealm(), unassigned, unassigned.getPrincipals());
+			Collection<AccountLinkingRules> primaryRules = getPrimaryRules(event.getCurrentRealm());
+			if(primaryRules != null) {
+				for (AccountLinkingRules rules : primaryRules) {
+					if (rules.isAssignmentEvent(event)) {
+						for (Role assigned : event.getAssignedRoles()) {
+							processRoleAssignmentEvent(event.getCurrentRealm(), assigned, assigned.getPrincipals());
+						}
+					} else if (rules.isUnassignmentEvent(event)) {
+						for (Role unassigned : event.getUnassignedRoles()) {
+							processRoleUnassignmentEvent(event.getCurrentRealm(), unassigned, unassigned.getPrincipals());
+						}
 					}
 				}
 			}
