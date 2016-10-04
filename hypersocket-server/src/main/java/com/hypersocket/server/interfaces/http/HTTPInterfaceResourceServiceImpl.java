@@ -164,7 +164,7 @@ public class HTTPInterfaceResourceServiceImpl extends
 	}
 	
 	@Override
-	protected void beforeDeleteResource(HTTPInterfaceResource resource) throws ResourceChangeException {
+	protected void beforeDeleteResource(HTTPInterfaceResource resource) throws ResourceChangeException, AccessDeniedException {
 		if(repository.allRealmsResourcesCount()==1) {
 			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.oneInterfaceRequired");
 		}
