@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -30,6 +29,7 @@ import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import com.hypersocket.scheduler.AutowiringSpringBeanJobFactory;
+import com.hypersocket.util.DatabaseInformation;
 
 @Configuration
 public class QuartzSpringConfiguration {
@@ -67,6 +67,9 @@ public class QuartzSpringConfiguration {
 	
 	@Autowired
 	Environment environment;
+	
+	@Autowired
+	DatabaseInformation databaseInformation;
 	
 	@Value("${user.dir}") 
 	String userDir; 
@@ -114,7 +117,6 @@ public class QuartzSpringConfiguration {
 	
 	private void checkTables(Properties quartzProperties) throws SQLException {
 		Connection connection = null;
-		ResultSet resultSet = null;
 		Boolean autoCommitStatus = null;
 		Statement statement = null;
 		boolean executeScript = true;
@@ -128,15 +130,14 @@ public class QuartzSpringConfiguration {
 			String quartzTablePrefix = quartzProperties.getProperty("org.quartz.jobStore.tablePrefix").toLowerCase();
 			autoCommitStatus = connection.getAutoCommit();
 			connection.setAutoCommit(false);
-			resultSet = connection.getMetaData().getTables(null, null, "%", null);
-			while (resultSet.next()) {
-				String tableName = resultSet.getString("TABLE_NAME").toLowerCase();
+			for(String tableName : databaseInformation.getTablesOnStartUp()) {
 				if(tableName.startsWith(quartzTablePrefix)){
 					executeScript = false;
 					break;
 				}
 				
 			}
+
 			if(executeScript){
 				statement = connection.createStatement();
 				
