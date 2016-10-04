@@ -11,14 +11,14 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="category.databaseSettings"
 		resourceBundle="DatabaseService" weight="200">
-		<property resourceKey="jdbc.vendor" inputType="select" defaultValue="MYSQL" options="MYSQL" store="databaseConfiguration"
+		<property resourceKey="jdbc.vendor" inputType="select" defaultValue="MYSQL" options="MYSQL,POSTGRES,MSSQL,DERBY" store="databaseConfiguration"
 			allowEmpty="false" weight="100" />
 		<property resourceKey="jdbc.database" inputType="text" store="databaseConfiguration"
 			allowEmpty="false" weight="200" defaultValue="hypersocket" />	
-		<property resourceKey="jdbc.host" inputType="text" store="databaseConfiguration"
-			allowEmpty="false" weight="300" defaultValue="" />
-		<property resourceKey="jdbc.port" inputType="integer" store="databaseConfiguration"
-			allowEmpty="false" weight="400" defaultValue="3306" minValue="1" maxValue="65535"/>
+		<property resourceKey="jdbc.host" inputType="text" store="databaseConfiguration" visibilityDependsOn="jdbc.vendor"
+				  visibilityDependsValue="!DERBY" allowEmpty="false" weight="300" defaultValue="" />
+		<property resourceKey="jdbc.port" inputType="integer" store="databaseConfiguration"  visibilityDependsOn="jdbc.vendor"
+				  visibilityDependsValue="!DERBY" allowEmpty="false" weight="400" defaultValue="3306" minValue="1" maxValue="65535"/>
 		<property resourceKey="jdbc.username" inputType="text" store="databaseConfiguration"
 			allowEmpty="false" weight="500" defaultValue="" />
 		<property resourceKey="jdbc.password" inputType="password" store="databaseConfiguration"
