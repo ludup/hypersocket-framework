@@ -216,7 +216,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		
 	}
 	
-	protected void beforeDeleteResource(T resource) throws ResourceChangeException {
+	protected void beforeDeleteResource(T resource) throws ResourceChangeException, AccessDeniedException {
 		
 	}
 	
@@ -574,6 +574,27 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	
 	protected final void updateFingerprint() {
 		fingerprint = new BigInteger(130, random).toString(32);
+	}
+	
+	protected void prepareCopy(T resource) throws ResourceCreationException {
+		
+	}
+	
+	@Override
+	public T copyResource(T resource) throws ResourceCreationException, AccessDeniedException {
+		
+		resource.setId(null);
+		String name = resource.getName();
+		do {
+			name = name + " [copy]";
+		} while(getRepository().getResourceByName(name, getCurrentRealm())!=null);
+		
+		resource.setName(name);
+		
+		prepareCopy(resource);
+		
+		createResource(resource);
+		return resource;
 	}
 	
 }
