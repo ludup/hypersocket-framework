@@ -2,7 +2,6 @@ package com.hypersocket.upload;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -375,5 +374,13 @@ public class FileUploadServiceImpl extends
 		} catch (ResourceNotFoundException e) {
 			throw new IOException(e.getMessage(), e);
 		}
+	}
+	
+	@Override
+	public FileUpload copyFile(String uuid) throws ResourceNotFoundException, ResourceCreationException, AccessDeniedException, IOException {
+		
+		FileUpload u = getFileUpload(uuid);
+		return createFile(getInputStream(u.getName()), 
+				u.getFileName(), u.getRealm(), true);
 	}
 }

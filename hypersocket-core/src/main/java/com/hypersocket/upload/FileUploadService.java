@@ -65,4 +65,7 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 	File createTempFile(String uuid) throws IOException;
 
 	FileUpload getFileUpload(String uuid) throws ResourceNotFoundException;
+
+	FileUpload copyFile(String uuid)
+			throws ResourceNotFoundException, ResourceCreationException, AccessDeniedException, IOException;
 }
