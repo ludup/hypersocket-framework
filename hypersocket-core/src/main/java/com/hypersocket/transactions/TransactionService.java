@@ -10,4 +10,6 @@ public interface TransactionService {
 	<T> T doInTransaction(TransactionCallback<T> transaction)
 			throws ResourceException, AccessDeniedException;
 
+	<T> T doInTransaction(TransactionCallbackWithError<T> transaction) throws ResourceException;
+
 }
