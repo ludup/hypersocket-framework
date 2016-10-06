@@ -4,6 +4,7 @@ import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 
 public interface AttributeFacadeService extends AuthenticatedService {
@@ -17,7 +18,7 @@ public interface AttributeFacadeService extends AuthenticatedService {
 			throws AccessDeniedException;
 
 	AttributeCategory<?> createAttributeCategory(String name, String context,
-			int weight) throws ResourceCreationException, AccessDeniedException;
+			int weight) throws ResourceException, AccessDeniedException;
 
 	UserAttribute getAttributeByName(String name)
 			throws ResourceNotFoundException, AccessDeniedException;
@@ -25,6 +26,6 @@ public interface AttributeFacadeService extends AuthenticatedService {
 	UserAttribute createAttribute(String name, Long category,
 			String description, String defaultValue, int weight, String type,
 			Boolean readOnly, Boolean encrypted, String variableName)
-			throws ResourceCreationException, AccessDeniedException;
+			throws AccessDeniedException, ResourceException;
 
 }

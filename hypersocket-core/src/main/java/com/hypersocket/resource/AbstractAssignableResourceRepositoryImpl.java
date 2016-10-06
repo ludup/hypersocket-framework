@@ -430,7 +430,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@Override
 	@Transactional
-	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceChangeException {
+	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException {
 		beforeDelete(resource);
 		for(TransactionOperation<T> op : ops) {
 			op.beforeOperation(resource, null);
@@ -475,7 +475,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Override
 	@SafeVarargs
 	@Transactional
-	public final void saveResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops) throws ResourceChangeException {
+	public final void saveResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops) throws ResourceException {
 
 		
 		beforeSave(resource, properties);
@@ -510,6 +510,8 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 		return (List<T>) crit.list();
 	}
+	
+	
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -551,7 +553,24 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 						new RealmCriteria(realm)));
 		return count;
 	}
-
+	
+	@Override
+	@Transactional(readOnly=true)
+	public long getResourceByRoleCount(Realm realm, Role... roles) {
+		if(roles.length == 0) {
+			return 0L;
+		}
+		return  getCount(getResourceClass(), new DeletedCriteria(false),
+						new RealmCriteria(realm), new RolesCriteria(roles));
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public Collection<T> getResourcesByRole(Realm realm, Role... roles) {
+		return  list(getResourceClass(), new DeletedCriteria(false),
+						new RealmCriteria(realm), new RolesCriteria(roles));
+	}
+	
 	protected abstract Class<T> getResourceClass();
 
 	class RoleSelectMode implements CriteriaConfiguration {

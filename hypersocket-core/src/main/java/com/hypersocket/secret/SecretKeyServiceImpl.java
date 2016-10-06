@@ -24,6 +24,7 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.rsa.RsaEncryptionProvider;
 import com.hypersocket.session.SessionService;
@@ -74,7 +75,7 @@ public class SecretKeyServiceImpl extends
 	}
 	
 	@Override
-	public SecretKeyResource createSecretKey(Realm realm) throws ResourceCreationException, AccessDeniedException {
+	public SecretKeyResource createSecretKey(Realm realm) throws AccessDeniedException, ResourceException {
 
 		String name = UUID.randomUUID().toString();
 		return createSecretKey(name, realm);
@@ -82,7 +83,7 @@ public class SecretKeyServiceImpl extends
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public SecretKeyResource createSecretKey(String name, Realm realm) throws ResourceCreationException, AccessDeniedException {
+	public SecretKeyResource createSecretKey(String name, Realm realm) throws ResourceException, AccessDeniedException {
 		
 		
 		try {

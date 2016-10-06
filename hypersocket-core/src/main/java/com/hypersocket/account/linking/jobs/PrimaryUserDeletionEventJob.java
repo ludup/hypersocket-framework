@@ -51,7 +51,8 @@ public class PrimaryUserDeletionEventJob extends PermissionsAwareJob {
 					}
 					
 					linkingService.unlinkAccounts(primaryPrincipal, secondaryPrincipal);
-					if(rules.isAutomaticLinking() && rules.isDeletionEnabled()) {
+					
+					if(rules.isDeletionEnabled()) {
 						
 						if(log.isInfoEnabled()) {
 							log.info(String.format("Deleting account %s", 
@@ -59,7 +60,7 @@ public class PrimaryUserDeletionEventJob extends PermissionsAwareJob {
 						}
 						
 						realmService.deleteUser(secondaryPrincipal.getRealm(), secondaryPrincipal);
-					}
+					} 
 				}
 			}
 		} catch(Throwable t) {

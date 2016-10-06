@@ -8,6 +8,7 @@
 package com.hypersocket.local;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Repository;
 
 import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 

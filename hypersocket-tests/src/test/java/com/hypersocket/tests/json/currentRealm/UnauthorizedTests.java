@@ -116,7 +116,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 
 		GroupUpdate group = new GroupUpdate();
 		group.setName("newGroup");
-		Long[] users = { getAuxSession().getCurrentPrincipal().getId() };
+		String[] users = { getAuxSession().getCurrentPrincipal().getId() + "="};
 		group.setUsers(users);
 		doPostJson("/hypersocket/api/currentRealm/group", group);
 	}

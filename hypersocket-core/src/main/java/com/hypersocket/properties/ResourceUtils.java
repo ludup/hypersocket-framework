@@ -227,6 +227,10 @@ public class ResourceUtils {
 		return key + "=" + value;
 	}
 
+	public static Long[] createResourceIdArray(Resource... resources) {
+		return createResourceIdArray(Arrays.asList(resources));
+	}
+	
 	public static Long[] createResourceIdArray(Collection<? extends Resource> resources) {
 		List<Long> ids = new ArrayList<Long>();
 		for(Resource r : resources) {

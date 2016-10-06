@@ -585,6 +585,21 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 	}
 	
+	@Override
+	public List<Principal> getUserGroups(Principal principal) {
+		return new ArrayList<Principal>(((LocalUser)principal).getGroups());
+	}
+
+	@Override
+	public List<Principal> getGroupUsers(Principal principal) {
+		return new ArrayList<Principal>(((LocalGroup)principal).getUsers());
+	}
+
+	@Override
+	public List<Principal> getGroupGroups(Principal principal) {
+		return new ArrayList<Principal>(((LocalGroup)principal).getGroups());
+	}
+	
 	private void iterateGroups(LocalGroup group, List<Principal> users, Set<LocalGroup> iterated) {
 		if(iterated==null) {
 			iterated = new HashSet<LocalGroup>();

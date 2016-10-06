@@ -1,5 +1,7 @@
 package com.hypersocket.realm.events;
 
+import java.util.Collection;
+
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.hypersocket.realm.Principal;
@@ -14,14 +16,14 @@ public class GroupDeletedEvent extends GroupEvent {
 	public static final String EVENT_RESOURCE_KEY = "event.groupDeleted";
 	
 	public GroupDeletedEvent(Object source, Session session, Realm realm,
-			RealmProvider provider, Principal principal) {
-		super(source, "event.groupDeleted", session, realm, provider, principal);
+			RealmProvider provider, Principal principal, Collection<Principal> associatedPrincipals) {
+		super(source, "event.groupDeleted", session, realm, provider, principal, associatedPrincipals);
 	}
 
 	public GroupDeletedEvent(Object source, Throwable e, Session session,
-			Realm realm, RealmProvider provider, String principalName) {
+			Realm realm, RealmProvider provider, String principalName, Collection<Principal> associatedPrincipals) {
 		super(source, "event.groupDeleted", e, session, realm, provider,
-				principalName);
+				principalName, associatedPrincipals);
 	}
 
 	public String[] getResourceKeys() {

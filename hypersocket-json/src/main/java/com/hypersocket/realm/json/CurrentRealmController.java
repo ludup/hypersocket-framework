@@ -93,11 +93,10 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return new ResourceList<Principal>(
-					realmService.getAssociatedPrincipals(realmService
+					realmService.getUserGroups(realmService
 							.getPrincipalById(
 									sessionUtils.getCurrentRealm(request),
-									user, PrincipalType.USER),
-							PrincipalType.GROUP));
+									user, PrincipalType.USER)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -238,11 +237,10 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return new ResourceList<Principal>(
-					realmService.getAssociatedPrincipals(realmService
+					realmService.getGroupUsers(realmService
 							.getPrincipalById(
 									sessionUtils.getCurrentRealm(request),
-									group, PrincipalType.GROUP),
-							PrincipalType.USER));
+									group, PrincipalType.GROUP)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -262,11 +260,10 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return new ResourceList<Principal>(
-					realmService.getAssociatedPrincipals(realmService
+					realmService.getGroupGroups(realmService
 							.getPrincipalById(
 									sessionUtils.getCurrentRealm(request),
-									group, PrincipalType.GROUP),
-							PrincipalType.GROUP));
+									group, PrincipalType.GROUP)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -403,7 +400,7 @@ public class CurrentRealmController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public RequestStatus setUserProperties(HttpServletRequest request,
 			@RequestBody PropertyItem[] items) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException {
+			UnauthorizedException, SessionTimeoutException, ResourceException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
@@ -581,14 +578,14 @@ public class CurrentRealmController extends ResourceController {
 			Realm realm = sessionUtils.getCurrentRealm(request);
 
 			List<Principal> userPrincipals = new ArrayList<Principal>();
-			for (Long user : group.getUsers()) {
-				userPrincipals.add(realmService.getPrincipalById(realm, user,
+			for (String user : group.getUsers()) {
+				userPrincipals.add(realmService.getPrincipalById(realm, Long.parseLong(ResourceUtils.getNamePairKey(user)),
 						PrincipalType.USER));
 			}
 			
 			List<Principal> groupPrincipals = new ArrayList<Principal>();
-			for (Long user : group.getGroups()) {
-				groupPrincipals.add(realmService.getPrincipalById(realm, user,
+			for (String user : group.getGroups()) {
+				groupPrincipals.add(realmService.getPrincipalById(realm, Long.parseLong(ResourceUtils.getNamePairKey(user)),
 						PrincipalType.GROUP));
 			}
 

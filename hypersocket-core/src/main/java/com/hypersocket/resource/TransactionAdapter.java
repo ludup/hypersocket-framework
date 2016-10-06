@@ -8,12 +8,12 @@ public class TransactionAdapter<T> implements TransactionOperation<T> {
 	}
 
 	@Override
-	public void beforeOperation(T resource, Map<String, String> properties) {
+	public void beforeOperation(T resource, Map<String, String> properties) throws ResourceException {
 		
 	}
 
 	@Override
-	public void afterOperation(T resource, Map<String, String> properties) {
+	public void afterOperation(T resource, Map<String, String> properties) throws ResourceException {
 		
 	}
 

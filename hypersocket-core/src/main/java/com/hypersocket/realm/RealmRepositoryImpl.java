@@ -21,6 +21,7 @@ import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.HiddenFilter;
 import com.hypersocket.resource.RealmResource;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
 
@@ -33,7 +34,7 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional
 	public Realm createRealm(String name, String uuid, String module,
-			Map<String, String> properties, RealmProvider provider, Long owner, TransactionOperation<Realm>... ops) {
+			Map<String, String> properties, RealmProvider provider, Long owner, TransactionOperation<Realm>... ops) throws ResourceException {
 		Realm realm = new Realm();
 		realm.setName(name);
 		realm.setResourceCategory(module);

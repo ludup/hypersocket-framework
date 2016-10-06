@@ -31,7 +31,7 @@ public abstract class Constraint extends AbstractEntity<Long> {
 	private static final long serialVersionUID = -3791619378744238044L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE)
+	@GeneratedValue(strategy=GenerationType.TABLE)
 	@Column(name="constraint_id")
 	Long id;
 	

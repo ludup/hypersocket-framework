@@ -4,6 +4,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.PermissionsAwareJobNonTransactional;
 
@@ -34,7 +35,7 @@ public abstract class TrackedJobNonTransactional extends PermissionsAwareJobNonT
 	protected void onJobComplete() {
 		try {
 			jobService.reportJobComplete(data.getUUID(), getResult());
-		} catch (ResourceNotFoundException | InvalidJobStateException e) {
+		} catch (ResourceException | InvalidJobStateException e) {
 		}
 	}
 
@@ -45,7 +46,7 @@ public abstract class TrackedJobNonTransactional extends PermissionsAwareJobNonT
 			if(jobService.isJobActive(data.getUUID())) {
 				jobService.reportJobFailed(data.getUUID(), t);
 			}
-		} catch (ResourceNotFoundException | InvalidJobStateException e) {
+		} catch (ResourceException | InvalidJobStateException e) {
 		}
 	}
 	
@@ -57,7 +58,7 @@ public abstract class TrackedJobNonTransactional extends PermissionsAwareJobNonT
 		onJobError(t);
 	}
 	
-	protected void reportFailedJob(String result) throws ResourceNotFoundException, InvalidJobStateException {
+	protected void reportFailedJob(String result) throws ResourceException, InvalidJobStateException {
 		jobService.reportJobFailed(data.getUUID(), result);
 	}
 }

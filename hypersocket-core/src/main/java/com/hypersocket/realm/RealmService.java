@@ -112,7 +112,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Collection<PropertyCategory> getGroupPropertyTemplates(String module) throws AccessDeniedException;
 
 	void updateProfile(Realm currentRealm, Principal principal, Map<String, String> values)
-			throws AccessDeniedException, ResourceChangeException;
+			throws AccessDeniedException, ResourceException;
 
 	RealmProvider getProviderForRealm(Realm realm);
 
@@ -132,11 +132,11 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean supportsAccountDisable(Realm realm) throws IOException;
 
-	Principal disableAccount(Principal principal) throws ResourceChangeException, AccessDeniedException;
+	Principal disableAccount(Principal principal) throws AccessDeniedException, ResourceException;
 
-	Principal enableAccount(Principal principal) throws ResourceChangeException, AccessDeniedException;
+	Principal enableAccount(Principal principal) throws ResourceException, AccessDeniedException;
 
-	Principal unlockAccount(Principal principal) throws ResourceChangeException, AccessDeniedException;
+	Principal unlockAccount(Principal principal) throws ResourceException, AccessDeniedException;
 
 	Realm getSystemRealm();
 
@@ -225,4 +225,10 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 			Principal parentPrincipal) throws ResourceCreationException, AccessDeniedException;
 
 	String getProfileProperty(Principal principal, String string);
+
+	List<Principal> getGroupGroups(Principal principal);
+
+	List<Principal> getGroupUsers(Principal principal);
+
+	List<Principal> getUserGroups(Principal principal);
 }

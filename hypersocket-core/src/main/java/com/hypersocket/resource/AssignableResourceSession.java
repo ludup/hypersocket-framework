@@ -39,7 +39,7 @@ public abstract class AssignableResourceSession<T extends AssignableResource> ex
 	private static final long serialVersionUID = 720402107508666208L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE)
+	@GeneratedValue(strategy=GenerationType.TABLE)
 	@Column(name="id")
 	Long id;
 	

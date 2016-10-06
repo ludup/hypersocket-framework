@@ -30,13 +30,13 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	T getResourceById(Long id);
 
 	void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops)
-			throws ResourceChangeException;
+			throws ResourceException;
 
 	List<T> getResources(Realm realm);
 
 	@SuppressWarnings("unchecked")
 	void saveResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops)
-			throws ResourceChangeException;
+			throws ResourceException;
 
 	List<T> search(Realm realm, String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting,
 			CriteriaConfiguration... configs);
@@ -67,6 +67,10 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	Collection<T> getAssignedResources(List<Principal> principals, CriteriaConfiguration... configs);
 
 	Collection<T> getAssignedResources(Role role, CriteriaConfiguration... configs);
+
+	long getResourceByRoleCount(Realm realm, Role... roles);
+
+	Collection<T> getResourcesByRole(Realm currentRealm, Role... role);
 
 
 

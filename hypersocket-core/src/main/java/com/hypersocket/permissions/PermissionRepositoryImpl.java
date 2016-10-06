@@ -24,6 +24,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.properties.ResourceKeyRestriction;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
@@ -32,6 +33,7 @@ import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.AssignableResource;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
 
@@ -122,7 +124,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	public void updateRole(Role role, Set<Principal> unassignPrincipals,
 			Set<Principal> assignPrincipals, Set<Permission> revokePermissions,
 			Set<Permission> grantPermissions, Map<String,String> properties,
-				TransactionOperation<Role>... ops) {
+				TransactionOperation<Role>... ops) throws ResourceException {
 		
 		if(StringUtils.isBlank(role.getResourceCategory())) {
 			role.setResourceCategory("role");
@@ -138,7 +140,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@Transactional
 	public void saveRole(Role role, Realm realm, Principal[] principals,
 			Collection<Permission> permissions, Map<String,String> properties,
-			TransactionOperation<Role>... ops) {
+			TransactionOperation<Role>... ops) throws ResourceException {
 		if(StringUtils.isBlank(role.getResourceCategory())) {
 			role.setResourceCategory("role");
 		}
@@ -151,7 +153,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@Override
 	public void createRole(String name, Realm realm, boolean personalRole,
 			boolean allUsers, boolean allPermissions, boolean system,
-			Set<Permission> permissions, Map<String,String> properties) {
+			Set<Permission> permissions, Map<String,String> properties) throws ResourceException {
 		Role role = createRole(name, realm, personalRole, allUsers,
 				allPermissions, system);
 		role.setPermissions(permissions);
@@ -546,6 +548,22 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		roles.addAll(getAllUserRoles(principals.get(0).getRealm()));
 		return roles;
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly = true)
+	public Collection<Principal> getPrincpalsByRole(Collection<Role> roles) {
+
+		Criteria crit = createCriteria(Principal.class)
+				.setResultTransformer(
+						CriteriaSpecification.DISTINCT_ROOT_ENTITY)
+				.createCriteria("roles")
+				.add(Restrictions.in("id", ResourceUtils.createResourceIdArray(roles)));
+
+		return new HashSet<Principal>(crit.list());
+	}
+	
+	
 
 	@Override
 	@Transactional(readOnly = true)

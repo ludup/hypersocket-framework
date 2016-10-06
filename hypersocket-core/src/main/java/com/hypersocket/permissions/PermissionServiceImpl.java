@@ -132,7 +132,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			}
 
 			@Override
-			public void onCreateRealm(Realm realm) {
+			public void onCreateRealm(Realm realm) throws ResourceException {
 
 				if (log.isInfoEnabled()) {
 					log.info("Creating Administrator role for realm "
@@ -710,11 +710,13 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			public Principal doInTransaction(TransactionStatus status) {
 				
 
-				for(TransactionAdapter<Principal> op : ops) {
-					op.beforeOperation(principal, new HashMap<String,String>());
-				}
+				
 
 				try {
+					for(TransactionAdapter<Principal> op : ops) {
+						op.beforeOperation(principal, new HashMap<String,String>());
+					}
+					
 					Role role = repository.getPersonalRole(principal, false);
 					if(role!=null) {
 						deleteRole(role);
@@ -723,14 +725,14 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 					for(Role r : getPrincipalRoles(principal)) {
 						repository.unassignRole(r, principal);
 					}
+					
+					for(TransactionAdapter<Principal> op : ops) {
+						op.afterOperation(principal, new HashMap<String,String>());
+					}
 				} catch (Throwable e) {
-					throw new IllegalStateException(e);
+					throw new IllegalStateException(e.getMessage(), e);
 				}
 			
-				for(TransactionAdapter<Principal> op : ops) {
-					op.afterOperation(principal, new HashMap<String,String>());
-				}
-				
 				return principal;
 			}
 			
@@ -881,5 +883,15 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public Set<String> getRolePropertyNames() {
 		return attributeRepository.getPropertyNames(null);
+	}
+
+	@Override
+	public Collection<Role> getRolesByPrincipal(Principal principal) {
+		return repository.getRolesForPrincipal(Arrays.asList(principal));
+	}
+
+	@Override
+	public Collection<Principal> getPrincipalsByRole(Role... roles) {
+		return repository.getPrincpalsByRole(Arrays.asList(roles));
 	}
 }

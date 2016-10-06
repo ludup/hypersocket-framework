@@ -1,6 +1,6 @@
 package com.hypersocket.realm.events;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -17,14 +17,14 @@ public class GroupCreatedEvent extends GroupEvent {
 	
 	public GroupCreatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
-			List<Principal> associatedPrincipals) {
+			Collection<Principal> associatedPrincipals) {
 		super(source, "event.groupCreated", session, realm, provider, principal,
 				associatedPrincipals);
 	}
 
 	public GroupCreatedEvent(Object source, Throwable e, Session session,
 			Realm realm, RealmProvider provider, String principalName,
-			List<Principal> associatedPrincipals) {
+			Collection<Principal> associatedPrincipals) {
 		super(source, "event.groupCreated", e, session, realm,
 				provider, principalName, associatedPrincipals);
 	}

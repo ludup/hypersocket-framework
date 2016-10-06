@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.realm.Realm;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
@@ -22,7 +23,7 @@ public class TriggerUtils {
 	@SuppressWarnings("unchecked")
 	public void createTrigger(Realm realm, 
 			String name, String eventResourceKey, boolean allRealms, 
-			TriggerResultType onResult, String taskResourceKey, Map<String,String> taskProperties, TriggerCondition... conditions ) {
+			TriggerResultType onResult, String taskResourceKey, Map<String,String> taskProperties, TriggerCondition... conditions ) throws ResourceException {
 		TriggerResource trigger = new TriggerResource();
 
 		trigger.setRealm(realm);

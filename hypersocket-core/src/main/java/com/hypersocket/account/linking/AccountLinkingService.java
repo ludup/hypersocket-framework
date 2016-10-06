@@ -35,4 +35,8 @@ public interface AccountLinkingService extends AuthenticatedService {
 
 	boolean isLinking(Realm secondaryRealm);
 
+	void performBulkAssignment(Realm realm, Collection<Principal> principals);
+
+	void performBulkUnassignment(Realm realm, Collection<Principal> principals);
+
 }

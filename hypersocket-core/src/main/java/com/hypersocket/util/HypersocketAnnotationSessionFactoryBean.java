@@ -93,7 +93,7 @@ public class HypersocketAnnotationSessionFactoryBean extends
 			String ormOnStartUp = databaseInformation.getOrmOnOld();
 			if(StringUtils.isEmpty(ormOnStartUp)){
 				log.info("Tables found in database, orm on old value is empty, setting id gen value as false");
-				getHibernateProperties().put(key, false);
+				getHibernateProperties().put(key, true);
 			}else{
 				log.info(String.format("Tables found in database, orm on old value is not empty, setting id gen value as %s", ormOnStartUp));
 				getHibernateProperties().put(key, Boolean.parseBoolean(ormOnStartUp));

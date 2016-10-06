@@ -37,6 +37,7 @@ import com.hypersocket.resource.AbstractAssignableResourceServiceImpl;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.role.events.RoleEvent;
 
@@ -97,8 +98,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	public A updateAttribute(A attribute, String name,
 			Long category, String description, String defaultValue, int weight,
 			String type, String displayMode, Boolean readOnly, Boolean encrypted,
-			String variableName, Set<Role> roles, Collection<NameValuePair> options) throws ResourceChangeException,
-			AccessDeniedException {
+			String variableName, Set<Role> roles, Collection<NameValuePair> options) throws AccessDeniedException, ResourceException {
 
 		assertPermission(updatePermission);
 
@@ -139,7 +139,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	public A createAttribute(String name, Long category,
 			String description, String defaultValue, int weight, String type,
 			String displayMode, Boolean readOnly, Boolean encrypted, String variableName, Set<Role> roles, Collection<NameValuePair> options)
-			throws ResourceCreationException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 		
 		A attribute = createNewAttributeInstance();
 
@@ -187,7 +187,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	@SuppressWarnings("unchecked")
 	@Override
 	public void deleteAttribute(A attribute)
-			throws AccessDeniedException, ResourceChangeException {
+			throws AccessDeniedException, ResourceException {
 
 		assertPermission(deletePermission);
 		

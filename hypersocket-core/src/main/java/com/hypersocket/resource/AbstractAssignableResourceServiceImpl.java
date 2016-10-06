@@ -135,7 +135,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	@Override
 	@SafeVarargs
 	public final void createResource(T resource, Map<String,String> properties,  
-			TransactionOperation<T>... ops) throws ResourceCreationException,
+			TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
 
 		assertPermission(getCreatePermission(resource));
@@ -167,8 +167,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		} catch (Throwable t) {
 			log.error("Failed to create resource", t);
 			fireResourceCreationEvent(resource, t);
-			if (t instanceof ResourceCreationException) {
-				throw (ResourceCreationException) t;
+			if (t instanceof ResourceException) {
+				throw (ResourceException) t;
 			} else {
 				throw new ResourceCreationException(RESOURCE_BUNDLE,
 						"generic.create.error", t.getMessage());
@@ -178,19 +178,19 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 	}
 
-	protected void beforeCreateResource(T resource, Map<String,String> properties) throws ResourceCreationException {
+	protected void beforeCreateResource(T resource, Map<String,String> properties) throws ResourceException {
 		
 	}
 
-	protected void afterCreateResource(T resource, Map<String,String> properties) throws ResourceCreationException {
+	protected void afterCreateResource(T resource, Map<String,String> properties) throws  ResourceException {
 		
 	}
 	
-	protected void beforeUpdateResource(T resource, Map<String,String> properties) throws ResourceChangeException {
+	protected void beforeUpdateResource(T resource, Map<String,String> properties) throws ResourceException {
 		
 	}
 	
-	protected void afterUpdateResource(T resource, Map<String,String> properties) throws ResourceChangeException {
+	protected void afterUpdateResource(T resource, Map<String,String> properties) throws ResourceException {
 		
 	}
 	
@@ -201,7 +201,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	@SafeVarargs
 	@Override
 	public final void updateResource(T resource,  
-			TransactionOperation<T>... ops) throws ResourceChangeException,
+			TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
 		updateResource(resource, null, new HashMap<String,String>(), ops);
 	}
@@ -213,7 +213,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	@SafeVarargs
 	@Override
 	public final void updateResource(T resource, Set<Role> roles, Map<String,String> properties,  
-			TransactionOperation<T>... ops) throws ResourceChangeException,
+			TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
 		
 		if(isAssignedUserAllowedUpdate()) {
@@ -271,8 +271,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {
 			fireResourceUpdateEvent(resource, t);
-			if (t instanceof ResourceChangeException) {
-				throw (ResourceChangeException) t;
+			if (t instanceof ResourceException) {
+				throw (ResourceException) t;
 			} else {
 				throw new ResourceChangeException(RESOURCE_BUNDLE,
 						"generic.update.error", t.getMessage());
@@ -286,8 +286,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	protected abstract void fireResourceUpdateEvent(T resource, Throwable t);
 
 	@Override
-	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceChangeException,
-			AccessDeniedException {
+	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws 
+			AccessDeniedException, ResourceException {
 
 		assertPermission(getDeletePermission(resource));
 
@@ -363,6 +363,11 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	@Override
 	public Collection<T> getPersonalResources() {
 		return getRepository().getAssignedResources(realmService.getAssociatedPrincipals(getCurrentPrincipal()));
+	}
+	
+	@Override
+	public long getPersonalResourceCount(Principal principal) {
+		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(principal), "");
 	}
 	
 	@Override

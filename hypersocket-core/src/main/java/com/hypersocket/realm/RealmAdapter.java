@@ -1,22 +1,21 @@
 package com.hypersocket.realm;
 
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 
 public class RealmAdapter implements RealmListener {
 
 	@Override
-	public void onCreateRealm(Realm realm) throws ResourceCreationException {
+	public void onCreateRealm(Realm realm) throws ResourceException {
 
 	}
 
 	@Override
-	public void onUpdateRealm(Realm realm) throws ResourceChangeException {
+	public void onUpdateRealm(Realm realm) throws ResourceException {
 
 	}
 
 	@Override
-	public void onDeleteRealm(Realm realm) throws ResourceChangeException {
+	public void onDeleteRealm(Realm realm) throws ResourceException {
 
 	}
 

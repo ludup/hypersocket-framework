@@ -28,7 +28,7 @@ public abstract class AbstractSecondaryUserLinkingJob extends PermissionsAwareJo
 		
 		try {
 
-			AccountLinkingRules rules = linkingService.getSecondaryRules(primaryRealm);
+			AccountLinkingRules rules = linkingService.getSecondaryRules(secondaryPrincipal.getRealm());
 			if(rules==null || !rules.isAutomaticLinking()) {
 				
 				if(log.isInfoEnabled()) {

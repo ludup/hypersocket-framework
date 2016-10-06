@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.TriggerResourceRepository;
@@ -33,7 +34,7 @@ public class AutomationResourceRepositoryImpl extends
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void deleteResource(AutomationResource resource, TransactionOperation<AutomationResource>... ops) {
+	public void deleteResource(AutomationResource resource, TransactionOperation<AutomationResource>... ops) throws ResourceException {
 		
 		
 		Collection<TriggerResource> triggers = new ArrayList<TriggerResource>(resource.getChildTriggers());

@@ -32,12 +32,12 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	@SuppressWarnings("unchecked") 
 	void createResource(T resource, Map<String,String> properties,
 			TransactionOperation<T>... ops) throws 
-			AccessDeniedException, ResourceCreationException;
+			AccessDeniedException, ResourceException;
 
 	@SuppressWarnings("unchecked") 
 	void updateResource(T resource, Set<Role> roles, Map<String,String> properties,
-			TransactionOperation<T>... ops) throws ResourceChangeException,
-			AccessDeniedException;
+			TransactionOperation<T>... ops) throws 
+			AccessDeniedException, ResourceException;
 
 	List<T> searchResources(Realm realm, String searchColumn, String search, int start, int length,
 			ColumnSort[] sorting) throws AccessDeniedException;
@@ -48,6 +48,8 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	Collection<T> searchPersonalResources(Principal principal, String searchColumn, String search,
 			int start, int length, ColumnSort[] sorting);
 
+	long getPersonalResourceCount(Principal principal);
+	
 	long getPersonalResourceCount(Principal principal, String searchColumn, String search);
 
 	Collection<T> getPersonalResources(Principal principal);
@@ -57,7 +59,7 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	long getPersonalResourceCount(String search);
 
 	void updateResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops)
-			throws ResourceChangeException, AccessDeniedException;
+			throws AccessDeniedException, ResourceException;
 
 	String exportResoure(Long id) throws ResourceNotFoundException,
 			ResourceExportException, AccessDeniedException;
@@ -70,7 +72,7 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	String getResourceCategory();
 
 	void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops)
-			throws ResourceChangeException, AccessDeniedException;
+			throws  AccessDeniedException, ResourceException;
 
 	long getPrincipalsInUse(Realm realm) throws AccessDeniedException;
 

@@ -15,6 +15,9 @@ public class ResourceStatus<T> {
 	boolean success = true;
 	String message = "";
 	T resource;
+	boolean confirmation = false;
+	String[] options;
+	Object[] args;
 	
 	public ResourceStatus() {
 		super();
@@ -67,6 +70,4 @@ public class ResourceStatus<T> {
 	public void setResource(T resource) {
 		this.resource = resource;
 	}
-
-	
 }

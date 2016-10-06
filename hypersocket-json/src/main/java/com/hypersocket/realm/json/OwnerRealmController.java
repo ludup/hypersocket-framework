@@ -95,11 +95,10 @@ public class OwnerRealmController extends ResourceController {
 		try {
 			Realm ownerRealm = realmService.getRealmById(id);
 			return new ResourceList<Principal>(
-					realmService.getAssociatedPrincipals(realmService
+					realmService.getUserGroups(realmService
 							.getPrincipalById(
 									ownerRealm,
-									user, PrincipalType.USER),
-							PrincipalType.GROUP));
+									user, PrincipalType.USER)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -238,11 +237,10 @@ public class OwnerRealmController extends ResourceController {
 			Realm ownerRealm = realmService.getRealmById(id);
 			
 			return new ResourceList<Principal>(
-					realmService.getAssociatedPrincipals(realmService
+					realmService.getGroupUsers(realmService
 							.getPrincipalById(
 									ownerRealm,
-									group, PrincipalType.GROUP),
-							PrincipalType.USER));
+									group, PrincipalType.GROUP)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -265,11 +263,10 @@ public class OwnerRealmController extends ResourceController {
 			Realm ownerRealm = realmService.getRealmById(id);
 			
 			return new ResourceList<Principal>(
-					realmService.getAssociatedPrincipals(realmService
+					realmService.getGroupGroups(realmService
 							.getPrincipalById(
 									ownerRealm,
-									group, PrincipalType.GROUP),
-							PrincipalType.GROUP));
+									group, PrincipalType.GROUP)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -596,14 +593,14 @@ public class OwnerRealmController extends ResourceController {
 			Realm realm = realmService.getRealmById(id);
 
 			List<Principal> userPrincipals = new ArrayList<Principal>();
-			for (Long user : group.getUsers()) {
-				userPrincipals.add(realmService.getPrincipalById(realm, user,
+			for (String user : group.getUsers()) {
+				userPrincipals.add(realmService.getPrincipalById(realm, Long.parseLong(ResourceUtils.getNamePairKey(user)),
 						PrincipalType.USER));
 			}
 			
 			List<Principal> groupPrincipals = new ArrayList<Principal>();
-			for (Long user : group.getGroups()) {
-				groupPrincipals.add(realmService.getPrincipalById(realm, user,
+			for (String user : group.getGroups()) {
+				groupPrincipals.add(realmService.getPrincipalById(realm, Long.parseLong(ResourceUtils.getNamePairKey(user)),
 						PrincipalType.GROUP));
 			}
 

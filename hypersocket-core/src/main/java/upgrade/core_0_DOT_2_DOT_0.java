@@ -30,7 +30,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 
 public class core_0_DOT_2_DOT_0 implements Runnable {
 
@@ -106,7 +106,7 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 //		}
 //	}
 
-	private void doCoreSetup() throws ResourceCreationException {
+	private void doCoreSetup() throws ResourceException {
 		
 		// Create the System realm
 		Realm realm = new Realm();

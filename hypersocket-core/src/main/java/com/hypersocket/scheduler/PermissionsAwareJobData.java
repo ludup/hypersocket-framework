@@ -23,6 +23,10 @@ public class PermissionsAwareJobData extends JobDataMap {
 		this(null, currentRealm, principal, locale, jobResourceKey);
 	}
 	
+	public String getJobName() {
+		return getString("jobName");
+	}
+	
 	public PermissionsAwareJobData(Session session, Realm currentRealm, Principal principal, Locale locale, String jobResourceKey) {
 		
 		put("jobName", jobResourceKey);

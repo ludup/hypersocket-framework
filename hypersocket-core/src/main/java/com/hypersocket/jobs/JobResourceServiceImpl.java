@@ -28,6 +28,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 
 
@@ -181,7 +182,7 @@ public class JobResourceServiceImpl extends
 	}
 
 	@SuppressWarnings("unchecked")
-	protected void updateState(String uuid, JobState current, JobState updated, String... result)  throws ResourceNotFoundException, InvalidJobStateException {
+	protected void updateState(String uuid, JobState current, JobState updated, String... result)  throws ResourceException, InvalidJobStateException {
 		JobResource job = getResourceByName(uuid);
 		if(job.getState()!=current) {
 			throw new InvalidJobStateException();
@@ -192,17 +193,17 @@ public class JobResourceServiceImpl extends
 	}
 	
 	@Override
-	public void reportJobStarting(String uuid) throws ResourceNotFoundException, InvalidJobStateException {
+	public void reportJobStarting(String uuid) throws ResourceException, InvalidJobStateException {
 		updateState(uuid, JobState.SCHEDULED, JobState.IN_PROGRESS);
 	}
 
 	@Override
-	public void reportJobComplete(String uuid, String result) throws ResourceNotFoundException, InvalidJobStateException {
+	public void reportJobComplete(String uuid, String result) throws ResourceException, InvalidJobStateException {
 		updateState(uuid, JobState.IN_PROGRESS, JobState.COMPLETE, result);
 	}
 
 	@Override
-	public void reportJobFailed(String uuid, Throwable t) throws ResourceNotFoundException, InvalidJobStateException {
+	public void reportJobFailed(String uuid, Throwable t) throws ResourceException, InvalidJobStateException {
 		StringWriter str = new StringWriter();
 		PrintWriter w = new PrintWriter(str);
 		t.printStackTrace(w);
@@ -210,7 +211,7 @@ public class JobResourceServiceImpl extends
 	}
 
 	@Override
-	public void reportJobFailed(String uuid, String result) throws ResourceNotFoundException, InvalidJobStateException {
+	public void reportJobFailed(String uuid, String result) throws ResourceException, InvalidJobStateException {
 		updateState(uuid, JobState.IN_PROGRESS, JobState.FAILED, result);
 	}
 	
@@ -286,13 +287,13 @@ public class JobResourceServiceImpl extends
 	}
 
 	@Override
-	public String createJob() throws ResourceCreationException, AccessDeniedException, ResourceNotFoundException {
+	public String createJob() throws ResourceException, AccessDeniedException {
 		return createJob(null);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public String createJob(String parent) throws ResourceCreationException, AccessDeniedException, ResourceNotFoundException {
+	public String createJob(String parent) throws ResourceException, AccessDeniedException {
 		
 		JobResource parentJob = null;
 		

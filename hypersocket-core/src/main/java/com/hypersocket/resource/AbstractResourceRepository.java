@@ -17,10 +17,10 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 
 	T getResourceById(Long id);
 
-	void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops);
+	void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException;
       
 	@SuppressWarnings("unchecked") 
-	void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops);
+	void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceException;
 
 	void saveResource(T resource);
 	

@@ -15,6 +15,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.NameValuePair;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 
 @Service
@@ -73,7 +74,7 @@ public class AttributeFacadeServiceImpl extends AbstractAuthenticatedServiceImpl
 	public UserAttribute createAttribute(String name, Long category,
 			String description, String defaultValue, int weight, String type,
 			Boolean readOnly, Boolean encrypted, String variableName)
-			throws ResourceCreationException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		return attributeService.createAttribute(name, category, description,
 				defaultValue, weight, type, readOnly ? "admin" : "", false, encrypted, variableName,

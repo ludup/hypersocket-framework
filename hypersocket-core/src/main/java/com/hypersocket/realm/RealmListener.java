@@ -1,15 +1,14 @@
 package com.hypersocket.realm;
 
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 
 public interface RealmListener {
 
 	public boolean hasCreatedDefaultResources(Realm realm);
 	
-	public void onCreateRealm(Realm realm) throws ResourceCreationException;
+	public void onCreateRealm(Realm realm) throws ResourceException;
 	
-	public void onUpdateRealm(Realm realm) throws ResourceChangeException;
+	public void onUpdateRealm(Realm realm) throws ResourceException;
 	
-	public void onDeleteRealm(Realm realm) throws ResourceChangeException;
+	public void onDeleteRealm(Realm realm) throws ResourceException;
 }

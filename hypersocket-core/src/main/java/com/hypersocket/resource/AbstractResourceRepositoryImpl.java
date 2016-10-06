@@ -81,7 +81,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	
 	@Override
 	@Transactional
-	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) {
+	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException {
 		
 		for(TransactionOperation<T> op : ops) {
 			op.beforeOperation(resource, null);
@@ -139,7 +139,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	@Override
 	@Transactional
 	@SafeVarargs
-	public final void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) {
+	public final void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops)  throws ResourceException {
 		
 		beforeSave(resource, properties);
 		

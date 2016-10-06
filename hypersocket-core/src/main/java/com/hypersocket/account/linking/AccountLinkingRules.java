@@ -33,12 +33,6 @@ public interface AccountLinkingRules {
 	String generatePrimaryPrincipalName(Principal secondaryPrincipal);
 
 	String generateSecondaryPrincipalName(Principal primaryPrincipal);
-
-	boolean isAssignmentEnabled();
-
-	boolean isAssignmentEvent(AssignableResourceEvent event);
-	
-	boolean isUnassignmentEvent(AssignableResourceEvent event);
 	
 	Principal getSecondaryPrincipal(Principal primaryPrincipal);
 

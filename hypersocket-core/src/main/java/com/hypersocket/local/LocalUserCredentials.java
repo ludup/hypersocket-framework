@@ -25,10 +25,6 @@ import com.hypersocket.repository.AbstractEntity;
 @Table(name="local_user_credentials")
 public class LocalUserCredentials extends AbstractEntity<Long> {
 
-	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -3299749715239030009L;
 
 	@Id

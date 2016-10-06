@@ -16,7 +16,8 @@ import java.util.Set;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.tables.ColumnSort;
 
 public interface RealmProvider extends ResourceTemplateRepository {
@@ -36,16 +37,16 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	boolean supportsAccountUnlock(Realm realm) throws IOException;
 
 	Principal createUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
-			String password, boolean forceChange) throws ResourceCreationException;
+			String password, boolean forceChange) throws ResourceException;
 
 	Principal updateUser(Realm realm, Principal user, String username, Map<String, String> properties,
-			List<Principal> principals) throws ResourceChangeException;
+			List<Principal> principals) throws ResourceException;
 
 	void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon, boolean administrative)
-			throws ResourceCreationException;
+			throws ResourceException;
 
 	void setPassword(Principal principal, char[] password, boolean forceChangeAtNextLogon, boolean administrative)
-			throws ResourceCreationException;
+			throws ResourceException;
 
 	boolean requiresPasswordChange(Principal principal);
 
@@ -54,18 +55,18 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	Principal getDeletedPrincipalById(Long id, Realm realm, PrincipalType[] type);
 	
 	Principal createGroup(Realm realm, String name, Map<String, String> properties, List<Principal> principals,
-			List<Principal> groups) throws ResourceCreationException;
+			List<Principal> groups) throws ResourceException;
 
-	Principal createGroup(Realm realm, String name, Map<String, String> properties) throws ResourceCreationException;
+	Principal createGroup(Realm realm, String name, Map<String, String> properties) throws ResourceException;
 
-	void deleteGroup(Principal group) throws ResourceChangeException;
+	void deleteGroup(Principal group) throws ResourceException;
 
 	Principal updateGroup(Realm realm, Principal group, String name, Map<String, String> properties,
-			List<Principal> principals, List<Principal> groups) throws ResourceChangeException;
+			List<Principal> principals, List<Principal> groups) throws ResourceException;
 
-	void deleteUser(Principal user) throws ResourceChangeException;
+	void deleteUser(Principal user) throws ResourceException;
 
-	void deleteRealm(Realm realm) throws ResourceChangeException;
+	void deleteRealm(Realm realm) throws ResourceException;
 
 	List<Principal> getAssociatedPrincipals(Principal principal);
 
@@ -94,11 +95,11 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	boolean supportsAccountDisable(Realm realm) throws IOException;
 
-	Principal disableAccount(Principal principal) throws ResourceChangeException;
+	Principal disableAccount(Principal principal) throws ResourceException;
 
-	Principal enableAccount(Principal principal) throws ResourceChangeException;
+	Principal enableAccount(Principal principal) throws ResourceException;
 
-	Principal unlockAccount(Principal principal) throws ResourceChangeException;
+	Principal unlockAccount(Principal principal) throws ResourceException;
 
 	Set<String> getUserPropertyNames(Principal principal);
 
@@ -107,7 +108,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	Set<String> getGroupPropertyNames(Principal principal);
 
 	void changePassword(Principal principal, char[] oldPassword, char[] newPassword)
-			throws ResourceChangeException, ResourceCreationException;
+			throws ResourceChangeException, ResourceException;
 
 	Set<String> getUserVariableNames(Principal principal);
 
@@ -123,7 +124,13 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	boolean canChangePassword(Principal principal);
 
-	Principal updateUserProperties(Principal principal, Map<String, String> properties) throws ResourceChangeException;
+	Principal updateUserProperties(Principal principal, Map<String, String> properties) throws ResourceException;
 
 	Principal getPrincipalByEmail(Realm realm, String email);
+
+	List<Principal> getUserGroups(Principal principal);
+
+	List<Principal> getGroupUsers(Principal principal);
+
+	List<Principal> getGroupGroups(Principal principal);
 }

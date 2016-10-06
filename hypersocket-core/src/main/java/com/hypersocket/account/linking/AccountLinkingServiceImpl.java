@@ -22,8 +22,8 @@ import org.springframework.transaction.support.TransactionCallback;
 
 import com.hypersocket.account.linking.events.AccountLinkedEvent;
 import com.hypersocket.account.linking.events.AccountUnlinkedEvent;
-import com.hypersocket.account.linking.jobs.BulkRoleAssignmentUserLinkingJob;
-import com.hypersocket.account.linking.jobs.BulkRoleUnassignmentUserUnlinkingJob;
+import com.hypersocket.account.linking.jobs.BulkPrincipalAssignmentUserLinkingJob;
+import com.hypersocket.account.linking.jobs.BulkPrincipalUnassignmentUserUnlinkingJob;
 import com.hypersocket.account.linking.jobs.BulkSecondaryUserLinkingJob;
 import com.hypersocket.account.linking.jobs.BulkSecondaryUserUnlinkingJob;
 import com.hypersocket.account.linking.jobs.PrimaryUserCreationEventJob;
@@ -148,90 +148,36 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 		}
 	}
 	
-	@EventListener
-	public synchronized void handleRoleEvent(RoleUpdatedEvent event) {
-	
-		if(event.isSuccess()) {
-			processRoleAssignmentEvent(event.getCurrentRealm(), event.getRole(), event.getGranted());
-			processRoleUnassignmentEvent(event.getCurrentRealm(),  event.getRole(), event.getRevoked());
-		}
-	}
-	
-	@EventListener
-	public synchronized void handleRoleEvent(RoleCreatedEvent event) {
-	
-		if(event.isSuccess()) {
-			processRoleAssignmentEvent(event.getCurrentRealm(), event.getRole(), event.getRole().getPrincipals());
-		}
-	}
-	
-	@EventListener
-	public synchronized void handleRoleEvent(RoleDeletedEvent event) {
-		
-		if(event.isSuccess()) {
-			processRoleUnassignmentEvent(event.getCurrentRealm(), event.getRole(), event.getRole().getPrincipals());
-		}
-	}
-	
-	@EventListener 
-	public synchronized void handleResourceAssignment(AssignableResourceEvent event) {
-		
-		if(event.isSuccess()) {
-			Collection<AccountLinkingRules> primaryRules = getPrimaryRules(event.getCurrentRealm());
-			if(primaryRules != null) {
-				for (AccountLinkingRules rules : primaryRules) {
-					if (rules.isAssignmentEvent(event)) {
-						for (Role assigned : event.getAssignedRoles()) {
-							processRoleAssignmentEvent(event.getCurrentRealm(), assigned, assigned.getPrincipals());
-						}
-					} else if (rules.isUnassignmentEvent(event)) {
-						for (Role unassigned : event.getUnassignedRoles()) {
-							processRoleUnassignmentEvent(event.getCurrentRealm(), unassigned, unassigned.getPrincipals());
-						}
-					}
-				}
-			}
+	@Override
+	public void performBulkAssignment(Realm realm, Collection<Principal> principals) {
+		if(!principals.isEmpty()) {
 			
-		}
-	}
-	
-	private void processRoleAssignmentEvent(Realm realm, Role role, Collection<Principal> principals) {
-		if(!principals.isEmpty() && primaryRules.containsKey(realm)) {
-			for(AccountLinkingRules rules : getPrimaryRules(realm)) {
-				if(rules.isAutomaticLinking() && rules.isAssignmentEnabled()) {
-					
-					JobDataMap data = new JobDataMap();
-					data.put("primaryRealmId", realm.getId());
-					data.put("roleName", role.getName());
-					data.put("assignedIds", ResourceUtils.createResourceIdArray(principals));
-					
-					try {
-						schedulerService.scheduleNow(BulkRoleAssignmentUserLinkingJob.class, UUID.randomUUID().toString(), data);
-					} catch (SchedulerException e) {
-						log.error("Failed to schedule bulk role assignment job", e);
-					}
-				}
+			JobDataMap data = new JobDataMap();
+			data.put("primaryRealmId", realm.getId());
+			data.put("assignedIds", ResourceUtils.createResourceIdArray(principals));
+			
+			try {
+				schedulerService.scheduleNow(BulkPrincipalAssignmentUserLinkingJob.class, UUID.randomUUID().toString(), data);
+			} catch (SchedulerException e) {
+				log.error("Failed to schedule bulk role assignment job", e);
 			}
 		}
+	
 	}
 
-	private synchronized void processRoleUnassignmentEvent(Realm realm, Role role, Collection<Principal> principals) {
+	@Override
+	public void performBulkUnassignment(Realm realm, Collection<Principal> principals) {
 		
-		if(!principals.isEmpty() && primaryRules.containsKey(realm)) {
-			for(AccountLinkingRules rules : getPrimaryRules(realm)) {
-				if(rules.isAutomaticLinking() && rules.isAssignmentEnabled()) {
-					
-					JobDataMap data = new JobDataMap();
-					data.put("primaryRealmId", realm.getId());
-					data.put("roleName", role.getName());
-					data.put("unassignedIds", ResourceUtils.createResourceIdArray(principals));
-					
-					try {
-						schedulerService.scheduleNow(BulkRoleUnassignmentUserUnlinkingJob.class, UUID.randomUUID().toString(), data);
-					} catch (SchedulerException e) {
-						log.error("Failed to schedule bulk role assignment job", e);
-					}
-				}
+		if(!principals.isEmpty()) {
+
+			JobDataMap data = new JobDataMap();
+			data.put("primaryRealmId", realm.getId());
+			data.put("unassignedIds", ResourceUtils.createResourceIdArray(principals));
+			
+			try {
+				schedulerService.scheduleNow(BulkPrincipalUnassignmentUserUnlinkingJob.class, UUID.randomUUID().toString(), data);
+			} catch (SchedulerException e) {
+				log.error("Failed to schedule bulk role assignment job", e);
 			}
 		}
 	}
@@ -262,7 +208,7 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 				
 			} else if(primaryRules.containsKey(event.getPrincipal().getRealm())) {
 				for(AccountLinkingRules rules : getPrimaryRules(event.getPrincipal().getRealm())) {
-					if(rules.isAutomaticLinking()) {
+					if(rules.isCreationEnabled()) {
 						
 						if(!rules.isAccountCreationRequired(event.getPrincipal())) {
 							if(log.isInfoEnabled()) {
@@ -306,11 +252,16 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 			data.put("principalId", event.getPrincipal().getId());
 			
 			if(secondaryRules.containsKey(event.getPrincipal().getRealm())) {
-				try {
-					schedulerService.scheduleNow(SecondaryUserDeletionEventJob.class, 
-							UUID.randomUUID().toString(), data);
-				} catch (SchedulerException e) {
-					log.error("Failed to schedule secondary user unlink");
+				
+				AccountLinkingRules rules = secondaryRules.get(event.getPrincipal().getRealm());
+				
+				if(rules.isDeletionEnabled() || rules.isDisableAccountRequired()) {
+					try {
+						schedulerService.scheduleNow(SecondaryUserDeletionEventJob.class, 
+								UUID.randomUUID().toString(), data);
+					} catch (SchedulerException e) {
+						log.error("Failed to schedule secondary user unlink");
+					}
 				}
 			} else if(primaryRules.containsKey(event.getPrincipal().getRealm())) {
 				

@@ -13,13 +13,12 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceCreationException;
 
-public class BulkRoleAssignmentUserLinkingJob extends AbstractSecondaryUserLinkingJob {
+public class BulkPrincipalAssignmentUserLinkingJob extends AbstractSecondaryUserLinkingJob {
 
 	@Override
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {
 		
 		Long primaryRealmId = context.getTrigger().getJobDataMap().getLong("primaryRealmId");
-		String roleName = context.getTrigger().getJobDataMap().getString("roleName");	
 		Long[] ids = (Long[]) context.getTrigger().getJobDataMap().get("assignedIds");
 		
 		try {
@@ -27,63 +26,35 @@ public class BulkRoleAssignmentUserLinkingJob extends AbstractSecondaryUserLinki
 			Realm primaryRealm = realmService.getRealmById(primaryRealmId);
 			
 			if(log.isInfoEnabled()) {
-				log.info(String.format("Checking assignments to role %s to determine if accounts need to be linked", 
-						roleName));
+				log.info(String.format("Checking assignments in realm %s to determine if accounts need to be linked", 
+						primaryRealm.getName()));
 			}
 			
 			Set<Principal> processedPrincipals = new HashSet<Principal>();
 			
 			for(AccountLinkingRules rules : linkingService.getPrimaryRules(primaryRealm)) {
-				if(rules.isAutomaticLinking() && rules.isAssignmentEnabled()) {
 					
-					for(Long id : ids) {
-						
-						Principal primaryPrincipal = realmService.getPrincipalById(
-								primaryRealm, 
-								id, 
-								PrincipalType.USER, PrincipalType.GROUP);
-						
-						switch(primaryPrincipal.getType()) {
-						case USER:
-							processPrincipal(rules, primaryPrincipal, processedPrincipals);
-							break;
-						case GROUP:
-							processGroupPrincipals(primaryPrincipal, rules, processedPrincipals);
-							break;
-						default:
-							break;
-						}
+				for(Long id : ids) {
+					
+					Principal primaryPrincipal = realmService.getPrincipalById(
+							primaryRealm, 
+							id, 
+							PrincipalType.USER, PrincipalType.GROUP);
+					
+					switch(primaryPrincipal.getType()) {
+					case USER:
+						processPrincipal(rules, primaryPrincipal, processedPrincipals);
+						break;
+					default:
+						throw new IllegalStateException("Cannot link non-user principal to another principal!");
 					}
 				}
+				
 			}
-			
-			
-			
 		} catch(Throwable t) {
 			throw new IllegalStateException(t.getMessage(), t);
 		}
 		
-	}
-	
-	private void processGroupPrincipals(Principal primaryPrincipal, AccountLinkingRules rules,
-			Set<Principal> processedPrincipals) throws ResourceCreationException, JobExecutionException, AccessDeniedException {
-		
-		if(processedPrincipals.contains(primaryPrincipal)) {
-			return;
-		}
-		processedPrincipals.add(primaryPrincipal);
-		
-		for(Principal principal : realmService.getAssociatedPrincipals(primaryPrincipal)) {
-			switch(principal.getType()) {
-			case USER:
-				processPrincipal(rules, principal, processedPrincipals);
-			case GROUP:
-				processGroupPrincipals(principal, rules, processedPrincipals);
-				break;
-			default:
-				break;
-			}
-		}
 	}
 
 	private void processPrincipal(AccountLinkingRules rules, Principal primaryPrincipal, Set<Principal> processedPrincipals) throws ResourceCreationException, AccessDeniedException, JobExecutionException {

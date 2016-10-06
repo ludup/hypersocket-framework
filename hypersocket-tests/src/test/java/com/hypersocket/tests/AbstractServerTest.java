@@ -548,7 +548,7 @@ public class AbstractServerTest {
 			throws Exception {
 		GroupUpdate group = new GroupUpdate();
 		group.setName(groupname);
-		group.setUsers(new Long[0]);
+		group.setUsers(new String[0]);
 
 		String newGroupJson = doPostJson("/hypersocket/api/currentRealm/group",
 				group);
@@ -568,7 +568,7 @@ public class AbstractServerTest {
 		GroupUpdate groupUpdate = new GroupUpdate();
 		groupUpdate.setName(jsonGroup.getResource().getName());
 		groupUpdate.setId(jsonGroup.getResource().getId());
-		Long[] groupUsers = { jsonUser.getResource().getId() };
+		String[] groupUsers = { jsonUser.getResource().getId() + "=" };
 		groupUpdate.setUsers(groupUsers);
 
 		String addUserToGroupJson = doPostJson(
@@ -578,7 +578,7 @@ public class AbstractServerTest {
 	}
 
 	protected static void addUsersToGroup(JsonResourceStatus jsonGroup,
-			Long[] users) throws Exception {
+			String[] users) throws Exception {
 
 		GroupUpdate groupUpdate = new GroupUpdate();
 		groupUpdate.setName(jsonGroup.getResource().getName());

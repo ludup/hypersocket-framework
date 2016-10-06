@@ -38,23 +38,6 @@ public class PrimaryUserCreationEventJob extends PermissionsAwareJob {
 			Principal primaryPrincipal = realmService.getPrincipalById(primaryRealm, principalId, PrincipalType.USER);
 			
 			AccountLinkingRules rules = linkingService.getSecondaryRules(secondaryRealm);
-			if(!rules.isAutomaticLinking()) {
-				
-				if(log.isInfoEnabled()) {
-					log.info(String.format("Automatic linking IS NOT enabled from realm %s to %s", 
-							rules.getPrimaryRealm().getName(), 
-							rules.getSecondaryRealm().getName()));
-				}
-				
-				return;
-			}
-			
-			
-			if(log.isInfoEnabled()) {
-				log.info(String.format("Automatic linking is enabled from realm %s to %s", 
-						rules.getPrimaryRealm().getName(), 
-						rules.getSecondaryRealm().getName()));
-			}
 			
 			String secondaryUsername = rules.generateSecondaryPrincipalName(primaryPrincipal);
 			
@@ -74,6 +57,7 @@ public class PrimaryUserCreationEventJob extends PermissionsAwareJob {
 					}
 					return;
 				}
+				
 				if(!rules.isAccountCreationRequired(primaryPrincipal)) {
 					if(log.isInfoEnabled()) {
 						log.info(String.format("Account creation IS NOT required for %s/%s", 

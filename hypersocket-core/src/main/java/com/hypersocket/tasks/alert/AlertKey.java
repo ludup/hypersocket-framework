@@ -19,7 +19,7 @@ import com.hypersocket.tasks.Task;
 public class AlertKey {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE)
+	@GeneratedValue(strategy=GenerationType.TABLE)
 	@Column(name="alert_key_id")
 	Long id;
 

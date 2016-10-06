@@ -212,7 +212,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						if (!listener.hasCreatedDefaultResources(realm)) {
 							try {
 								listener.onCreateRealm(realm);
-							} catch (ResourceCreationException e) {
+							} catch (ResourceException e) {
 								log.error("Failed to create default resources in realm", e);
 							}
 						}
@@ -1174,24 +1174,24 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			throw ex;
 		}
 		
-//		Collection<Principal> existingUsers = getAssociatedPrincipals(group, PrincipalType.USER);
-//		Collection<Principal> existingGroups = getAssociatedPrincipals(group, PrincipalType.GROUP);
-//		
-//		final Collection<Principal> assignedUsers = new ArrayList<Principal>();
-//		assignedUsers.addAll(principals);
-//		assignedUsers.removeAll(existingUsers);
-//		
-//		final Collection<Principal> unassignedUsers = new ArrayList<Principal>();
-//		unassignedUsers.addAll(existingUsers);
-//		unassignedUsers.removeAll(principals);
-//		
-//		final Collection<Principal> assignedGroups = new ArrayList<Principal>();
-//		assignedGroups.addAll(groups);
-//		assignedGroups.removeAll(existingGroups);
-//		
-//		final Collection<Principal> unassignedGroups = new ArrayList<Principal>();
-//		unassignedGroups.addAll(existingGroups);
-//		unassignedGroups.removeAll(groups);
+		Collection<Principal> existingPrincipals = new HashSet<Principal>();
+		existingPrincipals.addAll(getGroupUsers(group));
+		existingPrincipals.addAll(getGroupGroups(group));
+		
+		final Collection<Principal> assigned = new ArrayList<Principal>();
+		assigned.addAll(principals);
+		assigned.addAll(groups);
+		
+		assigned.removeAll(existingPrincipals);
+		
+		final Collection<Principal> unassigned = new ArrayList<Principal>();
+		unassigned.addAll(existingPrincipals);
+		unassigned.removeAll(principals);
+		unassigned.removeAll(groups);
+		
+		final Collection<Principal> all = new HashSet<Principal>();
+		all.addAll(principals);
+		all.addAll(groups);
 		
 		return transactionService.doInTransaction(new TransactionCallbackWithError<Principal>() {
 
@@ -1212,7 +1212,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					eventService.publishEvent(new GroupUpdatedEvent(this, 
 							getCurrentSession(), 
 							realm, provider,
-							principal, principals));
+							principal, all, assigned, unassigned));
 
 					return principal;
 				} catch (ResourceChangeException e) {
@@ -1237,6 +1237,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		RealmProvider provider = getProviderForRealm(realm);
 
+		Collection<Principal> assosiatedPrincipals = provider.getAssociatedPrincipals(group);
+		
 		try {
 			assertAnyPermission(GroupPermission.DELETE, RealmPermission.DELETE);
 
@@ -1246,19 +1248,19 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			provider.deleteGroup(group);
 
-			eventService.publishEvent(new GroupDeletedEvent(this, getCurrentSession(), realm, provider, group));
+			eventService.publishEvent(new GroupDeletedEvent(this, getCurrentSession(), realm, provider, group, assosiatedPrincipals));
 
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(
-					new GroupDeletedEvent(this, e, getCurrentSession(), realm, provider, group.getPrincipalName()));
+					new GroupDeletedEvent(this, e, getCurrentSession(), realm, provider, group.getPrincipalName(), assosiatedPrincipals));
 			throw e;
 		} catch (ResourceChangeException e) {
 			eventService.publishEvent(
-					new GroupDeletedEvent(this, e, getCurrentSession(), realm, provider, group.getPrincipalName()));
+					new GroupDeletedEvent(this, e, getCurrentSession(), realm, provider, group.getPrincipalName(), assosiatedPrincipals));
 			throw e;
 		} catch (Throwable e) {
 			eventService.publishEvent(
-					new GroupDeletedEvent(this, e, getCurrentSession(), realm, provider, group.getPrincipalName()));
+					new GroupDeletedEvent(this, e, getCurrentSession(), realm, provider, group.getPrincipalName(), assosiatedPrincipals));
 			throw new ResourceChangeException(RESOURCE_BUNDLE, "deleteGroup.unexpectedError", e.getMessage());
 		}
 	}
@@ -1283,7 +1285,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			permissionService.revokePermissions(user, new TransactionAdapter<Principal>() {
 				@Override
-				public void afterOperation(Principal resource, Map<String, String> properties) {
+				public void afterOperation(Principal resource, Map<String, String> properties) throws ResourceException {
 					try {
 						provider.deleteUser(resource);
 					} catch (ResourceChangeException e) {
@@ -1457,6 +1459,21 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 		return result;
 	}
+	
+	@Override
+	public List<Principal> getUserGroups(Principal principal) {
+		return getProviderForPrincipal(principal).getUserGroups(principal);
+	}
+	
+	@Override
+	public List<Principal> getGroupUsers(Principal principal) {
+		return getProviderForPrincipal(principal).getGroupUsers(principal);
+	}
+	
+	@Override
+	public List<Principal> getGroupGroups(Principal principal) {
+		return getProviderForPrincipal(principal).getGroupGroups(principal);
+	}
 
 	@Override
 	public List<Principal> getAssociatedPrincipals(Principal principal, PrincipalType type) {
@@ -1563,7 +1580,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public void updateProfile(Realm realm, Principal principal, Map<String, String> properties)
-			throws AccessDeniedException, ResourceChangeException {
+			throws AccessDeniedException, ResourceException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -1639,7 +1656,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Principal disableAccount(Principal principal) throws ResourceChangeException, AccessDeniedException {
+	public Principal disableAccount(Principal principal) throws AccessDeniedException, ResourceException {
 
 		assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
 
@@ -1654,7 +1671,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Principal enableAccount(Principal principal) throws ResourceChangeException, AccessDeniedException {
+	public Principal enableAccount(Principal principal) throws AccessDeniedException, ResourceException {
 
 		assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
 
@@ -1668,7 +1685,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Principal unlockAccount(Principal principal) throws ResourceChangeException, AccessDeniedException {
+	public Principal unlockAccount(Principal principal) throws AccessDeniedException, ResourceException {
 
 		assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
 

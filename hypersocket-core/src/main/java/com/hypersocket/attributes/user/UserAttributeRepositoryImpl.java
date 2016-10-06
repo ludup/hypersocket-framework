@@ -17,6 +17,7 @@ import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.resource.AbstractAssignableResourceRepositoryImpl;
 import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionOperation;
 
 
@@ -69,7 +70,7 @@ public class UserAttributeRepositoryImpl extends
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional
-	public void deleteResource(UserAttribute resource, TransactionOperation<UserAttribute>... ops) throws ResourceChangeException {
+	public void deleteResource(UserAttribute resource, TransactionOperation<UserAttribute>... ops) throws ResourceException {
 	
 		Query query = createQuery("delete from DatabaseProperty where resourceKey = :resourceKey", true);
 		query.setParameter("resourceKey", resource.getVariableName());

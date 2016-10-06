@@ -10,6 +10,7 @@ package com.hypersocket.auth;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
@@ -20,16 +21,12 @@ import com.hypersocket.repository.AbstractEntity;
 
 @Entity
 @Table(name = "auth_scheme_modules")
-@XmlRootElement(name = "authenticationSchemeModules")
 public class AuthenticationModule extends AbstractEntity<Long> {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1206533209868713440L;
 
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy=GenerationType.TABLE)
 	@Column(name = "module_id")
 	Long id;
 

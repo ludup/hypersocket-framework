@@ -31,15 +31,15 @@ public interface JobResourceService extends
 	
 	String createJob(String parent) throws ResourceException, AccessDeniedException;
 	
-	void reportJobStarting(String uuid) throws ResourceNotFoundException, InvalidJobStateException;
+	void reportJobStarting(String uuid) throws ResourceException, InvalidJobStateException;
 
-	void reportJobComplete(String uuid, String result) throws ResourceNotFoundException, InvalidJobStateException;
+	void reportJobComplete(String uuid, String result) throws ResourceException, InvalidJobStateException;
 
-	void reportJobFailed(String uuid, Throwable t) throws ResourceNotFoundException, InvalidJobStateException;
+	void reportJobFailed(String uuid, Throwable t) throws ResourceException, InvalidJobStateException;
 
 	boolean isJobActive(String uuid) throws ResourceNotFoundException, InvalidJobStateException;
 
-	void reportJobFailed(String uuid, String result) throws ResourceNotFoundException, InvalidJobStateException;
+	void reportJobFailed(String uuid, String result) throws ResourceException, InvalidJobStateException;
 
 	boolean hasActiveJobs(String parent) throws ResourceNotFoundException;
 

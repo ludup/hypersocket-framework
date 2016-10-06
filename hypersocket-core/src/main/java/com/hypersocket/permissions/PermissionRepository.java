@@ -15,6 +15,7 @@ import java.util.Set;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
 
@@ -92,21 +93,23 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 	Role createRole(String name, Realm realm);
 
 	Set<Role> getRolesForPrincipal(List<Principal> associatedPrincipals);
+	
+	Collection<Principal> getPrincpalsByRole(Collection<Role> associatedPrincipals);
 
 	Set<Role> getAllUserRoles(Realm realm);
 
 	void saveRole(Role role, Realm realm, Principal[] principals,
 			Collection<Permission> permissions, Map<String,String> properties,
-			TransactionOperation<Role>... ops);
+			TransactionOperation<Role>... ops) throws ResourceException;
 
 	void updateRole(Role role, Set<Principal> unassignPrincipals,
 			Set<Principal> assignPrincipals, Set<Permission> revokePermissions,
 			Set<Permission> grantPermissions, Map<String,String> properties,
-			TransactionOperation<Role>... ops);
+			TransactionOperation<Role>... ops) throws ResourceException;
 
 	void createRole(String name, Realm realm, boolean personalRole,
 			boolean allUsers, boolean allPermissions, boolean system,
-			Set<Permission> permissions, Map<String,String> properties);
+			Set<Permission> permissions, Map<String,String> properties) throws ResourceException;
 
 	Role getPersonalRole(Principal principal, boolean createIfNotFound);
 }

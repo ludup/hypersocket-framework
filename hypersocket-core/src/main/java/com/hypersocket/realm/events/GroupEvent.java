@@ -1,7 +1,6 @@
 package com.hypersocket.realm.events;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Collection;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -22,47 +21,29 @@ public abstract class GroupEvent extends PrincipalEvent {
 	public static final String ATTR_ASSOCIATED_PRINCIPALS = "attr.associatedPrincipals";
 
 	private Principal principal;
-
-	public GroupEvent(Object source, String resourceKey, Session session,
-			Realm realm, RealmProvider provider, Principal principal) {
-		super(source, resourceKey, true, session, realm);
-		this.principal = principal;
-		addAttribute(ATTR_GROUP_NAME, principal.getName());
-	}
-
+	Collection<Principal> assosiatedPrincipals;
+	
 	public GroupEvent(Object source, String resourceKey, Session session,
 			Realm realm, RealmProvider provider, Principal principal,
-			List<Principal> associatedPrincipals) {
+			Collection<Principal> associatedPrincipals) {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
+		this.assosiatedPrincipals = associatedPrincipals;
 		addAttribute(ATTR_GROUP_NAME, principal.getName());
 		addAssociatedPrincipals(associatedPrincipals);
 	}
 
 	public GroupEvent(Object source, String resourceKey, Throwable e,
 			Session session, Realm realmName, RealmProvider provider,
-			String principalName) {
+			String principalName, Collection<Principal> associatedPrincipals) {
 		super(source, resourceKey, e, session, realmName);
-		addAttribute(ATTR_GROUP_NAME, principalName);
-	}
-
-	public GroupEvent(Object source, String resourceKey, Throwable e,
-			Session session, Realm realmName, RealmProvider provider,
-			String principalName, List<Principal> associatedPrincipals) {
-		super(source, resourceKey, e, session, realmName);
+		this.assosiatedPrincipals = associatedPrincipals;
 		addAttribute(ATTR_GROUP_NAME, principalName);
 		addAssociatedPrincipals(associatedPrincipals);
 	}
 
-	private void addAssociatedPrincipals(List<Principal> associatedPrincipals) {
-		StringBuffer buf = new StringBuffer();
-		for (Principal p : associatedPrincipals) {
-			if (buf.length() > 0) {
-				buf.append(',');
-			}
-			buf.append(p.getPrincipalName());
-		}
-		addAttribute(ATTR_ASSOCIATED_PRINCIPALS, buf.toString());
+	private void addAssociatedPrincipals(Collection<Principal> associatedPrincipals) {
+		addAttribute(ATTR_ASSOCIATED_PRINCIPALS, createPrincipalList(associatedPrincipals));
 	}
 
 	public Principal getPrincipal() {
@@ -71,5 +52,20 @@ public abstract class GroupEvent extends PrincipalEvent {
 
 	public String[] getResourceKeys() {
 		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
+	
+	public Collection<Principal> getAssosicatedPrincipals() {
+		return assosiatedPrincipals;
+	}
+	
+	protected String createPrincipalList(Collection<Principal> principals) {
+		StringBuffer buf = new StringBuffer();
+		for(Principal p : principals) {
+			if(buf.length() > 0) {
+				buf.append("\r\n");
+			}
+			buf.append(p.getPrincipalName());
+		}
+		return buf.toString();
 	}
 }
