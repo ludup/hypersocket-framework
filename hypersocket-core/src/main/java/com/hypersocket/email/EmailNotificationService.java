@@ -5,7 +5,6 @@ import java.util.List;
 import javax.mail.Message.RecipientType;
 
 import org.codemonkey.simplejavamail.MailException;
-import org.codemonkey.simplejavamail.Recipient;
 
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;

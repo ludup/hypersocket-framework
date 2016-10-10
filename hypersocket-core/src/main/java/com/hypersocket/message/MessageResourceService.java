@@ -27,12 +27,7 @@ public interface MessageResourceService extends
 			throws AccessDeniedException;
 
 	MessageResource createResource(String name, String subject, String body, String html, Boolean enabled,
-<<<<<<< Updated upstream
-			Boolean track, Class<? extends SystemEvent> fireEvent, Collection<FileUpload> attachments, Realm realm,
-			Map<String, String> properties) throws ResourceCreationException, AccessDeniedException;
-=======
 			Boolean track, Collection<FileUpload> attachments, Realm realm, Map<String, String> properties)
 			throws ResourceCreationException, AccessDeniedException;
->>>>>>> Stashed changes
 
 }

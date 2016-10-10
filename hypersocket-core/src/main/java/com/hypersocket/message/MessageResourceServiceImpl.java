@@ -253,6 +253,11 @@ public class MessageResourceServiceImpl extends
 		
 		MessageResource message = getResourceByName(templateName, realm);
 		
+		if(!message.getEnabled()) {
+			log.info(String.format("Message template %s has been disabled", templateName));
+			return;
+		}
+		
 		List<RecipientHolder> recipients = new ArrayList<RecipientHolder>();
 		for(Principal principal : principals) {
 			try {

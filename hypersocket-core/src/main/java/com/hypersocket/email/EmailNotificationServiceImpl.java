@@ -66,25 +66,36 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 	@Override
 	@SafeVarargs
-	public final void sendEmail(String subject, String text, String html, Recipient[] recipients, boolean track, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
+	public final void sendEmail(String subject, String text, String html, RecipientHolder[] recipients, boolean track, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
 		sendEmail(getCurrentRealm(), subject, text, html, recipients, track, attachments);
 	}
 	
 	@Override
 	@SafeVarargs
-	public final void sendEmail(Realm realm, String subject, String text, String html, Recipient[] recipients, boolean track, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
+	public final void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients, boolean track, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
 		sendEmail(realm, subject, text, html, null, null, recipients, track, attachments);
 	}
 	
 	@Override
-	@SafeVarargs
-	public final void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail, RecipientHolder[] recipients, boolean track, EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
-		sendEmail(realm, subject, text, html, replyToName, replyToEmail, recipients, new String[0], track, attachments); 
+	public void sendEmail(Realm realm, String subject, String text, String html, String replyToName,
+			String replyToEmail, RecipientHolder[] recipients, boolean track, EmailAttachment... attachments)
+			throws MailException, AccessDeniedException, ValidationException {
+		sendEmail(realm, subject, text, html, replyToName, replyToEmail, recipients, new String[0], track, attachments);
 	}
+	
 	
 	@Override
 	@SafeVarargs
-	public final void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail, RecipientHolder[] recipients, String[] archiveAddresses, boolean track, EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
+	public final void sendEmail(Realm realm, 
+			String subject, 
+			String text, 
+			String html, 
+			String replyToName, 
+			String replyToEmail, 
+			RecipientHolder[] recipients, 
+			String[] archiveAddresses,
+			boolean track, 
+			EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
 		
 		Mailer mail = new Mailer(configurationService.getValue(realm, SMTP_HOST), 
 				configurationService.getIntValue(realm, SMTP_PORT), 
@@ -93,22 +104,69 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				TransportStrategy.values()[configurationService.getIntValue(realm, SMTP_PROTOCOL)]);
 		
 		String archiveAddress = configurationService.getValue(realm, "email.archiveAddress");
-		List<Recipient> archiveRecipients = new ArrayList<Recipient>();
+		List<RecipientHolder> archiveRecipients = new ArrayList<RecipientHolder>();
 
 		if(StringUtils.isNotBlank(archiveAddress)) {
 			populateEmailList(new String[] {archiveAddress} , archiveRecipients, RecipientType.TO);
 		}
 		
-		populateEmailList(archiveAddresses , archiveRecipients, RecipientType.TO);
+		populateEmailList(archiveAddresses, archiveRecipients, RecipientType.TO);
 
-		for(Recipient r : recipients) {
-			send(realm, mail, subject, text, html, replyToName, replyToEmail, track, r, attachments);
+		for(RecipientHolder r : recipients) {
+			
+			String recipeintSubject = replaceRecipientInfo(subject, r);
+			String receipientText = replaceRecipientInfo(text, r);
+			String receipientHtml = replaceRecipientInfo(html, r);
+			
+			String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
+			if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(receipientHtml)) {
+				try {
+					htmlTemplate = FileUtils.readFileToString(uploadService.getFile(htmlTemplate));
+					htmlTemplate = replaceRecipientInfo(htmlTemplate.replace("${htmlContent}", receipientHtml), r);
+					
+					String trackingImage = configurationService.getValue(realm, "email.trackingImage");
+					if(track && StringUtils.isNotBlank(trackingImage)) {
+						String trackingUri = trackerService.generateTrackingUri(subject, r.getName(), r.getEmail(), realm);
+						htmlTemplate = htmlTemplate.replace("${trackingImage}", trackingUri);
+					} else {
+						String trackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);
+						htmlTemplate = htmlTemplate.replace("${trackingImage}", trackingUri);
+					}
+
+					receipientHtml = htmlTemplate;
+				} catch (ResourceNotFoundException e) {
+					log.error("Cannot find HTML template", e);
+				} catch (IOException e) {
+					log.error("Cannot find HTML template", e);
+				}	
+			}
+			
+			send(realm, mail, 
+					recipeintSubject, 
+					receipientText, 
+					receipientHtml, 
+					replyToName, 
+					replyToEmail, 
+					track, 
+					r, 
+					attachments);
+			
+			for(RecipientHolder recipient : archiveRecipients) {
+				send(realm, mail, recipeintSubject, receipientText, receipientHtml, 
+						replyToName, replyToEmail, false, recipient, attachments);
+			}
 		}
-		
-		if(!archiveAddress.isEmpty()) {
-			send(realm, mail, subject, text, html, replyToName, replyToEmail, false, archiveRecipients.get(0), attachments);
-		}
+	}
 	
+	private String replaceRecipientInfo(String str, RecipientHolder r) {
+		if(str!=null) {
+			return str.replace("${email}", r.getEmail())
+					.replace("${firstName}", r.getFirstName())
+					.replace("${fullName}", r.getName())
+					.replace("${principalId}", r.getPrincipalId());
+		} else {
+			return str;
+		}
 	}
 	
 	private void send(Realm realm, 
@@ -119,7 +177,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			String replyToName, 
 			String replyToEmail, 
 			boolean track,
-			Recipient r, 
+			RecipientHolder r, 
 			EmailAttachment... attachments) throws AccessDeniedException {
 		
 		Email email = new Email();
@@ -127,7 +185,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		email.setFromAddress(configurationService.getValue(realm, SMTP_FROM_NAME), 
 				configurationService.getValue(realm, SMTP_FROM_ADDRESS));
 		
-		email.addRecipient(r.getName(), r.getAddress(), RecipientType.TO);
+		email.addRecipient(r.getName(), r.getEmail(), RecipientType.TO);
 		
 		email.setSubject(subject);
 		
@@ -135,28 +193,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			email.setReplyToAddress(replyToName, replyToEmail);
 		}
 		
-		String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
-		if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(htmlText)) {
-			try {
-				htmlTemplate = FileUtils.readFileToString(uploadService.getFile(htmlTemplate));
-				htmlTemplate = htmlTemplate.replace("${htmlContent}", htmlText);
-				
-				String trackingImage = configurationService.getValue(realm, "email.trackingImage");
-				if(track && StringUtils.isNotBlank(trackingImage)) {
-					String trackingUri = trackerService.generateTrackingUri(subject, r.getName(), r.getAddress(), realm);
-					htmlTemplate = htmlTemplate.replace("${trackingImage}", trackingUri);
-				} else {
-					String trackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);
-					htmlTemplate = htmlTemplate.replace("${trackingImage}", trackingUri);
-				}
-				email.setTextHTML(htmlTemplate);
-			} catch (ResourceNotFoundException e) {
-				log.error("Cannot find HTML template", e);
-			} catch (IOException e) {
-				log.error("Cannot find HTML template", e);
-			}
-			
-		} else if(StringUtils.isNotBlank(htmlText)) {
+		if(StringUtils.isNotBlank(htmlText)) {
 			email.setTextHTML(htmlText);
 		}
 		
@@ -169,6 +206,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		}
 		
 		mail.sendMail(email);
+
 	}
 	
 	@Override
@@ -217,38 +255,50 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		return false;
 	}
 	
-	private String[] getEmailName(String val) throws ValidationException {
+	private void populateEmail(String val, List<RecipientHolder> recipients) throws ValidationException {
+
 		Pattern p = Pattern.compile(EmailNotificationServiceImpl.EMAIL_NAME_PATTERN);
 
 		Matcher m = p.matcher(val);
-
+		Principal principal = null;
+		
 		if (m.find()) {
 			String name = m.group(1).replaceAll("[\\n\\r]+", "");
 			String email = m.group(2).replaceAll("[\\n\\r]+", "");
 
-			if (Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, email)) {
-				return new String[] { name, email };
-			} else {
+			if (!Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, email)) {
 				throw new ValidationException(email
 						+ " is not a valid email address");
 			}
-		}
+			
+			name = WordUtils.capitalize(name.replace('.',  ' ').replace('_', ' '));
+			
+			principal = realmService.getPrincipalByName(getCurrentRealm(), email, PrincipalType.USER);
+		} else {
 
-		if (Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, val)) {
-			String name = val.substring(0, val.indexOf('@'));
-			return new String[] { WordUtils.capitalize(name.replace('.',  ' ').replace('_', ' ')), val };
+			// Not an email address? Is this a principal of the realm?
+			principal = realmService.getPrincipalByName(getCurrentRealm(), val, PrincipalType.USER);
 		}
-
-		// Not an email address? Is this a principal of the realm?
-		Principal principal = realmService.getPrincipalByName(getCurrentRealm(), val, PrincipalType.USER);
+		
+		if(principal==null) {
+			try {
+				principal = realmService.getPrincipalById(getCurrentRealm(), Long.parseLong(val), PrincipalType.USER);
+			} catch(AccessDeniedException | NumberFormatException e) { };
+		}
 		
 		if(principal!=null) {
 			try {
-				return new String[] { realmService.getPrincipalDescription(principal),
-						realmService.getPrincipalAddress(principal, MediaType.EMAIL)};
+				recipients.add(new RecipientHolder(new Recipient(principal.getPrincipalDescription(), 
+					realmService.getPrincipalAddress(principal, MediaType.EMAIL), RecipientType.TO), principal));
+				return;
 			} catch (MediaNotFoundException e) {
 				log.error("Could not find email address for " + val, e);
 			}
+		}
+		
+		if(Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, val)) {
+			recipients.add(new RecipientHolder(new Recipient("", val, RecipientType.TO)));
+			return;
 		}
 		throw new ValidationException(val
 				+ " is not a valid email address");
@@ -256,7 +306,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	
 	@Override
 	public String populateEmailList(String[] emails, 
-			List<Recipient> recipients,
+			List<RecipientHolder> recipients,
 			RecipientType type)
 			throws ValidationException {
 
@@ -268,8 +318,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				ret.append(", ");
 			}
 			ret.append(email);
-			String[] rec = getEmailName(email);
-			recipients.add(new Recipient(rec[0], rec[1], type));
+			populateEmail(email, recipients);
 		}
 
 		return ret.toString();
