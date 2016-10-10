@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="messageResource">
+	<propertyCategory resourceKey="category.plain"
+		resourceBundle="MessageResourceService" weight="1000">
+		<property resourceKey="subject" inputType="text"
+			weight="80" defaultValue="" size="255" allowEmpty="false" errorResourceKey="error.subjectRequired"/>
+		<property resourceKey="body" inputType="textarea" rows="10"
+			cols="100" maxlength="1024" defaultValue="" weight="100" allowEmpty="true" errorResourceKey="error.bodyRequired"/>
+	</propertyCategory>
+	<propertyCategory resourceKey="category.html"
+		resourceBundle="TriggerResourceService" weight="2000">
+		<property resourceKey="html" inputType="html" rows="10"
+			cols="100" maxlength="8000" defaultValue="" weight="100" allowEmpty="true"/>
+	</propertyCategory>
+	<propertyCategory resourceKey="category.options"
+		resourceBundle="MessageResourceService" weight="3000">
+		<property resourceKey="enabled" inputType="switch" weight="0" defaultValue="true"/>
+		<property resourceKey="track" inputType="switch" weight="0" defaultValue="true"/>
+		<property resourceKey="attachments" inputType="multipleFileInput"
+			weight="50" defaultValue="" allowEmpty="true" text=""/>
+	</propertyCategory>
+	<propertyCategory resourceKey="category.email.delivery"
+		resourceBundle="MessageResourceService" weight="4000">
+		<property resourceKey="additionalTo" inputType="multipleTextInput"
+			weight="50" defaultValue="" allowEmpty="false" validateAll="email"/>
+		<property resourceKey="replyToName" inputType="text"
+			weight="80" defaultValue="" size="255" allowEmpty="true"/>
+		<property resourceKey="replyToEmail" inputType="text"
+			weight="90" defaultValue="" size="255" validateAll="email" allowEmpty="true"/>
+	</propertyCategory>
+</propertyTemplates>

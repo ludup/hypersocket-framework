@@ -31,4 +31,8 @@ public interface EmailNotificationService {
 	void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail,
 			RecipientHolder[] recipients, boolean track, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException;
 
+	void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail,
+			RecipientHolder[] recipients, String[] archiveAddresses, boolean track, EmailAttachment... attachments)
+			throws MailException, ValidationException, AccessDeniedException;
+
 }
