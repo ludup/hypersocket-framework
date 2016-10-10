@@ -134,7 +134,7 @@ public class NoPermissionTests extends AbstractServerTest {
 
 		GroupUpdate group = new GroupUpdate();
 		group.setName("newGroup");
-		Long[] users = { getSession().getCurrentPrincipal().getId() };
+		String[] users = { getSession().getCurrentPrincipal().getId() + "=" };
 		group.setUsers(users);
 		doPostJson("/hypersocket/api/currentRealm/group", group);
 	}
@@ -165,7 +165,7 @@ public class NoPermissionTests extends AbstractServerTest {
 		user.setName("newUser");
 		user.setPassword("newUserPass");
 		user.setProperties(new PropertyItem[0]);
-		user.setGroups(new Long[0]);
+		user.setGroups(new String[0]);
 
 		doPostJson("/hypersocket/api/currentRealm/user", user);
 
