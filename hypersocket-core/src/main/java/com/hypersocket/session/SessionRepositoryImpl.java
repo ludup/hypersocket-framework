@@ -15,7 +15,6 @@ import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
@@ -92,9 +91,6 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		return allEntities(Session.class, new CriteriaConfiguration() {
 			@Override
 			public void configure(Criteria criteria) {
-				criteria.setFetchMode("principal", FetchMode.SELECT);
-				criteria.setFetchMode("impersonatedPrincipal", FetchMode.SELECT);
-				
 				criteria.add(Restrictions.isNull("signedOut"));
 				criteria.add(Restrictions.eq("system", false));
 			}
@@ -264,10 +260,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 
 							@Override
 							public void configure(Criteria criteria) {
-								
-								criteria.setFetchMode("principal", FetchMode.SELECT);
-								criteria.setFetchMode("impersonatedPrincipal", FetchMode.SELECT);
-								
+																
 								criteria.add(Restrictions.eq("system", false));
 								criteria.add(Restrictions.isNull("signedOut"));
 								
