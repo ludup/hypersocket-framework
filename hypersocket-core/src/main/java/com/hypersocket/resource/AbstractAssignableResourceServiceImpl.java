@@ -131,6 +131,11 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		}
 	}
 	
+	protected ResourceException createDuplicateException(T resource) {
+		return new ResourceCreationException(RESOURCE_BUNDLE,
+				"generic.alreadyExists.error", resource.getName());
+	}
+	
 	@Override
 	@SafeVarargs
 	public final void createResource(T resource, Map<String,String> properties,  
@@ -150,8 +155,9 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			beforeCreateResource(resource, properties);
 			
 			if(!checkUnique(resource, true)) {
-				throw new ResourceCreationException(RESOURCE_BUNDLE,
-						"generic.alreadyExists.error", resource.getName());
+				ResourceException ex = createDuplicateException(resource);
+				fireResourceCreationEvent(resource, ex);
+				throw ex;
 			}
 			
 			getRepository().saveResource(resource, properties, ops);
@@ -218,21 +224,17 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			assertPermission(getUpdatePermission(resource));
 		}
 		
-
-		if(!checkUnique(resource, false)) {
-			ResourceChangeException ex = new ResourceChangeException(RESOURCE_BUNDLE,
-					"generic.alreadyExists.error", resource.getName());
-			fireResourceCreationEvent(resource, ex);
-			throw ex;
-		}
-
-		
 		if(resource.getRealm()==null) {
 			resource.setRealm(getCurrentRealm());
 		}
 		getRepository().populateEntityFields(resource, properties);
 		
-		
+		if(!checkUnique(resource, false)) {
+			ResourceException ex = createDuplicateException(resource);
+			fireResourceUpdateEvent(resource, ex);
+			throw new ResourceChangeException(ex);
+		}
+
 		try {
 
 			beforeUpdateResource(resource, properties);
