@@ -293,8 +293,11 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			
 		Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
 		
-		Set<String> interfacesToBind = new HashSet<String>(
-				ResourceUtils.explodeCollectionValues(interfaceResource.getInterfaces()));
+		Set<String> interfacesToBind = new HashSet<String>();
+		
+		if(!interfaceResource.getAllInterfaces()) {
+			interfacesToBind.addAll(ResourceUtils.explodeCollectionValues(interfaceResource.getInterfaces()));
+		}
 		
 		httpChannels.put(interfaceResource, new HashSet<Channel>());
 		httpsChannels.put(interfaceResource, new HashSet<Channel>());
