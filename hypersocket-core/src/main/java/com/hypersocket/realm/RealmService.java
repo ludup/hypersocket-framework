@@ -213,4 +213,8 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	String getProfileProperty(Principal principal, String string);
 
+	Collection<PropertyCategory> getUserProperties(Principal principal);
+
+	Map<String, String> getUserPropertyValues(Principal principal);
+
 }

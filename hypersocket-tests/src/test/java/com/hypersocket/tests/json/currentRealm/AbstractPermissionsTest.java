@@ -127,7 +127,7 @@ public class AbstractPermissionsTest extends AbstractServerTest {
 
 		GroupUpdate group = new GroupUpdate();
 		group.setName("newGroup");
-		Long[] users = { getSession().getCurrentPrincipal().getId() };
+		String[] users = { getSession().getCurrentPrincipal().getId() + "=" };
 		group.setUsers(users);
 
 		JsonResourceStatus json = getMapper().readValue(
@@ -163,7 +163,7 @@ public class AbstractPermissionsTest extends AbstractServerTest {
 		user.setName("newUser");
 		user.setPassword("newUserPass");
 		user.setProperties(new PropertyItem[0]);
-		user.setGroups(new Long[0]);
+		user.setGroups(new String[0]);
 
 		JsonResourceStatus json = getMapper().readValue(
 				doPostJson("/hypersocket/api/currentRealm/user", user),

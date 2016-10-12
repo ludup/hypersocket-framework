@@ -13,7 +13,7 @@ public class UserUpdate {
 
 	String name;
 	Long id;
-	Long[] groups;
+	String[] groups;
 	
 	String password;
 	boolean forceChange;
@@ -47,11 +47,11 @@ public class UserUpdate {
 		this.id = id;
 	}
 	
-	public void setGroups(Long[] groups) {
+	public void setGroups(String[] groups) {
 		this.groups = groups;
 	}
 	
-	public Long[] getGroups() {
+	public String[] getGroups() {
 		return groups;
 	}
 

@@ -1714,6 +1714,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		return variables;
 	}
+	
+	@Override
+	public Map<String, String> getUserPropertyValues(Principal principal) {
+
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserPropertyValues(principal);
+	}
 
 	@Override
 	public long getPrincipalCount(Realm realm) {
@@ -1728,5 +1735,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		RealmProvider provider = getProviderForPrincipal(principal);
 		
 		return provider.canChangePassword(principal);
+	}
+
+	@Override
+	public Collection<PropertyCategory> getUserProperties(Principal principal) {
+		
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserProperties(principal);
 	}
 }

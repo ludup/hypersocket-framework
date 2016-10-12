@@ -7,10 +7,36 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hypersocket.utils.ITokenResolver;
+
 public class ReplacementUtils {
 
 	static Logger log = LoggerFactory.getLogger(ReplacementUtils.class);
 	
+	public static String processTokenReplacements(String value, ITokenResolver tokenResolver) {
+		
+		Pattern pattern = Pattern.compile("\\$\\{(.*?)\\}");
+		Matcher matcher = pattern.matcher(value);
+
+		StringBuilder builder = new StringBuilder();
+		int i = 0;
+		while (matcher.find()) {
+			String attributeName = matcher.group(1);
+			String attributeValue = tokenResolver.resolveToken(attributeName);
+			if(attributeValue==null) {
+				log.debug("Replacement token " + attributeName + " not in list to replace from");
+				continue;
+			}
+		    builder.append(value.substring(i, matcher.start()));
+		    builder.append(attributeValue);
+		    i = matcher.end();
+		}
+		
+	    builder.append(value.substring(i, value.length()));
+		
+		return builder.toString();
+	}
+
 	public static String processTokenReplacements(String value, Map<String,String> replacements) {
 		
 		Pattern pattern = Pattern.compile("\\$\\{(.*?)\\}");
