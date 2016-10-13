@@ -29,6 +29,8 @@ import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 
 import org.apache.log4j.Logger;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -68,10 +70,12 @@ public class Session extends AbstractEntity<String> {
 	Date lastUpdated;
 
 	@OneToOne
+	@Fetch(FetchMode.SELECT)
 	@JoinColumn(name = "principal_id", insertable = true, updatable = false)
 	Principal principal;
 
 	@OneToOne
+	@Fetch(FetchMode.SELECT)
 	@JoinColumn(name = "impersonating_principal_id", insertable = true, updatable = true)
 	Principal impersonatedPrincipal;
 

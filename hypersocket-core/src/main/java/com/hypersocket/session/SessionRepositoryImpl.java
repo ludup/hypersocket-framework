@@ -260,6 +260,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 
 							@Override
 							public void configure(Criteria criteria) {
+																
 								criteria.add(Restrictions.eq("system", false));
 								criteria.add(Restrictions.isNull("signedOut"));
 								
