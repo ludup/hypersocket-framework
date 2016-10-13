@@ -70,6 +70,7 @@ public abstract class Principal extends RealmResource {
 		return super.getRealm().getOwner()==null;
 	}
 
+	@Transient
 	public abstract PrincipalType getType();
 
 	public abstract String getIcon();

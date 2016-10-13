@@ -78,8 +78,25 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	}
 	
 	@Override
+	public void sendEmail(Realm realm, String subject, String text, String html, String replyToName,
+			String replyToEmail, RecipientHolder[] recipients, boolean track, EmailAttachment... attachments)
+			throws MailException, AccessDeniedException, ValidationException {
+		sendEmail(realm, subject, text, html, replyToName, replyToEmail, recipients, new String[0], track, attachments);
+	}
+	
+	
+	@Override
 	@SafeVarargs
-	public final void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail, RecipientHolder[] recipients, boolean track, EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
+	public final void sendEmail(Realm realm, 
+			String subject, 
+			String text, 
+			String html, 
+			String replyToName, 
+			String replyToEmail, 
+			RecipientHolder[] recipients, 
+			String[] archiveAddresses,
+			boolean track, 
+			EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
 		
 		Mailer mail = new Mailer(configurationService.getValue(realm, SMTP_HOST), 
 				configurationService.getIntValue(realm, SMTP_PORT), 
@@ -93,6 +110,8 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		if(StringUtils.isNotBlank(archiveAddress)) {
 			populateEmailList(new String[] {archiveAddress} , archiveRecipients, RecipientType.TO);
 		}
+		
+		populateEmailList(archiveAddresses, archiveRecipients, RecipientType.TO);
 
 		for(RecipientHolder r : recipients) {
 			
@@ -133,9 +152,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 					r, 
 					attachments);
 			
-			if(!archiveAddress.isEmpty()) {
+			for(RecipientHolder recipient : archiveRecipients) {
 				send(realm, mail, recipeintSubject, receipientText, receipientHtml, 
-						replyToName, replyToEmail, false, archiveRecipients.get(0), attachments);
+						replyToName, replyToEmail, false, recipient, attachments);
 			}
 		}
 	}
