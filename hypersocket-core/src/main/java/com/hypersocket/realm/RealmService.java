@@ -219,10 +219,6 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Collection<PropertyCategory> getUserProperties(Principal principal);
 
 	Map<String, String> getUserPropertyValues(Principal principal);
-	
-	Principal createSecondaryUser(Realm realm, String username, Map<String, String> properties,
-			List<Principal> principals, String password, boolean forceChange, boolean selfCreated,
-			Principal parentPrincipal) throws AccessDeniedException, ResourceException;
 
 	String getProfileProperty(Principal principal, String string);
 
@@ -231,4 +227,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	List<Principal> getGroupUsers(Principal principal);
 
 	List<Principal> getUserGroups(Principal principal);
+
+	Map<String, String> filterSecretProperties(Principal principal, RealmProvider provider,
+			Map<String, String> properties);
 }

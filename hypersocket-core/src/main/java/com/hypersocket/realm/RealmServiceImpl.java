@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -29,8 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 
-import com.hypersocket.account.linking.AccountLinkingService;
-import com.hypersocket.account.linking.AccountResolver;
 import com.hypersocket.attributes.AttributeType;
 import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeService;
@@ -39,7 +36,6 @@ import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
-import com.hypersocket.i18n.I18N;
 import com.hypersocket.local.LocalRealmProviderImpl;
 import com.hypersocket.message.MessageResourceService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -138,14 +134,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Autowired
 	PrincipalRepository principalRepository; 
-	
-	@Autowired
-	AccountLinkingService linkingService;
 
 	@Autowired
 	MessageResourceService messageService; 
 	
-	final static int MESSAGE_SECONDARY_ACCOUNT_CREATED = 5300;
+	
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -205,33 +198,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		realmCache = cacheService.getCache("realmCache", String.class, Object.class);
 		
-		registerRealmListener(new RealmAdapter() {
-
-			@Override
-			public void onCreateRealm(Realm realm) throws ResourceException {
-				
-				try {
-					messageService.createResource(MESSAGE_SECONDARY_ACCOUNT_CREATED, 
-							I18N.getResource(Locale.getDefault(), RESOURCE_BUNDLE, "secondaryAccountCreated.message.name"),
-							I18N.getResource(Locale.getDefault(), RESOURCE_BUNDLE, "secondaryAccountCreated.message.subject"),
-							I18N.getResource(Locale.getDefault(), RESOURCE_BUNDLE, "secondaryAccountCreated.message.body"),
-							realm);
-					
-					realmRepository.setValue(realm, "secondaryAccountCreated.createdTemplates", true);
-				} catch (AccessDeniedException e) {
-					throw new IllegalStateException(e);
-				}
-			}
-
-			@Override
-			public boolean hasCreatedDefaultResources(Realm realm) {
-				if(realm.getOwner()==null) {
-					return realmRepository.getBooleanValue(realm, "secondaryAccountCreated.createdTemplates");
-				}
-				return true;
-			}
-			
-		});
+		
 	}
 
 	@Override
@@ -438,6 +405,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return realmRepository.getRealmByOwner(owner);
 	}
 
+	@Override
 	public Map<String, String> filterSecretProperties(Principal principal, RealmProvider provider,
 			Map<String, String> properties) {
 
@@ -480,21 +448,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, null, getProviderForRealm(realm));
 		
 	}
-	
-	@Override
-	public Principal createSecondaryUser(Realm realm, String username, Map<String, String> properties,
-			List<Principal> principals, String password, boolean forceChange, boolean selfCreated, Principal parentPrincipal)
-					throws ResourceException, AccessDeniedException {
-		Principal secondary = createUser(realm, username, properties, principals, password, forceChange, selfCreated, parentPrincipal, getProviderForRealm(realm));
-	
-		messageService.sendMessage(MESSAGE_SECONDARY_ACCOUNT_CREATED, parentPrincipal.getRealm(),
-					new AccountResolver(parentPrincipal, secondary, password), parentPrincipal);
 
-		return secondary;
-	}
 
 	
-	protected Principal createUser(Realm realm, String username, Map<String, String> properties,
+	public Principal createUser(Realm realm, String username, Map<String, String> properties,
 			List<Principal> principals, String password, boolean forceChange, boolean selfCreated, Principal parent, RealmProvider provider)
 					throws ResourceCreationException, AccessDeniedException {
 
@@ -514,10 +471,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			for (PrincipalProcessor processor : principalProcessors) {
 				processor.afterCreate(principal, properties);
-			}
-
-			if(parent!=null) {
-				linkingService.linkAccounts(parent, principal);
 			}
 			
 			eventService.publishEvent(new UserCreatedEvent(this, getCurrentSession(), realm, provider, principal,
