@@ -11,7 +11,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 
 public class BulkPrincipalAssignmentUserLinkingJob extends AbstractSecondaryUserLinkingJob {
 
@@ -57,7 +57,7 @@ public class BulkPrincipalAssignmentUserLinkingJob extends AbstractSecondaryUser
 		
 	}
 
-	private void processPrincipal(AccountLinkingRules rules, Principal primaryPrincipal, Set<Principal> processedPrincipals) throws ResourceCreationException, AccessDeniedException, JobExecutionException {
+	private void processPrincipal(AccountLinkingRules rules, Principal primaryPrincipal, Set<Principal> processedPrincipals) throws ResourceException, AccessDeniedException, JobExecutionException {
 		
 		if(processedPrincipals.contains(primaryPrincipal)) {
 			return;

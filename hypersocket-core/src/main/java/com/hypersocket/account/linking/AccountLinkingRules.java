@@ -5,6 +5,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AssignableResourceEvent;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 
 public interface AccountLinkingRules {
 
@@ -28,7 +29,7 @@ public interface AccountLinkingRules {
 	
 	boolean isDeletionEnabled();
 
-	Principal createSecondaryPrincipal(Principal primaryPrincipal) throws ResourceCreationException, AccessDeniedException;
+	Principal createSecondaryPrincipal(Principal primaryPrincipal) throws AccessDeniedException, ResourceException;
 
 	String generatePrimaryPrincipalName(Principal secondaryPrincipal);
 

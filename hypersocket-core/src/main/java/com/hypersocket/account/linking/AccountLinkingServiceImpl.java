@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -32,25 +33,24 @@ import com.hypersocket.account.linking.jobs.SecondaryUserCreationEventJob;
 import com.hypersocket.account.linking.jobs.SecondaryUserDeletionEventJob;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.events.EventService;
+import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.message.MessageResourceService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalRepository;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
+import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.events.RealmDeletedEvent;
 import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserDeletedEvent;
-import com.hypersocket.resource.AssignableResourceEvent;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.role.events.RoleCreatedEvent;
-import com.hypersocket.role.events.RoleDeletedEvent;
-import com.hypersocket.role.events.RoleUpdatedEvent;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.transactions.TransactionCallbackWithError;
 import com.hypersocket.transactions.TransactionService;
@@ -75,10 +75,19 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 	RealmService realmService;
 	
 	@Autowired
+	RealmRepository realmRepository;
+	
+	@Autowired
 	SchedulerService schedulerService; 
 	
 	@Autowired
 	EventService eventService; 
+	
+	@Autowired
+	MessageResourceService messageService;
+	
+	final static int MESSAGE_ACCOUNT_LINKED = 5200;
+	final static int MESSAGE_ACCOUNT_UNLINKED = 5201;
 	
 	Map<Realm, Collection<AccountLinkingRules>> primaryRules = new HashMap<Realm,Collection<AccountLinkingRules>>();
 	Map<Realm, AccountLinkingRules> secondaryRules = new HashMap<Realm,AccountLinkingRules>();
@@ -87,6 +96,40 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 	
+		realmService.registerRealmListener(new RealmAdapter() {
+
+			@Override
+			public void onCreateRealm(Realm realm) throws ResourceException {
+				
+				try {
+					messageService.createResource(MESSAGE_ACCOUNT_LINKED, 
+							I18N.getResource(Locale.getDefault(), RESOURCE_BUNDLE, "accountLinked.message.name"),
+							I18N.getResource(Locale.getDefault(), RESOURCE_BUNDLE, "accountLinked.message.subject"),
+							I18N.getResource(Locale.getDefault(), RESOURCE_BUNDLE, "accountLinked.message.body"),
+							realm);
+					
+					messageService.createResource(MESSAGE_ACCOUNT_UNLINKED, 
+							I18N.getResource(Locale.getDefault(), RESOURCE_BUNDLE, "accountUnlinked.message.name"),
+							I18N.getResource(Locale.getDefault(), RESOURCE_BUNDLE, "accountUnlinked.message.subject"),
+							I18N.getResource(Locale.getDefault(), RESOURCE_BUNDLE, "accountUnlinked.message.body"),
+							realm);
+				
+					
+					realmRepository.setValue(realm, "accountLinking.createdTemplates", true);
+				} catch (AccessDeniedException e) {
+					throw new IllegalStateException(e);
+				}
+			}
+
+			@Override
+			public boolean hasCreatedDefaultResources(Realm realm) {
+				if(realm.getOwner()==null) {
+					return realmRepository.getBooleanValue(realm, "accountLinking.createdTemplates");
+				}
+				return true;
+			}
+			
+		});
 	}
 	
 	@Override
@@ -352,6 +395,8 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 						realmService.getProviderForRealm(primary.getRealm()), primary, secondary));
 			}
 		});
+		
+		messageService.sendMessage(MESSAGE_ACCOUNT_LINKED, primary.getRealm(), new AccountResolver(primary, secondary), primary);
 	}
 	
 	@Override
@@ -435,6 +480,8 @@ public class AccountLinkingServiceImpl extends AbstractAuthenticatedServiceImpl 
 						realmService.getProviderForRealm(primary.getRealm()), primary, secondary, e));
 			}
 		});
+		
+		messageService.sendMessage(MESSAGE_ACCOUNT_UNLINKED, primary.getRealm(), new AccountResolver(primary, secondary), primary);
 	}
 	
 	@Override

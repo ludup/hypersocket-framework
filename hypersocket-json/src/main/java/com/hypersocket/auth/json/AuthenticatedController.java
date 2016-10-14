@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.auth.json;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -141,6 +142,13 @@ public class AuthenticatedController {
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)
 	public void unauthorizedAccess(HttpServletRequest request,
 			HttpServletResponse response, AccessDeniedException redirect) {
+
+	}
+	
+	@ExceptionHandler(FileNotFoundException.class)
+	@ResponseStatus(value = HttpStatus.NOT_FOUND)
+	public void fileNotFound(HttpServletRequest request,
+			HttpServletResponse response, FileNotFoundException redirect) {
 
 	}
 

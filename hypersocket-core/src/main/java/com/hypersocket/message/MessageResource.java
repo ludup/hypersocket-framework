@@ -2,6 +2,7 @@ package com.hypersocket.message;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import com.hypersocket.resource.RealmResource;
@@ -10,13 +11,18 @@ import com.hypersocket.resource.RealmResource;
 @Table(name="message_resource")
 public class MessageResource extends RealmResource {
 
-	@Column(name="subject")
+	@Column(name="message_id", unique=true)
+	Integer messageId;
+	
+	@Column(name="subject", length=1024)
 	String subject;
 	
 	@Column(name="body")
+	@Lob
 	String body;
 	
 	@Column(name="html")
+	@Lob
 	String html;
 	
 	@Column(name="enabled")
@@ -36,6 +42,15 @@ public class MessageResource extends RealmResource {
 	
 	@Column(name="reply_email", length=1024)
 	String replyToEmail;
+
+	
+	public Integer getMessageId() {
+		return messageId;
+	}
+
+	public void setMessageId(Integer messageId) {
+		this.messageId = messageId;
+	}
 
 	public String getSubject() {
 		return subject;

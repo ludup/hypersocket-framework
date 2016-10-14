@@ -222,7 +222,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	
 	Principal createSecondaryUser(Realm realm, String username, Map<String, String> properties,
 			List<Principal> principals, String password, boolean forceChange, boolean selfCreated,
-			Principal parentPrincipal) throws ResourceCreationException, AccessDeniedException;
+			Principal parentPrincipal) throws AccessDeniedException, ResourceException;
 
 	String getProfileProperty(Principal principal, String string);
 

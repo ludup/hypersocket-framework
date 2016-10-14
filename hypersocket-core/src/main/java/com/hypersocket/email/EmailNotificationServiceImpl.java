@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.email.events.EmailEvent;
+import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
@@ -50,6 +52,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	
 	@Autowired
 	EmailTrackerService trackerService; 
+	
+	@Autowired
+	EventService eventService;
 	
 	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
 
@@ -206,7 +211,14 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			}
 		}
 		
-		mail.sendMail(email);
+		try {
+			mail.sendMail(email);
+			
+			eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail()));
+		} catch (MailException e) {
+			eventService.publishEvent(new EmailEvent(this, e, realm, subject, plainText, r.getEmail()));
+			throw e;
+		}
 
 	}
 	
