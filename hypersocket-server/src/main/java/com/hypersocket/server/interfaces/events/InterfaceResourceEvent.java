@@ -27,14 +27,22 @@ public class InterfaceResourceEvent extends ResourceEvent {
 	public InterfaceResourceEvent(Object source, String resourceKey,
 			Session session, InterfaceResource resource) {
 		super(source, resourceKey, true, session, resource);
-		addAttribute(ATTR_INTERFACES, ResourceUtils.createDelimitedString(ResourceUtils.explodeCollectionValues(resource.getInterfaces()), "\r\n"));
+		if(resource.getAllInterfaces()) {
+			addAttribute(ATTR_INTERFACES, "::");
+		} else {
+			addAttribute(ATTR_INTERFACES, ResourceUtils.createDelimitedString(ResourceUtils.explodeCollectionValues(resource.getInterfaces()), "\r\n"));
+		}
 		addAttribute(ATTR_PORT, String.valueOf(resource.getPort()));
 		
 	}
 	public InterfaceResourceEvent(Object source, String resourceKey,
 			InterfaceResource resource, Throwable e, Session session) {
 		super(source, resourceKey, e, session, resource);
-		addAttribute(ATTR_INTERFACES, ResourceUtils.createDelimitedString(ResourceUtils.explodeCollectionValues(resource.getInterfaces()), "\r\n"));
+		if(resource.getAllInterfaces()) {
+			addAttribute(ATTR_INTERFACES, "::");
+		} else {
+			addAttribute(ATTR_INTERFACES, ResourceUtils.createDelimitedString(ResourceUtils.explodeCollectionValues(resource.getInterfaces()), "\r\n"));
+		}
 		addAttribute(ATTR_PORT, String.valueOf(resource.getPort()));
 	}
 	

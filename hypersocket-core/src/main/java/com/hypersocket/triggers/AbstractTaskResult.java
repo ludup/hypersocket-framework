@@ -24,6 +24,12 @@ public abstract class AbstractTaskResult extends SystemEvent implements TaskResu
 		addAttribute(ATTR_TASK_NAME, task.getName());
 		addAttribute(ATTR_REALM_NAME, currentRealm.getName());
 	}
+	
+	public AbstractTaskResult(Object source, String resourceKey, boolean success,
+			Realm currentRealm) {
+		super(source, resourceKey, success, currentRealm);
+		addAttribute(ATTR_REALM_NAME, currentRealm.getName());
+	}
 
 	public AbstractTaskResult(Object source, String resourceKey,
 			SystemEventStatus status, Realm currentRealm, Task task) {
@@ -36,6 +42,12 @@ public abstract class AbstractTaskResult extends SystemEvent implements TaskResu
 			Realm currentRealm, Task task) {
 		super(source, resourceKey, e, currentRealm);
 		addAttribute(ATTR_TASK_NAME, task.getName());
+		addAttribute(ATTR_REALM_NAME, currentRealm.getName());
+	}
+	
+	public AbstractTaskResult(Object source, String resourceKey, Throwable e,
+			Realm currentRealm) {
+		super(source, resourceKey, e, currentRealm);
 		addAttribute(ATTR_REALM_NAME, currentRealm.getName());
 	}
 

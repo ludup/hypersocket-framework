@@ -5,6 +5,8 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.MappedSuperclass;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.hypersocket.resource.RealmResource;
 
 @MappedSuperclass
@@ -16,6 +18,9 @@ public class InterfaceResource extends RealmResource {
 	
 	@Column(name="port")
 	Integer port;
+	
+	@Column(name="all_interfaces", nullable=true)
+	Boolean allInterfaces;
 	
 	public String getInterfaces() {
 		return interfaces;
@@ -32,4 +37,14 @@ public class InterfaceResource extends RealmResource {
 	public void setPort(Integer port) {
 		this.port = port;
 	}
+
+	public Boolean getAllInterfaces() {
+		return allInterfaces == null ? StringUtils.isBlank(interfaces) : allInterfaces;
+	}
+
+	public void setAllInterfaces(Boolean allInterfaces) {
+		this.allInterfaces = allInterfaces;
+	}
+	
+	
 }

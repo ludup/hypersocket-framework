@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.email.RecipientHolder;
+import com.hypersocket.email.events.EmailEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.message.events.MessageResourceCreatedEvent;
@@ -189,13 +190,26 @@ public class MessageResourceServiceImpl extends
 	}
 
 	@Override
-	public MessageResource createResource(String name, String subject, String body, String html, 
+	public MessageResource createResource(Integer messageId, String name, String subject, String body, Realm realm) throws ResourceCreationException,
+			AccessDeniedException {
+		return createResource(messageId, name, subject, body, "", true, false, null, realm);
+	}
+	
+	@Override
+	public MessageResource createResource(Integer messageId, String name, String subject, String body, String html, 
+			Boolean enabled, Boolean track, Realm realm) throws ResourceCreationException,
+			AccessDeniedException {
+		return createResource(messageId, name, subject, body, html, enabled, track, null, realm);
+	}
+	
+	@Override
+	public MessageResource createResource(Integer messageId, String name, String subject, String body, String html, 
 			Boolean enabled, Boolean track, 
-			Collection<FileUpload> attachments, Realm realm,
-			Map<String, String> properties) throws ResourceCreationException,
+			Collection<FileUpload> attachments, Realm realm) throws ResourceCreationException,
 			AccessDeniedException {
 
 		MessageResource resource = new MessageResource();
+		resource.setMessageId(messageId);
 		resource.setSystem(true);
 		resource.setName(name);
 		resource.setRealm(realm);
@@ -206,13 +220,15 @@ public class MessageResourceServiceImpl extends
 		resource.setTrack(track);
 		
 		List<String> attachmentUUIDs = new ArrayList<String>();
-		for(FileUpload u : attachments) {
-			attachmentUUIDs.add(u.getName());
+		if(attachments!=null) {
+			for(FileUpload u : attachments) {
+				attachmentUUIDs.add(u.getName());
+			}
 		}
 
 		resource.setAttachments(ResourceUtils.implodeValues(attachmentUUIDs));
 	
-		createResource(resource, properties);
+		createResource(resource,(Map<String,String>) null);
 
 		return resource;
 	}
@@ -248,13 +264,17 @@ public class MessageResourceServiceImpl extends
 		return resource;
 	}
 
-	
-	public void sendMessage(String templateName, Realm realm, ITokenResolver tokenResolver, Principal... principals) throws ResourceNotFoundException, AccessDeniedException {
+	@Override
+	public void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Principal... principals) throws ResourceNotFoundException, AccessDeniedException {
 		
-		MessageResource message = getResourceByName(templateName, realm);
+		MessageResource message = repository.getMessageById(messageId, realm);
+		
+		if(message==null) {
+			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.invalidMessageId", messageId);
+		}
 		
 		if(!message.getEnabled()) {
-			log.info(String.format("Message template %s has been disabled", templateName));
+			log.info(String.format("Message template %s has been disabled", message.getName()));
 			return;
 		}
 		
@@ -292,8 +312,9 @@ public class MessageResourceServiceImpl extends
 						ResourceUtils.explodeValues(message.getAdditionalTo()),
 						message.getTrack(), 
 						attachments.toArray(new EmailAttachment[0]));
-			} catch (MailException | ValidationException e) {
 				
+			} catch (MailException | ValidationException e) {
+				log.error("Failed to send email", e);
 			}
 		}
 
