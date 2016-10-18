@@ -234,7 +234,7 @@ public class ExtensionHelper {
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		try {
 
-			String updateUrl = url + "/" + version + "/" + HypersocketUtils.csv(repos) + "/" + serial;
+			String updateUrl = url + "/" + System.getProperty("fake.version", version) + "/" + HypersocketUtils.csv(repos) + "/" + serial;
 
 			if (log.isInfoEnabled()) {
 				log.info("Checking for updates from " + updateUrl);

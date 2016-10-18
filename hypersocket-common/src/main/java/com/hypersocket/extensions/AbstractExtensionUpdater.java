@@ -18,6 +18,7 @@ import java.util.Map;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +43,7 @@ public abstract class AbstractExtensionUpdater {
 	
 	public abstract ExtensionPlace getExtensionPlace();
 
-	public abstract String getUpdateTarget();
+	public abstract String[] getUpdateTarget();
 	
 	public abstract String getVersion();
 	
@@ -67,7 +68,8 @@ public abstract class AbstractExtensionUpdater {
 			for(ExtensionVersion v : allExtensions.values()) {
 				switch(v.getState()) {
 				case UPDATABLE:
-					if(getUpdateTarget().equals(v.getTarget())) {
+					
+					if(ArrayUtils.contains(getUpdateTarget(), v.getTarget())) {
 						updates.add(v);
 						for(String depend : v.getDependsOn()) {
 							if(StringUtils.isNotBlank(depend)) {
@@ -78,9 +80,11 @@ public abstract class AbstractExtensionUpdater {
 							}
 						}
 					}
+					
 					break;
 				case NOT_INSTALLED:
-					if(getUpdateTarget().equals(v.getTarget())) {
+					
+					if(ArrayUtils.contains(getUpdateTarget(), v.getTarget())) {
 						if(v.isMandatory()) {
 							updates.add(v);
 							for(String depend : v.getDependsOn()) {
@@ -93,6 +97,7 @@ public abstract class AbstractExtensionUpdater {
 							}
 						}
 					}
+					
 					break;
 				default:
 					break;
@@ -114,7 +119,7 @@ public abstract class AbstractExtensionUpdater {
 			}
 
 			if (totalUpdates == 0) {
-				return false;
+				throw new IOException("The update could not resolve any extensions to download!");
 			}
 			onUpdateStart(totalSize);
 
