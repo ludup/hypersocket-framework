@@ -326,6 +326,51 @@ public class CurrentRealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/group/byName/{name}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public Principal getGroupByName(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable("id") String name)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			Realm realm = sessionUtils.getCurrentRealm(request);
+			return realmService
+					.getPrincipalByName(realm, name, PrincipalType.GROUP);
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/user/byName/{name}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Principal> getUserByName(
+			HttpServletRequest request, @PathVariable String name)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			Principal principal = realmService.getPrincipalByName(
+					sessionUtils.getCurrentRealm(request), name,
+					PrincipalType.USER);
+			if(principal == null)
+				return new ResourceStatus<Principal>(false, "Not found.");
+			else
+				return new ResourceStatus<Principal>(principal);
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/user/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })

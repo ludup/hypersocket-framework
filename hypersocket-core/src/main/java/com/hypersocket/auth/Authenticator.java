@@ -23,7 +23,7 @@ public interface Authenticator {
 			throws AccessDeniedException;
 
 	@SuppressWarnings("rawtypes")
-	public FormTemplate createTemplate(AuthenticationState state, Map params);
+	public FormTemplate createTemplate(AuthenticationState state, Map params) ;
 
 	public String getResourceBundle();
 

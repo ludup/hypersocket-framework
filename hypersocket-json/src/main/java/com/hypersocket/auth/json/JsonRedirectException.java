@@ -7,11 +7,11 @@
  ******************************************************************************/
 package com.hypersocket.auth.json;
 
-public class RedirectException extends RuntimeException {
+public class JsonRedirectException extends RuntimeException {
 
 	private static final long serialVersionUID = -8592093219854938960L;
 
-	public RedirectException(String location) {
+	public JsonRedirectException(String location) {
 		super(location);
 		if(location == null)
 			throw new IllegalArgumentException("Location for a redirect cannot be null.");

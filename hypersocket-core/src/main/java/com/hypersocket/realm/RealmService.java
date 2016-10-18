@@ -16,6 +16,7 @@ import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -27,11 +28,13 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	static final String SYSTEM_REALM = "System";
 	static final String SYSTEM_PRINCIPAL = "system";
 	static final String MODULE = "realms";
+	
+	public final static String KNOWN_HOSTS_ATTR = "realm.knownHosts";
 
 	void registerRealmProvider(RealmProvider provider);
 
 	Realm createRealm(String name, String module, Long owner, Map<String, String> properties)
-			throws AccessDeniedException, ResourceCreationException;
+			throws AccessDeniedException, ResourceCreationException, ResourceConfirmationException;
 
 	void deleteRealm(String name) throws ResourceChangeException, ResourceNotFoundException, AccessDeniedException;
 
@@ -69,7 +72,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Collection<PropertyCategory> getRealmPropertyTemplates(Realm realm) throws AccessDeniedException;
 
 	Realm updateRealm(Realm realm, String name, Map<String, String> properties)
-			throws AccessDeniedException, ResourceChangeException;
+			throws AccessDeniedException, ResourceChangeException, ResourceConfirmationException;
 
 	Principal getPrincipalById(Realm realm, Long id, PrincipalType... type) throws AccessDeniedException;
 

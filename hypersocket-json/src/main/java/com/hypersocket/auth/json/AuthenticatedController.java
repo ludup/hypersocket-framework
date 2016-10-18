@@ -52,7 +52,7 @@ public class AuthenticatedController {
 	public static final String AUTHENTICATION_STATE_KEY = "authenticationState";
 	public static final String PREVIOUS_AUTHENTICATION_SCHEME = "previousAuthScheme";
 	
-	static final String LOCATION = "Location";
+	public static final String LOCATION = "Location";
 
 	@Autowired
 	protected AuthenticationService authenticationService;
@@ -118,7 +118,7 @@ public class AuthenticatedController {
 	}
 
 	@ExceptionHandler(RedirectException.class)
-	@ResponseStatus(value = HttpStatus.MOVED_TEMPORARILY)
+	@ResponseStatus(value = HttpStatus.FOUND)
 	public void redirectToLogin(HttpServletRequest request,
 			HttpServletResponse response, RedirectException redirect) {
 		response.setHeader(LOCATION, redirect.getMessage());

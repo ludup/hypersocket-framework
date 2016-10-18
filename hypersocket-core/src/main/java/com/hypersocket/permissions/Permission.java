@@ -24,6 +24,9 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.repository.AbstractEntity;
 
@@ -56,6 +59,7 @@ public class Permission extends AbstractEntity<Long> {
 	boolean system;
 	
 	@ManyToMany(fetch=FetchType.LAZY)
+	@Fetch(FetchMode.SUBSELECT)
 	@JoinTable(name = "role_permissions", joinColumns={@JoinColumn(name="permission_id")}, inverseJoinColumns={@JoinColumn(name="role_id")})
 	Set<Role> roles = new HashSet<Role>();
 	
