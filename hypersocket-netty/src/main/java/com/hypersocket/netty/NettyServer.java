@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.regex.Pattern;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -36,17 +36,31 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.DownstreamMessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
+import org.jboss.netty.channel.UpstreamMessageEvent;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.codec.http.HttpChunk;
+import org.jboss.netty.handler.codec.http.HttpHeaders;
+import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
+import org.jboss.netty.handler.execution.ChannelDownstreamEventRunnable;
+import org.jboss.netty.handler.execution.ChannelUpstreamEventRunnable;
+import org.jboss.netty.handler.execution.ExecutionHandler;
+import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
+import org.jboss.netty.util.ObjectSizeEstimator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.config.SystemConfigurationService;
+import com.hypersocket.events.EventService;
+import com.hypersocket.events.SystemEvent;
+import com.hypersocket.i18n.I18NService;
 import com.hypersocket.ip.ExtendedIpFilterRuleHandler;
 import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
@@ -55,17 +69,26 @@ import com.hypersocket.server.HypersocketServerImpl;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceRepository;
 import com.hypersocket.server.interfaces.http.HTTPProtocol;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceCreatedEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceDeletedEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceUpdatedEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceStartedEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceStoppedEvent;
 import com.hypersocket.server.websocket.TCPForwardingClientCallback;
+import com.hypersocket.session.SessionService;
 
 @Component
-public class NettyServer extends HypersocketServerImpl {
+public class NettyServer extends HypersocketServerImpl implements ObjectSizeEstimator  {
 
+	static final String RESOURCE_BUNDLE = "NettyServer";
+	
 	static Logger log = LoggerFactory.getLogger(NettyServer.class);
 
 	private ClientBootstrap clientBootstrap = null;
 	private ServerBootstrap serverBootstrap = null;
-	Set<Channel> httpChannels;
-	Set<Channel> httpsChannels;
+	Map<HTTPInterfaceResource,Set<Channel>> httpChannels;
+	Map<HTTPInterfaceResource,Set<Channel>> httpsChannels;
 	
 	ExecutorService executor;
 	
@@ -75,11 +98,24 @@ public class NettyServer extends HypersocketServerImpl {
 	MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
 	Map<String,List<Channel>> channelsByIPAddress = new HashMap<String,List<Channel>>();
 	
+	ExecutionHandler executionHandler;
+	
 	@Autowired
 	IPRestrictionService ipRestrictionService; 
 	
 	@Autowired
 	SystemConfigurationService configurationService; 
+	
+	@Autowired
+	EventService eventService; 
+	
+	@Autowired
+	SessionService sessionService;
+	
+	@Autowired
+	I18NService i18nService;
+	
+	NettyThreadFactory nettyThreadFactory;
 	
 	public NettyServer() {
 
@@ -88,6 +124,19 @@ public class NettyServer extends HypersocketServerImpl {
 	@PostConstruct
 	private void postConstruct() {
 		
+		nettyThreadFactory = new NettyThreadFactory();
+		
+		executionHandler = new ExecutionHandler(
+	            new OrderedMemoryAwareThreadPoolExecutor(
+	            		configurationService.getIntValue("netty.maxChannels"), 
+	            		configurationService.getIntValue("netty.maxChannelMemory"), 
+	            		configurationService.getIntValue("netty.maxTotalMemory"),
+	            		60 * 5,
+	            		TimeUnit.SECONDS,
+	            		this,
+	            		nettyThreadFactory));
+		
+		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}
 
 	public ClientBootstrap getClientBootstrap() {
@@ -96,6 +145,11 @@ public class NettyServer extends HypersocketServerImpl {
 
 	public ServerBootstrap getServerBootstrap() {
 		return serverBootstrap;
+	}
+	
+	@Override
+	public ExecutorService getExecutor() {
+		return executor;
 	}
 
 	@Override
@@ -140,12 +194,15 @@ public class NettyServer extends HypersocketServerImpl {
 		});
 
 		
-		serverBootstrap.setOption("child.receiveBufferSize", 1048576);
-		serverBootstrap.setOption("child.sendBufferSize", 1048576);
-		serverBootstrap.setOption("backlog", 5000);
+		serverBootstrap.setOption("child.receiveBufferSize", 
+				configurationService.getIntValue("netty.receiveBuffer"));
+		serverBootstrap.setOption("child.sendBufferSize", 
+				configurationService.getIntValue("netty.sendBuffer"));
+		serverBootstrap.setOption("backlog", 
+				configurationService.getIntValue("netty.backlog"));
 		
-		httpChannels = new HashSet<Channel>();
-		httpsChannels = new HashSet<Channel>();
+		httpChannels = new HashMap<HTTPInterfaceResource,Set<Channel>>();
+		httpsChannels = new HashMap<HTTPInterfaceResource,Set<Channel>>();
 		
 		HTTPInterfaceResourceRepository interfaceRepository = 
 				(HTTPInterfaceResourceRepository) getApplicationContext().getBean("HTTPInterfaceResourceRepositoryImpl");
@@ -185,7 +242,7 @@ public class NettyServer extends HypersocketServerImpl {
 		if(httpChannels==null) {
 			throw new IllegalStateException("You cannot get the actual port in use because the server is not started");
 		}
-		return ((InetSocketAddress)httpChannels.iterator().next().getLocalAddress()).getPort();
+		return ((InetSocketAddress)httpChannels.values().iterator().next().iterator().next().getLocalAddress()).getPort();
 	}
 
 	@Override
@@ -193,35 +250,90 @@ public class NettyServer extends HypersocketServerImpl {
 		if(httpsChannels==null) {
 			throw new IllegalStateException("You cannot get the actual port in use because the server is not started");
 		}
-		return ((InetSocketAddress)httpsChannels.iterator().next().getLocalAddress()).getPort();
+		return ((InetSocketAddress)httpsChannels.values().iterator().next().iterator().next().getLocalAddress()).getPort();
+	}
+	
+	protected void unbindInterface(HTTPInterfaceResource interfaceResource) {
+		
+		Set<Channel> channels = httpChannels.get(interfaceResource);
+		
+		closeChannels(interfaceResource, channels);
+		
+		channels = httpsChannels.get(interfaceResource);
+		
+		closeChannels(interfaceResource, channels);
+	}
+	
+	protected void closeChannels(HTTPInterfaceResource interfaceResource, Set<Channel> channels) {
+		
+		for(Channel channel : channels) {
+			InetSocketAddress addr = (InetSocketAddress) channel.getLocalAddress();
+			try {
+				channel.disconnect().await(5000);
+				
+				eventService.publishEvent(new HTTPInterfaceStoppedEvent(this, 
+						sessionService.getSystemSession(), 
+						interfaceResource, addr.getAddress().getHostAddress(), addr.getPort()));
+				
+			} catch (InterruptedException e) {
+				
+				eventService.publishEvent(new HTTPInterfaceStoppedEvent(this, 
+						interfaceResource,
+						e, 
+						sessionService.getSystemSession(),
+						addr.getAddress().getHostAddress(), addr.getPort()));
+			}
+			
+		}
+		
+		channels.clear();
 	}
 	
 	protected void bindInterface(HTTPInterfaceResource interfaceResource) throws IOException {
 			
 		Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
 		
-		Set<String> interfacesToBind = new HashSet<String>(
-				ResourceUtils.explodeCollectionValues(interfaceResource.getInterfaces()));
+		Set<String> interfacesToBind = new HashSet<String>();
+		
+		if(!interfaceResource.getAllInterfaces()) {
+			interfacesToBind.addAll(ResourceUtils.explodeCollectionValues(interfaceResource.getInterfaces()));
+		}
+		
+		httpChannels.put(interfaceResource, new HashSet<Channel>());
+		httpsChannels.put(interfaceResource, new HashSet<Channel>());
 		
 		if(interfacesToBind.isEmpty()) {
 			
-			if(log.isInfoEnabled()) {
-				log.info("Binding server to all interfaces on port " 
-						+ interfaceResource.getPort());
-			}
-			Channel ch = serverBootstrap.bind(new InetSocketAddress(interfaceResource.getPort()));
-			ch.setAttachment(interfaceResource);
-			switch(interfaceResource.getProtocol()) {
-			case HTTP:
-				httpChannels.add(ch);
-				break;
-			default:
-				httpsChannels.add(ch);
-			}
-			
-			if(log.isInfoEnabled()) {
-				log.info("Bound " + interfaceResource.getProtocol() + " to port "
-						+ ((InetSocketAddress)ch.getLocalAddress()).getPort());
+			try {
+				if(log.isInfoEnabled()) {
+					log.info("Binding server to all interfaces on port " 
+							+ interfaceResource.getPort());
+				}
+				Channel ch = serverBootstrap.bind(new InetSocketAddress(interfaceResource.getPort()));
+				ch.setAttachment(interfaceResource);
+				switch(interfaceResource.getProtocol()) {
+				case HTTP:
+					httpChannels.get(interfaceResource).add(ch);
+					break;
+				default:
+					httpsChannels.get(interfaceResource).add(ch);
+				}
+				
+				eventService.publishEvent(new HTTPInterfaceStartedEvent(this, 
+						sessionService.getSystemSession(), 
+						interfaceResource,
+						((InetSocketAddress)ch.getLocalAddress()).getAddress().getHostAddress()));
+				
+				if(log.isInfoEnabled()) {
+					log.info("Bound " + interfaceResource.getProtocol() + " to port "
+							+ ((InetSocketAddress)ch.getLocalAddress()).getPort());
+				}
+			} catch (Exception e1) {
+				eventService.publishEvent(new HTTPInterfaceStartedEvent(this, 
+						interfaceResource,
+						e1, 
+						sessionService.getSystemSession(),
+						"::"));
 			}
 		} else {
 			while(e.hasMoreElements())  {
@@ -248,11 +360,16 @@ public class NettyServer extends HypersocketServerImpl {
 							ch.setAttachment(interfaceResource);
 							switch(interfaceResource.getProtocol()) {
 							case HTTP:
-								httpChannels.add(ch);
+								httpChannels.get(interfaceResource).add(ch);
 								break;
 							default:
-								httpsChannels.add(ch);
+								httpsChannels.get(interfaceResource).add(ch);
 							}
+							
+							eventService.publishEvent(new HTTPInterfaceStartedEvent(this, 
+									sessionService.getSystemSession(), 
+									interfaceResource,
+									((InetSocketAddress)ch.getLocalAddress()).getAddress().getHostAddress()));
 							
 							if(log.isInfoEnabled()) {
 								log.info("Bound " + interfaceResource.getProtocol() + " to " 
@@ -262,6 +379,13 @@ public class NettyServer extends HypersocketServerImpl {
 							}
 						
 						} catch(ChannelException ex) {
+							
+							eventService.publishEvent(new HTTPInterfaceStartedEvent(this, 
+									interfaceResource,
+									ex, 
+									sessionService.getSystemSession(),
+									inetAddress.getHostAddress()));
+							
 							log.error("Failed to bind port", ex);
 						}
 					}
@@ -388,5 +512,90 @@ public class NettyServer extends HypersocketServerImpl {
 			}
 			
 		}
+	}
+	
+	protected void processApplicationEvent(final SystemEvent event) {
+		
+		if(event instanceof HTTPInterfaceResourceEvent) {
+			executor.execute(new Runnable() {
+				public void run() {
+					try {
+						HTTPInterfaceResource resource = (HTTPInterfaceResource) ((HTTPInterfaceResourceEvent) event).getResource();
+						
+						if(event instanceof HTTPInterfaceResourceCreatedEvent) {
+							bindInterface(resource);
+						} else if(event instanceof HTTPInterfaceResourceUpdatedEvent) {
+							unbindInterface(resource);
+							bindInterface(resource);
+						} else if(event instanceof HTTPInterfaceResourceDeletedEvent) {
+							bindInterface(resource);
+						}
+					
+					} catch (IOException e) {
+						log.error("Failed to reconfigure interfaces", e);
+					} 
+				}
+			});
+		} 
+	}
+
+	@Override
+	public int estimateSize(Object obj) {
+		
+		int size = 1024;
+		if(obj instanceof ChannelUpstreamEventRunnable) {
+			ChannelUpstreamEventRunnable e = (ChannelUpstreamEventRunnable) obj;
+			if(e.getEvent() instanceof UpstreamMessageEvent) {
+				UpstreamMessageEvent evt = (UpstreamMessageEvent) e.getEvent();
+				
+				if(evt.getMessage() instanceof HttpRequest) {
+					HttpRequest request = (HttpRequest) evt.getMessage();
+				
+					size = (int) HttpHeaders.getContentLength(request, 1024);
+				}
+				
+				if(evt.getMessage() instanceof HttpChunk) {
+					HttpChunk chunk = (HttpChunk) evt.getMessage();
+					size = chunk.getContent().readableBytes();
+				}
+				
+				if(evt.getMessage() instanceof WebSocketFrame) {
+					WebSocketFrame frame = (WebSocketFrame) evt.getMessage();
+					size = frame.getBinaryData().readableBytes();
+				}
+			}
+			if(log.isDebugEnabled()) {
+				log.debug(String.format("Incoming message is %d bytes in size", size));
+			}
+		} else if(obj instanceof ChannelDownstreamEventRunnable) {
+			ChannelDownstreamEventRunnable e = (ChannelDownstreamEventRunnable) obj;
+			if(e.getEvent() instanceof DownstreamMessageEvent) {
+				
+				DownstreamMessageEvent evt = (DownstreamMessageEvent) e.getEvent();
+			
+				if(evt.getMessage() instanceof HttpRequest) {
+					HttpRequest request = (HttpRequest) evt.getMessage();
+				
+					size = (int) HttpHeaders.getContentLength(request, 1024);
+				}
+				
+				if(evt.getMessage() instanceof HttpChunk) {
+					HttpChunk chunk = (HttpChunk) evt.getMessage();
+					size = chunk.getContent().readableBytes();
+				}
+				
+				if(evt.getMessage() instanceof WebSocketFrame) {
+					WebSocketFrame frame = (WebSocketFrame) evt.getMessage();
+					size = frame.getBinaryData().readableBytes();
+				}
+				
+				if(log.isDebugEnabled()) {
+					log.debug(String.format("Outgoing message is %d bytes in size", size));
+				}
+			}
+		}
+
+		
+		return size;
 	}
 }

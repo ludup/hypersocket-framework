@@ -1,10 +1,12 @@
 <?xml version="1.0" ?>
-<propertyTemplates context="httpInterfaceResource">
+<propertyTemplates context="httpInterfaceResource" extends="interfaceResourceTemplate.xml">
 	<propertyCategory resourceKey="category.interface" resourceBundle="HypersocketServer" weight="0">
+		<property resourceKey="allInterfaces" inputType="switch" defaultValue="true"	weight="0" />
 		<property resourceKey="interfaces" inputType="multipleSelect"
-			restart="false" url="server/networkInterfaces" selectAllIfEmpty="false"	weight="0" />
+			restart="false" url="server/networkInterfaces" selectAllIfEmpty="false"	weight="50" 
+				visibilityDependsOn="allInterfaces" visibilityDependsValue="false"/>
 		<property resourceKey="port" inputType="integer" minValue="1"
-			maxValue="65535" restart="true" defaultValue="80" weight="100" />
+			maxValue="65535" restart="true" defaultValue="443" weight="100" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.protocol" resourceBundle="HypersocketServer" weight="100">
 		<property resourceKey="protocol" inputType="select" 

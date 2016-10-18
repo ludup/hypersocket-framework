@@ -39,6 +39,7 @@ public class HttpChunkStream implements ChunkedInput {
 				log.debug("Stream is EOF for " + uri);
 			}
 			eof = true;
+			close();
 			return new DefaultHttpChunk(ChannelBuffers.EMPTY_BUFFER);
 		}
 		if(log.isDebugEnabled()) {

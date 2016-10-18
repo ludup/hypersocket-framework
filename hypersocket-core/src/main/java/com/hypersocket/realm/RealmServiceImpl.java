@@ -29,7 +29,6 @@ import org.springframework.transaction.TransactionStatus;
 import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeService;
 import com.hypersocket.attributes.user.UserAttributeType;
-import com.hypersocket.auth.InvalidAuthenticationContext;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventPropertyCollector;
@@ -1044,6 +1043,21 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 		return principal;
 	}
+	
+	@Override
+	public Principal getPrincipalByEmail(Realm realm, String email) throws AccessDeniedException, ResourceNotFoundException {
+
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
+
+		Principal principal = getProviderForRealm(realm).getPrincipalByEmail(realm, email);
+		if(principal==null) {
+			principal = getLocalProvider().getPrincipalByEmail(realm, email);
+		}
+		if(principal==null) {
+			throw new ResourceNotFoundException(RESOURCE_BUNDLE,"error.noPrincipalForEmail", email);
+		}
+		return principal;
+	}	
 
 	@Override
 	public boolean requiresPasswordChange(Principal principal, Realm realm) {
@@ -1681,6 +1695,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			return "";
 		}
 	}
+	
+	@Override
+	public String getProfileProperty(Principal principal, String resourceKey) {
+		
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserPropertyValue(principal, resourceKey);
+	}
 
 	@Override
 	public Map<String, String> getUserPropertyValues(Principal principal, String... variableNames) {
@@ -1692,6 +1713,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 
 		return variables;
+	}
+	
+	@Override
+	public Map<String, String> getUserPropertyValues(Principal principal) {
+
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserPropertyValues(principal);
 	}
 
 	@Override
@@ -1707,5 +1735,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		RealmProvider provider = getProviderForPrincipal(principal);
 		
 		return provider.canChangePassword(principal);
+	}
+
+	@Override
+	public Collection<PropertyCategory> getUserProperties(Principal principal) {
+		
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserProperties(principal);
 	}
 }

@@ -37,6 +37,7 @@ import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
+import com.hypersocket.resource.RealmCriteria;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
@@ -383,5 +384,11 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 				criteria.add(Restrictions.eq("id", principal.getId()));
 			}
 		});
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public Principal getUserByEmail(String email, Realm realm) {
+		return get("email", email, LocalUser.class, new RealmCriteria(realm));
 	}
 }

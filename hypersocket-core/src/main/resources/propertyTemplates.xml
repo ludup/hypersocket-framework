@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <propertyTemplates>
+
 	<propertyCategory resourceKey="category.security"
 		resourceBundle="AuthenticationService" weight="500">
 		<property resourceKey="logon.banner" inputType="textarea"
@@ -21,8 +22,14 @@
 			weight="500" defaultValue="admin@localhost.com" validateAll="email" />
 		<property resourceKey="smtp.fromName" inputType="text"
 			weight="600" defaultValue="Server Administrator" />
+	</propertyCategory>
+	<propertyCategory resourceKey="category.emailExtra"
+		resourceBundle="EmailService" weight="600">
 		<property resourceKey="email.htmlTemplate" inputType="fileInput"
-			weight="700" defaultValue="" />
+			weight="700" defaultValue="" automaticUpload="true" showUploadButton="false" />
+		<property resourceKey="email.trackingImage" inputType="fileInput" weight="700" defaultValue="" automaticUpload="true" showUploadButton="false" />
+		<property resourceKey="email.archiveAddress" inputType="text" weight="800" defaultValue="" />
+		<property resourceKey="email.externalHostname" inputType="text" weight="900" defaultValue="" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.localization"
 		resourceBundle="I18NService" weight="700">

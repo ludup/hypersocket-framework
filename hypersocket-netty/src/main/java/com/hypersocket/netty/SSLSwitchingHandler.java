@@ -79,7 +79,7 @@ public class SSLSwitchingHandler extends FrameDecoder {
 		}
 
 		ChannelPipeline p = ctx.getPipeline();
-
+		
 		p.addLast(
 				"ssl",
 				new SslHandler(server
@@ -88,9 +88,9 @@ public class SSLSwitchingHandler extends FrameDecoder {
 								.getLocalAddress(), (InetSocketAddress) ctx
 								.getChannel().getRemoteAddress())));
 		p.addLast("decoder", new HttpRequestDecoder());
-		p.addLast("aggregator", new HttpChunkAggregator(Integer.MAX_VALUE));
 		p.addLast("encoder", new HttpResponseEncoder());
 		p.addLast("chunkedWriter", new ChunkedWriteHandler());
+		p.addLast("executionHandler", server.executionHandler);
 		try {
 			p.addLast("http", new HttpRequestDispatcherHandler(server));
 		} catch (ServletException e) {

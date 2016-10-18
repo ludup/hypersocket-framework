@@ -3,16 +3,25 @@ package com.hypersocket.scheduler;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
+
+import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.resource.ResourceException;
+import com.hypersocket.transactions.TransactionCallbackWithError;
+import com.hypersocket.transactions.TransactionService;
 
 public abstract class TransactionalJob implements Job {
 
+	static Logger log = LoggerFactory.getLogger(TransactionalJob.class);
+	
 	@Autowired
-	PlatformTransactionManager transactionManager;
+	TransactionService transactionService;
+	
+	boolean transactionFailed = false;
 	
 	public TransactionalJob() {
 	}
@@ -35,23 +44,33 @@ public abstract class TransactionalJob implements Job {
 	public void execute(final JobExecutionContext context) throws JobExecutionException {
 
 		beforeTransaction();
-		boolean transactionFailed = false;
+		
+		
+	
 		try {
-			TransactionTemplate txnTemplate = new TransactionTemplate(
-					transactionManager);
-			txnTemplate.afterPropertiesSet();
-			txnTemplate.execute(new TransactionCallback<Object>() {
-				public Object doInTransaction(TransactionStatus status) {
+			transactionService.doInTransaction(new TransactionCallbackWithError<Void>() {
+
+				@Override
+				public Void doInTransaction(TransactionStatus status) {
 					onExecute(context);
 					return null;
 				}
+
+				@Override
+				public void doTransacationError(Throwable e) {
+					onTransactionFailure(e);
+					transactionFailed = true;
+					
+				}
 			});
-			onTransactionComplete();
-		} catch(Throwable t) {
-			onTransactionFailure(t);
-			transactionFailed = true;
+		} catch (ResourceException e) {
+			log.error("Job transaction failed", e);
 		}
 		
+		if(!transactionFailed) {
+			onTransactionComplete();
+		}
+
 		afterTransaction(transactionFailed);
 	}
 }

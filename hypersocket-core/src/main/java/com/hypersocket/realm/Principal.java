@@ -18,6 +18,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -46,13 +47,14 @@ public abstract class Principal extends RealmResource {
 	Set<PrincipalSuspension> suspensions;
 	
 	@Column(name="principal_type")
-	PrincipalType principalType;
+	PrincipalType principalType = getType();
 	
 	@JsonIgnore
 	public Realm getRealm() {
 		return super.getRealm();
 	}
 
+	@Transient
 	public abstract PrincipalType getType();
 
 	public abstract String getIcon();

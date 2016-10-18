@@ -10,6 +10,7 @@ package com.hypersocket.server;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletConfig;
@@ -101,4 +102,6 @@ public interface HypersocketServer {
 	void removeAlias(String alias);
 
 	boolean isAliasFor(String redirectPage, String uri);
+
+	ExecutorService getExecutor();
 }

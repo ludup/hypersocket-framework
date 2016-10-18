@@ -24,6 +24,9 @@ public class FastHash {
 		if(print) {
 			System.out.println(str);
 		}
+		if(str==null) {
+			str = "NULL";
+		}
 		byte[] b;
 		try {
 			b = str.getBytes("UTF-8");

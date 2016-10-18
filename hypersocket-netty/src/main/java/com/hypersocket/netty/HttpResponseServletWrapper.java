@@ -299,6 +299,4 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 	public boolean isCloseOnComplete() {
 		return closeOnComplete;
 	}
-
-
 }

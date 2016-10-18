@@ -35,7 +35,7 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	@SuppressWarnings("unchecked") 
 	void updateResource(T resource, Map<String,String> properties,
 			TransactionOperation<T>... ops) throws ResourceChangeException,
-			AccessDeniedException;
+			AccessDeniedException, ResourceException;
 
 	List<T> searchResources(Realm realm, String searchColumn, String search, int start, int length,
 			ColumnSort[] sorting) throws AccessDeniedException;
