@@ -1,19 +1,10 @@
 package com.hypersocket.scheduler;
 
-import java.util.Collection;
 import java.util.Date;
-import java.util.Map;
 
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
-
-import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.AbstractResourceService;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
 
 public interface SchedulerService {
 

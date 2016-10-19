@@ -30,6 +30,17 @@ public class FeedbackServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		
 		return progress;
 	}
+	
+	@Override
+	public FeedbackProgress startJob( Class<? extends FeedbackEnabledJob> jobClz, String scheduleId, PermissionsAwareJobData data) throws SchedulerException {
+		
+		FeedbackProgress progress = createFeedbackProgress();
+		data.put(FeedbackEnabledJob.FEEDBACK_ITEM, progress.getUuid());
+		
+		schedulerService.scheduleNow(jobClz, scheduleId, data);
+		
+		return progress;
+	}
 
 	@Override
 	public FeedbackProgress createFeedbackProgress() {

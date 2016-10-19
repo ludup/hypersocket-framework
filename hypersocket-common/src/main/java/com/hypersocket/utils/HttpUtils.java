@@ -4,10 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import javax.net.ssl.HostnameVerifier;
+
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 public interface HttpUtils {
+	
+	void setVerifier(HostnameVerifier verifier);
 
 	CloseableHttpResponse doHttpGet(String uri, boolean allowSelfSigned, Map<String, String> headers)
 			throws IOException;

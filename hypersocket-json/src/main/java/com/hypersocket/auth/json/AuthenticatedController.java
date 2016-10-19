@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.auth.json;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -51,7 +52,7 @@ public class AuthenticatedController {
 	public static final String AUTHENTICATION_STATE_KEY = "authenticationState";
 	public static final String PREVIOUS_AUTHENTICATION_SCHEME = "previousAuthScheme";
 	
-	static final String LOCATION = "Location";
+	public static final String LOCATION = "Location";
 
 	@Autowired
 	protected AuthenticationService authenticationService;
@@ -117,7 +118,7 @@ public class AuthenticatedController {
 	}
 
 	@ExceptionHandler(RedirectException.class)
-	@ResponseStatus(value = HttpStatus.MOVED_TEMPORARILY)
+	@ResponseStatus(value = HttpStatus.FOUND)
 	public void redirectToLogin(HttpServletRequest request,
 			HttpServletResponse response, RedirectException redirect) {
 		response.setHeader(LOCATION, redirect.getMessage());
@@ -141,6 +142,13 @@ public class AuthenticatedController {
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)
 	public void unauthorizedAccess(HttpServletRequest request,
 			HttpServletResponse response, AccessDeniedException redirect) {
+
+	}
+	
+	@ExceptionHandler(FileNotFoundException.class)
+	@ResponseStatus(value = HttpStatus.NOT_FOUND)
+	public void fileNotFound(HttpServletRequest request,
+			HttpServletResponse response, FileNotFoundException redirect) {
 
 	}
 

@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
+import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Realm;
@@ -109,28 +110,38 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 	@Override
 	public List<PropertyChange> populateEntityFields(T resource, Map<String,String> properties) {
 		List<PropertyChange> changedProperties = new ArrayList<>();
-		final Set<String> propertyNames = getPropertyNames(resource);
-		for(String resourceKey : propertyNames) {
-			if(properties.containsKey(resourceKey)) {
-//				PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
-//				if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
-					String val = getValue(resource, resourceKey);
-					String newVal = properties.get(resourceKey);
-					
-					/* NOTE - I am not 100% sure about this. What if a value IS changing to (or from) null? */
-					
-					if(val == null) 
-						val = "";
-					if(newVal == null) 
-						newVal = "";
-					
-					if(!Objects.equals(val, newVal)) {
-						changedProperties.add(new PropertyChange(resourceKey, val, newVal));
+		if(properties!=null) {
+			final Set<String> propertyNames = getPropertyNames(resource);
+			for(String resourceKey : propertyNames) {
+				if(properties.containsKey(resourceKey)) {
+					/**
+					 * Why was this commented out? We have to ensure we only attempt to update
+					 * entity properties. Some resources use a mixture of both.
+					 */
+					PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
+					if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
+						String val = getValue(resource, resourceKey);
+						String newVal = properties.get(resourceKey);
+						
+						/* NOTE - I am not 100% sure about this. What if a value IS changing to (or from) null? */
+						/**
+						 * Values will never be null because default value is either blank string or value of some string
+						 * and new value cannot have null passed to it because all values come from the javascript front
+						 * end.
+						 */
+						if(val == null) 
+							val = "";
+						if(newVal == null) 
+							newVal = "";
+						
+						if(!Objects.equals(val, newVal)) {
+							changedProperties.add(new PropertyChange(resourceKey, val, newVal));
+						}
+						
+						setValue(resource, resourceKey, newVal);
+						properties.remove(resourceKey);
 					}
-					
-					setValue(resource, resourceKey, newVal);
-					properties.remove(resourceKey);
-//				}
+				}
 			}
 		}
 		return changedProperties;

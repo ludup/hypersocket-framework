@@ -16,15 +16,15 @@ import java.util.Set;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.tables.ColumnSort;
 
 public interface RealmProvider extends ResourceTemplateRepository {
 
-	void testConnection(Map<String, String> properties) throws IOException;
+	void testConnection(Map<String, String> properties) throws IOException, ResourceConfirmationException;
 
-	void testConnection(Map<String, String> properties, Realm realm) throws IOException;
+	void testConnection(Map<String, String> properties, Realm realm) throws IOException, ResourceConfirmationException;
 
 	List<Principal> allPrincipals(Realm realm, PrincipalType... types);
 

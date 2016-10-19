@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 
-import com.hypersocket.account.linking.AccountLinkingService;
 import com.hypersocket.attributes.AttributeType;
 import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeService;
@@ -38,6 +37,7 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
 import com.hypersocket.local.LocalRealmProviderImpl;
+import com.hypersocket.message.MessageResourceService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
@@ -63,6 +63,7 @@ import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
 import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -134,10 +135,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Autowired
 	PrincipalRepository principalRepository; 
-	
-	@Autowired
-	AccountLinkingService linkingService;
 
+	@Autowired
+	MessageResourceService messageService; 
+	
+	
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -195,6 +198,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		upgradeService.registerListener(this);
 
 		realmCache = cacheService.getCache("realmCache", String.class, Object.class);
+		
+		
 	}
 
 	@Override
@@ -401,6 +406,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return realmRepository.getRealmByOwner(owner);
 	}
 
+	@Override
 	public Map<String, String> filterSecretProperties(Principal principal, RealmProvider provider,
 			Map<String, String> properties) {
 
@@ -443,17 +449,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, null, getProviderForRealm(realm));
 		
 	}
-	
-	@Override
-	public Principal createSecondaryUser(Realm realm, String username, Map<String, String> properties,
-			List<Principal> principals, String password, boolean forceChange, boolean selfCreated, Principal parentPrincipal)
-					throws ResourceCreationException, AccessDeniedException {
-		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, parentPrincipal, getProviderForRealm(realm));
-		
-	}
+
 
 	
-	protected Principal createUser(Realm realm, String username, Map<String, String> properties,
+	public Principal createUser(Realm realm, String username, Map<String, String> properties,
 			List<Principal> principals, String password, boolean forceChange, boolean selfCreated, Principal parent, RealmProvider provider)
 					throws ResourceCreationException, AccessDeniedException {
 
@@ -473,10 +472,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			for (PrincipalProcessor processor : principalProcessors) {
 				processor.afterCreate(principal, properties);
-			}
-
-			if(parent!=null) {
-				linkingService.linkAccounts(parent, principal);
 			}
 			
 			eventService.publishEvent(new UserCreatedEvent(this, getCurrentSession(), realm, provider, principal,
@@ -816,7 +811,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Realm createRealm(String name, String module, Long owner, Map<String, String> properties)
-			throws AccessDeniedException, ResourceCreationException {
+			throws AccessDeniedException, ResourceCreationException, ResourceConfirmationException {
 
 		try {
 			assertPermission(RealmPermission.CREATE);
@@ -830,6 +825,14 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			final RealmProvider realmProvider = getProviderForRealm(module);
 
+			// TODO how on earth can i pass known hosts all the way down to HttpUtils that now expects to have a realm??
+//			if(properties.containsKey("knownHosts")) {
+//				/* Set this before the test, as the test needs to know the NEW list of
+//				 * known hosts if it is ever going to accept a connection to a host 
+//				 */				
+//				realm.setKnownHosts(ResourceUtils.explodeValues(properties.get("knownHosts")));
+//			}
+			
 			realmProvider.testConnection(properties);
 
 			@SuppressWarnings("unchecked")
@@ -858,6 +861,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (ResourceCreationException e) {
 			eventService.publishEvent(new RealmCreatedEvent(this, e, getCurrentSession(), name, module));
 			throw e;
+		} catch(ResourceConfirmationException e) {
+			throw e;
 		} catch (Throwable t) {
 			eventService.publishEvent(new RealmCreatedEvent(this, t, getCurrentSession(), name, module));
 			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.genericError", name, t.getMessage());
@@ -884,7 +889,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Realm updateRealm(Realm realm, String name, Map<String, String> properties)
-			throws AccessDeniedException, ResourceChangeException {
+			throws AccessDeniedException, ResourceChangeException, ResourceConfirmationException {
 
 		try {
 
@@ -897,7 +902,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 
 			RealmProvider realmProvider = getProviderForRealm(realm.getResourceCategory());
-
+			
 			realmProvider.testConnection(properties, realm);
 			String oldName = realm.getName();
 
@@ -917,6 +922,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			throw e;
 		} catch (ResourceChangeException e) {
 			eventService.publishEvent(new RealmUpdatedEvent(this, e, getCurrentSession(), realm));
+			throw e;
+		} catch(ResourceConfirmationException e) {
 			throw e;
 		} catch (Throwable t) {
 			log.error("Unexpected error", t);

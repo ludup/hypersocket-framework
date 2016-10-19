@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.FallbackAuthenticationRequired;
+import com.hypersocket.json.AuthenticationRedirectResult;
 import com.hypersocket.json.AuthenticationRequiredResult;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -94,6 +95,10 @@ public class LogonController extends AuthenticatedController {
 
 	}
 
+	@RequestMapping(value = "logon/resetState", method = { RequestMethod.GET,
+			RequestMethod.POST }, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
 	public AuthenticationState resetAuthenticationState(
 			HttpServletRequest request, HttpServletResponse response,
 			String scheme) throws AccessDeniedException, UnsupportedEncodingException {
@@ -123,11 +128,11 @@ public class LogonController extends AuthenticatedController {
 
 		AuthenticationState state = (AuthenticationState) request
 				.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
-		
+
+
+		String flash = (String) request.getSession().getAttribute("flash");
 		try {
 			Session session;
-
-			String flash = (String) request.getSession().getAttribute("flash");
 			
 			request.getSession().removeAttribute("flash");
 
@@ -217,6 +222,12 @@ public class LogonController extends AuthenticatedController {
 			return resetLogon(request, response, "fallback", false);
 		} catch(RedirectException e) {
 			throw e;
+		} catch(JsonRedirectException e) {
+			return new AuthenticationRedirectResult(
+					configurationService.getValue(state.getRealm(),
+							"logon.banner"),
+					flash!=null ? flash : state.getLastErrorMsg(),
+					configurationService.hasUserLocales(), e.getMessage());
 		} catch(Throwable t) {
 			
 			if(log.isErrorEnabled()) {

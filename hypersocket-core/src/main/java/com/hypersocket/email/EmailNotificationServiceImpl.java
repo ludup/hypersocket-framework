@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.email.events.EmailEvent;
+import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
@@ -50,6 +52,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	
 	@Autowired
 	EmailTrackerService trackerService; 
+	
+	@Autowired
+	EventService eventService;
 	
 	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
 
@@ -78,8 +83,25 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	}
 	
 	@Override
+	public void sendEmail(Realm realm, String subject, String text, String html, String replyToName,
+			String replyToEmail, RecipientHolder[] recipients, boolean track, EmailAttachment... attachments)
+			throws MailException, AccessDeniedException, ValidationException {
+		sendEmail(realm, subject, text, html, replyToName, replyToEmail, recipients, new String[0], track, attachments);
+	}
+	
+	
+	@Override
 	@SafeVarargs
-	public final void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail, RecipientHolder[] recipients, boolean track, EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
+	public final void sendEmail(Realm realm, 
+			String subject, 
+			String text, 
+			String html, 
+			String replyToName, 
+			String replyToEmail, 
+			RecipientHolder[] recipients, 
+			String[] archiveAddresses,
+			boolean track, 
+			EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
 		
 		Mailer mail = new Mailer(configurationService.getValue(realm, SMTP_HOST), 
 				configurationService.getIntValue(realm, SMTP_PORT), 
@@ -93,6 +115,8 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		if(StringUtils.isNotBlank(archiveAddress)) {
 			populateEmailList(new String[] {archiveAddress} , archiveRecipients, RecipientType.TO);
 		}
+		
+		populateEmailList(archiveAddresses, archiveRecipients, RecipientType.TO);
 
 		for(RecipientHolder r : recipients) {
 			
@@ -133,9 +157,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 					r, 
 					attachments);
 			
-			if(!archiveAddress.isEmpty()) {
+			for(RecipientHolder recipient : archiveRecipients) {
 				send(realm, mail, recipeintSubject, receipientText, receipientHtml, 
-						replyToName, replyToEmail, false, archiveRecipients.get(0), attachments);
+						replyToName, replyToEmail, false, recipient, attachments);
 			}
 		}
 	}
@@ -187,7 +211,14 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			}
 		}
 		
-		mail.sendMail(email);
+		try {
+			mail.sendMail(email);
+			
+			eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail()));
+		} catch (MailException e) {
+			eventService.publishEvent(new EmailEvent(this, e, realm, subject, plainText, r.getEmail()));
+			throw e;
+		}
 
 	}
 	

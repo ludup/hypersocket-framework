@@ -76,7 +76,7 @@ public class AuthenticationState {
 		return currentIndex >= modules.size();
 	}
 
-	void nextModule() {
+	public void nextModule() {
 		this.currentIndex++;
 	}
 	
@@ -225,6 +225,10 @@ public class AuthenticationState {
 	
 	public void setEnvironmentVariable(String key, Object value) {
 		environment.put(key, value);
+	}
+
+	public Object removeEnvironmentVariable(String name) {
+		return environment.remove(name);		
 	}
 	
 	public boolean hasEnvironmentVariable(String key) {

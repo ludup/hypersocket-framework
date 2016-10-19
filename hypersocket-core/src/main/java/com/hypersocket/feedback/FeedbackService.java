@@ -15,4 +15,7 @@ public interface FeedbackService extends AuthenticatedService {
 
 	void closeFeedbackProgress(FeedbackProgress progress);
 
+	FeedbackProgress startJob(Class<? extends FeedbackEnabledJob> jobClz, String scheduleId,
+			PermissionsAwareJobData data) throws SchedulerException;
+
 }
