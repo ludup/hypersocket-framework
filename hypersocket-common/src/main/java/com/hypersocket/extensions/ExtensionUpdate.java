@@ -7,6 +7,8 @@ public class ExtensionUpdate {
 	String phase;
 	String[] repos;
 	boolean upgrade;
+	boolean canUpdate;
+	int missingComponentCount;
 	
 	public ExtensionUpdate() {
 		
@@ -50,5 +52,21 @@ public class ExtensionUpdate {
 
 	public void setRepos(String[] repos) {
 		this.repos = repos;
+	}
+
+	public void setMissingComponents(int missingComponentCount) {
+		this.missingComponentCount = missingComponentCount;
+	}
+	
+	public int getMissingComponentCount() {
+		return missingComponentCount;
+	}
+
+	public void setCanUpdate(boolean canUpdate) {
+		this.canUpdate = canUpdate;
+	}
+	
+	public boolean getCanUpdate() {
+		return canUpdate;
 	}
 }
