@@ -83,6 +83,7 @@ public class FileUtils {
 	
 	public static String firstPathElement(String mountPath) {
 		int idx;
+		mountPath = FileUtils.checkStartsWithNoSlash(mountPath);
 		if ((idx = mountPath.indexOf('/')) > -1) {
 			return mountPath.substring(0, idx);
 		} else {
