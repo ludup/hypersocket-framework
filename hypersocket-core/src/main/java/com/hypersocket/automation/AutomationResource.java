@@ -8,6 +8,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinTable;
+import javax.persistence.Lob;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -53,7 +54,8 @@ public class AutomationResource extends Task {
 	@Column(name="repeat_value")
 	Integer repeatValue;
 	
-	@Column(name="notes", length=8000)
+	@Column(name="notes")
+	@Lob
 	String notes;
 	
 	@Column(name="transactional")

@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
@@ -24,9 +25,6 @@ import com.hypersocket.repository.AbstractEntity;
 	    @UniqueConstraint(columnNames={"resourceKey", "resource"})})
 public class DatabaseProperty extends AbstractEntity<Long> implements ResourceProperty {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 5255957700370043100L;
 
 	@Id
@@ -37,7 +35,8 @@ public class DatabaseProperty extends AbstractEntity<Long> implements ResourcePr
 	@Column(nullable=false)
 	String resourceKey;
 	
-	@Column(nullable=true, length=8000 /*SQL server limit */)
+	@Column(nullable=true)
+	@Lob
 	String value;
 	
 	@Column(name="resource")
