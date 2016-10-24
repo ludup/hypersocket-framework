@@ -8,27 +8,23 @@
 package com.hypersocket.local;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.hypersocket.auth.PasswordEncryptionService;
+import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 
 @Repository
-public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl {
+public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl implements LocalRealmProvider {
 
-	private static Logger log = LoggerFactory
-			.getLogger(LocalRealmProviderImpl.class);
+	static final String RESOURCE_BUNDLE = "LocalRealm";
 
 	public final static String REALM_RESOURCE_CATEGORY = "local";
 
@@ -52,12 +48,16 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl {
 	@Autowired
 	PasswordEncryptionService encryptionService;
 	
+	@Autowired
+	I18NService i18nService;
+	
 	PropertyCategory userDetailsCategory;
 
 	Set<String> defaultProperties = new HashSet<String>();
 	
 	@PostConstruct
 	private void registerProvider() throws Exception {
+		i18nService.registerBundle(LocalRealmProviderImpl.RESOURCE_BUNDLE);
 
 		defaultProperties.add("fullname");
 		defaultProperties.add("email");
@@ -78,6 +78,12 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl {
 
 	public boolean canCreate() {
 		return true;
+	}
+
+	@Override
+	public String getResourceBundle() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

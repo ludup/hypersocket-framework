@@ -43,7 +43,7 @@ import com.hypersocket.session.events.SessionOpenEvent;
 import com.hypersocket.tables.ColumnSort;
 
 public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvider implements
-		LocalRealmProvider, ApplicationListener<SessionOpenEvent> {
+		 ApplicationListener<SessionOpenEvent> {
 
 	private static Logger log = LoggerFactory
 			.getLogger(AbstractLocalRealmProviderImpl.class);
@@ -89,9 +89,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 
 	@Override
-	public String getResourceBundle() {
-		return RESOURCE_BUNDLE;
-	}
+	public abstract String getResourceBundle();
 
 	@Override
 	@Transactional(readOnly=true)
@@ -203,7 +201,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 					PrincipalType.USER, PrincipalType.SYSTEM, PrincipalType.SERVICE);
 			
 			if(principal!=null) {
-				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.principalExists", username);
+				throw new ResourceCreationException(getResourceBundle(), "error.principalExists", username);
 			}
 			
 			LocalUser user = new LocalUser();
@@ -230,7 +228,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			}
 			return user;
 		} catch (Exception e) {
-			throw new ResourceCreationException(RESOURCE_BUNDLE,
+			throw new ResourceCreationException(getResourceBundle(),
 					"error.createFailed", username, e.getMessage());
 		}
 
@@ -269,7 +267,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 			return user;
 		} catch (Exception e) {
-			throw new ResourceChangeException(RESOURCE_BUNDLE,
+			throw new ResourceChangeException(getResourceBundle(),
 					"error.updateFailed", principal.getPrincipalName(),
 					e.getMessage());
 		}
@@ -297,7 +295,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 			return user;
 		} catch (Exception e) {
-			throw new ResourceChangeException(RESOURCE_BUNDLE,
+			throw new ResourceChangeException(getResourceBundle(),
 					"error.updateFailed", principal.getPrincipalName(),
 					e.getMessage());
 		}
@@ -310,7 +308,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			char[] newPassword) throws ResourceChangeException,
 			ResourceCreationException {
 		if(!verifyPassword(principal, oldPassword)) {
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "invalid.password");
+			throw new ResourceChangeException(getResourceBundle(), "invalid.password");
 		}
 		
 		setPassword(principal, newPassword, false, false);
@@ -349,7 +347,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			userRepository.saveCredentials(creds);
 
 		} catch (Throwable e) {
-			throw new ResourceCreationException(RESOURCE_BUNDLE,
+			throw new ResourceCreationException(getResourceBundle(),
 					"error.creatingPassword", principal.getPrincipalName(),
 					e.getMessage());
 		}
@@ -507,7 +505,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 						"Group member principal is not of type LocalGroup");
 			}
 			if(containsSelf((LocalGroup)group, (LocalGroup) principal)) {
-				throw new ResourceChangeException(AbstractLocalRealmProviderImpl.RESOURCE_BUNDLE, "error.groupContainsSelf", principal.getName());
+				throw new ResourceChangeException(getResourceBundle(), "error.groupContainsSelf", principal.getName());
 			}
 			grp.getGroups().add((LocalGroup) principal);
 		}

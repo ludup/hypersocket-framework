@@ -25,7 +25,6 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.EmailNotificationService;
-import com.hypersocket.local.LocalRealmProvider;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.secret.SecretKeyServiceImpl;
@@ -53,7 +52,6 @@ public class I18NServiceImpl implements I18NService {
 		registerBundle(AuthenticationService.RESOURCE_BUNDLE);
 		registerBundle(CertificateResourceService.RESOURCE_BUNDLE);
 		registerBundle(EmailNotificationService.RESOURCE_BUNDLE);
-		registerBundle(LocalRealmProvider.RESOURCE_BUNDLE);
 		registerBundle(PermissionService.RESOURCE_BUNDLE);
 		registerBundle(RealmService.RESOURCE_BUNDLE);
 		registerBundle(SessionService.RESOURCE_BUNDLE);

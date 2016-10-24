@@ -10,6 +10,4 @@ package com.hypersocket.local;
 import com.hypersocket.realm.RealmProvider;
 
 public interface LocalRealmProvider extends RealmProvider {
-
-	static final String RESOURCE_BUNDLE = "LocalRealm";
 }
