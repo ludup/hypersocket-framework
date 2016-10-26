@@ -53,7 +53,11 @@ public abstract class Principal extends RealmResource {
 	public Realm getRealm() {
 		return super.getRealm();
 	}
-
+	
+	public boolean isReadOnly() {
+		return true;
+	}
+	
 	@Transient
 	public abstract PrincipalType getType();
 

@@ -45,13 +45,9 @@ public class TransactionServiceImpl implements TransactionService {
 			if(transaction instanceof TransactionCallbackWithError) {
 				((TransactionCallbackWithError<T>)transaction).doTransacationError(e);
 			}
-			if(e.getCause() instanceof ResourceChangeException) {
-				throw (ResourceChangeException) e.getCause();
-			} else if(e.getCause() instanceof ResourceCreationException) {
-				throw (ResourceCreationException) e.getCause();
-			} else if(e.getCause() instanceof ResourceNotFoundException) {
-				throw (ResourceNotFoundException) e.getCause();
-			} else if(e.getCause() instanceof AccessDeniedException) {
+			if(e.getCause() instanceof ResourceException) {
+				throw (ResourceException) e.getCause();
+			}else if(e.getCause() instanceof AccessDeniedException) {
 				throw (AccessDeniedException) e.getCause();
 			}
 			

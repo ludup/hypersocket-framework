@@ -347,12 +347,18 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		if (!realmCache.isElementInMemory(host)
 				|| (realmCache.get(host) == null || realmCache.isExpired(realmCache.get(host)))) {
+			Set<String> hosts = new HashSet<String>();
+			hosts.add(host);
+			int idx;
+			if((idx = host.indexOf(":")) > -1) {
+				hosts.add(host.substring(0,  idx));
+			}
 			for (Realm r : internalAllRealms()) {
 				RealmProvider provider = getProviderForRealm(r);
 				String[] realmHosts = provider.getValues(r, "realm.host");
 				for (String realmHost : realmHosts) {
 					if (realmHost != null && !"".equals(realmHost)) {
-						if (realmHost.equalsIgnoreCase(host)) {
+						if (hosts.contains(realmHost)) {
 							realmCache.put(new Element(host, r));
 							if(log.isDebugEnabled()) {
 								log.debug(String.format("Returning resolved value for host %s realm %s", host, r.getName()));
@@ -1453,31 +1459,39 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Principal getUniquePrincipal(String username, PrincipalType... type) throws ResourceNotFoundException {
-		int found = 0;
-		Principal ret = null;
+		List<Principal> found = new ArrayList<Principal>();
 		for (Realm r : internalAllRealms()) {
 			Principal p = getProviderForRealm(r).getPrincipalByName(username, r, type);
 			if (p != null) {
-				ret = p;
-				found++;
+				found.add(p);
 			} else {
 				p = getLocalProvider().getPrincipalByName(username, r, type);
 				if (p != null) {
-					ret = p;
-					found++;
+					found.add(p);
 				} 
 			}
 		}
-		if (found != 1) {
-			if (found > 1 && log.isInfoEnabled()) {
-				
+		if (found.size() != 1) {
+			if (found.size() > 1 && log.isInfoEnabled()) {
 				// Fire Event 
-				
 				log.info("More than one principal found for username " + username);
+				for(Principal principal : found) {
+					if(principal.isSystem()) {
+						log.info(String.format("Resolving duplicate principals to %s/%s [System User]", principal.getRealm().getName(), principal.getPrincipalName()));
+						return principal;
+					} 
+				}
+				for(Principal principal : found) {
+					if(principal.getRealm().isDefaultRealm()) {
+						log.info(String.format("Resolving duplicate principals to %s/%s [Default Realm]", principal.getRealm().getName(), principal.getPrincipalName()));
+						return principal;
+					}
+				}
+				
 			}
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "principal.notFound");
 		}
-		return ret;
+		return found.get(0);
 	}
 
 	@Override
