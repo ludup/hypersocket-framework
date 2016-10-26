@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.email.RecipientHolder;
@@ -77,6 +78,9 @@ public class MessageResourceServiceImpl extends
 	
 	@Autowired
 	FileUploadService uploadService; 
+	
+	@Autowired
+	ConfigurationService configurationService;
 	
 	public MessageResourceServiceImpl() {
 		super("Message");
@@ -301,6 +305,7 @@ public class MessageResourceServiceImpl extends
 		}
 		if(!recipients.isEmpty()) {
 			try {
+		
 				emailService.sendEmail(
 						realm,
 						ReplacementUtils.processTokenReplacements(message.getSubject(), tokenResolver),
@@ -311,6 +316,7 @@ public class MessageResourceServiceImpl extends
 						recipients.toArray(new RecipientHolder[0]), 
 						ResourceUtils.explodeValues(message.getAdditionalTo()),
 						message.getTrack(), 
+						configurationService.getIntValue(realm, "smtp.delay"),
 						attachments.toArray(new EmailAttachment[0]));
 				
 			} catch (MailException | ValidationException e) {

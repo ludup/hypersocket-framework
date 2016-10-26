@@ -71,21 +71,21 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 	@Override
 	@SafeVarargs
-	public final void sendEmail(String subject, String text, String html, RecipientHolder[] recipients, boolean track, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
-		sendEmail(getCurrentRealm(), subject, text, html, recipients, track, attachments);
+	public final void sendEmail(String subject, String text, String html, RecipientHolder[] recipients, boolean track, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
+		sendEmail(getCurrentRealm(), subject, text, html, recipients, track, delay, attachments);
 	}
 	
 	@Override
 	@SafeVarargs
-	public final void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients, boolean track, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
-		sendEmail(realm, subject, text, html, null, null, recipients, track, attachments);
+	public final void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients, boolean track, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
+		sendEmail(realm, subject, text, html, null, null, recipients, track, delay, attachments);
 	}
 	
 	@Override
 	public void sendEmail(Realm realm, String subject, String text, String html, String replyToName,
-			String replyToEmail, RecipientHolder[] recipients, boolean track, EmailAttachment... attachments)
+			String replyToEmail, RecipientHolder[] recipients, boolean track, int delay, EmailAttachment... attachments)
 			throws MailException, AccessDeniedException, ValidationException {
-		sendEmail(realm, subject, text, html, replyToName, replyToEmail, recipients, new String[0], track, attachments);
+		sendEmail(realm, subject, text, html, replyToName, replyToEmail, recipients, new String[0], track, delay, attachments);
 	}
 	
 	
@@ -99,7 +99,8 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			String replyToEmail, 
 			RecipientHolder[] recipients, 
 			String[] archiveAddresses,
-			boolean track, 
+			boolean track,
+			int delay,
 			EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
 		
 		Mailer mail = new Mailer(configurationService.getValue(realm, SMTP_HOST), 
@@ -154,11 +155,12 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 					replyToEmail, 
 					track, 
 					r, 
+					delay,
 					attachments);
 			
 			for(RecipientHolder recipient : archiveRecipients) {
 				send(realm, mail, recipeintSubject, receipientText, receipientHtml, 
-						replyToName, replyToEmail, false, recipient, attachments);
+						replyToName, replyToEmail, false, recipient, delay, attachments);
 			}
 		}
 	}
@@ -183,6 +185,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			String replyToEmail, 
 			boolean track,
 			RecipientHolder r, 
+			int delay,
 			EmailAttachment... attachments) throws AccessDeniedException {
 		
 		Email email = new Email();
@@ -211,6 +214,13 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		}
 		
 		try {
+			
+			if(delay > 0) {
+				try {
+					Thread.sleep(delay);
+				} catch (InterruptedException e) {
+				};
+			}
 			mail.sendMail(email);
 			
 			eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail()));
