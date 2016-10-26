@@ -664,7 +664,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			websocketClient.setWebsocketChannel(websocketChannel);
 
 			WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
-					getWebSocketLocation(request.getNettyRequest()), null,
+					getWebSocketLocation(request.getNettyRequest()), "binary",
 					true);
 
 			WebSocketServerHandshaker handshaker = wsFactory
