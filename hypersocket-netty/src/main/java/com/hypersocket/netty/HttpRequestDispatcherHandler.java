@@ -27,7 +27,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.hypersocket.json.RestApi;
 import org.apache.commons.io.input.ReaderInputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.DateUtils;
@@ -390,20 +392,19 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			final HttpResponseServletWrapper servletResponse, boolean chunked) {
 
 		try {
-			
-			switch(servletResponse.getNettyResponse().getStatus().getCode()) {
-				case HttpStatus.SC_NOT_FOUND:
-				{
-					send404(servletRequest, servletResponse);
-					break;
-				}
-				case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-				{
-					send500(servletRequest, servletResponse);
-					break;
-				}
-				default:
-				{
+
+			if(!StringUtils.equals(RestApi.API_REST, (CharSequence) servletRequest.getAttribute(RestApi.API_REST))) {
+				switch (servletResponse.getNettyResponse().getStatus().getCode()) {
+					case HttpStatus.SC_NOT_FOUND: {
+						send404(servletRequest, servletResponse);
+						break;
+					}
+					case HttpStatus.SC_INTERNAL_SERVER_ERROR: {
+						send500(servletRequest, servletResponse);
+						break;
+					}
+					default: {
+					}
 				}
 			}
 			

@@ -9,6 +9,7 @@ package com.hypersocket.json;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -18,10 +19,14 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 
 	@Autowired
 	ControllerInterceptor interceptor;
+
+	@Autowired
+	RestApiInterceptor restApiInterceptor;
 	
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(interceptor);
+		registry.addInterceptor(interceptor).addPathPatterns("/**").excludePathPatterns("/**/v1/**");
+		registry.addInterceptor(restApiInterceptor).addPathPatterns("/**/v1/**");
 		super.addInterceptors(registry);
 	}
 
