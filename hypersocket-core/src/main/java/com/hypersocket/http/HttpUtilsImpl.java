@@ -96,7 +96,9 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 	@Override
 	public CloseableHttpClient createHttpClient(boolean allowSelfSigned) throws IOException {
 
-		log.info("Creating a new client");
+		if(log.isDebugEnabled()) {
+			log.debug("Creating a new client");
+		}
 		realmService.getCurrentRealm();
 		CloseableHttpClient httpclient = null;
 
