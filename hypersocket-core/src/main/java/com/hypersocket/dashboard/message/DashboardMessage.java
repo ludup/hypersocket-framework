@@ -4,6 +4,7 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -16,9 +17,6 @@ import com.hypersocket.resource.Resource;
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class DashboardMessage extends Resource {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 2791708877112002145L;
 
 	@Column(name="message_id")
@@ -27,7 +25,8 @@ public class DashboardMessage extends Resource {
 	@Column(name="author")
 	String author;
 	
-	@Column(name="body", length=8000)
+	@Column(name="body")
+	@Lob
 	String body;
 
 	@Column(name="name_resource_key")

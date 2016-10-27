@@ -20,6 +20,7 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
+import javax.security.auth.callback.PasswordCallback;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -51,6 +52,7 @@ import com.hypersocket.realm.events.GroupCreatedEvent;
 import com.hypersocket.realm.events.GroupDeletedEvent;
 import com.hypersocket.realm.events.GroupEvent;
 import com.hypersocket.realm.events.GroupUpdatedEvent;
+import com.hypersocket.realm.events.PasswordUpdateEvent;
 import com.hypersocket.realm.events.PrincipalEvent;
 import com.hypersocket.realm.events.ProfileUpdatedEvent;
 import com.hypersocket.realm.events.RealmCreatedEvent;
@@ -185,6 +187,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		eventService.registerEvent(UserCreatedEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
 		eventService.registerEvent(UserUpdatedEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
 		eventService.registerEvent(UserDeletedEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
+		eventService.registerEvent(PasswordUpdateEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
 
 		eventService.registerEvent(GroupEvent.class, RESOURCE_BUNDLE, new GroupPropertyCollector());
 		eventService.registerEvent(GroupCreatedEvent.class, RESOURCE_BUNDLE, new GroupPropertyCollector());

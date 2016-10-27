@@ -215,6 +215,10 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			if((idx = name.lastIndexOf("/")) > -1) {
 				name = name.substring(idx+1);
 			}
+			
+			// Skip if this looks like an inner class
+			if(name.indexOf('$') != -1)
+				continue;
 
 			// Java identifiers (i.e. .java upgrade 'scripts') may only contain
 			// _ and currency symbols. So we use $ for a dash (-) and £ for dot

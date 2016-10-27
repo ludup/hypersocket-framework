@@ -175,7 +175,9 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			fireResourceCreationEvent(resource, t);
 			if (t instanceof ResourceException) {
 				throw (ResourceException) t;
-			} else {
+			} else if(t instanceof RuntimeException && t.getCause() instanceof ResourceException) {
+				throw (ResourceException)t.getCause();
+			} else  {
 				throw new ResourceCreationException(RESOURCE_BUNDLE,
 						"generic.create.error", t.getMessage());
 			}
@@ -275,6 +277,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			fireResourceUpdateEvent(resource, t);
 			if (t instanceof ResourceException) {
 				throw (ResourceException) t;
+			} else if (t.getCause() instanceof ResourceException) {
+				throw (ResourceException) t.getCause();
 			} else {
 				throw new ResourceChangeException(RESOURCE_BUNDLE,
 						"generic.update.error", t.getMessage());

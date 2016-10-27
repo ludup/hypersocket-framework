@@ -2,6 +2,7 @@ package com.hypersocket.jobs;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Lob;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -11,9 +12,6 @@ import com.hypersocket.resource.RealmResource;
 @Table(name="jobs")
 public class JobResource extends RealmResource {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 5348826725565924228L;
 
 	@OneToOne
@@ -22,7 +20,8 @@ public class JobResource extends RealmResource {
 	@Column(name="state")
 	JobState state;
 	
-	@Column(name="result", length=8000)
+	@Column(name="result")
+	@Lob
 	String result;
 	
 	public JobResource getParentJob() {

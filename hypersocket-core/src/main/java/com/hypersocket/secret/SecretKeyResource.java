@@ -2,6 +2,7 @@ package com.hypersocket.secret;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import com.hypersocket.resource.RealmResource;
@@ -10,15 +11,14 @@ import com.hypersocket.resource.RealmResource;
 @Table(name="secret_keys")
 public class SecretKeyResource extends RealmResource {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 5968935969005380460L;
 
-	@Column(name="keydata", length=8000)
+	@Column(name="keydata")
+	@Lob
 	String keydata;
 	
-	@Column(name="iv", length=8000)
+	@Column(name="iv")
+	@Lob
 	String iv;
 	
 	@Column(name="keylength")

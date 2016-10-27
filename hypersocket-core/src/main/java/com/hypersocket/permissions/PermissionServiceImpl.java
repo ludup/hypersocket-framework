@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,6 +36,7 @@ import com.hypersocket.attributes.role.RoleAttributeRepository;
 import com.hypersocket.attributes.role.RoleAttributeService;
 import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationPermission;
+import com.hypersocket.auth.InvalidAuthenticationContext;
 import com.hypersocket.cache.CacheService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
@@ -445,9 +447,15 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 					}
 				}
 			}
-
+			Locale currentLocale = null;
+			try {
+				currentLocale = getCurrentLocale();
+			}
+			catch(InvalidAuthenticationContext iac) {
+				currentLocale = Locale.getDefault();
+			}
 			throw new AccessDeniedException(I18N.getResource(
-					getCurrentLocale(), PermissionService.RESOURCE_BUNDLE,
+					currentLocale, PermissionService.RESOURCE_BUNDLE,
 					"error.accessDenied"));
 
 		}

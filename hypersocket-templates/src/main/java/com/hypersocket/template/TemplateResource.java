@@ -2,6 +2,7 @@ package com.hypersocket.template;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import com.hypersocket.resource.RealmResource;
@@ -10,18 +11,17 @@ import com.hypersocket.resource.RealmResource;
 @Table(name="templates")
 public class TemplateResource extends RealmResource {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -5189102854329906423L;
 
 	@Column(name="logo")
 	String templateLogo;
 	
-	@Column(name="template_variables", length=8000)
+	@Column(name="template_variables")
+	@Lob
 	String variables;
 	
-	@Column(name="template_script", length=8000)
+	@Column(name="template_script")
+	@Lob
 	String script;
 
 	@Column(name="template_type")
