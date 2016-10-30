@@ -26,7 +26,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
-import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskResult;
@@ -53,7 +53,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 	TaskProviderService taskService; 
 	
 	@Autowired
-	SchedulerService schedulerService; 
+	ClusteredSchedulerService schedulerService; 
 	
 	@Autowired
 	ConfigurationService configurationService; 

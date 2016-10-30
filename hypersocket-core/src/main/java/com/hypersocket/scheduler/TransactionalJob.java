@@ -44,8 +44,6 @@ public abstract class TransactionalJob implements Job {
 	public void execute(final JobExecutionContext context) throws JobExecutionException {
 
 		beforeTransaction();
-		
-		
 	
 		try {
 			transactionService.doInTransaction(new TransactionCallbackWithError<Void>() {

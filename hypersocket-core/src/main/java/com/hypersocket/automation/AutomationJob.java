@@ -15,7 +15,7 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskResult;
@@ -39,7 +39,7 @@ public class AutomationJob extends AbstractTriggerJob {
 	EventService eventService; 
 	
 	@Autowired
-	SchedulerService schedulerService; 
+	ClusteredSchedulerService schedulerService; 
 	
 	@Autowired
 	RealmService realmService;

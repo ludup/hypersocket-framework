@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionReaperJob;
 import com.hypersocket.session.SessionService;
@@ -25,7 +25,7 @@ public class core_1_DOT_3_DOT_0 implements Runnable {
 	static Logger log = LoggerFactory.getLogger(core_1_DOT_3_DOT_0.class);
 
 	@Autowired
-	SchedulerService schedulerService;
+	ClusteredSchedulerService schedulerService;
 	
 	@Autowired
 	SessionService sessionService;

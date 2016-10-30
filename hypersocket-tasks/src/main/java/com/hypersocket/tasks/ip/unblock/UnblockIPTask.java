@@ -18,7 +18,7 @@ import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -50,7 +50,7 @@ public class UnblockIPTask extends AbstractTaskProvider {
 	I18NService i18nService;
 	
 	@Autowired
-	SchedulerService schedulerService; 
+	ClusteredSchedulerService schedulerService; 
 	
 	@Autowired
 	TaskProviderService taskService; 

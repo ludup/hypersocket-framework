@@ -70,7 +70,7 @@ import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
-import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.tables.ColumnSort;
@@ -110,7 +110,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	SessionService sessionService;
 
 	@Autowired
-	SchedulerService schedulerService;
+	ClusteredSchedulerService schedulerService;
 
 	@Autowired
 	PrincipalSuspensionService suspensionService;

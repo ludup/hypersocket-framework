@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
-import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
 
 @Service
@@ -24,7 +24,7 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	static Logger log = LoggerFactory.getLogger(PrincipalSuspensionServiceImpl.class);
 	
 	@Autowired
-	SchedulerService schedulerService;
+	ClusteredSchedulerService schedulerService;
 	
 	@Autowired
 	PrincipalSuspensionRepository repository;

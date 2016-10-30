@@ -42,7 +42,7 @@ import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.NotScheduledException;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
-import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
@@ -74,7 +74,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	EventService eventService;
 
 	@Autowired
-	SchedulerService schedulerService;
+	ClusteredSchedulerService schedulerService;
 
 	@Autowired
 	TaskProviderService taskService;

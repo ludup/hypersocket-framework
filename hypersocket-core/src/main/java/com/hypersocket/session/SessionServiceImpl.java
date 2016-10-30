@@ -52,7 +52,7 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.events.SessionClosedEvent;
 import com.hypersocket.session.events.SessionEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
@@ -72,7 +72,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	ConfigurationService configurationService;
 
 	@Autowired
-	SchedulerService schedulerService;
+	ClusteredSchedulerService schedulerService;
 
 	@Autowired
 	RealmService realmService;
