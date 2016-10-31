@@ -15,6 +15,8 @@ public interface AbstractRepository<K> {
 
 	public void refresh(Object entity);
 	
+	public Object merge(Object entity);
+	
 	public void flush();
 
 	Long getCount(Class<?> clz, String searchColumn, String searchPattern, CriteriaConfiguration... configs);

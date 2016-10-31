@@ -1,6 +1,5 @@
 package com.hypersocket.scheduler;
 
-import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -24,22 +23,15 @@ import org.quartz.TriggerKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.utils.HypersocketUtils;
 
-@Service
-public class SchedulerServiceImpl implements
-		SchedulerService {
+public abstract class AbstractSchedulerServiceImpl implements SchedulerService {
 
-	protected SchedulerServiceImpl() {
-	}
+	static Logger log = LoggerFactory.getLogger(AbstractSchedulerServiceImpl.class);
 
-	static Logger log = LoggerFactory.getLogger(SchedulerServiceImpl.class);
-
-	@Autowired
 	Scheduler scheduler;
 
 	@Autowired
@@ -51,20 +43,16 @@ public class SchedulerServiceImpl implements
 	@Autowired
 	EventService eventService;
 
-	public static Long SEQUENCE_GEN = 0L;
-
 	@PostConstruct
 	private void postConstruct() throws SchedulerException {
 		
-		
-		File quartzProperties = new File(HypersocketUtils.getConfigDir(), "quartz.properties");
-		if(quartzProperties.exists()) {
-			System.setProperty("org.quartz.properties", quartzProperties.getAbsolutePath());
-		}
-		
+		scheduler = configureScheduler();
+		  
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}
-
+	
+	protected abstract Scheduler configureScheduler() throws SchedulerException;
+	
 	@Override
 	public void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data)
 			throws SchedulerException {

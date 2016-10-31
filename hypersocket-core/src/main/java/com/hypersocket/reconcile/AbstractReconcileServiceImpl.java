@@ -39,7 +39,7 @@ import com.hypersocket.reconcile.events.ReconcileEvent;
 import com.hypersocket.reconcile.events.ReconcileStartedEvent;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.scheduler.NotScheduledException;
-import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.utils.HypersocketUtils;
 
@@ -53,7 +53,7 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 	public static final String RESOURCE_BUNDLE = "AbstractReconcileService";
 
 	@Autowired
-	SchedulerService schedulerService;
+	ClusteredSchedulerService schedulerService;
 
 	@Autowired
 	ConfigurationService configurationService;

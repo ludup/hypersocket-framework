@@ -18,7 +18,7 @@ import com.hypersocket.dashboard.message.events.DashboardMessageCreatedEvent;
 import com.hypersocket.dashboard.message.events.DashboardMessageEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
-import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
 
 @Service
@@ -30,7 +30,7 @@ public class DashboardMessageServiceImpl extends
 	static Logger log = Logger.getLogger(DashboardMessageServiceImpl.class);
 
 	@Autowired
-	SchedulerService schedulerService;
+	ClusteredSchedulerService schedulerService;
 
 	@Autowired
 	DashboardMessageRepository repository;

@@ -88,5 +88,5 @@ public interface SchedulerService {
 	public boolean jobExists(String scheduleId) throws SchedulerException;
 	
 	public boolean jobDoesNotExists(String scheduleId) throws SchedulerException;
-	
+
 }

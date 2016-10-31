@@ -24,7 +24,7 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.scheduler.ClusteredSchedulerService;
 
 @Service
 public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
@@ -50,7 +50,7 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	I18NService i18nService;
 
 	@Autowired
-	SchedulerService schedulerService;
+	ClusteredSchedulerService schedulerService;
 
 	@Autowired
 	PermissionService permissionService;

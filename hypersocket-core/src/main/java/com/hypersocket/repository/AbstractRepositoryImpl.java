@@ -126,6 +126,13 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		hibernateTemplate.evict(entity);
 	}
 	
+	
+	@Transactional
+	@Override
+	public Object merge(Object entity) {
+		return hibernateTemplate.merge(entity);
+	}
+	
 	@Transactional
 	public void flush() {
 		hibernateTemplate.flush();

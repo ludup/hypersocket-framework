@@ -9,14 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
+import com.hypersocket.scheduler.LocalSchedulerService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
-import com.hypersocket.scheduler.SchedulerService;
 
 @Service
 public class FeedbackServiceImpl extends PasswordEnabledAuthenticatedServiceImpl implements FeedbackService {
 	
 	@Autowired
-	SchedulerService schedulerService;
+	LocalSchedulerService schedulerService;
 	
 	Map<String,FeedbackProgress> feedbacks = new HashMap<String,FeedbackProgress>();
 	
