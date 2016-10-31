@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.json;
 
+import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.local.LocalUser;
@@ -18,6 +19,8 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -31,6 +34,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -55,6 +59,7 @@ public class RestApiInterceptor extends HandlerInterceptorAdapter {
 	PasswordEncryptionService encryptionService;
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 		request.setAttribute(RestApi.API_REST, RestApi.API_REST);
 		String authorizationHeader = request.getHeader(RestApi.HTTP_HEADER_AUTH);
@@ -69,12 +74,23 @@ public class RestApiInterceptor extends HandlerInterceptorAdapter {
 					LocalUser user = userRepository.getUserByName(username, realm);
 
 					if(verify(user, password)){
-						request.setAttribute(RestApi.API_USER, username);
-						Session session = getCurrentSession(request, authorizationHeader);
+						request.setAttribute(RestApi.API_USER, user);
+						Session session = getCurrentSession(request, username);
 						if(session == null){
-							session = createRestApiSession(user, request.getRemoteAddr());
-							sessionService.registerNonCookieSession(request.getRemoteAddr(), authorizationHeader,
-									RestApi.HTTP_BASIC_AUTH_SCHEME, session);
+							AuthenticationScheme authenticationScheme = authenticationService.getSchemeByResourceKey(realm, "basic");
+							session = sessionService.openSession(request.getRemoteAddr(), user, authenticationScheme, RestApi.API_REST,
+									MapUtils.transformedMap(request.getParameterMap(), new Transformer() {
+										@Override
+										public Object transform(Object o) {
+											return o;
+										}
+									}, new Transformer() {
+										@Override
+										public Object transform(Object o) {
+											return Arrays.toString((Object[]) o);
+										}
+									}), realm);
+							sessionService.registerNonCookieSession(request.getRemoteAddr(), username, RestApi.HTTP_BASIC_AUTH_SCHEME, session);
 						}
 						authenticationService.setCurrentSession(session, realm, user, Locale.ENGLISH);
 						return true;
@@ -94,26 +110,10 @@ public class RestApiInterceptor extends HandlerInterceptorAdapter {
 		authenticationService.clearPrincipalContext();
 	}
 
-	private Session createRestApiSession(Principal principal, String remoteAddress) {
-		Session session = new Session();
-		session.setId(UUID.randomUUID().toString());
-		session.setCurrentRealm(realmService.getSystemRealm());
-		session.setOs(System.getProperty("os.name"));
-		session.setOsVersion(System.getProperty("os.version"));
+	private Session getCurrentSession(HttpServletRequest request, String username)  {
 		try {
-			FieldUtils.writeField(session, "principal", principal,true);
-		} catch (IllegalAccessException e) {
-			throw new IllegalStateException(e);
-		}
-		session.setUserAgent("N/A");
-		session.setUserAgentVersion("N/A");
-		session.setRemoteAddress(remoteAddress);
-		return session;
-	}
-
-	private Session getCurrentSession(HttpServletRequest request, String authorizationHeader)  {
-		try {
-			return sessionService.getNonCookieSession(request.getRemoteAddr(), authorizationHeader, RestApi.HTTP_BASIC_AUTH_SCHEME);
+			String usernameEncoded = Base64.toBase64String(username.getBytes());
+			return sessionService.getNonCookieSession(request.getRemoteAddr(), usernameEncoded, RestApi.HTTP_BASIC_AUTH_SCHEME);
 		}catch (AccessDeniedException e){
 			return null;
 		}
