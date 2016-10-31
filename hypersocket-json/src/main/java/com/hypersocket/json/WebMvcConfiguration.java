@@ -42,7 +42,7 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 
 		ObjectMapper mapper = new ObjectMapper();
 		//Registering Hibernate5Module to support lazy objects
-		mapper.registerModule(new Hibernate5Module());
+		mapper.registerModule(new Hibernate5Module().disable(Hibernate5Module.Feature.USE_TRANSIENT_ANNOTATION));
 
 		messageConverter.setObjectMapper(mapper);
 
