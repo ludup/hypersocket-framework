@@ -1,11 +1,11 @@
 package com.hypersocket.extensions;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -13,40 +13,37 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.HypersocketVersion;
 import com.hypersocket.Version;
 import com.hypersocket.utils.HttpUtilsHolder;
+import com.hypersocket.utils.HypersocketUtils;
 
 public class ExtensionHelper {
 
 	static Logger log = LoggerFactory.getLogger(ExtensionHelper.class);
 
-	public static Map<String, ExtensionDefinition> resolveExtensions(
-			boolean refresh, String updateUrl, String appId, String repo,
-			String ourVersion, String serial, ExtensionPlace extensionPlace) throws IOException {
+	public static Map<String, ExtensionVersion> resolveExtensions(
+			boolean refresh, String updateUrl, String[] repos,
+			String ourVersion, String serial,
+			ExtensionPlace extensionPlace, boolean resolveInstalled,
+			ExtensionTarget target) throws IOException {
 
-		Map<String, ExtensionDefinition> extsByName = new HashMap<String, ExtensionDefinition>();
-
-		extsByName.putAll(ExtensionHelper.resolveRemoteDependencies(
-					updateUrl, appId, repo, ourVersion, serial));
-
-		if (!appId.equals(System.getProperty("hypersocket.id"))) {
-			// If not dealing with the local app ID, then we only want what is
-			// available
+		Map<String, ExtensionVersion> extsByName = ExtensionHelper.resolveRemoteDependencies(
+				updateUrl, repos, ourVersion, serial, target);
+		
+		for(ExtensionVersion ext : extsByName.values()) {
+			ext.setState(ExtensionState.NOT_INSTALLED);
+		}
+		
+		if (!resolveInstalled) {
 			return extsByName;
 		}
 
@@ -54,11 +51,11 @@ public class ExtensionHelper {
 
 	}
 
-	public static Map<String, ExtensionDefinition> processLocalExtensions(
-			Map<String, ExtensionDefinition> availableExtensions, ExtensionPlace  extensionsPlace)
+	public static Map<String, ExtensionVersion> processLocalExtensions(
+			Map<String, ExtensionVersion> availableExtensions, ExtensionPlace  extensionsPlace)
 			throws IOException {
 
-		Map<String, ExtensionDefinition> extsByName = new HashMap<String, ExtensionDefinition>(
+		Map<String, ExtensionVersion> extsByName = new HashMap<String, ExtensionVersion>(
 				availableExtensions);
 
 		try {
@@ -82,66 +79,16 @@ public class ExtensionHelper {
 					if (currentArchive == null) {
 						log.warn("No bootstrap archive detected for "
 								+ extensionId);
-						if (Boolean.getBoolean("hypersocket.development")) {
-
-							ExtensionDefinition ext = new ExtensionDefinition(
-									props, System.currentTimeMillis(),
-									currentArchive,
-									HypersocketVersion.getVersion());
-
-							if (Boolean
-									.getBoolean("hypersocket.development.allowExtensionInstall")) {
-								// Allow development version to actually install
-								// extensions
-								if (extsByName.containsKey(extensionId)) {
-									ExtensionDefinition remote = extsByName
-											.get(extensionId);
-
-									Version remoteVersion = new Version(
-											remote.getVersion());
-									Version localVersion = new Version(
-											HypersocketVersion.getVersion());
-
-									if (remoteVersion.compareTo(localVersion) >= 0) {
-
-										if (log.isInfoEnabled()) {
-											log.info(extensionId
-													+ " is installed but an update is available hash=\""
-													+ ext.getHash()
-													+ "\" modified=\""
-													+ ext.getLastModified()
-													+ "\" ["
-													+ remoteVersion
-															.compareTo(localVersion)
-													+ "]");
-										}
-
-										remote.setState(ExtensionState.UPDATABLE);
-									} else {
-
-										if (log.isInfoEnabled()) {
-											log.info("Although the current repository version of "
-													+ extensionId
-													+ " differs its version "
-													+ remote.getVersion()
-													+ " is earlier than the current version "
-													+ HypersocketVersion
-															.getVersion());
-											;
-										}
-										remote.setState(ExtensionState.valueOf(System
-												.getProperty(
-														"hypersocket.development.fakeExtensionState",
-														ExtensionState.INSTALLED.name())));
-									}
-								}
-							} else {
-								ext.setState(ExtensionState.valueOf(System
-										.getProperty(
-												"hypersocket.development.fakeExtensionState",
-												ExtensionState.INSTALLED.name())));
-								extsByName.put(ext.getId(), ext);
-							}
+						
+						if(extsByName.containsKey(extensionId)) {
+							ExtensionVersion remote = extsByName.get(extensionId);
+							remote.setState(ExtensionState.INSTALLED);
+							extsByName.put(extensionId, remote);
+						} else {
+							ExtensionVersion local = new ExtensionVersion();
+							loadLocalExtension(local, props, currentArchive);
+							local.setState(ExtensionState.INSTALLED);
+							extsByName.put(extensionId, local);
 						}
 						continue;
 					} else {
@@ -157,23 +104,15 @@ public class ExtensionHelper {
 							} else {
 								props.put("hash", "??UNKNOWN??");
 							}
-							ExtensionDefinition ext = new ExtensionDefinition(
-									props, currentArchive.lastModified(),
-									currentArchive,
-									HypersocketVersion.getVersion());
-							if (extsByName.containsKey(ext.getId())) {
-								ExtensionDefinition remote = extsByName.get(ext
-										.getId());
-
-								if (remote.getHash().equals(ext.getHash())) {
-									if (log.isInfoEnabled()) {
-										log.info(extensionId
-												+ " is installed ["
-												+ ext.getHash() + "]");
-									}
-									ext.setState(ExtensionState.INSTALLED);
-									extsByName.put(ext.getId(), ext);
-								} else {
+							
+							ExtensionVersion local = new ExtensionVersion();
+							
+							if (extsByName.containsKey(extensionId)) {
+							
+								ExtensionVersion remote = extsByName.get(extensionId);
+								loadBootstrapExtension(local, remote, props, currentArchive);
+								
+								if (!remote.getHash().equals(local.getHash())) {
 
 									Version remoteVersion = new Version(
 											remote.getVersion());
@@ -185,9 +124,9 @@ public class ExtensionHelper {
 										if (log.isInfoEnabled()) {
 											log.info(extensionId
 													+ " is installed but an update is available hash=\""
-													+ ext.getHash()
+													+ local.getHash()
 													+ "\" modified=\""
-													+ ext.getLastModified()
+													+ local.getModifiedDate()
 													+ "\" size=\""
 													+ currentArchive.length()
 													+ "\" ["
@@ -217,8 +156,8 @@ public class ExtensionHelper {
 									log.info(extensionId
 											+ " is installed but not provided by online store");
 								}
-								ext.setState(ExtensionState.INSTALLED);
-								extsByName.put(ext.getId(), ext);
+								loadLocalExtension(local, props, currentArchive);
+								extsByName.put(local.getId(), local);
 							}
 
 						} catch (Throwable e) {
@@ -244,65 +183,79 @@ public class ExtensionHelper {
 		}
 	}
 
-	public static Map<String, ExtensionDefinition> resolveRemoteDependencies(
-			String url, String appId, String repo, String serial) throws IOException {
-		return resolveRemoteDependencies(url, appId, repo,
-				HypersocketVersion.getVersion(), serial);
+	private static void loadBootstrapExtension(ExtensionVersion ext, ExtensionVersion remote, Properties props, File currentArchive) {
+		
+		ext.setDescription(remote.getDescription());
+		ext.setExtensionId(props.getProperty("extension.id"));
+		ext.setExtensionName(remote.getExtensionName());
+		ext.setFilename(currentArchive.getName());
+		ext.setHash(props.getProperty("hash"));
+		ext.setModifiedDate(currentArchive.lastModified());
+		ext.setName(remote.getName());
+		ext.setRepository(remote.getRepository());
+		ext.setRepositoryDescription(remote.getRepositoryDescription());
+		ext.setSize(currentArchive.length());
+		ext.setState(ExtensionState.INSTALLED);
+		ext.setVersion(HypersocketVersion.getVersion());
+		ext.setDependsOn(remote.getDependsOn());
+		ext.setMandatory(remote.isMandatory());
+		ext.setTarget(remote.getTarget());
+	}
+	
+	private static void loadLocalExtension(ExtensionVersion ext, Properties props, File currentArchive) {
+		
+		ext.setDescription("This extension is not available on the remote extension store.");
+		ext.setExtensionId(props.getProperty("extension.id"));
+		ext.setExtensionName(props.getProperty("extension.id"));
+		ext.setFilename(currentArchive==null ? ext.getExtensionId() + ".zip" : currentArchive.getName());
+		ext.setHash(props.getProperty("hash"));
+		ext.setModifiedDate(currentArchive==null ? System.currentTimeMillis() : currentArchive.lastModified());
+		ext.setName(props.getProperty("extension.id"));
+		ext.setRepository("local");
+		ext.setRepositoryDescription("Local Extensions");
+		ext.setSize(currentArchive==null ? 0 : currentArchive.length());
+		ext.setState(ExtensionState.INSTALLED);
+		ext.setVersion(HypersocketVersion.getVersion());
+		ext.setDependsOn(HypersocketUtils.checkNull(props.getProperty("extension.depends")).split(","));
+		ext.setMandatory(Boolean.parseBoolean(props.getProperty("extension.system", "false")));
+		ext.setTarget("SERVER");
 	}
 
-	public static Map<String, ExtensionDefinition> resolveRemoteDependencies(
-			String url, String appId, String repo, String version, String serial)
+	public static Map<String, ExtensionVersion> resolveRemoteDependencies(
+			String url, String appId, String[] repos, String serial, ExtensionTarget target) throws IOException {
+		return resolveRemoteDependencies(url, repos,
+				HypersocketVersion.getVersion(), serial, target);
+	}
+
+	public static Map<String, ExtensionVersion> resolveRemoteDependencies(
+			String url, String[] repos, String version, String serial, ExtensionTarget target)
 			throws IOException {
 
-		Map<String, ExtensionDefinition> extsByName = new HashMap<String, ExtensionDefinition>();
+		Map<String, ExtensionVersion> extsByName = new HashMap<String, ExtensionVersion>();
 
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		try {
 
-			String updateUrl = url + "/" + appId + "/" + repo + "/" + version + "/" + serial;
+			String updateUrl = String.format("%s/%s/%s/%s/%s",url, 
+					System.getProperty("fake.version", version), 
+					HypersocketUtils.csv(repos) , serial, target.name());
 
 			if (log.isInfoEnabled()) {
 				log.info("Checking for updates from " + updateUrl);
 			}
-
-			StringBuffer buf = new StringBuffer();
-			for (String ext : getInstalledExtensions()) {
-				if (buf.length() > 0) {
-					buf.append(",");
-				}
-				buf.append(ext);
-			}
 			
 			Map<String,String> params = new HashMap<String,String>();
-			params.put("exts", buf.toString());
 			String output = HttpUtilsHolder.getInstance().doHttpPost(updateUrl, params, true);
 
-			DocumentBuilderFactory xmlFactory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder xmlBuilder = xmlFactory.newDocumentBuilder();
-
+			
 			if (log.isInfoEnabled()) {
-				log.info(output);
+				log.info(HypersocketUtils.prettyPrintJson(output));
 			}
 
-			Document doc = xmlBuilder.parse(new ByteArrayInputStream(output
-					.getBytes("UTF-8")));
-
-			String appUrl = doc.getDocumentElement().getAttribute("url");
-			String repoVersion = doc.getDocumentElement().getAttribute(
-					"version");
-			NodeList list = doc.getElementsByTagName("archive");
-			Map<String, File> localArchives = getBootstrapArchives();
-			for (int i = 0; i < list.getLength(); i++) {
-				Node node = list.item(i);
-				try {
-					ExtensionDefinition ext = new ExtensionDefinition(
-							(Element) node, appUrl, repoVersion);
-					ext.setLocalArchiveFile(localArchives.get(ext.getId()));
-					extsByName.put(ext.getId(), ext);
-				} catch (Throwable e) {
-					log.error("Failed to parse remote extension definition", e);
-				}
+			ObjectMapper mapper = new ObjectMapper();
+			ExtensionVersion[] exts = mapper.readValue(output, ExtensionVersion[].class);
+			for(ExtensionVersion ext : exts) {
+				extsByName.put(ext.getExtensionId(), ext);
 			}
 
 		} catch (Exception ex) {
