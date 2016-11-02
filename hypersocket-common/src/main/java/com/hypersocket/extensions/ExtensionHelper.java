@@ -112,6 +112,8 @@ public class ExtensionHelper {
 								ExtensionVersion remote = extsByName.get(extensionId);
 								loadBootstrapExtension(local, remote, props, currentArchive);
 								
+								remote.setState(ExtensionState.INSTALLED);
+								
 								if (!remote.getHash().equals(local.getHash())) {
 
 									Version remoteVersion = new Version(
@@ -136,20 +138,7 @@ public class ExtensionHelper {
 										}
 
 										remote.setState(ExtensionState.UPDATABLE);
-									} else {
-
-										if (log.isInfoEnabled()) {
-											log.info("Although the current repository version of "
-													+ extensionId
-													+ " differs its version "
-													+ remote.getVersion()
-													+ " is earlier than the current version "
-													+ HypersocketVersion
-															.getVersion());
-											;
-										}
-										remote.setState(ExtensionState.INSTALLED);
-									}
+									} 
 								}
 							} else {
 								if (log.isInfoEnabled()) {
