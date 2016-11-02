@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -15,6 +14,7 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
@@ -236,6 +236,13 @@ public class ExtensionHelper {
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		try {
 
+			String additionalRepos = System.getProperty("hypersocket.privateRepos");
+			if(additionalRepos!=null) {
+				if(log.isInfoEnabled()) {
+					log.info(String.format("Adding private repos %s", additionalRepos));
+				}
+				repos = ArrayUtils.addAll(repos, additionalRepos.split(","));
+			}
 			String updateUrl = String.format("%s/%s/%s/%s/%s",url, 
 					System.getProperty("fake.version", version), 
 					HypersocketUtils.csv(repos) , serial, target.name());
