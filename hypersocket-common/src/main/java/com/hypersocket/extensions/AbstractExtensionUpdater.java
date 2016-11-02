@@ -12,8 +12,10 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -63,7 +65,7 @@ public abstract class AbstractExtensionUpdater {
 				backupFolder.mkdirs();
 			}
 			final Map<String, ExtensionVersion> allExtensions = onResolveExtensions(getVersion());
-			List<ExtensionVersion> updates = new ArrayList<ExtensionVersion>();
+			Set<ExtensionVersion> updates = new HashSet<ExtensionVersion>();
 			
 			for(ExtensionVersion v : allExtensions.values()) {
 				switch(v.getState()) {
@@ -74,9 +76,7 @@ public abstract class AbstractExtensionUpdater {
 						for(String depend : v.getDependsOn()) {
 							if(StringUtils.isNotBlank(depend)) {
 								ExtensionVersion dep = allExtensions.get(depend);
-								if(dep.getState()==ExtensionState.UPDATABLE || dep.getState()==ExtensionState.NOT_INSTALLED) {
-									updates.add(dep);
-								}
+								updates.add(dep);
 							}
 						}
 					}
@@ -90,9 +90,7 @@ public abstract class AbstractExtensionUpdater {
 							for(String depend : v.getDependsOn()) {
 								if(StringUtils.isNotBlank(depend)) {
 									ExtensionVersion dep = allExtensions.get(depend);
-									if(dep.getState()==ExtensionState.UPDATABLE || dep.getState()==ExtensionState.NOT_INSTALLED) {
-										updates.add(dep);
-									}
+									updates.add(dep);
 								}
 							}
 						}
@@ -109,7 +107,8 @@ public abstract class AbstractExtensionUpdater {
 			totalSize = 0;
 
 			for (ExtensionVersion def : updates) {
-				log.info(String.format("Checking %s - State %s (%d bytes)", 
+				log.info(String.format("Checking %s %s - State %s (%d bytes)", 
+						def.getVersion(),
 						def.getId(), 
 						def.getState(),
 						def.getSize()));
