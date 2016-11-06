@@ -65,6 +65,7 @@ import com.hypersocket.ip.ExtendedIpFilterRuleHandler;
 import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
 import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.server.HypersocketServerImpl;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceRepository;
@@ -114,6 +115,9 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	
 	@Autowired
 	I18NService i18nService;
+	
+	@Autowired
+	RealmService realmService;
 	
 	NettyThreadFactory nettyThreadFactory;
 	
@@ -222,16 +226,19 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			}
 			
 			HTTPInterfaceResource tmp = new HTTPInterfaceResource();
+			tmp.setId(0L);
 			tmp.setInterfaces("127.0.0.1");
 			tmp.setPort(0);
 			tmp.setProtocol(HTTPProtocol.HTTP.toString());
-			
+			tmp.setRealm(realmService.getSystemRealm());
 			bindInterface(tmp);
 			
 			HTTPInterfaceResource tmp2 = new HTTPInterfaceResource();
+			tmp.setId(1L);
 			tmp2.setInterfaces("::");
-			tmp2.setPort(8080);
+			tmp2.setPort(0);
 			tmp2.setProtocol(HTTPProtocol.HTTP.toString());
+			tmp.setRealm(realmService.getSystemRealm());
 			
 			bindInterface(tmp2);
 		}
