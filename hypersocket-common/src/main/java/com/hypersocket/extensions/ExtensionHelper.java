@@ -233,7 +233,7 @@ public class ExtensionHelper {
 				repos = ArrayUtils.addAll(repos, additionalRepos.split(","));
 			}
 			String updateUrl = String.format("%s/%s/%s/%s/%s",url, 
-					System.getProperty("fake.version", version), 
+					version, 
 					HypersocketUtils.csv(repos) , serial, target.name());
 
 			if (log.isInfoEnabled()) {
