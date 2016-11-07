@@ -1,3 +1,0 @@
-ALTER TABLE ssl_certificates ALTER COLUMN private_key SET DATA TYPE TEXT NOT NULL;
-ALTER TABLE ssl_certificates ALTER COLUMN certificate SET DATA TYPE TEXT;
-ALTER TABLE ssl_certificates ALTER COLUMN bundle SET DATA TYPE TEXT;

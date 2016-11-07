@@ -1,5 +1,0 @@
-EXIT IF FRESH
-TRY
-DROP INDEX uuid ON local_user_groups;
-DROP INDEX gguid ON local_group_groups;
-CATCH
