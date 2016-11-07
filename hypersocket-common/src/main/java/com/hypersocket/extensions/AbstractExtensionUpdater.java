@@ -45,16 +45,20 @@ public abstract class AbstractExtensionUpdater {
 	
 	public abstract ExtensionPlace getExtensionPlace();
 
-	public abstract ExtensionTarget[] getUpdateTarget();
+	public abstract ExtensionTarget[] getUpdateTargets();
 	
 	public abstract String getVersion();
+	
+	public abstract boolean hasLocalRepository(String version);
+	
+	public abstract File getLocalRepositoryFile();
 	
 	public final boolean update() throws IOException {
 
 		if (log.isInfoEnabled()) {
 			log.info("Checking updatable extensions");
 		}
-
+		
 		int totalUpdates = 0;
 		try {
 			File tmpFolder = Files.createTempDirectory("hypersocket").toFile();
@@ -71,7 +75,7 @@ public abstract class AbstractExtensionUpdater {
 				switch(v.getState()) {
 				case UPDATABLE:
 					
-					if(ArrayUtils.contains(getUpdateTarget(),ExtensionTarget.valueOf(v.getTarget()))) {
+					if(ArrayUtils.contains(getUpdateTargets(),ExtensionTarget.valueOf(v.getTarget()))) {
 						updates.add(v);
 						for(String depend : v.getDependsOn()) {
 							if(StringUtils.isNotBlank(depend)) {
@@ -84,7 +88,7 @@ public abstract class AbstractExtensionUpdater {
 					break;
 				case NOT_INSTALLED:
 					
-					if(ArrayUtils.contains(getUpdateTarget(), ExtensionTarget.valueOf(v.getTarget()))) {
+					if(ArrayUtils.contains(getUpdateTargets(), ExtensionTarget.valueOf(v.getTarget()))) {
 						if(v.isMandatory()) {
 							updates.add(v);
 							for(String depend : v.getDependsOn()) {
@@ -117,9 +121,6 @@ public abstract class AbstractExtensionUpdater {
 					totalSize += def.getSize();
 			}
 
-			//if (totalUpdates == 0) {
-			//	throw new IOException("The update could not resolve any extensions to download!");
-			//}
 			onUpdateStart(totalSize);
 
 			transfered = 0;
@@ -129,23 +130,30 @@ public abstract class AbstractExtensionUpdater {
 			for (ExtensionVersion def : updates) {
 
 				onExtensionDownloadStarted(def);
-
-				URL url = new URL(def.getUrl());
-
-				File archiveTmp = new File(tmpFolder,
-						FileUtils.lastPathElement(FileUtils.checkEndsWithNoSlash(url.getFile())));
-				archiveTmp.getParentFile().mkdirs();
-
-				tmpArchives.put(def, archiveTmp);
-
-				OutputStream out = new FileOutputStream(archiveTmp);
-
-				if (log.isInfoEnabled()) {
-					log.info(String.format("Downloading %s", url));
+				InputStream in = null;
+				String filename = FileUtils.lastPathElement(def.getFilename());
+				if(hasLocalRepository(getVersion())) {
+					File file = new File(getLocalRepositoryFile(), def.getFilename());
+					in = new FileInputStream(file);
+					if (log.isInfoEnabled()) {
+						log.info(String.format("Copying %s", file.getAbsolutePath()));
+					}
+				} else {
+					URL url = new URL(def.getUrl());
+					if (log.isInfoEnabled()) {
+						log.info(String.format("Downloading %s", url));
+					}
+					in = downloadFromUrl(url);
 				}
-				try {
-					InputStream in = downloadFromUrl(url);
 
+				File archiveTmp = new File(tmpFolder,filename);
+				archiveTmp.getParentFile().mkdirs();
+				tmpArchives.put(def, archiveTmp);
+				
+				try {
+					
+					OutputStream out = new FileOutputStream(archiveTmp);
+					
 					try {
 
 						byte[] buf = new byte[32768];
@@ -166,13 +174,14 @@ public abstract class AbstractExtensionUpdater {
 						}
 
 					} finally {
-						FileUtils.closeQuietly(in);
+						
+						FileUtils.closeQuietly(out);
 					}
 				} finally {
-					FileUtils.closeQuietly(out);
+					FileUtils.closeQuietly(in);
 				}
 
-				InputStream in = new FileInputStream(archiveTmp);
+				in = new FileInputStream(archiveTmp);
 				try {
 					String generatedMd5 = DigestUtils.md5Hex(in);
 					if (def.getHash().length() > 0 && !generatedMd5.equals(def.getHash())) {

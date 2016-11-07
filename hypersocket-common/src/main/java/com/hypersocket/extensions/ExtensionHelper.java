@@ -34,10 +34,10 @@ public class ExtensionHelper {
 			boolean refresh, String updateUrl, String[] repos,
 			String ourVersion, String serial,
 			ExtensionPlace extensionPlace, boolean resolveInstalled,
-			ExtensionTarget target) throws IOException {
+			ExtensionTarget... targets) throws IOException {
 
 		Map<String, ExtensionVersion> extsByName = ExtensionHelper.resolveRemoteDependencies(
-				updateUrl, repos, ourVersion, serial, target);
+				updateUrl, repos, ourVersion, serial, targets);
 		
 		for(ExtensionVersion ext : extsByName.values()) {
 			ext.setState(ExtensionState.NOT_INSTALLED);
@@ -211,13 +211,7 @@ public class ExtensionHelper {
 	}
 
 	public static Map<String, ExtensionVersion> resolveRemoteDependencies(
-			String url, String appId, String[] repos, String serial, ExtensionTarget target) throws IOException {
-		return resolveRemoteDependencies(url, repos,
-				HypersocketVersion.getVersion(), serial, target);
-	}
-
-	public static Map<String, ExtensionVersion> resolveRemoteDependencies(
-			String url, String[] repos, String version, String serial, ExtensionTarget target)
+			String url, String[] repos, String version, String serial, ExtensionTarget... targets)
 			throws IOException {
 
 		Map<String, ExtensionVersion> extsByName = new HashMap<String, ExtensionVersion>();
@@ -234,7 +228,7 @@ public class ExtensionHelper {
 			}
 			String updateUrl = String.format("%s/%s/%s/%s/%s",url, 
 					version, 
-					HypersocketUtils.csv(repos) , serial, target.name());
+					HypersocketUtils.csv(repos) , serial, targets[0].name());
 
 			if (log.isInfoEnabled()) {
 				log.info("Checking for updates from " + updateUrl);
@@ -251,7 +245,10 @@ public class ExtensionHelper {
 			ObjectMapper mapper = new ObjectMapper();
 			ExtensionVersion[] exts = mapper.readValue(output, ExtensionVersion[].class);
 			for(ExtensionVersion ext : exts) {
-				extsByName.put(ext.getExtensionId(), ext);
+				ExtensionTarget t = ExtensionTarget.valueOf(ext.getTarget());
+				if(ArrayUtils.contains(targets, t)) {
+					extsByName.put(ext.getExtensionId(), ext);
+				}
 			}
 
 		} catch (Exception ex) {
