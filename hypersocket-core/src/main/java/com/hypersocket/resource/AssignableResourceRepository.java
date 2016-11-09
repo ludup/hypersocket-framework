@@ -13,8 +13,7 @@ import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
 
 public interface AssignableResourceRepository extends ResourceTemplateRepository {
-
+	
 	List<AssignableResource> getAllAssignableResources(List<Principal> principals);
-
 
 }

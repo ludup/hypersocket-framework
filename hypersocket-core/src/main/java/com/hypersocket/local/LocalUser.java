@@ -70,6 +70,11 @@ public class LocalUser extends UserPrincipal implements Serializable {
 		return "fa-database";
 	}
 	
+	@Override
+	public boolean isReadOnly() {
+		return false;
+	}
+	
 	@JsonIgnore
 	public Set<LocalGroup> getGroups() {
 		return groups;

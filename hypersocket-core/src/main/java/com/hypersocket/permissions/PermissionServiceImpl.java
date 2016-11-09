@@ -716,11 +716,14 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 			@Override
 			public Principal doInTransaction(TransactionStatus status) {
-				
-
-				
 
 				try {
+					
+					long count = repository.getAssignableResourceCount(principal);
+					if(count > 0) {
+						throw new ResourceException(RESOURCE_BUNDLE, "error.resourcesAssigned", principal.getPrincipalName(), count);
+					}
+					
 					for(TransactionAdapter<Principal> op : ops) {
 						op.beforeOperation(principal, new HashMap<String,String>());
 					}

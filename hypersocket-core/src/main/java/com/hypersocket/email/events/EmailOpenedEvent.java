@@ -1,7 +1,9 @@
-package com.hypersocket.email;
+package com.hypersocket.email.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.hypersocket.email.EmailNotificationServiceImpl;
+import com.hypersocket.email.EmailReceipt;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.utils.HypersocketUtils;

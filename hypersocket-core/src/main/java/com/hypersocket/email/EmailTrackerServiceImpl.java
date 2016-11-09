@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.config.SystemConfigurationService;
+import com.hypersocket.email.events.EmailOpenedEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
@@ -47,7 +48,7 @@ public class EmailTrackerServiceImpl implements EmailTrackerService {
 	
 	@PostConstruct
 	private void postConstruct() {
-		
+		eventService.registerEvent(EmailOpenedEvent.class, EmailNotificationServiceImpl.RESOURCE_BUNDLE);
 	}
 	
 	@Override

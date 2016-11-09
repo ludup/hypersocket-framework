@@ -8,6 +8,7 @@
 package com.hypersocket.resource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -69,7 +70,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	public EntityResourcePropertyStore getEntityStore() {
 		return entityPropertyStore;
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)

@@ -790,6 +790,10 @@ public class AuthenticationServiceImpl extends
 			}
 		}
 
+		// We need to reset the scheme to the new principal realm.
+		state.setScheme(schemeRepository.getSchemeByResourceKey(principal.getRealm(), 
+				state.getScheme().getResourceKey()));
+		
 		if(!state.getScheme().getAllowedRoles().isEmpty()) {
 			boolean found = false;
 			for(Role role : state.getScheme().getAllowedRoles()) {

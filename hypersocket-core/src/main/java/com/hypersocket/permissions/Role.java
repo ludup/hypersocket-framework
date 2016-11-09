@@ -48,6 +48,7 @@ public class Role extends RealmResource {
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Fetch(FetchMode.SUBSELECT)
 	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
+	@Fetch(FetchMode.SELECT)
 	@JoinTable(name = "role_principals", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
 	Set<Principal> principals = new HashSet<Principal>();
 
