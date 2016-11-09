@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 import javax.mail.Message.RecipientType;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;

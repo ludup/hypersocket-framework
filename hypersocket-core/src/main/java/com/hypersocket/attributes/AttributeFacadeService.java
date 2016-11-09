@@ -3,7 +3,6 @@ package com.hypersocket.attributes;
 import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 
