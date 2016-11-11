@@ -72,6 +72,8 @@ public interface PermissionService extends AuthenticatedService {
 
 	boolean hasSystemPermission(Principal principal);
 
+	boolean hasAdministrativePermission(Principal principal);
+	
 	public Long getRoleCount(String searchPattern) throws AccessDeniedException;
 
 	public List<?> getRoles(String searchPattern, int start, int length, ColumnSort[] sorting)
