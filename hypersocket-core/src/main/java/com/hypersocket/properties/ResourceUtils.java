@@ -131,7 +131,15 @@ public class ResourceUtils {
 	}
 
 	public static boolean isEncrypted(String value) {
-		return value!=null && value.startsWith(getEncryptedTag());
+		return value!=null && (value.startsWith(getEncryptedTag()) || value.startsWith(getUUIDEncryptedTag()));
+	}
+	
+	public static boolean isEncryptedUUIDType(String value) {
+		return value!=null && value.startsWith(getUUIDEncryptedTag());
+	}
+	
+	public static String getUUIDEncryptedTag() {
+		return "!ENU!";
 	}
 
 	public static <T extends Resource> String implodeResourceValues(Collection<T> entities) {
@@ -212,11 +220,11 @@ public class ResourceUtils {
 	}
 	
 	public static String addEncryptedTag(String value) {
-		return getEncryptedTag() + value;
+		return getUUIDEncryptedTag() + value;
 	}
 	
 	public static String removeEncryptedTag(String value) {
-		return value.replaceFirst(getEncryptedTag(), "");
+		return value.replaceFirst(getEncryptedTag(), "").replaceFirst(getUUIDEncryptedTag(), "");
 	}
 
 	public static boolean isNamePair(String id) {
