@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.hypersocket.resource.RealmResource;
 
 @MappedSuperclass
-@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
 public class InterfaceResource extends RealmResource {
 
 	private static final long serialVersionUID = 3104523837579362221L;
