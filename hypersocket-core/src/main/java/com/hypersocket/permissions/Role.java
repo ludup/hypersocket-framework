@@ -25,6 +25,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import com.hypersocket.realm.Principal;
+import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
@@ -34,13 +35,20 @@ public class Role extends RealmResource {
 
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
+	@Fetch(FetchMode.SELECT)
 	@JoinTable(name = "role_permissions", 
 		joinColumns = {@JoinColumn(name="role_id")}, 
 		inverseJoinColumns = {@JoinColumn(name="permission_id")})
 	private Set<Permission> permissions = new HashSet<Permission>();
 
-	@ManyToMany(fetch=FetchType.EAGER)
+	@ManyToMany(fetch=FetchType.LAZY)
+	@Fetch(FetchMode.SELECT)
 	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
+	@JoinTable(name = "resource_roles", inverseJoinColumns={@JoinColumn(name="resource_id")}, 
+			joinColumns={@JoinColumn(name="role_id")})
+	Set<AssignableResource> resources = new HashSet<AssignableResource>();
+	
+	@ManyToMany(fetch=FetchType.EAGER)
 	@Fetch(FetchMode.SELECT)
 	@JoinTable(name = "role_principals", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
 	Set<Principal> principals = new HashSet<Principal>();

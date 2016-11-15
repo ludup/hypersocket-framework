@@ -28,6 +28,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.resource.AbstractResource;
@@ -246,23 +247,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 
 	@Override
 	@Transactional
-	public void deleteRole(final Role role) {
-		
-		Collection<AssignableResource> resources = list(AssignableResource.class, new CriteriaConfiguration() {	
-			@Override
-			public void configure(Criteria criteria) {
-				criteria = criteria.createCriteria("roles");
-				criteria.add(Restrictions.eq("id", role.getId()));
-			}
-		});
-		
-		for(AssignableResource resource : resources) {
-			resource.getRoles().remove(role);
-			save(resource);
-		}
-		
-		flush();
-		
+	public void deleteRole(final Role role) {		
 		delete(role);
 	}
 
@@ -577,6 +562,11 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@Override
 	protected Class<Role> getResourceClass() {
 		return Role.class;
+	}
+
+	@Override
+	public Collection<Role> allRoles() {
+		return allEntities(Role.class);
 	}
 
 

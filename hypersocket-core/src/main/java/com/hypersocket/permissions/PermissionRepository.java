@@ -108,4 +108,6 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 	Role getPersonalRole(Principal principal, boolean createIfNotFound);
 
 	long getAssignableResourceCount(Principal principal);
+
+	public Collection<Role> allRoles();
 }
