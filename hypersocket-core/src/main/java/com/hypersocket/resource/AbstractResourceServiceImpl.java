@@ -149,8 +149,9 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 					return true;
 				}
 			}
-			getResourceByName(resource.getName(), resource.getRealm());
-			return false;
+			// Database might collate accented characters so check String.equals
+			T resource2 = getResourceByName(resource.getName(), resource.getRealm());
+			return !resource2.getName().equals(resource.getName());
 		} catch (ResourceNotFoundException e) {
 			return true;
 		}
