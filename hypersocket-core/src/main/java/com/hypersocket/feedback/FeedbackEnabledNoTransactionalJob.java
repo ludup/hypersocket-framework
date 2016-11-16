@@ -4,9 +4,9 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hypersocket.scheduler.PermissionsAwareJob;
+import com.hypersocket.scheduler.PermissionsAwareJobNonTransactional;
 
-public abstract class FeedbackEnabledJob extends PermissionsAwareJob implements FeedbackJob {
+public abstract class FeedbackEnabledNoTransactionalJob extends PermissionsAwareJobNonTransactional implements FeedbackJob {
 
 	public static final String FEEDBACK_ITEM = "feedback";
 	
@@ -15,29 +15,27 @@ public abstract class FeedbackEnabledJob extends PermissionsAwareJob implements 
 	
 	protected FeedbackProgress progress;
 	
-	public FeedbackEnabledJob() {
+	public FeedbackEnabledNoTransactionalJob() {
 	}
 
 	@Override
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {
-		String uuid = (String) context.getTrigger().getJobDataMap().get(FEEDBACK_ITEM);
-		if(uuid==null) {
-			progress = feedbackService.createFeedbackProgress();
-		} else {
-			progress = feedbackService.getFeedbackProgress(uuid);
+		try {
+			String uuid = (String) context.getTrigger().getJobDataMap().get(FEEDBACK_ITEM);
+			if(uuid==null) {
+				progress = feedbackService.createFeedbackProgress();
+			} else {
+				progress = feedbackService.getFeedbackProgress(uuid);
+			}
+			startJob(context, progress);
+			progress.complete(getCompleteResourceKey());
+		} catch (Throwable t) {
+			progress.failed(getFailedResourceKey(), t, t.getCause()!=null ? t.getCause().getMessage() : t.getMessage());
+			throw t;
 		}
-		startJob(context, progress);
 	}
 	
 	protected abstract void startJob(JobExecutionContext context, FeedbackProgress progress) throws JobExecutionException;
-
-	protected void onTransactionComplete() {
-		progress.complete(getCompleteResourceKey());
-	}
-
-	protected void onTransactionFailure(Throwable t) {
-		progress.failed(getFailedResourceKey(), t, t.getCause()!=null ? t.getCause().getMessage() : t.getMessage());
-	}
 
 	protected String getCompleteResourceKey() {
 		return "jobComplete.text";

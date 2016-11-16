@@ -32,7 +32,7 @@ public abstract class TransactionalJob implements Job {
 	
 	protected abstract void onExecute(JobExecutionContext context);
 
-	protected void beforeTransaction() { 
+	protected void beforeTransaction(JobExecutionContext context) { 
 		
 	}
 	
@@ -43,7 +43,7 @@ public abstract class TransactionalJob implements Job {
 	@Override
 	public void execute(final JobExecutionContext context) throws JobExecutionException {
 
-		beforeTransaction();
+		beforeTransaction(context);
 	
 		try {
 			transactionService.doInTransaction(new TransactionCallbackWithError<Void>() {
