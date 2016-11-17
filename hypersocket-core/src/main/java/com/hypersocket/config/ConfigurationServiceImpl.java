@@ -26,6 +26,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceChangeException;
@@ -185,9 +186,11 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 		if(resourceKey.equals("current.locale")) {
 			defaultLocale = i18nService.getLocale(newValue);
 		}
-		eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true,
-				getCurrentSession(), repository.getPropertyTemplate(getCurrentRealm(), resourceKey), oldValue, newValue, hidden));
-		
+		PropertyTemplate template = repository.getPropertyTemplate(getCurrentRealm(), resourceKey);
+		if(!template.isHidden()) {
+			eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true,
+				getCurrentSession(), template, oldValue, newValue, hidden));
+		}
 	}
 
 	private void fireChangeEvent(String resourceKey, Throwable t) {
