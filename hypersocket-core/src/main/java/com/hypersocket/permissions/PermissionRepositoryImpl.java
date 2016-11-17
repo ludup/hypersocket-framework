@@ -252,22 +252,6 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@Override
 	@Transactional
 	public void deleteRole(final Role role) {
-		
-		Collection<AssignableResource> resources = list(AssignableResource.class, new CriteriaConfiguration() {	
-			@Override
-			public void configure(Criteria criteria) {
-				criteria = criteria.createCriteria("roles");
-				criteria.add(Restrictions.eq("id", role.getId()));
-			}
-		});
-		
-		for(AssignableResource resource : resources) {
-			resource.getRoles().remove(role);
-			save(resource);
-		}
-		
-		flush();
-		
 		delete(role);
 	}
 

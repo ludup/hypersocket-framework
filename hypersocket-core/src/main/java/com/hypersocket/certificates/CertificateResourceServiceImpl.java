@@ -427,7 +427,12 @@ public class CertificateResourceServiceImpl extends
 	public void updateCertificate(CertificateResource resource,
 			MultipartFile file, MultipartFile bundle)
 			throws ResourceChangeException {
-		
+		try {
+			updateCertificate(resource, file.getInputStream(), bundle.getInputStream());
+		} catch (IOException e) {
+			throw new ResourceChangeException(RESOURCE_BUNDLE,
+					"error.certificateError", e.getMessage());
+		}
 	}
 	
 	@Override

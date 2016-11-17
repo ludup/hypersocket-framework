@@ -40,7 +40,7 @@ public abstract class Principal extends RealmResource {
 	private static final long serialVersionUID = -2289438956153713201L;
 
 	@ManyToMany(fetch = FetchType.LAZY)
-	@Cascade({ CascadeType.SAVE_UPDATE })
+	@Cascade({ CascadeType.SAVE_UPDATE, CascadeType.MERGE })
 	@JoinTable(name = "role_principals", joinColumns = { @JoinColumn(name = "principal_id") }, inverseJoinColumns = { @JoinColumn(name = "role_id") })
 	@Fetch(FetchMode.SELECT)
 	Set<Role> roles = new HashSet<Role>();

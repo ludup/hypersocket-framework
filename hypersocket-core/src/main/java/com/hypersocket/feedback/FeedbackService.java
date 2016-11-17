@@ -7,7 +7,7 @@ import com.hypersocket.scheduler.PermissionsAwareJobData;
 
 public interface FeedbackService extends AuthenticatedService {
 	
-	FeedbackProgress startJob(Class<? extends FeedbackEnabledJob> jobClz, PermissionsAwareJobData data) throws SchedulerException;
+	FeedbackProgress startJob(Class<? extends FeedbackJob> jobClz, PermissionsAwareJobData data) throws SchedulerException;
 
 	FeedbackProgress createFeedbackProgress();
 
@@ -15,7 +15,7 @@ public interface FeedbackService extends AuthenticatedService {
 
 	void closeFeedbackProgress(FeedbackProgress progress);
 
-	FeedbackProgress startJob(Class<? extends FeedbackEnabledJob> jobClz, String scheduleId,
+	FeedbackProgress startJob(Class<? extends FeedbackJob> jobClz, String scheduleId,
 			PermissionsAwareJobData data) throws SchedulerException;
 
 }
