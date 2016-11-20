@@ -7,6 +7,16 @@
  ******************************************************************************/
 package com.hypersocket.input;
 
-public enum InputFieldType {
-	text, password, select, hidden, p, a, script, div, pre;
+public class PreField extends InputField {
+
+	boolean isValueResourceKey;
+	
+	public PreField(String defaultValue, boolean isValueResourceKey) {
+		super(InputFieldType.pre, "preField", defaultValue, false, "");
+		this.isValueResourceKey = isValueResourceKey;
+	}
+	
+	public boolean isValueResourceKey() {
+		return isValueResourceKey;
+	}
 }
