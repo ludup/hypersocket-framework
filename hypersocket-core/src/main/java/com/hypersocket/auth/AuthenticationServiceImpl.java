@@ -432,9 +432,11 @@ public class AuthenticationServiceImpl extends
 			} else {
 				switch (authenticator.authenticate(state, parameterMap)) {
 				case INSUFFICIENT_DATA: {
-					if (state.getAttempts() >= 1) {
-						state.setLastErrorMsg("error.insufficentData");
-						state.setLastErrorIsResourceKey(true);
+					if (state.getLastErrorMsg() == null && parameterMap.size() > 1) {
+						if (state.getAttempts() >= 1) {
+							state.setLastErrorMsg("error.insufficentData");
+							state.setLastErrorIsResourceKey(true);
+						}
 					}
 					break;
 				}
