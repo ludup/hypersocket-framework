@@ -15,6 +15,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -324,6 +325,9 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			afterDeleteResource(resource);
 			fireResourceDeletionEvent(resource);
 		} catch (Throwable t) {
+			if(t instanceof DataIntegrityViolationException) {
+				throw new ResourceChangeException(RESOURCE_BUNDLE_DEFAULT, "error.objectInUse");
+			}
 			fireResourceDeletionEvent(resource, t);
 			if (t instanceof ResourceChangeException) {
 				throw (ResourceChangeException) t;
