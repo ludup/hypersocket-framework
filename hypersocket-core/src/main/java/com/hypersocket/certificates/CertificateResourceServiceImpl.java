@@ -27,6 +27,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
@@ -475,6 +476,9 @@ public class CertificateResourceServiceImpl extends
 			log.error("Failed to generate certificate", e);
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
 					"error.certificateError", e.getMessage());
+		} finally {
+			IOUtils.closeQuietly(file);
+			IOUtils.closeQuietly(bundle);
 		}
 
 	}
