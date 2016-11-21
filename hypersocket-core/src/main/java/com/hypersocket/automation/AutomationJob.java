@@ -91,7 +91,7 @@ public class AutomationJob extends AbstractTriggerJob {
 						try {
 							executeTask(resource, provider, event);
 						} catch (ValidationException e) {
-							throw new IllegalStateException(e);
+							throw new IllegalStateException(e.getMessage(), e);
 						}
 						return null;
 					}

@@ -401,7 +401,7 @@ public class TriggerResourceServiceImpl extends
 							getRepository().deletePropertiesForResource(
 									resource);
 						} catch (Throwable e) {
-							throw new IllegalStateException(e);
+							throw new IllegalStateException(e.getMessage(), e);
 						}
 					}
 				});

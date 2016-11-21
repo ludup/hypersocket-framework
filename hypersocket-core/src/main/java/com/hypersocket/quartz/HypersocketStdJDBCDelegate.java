@@ -68,7 +68,7 @@ public class HypersocketStdJDBCDelegate extends StdJDBCDelegate{
 
             return job;
         } catch (JobPersistenceException e){
-            throw new IllegalStateException(e);
+            throw new IllegalStateException(e.getMessage(), e);
         }finally {
             closeResultSet(rs);
             closeStatement(ps);

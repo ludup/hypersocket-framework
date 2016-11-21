@@ -68,7 +68,7 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 
 			return propertiesMap.get(vendor);
 		}catch (IOException e){
-			throw new IllegalStateException(e);
+			throw new IllegalStateException(e.getMessage(), e);
 		}
 	 }
 	 

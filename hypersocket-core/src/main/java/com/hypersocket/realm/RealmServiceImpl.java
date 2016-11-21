@@ -1237,7 +1237,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 					return principal;
 				} catch (ResourceChangeException e) {
-					throw new IllegalStateException(e);
+					throw new IllegalStateException(e.getMessage(), e);
 				} catch (Throwable e) {
 					throw new IllegalStateException(
 							new ResourceChangeException(RESOURCE_BUNDLE, "groupUser.unexpectedError", e.getMessage()));
@@ -1310,7 +1310,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					try {
 						provider.deleteUser(resource);
 					} catch (ResourceChangeException e) {
-						throw new IllegalStateException(e);
+						throw new IllegalStateException(e.getMessage(), e);
 					}
 				}
 			});

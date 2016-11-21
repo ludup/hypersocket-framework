@@ -838,7 +838,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 					return role;
 				} catch (AccessDeniedException | ResourceCreationException e) {
-					throw new IllegalStateException(e);
+					throw new IllegalStateException(e.getMessage(), e);
 				}
 			}
 			

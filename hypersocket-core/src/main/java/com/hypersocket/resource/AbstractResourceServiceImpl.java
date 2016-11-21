@@ -541,7 +541,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 					
 					return resources;
 				} catch(ResourceException e) { 
-					throw new IllegalStateException(e);
+					throw new IllegalStateException(e.getMessage(), e);
 				}catch (AccessDeniedException | IOException e) {
 					throw new IllegalStateException(new ResourceImportException(RESOURCE_BUNDLE_DEFAULT, "error.importError", e.getMessage()));
 				}			
