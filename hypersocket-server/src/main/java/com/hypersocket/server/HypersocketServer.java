@@ -104,4 +104,6 @@ public interface HypersocketServer {
 	boolean isAliasFor(String redirectPage, String uri);
 
 	ExecutorService getExecutor();
+
+	void registerClientConnector(ClientConnector connector);
 }
