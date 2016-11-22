@@ -1472,11 +1472,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 		}
 		if (found.size() != 1) {
-			if (found.size() > 1 && log.isInfoEnabled()) {
+			if (found.size() > 1) {
 				// Fire Event 
-				log.info("More than one principal found for username " + username);
+				if(log.isInfoEnabled()) {
+					log.info("More than one principal found for username " + username);
+				}
 				for(Principal principal : found) {
-					if(principal.isSystem()) {
+					if(principal.isSystem() || permissionService.hasSystemPermission(principal)) {
 						log.info(String.format("Resolving duplicate principals to %s/%s [System User]", principal.getRealm().getName(), principal.getPrincipalName()));
 						return principal;
 					} 
