@@ -658,8 +658,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				if (propertyTemplates.containsKey(resourceKey)) {
 					setValue(resource, resourceKey, properties.get(resourceKey));
 				}
-				else
+				else {
 					log.warn(String.format("Request to set property %s which does not exist in template %s", resourceKey, resource.toString()));
+				}
 			}
 		}
 	}
