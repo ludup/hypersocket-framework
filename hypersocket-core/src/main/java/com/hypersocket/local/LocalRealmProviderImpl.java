@@ -8,6 +8,7 @@
 package com.hypersocket.local;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -20,6 +21,7 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.resource.ResourceException;
 
 @Repository
 public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl implements LocalRealmProvider {
@@ -82,8 +84,12 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 
 	@Override
 	public String getResourceBundle() {
-		// TODO Auto-generated method stub
-		return null;
+		return RESOURCE_BUNDLE;
+	}
+
+	@Override
+	public void assertCreateRealm(Map<String, String> properties) throws ResourceException {
+		
 	}
 
 }

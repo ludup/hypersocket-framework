@@ -7,7 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -20,7 +19,6 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
-import javax.security.auth.callback.PasswordCallback;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -843,6 +841,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 //				realm.setKnownHosts(ResourceUtils.explodeValues(properties.get("knownHosts")));
 //			}
 			
+			realmProvider.assertCreateRealm(properties);
 			realmProvider.testConnection(properties);
 
 			@SuppressWarnings("unchecked")
@@ -1671,7 +1670,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean supportsAccountUnlock(Realm realm) throws IOException {
+	public boolean supportsAccountUnlock(Realm realm) throws ResourceException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -1679,7 +1678,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean supportsAccountDisable(Realm realm) throws IOException {
+	public boolean supportsAccountDisable(Realm realm) throws ResourceException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 

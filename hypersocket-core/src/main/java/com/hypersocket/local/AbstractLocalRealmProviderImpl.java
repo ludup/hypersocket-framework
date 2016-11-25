@@ -789,8 +789,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	}
 
 	@Override
-	public void testConnection(Map<String, String> properties, Realm realm)
-			throws IOException {
+	public void testConnection(Map<String, String> properties, Realm realm) {
 		
 	}
 	
