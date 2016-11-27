@@ -1,25 +1,5 @@
 package com.hypersocket.resource;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.math.BigInteger;
-import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
@@ -33,6 +13,18 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.transactions.TransactionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.util.*;
 
 @Service
 public abstract class AbstractAssignableResourceServiceImpl<T extends AssignableResource>
