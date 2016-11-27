@@ -93,7 +93,7 @@ public abstract class PermissionsAwareJobNonTransactional implements Job, Runnab
 
 		} catch (Throwable e) {
 			log.error("Error in job", e);
-			throw new IllegalStateException(e);
+			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}
 	

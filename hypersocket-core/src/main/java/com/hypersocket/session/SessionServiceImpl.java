@@ -574,7 +574,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 			throw new AccessDeniedException();
 		} catch (UnsupportedEncodingException e) {
-			throw new IllegalStateException(e);
+			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}
 

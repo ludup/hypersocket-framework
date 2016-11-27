@@ -342,7 +342,7 @@ public class HypersocketUtils {
 		try {
 			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readValue(output, Object.class));
 		} catch (IOException e) {
-			throw new IllegalStateException(e);
+			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}
 

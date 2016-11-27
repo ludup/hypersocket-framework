@@ -91,7 +91,7 @@ public abstract class PermissionsAwareJob extends TransactionalJob implements Ru
 
 		} catch (Exception e) {
 			log.error("Error in job", e);
-			throw new IllegalStateException(e);
+			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}
 	

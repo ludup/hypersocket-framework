@@ -436,9 +436,9 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 					try {
 						updateResource(automation);
 					} catch (ResourceChangeException e) {
-						throw new IllegalStateException(e);
+						throw new IllegalStateException(e.getMessage(), e);
 					} catch (AccessDeniedException e) {
-						throw new IllegalStateException(e);
+						throw new IllegalStateException(e.getMessage(), e);
 					}
 				}
 			}

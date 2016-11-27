@@ -226,7 +226,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 					try {
 						return  provider.execute(trigger, lastResult.getCurrentRealm(), lastResult);
 					} catch (ValidationException e) {
-						throw new IllegalStateException(e);
+						throw new IllegalStateException(e.getMessage(), e);
 					}
 				}
 				
@@ -255,7 +255,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 				}
 			}
 		} catch(ResourceException | AccessDeniedException e) {
-			throw new IllegalStateException(e);
+			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}
 	

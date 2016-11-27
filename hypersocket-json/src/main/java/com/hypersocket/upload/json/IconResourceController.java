@@ -51,7 +51,7 @@ public abstract class IconResourceController<T extends Resource> extends Resourc
 			IconEntry e = new IconEntry();
 			e.setIcon(String.valueOf(a.character()));
 			e.setValue(a.name());
-			e.setName(a.name().substring(5).replace("_", " ").toLowerCase());
+			e.setName(a.name().replace("_", " ").toLowerCase());
 			ICON_LIST.getResources().add(e);
 		}
 	}
@@ -115,7 +115,7 @@ public abstract class IconResourceController<T extends Resource> extends Resourc
 			// name
 			int iconMatches = 0;
 			for (AwesomeIcon a : AwesomeIcon.values()) {
-				final String ename = a.name().replace("ICON_", "").replace("_", " ");
+				final String ename = a.name().replace("_", " ");
 				String[] iconWords = ename.split("\\s+");
 				int matches = 0;
 				for (String w : words) {
@@ -140,7 +140,7 @@ public abstract class IconResourceController<T extends Resource> extends Resourc
 		}
 		
 		if(text.startsWith("icon")) {
-			String iconName = "ICON_" + text.substring(4).replace(" ", "_").toUpperCase();
+			String iconName = text.substring(4).replace(" ", "_").toUpperCase();
 			if(iconName.length()>5) {
 				try {
 					icon = AwesomeIcon.valueOf(iconName);

@@ -16,16 +16,17 @@ import java.util.Set;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.tables.ColumnSort;
 
 public interface RealmProvider extends ResourceTemplateRepository {
 
-	void testConnection(Map<String, String> properties) throws IOException, ResourceConfirmationException;
+	void testConnection(Map<String, String> properties) throws IOException, ResourceException;
 
-	void testConnection(Map<String, String> properties, Realm realm) throws IOException, ResourceConfirmationException;
+	void testConnection(Map<String, String> properties, Realm realm) throws ResourceException;
 
+	void assertCreateRealm(Map<String, String> properties) throws ResourceException;
+	
 	List<Principal> allPrincipals(Realm realm, PrincipalType... types);
 
 	Principal getPrincipalByName(String principalName, Realm realm, PrincipalType... acceptTypes);
@@ -34,7 +35,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	boolean isReadOnly(Realm realm);
 
-	boolean supportsAccountUnlock(Realm realm) throws IOException;
+	boolean supportsAccountUnlock(Realm realm) throws ResourceException;
 
 	Principal createUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
 			String password, boolean forceChange) throws ResourceException;
@@ -73,8 +74,6 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	String getModule();
 
 	String getResourceBundle();
-	
-	boolean canCreate();
 
 	List<Principal> getAssociatedPrincipals(Principal principal, PrincipalType type);
 
@@ -93,7 +92,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	String getPrincipalDescription(Principal principal);
 
-	boolean supportsAccountDisable(Realm realm) throws IOException;
+	boolean supportsAccountDisable(Realm realm) throws ResourceException;
 
 	Principal disableAccount(Principal principal) throws ResourceException;
 
