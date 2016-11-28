@@ -11,7 +11,7 @@ import com.hypersocket.resource.RealmResource;
 @Table(name="message_resource")
 public class MessageResource extends RealmResource {
 
-	@Column(name="message_id", unique=true)
+	@Column(name="message_id")
 	Integer messageId;
 	
 	@Column(name="subject", length=1024)
