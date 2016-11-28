@@ -9,6 +9,7 @@ package com.hypersocket.properties;
 
 import java.util.List;
 
+import com.hypersocket.realm.Principal;
 import com.hypersocket.repository.AbstractRepository;
 import com.hypersocket.resource.AbstractResource;
 
@@ -30,5 +31,6 @@ public interface PropertyRepository extends AbstractRepository<Long> {
 	void deletePropertiesForResource(AbstractResource resource);
 
 	void deleteProperties(AbstractResource resource, String... resourceKeys);
+
 
 }

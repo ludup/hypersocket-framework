@@ -4,11 +4,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import com.hypersocket.resource.RealmResource;
 
 @Entity
-@Table(name="message_resource")
+@Table(name="message_resource", uniqueConstraints = @UniqueConstraint(columnNames = {"message_id", "realm_id"}))
 public class MessageResource extends RealmResource {
 
 	@Column(name="message_id")

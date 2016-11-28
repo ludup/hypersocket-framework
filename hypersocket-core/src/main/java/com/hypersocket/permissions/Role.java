@@ -21,8 +21,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import com.hypersocket.realm.Principal;
+import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
@@ -32,6 +35,7 @@ public class Role extends RealmResource {
 
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
+	@Fetch(FetchMode.SELECT)
 	@JoinTable(name = "role_permissions", 
 		joinColumns = {@JoinColumn(name="role_id")}, 
 		inverseJoinColumns = {@JoinColumn(name="permission_id")})
@@ -39,9 +43,10 @@ public class Role extends RealmResource {
 
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
+	@Fetch(FetchMode.SELECT)
 	@JoinTable(name = "role_principals", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
 	Set<Principal> principals = new HashSet<Principal>();
-
+	
 	@Column(name="all_users", nullable=false)
 	boolean allUsers;
 	

@@ -30,6 +30,7 @@ import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
+import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.tables.ColumnSort;
@@ -246,22 +247,6 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@Override
 	@Transactional
 	public void deleteRole(final Role role) {
-		
-		Collection<AssignableResource> resources = list(AssignableResource.class, new CriteriaConfiguration() {	
-			@Override
-			public void configure(Criteria criteria) {
-				criteria = criteria.createCriteria("roles");
-				criteria.add(Restrictions.eq("id", role.getId()));
-			}
-		});
-		
-		for(AssignableResource resource : resources) {
-			resource.getRoles().remove(role);
-			save(resource);
-		}
-		
-		flush();
-		
 		delete(role);
 	}
 
@@ -517,6 +502,21 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		} else {
 			return roles.iterator().next();
 		}
+	}
+	
+	@Override
+	public long getAssignableResourceCount(final Principal principal) {
+		
+		return getCount(AssignableResource.class, new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				criteria = criteria.createCriteria("roles");
+				criteria = criteria.createCriteria("principals");
+				criteria.add(Restrictions.in("id", Arrays.asList(principal.getId())));
+			}
+			
+		});
 	}
 
 	@SuppressWarnings("unchecked")

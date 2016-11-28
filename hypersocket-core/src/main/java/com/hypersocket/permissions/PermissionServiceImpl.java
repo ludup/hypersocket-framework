@@ -693,6 +693,12 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				}
 
 				try {
+					
+					long count = repository.getAssignableResourceCount(principal);
+					if(count > 0) {
+						throw new ResourceException(RESOURCE_BUNDLE, "error.resourcesAssigned", principal.getPrincipalName(), count);
+					}
+					
 					Role role = repository.getPersonalRole(principal, false);
 					if(role!=null) {
 						deleteRole(role);

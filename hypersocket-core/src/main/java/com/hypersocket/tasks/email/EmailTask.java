@@ -186,7 +186,7 @@ public class EmailTask extends AbstractTaskProvider {
 						addFileAttachment(attachment, attachments, event);
 					}
 				} catch (Exception e) {
-					return new EmailTaskResult(this, e, currentRealm, subject, body, to);
+					return new EmailTaskResult(this, currentRealm, task, e);
 				}
 			}
 			
@@ -197,10 +197,10 @@ public class EmailTask extends AbstractTaskProvider {
 				addUUIDAttachment(uuid, new String[0], attachments);
 			} catch (ResourceException e) {
 				log.error("Failed to get upload file", e);
-				return new EmailTaskResult(this, e, currentRealm, subject, body, to);
+				return new EmailTaskResult(this, currentRealm, task, e);
 			} catch (IOException e) {
 				log.error("Failed to get upload file", e);
-				return new EmailTaskResult(this, e, currentRealm, subject, body, to);
+				return new EmailTaskResult(this, currentRealm, task, e);
 			}
 		}
 		
@@ -208,24 +208,27 @@ public class EmailTask extends AbstractTaskProvider {
 			try {
 				addFileAttachment(path, attachments, event);
 			} catch (FileNotFoundException e) {
-				return new EmailTaskResult(this, e, currentRealm, subject, body, to);
+				return new EmailTaskResult(this, currentRealm, task, e);
 			}
 		}
 		
 		String replyToName = processTokenReplacements(repository.getValue(task, "email.replyToName"), event);
 		String replyToEmail = processTokenReplacements(repository.getValue(task, "email.replyToEmail"), event);
 		boolean track = repository.getBooleanValue(task, "email.track");
+		int delay = repository.getIntValue(task, "email.delay");
 		
 		try {
 			emailService.sendEmail(currentRealm, subject, body, bodyHtml,
 					replyToName, replyToEmail, 
-					recipients.toArray(new RecipientHolder[0]), track, attachments.toArray(new EmailAttachment[0]));
+					recipients.toArray(new RecipientHolder[0]), track, delay, attachments.toArray(new EmailAttachment[0]));
 
+			return new EmailTaskResult(this, currentRealm, task);
 		} catch (Exception ex) {
 			log.error("Failed to send email", ex);
+			return new EmailTaskResult(this, currentRealm, task, ex);
 		}
 		
-		return null;
+		
 	}
 	
 	private void addUUIDAttachment(String uuid, String[] typesRequired, List<EmailAttachment> attachments) throws ResourceNotFoundException, FileNotFoundException, IOException {

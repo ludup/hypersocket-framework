@@ -287,7 +287,7 @@ public class AuthenticationServiceImpl extends
 			state.setRealm(realmService.getDefaultRealm());
 		}
 
-		AuthenticationScheme scheme = selectScheme(schemeResourceKey, remoteAddress, environment, state.getRealm());
+		AuthenticationScheme scheme = selectScheme(schemeResourceKey, state);
 		
 		if(scheme==null) {
 			if(schemeResourceKey!=null) {
@@ -315,10 +315,9 @@ public class AuthenticationServiceImpl extends
 		return state;
 	}
 
-	private AuthenticationScheme selectScheme(String schemeResourceKey, String remoteAddress,
-			Map<String, Object> environment, Realm realm) throws AccessDeniedException {
+	private AuthenticationScheme selectScheme(String schemeResourceKey, AuthenticationState state) throws AccessDeniedException {
 		if(authenticationSelector!=null) {
-			return authenticationSelector.selectScheme(schemeResourceKey, remoteAddress, environment, realm);
+			return authenticationSelector.selectScheme(schemeResourceKey, state);
 		}
 		return null;
 	}
@@ -748,6 +747,10 @@ public class AuthenticationServiceImpl extends
 			}
 		}
 
+		// We need to reset the scheme to the new principal realm.
+		state.setScheme(schemeRepository.getSchemeByResourceKey(principal.getRealm(), 
+				state.getScheme().getResourceKey()));
+		
 		if(!state.getScheme().getAllowedRoles().isEmpty()) {
 			boolean found = false;
 			for(Role role : state.getScheme().getAllowedRoles()) {

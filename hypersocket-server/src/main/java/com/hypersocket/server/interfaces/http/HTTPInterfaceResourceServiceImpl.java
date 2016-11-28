@@ -11,8 +11,9 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
@@ -52,12 +53,12 @@ public class HTTPInterfaceResourceServiceImpl extends
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-		PermissionCategory cat = permissionService.registerPermissionCategory(
-				RESOURCE_BUNDLE, "category.httpInterfaces");
-
-		for (HTTPInterfaceResourcePermission p : HTTPInterfaceResourcePermission.values()) {
-			permissionService.registerPermission(p, cat);
-		}
+//		PermissionCategory cat = permissionService.registerPermissionCategory(
+//				RESOURCE_BUNDLE, "category.httpInterfaces");
+//
+//		for (HTTPInterfaceResourcePermission p : HTTPInterfaceResourcePermission.values()) {
+//			permissionService.registerPermission(p, cat);
+//		}
 
 		repository.loadPropertyTemplates("httpInterfaceResourceTemplate.xml");
 
@@ -97,8 +98,8 @@ public class HTTPInterfaceResourceServiceImpl extends
 	}
 
 	@Override
-	public Class<HTTPInterfaceResourcePermission> getPermissionType() {
-		return HTTPInterfaceResourcePermission.class;
+	public Class<? extends PermissionType> getPermissionType() {
+		return null;
 	}
 	
 	protected Class<HTTPInterfaceResource> getResourceClass() {
@@ -195,7 +196,7 @@ public class HTTPInterfaceResourceServiceImpl extends
 	public Collection<PropertyCategory> getPropertyTemplate()
 			throws AccessDeniedException {
 
-		assertPermission(HTTPInterfaceResourcePermission.READ);
+		assertPermission(SystemPermission.SYSTEM_ADMINISTRATION);
 
 		return repository.getPropertyCategories(null);
 	}
@@ -204,7 +205,7 @@ public class HTTPInterfaceResourceServiceImpl extends
 	public Collection<PropertyCategory> getPropertyTemplate(
 			HTTPInterfaceResource resource) throws AccessDeniedException {
 
-		assertPermission(HTTPInterfaceResourcePermission.READ);
+		assertPermission(SystemPermission.SYSTEM_ADMINISTRATION);
 
 		return repository.getPropertyCategories(resource);
 	}
