@@ -46,14 +46,6 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		return false;
 	}
 	
-	/*public void registerResourceService(Class<?> clz, AbstractResourceRepository<?> service) {
-		resourceServices.put(clz, service);
-	}*/
-	
-	/*public void registerResourceService(Class<?> clz, AbstractAssignableResourceRepository<?> service) {
-		assignableServices.put(clz, service);
-	}*/
-
 	public void registerResourceService(Class<?> clz, FindableResourceRepository<?> repository) {
 		findableResourceRepositories.put(clz, repository);
 	}
