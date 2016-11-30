@@ -100,4 +100,8 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	Long getResourceLongProperty(T resource, String resourceKey);
 
 	int getResourceIntProperty(T resource, String resourceKey);
+
+	T getPersonalResourceByName(String name) throws ResourceNotFoundException, AccessDeniedException;
+
+	void deleteResource(Long id) throws ResourceChangeException, ResourceNotFoundException, AccessDeniedException;
 }

@@ -10,6 +10,7 @@ package com.hypersocket.resource;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Inheritance;
@@ -37,6 +38,9 @@ public class AssignableResource extends RealmResource {
 			inverseJoinColumns={@JoinColumn(name="role_id")})
 	Set<Role> roles = new HashSet<Role>();
 
+	@Column(name="personal")
+	Boolean personal;
+	
 	public AssignableResource() {
 	}
 	
@@ -47,5 +51,14 @@ public class AssignableResource extends RealmResource {
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
 	}
+
+	public Boolean getPersonal() {
+		return personal == null ? Boolean.FALSE : personal;
+	}
+
+	public void setPersonal(Boolean personal) {
+		this.personal = personal;
+	}
+	
 	
 }

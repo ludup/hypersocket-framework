@@ -139,6 +139,28 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		everyone.addAll((List<T>) criteria.list());
 		return everyone;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public T getPersonalResourceByName(String name, Principal principal, CriteriaConfiguration... configs) {
+		
+		Criteria criteria = createCriteria(getResourceClass());
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		
+		criteria.add(Restrictions.eq("name", name));
+		
+		for (CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+
+		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+		criteria.add(Restrictions.eq("deleted", false));
+		criteria.add(Restrictions.eq("personal", true));
+		criteria = criteria.createCriteria("roles");
+		criteria.add(Restrictions.eq("personalRole", true));
+		criteria.add(Restrictions.in("principals", Arrays.asList(principal.getId())));
+		
+		return (T) criteria.uniqueResult();
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -413,14 +435,14 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Override
 	@Transactional(readOnly=true)
 	public T getResourceByName(String name, Realm realm) {
-		return get("name", name, getResourceClass(), new DeletedCriteria(false), new RealmRestriction(realm));
+		return get("name", name, getResourceClass(), new DeletedCriteria(false), new RealmRestriction(realm), new PersonalRestriction(false));
 	}
 
 	@Override
 	@Transactional(readOnly=true)
 	public T getResourceByName(String name, Realm realm, boolean deleted) {
 		return get("name", name, getResourceClass(), new DeletedCriteria(
-				deleted), new RealmRestriction(realm));
+				deleted), new RealmRestriction(realm), new PersonalRestriction(false));
 	}
 
 	@Override
@@ -507,6 +529,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit.setFetchMode("roles", FetchMode.SELECT);
 		crit.add(Restrictions.eq("deleted", false));
+		new PersonalRestriction(false).configure(crit);
 		crit.add(Restrictions.eq("realm", realm));
 
 		return (List<T>) crit.list();
@@ -521,6 +544,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		crit.setFetchMode("roles", FetchMode.SELECT);
 		crit.add(Restrictions.eq("deleted", false));
+		new PersonalRestriction(false).configure(crit);
 
 		return (List<T>) crit.list();
 	}
@@ -532,7 +556,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		List<T> results = super.search(getResourceClass(), searchColumn, searchPattern, start,
 				length, sorting, ArrayUtils.addAll(configs, new DeletedCriteria(false),
 						new RoleSelectMode(), new RealmCriteria(
-								realm)));
+								realm), new PersonalRestriction(false)));
 		return results;
 	}
 	
@@ -540,7 +564,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Override
 	@Transactional(readOnly=true)
 	public long allRealmsResourcesCount() {
-		return getCount(getResourceClass(), new DeletedCriteria(false));
+		return getCount(getResourceClass(), new DeletedCriteria(false), new PersonalRestriction(false));
 	}
 
 	@Override
@@ -549,7 +573,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			CriteriaConfiguration... configs) {
 		long count = getCount(getResourceClass(), searchColumn, searchPattern,
 				ArrayUtils.addAll(configs, new RoleSelectMode(), new DeletedCriteria(false),
-						new RealmCriteria(realm)));
+						new RealmCriteria(realm), new PersonalRestriction(false)));
 		return count;
 	}
 
@@ -583,6 +607,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		
 		criteria.add(Restrictions.eq("realm", currentRealm));
 		criteria.add(Restrictions.eq("deleted", false));
+		new PersonalRestriction(false).configure(criteria);
 		
 		if(createdFrom!=null) {
 			criteria.add(Restrictions.and(Restrictions.ge("created", createdFrom),

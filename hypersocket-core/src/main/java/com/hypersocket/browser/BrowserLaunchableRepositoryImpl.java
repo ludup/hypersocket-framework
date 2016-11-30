@@ -173,4 +173,10 @@ public class BrowserLaunchableRepositoryImpl extends
 		return new ArrayList<BrowserLaunchable>();
 	}
 
+
+	@Override
+	public BrowserLaunchable getBrowserResource(Long id) {
+		return get("id", id, BrowserLaunchable.class);
+	}
+
 }

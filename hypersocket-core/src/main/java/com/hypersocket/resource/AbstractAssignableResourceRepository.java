@@ -68,6 +68,8 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	Collection<T> getAssignedResources(Role role, CriteriaConfiguration... configs);
 
+	T getPersonalResourceByName(String name, Principal principal, CriteriaConfiguration... configs);
+
 
 
 }

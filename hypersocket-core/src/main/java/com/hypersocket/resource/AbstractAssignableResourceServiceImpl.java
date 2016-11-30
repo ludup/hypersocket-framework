@@ -124,7 +124,12 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 					return true;
 				}
 			}
+			
 			getResourceByName(resource.getName(), resource.getRealm());
+			
+			if(resource.getPersonal()) {
+				getPersonalResourceByName(resource.getName());
+			} 
 			return false;
 		} catch (ResourceNotFoundException e) {
 			return true;
@@ -134,6 +139,14 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	protected ResourceException createDuplicateException(T resource) {
 		return new ResourceCreationException(RESOURCE_BUNDLE,
 				"generic.alreadyExists.error", resource.getName());
+	}
+	
+	@SafeVarargs
+	protected final void createPersonalResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceException, AccessDeniedException {
+		resource.setPersonal(true);
+		resource.getRoles().clear();
+		resource.getRoles().add(permissionService.getPersonalRole(getCurrentPrincipal()));
+		createResource(resource, properties, ops);
 	}
 	
 	@Override
@@ -262,6 +275,12 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 	protected abstract void fireResourceUpdateEvent(T resource, Throwable t);
 
+	@SuppressWarnings("unchecked")
+	@Override 
+	public void deleteResource(Long id) throws ResourceChangeException, ResourceNotFoundException, AccessDeniedException {
+		deleteResource(getResourceById(id));
+	}
+	
 	@Override
 	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
@@ -403,6 +422,18 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		}
 		
 		assertPrincipalAssignment(resource, getReadPermission());
+		
+		return resource;
+	}
+	
+	@Override
+	public T getPersonalResourceByName(String name) throws ResourceNotFoundException, AccessDeniedException {
+		
+		T resource = getRepository().getPersonalResourceByName(name, getCurrentPrincipal());
+		if (resource == null) {
+			throw new ResourceNotFoundException(getResourceBundle(),
+					"error.invalidResourceName", name);
+		}
 		
 		return resource;
 	}
