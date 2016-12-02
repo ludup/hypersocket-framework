@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import org.springframework.context.ApplicationContext;
@@ -49,8 +50,6 @@ public interface HypersocketServer {
 
 	public abstract DispatcherServlet getDispatcherServlet();
 
-	public abstract ServletConfig getServletConfig();
-
 	public abstract String getApplicationPath();
 	
 	public String resolvePath(String path);
@@ -58,6 +57,8 @@ public interface HypersocketServer {
 	public void init(ApplicationContext applicationContext) throws AccessDeniedException, ServletException, IOException;
 	
 	public void connect(TCPForwardingClientCallback callback);
+	
+	ServletContext getServletContext();
 
 	ApplicationContext getApplicationContext();
 

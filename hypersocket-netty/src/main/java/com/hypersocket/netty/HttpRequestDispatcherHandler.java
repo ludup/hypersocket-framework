@@ -170,7 +170,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					nettyRequest, (InetSocketAddress) ctx.getChannel()
 							.getLocalAddress(), remoteAddress, 
 							interfaceResource.getProtocol()==HTTPProtocol.HTTPS, 
-							server.getServletConfig().getServletContext(), session);
+							server.getServletContext(), session);
 			
 			if(nettyRequest.isChunked()) {
 				ctx.getChannel().setAttachment(servletRequest);
