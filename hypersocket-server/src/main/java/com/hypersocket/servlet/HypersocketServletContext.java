@@ -10,10 +10,13 @@ package com.hypersocket.servlet;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 
@@ -35,15 +38,24 @@ import org.springframework.mail.javamail.ConfigurableMimeFileTypeMap;
 
 public class HypersocketServletContext implements ServletContext {
 
-	HypersocketServletConfig config;
 	String contextPath;
 	Map<String,Object> attributes = new HashMap<String,Object>();
 	static Logger log = LoggerFactory.getLogger(HypersocketServletContext.class);
 	ConfigurableMimeFileTypeMap mimeTypesMap = new ConfigurableMimeFileTypeMap();
+	Properties initParameters;
+	List<HypersocketServletConfig> configs = new ArrayList<>();
 	
-	HypersocketServletContext(HypersocketServletConfig config, String contextPath) {
-		this.config = config;
+	public HypersocketServletContext(String contextPath) {
+		initParameters = new Properties();
 		this.contextPath = contextPath;
+	}
+	
+	public List<HypersocketServletConfig> getServletConfigs() {
+		return configs;
+	}
+
+	public void addServlet(HypersocketServletConfig hypersocketServletConfig) {
+		configs.add(hypersocketServletConfig);
 	}
 	
 	public String getContextPath() {
@@ -126,11 +138,12 @@ public class HypersocketServletContext implements ServletContext {
 	}
 
 	public String getInitParameter(String name) {
-		return config.getInitParameter(name);
+		return initParameters.getProperty(name);
 	}
 
+	@SuppressWarnings("unchecked")
 	public Enumeration<String> getInitParameterNames() {
-		return config.getInitParameterNames();
+		return (Enumeration<String>) initParameters.propertyNames();
 	}
 
 	public Object getAttribute(String name) {
@@ -165,10 +178,10 @@ public class HypersocketServletContext implements ServletContext {
 
 	@Override
 	public boolean setInitParameter(String name, String value) {
-		if(config.initParameters.containsKey(name)){
+		if(initParameters.containsKey(name)){
 			return false;
 		}
-		config.initParameters.put(name, value);
+		initParameters.put(name, value);
 		return true;
 	}
 

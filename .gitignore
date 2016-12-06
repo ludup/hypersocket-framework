@@ -6,3 +6,4 @@
 /client-netty/
 /client-service/
 /hypersocket-client/
+*.log

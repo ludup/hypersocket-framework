@@ -24,10 +24,11 @@ public class HypersocketServletConfig implements ServletConfig {
 	
 	static Logger log = LoggerFactory.getLogger(HypersocketServletConfig.class);
 	
-	public HypersocketServletConfig(String servletName, String contextPath) {
+	public HypersocketServletConfig(String servletName, ServletContext context) {
 	    this.servletName = servletName;
+	    this.servletContext = context;
 		initParameters = new Properties();
-	    servletContext = new HypersocketServletContext(this, contextPath);
+		((HypersocketServletContext)context).addServlet(this);
     }
 
 	public String getServletName() {
