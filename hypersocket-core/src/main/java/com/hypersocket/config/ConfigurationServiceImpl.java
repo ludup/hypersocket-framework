@@ -118,6 +118,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 			String oldValue = repository.getValue(realm, resourceKey);
 			repository.setValue(realm, resourceKey, value);
 			fireChangeEvent(resourceKey, oldValue, value, repository.getPropertyTemplate(realm, resourceKey).isHidden());
+			eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession()));
 		} catch (AccessDeniedException e) {
 			fireChangeEvent(resourceKey, e);
 			throw e;
@@ -168,6 +169,8 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 			for(String resourceKey : values.keySet()) {
 				fireChangeEvent(resourceKey, oldValues.get(resourceKey), values.get(resourceKey), repository.getPropertyTemplate(getCurrentRealm(), resourceKey).isHidden());
 			}
+			
+			eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession()));
 		} catch (AccessDeniedException e) {
 			for(String resourceKey : values.keySet()) {
 				fireChangeEvent(resourceKey, e);
@@ -185,13 +188,13 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 		if(resourceKey.equals("current.locale")) {
 			defaultLocale = i18nService.getLocale(newValue);
 		}
-		eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true,
+		eventPublisher.publishEvent(new ConfigurationValueChangedEvent(this, true,
 				getCurrentSession(), repository.getPropertyTemplate(getCurrentRealm(), resourceKey), oldValue, newValue, hidden));
 		
 	}
 
 	private void fireChangeEvent(String resourceKey, Throwable t) {
-		eventPublisher.publishEvent(new ConfigurationChangedEvent(this, resourceKey, t,
+		eventPublisher.publishEvent(new ConfigurationValueChangedEvent(this, resourceKey, t,
 				getCurrentSession()));
 	}
 	

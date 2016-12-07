@@ -20,6 +20,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceCreatedEvent;
 import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceDeletedEvent;
 import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceEvent;
@@ -165,7 +166,7 @@ public class HTTPInterfaceResourceServiceImpl extends
 	}
 	
 	@Override
-	protected void beforeDeleteResource(HTTPInterfaceResource resource) throws ResourceChangeException {
+	protected void beforeDeleteResource(HTTPInterfaceResource resource) throws ResourceException {
 		if(repository.allRealmsResourcesCount()==1) {
 			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.oneInterfaceRequired");
 		}

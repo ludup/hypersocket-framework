@@ -578,7 +578,7 @@ public class TriggerResourceServiceImpl extends
 		}
 	}
 
-	protected void prepareExport(TriggerResource resource) {
+	protected void prepareExport(TriggerResource resource) throws ResourceException, AccessDeniedException {
 
 		TaskProvider provider = taskService.getTaskProvider(resource
 				.getResourceKey());

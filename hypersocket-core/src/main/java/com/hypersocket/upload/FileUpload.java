@@ -26,6 +26,9 @@ public class FileUpload extends RealmResource {
 	@Transient
 	String url;
 	
+	@Transient
+	String content;
+	
 	public FileUpload() {
 
 	}
@@ -69,4 +72,14 @@ public class FileUpload extends RealmResource {
 	public String getUrl() {
 		return url;
 	}
+
+	public String getContent() {
+		return content;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
+	}
+	
+	
 }

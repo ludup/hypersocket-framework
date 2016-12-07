@@ -2,6 +2,7 @@ package com.hypersocket.upload.json;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,7 +35,12 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceExportException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
+import com.hypersocket.tables.BootstrapTableResult;
+import com.hypersocket.tables.Column;
+import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 import com.hypersocket.upload.FileUpload;
+import com.hypersocket.upload.FileUploadColumn;
 import com.hypersocket.upload.FileUploadService;
 import com.hypersocket.upload.FileUploadServiceImpl;
 import com.hypersocket.utils.HypersocketUtils;
@@ -47,6 +53,50 @@ public class FileStoreController extends ResourceController {
 	@Autowired
 	FileUploadService resourceService;
 
+	@AuthenticationRequired
+	@RequestMapping(value = "files/table", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public BootstrapTableResult<?> tableNetworkResources(
+			final HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return processDataTablesRequest(request,
+					new BootstrapTablePageProcessor() {
+
+						@Override
+						public Column getColumn(String col) {
+							return FileUploadColumn.valueOf(col.toUpperCase());
+						}
+
+						@Override
+						public List<?> getPage(String searchColumn, String searchPattern, int start,
+								int length, ColumnSort[] sorting)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							return resourceService.searchResources(
+									sessionUtils.getCurrentRealm(request),
+									searchColumn, searchPattern, start, length, sorting);
+						}
+
+						@Override
+						public Long getTotalCount(String searchColumn, String searchPattern)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							return resourceService.getResourceCount(
+									sessionUtils.getCurrentRealm(request),
+									searchColumn, searchPattern);
+						}
+					});
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 	@AuthenticationRequired
 	@RequestMapping(value = "files/file/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
@@ -119,7 +169,13 @@ public class FileStoreController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			FileUpload fileUpload = resourceService.getFileByUuid(uuid);
+			FileUpload fileUpload = null;
+			if(HypersocketUtils.isUUID(uuid)) {
+				fileUpload = resourceService.getFileByUuid(uuid);
+			} else {
+				fileUpload = resourceService.getResourceById(Long.parseLong(uuid));
+			}
+
 			if (fileUpload == null) {
 				return new ResourceStatus<FileUpload>(false, I18N.getResource(
 						sessionUtils.getLocale(request),

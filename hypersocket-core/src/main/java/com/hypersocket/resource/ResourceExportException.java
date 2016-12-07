@@ -8,5 +8,9 @@ public class ResourceExportException extends ResourceException {
 			Object... args) {
 		super(bundle, resourceKey, args);
 	}
+	
+	public ResourceExportException(ResourceException e) {
+		super(e);
+	}
 
 }

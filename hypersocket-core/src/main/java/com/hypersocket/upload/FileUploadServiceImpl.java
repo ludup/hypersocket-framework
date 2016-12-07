@@ -6,9 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringBufferInputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -16,6 +18,9 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -34,6 +39,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 
 @Service
@@ -334,5 +340,50 @@ public class FileUploadServiceImpl extends
 			return "application/octet-stream";
 		}
 		return contentType;
+	}
+	
+
+	@Override
+	protected void prepareExport(FileUpload resource) throws ResourceException, AccessDeniedException {
+		super.prepareExport(resource);
+		
+		FileInputStream in = null;
+		Base64InputStream b = null;
+		try {
+			in = new FileInputStream(getFile(resource.getName()));
+			b = new Base64InputStream(in, true);
+
+			resource.setContent(IOUtils.toString(b));
+					
+		} catch(IOException ex) {
+			throw new ResourceException(RESOURCE_BUNDLE, "error.fileIO", ex.getMessage());
+		} finally {
+			IOUtils.closeQuietly(b);
+			IOUtils.closeQuietly(in);
+		}
+	}
+
+	protected void afterCreateResource(FileUpload resource, Map<String,String> properties) throws ResourceException {
+		if(resource.getContent()!=null) {
+			
+			FileOutputStream out = null;
+			Base64InputStream b = null;
+			
+			try {
+				File file = getFile(resource.getName());
+				file.getParentFile().mkdirs();
+				
+				out = new FileOutputStream(file);
+				b = new Base64InputStream(IOUtils.toInputStream(resource.getContent(), "UTF-8"), false);
+			
+				IOUtils.copy(b, out);
+				 
+			} catch(IOException ex) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.fileIO", ex.getMessage());
+			} finally {
+				IOUtils.closeQuietly(out);
+				IOUtils.closeQuietly(b);
+			}
+		}
 	}
 }
