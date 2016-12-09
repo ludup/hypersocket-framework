@@ -131,9 +131,9 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean isReadOnly(Realm realm);
 
-	boolean supportsAccountUnlock(Realm realm) throws IOException;
+	boolean supportsAccountUnlock(Realm realm) throws ResourceException;
 
-	boolean supportsAccountDisable(Realm realm) throws IOException;
+	boolean supportsAccountDisable(Realm realm) throws ResourceException;
 
 	Principal disableAccount(Principal principal) throws AccessDeniedException, ResourceException;
 
@@ -233,4 +233,6 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Map<String, String> filterSecretProperties(Principal principal, RealmProvider provider,
 			Map<String, String> properties);
+
+	Principal getPrincipalById(Long id) throws AccessDeniedException;
 }

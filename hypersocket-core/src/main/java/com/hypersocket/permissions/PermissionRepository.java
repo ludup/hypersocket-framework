@@ -112,4 +112,6 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 			Set<Permission> permissions, Map<String,String> properties) throws ResourceException;
 
 	Role getPersonalRole(Principal principal, boolean createIfNotFound);
+
+	long getAssignableResourceCount(Principal principal);
 }

@@ -25,6 +25,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import com.hypersocket.realm.Principal;
+import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
@@ -32,9 +33,6 @@ import com.hypersocket.resource.RealmResource;
 @XmlRootElement(name="role")
 public class Role extends RealmResource {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -9007753723140808832L;
 
 	@ManyToMany(fetch=FetchType.EAGER)
@@ -50,7 +48,7 @@ public class Role extends RealmResource {
 	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
 	@JoinTable(name = "role_principals", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
 	Set<Principal> principals = new HashSet<Principal>();
-
+	
 	@Column(name="all_users", nullable=false)
 	boolean allUsers;
 	

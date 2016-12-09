@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HypersocketUtils {
@@ -326,12 +327,32 @@ public class HypersocketUtils {
 		return set;
 	}
 
+
 	public static <S extends Throwable,D extends Throwable> S chain(S source, D target){
 		try {
 			FieldUtils.writeField(source, "cause", target,true);
 			return source;
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException("Problem in chaining exceptions", e);
+
+	public static String csv(String[] items) {
+		StringBuffer b = new StringBuffer();
+		for(String i : items) {
+			if(b.length() > 0) {
+				b.append(",");
+			}
+			b.append(i);
+		}
+		return b.toString();
+	}
+
+	public static String prettyPrintJson(String output) {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readValue(output, Object.class));
+		} catch (IOException e) {
+			throw new IllegalStateException(e.getMessage(), e);
+
 		}
 	}
 

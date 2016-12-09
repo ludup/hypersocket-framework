@@ -99,7 +99,7 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 		if(log.isDebugEnabled()) {
 			log.debug("Creating a new client");
 		}
-		realmService.getCurrentRealm();
+		
 		CloseableHttpClient httpclient = null;
 
 		try {

@@ -21,6 +21,8 @@
 			weight="80" defaultValue="" size="255" allowEmpty="true"/>
 		<property resourceKey="email.replyToEmail" inputType="text"
 			weight="90" defaultValue="" size="255" validateAll="email" allowEmpty="true"/>
+		<property resourceKey="email.delay" inputType="integer"
+			weight="100" defaultValue="250" minValue="0" maxValue="60000"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email.attachments"
 		resourceBundle="TriggerResourceService" weight="4000">

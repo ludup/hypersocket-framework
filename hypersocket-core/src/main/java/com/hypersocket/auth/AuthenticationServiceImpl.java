@@ -61,6 +61,8 @@ public class AuthenticationServiceImpl extends
 	public static final String ANONYMOUS_AUTHENTICATION_SCHEME = "Anonymous";
 	public static final String ANONYMOUS_AUTHENTICATION_RESOURCE_KEY = "anonymous";
 
+	public static final String FALLBACK_AUTHENTICATION_RESOURCE_KEY = "fallback";
+	
 	private static Logger log = LoggerFactory
 			.getLogger(AuthenticationServiceImpl.class);
 
@@ -123,6 +125,35 @@ public class AuthenticationServiceImpl extends
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
 		setupRealms();
+		
+		setupFallback();
+	}
+	
+	private void setupFallback() {
+
+		realmService.registerRealmListener(new RealmAdapter() {
+
+			public boolean hasCreatedDefaultResources(Realm realm) {
+				return schemeRepository.getSchemeByResourceKeyCount(realm,
+						FALLBACK_AUTHENTICATION_RESOURCE_KEY) > 0;
+			}
+
+			public void onCreateRealm(Realm realm) {
+
+				if (log.isInfoEnabled()) {
+					log.info("Creating unlicensed authentication scheme for realm "
+							+ realm.getName());
+				}
+
+				List<String> modules = new ArrayList<String>();
+				modules.add(FallbackAuthenticator.RESOURCE_KEY);
+
+				schemeRepository.createScheme(realm, "fallback", modules,
+						"fallback", true, 1, AuthenticationModuleType.BASIC);
+
+			}
+		});
+
 	}
 
 	private void setupRealms() {
@@ -287,7 +318,7 @@ public class AuthenticationServiceImpl extends
 			state.setRealm(realmService.getDefaultRealm());
 		}
 
-		AuthenticationScheme scheme = selectScheme(schemeResourceKey, remoteAddress, environment, state.getRealm());
+		AuthenticationScheme scheme = selectScheme(schemeResourceKey, state);
 		
 		if(scheme==null) {
 			if(schemeResourceKey!=null) {
@@ -315,10 +346,9 @@ public class AuthenticationServiceImpl extends
 		return state;
 	}
 
-	private AuthenticationScheme selectScheme(String schemeResourceKey, String remoteAddress,
-			Map<String, Object> environment, Realm realm) throws AccessDeniedException {
+	private AuthenticationScheme selectScheme(String schemeResourceKey, AuthenticationState state) throws AccessDeniedException {
 		if(authenticationSelector!=null) {
-			return authenticationSelector.selectScheme(schemeResourceKey, remoteAddress, environment, realm);
+			return authenticationSelector.selectScheme(schemeResourceKey, state);
 		}
 		return null;
 	}
@@ -401,9 +431,11 @@ public class AuthenticationServiceImpl extends
 			} else {
 				switch (authenticator.authenticate(state, parameterMap)) {
 				case INSUFFICIENT_DATA: {
-					if (state.getAttempts() >= 1) {
-						state.setLastErrorMsg("error.insufficentData");
-						state.setLastErrorIsResourceKey(true);
+					if (state.getLastErrorMsg() == null && parameterMap.size() > 1) {
+						if (state.getAttempts() >= 1) {
+							state.setLastErrorMsg("error.insufficentData");
+							state.setLastErrorIsResourceKey(true);
+						}
 					}
 					break;
 				}
@@ -759,6 +791,10 @@ public class AuthenticationServiceImpl extends
 			}
 		}
 
+		// We need to reset the scheme to the new principal realm.
+		state.setScheme(schemeRepository.getSchemeByResourceKey(principal.getRealm(), 
+				state.getScheme().getResourceKey()));
+		
 		if(!state.getScheme().getAllowedRoles().isEmpty()) {
 			boolean found = false;
 			for(Role role : state.getScheme().getAllowedRoles()) {

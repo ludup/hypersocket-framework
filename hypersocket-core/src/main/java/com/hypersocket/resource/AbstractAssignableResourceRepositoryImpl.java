@@ -69,7 +69,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	public EntityResourcePropertyStore getEntityStore() {
 		return entityPropertyStore;
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)

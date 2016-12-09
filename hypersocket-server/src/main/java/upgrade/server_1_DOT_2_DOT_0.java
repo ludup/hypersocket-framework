@@ -1,8 +1,5 @@
 package upgrade;
 
-import java.util.HashMap;
-import java.util.Locale;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +37,7 @@ public class server_1_DOT_2_DOT_0 extends PermissionsAwareUpgradeScript {
 	protected void doUpgrade() {
 
 		try {
+			
 			certificateService.getDefaultCertificate();
 			
 			HTTPInterfaceResource http = new HTTPInterfaceResource();

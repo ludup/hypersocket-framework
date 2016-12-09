@@ -23,10 +23,11 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
+import javax.annotation.PostConstruct;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -60,6 +61,7 @@ import com.hypersocket.server.handlers.WebsocketHandler;
 import com.hypersocket.server.handlers.impl.APIRequestHandler;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.servlet.HypersocketServletConfig;
+import com.hypersocket.servlet.HypersocketServletContext;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
 import com.hypersocket.session.SessionService;
@@ -77,7 +79,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 	private AnnotationConfigWebApplicationContext webappContext;
 	private DispatcherServlet dispatcherServlet;
-	private HypersocketServletConfig servletConfig;
+//	private HypersocketServletConfig servletConfig;
 	
 	private List<String> controllerPackages = new ArrayList<String>();
 	
@@ -115,11 +117,21 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	
 	Map<Pattern,String> urlRewrite = new HashMap<Pattern,String>();
 	Map<String,String> aliases = new HashMap<String,String>();
+
+	private HypersocketServletContext servletContext;
 	
 	public HypersocketServerImpl() {
 		Security.addProvider(new BouncyCastleProvider());
+		
+
+		/* The context is the whole 'webapp'. It's path is the base path, i.e. /product-name */
 		controllerPackages.add("com.hypersocket.json.**");
 		controllerPackages.add("com.hypersocket.**.json");
+	}
+	
+	@PostConstruct
+	private void setup() {
+	    servletContext = new HypersocketServletContext(getBasePath());
 	}
 	
 	@Override
@@ -226,6 +238,11 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		Collections.sort(httpHandlers);
 	}
 	
+	@Override
+	public ServletContext getServletContext() {
+		return servletContext;
+	}
+
 	public void init(ApplicationContext applicationContext)
 			throws AccessDeniedException, IOException, ServletException {
 
@@ -251,10 +268,8 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	private void createWebappContext() throws ServletException {
 		if (log.isDebugEnabled())
 			log.debug("Creating spring webapp context");
-
-		servletConfig = new HypersocketServletConfig("default",
-				resolvePath(API_PATH));
 		
+		HypersocketServletConfig servletConfig = new HypersocketServletConfig("api", servletContext);
 		
 		webappContext = new AnnotationConfigWebApplicationContext();
 		webappContext.setParent(applicationContext);
@@ -439,16 +454,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		return dispatcherServlet;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.hypersocket.server.HypersocketServer#getServletConfig()
-	 */
-	@Override
-	public ServletConfig getServletConfig() {
-		return servletConfig;
-	}
-
 	public HypersocketSession setupHttpSession(List<String> cookies,
 			boolean secure,
 			HttpServletResponse servletResponse) {
@@ -469,7 +474,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 					String value = cookie.substring(idx + 1);
 					session = HypersocketSessionFactory.getInstance()
 							.getSession(value,
-									servletConfig.getServletContext());
+									servletContext);
 					// Check that the session exists in case we have any old
 					// cookies
 					if (session != null) {
@@ -480,7 +485,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		}
 		if (session == null) {
 			session = HypersocketSessionFactory.getInstance().createSession(
-					servletConfig.getServletContext());
+					servletContext);
 		}
 
 		Cookie cookie = new Cookie(sessionCookieName, session.getId());

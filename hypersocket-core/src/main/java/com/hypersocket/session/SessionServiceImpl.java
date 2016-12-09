@@ -8,8 +8,6 @@
 package com.hypersocket.session;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.rmi.server.RemoteObjectInvocationHandler;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -23,7 +21,6 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
-import org.bouncycastle.util.encoders.Base64;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -554,21 +551,10 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Session getNonCookieSession(String remoteAddr, String requestHeader,
+	public Session getNonCookieSession(String remoteAddr, String token,
 			String authenticationSchemeResourceKey)
 			throws AccessDeniedException {
 
-		try {
-			int idx = requestHeader.indexOf(' ');
-			if(idx > -1) {
-				requestHeader = requestHeader.substring(idx+1);
-			}
-			String auth = new String(Base64.decode(requestHeader), "UTF-8");
-			idx = auth.indexOf(':');
-			String token = auth;
-			if(idx > -1) {
-				token = auth.substring(idx+1);
-			}
 			Session session = nonCookieSessions.get(token);
 
 			if (session != null) {
@@ -578,9 +564,6 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				return session;
 			}
 			throw new AccessDeniedException();
-		} catch (UnsupportedEncodingException e) {
-			throw new IllegalStateException(e);
-		}
 	}
 
 	@Override

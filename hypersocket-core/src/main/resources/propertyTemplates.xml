@@ -22,6 +22,8 @@
 			weight="500" defaultValue="admin@localhost.com" validateAll="email" />
 		<property resourceKey="smtp.fromName" inputType="text"
 			weight="600" defaultValue="Server Administrator" />
+		<property resourceKey="smtp.delay" inputType="integer"
+			weight="600" defaultValue="250" minValue="0" maxValue="60000"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.emailExtra"
 		resourceBundle="EmailService" weight="600">

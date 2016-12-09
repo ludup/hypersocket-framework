@@ -107,7 +107,7 @@ public class QuartzSpringConfiguration {
 			properties = propertiesFactoryBean.getObject();
 
 		} catch (IOException e) {
-			throw new IllegalStateException(e);
+			throw new IllegalStateException(e.getMessage(), e);
 		}
 		
 		properties.put("org.quartz.jobStore.isClustered", String.valueOf(environment.acceptsProfiles("HA")));
@@ -159,11 +159,11 @@ public class QuartzSpringConfiguration {
 			}
 	        log.error(String.format("Quartz script import failed SQLException: %s SQLState: %s Message: %s Vendor error code: %s", e.getMessage()
 	        		, e.getSQLState(), e.getMessage(), e.getErrorCode()), e);
-	        throw new IllegalStateException(e);
+	        throw new IllegalStateException(e.getMessage(), e);
 	    }catch(Exception e){
 	    	connection.rollback();
 	    	log.error("Quartz script import failed !!!", e);
-			throw new IllegalStateException(e);
+			throw new IllegalStateException(e.getMessage(), e);
 		}finally{
 			if(connection != null){
 				if(autoCommitStatus != null){

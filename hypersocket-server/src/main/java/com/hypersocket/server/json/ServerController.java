@@ -81,6 +81,7 @@ public class ServerController extends AuthenticatedController {
 			HttpServletResponse response, @PathVariable Long delay)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
+		
 		permissionService.verifyPermission(sessionUtils.getPrincipal(request),
 				PermissionStrategy.INCLUDE_IMPLIED,
 				SystemPermission.SYSTEM_ADMINISTRATION);

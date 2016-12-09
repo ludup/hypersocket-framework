@@ -379,8 +379,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Set<Role> getPrincipalRoles(Principal principal)
-			throws AccessDeniedException {
+	public Set<Role> getPrincipalRoles(Principal principal) {
 
 		if (!roleCache.containsKey(principal)) {
 			
@@ -487,6 +486,17 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			}
 		}
 		return hasSystemPrincipal(principalPermissions);
+	}
+	
+	@Override
+	public boolean hasAdministrativePermission(Principal principal) {
+		
+		Set<Role> roles = new HashSet<Role>();
+		roles.add(repository.getRoleByName(ROLE_ADMINISTRATOR, principal.getRealm()));
+		if(principal.getRealm().isSystem()) {
+			roles.add(repository.getRoleByName(ROLE_SYSTEM_ADMINISTRATOR, principal.getRealm()));
+		}
+		return hasRole(principal, roles);
 	}
 
 	@Override
@@ -716,11 +726,14 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 			@Override
 			public Principal doInTransaction(TransactionStatus status) {
-				
-
-				
 
 				try {
+					
+					long count = repository.getAssignableResourceCount(principal);
+					if(count > 0) {
+						throw new ResourceException(RESOURCE_BUNDLE, "error.resourcesAssigned", principal.getPrincipalName(), count);
+					}
+					
 					for(TransactionAdapter<Principal> op : ops) {
 						op.beforeOperation(principal, new HashMap<String,String>());
 					}
@@ -760,7 +773,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 	
 	@Override
-	public boolean hasRole(Principal principal, Collection<Role> roles) throws AccessDeniedException {
+	public boolean hasRole(Principal principal, Collection<Role> roles) {
 		
 		Collection<Role> principalRoles = getPrincipalRoles(principal);
 		for(Role r : principalRoles) {
@@ -825,7 +838,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 					return role;
 				} catch (AccessDeniedException | ResourceCreationException e) {
-					throw new IllegalStateException(e);
+					throw new IllegalStateException(e.getMessage(), e);
 				}
 			}
 			

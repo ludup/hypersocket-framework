@@ -581,7 +581,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 					
 					return resources;
 				} catch(ResourceException e) { 
-					throw new IllegalStateException(e);
+					throw new IllegalStateException(e.getMessage(), e);
 				}catch (AccessDeniedException | IOException e) {
 					throw new IllegalStateException(new ResourceImportException(RESOURCE_BUNDLE, "error.importError", e.getMessage()));
 				}			

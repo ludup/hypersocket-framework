@@ -7,7 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -20,7 +19,6 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
-import javax.security.auth.callback.PasswordCallback;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -357,13 +355,20 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 
 		if (!realmCache.containsKey(host)) {
+			Set<String> hosts = new HashSet<String>();
+			hosts.add(host);
+			int idx;
+			if((idx = host.indexOf(":")) > -1) {
+				hosts.add(host.substring(0,  idx));
+			}
 			for (Realm r : internalAllRealms()) {
 				RealmProvider provider = getProviderForRealm(r);
 				String[] realmHosts = provider.getValues(r, "realm.host");
 				for (String realmHost : realmHosts) {
 					if (realmHost != null && !"".equals(realmHost)) {
-						if (realmHost.equalsIgnoreCase(host)) {
+						if (hosts.contains(realmHost)) {
 							realmCache.put(host, r);
+
 							if(log.isDebugEnabled()) {
 								log.debug(String.format("Returning resolved value for host %s realm %s", host, r.getName()));
 							}
@@ -836,6 +841,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 //				realm.setKnownHosts(ResourceUtils.explodeValues(properties.get("knownHosts")));
 //			}
 			
+			realmProvider.assertCreateRealm(properties);
 			realmProvider.testConnection(properties);
 
 			@SuppressWarnings("unchecked")
@@ -1063,17 +1069,21 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
+	@Deprecated
 	public Principal getPrincipalById(Realm realm, Long id, PrincipalType... type) throws AccessDeniedException {
 
 		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
 
-		if (type.length == 0) {
-			type = PrincipalType.ALL_TYPES;
-		}
-		Principal principal = getProviderForRealm(realm).getPrincipalById(id, realm, type);
-		if(principal==null) {
-			return getLocalProvider().getPrincipalById(id, realm, type);
-		}
+		Principal principal = principalRepository.getResourceById(id);
+		return principal;
+	}
+	
+	@Override
+	public Principal getPrincipalById(Long id) throws AccessDeniedException {
+
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
+
+		Principal principal = principalRepository.getResourceById(id);
 		return principal;
 	}
 	
@@ -1226,7 +1236,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 					return principal;
 				} catch (ResourceChangeException e) {
-					throw new IllegalStateException(e);
+					throw new IllegalStateException(e.getMessage(), e);
 				} catch (Throwable e) {
 					throw new IllegalStateException(
 							new ResourceChangeException(RESOURCE_BUNDLE, "groupUser.unexpectedError", e.getMessage()));
@@ -1299,7 +1309,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					try {
 						provider.deleteUser(resource);
 					} catch (ResourceChangeException e) {
-						throw new IllegalStateException(e);
+						throw new IllegalStateException(e.getMessage(), e);
 					}
 				}
 			});
@@ -1544,31 +1554,41 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Principal getUniquePrincipal(String username, PrincipalType... type) throws ResourceNotFoundException {
-		int found = 0;
-		Principal ret = null;
+		List<Principal> found = new ArrayList<Principal>();
 		for (Realm r : internalAllRealms()) {
 			Principal p = getProviderForRealm(r).getPrincipalByName(username, r, type);
 			if (p != null) {
-				ret = p;
-				found++;
+				found.add(p);
 			} else {
 				p = getLocalProvider().getPrincipalByName(username, r, type);
 				if (p != null) {
-					ret = p;
-					found++;
+					found.add(p);
 				} 
 			}
 		}
-		if (found != 1) {
-			if (found > 1 && log.isInfoEnabled()) {
-				
+		if (found.size() != 1) {
+			if (found.size() > 1) {
 				// Fire Event 
+				if(log.isInfoEnabled()) {
+					log.info("More than one principal found for username " + username);
+				}
+				for(Principal principal : found) {
+					if(principal.isSystem() || permissionService.hasSystemPermission(principal)) {
+						log.info(String.format("Resolving duplicate principals to %s/%s [System User]", principal.getRealm().getName(), principal.getPrincipalName()));
+						return principal;
+					} 
+				}
+				for(Principal principal : found) {
+					if(principal.getRealm().isDefaultRealm()) {
+						log.info(String.format("Resolving duplicate principals to %s/%s [Default Realm]", principal.getRealm().getName(), principal.getPrincipalName()));
+						return principal;
+					}
+				}
 				
-				log.info("More than one principal found for username " + username);
 			}
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "principal.notFound");
 		}
-		return ret;
+		return found.get(0);
 	}
 
 	@Override
@@ -1650,7 +1670,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean supportsAccountUnlock(Realm realm) throws IOException {
+	public boolean supportsAccountUnlock(Realm realm) throws ResourceException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -1658,7 +1678,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean supportsAccountDisable(Realm realm) throws IOException {
+	public boolean supportsAccountDisable(Realm realm) throws ResourceException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 

@@ -96,7 +96,7 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 	}
 	
 	public int getLength() {
-		return 245;
+		return 128;
 	}
 	
 	@Override

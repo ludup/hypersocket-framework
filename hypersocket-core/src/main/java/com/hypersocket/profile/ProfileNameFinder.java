@@ -33,7 +33,7 @@ public class ProfileNameFinder {
 			
 			return profiles.toArray(new String[0]);
 		}catch(Exception e){
-			throw new IllegalStateException(e);
+			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}
 

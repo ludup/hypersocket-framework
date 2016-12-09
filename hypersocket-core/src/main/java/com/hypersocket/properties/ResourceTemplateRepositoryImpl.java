@@ -381,7 +381,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		String inputType = pnode.getAttribute("inputType");
 		String mapping = pnode.hasAttribute("mapping") ? pnode.getAttribute("mapping") : "";
 		int weight = pnode.hasAttribute("weight") ? Integer.parseInt(pnode.getAttribute("weight")) : 9999;
-		boolean hidden = pnode.hasAttribute("hidden") && pnode.getAttribute("hidden").equalsIgnoreCase("true");
+		boolean hidden = (pnode.hasAttribute("hidden") && pnode.getAttribute("hidden").equalsIgnoreCase("true"))
+				|| (pnode.hasAttribute("inputType") && pnode.getAttribute("inputType").equalsIgnoreCase("hidden"));
 		String displayMode = pnode.hasAttribute("displayMode") ? pnode.getAttribute("displayMode") : "";
 		boolean readOnly = pnode.hasAttribute("readOnly") && pnode.getAttribute("readOnly").equalsIgnoreCase("true");
 		String defaultValue = Boolean.getBoolean("hypersocket.development") && pnode.hasAttribute("developmentValue")
@@ -657,8 +658,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				if (propertyTemplates.containsKey(resourceKey)) {
 					setValue(resource, resourceKey, properties.get(resourceKey));
 				}
-				else
+				else {
 					log.warn(String.format("Request to set property %s which does not exist in template %s", resourceKey, resource.toString()));
+				}
 			}
 		}
 	}

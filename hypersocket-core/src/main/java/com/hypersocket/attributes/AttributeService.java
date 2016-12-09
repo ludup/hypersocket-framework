@@ -8,8 +8,6 @@ import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.NameValuePair;
 import com.hypersocket.properties.PropertyResolver;
 import com.hypersocket.resource.AbstractAssignableResourceService;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 
 public interface AttributeService<A extends AbstractAttribute<?>, C extends RealmAttributeCategory<?>> extends AbstractAssignableResourceService<A>, PropertyResolver {

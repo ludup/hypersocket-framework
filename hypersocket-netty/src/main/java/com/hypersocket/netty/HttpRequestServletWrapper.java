@@ -43,115 +43,180 @@ import org.apache.http.client.utils.DateUtils;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 
 import com.hypersocket.netty.util.ChannelBufferServletInputStream;
+import com.hypersocket.servlet.HypersocketServletConfig;
+import com.hypersocket.servlet.HypersocketServletContext;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
 
 public class HttpRequestServletWrapper implements HttpServletRequest {
 
-	HttpRequest request;
-	Map<String, Object> attributes = new HashMap<String, Object>();
-	Map<String,ArrayList<String>> parameters = new HashMap<String,ArrayList<String>>();
-	String charset;
-	String queryString;
-	String pathInfo;
-	String url;
-	String uri;
-	InetSocketAddress localAddress;
-	InetSocketAddress remoteAddress;
-	Cookie[] cookies;
-	boolean secure;
-	HttpSession session;
-	ServletContext context;
-	HttpRequestChunkStream chunkedInputStream = null;
-	
-	public HttpRequestServletWrapper(HttpRequest request,
-			InetSocketAddress localAddress, 
-			InetSocketAddress remoteAddress, 
-			boolean secure,
-			ServletContext context,
-			HttpSession session) {
+	private HttpRequest request;
+	private Map<String, Object> attributes = new HashMap<String, Object>();
+	private Map<String, ArrayList<String>> parameters = new HashMap<String, ArrayList<String>>();
+	private String charset;
+	private String queryString;
+	private String pathInfo;
+	private String requestUri;
+	private InetSocketAddress localAddress;
+	private InetSocketAddress remoteAddress;
+	private Cookie[] cookies;
+	private boolean secure;
+	private HttpSession session;
+	private ServletContext context;
+	private HttpRequestChunkStream chunkedInputStream = null;
+	private String servletPath;
+	private String requestUrl;
+
+	public HttpRequestServletWrapper(HttpRequest request, InetSocketAddress localAddress,
+			InetSocketAddress remoteAddress, boolean secure, ServletContext context, HttpSession session) {
 		this.request = request;
 		this.localAddress = localAddress;
 		this.remoteAddress = remoteAddress;
-		
+
 		this.secure = secure;
 		this.context = context;
 		this.session = session;
 		
+
 		parseUri(request.getUri());
 
 		String contentType = request.getHeader(HttpHeaders.CONTENT_TYPE);
-		
+
 		String contentTypeCharset = "UTF-8";
 		int idx;
-		if(contentType!=null) {
-			
-			if((idx = contentType.indexOf(';')) > -1) {
-				String tmp = contentType.substring(idx+1);
+		if (contentType != null) {
+
+			if ((idx = contentType.indexOf(';')) > -1) {
+				String tmp = contentType.substring(idx + 1);
 				contentType = contentType.substring(0, idx);
-				if((idx = tmp.indexOf("charset=")) > -1) {
-					contentTypeCharset = tmp.substring(idx+8);
+				if ((idx = tmp.indexOf("charset=")) > -1) {
+					contentTypeCharset = tmp.substring(idx + 8);
 				}
 			}
-			
-			if(contentType!=null && contentType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
+
+			if (contentType != null && contentType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
 				processParameters(request.getContent().toString(Charset.forName(contentTypeCharset)));
 			}
 		}
 	}
-	
+
 	void parseUri(String uri) {
-		
-		boolean firstPass = url == null;
-		
-		this.url = (secure ? "https://" : "http://") + request.getHeader(HttpHeaders.HOST) + uri;
-
-		if(uri.indexOf('?') > -1) {
-	         uri = uri.substring(0, uri.indexOf('?'));
-	    }
-		
-		this.uri = uri;
-		
-		int doubleSlashPos = url.lastIndexOf("://");
-		int startPathPos = url.indexOf("/", doubleSlashPos + 1) + 1;
-
-		int questionMarkPos = url.lastIndexOf('?');
-		
-		if(firstPass) {
-			if (questionMarkPos == url.length() - 1) {
-				queryString = "";
-				if (startPathPos < questionMarkPos) {
-					pathInfo = url.substring(startPathPos, questionMarkPos);
-				}
-			} else if (questionMarkPos != -1) {
-				queryString = url.substring(questionMarkPos + 1);
-				if (startPathPos < questionMarkPos) {
-					pathInfo = url.substring(startPathPos, questionMarkPos);
-				}
-				processParameters(queryString);
-			} else {
-				queryString = null;
-				if (startPathPos < url.length()) {
-					pathInfo = url.substring(startPathPos);
-				}
-			} 
-		} else {
-			if (questionMarkPos == url.length() - 1) {
-				if (startPathPos < questionMarkPos) {
-					pathInfo = url.substring(startPathPos, questionMarkPos);
-				}
-			} else if (questionMarkPos != -1) {
-				if (startPathPos < questionMarkPos) {
-					pathInfo = url.substring(startPathPos, questionMarkPos);
-				}
-			} else {
-				if (startPathPos < url.length()) {
-					pathInfo = url.substring(startPathPos);
-				}
-			} 
+		/* There is only one context, so we assume requests coming in for root are part of it */
+		if(uri.startsWith("/?")) {
+			uri = getContextPath() + uri.substring(1);
 		}
+		else if(uri.equals("/")) {
+			uri = getContextPath();
+		}
+		
+		/* Sanity check */
+		/* TODO 404 this? */
+//		if (!uri.startsWith(getContextPath()))
+//			throw new IllegalArgumentException("Unexpected URI " + uri);
+
+		/*
+		 * requestURI is the part of this request's URL from the protocol name up to
+		 * the query string in the first line of the HTTP request. The web
+		 * container does not decode this String. 
+		 * 
+		 * For example: First line of
+		 * HTTP request Returned Value 
+		 * 
+		 * POST /some/path.html HTTP/1.1	 	/some/path.html 
+		 * GET http://foo.bar/a.html HTTP/1.0 	/a.html 
+		 * HEAD /xyz?a=b HTTP/1.1 				/xyz
+		 */
+		requestUri = uri;
+		int idx = requestUri.indexOf('?');
+		if(idx != -1) {
+			requestUri  = requestUri.substring(0, idx);
+		}
+		
+		/*
+		 * The request URL is the URL the client used to make the request. The
+		 * returned URL contains a protocol, server name, port number, and
+		 * server path, but it does not include query string parameters.
+		 * 
+		 * If this request has been forwarded using
+		 * javax.servlet.RequestDispatcher.forward, the server path in the
+		 * reconstructed URL must reflect the path used to obtain the
+		 * RequestDispatcher, and not the server path specified by the client.
+		 */
+		this.requestUrl = (secure ? "https://" : "http://") + request.getHeader(HttpHeaders.HOST) + requestUri;
+		
+		/* Strip the context path from the working URI */
+		uri = uri.equals("/") ? uri : uri.substring(getContextPath().length());
+
+		/*
+		 * Extract the servlet name. If it is the default servlet, the path will
+		 * be empty
+		 */
+		HypersocketServletConfig servlet = null;
+
+		/*
+		 * Find the matching servlet (if any) and the default servlet
+		 */
+		HypersocketServletConfig defaultServlet = null;
+		for (HypersocketServletConfig config : ((HypersocketServletContext) getServletContext()).getServletConfigs()) {
+			String name = config.getServletName();
+			if (name.equals("default")) {
+				defaultServlet = config;
+				if (servlet != null)
+					break;
+			} else {
+				name = "/" + name;
+				if (uri.equals(name) || uri.startsWith(name + "/") || uri.startsWith(name + "?")) {
+					servlet = config;
+					if (defaultServlet != null)
+						break;
+				}
+			}
+		}
+
+		/*
+		 * Determine servlet to use and the path. The path is part of this
+		 * request's URL that calls the servlet. This path starts with a "/"
+		 * character and includes either the servlet name or a path to the
+		 * servlet, but does not include any extra path information or a query
+		 * string. Same as the value of the CGI variable SCRIPT_NAME.
+		 * 
+		 * This path will be an empty string ("") if the servlet used to process
+		 * this request was matched using the "/*" pattern.
+		 */
+
+		if (servlet == null) {
+			servlet = defaultServlet;
+			servletPath = "";
+		} else {
+			servletPath = "/" + servlet.getServletName();
+		}
+
+		/*
+		 * pathInfo is any extra path information associated with the URL the
+		 * client sent when it made this request. The extra path information
+		 * follows the servlet path but precedes the query string and will start
+		 * with a "/" character.
+		 * 
+		 * This method returns null if there was no extra path information.
+		 * 
+		 * We also extract the query string at this point
+		 */
+		pathInfo = uri.equals("/") || uri.equals("") ? "" : uri.substring(servletPath.length());
+		idx = pathInfo.indexOf('?');
+		if (idx != -1) {
+			queryString = pathInfo.substring(idx + 1);
+			pathInfo = pathInfo.substring(0, idx);
+		}
+
+		if (pathInfo.equals("") || pathInfo.equals("/"))
+			pathInfo = null;
+
+		if (queryString != null && queryString.length() > 0) {
+			processParameters(queryString);
+		}
+
 	}
-			
+
 	private void processParameters(String params) {
 		StringTokenizer paramsParser = new StringTokenizer(params, "&");
 		while (paramsParser.hasMoreTokens()) {
@@ -159,12 +224,10 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 			int equalPos = parameter.indexOf('=');
 			if (equalPos != -1) {
 				try {
-					String paramName = URLDecoder.decode(
-							parameter.substring(0, equalPos), "UTF-8");
+					String paramName = URLDecoder.decode(parameter.substring(0, equalPos), "UTF-8");
 					String paramValue = "";
 					if (equalPos != parameter.length() - 1) {
-						paramValue = URLDecoder.decode(
-								parameter.substring(equalPos + 1), "UTF-8");
+						paramValue = URLDecoder.decode(parameter.substring(equalPos + 1), "UTF-8");
 					}
 					addParameter(paramName, paramValue);
 				} catch (UnsupportedEncodingException ex) {
@@ -175,16 +238,16 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	}
 
 	void addParameter(String name, String value) {
-		if(!parameters.containsKey(name)) {
+		if (!parameters.containsKey(name)) {
 			parameters.put(name, new ArrayList<String>());
 		}
 		parameters.get(name).add(value);
 	}
-	
+
 	public HttpRequest getNettyRequest() {
 		return request;
 	}
-	
+
 	@Override
 	public Object getAttribute(String name) {
 		return attributes.get(name);
@@ -202,20 +265,17 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 		} else if (request.getHeader(HttpHeaders.CONTENT_TYPE) == null) {
 			return null;
 		} else {
-			int charsetPos = request.getHeader(HttpHeaders.CONTENT_TYPE)
-					.indexOf("charset=");
+			int charsetPos = request.getHeader(HttpHeaders.CONTENT_TYPE).indexOf("charset=");
 			if (charsetPos == -1) {
 				return "UTF-8";
 			} else {
-				return request.getHeader(HttpHeaders.CONTENT_TYPE).substring(
-						charsetPos + 8);
+				return request.getHeader(HttpHeaders.CONTENT_TYPE).substring(charsetPos + 8);
 			}
 		}
 	}
 
 	@Override
-	public void setCharacterEncoding(String charset)
-			throws UnsupportedEncodingException {
+	public void setCharacterEncoding(String charset) throws UnsupportedEncodingException {
 		this.charset = charset;
 	}
 
@@ -232,8 +292,8 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public ServletInputStream getInputStream() throws IOException {
-		if(request.isChunked()) {
-			if(chunkedInputStream==null) {
+		if (request.isChunked()) {
+			if (chunkedInputStream == null) {
 				chunkedInputStream = new HttpRequestChunkStream();
 			}
 			return chunkedInputStream;
@@ -242,7 +302,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	}
 
 	public String getParameter(String name) {
-		if(parameters.containsKey(name)) {
+		if (parameters.containsKey(name)) {
 			return parameters.get(name).get(0);
 		} else {
 			return null;
@@ -254,25 +314,24 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	}
 
 	public String[] getParameterValues(String name) {
-		if(parameters.containsKey(name)) {
-		return parameters.get(name).toArray(new String[0]);
+		if (parameters.containsKey(name)) {
+			return parameters.get(name).toArray(new String[0]);
 		} else {
 			return null;
 		}
 	}
 
-	public Map<String,String[]> getParameterMap() {
-		HashMap<String,String[]> tmp = new HashMap<String,String[]>();
-		for(Map.Entry<String, ArrayList<String>> entry : parameters.entrySet()) {
+	public Map<String, String[]> getParameterMap() {
+		HashMap<String, String[]> tmp = new HashMap<String, String[]>();
+		for (Map.Entry<String, ArrayList<String>> entry : parameters.entrySet()) {
 			tmp.put(entry.getKey(), entry.getValue().toArray(new String[entry.getValue().size()]));
 		}
 		return tmp;
 	}
 
-
 	@Override
 	public String getProtocol() {
-		return url.startsWith("https") ? "https" : "http";
+		return requestUrl.startsWith("https") ? "https" : "http";
 	}
 
 	@Override
@@ -284,7 +343,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	public String getServerName() {
 		String host = getHeader(HttpHeaders.HOST);
 		int idx;
-		if((idx = host.indexOf(":")) > -1) {
+		if ((idx = host.indexOf(":")) > -1) {
 			host = host.substring(0, idx);
 		}
 		return host;
@@ -373,29 +432,29 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	@Override
 	public Cookie[] getCookies() {
 		if (cookies == null && getHeader("COOKIE") != null) {
-	         String tmp = getHeader("COOKIE");
-	         StringTokenizer t = new StringTokenizer(tmp, ";");
-	         cookies = new Cookie[t.countTokens()];
-	         int count = 0;
-	         while (t.hasMoreTokens()) {
-	            String nextCookie = t.nextToken().trim();
-	            int equalsPos = nextCookie.indexOf('=');
-	            String cookieName = nextCookie.substring(0, equalsPos);
-	            String cookieValue = nextCookie.substring(equalsPos + 1);
-	            cookies[count++] = new Cookie(cookieName, cookieValue);
-	         }
-	      } else if (cookies == null) {
-	         cookies = new Cookie[0];
-	      }
-	      return cookies;
+			String tmp = getHeader("COOKIE");
+			StringTokenizer t = new StringTokenizer(tmp, ";");
+			cookies = new Cookie[t.countTokens()];
+			int count = 0;
+			while (t.hasMoreTokens()) {
+				String nextCookie = t.nextToken().trim();
+				int equalsPos = nextCookie.indexOf('=');
+				String cookieName = nextCookie.substring(0, equalsPos);
+				String cookieValue = nextCookie.substring(equalsPos + 1);
+				cookies[count++] = new Cookie(cookieName, cookieValue);
+			}
+		} else if (cookies == null) {
+			cookies = new Cookie[0];
+		}
+		return cookies;
 	}
 
 	@Override
 	public long getDateHeader(String name) {
-		if(getHeader(name)==null) {
+		if (getHeader(name) == null) {
 			return -1;
 		}
-		
+
 		return DateUtils.parseDate(getHeader(name)).getTime();
 	}
 
@@ -436,7 +495,6 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public String getContextPath() {
-		context.getContextPath();
 		return context.getContextPath();
 	}
 
@@ -467,22 +525,22 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public String getRequestURI() {
-		return uri;
+		return requestUri;
 	}
 
 	@Override
 	public StringBuffer getRequestURL() {
-		return new StringBuffer(url);
+		return new StringBuffer(requestUrl);
 	}
 
 	@Override
 	public String getServletPath() {
-		return "";
+		return servletPath;
 	}
 
 	@Override
 	public HttpSession getSession(boolean create) {
-		if(session==null && create) {
+		if (session == null && create) {
 			session = HypersocketSessionFactory.getInstance().createSession(context);
 		}
 		return session;
@@ -492,7 +550,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	public HttpSession getSession() {
 		return session;
 	}
-	
+
 	public void setSession(HypersocketSession session) {
 		this.session = session;
 	}
@@ -560,12 +618,12 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public void login(String username, String password) throws ServletException {
-		
+
 	}
 
 	@Override
 	public void logout() throws ServletException {
-		
+
 	}
 
 	@Override

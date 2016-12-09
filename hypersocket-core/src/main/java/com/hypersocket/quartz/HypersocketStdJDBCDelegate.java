@@ -1,15 +1,5 @@
 package com.hypersocket.quartz;
 
-import com.hypersocket.cache.CacheService;
-import com.hypersocket.util.SpringApplicationContextProvider;
-import org.quartz.*;
-import org.quartz.impl.JobDetailImpl;
-import org.quartz.impl.jdbcjobstore.StdJDBCDelegate;
-import org.quartz.spi.ClassLoadHelper;
-import org.quartz.spi.OperableTrigger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -19,6 +9,18 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import org.quartz.Job;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.JobPersistenceException;
+import org.quartz.impl.JobDetailImpl;
+import org.quartz.impl.jdbcjobstore.StdJDBCDelegate;
+import org.quartz.spi.ClassLoadHelper;
+import org.quartz.spi.OperableTrigger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HypersocketStdJDBCDelegate extends StdJDBCDelegate{
 
@@ -66,7 +68,7 @@ public class HypersocketStdJDBCDelegate extends StdJDBCDelegate{
 
             return job;
         } catch (JobPersistenceException e){
-            throw new IllegalStateException(e);
+            throw new IllegalStateException(e.getMessage(), e);
         }finally {
             closeResultSet(rs);
             closeStatement(ps);

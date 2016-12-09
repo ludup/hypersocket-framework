@@ -1,11 +1,9 @@
 package com.hypersocket.tasks.email;
 
 import com.hypersocket.email.EmailNotificationServiceImpl;
-import com.hypersocket.email.events.EmailEvent;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
-import com.hypersocket.tasks.TaskResult;
 import com.hypersocket.triggers.AbstractTaskResult;
 
 public class EmailTaskResult extends AbstractTaskResult {

@@ -15,7 +15,7 @@ public class ProfileLoaderClassPathXmlApplicationContext extends ClassPathXmlApp
 			setConfigLocations(new String[]{configLocation});
 			refresh();
 		}catch(IllegalAccessException e){
-			throw new IllegalStateException(e);
+			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}
 }

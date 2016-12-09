@@ -113,7 +113,11 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		}
 
 		if(template.isEncrypted() && ResourceUtils.isEncrypted(c)) {
-			c = decryptValue(cacheKey, c, resolveRealm(resource));
+			if(ResourceUtils.isEncryptedUUIDType(c)) {
+				c = decryptValue(resource.getUUID(), c, resolveRealm(resource));
+			} else {
+				c = decryptValue(cacheKey, c, resolveRealm(resource));
+			}
 		}
 
 		return c;
@@ -130,13 +134,11 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		cachedValues.remove(cacheKey);
 		
 		if(template.isEncrypted() && !ResourceUtils.isEncrypted(value)) {
-			value = encryptValue(cacheKey, value, resolveRealm(resource));
+			value = encryptValue(resource.getUUID(), value, resolveRealm(resource));
 			doSetProperty(template, resource, value);
 		} else {
 			doSetProperty(template, resource, value);
 		}
-		
-
 	}
 	
 	private String encryptValue(String cacheKey, String value, Realm realm) {

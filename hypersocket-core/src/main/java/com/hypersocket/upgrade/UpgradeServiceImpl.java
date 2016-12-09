@@ -159,7 +159,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 				listener.onUpgradeComplete();
 			}
 		} catch (Throwable e) {
-			throw new IllegalStateException(e);
+			throw new IllegalStateException(e.getMessage(), e);
 		} 
 	}
 

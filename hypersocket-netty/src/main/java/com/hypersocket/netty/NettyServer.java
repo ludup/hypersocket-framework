@@ -13,6 +13,7 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,6 +66,8 @@ import com.hypersocket.ip.ExtendedIpFilterRuleHandler;
 import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
 import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.realm.RealmService;
+import com.hypersocket.server.ClientConnector;
 import com.hypersocket.server.HypersocketServerImpl;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceRepository;
@@ -115,7 +118,12 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	@Autowired
 	I18NService i18nService;
 	
+	@Autowired
+	RealmService realmService;
+	
 	NettyThreadFactory nettyThreadFactory;
+	
+	List<ClientConnector> clientConnectors = new ArrayList<ClientConnector>();
 	
 	public NettyServer() {
 
@@ -145,6 +153,18 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 	public ServerBootstrap getServerBootstrap() {
 		return serverBootstrap;
+	}
+	
+	@Override
+	public void registerClientConnector(ClientConnector connector) {
+		clientConnectors.add(connector);
+		Collections.sort(clientConnectors, new Comparator<ClientConnector>() {
+
+			@Override
+			public int compare(ClientConnector o1, ClientConnector o2) {
+				return o1.getWeight().compareTo(o2.getWeight());
+			}
+		});
 	}
 	
 	@Override
@@ -222,16 +242,19 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			}
 			
 			HTTPInterfaceResource tmp = new HTTPInterfaceResource();
+			tmp.setId(0L);
 			tmp.setInterfaces("127.0.0.1");
 			tmp.setPort(0);
 			tmp.setProtocol(HTTPProtocol.HTTP.toString());
-			
+			tmp.setRealm(realmService.getSystemRealm());
 			bindInterface(tmp);
 			
 			HTTPInterfaceResource tmp2 = new HTTPInterfaceResource();
+			tmp.setId(1L);
 			tmp2.setInterfaces("::");
-			tmp2.setPort(8080);
+			tmp2.setPort(0);
 			tmp2.setProtocol(HTTPProtocol.HTTP.toString());
+			tmp.setRealm(realmService.getSystemRealm());
 			
 			bindInterface(tmp2);
 		}
@@ -402,8 +425,17 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	@Override
 	public void connect(TCPForwardingClientCallback callback) {
 
+		InetSocketAddress addr = new InetSocketAddress(callback.getHostname(), callback.getPort());
+		
+		for(ClientConnector connector : clientConnectors) {
+			if(connector.handlesConnect(addr)) {
+				connector.connect(addr, callback);
+				return;
+			}
+		}
+		
 		clientBootstrap.connect(
-				new InetSocketAddress(callback.getHostname(), callback.getPort())).addListener(
+				addr).addListener(
 				new ClientConnectCallbackImpl(callback));
 
 	}
