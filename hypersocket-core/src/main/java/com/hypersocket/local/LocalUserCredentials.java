@@ -47,12 +47,6 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 	@Column(name="password_change_required")
 	boolean passwordChangeRequired;
 
-	@Column(name="master_password")
-	String masterPassword;
-
-	@Column(name="master_password_algorithm")
-	String masterPasswordAlgorithm;
-	
 	public LocalUser getUser() {
 		return user;
 	}
@@ -91,22 +85,6 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 
 	public void setPasswordChangeRequired(boolean passwordChangeRequired) {
 		this.passwordChangeRequired = passwordChangeRequired;
-	}
-
-	public String getMasterPassword(){
-		return this.masterPassword;
-	}
-
-	public void setMasterPassword(String masterPassword){
-		this.masterPassword = masterPassword;
-	}
-
-	public String getMasterPasswordAlgorithm() {
-		return masterPasswordAlgorithm;
-	}
-
-	public void setMasterPasswordAlgorithm(String masterPasswordAlgorithm) {
-		this.masterPasswordAlgorithm = masterPasswordAlgorithm;
 	}
 
 	@Override

@@ -146,31 +146,4 @@ public class LocalUser extends UserPrincipal implements Serializable {
 		this.realmCategory = realmCategory;
 	}
 	
-	public String getMasterPassword(){
-		if(this.credentials != null) {
-			return this.credentials.masterPassword;
-		}
-		return null;
-	}
-
-	public String getMasterPasswordAlgorithm(){
-		if(this.credentials != null) {
-			return this.credentials.masterPasswordAlgorithm;
-		}
-		return null;
-	}
-
-	public void setMasterPassword(String masterPassword){
-		if(this.credentials != null) {
-			this.credentials.masterPassword = masterPassword;
-			this.credentials.updateModifiedTimestamp();
-		}
-	}
-
-	public void setMasterPasswordAlgorithm(String algorithm){
-		if(this.credentials != null) {
-			this.credentials.masterPasswordAlgorithm = algorithm;
-			this.credentials.updateModifiedTimestamp();
-		}
-	}
 }
