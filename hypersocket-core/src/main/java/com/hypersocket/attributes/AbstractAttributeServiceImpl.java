@@ -289,6 +289,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 				PropertyCategory cat = new PropertyCategory();
 				cat.setBundle(t.getCategory().getBundle());
 				cat.setCategoryGroup(categoryGroup);
+				cat.setCategoryNamespace(t.getCategory().getCategoryNamespace());
 				cat.setCategoryKey(t.getCategory().getCategoryKey());
 				cat.setWeight(t.getCategory().getWeight());
 				cat.setDisplayMode(t.getCategory().getDisplayMode());

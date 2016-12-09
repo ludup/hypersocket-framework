@@ -229,16 +229,17 @@ public abstract class AbstractAttributeCategoryServiceImpl<A extends AbstractAtt
 	@Override
 	public PropertyCategory registerPropertyCategory(T c) {
 		return registerPropertyCategory(
-				"attributeCategory" + String.valueOf(c.getId()),
+				"attributeCategory" + String.valueOf(c.getId()), c.getCategoryNamespace(), 
 				resourceBundle, c.getWeight(), c.isHidden(), c.getName(), c.getVisibilityDependsOn(), c.getVisibilityDependsValue());
 	}
 	
-	protected PropertyCategory registerPropertyCategory(String resourceKey,
+	protected PropertyCategory registerPropertyCategory(String resourceKey, String categoryNamespace,
 			String bundle, int weight, boolean hidden, String name, String visibilityDependsOn, String visibilityDependsValue) {
 
 		PropertyCategory category = new PropertyCategory();
 		category.setName(name);
 		category.setBundle(bundle);
+		category.setCategoryNamespace(categoryNamespace);
 		category.setCategoryKey(resourceKey);
 		category.setDisplayMode("");
 		category.setWeight(weight);

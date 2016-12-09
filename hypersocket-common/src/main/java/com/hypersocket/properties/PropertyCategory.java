@@ -17,6 +17,7 @@ public class PropertyCategory implements Serializable {
 
 	String categoryKey;
 	String categoryGroup;
+	String categoryNamespace;
 	String bundle;
 	String displayMode;
 	int weight;
@@ -36,6 +37,14 @@ public class PropertyCategory implements Serializable {
 	
 	public int getId() {
 		return categoryKey.hashCode();
+	}
+	
+	public String getCategoryNamespace() {
+		return categoryNamespace;
+	}
+	
+	public void setCategoryNamespace(String categoryNamespace) {
+		this.categoryNamespace = categoryNamespace;
 	}
 	
 	public String getCategoryKey() {

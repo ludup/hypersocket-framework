@@ -126,6 +126,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 			PropertyCategory cat = registerPropertyCategory(
 					node.getAttribute("resourceKey"),
+					node.getAttribute("namespace"),
 					node.hasAttribute("group") ? node.getAttribute("group")
 							: SYSTEM_GROUP,
 					node.getAttribute("resourceBundle"), Integer.parseInt(node
@@ -309,7 +310,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		} 
 	}
 
-	private PropertyCategory registerPropertyCategory(String categoryKey,
+	private PropertyCategory registerPropertyCategory(String categoryKey, String categoryNamespace,
 			String categoryGroup, String bundle, int weight, String displayMode, boolean systemOnly, String filter, boolean hidden,
 			String visibilityDependsOn, String visibilityDependsValue) {
 
@@ -328,6 +329,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		PropertyCategory category = new PropertyCategory();
 		category.setBundle(bundle);
 		category.setCategoryKey(categoryKey);
+		category.setCategoryNamespace(categoryNamespace);
 		category.setCategoryGroup(categoryGroup);
 		category.setDisplayMode(displayMode);
 		category.setWeight(weight);

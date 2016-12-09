@@ -20,6 +20,10 @@ public abstract class AbstractAttributeCategory<A extends AbstractAttribute<?>> 
 	public AbstractAttributeCategory() {
 		super();
 	}
+	
+	public String getCategoryNamespace() {
+		return null;
+	}
 
 	public Integer getWeight() {
 		return weight;

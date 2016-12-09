@@ -104,4 +104,5 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	Long getResourceLongProperty(T resource, String resourceKey);
 
 	int getResourceIntProperty(T resource, String resourceKey);
+
 }

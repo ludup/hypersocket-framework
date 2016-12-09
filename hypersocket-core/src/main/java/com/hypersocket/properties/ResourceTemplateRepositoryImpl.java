@@ -265,6 +265,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 
 			PropertyCategory cat = registerPropertyCategory(node.getAttribute("resourceKey"),
+					node.getAttribute("namespace"),
 					node.getAttribute("resourceBundle"), Integer.parseInt(node.getAttribute("weight")), false, group,
 					node.getAttribute("displayMode"), 
 					node.hasAttribute("system") && Boolean.parseBoolean(node.getAttribute("system")),
@@ -481,7 +482,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		} 
 	}
 
-	private PropertyCategory registerPropertyCategory(String resourceKey, String bundle, int weight,
+	private PropertyCategory registerPropertyCategory(String resourceKey, String categoryNamespace, String bundle, int weight,
 			boolean userCreated, String group, String displayMode, boolean systemOnly, String filter, boolean hidden,
 			String visibilityDependsOn, String visibilityDependsValue) {
 
@@ -502,6 +503,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		category.setBundle(bundle);
 		category.setCategoryKey(resourceKey);
 		category.setCategoryGroup(group);
+		category.setCategoryNamespace(categoryNamespace);
 		category.setDisplayMode(displayMode);
 		category.setWeight(weight);
 		category.setUserCreated(userCreated);
@@ -717,6 +719,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			if(!cats.containsKey(c.getCategoryKey())) {
 				tmp = new PropertyCategory();
 				tmp.setBundle(c.getBundle());
+				tmp.setCategoryNamespace(c.getCategoryNamespace());
 				tmp.setCategoryKey(c.getCategoryKey());
 				tmp.setWeight(c.getWeight());
 				tmp.setDisplayMode(c.getDisplayMode());
@@ -744,6 +747,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				if(!cats.containsKey(c.getCategoryKey())) {
 					tmp = new PropertyCategory();
 					tmp.setBundle(c.getBundle());
+					tmp.setCategoryNamespace(c.getCategoryNamespace());
 					tmp.setCategoryKey(c.getCategoryKey());
 					tmp.setWeight(c.getWeight());
 					tmp.setUserCreated(c.isUserCreated());
@@ -786,6 +790,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			if(!cats.containsKey(c.getCategoryKey())) {
 				tmp = new PropertyCategory();
 				tmp.setBundle(c.getBundle());
+				tmp.setCategoryNamespace(c.getCategoryNamespace());
 				tmp.setCategoryKey(c.getCategoryKey());
 				tmp.setWeight(c.getWeight());
 				tmp.setUserCreated(c.isUserCreated());
@@ -816,6 +821,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				if(!cats.containsKey(c.getCategoryKey())) {
 					tmp = new PropertyCategory();
 					tmp.setBundle(c.getBundle());
+					tmp.setCategoryNamespace(c.getCategoryNamespace());
 					tmp.setCategoryKey(c.getCategoryKey());
 					tmp.setWeight(c.getWeight());
 					tmp.setDisplayMode(c.getDisplayMode());
