@@ -328,12 +328,14 @@ public class HypersocketUtils {
 	}
 
 
-	public static <S extends Throwable,D extends Throwable> S chain(S source, D target){
+	public static <S extends Throwable,D extends Throwable> S chain(S source, D target) {
 		try {
-			FieldUtils.writeField(source, "cause", target,true);
+			FieldUtils.writeField(source, "cause", target, true);
 			return source;
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException("Problem in chaining exceptions", e);
+		}
+	}
 
 	public static String csv(String[] items) {
 		StringBuffer b = new StringBuffer();
