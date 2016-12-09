@@ -138,8 +138,11 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	public static Set<String> getContextNames() {
 		return propertyContexts.keySet();
 	}
-
 	public void loadPropertyTemplates(String resourceXmlPath) {
+		loadPropertyTemplates(resourceXmlPath, false);
+	}
+	
+	public void loadPropertyTemplates(String resourceXmlPath, boolean forceReadOnly) {
 
 		this.resourceXmlPath = resourceXmlPath;
 
@@ -153,7 +156,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			while (urls.hasMoreElements()) {
 				URL url = urls.nextElement();
 				try {
-					context = loadPropertyTemplates(url);
+					context = loadPropertyTemplates(url, forceReadOnly);
 				} catch (Exception e) {
 					log.error("Failed to process " + url.toExternalForm(), e);
 				}
@@ -202,7 +205,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	}
 
-	private String loadPropertyTemplates(URL url) throws SAXException, IOException, ParserConfigurationException {
+	private String loadPropertyTemplates(URL url, boolean forceReadOnly) throws SAXException, IOException, ParserConfigurationException {
 
 		DocumentBuilderFactory xmlFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder xmlBuilder = xmlFactory.newDocumentBuilder();
@@ -219,7 +222,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				while (extendUrls.hasMoreElements()) {
 					URL extendUrl = extendUrls.nextElement();
 					try {
-						context = loadPropertyTemplates(extendUrl);
+						context = loadPropertyTemplates(extendUrl, forceReadOnly);
 					} catch (Exception e) {
 						log.error("Failed to process " + extendUrl.toExternalForm(), e);
 					}
@@ -237,12 +240,12 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 		loadPropertyStores(doc);
 
-		loadPropertyCategories(doc);
+		loadPropertyCategories(doc, forceReadOnly);
 
 		return context;
 	}
 
-	private void loadPropertyCategories(Document doc) throws IOException {
+	private void loadPropertyCategories(Document doc, boolean forceReadOnly) throws IOException {
 
 		NodeList list = doc.getElementsByTagName("propertyCategory");
 
@@ -318,7 +321,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 						}
 					}
 
-					registerPropertyItem(cat, store, pnode);
+					registerPropertyItem(cat, store, pnode, forceReadOnly);
 				} catch (Throwable e) {
 					log.error("Failed to register property item", e);
 				}
@@ -375,7 +378,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		return propertyTemplates.get(resourceKey);
 	}
 
-	private void registerPropertyItem(PropertyCategory category, PropertyStore propertyStore, Element pnode) {
+	private void registerPropertyItem(PropertyCategory category, PropertyStore propertyStore, Element pnode, boolean forceReadOnly) {
 
 	
 		String resourceKey = pnode.getAttribute("resourceKey");
@@ -385,7 +388,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		boolean hidden = (pnode.hasAttribute("hidden") && pnode.getAttribute("hidden").equalsIgnoreCase("true"))
 				|| (pnode.hasAttribute("inputType") && pnode.getAttribute("inputType").equalsIgnoreCase("hidden"));
 		String displayMode = pnode.hasAttribute("displayMode") ? pnode.getAttribute("displayMode") : "";
-		boolean readOnly = pnode.hasAttribute("readOnly") && pnode.getAttribute("readOnly").equalsIgnoreCase("true");
+		boolean readOnly = forceReadOnly || pnode.hasAttribute("readOnly") && pnode.getAttribute("readOnly").equalsIgnoreCase("true");
 		String defaultValue = Boolean.getBoolean("hypersocket.development") && pnode.hasAttribute("developmentValue")
 				? pnode.getAttribute("developmentValue") : pnode.hasAttribute("defaultValue") ? pnode.getAttribute("defaultValue") : "";
 		boolean isVariable = pnode.hasAttribute("variable") && pnode.getAttribute("variable").equalsIgnoreCase("true");
