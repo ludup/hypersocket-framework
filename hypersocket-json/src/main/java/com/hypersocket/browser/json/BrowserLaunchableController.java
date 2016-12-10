@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -19,14 +20,17 @@ import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.browser.BrowserLaunchable;
 import com.hypersocket.browser.BrowserLaunchableColumns;
 import com.hypersocket.browser.BrowserLaunchableService;
+import com.hypersocket.browser.BrowserLaunchableServiceImpl;
+import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.session.json.SessionUtils;
+import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.json.BootstrapTableController;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
@@ -123,6 +127,31 @@ public class BrowserLaunchableController extends BootstrapTableController<Void> 
 									searchPattern);
 						}
 					});
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "browser/browser/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<BrowserLaunchable> deleteResource(
+			HttpServletRequest request, HttpServletResponse response,
+			@PathVariable("id") Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+			resourceService.deleteResource(id);
+			return new ResourceStatus<BrowserLaunchable>(true, I18N.getResource(
+					sessionUtils.getLocale(request),
+					BrowserLaunchableServiceImpl.RESOURCE_BUNDLE,
+					"resource.deleted.info"));
+		} catch (ResourceException e) {
+			return new ResourceStatus<BrowserLaunchable>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}

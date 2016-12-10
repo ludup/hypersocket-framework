@@ -72,6 +72,6 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	Collection<T> getResourcesByRole(Realm currentRealm, Role... role);
 
-
+	T getPersonalResourceByName(String name, Principal principal, CriteriaConfiguration... configs);
 
 }

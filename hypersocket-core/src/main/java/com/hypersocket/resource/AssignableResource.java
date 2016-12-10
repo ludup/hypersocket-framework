@@ -10,6 +10,7 @@ package com.hypersocket.resource;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Inheritance;
@@ -45,6 +46,10 @@ public class AssignableResource extends RealmResource {
 	
 	@Transient
 	Set<Role> unassignedRoles;
+
+	@Column(name="personal")
+	Boolean personal;
+
 	
 	public AssignableResource() {
 	}
@@ -75,6 +80,11 @@ public class AssignableResource extends RealmResource {
 		this.unassignedRoles = unassignedRoles;
 	}
 	
-	
-	
+	public Boolean getPersonal() {
+		return personal == null ? Boolean.FALSE : personal;
+	}
+
+	public void setPersonal(Boolean personal) {
+		this.personal = personal;
+	}
 }
