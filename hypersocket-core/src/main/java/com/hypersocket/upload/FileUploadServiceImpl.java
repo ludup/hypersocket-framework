@@ -6,9 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringBufferInputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -16,6 +18,9 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -34,6 +39,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.util.CloseOnEOFInputStream;
 import com.hypersocket.utils.HypersocketUtils;
@@ -146,11 +152,10 @@ public class FileUploadServiceImpl extends
 			throws ResourceCreationException, AccessDeniedException,
 			IOException {
 
-		String uuid = UUID.randomUUID().toString();
 		FileUpload fileUpload = new FileUpload();
 		fileUpload.setFileName(filename);
 		fileUpload.setRealm(realm);
-		fileUpload.setName(uuid);
+		fileUpload.setName(fileUpload.getUUID());
 		fileUpload.setType(type);
 		String shortCode;
 		do {
@@ -169,7 +174,7 @@ public class FileUploadServiceImpl extends
 
 				din = new DigestInputStream(in, md5);
 
-				fileUpload.setFileSize(uploadStore.writeFile(realm, filename, uuid, din));
+				fileUpload.setFileSize(uploadStore.writeFile(realm, filename, fileUpload.getUUID(), din));
 
 				String md5String = Hex.encodeHexString(md5.digest());
 				fileUpload.setMd5Sum(md5String);
@@ -193,15 +198,6 @@ public class FileUploadServiceImpl extends
 
 	}
 
-//	@Override
-//	public FileUpload getFileByUuid(String uuid) throws ResourceNotFoundException {
-//		FileUpload upload = repository.getFileByUuid(uuid);
-//		if(upload==null) {
-//			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.fileNotFound", uuid);
-//		}
-//		return upload;
-//	}
-	
 	@Override
 	public FileUpload getFileUpload(String uuid) throws ResourceNotFoundException {
 		FileUpload upload = repository.getFileUpload(uuid);
@@ -382,5 +378,45 @@ public class FileUploadServiceImpl extends
 		FileUpload u = getFileUpload(uuid);
 		return createFile(getInputStream(u.getName()), 
 				u.getFileName(), u.getRealm(), true);
+	}
+
+	@Override
+	protected void prepareExport(FileUpload resource) throws ResourceException, AccessDeniedException {
+		super.prepareExport(resource);
+		
+		InputStream in = null;
+		Base64InputStream b = null;
+		try {
+			in = getInputStream(resource.getName());
+			b = new Base64InputStream(in, true);
+
+			resource.setContent(IOUtils.toString(b));
+					
+		} catch(IOException ex) {
+			throw new ResourceException(RESOURCE_BUNDLE, "error.fileIO", ex.getMessage());
+		} finally {
+			IOUtils.closeQuietly(b);
+			IOUtils.closeQuietly(in);
+		}
+	}
+
+	protected void beforeCreateResource(FileUpload resource, Map<String,String> properties) throws ResourceException {
+		if(resource.getContent()!=null) {
+			
+			FileOutputStream out = null;
+			Base64InputStream b = null;
+			
+			try {
+				b = new Base64InputStream(IOUtils.toInputStream(resource.getContent(), "UTF-8"), false);
+				defaultStore.writeFile(resource.getRealm(), resource.getFileName(), resource.getName(), b);
+				 
+			} catch(IOException ex) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.fileIO", ex.getMessage());
+			} finally {
+				IOUtils.closeQuietly(out);
+				IOUtils.closeQuietly(b);
+			}
+		}
+
 	}
 }

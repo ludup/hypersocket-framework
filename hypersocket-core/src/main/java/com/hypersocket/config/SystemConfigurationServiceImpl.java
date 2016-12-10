@@ -48,15 +48,10 @@ public class SystemConfigurationServiceImpl extends
 
 		eventService.registerEvent(ConfigurationChangedEvent.class,
 				ConfigurationServiceImpl.RESOURCE_BUNDLE);
+		eventService.registerEvent(ConfigurationValueChangedEvent.class,
+				ConfigurationServiceImpl.RESOURCE_BUNDLE);
 
 		repository.loadPropertyTemplates("systemTemplates.xml");
-	}
-
-	protected void onValueChanged(PropertyTemplate template, String oldValue,
-			String value) {
-		eventService.publishEvent(new ConfigurationChangedEvent(this, true,
-				getCurrentSession(), template, oldValue, value, template
-						.isHidden()));
 	}
 
 	@Override
@@ -82,6 +77,7 @@ public class SystemConfigurationServiceImpl extends
 			String oldValue = repository.getValue(resourceKey);
 			repository.setValue(resourceKey, value);
 			fireChangeEvent(resourceKey, oldValue, value);
+			eventService.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession()));
 		} catch (AccessDeniedException e) {
 			fireChangeEvent(resourceKey, e);
 			throw e;
@@ -134,6 +130,8 @@ public class SystemConfigurationServiceImpl extends
 				fireChangeEvent(resourceKey, oldValues.get(resourceKey),
 						values.get(resourceKey));
 			}
+			
+			eventService.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession()));
 		} catch (AccessDeniedException e) {
 			for (String resourceKey : values.keySet()) {
 				fireChangeEvent(resourceKey, e);
@@ -151,14 +149,14 @@ public class SystemConfigurationServiceImpl extends
 
 	private void fireChangeEvent(String resourceKey, String oldValue,
 			String newValue) {
-		eventService.publishEvent(new ConfigurationChangedEvent(this, true,
+		eventService.publishEvent(new ConfigurationValueChangedEvent(this, true,
 				getCurrentSession(), repository
 						.getPropertyTemplate(resourceKey), oldValue, newValue,
 				repository.getPropertyTemplate(resourceKey).isHidden()));
 	}
 
 	private void fireChangeEvent(String resourceKey, Throwable t) {
-		eventService.publishEvent(new ConfigurationChangedEvent(this,
+		eventService.publishEvent(new ConfigurationValueChangedEvent(this,
 				resourceKey, t, getCurrentSession()));
 	}
 
