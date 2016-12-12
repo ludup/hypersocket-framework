@@ -5,6 +5,8 @@ public interface AttributeCategory<T extends AbstractAttribute<?>> {
 	Long getId();
 
 	String getName();
+	
+	String getCategoryNamespace();
 
 	Integer getWeight();
 	

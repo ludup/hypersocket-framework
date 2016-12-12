@@ -28,7 +28,10 @@ import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.SystemPermission;
+import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.tables.ColumnSort;
@@ -201,27 +204,27 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	}
 
-	protected void beforeCreateResource(T resource, Map<String,String> properties) throws ResourceCreationException {
+	protected void beforeCreateResource(T resource, Map<String,String> properties) throws ResourceException {
 		
 	}
 	
-	protected void afterCreateResource(T resource, Map<String,String> properties) throws ResourceCreationException {
+	protected void afterCreateResource(T resource, Map<String,String> properties) throws ResourceException {
 		
 	}
 	
-	protected void beforeUpdateResource(T resource, Map<String,String> properties) throws ResourceChangeException {
+	protected void beforeUpdateResource(T resource, Map<String,String> properties) throws ResourceException {
 		
 	}
 	
-	protected void afterUpdateResource(T resource, Map<String,String> properties) throws ResourceChangeException {
+	protected void afterUpdateResource(T resource, Map<String,String> properties) throws ResourceException {
 		
 	}
 	
-	protected void beforeDeleteResource(T resource) throws ResourceChangeException, AccessDeniedException {
-		
+	protected void beforeDeleteResource(T resource) throws ResourceException, AccessDeniedException {
+	
 	}
 	
-	protected void afterDeleteResource(T resource) throws ResourceChangeException {
+	protected void afterDeleteResource(T resource) throws ResourceException {
 		
 	}
 	
@@ -462,7 +465,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 	
 	@Override
-	public String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException {
+	public String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException, AccessDeniedException {
 		return exportResources(Arrays.asList(resources));
 	}
 	
@@ -475,16 +478,16 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 
 	@Override
-	public String exportAllResoures() throws ResourceExportException {
+	public String exportAllResoures() throws ResourceExportException, AccessDeniedException {
 		List<T> list = allResources();
 		return exportResources(list);
 	}
 	
 	protected boolean isExportingAdditionalProperties() {
-		return false;
+		return true;
 	}
 	
-	protected void prepareExport(T resource) {
+	protected void prepareExport(T resource) throws ResourceException, AccessDeniedException {
 		if(isExportingAdditionalProperties()) {
 			resource.setProperties(getRepository().getProperties(resource));
 		}
@@ -495,7 +498,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 	
 	@Override
-	public String exportResources(Collection<T> resources) throws ResourceExportException {
+	public String exportResources(Collection<T> resources) throws ResourceExportException, AccessDeniedException {
 
 		if(resources.isEmpty()) {
 			throw new ResourceExportException(RESOURCE_BUNDLE_DEFAULT, "error.nothingToExport");
@@ -514,6 +517,8 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resources);
 		} catch (JsonProcessingException e) {
 			throw new ResourceExportException(RESOURCE_BUNDLE_DEFAULT, "error.exportError", e.getMessage());
+		} catch (ResourceException e) {
+			throw new ResourceExportException(e);
 		}
 	}
 	
@@ -562,8 +567,10 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	protected void performImport(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 		resource.setRealm(realm);
 		checkImportName(resource, isSystemResource() ? realmService.getSystemRealm() : realm);
-		createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() : resource.getProperties());
+		createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() : 
+			ResourceUtils.filterResourceProperties(getRepository().getPropertyTemplates(null), resource.getProperties()));
 	}
+	
 	
 	protected void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 		

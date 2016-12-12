@@ -5,7 +5,9 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -247,4 +249,17 @@ public class ResourceUtils {
 		return ids.toArray(new Long[0]);
 	}
 
+	public static Map<String,String> filterResourceProperties(Collection<PropertyTemplate> templates, Map<String,String> properties) {
+		
+		Map<String,String> ret = new HashMap<String,String>();
+		for(PropertyTemplate t : templates) {
+			if(!(t.getPropertyStore() instanceof EntityResourcePropertyStore)) {
+				String value = properties.get(t.getResourceKey());
+				if(value!=null) {
+					ret.put(t.getResourceKey(), value);
+				}
+			}
+		}
+		return ret;
+	}
 }

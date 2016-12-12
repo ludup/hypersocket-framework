@@ -20,6 +20,10 @@ public class ResourceException extends Exception {
 	String resourceKey;
 	Object[] args;
 	
+	public ResourceException(ResourceException e) {
+		this(e.getBundle(), e.getResourceKey(), e.getArgs());
+	}
+	
 	public ResourceException(String bundle, String resourceKey, Object... args) {
 		super(I18N.getResource(Locale.getDefault(), bundle, resourceKey, args));
 		this.bundle = bundle;

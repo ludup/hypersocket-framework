@@ -45,6 +45,7 @@ import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfigu
 
 import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.config.ConfigurationChangedEvent;
+import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
@@ -625,14 +626,11 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 			sessionCookieName = getApplicationName().toUpperCase().replace(' ', '_')
 					+ "_HTTP_SESSION";
 		}
-		if(event.getResourceKey().equals(ConfigurationChangedEvent.EVENT_RESOURCE_KEY)) {
-			String resourceKey = (String) event.getAttribute(ConfigurationChangedEvent.ATTR_CONFIG_RESOURCE_KEY);
-			if(resourceKey.equals("ssl.ciphers") || resourceKey.equals("ssl.protocols")) {
+		if(event instanceof ConfigurationValueChangedEvent) {
+			ConfigurationValueChangedEvent configEvent = (ConfigurationValueChangedEvent) event;
+			if(configEvent.getResourceKey().equals("ssl.ciphers") || configEvent.getResourceKey().equals("ssl.protocols")) {
 				rebuildEnabledCipherSuites();
 			}
-		}
-		if(event instanceof ConfigurationChangedEvent) {
-			ConfigurationChangedEvent configEvent = (ConfigurationChangedEvent) event;
 			if(configEvent.getResourceKey().equals("application.path")) {
 				System.setProperty("hypersocket.appPath", getBasePath());
 			} else if(configEvent.getResourceKey().equals("ui.path")) {

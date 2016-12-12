@@ -30,6 +30,9 @@ public class FileUpload extends RealmResource {
 	
 	@Column(name="short_code", nullable=true)
 	String shortCode;
+
+	@Transient
+	String content;
 	
 	public FileUpload() {
 	}
@@ -80,5 +83,13 @@ public class FileUpload extends RealmResource {
 	
 	public String getShortCode() {
 		return shortCode;
+	}
+
+	public String getContent() {
+		return content;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
 	}
 }

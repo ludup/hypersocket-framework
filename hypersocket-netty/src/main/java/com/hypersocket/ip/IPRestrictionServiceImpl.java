@@ -16,7 +16,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.config.ConfigurationChangedEvent;
+import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.ResourceChangeException;
@@ -134,11 +134,11 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 		
 		if(event instanceof ContextStartedEvent) {
 			loadBlockedIPs();
-		} else if(event instanceof ConfigurationChangedEvent) {
-			ConfigurationChangedEvent c = (ConfigurationChangedEvent)event;
-			if("server.blockIPs".equals(c.getAttribute(ConfigurationChangedEvent.ATTR_CONFIG_RESOURCE_KEY))) {
-				String[] oldValues = c.getAttribute(ConfigurationChangedEvent.ATTR_OLD_VALUE).split("\\r\\n");
-				String[] newValues = c.getAttribute(ConfigurationChangedEvent.ATTR_NEW_VALUE).split("\\r\\n");
+		} else if(event instanceof ConfigurationValueChangedEvent) {
+			ConfigurationValueChangedEvent c = (ConfigurationValueChangedEvent)event;
+			if("server.blockIPs".equals(c.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY))) {
+				String[] oldValues = c.getAttribute(ConfigurationValueChangedEvent.ATTR_OLD_VALUE).split("\\r\\n");
+				String[] newValues = c.getAttribute(ConfigurationValueChangedEvent.ATTR_NEW_VALUE).split("\\r\\n");
 				
 				for(String ip : newValues) {
 					if(StringUtils.isEmptyOrWhitespaceOnly(ip)) {

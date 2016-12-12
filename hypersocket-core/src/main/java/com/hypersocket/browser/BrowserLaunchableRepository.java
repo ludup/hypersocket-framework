@@ -18,4 +18,6 @@ public interface BrowserLaunchableRepository extends AbstractRepository<Long> {
 
 	List<BrowserLaunchable> getPersonalResources(List<Principal> principals);
 
+	BrowserLaunchable getBrowserResource(Long id);
+
 }
