@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.server.websocket;
 
+import java.net.InetSocketAddress;
+
 public interface WebsocketClientCallback {
 
 	void websocketAccepted(WebsocketClient client);
@@ -14,5 +16,7 @@ public interface WebsocketClientCallback {
 	void websocketRejected(Throwable cause);
 
 	void websocketClosed(WebsocketClient client);
+	
+	InetSocketAddress getRemoteAddress();
 
 }

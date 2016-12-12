@@ -710,6 +710,11 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			client.close();
 		}
 
+		@Override
+		public InetSocketAddress getRemoteAddress() {
+			return new InetSocketAddress(request.getRemoteAddr(), request.getRemotePort());
+		}
+
 	}
 
 	private static String getWebSocketLocation(HttpRequest req) {
