@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.server.forward;
 
+import java.net.InetSocketAddress;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -195,6 +197,11 @@ public abstract class AbstractForwardingHandler<T extends ForwardingResource> im
 
 		public String getHostname() {
 			return hostname;
+		}
+
+		@Override
+		public InetSocketAddress getRemoteAddress() {
+			return callback.getRemoteAddress();
 		}
 	}
 
