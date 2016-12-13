@@ -151,5 +151,4 @@ public class LocalUser extends UserPrincipal implements Serializable {
 		this.realmCategory = realmCategory;
 	}
 	
-	
 }

@@ -195,6 +195,11 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					completedScheme, agent, agentVersion, os, osVersion, 
 					configurationService.getIntValue(
 					realm, SESSION_TIMEOUT), realm);
+		} else if("API_REST".equals(userAgent)){
+			session = repository.createSession(remoteAddress, principal,
+					completedScheme, "API_REST", "Unknown", "Unknown", "Unknown",
+					configurationService.getIntValue(
+							realm, SESSION_TIMEOUT), realm);
 		} else {
 			UserAgentInfo info;
 			try {

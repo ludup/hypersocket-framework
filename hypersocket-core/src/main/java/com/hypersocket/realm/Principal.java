@@ -10,16 +10,7 @@ package com.hypersocket.realm;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlElement;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -60,6 +51,11 @@ public abstract class Principal extends RealmResource {
 
 	@Column(name="principal_type")
 	PrincipalType principalType = getType();
+
+	@OneToOne
+	@JoinColumn(name = "master_password_id")
+	@Cascade({ CascadeType.ALL })
+	MasterPassword masterPassword;
 	
 	@JsonIgnore
 	public Realm getRealm() {
@@ -132,4 +128,12 @@ public abstract class Principal extends RealmResource {
 	}
 	
 	public abstract String getRealmModule();
+
+	public MasterPassword getMasterPassword() {
+		return masterPassword;
+	}
+
+	public void setMasterPassword(MasterPassword masterPassword) {
+		this.masterPassword = masterPassword;
+	}
 }

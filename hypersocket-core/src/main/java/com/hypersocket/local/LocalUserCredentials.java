@@ -46,7 +46,7 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 	
 	@Column(name="password_change_required")
 	boolean passwordChangeRequired;
-	
+
 	public LocalUser getUser() {
 		return user;
 	}
@@ -102,4 +102,6 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 		LocalUserCredentials creds = (LocalUserCredentials) obj;
 		builder.append(user==null ? -1 : user.getId(), creds==null ? -1 : creds.getUser().getId());
 	}
+
+
 }

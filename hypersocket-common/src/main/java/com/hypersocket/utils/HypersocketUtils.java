@@ -26,6 +26,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -326,6 +327,16 @@ public class HypersocketUtils {
 		return set;
 	}
 
+
+	public static <S extends Throwable,D extends Throwable> S chain(S source, D target) {
+		try {
+			FieldUtils.writeField(source, "cause", target, true);
+			return source;
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException("Problem in chaining exceptions", e);
+		}
+	}
+
 	public static String csv(String[] items) {
 		StringBuffer b = new StringBuffer();
 		for(String i : items) {
@@ -343,6 +354,7 @@ public class HypersocketUtils {
 			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readValue(output, Object.class));
 		} catch (IOException e) {
 			throw new IllegalStateException(e.getMessage(), e);
+
 		}
 	}
 
