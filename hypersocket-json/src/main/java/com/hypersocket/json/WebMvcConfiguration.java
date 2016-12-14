@@ -7,17 +7,13 @@
  ******************************************************************************/
 package com.hypersocket.json;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
-import java.util.List;
 
 @Component
 public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
@@ -38,15 +34,15 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 
 	@Override
 	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-		MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
-
-		ObjectMapper mapper = new ObjectMapper();
-		//Registering Hibernate5Module to support lazy objects
-		mapper.registerModule(new Hibernate5Module().disable(Hibernate5Module.Feature.USE_TRANSIENT_ANNOTATION));
-
-		messageConverter.setObjectMapper(mapper);
-
-		converters.add(messageConverter);
+//		MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
+//
+//		ObjectMapper mapper = new ObjectMapper();
+//		//Registering Hibernate5Module to support lazy objects
+//		mapper.registerModule(new Hibernate5Module().disable(Hibernate5Module.Feature.USE_TRANSIENT_ANNOTATION));
+//
+//		messageConverter.setObjectMapper(mapper);
+//
+//		converters.add(messageConverter);
 		super.configureMessageConverters(converters);
 	}
 }
