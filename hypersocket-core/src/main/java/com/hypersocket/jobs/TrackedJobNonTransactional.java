@@ -1,11 +1,11 @@
 package com.hypersocket.jobs;
 
+import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.PermissionsAwareJobNonTransactional;
 
 public abstract class TrackedJobNonTransactional extends PermissionsAwareJobNonTransactional {
@@ -13,15 +13,15 @@ public abstract class TrackedJobNonTransactional extends PermissionsAwareJobNonT
 	@Autowired
 	JobResourceService jobService; 
 	
-	TrackedJobData data;
+	JobDataMap data;
 	
 	@Override
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {
 		
-		data = (TrackedJobData) context.getTrigger().getJobDataMap();
+		data = context.getTrigger().getJobDataMap();
 		
 		try {
-			jobService.reportJobStarting(data.getUUID());
+			jobService.reportJobStarting(data.getString("uuid"));
 			onExecuteJob(data);
 			onJobComplete();
 		} catch (Throwable t) {
@@ -34,7 +34,7 @@ public abstract class TrackedJobNonTransactional extends PermissionsAwareJobNonT
 	@Override
 	protected void onJobComplete() {
 		try {
-			jobService.reportJobComplete(data.getUUID(), getResult());
+			jobService.reportJobComplete(data.getString("uuid"), getResult());
 		} catch (ResourceException | InvalidJobStateException e) {
 		}
 	}
@@ -43,14 +43,14 @@ public abstract class TrackedJobNonTransactional extends PermissionsAwareJobNonT
 	@Override
 	protected void onJobError(Throwable t) {
 		try {
-			if(jobService.isJobActive(data.getUUID())) {
-				jobService.reportJobFailed(data.getUUID(), t);
+			if(jobService.isJobActive(data.getString("uuid"))) {
+				jobService.reportJobFailed(data.getString("uuid"), t);
 			}
 		} catch (ResourceException | InvalidJobStateException e) {
 		}
 	}
 	
-	protected abstract void onExecuteJob(TrackedJobData data) throws JobExecutionException;
+	protected abstract void onExecuteJob(JobDataMap data) throws JobExecutionException;
 
 	protected abstract String getResult();
 	
@@ -59,6 +59,6 @@ public abstract class TrackedJobNonTransactional extends PermissionsAwareJobNonT
 	}
 	
 	protected void reportFailedJob(String result) throws ResourceException, InvalidJobStateException {
-		jobService.reportJobFailed(data.getUUID(), result);
+		jobService.reportJobFailed(data.getString("uuid"), result);
 	}
 }

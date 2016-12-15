@@ -10,20 +10,14 @@ public class TrackedJobData extends PermissionsAwareJobData {
 
 	private static final long serialVersionUID = -2828631488989447503L;
 
-	String uuid;
-	
 	public TrackedJobData(Realm currentRealm, String jobResourceKey, String uuid) {
 		super(currentRealm, jobResourceKey);
-		this.uuid = uuid;
+		put("uuid", uuid);
 	}
 
 	public TrackedJobData(Realm currentRealm, Principal principal, 
 			Locale locale, String jobResourceKey, String uuid) {
 		super(currentRealm, principal, locale, jobResourceKey);
-		this.uuid = uuid;
-	}
-
-	public String getUUID() {
-		return uuid;
+		put("uuid", uuid);
 	}
 }
