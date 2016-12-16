@@ -160,6 +160,7 @@ public class EmailTask extends AbstractTaskProvider {
 	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
 			throws ValidationException {
 
+		
 		String subject = processTokenReplacements(
 				repository.getValue(task, ATTR_SUBJECT), event);
 		String body = processTokenReplacements(
@@ -168,9 +169,13 @@ public class EmailTask extends AbstractTaskProvider {
 				repository.getValue(task, ATTR_BODY_HTML), event);
 		List<RecipientHolder> recipients = new ArrayList<RecipientHolder>();
 
-		String to = populateEmailList(task, ATTR_TO_ADDRESSES, recipients,
+		populateEmailList(task, ATTR_TO_ADDRESSES, recipients,
 				RecipientType.TO, event);
 
+		if(log.isInfoEnabled()) {
+			log.info(String.format("Sending email named %s to %d receipients", subject, recipients.size()));
+		}
+		
 		List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
 		
 		if(repository.getBooleanValue(task, ATTR_EVENT_SOURCE) && event instanceof EmailAttachmentSource) {
