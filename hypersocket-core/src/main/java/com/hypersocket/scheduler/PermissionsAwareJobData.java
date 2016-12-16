@@ -12,6 +12,10 @@ public class PermissionsAwareJobData extends JobDataMap {
 
 	private static final long serialVersionUID = -2512176436464687235L;
 		
+	public PermissionsAwareJobData(String jobResourceKey) {
+		this(null, null, null, null, jobResourceKey);
+	}
+	
 	public PermissionsAwareJobData(Realm currentRealm, String jobResourceKey) {
 		this(null, currentRealm, null, null, jobResourceKey);
 	}

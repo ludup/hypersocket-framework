@@ -112,11 +112,4 @@ public abstract class PermissionsAwareJobNonTransactional implements Job, Runnab
 	protected abstract void executeJob(JobExecutionContext context)
 			throws JobExecutionException;
 	
-	protected void onJobComplete() {
-		
-	}
-
-	protected void onJobError(Throwable t) {
-		
-	}
 }
