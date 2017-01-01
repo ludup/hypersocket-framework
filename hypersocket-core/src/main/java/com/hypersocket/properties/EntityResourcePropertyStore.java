@@ -1,38 +1,32 @@
 package com.hypersocket.properties;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.hypersocket.encrypt.EncryptionService;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.FindableResourceRepository;
+import com.hypersocket.resource.RealmResource;
+import com.hypersocket.resource.Resource;
+import com.hypersocket.utils.HypersocketUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
-import com.hypersocket.encrypt.EncryptionService;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.AbstractAssignableResourceRepository;
-import com.hypersocket.resource.AbstractResource;
-import com.hypersocket.resource.AbstractResourceRepository;
-import com.hypersocket.resource.RealmResource;
-import com.hypersocket.resource.Resource;
-import com.hypersocket.utils.HypersocketUtils;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.text.ParseException;
+import java.util.*;
 
 public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 
 	static Logger log = LoggerFactory.getLogger(EntityResourcePropertyStore.class);
-	
-	static Map<Class<?>,AbstractResourceRepository<?>> resourceServices = new HashMap<Class<?>,AbstractResourceRepository<?>>();
-	static Map<Class<?>,AbstractAssignableResourceRepository<?>> assignableServices = new HashMap<Class<?>,AbstractAssignableResourceRepository<?>>();
+
+	static Map<Class<?>,FindableResourceRepository<?>> findableResourceRepositories = new HashMap<Class<?>,FindableResourceRepository<?>>();
+
 	Map<Class<?>, PrimitiveParser<?>> primitiveParsers = new HashMap<Class<?>,PrimitiveParser<?>>();
 	StringValue stringParser = new StringValue();
 	
@@ -52,12 +46,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		return false;
 	}
 	
-	public void registerResourceService(Class<?> clz, AbstractResourceRepository<?> service) {
-		resourceServices.put(clz, service);
-	}
-	
-	public void registerResourceService(Class<?> clz, AbstractAssignableResourceRepository<?> service) {
-		assignableServices.put(clz, service);
+	public void registerResourceService(Class<?> clz, FindableResourceRepository<?> repository) {
+		findableResourceRepositories.put(clz, repository);
 	}
 	
 	@Override
@@ -83,7 +73,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		try {
 			
 			Method m = resource.getClass().getMethod(methodName, (Class<?>[])null);
-			if(assignableServices.containsKey(m.getReturnType()) || resourceServices.containsKey(m.getReturnType())) {
+			if(findableResourceRepositories.containsKey(m.getReturnType())) {
 				Resource r = (Resource) m.invoke(resource);
 				if(r==null) {
 					return null;
@@ -192,24 +182,12 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 						throw new IllegalStateException("Could not set " + template.getResourceKey() + " primitive value " + value + " for resource " + resource.getClass().getName(), e);
 					}
 					return;
-				} else if(resourceServices.containsKey(clz)) {
+				} else if(findableResourceRepositories.containsKey(clz)) {
 					try {
 						if(StringUtils.isEmpty(value)) {
 							m.invoke(resource, (Object)null);
 						} else {
-							m.invoke(resource, resourceServices.get(clz).getResourceById(Long.parseLong(value)));
-						}
-					} catch (Exception e) {
-						log.error("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
-						throw new IllegalStateException("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
-					}
-					return;
-				} else if(assignableServices.containsKey(clz)) {
-					try {
-						if(StringUtils.isEmpty(value)) {
-							m.invoke(resource, (Object)null);
-						} else {
-							m.invoke(resource, assignableServices.get(clz).getResourceById(Long.parseLong(value)));
+							m.invoke(resource, findableResourceRepositories.get(clz).getResourceById(Long.parseLong(value)));
 						}
 					} catch (Exception e) {
 						log.error("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
@@ -237,7 +215,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 						}
 					}  else if(Resource.class.isAssignableFrom(type)) {
 						try {
-							Collection<Object> values = new ArrayList<Object>();
+							Collection<Object> values = m.getParameterTypes()[0].equals(List.class) ? new ArrayList<>() : new HashSet<>();
 							if(StringUtils.isEmpty(value)) {
 								m.invoke(resource, values);
 							} else {
@@ -247,10 +225,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 										id = ResourceUtils.getNamePairKey(id);
 									}
 									Object obj = null;
-									if(assignableServices.containsKey(type)) {
-										obj = assignableServices.get(type).getResourceById(Long.parseLong(id));
-									} else if(resourceServices.containsKey(type)) {
-										obj = resourceServices.get(type).getResourceById(Long.parseLong(id));
+									if(findableResourceRepositories.containsKey(type)) {
+										obj = findableResourceRepositories.get(type).getResourceById(Long.parseLong(id));
 									} else {
 										throw new IllegalStateException(String.format
 												("Collection type %s does not appear to be registered with entity store", 

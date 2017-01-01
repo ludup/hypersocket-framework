@@ -1,15 +1,15 @@
 package com.hypersocket.resource;
 
-import java.util.List;
-import java.util.Map;
-
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.tables.ColumnSort;
 
-public interface AbstractResourceRepository<T extends Resource> extends ResourceTemplateRepository {
+import java.util.List;
+import java.util.Map;
+
+public interface AbstractResourceRepository<T extends Resource> extends ResourceTemplateRepository, FindableResourceRepository<T> {
 
 	T getResourceByName(String name, Realm realm);
 
