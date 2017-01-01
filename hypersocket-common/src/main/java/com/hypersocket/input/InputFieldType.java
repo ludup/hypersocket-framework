@@ -8,5 +8,5 @@
 package com.hypersocket.input;
 
 public enum InputFieldType {
-	text, password, select, hidden, p, a, script, div;
+	text, password, select, hidden, p, a, script, div, img;
 }
