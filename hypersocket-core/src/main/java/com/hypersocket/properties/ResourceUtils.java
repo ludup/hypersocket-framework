@@ -92,6 +92,7 @@ public class ResourceUtils {
 		return StringUtils.join(array.toArray(new String[0]), "]|[");	
 	}
 
+
 	public static String getNamePairValue(String element) {	
 		int idx = element.indexOf('=');
 		if(idx > -1) {
@@ -261,5 +262,9 @@ public class ResourceUtils {
 			}
 		}
 		return ret;
+	}
+
+	public static String implodeObjectValues(Collection<?> array) {
+		return StringUtils.join(array.toArray(new Object[0]), "]|[");	
 	}
 }

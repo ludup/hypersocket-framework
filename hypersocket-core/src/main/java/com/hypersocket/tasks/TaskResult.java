@@ -1,6 +1,7 @@
 package com.hypersocket.tasks;
 
 import com.hypersocket.events.SystemEvent;
+import com.hypersocket.events.SystemEventStatus;
 
 public interface TaskResult {
 
@@ -8,4 +9,8 @@ public interface TaskResult {
 
 	SystemEvent getEvent();
 
+	boolean isSuccess();
+	
+	SystemEventStatus getStatus();
+	
 }
