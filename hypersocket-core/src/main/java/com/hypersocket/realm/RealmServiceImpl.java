@@ -114,7 +114,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	PrincipalSuspensionService suspensionService;
 
 	@Autowired
-	UserVariableReplacement userVariableReplacement;
+	UserVariableReplacementService userVariableReplacement;
 
 	@Autowired
 	ConfigurationService configurationService;
@@ -1783,7 +1783,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		RealmProvider provider = getProviderForRealm(realm);
 
-		Set<String> tmp = new HashSet<String>(UserVariableReplacementImpl.getDefaultReplacements());
+		Set<String> tmp = new HashSet<String>(UserVariableReplacementServiceImpl.getDefaultReplacements());
 		tmp.addAll(provider.getUserVariableNames(principal));
 		return tmp;
 

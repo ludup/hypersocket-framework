@@ -41,6 +41,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.realm.UserVariableReplacement;
+import com.hypersocket.realm.UserVariableReplacementService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
@@ -56,7 +57,7 @@ public class CurrentRealmController extends ResourceController {
 	PrincipalSuspensionService suspensionService;
 
 	@Autowired
-	UserVariableReplacement userVariableReplacement;
+	UserVariableReplacementService userVariableReplacement;
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/groups/list", method = RequestMethod.GET, produces = { "application/json" })

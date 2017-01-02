@@ -109,4 +109,7 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 
 	void deleteResource(Long id) throws AccessDeniedException, ResourceException;
 
+	T getPersonalResourceByName(String name, Principal principal)
+			throws ResourceNotFoundException, AccessDeniedException;
+
 }

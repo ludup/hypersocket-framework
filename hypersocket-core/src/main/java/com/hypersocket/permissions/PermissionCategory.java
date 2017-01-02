@@ -28,12 +28,8 @@ import com.hypersocket.repository.AbstractEntity;
 
 @Entity
 @Table(name = "permission_category", uniqueConstraints = {@UniqueConstraint(columnNames={"resource_bundle", "resource_key"})})
-@XmlRootElement(name="permissionCategory")
 public class PermissionCategory extends AbstractEntity<Long> {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -9024441856361180370L;
 
 	@Id

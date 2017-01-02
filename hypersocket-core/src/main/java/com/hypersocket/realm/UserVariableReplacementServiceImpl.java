@@ -2,17 +2,21 @@ package com.hypersocket.realm;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.hypersocket.permissions.PermissionService;
 
-@Component
-public class UserVariableReplacementImpl extends
-		AbstractVariableReplacementImpl<Principal> implements
-		UserVariableReplacement {
+@Service
+public class UserVariableReplacementServiceImpl implements UserVariableReplacementService {
 
+	static Logger log = LoggerFactory.getLogger(UserVariableReplacementServiceImpl.class);
+	
 	static Set<String> defaultReplacements;
 	static {
 
@@ -28,12 +32,50 @@ public class UserVariableReplacementImpl extends
 	
 	@Autowired
 	PermissionService permissionService; 
+	
+	Set<UserVariableReplacement> additionalReplacements = new HashSet<UserVariableReplacement>();
 
 	public static Set<String> getDefaultReplacements() {
 		return defaultReplacements;
 	}
 	
 	@Override
+	public void registerReplacement(UserVariableReplacement replacement) {
+		additionalReplacements.add(replacement);
+	}
+	
+	@Override
+	public String replaceVariables(Principal source, String value) {
+		
+		Pattern pattern = Pattern.compile("\\$\\{(.*?)\\}");
+		Matcher matcher = pattern.matcher(value);
+
+		StringBuilder builder = new StringBuilder();
+		
+		int i = 0;
+		while (matcher.find()) {
+			String attributeName = matcher.group(1);
+			String replacement;
+			if(hasVariable(source, attributeName)) {
+				replacement = getVariableValue(source, attributeName);
+			} else {
+				log.warn("Failed to find replacement token " + attributeName);
+				continue;	
+			}
+		    builder.append(value.substring(i, matcher.start()));
+		    if (replacement == null) {
+		        builder.append(matcher.group(0));
+		    } else {
+		        builder.append(replacement);
+		    }
+		    i = matcher.end();
+		}
+		
+	    builder.append(value.substring(i, value.length()));
+		
+		return builder.toString();
+	}
+	
 	protected boolean hasVariable(Principal principal, String name) {
 
 		if (name.equals("password")) {
@@ -42,9 +84,19 @@ public class UserVariableReplacementImpl extends
 		RealmProvider provider = realmService.getProviderForRealm(principal
 				.getRealm());
 		
-		return defaultReplacements.contains(name)
+		boolean has = defaultReplacements.contains(name)
 				|| provider.getUserPropertyNames(principal).contains(name)
 				|| permissionService.getRolePropertyNames().contains(name);
+		
+		if(!has) {
+			for(UserVariableReplacement replacement : additionalReplacements) {
+				if(replacement.getVariableNames(principal).contains(name)) {
+					has = true;
+					break;
+				}
+			}
+		}
+		return has;
 	}
 	
 	@Override
@@ -55,6 +107,9 @@ public class UserVariableReplacementImpl extends
 		names.addAll(permissionService.getRolePropertyNames());
 		names.addAll(provider.getUserPropertyNames(null));
 		
+		for(UserVariableReplacement replacement : additionalReplacements) {
+			names.addAll(replacement.getVariableNames(realm));
+		}
 		return names;
 	}
 	
@@ -66,6 +121,9 @@ public class UserVariableReplacementImpl extends
 		names.addAll(permissionService.getRolePropertyNames());
 		names.addAll(provider.getUserPropertyNames(principal));
 		
+		for(UserVariableReplacement replacement : additionalReplacements) {
+			names.addAll(replacement.getVariableNames(principal));
+		}
 		return names;
 	}
 
@@ -96,6 +154,12 @@ public class UserVariableReplacementImpl extends
 					"We should not be able to reach here. Did you add default replacement without implementing it?");
 		}
 
+		for(UserVariableReplacement replacement : additionalReplacements) {
+			if(replacement.getVariableNames(source).contains(name)) {
+				return replacement.getVariableValue(source, name);
+			}
+		}
+		
 		if(permissionService.getRolePropertyNames().contains(name)) {
 			return permissionService.getRoleProperty(permissionService.getCurrentRole(), name);
 		} else {

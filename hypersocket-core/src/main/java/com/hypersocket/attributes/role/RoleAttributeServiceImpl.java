@@ -17,10 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.attributes.AbstractAttributeServiceImpl;
-import com.hypersocket.attributes.user.events.UserAttributeCreatedEvent;
-import com.hypersocket.attributes.user.events.UserAttributeDeletedEvent;
-import com.hypersocket.attributes.user.events.UserAttributeEvent;
-import com.hypersocket.attributes.user.events.UserAttributeUpdatedEvent;
+import com.hypersocket.attributes.role.events.RoleAttributeCreatedEvent;
+import com.hypersocket.attributes.role.events.RoleAttributeDeletedEvent;
+import com.hypersocket.attributes.role.events.RoleAttributeEvent;
+import com.hypersocket.attributes.role.events.RoleAttributeUpdatedEvent;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.AbstractPropertyTemplate;
@@ -68,10 +68,10 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-		eventService.registerEvent(UserAttributeEvent.class, RESOURCE_BUNDLE);
-		eventService.registerEvent(UserAttributeCreatedEvent.class, RESOURCE_BUNDLE);
-		eventService.registerEvent(UserAttributeUpdatedEvent.class, RESOURCE_BUNDLE);
-		eventService.registerEvent(UserAttributeDeletedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(RoleAttributeEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(RoleAttributeCreatedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(RoleAttributeUpdatedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(RoleAttributeDeletedEvent.class, RESOURCE_BUNDLE);
 
 		super.init();
 	}

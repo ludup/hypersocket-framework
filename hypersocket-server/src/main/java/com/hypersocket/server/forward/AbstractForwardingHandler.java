@@ -22,6 +22,7 @@ import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.UserVariableReplacement;
+import com.hypersocket.realm.UserVariableReplacementService;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.server.HypersocketServer;
 import com.hypersocket.server.handlers.HttpResponseProcessor;
@@ -54,7 +55,7 @@ public abstract class AbstractForwardingHandler<T extends ForwardingResource> im
 	EventService eventService;
 
 	@Autowired
-	UserVariableReplacement userVariableReplacement;
+	UserVariableReplacementService userVariableReplacement;
 	
 	String path;
 	

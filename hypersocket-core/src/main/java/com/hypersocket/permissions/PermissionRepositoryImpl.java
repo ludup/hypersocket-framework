@@ -77,6 +77,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		category.setResourceBundle(resourceBundle);
 		category.setResourceKey(resourceKey);
 		save(category);
+		flush();
 		return category;
 	}
 

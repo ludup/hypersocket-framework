@@ -141,6 +141,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 	
 	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
 	public T getPersonalResourceByName(String name, Principal principal, CriteriaConfiguration... configs) {
 		
 		Criteria criteria = createCriteria(getResourceClass());

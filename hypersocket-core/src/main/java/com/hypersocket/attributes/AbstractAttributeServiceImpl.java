@@ -32,6 +32,8 @@ import com.hypersocket.properties.PropertyResolver;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourcePropertyTemplate;
+import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AbstractAssignableResourceServiceImpl;
 import com.hypersocket.resource.AbstractResource;
