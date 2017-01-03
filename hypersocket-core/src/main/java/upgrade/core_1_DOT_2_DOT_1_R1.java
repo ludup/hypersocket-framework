@@ -18,6 +18,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.upgrade.PermissionsAwareUpgradeScript;
+import com.hypersocket.upgrade.UpgradeService;
 
 public class core_1_DOT_2_DOT_1_R1 extends PermissionsAwareUpgradeScript {
 
@@ -35,9 +36,16 @@ public class core_1_DOT_2_DOT_1_R1 extends PermissionsAwareUpgradeScript {
 	@Autowired
 	SessionService sessionService; 
 	
+	@Autowired
+	UpgradeService upgradeService; 
+	
 	@Override
 	protected void doUpgrade() {
 
+		if(upgradeService.isFreshInstall()) {
+			return;
+		}
+		
 		try {
 			for(Realm realm : realmRepository.allRealms(LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY)) {
 				String[] editable = configurationService.getValues(realm, "realm.userEditableProperties");
