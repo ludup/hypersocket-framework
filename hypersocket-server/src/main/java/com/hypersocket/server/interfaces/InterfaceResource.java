@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.hypersocket.resource.RealmResource;
 
 @MappedSuperclass
-public class InterfaceResource extends RealmResource {
+public abstract class InterfaceResource extends RealmResource {
 
 	private static final long serialVersionUID = 3104523837579362221L;
 
@@ -32,8 +32,10 @@ public class InterfaceResource extends RealmResource {
 	}
 
 	public Integer getPort() {
-		return port == null ? 22 : port;
+		return port == null ? getDefaultPort() : port;
 	}
+
+	protected abstract Integer getDefaultPort();
 
 	public void setPort(Integer port) {
 		this.port = port;

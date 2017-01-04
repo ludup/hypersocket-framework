@@ -56,7 +56,11 @@ public class HTTPInterfaceResource extends InterfaceResource {
 		this.redirectPort = redirectPort;
 	}
 	
-	
+
+	@Override
+	protected Integer getDefaultPort() {
+		return 80;
+	}
 	
 	
 }
