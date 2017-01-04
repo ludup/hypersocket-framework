@@ -55,6 +55,7 @@ public abstract class Principal extends RealmResource {
 	@OneToOne
 	@JoinColumn(name = "master_password_id")
 	@Cascade({ CascadeType.ALL })
+	@JsonIgnore
 	MasterPassword masterPassword;
 	
 	@JsonIgnore
