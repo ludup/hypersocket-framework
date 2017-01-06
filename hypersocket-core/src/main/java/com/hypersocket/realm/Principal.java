@@ -7,12 +7,9 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.persistence.*;
-import javax.xml.bind.annotation.XmlElement;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hypersocket.permissions.Role;
+import com.hypersocket.resource.RealmResource;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cascade;
@@ -20,9 +17,10 @@ import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hypersocket.permissions.Role;
-import com.hypersocket.resource.RealmResource;
+import javax.persistence.*;
+import javax.xml.bind.annotation.XmlElement;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "principals")
@@ -52,12 +50,6 @@ public abstract class Principal extends RealmResource {
 	@Column(name="principal_type")
 	PrincipalType principalType = getType();
 
-	@OneToOne
-	@JoinColumn(name = "master_password_id")
-	@Cascade({ CascadeType.ALL })
-	@JsonIgnore
-	MasterPassword masterPassword;
-	
 	@JsonIgnore
 	public Realm getRealm() {
 		return super.getRealm();
@@ -130,11 +122,4 @@ public abstract class Principal extends RealmResource {
 	
 	public abstract String getRealmModule();
 
-	public MasterPassword getMasterPassword() {
-		return masterPassword;
-	}
-
-	public void setMasterPassword(MasterPassword masterPassword) {
-		this.masterPassword = masterPassword;
-	}
 }
