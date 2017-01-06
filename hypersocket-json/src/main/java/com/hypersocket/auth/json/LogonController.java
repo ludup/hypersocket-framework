@@ -208,7 +208,9 @@ public class LogonController extends AuthenticatedController {
 										request.getParameterMap())
 								: authenticationService
 										.nextPostAuthenticationStep(state),
-						configurationService.hasUserLocales(), state.isNew(),
+						configurationService.hasUserLocales(), 
+						state.isNew(),
+						state.getCurrentIndex()==0,
 						!state.hasNextStep(), success || state.isNew(),
 						state.isAuthenticationComplete(),
 						state.getScheme().getLastButtonResourceKey());
@@ -236,7 +238,9 @@ public class LogonController extends AuthenticatedController {
 									request.getParameterMap())
 							: authenticationService
 									.nextPostAuthenticationStep(state),
-					configurationService.hasUserLocales(), state.isNew(),
+					configurationService.hasUserLocales(), 
+					state.isNew(),
+					state.getCurrentIndex()==0,
 					!state.hasNextStep(), state.isNew(),
 					state.isAuthenticationComplete(),
 					state.getScheme().getLastButtonResourceKey());
@@ -291,6 +295,7 @@ public class LogonController extends AuthenticatedController {
 				request.getSession().removeAttribute(
 						SessionUtils.AUTHENTICATED_SESSION);
 			}
+			
 		} finally {
 			clearAuthenticatedContext();
 		}
