@@ -38,12 +38,12 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	
 	@Override
 	public PrincipalSuspension createPrincipalSuspension(Principal principal,
-			Date startDate, Long duration) throws ResourceNotFoundException,
+			Date startDate, Long duration, PrincipalSuspensionType type) throws ResourceNotFoundException,
 			ResourceCreationException {
 
 		String name = principal.getPrincipalName();
 
-		Collection<PrincipalSuspension> principalSuspensions = repository.getSuspensions(principal);
+		Collection<PrincipalSuspension> principalSuspensions = repository.getSuspensions(principal, type);
 		
 		PrincipalSuspension principalSuspension = null;
 		
@@ -59,6 +59,7 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 		
 		principalSuspension.setStartTime(startDate);
 		principalSuspension.setDuration(duration);
+		principalSuspension.setSuspensionType(type);
 	
 
 		if (suspendedUserResumeSchedules.containsKey(name)) {
@@ -130,9 +131,9 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	}
 
 	@Override
-	public PrincipalSuspension deletePrincipalSuspension(Principal principal) {
+	public PrincipalSuspension deletePrincipalSuspension(Principal principal, PrincipalSuspensionType type) {
 		Collection<PrincipalSuspension> suspensions = repository
-				.getSuspensions(principal);
+				.getSuspensions(principal, type);
 		PrincipalSuspension suspension = suspensions.iterator().next();
 		repository.deletePrincipalSuspension(suspension);
 		return suspension;
@@ -156,12 +157,21 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	}
 
 	@Override
-	public PrincipalSuspension getSuspension(Principal principal) {
-		Collection<PrincipalSuspension> suspensions = repository.getSuspensions(principal);
+	public PrincipalSuspension getSuspension(Principal principal, PrincipalSuspensionType type) {
+		Collection<PrincipalSuspension> suspensions = repository.getSuspensions(principal, type);
 		if(suspensions.isEmpty()) {
 			return null;
 		}
 		return suspensions.iterator().next();
+	}
+	
+	@Override
+	public Collection<PrincipalSuspension> getSuspensions(Principal principal) {
+		Collection<PrincipalSuspension> suspensions = repository.getSuspensions(principal);
+		if(suspensions.isEmpty()) {
+			return null;
+		}
+		return suspensions;
 	}
 
 	@Override

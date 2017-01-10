@@ -19,4 +19,8 @@
 		<property resourceKey="mobile" inputType="text" weight="20"
 			defaultValue="" />
 	</propertyCategory>
+	<propertyCategory resourceKey="local.userStatus"
+		resourceBundle="LocalRealm" weight="0">
+		<property resourceKey="expires" inputType="date" weight="0" defaultValue="" />
+	</propertyCategory>
 </propertyTemplates>

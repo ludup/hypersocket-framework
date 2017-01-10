@@ -14,6 +14,7 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalSuspensionService;
+import com.hypersocket.realm.PrincipalSuspensionType;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -91,7 +92,8 @@ public class ResumeUserTask extends AbstractTaskProvider {
 				log.info("Resuming user " + name);
 			}
 			Principal principal = service.getUniquePrincipal(name, PrincipalType.USER);
-			suspensionService.deletePrincipalSuspension(principal);
+			suspensionService.deletePrincipalSuspension(principal,
+					PrincipalSuspensionType.MANUAL);
 			
 			suspensionService.notifyResume(principal.getPrincipalName(), false);
 

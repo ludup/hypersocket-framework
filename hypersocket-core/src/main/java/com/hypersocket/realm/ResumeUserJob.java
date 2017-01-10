@@ -43,7 +43,8 @@ public class ResumeUserJob extends PermissionsAwareJob {
 				getCurrentRealm(), name, PrincipalType.USER);
 
 		if (principal != null) {
-			suspensionService.deletePrincipalSuspension(principal);
+			suspensionService.deletePrincipalSuspension(principal,
+					PrincipalSuspensionType.MANUAL);
 
 			suspensionService.notifyResume(name, true);
 

@@ -14,6 +14,8 @@ public interface PrincipalSuspensionRepository extends
 
 	void saveSuspension(PrincipalSuspension principalSuspension);
 
+	Collection<PrincipalSuspension> getSuspensions(Principal principal, PrincipalSuspensionType type);
+
 	List<PrincipalSuspension> getSuspensions();
 
 	Collection<PrincipalSuspension> getSuspensions(Principal principal);
