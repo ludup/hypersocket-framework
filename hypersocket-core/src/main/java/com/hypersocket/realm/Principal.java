@@ -95,4 +95,5 @@ public abstract class Principal extends RealmResource {
 	}
 	
 	public abstract String getRealmModule();
+	
 }

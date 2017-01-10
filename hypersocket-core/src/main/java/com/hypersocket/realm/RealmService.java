@@ -165,7 +165,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean isRegistered(RealmProvider provider);
 
-	boolean verifyPrincipal(Principal principal) throws ResourceException, AccessDeniedException;
+	boolean verifyPrincipal(Principal principal);
 
 	String getPrincipalEmail(Principal currentPrincipal);
 
