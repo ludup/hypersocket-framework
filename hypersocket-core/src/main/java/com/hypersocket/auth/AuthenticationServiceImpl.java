@@ -543,19 +543,6 @@ public class AuthenticationServiceImpl extends
 								}
 							}
 						}
-					} catch (ResourceException e) {
-
-						log.error("Authentication Failed", e);
-
-						eventService
-								.publishEvent(new AuthenticationAttemptEvent(
-										this, state, authenticator,
-										"hint.internalError"));
-						// user does not have LOGON permission
-						state.setLastErrorMsg("error.noLogonPermission");
-						state.setLastErrorIsResourceKey(true);
-						state.revertModule();
-						success = false;
 					} catch (AccessDeniedException e) {
 
 						eventService

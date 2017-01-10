@@ -18,6 +18,7 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalSuspensionService;
+import com.hypersocket.realm.PrincipalSuspensionType;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -113,7 +114,8 @@ public class SuspendUserTask extends AbstractTaskProvider {
 			}
 
 			Principal principal = realmService.getUniquePrincipal(name, PrincipalType.USER);
-			suspensionService.createPrincipalSuspension(principal, startDate, duration);
+			suspensionService.createPrincipalSuspension(principal, startDate, duration,
+					PrincipalSuspensionType.MANUAL);
 
 			if (log.isInfoEnabled()) {
 				log.info("Suspended account " + name);

@@ -36,6 +36,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalColumns;
 import com.hypersocket.realm.PrincipalSuspension;
 import com.hypersocket.realm.PrincipalSuspensionService;
+import com.hypersocket.realm.PrincipalSuspensionType;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -864,7 +865,8 @@ public class CurrentRealmController extends ResourceController {
 			PrincipalSuspension principalSuspension = suspensionService
 					.createPrincipalSuspension(principal,
 							principalSuspensionUpdate.getStartDate(),
-							principalSuspensionUpdate.getDuration());
+							principalSuspensionUpdate.getDuration(),
+							PrincipalSuspensionType.MANUAL);
 
 			return new ResourceStatus<PrincipalSuspension>(principalSuspension,
 					I18N.getResource(sessionUtils.getLocale(request),
@@ -897,7 +899,8 @@ public class CurrentRealmController extends ResourceController {
 				PrincipalType.USER);
 		try {
 			PrincipalSuspension principalSuspension = suspensionService
-					.deletePrincipalSuspension(principal);
+					.deletePrincipalSuspension(principal,
+							PrincipalSuspensionType.MANUAL);
 
 			return new ResourceStatus<PrincipalSuspension>(principalSuspension,
 					I18N.getResource(sessionUtils.getLocale(request),

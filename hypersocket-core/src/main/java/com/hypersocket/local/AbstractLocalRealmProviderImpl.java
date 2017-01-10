@@ -33,12 +33,16 @@ import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalSuspension;
+import com.hypersocket.realm.PrincipalSuspensionService;
+import com.hypersocket.realm.PrincipalSuspensionType;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.events.SessionOpenEvent;
 import com.hypersocket.tables.ColumnSort;
 
@@ -67,6 +71,9 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 	@Autowired
 	PasswordEncryptionService encryptionService;
+	
+	@Autowired
+	PrincipalSuspensionService suspensionService; 
 	
 	PropertyCategory userDetailsCategory;
 
@@ -223,6 +230,8 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			userRepository.flush();
 			userRepository.refresh(user);
 
+			checkExpiry(user);
+			
 			if(password!=null) {
 				setPassword(user, password, forceChange, true);
 			}
@@ -234,6 +243,19 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 	}
 
+	protected void checkExpiry(LocalUser user) throws ResourceNotFoundException, ResourceCreationException {
+
+		PrincipalSuspension suspension = suspensionService.getSuspension(user, PrincipalSuspensionType.EXPIRY);
+
+		if(suspension!=null) {
+			suspensionService.deletePrincipalSuspension(user, PrincipalSuspensionType.EXPIRY);
+		} 
+
+		if(user.getExpires()!=null) {
+			suspensionService.createPrincipalSuspension(user, user.getExpires(), 0L, PrincipalSuspensionType.EXPIRY);
+		}
+	}
+	
 	@Override
 	@Transactional
 	public Principal updateUser(Realm realm, Principal principal,
@@ -265,6 +287,8 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			userRepository.flush();
 			userRepository.refresh(user);
 
+			checkExpiry(user);
+			
 			return user;
 		} catch (Exception e) {
 			throw new ResourceChangeException(getResourceBundle(),

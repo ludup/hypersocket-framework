@@ -66,6 +66,11 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	@Column(name="realm_category")
 	String realmCategory;
 	
+	
+	@Column(name="user_expires")
+	@Temporal(TemporalType.DATE)
+	Date expires;
+	
 	public String getIcon() {
 		return "fa-database";
 	}
@@ -149,6 +154,14 @@ public class LocalUser extends UserPrincipal implements Serializable {
 
 	public void setRealmCategory(String realmCategory) {
 		this.realmCategory = realmCategory;
+	}
+
+	public Date getExpires() {
+		return expires;
+	}
+
+	public void setExpires(Date expires) {
+		this.expires = expires;
 	}
 	
 }

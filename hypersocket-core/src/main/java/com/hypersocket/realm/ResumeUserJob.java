@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.scheduler.PermissionsAwareJob;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 
@@ -43,7 +45,8 @@ public class ResumeUserJob extends PermissionsAwareJob {
 				getCurrentRealm(), name, PrincipalType.USER);
 
 		if (principal != null) {
-			suspensionService.deletePrincipalSuspension(principal);
+
+			suspensionService.deletePrincipalSuspension(principal, PrincipalSuspensionType.MANUAL);
 			
 			String scheduleId = context.getJobDetail().getKey().getName();
 			

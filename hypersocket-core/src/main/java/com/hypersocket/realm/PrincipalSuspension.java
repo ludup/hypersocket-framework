@@ -10,6 +10,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.resource.Resource;
 
@@ -33,6 +36,9 @@ public class PrincipalSuspension extends Resource {
 	@Column(name = "duration")
 	Long duration;
 
+	@Column(name="suspension_type")
+	PrincipalSuspensionType suspensionType;
+	
 	public PrincipalSuspension() {
 
 	}
@@ -83,12 +89,27 @@ public class PrincipalSuspension extends Resource {
 		Calendar c = Calendar.getInstance();
 		c.setTime(startTime);
 		
-		Calendar c2 = Calendar.getInstance();
-		c2.setTime(startTime);
-		c2.add(Calendar.MINUTE, duration.intValue());
-		
 		Date now = new Date();
 		
-		return now.after(c.getTime()) && now.before(c2.getTime());
+		if(duration > 0) {
+			Calendar c2 = Calendar.getInstance();
+			c2.setTime(startTime);
+			c2.add(Calendar.MINUTE, duration.intValue());
+			
+			return now.after(c.getTime()) && now.before(c2.getTime());
+		} else {
+			return now.after(c.getTime());
+		}
+		
 	}
+
+	public PrincipalSuspensionType getSuspensionType() {
+		return suspensionType==null ? PrincipalSuspensionType.MANUAL : suspensionType;
+	}
+
+	public void setSuspensionType(PrincipalSuspensionType suspensionType) {
+		this.suspensionType = suspensionType;
+	}
+	
+	
 }

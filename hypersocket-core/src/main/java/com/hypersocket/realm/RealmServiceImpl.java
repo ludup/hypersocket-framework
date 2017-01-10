@@ -587,7 +587,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean verifyPrincipal(final Principal principal) throws ResourceException, AccessDeniedException {
+	public boolean verifyPrincipal(final Principal principal) {
 		
 		Collection<PrincipalSuspension> suspensions = suspensionRepository.getSuspensions(principal);
 		
