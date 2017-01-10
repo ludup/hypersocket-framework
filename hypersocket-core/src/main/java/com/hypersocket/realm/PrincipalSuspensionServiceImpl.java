@@ -19,7 +19,7 @@ import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
 
 @Service
-public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionService, ApplicationListener<ContextStartedEvent> {
+public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionService {
 
 	static Logger log = LoggerFactory.getLogger(PrincipalSuspensionServiceImpl.class);
 	
@@ -98,7 +98,6 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 		c.add(Calendar.MINUTE, (int) duration); 
 		
 		if(new Date().after(c.getTime())) {
-			
 			if(log.isInfoEnabled()) {
 				log.info("Not scheduling resume because the suspension has already expired");
 			}
@@ -149,27 +148,5 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 			return null;
 		}
 		return suspensions.iterator().next();
-	}
-
-	@Override
-	public void onApplicationEvent(ContextStartedEvent event) {
-		
-		sessionService.executeInSystemContext(new Runnable() {
-
-			@Override
-			public void run() {
-				for(PrincipalSuspension s : repository.getSuspensions()) {
-					try {
-						if (s.getDuration() > 0) {
-							scheduleResume(s.getPrincipal(), s.getStartTime(), s.getDuration());
-						}
-					} catch (ResourceCreationException e) {
-						log.error("Could not schedule resumption of user account " + s.getPrincipal().getName(), e);
-					}
-				}
-			}
-			
-		});
-		
 	}
 }

@@ -36,12 +36,5 @@ public class PrincipalSuspensionRepositoryImpl extends
 	public void saveSuspension(PrincipalSuspension principalSuspension) {
 		save(principalSuspension);
 	}
-
-	@Override
-	@Transactional(readOnly=true)
-	public List<PrincipalSuspension> getSuspensions() {
-		return (List<PrincipalSuspension>) list(PrincipalSuspension.class);
-	}
-	
 	
 }

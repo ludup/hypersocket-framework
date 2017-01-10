@@ -13,9 +13,7 @@ public interface PrincipalSuspensionRepository extends
 	void deletePrincipalSuspension(PrincipalSuspension suspension);
 
 	void saveSuspension(PrincipalSuspension principalSuspension);
-
-	List<PrincipalSuspension> getSuspensions();
-
+	
 	Collection<PrincipalSuspension> getSuspensions(Principal principal);
 
 }
