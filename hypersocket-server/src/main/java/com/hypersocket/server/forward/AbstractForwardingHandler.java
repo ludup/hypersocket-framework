@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.server.forward;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +22,6 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.realm.UserVariableReplacement;
 import com.hypersocket.realm.UserVariableReplacementService;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.server.HypersocketServer;
@@ -114,6 +114,10 @@ public abstract class AbstractForwardingHandler<T extends ForwardingResource> im
 		} catch (ResourceNotFoundException e) {
 			// TODO Log event
 			log.error("Cannot find resource", e);
+			throw new AccessDeniedException("Resource not found");
+		} catch (IOException e) {
+			// TODO Log event
+			log.error("Cannot connect to resource", e);
 			throw new AccessDeniedException("Resource not found");
 		} finally {
 			getService().clearPrincipalContext();

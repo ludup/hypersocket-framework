@@ -56,7 +56,7 @@ public interface HypersocketServer {
 	
 	public void init(ApplicationContext applicationContext) throws AccessDeniedException, ServletException, IOException;
 	
-	public void connect(TCPForwardingClientCallback callback);
+	public void connect(TCPForwardingClientCallback callback) throws IOException;
 	
 	ServletContext getServletContext();
 

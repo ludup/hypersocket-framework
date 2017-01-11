@@ -423,7 +423,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	}
 
 	@Override
-	public void connect(TCPForwardingClientCallback callback) {
+	public void connect(TCPForwardingClientCallback callback) throws IOException {
 
 		InetSocketAddress addr = new InetSocketAddress(callback.getHostname(), callback.getPort());
 		
