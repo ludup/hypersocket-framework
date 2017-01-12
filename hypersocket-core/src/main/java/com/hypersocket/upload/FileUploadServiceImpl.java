@@ -237,6 +237,11 @@ public class FileUploadServiceImpl extends
 
 		InputStream in = getInputStream(uuid);
 		String contentType = mimeTypesMap.getContentType(fileUpload.getFileName());
+		
+		if(log.isInfoEnabled()) {
+			log.info(String.format("Setting Content-Type of request to %s", contentType));
+		}
+		
 		response.setContentType(contentType);
 
 		if(forceDownload) {
