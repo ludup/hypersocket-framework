@@ -599,7 +599,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	
 	protected abstract Class<T> getResourceClass();
 
-	class RoleSelectMode implements CriteriaConfiguration {
+	public class RoleSelectMode implements CriteriaConfiguration {
 
 		@Override
 		public void configure(Criteria criteria) {
