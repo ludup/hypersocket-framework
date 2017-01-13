@@ -257,7 +257,7 @@ public class FileUploadServiceImpl extends
 	public File createTempFile(String uuid) throws IOException {
 		File file = File.createTempFile("task", "template");
 		file.deleteOnExit();
-		FileOutputStream out = new FileOutputStream(uuid);
+		FileOutputStream out = new FileOutputStream(file);
 		try {
 			IOUtils.copy(new CloseOnEOFInputStream(getInputStream(uuid)), out);
 		} finally {
