@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -41,6 +42,8 @@ import javax.servlet.http.Part;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.DateUtils;
 import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hypersocket.netty.util.ChannelBufferServletInputStream;
 import com.hypersocket.servlet.HypersocketServletConfig;
@@ -50,6 +53,8 @@ import com.hypersocket.servlet.HypersocketSessionFactory;
 
 public class HttpRequestServletWrapper implements HttpServletRequest {
 
+	static Logger log = LoggerFactory.getLogger(HttpRequestServletWrapper.class);
+	
 	private HttpRequest request;
 	private Map<String, Object> attributes = new HashMap<String, Object>();
 	private Map<String, ArrayList<String>> parameters = new HashMap<String, ArrayList<String>>();
@@ -145,7 +150,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 		this.requestUrl = (secure ? "https://" : "http://") + request.getHeader(HttpHeaders.HOST) + requestUri;
 		
 		/* Strip the context path from the working URI */
-		uri = uri.equals("/") ? uri : uri.substring(getContextPath().length());
+		uri = uri.equals("/") || !uri.startsWith(getContextPath()) ? uri : uri.substring(getContextPath().length());
 
 		/*
 		 * Extract the servlet name. If it is the default servlet, the path will
@@ -431,18 +436,23 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public Cookie[] getCookies() {
+		
 		if (cookies == null && getHeader("COOKIE") != null) {
+			List<Cookie> lst = new ArrayList<Cookie>();
 			String tmp = getHeader("COOKIE");
 			StringTokenizer t = new StringTokenizer(tmp, ";");
-			cookies = new Cookie[t.countTokens()];
-			int count = 0;
 			while (t.hasMoreTokens()) {
 				String nextCookie = t.nextToken().trim();
 				int equalsPos = nextCookie.indexOf('=');
 				String cookieName = nextCookie.substring(0, equalsPos);
 				String cookieValue = nextCookie.substring(equalsPos + 1);
-				cookies[count++] = new Cookie(cookieName, cookieValue);
+				try {
+					lst.add(new Cookie(cookieName, cookieValue));
+				} catch (Throwable e) {
+					log.info("Ignoring cookie" + cookieName, e);
+				}
 			}
+			cookies = lst.toArray(new Cookie[0]);
 		} else if (cookies == null) {
 			cookies = new Cookie[0];
 		}
