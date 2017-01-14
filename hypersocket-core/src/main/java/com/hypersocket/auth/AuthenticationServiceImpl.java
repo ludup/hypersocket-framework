@@ -687,18 +687,25 @@ public class AuthenticationServiceImpl extends
 				if (scheme.getType().ordinal() >= a.getType().ordinal()) {
 					tmp.put(a.getResourceKey(), a);
 				}
-			} else {
-				if (scheme.getAllowedModules() == null) {
-					throw new IllegalStateException(
-							"CUSTOM authentication scheme type must declare allowed modules");
-				}
-				for (String s : scheme.getAllowedModules().split(",")) {
-					if (a.getResourceKey().matches(s)) {
-						tmp.put(a.getResourceKey(), a);
-						break;
-					}
-				}
+			}  else {
+				tmp.put(a.getResourceKey(), a);
 			}
+			/**
+			 * Don't filter by what the scheme wants. This requires database change evertime a new authenticator
+			 * is added causing upgrade issues. We will rely on Authenticator's allowedSchemes.
+			 */
+//			else {
+//				if (scheme.getAllowedModules() == null) {
+//					throw new IllegalStateException(
+//							"CUSTOM authentication scheme type must declare allowed modules");
+//				}
+//				for (String s : scheme.getAllowedModules().split(",")) {
+//					if (a.getResourceKey().matches(s)) {
+//						tmp.put(a.getResourceKey(), a);
+//						break;
+//					}
+//				}
+//			}
 		}
 		return tmp;
 	}
