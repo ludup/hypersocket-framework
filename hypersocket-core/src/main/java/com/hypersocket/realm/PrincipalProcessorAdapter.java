@@ -26,12 +26,12 @@ public class PrincipalProcessorAdapter implements PrincipalProcessor {
 	}
 
 	@Override
-	public void beforeChangePassword(Principal principal, String newPassword) throws ResourceException{
+	public void beforeChangePassword(Principal principal, String newPassword, String oldPassword) throws ResourceException{
 		
 	}
 
 	@Override
-	public void afterChangePassword(Principal principal, String newPassword) throws ResourceException {
+	public void afterChangePassword(Principal principal, String newPassword, String oldPassword) throws ResourceException {
 
 	}
 
