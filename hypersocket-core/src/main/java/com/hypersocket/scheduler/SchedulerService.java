@@ -10,10 +10,10 @@ public interface SchedulerService {
 
 	public static final String RESOURCE_BUNDLE = "SchedulerService";
 
-	void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data, int interval)
+	void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data, long interval)
 			throws SchedulerException;
 
-	void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data, int interval,
+	void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data, long interval,
 			int repeat) throws SchedulerException;
 
 	void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data)
@@ -23,45 +23,45 @@ public interface SchedulerService {
 			throws SchedulerException;
 
 	void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data, Date start,
-			int interval) throws SchedulerException;
+			long interval) throws SchedulerException;
 
 	void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data, Date start,
-			int interval, int repeat) throws SchedulerException;
+			long interval, int repeat) throws SchedulerException;
 
 	void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data, int millis)
 			throws SchedulerException;
 
 	void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data, int millis,
-			int interval) throws SchedulerException;
+			long interval) throws SchedulerException;
 
 	void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data, int millis,
-			int interval, int repeat) throws SchedulerException;
+			long interval, int repeat) throws SchedulerException;
 	
 	void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data, int millis,
-			int interval, Date ends) throws SchedulerException;
+			long interval, Date ends) throws SchedulerException;
 
-	void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data, int interval,
+	void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data, long interval,
 			int repeat, Date ends) throws SchedulerException;
 
 	void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data, Date start,
-			int interval, int repeat, Date ends) throws SchedulerException;
+			long interval, int repeat, Date ends) throws SchedulerException;
 
-	void rescheduleIn(String scheduleId, int millis, int interval, int repeat)
+	void rescheduleIn(String scheduleId, int millis, long interval, int repeat)
 			throws SchedulerException, NotScheduledException;
 
-	void rescheduleIn(String scheduleId, int millis, int interval)
+	void rescheduleIn(String scheduleId, int millis, long interval)
 			throws SchedulerException, NotScheduledException;
 
 	void rescheduleIn(String scheduleId, int millis) throws SchedulerException,
 			NotScheduledException;
 
-	void rescheduleAt(String scheduleId, Date time, int interval, int repeat)
+	void rescheduleAt(String scheduleId, Date time, long interval, int repeat)
 			throws SchedulerException, NotScheduledException;
 
-	void rescheduleAt(String scheduleId, Date time, int interval, int repeat,
+	void rescheduleAt(String scheduleId, Date time, long interval, int repeat,
 			Date end) throws SchedulerException, NotScheduledException;
 
-	void rescheduleAt(String scheduleId, Date time, int interval)
+	void rescheduleAt(String scheduleId, Date time, long interval)
 			throws SchedulerException, NotScheduledException;
 
 	void rescheduleAt(String scheduleId, Date time) throws SchedulerException,
@@ -70,10 +70,10 @@ public interface SchedulerService {
 	void rescheduleNow(String scheduleId) throws SchedulerException,
 			NotScheduledException;
 
-	void rescheduleNow(String scheduleId, int interval)
+	void rescheduleNow(String scheduleId, long interval)
 			throws SchedulerException, NotScheduledException;
 
-	void rescheduleNow(String scheduleId, int interval, int repeat)
+	void rescheduleNow(String scheduleId, long interval, int repeat)
 			throws SchedulerException, NotScheduledException;
 
 	void cancelNow(String scheduleId) throws SchedulerException;
@@ -82,7 +82,7 @@ public interface SchedulerService {
 
 	Date getPreviousSchedule(String string) throws SchedulerException;
 
-	void rescheduleNow(String scheduleId, int interval, int repeat, Date end)
+	void rescheduleNow(String scheduleId, long interval, int repeat, Date end)
 			throws SchedulerException, NotScheduledException;
 
 	public boolean jobExists(String scheduleId) throws SchedulerException;

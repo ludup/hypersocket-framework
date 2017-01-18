@@ -61,20 +61,20 @@ public abstract class AbstractSchedulerServiceImpl implements SchedulerService {
 
 	@Override
 	public void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data,
-			int interval, int repeat) throws SchedulerException {
+			long interval, int repeat) throws SchedulerException {
 		schedule(clz, scheduleId, data, null, interval, repeat, null);
 	}
 
 	@Override
 	public void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data,
-			int interval) throws SchedulerException {
+			long interval) throws SchedulerException {
 		scheduleNow(clz, scheduleId, data, interval,
 				SimpleTrigger.REPEAT_INDEFINITELY);
 	}
 
 	@Override
 	public void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data,
-			int interval, int repeat, Date ends) throws SchedulerException {
+			long interval, int repeat, Date ends) throws SchedulerException {
 		schedule(clz, scheduleId, data, null, interval, repeat, null);
 	}
 
@@ -86,20 +86,20 @@ public abstract class AbstractSchedulerServiceImpl implements SchedulerService {
 
 	@Override
 	public void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data,
-			Date start, int interval) throws SchedulerException {
+			Date start, long interval) throws SchedulerException {
 		schedule(clz, scheduleId, data, start, interval,
 				SimpleTrigger.REPEAT_INDEFINITELY, null);
 	}
 
 	@Override
 	public void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data,
-			Date start, int interval, int repeat) throws SchedulerException {
+			Date start, long interval, int repeat) throws SchedulerException {
 		schedule(clz, scheduleId, data, start, interval, repeat, null);
 	}
 
 	@Override
 	public void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data,
-			Date start, int interval, int repeat, Date ends)
+			Date start, long interval, int repeat, Date ends)
 			throws SchedulerException {
 		schedule(clz, scheduleId, data, start, interval, repeat, ends);
 	}
@@ -113,7 +113,7 @@ public abstract class AbstractSchedulerServiceImpl implements SchedulerService {
 
 	@Override
 	public void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data,
-			int millis, int interval) throws SchedulerException {
+			int millis, long interval) throws SchedulerException {
 		schedule(clz, scheduleId, data, DateBuilder.futureDate(millis,
 				DateBuilder.IntervalUnit.MILLISECOND), interval,
 				SimpleTrigger.REPEAT_INDEFINITELY, null);
@@ -121,7 +121,7 @@ public abstract class AbstractSchedulerServiceImpl implements SchedulerService {
 
 	@Override
 	public void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data,
-			int millis, int interval, Date ends) throws SchedulerException {
+			int millis, long interval, Date ends) throws SchedulerException {
 		schedule(clz, scheduleId, data, DateBuilder.futureDate(millis,
 				DateBuilder.IntervalUnit.MILLISECOND), interval,
 				SimpleTrigger.REPEAT_INDEFINITELY, ends);
@@ -129,20 +129,20 @@ public abstract class AbstractSchedulerServiceImpl implements SchedulerService {
 
 	@Override
 	public void scheduleIn(Class<? extends Job> clz, String scheduleId, JobDataMap data,
-			int millis, int interval, int repeat) throws SchedulerException {
+			int millis, long interval, int repeat) throws SchedulerException {
 		scheduleAt(clz, scheduleId, data, DateBuilder.futureDate(millis,
 				DateBuilder.IntervalUnit.MILLISECOND), interval, repeat);
 	}
 
 	@Override
-	public void rescheduleIn(String scheduleId, int millis, int interval,
+	public void rescheduleIn(String scheduleId, int millis, long interval,
 			int repeat) throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, DateBuilder.futureDate(millis,
 				DateBuilder.IntervalUnit.MILLISECOND), interval, repeat, null);
 	}
 
 	@Override
-	public void rescheduleIn(String scheduleId, int millis, int interval)
+	public void rescheduleIn(String scheduleId, int millis, long interval)
 			throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, DateBuilder.futureDate(millis,
 				DateBuilder.IntervalUnit.MILLISECOND), interval, 0, null);
@@ -156,20 +156,20 @@ public abstract class AbstractSchedulerServiceImpl implements SchedulerService {
 	}
 
 	@Override
-	public void rescheduleAt(String scheduleId, Date time, int interval,
+	public void rescheduleAt(String scheduleId, Date time, long interval,
 			int repeat) throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, time, interval, repeat, null);
 	}
 
 	@Override
-	public void rescheduleAt(String scheduleId, Date time, int interval,
+	public void rescheduleAt(String scheduleId, Date time, long interval,
 			int repeat, Date end) throws SchedulerException,
 			NotScheduledException {
 		reschedule(scheduleId, time, interval, repeat, end);
 	}
 
 	@Override
-	public void rescheduleAt(String scheduleId, Date time, int interval)
+	public void rescheduleAt(String scheduleId, Date time, long interval)
 			throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, time, interval,
 				SimpleTrigger.REPEAT_INDEFINITELY, null);
@@ -188,26 +188,26 @@ public abstract class AbstractSchedulerServiceImpl implements SchedulerService {
 	}
 
 	@Override
-	public void rescheduleNow(String scheduleId, int interval)
+	public void rescheduleNow(String scheduleId, long interval)
 			throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, null, interval,
 				SimpleTrigger.REPEAT_INDEFINITELY, null);
 	}
 
 	@Override
-	public void rescheduleNow(String scheduleId, int interval, int repeat)
+	public void rescheduleNow(String scheduleId, long interval, int repeat)
 			throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, null, interval, repeat, null);
 	}
 
 	@Override
-	public void rescheduleNow(String scheduleId, int interval, int repeat,
+	public void rescheduleNow(String scheduleId, long interval, int repeat,
 			Date end) throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, null, interval, repeat, end);
 	}
 
 	protected void schedule(Class<? extends Job> clz, String scheduleId, JobDataMap data,
-			Date start, int interval, int repeat, Date end)
+			Date start, long interval, int repeat, Date end)
 			throws SchedulerException {
 
 		if(scheduleId == null){
@@ -262,7 +262,7 @@ public abstract class AbstractSchedulerServiceImpl implements SchedulerService {
 		return !jobExists(scheduleId);
 	}
 
-	protected Trigger createTrigger(JobDataMap data, Date start, int interval,
+	protected Trigger createTrigger(JobDataMap data, Date start, long interval,
 			int repeat, Date end) {
 
 		TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger();
@@ -291,7 +291,7 @@ public abstract class AbstractSchedulerServiceImpl implements SchedulerService {
 		return triggerBuilder.build();
 	}
 
-	protected void reschedule(String id, Date start, int interval, int repeat,
+	protected void reschedule(String id, Date start, long interval, int repeat,
 			Date end) throws SchedulerException, NotScheduledException {
 
 		if (log.isInfoEnabled()) {
