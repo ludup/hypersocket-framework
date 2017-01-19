@@ -19,7 +19,7 @@ public class CollectMailTaskResult extends AbstractTaskResult {
 
 	public static final String EVENT_RESOURCE_KEY = "collectMail.result";
 	public static final String EVENT_FROM = "attr.from";
-	public static final String EVENT_REPLY_TO = "attr.replyTo";
+//	public static final String EVENT_REPLY_TO = "attr.replyTo";
 	public static final String EVENT_TO = "attr.to";
 	public static final String EVENT_CC = "attr.cc";
 	public static final String EVENT_SUBJECT = "attr.subject";
@@ -37,8 +37,12 @@ public class CollectMailTaskResult extends AbstractTaskResult {
 		// Not thread safe
 		DateFormat rfc2113 = new SimpleDateFormat("EEE, dd MMM yyyyy HH:mm:ss z");
 		
-		addAttribute(EVENT_FROM, StringUtils.join(from, ','));
-		addAttribute(EVENT_REPLY_TO, StringUtils.join(replyTo, ','));
+		// LDP - We should be honouring reply and should use it in preference to from
+		if(replyTo!=null && replyTo.length > 0) {
+			addAttribute(EVENT_FROM, StringUtils.join(replyTo, ','));
+		} else {
+			addAttribute(EVENT_FROM, StringUtils.join(from, ','));
+		}
 		addAttribute(EVENT_TO, StringUtils.join(to, ','));
 		addAttribute(EVENT_CC, StringUtils.join(cc, ','));
 		addAttribute(EVENT_SUBJECT, StringUtils.defaultIfBlank(subject, ""));

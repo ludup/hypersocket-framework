@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.Resource;
+import com.hypersocket.upload.FileUpload;
 import com.hypersocket.utils.HypersocketUtils;
 
 public class ResourceUtils {
@@ -266,5 +267,18 @@ public class ResourceUtils {
 
 	public static String implodeObjectValues(Collection<?> array) {
 		return StringUtils.join(array.toArray(new Object[0]), "]|[");	
+	}
+
+	public static String implodeFileUploads(FileUpload[] attachments) {
+		StringBuilder buf = new StringBuilder();
+		if(attachments != null) {
+			for(FileUpload e : attachments) {
+				if(buf.length() > 0) {
+					buf.append("]|[");
+				}
+				buf.append(e.getUUID());
+			}
+		}
+		return buf.toString();
 	}
 }
