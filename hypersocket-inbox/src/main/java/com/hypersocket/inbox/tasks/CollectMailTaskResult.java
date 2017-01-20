@@ -18,16 +18,17 @@ public class CollectMailTaskResult extends AbstractTaskResult {
 	private static final long serialVersionUID = -8776154664692553132L;
 
 	public static final String EVENT_RESOURCE_KEY = "collectMail.result";
-	public static final String EVENT_FROM = "attr.from";
+	
+	public static final String ATTR_FROM = "attr.from";
 //	public static final String EVENT_REPLY_TO = "attr.replyTo";
-	public static final String EVENT_TO = "attr.to";
-	public static final String EVENT_CC = "attr.cc";
-	public static final String EVENT_SUBJECT = "attr.subject";
-	public static final String EVENT_TEXT_CONTENT = "attr.textContent";
-	public static final String EVENT_HTML_CONTENT = "attr.htmlContent";
-	public static final String EVENT_DATE_SENT = "attr.dateSent";
-	public static final String EVENT_DATE_RECEIVED = "attr.dateReceived";
-	public static final String EVENT_ATTACHMENTS = "attr.attachments";
+	public static final String ATTR_TO = "attr.to";
+	public static final String ATTR_CC = "attr.cc";
+	public static final String ATTR_SUBJECT = "attr.subject";
+	public static final String ATTR_TEXT_CONTENT = "attr.textContent";
+	public static final String ATTR_HTML_CONTENT = "attr.htmlContent";
+	public static final String ATTR_DATE_SENT = "attr.dateSent";
+	public static final String ATTR_DATE_RECEIVED = "attr.dateReceived";
+	public static final String ATTR_ATTACHMENTS = "attr.attachments";
 
 	public CollectMailTaskResult(Object source, boolean success, Realm currentRealm, Task task, Address[] from,
 			Address[] replyTo, Address[] to, Address[] cc, String subject, String textContent, String htmlContent,
@@ -39,18 +40,18 @@ public class CollectMailTaskResult extends AbstractTaskResult {
 		
 		// LDP - We should be honouring reply and should use it in preference to from
 		if(replyTo!=null && replyTo.length > 0) {
-			addAttribute(EVENT_FROM, StringUtils.join(replyTo, ','));
+			addAttribute(ATTR_FROM, StringUtils.join(replyTo, ','));
 		} else {
-			addAttribute(EVENT_FROM, StringUtils.join(from, ','));
+			addAttribute(ATTR_FROM, StringUtils.join(from, ','));
 		}
-		addAttribute(EVENT_TO, StringUtils.join(to, ','));
-		addAttribute(EVENT_CC, StringUtils.join(cc, ','));
-		addAttribute(EVENT_SUBJECT, StringUtils.defaultIfBlank(subject, ""));
-		addAttribute(EVENT_TEXT_CONTENT, StringUtils.defaultIfBlank(textContent, ""));
-		addAttribute(EVENT_HTML_CONTENT, StringUtils.defaultIfBlank(htmlContent, ""));
-		addAttribute(EVENT_DATE_SENT, sent == null ? "" : rfc2113.format(sent));
-		addAttribute(EVENT_DATE_RECEIVED, received == null ? "" : rfc2113.format(received));
-		addAttribute(EVENT_ATTACHMENTS, StringUtils.join(attachments, ','));
+		addAttribute(ATTR_TO, StringUtils.join(to, ','));
+		addAttribute(ATTR_CC, StringUtils.join(cc, ','));
+		addAttribute(ATTR_SUBJECT, StringUtils.defaultIfBlank(subject, ""));
+		addAttribute(ATTR_TEXT_CONTENT, StringUtils.defaultIfBlank(textContent, ""));
+		addAttribute(ATTR_HTML_CONTENT, StringUtils.defaultIfBlank(htmlContent, ""));
+		addAttribute(ATTR_DATE_SENT, sent == null ? "" : rfc2113.format(sent));
+		addAttribute(ATTR_DATE_RECEIVED, received == null ? "" : rfc2113.format(received));
+		addAttribute(ATTR_ATTACHMENTS, StringUtils.join(attachments, ','));
 
 	}
 
