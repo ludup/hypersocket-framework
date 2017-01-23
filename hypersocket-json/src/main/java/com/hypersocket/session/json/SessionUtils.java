@@ -47,6 +47,16 @@ public class SessionUtils {
 		
 		Session session = null;
 		
+		if(request.getParameterMap().containsKey(HYPERSOCKET_API_KEY)) {
+			session = sessionService.getSession(request.getParameter(HYPERSOCKET_API_KEY));
+		} else if(request.getHeader(HYPERSOCKET_API_SESSION) != null) {
+			session = sessionService.getSession((String)request.getHeader(HYPERSOCKET_API_SESSION));
+		}
+		
+		if (session != null && sessionService.isLoggedOn(session, true)) {
+			return session;
+		}
+		
 		if (request.getAttribute(AUTHENTICATED_SESSION) != null) {
 			session = (Session) request.getAttribute(AUTHENTICATED_SESSION);
 			if(sessionService.isLoggedOn(session, true)) {
@@ -69,15 +79,9 @@ public class SessionUtils {
 			}
 		}
 		
-		if(request.getParameterMap().containsKey(HYPERSOCKET_API_KEY)) {
-			session = sessionService.getSession(request.getParameter(HYPERSOCKET_API_KEY));
-		} else if(request.getHeader(HYPERSOCKET_API_SESSION) != null) {
-			session = sessionService.getSession((String)request.getHeader(HYPERSOCKET_API_SESSION));
-		}
+
 		
-		if (session != null && sessionService.isLoggedOn(session, true)) {
-			return session;
-		}
+		
 		
 		return null;
 	}
