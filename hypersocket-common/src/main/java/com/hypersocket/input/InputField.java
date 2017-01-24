@@ -22,6 +22,7 @@ public class InputField {
 	boolean required;
 	String label;
 	List<Option> options = new ArrayList<Option>();
+	String infoKey;
 
 	public InputField() {
 
@@ -34,6 +35,12 @@ public class InputField {
 		this.defaultValue = defaultValue;
 		this.required = required;
 		this.label = label;
+	}
+
+	protected InputField(InputFieldType type, String resourceKey,
+						 String defaultValue, boolean required, String label, String infoKey) {
+		this(type, resourceKey, defaultValue, required, label);
+		this.infoKey = infoKey;
 	}
 
 	public String getLabel() {
@@ -89,4 +96,11 @@ public class InputField {
 		this.required = required;
 	}
 
+	public String getInfoKey() {
+		return infoKey;
+	}
+
+	public void setInfoKey(String infoKey) {
+		this.infoKey = infoKey;
+	}
 }
