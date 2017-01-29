@@ -713,7 +713,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						proc.afterChangePassword(principal, newPassword);
 					}
 					
-					eventService.publishEvent(new ChangePasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider));
+					eventService.publishEvent(new ChangePasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider, newPassword));
 					
 					return principal;
 				} catch(Throwable t) {
@@ -723,7 +723,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			@Override
 			public void doTransacationError(Throwable t) {
-				eventService.publishEvent(new ChangePasswordEvent(this, t, getCurrentSession(), getCurrentRealm(), provider));
+				eventService.publishEvent(new ChangePasswordEvent(this, t, getCurrentSession(), getCurrentRealm(), provider, newPassword));
 			}
 		});
 	}
@@ -765,11 +765,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 			
 			eventService.publishEvent(
-					new SetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider, principal));
+					new SetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), 
+							provider, principal, password, administrative));
 
 		} catch (ResourceException ex) {
 			eventService.publishEvent(new SetPasswordEvent(this, ex, getCurrentSession(), getCurrentRealm(), provider,
-					principal.getPrincipalName()));
+					principal.getPrincipalName(), password, administrative));
 			throw ex;
 		}
 
