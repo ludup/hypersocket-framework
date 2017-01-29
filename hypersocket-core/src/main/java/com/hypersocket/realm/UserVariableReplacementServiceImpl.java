@@ -1,7 +1,9 @@
 package com.hypersocket.realm;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -117,13 +119,14 @@ public class UserVariableReplacementServiceImpl implements UserVariableReplaceme
 	public Set<String> getVariableNames(Principal principal) {
 		
 		RealmProvider provider = realmService.getProviderForRealm(principal.getRealm());
-		Set<String> names = new HashSet<String>(defaultReplacements);
+		Set<String> names = new TreeSet<String>(defaultReplacements);
 		names.addAll(permissionService.getRolePropertyNames());
 		names.addAll(provider.getUserPropertyNames(principal));
 		
 		for(UserVariableReplacement replacement : additionalReplacements) {
 			names.addAll(replacement.getVariableNames(principal));
 		}
+		
 		return names;
 	}
 

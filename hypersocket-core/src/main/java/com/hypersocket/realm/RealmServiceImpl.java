@@ -717,7 +717,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				
 				try {
 					for(PrincipalProcessor proc : principalProcessors) {
-						proc.beforeChangePassword(principal, newPassword);
+						proc.beforeChangePassword(principal, newPassword, oldPassword);
 					}
 					
 					if (!verifyPassword(principal, oldPassword.toCharArray())) {
@@ -729,7 +729,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					setCurrentPassword(newPassword);
 	
 					for(PrincipalProcessor proc : principalProcessors) {
-						proc.afterChangePassword(principal, newPassword);
+						proc.afterChangePassword(principal, newPassword, oldPassword);
 					}
 					
 					eventService.publishEvent(new ChangePasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider, newPassword));

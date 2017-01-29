@@ -7,6 +7,13 @@
  ******************************************************************************/
 package com.hypersocket.input;
 
-public enum InputFieldType {
-	text, password, select, hidden, p, a, script, div, pre, img, checkbox;
+public class CheckBoxField extends InputField {
+
+	public CheckBoxField(String resourceKey, String defaultValue) {
+		super(InputFieldType.checkbox, resourceKey, defaultValue, true, "");
+	}
+
+	public CheckBoxField(String resourceKey, String defaultValue, String infoKey) {
+		super(InputFieldType.checkbox, resourceKey, defaultValue, true, "", infoKey);
+	}
 }
