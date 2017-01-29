@@ -124,6 +124,9 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	public PrincipalSuspension deletePrincipalSuspension(Principal principal, PrincipalSuspensionType type) {
 		Collection<PrincipalSuspension> suspensions = repository
 				.getSuspensions(principal, type);
+		if(suspensions.isEmpty()) {
+			return null;
+		}
 		PrincipalSuspension suspension = suspensions.iterator().next();
 		repository.deletePrincipalSuspension(suspension);
 		return suspension;
