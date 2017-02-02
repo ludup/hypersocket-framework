@@ -9,6 +9,8 @@ public interface UserVariableReplacement extends
 
 	Set<String> getVariableNames(Realm realm);
 	
-	Set<String> getVariableNames(Principal realm);
+	Set<String> getVariableNames(Principal principal);
+
+	boolean supportsVariable(Principal principal, String name);
 
 }

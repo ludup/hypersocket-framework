@@ -1,6 +1,5 @@
 package com.hypersocket.realm;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -13,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.properties.ResourceUtils;
 
 @Service
 public class UserVariableReplacementServiceImpl implements UserVariableReplacementService {
@@ -105,7 +105,7 @@ public class UserVariableReplacementServiceImpl implements UserVariableReplaceme
 	public Set<String> getVariableNames(Realm realm) {
 		
 		RealmProvider provider = realmService.getProviderForRealm(realm);
-		Set<String> names = new HashSet<String>(defaultReplacements);
+		Set<String> names = new TreeSet<String>(defaultReplacements);
 		names.addAll(permissionService.getRolePropertyNames());
 		names.addAll(provider.getUserPropertyNames(null));
 		
@@ -133,6 +133,9 @@ public class UserVariableReplacementServiceImpl implements UserVariableReplaceme
 	@Override
 	public String getVariableValue(Principal source, String name) {
 
+		if(ResourceUtils.isReplacementVariable(name)) {
+			name = ResourceUtils.getReplacementVariableName(name);
+		}
 		if (name.equals("password")) {
 			return realmService.getCurrentPassword();
 		} 
@@ -158,7 +161,7 @@ public class UserVariableReplacementServiceImpl implements UserVariableReplaceme
 		}
 
 		for(UserVariableReplacement replacement : additionalReplacements) {
-			if(replacement.getVariableNames(source).contains(name)) {
+			if(replacement.supportsVariable(source, name)) {
 				return replacement.getVariableValue(source, name);
 			}
 		}

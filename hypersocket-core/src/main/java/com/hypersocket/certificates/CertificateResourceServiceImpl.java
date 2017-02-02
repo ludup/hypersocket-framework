@@ -28,6 +28,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
@@ -379,13 +380,14 @@ public class CertificateResourceServiceImpl extends
 			throws CertificateException, MismatchedCertificateException {
 
 		try {
+			X509Certificate[] ca = ArrayUtils.add(X509CertificateUtils
+					.loadCertificateChainFromPEM(caStream), X509CertificateUtils
+					.loadCertificateFromPEM(certStream));
+			ArrayUtils.reverse(ca);
 			if (caStream != null) {
 				return X509CertificateUtils.createKeystore(X509CertificateUtils
 						.loadKeyPairFromPEM(keyStream, keyPassphrase),
-						X509CertificateUtils.validateChain(X509CertificateUtils
-								.loadCertificateChainFromPEM(caStream),
-								X509CertificateUtils
-										.loadCertificateFromPEM(certStream)),
+						 ca,
 						alias, keystorePassphrase);
 			} else {
 				return X509CertificateUtils.createKeystore(X509CertificateUtils
@@ -429,7 +431,7 @@ public class CertificateResourceServiceImpl extends
 			MultipartFile file, MultipartFile bundle)
 			throws ResourceChangeException {
 		try {
-			updateCertificate(resource, file.getInputStream(), bundle.getInputStream());
+			updateCertificate(resource, file.getInputStream(), bundle==null ? null : bundle.getInputStream());
 		} catch (IOException e) {
 			throw new ResourceChangeException(RESOURCE_BUNDLE,
 					"error.certificateError", e.getMessage());
@@ -445,11 +447,13 @@ public class CertificateResourceServiceImpl extends
 			X509Certificate cert = X509CertificateUtils
 					.loadCertificateFromPEM(file);
 
-			X509Certificate[] ca = X509CertificateUtils
-					.loadCertificateChainFromPEM(bundle);
-
-			X509CertificateUtils.validateChain(ca, cert);
-
+			X509Certificate[] ca = null;
+			
+			if(bundle!=null) {
+				ca = X509CertificateUtils.loadCertificateChainFromPEM(bundle);
+				X509CertificateUtils.validateChain(ca, cert);
+			}
+			
 			KeyPair pair = loadKeyPair(resource);
 
 			if (!pair.getPublic().equals(cert.getPublicKey())) {
@@ -461,12 +465,12 @@ public class CertificateResourceServiceImpl extends
 			X509CertificateUtils.saveCertificate(new Certificate[] { cert },
 					certStream);
 
-			ByteArrayOutputStream caStream = new ByteArrayOutputStream();
-			X509CertificateUtils.saveCertificate(ca, caStream);
-
-			resource.setCertificate(new String(certStream.toByteArray(),
-					"UTF-8"));
-			resource.setBundle(new String(caStream.toByteArray(), "UTF-8"));
+			if(ca!=null) {
+				ByteArrayOutputStream caStream = new ByteArrayOutputStream();
+				X509CertificateUtils.saveCertificate(ca, caStream);
+				resource.setBundle(new String(caStream.toByteArray(), "UTF-8"));
+			}
+			resource.setCertificate(new String(certStream.toByteArray(), "UTF-8"));
 
 			updateResource(resource, new HashMap<String, String>());
 
@@ -541,7 +545,7 @@ public class CertificateResourceServiceImpl extends
 		doInternalPrivateKey(resource, key.getInputStream(), 
 				passphrase, 
 				file.getInputStream(), 
-				bundle.getInputStream());
+				bundle==null ? null : bundle.getInputStream());
 		
 	}
 	
@@ -554,11 +558,14 @@ public class CertificateResourceServiceImpl extends
 		
 		X509Certificate cert = X509CertificateUtils.loadCertificateFromPEM(file);
 
-		X509Certificate[] ca = X509CertificateUtils
-				.loadCertificateChainFromPEM(bundle);
-
-		X509CertificateUtils.validateChain(ca, cert);
-
+		X509Certificate[] ca = null;
+		
+		if(bundle!=null) {
+			ca = X509CertificateUtils
+					.loadCertificateChainFromPEM(bundle);
+			X509CertificateUtils.validateChain(ca, cert);
+		}
+		
 		KeyPair pair = X509CertificateUtils.loadKeyPairFromPEM(key, 
 				passphrase.toCharArray());
 
@@ -574,9 +581,12 @@ public class CertificateResourceServiceImpl extends
 		X509CertificateUtils.saveCertificate(new Certificate[] { cert },
 				certStream);
 
-		ByteArrayOutputStream caStream = new ByteArrayOutputStream();
-		X509CertificateUtils.saveCertificate(ca, caStream);
-
+		if(ca!=null) {
+			ByteArrayOutputStream caStream = new ByteArrayOutputStream();
+			X509CertificateUtils.saveCertificate(ca, caStream);
+			resource.setBundle(new String(caStream.toByteArray(), "UTF-8"));
+		}
+		
 		X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
 		RDN cn = x500name.getRDNs(BCStyle.CN)[0];
 		for (RDN rdn : x500name.getRDNs()) {
@@ -585,7 +595,7 @@ public class CertificateResourceServiceImpl extends
 						+ IETFUtils.valueToString(v.getValue()));
 			}
 		}
-		if (!resource.getName().equals(DEFAULT_CERTIFICATE_NAME)) {
+		if (!DEFAULT_CERTIFICATE_NAME.equals(resource.getName())) {
 			resource.setName(IETFUtils.valueToString(cn.getFirst().getValue()));
 		}
 		resource.setCommonName(IETFUtils
@@ -597,7 +607,7 @@ public class CertificateResourceServiceImpl extends
 		resource.setState("");
 		resource.setPrivateKey(new String(privateKeyFile.toByteArray(), "UTF-8"));
 		resource.setCertificate(new String(certStream.toByteArray(), "UTF-8"));
-		resource.setBundle(new String(caStream.toByteArray(), "UTF-8"));
+		
 
 	}
 
@@ -659,7 +669,7 @@ public class CertificateResourceServiceImpl extends
 			NoSuchAlgorithmException, CertificateException,
 			NoSuchProviderException, IOException,
 			MismatchedCertificateException {
-		internalDoPfx(resource, pfx, passphrase);
+		internalDoPfx(resource, pfx.getInputStream(), passphrase);
 	}
 	
 	private void internalDoPfx(CertificateResource resource, InputStream pfx,

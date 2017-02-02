@@ -7,9 +7,21 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hypersocket.permissions.Role;
-import com.hypersocket.resource.RealmResource;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlElement;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cascade;
@@ -17,10 +29,9 @@ import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
-import javax.persistence.*;
-import javax.xml.bind.annotation.XmlElement;
-import java.util.HashSet;
-import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hypersocket.permissions.Role;
+import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name = "principals")

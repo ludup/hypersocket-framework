@@ -2,12 +2,12 @@
 <propertyTemplates>
 
 	<propertyCategory resourceKey="category.security"
-		resourceBundle="AuthenticationService" weight="500">
+		resourceBundle="AuthenticationService" group="authentication" weight="500">
 		<property resourceKey="logon.banner" inputType="textarea"
 			rows="5" maxLength="8000" defaultValue="" weight="0" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email"
-		resourceBundle="EmailService" weight="600">
+		resourceBundle="EmailService" weight="600" group="messages">
 		<property resourceKey="smtp.host" inputType="text" weight="0"
 			defaultValue="localhost" />
 		<property resourceKey="smtp.port" inputType="integer"
@@ -26,7 +26,7 @@
 			weight="600" defaultValue="250" minValue="0" maxValue="60000"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.emailExtra"
-		resourceBundle="EmailService" weight="600">
+		resourceBundle="EmailService" weight="600"  group="messages">
 		<property resourceKey="email.htmlTemplate" inputType="fileInput"
 			weight="700" defaultValue="" automaticUpload="true" showUploadButton="false" />
 		<property resourceKey="email.trackingImage" inputType="fileInput" weight="700" defaultValue="" automaticUpload="true" showUploadButton="false" />
@@ -34,7 +34,7 @@
 		<property resourceKey="email.externalHostname" inputType="text" weight="900" defaultValue="" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.localization"
-		resourceBundle="I18NService" weight="700">
+		resourceBundle="I18NService" weight="700" hidden="true">
 		<property resourceKey="user.locales" inputType="switch"
 			defaultValue="true" weight="0" />
 		<property resourceKey="current.locale" inputType="select"

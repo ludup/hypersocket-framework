@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
 
+import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 
@@ -18,8 +19,16 @@ public interface HttpUtils {
 
 	InputStream doHttpGet(String uri, boolean allowSelfSigned) throws IOException;
 
-	String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned) throws IOException;
-
 	CloseableHttpClient createHttpClient(boolean allowSelfSigned) throws IOException;
+
+	String doHttpPost(String url, Map<String, String> parameters, 
+			boolean allowSelfSigned)
+					throws IOException;
+	
+	String doHttpPost(String url, Map<String, String> parameters, 
+			boolean allowSelfSigned, Map<String,String> additionalHeaders)
+					throws IOException;
+
+	String doHttpGetContent(String uri, boolean allowSelfSigned, Map<String, String> headers) throws IOException;
 
 }

@@ -133,6 +133,12 @@ public class ResourceUtils {
 		Matcher m = pattern.matcher(value);
 		return m.find();
 	}
+	
+	public static String getReplacementVariableName(String value) {
+		Matcher m = pattern.matcher(value);
+		m.find();
+		return m.group(1);
+	}
 
 	public static boolean isEncrypted(String value) {
 		return value!=null && (value.startsWith(getEncryptedTag()) || value.startsWith(getUUIDEncryptedTag()));

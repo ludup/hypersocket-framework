@@ -379,12 +379,13 @@ public class CertificateResourceController extends ResourceController {
 				for (X509Certificate cert : arr) {
 					certChain.add(cert);
 				}
-				if (StringUtils.isNotEmpty(resource.getBundle()))
+				if (StringUtils.isNotEmpty(resource.getBundle())) {
 					arr = X509CertificateUtils
 							.loadCertificateChainFromPEM(new ByteArrayInputStream(
 									resource.getBundle().getBytes("UTF-8")));
-				for (X509Certificate cert : arr) {
-					certChain.add(cert);
+					for (X509Certificate cert : arr) {
+						certChain.add(cert);
+					}
 				}
 
 				KeyStore keystore = X509CertificateUtils.createPKCS12Keystore(
@@ -426,7 +427,10 @@ public class CertificateResourceController extends ResourceController {
 									resourceService.getResourceById(id)
 											.getName().replace(' ', '_'),
 									"UTF-8") + ".pfx\"");
-			return (byte[]) request.getSession().getAttribute("pfx");
+			byte[] pfx = (byte[]) request.getSession().getAttribute("pfx");
+			request.getSession().removeAttribute("pfx");
+			response.setContentLength(pfx.length);
+			return pfx;
 		} catch (Exception e) {
 			try {
 				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.ordinal());
@@ -523,7 +527,10 @@ public class CertificateResourceController extends ResourceController {
 									resourceService.getResourceById(id)
 											.getName().replace(' ', '_'),
 									"UTF-8") + ".zip\"");
-			return (byte[]) request.getSession().getAttribute("pem");
+			byte[] ppemfx = (byte[]) request.getSession().getAttribute("pem");
+			request.getSession().removeAttribute("pem");
+			response.setContentLength(ppemfx.length);
+			return ppemfx;
 		} catch (Exception e) {
 			try {
 				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.ordinal());
@@ -542,7 +549,7 @@ public class CertificateResourceController extends ResourceController {
 	public CertificateStatus uploadCertificate(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable Long id,
 			@RequestPart(value = "file") MultipartFile file,
-			@RequestPart(value = "bundle") MultipartFile bundle)
+			@RequestPart(value = "bundle", required=false) MultipartFile bundle)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
@@ -583,7 +590,7 @@ public class CertificateResourceController extends ResourceController {
 	public CertificateStatus uploadKey(HttpServletRequest request,
 			HttpServletResponse response,
 			@RequestPart(value = "file") MultipartFile file,
-			@RequestPart(value = "bundle") MultipartFile bundle,
+			@RequestPart(value = "bundle", required=false) MultipartFile bundle,
 			@RequestPart(value = "key") MultipartFile key,
 			@RequestParam(value = "passphrase") String passphrase)
 			throws AccessDeniedException, UnauthorizedException,
@@ -600,7 +607,7 @@ public class CertificateResourceController extends ResourceController {
 	public CertificateStatus replaceKey(HttpServletRequest request,
 			HttpServletResponse response,
 			@RequestPart(value = "file") MultipartFile file,
-			@RequestPart(value = "bundle") MultipartFile bundle,
+			@RequestPart(value = "bundle", required=false) MultipartFile bundle,
 			@RequestPart(value = "key") MultipartFile key,
 			@RequestParam(value = "passphrase") String passphrase,
 			@PathVariable Long id) throws AccessDeniedException,

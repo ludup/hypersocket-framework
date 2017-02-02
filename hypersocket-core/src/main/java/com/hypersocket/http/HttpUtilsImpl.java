@@ -124,6 +124,10 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 
 	@Override
 	public String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned) throws IOException {
+		return doHttpPost(url, parameters, allowSelfSigned, null);
+	}
+	@Override
+	public String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned, Map<String,String> additionalHeaders) throws IOException {
 
 		CloseableHttpClient client = createHttpClient(allowSelfSigned);
 
@@ -134,6 +138,12 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 
 			for (String name : parameters.keySet()) {
 				nameValuePairs.add(new BasicNameValuePair(name, parameters.get(name)));
+			}
+			
+			if(additionalHeaders!=null) {
+				for(Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
+					request.addHeader(entry.getKey(), entry.getValue());
+				}
 			}
 			request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 			HttpResponse response = client.execute(request);
@@ -381,5 +391,24 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 			return sock;
 		}
 
+	}
+
+	@Override
+	public String doHttpGetContent(String uri, boolean allowSelfSigned, Map<String, String> headers)
+			throws IOException {
+		CloseableHttpResponse response = doHttpGet(uri, allowSelfSigned, headers);
+		try {
+			if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+				throw new IOException("Received " + response.getStatusLine().toString());
+			}
+			HttpEntity entity = response.getEntity();
+			return EntityUtils.toString(entity);
+
+		} finally {
+			try {
+				response.close();
+			} catch (IOException e) {
+			}
+		}
 	}
 }
