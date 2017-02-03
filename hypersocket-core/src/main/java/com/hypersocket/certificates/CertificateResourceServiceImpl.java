@@ -380,11 +380,13 @@ public class CertificateResourceServiceImpl extends
 			throws CertificateException, MismatchedCertificateException {
 
 		try {
-			X509Certificate[] ca = ArrayUtils.add(X509CertificateUtils
-					.loadCertificateChainFromPEM(caStream), X509CertificateUtils
-					.loadCertificateFromPEM(certStream));
-			ArrayUtils.reverse(ca);
+
 			if (caStream != null) {
+				X509Certificate[] ca = ArrayUtils.add(X509CertificateUtils
+						.loadCertificateChainFromPEM(caStream), X509CertificateUtils
+						.loadCertificateFromPEM(certStream));
+				ArrayUtils.reverse(ca);
+				
 				return X509CertificateUtils.createKeystore(X509CertificateUtils
 						.loadKeyPairFromPEM(keyStream, keyPassphrase),
 						 ca,
