@@ -1,7 +1,6 @@
 package com.hypersocket.realm;
 
 import java.util.Collection;
-import java.util.List;
 
 import com.hypersocket.repository.AbstractRepository;
 

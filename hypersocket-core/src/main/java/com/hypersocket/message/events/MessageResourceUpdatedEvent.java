@@ -9,6 +9,10 @@ public class MessageResourceUpdatedEvent extends
 		MessageResourceEvent {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 697988030382428987L;
+	/**
 	 * TODO rename to suit your resource and replace message with lower case
 	 * name of your resource.
 	 * 

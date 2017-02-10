@@ -12,10 +12,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.ResourceNotFoundException;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {

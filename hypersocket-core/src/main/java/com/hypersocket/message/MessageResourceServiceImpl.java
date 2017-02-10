@@ -29,6 +29,7 @@ import com.hypersocket.message.events.MessageResourceUpdatedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.MediaNotFoundException;
@@ -112,7 +113,7 @@ public class MessageResourceServiceImpl extends
 				MessageResourceDeletedEvent.class, RESOURCE_BUNDLE,
 				this);
 
-		repository.getEntityStore().registerResourceService(MessageResource.class, repository);
+		EntityResourcePropertyStore.registerResourceService(MessageResource.class, repository);
 	}
 
 	@Override

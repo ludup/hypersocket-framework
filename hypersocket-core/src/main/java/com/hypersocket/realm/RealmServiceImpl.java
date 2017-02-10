@@ -42,6 +42,7 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.AbstractPropertyTemplate;
+import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourceUtils;
@@ -127,7 +128,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Autowired
 	PrincipalSuspensionRepository suspensionRepository; 
-	
+
 	Cache<String, Object> realmCache;
 	
 	@Autowired
@@ -200,7 +201,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		realmCache = cacheService.getCache("realmCache", String.class, Object.class);
 		
-		
+		EntityResourcePropertyStore.registerResourceService(Principal.class, realmRepository);
 	}
 
 	@Override

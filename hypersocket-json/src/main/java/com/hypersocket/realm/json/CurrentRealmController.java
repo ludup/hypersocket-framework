@@ -41,7 +41,6 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RealmServiceImpl;
-import com.hypersocket.realm.UserVariableReplacement;
 import com.hypersocket.realm.UserVariableReplacementService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceException;

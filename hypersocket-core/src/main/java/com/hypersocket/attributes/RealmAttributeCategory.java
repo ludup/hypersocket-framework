@@ -15,6 +15,11 @@ import com.hypersocket.resource.RealmResource;
 public abstract class RealmAttributeCategory<A extends AbstractAttribute<?>> extends RealmResource implements AttributeCategory<A> {
 
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -682595785528401400L;
+
 	abstract public void setWeight(Integer weight);
 	
 	abstract public Set<A> getAttributes();

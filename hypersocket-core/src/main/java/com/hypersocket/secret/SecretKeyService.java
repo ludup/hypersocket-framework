@@ -6,7 +6,6 @@ import com.hypersocket.encrypt.EncryptionProvider;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
-import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 
 public interface SecretKeyService extends AbstractResourceService<SecretKeyResource> {

@@ -1,8 +1,6 @@
 package com.hypersocket.server.interfaces;
 
 import javax.persistence.Column;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.MappedSuperclass;
 
 import org.apache.commons.lang3.StringUtils;

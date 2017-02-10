@@ -44,7 +44,6 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 
 import com.hypersocket.certificates.CertificateResourceService;
-import com.hypersocket.config.ConfigurationChangedEvent;
 import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.events.EventService;

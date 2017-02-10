@@ -12,6 +12,11 @@ import com.hypersocket.resource.RealmResource;
 @Table(name="message_resource", uniqueConstraints = @UniqueConstraint(columnNames = {"message_id", "realm_id"}))
 public class MessageResource extends RealmResource {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5676595715637581705L;
+
 	@Column(name="message_id")
 	Integer messageId;
 	

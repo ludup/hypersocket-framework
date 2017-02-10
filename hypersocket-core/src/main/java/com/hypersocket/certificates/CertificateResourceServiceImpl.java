@@ -55,6 +55,7 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -121,7 +122,7 @@ public class CertificateResourceServiceImpl extends
 		eventService.registerEvent(CertificateResourceDeletedEvent.class,
 				RESOURCE_BUNDLE, this);
 
-		repository.getEntityStore().registerResourceService(CertificateResource.class, repository);
+		EntityResourcePropertyStore.registerResourceService(CertificateResource.class, repository);
 	}
 
 	@Override

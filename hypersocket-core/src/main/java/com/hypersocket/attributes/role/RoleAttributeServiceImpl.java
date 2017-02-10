@@ -192,4 +192,40 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 		 */
 		userPropertyTemplates.clear();
 	}
+	
+	@Override
+	protected void fireResourceCreationEvent(RoleAttribute resource) {
+		eventService.publishEvent(new RoleAttributeCreatedEvent(this,
+				getCurrentSession(), resource));
+	}
+
+	@Override
+	protected void fireResourceCreationEvent(RoleAttribute resource, Throwable t) {
+		eventService.publishEvent(new RoleAttributeCreatedEvent(this, t,
+				getCurrentSession(), resource));
+	}
+
+	@Override
+	protected void fireResourceUpdateEvent(RoleAttribute resource) {
+		eventService.publishEvent(new RoleAttributeUpdatedEvent(this,
+				getCurrentSession(), resource));
+	}
+
+	@Override
+	protected void fireResourceUpdateEvent(RoleAttribute resource, Throwable t) {
+		eventService.publishEvent(new RoleAttributeUpdatedEvent(this, t,
+				getCurrentSession(), resource));
+	}
+
+	@Override
+	protected void fireResourceDeletionEvent(RoleAttribute resource) {
+		eventService.publishEvent(new RoleAttributeDeletedEvent(this,
+				getCurrentSession(), resource));	
+	}
+
+	@Override
+	protected void fireResourceDeletionEvent(RoleAttribute resource, Throwable t) {
+		eventService.publishEvent(new RoleAttributeDeletedEvent(this, t,
+				getCurrentSession(), resource));	
+	}
 }

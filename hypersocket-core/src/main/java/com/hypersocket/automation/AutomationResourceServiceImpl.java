@@ -31,6 +31,7 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
@@ -40,9 +41,9 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
+import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.NotScheduledException;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
-import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
@@ -115,7 +116,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		eventService.registerEvent(AutomationResourceDeletedEvent.class, RESOURCE_BUNDLE, this);
 		eventService.registerEvent(AutomationTaskStartedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(AutomationTaskFinishedEvent.class, RESOURCE_BUNDLE);
-		repository.getEntityStore().registerResourceService(AutomationResource.class, repository);
+		EntityResourcePropertyStore.registerResourceService(AutomationResource.class, repository);
 	}
 
 	@Override
