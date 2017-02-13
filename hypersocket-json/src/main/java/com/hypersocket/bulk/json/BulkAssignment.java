@@ -1,4 +1,4 @@
-package com.hypersocket.json;
+package com.hypersocket.bulk.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
