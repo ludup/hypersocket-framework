@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
+import com.hypersocket.bulk.BulkAssignment;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.realm.Principal;
@@ -73,5 +74,7 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	Collection<T> getResourcesByRole(Realm currentRealm, Role... role);
 
 	T getPersonalResourceByName(String name, Principal principal, CriteriaConfiguration... configs);
+
+	void bulkAssignRolesToResource(Class<T> clazz, BulkAssignment bulkAssignment);
 
 }

@@ -1,4 +1,4 @@
-package com.hypersocket.bulk.json;
+package com.hypersocket.bulk;
 
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;

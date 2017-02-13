@@ -3,15 +3,18 @@ package com.hypersocket.resource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
+import com.hypersocket.bulk.BulkAssignment;
+import com.hypersocket.bulk.BulkAssignmentEvent;
+import com.hypersocket.bulk.BulkAssignmentMode;
+import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.PrincipalType;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.*;
+import com.hypersocket.session.Session;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.transactions.TransactionCallbackWithError;
 import com.hypersocket.transactions.TransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigInteger;
@@ -42,11 +46,19 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	RealmService realmService;
 
 	@Autowired
-	TransactionService transactionService; 
+	TransactionService transactionService;
+
+	@Autowired
+	EventService eventService;
 	
 	String resourceCategory;
 
 	private String fingerprint;
+
+	@PostConstruct
+	private void postConstruct() {
+		eventService.registerEvent(BulkAssignmentEvent.class, RESOURCE_BUNDLE);
+	}
 	
 	protected abstract AbstractAssignableResourceRepository<T> getRepository();
 
@@ -712,6 +724,49 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	public Long getResourceLongProperty(T resource, String resourceKey) {
 		return getRepository().getLongValue(resource, resourceKey);
 	}
+
+	@Override
+	public void bulkAssignRolesToResource(final Class<T> clazz, final BulkAssignment bulkAssignment)
+			throws ResourceException {
+		final List<Long> roleIds = bulkAssignment.getRoleIds();
+		final List<Long> resourceIds = bulkAssignment.getResourceIds();
+		final BulkAssignmentMode bulkAssignmentMode = bulkAssignment.getMode();
+
+		if(roleIds == null || roleIds.isEmpty()) {
+			throw new IllegalArgumentException("Roles cannot be empty.");
+		}
+
+		if(resourceIds == null || resourceIds.isEmpty()) {
+			throw new IllegalArgumentException("Resources cannot be empty.");
+		}
+
+
+		transactionService.doInTransaction(new TransactionCallbackWithError<Void>() {
+
+			Principal principal = realmService.getCurrentPrincipal();
+			Realm realm = realmService.getCurrentRealm();
+			final Session session = realmService.getCurrentSession();
+			final RealmProvider realmProvider = realmService.getProviderForRealm(realm);
+
+			@Override
+			public Void doInTransaction(TransactionStatus transactionStatus) {
+
+				getRepository().bulkAssignRolesToResource(clazz, bulkAssignment);
+				eventService.publishEvent(new BulkAssignmentEvent(this, roleIds, resourceIds, bulkAssignmentMode,
+						session, realm,
+						realmProvider, principal));
+				return null;
+			}
+
+			@Override
+			public void doTransacationError(Throwable e) {
+				eventService.publishEvent(new BulkAssignmentEvent(this, roleIds, resourceIds, bulkAssignmentMode,
+						e, session, realm,
+						realmProvider, principal));
+			}
+		});
+	}
+
 	protected void updateFingerprint() {
 		fingerprint = new BigInteger(130, random).toString(32);
 	}
