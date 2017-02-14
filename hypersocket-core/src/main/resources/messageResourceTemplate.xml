@@ -22,7 +22,7 @@
 	<propertyCategory resourceKey="category.email.delivery"
 		resourceBundle="MessageResourceService" weight="4000">
 		<property resourceKey="additionalTo" inputType="multipleTextInput"
-			weight="50" defaultValue="" allowEmpty="false" validateAll="email"/>
+			weight="50" defaultValue="" allowEmpty="true" validateAll="email"/>
 		<property resourceKey="replyToName" inputType="text"
 			weight="80" defaultValue="" size="255" allowEmpty="true"/>
 		<property resourceKey="replyToEmail" inputType="text"

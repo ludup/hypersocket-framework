@@ -204,7 +204,7 @@ public class MessageResourceServiceImpl extends
 	@Override
 	public MessageResource createI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Realm realm) throws ResourceCreationException,
 			AccessDeniedException {
-		return createResource(messageId, I18N.getResource(Locale.getDefault(), resourceBundle + ".name", resourceKey),
+		return createResource(messageId, I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".name"),
 				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".subject"), 
 				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".body"), 
 				"", true, false, null, realm);
