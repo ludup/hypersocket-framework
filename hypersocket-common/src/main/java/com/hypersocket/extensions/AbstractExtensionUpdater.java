@@ -241,7 +241,7 @@ public abstract class AbstractExtensionUpdater {
 				}
 			});
 
-			if (archives != null) {
+			if (archives != null && archives.length > 0) {
 				// Add to the list of files to be removed on success
 				List<File> toRemoveList = Arrays.asList(archives);
 				toRemove.addAll(toRemoveList);
@@ -317,8 +317,10 @@ public abstract class AbstractExtensionUpdater {
 			throw new IOException(e);
 		}
 
-		return true;
+		return totalUpdates > 0;
 	}
+
+	protected abstract boolean isInstallRequired(ExtensionVersion v);
 
 	protected InputStream downloadFromUrl(URL url) throws IOException {
 		InputStream in = url.openStream();

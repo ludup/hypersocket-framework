@@ -353,6 +353,17 @@ public class HypersocketUtils {
 		}
 		return b.toString();
 	}
+	
+	public static String csv(Object[] items) {
+		StringBuffer b = new StringBuffer();
+		for(Object i : items) {
+			if(b.length() > 0) {
+				b.append(",");
+			}
+			b.append(i.toString());
+		}
+		return b.toString();
+	}
 
 	public static String prettyPrintJson(String output) {
 		ObjectMapper mapper = new ObjectMapper();
