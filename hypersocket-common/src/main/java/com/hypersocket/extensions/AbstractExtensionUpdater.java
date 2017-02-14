@@ -320,8 +320,6 @@ public abstract class AbstractExtensionUpdater {
 		return totalUpdates > 0;
 	}
 
-	protected abstract boolean isInstallRequired(ExtensionVersion v);
-
 	protected InputStream downloadFromUrl(URL url) throws IOException {
 		InputStream in = url.openStream();
 		return in;
