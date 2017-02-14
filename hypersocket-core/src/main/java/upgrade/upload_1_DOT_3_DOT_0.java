@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.upload.FileUploadRepository;
 import com.hypersocket.utils.HypersocketUtils;
@@ -34,7 +35,11 @@ public class upload_1_DOT_3_DOT_0 implements Runnable {
 			} while(uploadRepository.getFileByShortCode(shortCode)!=null);
 			
 			u.setShortCode(shortCode);
-			uploadRepository.saveResource(u);
+			try {
+				uploadRepository.saveResource(u);
+			} catch (ResourceException e) {
+				throw new IllegalStateException(e.getMessage(), e);
+			}
 		}
 		
 	}

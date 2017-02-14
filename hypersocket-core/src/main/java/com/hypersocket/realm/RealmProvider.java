@@ -77,9 +77,9 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	List<Principal> getAssociatedPrincipals(Principal principal, PrincipalType type);
 
-	Long getPrincipalCount(Realm realm, PrincipalType type, String searchPattern);
+	Long getPrincipalCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern);
 
-	List<?> getPrincipals(Realm realm, PrincipalType type, String searchPattern, int start, int length,
+	List<?> getPrincipals(Realm realm, PrincipalType type, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting);
 
 	Collection<PropertyCategory> getUserProperties(Principal principal);

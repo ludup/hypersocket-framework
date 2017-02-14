@@ -259,22 +259,25 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		}
 		
 		final List<PropertyChange> changes = getRepository().populateEntityFields(resource, properties);
-		if(changes.size() > 0) {
-			changedDefault = changedDefault || fireNonStandardEvents(resource, changes);
-		}
-		else
-			changedDefault = true;
-				
+		
 		try {
 			beforeUpdateResource(resource, properties);
 			getRepository().saveResource(resource, properties, ops);
 			updateFingerprint();
 			afterUpdateResource(resource, properties);
-			if(changedDefault)
+			if(changes.size() > 0) {
+				changedDefault = changedDefault || fireNonStandardEvents(resource, changes);
+			}
+			else {
+				changedDefault = true;
+			}	
+			if(changedDefault) {
 				fireResourceUpdateEvent(resource);
+			}
 		} catch (Throwable t) {
-			if(changedDefault)
+			if(changedDefault) {
 				fireResourceUpdateEvent(resource, t);
+			}
 			if (t instanceof ResourceChangeException) {
 				throw (ResourceChangeException) t;
 			} else {

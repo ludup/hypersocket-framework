@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -21,6 +22,7 @@ import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.email.RecipientHolder;
 import com.hypersocket.events.EventService;
+import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.message.events.MessageResourceCreatedEvent;
 import com.hypersocket.message.events.MessageResourceDeletedEvent;
@@ -197,6 +199,15 @@ public class MessageResourceServiceImpl extends
 	public MessageResource createResource(Integer messageId, String name, String subject, String body, Realm realm) throws ResourceCreationException,
 			AccessDeniedException {
 		return createResource(messageId, name, subject, body, "", true, false, null, realm);
+	}
+	
+	@Override
+	public MessageResource createI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Realm realm) throws ResourceCreationException,
+			AccessDeniedException {
+		return createResource(messageId, I18N.getResource(Locale.getDefault(), resourceBundle + ".name", resourceKey),
+				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".subject"), 
+				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".body"), 
+				"", true, false, null, realm);
 	}
 	
 	@Override

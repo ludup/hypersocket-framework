@@ -70,17 +70,19 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	}
 
 	@Transactional
-	protected void save(AbstractEntity<K> entity) {
+	protected AbstractEntity<K> save(AbstractEntity<K> entity) {
 
 		checkDemoMode();
 
 		entity.setLastModified(new Date());
 
-		if (entity.getId() != null) {
-			hibernateTemplate.merge(entity);
+		if(entity.getId() != null) {
+			entity = hibernateTemplate.merge(entity);
 		} else {
 			hibernateTemplate.saveOrUpdate(entity);
 		}
+		
+		return entity;
 	}
 	
 	protected void saveObject(Object entity) {
@@ -95,7 +97,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		if(entity instanceof AbstractEntity<?>) {
 			((AbstractEntity<?>)entity).setLastModified(new Date());
 		}
-		if (!isNew) {
+		if(!isNew) {
 			hibernateTemplate.merge(entity);
 		} else {
 			hibernateTemplate.saveOrUpdate(entity);

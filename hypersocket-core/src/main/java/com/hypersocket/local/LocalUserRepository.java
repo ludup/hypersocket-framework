@@ -59,13 +59,13 @@ public interface LocalUserRepository extends ResourceTemplateRepository, Abstrac
 
 	public void deleteUser(LocalUser usr);
 
-	Long countUsers(Realm realm, String searchPattern);
+	Long countUsers(Realm realm, String searchColumn, String searchPattern);
 
-	Long countGroups(Realm realm, String searchPattern);
+	Long countGroups(Realm realm, String searchColumn, String searchPattern);
 
-	List<?> getGroups(Realm realm, String searchPattern, int start, int length, ColumnSort[] sorting);
+	List<?> getGroups(Realm realm, String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting);
 
-	List<?> getUsers(Realm realm, String searchPattern, int start, int length, ColumnSort[] sorting);
+	List<?> getUsers(Realm realm, String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting);
 
 	public Collection<? extends Principal> getGroupsByUser(LocalUser principal);
 

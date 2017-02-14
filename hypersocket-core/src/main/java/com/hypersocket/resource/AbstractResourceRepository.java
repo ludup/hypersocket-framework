@@ -20,9 +20,9 @@ public interface AbstractResourceRepository<T extends Resource> extends Resource
 	void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException;
       
 	@SuppressWarnings("unchecked") 
-	void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceException;
+	T saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceException;
 
-	void saveResource(T resource);
+	T saveResource(T resource) throws ResourceException;
 	
 	List<T> getResources(Realm realm);
 

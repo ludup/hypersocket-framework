@@ -668,12 +668,13 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	@Transactional(readOnly=true)
 	public Long getPrincipalCount(Realm realm, PrincipalType type,
+			String searchColumn, 
 			String searchPattern) {
 		switch (type) {
 		case USER:
-			return userRepository.countUsers(realm, searchPattern);
+			return userRepository.countUsers(realm, searchColumn, searchPattern);
 		case GROUP:
-			return userRepository.countGroups(realm, searchPattern);
+			return userRepository.countGroups(realm, searchColumn, searchPattern);
 		default:
 			return 0L;
 		}
@@ -682,14 +683,14 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	@Transactional(readOnly=true)
 	public List<?> getPrincipals(Realm realm, PrincipalType type,
-			String searchPattern, int start, int length, ColumnSort[] sorting) {
+			String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting) {
 
 		switch (type) {
 		case USER:
-			return userRepository.getUsers(realm, searchPattern, start, length,
+			return userRepository.getUsers(realm, searchColumn, searchPattern, start, length,
 					sorting);
 		case GROUP:
-			return userRepository.getGroups(realm, searchPattern, start,
+			return userRepository.getGroups(realm, searchColumn, searchPattern, start,
 					length, sorting);
 		default:
 			throw new IllegalArgumentException(

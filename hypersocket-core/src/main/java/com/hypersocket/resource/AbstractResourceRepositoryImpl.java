@@ -129,11 +129,12 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 						 * and new value cannot have null passed to it because all values come from the javascript front
 						 * end.
 						 */
-						if(val == null) 
+						if(val == null) {
 							val = "";
-						if(newVal == null) 
+						}
+						if(newVal == null) {
 							newVal = "";
-						
+						}
 						if(!Objects.equals(val, newVal)) {
 							changedProperties.add(new PropertyChange(resourceKey, val, newVal));
 						}
@@ -147,10 +148,11 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 		return changedProperties;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional
 	@SafeVarargs
-	public final void saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops)  throws ResourceException {
+	public final T saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops)  throws ResourceException {
 		
 		beforeSave(resource, properties);
 		
@@ -158,7 +160,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 			op.beforeOperation(resource, properties);
 		}
 		
-		save(resource);
+		resource = (T) save(resource);
 
 		// Now set any remaining values
 		setValues(resource, properties);
@@ -169,10 +171,11 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 			op.afterOperation(resource, properties);
 		}
 		
+		return resource;
 	}
 	
-	public void saveResource(T resource) {
-		saveObject(resource);
+	public T saveResource(T resource) throws ResourceException {
+		return saveResource(resource, null);
 	}
 
 
