@@ -24,6 +24,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
@@ -91,7 +92,7 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	}
 	
 	public String getPrincipalDescription() {
-		return getFullname();
+		return StringUtils.isBlank(getFullname()) ? getName() : getFullname();
 	}
 	
 	public void setType(PrincipalType type) {

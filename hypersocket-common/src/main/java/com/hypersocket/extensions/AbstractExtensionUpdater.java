@@ -60,6 +60,7 @@ public abstract class AbstractExtensionUpdater {
 		}
 		
 		int totalUpdates = 0;
+		
 		try {
 			File tmpFolder = Files.createTempDirectory("hypersocket").toFile();
 			File backupFolder = new File(HypersocketUtils.getConfigDir().getParent(), "backups");
@@ -240,7 +241,7 @@ public abstract class AbstractExtensionUpdater {
 				}
 			});
 
-			if (archives != null) {
+			if (archives != null && archives.length > 0) {
 				// Add to the list of files to be removed on success
 				List<File> toRemoveList = Arrays.asList(archives);
 				toRemove.addAll(toRemoveList);
@@ -304,7 +305,7 @@ public abstract class AbstractExtensionUpdater {
 
 			}
 
-			onUpdateComplete(totalSize);
+			onUpdateComplete(totalSize, totalUpdates);
 
 		} catch (Throwable e) {
 			if (log.isErrorEnabled()) {
@@ -316,7 +317,7 @@ public abstract class AbstractExtensionUpdater {
 			throw new IOException(e);
 		}
 
-		return true;
+		return totalUpdates > 0;
 	}
 
 	protected InputStream downloadFromUrl(URL url) throws IOException {
@@ -338,7 +339,7 @@ public abstract class AbstractExtensionUpdater {
 
 	protected abstract void onUpdateProgress(long sincelastProgress, long totalSoFar, long totalBytesException);
 
-	protected abstract void onUpdateComplete(long totalBytesTransfered);
+	protected abstract void onUpdateComplete(long totalBytesTransfered, int totalUpdates);
 
 	protected abstract void onUpdateFailure(Throwable e);
 

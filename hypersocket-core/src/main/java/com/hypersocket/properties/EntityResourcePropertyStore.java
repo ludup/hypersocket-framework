@@ -46,7 +46,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		return false;
 	}
 	
-	public void registerResourceService(Class<?> clz, FindableResourceRepository<?> repository) {
+	public static void registerResourceService(Class<?> clz, FindableResourceRepository<?> repository) {
 		findableResourceRepositories.put(clz, repository);
 	}
 	
@@ -242,10 +242,10 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 						}
 						return;
 					} else {
-						throw new IllegalStateException("Unhandled collection type!");
+						throw new IllegalStateException("Unhandled collection type! " + clz.getCanonicalName());
 					}
 				} else {
-					throw new IllegalStateException("Unhandled parameter type!");
+					throw new IllegalStateException("Unhandled parameter type! " + clz.getCanonicalName());
 				}
 				
 			}

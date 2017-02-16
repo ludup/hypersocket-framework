@@ -277,33 +277,26 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	
 	@Override
 	@Transactional(readOnly=true)
-	public Long countUsers(final Realm realm, final String searchPattern) {
-		return getCount(LocalUser.class, new CriteriaConfiguration() {
+	public Long countUsers(final Realm realm, String searchColumn, final String searchPattern) {
+		return getCount(LocalUser.class, searchColumn, searchPattern, new CriteriaConfiguration() {
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("realm", realm));
 				criteria.add(Restrictions.eq("deleted", false));
-				criteria.add(Restrictions.eq("hidden", false));
-				if(!StringUtils.isEmpty(searchPattern)) {
-					criteria.add(Restrictions.ilike("name", searchPattern));
-				}
-				
+				criteria.add(Restrictions.eq("hidden", false));				
 			}
 		});
 	}
 
 	@Override
 	@Transactional(readOnly=true)
-	public Long countGroups(final Realm realm, final String searchPattern) {
-		return getCount(LocalGroup.class, new CriteriaConfiguration() {
+	public Long countGroups(final Realm realm, final String searchColumn, final String searchPattern) {
+		return getCount(LocalGroup.class, searchColumn, searchPattern, new CriteriaConfiguration() {
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("realm", realm));
 				criteria.add(Restrictions.eq("deleted", false));
 				criteria.add(Restrictions.eq("hidden", false));
-				if(!StringUtils.isEmpty(searchPattern)) {
-					criteria.add(Restrictions.ilike("name", searchPattern));
-				}
 			}
 		});
 	};
@@ -311,9 +304,9 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<?> getUsers(final Realm realm, final String searchPattern, final int start,
+	public List<?> getUsers(final Realm realm, String searchColumn, final String searchPattern, final int start,
 			final int length, final ColumnSort[] sorting) {
-		return search(LocalUser.class, "name", searchPattern, start, length, sorting, new CriteriaConfiguration() {
+		return search(LocalUser.class, searchColumn, searchPattern, start, length, sorting, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -329,10 +322,10 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<?> getGroups(final Realm realm, final String searchPattern, final int start,
+	public List<?> getGroups(final Realm realm, String searchColumn, final String searchPattern, final int start,
 			final int length, final ColumnSort[] sorting) {
 		
-		return search(LocalGroup.class, "name", searchPattern, start, length, sorting, new CriteriaConfiguration() {
+		return search(LocalGroup.class, searchColumn, searchPattern, start, length, sorting, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {

@@ -19,7 +19,6 @@ import org.springframework.stereotype.Repository;
 import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;

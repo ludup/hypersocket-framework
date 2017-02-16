@@ -13,14 +13,17 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
+import javax.xml.bind.attachment.AttachmentUnmarshaller;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.asn1.ocsp.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +38,7 @@ import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
+import com.hypersocket.i18n.I18N;
 import com.hypersocket.local.LocalRealmProviderImpl;
 import com.hypersocket.message.MessageResourceService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -42,6 +46,7 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.AbstractPropertyTemplate;
+import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourceUtils;
@@ -127,7 +132,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Autowired
 	PrincipalSuspensionRepository suspensionRepository; 
-	
+
 	Cache<String, Object> realmCache;
 	
 	@Autowired
@@ -138,8 +143,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Autowired
 	MessageResourceService messageService; 
-	
-	
+
+	public static final Integer MESSAGE_NEW_USER_NEW_PASSWORD = 6001;
+	public static final Integer MESSAGE_NEW_USER_TMP_PASSWORD = 6002;
+	public static final Integer MESSAGE_NEW_USER_SELF_CREATED = 6003;
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -200,7 +207,36 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		realmCache = cacheService.getCache("realmCache", String.class, Object.class);
 		
+		EntityResourcePropertyStore.registerResourceService(Principal.class, realmRepository);
 		
+		this.registerRealmListener(new RealmAdapter() {
+			@Override
+			public void onCreateRealm(Realm realm) throws ResourceException {
+				
+				try {
+					messageService.createI18nMessage(MESSAGE_NEW_USER_NEW_PASSWORD, RESOURCE_BUNDLE,
+							"realmService.newUserNewPassword", realm);
+					
+					messageService.createI18nMessage(MESSAGE_NEW_USER_TMP_PASSWORD, RESOURCE_BUNDLE,
+							"realmService.newUserTmpPassword", realm);
+
+					messageService.createI18nMessage(MESSAGE_NEW_USER_SELF_CREATED, RESOURCE_BUNDLE,
+							"realmService.newUserSelfCreated", realm);
+					
+					realmRepository.setValue(realm, "realmService.createdTemplates", true);
+				} catch (AccessDeniedException e) {
+					throw new IllegalStateException(e.getMessage(), e);
+				}
+			}
+
+			@Override
+			public boolean hasCreatedDefaultResources(Realm realm) {
+				if(realm.getOwner()==null) {
+					return realmRepository.getBooleanValue(realm, "realmService.createdTemplates");
+				}
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -455,7 +491,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			List<Principal> principals, String password, boolean forceChange, boolean selfCreated)
 					throws ResourceCreationException, AccessDeniedException {
 		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, null, getProviderForRealm(realm));
-		
 	}
 
 
@@ -486,6 +521,16 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					principals, filterSecretProperties(principal, provider, properties), password, forceChange,
 					selfCreated));
 
+			PrincipalResolver resolver = new PrincipalResolver(principal, password);
+			
+			if(selfCreated) {
+				messageService.sendMessage(MESSAGE_NEW_USER_SELF_CREATED, realm, resolver, principal);
+			} else if(forceChange) {
+				messageService.sendMessage(MESSAGE_NEW_USER_TMP_PASSWORD, realm, resolver, principal);
+			} else {
+				messageService.sendMessage(MESSAGE_NEW_USER_NEW_PASSWORD, realm, resolver, principal);
+			}
+			
 			return principal;
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(new UserCreatedEvent(this, e, getCurrentSession(), realm, provider, username,
@@ -501,6 +546,16 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.unexpectedError", e.getMessage());
 		}
 
+	}
+
+	private void sendNewUserTemporaryPasswordNofification(Principal principal, String password) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void sendNewUserNofification(Principal principal, String password) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
@@ -834,14 +889,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			final RealmProvider realmProvider = getProviderForRealm(module);
 
-			// TODO how on earth can i pass known hosts all the way down to HttpUtils that now expects to have a realm??
-//			if(properties.containsKey("knownHosts")) {
-//				/* Set this before the test, as the test needs to know the NEW list of
-//				 * known hosts if it is ever going to accept a connection to a host 
-//				 */				
-//				realm.setKnownHosts(ResourceUtils.explodeValues(properties.get("knownHosts")));
-//			}
-			
 			realmProvider.assertCreateRealm(properties);
 			realmProvider.testConnection(properties);
 
@@ -1503,40 +1550,40 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public List<?> searchPrincipals(Realm realm, PrincipalType type, String searchPattern, int start, int length,
+	public List<?> searchPrincipals(Realm realm, PrincipalType type, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting) throws AccessDeniedException {
-		return searchPrincipals(realm, type, null, searchPattern, start, length, sorting);
+		return searchPrincipals(realm, type, null, searchColumn, searchPattern, start, length, sorting);
 	}
 	
 	@Override
-	public List<?> searchPrincipals(Realm realm, PrincipalType type, String module, String searchPattern, int start, int length,
+	public List<?> searchPrincipals(Realm realm, PrincipalType type, String module, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting) throws AccessDeniedException {
 
 		assertAnyPermission(UserPermission.READ, GroupPermission.READ, ProfilePermission.READ, RealmPermission.READ);
 
 		if(StringUtils.isNotBlank(module)) {
 			RealmProvider provider = getProviderForRealm(module);
-			return provider.getPrincipals(realm, type, searchPattern, start, length, sorting);
+			return provider.getPrincipals(realm, type, searchColumn, searchPattern, start, length, sorting);
 		} else {
-			return principalRepository.search(realm, type, "name", searchPattern, start, length, sorting);
+			return principalRepository.search(realm, type, searchColumn, searchPattern, start, length, sorting);
 		}
 	}
 
 	@Override
-	public Long getSearchPrincipalsCount(Realm realm, PrincipalType type, String searchPattern) throws AccessDeniedException {
-		return getSearchPrincipalsCount(realm, type, null, searchPattern);
+	public Long getSearchPrincipalsCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern) throws AccessDeniedException {
+		return getSearchPrincipalsCount(realm, type, null, searchColumn, searchPattern);
 	}
 	
 	@Override
-	public Long getSearchPrincipalsCount(Realm realm, PrincipalType type, String module, String searchPattern) throws AccessDeniedException {
+	public Long getSearchPrincipalsCount(Realm realm, PrincipalType type, String module, String searchColumn, String searchPattern) throws AccessDeniedException {
 
 		assertAnyPermission(UserPermission.READ, GroupPermission.READ, ProfilePermission.READ, RealmPermission.READ);
 
 		if(StringUtils.isNotBlank(module)) {
 			RealmProvider provider = getProviderForRealm(module);
-			return provider.getPrincipalCount(realm, type, searchPattern);
+			return provider.getPrincipalCount(realm, type, searchColumn, searchPattern);
 		} else {
-			return principalRepository.getResourceCount(realm, type, "name", searchPattern);
+			return principalRepository.getResourceCount(realm, type, searchColumn, searchPattern);
 		}
 	}
 
@@ -1838,7 +1885,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public long getPrincipalCount(Realm realm) {
 
 		RealmProvider provider = getProviderForRealm(realm);
-		return provider.getPrincipalCount(realm, PrincipalType.USER, "");
+		return provider.getPrincipalCount(realm, PrincipalType.USER, "name", "");
 	}
 
 	@Override

@@ -14,6 +14,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.SystemPermission;
+import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
@@ -80,7 +81,7 @@ public class HTTPInterfaceResourceServiceImpl extends
 				HTTPInterfaceResourceDeletedEvent.class, RESOURCE_BUNDLE,
 				this);
 
-		repository.getEntityStore().registerResourceService(HTTPInterfaceResource.class, repository);
+		EntityResourcePropertyStore.registerResourceService(HTTPInterfaceResource.class, repository);
 	}
 	
 	@Override

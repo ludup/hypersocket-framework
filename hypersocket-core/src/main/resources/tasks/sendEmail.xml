@@ -3,9 +3,9 @@
 	<propertyCategory resourceKey="category.email.message"
 		resourceBundle="TriggerResourceService" weight="1000">
 		<property resourceKey="email.subject" inputType="text"
-			weight="80" defaultValue="" size="255" allowEmpty="false" errorResourceKey="error.subjectRequired"/>
+			weight="80" defaultValue="" size="255" allowEmpty="false" invalidResourceKey="error.subjectRequired"/>
 		<property resourceKey="email.body" inputType="textarea" rows="10"
-			cols="100" maxlength="8000" defaultValue="" weight="100" allowEmpty="true" errorResourceKey="error.bodyRequired"/>
+			cols="100" maxlength="8000" defaultValue="" weight="100" allowEmpty="true" invalidResourceKey="error.bodyRequired"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email.html"
 		resourceBundle="TriggerResourceService" weight="2000">
@@ -15,7 +15,7 @@
 	<propertyCategory resourceKey="category.email.delivery"
 		resourceBundle="TriggerResourceService" weight="3000">
 		<property resourceKey="email.to" inputType="multipleTextInput"
-			weight="50" defaultValue="" allowEmpty="false" validateAll="email" errorResourceKey="error.toRequired"/>
+			weight="50" defaultValue="" allowEmpty="false" validateAll="email" invalidResourceKey="error.toRequired"/>
 		<property resourceKey="email.track" inputType="switch" weight="0" defaultValue="true"/>
 		<property resourceKey="email.replyToName" inputType="text"
 			weight="80" defaultValue="" size="255" allowEmpty="true"/>

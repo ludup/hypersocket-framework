@@ -202,4 +202,41 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 		 */
 		userPropertyTemplates.clear();
 	}
+	
+	@Override
+	protected void fireResourceCreationEvent(UserAttribute resource) {
+		eventService.publishEvent(new UserAttributeCreatedEvent(this,
+				getCurrentSession(), resource));
+	}
+
+	@Override
+	protected void fireResourceCreationEvent(UserAttribute resource, Throwable t) {
+		eventService.publishEvent(new UserAttributeCreatedEvent(this, t,
+				getCurrentSession(), resource));
+	}
+
+	@Override
+	protected void fireResourceUpdateEvent(UserAttribute resource) {
+		eventService.publishEvent(new UserAttributeUpdatedEvent(this,
+				getCurrentSession(), resource));
+	}
+
+	@Override
+	protected void fireResourceUpdateEvent(UserAttribute resource, Throwable t) {
+		eventService.publishEvent(new UserAttributeUpdatedEvent(this, t,
+				getCurrentSession(), resource));
+	}
+
+	@Override
+	protected void fireResourceDeletionEvent(UserAttribute resource) {
+		eventService.publishEvent(new UserAttributeDeletedEvent(this,
+				getCurrentSession(), resource));	
+	}
+
+	@Override
+	protected void fireResourceDeletionEvent(UserAttribute resource, Throwable t) {
+		eventService.publishEvent(new UserAttributeDeletedEvent(this, t,
+				getCurrentSession(), resource));	
+	}
+
 }

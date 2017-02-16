@@ -9,6 +9,10 @@ public class MessageResourceDeletedEvent extends
 		MessageResourceEvent {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2761984448107423821L;
+	/**
 	 * TODO rename to suit your resource and replace message with lower case
 	 * name of your resource.
 	 * 

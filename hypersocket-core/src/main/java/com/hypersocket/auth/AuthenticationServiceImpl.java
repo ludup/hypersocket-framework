@@ -45,7 +45,6 @@ import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserVariableReplacementService;
-import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 

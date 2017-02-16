@@ -120,9 +120,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 		for(RecipientHolder r : recipients) {
 			
-			String recipeintSubject = replaceRecipientInfo(subject, r);
-			String receipientText = replaceRecipientInfo(text, r);
-			String receipientHtml = replaceRecipientInfo(html, r);
+			String recipeintSubject = replaceServerInfo(realm, replaceRecipientInfo(subject, r));
+			String receipientText = replaceServerInfo(realm, replaceRecipientInfo(text, r));
+			String receipientHtml = replaceServerInfo(realm, replaceRecipientInfo(html, r));
 			
 			String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
 			if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(receipientHtml)) {
@@ -174,6 +174,19 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		} else {
 			return str;
 		}
+	}
+	
+	private String replaceServerInfo(Realm realm, String str) {
+		String serverUrl = configurationService.getValue(realm,"email.externalHostname");
+		if(StringUtils.isBlank(serverUrl)) {
+			serverUrl = realmService.getRealmHostname(realm);
+		}
+		if(!serverUrl.startsWith("http")) {
+			serverUrl = String.format("https://%s/", serverUrl);
+		}
+		
+		return str.replace("${serverName}", configurationService.getValue(realm, "email.serverName"))
+				.replace("${serverUrl}", serverUrl);
 	}
 	
 	private void send(Realm realm, 

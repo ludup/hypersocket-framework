@@ -12,7 +12,6 @@ import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.scheduler.PermissionsAwareJob;
-import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.tasks.ip.block.BlockIPTask;
 
 public class UnblockIPJob extends PermissionsAwareJob {

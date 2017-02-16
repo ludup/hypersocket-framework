@@ -17,9 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.attributes.user.events.UserAttributeCreatedEvent;
-import com.hypersocket.attributes.user.events.UserAttributeDeletedEvent;
-import com.hypersocket.attributes.user.events.UserAttributeUpdatedEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -32,8 +29,6 @@ import com.hypersocket.properties.PropertyResolver;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourcePropertyTemplate;
-import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AbstractAssignableResourceServiceImpl;
 import com.hypersocket.resource.AbstractResource;
@@ -222,43 +217,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	protected Class<A> getResourceClass() {
 		return resourceClass;
 	}
-
-	@Override
-	protected void fireResourceCreationEvent(A resource) {
-		eventService.publishEvent(new UserAttributeCreatedEvent(this,
-				getCurrentSession(), resource));
-	}
-
-	@Override
-	protected void fireResourceCreationEvent(A resource, Throwable t) {
-		eventService.publishEvent(new UserAttributeCreatedEvent(this, t,
-				getCurrentSession(), resource));
-	}
-
-	@Override
-	protected void fireResourceUpdateEvent(A resource) {
-		eventService.publishEvent(new UserAttributeUpdatedEvent(this,
-				getCurrentSession(), resource));
-	}
-
-	@Override
-	protected void fireResourceUpdateEvent(A resource, Throwable t) {
-		eventService.publishEvent(new UserAttributeUpdatedEvent(this, t,
-				getCurrentSession(), resource));
-	}
-
-	@Override
-	protected void fireResourceDeletionEvent(A resource) {
-		eventService.publishEvent(new UserAttributeDeletedEvent(this,
-				getCurrentSession(), resource));	
-	}
-
-	@Override
-	protected void fireResourceDeletionEvent(A resource, Throwable t) {
-		eventService.publishEvent(new UserAttributeDeletedEvent(this, t,
-				getCurrentSession(), resource));	
-	}
-
+	
 	@Override
 	public Collection<String> getPropertyNames(AbstractResource resource) {
 		Map<String,PropertyTemplate> userTemplates = getAttributeTemplates(checkResource(resource));
@@ -346,17 +305,6 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	}
 
 	protected void registerPropertyItem(PropertyCategory cat, A attr) {
-//		registerPropertyItem(cat, attributeRepository.getDatabasePropertyStore(), attr.getVariableName(),
-//				attr.generateMetaData(), "", attr.getWeight(),
-//				attr.getHidden(), attr.getDisplayMode(), attr.getReadOnly(), attr.getDefaultValue(),
-//				true, attr.getEncrypted(), null);
-//	}
-//
-//	void registerPropertyItem(PropertyCategory category,
-//			PropertyStore propertyStore, String resourceKey, String metaData,
-//			String mapping, int weight, boolean hidden, String displayMode, boolean readOnly,
-//			String defaultValue, boolean isVariable, boolean encrypted,
-//			String defaultsToProperty) {
 
 		if (log.isInfoEnabled()) {
 			log.info("Registering property " + attr.getVariableName());

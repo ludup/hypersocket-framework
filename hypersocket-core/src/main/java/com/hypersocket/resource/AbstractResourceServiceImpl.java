@@ -28,9 +28,7 @@ import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.SystemPermission;
-import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -261,22 +259,25 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		}
 		
 		final List<PropertyChange> changes = getRepository().populateEntityFields(resource, properties);
-		if(changes.size() > 0) {
-			changedDefault = changedDefault || fireNonStandardEvents(resource, changes);
-		}
-		else
-			changedDefault = true;
-				
+		
 		try {
 			beforeUpdateResource(resource, properties);
 			getRepository().saveResource(resource, properties, ops);
 			updateFingerprint();
 			afterUpdateResource(resource, properties);
-			if(changedDefault)
+			if(changes.size() > 0) {
+				changedDefault = changedDefault || fireNonStandardEvents(resource, changes);
+			}
+			else {
+				changedDefault = true;
+			}	
+			if(changedDefault) {
 				fireResourceUpdateEvent(resource);
+			}
 		} catch (Throwable t) {
-			if(changedDefault)
+			if(changedDefault) {
 				fireResourceUpdateEvent(resource, t);
+			}
 			if (t instanceof ResourceChangeException) {
 				throw (ResourceChangeException) t;
 			} else {

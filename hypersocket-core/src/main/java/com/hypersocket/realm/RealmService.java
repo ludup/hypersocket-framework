@@ -7,7 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -200,19 +199,19 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Realm getRealmByOwner(Long owner) throws AccessDeniedException;
 
-	List<?> searchPrincipals(Realm realm, PrincipalType type, String module, String searchPattern, int start,
+	List<?> searchPrincipals(Realm realm, PrincipalType type, String module, String searchColumn, String searchPattern, int start,
 			int length, ColumnSort[] sorting) throws AccessDeniedException;
 
-	Long getSearchPrincipalsCount(Realm realm, PrincipalType type, String module, String searchPattern)
+	Long getSearchPrincipalsCount(Realm realm, PrincipalType type, String module, String searchColumn, String searchPattern)
 			throws AccessDeniedException;
 
 	Principal createLocalUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
 			String password, boolean forceChange, boolean selfCreated)
 			throws ResourceCreationException, AccessDeniedException;
 
-	Long getSearchPrincipalsCount(Realm realm, PrincipalType type, String searchPattern) throws AccessDeniedException;
+	Long getSearchPrincipalsCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern) throws AccessDeniedException;
 
-	List<?> searchPrincipals(Realm realm, PrincipalType type, String searchPattern, int start, int length,
+	List<?> searchPrincipals(Realm realm, PrincipalType type, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting) throws AccessDeniedException;
 
 	Principal getPrincipalByEmail(Realm realm, String email) throws AccessDeniedException, ResourceNotFoundException;

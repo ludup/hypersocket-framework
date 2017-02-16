@@ -22,6 +22,7 @@ import com.hypersocket.jobs.events.JobResourceUpdatedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
@@ -81,7 +82,7 @@ public class JobResourceServiceImpl extends
 				JobResourceDeletedEvent.class, RESOURCE_BUNDLE,
 				this);
 
-		repository.getEntityStore().registerResourceService(JobResource.class, repository);
+		EntityResourcePropertyStore.registerResourceService(JobResource.class, repository);
 	}
 
 	@Override

@@ -228,7 +228,8 @@ public class ExtensionHelper {
 			}
 			String updateUrl = String.format("%s/%s/%s/%s/%s",url, 
 					version, 
-					HypersocketUtils.csv(repos) , serial, targets[0].name());
+					HypersocketUtils.csv(repos) , serial, 
+					HypersocketUtils.csv(targets));
 
 			if (log.isInfoEnabled()) {
 				log.info("Checking for updates from " + updateUrl);

@@ -10,13 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.Message;
-import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.resource.AbstractAssignableResourceRepositoryImpl;
-import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionOperation;
 

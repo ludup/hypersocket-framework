@@ -3,7 +3,6 @@ package com.hypersocket.message;
 import java.util.Collection;
 import java.util.Map;
 
-import com.hypersocket.events.SystemEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
@@ -37,6 +36,9 @@ public interface MessageResourceService extends
 			Boolean track, Realm realm) throws ResourceCreationException, AccessDeniedException;
 
 	MessageResource createResource(Integer mesasgeId, String name, String subject, String body, Realm realm)
+			throws ResourceCreationException, AccessDeniedException;
+	
+	MessageResource createI18nMessage(Integer mesasgeId, String resourceBundle, String resourceKey, Realm realm)
 			throws ResourceCreationException, AccessDeniedException;
 
 	void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Principal... principals)

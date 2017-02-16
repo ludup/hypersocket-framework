@@ -9,7 +9,6 @@ package com.hypersocket.properties;
 
 import java.util.List;
 
-import com.hypersocket.realm.Principal;
 import com.hypersocket.repository.AbstractRepository;
 import com.hypersocket.resource.AbstractResource;
 

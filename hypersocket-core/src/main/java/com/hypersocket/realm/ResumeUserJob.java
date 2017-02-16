@@ -6,8 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.scheduler.PermissionsAwareJob;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 

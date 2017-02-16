@@ -31,7 +31,8 @@
 			weight="700" defaultValue="" automaticUpload="true" showUploadButton="false" />
 		<property resourceKey="email.trackingImage" inputType="fileInput" weight="700" defaultValue="" automaticUpload="true" showUploadButton="false" />
 		<property resourceKey="email.archiveAddress" inputType="text" weight="800" defaultValue="" />
-		<property resourceKey="email.externalHostname" inputType="text" weight="900" defaultValue="" />
+		<property resourceKey="email.serverName" inputType="text" weight="900" defaultValue="Hypersocket Server" />
+		<property resourceKey="email.externalHostname" inputType="text" weight="1000" defaultValue="localhost" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.localization"
 		resourceBundle="I18NService" weight="700" hidden="true">

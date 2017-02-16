@@ -8,6 +8,10 @@ import com.hypersocket.session.Session;
 
 public class MessageResourceEvent extends ResourceEvent {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6693971807084150159L;
 	public static final String EVENT_RESOURCE_KEY = "message.event";
 	
 	public MessageResourceEvent(Object source, String resourceKey,

@@ -7,23 +7,15 @@
  ******************************************************************************/
 package com.hypersocket.json;
 
-import com.hypersocket.auth.AuthenticationScheme;
-import com.hypersocket.auth.AuthenticationService;
-import com.hypersocket.auth.PasswordEncryptionService;
-import com.hypersocket.local.LocalUser;
-import com.hypersocket.local.LocalUserCredentials;
-import com.hypersocket.local.LocalUserRepository;
-import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmService;
-import com.hypersocket.session.Session;
-import com.hypersocket.session.SessionService;
+import java.util.Arrays;
+import java.util.Locale;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.commons.lang3.reflect.MethodUtils;
 import org.bouncycastle.util.encoders.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +23,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.UUID;
+import com.hypersocket.auth.AuthenticationScheme;
+import com.hypersocket.auth.AuthenticationService;
+import com.hypersocket.auth.PasswordEncryptionService;
+import com.hypersocket.local.LocalUser;
+import com.hypersocket.local.LocalUserCredentials;
+import com.hypersocket.local.LocalUserRepository;
+import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
+import com.hypersocket.session.Session;
+import com.hypersocket.session.SessionService;
 
 @Component
 public class RestApiInterceptor extends HandlerInterceptorAdapter {

@@ -13,7 +13,14 @@ import java.security.SecureRandom;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
@@ -32,7 +39,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HypersocketUtils {
@@ -344,6 +350,17 @@ public class HypersocketUtils {
 				b.append(",");
 			}
 			b.append(i);
+		}
+		return b.toString();
+	}
+	
+	public static String csv(Object[] items) {
+		StringBuffer b = new StringBuffer();
+		for(Object i : items) {
+			if(b.length() > 0) {
+				b.append(",");
+			}
+			b.append(i.toString());
 		}
 		return b.toString();
 	}
