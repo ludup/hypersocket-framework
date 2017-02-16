@@ -1,5 +1,7 @@
 package com.hypersocket.interfaceState;
 
+import java.util.Collection;
+
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
@@ -56,6 +58,20 @@ public class UserInterfaceStateRepositoryImpl extends
 					}
 				});
 		return userInterface;
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Collection<UserInterfaceState> getStateStartsWith(final String name, final String resourceCategory, final Realm realm) {
+		Collection<UserInterfaceState> list = list(getResourceClass(), new CriteriaConfiguration() {
+			@Override
+			public void configure(Criteria criteria) {
+				criteria/*.add(Restrictions.ilike("name", name))*/
+						.add(Restrictions.eq("resourceCategory", resourceCategory))
+						.add(Restrictions.eq("realm", realm));
+			}
+		});
+		return list;
 	}
 
 	@Override

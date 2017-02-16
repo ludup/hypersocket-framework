@@ -57,6 +57,11 @@ public class UserInterfaceStateServiceImpl extends
 	}
 	
 	@Override
+	public Collection<UserInterfaceState> getStateStartsWith(String name, Realm realm){
+		return repository.getStateStartsWith(name, RESOURCE_CATEGORY_TABLE_STATE, realm);
+	}
+	
+	@Override
 	public UserInterfaceState getStateByName(String name, boolean specific)
 			throws AccessDeniedException {
 		if(specific){
@@ -64,6 +69,12 @@ public class UserInterfaceStateServiceImpl extends
 		}else{
 			return getStateByName(name);
 		}
+	}
+	
+	@Override
+	public UserInterfaceState getStateByName(Principal principal, String name){
+		Realm realm = principal.getRealm();
+		return repository.getResourceByName(name + "_" + principal.getId(), realm);
 	}
 
 	@Override
@@ -96,6 +107,34 @@ public class UserInterfaceStateServiceImpl extends
 		if (principal != null) {
 			newState = repository.getResourceByName(
 					name + "_" + principal.getId(), getCurrentRealm());
+		} else {
+			newState = getStateByName(name);
+		}
+		for (UserInterfaceStateListener listener : listeners) {
+			listener.modifyState(newState);
+		}
+		return getStateByResourceId(newState.getId());
+
+	}
+	
+	@Override
+	public UserInterfaceState createState(Principal principal,
+			String preferences, String name, Realm realm) throws AccessDeniedException {
+
+		UserInterfaceState newState = new UserInterfaceState();
+		newState.setPreferences(preferences);
+		if (principal != null) {
+			newState.setName(name + "_" + principal.getId());
+		} else {
+			newState.setName(name);
+		}
+		newState.setResourceCategory(RESOURCE_CATEGORY_TABLE_STATE);
+		newState.setRealm(realm);
+		repository.updateState(newState);
+
+		if (principal != null) {
+			newState = repository.getResourceByName(
+					name + "_" + principal.getId(), realm);
 		} else {
 			newState = getStateByName(name);
 		}
