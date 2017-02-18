@@ -273,8 +273,13 @@ public class MessageResourceServiceImpl extends
 		
 		MessageResource message = repository.getMessageById(messageId, realm);
 		
+		/**
+		 * 1.2 fix only because triggers may already be available for messages.
+		 */
 		if(message==null) {
-			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.invalidMessageId", messageId);
+			log.warn(String.format("Message template with id %d is missing", messageId));
+			return;
+//			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.invalidMessageId", messageId);
 		}
 		
 		if(!message.getEnabled()) {
