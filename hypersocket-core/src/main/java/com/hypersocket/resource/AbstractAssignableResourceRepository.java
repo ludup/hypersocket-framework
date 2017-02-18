@@ -77,4 +77,6 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	void bulkAssignRolesToResource(BulkAssignment bulkAssignment);
 
+	void removeAssignments(Role role);
+
 }

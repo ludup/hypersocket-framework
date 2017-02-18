@@ -89,6 +89,13 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		hibernateTemplate.saveOrUpdate(entity);
 	}
 
+	@Transactional
+	protected void saveEntities(Collection<AbstractEntity<K>> resources) {
+		for(AbstractEntity<K> resource : resources) {
+			save(resource);
+		}
+	}
+	
 	@Transactional(propagation = Propagation.REQUIRED)
 	protected void save(Object entity, boolean isNew) {
 
@@ -308,7 +315,11 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 		criteria.setProjection(Projections.rowCount());
 
-		return (long) criteria.uniqueResult();
+		Object result = criteria.uniqueResult();
+		if(result!=null) {
+			return (Long) result;
+		}
+		return 0L;
 	}
 
 	@Override

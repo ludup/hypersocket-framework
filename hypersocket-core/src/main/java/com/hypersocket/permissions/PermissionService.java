@@ -114,4 +114,7 @@ public interface PermissionService extends AuthenticatedService, FindableResourc
 	public Collection<Role> getRolesByPrincipal(Principal principal);
 
 	public Collection<Principal> getPrincipalsByRole(Role... roles);
+
+	void registerAssignableRepository(Class<? extends AssignableResource> clz,
+			AbstractAssignableResourceRepository<?> repository);
 }

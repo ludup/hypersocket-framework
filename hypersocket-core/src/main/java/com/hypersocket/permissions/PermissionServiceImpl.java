@@ -53,7 +53,9 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
 import com.hypersocket.realm.events.GroupEvent;
 import com.hypersocket.realm.events.UserEvent;
+import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AssignableResource;
+import com.hypersocket.resource.AssignableResourceRepository;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
@@ -108,6 +110,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Autowired
 	RoleAttributeRepository attributeRepository;
 	
+	Map<Class<? extends AssignableResource>, AbstractAssignableResourceRepository<?>> repositories
+		= new HashMap<Class<? extends AssignableResource>, AbstractAssignableResourceRepository<?>>();
+
 	@PostConstruct
 	private void postConstruct() {
 
@@ -172,6 +177,13 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		EntityResourcePropertyStore.registerResourceService(Role.class, repository);
 	
 		repository.loadPropertyTemplates("roleTemplate.xml");
+	}
+	
+	@Override
+	public void registerAssignableRepository(
+			Class<? extends AssignableResource> clz, 
+			AbstractAssignableResourceRepository<?> repository) {
+		repositories.put(clz, repository);
 	}
 
 	@Override
@@ -547,6 +559,13 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public void deleteRole(Role role) throws AccessDeniedException, ResourceChangeException {
 		assertPermission(RolePermission.DELETE);
 		try {
+			
+			for(AbstractAssignableResourceRepository<?> r : repositories.values()) {
+				if(r.getResourceByRoleCount(role.getRealm(), role) > 0) {
+					r.removeAssignments(role);
+				}
+			}
+			
 			role.getPrincipals().clear();
 			role.getPermissions().clear();
 			repository.saveRole(role);

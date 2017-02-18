@@ -52,7 +52,6 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	@Autowired
 	protected EventService eventService;
 
-	protected AttributeRepository<A, C> attributeRepository;
 	protected AttributeCategoryRepository<C> categoryRepository;
 	protected AttributeCategoryService<A, C> categoryService; 
 
@@ -83,11 +82,11 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	
 	protected void init() {
 		
-		for(A attr : attributeRepository.allResources()) {
+		for(A attr : getRepository().allResources()) {
 			registerAttribute(attr);
 		}
 		
-		attributeRepository.registerPropertyResolver(this);
+		getRepository().registerPropertyResolver(this);
 	}
 
 
@@ -100,12 +99,12 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		assertPermission(updatePermission);
 
 		attribute.setName(name);
-		if (!attribute.getOldName().equalsIgnoreCase(name) && attributeRepository.getResourceByName(attribute.getName(), getCurrentRealm()) != null) {
+		if (!attribute.getOldName().equalsIgnoreCase(name) && getRepository().getResourceByName(attribute.getName(), getCurrentRealm()) != null) {
 			throw new ResourceChangeException(resourceBundle,
 					"attribute.nameInUse.error", name);
 		}
 		
-		A varAttribute = attributeRepository.getAttributeByVariableName(attribute.getVariableName(), getCurrentRealm());
+		A varAttribute = getRepository().getAttributeByVariableName(attribute.getVariableName(), getCurrentRealm());
 		if (varAttribute != null && !varAttribute.getId().equals(attribute.getId())) {
 			throw new ResourceChangeException(resourceBundle,
 					"attribute.variableInUse.error", attribute.getVariableName());
@@ -144,12 +143,12 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 
 		attribute.setName(name);
 
-		if (attributeRepository.getResourceByName(attribute.getName(), getCurrentRealm()) != null) {
+		if (getRepository().getResourceByName(attribute.getName(), getCurrentRealm()) != null) {
 			throw new ResourceCreationException(resourceBundle,
 					"attribute.nameInUse.error", name);
 		}
 		
-		if (attributeRepository.getAttributeByVariableName(attribute.getVariableName(), getCurrentRealm()) != null) {
+		if (getRepository().getAttributeByVariableName(attribute.getVariableName(), getCurrentRealm()) != null) {
 			throw new ResourceCreationException(resourceBundle,
 					"attribute.variableInUse.error", attribute.getVariableName());
 		}
@@ -195,13 +194,10 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	@Override
 	public Long getMaximumAttributeWeight(C cat) throws AccessDeniedException {
 		assertPermission(readPermission);
-		return attributeRepository.getMaximumAttributeWeight(cat);
+		return getRepository().getMaximumAttributeWeight(cat);
 	}
 
-	@Override
-	protected AbstractAssignableResourceRepository<A> getRepository() {
-		return attributeRepository;
-	}
+	protected abstract AttributeRepository<A, C> getRepository();
 
 	@Override
 	protected String getResourceBundle() {
@@ -399,12 +395,12 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	}
 
 	protected ResourcePropertyStore getStore() {
-		return attributeRepository.getDatabasePropertyStore();
+		return getRepository().getDatabasePropertyStore();
 	}
 
 	@Override
 	public A getAttributeByVariableName(String attributeName) throws AccessDeniedException {
 		assertPermission(readPermission);
-		return attributeRepository.getAttributeByVariableName(attributeName, getCurrentRealm());
+		return getRepository().getAttributeByVariableName(attributeName, getCurrentRealm());
 	}
 }

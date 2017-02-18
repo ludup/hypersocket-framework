@@ -58,6 +58,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	@PostConstruct
 	private void postConstruct() {
 		eventService.registerEvent(BulkAssignmentEvent.class, RESOURCE_BUNDLE);
+		permissionService.registerAssignableRepository(getResourceClass(), getRepository());
 	}
 	
 	protected abstract AbstractAssignableResourceRepository<T> getRepository();

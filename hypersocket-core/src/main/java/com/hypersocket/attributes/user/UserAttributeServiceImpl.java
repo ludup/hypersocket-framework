@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.attributes.AbstractAttributeServiceImpl;
+import com.hypersocket.attributes.role.RoleAttributeRepository;
 import com.hypersocket.attributes.user.events.UserAttributeCreatedEvent;
 import com.hypersocket.attributes.user.events.UserAttributeDeletedEvent;
 import com.hypersocket.attributes.user.events.UserAttributeEvent;
@@ -56,7 +57,6 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 
 	@PostConstruct
 	protected void init() {
-		attributeRepository = userAttributeRepository;
 		categoryRepository = userAttributeCategoryRepository;
 		categoryService = userAttributeCategoryService;
 
@@ -77,6 +77,11 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 		super.init();
 	}
 
+	@Override
+	protected UserAttributeRepository getRepository() {
+		return userAttributeRepository;
+	}
+	
 	@Override
 	protected UserAttribute createNewAttributeInstance() {
 		return new UserAttribute();
@@ -173,7 +178,7 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 		template.setCategory(cat);
 		template.setEncrypted(attr.getEncrypted());
 		template.setDefaultsToProperty("");
-		template.setPropertyStore(attributeRepository.getDatabasePropertyStore());
+		template.setPropertyStore(userAttributeRepository.getDatabasePropertyStore());
 
 		cat.getTemplates().remove(template);
 		cat.getTemplates().add(template);

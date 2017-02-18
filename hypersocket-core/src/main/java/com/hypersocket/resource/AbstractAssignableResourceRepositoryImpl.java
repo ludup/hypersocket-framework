@@ -7,22 +7,18 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
-import com.hypersocket.bulk.BulkAssignment;
-import com.hypersocket.bulk.BulkAssignmentMode;
-import com.hypersocket.encrypt.EncryptionService;
-import com.hypersocket.permissions.Role;
-import com.hypersocket.properties.EntityResourcePropertyStore;
-import com.hypersocket.properties.PropertyTemplate;
-import com.hypersocket.properties.ResourcePropertyStore;
-import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
-import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmRestriction;
-import com.hypersocket.repository.CriteriaConfiguration;
-import com.hypersocket.repository.DeletedCriteria;
-import com.hypersocket.session.Session;
-import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.Sort;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
@@ -35,8 +31,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
-import java.util.*;
+import com.hypersocket.bulk.BulkAssignment;
+import com.hypersocket.bulk.BulkAssignmentMode;
+import com.hypersocket.encrypt.EncryptionService;
+import com.hypersocket.permissions.Role;
+import com.hypersocket.properties.EntityResourcePropertyStore;
+import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.properties.ResourcePropertyStore;
+import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
+import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmRestriction;
+import com.hypersocket.repository.AbstractEntity;
+import com.hypersocket.repository.CriteriaConfiguration;
+import com.hypersocket.repository.DeletedCriteria;
+import com.hypersocket.session.Session;
+import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.tables.Sort;
 
 @Repository
 public abstract class AbstractAssignableResourceRepositoryImpl<T extends AssignableResource>
@@ -694,5 +705,15 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 
 		return toMergeRoleToIdMap.values();
+	}
+	
+	@Transactional
+	public void removeAssignments(Role role) {
+		
+		Collection<T> resources = getResourcesByRole(role.getRealm(), role);
+		for(T resource : resources) {
+			resource.getRoles().remove(role);
+			save(resource);
+		}
 	}
 }
