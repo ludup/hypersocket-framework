@@ -63,7 +63,7 @@ public abstract class SessionEvent extends SystemEvent {
 		return session;
 	}
 
-	public Principal getPrincipal() {
+	public Principal getTargetPrincipal() {
 		return session.getCurrentPrincipal();
 	}
 	

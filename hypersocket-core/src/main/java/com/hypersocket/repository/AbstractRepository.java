@@ -37,4 +37,6 @@ public interface AbstractRepository<K> {
 	List<?> getCounts(Class<?> clz, String groupBy, boolean highestFirst, int maxResults,
 			CriteriaConfiguration... configs);
 
+	void assosicate(Object entity);
+	
 }

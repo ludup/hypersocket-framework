@@ -26,6 +26,8 @@ import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceCreate
 import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceDeletedEvent;
 import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceEvent;
 import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceUpdatedEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceStartedEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceStoppedEvent;
 
 @Service
 public class HTTPInterfaceResourceServiceImpl extends
@@ -80,7 +82,9 @@ public class HTTPInterfaceResourceServiceImpl extends
 		eventService.registerEvent(
 				HTTPInterfaceResourceDeletedEvent.class, RESOURCE_BUNDLE,
 				this);
-
+		eventService.registerEvent(HTTPInterfaceStartedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(HTTPInterfaceStoppedEvent.class, RESOURCE_BUNDLE);
+		
 		EntityResourcePropertyStore.registerResourceService(HTTPInterfaceResource.class, repository);
 	}
 	

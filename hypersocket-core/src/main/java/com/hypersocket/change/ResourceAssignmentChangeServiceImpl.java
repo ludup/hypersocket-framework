@@ -175,14 +175,14 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 	@EventListener
 	public synchronized void handleGroupEvent(GroupUpdatedEvent event) {
 		if(event.isSuccess()) {
-			processGroupEvent(event.getCurrentRealm(), event.getPrincipal(), event.getGranted(), event.getRevoked());
+			processGroupEvent(event.getCurrentRealm(), event.getTargetPrincipal(), event.getGranted(), event.getRevoked());
 		}
 	}
 	
 	@EventListener 
 	public synchronized void handleGroupEvent(GroupDeletedEvent event) {
 		if(event.isSuccess()) {
-			processGroupEvent(event.getCurrentRealm(), event.getPrincipal(), Collections.<Principal>emptySet(), event.getAssosicatedPrincipals());
+			processGroupEvent(event.getCurrentRealm(), event.getTargetPrincipal(), Collections.<Principal>emptySet(), event.getAssosicatedPrincipals());
 		}
 	}
 	

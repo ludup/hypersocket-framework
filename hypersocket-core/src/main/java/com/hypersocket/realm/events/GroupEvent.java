@@ -46,7 +46,7 @@ public abstract class GroupEvent extends PrincipalEvent {
 		addAttribute(ATTR_ASSOCIATED_PRINCIPALS, createPrincipalList(associatedPrincipals));
 	}
 
-	public Principal getPrincipal() {
+	public Principal getTargetPrincipal() {
 		return principal;
 	}
 

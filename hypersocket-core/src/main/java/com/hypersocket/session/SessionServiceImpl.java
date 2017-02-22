@@ -354,7 +354,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				
 				try {
 					if(permissionService.hasRole(getCurrentSession().getPrincipal(), 
-							permissionService.getRole(PermissionService.ROLE_ADMINISTRATOR, 
+							permissionService.getRole(PermissionService.ROLE_REALM_ADMINISTRATOR, 
 									getCurrentSession().getPrincipal().getRealm()))) {
 						return;
 					}
@@ -372,7 +372,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		try {
 			if(permissionService.hasRole(getCurrentPrincipal(), 
-					permissionService.getRole(PermissionService.ROLE_ADMINISTRATOR, 
+					permissionService.getRole(PermissionService.ROLE_REALM_ADMINISTRATOR, 
 							getCurrentPrincipal().getRealm()))) {
 				return;
 			}

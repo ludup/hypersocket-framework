@@ -111,6 +111,11 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		}
 	}
 
+	@Override
+	public void assosicate(Object entity) {
+		hibernateTemplate.saveOrUpdate(entity);
+	}
+	
 	protected <T> T load(Class<T> entityClass, Long id) {
 		return hibernateTemplate.load(entityClass, id);
 	}

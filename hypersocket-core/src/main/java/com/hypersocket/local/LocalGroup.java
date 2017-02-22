@@ -28,9 +28,6 @@ import com.hypersocket.realm.PrincipalType;
 @XmlRootElement(name="group")
 public class LocalGroup extends Principal {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 8447795179729315608L;
 
 	@ManyToMany(fetch=FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})

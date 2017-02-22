@@ -9,9 +9,8 @@ package com.hypersocket.upgrade;
 
 import java.io.IOException;
 
-import javax.script.ScriptException;
-
 import org.springframework.core.io.Resource;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public interface UpgradeService {
 
@@ -21,7 +20,7 @@ public interface UpgradeService {
     
     boolean hasUpgrades()  throws IOException;
     
-    void upgrade() throws IOException, ScriptException;
+    void upgrade(TransactionTemplate txnTemplate);
 
 	void registerListener(UpgradeServiceListener listener);
 

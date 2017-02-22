@@ -10,7 +10,7 @@ import com.hypersocket.properties.PropertyResolver;
 import com.hypersocket.resource.AbstractAssignableResourceService;
 import com.hypersocket.resource.ResourceException;
 
-public interface AttributeService<A extends AbstractAttribute<?>, C extends RealmAttributeCategory<?>> extends AbstractAssignableResourceService<A>, PropertyResolver {
+public interface AttributeService<A extends AbstractAttribute<?>, C extends RealmAttributeCategory<?>> extends AbstractAssignableResourceService<A> {
 
 	public A updateAttribute(A attribute, String name,
 			Long category, String description, String defaultValue, int weight,
@@ -28,6 +28,8 @@ public interface AttributeService<A extends AbstractAttribute<?>, C extends Real
 	public Long getMaximumAttributeWeight(C cat) throws AccessDeniedException;
 
 	public A getAttributeByVariableName(String attributeName) throws AccessDeniedException;
+
+	PropertyResolver getPropertyResolver();
 
 
 }

@@ -1545,7 +1545,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public List<Principal> getAssociatedPrincipals(Principal principal, PrincipalType type) {
-
 		return getProviderForPrincipal(principal).getAssociatedPrincipals(principal, type);
 	}
 
@@ -1670,7 +1669,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		Map<String, String> currentProperties = provider.getUserPropertyValues(principal);
 		Map<String, String> changedProperties = new HashMap<String, String>();
 
-		Collection<PropertyTemplate> userAttributes = userAttributeService.getPropertyTemplates(principal);
+		Collection<PropertyTemplate> userAttributes = userAttributeService.getPropertyResolver().getPropertyTemplates(principal);
 
 		for (String allowed : editableProperties) {
 			if (properties.containsKey(allowed)) {

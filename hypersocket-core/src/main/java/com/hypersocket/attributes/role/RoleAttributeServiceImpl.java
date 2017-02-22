@@ -46,7 +46,6 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 	RoleAttributeCategoryService userAttributeCategoryService;
 
 	Map<Role, Map<String, PropertyTemplate>> userPropertyTemplates = new HashMap<Role, Map<String, PropertyTemplate>>();
-//	FakePrincipal allUsersPrincial = new FakePrincipal("allusers");
 
 	public RoleAttributeServiceImpl() {
 		super(RESOURCE_BUNDLE, RoleAttribute.class, RoleAttributePermission.class, RoleAttributePermission.CREATE,

@@ -10,6 +10,7 @@ package com.hypersocket.permissions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -38,6 +40,7 @@ import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.auth.InvalidAuthenticationContext;
 import com.hypersocket.cache.CacheService;
+import com.hypersocket.context.SystemContextRequired;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18N;
@@ -51,11 +54,14 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
+import com.hypersocket.realm.events.GroupCreatedEvent;
+import com.hypersocket.realm.events.GroupDeletedEvent;
 import com.hypersocket.realm.events.GroupEvent;
+import com.hypersocket.realm.events.UserCreatedEvent;
+import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AssignableResource;
-import com.hypersocket.resource.AssignableResourceRepository;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
@@ -136,7 +142,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 			@Override
 			public boolean hasCreatedDefaultResources(Realm realm) {
-				return repository.getRoleByName(ROLE_ADMINISTRATOR, realm) != null;
+				return repository.getRoleByName(ROLE_REALM_ADMINISTRATOR, realm) != null;
 			}
 
 			@Override
@@ -147,7 +153,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 							+ realm.getName());
 				}
 
-				repository.createRole(ROLE_ADMINISTRATOR, realm, false, false,
+				repository.createRole(ROLE_REALM_ADMINISTRATOR, realm, false, false,
 						true, true);
 
 				if (log.isInfoEnabled()) {
@@ -229,14 +235,27 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 					RESOURCE_BUNDLE, "error.role.alreadyExists", name);
 			throw ex;
 		} catch (ResourceNotFoundException re) {
-			return repository.createRole(name, realm, false, false, false,
-					false);
+			return createRole(name, realm, 
+					Collections.<Principal>emptyList(),
+					Collections.<Permission>emptyList(), null, false, false);
 		}
+	}
+	
+	@Override
+	public Role createRole(String name, Realm realm,
+			List<Principal> principals, List<Permission> permissions, 
+			Map<String,String> properties)
+			throws AccessDeniedException, ResourceCreationException {
+		return createRole(name, realm, principals, permissions, properties, false, false);
 	}
 
 	@Override
 	public Role createRole(String name, Realm realm,
-			List<Principal> principals, List<Permission> permissions, Map<String,String> properties)
+			List<Principal> principals, 
+			List<Permission> permissions, 
+			Map<String,String> properties,
+			boolean isPrincipalRole,
+			boolean isSystemRole)
 			throws AccessDeniedException, ResourceCreationException {
 
 		assertPermission(RolePermission.CREATE);
@@ -250,6 +269,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				Role role = new Role();
 				role.setName(name);
 				role.setRealm(realm);
+				role.setPersonalRole(isPrincipalRole);
+				role.setSystem(isSystemRole);
 				repository.saveRole(role, realm,
 						principals.toArray(new Principal[0]), permissions, properties,
 						new TransactionAdapter<Role>() {
@@ -506,7 +527,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public boolean hasAdministrativePermission(Principal principal) {
 		
 		Set<Role> roles = new HashSet<Role>();
-		roles.add(repository.getRoleByName(ROLE_ADMINISTRATOR, principal.getRealm()));
+		roles.add(repository.getRoleByName(ROLE_REALM_ADMINISTRATOR, principal.getRealm()));
 		if(principal.getRealm().isSystem()) {
 			roles.add(repository.getRoleByName(ROLE_SYSTEM_ADMINISTRATOR, principal.getRealm()));
 		}
@@ -901,7 +922,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 		List<PropertyCategory> cats = new ArrayList<PropertyCategory>();
 		cats.addAll(repository.getPropertyCategories(null));
-		cats.addAll(attributeService.getPropertyCategories(null));
+		cats.addAll(attributeService.getPropertyResolver().getPropertyCategories(null));
 		return cats;
 	}
 
@@ -912,14 +933,14 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		List<PropertyCategory> cats = new ArrayList<PropertyCategory>();
 
 		cats.addAll(repository.getPropertyCategories(role));
-		cats.addAll(attributeService.getPropertyCategories(role));
+		cats.addAll(attributeService.getPropertyResolver().getPropertyCategories(role));
 	
 		return cats;
 	}
 	
 	protected void saveRoleAttributes(Role role, Map<String,String> properties) {
 		
-		for(PropertyTemplate template : attributeService.getPropertyTemplates(role)) {
+		for(PropertyTemplate template : attributeService.getPropertyResolver().getPropertyTemplates(role)) {
 			if(properties.containsKey(template.getResourceKey())) {
 			
 				attributeRepository.setValue(role, template.getResourceKey(), properties.get(template.getResourceKey()));
@@ -940,5 +961,62 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public Collection<Principal> getPrincipalsByRole(Role... roles) {
 		return repository.getPrincpalsByRole(Arrays.asList(roles));
+	}
+	
+	protected void createPrincipalRole(Principal principal) {
+		try {
+			createRole(principal.getPrincipalName(), 
+					principal.getRealm(), 
+					Arrays.asList(principal), 
+					Collections.<Permission>emptyList(), 
+					null,
+					true, true);
+		} catch (ResourceCreationException | AccessDeniedException e) {
+			log.error("Failed to create principal role", e);
+		}
+	}
+	
+	protected void deletePrincipalRole(Principal principal) {
+		try {
+			deleteRole(getPersonalRole(principal));
+		} catch (ResourceChangeException | AccessDeniedException e) {
+			log.error("Failed to delete principal role", e);
+		}
+	}
+	
+	@Override
+	@EventListener
+	@SystemContextRequired
+	public void onUserCreated(UserCreatedEvent event) {
+		if(event.isSuccess()) {
+			createPrincipalRole(event.getTargetPrincipal());
+		}
+	}
+	
+	@Override
+	@EventListener
+	@SystemContextRequired
+	public void onUserDeleted(UserDeletedEvent event) {
+		if(event.isSuccess()) {
+			deletePrincipalRole(event.getTargetPrincipal());
+		}
+	}
+	
+	@Override
+	@EventListener
+	@SystemContextRequired
+	public void onGroupCreated(GroupCreatedEvent event) {
+		if(event.isSuccess()) {
+			createPrincipalRole(event.getTargetPrincipal());
+		}
+	}
+	
+	@Override
+	@EventListener
+	@SystemContextRequired
+	public void onGroupDeleted(GroupDeletedEvent event) {
+		if(event.isSuccess()) {
+			deletePrincipalRole(event.getTargetPrincipal());
+		}
 	}
 }

@@ -88,7 +88,7 @@ public class QuartzSpringConfiguration {
 
 		quartzScheduler.setJobFactory(autowiringSpringBeanJobFactory);
 
-		quartzScheduler.setAutoStartup(true);
+		quartzScheduler.setAutoStartup(false);
 		quartzScheduler.setSchedulerName("quartzScheduler");
 		quartzScheduler.setApplicationContext(applicationContext);
 		

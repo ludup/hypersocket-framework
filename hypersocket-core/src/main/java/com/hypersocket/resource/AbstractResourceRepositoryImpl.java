@@ -28,7 +28,7 @@ import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
-public abstract class AbstractResourceRepositoryImpl<T extends Resource>
+public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 		extends ResourceTemplateRepositoryImpl implements
 		AbstractResourceRepository<T> {
 

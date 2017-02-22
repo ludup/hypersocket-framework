@@ -11,6 +11,10 @@ import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.events.GroupCreatedEvent;
+import com.hypersocket.realm.events.GroupDeletedEvent;
+import com.hypersocket.realm.events.UserCreatedEvent;
+import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.resource.*;
 import com.hypersocket.tables.ColumnSort;
 
@@ -22,7 +26,8 @@ import java.util.Set;
 public interface PermissionService extends AuthenticatedService, FindableResourceRepository<Role> {
 
 	static final String RESOURCE_BUNDLE = "PermissionService";
-	static final String ROLE_ADMINISTRATOR = "Administrator";
+	static final String ROLE_REALM_ADMINISTRATOR = "Realm Administrator";
+	static final String OLD_ROLE_ADMINISTRATOR = "Administrator";
 	static final String ROLE_EVERYONE = "Everyone";
 	static final String ROLE_SYSTEM_ADMINISTRATOR = "System Administrator";
 
@@ -53,7 +58,12 @@ public interface PermissionService extends AuthenticatedService, FindableResourc
 
 	public List<Permission> allPermissions();
 
-	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions, Map<String,String> properties)
+	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
+			Map<String, String> properties)
+			throws AccessDeniedException, ResourceCreationException;
+	
+	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
+			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole)
 			throws AccessDeniedException, ResourceCreationException;
 
 	Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions, Map<String,String> properties)
@@ -117,4 +127,12 @@ public interface PermissionService extends AuthenticatedService, FindableResourc
 
 	void registerAssignableRepository(Class<? extends AssignableResource> clz,
 			AbstractAssignableResourceRepository<?> repository);
+
+	void onUserCreated(UserCreatedEvent event);
+
+	void onUserDeleted(UserDeletedEvent event);
+
+	void onGroupCreated(GroupCreatedEvent event);
+
+	void onGroupDeleted(GroupDeletedEvent event);
 }

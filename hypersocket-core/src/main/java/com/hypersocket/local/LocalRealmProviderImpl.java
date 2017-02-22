@@ -70,7 +70,7 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 		loadPropertyTemplates("localRealmTemplate.xml");
 
 		userRepository.loadPropertyTemplates("localUserTemplate.xml");
-		userRepository.registerPropertyResolver(userAttributeService);
+		userRepository.registerPropertyResolver(userAttributeService.getPropertyResolver());
 	}
 
 	@Override

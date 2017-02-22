@@ -42,6 +42,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hypersocket.Version;
 import com.hypersocket.session.SessionService;
@@ -130,37 +134,55 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 		return scripts;
 	}
 
-	public void upgrade() throws IOException, ScriptException {
+	public void upgrade(TransactionTemplate txnTemplate) {
 		
 		try {
-			if(log.isInfoEnabled()) {
-				log.info("Starting upgrade");
-			}
-			
-			fresh = sessionFactory.getCurrentSession()
-					.createCriteria(Upgrade.class).list().size() == 0;
-			
-			if(log.isInfoEnabled()) {
-				if(fresh) {
-					log.info("Database is fresh");
-				} else {
-					log.info("Upgrading existing database");
-				}
-			}
-			List<UpgradeOp> ops = buildUpgradeOps();
-			Map<String, Object> beans = new HashMap<String, Object>();
-			
-			// Do all the SQL upgrades first
-			doOps(ops, beans, "sql", getDatabaseType());
+			txnTemplate.execute(new TransactionCallback<Object>() {
+				public Object doInTransaction(TransactionStatus status) {
 
-			doOps(ops, beans, "js", "class");
-			
-			for(UpgradeServiceListener listener : listeners) {
-				listener.onUpgradeComplete();
-			}
-		} catch (Throwable e) {
+					try {
+						if (log.isInfoEnabled()) {
+							log.info("Starting upgrade");
+						}
+						
+						fresh = sessionFactory.getCurrentSession()
+								.createCriteria(Upgrade.class).list().size() == 0;
+						
+						if(log.isInfoEnabled()) {
+							if(fresh) {
+								log.info("Database is fresh");
+							} else {
+								log.info("Upgrading existing database");
+							}
+						}
+						List<UpgradeOp> ops = buildUpgradeOps();
+						Map<String, Object> beans = new HashMap<String, Object>();
+						
+						// Do all the SQL upgrades first
+						doOps(ops, beans, "sql", getDatabaseType());
+
+						doOps(ops, beans, "js", "class");
+
+					
+					} catch (Throwable e) {
+						log.error("Failed to upgrade", e);
+						throw new IllegalStateException("Errors upgrading database");
+					}
+					return null;
+				}
+			});
+		} catch (TransactionException e) {
 			throw new IllegalStateException(e.getMessage(), e);
-		} 
+		}
+		
+		if (log.isInfoEnabled()) {
+			log.info("Completed upgrade");
+		}
+			
+		for(UpgradeServiceListener listener : listeners) {
+			listener.onUpgradeComplete();
+		}
+	
 	}
 
 	protected void doOps(List<UpgradeOp> ops, Map<String, Object> beans, String... languages) throws ScriptException, IOException {

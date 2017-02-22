@@ -7,6 +7,8 @@ import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.upgrade.UpgradeService;
+import com.hypersocket.upgrade.UpgradeServiceListener;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Service
@@ -16,6 +18,9 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 	@Autowired
 	Scheduler clusteredScheduler;
 	
+	@Autowired
+	UpgradeService upgradeService; 
+	
 	protected Scheduler configureScheduler() throws SchedulerException {
 		
 		
@@ -24,6 +29,17 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 			System.setProperty("org.quartz.properties", quartzProperties.getAbsolutePath());
 		}
 
+		upgradeService.registerListener(new UpgradeServiceListener() {
+			
+			@Override
+			public void onUpgradeComplete() {
+				try {
+					clusteredScheduler.start();
+				} catch (SchedulerException e) {
+					throw new IllegalStateException(e.getMessage(), e);
+				}
+			}
+		});
 		return clusteredScheduler;
 	}
 }

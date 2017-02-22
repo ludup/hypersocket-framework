@@ -136,7 +136,8 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 					node.getAttribute("filter"),
 					node.hasAttribute("hidden") && Boolean.parseBoolean(node.getAttribute("hidden")),
 					node.getAttribute("visibilityDependsOn"),
-					node.getAttribute("visibilityDependsValue"));
+					node.getAttribute("visibilityDependsValue"),
+					node.getAttribute("via"));
 
 			NodeList properties = node.getElementsByTagName("property");
 
@@ -312,7 +313,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 	private PropertyCategory registerPropertyCategory(String categoryKey, String categoryNamespace,
 			String categoryGroup, String bundle, int weight, String displayMode, boolean systemOnly, String filter, boolean hidden,
-			String visibilityDependsOn, String visibilityDependsValue) {
+			String visibilityDependsOn, String visibilityDependsValue, String via) {
 
 		if (activeCategories.containsKey(categoryKey) 
 				&& !activeCategories.get(categoryKey).getBundle().equals(bundle)) {

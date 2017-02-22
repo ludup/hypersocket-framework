@@ -1,38 +1,48 @@
 package com.hypersocket.properties;
 
-import com.hypersocket.encrypt.EncryptionService;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.AbstractResource;
-import com.hypersocket.resource.FindableResourceRepository;
-import com.hypersocket.resource.RealmResource;
-import com.hypersocket.resource.Resource;
-import com.hypersocket.utils.HypersocketUtils;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.text.ParseException;
-import java.util.*;
+import com.hypersocket.encrypt.EncryptionService;
+import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.FindableResourceRepository;
+import com.hypersocket.resource.RealmResource;
+import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.utils.HypersocketUtils;
 
 public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 
 	static Logger log = LoggerFactory.getLogger(EntityResourcePropertyStore.class);
 
 	static Map<Class<?>,FindableResourceRepository<?>> findableResourceRepositories = new HashMap<Class<?>,FindableResourceRepository<?>>();
-
+	Map<String,EntityStoreRepository<?>> attributeRepositories = new HashMap<String,EntityStoreRepository<?>>();
+	
 	Map<Class<?>, PrimitiveParser<?>> primitiveParsers = new HashMap<Class<?>,PrimitiveParser<?>>();
 	StringValue stringParser = new StringValue();
+	EntityStoreRepository<?> attributeRepository;
+	String attributeField;
 	
 	public EntityResourcePropertyStore(EncryptionService encryptionService) {
 		
-		//primitiveParsers.put(String.class, new StringValue());
 		primitiveParsers.put(Boolean.class, new BooleanValue());
 		primitiveParsers.put(Integer.class, new IntegerValue());
 		primitiveParsers.put(Long.class, new LongValue());
@@ -46,8 +56,13 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		return false;
 	}
 	
-	public static void registerResourceService(Class<?> clz, FindableResourceRepository<?> repository) {
+	public static void registerResourceService(Class<?> clz, 
+			FindableResourceRepository<?> repository) {
 		findableResourceRepositories.put(clz, repository);
+	}
+	
+	public void registerAttributeRepository(String attributeBean, EntityStoreRepository<?> repository) {
+		attributeRepositories.put(attributeBean, repository);
 	}
 	
 	@Override
@@ -59,20 +74,59 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	protected void doSetProperty(PropertyTemplate template, String value) {
 		throw new UnsupportedOperationException("Entity resource property store requires an entity resource to set property value");
 	}
+	
+	private Object resolveTargetEntity(AbstractResource resource, AbstractPropertyTemplate template) {
+		if(template.getAttributes().containsKey("via")) {
+			return getAttributeEntity(resource, template);
+		}
+		return resource;
+	}
+	
+	private Object getAttributeEntity(AbstractResource resource, AbstractPropertyTemplate template) {
+		try {
+			String attributeField = template.getAttributes().get("via");
+			EntityStoreRepository<?> attributeRepository = attributeRepositories.get(attributeField);
+			String methodName = "get" + StringUtils.capitalize(attributeField);
+			Method m = resource.getClass().getMethod(methodName, (Class<?>[])null);
+			Object result =  m.invoke(resource);
+			if(result==null) {
+				methodName = "set" + StringUtils.capitalize(attributeField);
+				m = resource.getClass().getMethod(methodName, attributeRepository.getEntityClass());
+				try {
+					m.invoke(resource, result = attributeRepository.getResourceById(resource.getId()));
+					if(result==null) {
+						m.invoke(resource, result = attributeRepository.createEntity());
+					}
+				} catch (ResourceNotFoundException e) {
+					m.invoke(resource, result = attributeRepository.createEntity());
+				}
+			}
+			if(result==null) {
+				throw new IllegalStateException(String.format("Cannot resolve property %s", template.getResourceKey()));
+			}
+			return result;
+		} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException | AccessDeniedException e) {
+			throw new IllegalStateException(String.format("Cannot resolve property %s", template.getResourceKey()));
+		}
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	protected String lookupPropertyValue(AbstractPropertyTemplate template,
-			AbstractResource resource) {
+			AbstractResource entity) {
 		
-		if(resource==null) {
+		if(entity==null) {
 			return template.getDefaultValue();
 		}
+		
+		Object resource = resolveTargetEntity(entity, template);
 		Throwable t;
 		String methodName = "get" + StringUtils.capitalize(template.hasMapping() ? template.getMapping() : template.getResourceKey());
 		try {
 			
 			Method m = resource.getClass().getMethod(methodName, (Class<?>[])null);
+			
 			if(findableResourceRepositories.containsKey(m.getReturnType())) {
 				Resource r = (Resource) m.invoke(resource);
 				if(r==null) {
@@ -114,6 +168,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		}
 		throw new IllegalStateException(methodName + " not found", t);
 	}
+	
+	
 
 	public void setField(AbstractPropertyTemplate template,
 			AbstractResource resource, String value) {
@@ -132,19 +188,20 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	
 	@Override
 	protected void doSetProperty(AbstractPropertyTemplate template,
-			AbstractResource resource, String value) {
+			AbstractResource entity, String value) {
 		
 		if(value==null) {
 			// We don't support setting null values. Caller may have set values on object directly
 			return;
 		}
+		
+		Object resource = resolveTargetEntity(entity, template);
 		Method[] methods = resource.getClass().getMethods();
 		
 		String methodName = "set" + StringUtils.capitalize(template.hasMapping() ? template.getMapping() : template.getResourceKey());
 		for(Method m : methods) {
 			if(m.getName().equals(methodName)) {
 				Class<?> clz = m.getParameterTypes()[0];
-				Type clzType = (Type)clz;
 				if(clz.isEnum()){
 					try {
 						Enum<?>[] enumConstants = (Enum<?>[]) resource.getClass().getDeclaredField(template.getResourceKey()).getType().getEnumConstants();
@@ -168,7 +225,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 					}
 				} else if(String.class.equals(clz)) {
 					try {
-						m.invoke(resource, stringParser.parseValue(value, resource, template));
+						m.invoke(resource, stringParser.parseValue(value, resource, template, entity.getUUID()));
 					} catch (Exception e) {
 						log.error("Could not set " + template.getResourceKey() + " String value " + value + " for resource " + resource.getClass().getName(), e);
 						throw new IllegalStateException("Could not set " + template.getResourceKey() + " String value " + value + " for resource " + resource.getClass().getName(), e);
@@ -275,7 +332,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	}
 	
 	class StringValue {
-		public String parseValue(String value, AbstractResource resource, AbstractPropertyTemplate template) {
+		public String parseValue(String value, Object resource, AbstractPropertyTemplate template, String uuid) {
 			Realm realm = encryptionService.getSystemRealm();
 			if(resource instanceof RealmResource) {
 				realm = ((RealmResource)resource).getRealm();
@@ -283,7 +340,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 			if(template.isEncrypted()) {
 				if(!ResourceUtils.isEncrypted(value)) {
 					try {
-						value = encryptionService.encryptString(resource.getUUID(), value, realm);
+						value = encryptionService.encryptString(uuid, value, realm);
 					} catch (IOException e) {
 						return value;
 					}
@@ -369,5 +426,4 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		}
 		return false;
 	}
-
 }
