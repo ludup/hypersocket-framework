@@ -77,7 +77,7 @@ public abstract class UserEvent extends PrincipalEvent {
 		addAttribute(ATTR_ASSOCIATED_PRINCIPALS, buf.toString());
 	}
 
-	public Principal getPrincipal() {
+	public Principal getTargetPrincipal() {
 		return principal;
 	}
 

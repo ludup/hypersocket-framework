@@ -248,7 +248,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	private void loadPropertyCategories(Document doc, boolean forceReadOnly) throws IOException {
 
 		NodeList list = doc.getElementsByTagName("propertyCategory");
-
+		
 		for (int i = 0; i < list.getLength(); i++) {
 			Element node = (Element) list.item(i);
 
@@ -275,7 +275,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 					node.getAttribute("filter"),
 					node.hasAttribute("hidden") && Boolean.parseBoolean(node.getAttribute("hidden")),
 					node.getAttribute("visibilityDependsOn"),
-					node.getAttribute("visibilityDependsValue"));
+					node.getAttribute("visibilityDependsValue"),
+					node.getAttribute("via"));
 
 			PropertyStore defaultStore = getPropertyStore();
 
@@ -308,7 +309,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 						t.setDefaultValue(pnode.getAttribute("defaultValue"));
 						continue;
 					}
-
+					
 					PropertyStore store = defaultStore;
 					if (pnode.hasAttribute("store")) {
 						if(pnode.getAttribute("store").equals("default")) {
@@ -487,7 +488,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	private PropertyCategory registerPropertyCategory(String resourceKey, String categoryNamespace, String bundle, int weight,
 			boolean userCreated, String group, String displayMode, boolean systemOnly, String filter, boolean hidden,
-			String visibilityDependsOn, String visibilityDependsValue) {
+			String visibilityDependsOn, String visibilityDependsValue, String via) {
 
 		String categoryKey = resourceKey + "/" + bundle;
 //		if (activeCategories.containsKey(categoryKey)) {
@@ -691,9 +692,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 		}
 
-		 if (template.isReadOnly()) {
-			 return;
-		 }
+//		 if (template.isReadOnly()) {
+//			 return;
+//		 }
 
 		((ResourcePropertyStore) template.getPropertyStore()).setPropertyValue(template, resource, value);
 	}
@@ -804,6 +805,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				tmp.setHidden(c.isHidden());
 				tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
 				tmp.setVisibilityDependsOn(c.getVisibilityDependsOn());
+
 			} else {
 				tmp = cats.get(c.getCategoryKey());
 			}
@@ -835,6 +837,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 					tmp.setHidden(c.isHidden());
 					tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
 					tmp.setVisibilityDependsOn(c.getVisibilityDependsOn());
+
 				} else {
 					tmp = cats.get(c.getCategoryKey());
 				}

@@ -412,7 +412,6 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 				new CriteriaConfiguration() {
 					@Override
 					public void configure(Criteria criteria) {
-						criteria.add(Restrictions.eq("personalRole", false));
 						criteria.add(Restrictions.eq("hidden", false));
 					}
 				});
@@ -427,7 +426,6 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 
 					@Override
 					public void configure(Criteria criteria) {
-						criteria.add(Restrictions.eq("personalRole", false));
 						criteria.add(Restrictions.eq("hidden", false));
 						criteria.setFetchMode("permissions", FetchMode.SELECT);
 						criteria.setFetchMode("principals", FetchMode.SELECT);
@@ -447,7 +445,6 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 					@Override
 					public void configure(Criteria criteria) {
 						criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-						criteria.add(Restrictions.eq("personalRole", false));
 						criteria.add(Restrictions.eq("hidden", false));
 						criteria.add(Restrictions.or(
 								Restrictions.eq("realm", realm),
@@ -583,6 +580,4 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	protected Class<Role> getResourceClass() {
 		return Role.class;
 	}
-
-
 }

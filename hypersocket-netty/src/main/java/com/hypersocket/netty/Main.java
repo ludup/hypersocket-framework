@@ -195,28 +195,11 @@ public class Main {
 			log.info("Creating transaction for upgrade");
 		}
 
-		txnTemplate.execute(new TransactionCallback<Object>() {
-			public Object doInTransaction(TransactionStatus status) {
-				UpgradeService upgradeService = (UpgradeService) applicationContext
-						.getBean("upgradeService");
-				
-				try {
-					if (log.isInfoEnabled()) {
-						log.info("Starting upgrade");
-					}
-					
-					upgradeService.upgrade();
+		UpgradeService upgradeService = (UpgradeService) applicationContext
+				.getBean("upgradeService");
+		
+		upgradeService.upgrade(txnTemplate);
 
-					if (log.isInfoEnabled()) {
-						log.info("Completed upgrade");
-					}
-				} catch (Throwable e) {
-					log.error("Failed to upgrade", e);
-					throw new IllegalStateException("Errors upgrading database");
-				}
-				return null;
-			}
-		});
 
 	}
 	

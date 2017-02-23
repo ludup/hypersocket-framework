@@ -9,7 +9,7 @@ import com.hypersocket.tables.ColumnSort;
 import java.util.List;
 import java.util.Map;
 
-public interface AbstractResourceRepository<T extends Resource> extends ResourceTemplateRepository, FindableResourceRepository<T> {
+public interface AbstractResourceRepository<T extends AbstractResource> extends ResourceTemplateRepository, FindableResourceRepository<T> {
 
 	T getResourceByName(String name, Realm realm);
 

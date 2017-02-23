@@ -100,12 +100,12 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 
 	void saveRole(Role role, Realm realm, Principal[] principals,
 			Collection<Permission> permissions, Map<String,String> properties,
-			TransactionOperation<Role>... ops) throws ResourceException;
+			@SuppressWarnings("unchecked") TransactionOperation<Role>... ops) throws ResourceException;
 
 	void updateRole(Role role, Set<Principal> unassignPrincipals,
 			Set<Principal> assignPrincipals, Set<Permission> revokePermissions,
 			Set<Permission> grantPermissions, Map<String,String> properties,
-			TransactionOperation<Role>... ops) throws ResourceException;
+			@SuppressWarnings("unchecked") TransactionOperation<Role>... ops) throws ResourceException;
 
 	void createRole(String name, Realm realm, boolean personalRole,
 			boolean allUsers, boolean allPermissions, boolean system,

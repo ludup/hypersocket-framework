@@ -47,7 +47,6 @@ public abstract class AbstractSchedulerServiceImpl implements SchedulerService {
 	private void postConstruct() throws SchedulerException {
 		
 		scheduler = configureScheduler();
-		  
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}
 	

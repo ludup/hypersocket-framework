@@ -91,7 +91,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		loadPropertyTemplates("localRealmTemplate.xml");
 
 		userRepository.loadPropertyTemplates("localUserTemplate.xml");
-		userRepository.registerPropertyResolver(userAttributeService);
+		userRepository.registerPropertyResolver(userAttributeService.getPropertyResolver());
 	}
 
 
@@ -866,9 +866,9 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	public void onApplicationEvent(final SessionOpenEvent event) {
 	
-		if(event.getPrincipal() instanceof LocalUser) {
+		if(event.getTargetPrincipal() instanceof LocalUser) {
 			
-			LocalUser user = (LocalUser) event.getPrincipal();
+			LocalUser user = (LocalUser) event.getTargetPrincipal();
 			user.setLastSignOn(new Date(event.getTimestamp()));
 			userRepository.saveUser(user, new HashMap<String,String>());
 		}

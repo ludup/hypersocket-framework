@@ -6,8 +6,12 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.support.WebApplicationObjectSupport;
 
+import com.hypersocket.upgrade.UpgradeService;
+import com.hypersocket.upgrade.UpgradeServiceListener;
 import com.hypersocket.util.DatabaseInformation;
 
 @Service
@@ -18,6 +22,9 @@ public class LocalSchedulerServiceImpl extends AbstractSchedulerServiceImpl impl
 	
 	@Autowired
 	DatabaseInformation databaseInformation;
+	
+	@Autowired
+	UpgradeService upgradeService; 
 	
 	protected Scheduler configureScheduler() throws SchedulerException {
 
@@ -30,10 +37,20 @@ public class LocalSchedulerServiceImpl extends AbstractSchedulerServiceImpl impl
 		
 		StdSchedulerFactory schedFact = new org.quartz.impl.StdSchedulerFactory(props);
 		
-		Scheduler scheduler = schedFact.getScheduler();
+		final Scheduler scheduler = schedFact.getScheduler();
 		scheduler.setJobFactory(autowiringSpringBeanJobFactory);
-		scheduler.start();
-		  
+		
+		upgradeService.registerListener(new UpgradeServiceListener() {
+			
+			@Override
+			public void onUpgradeComplete() {
+				try {
+					scheduler.start();
+				} catch (SchedulerException e) {
+					throw new IllegalStateException(e.getMessage(), e);
+				}
+			}
+		});
 		return scheduler;
 	}
 }

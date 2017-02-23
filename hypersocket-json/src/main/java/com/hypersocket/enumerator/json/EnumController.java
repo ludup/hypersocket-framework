@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.hypersocket.properties.enumeration.Displayable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -50,6 +51,35 @@ public class EnumController extends AuthenticatedController {
 			return new ResourceList<NameValuePair>(results);
 		} catch(Exception e) { 
 			return new ResourceList<NameValuePair>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "enum/displayable/{className}/", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<Displayable<?>> getDisplayableEnums(
+			HttpServletRequest request,
+			@PathVariable("className") String className)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+			Class<?> enumType = Class.forName(className);
+			if(!Displayable.class.isAssignableFrom(enumType)) {
+				throw new IllegalStateException("Enum is not of type Displayable.");
+			}
+			List<Displayable<?>> results = new ArrayList<>();
+			for(Enum<?> enumConstant : (Enum<?>[]) enumType.getEnumConstants()) {
+				results.add((Displayable<?>) enumConstant);
+			}
+			return new ResourceList<Displayable<?>>(results);
+		} catch(Exception e) {
+			return new ResourceList<Displayable<?>>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}

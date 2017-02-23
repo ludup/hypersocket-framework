@@ -46,7 +46,6 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 	RoleAttributeCategoryService userAttributeCategoryService;
 
 	Map<Role, Map<String, PropertyTemplate>> userPropertyTemplates = new HashMap<Role, Map<String, PropertyTemplate>>();
-//	FakePrincipal allUsersPrincial = new FakePrincipal("allusers");
 
 	public RoleAttributeServiceImpl() {
 		super(RESOURCE_BUNDLE, RoleAttribute.class, RoleAttributePermission.class, RoleAttributePermission.CREATE,
@@ -55,7 +54,7 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 
 	@PostConstruct
 	protected void init() {
-		attributeRepository = userAttributeRepository;
+		
 		categoryRepository = userAttributeCategoryRepository;
 		categoryService = userAttributeCategoryService;
 
@@ -74,6 +73,11 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 		eventService.registerEvent(RoleAttributeDeletedEvent.class, RESOURCE_BUNDLE);
 
 		super.init();
+	}
+	
+	@Override
+	protected RoleAttributeRepository getRepository() {
+		return userAttributeRepository;
 	}
 
 	@Override
@@ -163,7 +167,7 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 		template.setCategory(cat);
 		template.setEncrypted(attr.getEncrypted());
 		template.setDefaultsToProperty("");
-		template.setPropertyStore(attributeRepository.getDatabasePropertyStore());
+		template.setPropertyStore(userAttributeRepository.getDatabasePropertyStore());
 
 		cat.getTemplates().remove(template);
 		cat.getTemplates().add(template);

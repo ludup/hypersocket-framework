@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.bulk.BulkAssignment;
+import com.hypersocket.bulk.BulkAssignmentMode;
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.EntityResourcePropertyStore;
@@ -39,6 +42,7 @@ import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
+import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.session.Session;
@@ -648,4 +652,68 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		return (Collection<T>) criteria.list();
 	}
 
+	@Override
+	@SuppressWarnings("unchecked")
+	@Transactional
+	public void bulkAssignRolesToResource(BulkAssignment bulkAssignment) {
+		List<T> assignableResources = createCriteria(getResourceClass(),	"ar").add(Restrictions.in("ar.id",
+				bulkAssignment.getResourceIds())).list();
+
+		if(assignableResources == null || assignableResources.isEmpty()) {
+			throw new IllegalStateException(String.format("For passed in ids %s no resources were found.",
+					bulkAssignment.getResourceIds()));
+		}
+
+		List<Role> roleList = createCriteria(Role.class,"role").
+				add(Restrictions.in("role.id", bulkAssignment.getRoleIds())).list();
+
+		if(roleList == null || roleList.isEmpty()) {
+			throw new IllegalStateException(String.format("For passed in ids %s no roles were found.",
+					bulkAssignment.getRoleIds()));
+		}
+
+		for (AssignableResource ar: assignableResources) {
+			if(BulkAssignmentMode.OverWrite.equals(bulkAssignment.getMode())) {
+				ar.getRoles().clear();
+				ar.getRoles().addAll(roleList);
+			} else {
+				Collection<Role> mergedRoles = computeMerge(ar, roleList);
+				ar.getRoles().addAll(computeMerge(ar, roleList));
+			}
+			saveObject(ar);
+		}
+	}
+
+	/**
+	 * Method to filter already existing roles, roles not present will only be returned.
+	 *
+	 * @param assignableResource
+	 * @param toMergeRoles
+	 * @return
+	 */
+	private Collection<Role> computeMerge(AssignableResource assignableResource, List<Role> toMergeRoles) {
+		Set<Role> present = assignableResource.getRoles();
+		Map<Long, Role> toMergeRoleToIdMap = new HashMap<>();
+		for (Role role : toMergeRoles) {
+			toMergeRoleToIdMap.put(role.getId(), role);
+		}
+
+		for(Role role : present) {
+			if(toMergeRoleToIdMap.containsKey(role.getId())) {
+				toMergeRoleToIdMap.remove(role.getId());
+			}
+		}
+
+		return toMergeRoleToIdMap.values();
+	}
+	
+	@Transactional
+	public void removeAssignments(Role role) {
+		
+		Collection<T> resources = getResourcesByRole(role.getRealm(), role);
+		for(T resource : resources) {
+			resource.getRoles().remove(role);
+			save(resource);
+		}
+	}
 }

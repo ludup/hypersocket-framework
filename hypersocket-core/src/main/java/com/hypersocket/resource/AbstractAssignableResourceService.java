@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
+import com.hypersocket.bulk.BulkAssignment;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.PropertyCategory;
@@ -111,5 +112,7 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 
 	T getPersonalResourceByName(String name, Principal principal)
 			throws ResourceNotFoundException, AccessDeniedException;
+
+	void bulkAssignRolesToResource(BulkAssignment bulkAssignment) throws ResourceException;
 
 }
