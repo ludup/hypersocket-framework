@@ -286,7 +286,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 	
 	protected RealmProvider getProviderForPrincipal(Principal principal) {
-		return getProviderForRealm(principal.getRealmModule());
+		return getProviderForRealm(principal.getRealm());
 	}
 
 	protected boolean hasProviderForRealm(Realm realm) {
@@ -568,10 +568,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		try {
 
 			assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
-
-			if (provider.isReadOnly(user.getRealm())) {
-				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
-			}
 
 			for (PrincipalProcessor processor : principalProcessors) {
 				processor.beforeUpdate(user, properties);
