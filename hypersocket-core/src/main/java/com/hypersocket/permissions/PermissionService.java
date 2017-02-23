@@ -35,6 +35,8 @@ public interface PermissionService extends AuthenticatedService, FindableResourc
 
 	public Permission getPermission(String resourceKey);
 
+	List<Permission> getPermissions(String...resourceKeys);
+
 	public Role createRole(String name, Realm realm) throws AccessDeniedException, ResourceCreationException;
 
 	public void unassignRole(Role customerRole, Principal principal) throws AccessDeniedException;
@@ -88,6 +90,8 @@ public interface PermissionService extends AuthenticatedService, FindableResourc
 
 	Set<Role> getPrincipalRoles(Principal principal) throws AccessDeniedException;
 
+	Set<Role> getPrincipalNonPersonalRoles(Principal principal);
+
 	String getRoleProperty(Role resource, String resourceKey);
 
 	boolean getRoleBooleanProperty(Role resource, String resourceKey);
@@ -108,6 +112,10 @@ public interface PermissionService extends AuthenticatedService, FindableResourc
 			throws ResourceException, AccessDeniedException;
 
 	boolean hasPermission(Principal principal, Permission permission);
+
+	boolean hasAllPermissions(Principal principal, Permission...permissions);
+
+	boolean hasAnyPermission(Principal principal, Permission...permissions);
 
 	public boolean hasRole(Principal principal, Role role) throws AccessDeniedException;
 

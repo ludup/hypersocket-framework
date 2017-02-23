@@ -21,6 +21,8 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -278,6 +280,11 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
+	public List<Permission> getPermissions(String...resourceKeys) {
+		return repository.getPermissionsByResourceKeys(resourceKeys);
+	}
+
+	@Override
 	public void assignRole(Role role, Principal principal) throws AccessDeniedException {
 
 		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, RolePermission.CREATE, RolePermission.UPDATE);
@@ -388,7 +395,23 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		return (Set<Role>) roleCache.get(principal);
 	}
 
-	private void recurseImpliedPermissions(PermissionType t, Set<PermissionType> derivedPermissions) {
+	@SuppressWarnings("unchecked")
+	@Override
+	public Set<Role> getPrincipalNonPersonalRoles(Principal principal) {
+
+		Set<Role> roles = getPrincipalRoles(principal);
+		CollectionUtils.filter(roles, new Predicate() {
+			@Override
+			public boolean evaluate(Object o) {
+				Role r = (Role) o;
+				return !r.personalRole;
+			}
+		});
+		return roles;
+	}
+
+	private void recurseImpliedPermissions(PermissionType t,
+			Set<PermissionType> derivedPermissions) {
 
 		if (t != null && !derivedPermissions.contains(t)) {
 			derivedPermissions.add(t);
@@ -494,6 +517,46 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 		for (Permission p : getPrincipalPermissions(principal)) {
 			if (p.getResourceKey().equals(permission.getResourceKey())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean hasAllPermissions(Principal principal, Permission...permissions) {
+
+		final Set<Permission> principalPermissions = getPrincipalPermissions(principal);
+		for(final Permission p : permissions) {
+			Object result = CollectionUtils.find(principalPermissions, new Predicate() {
+				@Override
+				public boolean evaluate(Object o) {
+					Permission permission = (Permission) o;
+					return p.getResourceKey().equals(permission.getResourceKey());
+				}
+			});
+
+			if(result == null) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public boolean hasAnyPermission(Principal principal, Permission...permissions) {
+
+		final Set<Permission> principalPermissions = getPrincipalPermissions(principal);
+		for(final Permission p : permissions) {
+			Object result = CollectionUtils.find(principalPermissions, new Predicate() {
+				@Override
+				public boolean evaluate(Object o) {
+					Permission permission = (Permission) o;
+					return p.getResourceKey().equals(permission.getResourceKey());
+				}
+			});
+
+			if(result != null) {
 				return true;
 			}
 		}

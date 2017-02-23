@@ -580,4 +580,21 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	protected Class<Role> getResourceClass() {
 		return Role.class;
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Permission> getPermissionsByResourceKeys(final String...resourceKeys) {
+		return allEntities(Permission.class,
+				new CriteriaConfiguration() {
+
+					@Override
+					public void configure(Criteria criteria) {
+						criteria.add(Restrictions.in("resourceKey", resourceKeys));
+
+					}
+				}
+		);
+	}
+
+
 }
