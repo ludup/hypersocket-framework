@@ -63,7 +63,7 @@ public class core_1_DOT_3_DOT_0_R1 implements Runnable {
 						
 						for(Principal user : realmService.allUsers(realm)) {
 							try {
-								permissionService.createRole(user.getPrincipalName(), realm, 
+								permissionService.createRole(user.getPrincipalDescription(), realm, 
 										Arrays.asList(user), 
 										Collections.<Permission>emptyList(), null, true, true);
 							} catch (ResourceCreationException e) {
