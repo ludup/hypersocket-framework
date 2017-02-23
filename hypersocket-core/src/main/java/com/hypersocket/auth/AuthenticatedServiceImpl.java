@@ -44,7 +44,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	protected abstract void verifyPermission(Principal principal,
 			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException;
 	
-	protected abstract Set<Role> getPrincipalRoles(Principal principal) throws AccessDeniedException;
+	protected abstract Role getPersonalRole(Principal principal) throws AccessDeniedException;
 	
 	@Override
 	public void elevatePermissions(PermissionType... permissions) {
@@ -156,7 +156,8 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	public Role getCurrentRole() {
 		if(currentRole.get()==null) {
 			try {
-				return getPrincipalRoles(getCurrentPrincipal()).iterator().next();
+				Role role = getPersonalRole(getCurrentPrincipal());
+				currentRole.set(role);
 			} catch (AccessDeniedException e) {
 				throw new InvalidAuthenticationContext("User is unable to read their own roles!");
 			}
