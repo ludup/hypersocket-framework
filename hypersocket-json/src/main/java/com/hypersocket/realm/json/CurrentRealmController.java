@@ -1,26 +1,6 @@
 package com.hypersocket.realm.json;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
+import com.hypersocket.auth.PrincipalNotFoundException;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
@@ -29,19 +9,12 @@ import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.properties.json.PropertyItem;
-import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.PrincipalColumns;
-import com.hypersocket.realm.PrincipalSuspension;
-import com.hypersocket.realm.PrincipalSuspensionService;
-import com.hypersocket.realm.PrincipalSuspensionType;
-import com.hypersocket.realm.PrincipalType;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmService;
-import com.hypersocket.realm.RealmServiceImpl;
-import com.hypersocket.realm.UserVariableReplacementService;
+import com.hypersocket.realm.*;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
@@ -49,6 +22,15 @@ import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
 
 @Controller
 public class CurrentRealmController extends ResourceController {
@@ -58,6 +40,9 @@ public class CurrentRealmController extends ResourceController {
 
 	@Autowired
 	UserVariableReplacementService userVariableReplacement;
+
+	@Autowired
+	PermissionService permissionService;
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/groups/list", method = RequestMethod.GET, produces = { "application/json" })
@@ -907,6 +892,35 @@ public class CurrentRealmController extends ResourceController {
 							RealmService.RESOURCE_BUNDLE,
 							"suspendUser.resumeSuccess", principalSuspension
 									.getPrincipal().getPrincipalName()));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/user/{id}/roles", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<Role> getPrincipalRoles(HttpServletRequest request,
+										   HttpServletResponse response, @PathVariable("id") Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException, PrincipalNotFoundException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			Realm realm = sessionUtils.getCurrentRealm(request);
+
+			Principal principal = realmService.getPrincipalById(realm, id,
+					PrincipalType.USER);
+
+			if(principal == null) {
+				throw new PrincipalNotFoundException(String.format("Principal with id %d not found.", id));
+			}
+
+			Set<Role> roles = permissionService.getPrincipalNonPersonalRoles(principal);
+			return new ResourceList<>(roles);
 		} finally {
 			clearAuthenticatedContext();
 		}
