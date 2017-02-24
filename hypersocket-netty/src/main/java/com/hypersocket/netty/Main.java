@@ -21,8 +21,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.SpringVersion;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hypersocket.permissions.AccessDeniedException;
@@ -98,6 +96,7 @@ public class Main {
 		InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
 
 		try {
+
 			createApplicationContext();
 
 			runServer();
@@ -113,6 +112,9 @@ public class Main {
 	public ClassLoader getClassLoader() {
 		return classLoader;
 	}
+	
+	
+	
 	protected void runServer() throws AccessDeniedException, ServletException,
 			IOException {
 
@@ -144,7 +146,9 @@ public class Main {
 	 */
 	public void restartServer() throws IOException {
 
-		server.stop();
+		if(server!=null) {
+			server.stop();
+		}
 		restartCallback.run();
 
 	}
