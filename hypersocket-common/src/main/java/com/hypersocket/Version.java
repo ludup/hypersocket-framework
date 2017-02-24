@@ -35,19 +35,19 @@ public class Version implements Comparable<Version> {
                     element = 0;
                 } else if (string.toLowerCase().startsWith("ga")) {
                     String substring = string.substring(2);
-                    element = -199 + ( substring.equals("") ? 0 : Integer.parseInt(substring) );
+                    element = -19999 + ( substring.equals("") ? 0 : Integer.parseInt(substring) );
                 } else if (string.toLowerCase().startsWith("rc")) {
                     String substring = string.substring(2);
-                    element = -299 + ( substring.equals("") ? 0 : Integer.parseInt(substring) );
+                    element = -29999 + ( substring.equals("") ? 0 : Integer.parseInt(substring) );
                 } else if (string.toLowerCase().startsWith("beta")) {
                     String substring = string.substring(4);
-                    element = -399 + ( substring.equals("") ? 0 : Integer.parseInt(substring) );
+                    element = -39999 + ( substring.equals("") ? 0 : Integer.parseInt(substring) );
                 } else if (string.toLowerCase().startsWith("alpha")) {
                     String substring = string.substring(5);
-                    element = -499 + ( substring.equals("") ? 0 : Integer.parseInt(substring) );
+                    element = -49999 + ( substring.equals("") ? 0 : Integer.parseInt(substring) );
                 } else if (string.toLowerCase().startsWith("snapshot")) {
                     String substring = string.substring(8);
-                    element = -599 + ( substring.equals("") ? 0 : Integer.parseInt(substring) );
+                    element = -59999 + ( substring.equals("") ? 0 : Integer.parseInt(substring) );
                 } else if (string.toLowerCase().startsWith("local")) {
                     element = Integer.MAX_VALUE;
                 } else if (string.toLowerCase().startsWith("r")) {
