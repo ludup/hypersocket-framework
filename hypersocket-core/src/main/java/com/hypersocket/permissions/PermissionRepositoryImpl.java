@@ -596,5 +596,23 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public List<Role> searchNoPersonalNoAllUserRoles(final Realm realm, String searchPattern,
+								  int start, int length, ColumnSort[] sorting) {
+		return search(Role.class, "name", searchPattern, start, length,
+				sorting, new CriteriaConfiguration() {
+
+					@Override
+					public void configure(Criteria criteria) {
+						criteria.add(Restrictions.eq("hidden", false));
+						criteria.add(Restrictions.eq("allUsers", false));
+						criteria.add(Restrictions.eq("personalRole", false));
+						criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+						criteria.add(Restrictions.eq("realm", realm));
+					}
+				});
+	}
+
 
 }

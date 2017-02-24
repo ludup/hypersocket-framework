@@ -7,17 +7,17 @@
  ******************************************************************************/
 package com.hypersocket.permissions;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface PermissionRepository extends AbstractResourceRepository<Role> {
 
@@ -116,4 +116,7 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 	long getAssignableResourceCount(Principal principal);
 
 	List<Permission> getPermissionsByResourceKeys(final String...resourceKeys);
+
+	public List<Role> searchNoPersonalNoAllUserRoles(final Realm realm, String searchPattern,
+													 int start, int length, ColumnSort[] sorting);
 }

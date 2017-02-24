@@ -81,9 +81,12 @@ public interface PermissionService extends AuthenticatedService, FindableResourc
 
 	boolean hasAdministrativePermission(Principal principal);
 	
-	public Long getRoleCount(String searchPattern) throws AccessDeniedException;
+	Long getRoleCount(String searchPattern) throws AccessDeniedException;
 
-	public List<?> getRoles(String searchPattern, int start, int length, ColumnSort[] sorting)
+	List<?> getRoles(String searchPattern, int start, int length, ColumnSort[] sorting)
+			throws AccessDeniedException;
+
+	List<?> getNoPersonalNoAllUsersRoles(String searchPattern, int start, int length, ColumnSort[] sorting)
 			throws AccessDeniedException;
 
 	Role getPersonalRole(Principal principal);
@@ -91,6 +94,8 @@ public interface PermissionService extends AuthenticatedService, FindableResourc
 	Set<Role> getPrincipalRoles(Principal principal) throws AccessDeniedException;
 
 	Set<Role> getPrincipalNonPersonalRoles(Principal principal);
+
+	Set<Role> getPrincipalNonPersonalNonAllUserRoles(Principal principal);
 
 	String getRoleProperty(Role resource, String resourceKey);
 

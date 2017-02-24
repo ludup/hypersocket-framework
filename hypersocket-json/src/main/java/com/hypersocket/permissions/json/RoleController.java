@@ -1,23 +1,6 @@
 package com.hypersocket.permissions.json;
 
-import java.util.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import com.hypersocket.auth.PrincipalNotFoundException;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
@@ -43,6 +26,16 @@ import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
 
 @Controller
 public class RoleController extends ResourceController {
@@ -321,7 +314,7 @@ public class RoleController extends ResourceController {
 				throw new PrincipalNotFoundException(String.format("Principal not found for id %d.", userId));
 			}
 
-			if(!permissionService.hasAdministrativePermission(principal)) {
+			if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 				throw new AccessDeniedException("Operation not allowed for current Principal.");
 			}
 			permissionService.assignRole(role, principal);
@@ -360,7 +353,7 @@ public class RoleController extends ResourceController {
 					throw new PrincipalNotFoundException(String.format("Principal not found for id %d.", userId));
 				}
 
-				if(!permissionService.hasAdministrativePermission(principal)) {
+				if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 					throw new AccessDeniedException("Operation not allowed for current Principal.");
 				}
 				permissionService.unassignRole(role, principal);
@@ -403,12 +396,12 @@ public class RoleController extends ResourceController {
 											   int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							List<?> roles = permissionService.getRoles(searchPattern,
+							List<?> roles = permissionService.getNoPersonalNoAllUsersRoles(searchPattern,
 									start, length, sorting);
 
 							Principal principal = realmService.getPrincipalById(userId);
 
-							final Set<Role> principalRoles = permissionService.getPrincipalRoles(principal);
+							final Set<Role> principalRoles = permissionService.getPrincipalNonPersonalNonAllUserRoles(principal);
 
 							CollectionUtils.filter(roles, new Predicate() {
 								@Override
@@ -424,14 +417,9 @@ public class RoleController extends ResourceController {
 						public Long getTotalCount(String searchColumn, String searchPattern)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							Long roleCount = permissionService
-									.getRoleCount(searchPattern);
 
-							Principal principal = realmService.getPrincipalById(userId);
-
-							Set<Role> principalRoles = permissionService.getPrincipalRoles(principal);
-
-							return roleCount - principalRoles.size();
+							//no op
+							return 0l;
 						}
 					});
 		} finally {
