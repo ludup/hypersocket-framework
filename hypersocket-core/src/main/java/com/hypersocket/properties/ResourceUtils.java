@@ -229,10 +229,16 @@ public class ResourceUtils {
 	}
 	
 	public static String addEncryptedTag(String value) {
+		if(value==null) {
+			return value;
+		}
 		return getUUIDEncryptedTag() + value;
 	}
 	
 	public static String removeEncryptedTag(String value) {
+		if(value==null) {
+			return value;
+		}
 		return value.replaceFirst(getEncryptedTag(), "").replaceFirst(getUUIDEncryptedTag(), "");
 	}
 
