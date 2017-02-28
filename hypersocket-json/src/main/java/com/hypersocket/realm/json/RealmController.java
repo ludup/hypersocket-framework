@@ -218,7 +218,7 @@ public class RealmController extends ResourceController {
 
 			if (realm.getId() != null) {
 				newRealm = realmService.updateRealm(realmService.getRealmById(realm.getId()), realm.getName(),
-						properties);
+						realm.getType(), properties);
 			} else {
 				newRealm = realmService.createRealm(realm.getName(), realm.getType(), null, properties);
 			}

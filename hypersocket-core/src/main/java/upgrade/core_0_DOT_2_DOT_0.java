@@ -142,13 +142,7 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 		systemRole.setHidden(true);
 		permissionRepository.saveRole(systemRole);
 
-
-		// Create Administrators group for Default realm
-		Principal group = localRealmProvider.createGroup(realm,
-				"Administrators", new HashMap<String,String>());
-
 		List<Principal> groups = new ArrayList<Principal>();
-		groups.add(group);
 
 		// Create the default admin user
 		Principal admin = localRealmProvider.createUser(realm, "admin",
@@ -163,7 +157,6 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 
 		permissionRepository.grantPermission(rAdmin, pAdmin);
 		rAdmin.getPrincipals().add(admin);
-		rAdmin.getPrincipals().add(group);
 
 		permissionRepository.saveRole(rAdmin);
 	}

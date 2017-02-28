@@ -13,17 +13,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
-import javax.xml.bind.attachment.AttachmentUnmarshaller;
 
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.asn1.ocsp.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +35,8 @@ import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
-import com.hypersocket.i18n.I18N;
 import com.hypersocket.local.LocalRealmProviderImpl;
+import com.hypersocket.local.LocalUser;
 import com.hypersocket.message.MessageResourceService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
@@ -286,6 +283,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 	
 	protected RealmProvider getProviderForPrincipal(Principal principal) {
+		if(principal instanceof LocalUser) {
+			return getLocalProvider();
+		}
 		return getProviderForRealm(principal.getRealm());
 	}
 
@@ -856,7 +856,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Realm getSystemRealm() {
 		if (systemRealm == null) {
-			systemRealm = realmRepository.getRealmByName(SYSTEM_REALM);
+			systemRealm = realmRepository.getSystemRealm();
 		}
 		return systemRealm;
 	}
@@ -864,7 +864,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Principal getSystemPrincipal() {
 		if (systemPrincipal == null) {
-			systemPrincipal = getPrincipalByName(realmRepository.getRealmByName(SYSTEM_REALM), SYSTEM_PRINCIPAL, PrincipalType.SYSTEM);
+			systemPrincipal = getPrincipalByName(realmRepository.getSystemRealm(), SYSTEM_PRINCIPAL, PrincipalType.SYSTEM);
 		}
 		return systemPrincipal;
 	}
@@ -945,7 +945,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Realm updateRealm(Realm realm, String name, Map<String, String> properties)
+	public Realm updateRealm(Realm realm, String name, String type, Map<String, String> properties)
 			throws AccessDeniedException, ResourceChangeException, ResourceConfirmationException {
 
 		try {
@@ -958,6 +958,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				}
 			}
 
+			realm.setResourceCategory(type);
 			RealmProvider realmProvider = getProviderForRealm(realm.getResourceCategory());
 			
 			realmProvider.testConnection(properties, realm);

@@ -24,7 +24,7 @@ import com.hypersocket.tables.ColumnSort;
 public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	static final String RESOURCE_BUNDLE = "RealmService";
-	static final String SYSTEM_REALM = "System";
+	//static final String SYSTEM_REALM = "System";
 	static final String SYSTEM_PRINCIPAL = "system";
 	static final String MODULE = "realms";
 	
@@ -70,7 +70,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Collection<PropertyCategory> getRealmPropertyTemplates(Realm realm) throws AccessDeniedException;
 
-	Realm updateRealm(Realm realm, String name, Map<String, String> properties)
+	Realm updateRealm(Realm realm, String name, String module, Map<String, String> properties)
 			throws AccessDeniedException, ResourceChangeException, ResourceConfirmationException;
 
 	Principal getPrincipalById(Realm realm, Long id, PrincipalType... type) throws AccessDeniedException;
