@@ -891,12 +891,16 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			@SuppressWarnings("unchecked")
 			Realm realm = realmRepository.createRealm(name, UUID.randomUUID().toString(), module, properties,
 					realmProvider, owner, new TransactionAdapter<Realm>() {
+
 				@Override
 				public void afterOperation(Realm realm, Map<String,String> properties) {
 					try {
 						configurationService.setValue(realm, "realm.userEditableProperties",
 								ResourceUtils.implodeValues(realmProvider.getDefaultUserPropertyNames()));
-
+						
+						realm.setReadOnly(realmProvider.isReadOnly(realm));
+						realmRepository.saveRealm(realm);
+						
 						fireRealmCreate(realm);
 
 					} catch (Throwable e) {

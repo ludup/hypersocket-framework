@@ -78,10 +78,6 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 		return REALM_RESOURCE_CATEGORY;
 	}
 
-	public boolean canCreate() {
-		return true;
-	}
-
 	@Override
 	public String getResourceBundle() {
 		return RESOURCE_BUNDLE;
