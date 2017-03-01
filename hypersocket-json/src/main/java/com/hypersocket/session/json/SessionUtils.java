@@ -13,6 +13,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,7 +130,7 @@ public class SessionUtils {
 			}
 		}
 
-		verifySameSiteRequest(request);
+		verifySameSiteRequest(request, session);
 		
 		// Preserve the session for future lookups in this request and session
 		request.setAttribute(AUTHENTICATED_SESSION, session);
@@ -171,7 +172,7 @@ public class SessionUtils {
 
 	}
 	
-	private void verifySameSiteRequest(HttpServletRequest request) throws AccessDeniedException {
+	private void verifySameSiteRequest(HttpServletRequest request, Session session) throws AccessDeniedException {
 		
 		/**
 		 * TODO remove this for production release. Only enable in development whilst
@@ -181,10 +182,10 @@ public class SessionUtils {
 			return;
 		}
 		
-		String token = (String)request.getSession().getAttribute(HYPERSOCKET_CSRF_TOKEN);
+		String token = (String) request.getSession().getAttribute(HYPERSOCKET_CSRF_TOKEN);
 		if(token==null) {
-			log.warn("CSRF token missing from session");
-			throw new AccessDeniedException("CSRF token missing from session");
+			token = DigestUtils.sha256Hex(session.getId() + "|CSRF-TOKEN");
+			request.getSession().setAttribute(HYPERSOCKET_CSRF_TOKEN, token);
 		}
 		String requestToken = request.getHeader("X-Csrf-Token");
 		if(requestToken==null) {
@@ -210,7 +211,7 @@ public class SessionUtils {
 		response.addCookie(cookie);
 		
 		if(request.getSession().getAttribute(HYPERSOCKET_CSRF_TOKEN)==null) {
-			request.getSession().setAttribute(HYPERSOCKET_CSRF_TOKEN, HypersocketUtils.generateRandomAlphaNumericString(24));
+			request.getSession().setAttribute(HYPERSOCKET_CSRF_TOKEN,  DigestUtils.sha256Hex(session.getId() + "|CSRF-TOKEN"));
 		}
 		
 		cookie = new Cookie(HYPERSOCKET_CSRF_TOKEN, (String)request.getSession().getAttribute(HYPERSOCKET_CSRF_TOKEN));

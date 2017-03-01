@@ -448,8 +448,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 				String cookieValue = nextCookie.substring(equalsPos + 1);
 				try {
 					lst.add(new Cookie(cookieName, cookieValue));
-				} catch (Throwable e) {
-					log.info("Ignoring cookie" + cookieName, e);
+				} catch (IllegalArgumentException e) {
 				}
 			}
 			cookies = lst.toArray(new Cookie[0]);
