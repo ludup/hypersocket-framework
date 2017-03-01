@@ -23,6 +23,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
 
@@ -50,20 +51,26 @@ public class core_1_DOT_3_DOT_0_R1 implements Runnable {
 			log.info("Creating principal roles");
 		}
 		
-		
 		sessionService.executeInSystemContext(new Runnable() {
 			public void run() {
 				try {
 					for(Realm realm : realmService.allRealms()) {
 						
-						permissionService.updateRole(permissionService.getRole(PermissionService.OLD_ROLE_ADMINISTRATOR, realm), 
-								PermissionService.ROLE_REALM_ADMINISTRATOR, 
-								Collections.<Principal>emptyList(), 
-								Collections.<Permission>emptyList(), null);
+						try {
+							permissionService.updateRole(permissionService.getRole(PermissionService.OLD_ROLE_ADMINISTRATOR, realm), 
+										PermissionService.ROLE_REALM_ADMINISTRATOR, 
+										Collections.<Principal>emptyList(), 
+										Collections.<Permission>emptyList(), null);
+						} catch (ResourceNotFoundException e1) {
+						}
+						
 						
 						for(Principal user : realmService.allUsers(realm)) {
+							if(user.isHidden()) {
+								continue;
+							}
 							try {
-								permissionService.createRole(user.getPrincipalName(), realm, 
+								permissionService.createRole(user.getPrincipalDescription(), realm, 
 										Arrays.asList(user), 
 										Collections.<Permission>emptyList(), null, true, true);
 							} catch (ResourceCreationException e) {
@@ -71,7 +78,7 @@ public class core_1_DOT_3_DOT_0_R1 implements Runnable {
 							}
 						}
 						for(Principal group : realmService.allGroups(realm)) {
-							try {
+							try { 
 								permissionService.createRole(group.getPrincipalName(), realm, 
 										Arrays.asList(group), 
 										Collections.<Permission>emptyList(), null, true, true);

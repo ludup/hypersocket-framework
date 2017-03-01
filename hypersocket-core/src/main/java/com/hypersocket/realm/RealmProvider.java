@@ -36,7 +36,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	boolean isReadOnly(Realm realm);
 
 	boolean supportsAccountUnlock(Realm realm) throws ResourceException;
-
+	
 	Principal createUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
 			String password, boolean forceChange) throws ResourceException;
 

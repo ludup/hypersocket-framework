@@ -491,16 +491,13 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		Criteria crit = createCriteria(Role.class)
 				.setResultTransformer(
 						CriteriaSpecification.DISTINCT_ROOT_ENTITY)
-				.add(Restrictions.eq("personalRole", true))
-				.createCriteria("principals")
-				.add(Restrictions.in("id", Arrays.asList(principal.getId())));
+				.add(Restrictions.eq("personalRole", true));
+		crit = crit.createCriteria("principals").add(Restrictions.in("id", Arrays.asList(principal.getId())));
 
 		Set<Role> roles = new HashSet<Role>(crit.list());
 
 		if (roles.isEmpty() && createIfNotFound) {
-			return createPersonalRole(principal);
-		} else if(roles.isEmpty()) {
-			return null;
+			throw new IllegalStateException(String.format("Missing role for principal %s", principal.getName()));
 		} else {
 			return roles.iterator().next();
 		}

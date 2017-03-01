@@ -505,6 +505,8 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Transactional
 	public final void saveResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops) throws ResourceException {
 
+		// Now set any remaining values
+		setValues(resource, properties);
 		
 		beforeSave(resource, properties);
 		
@@ -514,9 +516,6 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 		save(resource);
 
-		// Now set any remaining values
-		setValues(resource, properties);
-		
 		afterSave(resource, properties);
 		
 		for(TransactionOperation<T> op : ops) {

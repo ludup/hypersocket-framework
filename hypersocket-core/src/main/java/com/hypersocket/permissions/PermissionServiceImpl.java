@@ -381,7 +381,6 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public Set<Role> getPrincipalRoles(Principal principal) {
 
 		if (!roleCache.containsKey(principal)) {
-
 			roleCache.put(principal, repository.getRolesForPrincipal(realmService.getAssociatedPrincipals(principal)));
 		}
 
