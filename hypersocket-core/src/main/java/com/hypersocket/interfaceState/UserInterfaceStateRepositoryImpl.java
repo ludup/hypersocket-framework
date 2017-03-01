@@ -66,7 +66,7 @@ public class UserInterfaceStateRepositoryImpl extends
 		Collection<UserInterfaceState> list = list(getResourceClass(), new CriteriaConfiguration() {
 			@Override
 			public void configure(Criteria criteria) {
-				criteria/*.add(Restrictions.ilike("name", name))*/
+				criteria.add(Restrictions.ilike("name", name))
 						.add(Restrictions.eq("resourceCategory", resourceCategory))
 						.add(Restrictions.eq("realm", realm));
 			}
