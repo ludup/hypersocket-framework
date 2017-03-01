@@ -71,4 +71,8 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 
 	void setAuthenticationSchemeSelector(AuthenticationSchemeSelector authenticationSelector);
 
+	void registerAuthenticatorSelector(AuthenticatorSelector selector);
+
+	Authenticator nextAuthenticator(AuthenticationState state);
+
 }

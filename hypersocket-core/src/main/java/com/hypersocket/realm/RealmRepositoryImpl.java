@@ -201,7 +201,7 @@ public class RealmRepositoryImpl extends
 	}
 
 	@Override
-	@Transactional(readOnly=tru)
+	@Transactional(readOnly=true)
 	public Realm getSystemRealm() {
 		return get("system", true, Realm.class);
 	}

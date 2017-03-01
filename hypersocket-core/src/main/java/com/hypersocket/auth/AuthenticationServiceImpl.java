@@ -103,6 +103,7 @@ public class AuthenticationServiceImpl extends
 
 	Permission logonPermission;
 	AuthenticationSchemeSelector authenticationSelector;
+	List<AuthenticatorSelector> authenticatorSelectors = new ArrayList<AuthenticatorSelector>();
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -200,6 +201,11 @@ public class AuthenticationServiceImpl extends
 	@Override
 	public void registerListener(AuthenticationServiceListener listener) {
 		listeners.add(listener);
+	}
+	
+	@Override
+	public void registerAuthenticatorSelector(AuthenticatorSelector selector) {
+		authenticatorSelectors.add(selector);
 	}
 
 	@Override
@@ -414,8 +420,7 @@ public class AuthenticationServiceImpl extends
 				clearPrincipalContext();
 			}
 		} else {
-			Authenticator authenticator = authenticators.get(state
-					.getCurrentModule().getTemplate());
+			Authenticator authenticator = nextAuthenticator(state);
 
 			if (authenticator == null) {
 				throw new FallbackAuthenticationRequired();
@@ -566,11 +571,10 @@ public class AuthenticationServiceImpl extends
 		return success;
 	}
 
-	@Override
-	@SuppressWarnings("rawtypes")
-	public FormTemplate nextAuthenticationTemplate(AuthenticationState state,
-			Map params) {
-		if (!authenticators.containsKey(state.getCurrentModule().getTemplate())) {
+	@Override 
+	public Authenticator nextAuthenticator(AuthenticationState state) {
+		Authenticator auth = authenticators.get(state.getCurrentModule().getTemplate());
+		if (auth==null) {
 			if (log.isErrorEnabled()) {
 				log.error(state.getCurrentModule().getTemplate()
 						+ " is not a valid authentication template");
@@ -578,9 +582,20 @@ public class AuthenticationServiceImpl extends
 			throw new IllegalStateException(state.getCurrentModule()
 					.getTemplate() + " is not a valid authenticator");
 		}
-		return modifyTemplate(state,
-				authenticators.get(state.getCurrentModule().getTemplate())
-						.createTemplate(state, params));
+		
+		for(AuthenticatorSelector selector : authenticatorSelectors) {
+			if(selector.isAuthenticatorOverridden(state, auth)) {
+				auth = selector.selectAuthenticator(state, auth);
+			}
+		}
+		return auth;
+	}
+	@Override
+	@SuppressWarnings("rawtypes")
+	public FormTemplate nextAuthenticationTemplate(AuthenticationState state,
+			Map params) {
+		
+		return modifyTemplate(state, nextAuthenticator(state).createTemplate(state, params));
 	}
 
 	protected FormTemplate modifyTemplate(AuthenticationState state,
