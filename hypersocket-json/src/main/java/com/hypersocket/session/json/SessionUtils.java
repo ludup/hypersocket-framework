@@ -13,6 +13,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +21,13 @@ import org.springframework.stereotype.Component;
 
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionResourceToken;
 import com.hypersocket.session.SessionService;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Component
 public class SessionUtils {
@@ -33,6 +36,7 @@ public class SessionUtils {
 
 	public static final String AUTHENTICATED_SESSION = "authenticatedSession";
 	public static final String HYPERSOCKET_API_SESSION = "HYPERSOCKET_API_SESSION";
+	public static final String HYPERSOCKET_CSRF_TOKEN = "HYPERSOCKET_CSRF_TOKEN";
 	public static final String HYPERSOCKET_API_KEY = "apikey";
 	public static final String USER_LOCALE = "userLocale";
 	public static final String HYPERSOCKET_LOCALE = "HYPERSOCKET_LOCALE";
@@ -78,11 +82,7 @@ public class SessionUtils {
 				}
 			}
 		}
-		
 
-		
-		
-		
 		return null;
 	}
 
@@ -104,9 +104,10 @@ public class SessionUtils {
 
 	public Session touchSession(HttpServletRequest request,
 			HttpServletResponse response) throws UnauthorizedException,
-			SessionTimeoutException {
+			SessionTimeoutException, AccessDeniedException {
 
 		Session session = null;
+		
 		if (request.getSession().getAttribute(AUTHENTICATED_SESSION) == null) {
 			if (log.isDebugEnabled()) {
 				log.debug("Session object not attached to HTTP session");
@@ -129,6 +130,8 @@ public class SessionUtils {
 			}
 		}
 
+		verifySameSiteRequest(request, session);
+		
 		// Preserve the session for future lookups in this request and session
 		request.setAttribute(AUTHENTICATED_SESSION, session);
 		request.getSession().setAttribute(AUTHENTICATED_SESSION, session);
@@ -141,7 +144,7 @@ public class SessionUtils {
 
 	public Session getSession(HttpServletRequest request)
 			throws UnauthorizedException, SessionTimeoutException {
-
+		
 		Session session = null;
 		if (request.getSession().getAttribute(AUTHENTICATED_SESSION) == null) {
 			if (log.isDebugEnabled()) {
@@ -169,6 +172,34 @@ public class SessionUtils {
 
 	}
 	
+	private void verifySameSiteRequest(HttpServletRequest request, Session session) throws AccessDeniedException {
+		
+		/**
+		 * TODO remove this for production release. Only enable in development whilst
+		 * issues are ironed out.
+		 */
+		if(!Boolean.getBoolean("hypersocket.development")) {
+			return;
+		}
+		
+		String token = (String) request.getSession().getAttribute(HYPERSOCKET_CSRF_TOKEN);
+		if(token==null) {
+			token = DigestUtils.sha256Hex(session.getId() + "|CSRF-TOKEN");
+			request.getSession().setAttribute(HYPERSOCKET_CSRF_TOKEN, token);
+		}
+		String requestToken = request.getHeader("X-Csrf-Token");
+		if(requestToken==null) {
+			log.warn(String.format("CSRF token missing from %s", request.getRemoteAddr()));
+			throw new AccessDeniedException("CSRF token missing");
+		}
+		
+		if(!token.equals(requestToken)) {
+			log.warn(String.format("CSRF token mistmatch from %s", request.getRemoteAddr()));
+			throw new AccessDeniedException("CSRF token mismatch");
+		}
+		
+		log.info("REMOVE ME: CSRF VERIFIED");
+	}
 
 	public void addAPISession(HttpServletRequest request,
 			HttpServletResponse response, Session session) {
@@ -177,7 +208,16 @@ public class SessionUtils {
 		cookie.setMaxAge(60 * session.getTimeout());
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
 		cookie.setPath("/");
-		//cookie.setDomain(request.getServerName());
+		response.addCookie(cookie);
+		
+		if(request.getSession().getAttribute(HYPERSOCKET_CSRF_TOKEN)==null) {
+			request.getSession().setAttribute(HYPERSOCKET_CSRF_TOKEN,  DigestUtils.sha256Hex(session.getId() + "|CSRF-TOKEN"));
+		}
+		
+		cookie = new Cookie(HYPERSOCKET_CSRF_TOKEN, (String)request.getSession().getAttribute(HYPERSOCKET_CSRF_TOKEN));
+		cookie.setMaxAge(60 * session.getTimeout());
+		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
+		cookie.setPath("/");
 		response.addCookie(cookie);
 	}
 

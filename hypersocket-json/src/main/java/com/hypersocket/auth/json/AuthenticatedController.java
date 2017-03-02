@@ -209,11 +209,6 @@ public class AuthenticatedController {
 		return authenticationService.getCurrentSession();
 	}
 
-//	protected void setupAuthenticatedContext(Principal principal,
-//			Locale locale, Realm realm) {
-//		authenticationService.setCurrentPrincipal(principal, locale, realm);
-//	}
-
 	protected void clearAuthenticatedContext() {
 		authenticationService.clearPrincipalContext();
 	}

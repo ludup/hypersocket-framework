@@ -131,29 +131,27 @@ public class LogonController extends AuthenticatedController {
 
 
 		String flash = (String) request.getSession().getAttribute("flash");
+		
+		Session session;
+		
+		request.getSession().removeAttribute("flash");
+
 		try {
-			Session session;
 			
-			request.getSession().removeAttribute("flash");
-
-			try {
-				
-				if(state==null) {
-					session = sessionUtils.touchSession(request, response);
-	
-					if (session != null) {
-						
-						return getSuccessfulResult(session, flash, request, response);
-					
-					}
+			if(state==null) {
+				session = sessionUtils.touchSession(request, response);
+				if (session != null) {
+					return getSuccessfulResult(session, flash, request, response);
 				}
-			} catch (UnauthorizedException e) {
-				// We are already in login so just continue
-			} catch (SessionTimeoutException ex) {
-				// Previous session has timed out
 			}
+		} catch (UnauthorizedException e) {
+			// We are already in login so just continue
+		} catch (SessionTimeoutException ex) {
+			// Previous session has timed out
+		}
 
 
+		try {
 			boolean createdState = false;
 			if (state == null
 					|| (!StringUtils.isEmpty(scheme) && !state.getScheme()
@@ -235,6 +233,7 @@ public class LogonController extends AuthenticatedController {
 			if(log.isErrorEnabled()) {
 				log.error("Error in authentication flow", t);
 			}
+
 			state.setLastErrorMsg(t.getMessage());
 			state.setLastErrorIsResourceKey(false);
 			
@@ -293,7 +292,7 @@ public class LogonController extends AuthenticatedController {
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public void logoff(HttpServletRequest request, HttpServletResponse response)
-			throws UnauthorizedException, SessionTimeoutException {
+			throws UnauthorizedException, SessionTimeoutException, AccessDeniedException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
