@@ -52,8 +52,16 @@ public class UsernameAndPasswordAuthenticator extends
 	public FormTemplate createTemplate(AuthenticationState state, Map params) {
 
 		List<Realm> realms = new ArrayList<Realm>();
-		if (systemConfigurationService.getBooleanValue("auth.chooseRealm")) {
-			realms.addAll(realmRepository.allRealms());
+		if(!realmService.isRealmStrictedToHost(state.getRealm())) {
+			if (systemConfigurationService.getBooleanValue("auth.chooseRealm")) {
+				for(Realm realm : realmRepository.allRealms()) {
+					if(!realmService.isRealmStrictedToHost(realm)) {
+						realms.add(realm);
+					}
+				}
+			}
+		} else {
+			realms.add(state.getRealm());
 		}
 		return new UsernameAndPasswordTemplate(state, params, realms,
 				realmService.getDefaultRealm());
