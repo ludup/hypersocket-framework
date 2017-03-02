@@ -197,8 +197,7 @@ public class SessionUtils {
 			log.warn(String.format("CSRF token mistmatch from %s", request.getRemoteAddr()));
 			throw new UnauthorizedException();
 		}
-		
-		log.info("REMOVE ME: CSRF VERIFIED");
+
 	}
 
 	public void addAPISession(HttpServletRequest request,
