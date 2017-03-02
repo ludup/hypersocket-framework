@@ -33,8 +33,9 @@ public class UsernameAndPasswordTemplate extends FormTemplate {
 
 		if(realms.size() > 1) {
 			SelectInputField select = new SelectInputField("realm", defaultRealm.getName(), true, "realm.label");
+			select.setOnChange("changeLogonRealm");
 			for(Realm realm : realms) {
-				select.addOption(new Option(realm.getName(), realm.getName(), realm.equals(defaultRealm), false));
+				select.addOption(new Option(realm.getName(), realm.getName(), realm.equals(state.getRealm()), false));
 			}
 			fields.add(select);
 		}

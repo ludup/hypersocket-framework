@@ -274,9 +274,13 @@ public class AuthenticationServiceImpl extends
 	@Override
 	public AuthenticationState createAuthenticationState(
 			String schemeResourceKey, String remoteAddress,
-			Map<String, Object> environment, Locale locale)
+			Map<String, Object> environment, Locale locale, Realm realm)
 			throws AccessDeniedException {
-
+		
+		if(realm==null) {
+			realm = realmService.getDefaultRealm();
+		}
+		
 		AuthenticationState state = new AuthenticationState(remoteAddress,
 				locale, environment);
 
@@ -315,12 +319,12 @@ public class AuthenticationServiceImpl extends
 					hostHeader = hostHeader.substring(0, idx);
 				}
 
-				state.setRealm(realmService.getRealmByHost(hostHeader));
+				state.setRealm(realmService.getRealmByHost(hostHeader, realm));
 			}
 		}
 
 		if (state.getRealm() == null) {
-			state.setRealm(realmService.getDefaultRealm());
+			state.setRealm(realm);
 		}
 
 		AuthenticationScheme scheme = selectScheme(schemeResourceKey, state);
@@ -421,7 +425,7 @@ public class AuthenticationServiceImpl extends
 			}
 		} else {
 			Authenticator authenticator = nextAuthenticator(state);
-
+			Realm currentRealm = state.getRealm(); // The default realm
 			if (authenticator == null) {
 				throw new FallbackAuthenticationRequired();
 			}
@@ -499,6 +503,27 @@ public class AuthenticationServiceImpl extends
 					try {
 						success = true;
 
+						if(!state.getRealm().equals(currentRealm) && state.getCurrentIndex()==0) {
+							/**
+							 * The users realm is not the realm we started off in. We need to switch
+							 */
+							AuthenticationScheme realmScheme = schemeRepository.getSchemeByResourceKey(state.getRealm(), state.getScheme().getResourceKey());
+							List<AuthenticationModule> modules = repository.getModulesForScheme(state.getScheme());
+							if(modules.isEmpty()) {
+								throw new IllegalStateException("Incorrect authentication configured. Contact your Administrator");
+							}
+							if(state.getCurrentModule().getTemplate().equals(modules.get(0).getTemplate())) {
+								if(log.isInfoEnabled()) {
+									log.info(String.format("Switching realms from %s to %s", currentRealm.getName(), state.getRealm()));
+								}
+								state.setScheme(realmScheme);
+								state.setModules(modules);
+							} else {
+								throw new IllegalStateException("Invalid realm configuration. Contact your Administrator");
+							}
+							
+						}
+						
 						state.nextModule();
 
 						if (state.isAuthenticationComplete()) {

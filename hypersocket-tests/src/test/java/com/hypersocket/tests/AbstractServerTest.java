@@ -36,7 +36,7 @@ import org.junit.BeforeClass;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hypersocket.json.AuthenticationRequiredResult;
+import com.hypersocket.auth.AuthenticationRequiredResult;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.JsonLogonResult;
 import com.hypersocket.json.JsonResourceStatus;

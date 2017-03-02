@@ -25,12 +25,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.hypersocket.auth.AuthenticationRequiredResult;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.FallbackAuthenticationRequired;
 import com.hypersocket.json.AuthenticationRedirectResult;
-import com.hypersocket.json.AuthenticationRequiredResult;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.session.json.SessionUtils;
@@ -95,15 +96,22 @@ public class LogonController extends AuthenticatedController {
 
 	}
 
-	@RequestMapping(value = "logon/resetState", method = { RequestMethod.GET,
+	public AuthenticationState resetAuthenticationState(
+			HttpServletRequest request, HttpServletResponse response,
+			String scheme, Realm realm) throws AccessDeniedException, UnsupportedEncodingException {
+		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, null);
+		return createAuthenticationState(scheme, request, response, realm);
+	}
+	
+	@RequestMapping(value = "logon/switchRealm/{scheme}/{realm}", method = { RequestMethod.GET,
 			RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public AuthenticationState resetAuthenticationState(
+	public AuthenticationState switchLogonRealm(
 			HttpServletRequest request, HttpServletResponse response,
-			String scheme) throws AccessDeniedException, UnsupportedEncodingException {
-		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, null);
-		return createAuthenticationState(scheme, request, response);
+			@PathVariable String scheme,
+			@PathVariable String realm) throws AccessDeniedException, UnsupportedEncodingException {
+		return resetAuthenticationState(request, response, scheme, realmService.getRealmByName(realm));
 	}
 
 	@RequestMapping(value = "logon", method = { RequestMethod.GET,
@@ -157,7 +165,7 @@ public class LogonController extends AuthenticatedController {
 					|| (!StringUtils.isEmpty(scheme) && !state.getScheme()
 							.getResourceKey().equals(scheme))) {
 				// We have not got login state so create
-				state = createAuthenticationState(scheme, request, response);
+				state = createAuthenticationState(scheme, request, response, getCurrentRealm());
 				createdState = true;
 			}
 
@@ -215,7 +223,8 @@ public class LogonController extends AuthenticatedController {
 						state.getCurrentIndex()==0,
 						!state.hasNextStep(), success || state.isNew(),
 						state.isAuthenticationComplete(),
-						state.getScheme().getLastButtonResourceKey());
+						state.getScheme().getLastButtonResourceKey(),
+						state.getRealm());
 				
 			}
 		} catch(FallbackAuthenticationRequired e) {
@@ -252,7 +261,8 @@ public class LogonController extends AuthenticatedController {
 					state.getCurrentIndex()==0,
 					!state.hasNextStep(), state.isNew(),
 					state.isAuthenticationComplete(),
-					state.getScheme().getLastButtonResourceKey());
+					state.getScheme().getLastButtonResourceKey(),
+					state.getRealm());
 		} finally {
 			clearAuthenticatedContext();
 		}

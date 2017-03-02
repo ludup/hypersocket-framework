@@ -13,12 +13,12 @@ import com.hypersocket.HypersocketVersion;
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class AuthenticationResult {
 
-	String bannerMsg;
-	String errorMsg;
-	boolean showLocales;
-	boolean success;
-	String version = HypersocketVersion.getVersion();
-	JsonResource principal;
+	protected String bannerMsg;
+	protected String errorMsg;
+	protected boolean showLocales;
+	protected boolean success;
+	protected String version = HypersocketVersion.getVersion();
+	protected JsonResource principal;
 	
 	public AuthenticationResult() {	
 	}
