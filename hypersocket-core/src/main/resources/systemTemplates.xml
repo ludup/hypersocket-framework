@@ -7,7 +7,7 @@
 	<propertyCategory resourceKey="category.authentication"
 		 resourceBundle="AuthenticationService" weight="100">
 		<property resourceKey="auth.chooseRealm" inputType="switch"
-			defaultValue="false" weight="0" />
+			defaultValue="true" weight="0" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.databaseSettings"
 		resourceBundle="DatabaseService" weight="200">

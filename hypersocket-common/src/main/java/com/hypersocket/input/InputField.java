@@ -23,7 +23,8 @@ public class InputField {
 	String label;
 	List<Option> options = new ArrayList<Option>();
 	String infoKey;
-
+	String onChange;
+	
 	public InputField() {
 
 	}
@@ -103,4 +104,14 @@ public class InputField {
 	public void setInfoKey(String infoKey) {
 		this.infoKey = infoKey;
 	}
+
+	public String getOnChange() {
+		return onChange;
+	}
+
+	public void setOnChange(String onclick) {
+		this.onChange = onclick;
+	}
+	
+	
 }

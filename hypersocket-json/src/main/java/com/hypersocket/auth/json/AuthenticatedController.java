@@ -76,9 +76,14 @@ public class AuthenticatedController {
 	protected I18NService i18nService;
 
 	AuthenticationState createAuthenticationState(String scheme,
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest request, HttpServletResponse response,
+			Realm realm)
 			throws AccessDeniedException, UnsupportedEncodingException {
 
+		if(realm==null) {
+			realm = realmService.getDefaultRealm();
+		}
+		
 		Map<String, Object> environment = new HashMap<String, Object>();
 		for (BrowserEnvironment env : BrowserEnvironment.values()) {
 			if (request.getHeader(env.toString()) != null) {
@@ -96,12 +101,12 @@ public class AuthenticatedController {
 
 		AuthenticationState state = authenticationService
 				.createAuthenticationState(scheme, request.getRemoteAddr(),
-						environment, sessionUtils.getLocale(request));
+						environment, sessionUtils.getLocale(request), realm);
 		List<AuthenticationModule> modules = state.getModules();
 		for(AuthenticationModule module : modules) {
 			if(authenticationService.getAuthenticator(module.getTemplate())==null) {
 				
-				state = createAuthenticationState("fallback", request, response);
+				state = createAuthenticationState("fallback", request, response, realm);
 				state.setLastErrorIsResourceKey(true);
 				state.setLastErrorMsg("revertedFallback.adminOnly");
 				return state;

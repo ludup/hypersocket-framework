@@ -5,9 +5,11 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.hypersocket.json;
+package com.hypersocket.auth;
 
 import com.hypersocket.input.FormTemplate;
+import com.hypersocket.json.AuthenticationResult;
+import com.hypersocket.realm.Realm;
 
 public class AuthenticationRequiredResult extends AuthenticationResult {
 
@@ -19,6 +21,7 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 	boolean lastResultSuccessful;
 	boolean inPostAuthentication;
 	String lastButtonResourceKey;
+	Realm realm;
 	
 	public AuthenticationRequiredResult() {
 
@@ -28,7 +31,7 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 			boolean lastErrorIsResourceKey, FormTemplate formTemplate,
 			boolean showLocales, boolean isNew, boolean isFirst, boolean isLast,
 			boolean lastResultSuccessful, boolean inPostAuthentication,
-			String lastButtonResourceKey) {
+			String lastButtonResourceKey, Realm realm) {
 		super(bannerMsg, errorMsg, showLocales);
 		this.formTemplate = formTemplate;
 		this.lastErrorIsResourceKey = lastErrorIsResourceKey;
@@ -38,6 +41,7 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 		this.lastResultSuccessful = lastResultSuccessful;
 		this.inPostAuthentication = inPostAuthentication;
 		this.lastButtonResourceKey = lastButtonResourceKey;
+		this.realm = realm;
 	}
 
 	public FormTemplate getFormTemplate() {
@@ -74,6 +78,10 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 	
 	public String getLastButtonResourceKey() {
 		return lastButtonResourceKey;
+	}
+
+	public Realm getRealm() {
+		return realm;
 	}
 
 	@Override

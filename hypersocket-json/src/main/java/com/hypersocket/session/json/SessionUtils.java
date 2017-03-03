@@ -172,7 +172,7 @@ public class SessionUtils {
 
 	}
 	
-	private void verifySameSiteRequest(HttpServletRequest request, Session session) throws AccessDeniedException {
+	private void verifySameSiteRequest(HttpServletRequest request, Session session) throws AccessDeniedException, UnauthorizedException {
 		
 		/**
 		 * TODO remove this for production release. Only enable in development whilst
@@ -195,10 +195,9 @@ public class SessionUtils {
 		
 		if(!token.equals(requestToken)) {
 			log.warn(String.format("CSRF token mistmatch from %s", request.getRemoteAddr()));
-			throw new AccessDeniedException("CSRF token mismatch");
+			throw new UnauthorizedException();
 		}
-		
-		log.info("REMOVE ME: CSRF VERIFIED");
+
 	}
 
 	public void addAPISession(HttpServletRequest request,
