@@ -17,9 +17,6 @@ import com.hypersocket.resource.AbstractResource;
 @Table(name="email_receipts")
 public class EmailReceipt extends AbstractResource {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 903483817231146776L;
 
 	@OneToOne
@@ -66,5 +63,8 @@ public class EmailReceipt extends AbstractResource {
 		this.opened = opened;
 	}
 	
+	public String getName() {
+		return getId().toString();
+	}
 	
 }

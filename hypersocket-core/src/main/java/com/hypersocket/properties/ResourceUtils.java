@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.utils.HypersocketUtils;
@@ -58,17 +59,31 @@ public class ResourceUtils {
 		return implodeValues(vals);
 	}
 	
-	public static <T extends Resource> String createCommaSeparatedString(Collection<T> resources) {
+	public static <T extends AbstractResource> String createCommaSeparatedString(Collection<T> resources) {
 		return createDelimitedResourceString(resources, ",");
 	}
 	
-	public static <T extends Resource> String createDelimitedResourceString(Collection<T> resources, String delimiter) {
+	public static <T extends AbstractResource> String createCommaSeparatedString(Collection<T> resources, ResourceNameCallback<T> callback) {
+		return createDelimitedResourceString(resources, ",", callback);
+	}
+	
+	public static <T extends AbstractResource> String createDelimitedResourceString(Collection<T> resources, String delimiter) {
+		return createDelimitedResourceString(resources, delimiter, new ResourceNameCallback<T>() {
+
+			@Override
+			public String getResourceName(T resource) {
+				return resource.getName();
+			}
+			
+		});
+	}
+	public static <T extends AbstractResource> String createDelimitedResourceString(Collection<T> resources, String delimiter, ResourceNameCallback<T> callback) {
 		StringBuffer buf = new StringBuffer();
-		for(Resource r : resources) {
+		for(T r : resources) {
 			if(buf.length() > 0) {
 				buf.append(delimiter);
 			}
-			buf.append(r.getName());
+			buf.append(callback.getResourceName(r));
 		}
 		return buf.toString();
 	}
@@ -151,10 +166,10 @@ public class ResourceUtils {
 		return "!ENU!";
 	}
 
-	public static <T extends Resource> String implodeResourceValues(Collection<T> entities) {
+	public static <T extends AbstractResource> String implodeResourceValues(Collection<T> entities) {
 		
 		StringBuilder buf = new StringBuilder();
-		for(Resource e : entities) {
+		for(AbstractResource e : entities) {
 			if(buf.length() > 0) {
 				buf.append("]|[");
 			}
@@ -163,7 +178,7 @@ public class ResourceUtils {
 		return buf.toString();
 	}
 	
-	public static <T extends Resource> String implodeNamePairValues(Collection<T> entities) {
+	public static <T extends AbstractResource> String implodeNamePairValues(Collection<T> entities) {
 		return implodeNamePairValues(new NameValueImploder<T>() {
 			public String getId(T t) {
 				return String.valueOf(t.getId());
@@ -187,7 +202,7 @@ public class ResourceUtils {
 		return buf.toString();
 	}
 	
-	public static <T extends Resource> String implodeNamePairValues(NameValueImploder<T> imploder, Collection<T> entities) {
+	public static <T extends AbstractResource> String implodeNamePairValues(NameValueImploder<T> imploder, Collection<T> entities) {
 		
 		StringBuilder buf = new StringBuilder();
 		for(T e : entities) {

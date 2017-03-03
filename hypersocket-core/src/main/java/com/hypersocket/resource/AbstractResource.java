@@ -36,5 +36,5 @@ public abstract class AbstractResource extends AbstractEntity<Long> {
 		return reference;
 	}
 	
-	
+	public abstract String getName();
 }

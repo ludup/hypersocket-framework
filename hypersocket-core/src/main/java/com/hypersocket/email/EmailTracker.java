@@ -17,9 +17,6 @@ import com.hypersocket.resource.AbstractResource;
 @Table(name="email_tracking")
 public class EmailTracker extends AbstractResource {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2245463597525844610L;
 
 	@Column(name="subject")
@@ -52,8 +49,6 @@ public class EmailTracker extends AbstractResource {
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
 	}
-	
-	
 
 	public Realm getRealm() {
 		return realm;
@@ -79,6 +74,8 @@ public class EmailTracker extends AbstractResource {
 		this.opened = opened;
 	}
 	
-	
+	public String getName() {
+		return getId().toString();
+	}
 	
 }
