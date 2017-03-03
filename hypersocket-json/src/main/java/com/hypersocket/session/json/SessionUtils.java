@@ -21,13 +21,13 @@ import org.springframework.stereotype.Component;
 
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionResourceToken;
 import com.hypersocket.session.SessionService;
-import com.hypersocket.utils.HypersocketUtils;
 
 @Component
 public class SessionUtils {
@@ -46,6 +46,9 @@ public class SessionUtils {
 
 	@Autowired
 	ConfigurationService configurationService; 
+	
+	@Autowired
+	SystemConfigurationService systemConfigurationService; 
 	
 	public Session getActiveSession(HttpServletRequest request) {
 		
@@ -174,11 +177,7 @@ public class SessionUtils {
 	
 	private void verifySameSiteRequest(HttpServletRequest request, Session session) throws AccessDeniedException, UnauthorizedException {
 		
-		/**
-		 * TODO remove this for production release. Only enable in development whilst
-		 * issues are ironed out.
-		 */
-		if(!Boolean.getBoolean("hypersocket.development")) {
+		if(!systemConfigurationService.getBooleanValue("security.enableCSRFProtection")) {
 			return;
 		}
 		
