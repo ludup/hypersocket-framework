@@ -43,7 +43,7 @@
 	   	    <property resourceKey="proxy.type" inputType="select" defaultValue="HTTP" options="HTTP,SOCKS" weight="400"/>
 	   	    <property resourceKey="proxy.bypass" inputType="multipleTextInput" defaultValue="" weight="400"/>
 	</propertyCategory>
-	<propertyCategory resourceKey="category.ipRestrictions" resourceBundle="HypersocketServer" weight="400">
+	<propertyCategory resourceKey="category.security" resourceBundle="HypersocketServer" weight="400">
 	    <property resourceKey="server.blockIPs" inputType="multipleTextInput"
 			restart="false" weight="100" store="blockedIPStore" allowEmpty="true"/>
 	</propertyCategory>
