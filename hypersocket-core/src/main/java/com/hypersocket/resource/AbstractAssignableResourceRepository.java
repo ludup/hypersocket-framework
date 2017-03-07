@@ -46,9 +46,11 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	
 	Long getAssignableResourceCount(Collection<Principal> principal);
 
-	Long getAssignedResourceCount(Collection<Principal> principals, String searchPattern, CriteriaConfiguration... configs);
+	Long getAssignedResourceCount(Collection<Principal> principals, String searchPattern, String searchColumn, 
+			CriteriaConfiguration... configs);
 
-	Collection<T> searchAssignedResources(List<Principal> principals, String searchPattern, int start, int length,
+	Collection<T> searchAssignedResources(List<Principal> principals, String searchPattern, String searchColumn, 
+			int start, int length,
 			ColumnSort[] sorting, CriteriaConfiguration... configs);
 
 	List<T> allResources();
@@ -58,10 +60,6 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	void populateEntityFields(T resource, Map<String, String> properties);
 
 	boolean hasAssignedEveryoneRole(Realm realm, CriteriaConfiguration... configs);
-
-	Long getAssignedPrincipalCount(Realm realm, CriteriaConfiguration... configs);
-
-	Collection<Principal> getAssignedPrincipals(Realm realm, CriteriaConfiguration... configs);
 
 	EntityResourcePropertyStore getEntityStore();
 

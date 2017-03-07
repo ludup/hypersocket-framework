@@ -418,13 +418,13 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				IOUtils.closeQuietly(in);
 			}
 		}
+		
+		propertyNames.add(resourceKey);
 
-		if(!hidden) {
-			propertyNames.add(resourceKey);
-			if (isVariable) {
-				variableNames.add(resourceKey);
-			}
+		if (isVariable) {
+			variableNames.add(resourceKey);
 		}
+		
 		
 		PropertyTemplate template = propertyStore.getPropertyTemplate(resourceKey);
 		if (template == null) {
@@ -692,9 +692,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 		}
 
-//		 if (template.isReadOnly()) {
-//			 return;
-//		 }
+		 if (template.isReadOnly()) {
+			 return;
+		 }
 
 		((ResourcePropertyStore) template.getPropertyStore()).setPropertyValue(template, resource, value);
 	}

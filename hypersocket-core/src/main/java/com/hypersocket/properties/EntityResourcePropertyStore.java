@@ -21,6 +21,7 @@ import org.w3c.dom.Element;
 
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.FindableResourceRepository;
@@ -270,7 +271,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 							log.error("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
 							throw new IllegalStateException("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
 						}
-					}  else if(Resource.class.isAssignableFrom(type)) {
+					}  else if(findableResourceRepositories.containsKey(type)) {
 						try {
 							Collection<Object> values = m.getParameterTypes()[0].equals(List.class) ? new ArrayList<>() : new HashSet<>();
 							if(StringUtils.isEmpty(value)) {

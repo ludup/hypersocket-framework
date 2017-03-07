@@ -167,9 +167,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			resource.setRealm(getCurrentRealm());
 		}
 		resource.setResourceCategory(resourceCategory);
-		if(!properties.isEmpty()) {
-			getRepository().populateEntityFields(resource, properties);
-		}
+		
 		try {
 		
 			beforeCreateResource(resource, properties);
@@ -277,9 +275,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		
 		resource.setAssignedRoles(assigned);
 		resource.setUnassignedRoles(unassigned);
-		
-		getRepository().populateEntityFields(resource, properties);
-		
+
 		if(!checkUnique(resource, false)) {
 			ResourceException ex = createDuplicateException(resource);
 			fireResourceUpdateEvent(resource, ex);
@@ -379,7 +375,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			int length, ColumnSort[] sorting) {
 
 		List<Principal> principals = realmService.getAssociatedPrincipals(principal);
-		return getRepository().searchAssignedResources(principals, search, start, length, sorting);
+		return getRepository().searchAssignedResources(principals, search, searchColumn, start, length, sorting);
 	}
 	
 	@Override
@@ -409,22 +405,22 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	
 	@Override
 	public long getPersonalResourceCount(Principal principal) {
-		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(principal), "");
+		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(principal), "", "");
 	}
 	
 	@Override
 	public long getPersonalResourceCount(Principal principal, String searchColumn, String search) {
-		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(principal), search);
+		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(principal), search, searchColumn);
 	}
 	
 	@Override
 	public long getPersonalResourceCount(String search) {
-		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(getCurrentPrincipal()), search);
+		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(getCurrentPrincipal()), search, "");
 	}
 
 	@Override
 	public long getPersonalResourceCount() {
-		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(getCurrentPrincipal()), "");
+		return getRepository().getAssignedResourceCount(realmService.getAssociatedPrincipals(getCurrentPrincipal()), "", "");
 	}
 	
 	@Override
@@ -497,8 +493,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 
 	protected void assertPrincipalAssignment(T resource, PermissionType permission) throws AccessDeniedException {
-		if(Collections.disjoint(resource.getRoles(), 
-				permissionService.getPrincipalRoles(getCurrentPrincipal()))) {
+		if(Collections.disjoint(getPersonalResources(), Arrays.asList(resource))) {
 			assertPermission(permission);
 		}
 	}
@@ -660,27 +655,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		}
 	}
 	
-	
-	@Override
-	public long getPrincipalsInUse(Realm realm) {
-		
-		if(getRepository().hasAssignedEveryoneRole(realm)) {
-			return realmService.getPrincipalCount(realm);
-		} else {
-			Set<Principal> tmp = new HashSet<Principal>();
-			
-			for(Principal p : getRepository().getAssignedPrincipals(realm)) {
-				if(p.getType()==PrincipalType.USER) {
-					tmp.add(p);
-				} else if(p.getType()==PrincipalType.GROUP) {
-					tmp.addAll(realmService.getAssociatedPrincipals(p, PrincipalType.USER));
-				}
-			}
-			
-			return tmp.size();
-		}
-	}
-	
+
 	@Override
 	public void saveMetaData(T resource, String key, String value) throws AccessDeniedException {
 		

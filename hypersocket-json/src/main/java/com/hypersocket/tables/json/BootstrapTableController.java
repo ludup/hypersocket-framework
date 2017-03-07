@@ -21,6 +21,7 @@ public class BootstrapTableController<T> extends AuthenticatedController {
 
 	Logger log = LoggerFactory.getLogger(BootstrapTableController.class);
 
+	@SuppressWarnings("unchecked")
 	protected BootstrapTableResult<T> processDataTablesRequest(
 			HttpServletRequest request, BootstrapTablePageProcessor processor)
 			throws NumberFormatException, UnauthorizedException,

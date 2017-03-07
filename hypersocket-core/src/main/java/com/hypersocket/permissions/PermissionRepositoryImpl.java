@@ -34,6 +34,7 @@ import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
 
@@ -358,7 +359,8 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 				.createCriteria("permissions")
 				.add(Restrictions.eq("resourceKey", permission.getResourceKey()));
 
-		return new HashSet<Principal>(crit.list());
+		Set<Principal> results = new HashSet<Principal>(crit.list());
+		return results;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -401,7 +403,8 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 				.createCriteria("permissions")
 				.add(Restrictions.eq("resourceKey", permission.getResourceKey()));
 
-		return new HashSet<Principal>(crit.list());
+		Set<Principal> results = new HashSet<Principal>(crit.list());
+		return results;
 	}
 
 	@Override
@@ -496,8 +499,11 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 
 		Set<Role> roles = new HashSet<Role>(crit.list());
 
-		if (roles.isEmpty() && createIfNotFound) {
-			throw new IllegalStateException(String.format("Missing role for principal %s", principal.getName()));
+		if (roles.isEmpty()) {
+			if(createIfNotFound) {
+				return createPersonalRole(principal);
+			}
+			return null;
 		} else {
 			return roles.iterator().next();
 		}
@@ -546,15 +552,19 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly = true)
-	public Collection<Principal> getPrincpalsByRole(Collection<Role> roles) {
+	public Collection<Principal> getPrincpalsByRole(Realm realm, Collection<Role> roles) {
 
-		Criteria crit = createCriteria(Principal.class)
-				.setResultTransformer(
-						CriteriaSpecification.DISTINCT_ROOT_ENTITY)
-				.createCriteria("roles")
-				.add(Restrictions.in("id", ResourceUtils.createResourceIdArray(roles)));
+		if(roles.isEmpty()) {
+			return new HashSet<Principal>();
+		}
+		Criteria crit = createCriteria(Principal.class);
+		crit.add(Restrictions.eq("realm", realm));
+		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY)
+			.createCriteria("roles")
+			.add(Restrictions.in("id", ResourceUtils.createResourceIdArray(roles)));
 
-		return new HashSet<Principal>(crit.list());
+		Set<Principal> results = new HashSet<Principal>(crit.list());
+		return results;
 	}
 	
 	

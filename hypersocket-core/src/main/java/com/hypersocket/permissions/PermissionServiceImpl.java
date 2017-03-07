@@ -905,8 +905,16 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
-	public Collection<Principal> getPrincipalsByRole(Role... roles) {
-		return repository.getPrincpalsByRole(Arrays.asList(roles));
+	public Collection<Principal> getPrincipalsByRole(Realm realm, Role... roles) {
+		return repository.getPrincpalsByRole(realm, Arrays.asList(roles));
+	}
+	
+	@Override
+	public Collection<Principal> getPrincipalsByRole(Realm realm, Collection<Role> roles) throws ResourceNotFoundException, AccessDeniedException {
+		if(hasEveryoneRole(roles, realm)) {
+			return realmService.allUsers(realm);
+		}
+		return repository.getPrincpalsByRole(realm, roles);
 	}
 
 	protected void createPrincipalRole(Principal principal) {
@@ -923,7 +931,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	protected void deletePrincipalRole(Principal principal) {
 		if (principal.isPrimaryAccount()) {
 			try {
-				deleteRole(getPersonalRole(principal));
+				Role role = repository.getPersonalRole(principal, false);
+				if (role != null) {
+					deleteRole(role);
+				}
 			} catch (ResourceChangeException | AccessDeniedException e) {
 				log.error("Failed to delete principal role", e);
 			}
@@ -965,4 +976,53 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			deletePrincipalRole(event.getTargetPrincipal());
 		}
 	}
+	
+	@Override
+	public Collection<Principal> resolveUsers(Collection<Role> roles, Realm realm) throws ResourceNotFoundException, AccessDeniedException {
+		if(hasEveryoneRole(roles, realm)) {
+			return realmService.allUsers(realm);
+		} else {
+			return resolveUsers(getPrincipalsByRole(realm, roles));
+		}
+	}
+	@Override
+	public Set<Principal> resolveUsers(Collection<Principal> principals) {
+		
+		Set<Principal> resolved = new HashSet<Principal>();
+		Set<Principal> processedGroups = new HashSet<Principal>();
+		
+		for(Principal principal : principals) {
+			switch(principal.getType()) {
+			case USER:
+				resolved.add(principal);
+				break;
+			case GROUP:
+				resolveGroupUsers(principal, resolved, processedGroups);
+				break;
+			default:
+				// Not processing SYSTEM or SERVICE principals.
+			}
+		}
+		return resolved;
+	}
+	
+	private void resolveGroupUsers(Principal group, Collection<Principal> resolved, Set<Principal> processed) {
+		if(!processed.contains(group)) {
+			processed.add(group);
+			for(Principal principal : realmService.getAssociatedPrincipals(group)) {
+				switch(principal.getType()) {
+				case USER:
+					resolved.add(principal);
+					break;
+				case GROUP:
+					resolveGroupUsers(principal, resolved, processed);
+					break;
+				default:
+					// Not processing SYSTEM or SERVICE principals.
+				}
+			}
+			
+		}
+	}
+	
 }

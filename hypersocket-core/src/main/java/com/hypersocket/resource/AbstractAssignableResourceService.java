@@ -75,8 +75,6 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops)
 			throws  AccessDeniedException, ResourceException;
 
-	long getPrincipalsInUse(Realm realm) throws AccessDeniedException;
-
 	Collection<T> importResources(String json, Realm realm, boolean dropCurrent)
 			throws AccessDeniedException, ResourceException;
 

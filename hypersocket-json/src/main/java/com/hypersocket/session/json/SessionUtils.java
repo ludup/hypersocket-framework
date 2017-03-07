@@ -188,8 +188,11 @@ public class SessionUtils {
 		}
 		String requestToken = request.getHeader("X-Csrf-Token");
 		if(requestToken==null) {
-			log.warn(String.format("CSRF token missing from %s", request.getRemoteAddr()));
-			throw new AccessDeniedException("CSRF token missing");
+			requestToken = request.getParameter("token");
+			if(requestToken==null) {
+				log.warn(String.format("CSRF token missing from %s", request.getRemoteAddr()));
+				throw new AccessDeniedException("CSRF token missing");
+			}
 		}
 		
 		if(!token.equals(requestToken)) {

@@ -90,7 +90,8 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 			AbstractResource resource) {
 		String c;
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
-		if (!cachedValues.containsKey(cacheKey)) {
+		String cache = template.getAttributes().get("cache");
+		if ("false".equals(cache) || !cachedValues.containsKey(cacheKey)) {
 			c = lookupPropertyValue(template, resource);
 			cachedValues.put(cacheKey, c);
 		} else {

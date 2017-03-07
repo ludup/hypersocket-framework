@@ -123,8 +123,6 @@ public interface PermissionService extends AuthenticatedService, FindableResourc
 
 	public Collection<Role> getRolesByPrincipal(Principal principal);
 
-	public Collection<Principal> getPrincipalsByRole(Role... roles);
-
 	void registerAssignableRepository(Class<? extends AssignableResource> clz,
 			AbstractAssignableResourceRepository<?> repository);
 
@@ -135,4 +133,12 @@ public interface PermissionService extends AuthenticatedService, FindableResourc
 	void onGroupCreated(GroupCreatedEvent event);
 
 	void onGroupDeleted(GroupDeletedEvent event);
+
+	Set<Principal> resolveUsers(Collection<Principal> principals);
+
+	Collection<Principal> resolveUsers(Collection<Role> roles, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
+
+	Collection<Principal> getPrincipalsByRole(Realm realm, Role... roles);
+
+	Collection<Principal> getPrincipalsByRole(Realm realm, Collection<Role> roles) throws ResourceNotFoundException, AccessDeniedException;
 }

@@ -113,12 +113,11 @@ public class SessionController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 
 		try {
-			Session session = sessionUtils.getActiveSession(request);
 
 			Role role = permissionService.getRoleById(id, getCurrentRealm());
 
 			if (role == null) {
-				throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE, "error.invalidRealm", id);
+				throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE, "error.invalidRole", id);
 			}
 
 			sessionService.setCurrentRole(role);

@@ -72,13 +72,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 		return get("id", id, getResourceClass());
 	}
 
-	protected void beforeDelete(T resource) {
-		
-	}
-	
-	protected void afterDelete(T resource) {
-		
-	}
+
 	
 	@Override
 	@Transactional
@@ -88,24 +82,13 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 			op.beforeOperation(resource, null);
 		}
 		
-		beforeDelete(resource);
-		
 		delete(resource);
-		
-		afterDelete(resource);
 		
 		for(TransactionOperation<T> op : ops) {
 			op.afterOperation(resource, null);
 		}
 	}
 
-	protected void beforeSave(T resource, Map<String,String> properties) {
-		
-	}
-	
-	protected void afterSave(T resource, Map<String,String> properties) {
-		
-	}
 	
 	@Override
 	public List<PropertyChange> populateEntityFields(T resource, Map<String,String> properties) {
@@ -153,9 +136,13 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 	@Transactional
 	@SafeVarargs
 	public final T saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops)  throws ResourceException {
+	
+		for(TransactionOperation<T> op : ops) {
+			op.beforeSetProperties(resource, properties);
+		}
 		
-		beforeSave(resource, properties);
-		
+		populateEntityFields(resource, properties);
+
 		for(TransactionOperation<T> op : ops) {
 			op.beforeOperation(resource, properties);
 		}
@@ -164,8 +151,6 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 
 		// Now set any remaining values
 		setValues(resource, properties);
-		
-		afterSave(resource, properties);
 		
 		for(TransactionOperation<T> op : ops) {
 			op.afterOperation(resource, properties);

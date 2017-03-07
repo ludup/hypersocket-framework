@@ -94,7 +94,7 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 
 	Set<Role> getRolesForPrincipal(List<Principal> associatedPrincipals);
 	
-	Collection<Principal> getPrincpalsByRole(Collection<Role> associatedPrincipals);
+	Collection<Principal> getPrincpalsByRole(Realm realm, Collection<Role> associatedPrincipals);
 
 	Set<Role> getAllUserRoles(Realm realm);
 

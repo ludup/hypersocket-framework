@@ -71,8 +71,8 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 				unassigned.addAll(role.getPrincipals());
 			}
 			
-			assigned = resolveUsers(assigned);
-			unassigned = resolveUsers(unassigned);
+			assigned = permissionService.resolveUsers(assigned);
+			unassigned = permissionService.resolveUsers(unassigned);
 			unassigned.removeAll(assigned);
 			
 			for(Role r : ((AssignableResource)event.getResource()).getRoles()) {
@@ -86,7 +86,7 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 					unassignedEveryone = false;
 					break;
 				}
-				Set<Principal> tmp = resolveUsers(r.getPrincipals());
+				Set<Principal> tmp = permissionService.resolveUsers(r.getPrincipals());
 				assigned.removeAll(tmp);
 				unassigned.removeAll(tmp);
 				if(assigned.isEmpty() && unassigned.isEmpty()) {
@@ -137,8 +137,8 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 	private void processRoleEvent(Realm realm, Role role, Collection<Principal> granted, Collection<Principal> revoked) {
 		if(!listeners.isEmpty()) {
 			
-			Set<Principal> assigned = resolveUsers(granted);
-			Set<Principal> unassigned = resolveUsers(revoked);
+			Set<Principal> assigned = permissionService.resolveUsers(granted);
+			Set<Principal> unassigned = permissionService.resolveUsers(revoked);
 			unassigned.removeAll(assigned);
 			
 			if(!assigned.isEmpty() || !unassigned.isEmpty()) {
@@ -155,7 +155,7 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 									unassigned.clear();
 									break;
 								}
-								Set<Principal> tmp = resolveUsers(r.getPrincipals());
+								Set<Principal> tmp = permissionService.resolveUsers(r.getPrincipals());
 								assigned.removeAll(tmp);
 								unassigned.removeAll(tmp);
 								if(assigned.isEmpty() && unassigned.isEmpty()) {
@@ -189,8 +189,8 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 	private void processGroupEvent(Realm realm, Principal group, Collection<Principal> granted, Collection<Principal> revoked) {
 		if(!listeners.isEmpty()) {
 			
-			Set<Principal> assigned = resolveUsers(granted);
-			Set<Principal> unassigned = resolveUsers(revoked);
+			Set<Principal> assigned = permissionService.resolveUsers(granted);
+			Set<Principal> unassigned = permissionService.resolveUsers(revoked);
 			unassigned.removeAll(assigned);
 			
 			if(!assigned.isEmpty() || !unassigned.isEmpty()) {
@@ -206,7 +206,7 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 									unassigned.clear();
 									break;
 								}
-								Set<Principal> tmp = resolveUsers(r.getPrincipals());
+								Set<Principal> tmp = permissionService.resolveUsers(r.getPrincipals());
 								assigned.removeAll(tmp);
 								unassigned.removeAll(tmp);
 								if(assigned.isEmpty() && unassigned.isEmpty()) {
@@ -223,44 +223,7 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 			}
 		}
 	}
-	private Set<Principal> resolveUsers(Collection<Principal> principals) {
-		
-		Set<Principal> resolved = new HashSet<Principal>();
-		Set<Principal> processedGroups = new HashSet<Principal>();
-		
-		for(Principal principal : principals) {
-			switch(principal.getType()) {
-			case USER:
-				resolved.add(principal);
-				break;
-			case GROUP:
-				resolveGroupUsers(principal, resolved, processedGroups);
-				break;
-			default:
-				// Not processing SYSTEM or SERVICE principals.
-			}
-		}
-		return resolved;
-	}
 	
-	private void resolveGroupUsers(Principal group, Collection<Principal> resolved, Set<Principal> processed) {
-		if(!processed.contains(group)) {
-			processed.add(group);
-			for(Principal principal : realmService.getAssociatedPrincipals(group)) {
-				switch(principal.getType()) {
-				case USER:
-					resolved.add(principal);
-					break;
-				case GROUP:
-					resolveGroupUsers(principal, resolved, processed);
-					break;
-				default:
-					// Not processing SYSTEM or SERVICE principals.
-				}
-			}
-			
-		}
-	}
 	
 
 	private void processAssignmentEvent(Realm realm, AssignableResource resource, Set<Principal> granted, Set<Principal> revoked) {
@@ -287,8 +250,8 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 			Set<Principal> assigned = new HashSet<Principal>();
 			assigned.addAll(realmService.allUsers(realm));
 			
-			Collection<Principal> alreadyAssigned = permissionService.getPrincipalsByRole(resource.getRoles().toArray(new Role[0]));
-			assigned.removeAll(resolveUsers(alreadyAssigned));
+			Collection<Principal> alreadyAssigned = permissionService.getPrincipalsByRole(realm, resource.getRoles().toArray(new Role[0]));
+			assigned.removeAll(permissionService.resolveUsers(alreadyAssigned));
 			
 			processAssignmentEvent(realm, resource, assigned, Collections.<Principal>emptySet());
 

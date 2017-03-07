@@ -42,7 +42,6 @@ import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
-import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.session.Session;
@@ -117,7 +116,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria = criteria.createCriteria("roles");
 		criteria.add(Restrictions.eq("allUsers", true));
 		
-		Set<T> everyone = new HashSet<T>(criteria.list());
+		Set<T> results = new HashSet<T>(criteria.list());
 		
 		Set<Long> ids = new HashSet<Long>();
 		for (Principal p : principals) {
@@ -140,10 +139,22 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria = criteria.createCriteria("principals");
 		criteria.add(Restrictions.in("id", ids));
 		
-		everyone.addAll((List<T>) criteria.list());
-		return everyone;
+		results.addAll((List<T>) criteria.list());
+		
+		processAdditionalAssignedResourceResults(results, principals.get(0).getRealm(), "", "name", principals);
+		
+		return results;
 	}
 	
+
+	protected void processAdditionalAssignedResourceIds(Set<Long> ids, Realm realm, String searchPattern, String searchColumn, Collection<Principal> principals) {
+			
+	}
+	
+	protected void processAdditionalAssignedResourceResults(Set<T> results, Realm realm, String searchPattern, String searchColumn, Collection<Principal> principals) {
+			
+	}
+
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
 	public T getPersonalResourceByName(String name, Principal principal, CriteriaConfiguration... configs) {
@@ -171,13 +182,13 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Override
 	@Transactional(readOnly=true)
 	public Collection<T> searchAssignedResources(List<Principal> principals,
-			final String searchPattern, final int start, final int length,
+			final String searchPattern, final String searchColumn, final int start, final int length,
 			final ColumnSort[] sorting, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(getResourceClass());
 		
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.ilike("name", searchPattern));
+			criteria.add(Restrictions.ilike(StringUtils.isBlank(searchColumn) ? "name" : searchColumn, searchPattern));
 		}
 
 		for (CriteriaConfiguration c : configs) {
@@ -198,7 +209,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria = createCriteria(getResourceClass());
 		
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.ilike("name", searchPattern));
+			criteria.add(Restrictions.ilike(StringUtils.isBlank(searchColumn) ? "name" : searchColumn, searchPattern));
 		}
 
 		for (CriteriaConfiguration c : configs) {
@@ -221,6 +232,8 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.add(Restrictions.in("id", principalIds));
 		
 		ids.addAll(criteria.list());
+		
+		processAdditionalAssignedResourceIds(ids, principals.get(0).getRealm(), searchPattern, searchColumn, principals);
 		
 		if(ids.size() > 0) {
 			
@@ -265,75 +278,18 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		
 		return everyoneRoles.size() > 0;
 	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	@Transactional(readOnly=true)
-	public Collection<Principal> getAssignedPrincipals(Realm realm, CriteriaConfiguration... configs) {
 
-		Criteria criteria = createCriteria(getResourceClass());
 		
-		for (CriteriaConfiguration c : configs) {
-			c.configure(criteria);
-		}
-
-		criteria.add(Restrictions.eq("realm", realm));
-		criteria.add(Restrictions.eq("deleted", false));
-		criteria = criteria.createCriteria("roles");
-		criteria.add(Restrictions.eq("allUsers", false));
-		
-		criteria = criteria.createCriteria("principals");
-		criteria.setProjection(Projections.distinct(Projections.property("id")));
-		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
-		
-		List<?> uniquePrincipals = criteria.list();
-		
-		if(uniquePrincipals.isEmpty()) {
-			return new HashSet<Principal>();
-		}
-		criteria = createCriteria(Principal.class);
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-		criteria.add(Restrictions.in("id", uniquePrincipals));
-		List<?> res = criteria.list();
-		
-		return (Collection<Principal>) res;
-	}
-		
-	@Override
-	@Transactional(readOnly=true)
-	public Long getAssignedPrincipalCount(Realm realm, CriteriaConfiguration... configs) {
-
-		Criteria criteria = createCriteria(getResourceClass());
-		
-		for (CriteriaConfiguration c : configs) {
-			c.configure(criteria);
-		}
-
-		criteria.add(Restrictions.eq("realm", realm));
-		criteria.add(Restrictions.eq("deleted", false));
-		criteria = criteria.createCriteria("roles");
-		criteria.add(Restrictions.eq("allUsers", false));
-		
-		criteria = criteria.createCriteria("principals");
-		criteria.setProjection(Projections.distinct(Projections.property("id")));
-		criteria.setResultTransformer(CriteriaSpecification.PROJECTION);
-		
-		List<?> uniquePrincipals = criteria.list();
-		
-		return (long)uniquePrincipals.size();
-
-	}
-	
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)
 	public Long getAssignedResourceCount(Collection<Principal> principals,
-			final String searchPattern, CriteriaConfiguration... configs) {
+			final String searchPattern, final String searchColumn, CriteriaConfiguration... configs) {
 
 		Criteria criteria = createCriteria(getResourceClass());
 		
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.ilike("name", searchPattern));
+			criteria.add(Restrictions.ilike(StringUtils.isBlank(searchColumn) ? "name" : searchColumn, searchPattern));
 		}
 
 		for (CriteriaConfiguration c : configs) {
@@ -349,12 +305,11 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria.add(Restrictions.eq("allUsers", true));
 		
 		Set<Long> ids = new HashSet<Long>(criteria.list());
-
 		
 		criteria = createCriteria(getResourceClass());
 		
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.ilike("name", searchPattern));
+			criteria.add(Restrictions.ilike(StringUtils.isBlank(searchColumn) ? "name" : searchColumn, searchPattern));
 		}
 
 		for (CriteriaConfiguration c : configs) {
@@ -377,33 +332,16 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		
 		ids.addAll((List<Long>)criteria.list());
 		
+		processAdditionalAssignedResourceIds(ids, principals.iterator().next().getRealm(), searchPattern, searchColumn, principals);
+		
 		return new Long(ids.size());
 	}
+
 
 	@Override
 	@Transactional(readOnly=true)
 	public Long getAssignableResourceCount(Collection<Principal> principals) {
-		return getAssignedResourceCount(principals, "");
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	@Transactional(readOnly=true)
-	public List<AssignableResource> getAllAssignableResources(
-			List<Principal> principals) {
-
-		Set<Long> ids = new HashSet<Long>();
-		for (Principal p : principals) {
-			ids.add(p.getId());
-		}
-		Criteria crit = createCriteria(AssignableResource.class);
-		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-		crit.add(Restrictions.eq("deleted", false));
-		crit = crit.createCriteria("roles");
-		crit = crit.createCriteria("principals");
-		crit.add(Restrictions.in("id", ids));
-
-		return (List<AssignableResource>) crit.list();
+		return getAssignedResourceCount(principals, "", "");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -459,69 +397,58 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Override
 	@Transactional
 	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException {
-		beforeDelete(resource);
+
 		for(TransactionOperation<T> op : ops) {
 			op.beforeOperation(resource, null);
 		}
+		
 		delete(resource);
-		afterDelete(resource);
+
 		for(TransactionOperation<T> op : ops) {
 			op.afterOperation(resource, null);
 		}
-	}
-
-	protected void beforeDelete(T resource) throws ResourceChangeException {
-		
-	}
-	
-	protected void afterDelete(T resource) throws ResourceChangeException {
-		
-	}
-	
-	protected void beforeSave(T resource, Map<String,String> properties) throws ResourceChangeException {
-		
-	}
-	
-	protected void afterSave(T resource, Map<String,String> properties) throws ResourceChangeException {
-		
 	}
 	
 	@Override
 	public void populateEntityFields(T resource, Map<String,String> properties) {
 		
-		for(String resourceKey : getPropertyNames(resource)) {
-			if(properties.containsKey(resourceKey)) {
-				PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
-				if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
-					setValue(resource, resourceKey, properties.get(resourceKey));
-					properties.remove(resourceKey);
+		if(properties!=null) {
+			for(String resourceKey : getPropertyNames(resource)) {
+				if(properties.containsKey(resourceKey)) {
+					PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
+					if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
+						setValue(resource, resourceKey, properties.get(resourceKey));
+						properties.remove(resourceKey);
+					}
 				}
 			}
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	@SafeVarargs
 	@Transactional
 	public final void saveResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops) throws ResourceException {
 
-		// Now set any remaining values
-		setValues(resource, properties);
+		for(TransactionOperation<T> op : ops) {
+			op.beforeSetProperties(resource, properties);
+		}
 		
-		beforeSave(resource, properties);
-		
+		populateEntityFields(resource, properties);
+
 		for(TransactionOperation<T> op : ops) {
 			op.beforeOperation(resource, properties);
 		}
+		
+		resource = (T) save(resource);
 
-		save(resource);
-
-		afterSave(resource, properties);
+		// Now set any remaining values
+		setValues(resource, properties);
 		
 		for(TransactionOperation<T> op : ops) {
 			op.afterOperation(resource, properties);
 		}
-
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -561,8 +488,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		List<T> results = super.search(getResourceClass(), searchColumn, searchPattern, start,
 				length, sorting, ArrayUtils.addAll(configs, new DeletedCriteria(false),
-						new RoleSelectMode(), new RealmCriteria(
-								realm), new PersonalRestriction(false)));
+						new RoleSelectMode(), new RealmCriteria(realm), new PersonalRestriction(false)));
 		return results;
 	}
 	

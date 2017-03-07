@@ -178,6 +178,19 @@ public class ResourceUtils {
 		return buf.toString();
 	}
 	
+	public static <T extends AbstractResource> String implodeResourceNames(Collection<T> entities,
+			ResourceNameCallback<T> callback) {
+		
+		StringBuilder buf = new StringBuilder();
+		for(T e : entities) {
+			if(buf.length() > 0) {
+				buf.append("]|[");
+			}
+			buf.append(callback.getResourceName(e));
+		}
+		return buf.toString();
+	}
+	
 	public static <T extends AbstractResource> String implodeNamePairValues(Collection<T> entities) {
 		return implodeNamePairValues(new NameValueImploder<T>() {
 			public String getId(T t) {
