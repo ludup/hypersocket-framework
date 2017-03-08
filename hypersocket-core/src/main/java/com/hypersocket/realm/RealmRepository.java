@@ -12,6 +12,7 @@ import java.util.Map;
 
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.RealmResource;
+import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
 
@@ -50,4 +51,7 @@ public interface RealmRepository extends
 
 	public Realm setDefaultRealm(Realm realm);
 
+	List<Resource> findAllResourceInRealmOfType(Class aClass);
+
+	<T> T findResourceInRealmByName(Class<T> aClass, String name);
 }

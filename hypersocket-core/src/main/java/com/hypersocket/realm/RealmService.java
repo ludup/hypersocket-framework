@@ -14,10 +14,7 @@ import java.util.Map;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
-import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.*;
 import com.hypersocket.tables.ColumnSort;
 
 public interface RealmService extends PasswordEnabledAuthenticatedService {
@@ -217,4 +214,10 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Map<String, String> getUserPropertyValues(Principal principal);
 
+	public String exportAllResoures() throws ResourceExportException, AccessDeniedException;
+
+	String exportResources(Collection<? extends Resource> resources, boolean stripIdentity)
+			throws ResourceExportException, AccessDeniedException;
+
+	<T> T findResourceInRealmByName(Class<T> aClass, String name);
 }

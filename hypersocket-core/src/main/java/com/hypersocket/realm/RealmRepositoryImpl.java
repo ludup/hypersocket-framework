@@ -191,5 +191,17 @@ public class RealmRepositoryImpl extends
 		return realm;
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public List findAllResourceInRealmOfType(Class aClass) {
+		Criteria criteria = createCriteria(aClass);
+		return criteria.list();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public <T> T findResourceInRealmByName(Class<T> aClass, String name) {
+		return (T) createCriteria(aClass).add(Restrictions.eq("name", name)).uniqueResult();
+	}
 
 }

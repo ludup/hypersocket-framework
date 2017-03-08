@@ -9,14 +9,11 @@ package com.hypersocket.repository;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlTransient;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonValue;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -39,7 +36,7 @@ public abstract class AbstractEntity<T> {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name="modified")
     Date modifiedDate = new Date();
-    
+
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
@@ -113,4 +110,11 @@ public abstract class AbstractEntity<T> {
 	void setCreated(Date created) {
 		this.created = created;
 	}
+
+	@Transient
+	@JsonIgnore
+	public String _meta() {
+		return this.getClass().getCanonicalName();
+	}
+
 }

@@ -14,6 +14,15 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.databind.*;
+import com.hypersocket.migration.execution.MigrationExecutor;
+import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
+import com.hypersocket.migration.mapper.MigrationObjectMapper;
+import com.hypersocket.permissions.Role;
+import com.hypersocket.resource.ResourceExportException;
+import com.hypersocket.resource.ResourceNotFoundException;
+import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -364,4 +373,58 @@ public class RealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "realms/export", method = RequestMethod.GET, produces = { "text/plain" })
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public String exportAll(HttpServletRequest request,
+							HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException,
+			ResourceNotFoundException, ResourceExportException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Thread.sleep(1000);
+		} catch (Exception e) {
+		}
+		try {
+			response.setHeader("Content-Disposition", "attachment; filename=\""
+					+ "realmResource.json\"");
+			return realmService.exportAllResoures();
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
+
+
+	@AuthenticationRequired
+	@RequestMapping(value = "realms/realmTest", method = RequestMethod.POST)
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Realm> trial(
+			HttpServletRequest request, HttpServletResponse response
+			) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+
+			String role = IOUtils.toString( request.getInputStream());
+			migrationExecutor.importJson(role);
+			return null;
+
+		} catch (Exception e) {
+			return new ResourceStatus<Realm>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@Autowired
+	MigrationExecutor migrationExecutor;
+
 }
