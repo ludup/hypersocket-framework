@@ -421,12 +421,10 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		
 		propertyNames.add(resourceKey);
 
-		if(!hidden) {
-			propertyNames.add(resourceKey);
-			if (isVariable) {
-				variableNames.add(resourceKey);
-			}
-		}	
+		if (isVariable) {
+			variableNames.add(resourceKey);
+		}
+		
 		
 		PropertyTemplate template = propertyStore.getPropertyTemplate(resourceKey);
 		if (template == null) {
