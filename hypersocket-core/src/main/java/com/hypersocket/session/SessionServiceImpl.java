@@ -42,6 +42,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -321,6 +322,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		session.setSignedOut(new Date());
 		session.setNonCookieKey(null);
+		session.setCurrentRole(null);
 		repository.updateSession(session);
 
 		if (!session.isSystem()) {
@@ -412,6 +414,21 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		repository.updateSession(session);
 	}
 
+	
+	@Override
+	public void switchRole(Session session, Role role) throws AccessDeniedException {
+
+		if (log.isInfoEnabled()) {
+			log.info(String.format("Switching %s role from %s to %s", session.getCurrentPrincipal().getPrincipalName(),
+					session.getCurrentRole().getName(),
+					role.getName()));
+		}
+
+		session.setCurrentRole(role);
+		setCurrentRole(role);
+		repository.updateSession(session);
+	}
+	
 	@Override
 	public void registerResourceSession(Session session,
 			ResourceSession<?> resourceSession) {

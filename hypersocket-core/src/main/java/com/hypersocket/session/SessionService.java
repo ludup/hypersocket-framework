@@ -16,6 +16,7 @@ import com.decibel.uasparser.UASparser;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.Resource;
@@ -101,4 +102,6 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	void executeInSystemContext(Runnable r);
 
 	void setUAParser(UASparser parser, OnlineUpdater updater);
+
+	void switchRole(Session session, Role role) throws AccessDeniedException;
 }

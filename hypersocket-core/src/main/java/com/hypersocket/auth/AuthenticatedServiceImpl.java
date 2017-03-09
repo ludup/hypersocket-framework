@@ -16,6 +16,7 @@ import java.util.Stack;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -25,6 +26,7 @@ import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
+import com.hypersocket.session.SessionService;
 
 public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 
@@ -45,6 +47,9 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 			PermissionStrategy strategy, PermissionType... permissions) throws AccessDeniedException;
 	
 	protected abstract Role getPersonalRole(Principal principal) throws AccessDeniedException;
+	
+	@Autowired
+	SessionService sessionService; 
 	
 	@Override
 	public void elevatePermissions(PermissionType... permissions) {
@@ -72,10 +77,6 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	protected boolean hasElevatedPermissions() {
 		return elevatedPermissions.get()!=null && !elevatedPermissions.get().isEmpty();
-	}
-	
-	public void setCurrentRole(Role role) {
-		currentRole.set(role);
 	}
 	
 	@Override
@@ -107,6 +108,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		currentSession.get().push(session);
 		currentRealm.get().push(realm);
 		currentLocale.get().push(locale);
+		currentRole.set(session.getCurrentRole());
 		elevatedPermissions.get().push(new HashSet<PermissionType>());
 		
 		if(log.isDebugEnabled()) {
@@ -154,15 +156,12 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	@Override
 	public Role getCurrentRole() {
-		if(currentRole.get()==null) {
-			try {
-				Role role = getPersonalRole(getCurrentPrincipal());
-				currentRole.set(role);
-			} catch (AccessDeniedException e) {
-				throw new InvalidAuthenticationContext("User is unable to read their own roles!");
-			}
-		}
 		return currentRole.get();
+	}
+	
+	@Override
+	public void setCurrentRole(Role role) {
+		currentRole.set(role);
 	}
 
 	@Override

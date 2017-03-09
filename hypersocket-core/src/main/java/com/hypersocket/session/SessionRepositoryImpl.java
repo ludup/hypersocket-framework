@@ -20,10 +20,12 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.auth.AuthenticationScheme;
+import com.hypersocket.permissions.PermissionRepository;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
@@ -38,6 +40,9 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 
 	static Logger log = LoggerFactory.getLogger(SessionRepositoryImpl.class);
 	
+	@Autowired
+	PermissionRepository permissionRepository; 
+	
 	public SessionRepositoryImpl() {
 		super(true);
 	}
@@ -45,7 +50,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	@Override
 	@Transactional
 	public Session createSession(String remoteAddress, 
-			Principal principal, 
+			Principal principal,
 			AuthenticationScheme scheme, 
 			String userAgent, 
 			String userAgentVersion,
@@ -56,6 +61,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 
 		Session session = new Session();
 		session.setPrincipal(principal);
+		session.setCurrentRole(permissionRepository.getPersonalRole(principal));
 		session.setRemoteAddress(remoteAddress);
 		session.setUserAgent(HypersocketUtils.checkNull(userAgent, "unknown"));
 		session.setUserAgentVersion(HypersocketUtils.checkNull(userAgentVersion, "unknown"));

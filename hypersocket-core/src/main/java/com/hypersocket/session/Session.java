@@ -22,10 +22,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlElement;
 
 import org.apache.log4j.Logger;
 import org.hibernate.annotations.Fetch;
@@ -35,6 +34,7 @@ import org.hibernate.annotations.GenericGenerator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.hypersocket.auth.AuthenticationScheme;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntity;
@@ -53,7 +53,6 @@ public class Session extends AbstractEntity<String> {
 	@GeneratedValue(generator = "uuid")
 	@GenericGenerator(name = "uuid", strategy = "uuid2")
 	@Column(name = "id")
-	@XmlElement(name = "id")
 	String id;
 
 	@Column(name = "ip_address", nullable = false, insertable = true, updatable = false)
@@ -65,12 +64,12 @@ public class Session extends AbstractEntity<String> {
 	@Transient
 	Date lastUpdated;
 
-	@OneToOne
+	@ManyToOne
 	@Fetch(FetchMode.SELECT)
 	@JoinColumn(name = "principal_id", insertable = true, updatable = false)
 	Principal principal;
 
-	@OneToOne
+	@ManyToOne
 	@Fetch(FetchMode.SELECT)
 	@JoinColumn(name = "impersonating_principal_id", insertable = true, updatable = true)
 	Principal impersonatedPrincipal;
@@ -78,15 +77,19 @@ public class Session extends AbstractEntity<String> {
 	@Column(name = "inherit", nullable = true)
 	Boolean inheritPermissions;
 
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = "current_realm_id")
 	Realm currentRealm;
+	
+	@ManyToOne(optional=true)
+	@JoinColumn(name = "current_role_id")
+	Role currentRole;
 
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = "realm_id")
 	Realm realm;
 
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = "authentication_scheme")
 	AuthenticationScheme scheme;
 
@@ -362,5 +365,11 @@ public class Session extends AbstractEntity<String> {
 		return totalSeconds;
 	}
 
-
+	public Role getCurrentRole() {
+		return currentRole;
+	}
+	
+	public void setCurrentRole(Role currentRole) {
+		this.currentRole = currentRole;
+	}
 }

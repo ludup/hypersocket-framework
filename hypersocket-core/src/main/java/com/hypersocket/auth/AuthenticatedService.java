@@ -44,7 +44,7 @@ public interface AuthenticatedService {
 	void setCurrentSession(Session session, Realm realm, Principal principal, Locale locale);
 
 	Role getCurrentRole();
-	
+
 	void setCurrentRole(Role role);
 
 }

@@ -120,7 +120,7 @@ public class SessionController extends ResourceController {
 				throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE, "error.invalidRole", id);
 			}
 
-			sessionService.setCurrentRole(role);
+			sessionService.switchRole(getCurrentSession(), role);
 
 			return new ResourceStatus<Role>(role);
 		} finally {
@@ -140,11 +140,11 @@ public class SessionController extends ResourceController {
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session, String info, String homePage) {
-		return new AuthenticationSuccessResult(info, configurationService.hasUserLocales(), session, homePage, sessionService.getCurrentRole());
+		return new AuthenticationSuccessResult(info, configurationService.hasUserLocales(), session, homePage);
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session) {
-		return new AuthenticationSuccessResult("", configurationService.hasUserLocales(), session, "", sessionService.getCurrentRole());
+		return new AuthenticationSuccessResult("", configurationService.hasUserLocales(), session, "");
 	}
 
 	@RequestMapping(value = "session/flash/{type}/{msg}", method = RequestMethod.GET, produces = { "application/json" })
