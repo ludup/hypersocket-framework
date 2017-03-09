@@ -21,7 +21,6 @@ import org.w3c.dom.Element;
 
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.FindableResourceRepository;

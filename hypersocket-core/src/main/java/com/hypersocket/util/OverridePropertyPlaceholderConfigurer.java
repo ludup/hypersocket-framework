@@ -27,7 +27,7 @@ public class OverridePropertyPlaceholderConfigurer extends
 		}
 	}
 	@Override
-	public void setLocations(Resource[] locations) {
+	public void setLocations(Resource... locations) {
 		if(override==null) {
 			super.setLocations(locations);
 		} else {

@@ -1024,5 +1024,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			
 		}
 	}
+
+	@Override
+	public boolean hasPermission(Principal principal, PermissionType permission) {
+		return hasPermission(principal, getPermission(permission.getResourceKey()));
+	}
 	
 }

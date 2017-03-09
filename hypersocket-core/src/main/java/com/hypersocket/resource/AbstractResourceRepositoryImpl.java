@@ -159,6 +159,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 		return resource;
 	}
 	
+	@Transactional()
 	public T saveResource(T resource) throws ResourceException {
 		return saveResource(resource, null);
 	}

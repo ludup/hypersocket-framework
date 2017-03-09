@@ -34,7 +34,7 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional
 	public Realm createRealm(String name, String uuid, String module,
-			Map<String, String> properties, RealmProvider provider, Long owner, TransactionOperation<Realm>... ops) throws ResourceException {
+			Map<String, String> properties, RealmProvider provider, Long owner,  @SuppressWarnings("unchecked") TransactionOperation<Realm>... ops) throws ResourceException {
 		Realm realm = new Realm();
 		realm.setName(name);
 		realm.setResourceCategory(module);

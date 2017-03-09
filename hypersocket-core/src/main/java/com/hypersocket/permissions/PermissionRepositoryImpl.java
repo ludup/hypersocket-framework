@@ -34,7 +34,6 @@ import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
 
@@ -126,7 +125,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	public void updateRole(Role role, Set<Principal> unassignPrincipals,
 			Set<Principal> assignPrincipals, Set<Permission> revokePermissions,
 			Set<Permission> grantPermissions, Map<String,String> properties,
-				TransactionOperation<Role>... ops) throws ResourceException {
+			 @SuppressWarnings("unchecked") TransactionOperation<Role>... ops) throws ResourceException {
 		
 		if(StringUtils.isBlank(role.getResourceCategory())) {
 			role.setResourceCategory("role");
@@ -142,7 +141,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@Transactional
 	public void saveRole(Role role, Realm realm, Principal[] principals,
 			Collection<Permission> permissions, Map<String,String> properties,
-			TransactionOperation<Role>... ops) throws ResourceException {
+			 @SuppressWarnings("unchecked") TransactionOperation<Role>... ops) throws ResourceException {
 		if(StringUtils.isBlank(role.getResourceCategory())) {
 			role.setResourceCategory("role");
 		}

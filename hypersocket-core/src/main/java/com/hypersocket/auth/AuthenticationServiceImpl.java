@@ -125,8 +125,9 @@ public class AuthenticationServiceImpl extends
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
 		setupRealms();
-		
 		setupFallback();
+		
+//		schemeService.enableScheme(BROWSER_AUTHENTICATION_RESOURCE_KEY);
 	}
 	
 	private void setupFallback() {

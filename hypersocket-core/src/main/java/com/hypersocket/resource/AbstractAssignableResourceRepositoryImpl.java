@@ -602,7 +602,6 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 				ar.getRoles().clear();
 				ar.getRoles().addAll(roleList);
 			} else {
-				Collection<Role> mergedRoles = computeMerge(ar, roleList);
 				ar.getRoles().addAll(computeMerge(ar, roleList));
 			}
 			saveObject(ar);

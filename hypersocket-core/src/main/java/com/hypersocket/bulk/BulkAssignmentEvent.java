@@ -5,13 +5,17 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.session.Session;
+import com.hypersocket.session.events.SessionEvent;
+
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.List;
 
-public class BulkAssignmentEvent extends UserEvent{
+public class BulkAssignmentEvent extends SessionEvent {
 
-    public static final String EVENT_RESOURCE_KEY = "event.bulkAssignmentResource";
+	private static final long serialVersionUID = -2366608864198706771L;
+
+	public static final String EVENT_RESOURCE_KEY = "event.bulkAssignmentResource";
 
     public static final String ATTR_BULK_ASSIGNED_ROLES = "attr.bulkAssignmentRoles";
     public static final String ATTR_BULK_ASSIGNED_RESOURCES = "attr.bulkAssignmentResources";
@@ -21,7 +25,7 @@ public class BulkAssignmentEvent extends UserEvent{
                                Session session,
                                Realm realm, RealmProvider provider,
                                Principal principal) {
-        super(source, "event.bulkAssignmentResource", session, realm, provider, principal);
+        super(source, "event.bulkAssignmentResource", true, session);
         addAttribute(ATTR_BULK_ASSIGNED_ROLES, roleIds);
         addAttribute(ATTR_BULK_ASSIGNED_RESOURCES, resourceIds);
         addAttribute(ATTR_BULK_ASSIGNED_MODE, bulkAssignmentMode);
@@ -31,7 +35,7 @@ public class BulkAssignmentEvent extends UserEvent{
                                Throwable e,
                                Session session, Realm realmName, RealmProvider provider,
                                Principal principal) {
-        super(source, "event.bulkAssignmentResource", e, session, realmName, provider, principal.getPrincipalName());
+        super(source, "event.bulkAssignmentResource", e, session);
         addAttribute(ATTR_BULK_ASSIGNED_ROLES, roleIds);
         addAttribute(ATTR_BULK_ASSIGNED_RESOURCES, resourceIds);
         addAttribute(ATTR_BULK_ASSIGNED_MODE, bulkAssignmentMode);

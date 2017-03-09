@@ -108,6 +108,8 @@ public interface PermissionService extends AuthenticatedService, FindableResourc
 			throws ResourceException, AccessDeniedException;
 
 	boolean hasPermission(Principal principal, Permission permission);
+	
+	boolean hasPermission(Principal principal, PermissionType permission);
 
 	public boolean hasRole(Principal principal, Role role) throws AccessDeniedException;
 
