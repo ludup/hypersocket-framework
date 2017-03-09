@@ -69,7 +69,7 @@ public class MigrationObjectMapper {
         try {
             for (BeanDefinition beanDefinition : classes) {
                 String className = beanDefinition.getBeanClassName();
-                Class aClass = Class.forName(className);
+                Class aClass = MigrationObjectMapper.class.getClassLoader().loadClass(className);
                 Class oldClass = customMixInMap.put(aClass.getSimpleName(), aClass);
                 if(oldClass != null) {
                     throw new IllegalStateException(String.format("While adding class for key %s, map returned back object, " +

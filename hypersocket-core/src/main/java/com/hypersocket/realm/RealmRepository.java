@@ -7,14 +7,14 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
-import java.util.List;
-import java.util.Map;
-
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.RealmResource;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
+
+import java.util.List;
+import java.util.Map;
 
 public interface RealmRepository extends
 		AbstractResourceRepository<RealmResource> {
@@ -53,5 +53,4 @@ public interface RealmRepository extends
 
 	List<Resource> findAllResourceInRealmOfType(Class aClass);
 
-	<T> T findResourceInRealmByName(Class<T> aClass, String name);
 }

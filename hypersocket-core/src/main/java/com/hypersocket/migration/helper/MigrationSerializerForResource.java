@@ -7,13 +7,13 @@ import com.hypersocket.resource.Resource;
 
 import java.io.IOException;
 
-public class MigrationSerializer extends StdSerializer<Resource> {
+public class MigrationSerializerForResource extends StdSerializer<Resource> {
 
-    protected MigrationSerializer() {
+    protected MigrationSerializerForResource() {
         this(null);
     }
 
-    protected MigrationSerializer(Class<Resource> t) {
+    protected MigrationSerializerForResource(Class<Resource> t) {
         super(t);
     }
 

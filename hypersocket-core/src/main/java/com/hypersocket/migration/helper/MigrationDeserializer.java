@@ -7,18 +7,22 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.hypersocket.migration.execution.stack.MigrationCurrentInfo;
 import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
+import com.hypersocket.migration.lookup.LookUpKey;
 import com.hypersocket.migration.mapper.MigrationObjectMapper;
-import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.migration.repository.MigrationRepository;
+import com.hypersocket.migration.util.MigrationUtil;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.resource.Resource;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 
 @Component
-public class MigrationDeserializer extends StdDeserializer<Resource> {
+public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
 
     @Autowired
     MigrationCurrentStack migrationCurrentStack;
@@ -30,7 +34,10 @@ public class MigrationDeserializer extends StdDeserializer<Resource> {
     RealmService realmService;
 
     @Autowired
-    PermissionService permissionService;
+    MigrationUtil migrationUtil;
+
+    @Autowired
+    MigrationRepository migrationRepository;
 
     protected MigrationDeserializer() {
         this(null);
@@ -41,7 +48,7 @@ public class MigrationDeserializer extends StdDeserializer<Resource> {
     }
 
     @Override
-    public Resource deserialize(JsonParser p, DeserializationContext ctxt)  {
+    public AbstractEntity deserialize(JsonParser p, DeserializationContext ctxt)  {
         try {
             boolean isCollection = false;
             boolean isValueToUpdateFromDb = false;
@@ -50,35 +57,33 @@ public class MigrationDeserializer extends StdDeserializer<Resource> {
             Resource resourceRootBean = (Resource) migrationCurrentInfo.getBean();
             String propertyName = migrationCurrentInfo.getPropName();
 
-            System.out.println("The bean " + migrationCurrentInfo.getBean());
-            System.out.println("The propname " + migrationCurrentInfo.getPropName());
-
             String className = node.get("_meta").asText();
-            //we need to check here if we have key name or not
-            //else we need to have a switch of key lookups
-            //Permissions have resourceKey, whats next ????
-            String entityName = node.get("name").asText();
 
-            Class resourceClass = Class.forName(className);
+            if(StringUtils.isBlank(className)) {
+                throw new IllegalStateException(String.format("Class type info not found, cannot parse json %s", node.toString()));
+            }
+            LookUpKey lookUpKey = migrationUtil.captureEntityLookup(node);
+
+            Class resourceClass = MigrationDeserializer.class.getClassLoader().loadClass(className);
 
             Class propertyClass = PropertyUtils.getPropertyType(resourceRootBean, propertyName);
             if(Collection.class.isAssignableFrom(propertyClass)) {
                 isCollection = true;
             }
             Object value = PropertyUtils.getProperty(resourceRootBean, propertyName);
-            Object valueToUpdate = null;
+            AbstractEntity valueToUpdate = null;
 
             if (value != null) {
                 if (isCollection) {
-                    Collection<Resource> resourceCollection = (Collection<Resource>) value;
-                    for (Resource resource : resourceCollection) {
-                        if (resource.getName().equals(entityName)) {
+                    Collection<AbstractEntity> resourceCollection = (Collection) value;
+                    for (AbstractEntity resource : resourceCollection) {
+                        if (PropertyUtils.getProperty(resource, lookUpKey.getProperty()).equals(lookUpKey.getValue())) {
                             valueToUpdate = resource;
                             break;
                         }
                     }
                 } else {
-                    valueToUpdate = value;
+                    valueToUpdate = (AbstractEntity) value;
                 }
             }
 
@@ -92,7 +97,7 @@ public class MigrationDeserializer extends StdDeserializer<Resource> {
             //this does not means delete a2
             if(valueToUpdate == null) {
                 //lets check db if we have something
-                valueToUpdate = realmService.findResourceInRealmByName(resourceClass, entityName);
+                valueToUpdate = (AbstractEntity) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey);
                 if (valueToUpdate != null) {
                     isValueToUpdateFromDb = true;
                 }
@@ -110,14 +115,13 @@ public class MigrationDeserializer extends StdDeserializer<Resource> {
             //if object was not present from hibernate we can set new reference
             //for collection or simple object
 
-            ObjectReader objectReader = null;
-            if (valueToUpdate != null) {
-                objectReader = migrationObjectMapper.getObjectMapper().readerForUpdating(valueToUpdate);
-            } else {
-                objectReader = migrationObjectMapper.getObjectMapper().readerFor(resourceClass);
+            if(valueToUpdate == null) {
+                valueToUpdate = (AbstractEntity) resourceClass.newInstance();
             }
 
-            Resource resource = (Resource) objectReader.treeAsTokens(node).readValueAs(resourceClass);
+            ObjectReader objectReader = migrationObjectMapper.getObjectMapper().readerForUpdating(valueToUpdate);
+
+            AbstractEntity resource = (AbstractEntity) objectReader.treeAsTokens(node).readValueAs(resourceClass);
 
             if(isCollection) {
                 //to begin with there was no collection
@@ -128,9 +132,9 @@ public class MigrationDeserializer extends StdDeserializer<Resource> {
                 }
 
                 //value to update is from db, we did not find match in loaded property
-                //or value to update is null, we did not find it anywhere
+                //or value to update is new, no id, we did not find it anywhere
                 //this value needs to go back to collection
-                if(isValueToUpdateFromDb || valueToUpdate == null) {
+                if(isValueToUpdateFromDb || valueToUpdate.getId() == null) {
                     ((Collection) value).add(resource);
                 }
 
@@ -139,6 +143,8 @@ public class MigrationDeserializer extends StdDeserializer<Resource> {
                 //we need to set it back to root property
                 PropertyUtils.setProperty(resourceRootBean, propertyName, resource);
             }
+
+            migrationUtil.fillInRealm(resource);
 
             return resource;
 

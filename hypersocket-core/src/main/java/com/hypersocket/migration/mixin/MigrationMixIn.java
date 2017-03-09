@@ -4,13 +4,21 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.Date;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-public abstract class MigrationMixIn {
+public interface MigrationMixIn {
 
     @JsonIgnore
-    public abstract Long getId();
+    Long getId();
 
     @JsonGetter("_meta")
     @JsonIgnore(false)
-    public abstract String _meta();
+    String _meta();
+
+    @JsonIgnore
+    Date getModifiedDate();
+
+    @JsonIgnore
+    Date getCreateDate();
 }

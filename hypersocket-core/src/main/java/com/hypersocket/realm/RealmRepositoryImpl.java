@@ -7,14 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
-import java.util.List;
-import java.util.Map;
-
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
@@ -23,6 +15,13 @@ import com.hypersocket.resource.HiddenFilter;
 import com.hypersocket.resource.RealmResource;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
 
 @Repository
 public class RealmRepositoryImpl extends
@@ -196,12 +195,6 @@ public class RealmRepositoryImpl extends
 	public List findAllResourceInRealmOfType(Class aClass) {
 		Criteria criteria = createCriteria(aClass);
 		return criteria.list();
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public <T> T findResourceInRealmByName(Class<T> aClass, String name) {
-		return (T) createCriteria(aClass).add(Restrictions.eq("name", name)).uniqueResult();
 	}
 
 }

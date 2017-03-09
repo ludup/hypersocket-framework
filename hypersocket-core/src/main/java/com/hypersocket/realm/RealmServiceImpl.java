@@ -7,17 +7,31 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
-import java.util.*;
-
-import javax.annotation.PostConstruct;
-import javax.persistence.Entity;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hypersocket.attributes.user.UserAttribute;
+import com.hypersocket.attributes.user.UserAttributeService;
+import com.hypersocket.attributes.user.UserAttributeType;
+import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
+import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.events.EventPropertyCollector;
+import com.hypersocket.events.EventService;
+import com.hypersocket.local.LocalRealmProviderImpl;
 import com.hypersocket.migration.mapper.MigrationObjectMapper;
 import com.hypersocket.permissions.*;
 import com.hypersocket.properties.*;
+import com.hypersocket.realm.events.*;
 import com.hypersocket.resource.*;
+import com.hypersocket.scheduler.SchedulerService;
+import com.hypersocket.session.SessionService;
+import com.hypersocket.session.SessionServiceImpl;
+import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.transactions.TransactionCallbackWithError;
+import com.hypersocket.transactions.TransactionService;
+import com.hypersocket.upgrade.UpgradeService;
+import com.hypersocket.upgrade.UpgradeServiceListener;
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Element;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,42 +42,9 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 
-import com.hypersocket.attributes.user.UserAttribute;
-import com.hypersocket.attributes.user.UserAttributeService;
-import com.hypersocket.attributes.user.UserAttributeType;
-import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
-import com.hypersocket.config.ConfigurationService;
-import com.hypersocket.events.EventPropertyCollector;
-import com.hypersocket.events.EventService;
-import com.hypersocket.local.LocalRealmProviderImpl;
-import com.hypersocket.realm.events.ChangePasswordEvent;
-import com.hypersocket.realm.events.GroupCreatedEvent;
-import com.hypersocket.realm.events.GroupDeletedEvent;
-import com.hypersocket.realm.events.GroupEvent;
-import com.hypersocket.realm.events.GroupUpdatedEvent;
-import com.hypersocket.realm.events.PrincipalEvent;
-import com.hypersocket.realm.events.ProfileUpdatedEvent;
-import com.hypersocket.realm.events.RealmCreatedEvent;
-import com.hypersocket.realm.events.RealmDeletedEvent;
-import com.hypersocket.realm.events.RealmEvent;
-import com.hypersocket.realm.events.RealmUpdatedEvent;
-import com.hypersocket.realm.events.SetPasswordEvent;
-import com.hypersocket.realm.events.UserCreatedEvent;
-import com.hypersocket.realm.events.UserDeletedEvent;
-import com.hypersocket.realm.events.UserEvent;
-import com.hypersocket.realm.events.UserUpdatedEvent;
-import com.hypersocket.scheduler.SchedulerService;
-import com.hypersocket.session.SessionService;
-import com.hypersocket.session.SessionServiceImpl;
-import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.transactions.TransactionCallbackWithError;
-import com.hypersocket.transactions.TransactionService;
-import com.hypersocket.upgrade.UpgradeService;
-import com.hypersocket.upgrade.UpgradeServiceListener;
-
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
+import javax.annotation.PostConstruct;
+import javax.persistence.Entity;
+import java.util.*;
 
 @Service
 public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
@@ -1886,10 +1867,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (JsonProcessingException e) {
 			throw new ResourceExportException(RESOURCE_BUNDLE, "error.exportError", e.getMessage());
 		}
-	}
-
-	public <T> T findResourceInRealmByName(Class<T> aClass, String name) {
-		return realmRepository.findResourceInRealmByName(aClass, name);
 	}
 
 	@Autowired
