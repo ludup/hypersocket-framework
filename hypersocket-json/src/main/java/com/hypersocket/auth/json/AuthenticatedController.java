@@ -218,6 +218,12 @@ public class AuthenticatedController {
 		authenticationService.clearPrincipalContext();
 	}
 
+	@ExceptionHandler(NumberFormatException.class)
+	@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
+	public void handleException(HttpServletRequest request, NumberFormatException ex) {
+		
+	}
+	
 	@ExceptionHandler(Throwable.class)
 	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
 	public void handleException(HttpServletRequest request, Throwable ex) {

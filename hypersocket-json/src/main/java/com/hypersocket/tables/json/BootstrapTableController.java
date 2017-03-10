@@ -16,6 +16,7 @@ import com.hypersocket.tables.BootstrapTableResourceProcessor;
 import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
+import com.hypersocket.utils.HypersocketUtils;
 
 public class BootstrapTableController<T> extends AuthenticatedController {
 
@@ -24,7 +25,7 @@ public class BootstrapTableController<T> extends AuthenticatedController {
 	@SuppressWarnings("unchecked")
 	protected BootstrapTableResult<T> processDataTablesRequest(
 			HttpServletRequest request, BootstrapTablePageProcessor processor)
-			throws NumberFormatException, UnauthorizedException,
+			throws UnauthorizedException,
 			AccessDeniedException {
 
 		Integer start = 0;
@@ -56,13 +57,13 @@ public class BootstrapTableController<T> extends AuthenticatedController {
 		String searchColumn = "";
 		
 		if(request.getParameter("sSearch") != null) {
-			searchPattern = request.getParameter("sSearch");
+			searchPattern = HypersocketUtils.urlEncode(request.getParameter("sSearch"));
 		} else if(request.getParameter("search") != null) {
-			searchPattern = request.getParameter("search");
+			searchPattern = HypersocketUtils.urlEncode(request.getParameter("search"));
 		}
 		
 		if(request.getParameter("searchColumn") != null) {
-			searchColumn = request.getParameter("searchColumn");
+			searchColumn = HypersocketUtils.urlEncode(request.getParameter("searchColumn"));
 		}
 
 		BootstrapTableResult<T> result = new BootstrapTableResult<T>(processor.getPage(

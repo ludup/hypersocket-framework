@@ -45,7 +45,7 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="category.security" resourceBundle="HypersocketServer" weight="400">
 	    <property resourceKey="server.blockIPs" inputType="multipleTextInput"
-			restart="false" weight="100" store="blockedIPStore" allowEmpty="true"/>
+			restart="false" weight="8888" store="blockedIPStore" allowEmpty="true"/>
 	</propertyCategory>
 		<propertyCategory resourceKey="category.authentication"
 		 resourceBundle="AuthenticationService" weight="0">
