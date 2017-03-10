@@ -29,4 +29,8 @@ public class DefaultServletRequestHandler extends ServletRequestHandler {
 		return request.getRequestURI().startsWith(server.resolvePath(server.getAttribute(getName(), getName())));
 	}
 
+	@Override
+	public boolean getDisableCache() {
+		return true;
+	}
 }

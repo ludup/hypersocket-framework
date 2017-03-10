@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -106,4 +107,6 @@ public interface HypersocketServer {
 	ExecutorService getExecutor();
 
 	void registerClientConnector(ClientConnector connector);
+
+	void processDefaultResponse(HttpServletResponse response, boolean disableCache);
 }

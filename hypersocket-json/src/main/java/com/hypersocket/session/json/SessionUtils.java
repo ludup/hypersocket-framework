@@ -207,7 +207,12 @@ public class SessionUtils {
 
 		Cookie cookie = new Cookie(HYPERSOCKET_API_SESSION, session.getId());
 		cookie.setMaxAge(60 * session.getTimeout());
-		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
+		if(request.getProtocol().equalsIgnoreCase("https")) {
+			cookie.setSecure(true);
+		} else {
+			cookie.setSecure(false);
+			cookie.setHttpOnly(true);
+		}
 		cookie.setPath("/");
 		response.addCookie(cookie);
 		
@@ -248,7 +253,12 @@ public class SessionUtils {
 		Cookie cookie = new Cookie(HYPERSOCKET_LOCALE, locale);
 		cookie.setMaxAge(Integer.MAX_VALUE);
 		cookie.setPath("/");
-		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
+		if(request.getProtocol().equalsIgnoreCase("https")) {
+			cookie.setSecure(true);
+		} else {
+			cookie.setSecure(false);
+			cookie.setHttpOnly(true);
+		}
 		cookie.setDomain(request.getServerName());
 		response.addCookie(cookie);
 

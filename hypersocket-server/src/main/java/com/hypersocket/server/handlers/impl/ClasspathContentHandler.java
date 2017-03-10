@@ -94,4 +94,9 @@ public class ClasspathContentHandler extends ContentHandlerImpl {
 		}
 	}
 
+	@Override
+	public boolean getDisableCache() {
+		return false;
+	}
+
 }

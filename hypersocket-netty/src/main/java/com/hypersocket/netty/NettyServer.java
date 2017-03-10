@@ -26,6 +26,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -629,5 +630,20 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 		
 		return size;
+	}
+
+	@Override
+	public void processDefaultResponse(HttpServletResponse nettyResponse, boolean disableCache) {
+		
+		if(configurationService.getBooleanValue("security.xFrameOptionsEnabled")) {
+			nettyResponse.setHeader("X-Frame-Options", configurationService.getValue("security.xFrameOptionsValue"));
+		}
+		
+		if(disableCache) {
+			nettyResponse.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private");
+			nettyResponse.setHeader("Pragma", "no-cache");
+		}
+		nettyResponse.setHeader("X-Content-Type-Options", "nosniff");
+		nettyResponse.setHeader("X-XSS-Protection", "1; mode=block");
 	}
 }

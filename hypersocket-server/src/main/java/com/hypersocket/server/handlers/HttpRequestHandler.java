@@ -52,6 +52,8 @@ public abstract class HttpRequestHandler implements Comparable<HttpRequestHandle
 	public int compareTo(HttpRequestHandler obj) {
 		return new Integer(this.getPriority()).compareTo(new Integer(obj.getPriority()));
 	}
+
+	public abstract boolean getDisableCache();
 	
 	
 }

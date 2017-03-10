@@ -298,6 +298,9 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 						}
 					}
 				} else {
+					
+					
+					
 					for (HttpRequestHandler handler : server.getHttpHandlers()) {
 						if(log.isDebugEnabled()) {
 							log.debug("Checking HTTP handler: " + handler.getName());
@@ -306,6 +309,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 							if(log.isDebugEnabled()) {
 								log.debug(handler.getName() + " is processing HTTP request");
 							}
+							server.processDefaultResponse(nettyResponse, handler.getDisableCache());
 							handler.handleHttpRequest(servletRequest, nettyResponse,
 									HttpRequestDispatcherHandler.this);
 							return;
@@ -313,7 +317,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					}
 				}
 		
-				
+				server.processDefaultResponse(nettyResponse, true);
 				send404(servletRequest, nettyResponse);
 				sendResponse(servletRequest, nettyResponse, false);
 		

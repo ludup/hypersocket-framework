@@ -30,6 +30,7 @@ import javax.net.ssl.SSLEngine;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -79,7 +80,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 	private AnnotationConfigWebApplicationContext webappContext;
 	private DispatcherServlet dispatcherServlet;
-//	private HypersocketServletConfig servletConfig;
 	
 	private List<String> controllerPackages = new ArrayList<String>();
 	
@@ -491,7 +491,12 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		Cookie cookie = new Cookie(sessionCookieName, session.getId());
 		cookie.setMaxAge(60 * 15);
 		cookie.setPath("/");
-		cookie.setSecure(secure);
+		if(secure) {
+			cookie.setSecure(true);
+		} else {
+			cookie.setSecure(false);
+			cookie.setHttpOnly(true);
+		}
 		servletResponse.addCookie(cookie);
 
 		return session;

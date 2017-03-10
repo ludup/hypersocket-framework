@@ -32,4 +32,9 @@ public class APIRequestHandler extends ServletRequestHandler {
 						HypersocketServerImpl.API_PATH)));
 	}
 
+	@Override
+	public boolean getDisableCache() {
+		return true;
+	}
+
 }
