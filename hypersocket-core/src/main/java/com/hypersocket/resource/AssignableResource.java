@@ -30,7 +30,7 @@ import com.hypersocket.permissions.Role;
 @Entity
 @Inheritance(strategy=InheritanceType.JOINED)
 @Table(name="assignable_resources")
-public class AssignableResource extends RealmResource {
+public abstract class AssignableResource extends RealmResource {
 
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Fetch(FetchMode.SELECT)

@@ -48,13 +48,14 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public AbstractEntity deserialize(JsonParser p, DeserializationContext ctxt)  {
         try {
             boolean isCollection = false;
             boolean isValueToUpdateFromDb = false;
             JsonNode node = p.getCodec().readTree(p);
             MigrationCurrentInfo migrationCurrentInfo = migrationCurrentStack.getState();
-            Resource resourceRootBean = (Resource) migrationCurrentInfo.getBean();
+            AbstractEntity resourceRootBean = (AbstractEntity) migrationCurrentInfo.getBean();
             String propertyName = migrationCurrentInfo.getPropName();
 
             String className = node.get("_meta").asText();
@@ -70,6 +71,7 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
             if(Collection.class.isAssignableFrom(propertyClass)) {
                 isCollection = true;
             }
+
             Object value = PropertyUtils.getProperty(resourceRootBean, propertyName);
             AbstractEntity valueToUpdate = null;
 
@@ -136,12 +138,20 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
                 //this value needs to go back to collection
                 if(isValueToUpdateFromDb || valueToUpdate.getId() == null) {
                     ((Collection) value).add(resource);
+                    String mappedBy = migrationUtil.getMappedBy(resourceRootBean, propertyName);
+                    if(StringUtils.isNotBlank(mappedBy)) {
+                        PropertyUtils.setProperty(resource, mappedBy, resourceRootBean);
+                    }
                 }
 
             } else if (!isCollection && value == null) {
                 //to begin with reference was not there when loaded from db
                 //we need to set it back to root property
                 PropertyUtils.setProperty(resourceRootBean, propertyName, resource);
+                String mappedBy = migrationUtil.getMappedBy(resourceRootBean, propertyName);
+                if(StringUtils.isNotBlank(mappedBy)) {
+                    PropertyUtils.setProperty(resource, mappedBy, resourceRootBean);
+                }
             }
 
             migrationUtil.fillInRealm(resource);

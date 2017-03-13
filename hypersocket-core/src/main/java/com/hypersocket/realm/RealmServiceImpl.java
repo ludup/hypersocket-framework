@@ -20,6 +20,7 @@ import com.hypersocket.migration.mapper.MigrationObjectMapper;
 import com.hypersocket.permissions.*;
 import com.hypersocket.properties.*;
 import com.hypersocket.realm.events.*;
+import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.resource.*;
 import com.hypersocket.scheduler.SchedulerService;
 import com.hypersocket.session.SessionService;
@@ -44,6 +45,7 @@ import org.springframework.transaction.TransactionStatus;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.Entity;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 @Service
@@ -1759,6 +1761,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			Map<String, List<Principal>> realmUsersMap = new LinkedHashMap<>();
 			Map<String, List<Principal>> realmGroupsMap = new LinkedHashMap<>();
 			Map<String, List<Role>> realmRolesMap = new LinkedHashMap<>();
+            Map<String, List<Object>> allEntityMap = new LinkedHashMap<>();
 
 			for(Resource resource : resources) {
 
@@ -1823,6 +1826,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			json.put("realms_principals", realmUsersMap);
 			json.put("realms_groups", realmGroupsMap);
 			json.put("realms_roles", realmRolesMap);
+            json.put("all_entities", allEntityMap);
+
 			if(permissions != null) {
 				json.put("permissions", permissions);
 			}
@@ -1834,12 +1839,14 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			//final Set<BeanDefinition> classes =
 			final Set<BeanDefinition> classes = scanner.findCandidateComponents("com.hypersocket");
 
+            allEntityMap.put("values", new ArrayList<Object>());
 			try {
 				for (BeanDefinition beanDefinition : classes) {
 					System.out.println("Class Name -> " + beanDefinition.getBeanClassName());
 					Class aClass = Class.forName(beanDefinition.getBeanClassName());
 					System.out.println("Class Instance -> " + aClass.getName());
-					if("com.hypersocket.resource.ResourceConstraint".equals(aClass.getName())) {
+					if("com.hypersocket.resource.ResourceConstraint".equals(aClass.getName())
+							|| Modifier.isAbstract( aClass.getModifiers() )) {
 						continue;
 					}
 					if(aClass.isAssignableFrom(AssignableResource.class)) {
@@ -1854,6 +1861,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					if(list != null) {
 						for (Object o: list) {
 							System.out.println("The object --> " + o);
+                            allEntityMap.get("values").add(o);
 						}
 					}
 

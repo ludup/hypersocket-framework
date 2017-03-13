@@ -19,6 +19,8 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RoleMigrationMixIn extends Role implements MigrationMixIn {
 
+    private RoleMigrationMixIn() {}
+
     @Override
     @JsonIgnore
     public Long getId() {return null;}
