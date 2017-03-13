@@ -190,11 +190,4 @@ public class RealmRepositoryImpl extends
 		return realm;
 	}
 
-	@Override
-	@Transactional(readOnly = true)
-	public List findAllResourceInRealmOfType(Class aClass) {
-		Criteria criteria = createCriteria(aClass);
-		return criteria.list();
-	}
-
 }

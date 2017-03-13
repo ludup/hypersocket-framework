@@ -16,6 +16,7 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
 import com.hypersocket.local.LocalRealmProviderImpl;
+import com.hypersocket.migration.execution.MigrationExecutor;
 import com.hypersocket.migration.mapper.MigrationObjectMapper;
 import com.hypersocket.permissions.*;
 import com.hypersocket.properties.*;
@@ -45,6 +46,7 @@ import org.springframework.transaction.TransactionStatus;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.Entity;
+import java.io.OutputStream;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
@@ -1730,153 +1732,15 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public String exportAllResoures() throws ResourceExportException, AccessDeniedException {
-		List<Realm> list = allRealms();
-		return exportResources(list, false);
-	}
-
-	@Override
-	public String exportResources(Collection<? extends Resource> resources, boolean stripIdentity)
-			throws ResourceExportException, AccessDeniedException {
-
-		if(resources.isEmpty()) {
-			throw new ResourceExportException(RESOURCE_BUNDLE, "error.nothingToExport");
-		}
-
-
-		//ObjectMapper mapper = new ObjectMapper();
-		/*ObjectReader reader = mapper.reader(Person.class);
-
-		Person person = new Person();
-		try {
-			String j = mapper.writeValueAsString(person);
-			Person p = reader.readValue(j);
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}*/
-		try {
-			Map<String, List<DatabaseProperty>> realmPropertiesMap = new LinkedHashMap<>();
-			Map<String, List<Principal>> realmUsersMap = new LinkedHashMap<>();
-			Map<String, List<Principal>> realmGroupsMap = new LinkedHashMap<>();
-			Map<String, List<Role>> realmRolesMap = new LinkedHashMap<>();
-            Map<String, List<Object>> allEntityMap = new LinkedHashMap<>();
-
-			for(Resource resource : resources) {
-
-				//properties
-				final List<DatabaseProperty> propertiesForResource = realmRepository.getPropertiesForResource(resource);
-				if(propertiesForResource != null) {
-					for (DatabaseProperty property :propertiesForResource) {
-						if(stripIdentity) {
-							property.setId(null);
-						}
-					}
-					realmPropertiesMap.put(resource.getName(), propertiesForResource);
-				}
-
-				//principals
-				final List<Principal> principals = allUsers((Realm) resource);
-				if(principals != null) {
-					for (Principal principal : principals) {
-						if (stripIdentity) {
-							principal.setId(null);
-						}
-					}
-					realmUsersMap.put(resource.getName(), principals);
-				}
-
-				//groups
-				final List<Principal> groups = allGroups((Realm) resource);
-				if(groups != null) {
-					for (Principal group : groups) {
-						if (stripIdentity) {
-							group.setId(null);
-						}
-					}
-					realmGroupsMap.put(resource.getName(), groups);
-				}
-
-				//roles
-				final List<Role> roles = permissionService.allRoles((Realm) resource);
-				if(roles != null) {
-					for (Role role : roles) {
-						if (stripIdentity) {
-							role.setId(null);
-						}
-						//strip principals
-						//role.setPrincipals(Collections.<Principal>emptySet());
-					}
-					realmRolesMap.put(resource.getName(), roles);
-				}
-
-				if(stripIdentity) {
-					resource.setId(null);
-				}
-			}
-
-			//permissions
-			List<Permission> permissions = permissionService.allPermissions();
-
-
-			Map<String, Object> json = new HashMap<>();
-			json.put("realms", resources);
-			json.put("realms_properties", realmPropertiesMap);
-			json.put("realms_principals", realmUsersMap);
-			json.put("realms_groups", realmGroupsMap);
-			json.put("realms_roles", realmRolesMap);
-            json.put("all_entities", allEntityMap);
-
-			if(permissions != null) {
-				json.put("permissions", permissions);
-			}
-
-			ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
-			scanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));
-
-			// get matching classes defined in the package
-			//final Set<BeanDefinition> classes =
-			final Set<BeanDefinition> classes = scanner.findCandidateComponents("com.hypersocket");
-
-            allEntityMap.put("values", new ArrayList<Object>());
-			try {
-				for (BeanDefinition beanDefinition : classes) {
-					System.out.println("Class Name -> " + beanDefinition.getBeanClassName());
-					Class aClass = Class.forName(beanDefinition.getBeanClassName());
-					System.out.println("Class Instance -> " + aClass.getName());
-					if("com.hypersocket.resource.ResourceConstraint".equals(aClass.getName())
-							|| Modifier.isAbstract( aClass.getModifiers() )) {
-						continue;
-					}
-					if(aClass.isAssignableFrom(AssignableResource.class)) {
-						System.out.println("It is assignable resource .......");
-					} else {
-						System.out.println("It is normal resource ............");
-					}
-
-					System.out.println("Listing the resource ............");
-					List list = realmRepository.findAllResourceInRealmOfType(aClass);
-					System.out.println("The data ----> ");
-					if(list != null) {
-						for (Object o: list) {
-							System.out.println("The object --> " + o);
-                            allEntityMap.get("values").add(o);
-						}
-					}
-
-				}
-			}catch (Exception e) {
-				e.printStackTrace();
-			}
-
-
-			return migrationObjectMapper.getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(json);
-		} catch (JsonProcessingException e) {
-			throw new ResourceExportException(RESOURCE_BUNDLE, "error.exportError", e.getMessage());
-		}
+	public void exportAllResoures(OutputStream outputStream) throws ResourceExportException, AccessDeniedException {
+		//List<Realm> list = allRealms();
+		//return exportResources(list, false);
+		migrationExecutor.startRealmExport(outputStream);
 	}
 
 	@Autowired
 	MigrationObjectMapper migrationObjectMapper;
+
+	@Autowired
+	MigrationExecutor migrationExecutor;
 }

@@ -9,7 +9,6 @@ package com.hypersocket.realm;
 
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.RealmResource;
-import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
 
@@ -50,7 +49,5 @@ public interface RealmRepository extends
 	public Realm getDefaultRealm();
 
 	public Realm setDefaultRealm(Realm realm);
-
-	List<Resource> findAllResourceInRealmOfType(Class aClass);
 
 }

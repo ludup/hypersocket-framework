@@ -13,6 +13,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.resource.*;
 import com.hypersocket.tables.ColumnSort;
 
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -214,9 +215,6 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Map<String, String> getUserPropertyValues(Principal principal);
 
-	public String exportAllResoures() throws ResourceExportException, AccessDeniedException;
-
-	String exportResources(Collection<? extends Resource> resources, boolean stripIdentity)
-			throws ResourceExportException, AccessDeniedException;
+	void exportAllResoures(OutputStream outputStream) throws ResourceExportException, AccessDeniedException;
 
 }

@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.realm.json;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -378,7 +379,7 @@ public class RealmController extends ResourceController {
 	@RequestMapping(value = "realms/export", method = RequestMethod.GET, produces = { "text/plain" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
-	public String exportAll(HttpServletRequest request,
+	public void exportAll(HttpServletRequest request,
 							HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException,
 			ResourceNotFoundException, ResourceExportException {
@@ -392,7 +393,9 @@ public class RealmController extends ResourceController {
 		try {
 			response.setHeader("Content-Disposition", "attachment; filename=\""
 					+ "realmResource.json\"");
-			return realmService.exportAllResoures();
+			realmService.exportAllResoures(response.getOutputStream());
+		} catch (IOException e) {
+			e.printStackTrace();
 		} finally {
 			clearAuthenticatedContext();
 		}
