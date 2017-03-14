@@ -26,6 +26,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -123,6 +124,9 @@ public class Session extends AbstractEntity<String> {
 	@Column(name = "system")
 	Boolean system;
 
+	@Transient
+	String csrfToken = null;
+	
 	@Override
 	public String getId() {
 		return id;
@@ -371,5 +375,12 @@ public class Session extends AbstractEntity<String> {
 	
 	public void setCurrentRole(Role currentRole) {
 		this.currentRole = currentRole;
+	}
+	
+	public String getCsrfToken() {
+		if(csrfToken==null) {
+			csrfToken = DigestUtils.sha256Hex(getId() + "|CSRF_TOKEN");
+		}
+		return csrfToken;
 	}
 }
