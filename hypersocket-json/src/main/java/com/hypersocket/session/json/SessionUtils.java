@@ -180,12 +180,7 @@ public class SessionUtils {
 		if(!systemConfigurationService.getBooleanValue("security.enableCSRFProtection")) {
 			return;
 		}
-		
-		String token = (String) request.getSession().getAttribute(HYPERSOCKET_CSRF_TOKEN);
-		if(token==null) {
-			token = DigestUtils.sha256Hex(session.getId() + "|CSRF-TOKEN");
-			request.getSession().setAttribute(HYPERSOCKET_CSRF_TOKEN, token);
-		}
+
 		String requestToken = request.getHeader("X-Csrf-Token");
 		if(requestToken==null) {
 			requestToken = request.getParameter("token");
@@ -195,7 +190,7 @@ public class SessionUtils {
 			}
 		}
 		
-		if(!token.equals(requestToken)) {
+		if(!session.getCsrfToken().equals(requestToken)) {
 			log.warn(String.format("CSRF token mistmatch from %s", request.getRemoteAddr()));
 			throw new UnauthorizedException();
 		}
@@ -216,11 +211,7 @@ public class SessionUtils {
 		cookie.setPath("/");
 		response.addCookie(cookie);
 		
-		if(request.getSession().getAttribute(HYPERSOCKET_CSRF_TOKEN)==null) {
-			request.getSession().setAttribute(HYPERSOCKET_CSRF_TOKEN,  DigestUtils.sha256Hex(session.getId() + "|CSRF-TOKEN"));
-		}
-		
-		cookie = new Cookie(HYPERSOCKET_CSRF_TOKEN, (String)request.getSession().getAttribute(HYPERSOCKET_CSRF_TOKEN));
+		cookie = new Cookie(HYPERSOCKET_CSRF_TOKEN, session.getCsrfToken());
 		cookie.setMaxAge(60 * session.getTimeout());
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
 		cookie.setPath("/");
