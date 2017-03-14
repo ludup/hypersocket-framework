@@ -65,4 +65,8 @@ public class Realm extends Resource {
 	public void setOwner(Long owner) {
 		this.owner = owner;
 	}
+
+	public boolean isPrimaryRealm() {
+		return owner==null;
+	}
 }

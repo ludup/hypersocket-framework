@@ -94,17 +94,15 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 	public List<PropertyChange> populateEntityFields(T resource, Map<String,String> properties) {
 		List<PropertyChange> changedProperties = new ArrayList<>();
 		if(properties!=null) {
-			final Set<String> propertyNames = getPropertyNames(resource);
-			for(String resourceKey : propertyNames) {
-				if(properties.containsKey(resourceKey)) {
+			for(PropertyTemplate template : getPropertyTemplates(resource)) {
+				if(properties.containsKey(template.getResourceKey())) {
 					/**
 					 * Why was this commented out? We have to ensure we only attempt to update
 					 * entity properties. Some resources use a mixture of both.
 					 */
-					PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
 					if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
-						String val = getValue(resource, resourceKey);
-						String newVal = properties.get(resourceKey);
+						String val = getValue(resource, template.getResourceKey());
+						String newVal = properties.get(template.getResourceKey());
 						
 						/* NOTE - I am not 100% sure about this. What if a value IS changing to (or from) null? */
 						/**
@@ -119,11 +117,11 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 							newVal = "";
 						}
 						if(!Objects.equals(val, newVal)) {
-							changedProperties.add(new PropertyChange(resourceKey, val, newVal));
+							changedProperties.add(new PropertyChange(template.getResourceKey(), val, newVal));
 						}
 						
-						setValue(resource, resourceKey, newVal);
-						properties.remove(resourceKey);
+						setValue(resource, template.getResourceKey(), newVal);
+						properties.remove(template.getResourceKey());
 					}
 				}
 			}

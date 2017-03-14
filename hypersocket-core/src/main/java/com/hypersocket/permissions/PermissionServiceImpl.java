@@ -232,6 +232,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		return createRole(name, realm, principals, permissions, properties, false, false);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
 			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole)
@@ -598,6 +599,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions,
 			Map<String, String> properties) throws AccessDeniedException, ResourceChangeException {

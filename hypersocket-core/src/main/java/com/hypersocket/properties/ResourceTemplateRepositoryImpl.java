@@ -419,12 +419,12 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 		}
 		
-		propertyNames.add(resourceKey);
-
-		if (isVariable) {
-			variableNames.add(resourceKey);
+		if(!hidden) {
+			propertyNames.add(resourceKey);	
+			if (isVariable) {
+				variableNames.add(resourceKey);
+			}
 		}
-		
 		
 		PropertyTemplate template = propertyStore.getPropertyTemplate(resourceKey);
 		if (template == null) {
@@ -904,10 +904,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	public Map<String, String> getProperties(AbstractResource resource) {
 
 		Map<String, String> properties = new HashMap<String, String>();
-		for (String name : getPropertyNames(resource)) {
-			if (propertyTemplates.containsKey(name)) {
-				properties.put(name, getValue(resource, name));
-			}
+		for (PropertyTemplate template : getPropertyTemplates(resource)) {
+			properties.put(template.getResourceKey(), getValue(resource, template.getResourceKey()));
 		}
 		return properties;
 	}
@@ -917,14 +915,11 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	public Map<String, String> getProperties(AbstractResource resource, boolean decrypt) {
 
 		Map<String, String> properties = new HashMap<String, String>();
-		for (String name : getPropertyNames(resource)) {
-			if (propertyTemplates.containsKey(name)) {
-				PropertyTemplate t = propertyTemplates.get(name);
-				if(t.isEncrypted()) {
-					properties.put(name, getDecryptedValue(resource, t.getResourceKey()));
-				} else {
-					properties.put(name, getValue(resource, name));
-				}
+		for (PropertyTemplate template : getPropertyTemplates(resource)) {
+			if(template.isEncrypted()) {
+				properties.put(template.getResourceKey(), getDecryptedValue(resource, template.getResourceKey()));
+			} else {
+				properties.put(template.getResourceKey(), getValue(resource, template.getResourceKey()));
 			}
 		}
 		return properties;

@@ -210,8 +210,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						info.getUaFamily(), 
 						info.getBrowserVersionInfo(), 
 						info.getOsFamily(),
-						info.getOsName(), configurationService.getIntValue(
-								realm, SESSION_TIMEOUT), realm);	
+						info.getOsName(), 
+						configurationService.getIntValue(realm, SESSION_TIMEOUT), 
+						realm);	
 			} catch (IOException e) {
 				session = repository.createSession(remoteAddress, principal,
 						completedScheme, "Unknown", "Unknown", "Unknown", "Unknown", 

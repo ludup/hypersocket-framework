@@ -1,15 +1,14 @@
 package com.hypersocket.bulk;
 
-import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmProvider;
-import com.hypersocket.realm.events.UserEvent;
-import com.hypersocket.session.Session;
-import com.hypersocket.session.events.SessionEvent;
+import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.List;
+import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmProvider;
+import com.hypersocket.session.Session;
+import com.hypersocket.session.events.SessionEvent;
 
 public class BulkAssignmentEvent extends SessionEvent {
 
