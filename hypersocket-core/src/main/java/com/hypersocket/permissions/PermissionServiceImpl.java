@@ -367,7 +367,6 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		return (Set<Role>) roleCache.get(principal);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Set<Role> getPrincipalNonPersonalRoles(Principal principal) {
 
@@ -382,7 +381,6 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		return roles;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Set<Role> getPrincipalNonPersonalNonAllUserRoles(Principal principal) {
 
