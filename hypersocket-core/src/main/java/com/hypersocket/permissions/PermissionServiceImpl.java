@@ -7,33 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.permissions;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-import javax.cache.Cache;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
-
 import com.hypersocket.attributes.role.RoleAttributeRepository;
 import com.hypersocket.attributes.role.RoleAttributeService;
 import com.hypersocket.auth.AuthenticatedServiceImpl;
@@ -47,32 +20,33 @@ import com.hypersocket.i18n.I18N;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
-import com.hypersocket.realm.PasswordPermission;
-import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.ProfilePermission;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmAdapter;
-import com.hypersocket.realm.RealmService;
-import com.hypersocket.realm.RolePermission;
-import com.hypersocket.realm.events.GroupCreatedEvent;
-import com.hypersocket.realm.events.GroupDeletedEvent;
-import com.hypersocket.realm.events.GroupEvent;
-import com.hypersocket.realm.events.UserCreatedEvent;
-import com.hypersocket.realm.events.UserDeletedEvent;
-import com.hypersocket.realm.events.UserEvent;
-import com.hypersocket.resource.AbstractAssignableResourceRepository;
-import com.hypersocket.resource.AssignableResource;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
-import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.resource.TransactionAdapter;
+import com.hypersocket.realm.*;
+import com.hypersocket.realm.events.*;
+import com.hypersocket.resource.*;
 import com.hypersocket.role.events.RoleCreatedEvent;
 import com.hypersocket.role.events.RoleDeletedEvent;
 import com.hypersocket.role.events.RoleEvent;
 import com.hypersocket.role.events.RoleUpdatedEvent;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.transactions.TransactionService;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import javax.annotation.PostConstruct;
+import javax.cache.Cache;
+import java.util.*;
 
 @Service
 public class PermissionServiceImpl extends AuthenticatedServiceImpl
@@ -279,6 +253,11 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
+	public List<Permission> getPermissions(String...resourceKeys) {
+		return repository.getPermissionsByResourceKeys(resourceKeys);
+	}
+
+	@Override
 	public void assignRole(Role role, Principal principal) throws AccessDeniedException {
 
 		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, RolePermission.CREATE, RolePermission.UPDATE);
@@ -388,7 +367,38 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		return (Set<Role>) roleCache.get(principal);
 	}
 
-	private void recurseImpliedPermissions(PermissionType t, Set<PermissionType> derivedPermissions) {
+	@SuppressWarnings("unchecked")
+	@Override
+	public Set<Role> getPrincipalNonPersonalRoles(Principal principal) {
+
+		Set<Role> roles = getPrincipalRoles(principal);
+		CollectionUtils.filter(roles, new Predicate() {
+			@Override
+			public boolean evaluate(Object o) {
+				Role r = (Role) o;
+				return !r.personalRole;
+			}
+		});
+		return roles;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Set<Role> getPrincipalNonPersonalNonAllUserRoles(Principal principal) {
+
+		Set<Role> roles = getPrincipalRoles(principal);
+		CollectionUtils.filter(roles, new Predicate() {
+			@Override
+			public boolean evaluate(Object o) {
+				Role r = (Role) o;
+				return !r.personalRole && !r.allUsers;
+			}
+		});
+		return roles;
+	}
+
+	private void recurseImpliedPermissions(PermissionType t,
+			Set<PermissionType> derivedPermissions) {
 
 		if (t != null && !derivedPermissions.contains(t)) {
 			derivedPermissions.add(t);
@@ -494,6 +504,46 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 		for (Permission p : getPrincipalPermissions(principal)) {
 			if (p.getResourceKey().equals(permission.getResourceKey())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean hasAllPermissions(Principal principal, Permission...permissions) {
+
+		final Set<Permission> principalPermissions = getPrincipalPermissions(principal);
+		for(final Permission p : permissions) {
+			Object result = CollectionUtils.find(principalPermissions, new Predicate() {
+				@Override
+				public boolean evaluate(Object o) {
+					Permission permission = (Permission) o;
+					return p.getResourceKey().equals(permission.getResourceKey());
+				}
+			});
+
+			if(result == null) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public boolean hasAnyPermission(Principal principal, Permission...permissions) {
+
+		final Set<Permission> principalPermissions = getPrincipalPermissions(principal);
+		for(final Permission p : permissions) {
+			Object result = CollectionUtils.find(principalPermissions, new Predicate() {
+				@Override
+				public boolean evaluate(Object o) {
+					Permission permission = (Permission) o;
+					return p.getResourceKey().equals(permission.getResourceKey());
+				}
+			});
+
+			if(result != null) {
 				return true;
 			}
 		}
@@ -688,6 +738,14 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		assertPermission(RolePermission.READ);
 
 		return repository.searchRoles(getCurrentRealm(), searchPattern, start, length, sorting);
+	}
+
+	@Override
+	public List<?> getNoPersonalNoAllUsersRoles(String searchPattern, int start, int length, ColumnSort[] sorting)
+			throws AccessDeniedException {
+		assertPermission(RolePermission.READ);
+
+		return repository.searchNoPersonalNoAllUserRoles(getCurrentRealm(), searchPattern, start, length, sorting);
 	}
 
 	@Override

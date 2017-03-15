@@ -1,23 +1,6 @@
 package com.hypersocket.permissions.json;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
+import com.hypersocket.auth.PrincipalNotFoundException;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
@@ -43,6 +26,16 @@ import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
 
 @Controller
 public class RoleController extends ResourceController {
@@ -294,6 +287,141 @@ public class RoleController extends ResourceController {
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<Role>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "roles/{roleId}/user/{userId}", method = RequestMethod.PATCH,
+			produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Boolean> addRoleToUser(HttpServletRequest request,
+												   HttpServletResponse response, @PathVariable("roleId") Long roleId,
+											  @PathVariable("userId") Long userId)
+			throws UnauthorizedException, AccessDeniedException,
+			SessionTimeoutException, PrincipalNotFoundException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Realm realm = sessionUtils.getCurrentRealm(request);
+			Role role = permissionService.getRoleById(roleId, realm);
+			Principal principal = realmService.getPrincipalById(userId);
+
+			if(principal == null) {
+				throw new PrincipalNotFoundException(String.format("Principal not found for id %d.", userId));
+			}
+
+			if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+				throw new AccessDeniedException("Operation not allowed for current Principal.");
+			}
+			permissionService.assignRole(role, principal);
+
+			return new ResourceStatus<>(true, I18N.getResource(
+					sessionUtils.getLocale(request),
+					PermissionService.RESOURCE_BUNDLE,
+					"role.add.to.user"));
+		} catch (ResourceNotFoundException e) {
+			return new ResourceStatus<>(false, e.getMessage());
+		}finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+
+	@AuthenticationRequired
+	@RequestMapping(value = "roles/{roleId}/user/{userId}", method = RequestMethod.DELETE,
+			produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Boolean> deleteRoleFromUser(HttpServletRequest request,
+											  HttpServletResponse response,  @PathVariable("roleId") Long roleId,
+													  @PathVariable("userId") Long userId)
+			throws UnauthorizedException, AccessDeniedException,
+			SessionTimeoutException, PrincipalNotFoundException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+				Realm realm = sessionUtils.getCurrentRealm(request);
+				Role role = permissionService.getRoleById(roleId, realm);
+				Principal principal = realmService.getPrincipalById(userId);
+
+				if(principal == null) {
+					throw new PrincipalNotFoundException(String.format("Principal not found for id %d.", userId));
+				}
+
+				if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+					throw new AccessDeniedException("Operation not allowed for current Principal.");
+				}
+				permissionService.unassignRole(role, principal);
+
+				return new ResourceStatus<>(true, I18N.getResource(
+					sessionUtils.getLocale(request),
+						PermissionService.RESOURCE_BUNDLE,
+						"role.remove.from.user"));
+
+		} catch (ResourceNotFoundException e) {
+			return new ResourceStatus<>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "roles/filter/user/{userId}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public BootstrapTableResult<?> tableRolesFilterByUser(final HttpServletRequest request,
+											  HttpServletResponse response,
+											@PathVariable("userId") final Long userId) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return processDataTablesRequest(request,
+					new BootstrapTablePageProcessor() {
+
+						@Override
+						public Column getColumn(String col) {
+							return RealmColumns.valueOf(col.toUpperCase());
+						}
+
+						@Override
+						public List<?> getPage(String searchColumn, String searchPattern, int start,
+											   int length, ColumnSort[] sorting)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							List<?> roles = permissionService.getNoPersonalNoAllUsersRoles(searchPattern,
+									start, length, sorting);
+
+							Principal principal = realmService.getPrincipalById(userId);
+
+							final Set<Role> principalRoles = permissionService.getPrincipalNonPersonalNonAllUserRoles(principal);
+
+							CollectionUtils.filter(roles, new Predicate() {
+								@Override
+								public boolean evaluate(Object o) {
+									return !principalRoles.contains(o);
+								}
+							});
+
+							return roles;
+						}
+
+						@Override
+						public Long getTotalCount(String searchColumn, String searchPattern)
+								throws UnauthorizedException,
+								AccessDeniedException {
+
+							//no op
+							return 0l;
+						}
+					});
 		} finally {
 			clearAuthenticatedContext();
 		}

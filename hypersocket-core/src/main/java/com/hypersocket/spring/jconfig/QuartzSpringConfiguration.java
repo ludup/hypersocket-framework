@@ -125,7 +125,7 @@ public class QuartzSpringConfiguration {
 			connection = dataSource.getConnection();
 			String databaseProductName = connection.getMetaData().getDatabaseProductName();
 			if(databaseProductName.toLowerCase().contains("postgres")){
-				quartzProperties.setProperty("org.quartz.jobStore.driverDelegateClass", "org.quartz.impl.jdbcjobstore.PostgreSQLDelegate");
+				quartzProperties.setProperty("org.quartz.jobStore.driverDelegateClass", "com.hypersocket.quartz.HypersocketPostgresSQLDelegate");
 			}
 			String quartzTablePrefix = quartzProperties.getProperty("org.quartz.jobStore.tablePrefix").toLowerCase();
 			autoCommitStatus = connection.getAutoCommit();
