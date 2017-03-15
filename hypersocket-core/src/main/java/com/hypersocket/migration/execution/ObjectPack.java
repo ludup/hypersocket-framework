@@ -1,5 +1,7 @@
 package com.hypersocket.migration.execution;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.hypersocket.migration.helper.MigrationDeserializer;
 import com.hypersocket.repository.AbstractEntity;
 
 import java.util.List;
@@ -24,6 +26,7 @@ public class ObjectPack {
         this.group = group;
     }
 
+    @JsonDeserialize(using = MigrationDeserializer.class)
     public List<AbstractEntity> getObjectList() {
         return objectList;
     }

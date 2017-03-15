@@ -6,6 +6,8 @@ import com.hypersocket.meta.ApplicationMetaSource;
 import com.hypersocket.migration.mapper.module.MigrationImpExpModule;
 import com.hypersocket.migration.mixin.MigrationMixIn;
 import org.apache.commons.collections.map.MultiValueMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -19,6 +21,8 @@ import java.util.Set;
 
 @Component
 public class MigrationObjectMapper {
+
+    static Logger log = LoggerFactory.getLogger(MigrationObjectMapper.class);
 
     @Autowired
     MigrationImpExpModule migrationImpExpModule;

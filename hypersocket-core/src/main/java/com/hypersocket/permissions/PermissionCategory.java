@@ -20,6 +20,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.hypersocket.migration.annotation.LookUpKeys;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
@@ -28,6 +29,7 @@ import com.hypersocket.repository.AbstractEntity;
 @Entity
 @Table(name = "permission_category", uniqueConstraints = {@UniqueConstraint(columnNames={"resource_bundle", "resource_key"})})
 @XmlRootElement(name="permissionCategory")
+@LookUpKeys(propertyNames = {"resourceBundle", "resourceKey"})
 public class PermissionCategory extends AbstractEntity<Long> {
 
 	@Id

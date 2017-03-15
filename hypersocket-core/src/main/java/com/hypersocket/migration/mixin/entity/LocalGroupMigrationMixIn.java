@@ -1,33 +1,35 @@
 package com.hypersocket.migration.mixin.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.hypersocket.local.LocalGroup;
+import com.hypersocket.local.LocalUser;
 import com.hypersocket.migration.helper.MigrationDeserializer;
-import com.hypersocket.migration.helper.MigrationSerializerForLookUpKeys;
 import com.hypersocket.migration.helper.MigrationSerializerForResource;
 import com.hypersocket.migration.mixin.MigrationMixIn;
-import com.hypersocket.permissions.Permission;
-import com.hypersocket.permissions.Role;
-import com.hypersocket.realm.Principal;
 
 import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RoleMigrationMixIn extends Role implements MigrationMixIn {
+public class LocalGroupMigrationMixIn extends LocalGroup implements MigrationMixIn {
 
-    private RoleMigrationMixIn() {}
+    private LocalGroupMigrationMixIn() {}
 
     @Override
-    @JsonSerialize(contentUsing = MigrationSerializerForLookUpKeys.class)
+    @JsonIgnore(false)
+    //@JsonSerialize(contentUsing = MigrationSerializerForResource.class)
     @JsonDeserialize(contentUsing = MigrationDeserializer.class)
-    public Set<Permission> getPermissions() {
+    public Set<LocalGroup> getGroups() {
         return null;
     }
 
     @Override
+    @JsonIgnore(false)
     @JsonSerialize(contentUsing = MigrationSerializerForResource.class)
     @JsonDeserialize(contentUsing = MigrationDeserializer.class)
-    public Set<Principal> getPrincipals() {return null;}
-
+    public Set<LocalUser> getUsers() {
+        return null;
+    }
 }

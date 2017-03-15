@@ -24,11 +24,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hypersocket.migration.annotation.LookUpKeys;
 import com.hypersocket.repository.AbstractEntity;
 
 @Entity
 @Table(name = "permissions")
 @XmlRootElement(name="permission")
+@LookUpKeys(propertyNames = {"resourceKey"})
 public class Permission extends AbstractEntity<Long> {
 
 	@Id

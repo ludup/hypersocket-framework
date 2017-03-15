@@ -3,6 +3,8 @@ package com.hypersocket.migration.repository;
 import com.hypersocket.migration.lookup.LookUpKey;
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.repository.AbstractRepositoryImpl;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +19,18 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public <T> T findEntityByLookUpKey(Class<T> aClass, LookUpKey lookUpKey) {
-        return (T) createCriteria(aClass).add(Restrictions.eq(lookUpKey.getProperty(), lookUpKey.getValue())).uniqueResult();
+        if(lookUpKey.isComposite()) {
+            String[] properties = lookUpKey.getProperties();
+            Object[] values = lookUpKey.getValues();
+            Criteria criteria = createCriteria(aClass);
+            for (int i = 0; i < properties.length; i++) {
+                criteria.add(Restrictions.eq(properties[i], values[i]));
+            }
+            return (T) criteria.uniqueResult();
+        } else {
+            return (T) createCriteria(aClass).add(Restrictions.eq(lookUpKey.getProperty(), lookUpKey.getValue()))
+                    .uniqueResult();
+        }
     }
 
     @Override
@@ -30,6 +43,8 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<AbstractEntity> findAllResourceInRealmOfType(Class aClass) {
-        return createCriteria(aClass).list();
+        return createCriteria(aClass)
+                .setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY)
+                .list();
     }
 }

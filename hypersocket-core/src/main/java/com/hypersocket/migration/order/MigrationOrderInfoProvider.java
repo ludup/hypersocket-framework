@@ -1,6 +1,8 @@
 package com.hypersocket.migration.order;
 
 import com.hypersocket.repository.AbstractEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
@@ -11,6 +13,8 @@ import java.util.*;
 
 @Component
 public class MigrationOrderInfoProvider {
+
+    static Logger log = LoggerFactory.getLogger(MigrationOrderInfoProvider.class);
 
     private Map<String, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = new TreeMap<>();
 

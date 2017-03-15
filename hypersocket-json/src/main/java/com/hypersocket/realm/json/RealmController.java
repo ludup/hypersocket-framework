@@ -416,8 +416,8 @@ public class RealmController extends ResourceController {
 
 		try {
 
-			String role = IOUtils.toString( request.getInputStream());
-			migrationExecutor.importJson(role, null);
+			//String role = IOUtils.toString( request.getInputStream());
+			migrationExecutor.startRealmImport(request.getInputStream(), null);
 			return null;
 
 		} catch (Exception e) {

@@ -16,6 +16,8 @@ import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.resource.Resource;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +25,8 @@ import java.util.Collection;
 
 @Component
 public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
+
+    static Logger log = LoggerFactory.getLogger(MigrationDeserializer.class);
 
     @Autowired
     MigrationCurrentStack migrationCurrentStack;
@@ -63,9 +67,10 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
             if(StringUtils.isBlank(className)) {
                 throw new IllegalStateException(String.format("Class type info not found, cannot parse json %s", node.toString()));
             }
-            LookUpKey lookUpKey = migrationUtil.captureEntityLookup(node);
 
             Class resourceClass = MigrationDeserializer.class.getClassLoader().loadClass(className);
+
+            LookUpKey lookUpKey = migrationUtil.captureEntityLookup(node, resourceClass);
 
             Class propertyClass = PropertyUtils.getPropertyType(resourceRootBean, propertyName);
             if(Collection.class.isAssignableFrom(propertyClass)) {
@@ -79,7 +84,8 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
                 if (isCollection) {
                     Collection<AbstractEntity> resourceCollection = (Collection) value;
                     for (AbstractEntity resource : resourceCollection) {
-                        if (PropertyUtils.getProperty(resource, lookUpKey.getProperty()).equals(lookUpKey.getValue())) {
+                        Object property = PropertyUtils.getProperty(resource, lookUpKey.getProperty());
+                        if (property != null && property.equals(lookUpKey.getValue())) {
                             valueToUpdate = resource;
                             break;
                         }
