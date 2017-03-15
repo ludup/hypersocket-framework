@@ -12,7 +12,7 @@
 	<propertyCategory resourceKey="category.security" resourceBundle="HypersocketServer" weight="400">
 	    <property resourceKey="security.enableCSRFProtection" inputType="switch" defaultValue="true" weight="0"/>
 	    <property resourceKey="security.xFrameOptionsEnabled" inputType="switch" defaultValue="true" weight="100"/>
-	    <property resourceKey="security.xFrameOptionsValue" inputType="select" defaultValue="DENY" options="DENY,SAMEORIGIN" weight="200"/>
+	    <property resourceKey="security.xFrameOptionsValue" inputType="select" defaultValue="SAMEORIGIN" options="DENY,SAMEORIGIN" weight="200"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.databaseSettings"
 		resourceBundle="DatabaseService" weight="200">
