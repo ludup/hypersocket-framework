@@ -3,9 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>500 Internal Server Error</title>
-<link
-	href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"
-	rel="stylesheet">
+<link type="text/css" media="screen" href="${uiPath}/css/bootstrap.min.css" rel="stylesheet" id="bootstrapStylesheet">
 <style>
 body {
 	background-image:
@@ -30,10 +28,8 @@ body {
 	margin-right: 10px;
 }
 </style>
-<script type="text/javascript"
-	src="//code.jquery.com/jquery-1.10.2.min.js"></script>
-<script type="text/javascript"
-	src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+<script src="${uiPath}/js/jquery.min.js"></script>
+<script src="${uiPath}/js/bootstrap.min.js"></script>
 <script type="text/javascript">
 
 	$(document).ready(function() {
@@ -55,17 +51,6 @@ body {
 					<div class="error-details">Sorry, an error has occurred!</div>
 				</div>
 			</div>
-		</div>
-		<div class="row">
-			<div class="col-md-1">&nbsp;</div>
-			<div class="col-md-10">
-				<div class="error-template">
-					<div class="error-details">${message}</div>
-					<p><a href="#" id="show">Show Trace</a></p>
-				</div>
-				<textarea style="width: 100%; height: 600px; display: none;">${stacktrace}</textarea>
-			</div>
-			<div class="col-md-1">&nbsp;</div>
 		</div>
 	</div>
 </body>
