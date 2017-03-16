@@ -314,9 +314,6 @@ public class RoleController extends ResourceController {
 				throw new PrincipalNotFoundException(String.format("Principal not found for id %d.", userId));
 			}
 
-			if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
-				throw new AccessDeniedException("Operation not allowed for current Principal.");
-			}
 			permissionService.assignRole(role, principal);
 
 			return new ResourceStatus<>(true, I18N.getResource(
@@ -340,7 +337,7 @@ public class RoleController extends ResourceController {
 											  HttpServletResponse response,  @PathVariable("roleId") Long roleId,
 													  @PathVariable("userId") Long userId)
 			throws UnauthorizedException, AccessDeniedException,
-			SessionTimeoutException, PrincipalNotFoundException {
+			SessionTimeoutException, PrincipalNotFoundException, ResourceException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
@@ -353,9 +350,6 @@ public class RoleController extends ResourceController {
 					throw new PrincipalNotFoundException(String.format("Principal not found for id %d.", userId));
 				}
 
-				if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
-					throw new AccessDeniedException("Operation not allowed for current Principal.");
-				}
 				permissionService.unassignRole(role, principal);
 
 				return new ResourceStatus<>(true, I18N.getResource(
@@ -363,7 +357,7 @@ public class RoleController extends ResourceController {
 						PermissionService.RESOURCE_BUNDLE,
 						"role.remove.from.user"));
 
-		} catch (ResourceNotFoundException e) {
+		} catch (ResourceException e) {
 			return new ResourceStatus<>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();

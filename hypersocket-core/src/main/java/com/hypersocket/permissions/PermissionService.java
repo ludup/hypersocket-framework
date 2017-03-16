@@ -39,9 +39,9 @@ public interface PermissionService extends AuthenticatedService, FindableResourc
 
 	public Role createRole(String name, Realm realm) throws AccessDeniedException, ResourceCreationException;
 
-	public void unassignRole(Role customerRole, Principal principal) throws AccessDeniedException;
+	public void unassignRole(Role customerRole, Principal principal) throws AccessDeniedException, ResourceException;
 	
-	public void unassignRole(Role customerRole, Principal... principals) throws AccessDeniedException;
+	public void unassignRole(Role customerRole, Principal... principals) throws AccessDeniedException, ResourceException;
 	
 	void assignRole(Role role, Principal principal) throws AccessDeniedException;
 

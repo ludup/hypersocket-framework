@@ -7,28 +7,20 @@
  ******************************************************************************/
 package com.hypersocket.permissions;
 
-import com.hypersocket.attributes.role.RoleAttributeRepository;
-import com.hypersocket.attributes.role.RoleAttributeService;
-import com.hypersocket.auth.AuthenticatedServiceImpl;
-import com.hypersocket.auth.AuthenticationPermission;
-import com.hypersocket.auth.InvalidAuthenticationContext;
-import com.hypersocket.cache.CacheService;
-import com.hypersocket.context.SystemContextRequired;
-import com.hypersocket.events.EventService;
-import com.hypersocket.events.SystemEvent;
-import com.hypersocket.i18n.I18N;
-import com.hypersocket.properties.EntityResourcePropertyStore;
-import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.properties.PropertyTemplate;
-import com.hypersocket.realm.*;
-import com.hypersocket.realm.events.*;
-import com.hypersocket.resource.*;
-import com.hypersocket.role.events.RoleCreatedEvent;
-import com.hypersocket.role.events.RoleDeletedEvent;
-import com.hypersocket.role.events.RoleEvent;
-import com.hypersocket.role.events.RoleUpdatedEvent;
-import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.transactions.TransactionService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.cache.Cache;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.slf4j.Logger;
@@ -44,9 +36,45 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.annotation.PostConstruct;
-import javax.cache.Cache;
-import java.util.*;
+import com.hypersocket.attributes.role.RoleAttributeRepository;
+import com.hypersocket.attributes.role.RoleAttributeService;
+import com.hypersocket.auth.AuthenticatedServiceImpl;
+import com.hypersocket.auth.AuthenticationPermission;
+import com.hypersocket.auth.InvalidAuthenticationContext;
+import com.hypersocket.cache.CacheService;
+import com.hypersocket.context.SystemContextRequired;
+import com.hypersocket.events.EventService;
+import com.hypersocket.events.SystemEvent;
+import com.hypersocket.i18n.I18N;
+import com.hypersocket.properties.EntityResourcePropertyStore;
+import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.realm.PasswordPermission;
+import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.ProfilePermission;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
+import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.RolePermission;
+import com.hypersocket.realm.events.GroupCreatedEvent;
+import com.hypersocket.realm.events.GroupDeletedEvent;
+import com.hypersocket.realm.events.GroupEvent;
+import com.hypersocket.realm.events.UserCreatedEvent;
+import com.hypersocket.realm.events.UserDeletedEvent;
+import com.hypersocket.realm.events.UserEvent;
+import com.hypersocket.resource.AbstractAssignableResourceRepository;
+import com.hypersocket.resource.AssignableResource;
+import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.TransactionAdapter;
+import com.hypersocket.role.events.RoleCreatedEvent;
+import com.hypersocket.role.events.RoleDeletedEvent;
+import com.hypersocket.role.events.RoleEvent;
+import com.hypersocket.role.events.RoleUpdatedEvent;
+import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.transactions.TransactionService;
 
 @Service
 public class PermissionServiceImpl extends AuthenticatedServiceImpl
@@ -271,6 +299,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		} catch (Throwable e) {
 			eventService
 					.publishEvent(new RoleUpdatedEvent(this, role.getName(), e, getCurrentSession(), role.getRealm()));
+			throw e;
 		}
 	}
 
@@ -290,32 +319,49 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		} catch (Throwable e) {
 			eventService
 					.publishEvent(new RoleUpdatedEvent(this, role.getName(), e, getCurrentSession(), role.getRealm()));
+			throw e;
 		}
 	}
 
 	@Override
-	public void unassignRole(Role role, Principal principal) throws AccessDeniedException {
+	public void unassignRole(Role role, Principal principal) throws AccessDeniedException, ResourceException {
 
 		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, RolePermission.UPDATE, RolePermission.UPDATE);
 
+
 		try {
+			checkSystemAdministratorAssignments(role);
+			
 			repository.unassignRole(role, principal);
 			permissionsCache.remove(principal);
 			roleCache.remove(principal);
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					new ArrayList<Principal>(), Arrays.asList(principal)));
 		} catch (Throwable e) {
-			eventService
-					.publishEvent(new RoleUpdatedEvent(this, role.getName(), e, getCurrentSession(), role.getRealm()));
+			eventService.publishEvent(new RoleUpdatedEvent(this, role.getName(), e, getCurrentSession(), role.getRealm()));
+			throw e;
+		}
+	
+	}
+
+	private void checkSystemAdministratorAssignments(Role role) throws ResourceChangeException {
+		if(role.getName().equals(ROLE_SYSTEM_ADMINISTRATOR)) {
+			Collection<Principal> admins = getPrincipalsByRole(realmService.getSystemRealm(), role);
+			if(admins.size() <= 1) {
+				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.sysAdminRequired");
+			}
 		}
 	}
 
 	@Override
-	public void unassignRole(Role role, Principal... principals) throws AccessDeniedException {
+	public void unassignRole(Role role, Principal... principals) throws AccessDeniedException, ResourceException {
 
 		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, RolePermission.UPDATE, RolePermission.UPDATE);
 
 		try {
+			
+			checkSystemAdministratorAssignments(role);
+			
 			repository.unassignRole(role, principals);
 			for (Principal principal : principals) {
 				permissionsCache.remove(principal);
@@ -326,6 +372,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		} catch (Throwable e) {
 			eventService
 					.publishEvent(new RoleUpdatedEvent(this, role.getName(), e, getCurrentSession(), role.getRealm()));
+			throw e;
 		}
 	}
 
