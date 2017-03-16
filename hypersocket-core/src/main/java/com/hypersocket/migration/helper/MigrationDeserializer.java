@@ -11,6 +11,7 @@ import com.hypersocket.migration.lookup.LookUpKey;
 import com.hypersocket.migration.mapper.MigrationObjectMapper;
 import com.hypersocket.migration.repository.MigrationRepository;
 import com.hypersocket.migration.util.MigrationUtil;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.resource.Resource;
@@ -59,6 +60,7 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
             boolean isValueToUpdateFromDb = false;
             JsonNode node = p.getCodec().readTree(p);
             MigrationCurrentInfo migrationCurrentInfo = migrationCurrentStack.getState();
+            Realm realm = migrationCurrentStack.getCurrentRealm();
             AbstractEntity resourceRootBean = (AbstractEntity) migrationCurrentInfo.getBean();
             String propertyName = migrationCurrentInfo.getPropName();
 
@@ -105,7 +107,7 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
             //this does not means delete a2
             if(valueToUpdate == null) {
                 //lets check db if we have something
-                valueToUpdate = (AbstractEntity) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey);
+                valueToUpdate = (AbstractEntity) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey, realm);
                 if (valueToUpdate != null) {
                     isValueToUpdateFromDb = true;
                 }

@@ -1735,7 +1735,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public void exportAllResoures(OutputStream outputStream) throws ResourceExportException, AccessDeniedException {
 		//List<Realm> list = allRealms();
 		//return exportResources(list, false);
-		migrationExecutor.startRealmExport(outputStream);
+		migrationExecutor.startRealmExport(outputStream, null);
 	}
 
 	@Autowired

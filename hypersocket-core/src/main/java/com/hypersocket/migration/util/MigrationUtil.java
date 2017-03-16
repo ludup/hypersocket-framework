@@ -126,14 +126,25 @@ public class MigrationUtil {
 
     public void fillInRealm(Object resource) {
         try {
-            PropertyDescriptor[] propertyDescriptors = PropertyUtils.getPropertyDescriptors(resource.getClass());
+            String property;
+            if((property = getResourceRealmProperty(resource.getClass())) != null
+                    && PropertyUtils.getProperty(resource, property) == null) {
+                PropertyUtils.setProperty(resource, property, migrationCurrentStack.getCurrentRealm());
+            }
+        }catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    public String getResourceRealmProperty(Class<?> resourceClass) {
+        try {
+            PropertyDescriptor[] propertyDescriptors = PropertyUtils.getPropertyDescriptors(resourceClass);
             for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-                if (propertyDescriptor.getPropertyType().isAssignableFrom(Realm.class)
-                        && PropertyUtils.getProperty(resource, propertyDescriptor.getName()) == null) {
-                    PropertyUtils.setProperty(resource, propertyDescriptor.getName(), migrationCurrentStack.getCurrentRealm());
-                    break;
+                if (propertyDescriptor.getPropertyType().isAssignableFrom(Realm.class)) {
+                    return propertyDescriptor.getName();
                 }
             }
+            return null;
         }catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

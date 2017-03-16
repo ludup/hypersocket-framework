@@ -88,7 +88,7 @@ public class MigrationExecutor {
 
                 ++record;
 
-                AbstractEntity resource = (AbstractEntity) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey);
+                AbstractEntity resource = (AbstractEntity) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey, realm);
                 if (resource == null) {
                     resource = (AbstractEntity) resourceClass.newInstance();
                 }
@@ -109,9 +109,12 @@ public class MigrationExecutor {
     }
 
 
-    public void startRealmExport(OutputStream outputStream) {
+    public void startRealmExport(OutputStream outputStream, Realm realm) {
         JsonGenerator jsonGenerator = null;
         try {
+            if(realm == null) {
+                realm = realmService.getCurrentRealm();
+            }
             JsonFactory jsonFactory = new JsonFactory();
             jsonGenerator = jsonFactory.createGenerator(outputStream);
             jsonGenerator.setCodec(migrationObjectMapper.getObjectMapper());
@@ -127,7 +130,7 @@ public class MigrationExecutor {
             for (String key : keys) {
                 List<Class<? extends AbstractEntity<Long>>> migrationClasses = migrationOrderMap.get(key);
                 for (Class<? extends AbstractEntity<Long>> aClass : migrationClasses) {
-                    List<AbstractEntity> objectList = migrationRepository.findAllResourceInRealmOfType(aClass);
+                    List<AbstractEntity> objectList = migrationRepository.findAllResourceInRealmOfType(aClass, realm);
                     ObjectPack objectPack = new ObjectPack(aClass.getCanonicalName(),
                             objectList);
                     jsonGenerator.writeObject(objectPack);
