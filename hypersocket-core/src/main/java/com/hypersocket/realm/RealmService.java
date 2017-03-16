@@ -46,7 +46,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Realm getRealmById(Long id) throws AccessDeniedException;
 
 	Principal createUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
-			String password, boolean forceChange, boolean selfCreated)
+			String password, boolean forceChange, boolean selfCreated, boolean sendNotifications)
 					throws ResourceCreationException, AccessDeniedException;
 
 	Principal updateUser(Realm realm, Principal user, String username, Map<String, String> properties,
@@ -206,7 +206,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 			throws AccessDeniedException;
 
 	Principal createLocalUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
-			String password, boolean forceChange, boolean selfCreated)
+			String password, boolean forceChange, boolean selfCreated, boolean sendNotifications)
 			throws ResourceCreationException, AccessDeniedException;
 
 	Long getSearchPrincipalsCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern) throws AccessDeniedException;

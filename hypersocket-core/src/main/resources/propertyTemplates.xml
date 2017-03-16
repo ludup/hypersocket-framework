@@ -1,6 +1,5 @@
 <?xml version="1.0" ?>
 <propertyTemplates>
-
 	<propertyCategory resourceKey="category.security"
 		resourceBundle="AuthenticationService" group="authentication" weight="500">
 		<property resourceKey="logon.banner" inputType="textarea"

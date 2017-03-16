@@ -745,9 +745,10 @@ public class CurrentRealmController extends ResourceController {
 				principal = realmService.updateUser(realm, principal,
 						user.getName(), properties, principals);
 			} else {
+				boolean sendNotifications = !"true".equals(properties.get("disableNotifications"));
 				principal = realmService.createUser(realm, user.getName(),
 						properties, principals, user.getPassword(),
-						user.isForceChange(), false);
+						user.isForceChange(), false, sendNotifications);
 			}
 			return new ResourceStatus<Principal>(principal,
 					I18N.getResource(sessionUtils.getLocale(request),

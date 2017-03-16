@@ -474,12 +474,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Principal createLocalUser(Realm realm, String username, Map<String,String> properties,
-			List<Principal> principals, String password, boolean forceChange, boolean selfCreated)
+			List<Principal> principals, String password, boolean forceChange, boolean selfCreated, boolean sendNotifications)
 					throws ResourceCreationException, AccessDeniedException {
 		
 		RealmProvider provider = getLocalProvider();
 		
-		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, null, provider);
+		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, null, provider, sendNotifications);
 	}
 	
 	private RealmProvider getLocalProvider() {
@@ -488,15 +488,26 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	
 	@Override
 	public Principal createUser(Realm realm, String username, Map<String, String> properties,
-			List<Principal> principals, String password, boolean forceChange, boolean selfCreated)
+			List<Principal> principals, String password, boolean forceChange, boolean selfCreated, boolean sendNotifications)
 					throws ResourceCreationException, AccessDeniedException {
-		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, null, getProviderForRealm(realm));
+		return createUser(realm, 
+				username, properties, 
+				principals, password, 
+				forceChange, selfCreated, 
+				null, getProviderForRealm(realm),
+				sendNotifications);
 	}
 
 
 	
 	public Principal createUser(Realm realm, String username, Map<String, String> properties,
-			List<Principal> principals, String password, boolean forceChange, boolean selfCreated, Principal parent, RealmProvider provider)
+			List<Principal> principals, 
+			String password, 
+			boolean forceChange, 
+			boolean selfCreated,
+			Principal parent, 
+			RealmProvider provider,
+			boolean sendNotifications)
 					throws ResourceCreationException, AccessDeniedException {
 
 		try {
@@ -523,12 +534,14 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			PrincipalResolver resolver = new PrincipalResolver(principal, password);
 			
-			if(selfCreated) {
-				messageService.sendMessage(MESSAGE_NEW_USER_SELF_CREATED, realm, resolver, principal);
-			} else if(forceChange) {
-				messageService.sendMessage(MESSAGE_NEW_USER_TMP_PASSWORD, realm, resolver, principal);
-			} else {
-				messageService.sendMessage(MESSAGE_NEW_USER_NEW_PASSWORD, realm, resolver, principal);
+			if(sendNotifications) {
+				if(selfCreated) {
+					messageService.sendMessage(MESSAGE_NEW_USER_SELF_CREATED, realm, resolver, principal);
+				} else if(forceChange) {
+					messageService.sendMessage(MESSAGE_NEW_USER_TMP_PASSWORD, realm, resolver, principal);
+				} else {
+					messageService.sendMessage(MESSAGE_NEW_USER_NEW_PASSWORD, realm, resolver, principal);
+				}
 			}
 			
 			return principal;
