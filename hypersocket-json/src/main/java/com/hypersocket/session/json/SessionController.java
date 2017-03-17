@@ -114,7 +114,7 @@ public class SessionController extends ResourceController {
 
 		try {
 
-			Role role = permissionService.getRoleById(id, getCurrentRealm());
+			Role role = permissionService.getRoleById(id, getCurrentPrincipal().getRealm());
 
 			if (role == null) {
 				throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE, "error.invalidRole", id);
