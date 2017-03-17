@@ -532,15 +532,15 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					principals, filterSecretProperties(principal, provider, properties), password, forceChange,
 					selfCreated));
 
-			PrincipalResolver resolver = new PrincipalResolver(principal, password);
+			
 			
 			if(sendNotifications) {
 				if(selfCreated) {
-					messageService.sendMessage(MESSAGE_NEW_USER_SELF_CREATED, realm, resolver, principal);
+					sendNewUserSelfCreatedNofification(principal, password);
 				} else if(forceChange) {
-					messageService.sendMessage(MESSAGE_NEW_USER_TMP_PASSWORD, realm, resolver, principal);
+					sendNewUserTemporaryPasswordNofification(principal, password);
 				} else {
-					messageService.sendMessage(MESSAGE_NEW_USER_NEW_PASSWORD, realm, resolver, principal);
+					sendNewUserFixedPasswordNotification(principal, password);
 				}
 			}
 			
@@ -561,14 +561,19 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	}
 
-	private void sendNewUserTemporaryPasswordNofification(Principal principal, String password) {
-		// TODO Auto-generated method stub
-		
+	private void sendNewUserTemporaryPasswordNofification(Principal principal, String password) throws ResourceNotFoundException, AccessDeniedException {
+		PrincipalResolver resolver = new PrincipalResolver(principal, password);
+		messageService.sendMessage(MESSAGE_NEW_USER_TMP_PASSWORD, principal.getRealm(), resolver, principal);
 	}
 
-	private void sendNewUserNofification(Principal principal, String password) {
-		// TODO Auto-generated method stub
-		
+	private void sendNewUserSelfCreatedNofification(Principal principal, String password) throws ResourceNotFoundException, AccessDeniedException {
+		PrincipalResolver resolver = new PrincipalResolver(principal, password);
+		messageService.sendMessage(MESSAGE_NEW_USER_SELF_CREATED, principal.getRealm(), resolver, principal);
+	}
+	
+	private void sendNewUserFixedPasswordNotification(Principal principal, String password) throws ResourceNotFoundException, AccessDeniedException {
+		PrincipalResolver resolver = new PrincipalResolver(principal, password);
+		messageService.sendMessage(MESSAGE_NEW_USER_NEW_PASSWORD, principal.getRealm(), resolver, principal);
 	}
 
 	@Override
