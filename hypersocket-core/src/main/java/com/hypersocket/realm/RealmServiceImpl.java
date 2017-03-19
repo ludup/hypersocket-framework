@@ -206,34 +206,14 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		
 		EntityResourcePropertyStore.registerResourceService(Principal.class, realmRepository);
 		
-		this.registerRealmListener(new RealmAdapter() {
-			@Override
-			public void onCreateRealm(Realm realm) throws ResourceException {
-				
-				try {
-					messageService.createI18nMessage(MESSAGE_NEW_USER_NEW_PASSWORD, RESOURCE_BUNDLE,
-							"realmService.newUserNewPassword", realm);
-					
-					messageService.createI18nMessage(MESSAGE_NEW_USER_TMP_PASSWORD, RESOURCE_BUNDLE,
-							"realmService.newUserTmpPassword", realm);
+		messageService.registerI18nMessage(MESSAGE_NEW_USER_NEW_PASSWORD, RESOURCE_BUNDLE,
+				"realmService.newUserNewPassword");
+		
+		messageService.registerI18nMessage(MESSAGE_NEW_USER_TMP_PASSWORD, RESOURCE_BUNDLE,
+				"realmService.newUserTmpPassword");
 
-					messageService.createI18nMessage(MESSAGE_NEW_USER_SELF_CREATED, RESOURCE_BUNDLE,
-							"realmService.newUserSelfCreated", realm);
-					
-					realmRepository.setValue(realm, "realmService.createdTemplates", true);
-				} catch (AccessDeniedException e) {
-					throw new IllegalStateException(e.getMessage(), e);
-				}
-			}
-
-			@Override
-			public boolean hasCreatedDefaultResources(Realm realm) {
-				if(realm.getOwner()==null) {
-					return realmRepository.getBooleanValue(realm, "realmService.createdTemplates");
-				}
-				return true;
-			}
-		});
+		messageService.registerI18nMessage(MESSAGE_NEW_USER_SELF_CREATED, RESOURCE_BUNDLE,
+				"realmService.newUserSelfCreated");
 	}
 
 	@Override
@@ -251,7 +231,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						if (!listener.hasCreatedDefaultResources(realm)) {
 							try {
 								listener.onCreateRealm(realm);
-							} catch (ResourceException e) {
+							} catch (ResourceException | AccessDeniedException e) {
 								log.error("Failed to create default resources in realm", e);
 							}
 						}

@@ -4,11 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FileUtils {
 
@@ -195,5 +200,31 @@ public class FileUtils {
 		}
 		return paths;
 	}
+	
+	/**
+	 * From http://stackoverflow.com/questions/12090598/parsing-human-readable-filesizes-in-java-to-bytes
+	 * @param filesize
+	 * @return
+	 */
+	public static long toBytes(String filesize) {
+	    long returnValue = -1;
+	    Pattern patt = Pattern.compile("([0-9]+([,.][0-9]+)?)([TGMK]B)", Pattern.CASE_INSENSITIVE);
+	    Matcher matcher = patt.matcher(filesize);
+	    Map<String, Integer> powerMap = new HashMap<String, Integer>();
+	    powerMap.put("TB", 4);
+	    powerMap.put("GB", 3);
+	    powerMap.put("MB", 2);
+	    powerMap.put("KB", 1);
+	    if (matcher.find()) {
+	      String number = matcher.group(1);
+	      String unit = matcher.group(3);
+	      int pow = powerMap.get(unit.toUpperCase());
+	      BigDecimal bytes = new BigDecimal(number);
+	      bytes = bytes.multiply(BigDecimal.valueOf(1024).pow(pow));
+	      returnValue = bytes.longValue();
+	    }
+	    return returnValue;
+	}
+
 
 }

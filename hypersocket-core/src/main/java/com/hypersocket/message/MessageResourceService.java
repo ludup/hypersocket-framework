@@ -38,10 +38,9 @@ public interface MessageResourceService extends
 	MessageResource createResource(Integer mesasgeId, String name, String subject, String body, Realm realm)
 			throws ResourceCreationException, AccessDeniedException;
 	
-	MessageResource createI18nMessage(Integer mesasgeId, String resourceBundle, String resourceKey, Realm realm)
-			throws ResourceCreationException, AccessDeniedException;
-
 	void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Principal... principals)
 			throws ResourceNotFoundException, AccessDeniedException;
+
+	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey);
 
 }

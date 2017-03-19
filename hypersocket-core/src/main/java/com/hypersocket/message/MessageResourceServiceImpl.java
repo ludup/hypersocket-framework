@@ -38,12 +38,14 @@ import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.replace.ReplacementUtils;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.triggers.ValidationException;
 import com.hypersocket.upload.FileUpload;
@@ -84,6 +86,9 @@ public class MessageResourceServiceImpl extends
 	@Autowired
 	ConfigurationService configurationService;
 	
+	List<MessageRegistration> messageRegistrations = new ArrayList<MessageRegistration>();
+	List<Integer> messageIds = new ArrayList<Integer>();
+	
 	public MessageResourceServiceImpl() {
 		super("Message");
 	}
@@ -116,6 +121,24 @@ public class MessageResourceServiceImpl extends
 				this);
 
 		EntityResourcePropertyStore.registerResourceService(MessageResource.class, repository);
+		
+		realmService.registerRealmListener(new RealmAdapter() {
+			
+			@Override
+			public void onCreateRealm(Realm realm) throws ResourceException, AccessDeniedException {
+				
+				for(MessageRegistration r : messageRegistrations) {
+					if(repository.getMessageById(r.messageId, realm)==null) {
+						createI18nMessage(r.messageId, r.resourceBundle, r.resourceKey, realm);
+					}
+				}
+			}
+			
+			@Override
+			public boolean hasCreatedDefaultResources(Realm realm) {
+				return !repository.hasMissingMessages(realm, messageIds);
+			}
+		});
 	}
 
 	@Override
@@ -202,9 +225,19 @@ public class MessageResourceServiceImpl extends
 	}
 	
 	@Override
-	public MessageResource createI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Realm realm) throws ResourceCreationException,
+	public void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey) {
+		MessageRegistration r = new MessageRegistration();
+		r.messageId = messageId;
+		r.resourceBundle = resourceBundle;
+		r.resourceKey = resourceKey;
+		
+		messageRegistrations.add(r);
+		messageIds.add(messageId);
+	}
+	
+	private void createI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Realm realm) throws ResourceCreationException,
 			AccessDeniedException {
-		return createResource(messageId, I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".name"),
+		createResource(messageId, I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".name"),
 				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".subject"), 
 				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".body"), 
 				"", true, false, null, realm);
@@ -334,7 +367,12 @@ public class MessageResourceServiceImpl extends
 				log.error("Failed to send email", e);
 			}
 		}
-
+	}
+	
+	class MessageRegistration {
+		Integer messageId;
+		String resourceBundle;
+		String resourceKey;
 	}
 
 }

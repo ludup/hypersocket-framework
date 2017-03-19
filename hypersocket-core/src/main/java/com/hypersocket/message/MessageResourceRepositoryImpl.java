@@ -1,11 +1,15 @@
 package com.hypersocket.message;
 
 import java.util.Collection;
+import java.util.List;
 
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.realm.Realm;
+import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.RealmCriteria;
 
@@ -29,6 +33,19 @@ public class MessageResourceRepositoryImpl extends
 	@Transactional(readOnly=true)
 	public MessageResource getMessageById(Integer id, Realm realm) {
 		return get("messageId", id, MessageResource.class,  new RealmCriteria(realm));
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public boolean hasMissingMessages(final Realm realm, final List<Integer> messageIds) {
+		return getCount(MessageResource.class, new RealmCriteria(realm), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.in("messageId", messageIds));
+			}
+			
+		}) != messageIds.size();
 	}
 
 }
