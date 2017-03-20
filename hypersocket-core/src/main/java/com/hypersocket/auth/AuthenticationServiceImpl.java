@@ -832,7 +832,7 @@ public class AuthenticationServiceImpl extends
 		if(!state.getScheme().getAllowedRoles().isEmpty()) {
 			boolean found = false;
 			for(Role role : state.getScheme().getAllowedRoles()) {
-				if(role.getPrincipals().contains(principal)) {
+				if(permissionService.hasRole(principal, role)) {
 					found = true;
 					break;
 				}
