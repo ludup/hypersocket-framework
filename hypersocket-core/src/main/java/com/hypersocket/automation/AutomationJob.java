@@ -82,33 +82,38 @@ public class AutomationJob extends AbstractTriggerJob {
 			
 			eventService.publishEvent(event);
 			
+			TaskResult result;
+			
 			if(resource.getTransactional()) {
-				transactionService.doInTransaction(new TransactionCallback<SystemEvent>() {
+				result = transactionService.doInTransaction(new TransactionCallback<TaskResult>() {
 
 					@Override
-					public SystemEvent doInTransaction(TransactionStatus status) {
+					public TaskResult doInTransaction(TransactionStatus status) {
 
 						try {
-							executeTask(resource, provider, event);
+							return executeTask(resource, provider, event);
 						} catch (ValidationException e) {
 							throw new IllegalStateException(e.getMessage(), e);
 						}
-						return null;
 					}
 					
 				});
 			} else {
-				executeTask(resource, provider, event);
+				result = executeTask(resource, provider, event);
 			}
 			
-			eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource));
+			if(result.isSuccess()) {
+				eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource));
+			} else {
+				eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource, false));
+			}
 		} catch (Throwable e) {
 			eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource, e));
 		}
 	}
 
 	
-	private void executeTask(AutomationResource resource, TaskProvider provider, SystemEvent event) throws ValidationException {
+	private TaskResult executeTask(AutomationResource resource, TaskProvider provider, SystemEvent event) throws ValidationException {
 		TaskResult outputEvent = provider.execute(resource, event.getCurrentRealm(), event);
 		
 		if(outputEvent!=null) {
@@ -137,5 +142,7 @@ public class AutomationJob extends AbstractTriggerJob {
 				}
 			}
 		}
+		
+		return outputEvent;
 	}
 }

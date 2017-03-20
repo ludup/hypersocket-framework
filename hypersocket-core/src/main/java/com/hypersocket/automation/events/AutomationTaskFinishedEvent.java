@@ -22,6 +22,12 @@ public class AutomationTaskFinishedEvent extends
 		super(source, EVENT_RESOURCE_KEY, true, resource.getRealm());
 		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
 	}
+	
+	public AutomationTaskFinishedEvent(Object source,
+			AutomationResource resource, boolean success) {
+		super(source, EVENT_RESOURCE_KEY, success, resource.getRealm());
+		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
+	}
 
 	public AutomationTaskFinishedEvent(Object source,
 			AutomationResource resource, Throwable e) {
