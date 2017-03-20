@@ -745,7 +745,7 @@ public class CertificateResourceServiceImpl extends
 									+ IETFUtils.valueToString(v.getValue()));
 						}
 					}
-					if (!resource.getName().equals(DEFAULT_CERTIFICATE_NAME)) {
+					if (resource.getName()==null || !resource.getName().equals(DEFAULT_CERTIFICATE_NAME)) {
 						resource.setName(IETFUtils.valueToString(cn.getFirst()
 								.getValue()));
 					}

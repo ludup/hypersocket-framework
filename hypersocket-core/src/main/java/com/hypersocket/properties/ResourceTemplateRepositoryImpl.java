@@ -22,13 +22,13 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -701,8 +701,43 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		 if (template.isReadOnly()) {
 			 return;
 		 }
+		 
+		 validate(template, value);
 
 		((ResourcePropertyStore) template.getPropertyStore()).setPropertyValue(template, resource, value);
+	}
+
+	private void validate(PropertyTemplate template, String value) {
+		
+		/**
+		 * LDP - this needs extending. Its design to support non-ui based
+		 * submissions and provide last defense against bad client submitting
+		 * invalid values
+		 */
+		if(template.getAttributes().containsKey("inputType")) {
+			
+			String inputType = template.getAttributes().get("inputType");
+			switch(inputType) {
+			case "integer":
+				try {
+					Integer.parseInt(value);
+				} catch (NumberFormatException e) {
+					throw new IllegalArgumentException(String.format("Invalid integer value %s", value));
+				}
+				break;
+			case "slider":
+			case "long":
+				try {
+					Long.parseLong(value);
+				} catch (NumberFormatException e) {
+					throw new IllegalArgumentException(String.format("Invalid long value %s", value));
+				}
+				break;
+			default:
+				break;
+			}
+		}
+		
 	}
 
 	@Override

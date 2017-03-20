@@ -201,18 +201,22 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 		 * This default implementation uses the system realm to store the known
 		 * hosts for anything that isn't a realm connection. When realms are
 		 * involved {@link #setVerifier} should be used.
-		 */
-
-		Realm currentRealm = realmService.getSystemRealm();
-
-		/*
+		 * 
 		 * Match against all known hosts we have connected and accepted before.
+		 * 
+		 * LDP - I changed this to a system property because its now possible to
+		 * change the realm provider of the system realm and this broke any
+		 * external HTTPS connection as it was trying to load, for example, SSH
+		 * known hosts after changing system realm to a SSH realm.
+		 * 
+		 * The problem is I don't see where these "other" hosts are getting set?
+		 * only the realm subsystem appears to use this.
 		 */
 		X509KnownHost thisX509KnownHost = new X509KnownHost(hostname, session);
 		boolean found = false;
 		boolean hostMatches = false;
 
-		String val = realmService.getRealmProperty(currentRealm, RealmService.KNOWN_HOSTS_ATTR);
+		String val = systemConfigurationService.getValue("security.knownHosts");
 		if (StringUtils.isNotBlank(val)) {
 			for (String knownHost : (ResourceUtils.explodeCollectionValues(val))) {
 				X509KnownHost x509KnownHost = new X509KnownHost(knownHost);

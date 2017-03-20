@@ -48,6 +48,17 @@
 							resourceUrl : "messages/message",
 							fields : [ {
 								name : "name"
+							}, {
+								name: "enabled",
+								formatter: function(value, obj, idx) {
+									return value ? getResource('text.yes') : getResource('text.no');
+								}
+							}, {
+								name: 'info',
+								formatter: function(value, obj, idx) {
+									debugger;
+									return getResourceOrDefault('messageText.' + obj.messageId, '');
+								}
 							}],
 							resourceKey : "message",
 							canCreate: false,
