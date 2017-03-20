@@ -785,7 +785,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					
 					return principal;
 				} catch(Throwable t) {
-					throw new IllegalStateException(t);
+					throw new IllegalStateException(t.getMessage(), t);
 				}
 			}
 

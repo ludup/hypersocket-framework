@@ -59,8 +59,8 @@ public class core_1_DOT_3_DOT_0_R1 implements Runnable {
 						try {
 							permissionService.updateRole(permissionService.getRole(PermissionService.OLD_ROLE_ADMINISTRATOR, realm), 
 										PermissionService.ROLE_REALM_ADMINISTRATOR, 
-										Collections.<Principal>emptyList(), 
-										Collections.<Permission>emptyList(), null);
+										null, 
+										null, null);
 						} catch (ResourceNotFoundException e1) {
 						}
 						

@@ -214,7 +214,7 @@ public class RoleController extends ResourceController {
 								int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							return permissionService.getRoles(searchPattern,
+							return permissionService.getRoles(searchPattern, searchColumn,
 									start, length, sorting);
 						}
 
@@ -223,7 +223,7 @@ public class RoleController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return permissionService
-									.getRoleCount(searchPattern);
+									.getRoleCount(searchPattern, searchColumn);
 						}
 					});
 		} finally {

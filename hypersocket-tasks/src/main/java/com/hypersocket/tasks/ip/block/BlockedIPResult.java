@@ -2,12 +2,13 @@ package com.hypersocket.tasks.ip.block;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.hypersocket.events.DefaultEvent;
 import com.hypersocket.events.SystemEventStatus;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.triggers.AbstractTaskResult;
 
-public class BlockedIPResult extends AbstractTaskResult {
+public class BlockedIPResult extends AbstractTaskResult implements DefaultEvent {
 
 	private static final long serialVersionUID = 1931288302204904429L;
 

@@ -2,9 +2,10 @@ package com.hypersocket.server.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.hypersocket.events.DefaultEvent;
 import com.hypersocket.realm.Realm;
 
-public class ServerStoppingEvent extends HypersocketServerEvent {
+public class ServerStoppingEvent extends HypersocketServerEvent implements DefaultEvent {
 
 	private static final long serialVersionUID = -302922543628681693L;
 

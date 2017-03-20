@@ -2,10 +2,11 @@ package com.hypersocket.server.interfaces.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.hypersocket.events.DefaultEvent;
 import com.hypersocket.server.interfaces.InterfaceResource;
 import com.hypersocket.session.Session;
 
-public class InterfaceStoppedEvent extends InterfaceResourceEvent {
+public class InterfaceStoppedEvent extends InterfaceResourceEvent implements DefaultEvent {
 	
 	private static final long serialVersionUID = 8606170445099375558L;
 	

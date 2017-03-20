@@ -19,6 +19,7 @@ import com.hypersocket.tasks.TaskProviderServiceImpl;
 import com.hypersocket.triggers.AbstractTaskResult;
 import com.hypersocket.triggers.ValidationException;
 import com.hypersocket.utils.CommandExecutor;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Component
 public class ExecuteCommandTask extends AbstractTaskProvider {
@@ -70,7 +71,7 @@ public class ExecuteCommandTask extends AbstractTaskProvider {
 				"command.exe"), event);
 		String[] args = repository.getValues(task, "command.args");
 		for(int i=0;i<args.length;i++) {
-			args[i] = processTokenReplacements(args[i], event);
+			args[i] = processTokenReplacements(HypersocketUtils.urlDecode(args[i]), event);
 		}
 		CommandExecutor exe = new CommandExecutor(command);
 		exe.addArgs(args);

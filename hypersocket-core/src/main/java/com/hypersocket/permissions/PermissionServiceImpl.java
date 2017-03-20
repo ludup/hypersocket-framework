@@ -291,6 +291,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, RolePermission.CREATE, RolePermission.UPDATE);
 
 		try {
+			if(role.isPersonalRole()) {
+				throw new AccessDeniedException("You cannot assign a personal role to any principal");
+			}
 			repository.assignRole(role, principal);
 			permissionsCache.remove(principal);
 			roleCache.remove(principal);
@@ -309,6 +312,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, RolePermission.CREATE, RolePermission.UPDATE);
 
 		try {
+			if(role.isPersonalRole()) {
+				throw new AccessDeniedException("You cannot assign a personal role to any principal");
+			}
 			repository.assignRole(role, principals);
 			for (Principal principal : principals) {
 				permissionsCache.remove(principal);
@@ -331,7 +337,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 		try {
 			checkSystemAdministratorAssignments(role);
-			
+			if(role.isPersonalRole()) {
+				throw new AccessDeniedException("You cannot unassign a personal role from any principal");
+			}
 			repository.unassignRole(role, principal);
 			permissionsCache.remove(principal);
 			roleCache.remove(principal);
@@ -361,7 +369,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		try {
 			
 			checkSystemAdministratorAssignments(role);
-			
+			if(role.isPersonalRole()) {
+				throw new AccessDeniedException("You cannot unassign a personal role from any principal");
+			}
 			repository.unassignRole(role, principals);
 			for (Principal principal : principals) {
 				permissionsCache.remove(principal);
@@ -700,6 +710,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			Map<String, String> properties) throws AccessDeniedException, ResourceChangeException {
 
 		assertPermission(RolePermission.UPDATE);
+		if(role.isPersonalRole()) {
+			throw new AccessDeniedException("You cannot change personal roles");
+		}
 		try {
 			Role anotherRole = getRole(name, role.getRealm());
 			if (!anotherRole.getId().equals(role.getId())) {
@@ -709,20 +722,30 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			role.setName(name);
 		}
 		try {
-			Set<Principal> unassignPrincipals = getEntitiesNotIn(principals, role.getPrincipals(),
-					new EntityMatch<Principal>() {
-						@Override
-						public boolean validate(Principal t) {
-							return getCurrentRealm().equals(t.getRealm());
-						}
-
-					});
-
 			Set<Principal> assignPrincipals = new HashSet<Principal>();
-			assignPrincipals.addAll(principals);
-			assignPrincipals.removeAll(role.getPrincipals());
-			Set<Permission> revokePermissions = getEntitiesNotIn(permissions, role.getPermissions(), null);
-			Set<Permission> grantPermissions = getEntitiesNotIn(role.getPermissions(), permissions, null);
+			Set<Principal> unassignPrincipals = new HashSet<Principal>();
+			
+			if(principals!=null) {
+				unassignPrincipals.addAll(getEntitiesNotIn(principals, role.getPrincipals(),
+						new EntityMatch<Principal>() {
+							@Override
+							public boolean validate(Principal t) {
+								return getCurrentRealm().equals(t.getRealm());
+							}
+	
+				}));
+				assignPrincipals.addAll(principals);
+				assignPrincipals.removeAll(role.getPrincipals());
+			}
+			
+			Set<Permission> revokePermissions = new HashSet<Permission>();
+			Set<Permission> grantPermissions = new HashSet<Permission>();
+			
+			if(permissions!=null) {
+				revokePermissions.addAll(getEntitiesNotIn(permissions, role.getPermissions(), null));
+				grantPermissions.addAll(getEntitiesNotIn(role.getPermissions(), permissions, null));
+			}
+			
 			repository.updateRole(role, unassignPrincipals, assignPrincipals, revokePermissions, grantPermissions,
 					properties, new TransactionAdapter<Role>() {
 
@@ -771,18 +794,18 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
-	public Long getRoleCount(String searchPattern) throws AccessDeniedException {
+	public Long getRoleCount(String searchPattern, String searchColumn) throws AccessDeniedException {
 		assertPermission(RolePermission.READ);
 
-		return repository.countRoles(getCurrentRealm(), searchPattern);
+		return repository.countRoles(getCurrentRealm(), searchPattern, searchColumn);
 	}
 
 	@Override
-	public List<?> getRoles(String searchPattern, int start, int length, ColumnSort[] sorting)
+	public List<?> getRoles(String searchPattern, String searchColumn, int start, int length, ColumnSort[] sorting)
 			throws AccessDeniedException {
 		assertPermission(RolePermission.READ);
 
-		return repository.searchRoles(getCurrentRealm(), searchPattern, start, length, sorting);
+		return repository.searchRoles(getCurrentRealm(), searchPattern, searchColumn, start, length, sorting);
 	}
 
 	@Override

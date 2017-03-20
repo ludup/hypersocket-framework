@@ -5,6 +5,6 @@
 		<property resourceKey="command.exe" inputType="text"
 			weight="80" defaultValue="" size="50" />
 		<property resourceKey="command.args" inputType="multipleTextInput" 
-			cdefaultValue="" weight="100" />
+			cdefaultValue="" weight="100" allowOrdering="true" />
 	</propertyCategory>
 </propertyTemplates>

@@ -421,9 +421,9 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Role> searchRoles(final Realm realm, String searchPattern,
+	public List<Role> searchRoles(final Realm realm, String searchPattern, String searchColumn,
 			int start, int length, ColumnSort[] sorting) {
-		return search(Role.class, "name", searchPattern, start, length,
+		return search(Role.class, searchColumn, searchPattern, start, length,
 				sorting, new CriteriaConfiguration() {
 
 					@Override
@@ -440,8 +440,8 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 
 	@Override
 	@Transactional(readOnly = true)
-	public Long countRoles(final Realm realm, String searchPattern) {
-		return getCount(Role.class, "name", searchPattern,
+	public Long countRoles(final Realm realm, String searchPattern, String searchColumn) {
+		return getCount(Role.class, searchColumn, searchPattern,
 				new CriteriaConfiguration() {
 
 					@Override

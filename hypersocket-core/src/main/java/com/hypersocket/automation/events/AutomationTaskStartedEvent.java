@@ -5,11 +5,12 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.hypersocket.automation.AutomationResource;
 import com.hypersocket.automation.AutomationResourceServiceImpl;
 import com.hypersocket.events.CommonAttributes;
+import com.hypersocket.events.DefaultEvent;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.realm.Realm;
 
 public class AutomationTaskStartedEvent extends
-		SystemEvent {
+		SystemEvent implements DefaultEvent {
 
 	private static final long serialVersionUID = -3063880990945502517L;
 
