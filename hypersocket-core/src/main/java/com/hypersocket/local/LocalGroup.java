@@ -38,6 +38,10 @@ public class LocalGroup extends Principal {
 	@JoinTable(name = "local_group_groups", joinColumns={@JoinColumn(name="guid")}, inverseJoinColumns={@JoinColumn(name="gguid")})
 	private Set<LocalGroup> groups = new HashSet<LocalGroup>();
 	
+	@ManyToMany(fetch=FetchType.EAGER, cascade={CascadeType.PERSIST, CascadeType.MERGE})
+	@JoinTable(name = "local_group_groups", joinColumns={@JoinColumn(name="gguid")}, inverseJoinColumns={@JoinColumn(name="guid")})
+	private Set<LocalGroup> parents = new HashSet<LocalGroup>();
+	
 	@Override
 	public PrincipalType getType() {
 		return PrincipalType.GROUP;
@@ -59,6 +63,11 @@ public class LocalGroup extends Principal {
 	@JsonIgnore
 	public Set<LocalGroup> getGroups() {
 		return groups;
+	}
+	
+	@JsonIgnore
+	public Set<LocalGroup> getParents() {
+		return parents;
 	}
 
 	public String getRealmModule() {

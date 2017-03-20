@@ -594,6 +594,10 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		if (principal instanceof LocalUser) {
 			LocalUser user = (LocalUser) principal;
 			result.addAll(user.getGroups());
+			
+			for(LocalGroup group : user.getGroups()) {
+				iterateParentGroups(group, result, null);
+			}
 		} else if (principal instanceof LocalGroup) {
 			LocalGroup group = (LocalGroup) principal;
 			result.addAll(group.getUsers());
@@ -633,6 +637,20 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		for(LocalGroup child : group.getGroups()) {
 			users.addAll(child.getUsers());
 			iterateGroups(child, users, iterated);
+		}
+	}
+	
+	private void iterateParentGroups(LocalGroup group, List<Principal> principals, Set<LocalGroup> iterated) {
+		if(iterated==null) {
+			iterated = new HashSet<LocalGroup>();
+		}
+		if(iterated.contains(group)) {
+			return;
+		}
+		iterated.add(group);
+		for(LocalGroup child : group.getParents()) {
+			principals.add(child);
+			iterateParentGroups(child, principals, iterated);
 		}
 	}
 
