@@ -7,58 +7,48 @@
  ******************************************************************************/
 package com.hypersocket.realm.json;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.fasterxml.jackson.databind.*;
-import com.hypersocket.migration.execution.MigrationExecutor;
-import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
-import com.hypersocket.migration.mapper.MigrationObjectMapper;
-import com.hypersocket.permissions.Role;
-import com.hypersocket.resource.ResourceExportException;
-import com.hypersocket.resource.ResourceNotFoundException;
-import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
+import com.hypersocket.migration.execution.MigrationExecutor;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.json.PropertyItem;
-import com.hypersocket.realm.PrincipalColumns;
-import com.hypersocket.realm.PrincipalType;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmColumns;
-import com.hypersocket.realm.RealmProvider;
-import com.hypersocket.realm.RealmService;
-import com.hypersocket.realm.RealmServiceImpl;
+import com.hypersocket.realm.*;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceExportException;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
+import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 public class RealmController extends ResourceController {
+
+	static Logger log = LoggerFactory.getLogger(RealmController.class);
+
+	@Autowired
+	MigrationExecutor migrationExecutor;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "realms/realm/{id}", method = RequestMethod.GET, produces = { "application/json" })
@@ -395,7 +385,7 @@ public class RealmController extends ResourceController {
 					+ "realmResource.json\"");
 			realmService.exportAllResoures(response.getOutputStream());
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Problem in exporting realm resource.", e);
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -404,30 +394,35 @@ public class RealmController extends ResourceController {
 
 
 	@AuthenticationRequired
-	@RequestMapping(value = "realms/realmTest", method = RequestMethod.POST)
+	@RequestMapping(value = "realms/import", method = { RequestMethod.POST }, produces = { "application/json" })
+	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceStatus<Realm> trial(
-			HttpServletRequest request, HttpServletResponse response
-			) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException {
-
+	public ResourceStatus<String> importRealm(
+			HttpServletRequest request, HttpServletResponse response,
+			@RequestParam(value = "file") MultipartFile jsonFile,
+			@RequestParam(required = false) boolean dropExisting)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
+		try {
+			Thread.sleep(2000);
+		} catch (Exception e) {
+		}
 
 		try {
 
-			//String role = IOUtils.toString( request.getInputStream());
-			migrationExecutor.startRealmImport(request.getInputStream(), null);
-			return null;
+			migrationExecutor.startRealmImport(jsonFile.getInputStream(), null);
+			return new ResourceStatus<String>(true,
+					I18N.getResource(sessionUtils.getLocale(request),
+							RealmService.RESOURCE_BUNDLE,
+							"realm.import.success"));
 
 		} catch (Exception e) {
-			return new ResourceStatus<Realm>(false, e.getMessage());
+			return new ResourceStatus<String>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}
 	}
-
-	@Autowired
-	MigrationExecutor migrationExecutor;
 
 }

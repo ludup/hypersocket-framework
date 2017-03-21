@@ -12,7 +12,6 @@ import com.hypersocket.migration.mapper.MigrationObjectMapper;
 import com.hypersocket.migration.repository.MigrationRepository;
 import com.hypersocket.migration.util.MigrationUtil;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmService;
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.resource.Resource;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -34,9 +33,6 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
 
     @Autowired
     MigrationObjectMapper migrationObjectMapper;
-
-    @Autowired
-    RealmService realmService;
 
     @Autowired
     MigrationUtil migrationUtil;
