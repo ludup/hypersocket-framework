@@ -32,12 +32,12 @@ public class ExtensionHelper {
 
 	public static Map<String, ExtensionVersion> resolveExtensions(
 			boolean refresh, String updateUrl, String[] repos,
-			String ourVersion, String serial,
+			String ourVersion, String serial, String product,
 			ExtensionPlace extensionPlace, boolean resolveInstalled,
 			ExtensionTarget... targets) throws IOException {
 
 		Map<String, ExtensionVersion> extsByName = ExtensionHelper.resolveRemoteDependencies(
-				updateUrl, repos, ourVersion, serial, targets);
+				updateUrl, repos, ourVersion, serial, product, targets);
 		
 		for(ExtensionVersion ext : extsByName.values()) {
 			ext.setState(ExtensionState.NOT_INSTALLED);
@@ -211,7 +211,7 @@ public class ExtensionHelper {
 	}
 
 	public static Map<String, ExtensionVersion> resolveRemoteDependencies(
-			String url, String[] repos, String version, String serial, ExtensionTarget... targets)
+			String url, String[] repos, String version, String serial, String product, ExtensionTarget... targets)
 			throws IOException {
 
 		Map<String, ExtensionVersion> extsByName = new HashMap<String, ExtensionVersion>();
@@ -226,10 +226,11 @@ public class ExtensionHelper {
 				}
 				repos = ArrayUtils.addAll(repos, additionalRepos.split(","));
 			}
-			String updateUrl = String.format("%s/%s/%s/%s/%s",url, 
+			String updateUrl = String.format("%s/%s/%s/%s/%s?product=%s",url, 
 					version, 
 					HypersocketUtils.csv(repos) , serial, 
-					HypersocketUtils.csv(targets));
+					HypersocketUtils.csv(targets),
+					HypersocketUtils.urlEncode(product));
 
 			if (log.isInfoEnabled()) {
 				log.info("Checking for updates from " + updateUrl);
