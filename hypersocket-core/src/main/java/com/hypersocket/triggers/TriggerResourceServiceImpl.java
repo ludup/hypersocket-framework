@@ -613,7 +613,7 @@ public class TriggerResourceServiceImpl extends
 				httpUtils.doHttpGet(
 						System.getProperty(
 								"hypersocket.templateServerImageUrl",
-								"https://templates1x.hypersocket.com/hypersocket/api/templates/image/")
+								"https://updates2.hypersocket.com/hypersocket/api/templates/image/")
 								+ uuid, true));
 
 	}
@@ -635,7 +635,7 @@ public class TriggerResourceServiceImpl extends
 		String json = httpUtils
 				.doHttpPost(
 						System.getProperty("hypersocket.templateServerUrl",
-								"https://templates1x.hypersocket.com/hypersocket/api/templates")
+								"https://updates2.hypersocket.com/hypersocket/api/templates")
 								+ "/"
 								+ (Boolean
 										.getBoolean("hypersocketTriggers.enablePrivate") ? "developer"
