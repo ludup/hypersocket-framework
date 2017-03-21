@@ -77,7 +77,7 @@ public class Permission extends AbstractEntity<Long> {
 		return category;
 	}
 	
-	void setCategory(PermissionCategory category) {
+	public void setCategory(PermissionCategory category) {
 		this.category = category;
 	}
 
