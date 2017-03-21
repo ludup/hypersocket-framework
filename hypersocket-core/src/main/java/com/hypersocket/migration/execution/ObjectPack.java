@@ -2,18 +2,17 @@ package com.hypersocket.migration.execution;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hypersocket.migration.helper.MigrationDeserializer;
-import com.hypersocket.repository.AbstractEntity;
 
 import java.util.List;
 
 public class ObjectPack {
 
     private String group;
-    private List<AbstractEntity> objectList;
+    private List<MigrationObjectWithMeta> objectList;
 
     public ObjectPack() {}
 
-    public ObjectPack(String group, List<AbstractEntity> objectList) {
+    public ObjectPack(String group, List<MigrationObjectWithMeta> objectList) {
         this.group = group;
         this.objectList = objectList;
     }
@@ -27,11 +26,11 @@ public class ObjectPack {
     }
 
     @JsonDeserialize(using = MigrationDeserializer.class)
-    public List<AbstractEntity> getObjectList() {
+    public List<MigrationObjectWithMeta> getObjectList() {
         return objectList;
     }
 
-    public void setObjectList(List<AbstractEntity> objectList) {
+    public void setObjectList(List<MigrationObjectWithMeta> objectList) {
         this.objectList = objectList;
     }
 }

@@ -64,9 +64,10 @@ public class MigrationBeanDeserializer extends BeanDeserializer {
             SettableBeanProperty prop = _beanProperties.find(propName);
 
             if (prop != null) { // normal case
-                MigrationCurrentInfo migrationCurrentInfo = new MigrationCurrentInfo(bean, propName);
-                migrationCurrentStack.addState(migrationCurrentInfo);
                 try {
+                    MigrationCurrentInfo migrationCurrentInfo = new MigrationCurrentInfo(bean, propName);
+                    migrationCurrentStack.addState(migrationCurrentInfo);
+
                     if (Collection.class.isAssignableFrom(prop.getType().getRawClass())
                             || AbstractEntity.class.isAssignableFrom(prop.getType().getRawClass())) {
                         //we need customization here
@@ -78,8 +79,10 @@ public class MigrationBeanDeserializer extends BeanDeserializer {
                     }
                 } catch (Exception e) {
                     wrapAndThrow(e, bean, propName, ctxt);
+                } finally {
+                    migrationCurrentStack.popState();
                 }
-                migrationCurrentStack.popState();
+
                 continue;
             }
             handleUnknownVanilla(p, ctxt, bean, propName);

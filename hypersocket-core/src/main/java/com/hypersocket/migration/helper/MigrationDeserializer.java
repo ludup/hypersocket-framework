@@ -85,11 +85,25 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
             if (value != null) {
                 if (isCollection) {
                     Collection<AbstractEntity> resourceCollection = (Collection) value;
-                    for (AbstractEntity resource : resourceCollection) {
-                        Object property = PropertyUtils.getProperty(resource, lookUpKey.getProperty());
-                        if (property != null && property.equals(lookUpKey.getValue())) {
-                            valueToUpdate = resource;
-                            break;
+                    outer : for (AbstractEntity resource : resourceCollection) {
+                        if(lookUpKey.isComposite()) {
+                            String[] properties = lookUpKey.getProperties();
+                            Object[] values = lookUpKey.getValues();
+                            if(properties != null) {
+                                for (int i = 0; i < properties.length; ++i) {
+                                    if (!properties[i].equals(values[i])) {
+                                        continue;
+                                    }
+                                    valueToUpdate = resource;
+                                    break outer;
+                                }
+                            }
+                        } else {
+                            Object property = PropertyUtils.getProperty(resource, lookUpKey.getProperty());
+                            if (property != null && property.equals(lookUpKey.getValue())) {
+                                valueToUpdate = resource;
+                                break;
+                            }
                         }
                     }
                 } else {
