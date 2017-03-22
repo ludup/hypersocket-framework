@@ -7,59 +7,49 @@
  ******************************************************************************/
 package com.hypersocket.realm.json;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
-import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.json.ResourceStatusConfirmation;
+import com.hypersocket.migration.execution.MigrationExecutor;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.json.PropertyItem;
-import com.hypersocket.realm.PrincipalColumns;
-import com.hypersocket.realm.PrincipalType;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmColumns;
-import com.hypersocket.realm.RealmProvider;
-import com.hypersocket.realm.RealmService;
-import com.hypersocket.realm.RealmServiceImpl;
-import com.hypersocket.realm.UserVariableReplacementService;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceConfirmationException;
-import com.hypersocket.resource.ResourceException;
+import com.hypersocket.realm.*;
+import com.hypersocket.resource.*;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 public class RealmController extends ResourceController {
+
+	static Logger log = LoggerFactory.getLogger(RealmController.class);
 
 	@Autowired
 	UserVariableReplacementService userVariableReplacement;
 
 	@Autowired
-	CertificateResourceService certificateResourceService;
+	MigrationExecutor migrationExecutor;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "realms/realm/{id}", method = RequestMethod.GET, produces = { "application/json" })
@@ -82,7 +72,7 @@ public class RealmController extends ResourceController {
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<Realm> setDefaultRealm(HttpServletRequest request, HttpServletResponse response,
-			@PathVariable("id") Long id) throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+												 @PathVariable("id") Long id) throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 
@@ -131,7 +121,7 @@ public class RealmController extends ResourceController {
 
 				@Override
 				public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
-						ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
+									   ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
 					return realmService.getRealms(searchPattern, start, length, sorting);
 				}
 
@@ -151,7 +141,7 @@ public class RealmController extends ResourceController {
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<PropertyCategory> getRealmTemplate(HttpServletRequest request,
-			@PathVariable("module") String module)
+														   @PathVariable("module") String module)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 
@@ -169,7 +159,7 @@ public class RealmController extends ResourceController {
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<PropertyCategory> getRealmPropertiesJson(HttpServletRequest request,
-			@PathVariable("id") Long module)
+																 @PathVariable("id") Long module)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 
@@ -204,7 +194,7 @@ public class RealmController extends ResourceController {
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<Realm> createOrUpdateRealm(HttpServletRequest request, HttpServletResponse response,
-			@RequestBody RealmUpdate realm)
+													 @RequestBody RealmUpdate realm)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
@@ -241,7 +231,7 @@ public class RealmController extends ResourceController {
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<Realm> deleteRealm(HttpServletRequest request, HttpServletResponse response,
-			@PathVariable("id") Long id) throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+											 @PathVariable("id") Long id) throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 		try {
@@ -286,7 +276,7 @@ public class RealmController extends ResourceController {
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public BootstrapTableResult<?> tableUsers(final HttpServletRequest request, HttpServletResponse response,
-			@PathVariable Long id) throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+											  @PathVariable Long id) throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 
@@ -303,7 +293,7 @@ public class RealmController extends ResourceController {
 
 				@Override
 				public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
-						ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
+									   ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
 					return realmService.searchPrincipals(realm, PrincipalType.USER, realm.getResourceCategory(),
 							searchPattern, start, length, sorting);
 				}
@@ -316,6 +306,66 @@ public class RealmController extends ResourceController {
 				}
 			});
 			return r;
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "realms/export", method = RequestMethod.GET, produces = { "text/plain" })
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public void exportAll(HttpServletRequest request,
+						  HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException,
+			ResourceNotFoundException, ResourceExportException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Thread.sleep(1000);
+		} catch (Exception e) {
+		}
+		try {
+			response.setHeader("Content-Disposition", "attachment; filename=\""
+					+ "realmResource.json\"");
+			realmService.exportAllResoures(response.getOutputStream());
+		} catch (IOException e) {
+			log.error("Problem in exporting realm resource.", e);
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
+
+
+	@AuthenticationRequired
+	@RequestMapping(value = "realms/import", method = { RequestMethod.POST }, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<String> importRealm(
+			HttpServletRequest request, HttpServletResponse response,
+			@RequestParam(value = "file") MultipartFile jsonFile,
+			@RequestParam(required = false) boolean dropExisting)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Thread.sleep(2000);
+		} catch (Exception e) {
+		}
+
+		try {
+
+			migrationExecutor.startRealmImport(jsonFile.getInputStream(), null);
+			return new ResourceStatus<String>(true,
+					I18N.getResource(sessionUtils.getLocale(request),
+							RealmService.RESOURCE_BUNDLE,
+							"realm.import.success"));
+
+		} catch (Exception e) {
+			return new ResourceStatus<String>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}

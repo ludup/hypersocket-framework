@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.hypersocket.repository.AbstractEntity;
 
-@Entity
+@Entity(name = "`constraint`")
 @Inheritance(strategy=InheritanceType.JOINED)
 @XmlRootElement(name="constraint")
 @Table(name = "`constraint`")

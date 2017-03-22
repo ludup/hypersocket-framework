@@ -30,19 +30,19 @@ public interface RealmRepository extends
 	public void delete(Realm realm);
 
 	Realm saveRealm(Realm realm, Map<String, String> properties,
-			RealmProvider provider);
+					RealmProvider provider);
 
 	Realm createRealm(String name, String uuid, String module,
-			Map<String, String> properties, RealmProvider provider,
-			Long owner,
-			 @SuppressWarnings("unchecked") TransactionOperation<Realm> ... ops) throws ResourceException;
+					  Map<String, String> properties, RealmProvider provider,
+					  Long owner,
+					  @SuppressWarnings("unchecked") TransactionOperation<Realm> ... ops) throws ResourceException;
 
 	Realm getRealmByName(String name, boolean deleted);
 
 	List<Realm> allRealms(String resourceKey);
 
 	List<Realm> searchRealms(String searchPattern, int start, int length,
-			ColumnSort[] sorting);
+							 ColumnSort[] sorting);
 
 	public Long countRealms(String searchPattern);
 
