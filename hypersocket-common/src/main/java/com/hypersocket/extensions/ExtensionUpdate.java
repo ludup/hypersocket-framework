@@ -9,6 +9,8 @@ public class ExtensionUpdate {
 	boolean upgrade;
 	boolean canUpdate;
 	int missingComponentCount;
+	String customer;
+	String product; 
 	
 	public ExtensionUpdate() {
 		
@@ -69,4 +71,22 @@ public class ExtensionUpdate {
 	public boolean getCanUpdate() {
 		return canUpdate;
 	}
+
+	public String getCustomer() {
+		return customer;
+	}
+
+	public void setCustomer(String customer) {
+		this.customer = customer;
+	}
+
+	public String getProduct() {
+		return product;
+	}
+
+	public void setProduct(String product) {
+		this.product = product;
+	}
+	
+	
 }
