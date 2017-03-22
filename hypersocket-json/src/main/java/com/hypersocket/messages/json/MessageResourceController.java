@@ -1,6 +1,5 @@
 package com.hypersocket.messages.json;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,13 +71,14 @@ public class MessageResourceController extends ResourceController {
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<String> getVariables(HttpServletRequest request,
-			HttpServletResponse response) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException {
+			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException, ResourceNotFoundException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			return new ResourceList<String>(Arrays.asList("foobar", "wicked"));
+			return new ResourceList<String>(resourceService.getMessageVariables(
+					resourceService.getResourceById(id)));
 		} finally {
 			clearAuthenticatedContext();
 		}

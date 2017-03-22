@@ -207,13 +207,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		EntityResourcePropertyStore.registerResourceService(Principal.class, realmRepository);
 		
 		messageService.registerI18nMessage(MESSAGE_NEW_USER_NEW_PASSWORD, RESOURCE_BUNDLE,
-				"realmService.newUserNewPassword");
+				"realmService.newUserNewPassword", PrincipalResolver.getVariables());
 		
 		messageService.registerI18nMessage(MESSAGE_NEW_USER_TMP_PASSWORD, RESOURCE_BUNDLE,
-				"realmService.newUserTmpPassword");
+				"realmService.newUserTmpPassword", PrincipalResolver.getVariables());
 
 		messageService.registerI18nMessage(MESSAGE_NEW_USER_SELF_CREATED, RESOURCE_BUNDLE,
-				"realmService.newUserSelfCreated");
+				"realmService.newUserSelfCreated", PrincipalResolver.getVariables());
 	}
 
 	@Override
