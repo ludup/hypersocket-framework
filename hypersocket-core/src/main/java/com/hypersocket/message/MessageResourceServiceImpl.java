@@ -363,7 +363,9 @@ public class MessageResourceServiceImpl extends
 						configurationService.getIntValue(realm, "smtp.delay"),
 						attachments.toArray(new EmailAttachment[0]));
 				
-			} catch (MailException | ValidationException e) {
+			} catch (MailException e) { 
+				// Will be logged by mail API
+			} catch(ValidationException e) {
 				log.error("Failed to send email", e);
 			}
 		}
