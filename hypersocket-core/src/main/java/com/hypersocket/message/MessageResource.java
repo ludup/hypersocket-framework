@@ -46,6 +46,8 @@ public class MessageResource extends RealmResource {
 	@Column(name="reply_email", length=1024)
 	String replyToEmail;
 
+	@Column(name="variables")
+	String supportedVariables;
 	
 	public Integer getMessageId() {
 		return messageId;
@@ -125,5 +127,15 @@ public class MessageResource extends RealmResource {
 
 	public void setReplyToEmail(String replyToEmail) {
 		this.replyToEmail = replyToEmail;
-	}		
+	}
+
+	public String getSupportedVariables() {
+		return supportedVariables;
+	}
+
+	public void setSupportedVariables(String supportedVariables) {
+		this.supportedVariables = supportedVariables;
+	}	
+	
+	
 }

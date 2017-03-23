@@ -2,6 +2,7 @@ package com.hypersocket.message;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
@@ -28,19 +29,15 @@ public interface MessageResourceService extends
 	Collection<PropertyCategory> getPropertyTemplate(MessageResource resource)
 			throws AccessDeniedException;
 
-	MessageResource createResource(Integer mesasgeId, String name, String subject, String body, String html, Boolean enabled,
-			Boolean track, Collection<FileUpload> attachments, Realm realm)
-			throws ResourceCreationException, AccessDeniedException;
-
-	MessageResource createResource(Integer mesasgeId, String name, String subject, String body, String html, Boolean enabled,
-			Boolean track, Realm realm) throws ResourceCreationException, AccessDeniedException;
-
-	MessageResource createResource(Integer mesasgeId, String name, String subject, String body, Realm realm)
-			throws ResourceCreationException, AccessDeniedException;
-	
 	void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Principal... principals)
 			throws ResourceNotFoundException, AccessDeniedException;
 
-	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey);
+	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables);
+
+	MessageResource createResource(Integer messageId, String name, String subject, String body, String html,
+			Set<String> variables, Boolean enabled, Boolean track, Collection<FileUpload> attachments, Realm realm)
+			throws ResourceCreationException, AccessDeniedException;
+
+	Set<String> getMessageVariables(MessageResource message);
 
 }

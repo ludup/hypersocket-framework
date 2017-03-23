@@ -2,10 +2,13 @@ package com.hypersocket.message;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 import javax.mail.Message.RecipientType;
@@ -128,15 +131,22 @@ public class MessageResourceServiceImpl extends
 			public void onCreateRealm(Realm realm) throws ResourceException, AccessDeniedException {
 				
 				for(MessageRegistration r : messageRegistrations) {
-					if(repository.getMessageById(r.messageId, realm)==null) {
-						createI18nMessage(r.messageId, r.resourceBundle, r.resourceKey, realm);
+					MessageResource message = repository.getMessageById(r.messageId, realm);
+					if(message==null) {
+						createI18nMessage(r.messageId, r.resourceBundle, r.resourceKey, r.variables, realm);
+					} else {
+						String vars = ResourceUtils.implodeValues(r.variables);
+						if(!vars.equals(message.getSupportedVariables())) {
+							message.setSupportedVariables(vars);
+							repository.saveResource(message);
+						}
 					}
 				}
 			}
 			
 			@Override
 			public boolean hasCreatedDefaultResources(Realm realm) {
-				return !repository.hasMissingMessages(realm, messageIds);
+				return false;
 			}
 		});
 	}
@@ -217,41 +227,31 @@ public class MessageResourceServiceImpl extends
 
 		return resource;
 	}
-
-	@Override
-	public MessageResource createResource(Integer messageId, String name, String subject, String body, Realm realm) throws ResourceCreationException,
-			AccessDeniedException {
-		return createResource(messageId, name, subject, body, "", true, false, null, realm);
-	}
 	
 	@Override
-	public void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey) {
+	public void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables) {
 		MessageRegistration r = new MessageRegistration();
 		r.messageId = messageId;
 		r.resourceBundle = resourceBundle;
 		r.resourceKey = resourceKey;
+		r.variables = variables;
 		
 		messageRegistrations.add(r);
 		messageIds.add(messageId);
 	}
 	
-	private void createI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Realm realm) throws ResourceCreationException,
+	private void createI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables, Realm realm) throws ResourceCreationException,
 			AccessDeniedException {
 		createResource(messageId, I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".name"),
 				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".subject"), 
 				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".body"), 
-				"", true, false, null, realm);
+				"", variables, true, false, null, realm);
 	}
+
 	
 	@Override
 	public MessageResource createResource(Integer messageId, String name, String subject, String body, String html, 
-			Boolean enabled, Boolean track, Realm realm) throws ResourceCreationException,
-			AccessDeniedException {
-		return createResource(messageId, name, subject, body, html, enabled, track, null, realm);
-	}
-	
-	@Override
-	public MessageResource createResource(Integer messageId, String name, String subject, String body, String html, 
+			Set<String> variables,
 			Boolean enabled, Boolean track, 
 			Collection<FileUpload> attachments, Realm realm) throws ResourceCreationException,
 			AccessDeniedException {
@@ -266,6 +266,7 @@ public class MessageResourceServiceImpl extends
 		resource.setHtml(html);
 		resource.setEnabled(enabled);
 		resource.setTrack(track);
+		resource.setSupportedVariables(ResourceUtils.implodeValues(variables));
 		
 		List<String> attachmentUUIDs = new ArrayList<String>();
 		if(attachments!=null) {
@@ -310,6 +311,16 @@ public class MessageResourceServiceImpl extends
 		createResource(resource, properties);
 
 		return resource;
+	}
+	
+	@Override
+	public Set<String> getMessageVariables(MessageResource message) {
+		
+		Set<String> vars = new TreeSet<String>();
+		vars.addAll(ResourceUtils.explodeCollectionValues(message.getSupportedVariables()));
+		vars.addAll(Arrays.asList("trackingImage", "email", "firstName",
+				"fullName", "principalId", "serverUrl", "serverName"));
+		return vars;
 	}
 
 	@Override
@@ -363,13 +374,16 @@ public class MessageResourceServiceImpl extends
 						configurationService.getIntValue(realm, "smtp.delay"),
 						attachments.toArray(new EmailAttachment[0]));
 				
-			} catch (MailException | ValidationException e) {
+			} catch (MailException e) { 
+				// Will be logged by mail API
+			} catch(ValidationException e) {
 				log.error("Failed to send email", e);
 			}
 		}
 	}
 	
 	class MessageRegistration {
+		Set<String> variables;
 		Integer messageId;
 		String resourceBundle;
 		String resourceKey;

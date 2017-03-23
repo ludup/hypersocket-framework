@@ -344,6 +344,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		if(servletRequest.getAttribute("404.html")!=null) {
 			url = (URL) servletRequest.getAttribute("404.html");
 		}
+		servletResponse.setContentType("text/html");
 		servletRequest.setAttribute(CONTENT_INPUTSTREAM, url.openStream());
 	}
 	
