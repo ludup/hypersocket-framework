@@ -16,14 +16,14 @@ public class MigrationOrderInfoProvider {
 
     static Logger log = LoggerFactory.getLogger(MigrationOrderInfoProvider.class);
 
-    private Map<String, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = new TreeMap<>();
+    private Map<Short, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = new TreeMap<>();
 
     @PostConstruct
     private void postConstruct() {
         scanForMigrationOrderClasses();
     }
 
-    public Map<String, List<Class<? extends AbstractEntity<Long>>>> getMigrationOrderMap() {
+    public Map<Short, List<Class<? extends AbstractEntity<Long>>>> getMigrationOrderMap() {
         return Collections.unmodifiableMap(migrationOrderMap);
     }
 
@@ -38,7 +38,7 @@ public class MigrationOrderInfoProvider {
                 String className = beanDefinition.getBeanClassName();
                 Class aClass = MigrationOrderInfoProvider.class.getClassLoader().loadClass(className);
                 MigrationOrder instance = (MigrationOrder) aClass.newInstance();
-                migrationOrderMap.put(instance.getGroupName(), instance.getOrderList());
+                migrationOrderMap.put(instance.sortOrder(), instance.getOrderList());
             }
         }catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage(), e);

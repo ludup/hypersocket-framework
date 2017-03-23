@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface MigrationOrder {
 
-    String getGroupName();
+    Short sortOrder();
     List<Class<? extends AbstractEntity<Long>>>  getOrderList();
 }

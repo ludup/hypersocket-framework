@@ -28,8 +28,8 @@ import java.util.List;
 
 public class CoreMigrationOrder implements MigrationOrder {
     @Override
-    public String getGroupName() {
-        return "core-base-hypersocket-migration";
+    public Short sortOrder() {
+        return 0;
     }
 
     @Override
