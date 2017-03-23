@@ -132,11 +132,11 @@ public class MigrationExecutor {
                 jsonGenerator.setPrettyPrinter(new DefaultPrettyPrinter());
             }
 
-            Map<String, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = migrationOrderInfoProvider.getMigrationOrderMap();
+            Map<Short, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = migrationOrderInfoProvider.getMigrationOrderMap();
 
             jsonGenerator.writeStartArray();
-            Set<String> keys = migrationOrderMap.keySet();
-            for (String key : keys) {
+            Set<Short> keys = migrationOrderMap.keySet();
+            for (Short key : keys) {
                 List<Class<? extends AbstractEntity<Long>>> migrationClasses = migrationOrderMap.get(key);
                 for (Class<? extends AbstractEntity<Long>> aClass : migrationClasses) {
                     List<AbstractEntity> objectList = migrationRepository.findAllResourceInRealmOfType(aClass, realm);

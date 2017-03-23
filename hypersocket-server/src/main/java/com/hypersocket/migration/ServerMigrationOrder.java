@@ -22,9 +22,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ServerMigrationOrder implements MigrationOrder {
+
     @Override
-    public String getGroupName() {
-        return "core-server-hypersocket-migration";
+    public Short sortOrder() {
+        return 10;
     }
 
     @Override
