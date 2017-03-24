@@ -131,12 +131,12 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 				}
 			}
 			
-			getResourceByName(resource.getName(), resource.getRealm());
+			T existing = getResourceByName(resource.getName(), resource.getRealm());
 			
 			if(resource.getPersonal()) {
-				getPersonalResourceByName(resource.getName());
+				existing = getPersonalResourceByName(resource.getName());
 			} 
-			return false;
+			return existing.getId().equals(resource.getId());
 		} catch (ResourceNotFoundException e) {
 			return true;
 		}
