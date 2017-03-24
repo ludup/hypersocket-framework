@@ -35,7 +35,7 @@ public class TriggerResource extends Task {
 	Set<TriggerCondition> conditions = new HashSet<TriggerCondition>();
 
 	@OneToMany(mappedBy = "parentTrigger", fetch = FetchType.EAGER)
-	Set<TriggerResource> childTriggers;
+	Set<TriggerResource> childTriggers = new HashSet<>();
 
 	@OneToOne
 	TriggerResource parentTrigger;
