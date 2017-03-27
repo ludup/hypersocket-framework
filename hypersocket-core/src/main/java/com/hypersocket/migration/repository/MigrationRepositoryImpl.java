@@ -71,9 +71,16 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
         if(Realm.class.equals(aClass)) {
             criteria.add(Restrictions.eq("id", realm.getId()));
         }
+        Order order =  Order.asc("created");
+        if(aClass.isAnnotationPresent(com.hypersocket.migration.annotation.Order.class)){
+            com.hypersocket.migration.annotation.Order orderAnno = (com.hypersocket.migration.annotation.Order)
+                    aClass.getAnnotation(com.hypersocket.migration.annotation.Order.class);
+            order = orderAnno.direction().equals(com.hypersocket.migration.annotation.Order.Direction.ASC) ?
+                    Order.asc(orderAnno.property()) : Order.desc(orderAnno.property());
+        }
         return criteria
                 .setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY)
-                .addOrder(Order.asc("created"))
+                .addOrder(order)
                 .list();
     }
 

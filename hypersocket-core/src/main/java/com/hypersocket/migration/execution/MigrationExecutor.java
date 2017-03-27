@@ -12,9 +12,10 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.hypersocket.local.LocalGroup;
 import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
+import com.hypersocket.migration.importer.MigrationImporter;
+import com.hypersocket.migration.info.MigrationHelperClassesInfoProvider;
 import com.hypersocket.migration.lookup.LookUpKey;
 import com.hypersocket.migration.mapper.MigrationObjectMapper;
-import com.hypersocket.migration.order.MigrationOrderInfoProvider;
 import com.hypersocket.migration.repository.MigrationRepository;
 import com.hypersocket.migration.util.MigrationUtil;
 import com.hypersocket.properties.DatabaseProperty;
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -59,7 +61,14 @@ public class MigrationExecutor {
     RealmRepository realmRepository;
 
     @Autowired
-    MigrationOrderInfoProvider migrationOrderInfoProvider;
+    MigrationHelperClassesInfoProvider migrationHelperClassesInfoProvider;
+
+    private Map<Class<?>, MigrationImporter> migrationImporterMap;
+
+    @PostConstruct
+    private void postConstruct() {
+        migrationImporterMap = migrationHelperClassesInfoProvider.getMigrationImporterMap();
+    }
 
     @Transactional(rollbackFor = Exception.class)
     @SuppressWarnings("unchecked")
@@ -105,6 +114,12 @@ public class MigrationExecutor {
                 migrationUtil.fillInRealm(resource);
 
                 handleTransientLocalGroup(resource);
+                if(migrationImporterMap.containsKey(resourceClass)) {
+                    MigrationImporter migrationImporter = migrationImporterMap.get(resourceClass);
+                    log.info("Found migration importer for class {} as {}", resourceClass.getCanonicalName(),
+                            migrationImporter.getClass().getCanonicalName());
+                    migrationImporter.process(resource);
+                }
 
                 migrationRepository.saveOrUpdate(resource);
 
@@ -132,7 +147,7 @@ public class MigrationExecutor {
                 jsonGenerator.setPrettyPrinter(new DefaultPrettyPrinter());
             }
 
-            Map<Short, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = migrationOrderInfoProvider.getMigrationOrderMap();
+            Map<Short, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = migrationHelperClassesInfoProvider.getMigrationOrderMap();
 
             jsonGenerator.writeStartArray();
             Set<Short> keys = migrationOrderMap.keySet();
@@ -241,7 +256,7 @@ public class MigrationExecutor {
             while (databasePropertiesIterator.hasNext()) {
                 JsonNode databaseProperties = databasePropertiesIterator.next();
                 String key = databaseProperties.get("resourceKey").asText();
-                String value = databaseProperties.get("value").asText();
+                String value = databaseProperties.get("value") == null ? null : databaseProperties.get("value").asText();
                 log.info("Recieved database property as {} and {}", key, value);
                 databasePropertiesMap.put(key, value);
             }
@@ -250,7 +265,7 @@ public class MigrationExecutor {
             for (DatabaseProperty databaseProperty : databasePropertyList) {
                 String key = databaseProperty.getResourceKey();
                 String value = databasePropertiesMap.get(key);
-                if(value != null) {
+                if(databasePropertiesMap.containsKey(key)) {
                     databaseProperty.setValue(value);
                     databasePropertiesMap.remove(key);
                 }
