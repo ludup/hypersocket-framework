@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @MappedSuperclass
-
 @JsonIgnoreProperties(ignoreUnknown=true)
 public abstract class AbstractEntity<T> implements Serializable{
 
