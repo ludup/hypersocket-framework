@@ -36,18 +36,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.ConfigurableMimeFileTypeMap;
 
+import com.hypersocket.server.HypersocketServer;
+
 public class HypersocketServletContext implements ServletContext {
 
-	String contextPath;
 	Map<String,Object> attributes = new HashMap<String,Object>();
 	static Logger log = LoggerFactory.getLogger(HypersocketServletContext.class);
 	ConfigurableMimeFileTypeMap mimeTypesMap = new ConfigurableMimeFileTypeMap();
 	Properties initParameters;
 	List<HypersocketServletConfig> configs = new ArrayList<>();
-	
-	public HypersocketServletContext(String contextPath) {
+	HypersocketServer server;
+	public HypersocketServletContext(HypersocketServer server) {
 		initParameters = new Properties();
-		this.contextPath = contextPath;
+		this.server = server;
 	}
 	
 	public List<HypersocketServletConfig> getServletConfigs() {
@@ -59,7 +60,7 @@ public class HypersocketServletContext implements ServletContext {
 	}
 	
 	public String getContextPath() {
-		return contextPath;
+		return server.getBasePath();
 	}
 
 	public ServletContext getContext(String uripath) {

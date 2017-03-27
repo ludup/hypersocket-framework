@@ -130,7 +130,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	
 	@PostConstruct
 	private void setup() {
-	    servletContext = new HypersocketServletContext(getBasePath());
+	    servletContext = new HypersocketServletContext(this);
 	}
 	
 	@Override
@@ -631,13 +631,20 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		}
 		if(event instanceof ConfigurationValueChangedEvent) {
 			ConfigurationValueChangedEvent configEvent = (ConfigurationValueChangedEvent) event;
-			if(configEvent.getResourceKey().equals("ssl.ciphers") || configEvent.getResourceKey().equals("ssl.protocols")) {
+			if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.ciphers") 
+					|| configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.protocols")) {
 				rebuildEnabledCipherSuites();
 			}
-			if(configEvent.getResourceKey().equals("application.path")) {
+			if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("application.path")) {
 				System.setProperty("hypersocket.appPath", getBasePath());
-			} else if(configEvent.getResourceKey().equals("ui.path")) {
+				if(log.isInfoEnabled()) {
+					log.info(String.format("Application path changed to %s", getBasePath()));
+				}
+			} else if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ui.path")) {
 				System.setProperty("hypersocket.uiPath", getUiPath());
+				if(log.isInfoEnabled()) {
+					log.info(String.format("UI path changed to %s", getUiPath()));
+				}
 			}
 			
 		}

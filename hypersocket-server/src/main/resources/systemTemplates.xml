@@ -8,11 +8,11 @@
 		type="com.hypersocket.properties.BlockedIPConfigurationStore">
 	</propertyStore>
 	<propertyCategory resourceKey="category.server" resourceBundle="HypersocketServer" weight="0">
-		<property resourceKey="application.name" inputType="text"
+		<property resourceKey="application.name" inputType="text" refreshUserInterface="true"
 			restart="true" defaultValue="Hypersocket" weight="0" alphaNumericSpacesOnly="true"/>
-		<property resourceKey="application.path" inputType="text"
+		<property resourceKey="application.path" inputType="text" refreshUserInterface="true"
 			restart="true" defaultValue="hypersocket" weight="100" />
-		<property resourceKey="ui.path" inputType="text" restart="true"
+		<property resourceKey="ui.path" inputType="text" refreshUserInterface="true"
 			defaultValue="ui" weight="200" />
 		<property resourceKey="http.port" inputType="hidden" minValue="1"
 			maxValue="65535" restart="true" defaultValue="80" weight="300"
