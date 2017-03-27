@@ -160,13 +160,11 @@ public class LogonController extends AuthenticatedController {
 
 
 		try {
-			boolean createdState = false;
 			if (state == null
 					|| (!StringUtils.isEmpty(scheme) && !state.getScheme()
 							.getResourceKey().equals(scheme))) {
 				// We have not got login state so create
 				state = createAuthenticationState(scheme, request, response, getCurrentRealm());
-				createdState = true;
 			}
 
 			String redirectHome = (String) request.getSession().getAttribute("redirectHome");
@@ -175,16 +173,8 @@ public class LogonController extends AuthenticatedController {
 				request.getSession().removeAttribute("redirectHome");
 			}
 			
-			boolean success = false;
-			
-			/* BPS - This is a work around. Something has changed that means the local API authentication never gets
-			 * called. I have hard coded the test for authkey here, but surely this should be determined some other
-			 * way.  
-			 */
-			if(request.getParameterMap().size() > 1 || !createdState ||  request.getHeader("Authorization") != null || request.getParameterMap().containsKey("authkey")) {
-				success = authenticationService.logon(state,
+			boolean success = authenticationService.logon(state,
 					decodeParameters(request.getParameterMap()));
-			}
 			
 			if(state.getSession()!=null) {
 				attachSession(state.getSession(), request, response);
