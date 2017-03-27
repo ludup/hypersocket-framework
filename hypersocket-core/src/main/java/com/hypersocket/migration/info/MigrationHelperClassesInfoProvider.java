@@ -24,7 +24,7 @@ public class MigrationHelperClassesInfoProvider {
     ApplicationContext applicationContext;
 
     private Map<Short, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = new TreeMap<>();
-    private Map<String, MigrationImporter> migrationImporterMap = new HashMap<>();
+    private Map<Class<?>, MigrationImporter> migrationImporterMap = new HashMap<>();
 
     @PostConstruct
     private void postConstruct() {
@@ -35,7 +35,7 @@ public class MigrationHelperClassesInfoProvider {
         return Collections.unmodifiableMap(migrationOrderMap);
     }
 
-    public Map<String, MigrationImporter> getMigrationImporterMap() {
+    public Map<Class<?>, MigrationImporter> getMigrationImporterMap() {
         return Collections.unmodifiableMap(migrationImporterMap);
     }
 
@@ -55,7 +55,7 @@ public class MigrationHelperClassesInfoProvider {
                     migrationOrderMap.put(instance.sortOrder(), instance.getOrderList());
                 } else if (MigrationImporter.class.isAssignableFrom(aClass)) {
                     MigrationImporter instance = (MigrationImporter) applicationContext.getBean(aClass.getCanonicalName());
-                    migrationImporterMap.put(className, instance);
+                    migrationImporterMap.put(instance.getType(), instance);
                 }
             }
         }catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {

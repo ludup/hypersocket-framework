@@ -63,7 +63,7 @@ public class MigrationExecutor {
     @Autowired
     MigrationHelperClassesInfoProvider migrationHelperClassesInfoProvider;
 
-    private Map<String, MigrationImporter> migrationImporterMap;
+    private Map<Class<?>, MigrationImporter> migrationImporterMap;
 
     @PostConstruct
     private void postConstruct() {
@@ -114,9 +114,8 @@ public class MigrationExecutor {
                 migrationUtil.fillInRealm(resource);
 
                 handleTransientLocalGroup(resource);
-
-                if(migrationImporterMap.containsKey(resourceClass.getCanonicalName())) {
-                    MigrationImporter migrationImporter = migrationImporterMap.get(resourceClass.getCanonicalName());
+                if(migrationImporterMap.containsKey(resourceClass)) {
+                    MigrationImporter migrationImporter = migrationImporterMap.get(resourceClass);
                     log.info("Found migration importer for class {} as {}", resourceClass.getCanonicalName(),
                             migrationImporter.getClass().getCanonicalName());
                     migrationImporter.process(resource);
