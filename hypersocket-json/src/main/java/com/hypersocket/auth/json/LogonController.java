@@ -177,7 +177,11 @@ public class LogonController extends AuthenticatedController {
 			
 			boolean success = false;
 			
-			if(request.getParameterMap().size() > 1 || !createdState ||  request.getHeader("Authorization") != null) {
+			/* BPS - This is a work around. Something has changed that means the local API authentication never gets
+			 * called. I have hard coded the test for authkey here, but surely this should be determined some other
+			 * way.  
+			 */
+			if(request.getParameterMap().size() > 1 || !createdState ||  request.getHeader("Authorization") != null || request.getParameterMap().containsKey("authkey")) {
 				success = authenticationService.logon(state,
 					decodeParameters(request.getParameterMap()));
 			}
