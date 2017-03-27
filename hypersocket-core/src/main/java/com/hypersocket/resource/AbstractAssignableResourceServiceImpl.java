@@ -16,6 +16,9 @@ import com.hypersocket.session.Session;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.transactions.TransactionCallbackWithError;
 import com.hypersocket.transactions.TransactionService;
+
+import org.apache.commons.lang3.StringUtils;
+import org.aspectj.apache.bcel.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -473,6 +476,24 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		assertPrincipalAssignment(resource, getReadPermission());
 		
 		return resource;
+	}
+	public T getAssignedResourceByName(String name) throws ResourceNotFoundException, AccessDeniedException {
+		return getAssignedResourceByName(name, getCurrentPrincipal());
+	}
+	
+	public T getAssignedResourceByName(String name, Principal principal) throws ResourceNotFoundException, AccessDeniedException {
+		
+		if(StringUtils.isBlank(name)) {
+			throw new ResourceNotFoundException(getResourceBundle(),
+					"error.invalidResourceName", name);
+		}
+		
+		Collection<T> resources = getRepository().getAssignedResources(name, realmService.getAssociatedPrincipals(principal));
+		if(resources.isEmpty()) {
+			throw new ResourceNotFoundException(getResourceBundle(),
+					"error.invalidResourceName", name);
+		}
+		return resources.iterator().next();
 	}
 	
 	@Override

@@ -65,6 +65,8 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	Collection<T> getAssignedResources(List<Principal> principals, CriteriaConfiguration... configs);
 
+	Collection<T> getAssignedResources(String name, List<Principal> principals, CriteriaConfiguration... configs);
+
 	Collection<T> getAssignedResources(Role role, CriteriaConfiguration... configs);
 
 	long getResourceByRoleCount(Realm realm, Role... roles);
@@ -77,4 +79,5 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	void removeAssignments(Role role);
 
+	
 }

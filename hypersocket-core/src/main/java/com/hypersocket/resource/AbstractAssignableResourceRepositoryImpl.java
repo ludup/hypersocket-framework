@@ -97,14 +97,24 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)
 	public Collection<T> getAssignedResources(List<Principal> principals, CriteriaConfiguration... configs) {
+		return getAssignedResources("", principals, configs);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly=true)
+	public Collection<T> getAssignedResources(String name, List<Principal> principals, CriteriaConfiguration... configs) {
 
 		
 		Criteria criteria = createCriteria(getResourceClass());
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		
+		if(StringUtils.isNotBlank(name)) {
+			criteria.add(Restrictions.eq("name", name));
+		}
 		
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria.add(Restrictions.eq("deleted", false));
@@ -127,6 +137,10 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		
+		if(StringUtils.isNotBlank(name)) {
+			criteria.add(Restrictions.eq("name", name));
+		}
+		
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria.add(Restrictions.eq("deleted", false));
 		
@@ -141,7 +155,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		
 		results.addAll((List<T>) criteria.list());
 		
-		processAdditionalAssignedResourceResults(results, principals.get(0).getRealm(), "", "name", principals);
+		processAdditionalAssignedResourceResults(results, principals.get(0).getRealm(), name, "name", principals);
 		
 		return results;
 	}
