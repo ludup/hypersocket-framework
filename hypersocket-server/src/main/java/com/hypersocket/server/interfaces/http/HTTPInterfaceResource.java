@@ -12,9 +12,6 @@ import com.hypersocket.server.interfaces.InterfaceResource;
 @Table(name="http_interfaces")
 public class HTTPInterfaceResource extends InterfaceResource {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 7449184297753501756L;
 
 	@Column(name="protocol")
