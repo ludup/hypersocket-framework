@@ -11,10 +11,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
-import javax.mail.Message.RecipientType;
 
 import org.codemonkey.simplejavamail.MailException;
-import org.codemonkey.simplejavamail.Recipient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -340,8 +338,8 @@ public class MessageResourceServiceImpl extends
 		List<RecipientHolder> recipients = new ArrayList<RecipientHolder>();
 		for(Principal principal : principals) {
 			try {
-				recipients.add(new RecipientHolder(new Recipient(principal.getPrincipalDescription(), 
-						realmService.getPrincipalAddress(principal, MediaType.EMAIL), RecipientType.TO), principal));
+				recipients.add(new RecipientHolder(principal, 
+						realmService.getPrincipalAddress(principal, MediaType.EMAIL)));
 			} catch (MediaNotFoundException e) {
 				
 			}
