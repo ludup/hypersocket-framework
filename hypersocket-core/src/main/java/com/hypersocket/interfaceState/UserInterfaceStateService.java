@@ -12,15 +12,22 @@ public interface UserInterfaceStateService {
 
 	UserInterfaceState getStateByName(String name) throws AccessDeniedException;
 	
-	public UserInterfaceState getStateByName(String name, Realm realm);
+	UserInterfaceState getStateByName(String name, Realm realm);
+	
+	Collection<UserInterfaceState> getStateStartsWith(String name, Realm realm);
 	
 	UserInterfaceState getStateByName(String name, boolean specific) throws AccessDeniedException;
+	
+	UserInterfaceState getStateByName(Principal principal, String name);
 
 	UserInterfaceState updateState(UserInterfaceState newState,
 			String preferences) throws AccessDeniedException;
 
 	UserInterfaceState createState(Principal principal, String preferences,
 			String name) throws AccessDeniedException;
+	
+	public UserInterfaceState createState(Principal principal,
+			String preferences, String name, Realm realm) throws AccessDeniedException;
 
 	Collection<UserInterfaceState> getStates(String[] resources, boolean specific)
 			throws AccessDeniedException;

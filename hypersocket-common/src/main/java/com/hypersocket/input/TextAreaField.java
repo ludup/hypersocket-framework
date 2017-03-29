@@ -7,6 +7,10 @@
  ******************************************************************************/
 package com.hypersocket.input;
 
-public enum InputFieldType {
-	text, textarea, password, select, hidden, p, a, script, div, pre, img, checkbox;
+public class TextAreaField extends InputField {
+
+	public TextAreaField(String resourceKey, String defaultValue, boolean required,
+			String label) {
+		super(InputFieldType.textarea, resourceKey, defaultValue, required, label);
+	}
 }
