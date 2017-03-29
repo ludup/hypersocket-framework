@@ -487,25 +487,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		
 		return resource;
 	}
-	public T getAssignedResourceByName(String name) throws ResourceNotFoundException, AccessDeniedException {
-		return getAssignedResourceByName(name, getCurrentPrincipal());
-	}
-	
-	public T getAssignedResourceByName(String name, Principal principal) throws ResourceNotFoundException, AccessDeniedException {
-		
-		if(StringUtils.isBlank(name)) {
-			throw new ResourceNotFoundException(getResourceBundle(),
-					"error.invalidResourceName", name);
-		}
-		
-		Collection<T> resources = getRepository().getAssignedResources(name, realmService.getAssociatedPrincipals(principal));
-		if(resources.isEmpty()) {
-			throw new ResourceNotFoundException(getResourceBundle(),
-					"error.invalidResourceName", name);
-		}
-		return resources.iterator().next();
-	}
-	
+
 	@Override
 	public T getPersonalResourceByName(String name) throws ResourceNotFoundException, AccessDeniedException {
 		return getPersonalResourceByName(name, getCurrentPrincipal());

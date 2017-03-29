@@ -184,10 +184,10 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 		criteria.add(Restrictions.eq("realm", principal.getRealm()));
 		criteria.add(Restrictions.eq("deleted", false));
-		criteria.add(Restrictions.eq("personal", true));
-		criteria = criteria.createCriteria("roles");
-		criteria.add(Restrictions.eq("personalRole", true));
-		criteria.add(Restrictions.in("principals", Arrays.asList(principal.getId())));
+
+//		criteria = criteria.createCriteria("roles");
+//		criteria.add(Restrictions.eq("personalRole", true));
+//		criteria.add(Restrictions.in("principals", Arrays.asList(principal.getId())));
 		
 		return (T) criteria.uniqueResult();
 	}
