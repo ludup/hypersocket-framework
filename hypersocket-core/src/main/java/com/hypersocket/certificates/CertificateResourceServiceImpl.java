@@ -491,6 +491,28 @@ public class CertificateResourceServiceImpl extends
 	}
 
 	@Override
+	public CertificateResource importPrivateKey(InputStream key,
+			String passphrase, InputStream file, InputStream bundle)
+			throws ResourceCreationException, InvalidPassphraseException {
+
+		CertificateResource resource = new CertificateResource();
+
+		try {
+
+			doInternalPrivateKey(resource, key, passphrase, file, bundle);
+			resource.setRealm(getCurrentRealm());
+			createResource(resource, new HashMap<String, String>());
+			return resource;
+		} catch (CertificateException | IOException | FileFormatException
+				| MismatchedCertificateException | AccessDeniedException e) {
+			log.error("Failed to generate certificate", e);
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"error.certificateError", e.getMessage());
+		}
+
+	}
+	
+	@Override
 	public CertificateResource importPrivateKey(MultipartFile key,
 			String passphrase, MultipartFile file, MultipartFile bundle)
 			throws ResourceCreationException, InvalidPassphraseException {

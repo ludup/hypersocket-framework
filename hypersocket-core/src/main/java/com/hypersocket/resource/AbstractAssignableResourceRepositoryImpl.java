@@ -8,7 +8,6 @@
 package com.hypersocket.resource;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -97,14 +96,24 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)
 	public Collection<T> getAssignedResources(List<Principal> principals, CriteriaConfiguration... configs) {
+		return getAssignedResources("", principals, configs);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly=true)
+	public Collection<T> getAssignedResources(String name, List<Principal> principals, CriteriaConfiguration... configs) {
 
 		
 		Criteria criteria = createCriteria(getResourceClass());
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		
+		if(StringUtils.isNotBlank(name)) {
+			criteria.add(Restrictions.eq("name", name));
+		}
 		
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria.add(Restrictions.eq("deleted", false));
@@ -127,6 +136,10 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		
+		if(StringUtils.isNotBlank(name)) {
+			criteria.add(Restrictions.eq("name", name));
+		}
+		
 		criteria.add(Restrictions.eq("realm", principals.get(0).getRealm()));
 		criteria.add(Restrictions.eq("deleted", false));
 		
@@ -141,7 +154,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		
 		results.addAll((List<T>) criteria.list());
 		
-		processAdditionalAssignedResourceResults(results, principals.get(0).getRealm(), "", "name", principals);
+		processAdditionalAssignedResourceResults(results, principals.get(0).getRealm(), name, "name", principals);
 		
 		return results;
 	}
@@ -170,10 +183,10 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 		criteria.add(Restrictions.eq("realm", principal.getRealm()));
 		criteria.add(Restrictions.eq("deleted", false));
-		criteria.add(Restrictions.eq("personal", true));
-		criteria = criteria.createCriteria("roles");
-		criteria.add(Restrictions.eq("personalRole", true));
-		criteria.add(Restrictions.in("principals", Arrays.asList(principal.getId())));
+
+//		criteria = criteria.createCriteria("roles");
+//		criteria.add(Restrictions.eq("personalRole", true));
+//		criteria.add(Restrictions.in("principals", Arrays.asList(principal.getId())));
 		
 		return (T) criteria.uniqueResult();
 	}

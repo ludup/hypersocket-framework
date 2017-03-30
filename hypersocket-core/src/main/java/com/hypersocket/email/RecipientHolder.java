@@ -5,31 +5,33 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.codemonkey.simplejavamail.Recipient;
 
 import com.hypersocket.realm.Principal;
 
 public class RecipientHolder {
 
-	Recipient recipient;
+	String name;
+	String email;
 	Principal principal;
 	
 	static Set<String> salutations = new HashSet<String>(Arrays.asList("MR", "MS", "MRS", "DR", "PROF"));
-	public RecipientHolder(Recipient recipient) {
-		this.recipient = recipient;
+	public RecipientHolder(String name, String email) {
+		this.name = name;
+		this.email = email;
 	}
 	
-	public RecipientHolder(Recipient recipient, Principal principal) {
-		this.recipient = recipient;
+	public RecipientHolder(Principal principal, String email) {
+		this.name = principal.getPrincipalDescription();
+		this.email = email;
 		this.principal = principal;
 	}
 	
 	public String getEmail() {
-		return recipient.getAddress();
+		return email;
 	}
 	
 	public String getName() {
-		return recipient.getName()!=null ? recipient.getName() : "";
+		return name==null ? "" : name;
 	}
 	
 	public String getFirstName() {

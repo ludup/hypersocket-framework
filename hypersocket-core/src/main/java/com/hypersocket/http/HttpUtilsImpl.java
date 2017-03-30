@@ -54,7 +54,6 @@ import org.springframework.stereotype.Component;
 import com.hypersocket.certificates.CertificateVerificationException;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.properties.ResourceUtils;
-import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.utils.HttpUtils;
 import com.hypersocket.utils.HttpUtilsHolder;

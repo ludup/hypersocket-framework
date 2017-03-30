@@ -22,7 +22,7 @@ public abstract class FileContentHandler extends ContentHandlerImpl {
 
 	static Logger log = LoggerFactory.getLogger(FileContentHandler.class);
 	
-	List<File> baseDirs = new ArrayList<File>();
+	protected List<File> baseDirs = new ArrayList<File>();
 	
 	public FileContentHandler(String name, int priority, File baseDir) {
 		super(name, priority);

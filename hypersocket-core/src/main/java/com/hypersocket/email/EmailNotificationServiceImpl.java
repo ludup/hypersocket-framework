@@ -11,11 +11,10 @@ import javax.mail.Message.RecipientType;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
-import org.codemonkey.simplejavamail.Email;
 import org.codemonkey.simplejavamail.MailException;
 import org.codemonkey.simplejavamail.Mailer;
-import org.codemonkey.simplejavamail.Recipient;
 import org.codemonkey.simplejavamail.TransportStrategy;
+import org.codemonkey.simplejavamail.email.Email;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -323,8 +322,8 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		
 		if(principal!=null) {
 			try {
-				recipients.add(new RecipientHolder(new Recipient(principal.getPrincipalDescription(), 
-					realmService.getPrincipalAddress(principal, MediaType.EMAIL), RecipientType.TO), principal));
+				recipients.add(new RecipientHolder(principal,
+					realmService.getPrincipalAddress(principal, MediaType.EMAIL)));
 				return;
 			} catch (MediaNotFoundException e) {
 				log.error("Could not find email address for " + val, e);
@@ -332,7 +331,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		}
 		
 		if(Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, val)) {
-			recipients.add(new RecipientHolder(new Recipient("", val, RecipientType.TO)));
+			recipients.add(new RecipientHolder("", val));
 			return;
 		}
 		throw new ValidationException(val

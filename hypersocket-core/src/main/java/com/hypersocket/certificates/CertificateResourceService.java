@@ -48,6 +48,10 @@ public interface CertificateResourceService extends
 	CertificateResource importPrivateKey(MultipartFile key, String passphrase,
 			MultipartFile file, MultipartFile bundle)
 			throws ResourceCreationException, InvalidPassphraseException;
+	
+	CertificateResource importPrivateKey(InputStream key, String passphrase,
+			InputStream file, InputStream bundle)
+			throws ResourceCreationException, InvalidPassphraseException;
 
 	CertificateResource importPfx(MultipartFile key, String passphrase) throws ResourceCreationException, AccessDeniedException;
 

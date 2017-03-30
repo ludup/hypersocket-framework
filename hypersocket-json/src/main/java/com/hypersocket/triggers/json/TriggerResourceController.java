@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.json.AuthenticationRequired;
+import com.hypersocket.auth.json.AuthenticationRequiredButDontTouchSession;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
@@ -569,7 +570,7 @@ public class TriggerResourceController extends AbstractTriggerController {
 		}
 	}
 
-	@AuthenticationRequired
+	@AuthenticationRequiredButDontTouchSession
 	@RequestMapping(value = "triggers/image/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
 	public void downloadTemplateImage(HttpServletRequest request,

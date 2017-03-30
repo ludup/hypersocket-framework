@@ -1,5 +1,7 @@
 package com.hypersocket.interfaceState;
 
+import java.util.Collection;
+
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
 
@@ -15,4 +17,6 @@ public interface UserInterfaceStateRepository extends
 
 	UserInterfaceState getState(String name, String resourceCategory,
 			Realm realm);
+	
+	Collection<UserInterfaceState> getStateStartsWith(final String name, final String resourceCategory, final Realm realm);
 }

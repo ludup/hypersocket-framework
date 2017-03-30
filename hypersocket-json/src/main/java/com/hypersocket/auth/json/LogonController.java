@@ -160,13 +160,11 @@ public class LogonController extends AuthenticatedController {
 
 
 		try {
-			boolean createdState = false;
 			if (state == null
 					|| (!StringUtils.isEmpty(scheme) && !state.getScheme()
 							.getResourceKey().equals(scheme))) {
 				// We have not got login state so create
 				state = createAuthenticationState(scheme, request, response, getCurrentRealm());
-				createdState = true;
 			}
 
 			String redirectHome = (String) request.getSession().getAttribute("redirectHome");
@@ -175,12 +173,8 @@ public class LogonController extends AuthenticatedController {
 				request.getSession().removeAttribute("redirectHome");
 			}
 			
-			boolean success = false;
-			
-			if(request.getParameterMap().size() > 1 || !createdState ||  request.getHeader("Authorization") != null) {
-				success = authenticationService.logon(state,
+			boolean success = authenticationService.logon(state,
 					decodeParameters(request.getParameterMap()));
-			}
 			
 			if(state.getSession()!=null) {
 				attachSession(state.getSession(), request, response);
