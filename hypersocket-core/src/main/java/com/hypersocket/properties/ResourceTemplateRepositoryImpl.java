@@ -714,6 +714,14 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		 * submissions and provide last defense against bad client submitting
 		 * invalid values
 		 */
+		
+		if(StringUtils.isBlank(value)) {
+			/**
+			 * Will use default value;
+			 */
+			return;
+		}
+		
 		if(template.getAttributes().containsKey("inputType")) {
 			
 			String inputType = template.getAttributes().get("inputType");
