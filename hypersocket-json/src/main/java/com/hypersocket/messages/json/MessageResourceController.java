@@ -59,8 +59,7 @@ public class MessageResourceController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 			return new ResourceList<MessageResource>(
-					resourceService.getResources(sessionUtils
-							.getCurrentRealm(request)));
+					resourceService.getResources(getCurrentRealm()));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -111,7 +110,7 @@ public class MessageResourceController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.searchResources(
-									sessionUtils.getCurrentRealm(request),
+									getCurrentRealm(),
 									searchColumn, searchPattern, start, length, sorting);
 						}
 
@@ -120,7 +119,7 @@ public class MessageResourceController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.getResourceCount(
-									sessionUtils.getCurrentRealm(request),
+									getCurrentRealm(),
 									searchColumn, searchPattern);
 						}
 					});
@@ -199,7 +198,7 @@ public class MessageResourceController extends ResourceController {
 
 			MessageResource newResource;
 
-			Realm realm = sessionUtils.getCurrentRealm(request);
+			Realm realm = getCurrentRealm();
 
 			Map<String, String> properties = new HashMap<String, String>();
 			for (PropertyItem i : resource.getProperties()) {

@@ -75,8 +75,7 @@ public class BrowserLaunchableController extends BootstrapTableController<Void> 
 		try {
 			ResourceList<BrowserLaunchable> list = new ResourceList<BrowserLaunchable>(
 					new HashMap<String,String>(),
-					resourceService.getPersonalResources(sessionUtils
-							.getPrincipal(request)));
+					resourceService.getPersonalResources(getCurrentPrincipal()));
 			list.getProperties().put(
 					"authCode",
 					sessionService.createSessionToken(
@@ -114,7 +113,7 @@ public class BrowserLaunchableController extends BootstrapTableController<Void> 
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.searchPersonalResources(
-									sessionUtils.getPrincipal(request),
+									getCurrentPrincipal(),
 									searchPattern, start, length, sorting);
 						}
 
@@ -123,7 +122,7 @@ public class BrowserLaunchableController extends BootstrapTableController<Void> 
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.getPersonalResourceCount(
-									sessionUtils.getPrincipal(request),
+									getCurrentPrincipal(),
 									searchPattern);
 						}
 					});

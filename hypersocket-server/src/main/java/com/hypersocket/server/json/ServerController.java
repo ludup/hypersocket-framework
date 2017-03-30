@@ -82,7 +82,7 @@ public class ServerController extends AuthenticatedController {
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		
-		permissionService.verifyPermission(sessionUtils.getPrincipal(request),
+		permissionService.verifyPermission(getCurrentPrincipal(),
 				PermissionStrategy.INCLUDE_IMPLIED,
 				SystemPermission.SYSTEM_ADMINISTRATION);
 
@@ -101,7 +101,7 @@ public class ServerController extends AuthenticatedController {
 			HttpServletResponse response, @PathVariable Long delay)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		permissionService.verifyPermission(sessionUtils.getPrincipal(request),
+		permissionService.verifyPermission(getCurrentPrincipal(),
 				PermissionStrategy.INCLUDE_IMPLIED,
 				SystemPermission.SYSTEM_ADMINISTRATION);
 
@@ -121,7 +121,7 @@ public class ServerController extends AuthenticatedController {
 			throws AccessDeniedException, UnauthorizedException {
 
 		permissionService.verifyPermission(
-				getSessionUtils().getPrincipal(request),
+				getCurrentPrincipal(),
 				PermissionStrategy.INCLUDE_IMPLIED,
 				ConfigurationPermission.READ);
 
@@ -159,7 +159,7 @@ public class ServerController extends AuthenticatedController {
 			throws AccessDeniedException, UnauthorizedException {
 
 		permissionService.verifyPermission(
-				getSessionUtils().getPrincipal(request),
+				getCurrentPrincipal(),
 				PermissionStrategy.INCLUDE_IMPLIED,
 				ConfigurationPermission.READ);
 		
@@ -180,7 +180,7 @@ public class ServerController extends AuthenticatedController {
 			throws AccessDeniedException, UnauthorizedException {
 
 		permissionService.verifyPermission(
-				getSessionUtils().getPrincipal(request),
+				getCurrentPrincipal(),
 				PermissionStrategy.INCLUDE_IMPLIED,
 				ConfigurationPermission.READ);
 		

@@ -103,7 +103,7 @@ public class ConfigurationController extends AuthenticatedController {
 			Map<String,String> results = new HashMap<String,String>();
 			for(String resourceKey : resources) {
 				results.put(resourceKey, configurationService.getValue(
-						sessionUtils.getCurrentRealm(request), resourceKey));
+						getCurrentRealm(), resourceKey));
 			}
 			
 			return new ResourceStatus<Map<String,String>>(results);

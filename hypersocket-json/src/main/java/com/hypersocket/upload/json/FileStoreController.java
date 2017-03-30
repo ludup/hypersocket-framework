@@ -81,7 +81,7 @@ public class FileStoreController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.searchResources(
-									sessionUtils.getCurrentRealm(request),
+									getCurrentRealm(),
 									searchColumn, searchPattern, start, length, sorting);
 						}
 
@@ -90,7 +90,7 @@ public class FileStoreController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.getResourceCount(
-									sessionUtils.getCurrentRealm(request),
+									getCurrentRealm(),
 									searchColumn, searchPattern);
 						}
 					});
@@ -135,7 +135,7 @@ public class FileStoreController extends ResourceController {
 
 			FileUpload fileUpload;
 
-			Realm realm = sessionUtils.getCurrentRealm(request);
+			Realm realm = getCurrentRealm();
 			fileUpload = resourceService.createFile(file, realm, "upload");
 
 			return new ResourceStatus<FileUpload>(fileUpload, I18N.getResource(

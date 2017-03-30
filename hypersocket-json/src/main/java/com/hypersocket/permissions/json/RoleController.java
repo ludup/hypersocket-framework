@@ -57,7 +57,7 @@ public class RoleController extends ResourceController {
 
 		try {
 			return permissionService.getRoleById(id,
-					sessionUtils.getCurrentRealm(request));
+					getCurrentRealm());
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -77,7 +77,7 @@ public class RoleController extends ResourceController {
 
 		try {
 			return permissionService.getRole(name,
-					sessionUtils.getCurrentRealm(request));
+					getCurrentRealm());
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -135,7 +135,7 @@ public class RoleController extends ResourceController {
 		try {
 
 			Role role = permissionService.getRoleById(id,
-					sessionUtils.getCurrentRealm(request));
+					getCurrentRealm());
 
 			permissionService.deleteRole(role);
 
@@ -163,8 +163,7 @@ public class RoleController extends ResourceController {
 
 		try {
 			return new ResourceList<Role>(
-					permissionService.allRoles(sessionUtils
-							.getCurrentRealm(request)));
+					permissionService.allRoles(getCurrentRealm()));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -245,7 +244,7 @@ public class RoleController extends ResourceController {
 		try {
 
 			Role newRole;
-			Realm realm = sessionUtils.getCurrentRealm(request);
+			Realm realm = getCurrentRealm();
 
 			List<Principal> principals = new ArrayList<Principal>();
 			for (String user : role.getUsers()) {
@@ -306,7 +305,7 @@ public class RoleController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			Realm realm = sessionUtils.getCurrentRealm(request);
+			Realm realm = getCurrentRealm();
 			Role role = permissionService.getRoleById(roleId, realm);
 			Principal principal = realmService.getPrincipalById(userId);
 
@@ -342,7 +341,7 @@ public class RoleController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-				Realm realm = sessionUtils.getCurrentRealm(request);
+				Realm realm = getCurrentRealm();
 				Role role = permissionService.getRoleById(roleId, realm);
 				Principal principal = realmService.getPrincipalById(userId);
 

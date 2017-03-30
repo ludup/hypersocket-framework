@@ -49,8 +49,7 @@ public abstract class AbstractAttributeController<A extends AbstractAttribute<C>
 				sessionUtils.getLocale(request));
 		try {
 			return new ResourceList<A>(
-					service.getResources(sessionUtils
-							.getCurrentRealm(request)));
+					service.getResources(getCurrentRealm()));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -71,7 +70,7 @@ public abstract class AbstractAttributeController<A extends AbstractAttribute<C>
 				@Override
 				public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
 						ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
-					return service.searchResources(sessionUtils.getCurrentRealm(request), searchColumn, searchPattern,
+					return service.searchResources(getCurrentRealm(), searchColumn, searchPattern,
 							start, length, sorting);
 
 				}
@@ -79,7 +78,7 @@ public abstract class AbstractAttributeController<A extends AbstractAttribute<C>
 				@Override
 				public Long getTotalCount(String searchColumn, String searchPattern)
 						throws UnauthorizedException, AccessDeniedException {
-					return service.getResourceCount(sessionUtils.getCurrentRealm(request), searchColumn, searchPattern);
+					return service.getResourceCount(getCurrentRealm(), searchColumn, searchPattern);
 				}
 			});
 		} finally {
