@@ -89,4 +89,19 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
     public List<DatabaseProperty> findAllDatabaseProperties(AbstractResource abstractResource) {
         return realmRepository.getPropertiesForResource(abstractResource);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public <T> T findEntityByLegacyIdInRealm(Class<? extends AbstractResource> aClass, Long legacyId, Realm realm) {
+        Criteria criteria = createCriteria(aClass);
+        criteria.add(Restrictions.eq("legacyId", legacyId));
+        String realmProperty = migrationUtil.getResourceRealmProperty(aClass);
+        if(StringUtils.isNotBlank(realmProperty)) {
+            criteria.add(Restrictions.eq(String.format("%s.id", realmProperty), realm.getId()));
+        }
+
+        return (T) criteria
+                .setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY)
+                .uniqueResult();
+    }
 }

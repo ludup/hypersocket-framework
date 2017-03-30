@@ -1,12 +1,8 @@
 package com.hypersocket.resource;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-
 import com.hypersocket.repository.AbstractEntity;
+
+import javax.persistence.*;
 
 @MappedSuperclass
 public abstract class AbstractResource extends AbstractEntity<Long> {
@@ -16,6 +12,9 @@ public abstract class AbstractResource extends AbstractEntity<Long> {
 	@Column(name="resource_id")
 	Long id;
 
+	@Column(name="legacy_id")
+	Long legacyId;
+
 	public Long getId() {
 		return id;
 	}
@@ -23,5 +22,12 @@ public abstract class AbstractResource extends AbstractEntity<Long> {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
+
+	public Long getLegacyId() {
+		return legacyId == null ? id : legacyId;
+	}
+
+	public void setLegacyId(Long legacyId) {
+		this.legacyId = legacyId;
+	}
 }

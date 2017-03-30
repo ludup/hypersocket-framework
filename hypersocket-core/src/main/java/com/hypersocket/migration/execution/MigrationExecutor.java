@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.hypersocket.local.LocalGroup;
 import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
+import com.hypersocket.migration.exporter.MigrationExporter;
 import com.hypersocket.migration.importer.MigrationImporter;
 import com.hypersocket.migration.info.MigrationHelperClassesInfoProvider;
 import com.hypersocket.migration.lookup.LookUpKey;
@@ -65,9 +66,12 @@ public class MigrationExecutor {
 
     private Map<Class<?>, MigrationImporter> migrationImporterMap;
 
+    private Map<Class<?>, MigrationExporter> migrationExporterMap;
+
     @PostConstruct
     private void postConstruct() {
         migrationImporterMap = migrationHelperClassesInfoProvider.getMigrationImporterMap();
+        migrationExporterMap = migrationHelperClassesInfoProvider.getMigrationExporterMap();
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -154,7 +158,7 @@ public class MigrationExecutor {
             for (Short key : keys) {
                 List<Class<? extends AbstractEntity<Long>>> migrationClasses = migrationOrderMap.get(key);
                 for (Class<? extends AbstractEntity<Long>> aClass : migrationClasses) {
-                    List<AbstractEntity> objectList = migrationRepository.findAllResourceInRealmOfType(aClass, realm);
+                    List<AbstractEntity<Long>> objectList = (List<AbstractEntity<Long>>) migrationRepository.findAllResourceInRealmOfType(aClass, realm);
                     List<MigrationObjectWithMeta> migrationObjectWithMetas = new ArrayList<>();
 
                     for (AbstractEntity abstractEntity : objectList) {
@@ -170,6 +174,16 @@ public class MigrationExecutor {
 
                     ObjectPack objectPack = new ObjectPack(aClass.getCanonicalName(),
                             migrationObjectWithMetas);
+
+                    if(migrationExporterMap.containsKey(aClass)) {
+                        MigrationExporter migrationExporter = migrationExporterMap.get(aClass);
+                        log.info("Found migration importer for class {} as {}", aClass.getCanonicalName(),
+                                migrationExporter.getClass().getCanonicalName());
+                        Map<String, List<Map<String, ?>>> customOperationsMap =
+                                            migrationExporter.produceCustomOperationsMap(realm);
+                        objectPack.setCustomOperationsMap(customOperationsMap);
+                    }
+
                     jsonGenerator.writeObject(objectPack);
                     jsonGenerator.flush();
                 }
@@ -200,6 +214,9 @@ public class MigrationExecutor {
                     importJson(objectPack.get("group").asText(),
                             (ArrayNode) objectPack.get("objectList"),
                             realm);
+                    importCustomOperations(objectPack.get("group").asText(),
+                            objectPack.get("customOperationsMap"),
+                            realm);
                 }
             }
         }catch (IOException e) {
@@ -212,6 +229,21 @@ public class MigrationExecutor {
                     //ignore
                 }
             }
+        }
+    }
+
+    private void importCustomOperations(String group, JsonNode jsonNode, Realm realm) {
+        try {
+            Class resourceClass = MigrationExecutor.class.getClassLoader().loadClass(group);
+
+            if(migrationImporterMap.containsKey(resourceClass)) {
+                MigrationImporter migrationImporter = migrationImporterMap.get(resourceClass);
+                log.info("Found migration importer for class {} as {}", resourceClass.getCanonicalName(),
+                        migrationImporter.getClass().getCanonicalName());
+                migrationImporter.processCustomOperationsMap(jsonNode, realm);
+            }
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 

@@ -34,4 +34,5 @@ public class MigrationObjectWithMeta {
     public void setDatabaseProperties(List<DatabaseProperty> databaseProperties) {
         this.databaseProperties = databaseProperties;
     }
+
 }

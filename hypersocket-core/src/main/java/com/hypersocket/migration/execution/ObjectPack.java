@@ -4,11 +4,13 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hypersocket.migration.helper.MigrationDeserializer;
 
 import java.util.List;
+import java.util.Map;
 
 public class ObjectPack {
 
     private String group;
     private List<MigrationObjectWithMeta> objectList;
+    private Map<String, List<Map<String, ?>>> customOperationsMap;
 
     public ObjectPack() {}
 
@@ -32,5 +34,13 @@ public class ObjectPack {
 
     public void setObjectList(List<MigrationObjectWithMeta> objectList) {
         this.objectList = objectList;
+    }
+
+    public Map<String, List<Map<String, ?>>> getCustomOperationsMap() {
+        return customOperationsMap;
+    }
+
+    public void setCustomOperationsMap(Map<String, List<Map<String, ?>>> customOperationsMap) {
+        this.customOperationsMap = customOperationsMap;
     }
 }
