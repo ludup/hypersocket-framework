@@ -337,12 +337,8 @@ public class MessageResourceServiceImpl extends
 		
 		List<RecipientHolder> recipients = new ArrayList<RecipientHolder>();
 		for(Principal principal : principals) {
-			try {
-				recipients.add(new RecipientHolder(principal, 
-						realmService.getPrincipalAddress(principal, MediaType.EMAIL)));
-			} catch (MediaNotFoundException e) {
-				
-			}
+			recipients.add(new RecipientHolder(principal, 
+					principal.getEmail()));
 		}
 		
 		List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();

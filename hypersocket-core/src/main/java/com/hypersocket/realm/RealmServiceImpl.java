@@ -1841,11 +1841,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public String getPrincipalEmail(Principal principal) {
-		try {
-			return getPrincipalAddress(principal, MediaType.EMAIL);
-		} catch (MediaNotFoundException e) {
-			return "";
-		}
+		return principal.getEmail();
 	}
 
 	@Override

@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.local;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,6 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalStatus;
 import com.hypersocket.realm.PrincipalType;
 
 @Entity
@@ -47,6 +49,10 @@ public class LocalGroup extends Principal {
 		return PrincipalType.GROUP;
 	}
 	
+	public PrincipalStatus getPrincipalStatus() {
+		return PrincipalStatus.ENABLED;
+	}
+	
 	public String getIcon() {
 		return "fa-database";
 	}
@@ -58,6 +64,10 @@ public class LocalGroup extends Principal {
 	@JsonIgnore
 	public Set<LocalUser> getUsers() {
 		return users;
+	}
+	
+	public String getEmail() {
+		return "";
 	}
 	
 	@JsonIgnore
@@ -72,5 +82,10 @@ public class LocalGroup extends Principal {
 
 	public String getRealmModule() {
 		return LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY;
+	}
+
+	@Override
+	public Date getExpires() {
+		return null;
 	}
 }

@@ -144,11 +144,7 @@ public class UserVariableReplacementServiceImpl implements UserVariableReplaceme
 			if(name.equals("principalName")) {
 				return source.getPrincipalName();
 			} else if(name.equals("currentUser.email")) {
-				try {
-					return realmService.getPrincipalAddress(source, MediaType.EMAIL);
-				} catch (MediaNotFoundException e) {
-					return "";
-				}
+				return source.getEmail();
 			} else if(name.equals("currentUser.phone")) {
 				try {
 					return realmService.getPrincipalAddress(source, MediaType.PHONE);

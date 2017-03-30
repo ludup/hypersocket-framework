@@ -149,12 +149,7 @@ public class TriggerResourceServiceImpl extends
 				new ReplacementVariableProvider() {
 					@Override
 					public String getReplacementValue(String variable) {
-						try {
-							return realmService.getPrincipalAddress(
-									getCurrentPrincipal(), MediaType.EMAIL);
-						} catch (MediaNotFoundException e) {
-							return "";
-						}
+						return 	getCurrentPrincipal().getEmail();
 					}
 				});
 		replacementVariables.put("currentUser.phone",
