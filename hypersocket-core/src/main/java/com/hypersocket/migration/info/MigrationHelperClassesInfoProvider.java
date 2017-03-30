@@ -1,5 +1,6 @@
 package com.hypersocket.migration.info;
 
+import com.hypersocket.migration.exporter.MigrationExporter;
 import com.hypersocket.migration.importer.MigrationImporter;
 import com.hypersocket.migration.order.MigrationOrder;
 import com.hypersocket.repository.AbstractEntity;
@@ -25,6 +26,7 @@ public class MigrationHelperClassesInfoProvider {
 
     private Map<Short, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = new TreeMap<>();
     private Map<Class<?>, MigrationImporter> migrationImporterMap = new HashMap<>();
+    private Map<Class<?>, MigrationExporter> migrationExporterMap = new HashMap<>();
 
     @PostConstruct
     private void postConstruct() {
@@ -39,10 +41,15 @@ public class MigrationHelperClassesInfoProvider {
         return Collections.unmodifiableMap(migrationImporterMap);
     }
 
+    public Map<Class<?>, MigrationExporter> getMigrationExporterMap() {
+        return Collections.unmodifiableMap(migrationExporterMap);
+    }
+
     private void scanForMigrationHelperClasses() {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AssignableTypeFilter(MigrationOrder.class));
         scanner.addIncludeFilter(new AssignableTypeFilter(MigrationImporter.class));
+        scanner.addIncludeFilter(new AssignableTypeFilter(MigrationExporter.class));
 
         final Set<BeanDefinition> classes = scanner.findCandidateComponents("com.hypersocket.migration");
 
@@ -56,6 +63,9 @@ public class MigrationHelperClassesInfoProvider {
                 } else if (MigrationImporter.class.isAssignableFrom(aClass)) {
                     MigrationImporter instance = (MigrationImporter) applicationContext.getBean(aClass.getCanonicalName());
                     migrationImporterMap.put(instance.getType(), instance);
+                } else if (MigrationExporter.class.isAssignableFrom(aClass)) {
+                    MigrationExporter instance = (MigrationExporter) applicationContext.getBean(aClass.getCanonicalName());
+                    migrationExporterMap.put(instance.getType(), instance);
                 }
             }
         }catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {

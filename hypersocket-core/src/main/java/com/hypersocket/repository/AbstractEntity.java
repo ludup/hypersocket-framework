@@ -28,6 +28,9 @@ public abstract class AbstractEntity<T> implements Serializable{
 	private static final long serialVersionUID = -8808550521563073042L;
 
 	public abstract T getId();
+
+	@Column(name="legacy_id")
+	T legacyId;
 	
 	@Column(name="deleted", nullable=false)
 	boolean deleted;
@@ -120,4 +123,12 @@ public abstract class AbstractEntity<T> implements Serializable{
 		return this.getClass().getCanonicalName();
 	}
 
+	@JsonIgnore
+	public T getLegacyId() {
+		return legacyId == null ? getId() : legacyId;
+	}
+
+	public void setLegacyId(T legacyId) {
+		this.legacyId = legacyId;
+	}
 }

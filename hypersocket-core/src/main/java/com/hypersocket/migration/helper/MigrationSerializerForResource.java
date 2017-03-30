@@ -21,6 +21,7 @@ public class MigrationSerializerForResource extends StdSerializer<Resource> {
     public void serialize(Resource value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
         gen.writeStringField("name", value.getName());
+        gen.writeNumberField("legacyId", value.getLegacyId());
         gen.writeStringField("_meta", value._meta());
         gen.writeEndObject();
     }

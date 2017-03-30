@@ -13,7 +13,9 @@ public interface MigrationRepository {
 
     void saveOrUpdate(AbstractEntity resource);
 
-    List<AbstractEntity> findAllResourceInRealmOfType(Class aClass, Realm realm);
+    <T> List<T> findAllResourceInRealmOfType(Class<T> aClass, Realm realm);
 
     List<DatabaseProperty> findAllDatabaseProperties(AbstractResource abstractResource);
+
+    <T> T findEntityByLegacyIdInRealm(Class<? extends AbstractResource> aClass, Long legacyId, Realm realm);
 }

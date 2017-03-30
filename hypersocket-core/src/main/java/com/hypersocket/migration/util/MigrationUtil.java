@@ -7,7 +7,6 @@ import com.hypersocket.migration.lookup.LookUpKey;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntity;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +19,9 @@ import javax.persistence.OneToOne;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class MigrationUtil {
@@ -53,42 +54,56 @@ public class MigrationUtil {
     public LookUpKey captureEntityLookup(JsonNode node) {
         LookUpKey lookUpKey = new LookUpKey();
 
-        String entityName = null;
+        List<String> properties = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
 
-        JsonNode propertyNode = node.get("name");
+        JsonNode propertyNode = node.get("legacyId");
+        if(propertyNode != null) {
+            properties.add("legacyId");
+            values.add(propertyNode.asLong());
+        }
+
+        propertyNode = node.get("name");
         if (propertyNode != null) {
-            entityName = propertyNode.asText();
-            lookUpKey.setProperty("name");
+            properties.add("name");
+            values.add(propertyNode.asText());
         }
 
-        if (StringUtils.isBlank(entityName)) {
-            propertyNode = node.get("resourceKey");
-            if (propertyNode != null) {
-                entityName = propertyNode.asText();
-                lookUpKey.setProperty("resourceKey");
-            }
+        propertyNode = node.get("resourceKey");
+        if (propertyNode != null) {
+            properties.add("resourceKey");
+            values.add(propertyNode.asText());
         }
 
-        lookUpKey.setValue(entityName);
+        //lookUpKey.setValue(value);
 
         //finally bank on id, -1 as we need some key for lookup else program would crash
         //this means here id of -1 just helps code flow, we are not looking actually for any data.
         //just to make code happy, ideally -1 value of id from database would not return any result
         //if there is value for id, we would consider it.
-        if (StringUtils.isBlank(entityName)) {
+        if (properties.isEmpty()) {
             propertyNode = node.get("id");
-            lookUpKey.setProperty("id");
+            properties.add("id");
             if (propertyNode != null && NumberUtils.isNumber(propertyNode.asText())) {
-                lookUpKey.setValue(NumberUtils.createLong(propertyNode.asText()));
+                values.add(NumberUtils.createLong(propertyNode.asText()));
             } else {
-                lookUpKey.setValue(-1l);
+                values.add(-1l);
             }
         }
 
         //so far not needed
         //if we need heavy customization on look up key and value property, may be we will need annotation on class
         //explicitly defining lookup key and value property
-
+        if(properties.size() == 1) {
+            lookUpKey.setProperty(properties.get(0));
+            lookUpKey.setValue(values.get(0));
+        } else if(properties.size() > 1) {
+            lookUpKey.setComposite(true);
+            lookUpKey.setProperties(properties.toArray(new String[0]));
+            lookUpKey.setValues(values.toArray(new Object[0]));
+        } else {
+            throw new IllegalStateException(String.format("Cannot compute lookup for node %s", node));
+        }
 
         return lookUpKey;
     }
