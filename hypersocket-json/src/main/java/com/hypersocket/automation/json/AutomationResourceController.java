@@ -72,7 +72,8 @@ public class AutomationResourceController extends AbstractTriggerController {
 				sessionUtils.getLocale(request));
 		try {
 			return new ResourceList<AutomationResource>(
-					resourceService.getResources(getCurrentRealm()));
+					resourceService.getResources(sessionUtils
+							.getCurrentRealm(request)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -105,7 +106,7 @@ public class AutomationResourceController extends AbstractTriggerController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.searchResources(
-									getCurrentRealm(),
+									sessionUtils.getCurrentRealm(request),
 									searchColumn, searchPattern, start, length, sorting);
 						}
 
@@ -114,7 +115,7 @@ public class AutomationResourceController extends AbstractTriggerController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.getResourceCount(
-									getCurrentRealm(),
+									sessionUtils.getCurrentRealm(request),
 									searchColumn, searchPattern);
 						}
 					});
@@ -238,7 +239,7 @@ public class AutomationResourceController extends AbstractTriggerController {
 
 			AutomationResource newResource;
 
-			Realm realm = getCurrentRealm();
+			Realm realm = sessionUtils.getCurrentRealm(request);
 
 			Map<String, String> properties = new HashMap<String, String>();
 			for (PropertyItem i : resource.getProperties()) {
@@ -286,7 +287,7 @@ public class AutomationResourceController extends AbstractTriggerController {
 
 			AutomationResource parentResource = null;
 			TriggerResource parentTrigger = null;
-			Realm realm = getCurrentRealm();
+			Realm realm = sessionUtils.getCurrentRealm(request);
 			
 			List<TriggerCondition> allConditions = new ArrayList<TriggerCondition>();
 			List<TriggerCondition> anyConditions = new ArrayList<TriggerCondition>();

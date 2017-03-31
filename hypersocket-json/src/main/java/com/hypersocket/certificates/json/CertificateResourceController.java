@@ -115,7 +115,7 @@ public class CertificateResourceController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.searchResources(
-									getCurrentRealm(),
+									sessionUtils.getCurrentRealm(request),
 									searchColumn, searchPattern, start, length, sorting);
 						}
 
@@ -124,7 +124,7 @@ public class CertificateResourceController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.getResourceCount(
-									getCurrentRealm(),
+									sessionUtils.getCurrentRealm(request),
 									searchColumn, searchPattern);
 						}
 					});
@@ -204,7 +204,7 @@ public class CertificateResourceController extends ResourceController {
 
 			CertificateResource newResource;
 
-			Realm realm = getCurrentRealm();
+			Realm realm = sessionUtils.getCurrentRealm(request);
 
 			Map<String, String> properties = new HashMap<String, String>();
 			for (PropertyItem i : resource.getProperties()) {

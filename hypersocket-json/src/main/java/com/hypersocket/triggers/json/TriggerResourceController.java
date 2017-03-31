@@ -95,7 +95,7 @@ public class TriggerResourceController extends AbstractTriggerController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.searchResources(
-									getCurrentRealm(),
+									sessionUtils.getCurrentRealm(request),
 									searchColumn, searchPattern, start, length, sorting);
 						}
 
@@ -104,7 +104,7 @@ public class TriggerResourceController extends AbstractTriggerController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return resourceService.getResourceCount(
-									getCurrentRealm(),
+									sessionUtils.getCurrentRealm(request),
 									searchColumn, searchPattern);
 						}
 					});
@@ -348,7 +348,7 @@ public class TriggerResourceController extends AbstractTriggerController {
 
 			TriggerResource newResource;
 
-			Realm realm = getCurrentRealm();
+			Realm realm = sessionUtils.getCurrentRealm(request);
 
 			List<TriggerCondition> allConditions = new ArrayList<TriggerCondition>();
 			List<TriggerCondition> anyConditions = new ArrayList<TriggerCondition>();

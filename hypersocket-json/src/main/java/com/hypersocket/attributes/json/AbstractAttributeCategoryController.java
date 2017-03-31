@@ -51,7 +51,7 @@ public abstract class AbstractAttributeCategoryController<A extends AbstractAttr
 				@Override
 				public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
 						ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
-					return service.searchResources(getCurrentRealm(), searchColumn, searchPattern,
+					return service.searchResources(sessionUtils.getCurrentRealm(request), searchColumn, searchPattern,
 							start, length, sorting);
 
 				}
@@ -59,7 +59,7 @@ public abstract class AbstractAttributeCategoryController<A extends AbstractAttr
 				@Override
 				public Long getTotalCount(String searchColumn, String searchPattern)
 						throws UnauthorizedException, AccessDeniedException {
-					return service.getResourceCount(getCurrentRealm(), searchColumn, searchPattern);
+					return service.getResourceCount(sessionUtils.getCurrentRealm(request), searchColumn, searchPattern);
 				}
 			});
 		} finally {
@@ -132,7 +132,7 @@ public abstract class AbstractAttributeCategoryController<A extends AbstractAttr
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 		try {
 			List<SelectOption> result = new ArrayList<SelectOption>();
-			for (T category : service.getResources(getCurrentRealm())) {
+			for (T category : service.getResources(sessionUtils.getCurrentRealm(request))) {
 				result.add(new SelectOption(Long.toString(category.getId()), category.getName()));
 			}
 			return new ResourceList<SelectOption>(result);

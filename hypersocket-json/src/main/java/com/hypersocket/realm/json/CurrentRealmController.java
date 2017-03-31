@@ -57,7 +57,8 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return new ResourceList<Principal>(
-					realmService.allGroups(getCurrentRealm()));
+					realmService.allGroups(sessionUtils
+							.getCurrentRealm(request)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -80,7 +81,7 @@ public class CurrentRealmController extends ResourceController {
 			return new ResourceList<Principal>(
 					realmService.getUserGroups(realmService
 							.getPrincipalById(
-									getCurrentRealm(),
+									sessionUtils.getCurrentRealm(request),
 									user, PrincipalType.USER)));
 		} finally {
 			clearAuthenticatedContext();
@@ -101,7 +102,7 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return new ResourceList<Principal>(
-					realmService.allUsers(getCurrentRealm()));
+					realmService.allUsers(sessionUtils.getCurrentRealm(request)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -118,7 +119,7 @@ public class CurrentRealmController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
-		final Realm currentRealm = getCurrentRealm();
+		final Realm currentRealm = sessionUtils.getCurrentRealm(request);
 		final String module = request.getParameter("module");
 
 		try {
@@ -170,7 +171,7 @@ public class CurrentRealmController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
-		final Realm currentRealm = getCurrentRealm();
+		final Realm currentRealm = sessionUtils.getCurrentRealm(request);
 		try {
 			return processDataTablesRequest(request,
 					new BootstrapTablePageProcessor() {
@@ -186,7 +187,7 @@ public class CurrentRealmController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return realmService.searchPrincipals(
-									getCurrentRealm(),
+									sessionUtils.getCurrentRealm(request),
 									PrincipalType.GROUP,
 									currentRealm.getResourceCategory(),
 									searchPattern, start,
@@ -198,7 +199,7 @@ public class CurrentRealmController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return realmService.getSearchPrincipalsCount(
-									getCurrentRealm(),
+									sessionUtils.getCurrentRealm(request),
 									PrincipalType.GROUP, 
 									currentRealm.getResourceCategory(),
 									searchPattern);
@@ -225,7 +226,7 @@ public class CurrentRealmController extends ResourceController {
 			return new ResourceList<Principal>(
 					realmService.getGroupUsers(realmService
 							.getPrincipalById(
-									getCurrentRealm(),
+									sessionUtils.getCurrentRealm(request),
 									group, PrincipalType.GROUP)));
 		} finally {
 			clearAuthenticatedContext();
@@ -248,7 +249,7 @@ public class CurrentRealmController extends ResourceController {
 			return new ResourceList<Principal>(
 					realmService.getGroupGroups(realmService
 							.getPrincipalById(
-									getCurrentRealm(),
+									sessionUtils.getCurrentRealm(request),
 									group, PrincipalType.GROUP)));
 		} finally {
 			clearAuthenticatedContext();
@@ -325,7 +326,7 @@ public class CurrentRealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			Realm realm = getCurrentRealm();
+			Realm realm = sessionUtils.getCurrentRealm(request);
 			return realmService
 					.getPrincipalByName(realm, name, PrincipalType.GROUP);
 		} finally {
@@ -347,7 +348,7 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			Principal principal = realmService.getPrincipalByName(
-					getCurrentRealm(), name,
+					sessionUtils.getCurrentRealm(request), name,
 					PrincipalType.USER);
 			if(principal == null)
 				return new ResourceStatus<Principal>(false, "Not found.");
@@ -372,7 +373,7 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			Principal principal = realmService.getPrincipalById(
-					getCurrentRealm(), id,
+					sessionUtils.getCurrentRealm(request), id,
 					PrincipalType.USER);
 			return new ResourceList<PropertyCategory>(
 					realmService.getUserPropertyTemplates(principal));
@@ -395,7 +396,7 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			Principal principal = realmService.getPrincipalById(
-					getCurrentRealm(), id,
+					sessionUtils.getCurrentRealm(request), id,
 					PrincipalType.GROUP);
 			return new ResourceList<PropertyCategory>(
 					realmService.getGroupPropertyTemplates(principal));
@@ -418,7 +419,8 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return new ResourceList<PropertyCategory>(
-					realmService.getUserProfileTemplates(getCurrentPrincipal()));
+					realmService.getUserProfileTemplates(sessionUtils
+							.getPrincipal(request)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -443,8 +445,8 @@ public class CurrentRealmController extends ResourceController {
 				values.put(item.getId(), item.getValue());
 			}
 
-			realmService.updateProfile(getCurrentRealm(),
-					getCurrentPrincipal(), values);
+			realmService.updateProfile(sessionUtils.getCurrentRealm(request),
+					sessionUtils.getPrincipal(request), values);
 
 			return new RequestStatus(true, I18N.getResource(
 					sessionUtils.getLocale(request),
@@ -469,7 +471,7 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return new ResourceList<String>(
-				realmService.getUserPropertyNames(getCurrentRealm(), null));
+				realmService.getUserPropertyNames(sessionUtils.getCurrentRealm(request), null));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -488,7 +490,7 @@ public class CurrentRealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			Realm realm = getCurrentRealm();
+			Realm realm = sessionUtils.getCurrentRealm(request);
 			return realmService
 					.getPrincipalById(realm, id, PrincipalType.GROUP);
 		} finally {
@@ -509,7 +511,7 @@ public class CurrentRealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			Realm realm = getCurrentRealm();
+			Realm realm = sessionUtils.getCurrentRealm(request);
 			UserUpdate user = new UserUpdate();
 			Principal principal = realmService.getPrincipalById(realm, id,
 					PrincipalType.USER);
@@ -561,7 +563,7 @@ public class CurrentRealmController extends ResourceController {
 
 			return new ResourceStatus<Map<String, String>>(
 					realmService.getUserPropertyValues(
-							getCurrentPrincipal(), variableNames));
+							sessionUtils.getPrincipal(request), variableNames));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -580,12 +582,12 @@ public class CurrentRealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 			Collection<String> names = realmService.getUserVariableNames(
-					getCurrentRealm(),
-					getCurrentPrincipal());
+					sessionUtils.getCurrentRealm(request),
+					sessionUtils.getPrincipal(request));
 			names.add("password");
 			return new ResourceStatus<Map<String, String>>(
 					realmService.getUserPropertyValues(
-							getCurrentPrincipal(),
+							sessionUtils.getPrincipal(request),
 								names.toArray(new String[0])));
 		} finally {
 			clearAuthenticatedContext();
@@ -605,7 +607,7 @@ public class CurrentRealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 
-			Realm realm = getCurrentRealm();
+			Realm realm = sessionUtils.getCurrentRealm(request);
 
 			List<Principal> userPrincipals = new ArrayList<Principal>();
 			for (String user : group.getUsers()) {
@@ -661,7 +663,7 @@ public class CurrentRealmController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			Realm realm = getCurrentRealm();
+			Realm realm = sessionUtils.getCurrentRealm(request);
 			Principal group = realmService.getPrincipalById(realm, id,
 					PrincipalType.GROUP);
 			String oldName = group.getPrincipalName();
@@ -691,7 +693,7 @@ public class CurrentRealmController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			Realm realm = getCurrentRealm();
+			Realm realm = sessionUtils.getCurrentRealm(request);
 			Principal user = realmService.getPrincipalById(realm, id,
 					PrincipalType.USER);
 			String oldName = user.getPrincipalName();
@@ -726,7 +728,7 @@ public class CurrentRealmController extends ResourceController {
 				properties.put(i.getId(), i.getValue());
 			}
 
-			Realm realm = getCurrentRealm();
+			Realm realm = sessionUtils.getCurrentRealm(request);
 
 			List<Principal> principals = new ArrayList<Principal>();
 			for (String group : user.getGroups()) {
@@ -775,7 +777,7 @@ public class CurrentRealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 
-			Realm realm = getCurrentRealm();
+			Realm realm = sessionUtils.getCurrentRealm(request);
 
 			Principal principal = realmService.getPrincipalById(realm,
 					creds.getPrincipalId(), PrincipalType.USER);
@@ -840,7 +842,7 @@ public class CurrentRealmController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 
-		Realm realm = getCurrentRealm();
+		Realm realm = sessionUtils.getCurrentRealm(request);
 
 		Principal principal = realmService.getPrincipalById(realm,
 				principalSuspensionUpdate.getPrincipalId(), PrincipalType.USER);
@@ -877,7 +879,7 @@ public class CurrentRealmController extends ResourceController {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
-		Realm realm = getCurrentRealm();
+		Realm realm = sessionUtils.getCurrentRealm(request);
 
 		Principal principal = realmService.getPrincipalById(realm, id,
 				PrincipalType.USER);
@@ -909,7 +911,7 @@ public class CurrentRealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		try {
-			Realm realm = getCurrentRealm();
+			Realm realm = sessionUtils.getCurrentRealm(request);
 
 			Principal principal = realmService.getPrincipalById(realm, id,
 					PrincipalType.USER);

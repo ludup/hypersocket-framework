@@ -88,6 +88,22 @@ public class SessionUtils {
 		return null;
 	}
 
+	public Realm getCurrentRealm(HttpServletRequest request)
+			throws UnauthorizedException {
+		Session session = getActiveSession(request);
+		if (session == null)
+			throw new UnauthorizedException();
+		return session.getCurrentRealm();
+	}
+
+	public Principal getPrincipal(HttpServletRequest request)
+			throws UnauthorizedException {
+		Session session = getActiveSession(request);
+		if (session == null)
+			throw new UnauthorizedException();
+		return session.getCurrentPrincipal();
+	}
+
 	public Session touchSession(HttpServletRequest request,
 			HttpServletResponse response) throws UnauthorizedException,
 			SessionTimeoutException, AccessDeniedException {

@@ -170,7 +170,7 @@ public class SessionController extends ResourceController {
 		try {
 			Session session = sessionUtils.getActiveSession(request);
 
-			Principal principal = realmService.getPrincipalById(getCurrentRealm(), id);
+			Principal principal = realmService.getPrincipalById(sessionUtils.getCurrentRealm(request), id);
 
 			if (principal == null) {
 				throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE, "error.invalidPrincipal",
@@ -258,13 +258,13 @@ public class SessionController extends ResourceController {
 				@Override
 				public List<?> getPage(String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting)
 						throws UnauthorizedException, AccessDeniedException {
-					return sessionService.searchResources(getCurrentRealm(), searchPattern, start,
+					return sessionService.searchResources(sessionUtils.getCurrentRealm(request), searchPattern, start,
 							length, sorting);
 				}
 
 				@Override
 				public Long getTotalCount(String searchColumn, String searchPattern) throws UnauthorizedException, AccessDeniedException {
-					return sessionService.getResourceCount(getCurrentRealm(), searchPattern);
+					return sessionService.getResourceCount(sessionUtils.getCurrentRealm(request), searchPattern);
 				}
 			});
 		} finally {
