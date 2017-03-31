@@ -123,7 +123,6 @@ public abstract class AbstractEntity<T> implements Serializable{
 		return this.getClass().getCanonicalName();
 	}
 
-	@JsonIgnore
 	public T getLegacyId() {
 		return legacyId == null ? getId() : legacyId;
 	}

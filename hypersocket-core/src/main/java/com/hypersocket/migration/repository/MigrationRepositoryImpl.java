@@ -104,4 +104,37 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
                 .setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY)
                 .uniqueResult();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public <T> T findEntityByNameLookUpKey(Class<T> aClass, LookUpKey lookUpKey, Realm realm) {
+        Criteria criteria = createCriteria(aClass);
+        String realmProperty = migrationUtil.getResourceRealmProperty(aClass);
+        if(StringUtils.isNotBlank(realmProperty)) {
+            criteria.add(Restrictions.eq(String.format("%s.id", realmProperty), realm.getId()));
+        }
+        if(lookUpKey.isComposite()) {
+            String[] properties = lookUpKey.getProperties();
+            Object[] values = lookUpKey.getValues();
+            boolean nameFound = false;
+            for (int i = 0; i < properties.length; i++) {
+                if("name".equals(properties[i])) {
+                    criteria.add(Restrictions.eq(properties[i], values[i]));
+                    nameFound = true;
+                }
+            }
+            if(nameFound) {
+                List<T> list = criteria.list();
+                return list != null && !list.isEmpty() ? list.get(0) : null;
+            }
+        } else {
+            if("name".equals(lookUpKey.getProperty())) {
+                List<T> list = criteria.add(Restrictions.eq(lookUpKey.getProperty(), lookUpKey.getValue()))
+                        .list();
+                return list != null && !list.isEmpty() ? list.get(0) : null;
+            }
+        }
+
+        return null;
+    }
 }

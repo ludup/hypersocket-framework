@@ -79,6 +79,9 @@ public class MigrationExecutor {
     public void importJson(String group, ArrayNode arrayNode, Realm realm) {
         int record = 0;
         try{
+            /*if("com.hypersocket.auth.AuthenticationModule".equals(group)) {
+                return;
+            }*/
             if(realm == null) {
                 realm = realmService.getCurrentRealm();
             }
@@ -109,7 +112,11 @@ public class MigrationExecutor {
 
                 AbstractEntity resource = (AbstractEntity) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey, realm);
                 if (resource == null) {
-                    resource = (AbstractEntity) resourceClass.newInstance();
+                    //if no match with legacy let us see if some thing matching in realm by name
+                    //resource = (AbstractEntity) migrationRepository.findEntityByNameLookUpKey(resourceClass, lookUpKey, realm);
+                    //if (resource == null) {
+                        resource = (AbstractEntity) resourceClass.newInstance();
+                    //}
                 }
                 ObjectReader objectReader = objectMapper.readerForUpdating(resource);
 
