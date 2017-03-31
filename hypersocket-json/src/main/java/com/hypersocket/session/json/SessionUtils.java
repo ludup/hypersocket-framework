@@ -91,6 +91,12 @@ public class SessionUtils {
 	public Session touchSession(HttpServletRequest request,
 			HttpServletResponse response) throws UnauthorizedException,
 			SessionTimeoutException, AccessDeniedException {
+		return touchSession(request, response, true);
+	}
+	
+	public Session touchSession(HttpServletRequest request,
+			HttpServletResponse response, boolean performCsrfCheck) throws UnauthorizedException,
+			SessionTimeoutException, AccessDeniedException {
 
 		Session session = null;
 		
@@ -116,8 +122,9 @@ public class SessionUtils {
 			}
 		}
 
-		verifySameSiteRequest(request, session);
-		
+		if(performCsrfCheck) {
+			verifySameSiteRequest(request, session);
+		}
 		// Preserve the session for future lookups in this request and session
 		request.setAttribute(AUTHENTICATED_SESSION, session);
 		request.getSession().setAttribute(AUTHENTICATED_SESSION, session);
