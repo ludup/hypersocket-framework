@@ -118,6 +118,11 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
             if(valueToUpdate == null) {
                 //lets check db if we have something
                 valueToUpdate = (AbstractEntity) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey, realm);
+                if((valueToUpdate == null && node.size() <= 3) || (valueToUpdate == null && resourceClass.getCanonicalName().equals("com.hypersocket.country.CountryResource")
+                || (valueToUpdate == null && resourceClass.getCanonicalName().equals("com.hypersocket.currency.Currency")))) {
+                    //if no match with legacy let us see if some thing matching in realm by name
+                    valueToUpdate = (AbstractEntity) migrationRepository.findEntityByNameLookUpKey(resourceClass, lookUpKey, realm);
+                }
                 if (valueToUpdate != null) {
                     isValueToUpdateFromDb = true;
                 }

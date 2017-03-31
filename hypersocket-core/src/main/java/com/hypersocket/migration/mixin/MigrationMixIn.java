@@ -21,4 +21,5 @@ public interface MigrationMixIn {
 
     @JsonIgnore
     Date getCreateDate();
+
 }

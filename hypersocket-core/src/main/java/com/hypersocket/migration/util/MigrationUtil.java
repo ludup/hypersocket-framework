@@ -57,7 +57,7 @@ public class MigrationUtil {
         List<String> properties = new ArrayList<>();
         List<Object> values = new ArrayList<>();
 
-        JsonNode propertyNode = node.get("_legacyId");
+        JsonNode propertyNode = node.get("legacyId");
         if(propertyNode != null) {
             properties.add("legacyId");
             values.add(propertyNode.asLong());
