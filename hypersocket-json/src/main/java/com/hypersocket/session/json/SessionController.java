@@ -170,7 +170,7 @@ public class SessionController extends ResourceController {
 		try {
 			Session session = sessionUtils.getActiveSession(request);
 
-			Principal principal = realmService.getPrincipalById(sessionUtils.getCurrentRealm(request), id);
+			Principal principal = getCurrentPrincipal() ;
 
 			if (principal == null) {
 				throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE, "error.invalidPrincipal",
