@@ -169,7 +169,8 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	public Role getCurrentRole(Session session) {
 		if(!currentRole.containsKey(session)) {
-			throw new InvalidAuthenticationContext("No role is attached to the current session!");
+			currentRole.put(session, ApplicationContextServiceImpl.getInstance().getBean(
+					PermissionService.class).getPersonalRole(session.getCurrentPrincipal()));
 		}
 		return currentRole.get(session);
 	}
