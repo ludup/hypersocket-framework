@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.cache.CacheService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -53,10 +54,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	protected abstract Role getPersonalRole(Principal principal) throws AccessDeniedException;
 	
 	@Autowired
-	SessionService sessionService; 
-	
-	@Autowired
-	PermissionService permissionService;  
+	SessionService sessionService;  
 
 	@Override
 	public void elevatePermissions(PermissionType... permissions) {
@@ -116,7 +114,8 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		currentRealm.get().push(realm);
 		currentLocale.get().push(locale);
 		if(currentRole.containsKey(session)) {
-			currentRole.put(session, permissionService.getPersonalRole(principal));
+			currentRole.put(session, ApplicationContextServiceImpl.getInstance().getBean(
+					PermissionService.class).getPersonalRole(principal));
 		}
 		elevatedPermissions.get().push(new HashSet<PermissionType>());
 		
