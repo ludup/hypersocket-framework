@@ -19,9 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
+import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.FindableResourceRepository;
 import com.hypersocket.resource.RealmResource;
@@ -333,7 +335,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	
 	class StringValue {
 		public String parseValue(String value, Object resource, AbstractPropertyTemplate template, String uuid) {
-			Realm realm = encryptionService.getSystemRealm();
+			Realm realm = ApplicationContextServiceImpl.getInstance().getBean(RealmService.class).getSystemRealm();
 			if(resource instanceof RealmResource) {
 				realm = ((RealmResource)resource).getRealm();
 			}

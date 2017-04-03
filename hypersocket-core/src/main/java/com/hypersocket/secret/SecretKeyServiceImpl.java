@@ -40,13 +40,6 @@ public class SecretKeyServiceImpl extends
 	@Autowired
 	SecretKeyRepository repository;
 	
-	@Autowired
-	SessionService sessionService; 
-	
-	@Autowired
-	RealmService realmService; 
-	
-	
 	EncryptionProvider encryptionProvider;
 	
 	public SecretKeyServiceImpl() {
