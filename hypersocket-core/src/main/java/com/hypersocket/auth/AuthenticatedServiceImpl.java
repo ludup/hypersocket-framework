@@ -8,9 +8,11 @@
 package com.hypersocket.auth;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -18,8 +20,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.cache.CacheService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.Role;
@@ -36,7 +40,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	static ThreadLocal<Stack<Session>> currentSession = new ThreadLocal<Stack<Session>>();
 	static ThreadLocal<Stack<Realm>> currentRealm = new ThreadLocal<Stack<Realm>>();
 	static ThreadLocal<Stack<Locale>> currentLocale = new ThreadLocal<Stack<Locale>>();
-	static ThreadLocal<Role> currentRole = new ThreadLocal<Role>();
+	static Map<Session,Role> currentRole = new HashMap<Session,Role>();
 	
 	static ThreadLocal<Boolean> isDelayingEvents = new ThreadLocal<Boolean>();
 	static ThreadLocal<LinkedList<SystemEvent>> delayedEvents = new ThreadLocal<LinkedList<SystemEvent>>();
@@ -51,6 +55,9 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	@Autowired
 	SessionService sessionService; 
 	
+	@Autowired
+	PermissionService permissionService;  
+
 	@Override
 	public void elevatePermissions(PermissionType... permissions) {
 		if(elevatedPermissions.get()==null) {
@@ -108,7 +115,9 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		currentSession.get().push(session);
 		currentRealm.get().push(realm);
 		currentLocale.get().push(locale);
-		currentRole.set(session.getCurrentRole());
+		if(currentRole.containsKey(session)) {
+			currentRole.put(session, permissionService.getPersonalRole(principal));
+		}
 		elevatedPermissions.get().push(new HashSet<PermissionType>());
 		
 		if(log.isDebugEnabled()) {
@@ -156,12 +165,27 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	@Override
 	public Role getCurrentRole() {
-		return currentRole.get();
+		return currentRole.get(getCurrentSession());
+	}
+	
+	public Role getCurrentRole(Session session) {
+		if(!currentRole.containsKey(session)) {
+			throw new InvalidAuthenticationContext("No role is attached to the current session!");
+		}
+		return currentRole.get(session);
+	}
+	@Override
+	public void setCurrentRole(Session session, Role role) {
+		currentRole.put(session, role);
 	}
 	
 	@Override
 	public void setCurrentRole(Role role) {
-		currentRole.set(role);
+		currentRole.put(getCurrentSession(), role);
+	}
+	
+	public void closeSession(Session session) {
+		currentRole.remove(session);
 	}
 
 	@Override

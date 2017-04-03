@@ -25,8 +25,6 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.events.EmailEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.realm.MediaNotFoundException;
-import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;

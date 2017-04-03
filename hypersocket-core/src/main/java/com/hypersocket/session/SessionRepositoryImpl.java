@@ -61,7 +61,6 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 
 		Session session = new Session();
 		session.setPrincipal(principal);
-		session.setCurrentRole(permissionRepository.getPersonalRole(principal));
 		session.setRemoteAddress(remoteAddress);
 		session.setUserAgent(HypersocketUtils.checkNull(userAgent, "unknown"));
 		session.setUserAgentVersion(HypersocketUtils.checkNull(userAgentVersion, "unknown"));

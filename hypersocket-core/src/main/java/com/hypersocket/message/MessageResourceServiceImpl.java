@@ -35,8 +35,6 @@ import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceUtils;
-import com.hypersocket.realm.MediaNotFoundException;
-import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;

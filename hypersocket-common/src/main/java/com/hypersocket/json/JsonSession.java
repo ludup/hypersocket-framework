@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class JsonSession {
 
 	String id;
+	String csrfToken;
 	JsonPrincipal currentPrincipal;
 	JsonResource currentRealm;
 
@@ -39,4 +40,14 @@ public class JsonSession {
 	public void setCurrentRealm(JsonResource currentRealm) {
 		this.currentRealm = currentRealm;
 	}
+
+	public String getCsrfToken() {
+		return csrfToken;
+	}
+
+	public void setCsrfToken(String csrfToken) {
+		this.csrfToken = csrfToken;
+	}
+	
+	
 }

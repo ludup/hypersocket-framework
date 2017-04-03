@@ -34,6 +34,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
@@ -81,10 +82,6 @@ public class Session extends AbstractEntity<String> {
 	@ManyToOne
 	@JoinColumn(name = "current_realm_id")
 	Realm currentRealm;
-	
-	@ManyToOne(optional=true)
-	@JoinColumn(name = "current_role_id")
-	Role currentRole;
 
 	@ManyToOne
 	@JoinColumn(name = "realm_id")
@@ -370,11 +367,7 @@ public class Session extends AbstractEntity<String> {
 	}
 
 	public Role getCurrentRole() {
-		return currentRole;
-	}
-	
-	public void setCurrentRole(Role currentRole) {
-		this.currentRole = currentRole;
+		return ApplicationContextServiceImpl.getInstance().getBean(SessionService.class).getCurrentRole(this);
 	}
 	
 	public String getCsrfToken() {

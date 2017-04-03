@@ -55,7 +55,7 @@ public class AbstractPermissionsTest extends AbstractServerTest {
 	public void tryCurrentRealmUsersGroup() throws ClientProtocolException,
 			IOException {
 
-		JsonResourceList json = getMapper().readValue(
+		JsonResourceList<?> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 
@@ -107,7 +107,7 @@ public class AbstractPermissionsTest extends AbstractServerTest {
 	@Test
 	public void tryCurrentRealmIdGroup() throws ClientProtocolException,
 			IOException {
-		JsonResourceList json = getMapper().readValue(
+		JsonResourceList<?> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 

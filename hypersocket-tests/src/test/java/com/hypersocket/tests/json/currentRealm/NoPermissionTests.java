@@ -68,7 +68,7 @@ public class NoPermissionTests extends AbstractServerTest {
 	public void tryNoPermissionCurrentRealmUsersGroup()
 			throws ClientProtocolException, IOException {
 
-		JsonResourceList json = getMapper().readValue(
+		JsonResourceList<?> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 
@@ -114,7 +114,7 @@ public class NoPermissionTests extends AbstractServerTest {
 	@Test(expected = ClientProtocolException.class)
 	public void tryNoPermissionCurrentRealmIdGroup()
 			throws ClientProtocolException, IOException {
-		JsonResourceList json = getMapper().readValue(
+		JsonResourceList<?> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 
@@ -143,7 +143,7 @@ public class NoPermissionTests extends AbstractServerTest {
 	public void tryNoPermissionCurrentRealmGroupDelete()
 			throws ClientProtocolException, IOException {
 
-		JsonResourceList json = getMapper().readValue(
+		JsonResourceList<?> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 

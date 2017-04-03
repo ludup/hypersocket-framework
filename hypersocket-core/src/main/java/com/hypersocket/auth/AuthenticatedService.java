@@ -47,4 +47,6 @@ public interface AuthenticatedService {
 
 	void setCurrentRole(Role role);
 
+	void setCurrentRole(Session session, Role role);
+
 }

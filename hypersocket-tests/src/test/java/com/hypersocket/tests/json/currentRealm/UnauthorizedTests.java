@@ -50,7 +50,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 	public void tryUnauthorizedCurrentRealmUsersGroup()
 			throws ClientProtocolException, IOException {
 
-		JsonResourceList json = getMapper().readValue(
+		JsonResourceList<?> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 
@@ -96,7 +96,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedCurrentRealmIdGroup()
 			throws ClientProtocolException, IOException {
-		JsonResourceList json = getMapper().readValue(
+		JsonResourceList<?> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 
@@ -125,7 +125,7 @@ public class UnauthorizedTests extends AbstractServerTest {
 	public void tryUnauthorizedCurrentRealmGroupDelete()
 			throws ClientProtocolException, IOException {
 
-		JsonResourceList json = getMapper().readValue(
+		JsonResourceList<?> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 
