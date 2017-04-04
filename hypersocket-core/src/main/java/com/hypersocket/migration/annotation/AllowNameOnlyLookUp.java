@@ -5,12 +5,5 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Order {
-    enum Direction {ASC, DESC}
-
-    Direction direction() default Direction.ASC;
-
-    String property() default "created";
+public @interface AllowNameOnlyLookUp {
 }
-
-

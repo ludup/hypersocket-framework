@@ -23,6 +23,7 @@ public class MigrationSerializerForResource extends StdSerializer<Resource> {
         gen.writeStringField("name", value.getName());
         gen.writeNumberField("legacyId", value.getLegacyId());
         gen.writeStringField("_meta", value._meta());
+        gen.writeBooleanField("reference", true);
         gen.writeEndObject();
     }
 }

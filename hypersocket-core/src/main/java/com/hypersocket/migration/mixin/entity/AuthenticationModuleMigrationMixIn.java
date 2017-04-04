@@ -18,7 +18,7 @@ public class AuthenticationModuleMigrationMixIn extends AuthenticationModule imp
     private AuthenticationModuleMigrationMixIn() {}
 
     @Override
-    @JsonSerialize(using = MigrationSerializerForResource.class)
+    //@JsonSerialize(using = MigrationSerializerForResource.class)
     @JsonDeserialize(using = MigrationDeserializer.class)
     public AuthenticationScheme getScheme() {
         return null;

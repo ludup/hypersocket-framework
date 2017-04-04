@@ -1,5 +1,7 @@
 package com.hypersocket.migration.lookup;
 
+import java.util.Arrays;
+
 public class LookUpKey {
 
     private String property;
@@ -46,5 +48,16 @@ public class LookUpKey {
 
     public void setValues(Object[] values) {
         this.values = values;
+    }
+
+    @Override
+    public String toString() {
+        return "LookUpKey{" +
+                "property='" + property + '\'' +
+                ", value=" + value +
+                ", composite=" + composite +
+                ", properties=" + Arrays.toString(properties) +
+                ", values=" + Arrays.toString(values) +
+                '}';
     }
 }

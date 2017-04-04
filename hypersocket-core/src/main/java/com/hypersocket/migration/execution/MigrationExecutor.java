@@ -19,12 +19,16 @@ import com.hypersocket.migration.lookup.LookUpKey;
 import com.hypersocket.migration.mapper.MigrationObjectMapper;
 import com.hypersocket.migration.repository.MigrationRepository;
 import com.hypersocket.migration.util.MigrationUtil;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.upload.FileUploadService;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +41,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class MigrationExecutor {
@@ -64,6 +71,9 @@ public class MigrationExecutor {
     @Autowired
     MigrationHelperClassesInfoProvider migrationHelperClassesInfoProvider;
 
+    @Autowired
+    FileUploadService fileUploadService;
+
     private Map<Class<?>, MigrationImporter> migrationImporterMap;
 
     private Map<Class<?>, MigrationExporter> migrationExporterMap;
@@ -79,9 +89,6 @@ public class MigrationExecutor {
     public void importJson(String group, ArrayNode arrayNode, Realm realm) {
         int record = 0;
         try{
-            /*if("com.hypersocket.auth.AuthenticationModule".equals(group)) {
-                return;
-            }*/
             if(realm == null) {
                 realm = realmService.getCurrentRealm();
             }
@@ -108,15 +115,16 @@ public class MigrationExecutor {
                 Class resourceClass = MigrationExecutor.class.getClassLoader().loadClass(className);
                 LookUpKey lookUpKey = migrationUtil.captureEntityLookup(node, resourceClass);
 
+                log.info("The look up key is {}", lookUpKey);
+
                 ++record;
 
                 AbstractEntity resource = (AbstractEntity) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey, realm);
                 if (resource == null) {
-                    //if no match with legacy let us see if some thing matching in realm by name
-                    //resource = (AbstractEntity) migrationRepository.findEntityByNameLookUpKey(resourceClass, lookUpKey, realm);
-                    //if (resource == null) {
-                        resource = (AbstractEntity) resourceClass.newInstance();
-                    //}
+                    log.info("Resource not found creating new.");
+                    resource = (AbstractEntity) resourceClass.newInstance();
+                } else {
+                    log.info("Resource found merging to resource with id {}", resource.getId());
                 }
                 ObjectReader objectReader = objectMapper.readerForUpdating(resource);
 
@@ -125,6 +133,7 @@ public class MigrationExecutor {
                 migrationUtil.fillInRealm(resource);
 
                 handleTransientLocalGroup(resource);
+
                 if(migrationImporterMap.containsKey(resourceClass)) {
                     MigrationImporter migrationImporter = migrationImporterMap.get(resourceClass);
                     log.info("Found migration importer for class {} as {}", resourceClass.getCanonicalName(),
@@ -144,8 +153,10 @@ public class MigrationExecutor {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void startRealmExport(OutputStream outputStream, Realm realm) {
         JsonGenerator jsonGenerator = null;
+        ZipOutputStream zos = (ZipOutputStream) outputStream;
         try {
             if(realm == null) {
                 realm = realmService.getCurrentRealm();
@@ -160,11 +171,13 @@ public class MigrationExecutor {
 
             Map<Short, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = migrationHelperClassesInfoProvider.getMigrationOrderMap();
 
-            jsonGenerator.writeStartArray();
+            //jsonGenerator.writeStartArray();
             Set<Short> keys = migrationOrderMap.keySet();
             for (Short key : keys) {
                 List<Class<? extends AbstractEntity<Long>>> migrationClasses = migrationOrderMap.get(key);
                 for (Class<? extends AbstractEntity<Long>> aClass : migrationClasses) {
+                    ZipEntry anEntry = new ZipEntry(String.format("%s.json", aClass.getSimpleName()));
+                    zos.putNextEntry(anEntry);
                     List<AbstractEntity<Long>> objectList = (List<AbstractEntity<Long>>) migrationRepository.findAllResourceInRealmOfType(aClass, realm);
                     List<MigrationObjectWithMeta> migrationObjectWithMetas = new ArrayList<>();
 
@@ -184,7 +197,7 @@ public class MigrationExecutor {
 
                     if(migrationExporterMap.containsKey(aClass)) {
                         MigrationExporter migrationExporter = migrationExporterMap.get(aClass);
-                        log.info("Found migration importer for class {} as {}", aClass.getCanonicalName(),
+                        log.info("Found migration exporter for class {} as {}", aClass.getCanonicalName(),
                                 migrationExporter.getClass().getCanonicalName());
                         Map<String, List<Map<String, ?>>> customOperationsMap =
                                             migrationExporter.produceCustomOperationsMap(realm);
@@ -192,41 +205,61 @@ public class MigrationExecutor {
                     }
 
                     jsonGenerator.writeObject(objectPack);
+                    zos.closeEntry();
                     jsonGenerator.flush();
                 }
             }
-            jsonGenerator.writeEndArray();
+            //jsonGenerator.writeEndArray();
         }catch (IOException e) {
+            log.error("Problem in import process.", e);
             throw new IllegalStateException(e.getMessage(), e);
         }finally {
             if(jsonGenerator != null) {
-                try {
+               /* try {
                     jsonGenerator.close();
                 }catch (IOException e) {
                     //ignore
-                }
+                }*/
             }
         }
     }
 
-    public void startRealmImport(InputStream inputStream, Realm realm) {
+    public void startRealmImport(InputStream inputStream, Realm realm) throws AccessDeniedException,
+            ResourceCreationException {
         JsonParser jsonParser = null;
         try {
-            ObjectMapper objectMapper = migrationObjectMapper.getObjectMapper();
-            jsonParser = objectMapper.getFactory().createParser(inputStream);
-            JsonToken jsonToken;
-            while((jsonToken = jsonParser.nextToken()) != null) {
-                if(jsonToken == JsonToken.START_OBJECT) {
-                    ObjectNode objectPack = jsonParser.readValueAsTree();
-                    importJson(objectPack.get("group").asText(),
-                            (ArrayNode) objectPack.get("objectList"),
-                            realm);
-                    importCustomOperations(objectPack.get("group").asText(),
-                            objectPack.get("customOperationsMap"),
-                            realm);
+            ZipInputStream zipInputStream = new ZipInputStream(inputStream);
+            ZipEntry ze = zipInputStream.getNextEntry();
+            while(ze!=null) {
+                String fileName = ze.getName();
+                if(fileName.contains("uploadedFiles\\")) {
+                    //store file
+                    String fileNameStripped = fileName.substring(fileName.indexOf("\\") + 1);
+                    fileUploadService.createFile(zipInputStream, fileNameStripped, realm, true);
+                }else {
+                    //process json
+                    ObjectMapper objectMapper = migrationObjectMapper.getObjectMapper();
+                    jsonParser = objectMapper.getFactory().createParser(zipInputStream);
+                    jsonParser.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
+                    JsonToken jsonToken;
+                    while ((jsonToken = jsonParser.nextToken()) != null) {
+                        if (jsonToken == JsonToken.START_OBJECT) {
+                            ObjectNode objectPack = jsonParser.readValueAsTree();
+                            importJson(objectPack.get("group").asText(),
+                                    (ArrayNode) objectPack.get("objectList"),
+                                    realm);
+                            importCustomOperations(objectPack.get("group").asText(),
+                                    objectPack.get("customOperationsMap"),
+                                    realm);
+                        }
+                    }
                 }
+
+                zipInputStream.closeEntry();
+                ze = zipInputStream.getNextEntry();
             }
         }catch (IOException e) {
+            log.error("Problem in import process.", e);
             throw new IllegalStateException(e.getMessage(), e);
         } finally {
             if(jsonParser != null) {
@@ -241,6 +274,9 @@ public class MigrationExecutor {
 
     private void importCustomOperations(String group, JsonNode jsonNode, Realm realm) {
         try {
+            if(realm == null) {
+                realm = realmService.getCurrentRealm();
+            }
             Class resourceClass = MigrationExecutor.class.getClassLoader().loadClass(group);
 
             if(migrationImporterMap.containsKey(resourceClass)) {

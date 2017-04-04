@@ -61,6 +61,9 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
             String propertyName = migrationCurrentInfo.getPropName();
 
             String className = node.get("_meta").asText();
+            log.info("Meta class name found as {}", className);
+
+            boolean isReference = node.get("reference") != null && node.get("reference").asBoolean();
 
             if(StringUtils.isBlank(className)) {
                 throw new IllegalStateException(String.format("Class type info not found, cannot parse json %s", node.toString()));
@@ -69,6 +72,8 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
             Class resourceClass = MigrationDeserializer.class.getClassLoader().loadClass(className);
 
             LookUpKey lookUpKey = migrationUtil.captureEntityLookup(node, resourceClass);
+
+            log.info("The look up key is {}", lookUpKey);
 
             Class propertyClass = PropertyUtils.getPropertyType(resourceRootBean, propertyName);
             if(Collection.class.isAssignableFrom(propertyClass)) {
@@ -118,8 +123,8 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
             if(valueToUpdate == null) {
                 //lets check db if we have something
                 valueToUpdate = (AbstractEntity) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey, realm);
-                if((valueToUpdate == null && node.size() <= 3) || (valueToUpdate == null && resourceClass.getCanonicalName().equals("com.hypersocket.country.CountryResource")
-                || (valueToUpdate == null && resourceClass.getCanonicalName().equals("com.hypersocket.currency.Currency")))) {
+                if((valueToUpdate == null && isReference) ||
+                        (valueToUpdate == null && migrationUtil.isResourceAllowNameOnlyLookUp(resourceClass))) {
                     //if no match with legacy let us see if some thing matching in realm by name
                     valueToUpdate = (AbstractEntity) migrationRepository.findEntityByNameLookUpKey(resourceClass, lookUpKey, realm);
                 }
@@ -141,7 +146,11 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
             //for collection or simple object
 
             if(valueToUpdate == null) {
+                log.info("Resource not found creating new for class {}.", resourceClass);
                 valueToUpdate = (AbstractEntity) resourceClass.newInstance();
+            } else {
+                log.info("Resource found merging to resource with id {} and class {}",
+                        valueToUpdate.getId(), resourceClass);
             }
 
             ObjectReader objectReader = migrationObjectMapper.getObjectMapper().readerForUpdating(valueToUpdate);
