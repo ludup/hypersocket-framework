@@ -480,7 +480,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public List<Session> getActiveSessions() throws AccessDeniedException {
 
 		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
-			throw new AccessDeniedException();
+			assertPermission(SystemPermission.SYSTEM);
 		}
 
 		return repository.getActiveSessions();

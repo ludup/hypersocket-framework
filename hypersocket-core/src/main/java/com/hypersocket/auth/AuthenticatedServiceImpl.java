@@ -135,7 +135,11 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		if(currentPrincipal.get()==null) {
 			throw new InvalidAuthenticationContext("No session is attached to the current context!");
 		}
-		return currentPrincipal.get().peek();
+		Principal principal = currentPrincipal.get().peek();
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("Current principal is %s", principal.getPrincipalName()));
+		}
+		return principal;
 	}
 	
 	@Override
