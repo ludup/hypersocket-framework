@@ -373,6 +373,7 @@ public class AuthenticationServiceImpl extends
 
 		boolean success = false;
 
+		try {
 		if (state.isAuthenticationComplete()) {
 
 			if (state.getSession() != null) {
@@ -595,6 +596,11 @@ public class AuthenticationServiceImpl extends
 		}
 
 		return success;
+		
+		} catch(Throwable t) {
+			log.error("Authentication failed", t);
+			return false;
+		}
 	}
 
 	@Override 

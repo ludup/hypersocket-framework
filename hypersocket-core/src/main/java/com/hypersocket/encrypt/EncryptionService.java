@@ -1,5 +1,6 @@
 package com.hypersocket.encrypt;
 
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.realm.Realm;
@@ -11,6 +12,6 @@ public interface EncryptionService extends Encryptor {
 
 	Encryptor getEncryptor();
 
-	Realm getSystemRealm();
+	void onContextStartedEvent(ContextStartedEvent event);
 
 }

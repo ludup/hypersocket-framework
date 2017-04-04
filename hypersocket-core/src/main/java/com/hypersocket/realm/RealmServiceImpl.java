@@ -1601,6 +1601,30 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Principal getUniquePrincipal(String username, PrincipalType... type) throws ResourceNotFoundException {
+
+		String realmName = null;
+		// Can we extract realm from username?
+		int idx;
+		idx = username.indexOf('\\');
+		if (idx > -1) {
+			realmName = username.substring(0, idx);
+			username = username.substring(idx + 1);
+		} else {
+			idx = username.indexOf('/');
+			if (idx > -1) {
+				realmName = username.substring(0, idx);
+				username = username.substring(idx + 1);
+			}
+		}
+
+		if (realmName != null) {
+			Realm realm = getRealmByName(realmName);
+			if(realm==null) {
+				throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.invalidRealm", realmName);
+			}
+			return getPrincipalByName(realm, username, PrincipalType.USER);
+		}
+
 		List<Principal> found = new ArrayList<Principal>();
 		for (Realm r : internalAllRealms()) {
 			Principal p = getProviderForRealm(r).getPrincipalByName(username, r, type);
@@ -1838,11 +1862,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public String getPrincipalEmail(Principal principal) {
-		try {
-			return getPrincipalAddress(principal, MediaType.EMAIL);
-		} catch (MediaNotFoundException e) {
-			return "";
-		}
+		return principal.getEmail();
 	}
 
 	@Override

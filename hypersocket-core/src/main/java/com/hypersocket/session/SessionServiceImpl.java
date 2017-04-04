@@ -213,6 +213,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						info.getOsName(), 
 						configurationService.getIntValue(realm, SESSION_TIMEOUT), 
 						realm);	
+				setCurrentRole(session, permissionService.getPersonalRole(principal));
 			} catch (IOException e) {
 				session = repository.createSession(remoteAddress, principal,
 						completedScheme, "Unknown", "Unknown", "Unknown", "Unknown", 
@@ -323,7 +324,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		session.setSignedOut(new Date());
 		session.setNonCookieKey(null);
-		session.setCurrentRole(null);
+		closeSession(session);
 		repository.updateSession(session);
 
 		if (!session.isSystem()) {
@@ -412,22 +413,34 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		session.setInheritPermissions(inheritPermissions);
 
 		setCurrentSession(session, getCurrentLocale());
+		setCurrentRole(permissionService.getPersonalRole(principal));
 		repository.updateSession(session);
 	}
 
 	
 	@Override
-	public void switchRole(Session session, Role role) throws AccessDeniedException {
+	public Role switchRole(Session session, Long id) throws AccessDeniedException, ResourceNotFoundException {
 
+		elevatePermissions(RolePermission.READ);
+		
+		try {
+			Role role = permissionService.getRoleById(id, getCurrentRealm());
+			switchRole(session, role);
+			return role;
+		} finally {
+			clearElevatedPermissions();
+		}
+	}
+	
+	@Override
+	public void switchRole(Session session, Role role) throws AccessDeniedException {
 		if (log.isInfoEnabled()) {
 			log.info(String.format("Switching %s role from %s to %s", session.getCurrentPrincipal().getPrincipalName(),
 					session.getCurrentRole().getName(),
 					role.getName()));
 		}
 
-		session.setCurrentRole(role);
 		setCurrentRole(role);
-		repository.updateSession(session);
 	}
 	
 	@Override
@@ -607,6 +620,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		session.setInheritPermissions(false);
 
 		setCurrentSession(session, getCurrentLocale());
+		setCurrentRole(permissionService.getPersonalRole(session.getCurrentPrincipal()));
 		repository.updateSession(session);
 	}
 

@@ -710,8 +710,12 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			Map<String, String> properties) throws AccessDeniedException, ResourceChangeException {
 
 		assertPermission(RolePermission.UPDATE);
-		if(role.isPersonalRole()) {
-			throw new AccessDeniedException("You cannot change personal roles");
+		if(principals!=null) {
+			if(!CollectionUtils.isEqualCollection(role.getPrincipals(), principals)) {
+				if(role.isPersonalRole()) {	
+					throw new AccessDeniedException("You cannot change personal roles");
+				}
+			}
 		}
 		try {
 			Role anotherRole = getRole(name, role.getRealm());

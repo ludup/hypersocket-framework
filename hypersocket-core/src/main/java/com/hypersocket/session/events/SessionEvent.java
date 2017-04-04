@@ -39,7 +39,7 @@ public abstract class SessionEvent extends SystemEvent {
 		addAttribute(ATTR_PRINCIPAL_REALM, realm.getName());
 		addAttribute(ATTR_IP_ADDRESS, session.getRemoteAddress());
 		if(session.isImpersonating()) {
-			addAttribute(ATTR_IMPERSONATOR, session.getInheritedPrincipal());
+			addAttribute(ATTR_IMPERSONATOR, session.getInheritedPrincipal().getPrincipalName());
 		}
 	}
 	
@@ -58,7 +58,7 @@ public abstract class SessionEvent extends SystemEvent {
 		addAttribute(ATTR_PRINCIPAL_REALM, session.getCurrentRealm().getName());
 		addAttribute(ATTR_IP_ADDRESS, session.getRemoteAddress());
 		if(session.isImpersonating()) {
-			addAttribute(ATTR_IMPERSONATOR, session.getInheritedPrincipal());
+			addAttribute(ATTR_IMPERSONATOR, session.getInheritedPrincipal().getPrincipalName());
 		}
 	}
 	

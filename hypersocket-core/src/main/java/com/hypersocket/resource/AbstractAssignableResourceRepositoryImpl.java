@@ -63,6 +63,22 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		entityPropertyStore = new EntityResourcePropertyStore(encryptionService);
 	}
 
+	protected void beforeDelete(T resource) throws ResourceChangeException {
+				
+	}
+	
+	protected void afterDelete(T resource) throws ResourceChangeException {
+		
+	}
+	
+	protected void beforeSave(T resource, Map<String,String> properties) throws ResourceChangeException {
+		
+	}
+	
+	protected void afterSave(T resource, Map<String,String> properties) throws ResourceChangeException {
+		
+ 	}
+		 	
 	@Override
 	protected ResourcePropertyStore getPropertyStore() {
 		return entityPropertyStore;
@@ -415,8 +431,12 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			op.beforeOperation(resource, null);
 		}
 		
+		beforeDelete(resource);
+		
 		delete(resource);
 
+		afterDelete(resource);
+		
 		for(TransactionOperation<T> op : ops) {
 			op.afterOperation(resource, null);
 		}
@@ -453,10 +473,14 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			op.beforeOperation(resource, properties);
 		}
 		
+		beforeSave(resource, properties);
+		
 		resource = (T) save(resource);
 
 		// Now set any remaining values
 		setValues(resource, properties);
+		
+		afterSave(resource, properties);
 		
 		for(TransactionOperation<T> op : ops) {
 			op.afterOperation(resource, properties);

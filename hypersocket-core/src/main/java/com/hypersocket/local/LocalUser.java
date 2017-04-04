@@ -30,6 +30,7 @@ import org.hibernate.annotations.CascadeType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalStatus;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.UserPrincipal;
 
@@ -67,7 +68,6 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	@Column(name="realm_category")
 	String realmCategory;
 	
-	
 	@Column(name="user_expires")
 	@Temporal(TemporalType.DATE)
 	Date expires;
@@ -90,6 +90,14 @@ public class LocalUser extends UserPrincipal implements Serializable {
 		return type;
 	}
 	
+	public PrincipalStatus getPrincipalStatus() {
+		if(getExpires()!=null) {
+			if(new Date().before(getExpires())) {
+				return PrincipalStatus.EXPIRED;
+			}
+		}
+		return PrincipalStatus.ENABLED;
+	}
 	public String getPrincipalDescription() {
 		return StringUtils.isBlank(getFullname()) ? getName() : getFullname();
 	}

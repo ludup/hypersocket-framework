@@ -32,6 +32,7 @@ import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelException;
+import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -293,11 +294,19 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		for(Channel channel : channels) {
 			InetSocketAddress addr = (InetSocketAddress) channel.getLocalAddress();
 			try {
-				channel.disconnect().await(5000);
-				
-				eventService.publishEvent(new HTTPInterfaceStoppedEvent(this, 
-						sessionService.getSystemSession(), 
-						interfaceResource, addr.getAddress().getHostAddress(), addr.getPort()));
+				ChannelFuture future = channel.close();
+				future.await(30000);
+				if(future.isDone() && future.isSuccess()) {
+					eventService.publishEvent(new HTTPInterfaceStoppedEvent(this, 
+							sessionService.getSystemSession(), 
+							interfaceResource, addr.getAddress().getHostAddress(), addr.getPort()));
+				} else {
+					eventService.publishEvent(new HTTPInterfaceStoppedEvent(this, 
+							interfaceResource,
+							new IllegalStateException("Timeout exceeded before channel was closed."), 
+							sessionService.getSystemSession(),
+							addr.getAddress().getHostAddress(), addr.getPort()));
+				}
 				
 			} catch (InterruptedException e) {
 				

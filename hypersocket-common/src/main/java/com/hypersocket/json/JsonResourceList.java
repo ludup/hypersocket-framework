@@ -3,12 +3,12 @@ package com.hypersocket.json;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
-public class JsonResourceList {
+public class JsonResourceList<T extends JsonResource> {
 
 	boolean success;
 	String error;
 	
-	JsonResource[] resources;
+	T[] resources;
 	
 	public boolean isSuccess() {
 		return success;
@@ -26,11 +26,11 @@ public class JsonResourceList {
 		this.error = error;
 	}
 
-	public JsonResource[] getResources() {
+	public T[] getResources() {
 		return resources;
 	}
 
-	public void setResources(JsonResource[] resources) {
+	public void setResources(T[] resources) {
 		this.resources = resources;
 	}
 	

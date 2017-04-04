@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -60,11 +61,17 @@ public abstract class Principal extends RealmResource {
 
 	@Column(name="principal_type")
 	PrincipalType principalType = getType();
-
+	
 	@JsonIgnore
 	public Realm getRealm() {
 		return super.getRealm();
 	}
+	
+	public abstract String getEmail();
+	
+	public abstract Date getExpires();
+	
+	public abstract PrincipalStatus getPrincipalStatus();
 	
 	public boolean isPrimaryAccount() {
 		return super.getRealm().getOwner()==null;

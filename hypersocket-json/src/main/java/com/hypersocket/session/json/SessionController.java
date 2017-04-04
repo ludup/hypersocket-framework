@@ -113,16 +113,7 @@ public class SessionController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 
 		try {
-
-			Role role = permissionService.getRoleById(id, getCurrentPrincipal().getRealm());
-
-			if (role == null) {
-				throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE, "error.invalidRole", id);
-			}
-
-			sessionService.switchRole(getCurrentSession(), role);
-
-			return new ResourceStatus<Role>(role);
+			return new ResourceStatus<Role>(sessionService.switchRole(getCurrentSession(), id));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -170,7 +161,7 @@ public class SessionController extends ResourceController {
 		try {
 			Session session = sessionUtils.getActiveSession(request);
 
-			Principal principal = realmService.getPrincipalById(sessionUtils.getCurrentRealm(request), id);
+			Principal principal = realmService.getPrincipalById(getCurrentRealm(), id);
 
 			if (principal == null) {
 				throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE, "error.invalidPrincipal",

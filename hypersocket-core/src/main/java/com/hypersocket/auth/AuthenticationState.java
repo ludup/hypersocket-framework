@@ -269,4 +269,8 @@ public class AuthenticationState {
 	public Map<String,String> getParameters() {
 		return parameters;
 	}
+	
+	public boolean isHTTP() {
+		return environment.containsKey(BrowserEnvironment.HOST);
+	}
 }

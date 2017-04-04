@@ -25,8 +25,6 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.events.EmailEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.realm.MediaNotFoundException;
-import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -280,11 +278,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		Principal principal = realmService.getPrincipalByName(getCurrentRealm(), val, PrincipalType.USER);
 		
 		if(principal!=null) {
-			try {
-				realmService.getPrincipalAddress(principal, MediaType.EMAIL);
-				return true;
-			} catch (MediaNotFoundException e) {
-			}
+			return StringUtils.isNotBlank(principal.getEmail());
 		}
 		return false;
 	}
@@ -321,12 +315,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		}
 		
 		if(principal!=null) {
-			try {
-				recipients.add(new RecipientHolder(principal,
-					realmService.getPrincipalAddress(principal, MediaType.EMAIL)));
+			if(StringUtils.isNotBlank(principal.getEmail())) {
+				recipients.add(new RecipientHolder(principal, principal.getEmail()));
 				return;
-			} catch (MediaNotFoundException e) {
-				log.error("Could not find email address for " + val, e);
 			}
 		}
 		

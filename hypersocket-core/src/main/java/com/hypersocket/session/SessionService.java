@@ -20,6 +20,7 @@ import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
 
 public interface SessionService extends PasswordEnabledAuthenticatedService {
@@ -103,5 +104,9 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 
 	void setUAParser(UASparser parser, OnlineUpdater updater);
 
-	void switchRole(Session session, Role role) throws AccessDeniedException;
+	Role switchRole(Session session, Long id) throws AccessDeniedException, ResourceNotFoundException;
+
+	void switchRole(Session currentSession, Role role) throws AccessDeniedException;
+
+	Role getCurrentRole(Session session);
 }
