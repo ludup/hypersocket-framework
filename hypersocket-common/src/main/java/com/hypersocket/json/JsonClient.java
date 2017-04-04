@@ -38,6 +38,7 @@ public class JsonClient {
 	protected ObjectMapper mapper = new ObjectMapper();
 	protected JsonSession session;
 
+	boolean debug = false;
 	String hostname;
 	int port;
 	String path;
@@ -50,13 +51,15 @@ public class JsonClient {
 		this.client = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
 	}
 	
-
-
 	public void logon(String username, String password)
 			throws Exception {
 		logon(username, password, false, null);
 	}
 
+	public void setDebug(boolean debug) {
+		this.debug = debug;
+	}
+	
 	public void logon(String username, String password,
 			boolean expectChangePassword, String newPassword) throws Exception {
 
@@ -91,23 +94,25 @@ public class JsonClient {
 
 	public String debugJSON(String json) throws JsonParseException,
 			JsonMappingException, IOException {
-		Object obj = mapper.readValue(json, Object.class);
-		String ret = mapper.writerWithDefaultPrettyPrinter()
-				.writeValueAsString(obj);
-		System.out.println(ret);
-		return ret;
-
+		if(debug) {
+			Object obj = mapper.readValue(json, Object.class);
+			String ret = mapper.writerWithDefaultPrettyPrinter()
+					.writeValueAsString(obj);
+			System.out.println(ret);
+			return ret;
+		}
+		return json;
 	}
 
 	public void logoff() throws JsonParseException,
-			JsonMappingException, IOException {
+			JsonMappingException, JsonStatusException, IOException {
 
 		doGet("api/logoff");
 		session = null;
 	}
 
 	public String doPost(String url, NameValuePair... postVariables)
-			throws URISyntaxException, ClientProtocolException, IOException {
+			throws URISyntaxException, IOException, JsonStatusException {
 
 		if (!url.startsWith("/")) {
 			url = "/" + url;
@@ -128,8 +133,7 @@ public class JsonClient {
 		System.out.println("Response: " + response.getStatusLine().toString());
 
 		if (response.getStatusLine().getStatusCode() != 200) {
-			throw new ClientProtocolException(
-					"Expected status code 200 for doPost");
+			throw new JsonStatusException(response.getStatusLine().getStatusCode());
 		}
 
 		try {
@@ -140,8 +144,8 @@ public class JsonClient {
 
 	}
 
-	public String doGet(String url) throws ClientProtocolException,
-			IOException {
+	public String doGet(String url) throws
+			IOException, JsonStatusException {
 
 		if (!url.startsWith("/")) {
 			url = "/" + url;
@@ -159,10 +163,7 @@ public class JsonClient {
 
 		try {
 			if (response.getStatusLine().getStatusCode() != 200) {
-				throw new ClientProtocolException(
-						"Expected status code 200 for doGet ["
-								+ response.getStatusLine().getStatusCode()
-								+ "]");
+				throw new JsonStatusException(response.getStatusLine().getStatusCode());
 			}
 
 			return IOUtils.toString(response.getEntity().getContent(), "UTF-8");
@@ -172,7 +173,7 @@ public class JsonClient {
 	}
 
 	public String doDelete(String url)
-			throws ClientProtocolException, IOException {
+			throws IOException, JsonStatusException {
 
 		if (!url.startsWith("/")) {
 			url = "/" + url;
@@ -190,10 +191,7 @@ public class JsonClient {
 
 		try {
 			if (response.getStatusLine().getStatusCode() != 200) {
-				throw new ClientProtocolException(
-						"Expected status code 200 for doGet ["
-								+ response.getStatusLine().getStatusCode()
-								+ "]");
+				throw new JsonStatusException(response.getStatusLine().getStatusCode());
 			}
 
 			return IOUtils.toString(response.getEntity().getContent(), "UTF-8");
@@ -204,7 +202,7 @@ public class JsonClient {
 
 	public String doPostMultiparts(String url,
 			PropertyObject[] properties, MultipartObject... files)
-			throws ClientProtocolException, IOException {
+			throws IOException, JsonStatusException {
 		if (!url.startsWith("/")) {
 			url = "/" + url;
 		}
@@ -236,8 +234,7 @@ public class JsonClient {
 		System.out.println("Response: " + response.getStatusLine().toString());
 
 		if (response.getStatusLine().getStatusCode() != 200) {
-			throw new ClientProtocolException(
-					"Expected status code 200 for doPost");
+			throw new JsonStatusException(response.getStatusLine().getStatusCode());
 		}
 
 		try {
@@ -248,7 +245,7 @@ public class JsonClient {
 	}
 
 	public <T> T doGet(String url, Class<T> clz)
-			throws ClientProtocolException, IOException {
+			throws JsonStatusException, IOException {
 		
 		String json = doGet(url);
 		
@@ -258,7 +255,7 @@ public class JsonClient {
 	}
 
 	public String doPost(String url, String json)
-			throws URISyntaxException, ClientProtocolException, IOException {
+			throws URISyntaxException, JsonStatusException, IOException {
 
 		if (!url.startsWith("/")) {
 			url = "/" + url;
@@ -280,8 +277,7 @@ public class JsonClient {
 		System.out.println("Response: " + response.getStatusLine().toString());
 
 		if (response.getStatusLine().getStatusCode() != 200) {
-			throw new ClientProtocolException(
-					"Expected status code 200 for doPost");
+			throw new JsonStatusException(response.getStatusLine().getStatusCode());
 		}
 
 		try {
@@ -293,7 +289,7 @@ public class JsonClient {
 	}
 
 	public String doPostJson(String url, Object jsonObject)
-			throws URISyntaxException, IllegalStateException, IOException {
+			throws URISyntaxException, IllegalStateException, IOException, JsonStatusException {
 
 		if (!url.startsWith("/")) {
 			url = "/" + url;
@@ -319,9 +315,7 @@ public class JsonClient {
 		System.out.println("Response: " + response.getStatusLine().toString());
 
 		if (response.getStatusLine().getStatusCode() != 200) {
-
-			throw new ClientProtocolException(
-					"Expected status code 200 for doPost");
+			throw new JsonStatusException(response.getStatusLine().getStatusCode());
 		}
 		try {
 			return IOUtils.toString(response.getEntity().getContent(), "UTF-8");
