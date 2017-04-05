@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.PermissionsAwareJob;
 
@@ -24,6 +25,7 @@ public class SessionReaperJob extends PermissionsAwareJob {
 	@Override
 	protected void executeJob(JobExecutionContext context) {
 
+		sessionService.elevatePermissions(SystemPermission.SYSTEM);
 		try {
 			List<Session> activeSessions = sessionService.getActiveSessions();
 			
@@ -46,7 +48,9 @@ public class SessionReaperJob extends PermissionsAwareJob {
 			}
 		} catch (AccessDeniedException e) {
 			log.error("Access Denied", e);
-		} 
+		} finally {
+			sessionService.clearElevatedPermissions();
+		}
 	}
 
 	@Override

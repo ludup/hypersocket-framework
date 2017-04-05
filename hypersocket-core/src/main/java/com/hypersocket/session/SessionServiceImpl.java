@@ -46,6 +46,7 @@ import com.hypersocket.permissions.Role;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmPermission;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
 import com.hypersocket.resource.Resource;
@@ -478,8 +479,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public List<Session> getActiveSessions() throws AccessDeniedException {
 
-		assertAnyPermission(SystemPermission.SYSTEM,
-				SystemPermission.SYSTEM_ADMINISTRATION);
+		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			assertPermission(SystemPermission.SYSTEM);
+		}
 
 		return repository.getActiveSessions();
 	}
@@ -487,7 +489,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Long getActiveSessionCount(boolean distinctUsers) throws AccessDeniedException {
 
-		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
+		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			throw new AccessDeniedException();
+		}
 		
 		return repository.getActiveSessionCount(distinctUsers);
 	}
@@ -495,7 +499,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Long getSessionCount(Date startDate, Date endDate, boolean distinctUsers) throws AccessDeniedException {
 		
-		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
+		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			throw new AccessDeniedException();
+		}
 		
 		return repository.getSessionCount(startDate, endDate, distinctUsers);
 		
@@ -504,7 +510,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Map<String,Long> getBrowserCount(Date startDate, Date endDate) throws AccessDeniedException {
 		
-		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
+		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			throw new AccessDeniedException();
+		}
 		
 		return repository.getBrowserCount(startDate, endDate);
 		
@@ -513,7 +521,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Map<String,Long> getIPCount(Date startDate, Date endDate) throws AccessDeniedException {
 		
-		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
+		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			throw new AccessDeniedException();
+		}
 		
 		return repository.getIPCount(startDate, endDate);
 		
@@ -522,7 +532,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Map<String,Long> getOSCount(Date startDate, Date endDate) throws AccessDeniedException {
 		
-		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
+		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			throw new AccessDeniedException();
+		}
 		
 		return repository.getOSCount(startDate, endDate);
 		
@@ -531,7 +543,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Map<String,Long> getPrincipalUsage(Date startDate, Date endDate) throws AccessDeniedException {
 		
-		assertAnyPermission(SystemPermission.SYSTEM, SystemPermission.SYSTEM_ADMINISTRATION);
+		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			throw new AccessDeniedException();
+		}
 		
 		return repository.getPrincipalUsage(getCurrentRealm(), 5, startDate, endDate);
 		
