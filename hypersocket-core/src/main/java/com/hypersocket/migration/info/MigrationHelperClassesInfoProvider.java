@@ -2,7 +2,7 @@ package com.hypersocket.migration.info;
 
 import com.hypersocket.migration.exporter.MigrationExporter;
 import com.hypersocket.migration.importer.MigrationImporter;
-import com.hypersocket.migration.order.MigrationOrder;
+import com.hypersocket.migration.properties.MigrationProperties;
 import com.hypersocket.repository.AbstractEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ public class MigrationHelperClassesInfoProvider {
 
     private void scanForMigrationHelperClasses() {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
-        scanner.addIncludeFilter(new AssignableTypeFilter(MigrationOrder.class));
+        scanner.addIncludeFilter(new AssignableTypeFilter(MigrationProperties.class));
         scanner.addIncludeFilter(new AssignableTypeFilter(MigrationImporter.class));
         scanner.addIncludeFilter(new AssignableTypeFilter(MigrationExporter.class));
 
@@ -57,8 +57,8 @@ public class MigrationHelperClassesInfoProvider {
             for (BeanDefinition beanDefinition : classes) {
                 String className = beanDefinition.getBeanClassName();
                 Class aClass = MigrationHelperClassesInfoProvider.class.getClassLoader().loadClass(className);
-                if(MigrationOrder.class.isAssignableFrom(aClass)) {
-                    MigrationOrder instance = (MigrationOrder) aClass.newInstance();
+                if(MigrationProperties.class.isAssignableFrom(aClass)) {
+                    MigrationProperties instance = (MigrationProperties) aClass.newInstance();
                     migrationOrderMap.put(instance.sortOrder(), instance.getOrderList());
                 } else if (MigrationImporter.class.isAssignableFrom(aClass)) {
                     MigrationImporter instance = (MigrationImporter) applicationContext.getBean(aClass.getCanonicalName());

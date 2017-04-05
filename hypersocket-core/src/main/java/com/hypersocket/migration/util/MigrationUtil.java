@@ -1,6 +1,7 @@
 package com.hypersocket.migration.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import com.hypersocket.migration.annotation.LookUpKeys;
 import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
 import com.hypersocket.migration.lookup.LookUpKey;
@@ -20,7 +21,6 @@ import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -39,13 +39,6 @@ public class MigrationUtil {
             lookUpKey = captureEntityLookupFromLookupKeysAnnotation(node, annotation);
         } else {
             lookUpKey = captureEntityLookup(node);
-        }
-
-        if(lookUpKey.isComposite()) {
-            log.info("Processing look up key {} {}", Arrays.toString(lookUpKey.getProperties()),
-                    Arrays.toString(lookUpKey.getValues()));
-        } else {
-            log.info("Processing look up key {} {}", lookUpKey.getProperty(), lookUpKey.getValue());
         }
 
         return lookUpKey;
@@ -75,8 +68,6 @@ public class MigrationUtil {
             values.add(propertyNode.asText());
         }
 
-        //lookUpKey.setValue(value);
-
         //finally bank on id, -1 as we need some key for lookup else program would crash
         //this means here id of -1 just helps code flow, we are not looking actually for any data.
         //just to make code happy, ideally -1 value of id from database would not return any result
@@ -91,9 +82,6 @@ public class MigrationUtil {
             }
         }
 
-        //so far not needed
-        //if we need heavy customization on look up key and value property, may be we will need annotation on class
-        //explicitly defining lookup key and value property
         if(properties.size() == 1) {
             lookUpKey.setProperty(properties.get(0));
             lookUpKey.setValue(values.get(0));
@@ -188,8 +176,11 @@ public class MigrationUtil {
             }
         });
         return mappedBy.toString();
-
     }
 
 
+    @SuppressWarnings("unchecked")
+    public boolean isResourceAllowNameOnlyLookUp(Class aClass) {
+        return aClass.getAnnotation(AllowNameOnlyLookUp.class) != null;
+    }
 }

@@ -18,6 +18,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
+import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -26,6 +27,7 @@ import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name = "auth_schemes")
+@AllowNameOnlyLookUp
 public class AuthenticationScheme extends RealmResource {
 
 	@Column(name = "resourceKey")

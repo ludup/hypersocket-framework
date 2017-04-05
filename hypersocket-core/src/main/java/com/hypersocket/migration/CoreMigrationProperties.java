@@ -12,7 +12,7 @@ import com.hypersocket.jobs.JobResource;
 import com.hypersocket.local.LocalGroup;
 import com.hypersocket.local.LocalUser;
 import com.hypersocket.message.MessageResource;
-import com.hypersocket.migration.order.MigrationOrder;
+import com.hypersocket.migration.properties.MigrationProperties;
 import com.hypersocket.permissions.Permission;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.Role;
@@ -26,7 +26,7 @@ import com.hypersocket.upload.FileUpload;
 import java.util.Arrays;
 import java.util.List;
 
-public class CoreMigrationOrder implements MigrationOrder {
+public class CoreMigrationProperties implements MigrationProperties {
     @Override
     public Short sortOrder() {
         return 0;
@@ -35,6 +35,7 @@ public class CoreMigrationOrder implements MigrationOrder {
     @Override
     public List<Class<? extends AbstractEntity<Long>>> getOrderList() {
         return Arrays.<Class<? extends AbstractEntity<Long>>>asList(
+                Realm.class,
                 LocalUser.class,
                 LocalGroup.class,
                 PermissionCategory.class,
@@ -45,7 +46,6 @@ public class CoreMigrationOrder implements MigrationOrder {
                 AutomationResource.class,
                 FileUpload.class,
                 SecretKeyResource.class,
-                AuthenticationScheme.class,
                 AuthenticationModule.class,
                 DashboardMessage.class,
                 UserInterfaceState.class,
@@ -53,7 +53,8 @@ public class CoreMigrationOrder implements MigrationOrder {
                 MessageResource.class,
                 PrincipalSuspension.class,
                 UserAttributeCategory.class,
-                UserAttribute.class,
-                Realm.class);
+                UserAttribute.class);
     }
+
 }
+

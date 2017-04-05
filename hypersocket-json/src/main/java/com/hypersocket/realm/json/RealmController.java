@@ -14,6 +14,7 @@ import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.migration.execution.MigrationExecutor;
+import com.hypersocket.migration.file.FileUploadExporter;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.json.PropertyItem;
@@ -41,6 +42,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipOutputStream;
 
 @Controller
 public class RealmController extends ResourceController {
@@ -370,7 +372,7 @@ public class RealmController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
 	public void exportAll(HttpServletRequest request,
-							HttpServletResponse response) throws AccessDeniedException,
+						  HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException,
 			ResourceNotFoundException, ResourceExportException {
 
@@ -381,11 +383,23 @@ public class RealmController extends ResourceController {
 		} catch (Exception e) {
 		}
 		try {
+			response.reset();
+			response.setContentType("application/zip");
 			response.setHeader("Content-Disposition", "attachment; filename=\""
-					+ "realmResource.json\"");
-			realmService.exportAllResoures(response.getOutputStream());
+					+ "realmResource.zip\"");
+			ZipOutputStream zos = new
+					ZipOutputStream(response.getOutputStream());
+			//ZipEntry anEntry = new ZipEntry("realmResource.json");
+			//zos.putNextEntry(anEntry);
+			realmService.exportAllResoures(zos);
+			//zos.closeEntry();
+			//zos.flush();
+			fileUploadExporter.start(null, zos);
+			zos.flush();
+			zos.close();
 		} catch (IOException e) {
 			log.error("Problem in exporting realm resource.", e);
+			throw new IllegalStateException(e.getMessage(), e);
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -399,7 +413,7 @@ public class RealmController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<String> importRealm(
 			HttpServletRequest request, HttpServletResponse response,
-			@RequestParam(value = "file") MultipartFile jsonFile,
+			@RequestParam(value = "file") MultipartFile zipFile,
 			@RequestParam(required = false) boolean dropExisting)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
@@ -412,7 +426,7 @@ public class RealmController extends ResourceController {
 
 		try {
 
-			migrationExecutor.startRealmImport(jsonFile.getInputStream(), null);
+			migrationExecutor.startRealmImport(zipFile.getInputStream(), null);
 			return new ResourceStatus<String>(true,
 					I18N.getResource(sessionUtils.getLocale(request),
 							RealmService.RESOURCE_BUNDLE,
@@ -424,5 +438,8 @@ public class RealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+
+	@Autowired
+	FileUploadExporter fileUploadExporter;
 
 }

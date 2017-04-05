@@ -18,4 +18,6 @@ public interface MigrationRepository {
     List<DatabaseProperty> findAllDatabaseProperties(AbstractResource abstractResource);
 
     <T> T findEntityByLegacyIdInRealm(Class<? extends AbstractResource> aClass, Long legacyId, Realm realm);
+
+    <T> T findEntityByNameLookUpKey(Class<T> aClass, LookUpKey lookUpKey, Realm realm);
 }
