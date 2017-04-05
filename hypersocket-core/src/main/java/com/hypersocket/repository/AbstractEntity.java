@@ -120,6 +120,7 @@ public abstract class AbstractEntity<T> {
 		return this.getClass().getCanonicalName();
 	}
 
+	@JsonIgnore
 	public T getLegacyId() {
 		return legacyId == null ? getId() : legacyId;
 	}
