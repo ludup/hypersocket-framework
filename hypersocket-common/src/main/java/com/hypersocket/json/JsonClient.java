@@ -3,11 +3,13 @@ package com.hypersocket.json;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -15,6 +17,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -26,6 +30,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.ssl.SSLContextBuilder;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -44,11 +49,20 @@ public class JsonClient {
 	String path;
 	HttpClient client;
 	
-	public JsonClient(String hostname, int port, String path) {
+	public JsonClient(String hostname, int port, String path) throws IOException {
 		this.hostname = hostname;
 		this.port = port;
 		this.path = path;
-		this.client = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
+		
+		try {
+			SSLContextBuilder builder = new SSLContextBuilder();
+			builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build());
+			this.client = HttpClients.custom().setSSLSocketFactory(sslsf)
+					.setDefaultCookieStore(cookieStore).build();
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+			throw new IOException(e);
+		}
 	}
 	
 	public void logon(String username, String password)
