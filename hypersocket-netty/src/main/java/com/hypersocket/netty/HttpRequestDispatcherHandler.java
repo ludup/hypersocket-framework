@@ -608,7 +608,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
 			throws Exception {
 
-		if (log.isErrorEnabled()) {
+		if (log.isErrorEnabled() && !(e.getCause() instanceof ClosedChannelException)) {
 			log.error("Exception in http request remoteAddress="
 					+ e.getChannel().getRemoteAddress() + " localAddress="
 					+ e.getChannel().getLocalAddress(), e.getCause());
