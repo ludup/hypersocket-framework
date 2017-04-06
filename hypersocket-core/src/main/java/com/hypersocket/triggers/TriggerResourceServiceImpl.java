@@ -641,11 +641,26 @@ public class TriggerResourceServiceImpl extends
 
 	@Override
 	public List<EventDefinition> getTriggerEvents(String pattern, Locale locale) {
+		
 		List<EventDefinition> ret = new ArrayList<EventDefinition>();
+		String [] cards = pattern.toLowerCase().split("\\*");
 		for (EventDefinition def : eventService.getEvents()) {
-			if(I18N.getResource(locale, def.getResourceBundle(), def.getResourceKey()).toLowerCase().indexOf(pattern.toLowerCase()) > -1){
-				ret.add(new EventDefinition(def, def.getI18nNamespace(),
-						getEventAttributes(def)));				
+			boolean matchesPattern = true;
+			String eventName = I18N.getResource(locale, def.getResourceBundle(), def.getResourceKey()).toLowerCase();
+			for (String card : cards) {
+		        int idx = eventName.indexOf(card);
+		        if(idx == -1) {
+		        	matchesPattern = false;
+		        	break;
+		        }
+		        if(eventName.length() < idx + card.length()){
+		        	eventName = "";
+		        }else{
+		        	eventName = eventName.substring(idx + card.length());
+		        }
+		    }
+			if(matchesPattern){
+				ret.add(new EventDefinition(def, def.getI18nNamespace(), getEventAttributes(def)));
 			}
 		}
 		Collections.sort(ret, new Comparator<EventDefinition>() {
