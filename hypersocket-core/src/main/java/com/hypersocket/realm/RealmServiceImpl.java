@@ -204,7 +204,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		realmCache = cacheService.getCache("realmCache", String.class, Object.class);
 		
-		EntityResourcePropertyStore.registerResourceService(Principal.class, realmRepository);
+		EntityResourcePropertyStore.registerResourceService(Principal.class, principalRepository);
+		EntityResourcePropertyStore.registerResourceService(Realm.class, realmRepository);
 		
 		messageService.registerI18nMessage(MESSAGE_NEW_USER_NEW_PASSWORD, RESOURCE_BUNDLE,
 				"realmService.newUserNewPassword", PrincipalResolver.getVariables());
