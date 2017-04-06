@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -20,6 +21,8 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
 
+import com.hypersocket.migration.execution.MigrationExecutor;
+import com.hypersocket.resource.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,12 +67,6 @@ import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceConfirmationException;
-import com.hypersocket.resource.ResourceCreationException;
-import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.SessionServiceImpl;
@@ -1925,4 +1922,15 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		RealmProvider provider = getProviderForPrincipal(principal);
 		return provider.getUserProperties(principal);
 	}
+
+	@Override
+	public void exportAllResoures(OutputStream outputStream) throws ResourceExportException, AccessDeniedException {
+		//List<Realm> list = allRealms();
+		//return exportResources(list, false);
+		migrationExecutor.startRealmExport(outputStream, null);
+	}
+
+	@Autowired
+	MigrationExecutor migrationExecutor;
 }
+
