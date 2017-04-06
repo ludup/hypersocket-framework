@@ -11,6 +11,7 @@ import com.hypersocket.resource.AbstractResource;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 
-@Repository
+@Repository("migrationRepository")
 public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEntity> implements MigrationRepository {
 
     @Autowired
@@ -136,5 +137,17 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
         }
 
         return null;
+    }
+
+    @Override
+    public <T> DetachedCriteria buildCriteriaFor(Class<T> aClass, String alias) {
+        return DetachedCriteria.forClass(aClass, alias).
+                setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List executeCriteria(DetachedCriteria criteria) {
+        return criteria.getExecutableCriteria(sessionFactory.getCurrentSession()).list();
     }
 }

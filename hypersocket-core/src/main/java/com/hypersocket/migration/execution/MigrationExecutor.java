@@ -17,6 +17,7 @@ import com.hypersocket.migration.importer.MigrationImporter;
 import com.hypersocket.migration.info.MigrationHelperClassesInfoProvider;
 import com.hypersocket.migration.lookup.LookUpKey;
 import com.hypersocket.migration.mapper.MigrationObjectMapper;
+import com.hypersocket.migration.repository.MigrationCriteriaBuilder;
 import com.hypersocket.migration.repository.MigrationRepository;
 import com.hypersocket.migration.util.MigrationUtil;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -28,8 +29,8 @@ import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.upload.FileUploadService;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.criterion.DetachedCriteria;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,10 +79,13 @@ public class MigrationExecutor {
 
     private Map<Class<?>, MigrationExporter> migrationExporterMap;
 
+    private Map<Class<?>, MigrationCriteriaBuilder> migrationCriteriaBuilderMap;
+
     @PostConstruct
     private void postConstruct() {
         migrationImporterMap = migrationHelperClassesInfoProvider.getMigrationImporterMap();
         migrationExporterMap = migrationHelperClassesInfoProvider.getMigrationExporterMap();
+        migrationCriteriaBuilderMap = migrationHelperClassesInfoProvider.getMigrationCriteriaBuilder();
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -178,7 +182,16 @@ public class MigrationExecutor {
                 for (Class<? extends AbstractEntity<Long>> aClass : migrationClasses) {
                     ZipEntry anEntry = new ZipEntry(String.format("%s.json", aClass.getSimpleName()));
                     zos.putNextEntry(anEntry);
-                    List<AbstractEntity<Long>> objectList = (List<AbstractEntity<Long>>) migrationRepository.findAllResourceInRealmOfType(aClass, realm);
+                    List<AbstractEntity<Long>> objectList = null;
+                    if(migrationCriteriaBuilderMap.containsKey(aClass)) {
+                        log.info("Criteria builder found for class {}", aClass.getSimpleName());
+                        MigrationCriteriaBuilder migrationCriteriaBuilder = migrationCriteriaBuilderMap.get(aClass);
+                        DetachedCriteria criteria = migrationCriteriaBuilder.make(realm);
+                        objectList = migrationRepository.executeCriteria(criteria);
+                    }else {
+                        objectList = (List<AbstractEntity<Long>>) migrationRepository.findAllResourceInRealmOfType(aClass, realm);
+                    }
+
                     List<MigrationObjectWithMeta> migrationObjectWithMetas = new ArrayList<>();
 
                     for (AbstractEntity abstractEntity : objectList) {

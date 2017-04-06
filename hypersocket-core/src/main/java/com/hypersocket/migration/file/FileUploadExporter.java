@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -36,13 +37,20 @@ public class FileUploadExporter {
         List<FileUpload> fileUploadList = migrationRepository.findAllResourceInRealmOfType(FileUpload.class, realm);
         if(fileUploadList != null) {
             for (FileUpload fileUpload : fileUploadList) {
-                ZipEntry anEntry = new ZipEntry("uploadedFiles" + File.separatorChar + fileUpload.getName());
-                zipOutputStream.putNextEntry(anEntry);
-                InputStream inputStream = fileUploadService.getInputStream(fileUpload.getName());
-                int bytesWritten = IOUtils.copy(inputStream, zipOutputStream);
-                IOUtils.closeQuietly(inputStream);
-                zipOutputStream.closeEntry();
-                zipOutputStream.flush();
+                try {
+                    InputStream inputStream = fileUploadService.getInputStream(fileUpload.getName());
+                    ZipEntry anEntry = new ZipEntry("uploadedFiles" + File.separatorChar + fileUpload.getName());
+                    zipOutputStream.putNextEntry(anEntry);
+                    IOUtils.copy(inputStream, zipOutputStream);
+                    IOUtils.closeQuietly(inputStream);
+                    zipOutputStream.closeEntry();
+                    zipOutputStream.flush();
+                }catch (FileNotFoundException e) {
+                    //ignore for development
+                    if(!Boolean.getBoolean("hypersocket.development")) {
+                        throw e;
+                    }
+                }
             }
         }
     }
