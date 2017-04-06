@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
@@ -27,7 +28,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.hypersocket.json.RestApi;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
@@ -57,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.json.RestApi;
 import com.hypersocket.netty.forwarding.NettyWebsocketClient;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.server.handlers.HttpRequestHandler;
@@ -324,8 +325,13 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				if (log.isDebugEnabled()) {
 					log.debug("Leaving HttpRequestDispatcherHandler processRequest");
 				}
+			} catch(ClosedChannelException e) { 
+				// Ignore unless debug
+				if(log.isDebugEnabled()) {
+					log.debug("Attempted to perform operation on closed channel", e);
+				}
 			} catch(Throwable t) {
-				log.error("Error in HTTP request worker", t);
+				log.error("Exception in HTTP request worker", t);
 				ctx.getChannel().close();
 			}
 		}
