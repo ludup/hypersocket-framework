@@ -3,6 +3,7 @@ package com.hypersocket.migration.info;
 import com.hypersocket.migration.exporter.MigrationExporter;
 import com.hypersocket.migration.importer.MigrationImporter;
 import com.hypersocket.migration.properties.MigrationProperties;
+import com.hypersocket.migration.repository.MigrationCriteriaBuilder;
 import com.hypersocket.repository.AbstractEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ public class MigrationHelperClassesInfoProvider {
     private Map<Short, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = new TreeMap<>();
     private Map<Class<?>, MigrationImporter> migrationImporterMap = new HashMap<>();
     private Map<Class<?>, MigrationExporter> migrationExporterMap = new HashMap<>();
+    private Map<Class<?>, MigrationCriteriaBuilder> migrationCriteriaBuilder = new HashMap<>();
 
     @PostConstruct
     private void postConstruct() {
@@ -45,6 +47,10 @@ public class MigrationHelperClassesInfoProvider {
         return Collections.unmodifiableMap(migrationExporterMap);
     }
 
+    public Map<Class<?>, MigrationCriteriaBuilder> getMigrationCriteriaBuilder() {
+        return Collections.unmodifiableMap(migrationCriteriaBuilder);
+    }
+
     private void scanForMigrationHelperClasses() {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AssignableTypeFilter(MigrationProperties.class));
@@ -60,6 +66,10 @@ public class MigrationHelperClassesInfoProvider {
                 if(MigrationProperties.class.isAssignableFrom(aClass)) {
                     MigrationProperties instance = (MigrationProperties) aClass.newInstance();
                     migrationOrderMap.put(instance.sortOrder(), instance.getOrderList());
+                    Map<Class<?>, MigrationCriteriaBuilder> criteriaMap = instance.getCriteriaMap();
+                    if(criteriaMap != null) {
+                        migrationCriteriaBuilder.putAll(instance.getCriteriaMap());
+                    }
                 } else if (MigrationImporter.class.isAssignableFrom(aClass)) {
                     MigrationImporter instance = (MigrationImporter) applicationContext.getBean(aClass.getCanonicalName());
                     migrationImporterMap.put(instance.getType(), instance);

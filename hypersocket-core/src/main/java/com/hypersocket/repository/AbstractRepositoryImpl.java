@@ -45,7 +45,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	static Logger log = LoggerFactory.getLogger(AbstractRepositoryImpl.class);
 
 	private HibernateTemplate hibernateTemplate;
-	private SessionFactory sessionFactory;
+	protected SessionFactory sessionFactory;
 
 	private boolean requiresDemoWrite = false;
 
