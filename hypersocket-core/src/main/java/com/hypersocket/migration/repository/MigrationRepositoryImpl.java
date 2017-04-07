@@ -46,10 +46,12 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
             for (int i = 0; i < properties.length; i++) {
                 criteria.add(Restrictions.eq(properties[i], values[i]));
             }
-            return (T) criteria.uniqueResult();
+            List list = criteria.list();
+            return list != null && !list.isEmpty() ? (T) list.get(0) : null;
         } else {
-            return (T) criteria.add(Restrictions.eq(lookUpKey.getProperty(), lookUpKey.getValue()))
-                    .uniqueResult();
+            List list = criteria.add(Restrictions.eq(lookUpKey.getProperty(), lookUpKey.getValue()))
+                    .list();
+            return list != null && !list.isEmpty() ? (T) list.get(0) : null;
         }
     }
 
