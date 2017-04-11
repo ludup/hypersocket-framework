@@ -217,6 +217,17 @@ public class FileStoreController extends ResourceController {
 			resourceService.downloadURIFile(uuid, request, response, true);
 	}
 	
+	@RequestMapping(value = "files/download/{uuid}/{filename}", method = RequestMethod.GET)
+	@ResponseStatus(value = HttpStatus.OK)
+	public void downloadFile(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String uuid, 
+			@PathVariable String filename)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException, IOException, ResourceNotFoundException {
+
+			resourceService.downloadURIFile(uuid, request, response, true);
+	}
+	
 	@RequestMapping(value = "files/public/{uuid}/{filename}", method = RequestMethod.GET)
 	@ResponseStatus(value = HttpStatus.OK)
 	public void downloadPublicFile(HttpServletRequest request,
