@@ -343,15 +343,21 @@ public abstract class AbstractSchedulerServiceImpl implements SchedulerService {
 	}
 
 	@Override
-	public Date getNextSchedule(String id) throws SchedulerException {
+	public Date getNextSchedule(String id) throws SchedulerException, NotScheduledException {
 		List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(new JobKey(id));
+		if(triggersOfJob.isEmpty()) {
+			throw new NotScheduledException();
+		}
 		Trigger trigger = triggersOfJob.get(0);
 		return trigger.getNextFireTime();
 	}
 
 	@Override
-	public Date getPreviousSchedule(String id) throws SchedulerException {
+	public Date getPreviousSchedule(String id) throws SchedulerException, NotScheduledException {
 		List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(new JobKey(id));
+		if(triggersOfJob.isEmpty()) {
+			throw new NotScheduledException();
+		}
 		Trigger trigger = triggersOfJob.get(0);
 		return trigger.getPreviousFireTime();
 	}

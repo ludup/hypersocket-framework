@@ -292,16 +292,22 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 	@Override
 	public void updateResourceSchedule(T resource) throws SchedulerException {
 
-		Date previousReconcile = schedulerService.getPreviousSchedule(resource.getId().toString());
-		
-		getRepository().setValue(resource, "reconcile.nextReconcileDue", 
-				HypersocketUtils.formatDate(
-						schedulerService.getNextSchedule(resource.getId().toString()), 
+		try {
+			Date previousReconcile = schedulerService.getPreviousSchedule(resource.getId().toString());
+			
+			getRepository().setValue(resource, "reconcile.nextReconcileDue", 
+					HypersocketUtils.formatDate(
+							schedulerService.getNextSchedule(resource.getId().toString()), 
+								"EEE, d MMM yyyy HH:mm:ss"));
+			
+			getRepository().setValue(resource, "reconcile.lastReconcilePerformed", 
+					HypersocketUtils.formatDate(
+							previousReconcile,
 							"EEE, d MMM yyyy HH:mm:ss"));
-		getRepository().setValue(resource, "reconcile.lastReconcilePerformed", 
-				HypersocketUtils.formatDate(
-						previousReconcile,
-						"EEE, d MMM yyyy HH:mm:ss"));
+		} catch (NotScheduledException e) {
+			scheduleReconcile(resource, false, false);
+		}
+		
 
 	}
 	
