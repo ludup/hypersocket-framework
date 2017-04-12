@@ -46,7 +46,6 @@ import com.hypersocket.permissions.Role;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmPermission;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
 import com.hypersocket.resource.Resource;
@@ -141,6 +140,11 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		repository.saveEntity(session);
 		return session;
+	}
+	
+	@Override
+	public void updateSession(Session session) {
+		repository.saveEntity(session);
 	}
 
 	@Override
