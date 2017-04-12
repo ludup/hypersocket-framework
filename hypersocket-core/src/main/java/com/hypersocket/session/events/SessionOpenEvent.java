@@ -14,6 +14,7 @@ public class SessionOpenEvent extends SessionStateEvent {
 	public static final String ATTR_USER_AGENT_VERSION = "attr.userAgentVersion";
 	public static final String ATTR_OS = "attr.os";
 	public static final String ATTR_OS_VERSION = "attr.osVersion";
+	public static final String ATTR_TRANSIENT = "attr.transient";
 	
 	public SessionOpenEvent(Object source, Session session) {
 		super(source, EVENT_RESOURCE_KEY, true, session);
@@ -21,6 +22,7 @@ public class SessionOpenEvent extends SessionStateEvent {
 		addAttribute(ATTR_USER_AGENT_VERSION, session.getUserAgentVersion());
 		addAttribute(ATTR_OS, session.getOs());
 		addAttribute(ATTR_OS_VERSION, session.getOsVersion());
+		addAttribute(ATTR_TRANSIENT, session.isTransient());
 	}
 	
 	public String[] getResourceKeys() {

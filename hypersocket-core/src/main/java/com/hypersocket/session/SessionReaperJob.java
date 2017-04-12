@@ -36,7 +36,10 @@ public class SessionReaperJob extends PermissionsAwareJob {
 			boolean firstRun = context.getTrigger().getJobDataMap().containsKey("firstRun");
 			
 			for(Session session : activeSessions) {
-				if(!session.isSystem()) {
+				if(firstRun && session.isTransient()) {
+					sessionService.closeSession(session);
+				}
+				else if(!session.isSystem()) {
 					if(sessionService.isLoggedOn(session, false)) {
 						if(firstRun) {
 							if(realmService.getRealmPropertyBoolean(session.getPrincipalRealm(), "session.closeOnShutdown")) {

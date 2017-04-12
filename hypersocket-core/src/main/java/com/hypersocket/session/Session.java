@@ -121,6 +121,9 @@ public class Session extends AbstractEntity<String> {
 	@Column(name = "system")
 	Boolean system;
 
+	@Column(name = "transient")
+	Boolean transientSession;
+
 	@Transient
 	String csrfToken = null;
 	
@@ -152,6 +155,14 @@ public class Session extends AbstractEntity<String> {
 	public void setSignedOut(Date signedOut) {
 		this.signedOut = signedOut;
 		totalSeconds = calculateTotalSeconds();
+	}
+
+	public boolean isTransient() {
+		return transientSession != null && transientSession;
+	}
+
+	public void setTransient(boolean transientSession) {
+		this.transientSession = transientSession;
 	}
 
 	protected Double calculateTotalSeconds() { 
@@ -214,7 +225,7 @@ public class Session extends AbstractEntity<String> {
 	}
 
 	public Date getLastUpdated() {
-		return lastUpdated == null ? getModifiedDate() : lastUpdated;
+		return sessionTimeout == Integer.MAX_VALUE ? new Date() : lastUpdated == null ? getModifiedDate() : lastUpdated;
 	}
 
 	public void setAuthenticationScheme(AuthenticationScheme scheme) {

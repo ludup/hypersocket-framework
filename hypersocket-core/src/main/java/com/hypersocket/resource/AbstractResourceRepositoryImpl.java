@@ -192,6 +192,13 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 
 	@Override
 	@Transactional(readOnly=true)
+	public long getResourceCount(Realm realm) {
+		return getCount(getResourceClass(), "name", "",
+				new RealmCriteria(realm), new DeletedCriteria(false), new DefaultCriteriaConfiguration());
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
 	public long getResourceCount(Realm realm, String searchColumn, String searchPattern,
 			CriteriaConfiguration... configs) {
 		return getCount(getResourceClass(), searchColumn, searchPattern,

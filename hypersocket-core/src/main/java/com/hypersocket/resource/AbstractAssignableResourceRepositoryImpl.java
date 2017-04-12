@@ -537,6 +537,12 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@Override
 	@Transactional(readOnly=true)
+	public long getResourceCount(Realm realm) {
+		return getResourceCount(realm, "name", "");
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
 	public long getResourceCount(Realm realm, String searchColumn, String searchPattern,
 			CriteriaConfiguration... configs) {
 		long count = getCount(getResourceClass(), searchColumn, searchPattern,

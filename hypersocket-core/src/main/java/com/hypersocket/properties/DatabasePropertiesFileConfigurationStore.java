@@ -8,6 +8,8 @@ import org.w3c.dom.Element;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,13 +44,11 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 	private Map<String, File> templateLocationMap = new HashMap<String, File>();
 	private Map<String, Properties> propertiesMap = new HashMap<String, Properties>();
 
-	public DatabasePropertiesFileConfigurationStore() {
-		String baseLocation = String.format("%s%c%s", System.getProperty("user.dir"), File.separatorChar, System.getProperty("hypersocket.conf", "conf"));
-
-		templateLocationMap.put(MYSQL, getTemplateLocation(baseLocation, "0"));
-		templateLocationMap.put(POSTGRES, getTemplateLocation(baseLocation, "1"));
-		templateLocationMap.put(MSSQL, getTemplateLocation(baseLocation, "2"));
-		templateLocationMap.put(DERBY, getTemplateLocation(baseLocation, "3"));
+	public DatabasePropertiesFileConfigurationStore() throws URISyntaxException {
+		templateLocationMap.put(MYSQL, getTemplateLocation( MYSQL.toLowerCase()));
+		templateLocationMap.put(POSTGRES, getTemplateLocation(POSTGRES.toLowerCase()));
+		templateLocationMap.put(MSSQL, getTemplateLocation(MSSQL.toLowerCase()));
+		templateLocationMap.put(DERBY, getTemplateLocation(DERBY.toLowerCase()));
 	}
 
 	public void init(Element element) throws IOException {
@@ -56,11 +56,13 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 		fillUpMissingKeys();
 	}
 	
-	 private File getTemplateLocation(String baseLocation, String code){
-	 	return new File(String.format("%s%c%s%c%s", baseLocation, File.separatorChar, code, File.separatorChar, "database.properties"));
-	 }
+	private File getTemplateLocation(String code) throws URISyntaxException {
+		URL url = DatabasePropertiesFileConfigurationStore.class.getClassLoader().
+				getResource(String.format("dbtemplates/%s_database.properties", code));
+		return new File(url.toURI());
+	}
 
-	 private Properties getProperties(String vendor) {
+	private Properties getProperties(String vendor) {
 	 	try {
 			if (!propertiesMap.containsKey(vendor)) {
 				propertiesMap.put(vendor, readProperties(templateLocationMap.get(vendor)));
@@ -70,7 +72,7 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 		}catch (IOException e){
 			throw new IllegalStateException(e.getMessage(), e);
 		}
-	 }
+	}
 	 
 	@Override
 	public void setProperty(PropertyTemplate template, String value) {

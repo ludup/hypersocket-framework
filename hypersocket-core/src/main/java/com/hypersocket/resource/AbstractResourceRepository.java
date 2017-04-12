@@ -38,4 +38,6 @@ public interface AbstractResourceRepository<T extends AbstractResource> extends 
 
 	EntityResourcePropertyStore getEntityStore();
 
+	long getResourceCount(Realm realm);
+
 }

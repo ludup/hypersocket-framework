@@ -41,6 +41,10 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 		return ((ResourcePropertyStore)propertyStore).getPropertyValue(this, resource);
 	}
 	
+	public AbstractResource getResource() {
+		return resource;
+	}
+	
 	public void setResource(AbstractResource resource) {
 		this.resource = resource;
 	}

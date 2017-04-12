@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.hypersocket.HypersocketVersion;
 import com.hypersocket.utils.FileUtils;
+import com.hypersocket.utils.HttpUtilsHolder;
 import com.hypersocket.utils.HypersocketUtils;
 
 public abstract class AbstractExtensionUpdater {
@@ -34,7 +35,7 @@ public abstract class AbstractExtensionUpdater {
 	static Logger log = LoggerFactory.getLogger(AbstractExtensionUpdater.class);
 	private long transfered;
 	private long totalSize;
-
+	
 	public long getTransfered() {
 		return transfered;
 	}
@@ -321,8 +322,7 @@ public abstract class AbstractExtensionUpdater {
 	}
 
 	protected InputStream downloadFromUrl(URL url) throws IOException {
-		InputStream in = url.openStream();
-		return in;
+		return HttpUtilsHolder.getInstance().doHttpGet(url.toExternalForm(), true);
 	}
 
 	protected void onExtensionDownloadStarted(ExtensionVersion def) {

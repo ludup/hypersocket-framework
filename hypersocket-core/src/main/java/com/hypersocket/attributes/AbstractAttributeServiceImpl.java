@@ -65,7 +65,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	private String resourceBundle;
 	private String categoryGroup;
 	
-	private PropertyResolver propertyResolver = new AttributePropertyResolver();
+	private PropertyResolver propertyResolver;
 	
 	public AbstractAttributeServiceImpl(String resourceBundle, Class<A> resourceClass, Class<?> permissionType,
 			PermissionType createPermission, PermissionType readPermission, PermissionType updatePermission, PermissionType deletePermission,
@@ -79,11 +79,17 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		this.readPermission = readPermission;
 		this.updatePermission = updatePermission;
 		this.deletePermission = deletePermission;
+		
+		propertyResolver = createPropertyResolver();
 	}
 	
 	@Override
 	public PropertyResolver getPropertyResolver() {
 		return propertyResolver;
+	}
+	
+	protected PropertyResolver createPropertyResolver() {
+		return new AttributePropertyResolver<A,C,R>(this);
 	}
 	
 	protected void init() {
@@ -339,16 +345,23 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		return getRepository().getAttributeByVariableName(attributeName, getCurrentRealm());
 	}
 	
-	class AttributePropertyResolver implements PropertyResolver {
+	public static class AttributePropertyResolver<A extends AbstractAttribute<C>, C extends RealmAttributeCategory<A>, R extends AbstractResource> implements PropertyResolver {
+		
+		protected AbstractAttributeServiceImpl<A,C,R> service;
+
+		public AttributePropertyResolver(AbstractAttributeServiceImpl<A,C,R> service) {
+			this.service = service;
+		}
+		
 		@Override
 		public Collection<String> getPropertyNames(AbstractResource resource) {
-			Map<String,PropertyTemplate> userTemplates = getAttributeTemplates(checkResource(resource));
+			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
 			return userTemplates.keySet();
 		}
 
 		@Override
 		public Collection<String> getVariableNames(AbstractResource resource) {
-			Map<String,PropertyTemplate> userTemplates = getAttributeTemplates(checkResource(resource));
+			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
 			return userTemplates.keySet();
 		}
 		
@@ -356,7 +369,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		public PropertyTemplate getPropertyTemplate(AbstractResource resource,
 				String resourceKey) {
 			
-			Map<String,PropertyTemplate> userTemplates = getAttributeTemplates(checkResource(resource));
+			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
 			return userTemplates.get(resourceKey);
 		}
 
@@ -364,14 +377,14 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		public Collection<PropertyCategory> getPropertyCategories(
 				AbstractResource resource) {
 			
-			Map<String,PropertyTemplate> userTemplates = getAttributeTemplates(checkResource(resource));
+			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
 			Map<Integer,PropertyCategory> results = new HashMap<Integer,PropertyCategory>();
 			
 			for(PropertyTemplate t : userTemplates.values()) {
 				if(!results.containsKey(t.getCategory().getId())) {
 					PropertyCategory cat = new PropertyCategory();
 					cat.setBundle(t.getCategory().getBundle());
-					cat.setCategoryGroup(categoryGroup);
+					cat.setCategoryGroup(service.categoryGroup);
 					cat.setCategoryNamespace(t.getCategory().getCategoryNamespace());
 					cat.setCategoryKey(t.getCategory().getCategoryKey());
 					cat.setWeight(t.getCategory().getWeight());
@@ -396,7 +409,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		public Collection<PropertyTemplate> getPropertyTemplates(
 				AbstractResource resource) {
 			
-			Map<String,PropertyTemplate> userTemplates = getAttributeTemplates(checkResource(resource));
+			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
 			return userTemplates.values();
 		}
 
@@ -404,7 +417,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		public boolean hasPropertyTemplate(AbstractResource resource,
 				String resourceKey) {
 
-			Map<String,PropertyTemplate> userTemplates = getAttributeTemplates(checkResource(resource));
+			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
 			return userTemplates.containsKey(resourceKey);
 
 		}

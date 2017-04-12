@@ -8,7 +8,10 @@
 package com.hypersocket.resource;
 
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.realm.Realm;
 
 public interface AssignableResourceRepository extends ResourceTemplateRepository {
+
+	long getResourceCount(Realm realm);
 	
 }

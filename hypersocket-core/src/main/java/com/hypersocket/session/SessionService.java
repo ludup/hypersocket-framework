@@ -109,4 +109,6 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	void switchRole(Session currentSession, Role role) throws AccessDeniedException;
 
 	Role getCurrentRole(Session session);
+	
+	void updateSession(Session session);
 }
