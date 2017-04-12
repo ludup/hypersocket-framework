@@ -1,5 +1,6 @@
 package com.hypersocket.migration.mixin.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -26,8 +27,9 @@ public class RoleMigrationMixIn extends Role implements MigrationMixIn {
     }
 
     @Override
-    @JsonSerialize(contentUsing = MigrationSerializerForResource.class)
-    @JsonDeserialize(contentUsing = MigrationDeserializer.class)
+    //@JsonSerialize(contentUsing = MigrationSerializerForResource.class)
+    //@JsonDeserialize(contentUsing = MigrationDeserializer.class)
+    @JsonIgnore
     public Set<Principal> getPrincipals() {return null;}
 
 }

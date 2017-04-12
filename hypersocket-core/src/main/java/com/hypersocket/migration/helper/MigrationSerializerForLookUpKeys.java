@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.hypersocket.migration.annotation.LookUpKeys;
+import com.hypersocket.migration.exporter.JsonPropertiesAdder;
 import com.hypersocket.repository.AbstractEntity;
+import com.hypersocket.util.SpringApplicationContextProvider;
 import org.apache.commons.beanutils.PropertyUtils;
 
 import java.io.IOException;
@@ -36,8 +38,20 @@ public class MigrationSerializerForLookUpKeys extends StdSerializer<AbstractEnti
                 throw new IllegalStateException(e.getMessage(), e);
             }
         }
+        addAnyPropertiesFromCustomBean(value, gen, provider);
+        gen.writeBooleanField("reference", true);
         gen.writeStringField("_meta", value._meta());
         gen.writeEndObject();
+    }
+
+    private void addAnyPropertiesFromCustomBean(AbstractEntity value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        Class aClass = value.getClass();
+        String customBean = String.format("%sJsonPropertiesAdder", aClass.getSimpleName());
+        if(SpringApplicationContextProvider.getApplicationContext().containsBean(customBean)) {
+            JsonPropertiesAdder jsonPropertiesAdder = (JsonPropertiesAdder) SpringApplicationContextProvider.
+                    getApplicationContext().getBean(customBean);
+            jsonPropertiesAdder.add(value, gen, provider);
+        }
     }
 
     private String[] getLookUpPropertyNames(AbstractEntity value) {

@@ -25,4 +25,6 @@ public interface MigrationRepository {
     <T> DetachedCriteria buildCriteriaFor(Class<T> aClass, String alias);
 
     List executeCriteria(DetachedCriteria criteria);
+
+    void flush();
 }
