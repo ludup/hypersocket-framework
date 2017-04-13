@@ -27,6 +27,11 @@ public class RoleMigrationImporter implements MigrationImporter<Role>{
     }
 
     @Override
+    public void postSave(Role entity) {
+
+    }
+
+    @Override
     public Class<Role> getType() {
         return Role.class;
     }

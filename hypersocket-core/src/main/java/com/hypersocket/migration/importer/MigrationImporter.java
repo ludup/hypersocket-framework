@@ -5,6 +5,7 @@ import com.hypersocket.realm.Realm;
 
 public interface MigrationImporter<E> {
     void process(E entity);
+    void postSave(E entity);
     Class<E> getType();
     void processCustomOperationsMap(JsonNode jsonNode, Realm realm);
 }

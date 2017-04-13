@@ -373,7 +373,7 @@ public class RealmController extends ResourceController {
 
 		try {
 
-			migrationExecutor.startRealmImport(zipFile.getInputStream(), null);
+			migrationExecutor.startRealmImport(zipFile.getInputStream());
 			return new ResourceStatus<String>(true,
 					I18N.getResource(sessionUtils.getLocale(request),
 							RealmService.RESOURCE_BUNDLE,
