@@ -5,6 +5,7 @@ import com.hypersocket.migration.importer.MigrationImporter;
 import com.hypersocket.migration.properties.MigrationProperties;
 import com.hypersocket.migration.repository.MigrationCriteriaBuilder;
 import com.hypersocket.repository.AbstractEntity;
+import org.apache.commons.collections.map.MultiValueMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class MigrationHelperClassesInfoProvider {
     @Autowired
     ApplicationContext applicationContext;
 
-    private Map<Short, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = new TreeMap<>();
+    private Map<Short, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = MultiValueMap.decorate(new TreeMap<>());
     private Map<Class<?>, MigrationImporter> migrationImporterMap = new HashMap<>();
     private Map<Class<?>, MigrationExporter> migrationExporterMap = new HashMap<>();
     private Map<Class<?>, MigrationCriteriaBuilder> migrationCriteriaBuilder = new HashMap<>();
@@ -36,7 +37,7 @@ public class MigrationHelperClassesInfoProvider {
     }
 
     public Map<Short, List<Class<? extends AbstractEntity<Long>>>> getMigrationOrderMap() {
-        return Collections.unmodifiableMap(migrationOrderMap);
+        return migrationOrderMap;
     }
 
     public Map<Class<?>, MigrationImporter> getMigrationImporterMap() {
