@@ -78,9 +78,9 @@ public interface SchedulerService {
 
 	void cancelNow(String scheduleId) throws SchedulerException;
 
-	Date getNextSchedule(String string) throws SchedulerException;
+	Date getNextSchedule(String string) throws SchedulerException, NotScheduledException;
 
-	Date getPreviousSchedule(String string) throws SchedulerException;
+	Date getPreviousSchedule(String string) throws SchedulerException, NotScheduledException;
 
 	void rescheduleNow(String scheduleId, long interval, int repeat, Date end)
 			throws SchedulerException, NotScheduledException;

@@ -699,6 +699,13 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 												+ websocketChannel
 														.getRemoteAddress());
 									client.open();
+									websocketChannel.getCloseFuture().addListener(new ChannelFutureListener() {
+										
+										@Override
+										public void operationComplete(ChannelFuture future) throws Exception {
+											client.close();
+										}
+									});
 								} else {
 									if (log.isDebugEnabled())
 										log.debug("Handshake failed for "
