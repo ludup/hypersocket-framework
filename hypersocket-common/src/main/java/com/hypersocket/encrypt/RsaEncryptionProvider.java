@@ -1,4 +1,4 @@
-package com.hypersocket.rsa;
+package com.hypersocket.encrypt;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,8 +22,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.lf5.util.StreamUtils;
 
-import com.hypersocket.encrypt.AbstractEncryptionProvider;
-import com.hypersocket.encrypt.EncryptionProvider;
+import com.hypersocket.utils.CommandExecutor;
 
 public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 
@@ -61,6 +60,8 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 		    pvt.flush();
 		} finally {
 		    pvt.close();
+		    prvFile.setWritable(false);
+		    prvFile.setReadable(true, true);
 		}
 		FileOutputStream pub = new FileOutputStream(pubFile);
 		try {
@@ -68,6 +69,8 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 		    pub.flush();
 		} finally {
 		    pub.close();
+		    pubFile.setWritable(false);
+		    pubFile.setReadable(true, true);
 		}
 	}
 	
