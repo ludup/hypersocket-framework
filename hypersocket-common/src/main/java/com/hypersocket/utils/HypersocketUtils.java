@@ -375,4 +375,8 @@ public class HypersocketUtils {
 		}
 	}
 
+	public static String encodeURIPath(String url) {
+		return url.replace(" ", "%20");
+	}
+
 }
