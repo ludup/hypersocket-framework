@@ -41,4 +41,6 @@ public interface Authenticator {
 	AbstractResourceRepository<AuthenticationScheme> getRepository();
 	
 	boolean isPropertiesModule();
+
+	public boolean requiresUserInput();
 }

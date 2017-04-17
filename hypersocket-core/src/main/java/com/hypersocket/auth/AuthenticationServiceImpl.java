@@ -528,6 +528,8 @@ public class AuthenticationServiceImpl extends
 						
 						state.nextModule();
 
+						
+						
 						if (state.isAuthenticationComplete()) {
 
 							permissionService.verifyPermission(
@@ -572,6 +574,12 @@ public class AuthenticationServiceImpl extends
 										success = logon(state, parameterMap);
 									}
 								}
+							}
+						} else {
+							authenticator = nextAuthenticator(state);
+							
+							if(!authenticator.requiresUserInput()) {
+								return logon(state, parameterMap);
 							}
 						}
 					} catch (AccessDeniedException e) {
