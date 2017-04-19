@@ -2,6 +2,7 @@ package com.hypersocket.migration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hypersocket.json.JsonMapper;
 import com.hypersocket.local.LocalGroup;
 import com.hypersocket.local.LocalUser;
 import com.hypersocket.migration.importer.MigrationImporter;
@@ -17,6 +18,9 @@ import java.util.Map;
 
 @Component("com.hypersocket.migration.RoleMigrationImporter")
 public class RoleMigrationImporter implements MigrationImporter<Role>{
+
+    @Autowired
+    JsonMapper jsonMapper;
 
     @Autowired
     MigrationRepository migrationRepository;
@@ -39,8 +43,7 @@ public class RoleMigrationImporter implements MigrationImporter<Role>{
     @Override
     @Transactional
     public void processCustomOperationsMap(JsonNode jsonNode, Realm realm) {
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> customOperationsList = mapper.convertValue(jsonNode, Map.class);
+        Map<String, Object> customOperationsList = jsonMapper.get().convertValue(jsonNode, Map.class);
 
         List<Map<String, ?>> users = (List<Map<String, ?>>) customOperationsList.get("users");
         List<Map<String, ?>> groups = (List<Map<String, ?>>) customOperationsList.get("groups");

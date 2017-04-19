@@ -215,6 +215,6 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Map<String, String> getUserPropertyValues(Principal principal);
 
-	void exportAllResoures(OutputStream outputStream) throws ResourceExportException, AccessDeniedException;
+	void exportResources(OutputStream outputStream, Long realmId, boolean all, String[] entities) throws ResourceExportException, AccessDeniedException;
 
 }

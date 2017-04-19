@@ -152,4 +152,27 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
     public List executeCriteria(DetachedCriteria criteria) {
         return criteria.getExecutableCriteria(sessionFactory.getCurrentSession()).list();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Realm findRealm(LookUpKey lookUpKey) {
+        Criteria criteria = createCriteria(Realm.class);
+        if(lookUpKey.isComposite()) {
+            String[] properties = lookUpKey.getProperties();
+            Object[] values = lookUpKey.getValues();
+            boolean nameFound = false;
+            for (int i = 0; i < properties.length; i++) {
+                if("name".equals(properties[i])) {
+                    criteria.add(Restrictions.eq(properties[i], values[i]));
+                    nameFound = true;
+                }
+            }
+            if(nameFound) {
+                List<Realm> list = criteria.list();
+                return list != null && !list.isEmpty() ? list.get(0) : null;
+            }
+        }
+
+        return null;
+    }
 }

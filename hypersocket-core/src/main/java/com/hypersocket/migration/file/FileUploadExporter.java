@@ -31,10 +31,6 @@ public class FileUploadExporter {
     FileUploadService fileUploadService;
 
     public void start(Realm realm, ZipOutputStream zipOutputStream) throws IOException, ResourceNotFoundException {
-        if(realm == null) {
-            realm = realmService.getCurrentRealm();
-        }
-
         List<FileUpload> fileUploadList = migrationRepository.findAllResourceInRealmOfType(FileUpload.class, realm);
         if(fileUploadList != null) {
             for (FileUpload fileUpload : fileUploadList) {

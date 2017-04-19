@@ -1,7 +1,8 @@
 package com.hypersocket.migration;
 
 import com.hypersocket.migration.properties.MigrationProperties;
-import com.hypersocket.migration.repository.MigrationCriteriaBuilder;
+import com.hypersocket.migration.repository.MigrationExportCriteriaBuilder;
+import com.hypersocket.migration.repository.MigrationLookupCriteriaBuilder;
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 
@@ -24,7 +25,12 @@ public class ServerMigrationProperties implements MigrationProperties {
     }
 
     @Override
-    public Map<Class<?>, MigrationCriteriaBuilder> getCriteriaMap() {
+    public Map<Class<?>, MigrationExportCriteriaBuilder> getExportCriteriaMap() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public Map<Class<?>, MigrationLookupCriteriaBuilder> getLookupCriteriaMap() {
         return Collections.emptyMap();
     }
 }

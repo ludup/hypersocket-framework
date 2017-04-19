@@ -17,6 +17,7 @@ import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
 import com.hypersocket.local.LocalRealmProviderImpl;
 import com.hypersocket.migration.execution.MigrationExecutor;
+import com.hypersocket.migration.file.FileUploadExporter;
 import com.hypersocket.migration.mapper.MigrationObjectMapper;
 import com.hypersocket.permissions.*;
 import com.hypersocket.properties.*;
@@ -46,9 +47,11 @@ import org.springframework.transaction.TransactionStatus;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.Entity;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
@@ -102,7 +105,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	PrincipalSuspensionRepository suspensionRepository; 
 	
 	@Autowired
-	PrincipalRepository principalRepository; 
+	PrincipalRepository principalRepository;
+
+	@Autowired
+	MigrationExecutor migrationExecutor;
+
+	@Autowired
+	FileUploadExporter fileUploadExporter;
 	
 	CacheManager cacheManager;
 	Cache realmCache;
@@ -1732,15 +1741,20 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void exportAllResoures(OutputStream outputStream) throws ResourceExportException, AccessDeniedException {
-		//List<Realm> list = allRealms();
-		//return exportResources(list, false);
-		migrationExecutor.startRealmExport(outputStream, null);
+	public void exportResources(OutputStream outputStream, Long realmId, boolean all, String[] entities) throws ResourceExportException, AccessDeniedException {
+		try {
+			Realm realm = realmRepository.getRealmById(realmId);
+			Set<String> entitiesSet = new HashSet<>();
+			if (!all && entities.length > 0) {
+				entitiesSet.addAll(Arrays.asList(entities));
+			}
+			migrationExecutor.startRealmExport(outputStream, realm, entitiesSet);
+			if(all || entitiesSet.contains("FileUpload")) {
+				fileUploadExporter.start(realm, (ZipOutputStream) outputStream);
+			}
+		}catch (ResourceNotFoundException | IOException e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
 	}
 
-	@Autowired
-	MigrationObjectMapper migrationObjectMapper;
-
-	@Autowired
-	MigrationExecutor migrationExecutor;
 }

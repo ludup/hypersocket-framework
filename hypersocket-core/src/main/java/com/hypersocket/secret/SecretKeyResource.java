@@ -4,10 +4,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name="secret_keys")
+@AllowNameOnlyLookUp
 public class SecretKeyResource extends RealmResource {
 
 	@Column(name="keydata", length=8000)

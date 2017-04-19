@@ -61,7 +61,7 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
             String propertyName = migrationCurrentInfo.getPropName();
 
             String className = node.get("_meta").asText();
-            log.info("Meta class name found as {}", className);
+            //log.info("Meta class name found as {}", className);
 
             boolean isReference = node.get("reference") != null && node.get("reference").asBoolean();
 
@@ -91,10 +91,17 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
                             String[] properties = lookUpKey.getProperties();
                             Object[] values = lookUpKey.getValues();
                             if(properties != null) {
+                                boolean match = true;
                                 for (int i = 0; i < properties.length; ++i) {
-                                    if (!properties[i].equals(values[i])) {
+                                    Object property = PropertyUtils.getProperty(resource, properties[i]);
+                                    if (property.equals(values[i])) {
                                         continue;
                                     }
+                                    match = false;
+                                    break;
+                                }
+
+                                if(match) {
                                     valueToUpdate = resource;
                                     break outer;
                                 }
