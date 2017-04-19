@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,11 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.zip.ZipOutputStream;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
 
 import com.hypersocket.migration.execution.MigrationExecutor;
+import com.hypersocket.migration.file.FileUploadExporter;
 import com.hypersocket.resource.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -136,7 +139,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	PrincipalRepository principalRepository; 
 
 	@Autowired
-	MessageResourceService messageService; 
+	MessageResourceService messageService;
+
+	@Autowired
+	MigrationExecutor migrationExecutor;
+
+	@Autowired
+	FileUploadExporter fileUploadExporter;
 
 	public static final Integer MESSAGE_NEW_USER_NEW_PASSWORD = 6001;
 	public static final Integer MESSAGE_NEW_USER_TMP_PASSWORD = 6002;
@@ -1924,13 +1933,21 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void exportAllResoures(OutputStream outputStream) throws ResourceExportException, AccessDeniedException {
-		//List<Realm> list = allRealms();
-		//return exportResources(list, false);
-		migrationExecutor.startRealmExport(outputStream, null);
+	public void exportResources(OutputStream outputStream, Long realmId, boolean all, String[] entities) throws ResourceExportException, AccessDeniedException {
+		try {
+			Realm realm = realmRepository.getRealmById(realmId);
+			Set<String> entitiesSet = new HashSet<>();
+			if (!all && entities.length > 0) {
+				entitiesSet.addAll(Arrays.asList(entities));
+			}
+			migrationExecutor.startRealmExport(outputStream, realm, entitiesSet);
+			if(all || entitiesSet.contains("FileUpload")) {
+				fileUploadExporter.start(realm, (ZipOutputStream) outputStream);
+			}
+		}catch (IOException e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
 	}
 
-	@Autowired
-	MigrationExecutor migrationExecutor;
 }
 

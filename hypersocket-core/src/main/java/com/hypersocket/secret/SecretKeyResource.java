@@ -5,10 +5,12 @@ import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
+import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name="secret_keys")
+@AllowNameOnlyLookUp
 public class SecretKeyResource extends RealmResource {
 
 	private static final long serialVersionUID = 5968935969005380460L;

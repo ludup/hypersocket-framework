@@ -3,8 +3,10 @@ package com.hypersocket.migration.info;
 import com.hypersocket.migration.exporter.MigrationExporter;
 import com.hypersocket.migration.importer.MigrationImporter;
 import com.hypersocket.migration.properties.MigrationProperties;
-import com.hypersocket.migration.repository.MigrationCriteriaBuilder;
+import com.hypersocket.migration.repository.MigrationExportCriteriaBuilder;
+import com.hypersocket.migration.repository.MigrationLookupCriteriaBuilder;
 import com.hypersocket.repository.AbstractEntity;
+import org.apache.commons.collections.map.MultiValueMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +27,11 @@ public class MigrationHelperClassesInfoProvider {
     @Autowired
     ApplicationContext applicationContext;
 
-    private Map<Short, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = new TreeMap<>();
+    private Map<Short, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = MultiValueMap.decorate(new TreeMap<>());
     private Map<Class<?>, MigrationImporter> migrationImporterMap = new HashMap<>();
     private Map<Class<?>, MigrationExporter> migrationExporterMap = new HashMap<>();
-    private Map<Class<?>, MigrationCriteriaBuilder> migrationCriteriaBuilder = new HashMap<>();
+    private Map<Class<?>, MigrationExportCriteriaBuilder> migrationExportCriteriaBuilder = new HashMap<>();
+    private Map<Class<?>, MigrationLookupCriteriaBuilder> migrationLookupCriteriaBuilder = new HashMap<>();
 
     @PostConstruct
     private void postConstruct() {
@@ -36,7 +39,7 @@ public class MigrationHelperClassesInfoProvider {
     }
 
     public Map<Short, List<Class<? extends AbstractEntity<Long>>>> getMigrationOrderMap() {
-        return Collections.unmodifiableMap(migrationOrderMap);
+        return migrationOrderMap;
     }
 
     public Map<Class<?>, MigrationImporter> getMigrationImporterMap() {
@@ -47,8 +50,12 @@ public class MigrationHelperClassesInfoProvider {
         return Collections.unmodifiableMap(migrationExporterMap);
     }
 
-    public Map<Class<?>, MigrationCriteriaBuilder> getMigrationCriteriaBuilder() {
-        return Collections.unmodifiableMap(migrationCriteriaBuilder);
+    public Map<Class<?>, MigrationExportCriteriaBuilder> getMigrationExportCriteriaBuilder() {
+        return Collections.unmodifiableMap(migrationExportCriteriaBuilder);
+    }
+
+    public Map<Class<?>, MigrationLookupCriteriaBuilder> getMigrationLookupCriteriaBuilder() {
+        return Collections.unmodifiableMap(migrationLookupCriteriaBuilder);
     }
 
     private void scanForMigrationHelperClasses() {
@@ -66,9 +73,13 @@ public class MigrationHelperClassesInfoProvider {
                 if(MigrationProperties.class.isAssignableFrom(aClass)) {
                     MigrationProperties instance = (MigrationProperties) aClass.newInstance();
                     migrationOrderMap.put(instance.sortOrder(), instance.getOrderList());
-                    Map<Class<?>, MigrationCriteriaBuilder> criteriaMap = instance.getCriteriaMap();
+                    Map<Class<?>, MigrationExportCriteriaBuilder> criteriaMap = instance.getExportCriteriaMap();
                     if(criteriaMap != null) {
-                        migrationCriteriaBuilder.putAll(instance.getCriteriaMap());
+                        migrationExportCriteriaBuilder.putAll(instance.getExportCriteriaMap());
+                    }
+                    Map<Class<?>, MigrationLookupCriteriaBuilder> lookupCriteriaMap = instance.getLookupCriteriaMap();
+                    if(lookupCriteriaMap != null) {
+                        migrationLookupCriteriaBuilder.putAll(instance.getLookupCriteriaMap());
                     }
                 } else if (MigrationImporter.class.isAssignableFrom(aClass)) {
                     MigrationImporter instance = (MigrationImporter) applicationContext.getBean(aClass.getCanonicalName());
@@ -81,5 +92,19 @@ public class MigrationHelperClassesInfoProvider {
         }catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+    }
+
+    public List<String> getAllExportableClasses() {
+        List<String> exportable = new ArrayList<>();
+        Set<Short> keys = migrationOrderMap.keySet();
+        for (Short key : keys) {
+            Collection migrationClassesList = ((MultiValueMap) migrationOrderMap).getCollection(key);
+            for (Object migrationClasses : migrationClassesList) {
+                for (Class<? extends AbstractEntity<Long>> aClass : (List<Class<? extends AbstractEntity<Long>>>) migrationClasses) {
+                    exportable.add(aClass.getSimpleName());
+                }
+            }
+        }
+        return exportable;
     }
 }

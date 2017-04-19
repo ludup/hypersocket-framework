@@ -26,5 +26,7 @@ public interface MigrationRepository {
 
     List executeCriteria(DetachedCriteria criteria);
 
+    Realm findRealm(LookUpKey lookUpKey);
+
     void flush();
 }

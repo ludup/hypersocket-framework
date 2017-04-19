@@ -105,8 +105,21 @@ public class MigrationUtil {
             lookUpKey.setProperties(propertyNames);
             Object[] values = new Object[propertyNames.length];
             for (int i = 0;  i < propertyNames.length; ++i) {
-                JsonNode jsonNode = node.get(propertyNames[i]);
-                if(jsonNode.isNumber()) {
+                JsonNode jsonNode = null;
+                if(propertyNames[i].contains(".")) {
+                    String[] parts = propertyNames[i].split("\\.");
+                    String currentPath = parts[0];
+                    JsonNode currentNode = node.get(currentPath);
+                    for (int j = 1; j < parts.length; j++) {
+                        currentPath = parts[j];
+                        currentNode = currentNode.get(currentPath);
+                    }
+                    jsonNode = currentNode;
+                } else {
+                    jsonNode = node.get(propertyNames[i]);
+                }
+
+                if (jsonNode.isNumber()) {
                     values[i] = jsonNode.asLong();
                 } else {
                     values[i] = jsonNode.textValue();
