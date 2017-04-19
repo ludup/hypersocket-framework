@@ -14,6 +14,7 @@ import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.json.ResourceStatusConfirmation;
+import com.hypersocket.migration.exception.MigrationProcessRealmAlreadyExistsThrowable;
 import com.hypersocket.migration.exception.MigrationProcessRealmNotFoundException;
 import com.hypersocket.migration.execution.MigrationExecutor;
 import com.hypersocket.migration.execution.MigrationExecutorTracker;
@@ -402,6 +403,11 @@ public class RealmController extends ResourceController {
 							RealmService.RESOURCE_BUNDLE,
 							msgKey));
 
+		} catch (MigrationProcessRealmAlreadyExistsThrowable e) {
+			log.error("Problem in importing realm resource.", e);
+			return new ResourceStatus<String>(false, I18N.getResource(sessionUtils.getLocale(request),
+					RealmService.RESOURCE_BUNDLE,
+					"realm.import.no.merge.realm.exists.failure"));
 		} catch(MigrationProcessRealmNotFoundException e) {
 			log.error("Problem in importing realm resource.", e);
 			return new ResourceStatus<String>(false, I18N.getResource(sessionUtils.getLocale(request),

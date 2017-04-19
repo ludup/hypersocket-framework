@@ -1,9 +1,13 @@
 package com.hypersocket.migration.execution;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,12 +88,18 @@ public class MigrationExecutorTracker {
 
     @Override
     public String toString() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+        MapUtils.debugPrint(ps, null, errorNodes);
+        String content = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+        ps.close();
+
         return "MigrationExecutorTracker{" +
                 "success=" + success +
                 ", failure=" + failure +
                 ", customOperationSuccess=" + customOperationSuccess +
                 ", customOperationFailure=" + customOperationFailure +
-                ", errorNodes=" + errorNodes +
+                ", errorNodes=" + content +
                 '}';
     }
 }

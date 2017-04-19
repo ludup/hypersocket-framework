@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.hypersocket.local.LocalGroup;
+import com.hypersocket.migration.exception.MigrationProcessRealmAlreadyExistsThrowable;
 import com.hypersocket.migration.exception.MigrationProcessRealmNotFoundException;
 import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
 import com.hypersocket.migration.exporter.MigrationExporter;
@@ -98,7 +99,7 @@ public class MigrationExecutor {
 
     @Transactional(rollbackFor = Exception.class)
     @SuppressWarnings("unchecked")
-    public void importJson(String group, ArrayNode arrayNode, MigrationRealm migrationRealm, MigrationExecutorTracker migrationExecutorTracker) {
+    public void importJson(String group, ArrayNode arrayNode, MigrationRealm migrationRealm, MigrationExecutorTracker migrationExecutorTracker) throws MigrationProcessRealmAlreadyExistsThrowable {
         try{
             log.info("Processing import for group {}.", group);
             Realm realm = migrationRealm.realm;
@@ -167,6 +168,10 @@ public class MigrationExecutor {
                     if (Realm.class.equals(resourceClass)) {
                         migrationRealm.realm = (Realm) resource;
                         realm = migrationRealm.realm;
+                        //mergeData is false and realm by same name exists, throw error
+                        if(!migrationRealm.mergeData && realmService.getRealmByName(realm.getName()) != null) {
+                            throw new MigrationProcessRealmAlreadyExistsThrowable();
+                        }
                     }
 
                     migrationUtil.fillInRealm(resource);
@@ -284,11 +289,12 @@ public class MigrationExecutor {
 
 
     public MigrationExecutorTracker startRealmImport(InputStream inputStream, boolean mergeData) throws AccessDeniedException,
-            ResourceCreationException {
+            ResourceCreationException, MigrationProcessRealmAlreadyExistsThrowable {
         JsonParser jsonParser = null;
         MigrationExecutorTracker migrationExecutorTracker = new MigrationExecutorTracker();
         try {
             MigrationRealm migrationRealm = new MigrationRealm();
+            migrationRealm.mergeData = mergeData;
 
             ZipInputStream zipInputStream = new ZipInputStream(inputStream);
             ZipEntry ze = zipInputStream.getNextEntry();
@@ -446,5 +452,6 @@ public class MigrationExecutor {
 
     public static class MigrationRealm {
         public Realm realm;
+        public boolean mergeData;
     }
 }
