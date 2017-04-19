@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.encrypt.EncryptionProvider;
+import com.hypersocket.encrypt.RsaEncryptionProvider;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Realm;
@@ -26,7 +27,6 @@ import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.rsa.RsaEncryptionProvider;
 import com.hypersocket.session.SessionService;
 
 @Service

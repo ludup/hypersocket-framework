@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 
@@ -61,5 +62,10 @@ public class HttpUtilsHolder implements HttpUtils {
 	@Override
 	public void setVerifier(HostnameVerifier verifier) {
 		instance.setVerifier(verifier);
+	}
+
+	@Override
+	public CloseableHttpResponse execute(HttpUriRequest request, boolean allowSelfSigned) throws IOException {
+		return instance.execute(request, allowSelfSigned);
 	}
 }

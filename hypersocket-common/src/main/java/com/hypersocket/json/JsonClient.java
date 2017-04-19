@@ -1,72 +1,58 @@
 package com.hypersocket.json;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
-import org.apache.http.ssl.SSLContextBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hypersocket.utils.HttpUtilsHolder;
+import com.hypersocket.utils.HypersocketUtils;
 
 
 public class JsonClient {
 
-	BasicCookieStore cookieStore = new BasicCookieStore();
+	static Logger log = LoggerFactory.getLogger(JsonClient.class);
+	
 	protected ObjectMapper mapper = new ObjectMapper();
 	protected JsonSession session;
 
 	boolean debug = false;
+	boolean allowSelfSigned = false;
 	String hostname;
 	int port;
 	String path;
-	HttpClient client;
+	String scheme = "basic";
 	
 	public JsonClient(String hostname, int port, String path) throws IOException {
 		this.hostname = hostname;
 		this.port = port;
 		this.path = path;
-		
-		try {
-			SSLContextBuilder builder = new SSLContextBuilder();
-			builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
-			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build());
-			this.client = HttpClients.custom().setSSLSocketFactory(sslsf)
-					.setDefaultCookieStore(cookieStore).build();
-		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-			throw new IOException(e);
-		}
 	}
 	
-	public void logon(String username, String password)
-			throws Exception {
+	public void logon(String username, String password) throws URISyntaxException, IOException, JsonStatusException {
 		logon(username, password, false, null);
 	}
 
@@ -74,22 +60,18 @@ public class JsonClient {
 		this.debug = debug;
 	}
 	
+	public void setAuthenticationScheme(String scheme) {
+		this.scheme = scheme;
+	}
+	
+	public void setAllowSelfSignedCertificates(boolean allowSelfSigned) {
+		this.allowSelfSigned = allowSelfSigned;
+	}
+	
 	public void logon(String username, String password,
-			boolean expectChangePassword, String newPassword) throws Exception {
+			boolean expectChangePassword, String newPassword) throws URISyntaxException, IOException, JsonStatusException {
 
-		String json = doPost("api/logon/basic");
-		debugJSON(json);
-
-		AuthenticationResult result = mapper.readValue(json,
-				AuthenticationResult.class);
-
-		AuthenticationRequiredResult resultWithForm = mapper.readValue(json,
-				AuthenticationRequiredResult.class);
-
-		/**
-		 * TODO attach to callback for form authentication
-		 */
-		String logonJson = doPost("api/logon",
+		String logonJson = doPost(String.format("api/logon/%s", scheme),
 				new BasicNameValuePair("username", username),
 				new BasicNameValuePair("password", password));
 
@@ -112,14 +94,14 @@ public class JsonClient {
 			Object obj = mapper.readValue(json, Object.class);
 			String ret = mapper.writerWithDefaultPrettyPrinter()
 					.writeValueAsString(obj);
-			System.out.println(ret);
+			log.info(ret);
 			return ret;
 		}
 		return json;
 	}
 
 	public void logoff() throws JsonParseException,
-			JsonMappingException, JsonStatusException, IOException {
+			JsonMappingException, JsonStatusException, IOException, URISyntaxException {
 
 		doGet("api/logoff");
 		session = null;
@@ -132,20 +114,24 @@ public class JsonClient {
 			url = "/" + url;
 		}
 
+		url = HypersocketUtils.encodeURIPath(url);
+		
 		HttpUriRequest login = RequestBuilder
 				.post()
 				.addHeader("X-Csrf-Token", session==null ? "<unknown>" : session.getCsrfToken())
 				.setUri(new URI(String.format("https://%s:%d%s%s", hostname, port, path, url)))
 				.addParameters(postVariables).build();
 
-		System.out.println("Executing request " + login.getRequestLine());
+		if(log.isInfoEnabled()) {
+			log.info("Executing request " + login.getRequestLine());
+		}
+		
+		CloseableHttpResponse response = HttpUtilsHolder.getInstance().execute(login, allowSelfSigned);
 
-		CloseableHttpClient httpClient = (CloseableHttpClient) client;
-		CloseableHttpResponse response = (CloseableHttpResponse) httpClient
-				.execute(login);
-
-		System.out.println("Response: " + response.getStatusLine().toString());
-
+		if(log.isInfoEnabled()) {
+			log.info("Response: " + response.getStatusLine().toString());
+		}
+		
 		if (response.getStatusLine().getStatusCode() != 200) {
 			throw new JsonStatusException(response.getStatusLine().getStatusCode());
 		}
@@ -159,22 +145,27 @@ public class JsonClient {
 	}
 
 	public String doGet(String url) throws
-			IOException, JsonStatusException {
+			IOException, JsonStatusException, URISyntaxException {
 
 		if (!url.startsWith("/")) {
 			url = "/" + url;
 		}
 
+		url = HypersocketUtils.encodeURIPath(url);
+		
 		HttpGet httpget = new HttpGet(String.format("https://%s:%d%s%s", hostname, port, path, url));
 		httpget.addHeader("X-Csrf-Token", session==null ? "<unknown>" : session.getCsrfToken());
-		System.out.println("Executing request " + httpget.getRequestLine());
+		
+		if(log.isInfoEnabled()) {
+			log.info("Executing request " + httpget.getRequestLine());
+		}
+		
+		CloseableHttpResponse response = HttpUtilsHolder.getInstance().execute(httpget, allowSelfSigned);
 
-		CloseableHttpClient httpClient = (CloseableHttpClient) client;
-		CloseableHttpResponse response = (CloseableHttpResponse) httpClient
-				.execute(httpget);
-
-		System.out.println("Response: " + response.getStatusLine().toString());
-
+		if(log.isInfoEnabled()) {
+			log.info("Response: " + response.getStatusLine().toString());
+		}
+		
 		try {
 			if (response.getStatusLine().getStatusCode() != 200) {
 				throw new JsonStatusException(response.getStatusLine().getStatusCode());
@@ -193,16 +184,21 @@ public class JsonClient {
 			url = "/" + url;
 		}
 
+		url = HypersocketUtils.encodeURIPath(url);
+		
 		HttpDelete httpdelete = new HttpDelete(String.format("https://%s:%d%s%s", hostname, port, path, url));
 		httpdelete.addHeader("X-Csrf-Token", session==null ? "<unknown>" : session.getCsrfToken());
-		System.out.println("Executing request " + httpdelete.getRequestLine());
+		
+		if(log.isInfoEnabled()) {
+			log.info("Executing request " + httpdelete.getRequestLine());
+		}
+		
+		CloseableHttpResponse response = HttpUtilsHolder.getInstance().execute(httpdelete, allowSelfSigned);
 
-		CloseableHttpClient httpClient = (CloseableHttpClient) client;
-		CloseableHttpResponse response = (CloseableHttpResponse) httpClient
-				.execute(httpdelete);
-
-		System.out.println("Response: " + response.getStatusLine().toString());
-
+		if(log.isInfoEnabled()) {
+			log.info("Response: " + response.getStatusLine().toString());
+		}
+		
 		try {
 			if (response.getStatusLine().getStatusCode() != 200) {
 				throw new JsonStatusException(response.getStatusLine().getStatusCode());
@@ -217,19 +213,19 @@ public class JsonClient {
 	public String doPostMultiparts(String url,
 			PropertyObject[] properties, MultipartObject... files)
 			throws IOException, JsonStatusException {
+		
 		if (!url.startsWith("/")) {
 			url = "/" + url;
 		}
+		
+		url = HypersocketUtils.encodeURIPath(url);
+		
 		HttpPost postMethod = new HttpPost(String.format("https://%s:%d%s%s", hostname, port, path, url));
 		postMethod.addHeader("X-Csrf-Token", session==null ? "<unknown>" : session.getCsrfToken());
 		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		if (properties != null && properties.length > 0) {
 			for (PropertyObject property : properties) {
-				/**
-				 * I've changed this because of deprecation warning. This may
-				 * break the test.
-				 */
 				builder.addPart(property.getProertyName(), new StringBody(
 						property.getPropertyValue(),
 						ContentType.APPLICATION_FORM_URLENCODED));
@@ -240,13 +236,17 @@ public class JsonClient {
 		}
 		HttpEntity reqEntity = builder.build();
 		postMethod.setEntity(reqEntity);
-		System.out.println("Executing request " + postMethod.getRequestLine());
-		CloseableHttpClient httpClient = (CloseableHttpClient) client;
-		CloseableHttpResponse response = (CloseableHttpResponse) httpClient
-				.execute(postMethod);
-
-		System.out.println("Response: " + response.getStatusLine().toString());
-
+		
+		if(log.isInfoEnabled()) {
+			log.info("Executing request " + postMethod.getRequestLine());
+		}
+		
+		CloseableHttpResponse response = HttpUtilsHolder.getInstance().execute(postMethod, allowSelfSigned);
+		
+		if(log.isInfoEnabled()) {
+			log.info("Response: " + response.getStatusLine().toString());
+		}
+		
 		if (response.getStatusLine().getStatusCode() != 200) {
 			throw new JsonStatusException(response.getStatusLine().getStatusCode());
 		}
@@ -259,7 +259,7 @@ public class JsonClient {
 	}
 
 	public <T> T doGet(String url, Class<T> clz)
-			throws JsonStatusException, IOException {
+			throws JsonStatusException, IOException, URISyntaxException {
 		
 		String json = doGet(url);
 		
@@ -275,6 +275,8 @@ public class JsonClient {
 			url = "/" + url;
 		}
 
+		url = HypersocketUtils.encodeURIPath(url);
+		
 		HttpPost postMethod = new HttpPost(String.format("https://%s:%d%s%s", hostname, port, path, url));
 		postMethod.addHeader("X-Csrf-Token", session==null ? "<unknown>" : session.getCsrfToken());
 		
@@ -284,12 +286,17 @@ public class JsonClient {
 
 		postMethod.setEntity(se);
 
-		CloseableHttpClient httpClient = (CloseableHttpClient) client;
-		CloseableHttpResponse response = (CloseableHttpResponse) httpClient
-				.execute(postMethod);
+		if(log.isInfoEnabled()) {
+			log.info("Executing request " + postMethod.getRequestLine());
+		}
+		
+		CloseableHttpResponse response = HttpUtilsHolder.getInstance().execute(postMethod, allowSelfSigned);
 
-		System.out.println("Response: " + response.getStatusLine().toString());
 
+		if(log.isInfoEnabled()) {
+			log.info("Response: " + response.getStatusLine().toString());
+		}
+		
 		if (response.getStatusLine().getStatusCode() != 200) {
 			throw new JsonStatusException(response.getStatusLine().getStatusCode());
 		}
@@ -309,6 +316,8 @@ public class JsonClient {
 			url = "/" + url;
 		}
 
+		url = HypersocketUtils.encodeURIPath(url);
+		
 		String json = mapper.writeValueAsString(jsonObject);
 
 		StringEntity requestEntity = new StringEntity(json,
@@ -319,15 +328,17 @@ public class JsonClient {
 				.addHeader("X-Csrf-Token", session==null ? "<unknown>" : session.getCsrfToken())
 				.setUri(new URI(String.format("https://%s:%d%s%s", hostname, port, path, url)))
 				.setEntity(requestEntity).build();
+		
+		if(log.isInfoEnabled()) {
+			log.info("Executing request " + request.getRequestLine());
+		}
 
-		System.out.println("Executing request " + request.getRequestLine());
+		CloseableHttpResponse response = HttpUtilsHolder.getInstance().execute(request, allowSelfSigned);
 
-		CloseableHttpClient httpClient = (CloseableHttpClient) client;
-		CloseableHttpResponse response = (CloseableHttpResponse) httpClient
-				.execute(request);
-
-		System.out.println("Response: " + response.getStatusLine().toString());
-
+		if(log.isInfoEnabled()) {
+			log.info("Response: " + response.getStatusLine().toString());
+		}
+		
 		if (response.getStatusLine().getStatusCode() != 200) {
 			throw new JsonStatusException(response.getStatusLine().getStatusCode());
 		}
@@ -346,4 +357,21 @@ public class JsonClient {
 		return mapper;
 	}
 
+	public InputStream doGetInputStream(String url) throws UnsupportedOperationException, IOException, JsonStatusException {
+		
+		if (!url.startsWith("/")) {
+			url = "/" + url;
+		}
+
+		url = HypersocketUtils.encodeURIPath(url);
+		
+		HttpGet httpget = new HttpGet(String.format("https://%s:%d%s%s", hostname, port, path, url));
+		httpget.addHeader("X-Csrf-Token", session==null ? "<unknown>" : session.getCsrfToken());
+		
+		if(log.isInfoEnabled()) {
+			log.info("Executing request " + httpget.getRequestLine());
+		}
+		
+		return HttpUtilsHolder.getInstance().doHttpGet(httpget.getURI().toASCIIString(), allowSelfSigned);
+	}
 }

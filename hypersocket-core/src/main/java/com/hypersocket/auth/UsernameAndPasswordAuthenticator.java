@@ -145,4 +145,9 @@ public class UsernameAndPasswordAuthenticator extends
 	public boolean isPropertiesModule() {
 		return false;
 	}
+	
+	@Override
+	public boolean requiresUserInput() {
+		return true;
+	}
 }

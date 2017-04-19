@@ -16,6 +16,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -27,7 +28,7 @@ import org.apache.http.util.EntityUtils;
 
 public class HttpUtilsApacheImpl implements HttpUtils {
 
-	static BasicCookieStore cookieStore;
+	static BasicCookieStore cookieStore = new BasicCookieStore();
 
 	@Override
 	public CloseableHttpClient createHttpClient(boolean allowSelfSigned) throws IOException {
@@ -163,6 +164,12 @@ public class HttpUtilsApacheImpl implements HttpUtils {
 
 	}
 
+	@Override
+	public CloseableHttpResponse execute(HttpUriRequest request, boolean allowSelfSigned) throws IOException {
+		CloseableHttpClient client = createHttpClient(allowSelfSigned);
+		return client.execute(request);
+	}
+	
 	@Override
 	public void setVerifier(HostnameVerifier verifier) {
 		

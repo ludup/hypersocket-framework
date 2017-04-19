@@ -1,5 +1,6 @@
 package com.hypersocket.encrypt;
 
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 import org.slf4j.Logger;
@@ -22,6 +23,20 @@ public abstract class AbstractEncryptionProvider implements EncryptionProvider {
 		}
 		return ret.toString();
 	}
+	
+//	@Override
+//	public String encrypt(char[] toEncrypt) throws Exception {
+//		
+//		int pos = 0;
+//		StringBuffer ret = new StringBuffer();
+//		while(pos < toEncrypt.length) {
+//			int count = Math.min(toEncrypt.length - pos, getLength());
+//			ret.append(doEncrypt(Arrays.copyOfRange(toEncrypt, pos, pos+count)));
+//			ret.append('|');
+//			pos += count;
+//		}
+//		return ret.toString();
+//	}
 
 	@Override
 	public String decrypt(String toDecrypt) throws Exception {
@@ -47,6 +62,8 @@ public abstract class AbstractEncryptionProvider implements EncryptionProvider {
 	protected abstract int getLength();
 	
 	protected abstract String doEncrypt(String toEncrypt) throws Exception;
+	
+//	protected abstract String doEncrypt(char[] toEncrypt) throws Exception;
 	
 	protected abstract String doDecrypt(String toDecrypt) throws Exception;
 }

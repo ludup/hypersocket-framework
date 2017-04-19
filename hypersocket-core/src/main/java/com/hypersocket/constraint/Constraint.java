@@ -25,9 +25,6 @@ import com.hypersocket.repository.AbstractEntity;
 @Table(name = "`constraint`")
 public abstract class Constraint extends AbstractEntity<Long> {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -3791619378744238044L;
 
 	@Id

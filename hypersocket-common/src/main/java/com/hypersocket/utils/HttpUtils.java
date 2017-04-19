@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 public interface HttpUtils {
@@ -29,5 +30,7 @@ public interface HttpUtils {
 					throws IOException;
 
 	String doHttpGetContent(String uri, boolean allowSelfSigned, Map<String, String> headers) throws IOException;
+
+	CloseableHttpResponse execute(HttpUriRequest request, boolean allowSelfSigned) throws IOException;
 
 }
