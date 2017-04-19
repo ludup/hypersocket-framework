@@ -87,7 +87,9 @@ public class LogonController extends AuthenticatedController {
 			 */
 			AuthenticationState state = (AuthenticationState) request
 					.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
-			state.clean();
+			if(state!=null) {
+				state.clean();
+			}
 			throw new RedirectException(System.getProperty(
 					"hypersocket.uiPath", "/hypersocket/ui"));
 		} else {
@@ -224,7 +226,11 @@ public class LogonController extends AuthenticatedController {
 		} catch(FallbackAuthenticationRequired e) {
 			return resetLogon(request, response, "fallback", false);
 		} catch(RedirectException e) {
-			throw e;
+			return new AuthenticationRedirectResult(
+					configurationService.getValue(state.getRealm(),
+							"logon.banner"),
+					flash!=null ? flash : state.getLastErrorMsg(),
+					configurationService.hasUserLocales(), e.getMessage());
 		} catch(JsonRedirectException e) {
 			return new AuthenticationRedirectResult(
 					configurationService.getValue(state.getRealm(),
