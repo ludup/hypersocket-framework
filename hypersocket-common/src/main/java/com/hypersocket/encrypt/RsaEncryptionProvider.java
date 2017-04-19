@@ -22,8 +22,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.lf5.util.StreamUtils;
 
-import com.hypersocket.utils.CommandExecutor;
-
 public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 
 	static public RsaEncryptionProvider instance;

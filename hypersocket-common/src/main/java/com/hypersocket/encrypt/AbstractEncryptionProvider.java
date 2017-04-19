@@ -1,6 +1,5 @@
 package com.hypersocket.encrypt;
 
-import java.util.Arrays;
 import java.util.StringTokenizer;
 
 import org.slf4j.Logger;
