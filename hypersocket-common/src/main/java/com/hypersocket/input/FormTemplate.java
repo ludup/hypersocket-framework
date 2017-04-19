@@ -20,6 +20,8 @@ public class FormTemplate {
 	protected String resourceKey;
 	protected List<InputField> fields = new ArrayList<InputField>();
 	protected boolean showLogonButton = true;
+	protected String logonButtonResourceKey = null;
+	protected String logonButtonIcon = null;
 	protected String formClass = null;
 	
 	public FormTemplate() {
@@ -57,5 +59,20 @@ public class FormTemplate {
 	public void setFormClass(String formClass) {
 		this.formClass = formClass;
 	}
-	
+
+	public String getLogonButtonResourceKey() {
+		return logonButtonResourceKey;
+	}
+
+	public void setLogonButtonResourceKey(String logonButtonResourceKey) {
+		this.logonButtonResourceKey = logonButtonResourceKey;
+	}
+
+	public String getLogonButtonIcon() {
+		return logonButtonIcon;
+	}
+
+	public void setLogonButtonIcon(String logonButtonIcon) {
+		this.logonButtonIcon = logonButtonIcon;
+	}
 }
