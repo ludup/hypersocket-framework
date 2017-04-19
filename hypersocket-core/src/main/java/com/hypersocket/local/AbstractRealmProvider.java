@@ -16,8 +16,6 @@ import com.hypersocket.realm.RealmProvider;
 
 public abstract class AbstractRealmProvider extends ResourceTemplateRepositoryImpl implements RealmProvider {
 
-
 	@Autowired
 	protected UserAttributeService userAttributeService;
-	
 }

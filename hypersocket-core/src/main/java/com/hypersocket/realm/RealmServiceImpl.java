@@ -1905,6 +1905,33 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
+	public Long getUserPropertyLong(Principal principal, String resourceKey) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserPropertyLong(principal, resourceKey);
+	
+	}
+	
+	@Override
+	public Integer getUserPropertyInt(Principal principal, String resourceKey) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserPropertyInt(principal, resourceKey);
+	}
+	
+	@Override
+	public boolean getUserPropertyBoolean(Principal principal, String resourceKey) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserPropertyBoolean(principal, resourceKey);
+	}
+	
+	@Override
+	public String getUserProperty(Principal principal, String resourceKey) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserProperty(principal, resourceKey);
+	}
+	
+	
+	
+	@Override
 	public long getPrincipalCount(Realm realm) {
 
 		RealmProvider provider = getProviderForRealm(realm);
@@ -1924,5 +1951,29 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		
 		RealmProvider provider = getProviderForPrincipal(principal);
 		return provider.getUserProperties(principal);
+	}
+
+	@Override
+	public void setUserPropertyLong(Principal principal, String resourceKey, Long val) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		provider.setUserProperty(principal, resourceKey, val);
+	}
+
+	@Override
+	public void setUserPropertyInt(Principal principal, String resourceKey, Integer val) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		provider.setUserProperty(principal, resourceKey, val);
+	}
+
+	@Override
+	public void setUserPropertyBoolean(Principal principal, String resourceKey, Boolean val) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		provider.setUserProperty(principal, resourceKey, val);
+	}
+
+	@Override
+	public void setUserProperty(Principal principal, String resourceKey, String val) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		provider.setUserProperty(principal, resourceKey, val);
 	}
 }
