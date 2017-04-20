@@ -40,7 +40,7 @@ import com.hypersocket.session.json.SessionUtils;
 public class LogonController extends AuthenticatedController {
 
 	
-	@RequestMapping(value = "logon/reset", method = RequestMethod.GET, produces = "application/json")
+	@RequestMapping(value = "logon/reset", method = { RequestMethod.GET, RequestMethod.POST}, produces = "application/json")
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public AuthenticationResult resetLogon(HttpServletRequest request,
@@ -62,7 +62,7 @@ public class LogonController extends AuthenticatedController {
 				redirect);
 	}
 
-	@RequestMapping(value = "logon/reset/{scheme}", method = RequestMethod.GET, produces = "application/json")
+	@RequestMapping(value = "logon/reset/{scheme}", method = { RequestMethod.GET, RequestMethod.POST}, produces = "application/json")
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public AuthenticationResult resetLogon(HttpServletRequest request,
