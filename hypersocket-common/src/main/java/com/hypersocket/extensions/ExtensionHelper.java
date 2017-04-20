@@ -32,10 +32,10 @@ public class ExtensionHelper {
 
 	public static Map<String, ExtensionVersion> resolveExtensions(boolean refresh, String updateUrl, String[] repos,
 			String ourVersion, String serial, String product, String customer, ExtensionPlace extensionPlace,
-			boolean resolveInstalled, ExtensionTarget... targets) throws IOException {
+			boolean resolveInstalled, PropertyCallback callback, ExtensionTarget... targets) throws IOException {
 
 		Map<String, ExtensionVersion> extsByName = ExtensionHelper.resolveRemoteDependencies(updateUrl, repos,
-				ourVersion, serial, product, customer, targets);
+				ourVersion, serial, product, customer, callback, targets);
 
 		for (ExtensionVersion ext : extsByName.values()) {
 			ext.setState(ExtensionState.NOT_INSTALLED);
@@ -129,7 +129,7 @@ public class ExtensionHelper {
 									log.info(extensionId + " is installed but not provided by online store");
 								}
 								loadLocalExtension(local, props, currentArchive);
-								extsByName.put(local.getId(), local);
+								extsByName.put(local.getExtensionId(), local);
 							}
 
 						} catch (Throwable e) {
@@ -192,7 +192,7 @@ public class ExtensionHelper {
 	}
 
 	public static Map<String, ExtensionVersion> resolveRemoteDependencies(String url, String[] repos, String version,
-			String serial, String product, String customer, ExtensionTarget... targets) throws IOException {
+			String serial, String product, String customer, PropertyCallback callback, ExtensionTarget... targets) throws IOException {
 
 		Map<String, ExtensionVersion> extsByName = new HashMap<String, ExtensionVersion>();
 
@@ -223,12 +223,15 @@ public class ExtensionHelper {
 			}
 
 			ObjectMapper mapper = new ObjectMapper();
-			ExtensionVersion[] exts = mapper.readValue(output, ExtensionVersion[].class);
-			for (ExtensionVersion ext : exts) {
+			JsonExtensionList exts = mapper.readValue(output, JsonExtensionList.class);
+			for (ExtensionVersion ext : exts.getResources()) {
 				ExtensionTarget t = ExtensionTarget.valueOf(ext.getTarget());
 				if (ArrayUtils.contains(targets, t)) {
 					extsByName.put(ext.getExtensionId(), ext);
 				}
+			}
+			if(callback!=null) {
+				callback.processRemoteProperties(exts.getProperties());
 			}
 
 		} catch (Exception ex) {

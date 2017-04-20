@@ -3,13 +3,13 @@ package com.hypersocket.extensions;
 import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.hypersocket.json.JsonResource;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
-public class ExtensionVersion implements Comparable<ExtensionVersion>, Serializable {
+public class ExtensionVersion extends JsonResource implements Comparable<ExtensionVersion>, Serializable {
 
 	private static final long serialVersionUID = -906138696866340097L;
 
-	String name;
 	Long size;
 	String version;
 	String hash;
@@ -27,20 +27,11 @@ public class ExtensionVersion implements Comparable<ExtensionVersion>, Serializa
 	int weight;
 	ExtensionState state;
 	
-	public String getId() {
-		return getExtensionId();
-	}
 	public ExtensionState getState() {
 		return state;
 	}
 	public void setState(ExtensionState state) {
 		this.state = state;
-	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
 	}
 	public Long getSize() {
 		return size;
