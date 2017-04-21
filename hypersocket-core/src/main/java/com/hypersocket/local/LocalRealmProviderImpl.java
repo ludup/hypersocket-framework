@@ -19,6 +19,7 @@ import org.springframework.stereotype.Repository;
 import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
@@ -86,6 +87,26 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 	@Override
 	public void assertCreateRealm(Map<String, String> properties) throws ResourceException {
 		
+	}
+
+	@Override
+	public void setUserProperty(Principal principal, String resourceKey, Long val) {
+		userRepository.setValue(principal, resourceKey, val);
+	}
+
+	@Override
+	public void setUserProperty(Principal principal, String resourceKey, Integer val) {
+		userRepository.setValue(principal, resourceKey, val);
+	}
+
+	@Override
+	public void setUserProperty(Principal principal, String resourceKey, Boolean val) {
+		userRepository.setValue(principal, resourceKey, val);
+	}
+
+	@Override
+	public void setUserProperty(Principal principal, String resourceKey, String val) {
+		userRepository.setValue(principal, resourceKey, val);
 	}
 
 }

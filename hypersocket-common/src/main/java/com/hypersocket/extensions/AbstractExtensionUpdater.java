@@ -115,7 +115,7 @@ public abstract class AbstractExtensionUpdater {
 			for (ExtensionVersion def : updates) {
 				log.info(String.format("Checking %s %s - State %s (%d bytes)", 
 						def.getVersion(),
-						def.getId(), 
+						def.getExtensionId(), 
 						def.getState(),
 						def.getSize()));
 
@@ -171,7 +171,7 @@ public abstract class AbstractExtensionUpdater {
 						}
 
 						if (read != def.getSize()) {
-							throw new IOException("Corrupt download for extension " + def.getId() + ". Size is "
+							throw new IOException("Corrupt download for extension " + def.getExtensionId() + ". Size is "
 									+ read + " bytes, expected " + def.getSize() + " bytes");
 						}
 
@@ -188,9 +188,9 @@ public abstract class AbstractExtensionUpdater {
 					String generatedMd5 = DigestUtils.md5Hex(in);
 					if (def.getHash().length() > 0 && !generatedMd5.equals(def.getHash())) {
 						if (log.isErrorEnabled()) {
-							log.error("Install of extension " + def.getId() + " failed. Corrupt download");
+							log.error("Install of extension " + def.getExtensionId() + " failed. Corrupt download");
 						}
-						throw new IOException("Corrupt download for extension " + def.getId() + ". Hash is "
+						throw new IOException("Corrupt download for extension " + def.getExtensionId() + ". Hash is "
 								+ generatedMd5 + ", expected " + def.getHash());
 					}
 				} finally {
@@ -215,7 +215,7 @@ public abstract class AbstractExtensionUpdater {
 						String bn = FilenameUtils.getBaseName(name);
 						boolean found = false;
 						for (ExtensionVersion d : allExtensions.values()) {
-							if (bn.matches(d.getId() + "-(\\d+\\.?)+.*")) {
+							if (bn.matches(d.getExtensionId() + "-(\\d+\\.?)+.*")) {
 								found = true;
 								if (d.getState() == ExtensionState.UPDATABLE) {
 									// The extension was updated or
@@ -368,7 +368,7 @@ public abstract class AbstractExtensionUpdater {
 			archiveTmp.delete();
 
 			if (log.isInfoEnabled()) {
-				log.info("Install of extension " + def.getId() + " to " + archiveFile + " completed ok");
+				log.info("Install of extension " + def.getExtensionId() + " to " + archiveFile + " completed ok");
 			}
 		} finally {
 			IOUtils.closeQuietly(in);

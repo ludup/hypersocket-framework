@@ -1,5 +1,7 @@
 package com.hypersocket.json;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
@@ -9,6 +11,7 @@ public class JsonResourceList<T extends JsonResource> {
 	String error;
 	
 	T[] resources;
+	Map<String,String> properties;
 	
 	public boolean isSuccess() {
 		return success;
@@ -32,6 +35,14 @@ public class JsonResourceList<T extends JsonResource> {
 
 	public void setResources(T[] resources) {
 		this.resources = resources;
+	}
+
+	public Map<String, String> getProperties() {
+		return properties;
+	}
+
+	public void setProperties(Map<String, String> properties) {
+		this.properties = properties;
 	}
 	
 	

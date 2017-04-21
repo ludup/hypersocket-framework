@@ -234,4 +234,20 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 			Map<String, String> properties);
 
 	Principal getPrincipalById(Long id) throws AccessDeniedException;
+
+	Long getUserPropertyLong(Principal principal, String resourceKey);
+
+	Integer getUserPropertyInt(Principal principal, String resourceKey);
+
+	boolean getUserPropertyBoolean(Principal principal, String resourceKey);
+
+	String getUserProperty(Principal principal, String resourceKey);
+	
+	void setUserPropertyLong(Principal principal, String resourceKey, Long val);
+
+	void setUserPropertyInt(Principal principal, String resourceKey, Integer val);
+
+	void setUserPropertyBoolean(Principal principal, String resourceKey, Boolean val);
+
+	void setUserProperty(Principal principal, String resourceKey, String val);
 }
