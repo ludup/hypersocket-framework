@@ -1,15 +1,11 @@
 package com.hypersocket.resource;
 
-import java.util.UUID;
-
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.repository.AbstractEntity;
+
+import javax.persistence.*;
+import java.util.UUID;
 
 @MappedSuperclass
 public abstract class AbstractResource extends AbstractEntity<Long> {
@@ -20,9 +16,11 @@ public abstract class AbstractResource extends AbstractEntity<Long> {
 	@Column(name="resource_id")
 	Long id;
 
+
 	@Column(name = "reference", updatable=false)
 	protected String reference = UUID.randomUUID().toString();
 	
+
 	public Long getId() {
 		return id;
 	}
@@ -30,6 +28,7 @@ public abstract class AbstractResource extends AbstractEntity<Long> {
 	public void setId(Long id) {
 		this.id = id;
 	}
+
 	
 	@JsonIgnore
 	public String getUUID() {
@@ -37,4 +36,5 @@ public abstract class AbstractResource extends AbstractEntity<Long> {
 	}
 	
 	public abstract String getName();
+
 }
