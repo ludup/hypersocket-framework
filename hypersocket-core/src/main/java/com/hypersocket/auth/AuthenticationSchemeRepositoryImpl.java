@@ -7,7 +7,10 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
@@ -30,6 +33,13 @@ import com.hypersocket.repository.HiddenCriteria;
 public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepositoryImpl<AuthenticationScheme,Long>
 		implements AuthenticationSchemeRepository {
 
+	Set<String> enabledSchemes = new HashSet<String>();
+	
+	@Override
+	public void enableAuthenticationScheme(String scheme) {
+		enabledSchemes.add(scheme);
+	}
+	
 	CriteriaConfiguration ORDER_BY_PRIORITY = new CriteriaConfiguration() {
 		@Override
 		public void configure(Criteria criteria) {
@@ -124,9 +134,27 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 
 	@Override
 	@Transactional(readOnly=true)
+	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm, 
+			final boolean enabledOnly) {
+		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
+				false), new HiddenCriteria(false), new DistinctRootEntity(), 
+				new RealmRestriction(realm), new CriteriaConfiguration() {
+
+					@Override
+					public void configure(Criteria criteria) {
+						if(enabledOnly) {
+							criteria.add(Restrictions.in("resourceKey", enabledSchemes));
+						}
+					}
+		});
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
 	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm) {
 		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
-				false), new HiddenCriteria(false), new DistinctRootEntity(), new RealmRestriction(realm));
+				false), new HiddenCriteria(false), new DistinctRootEntity(), 
+				new RealmRestriction(realm));
 	}
 
 	@Override
