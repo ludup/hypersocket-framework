@@ -49,7 +49,6 @@ import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 
 @Service
-@Transactional
 public class AuthenticationServiceImpl extends
 		PasswordEnabledAuthenticatedServiceImpl implements
 		AuthenticationService {
