@@ -37,16 +37,6 @@
 		<property name="acquireRetryDelay" value="1000" />
 		<property name="acquireRetryAttempts" value="10" />
 	</bean>
-	
-	<bean id="transactionInterceptor"
-       class="org.springframework.transaction.interceptor.TransactionInterceptor">
-	<property name="transactionManager" ref="transactionManager" />
-	<property name="transactionAttributes">
-	   <props>
-		<prop key="save">PROPAGATION_NEVER</prop>
-	   </props>
-	</property>
-    </bean>
     
 	<bean id="transactionManager"
 		class="org.springframework.orm.hibernate5.HibernateTransactionManager">
