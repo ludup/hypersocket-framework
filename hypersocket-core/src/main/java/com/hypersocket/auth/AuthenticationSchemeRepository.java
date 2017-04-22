@@ -7,7 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
-import java.util.Collection;
 import java.util.List;
 
 import com.hypersocket.realm.Realm;
