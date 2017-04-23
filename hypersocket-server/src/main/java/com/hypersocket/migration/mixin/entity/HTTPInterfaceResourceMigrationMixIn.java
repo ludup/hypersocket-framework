@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.hypersocket.certificates.CertificateResource;
 import com.hypersocket.migration.helper.MigrationDeserializer;
-import com.hypersocket.migration.helper.MigrationSerializerForLookUpKeys;
 import com.hypersocket.migration.helper.MigrationSerializerForResource;
 import com.hypersocket.migration.mixin.MigrationMixIn;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;

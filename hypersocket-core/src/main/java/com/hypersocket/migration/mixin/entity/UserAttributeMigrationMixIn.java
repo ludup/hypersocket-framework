@@ -1,6 +1,7 @@
 package com.hypersocket.migration.mixin.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Set;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.hypersocket.attributes.user.UserAttribute;
@@ -9,8 +10,6 @@ import com.hypersocket.migration.helper.MigrationDeserializer;
 import com.hypersocket.migration.helper.MigrationSerializerForResource;
 import com.hypersocket.migration.mixin.MigrationMixIn;
 import com.hypersocket.permissions.Role;
-
-import java.util.Set;
 
 public class UserAttributeMigrationMixIn extends UserAttribute implements MigrationMixIn{
 

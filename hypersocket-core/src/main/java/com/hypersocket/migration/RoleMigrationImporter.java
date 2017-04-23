@@ -1,7 +1,13 @@
 package com.hypersocket.migration;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.json.JsonMapper;
 import com.hypersocket.local.LocalGroup;
 import com.hypersocket.local.LocalUser;
@@ -9,12 +15,6 @@ import com.hypersocket.migration.importer.MigrationImporter;
 import com.hypersocket.migration.repository.MigrationRepository;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Realm;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Map;
 
 @Component("com.hypersocket.migration.RoleMigrationImporter")
 public class RoleMigrationImporter implements MigrationImporter<Role>{
