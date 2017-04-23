@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -443,18 +444,41 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 	
 	@Override
-	public void populateEntityFields(T resource, Map<String,String> properties) {
-		
+	public List<PropertyChange> populateEntityFields(T resource, Map<String,String> properties) {
+		List<PropertyChange> changedProperties = new ArrayList<>();
 		if(properties!=null) {
 			for(PropertyTemplate template : getPropertyTemplates(resource)) {
 				if(properties.containsKey(template.getResourceKey())) {
+					/**
+					 * Why was this commented out? We have to ensure we only attempt to update
+					 * entity properties. Some resources use a mixture of both.
+					 */
 					if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
+						String val = getValue(resource, template.getResourceKey());
 						setValue(resource, template.getResourceKey(), properties.get(template.getResourceKey()));
+						
+						String newVal = getValue(resource, template.getResourceKey());
+						
+						/**
+						 * LDP - Changed to getValue rather than use property value because the property
+						 * value may not be the same as the actual value, for example in the case of enum we
+						 * might have ordinal but getValue returns String.
+						 */
+						if(val == null) {
+							val = "";
+						}
+						if(newVal == null) {
+							newVal = "";
+						}
+						if(!Objects.equals(val, newVal)) {
+							changedProperties.add(new PropertyChange(template.getResourceKey(), val, newVal));
+						}
 						properties.remove(template.getResourceKey());
 					}
 				}
 			}
 		}
+		return changedProperties;
 	}
 	
 	@SuppressWarnings("unchecked")

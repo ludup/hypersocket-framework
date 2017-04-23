@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -52,7 +53,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
 
-	static final String RESOURCE_BUNDLE = "AssignableResourceService";
+	static final String RESOURCE_BUNDLE_DEFAULT = "AssignableResourceService";
 
 	@Autowired
 	RealmService realmService;
@@ -69,7 +70,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 	@PostConstruct
 	private void postConstruct() {
-		eventService.registerEvent(BulkAssignmentEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(BulkAssignmentEvent.class, RESOURCE_BUNDLE_DEFAULT);
 		permissionService.registerAssignableRepository(getResourceClass(), getRepository());
 	}
 	
@@ -155,7 +156,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	protected ResourceException createDuplicateException(T resource) {
-		return new ResourceCreationException(RESOURCE_BUNDLE,
+		return new ResourceCreationException(RESOURCE_BUNDLE_DEFAULT,
 				"generic.alreadyExists.error", resource.getName());
 	}
 	
@@ -212,7 +213,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			} else if(t.getCause() instanceof ResourceException) {
 				throw (ResourceException)t.getCause();
 			} else  {
-				throw new ResourceCreationException(RESOURCE_BUNDLE,
+				throw new ResourceCreationException(RESOURCE_BUNDLE_DEFAULT,
 						"generic.create.error", t.getMessage());
 			}
 		}
@@ -258,6 +259,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
 		
+		boolean changedDefault = false;
+		
 		if(isAssignedUserAllowedUpdate()) {
 			assertPrincipalAssignment(resource, getUpdatePermission());
 		} else {
@@ -288,23 +291,39 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		resource.setAssignedRoles(assigned);
 		resource.setUnassignedRoles(unassigned);
 
+		if(resource.getRealm()==null) {
+			resource.setRealm(isSystemResource() ? realmService.getSystemRealm() : getCurrentRealm());
+			changedDefault = true;
+		}
+		
 		if(!checkUnique(resource, false)) {
 			ResourceException ex = createDuplicateException(resource);
 			fireResourceUpdateEvent(resource, ex);
-			throw new ResourceChangeException(ex);
+			throw ex;
 		}
-
+		
+		if(!Objects.equals(resource.getResourceCategory(), resourceCategory)) {
+			resource.setResourceCategory(resourceCategory);
+			changedDefault = true;
+		}
+		
+		final List<PropertyChange> changes = populateEntityFields(resource, properties);
+		
 		try {
-
 			beforeUpdateResource(resource, properties);
-
 			getRepository().saveResource(resource, properties, ops);
 			updateFingerprint();
-			
-
 			afterUpdateResource(resource, properties);
+			if(changes.size() > 0) {
+				changedDefault = changedDefault || fireNonStandardEvents(resource, changes);
+			}
+			else {
+				changedDefault = true;
+			}	
+			if(changedDefault) {
+				fireResourceUpdateEvent(resource);
+			}
 
-			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {
 			if(t instanceof ResourceConfirmationException)  {
 				throw t;
@@ -318,12 +337,19 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			} else if (t.getCause() instanceof ResourceException) {
 				throw (ResourceException) t.getCause();
 			} else {
-				throw new ResourceChangeException(RESOURCE_BUNDLE,
+				throw new ResourceChangeException(RESOURCE_BUNDLE_DEFAULT,
 						"generic.update.error", t.getMessage());
 			}
 		}
 	}
 
+	protected List<PropertyChange> populateEntityFields(T resource, Map<String,String> properties) {
+		return getRepository().populateEntityFields(resource, properties);
+	}
+	
+	protected boolean isSystemResource() {
+		return false;
+	}
 	
 	protected abstract void fireResourceUpdateEvent(T resource);
 	
@@ -333,6 +359,21 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	@Override 
 	public void deleteResource(Long id) throws ResourceException, AccessDeniedException {
 		deleteResource(getResourceById(id));
+	}
+	
+	/**
+	 * 
+	 * If the resource wants to fire particular events for particular property changes,
+	 * then it should override this method. The list of resourceKey's for the properties
+	 * will be  supplied, and a boolean indicating whether the default resource change
+	 * event should be fired.
+	 * 
+	 * @param changes list of resourceKey changes
+	 * @param resource resource being updated
+	 * @return fire default resource change event
+	 */
+	protected boolean fireNonStandardEvents(T resource, List<PropertyChange> changes) {
+		return true;
 	}
 	
 	@Override
@@ -353,7 +394,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			if (t instanceof ResourceChangeException) {
 				throw (ResourceChangeException) t;
 			} else {
-				throw new ResourceChangeException(RESOURCE_BUNDLE,
+				throw new ResourceChangeException(RESOURCE_BUNDLE_DEFAULT,
 						"generic.delete.error", t.getMessage());
 			}
 		}
@@ -596,7 +637,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	public String exportResources(Collection<T> resources, boolean stripIdentity) throws ResourceExportException {
 
 		if(resources.isEmpty()) {
-			throw new ResourceExportException(RESOURCE_BUNDLE, "error.nothingToExport");
+			throw new ResourceExportException(RESOURCE_BUNDLE_DEFAULT, "error.nothingToExport");
 		}
 		
 		ObjectMapper mapper = new ObjectMapper();
@@ -612,7 +653,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resources);
 		} catch (JsonProcessingException e) {
-			throw new ResourceExportException(RESOURCE_BUNDLE, "error.exportError", e.getMessage());
+			throw new ResourceExportException(RESOURCE_BUNDLE_DEFAULT, "error.exportError", e.getMessage());
 		}
 	}
 	
@@ -643,7 +684,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 				} catch(ResourceException e) { 
 					throw new IllegalStateException(e.getMessage(), e);
 				}catch (AccessDeniedException | IOException e) {
-					throw new IllegalStateException(new ResourceImportException(RESOURCE_BUNDLE, "error.importError", e.getMessage()));
+					throw new IllegalStateException(new ResourceImportException(RESOURCE_BUNDLE_DEFAULT, "error.importError", e.getMessage()));
 				}			
 			}
 		});
