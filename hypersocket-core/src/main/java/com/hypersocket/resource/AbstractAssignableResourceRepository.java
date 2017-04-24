@@ -79,5 +79,5 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	void removeAssignments(Role role);
 
-	
+	void deleteResources(List<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException;
 }

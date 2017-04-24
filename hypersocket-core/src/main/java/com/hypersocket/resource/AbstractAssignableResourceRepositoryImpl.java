@@ -7,29 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.hypersocket.bulk.BulkAssignment;
 import com.hypersocket.bulk.BulkAssignmentMode;
 import com.hypersocket.encrypt.EncryptionService;
@@ -46,6 +23,20 @@ import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.session.Session;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
+import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.PostConstruct;
+import java.util.*;
 
 @Repository
 public abstract class AbstractAssignableResourceRepositoryImpl<T extends AssignableResource>
@@ -680,6 +671,26 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for(T resource : resources) {
 			resource.getRoles().remove(role);
 			save(resource);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly = true)
+	public List<T> getResourcesByIds(Long...ids) {
+		Criteria crit = createCriteria(getResourceClass());
+		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		crit.add(Restrictions.eq("deleted", false));
+		crit.add(Restrictions.in("id", ids));
+
+		return (List<T>) crit.list();
+	}
+
+	@Override
+	@Transactional
+	public void deleteResources(List<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException {
+		for (T resource: resources) {
+			deleteResource(resource, ops);
 		}
 	}
 }
