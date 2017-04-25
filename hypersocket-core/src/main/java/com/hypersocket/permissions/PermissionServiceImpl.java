@@ -788,16 +788,6 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		return repository.getPermissionById(id);
 	}
 
-	@Override
-	public Role getResourceById(Long id) throws ResourceNotFoundException, AccessDeniedException {
-		return getRoleById(id, null);
-	}
-
-	@Override
-	public List<Role> getResourcesByIds(Long... ids) {
-		return repository.getResourcesByIds(ids);
-	}
-
 	private interface EntityMatch<T> {
 		boolean validate(T t);
 	}

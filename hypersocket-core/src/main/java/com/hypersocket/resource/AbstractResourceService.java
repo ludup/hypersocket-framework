@@ -84,5 +84,9 @@ public interface AbstractResourceService<T extends RealmResource> extends Authen
 
 	T copyResource(T resource) throws ResourceCreationException, AccessDeniedException;
 
+	void deleteResources(List<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) 
+			throws ResourceException, AccessDeniedException;
+	
+	List<T> getResourcesByIds(Long...ids) throws AccessDeniedException;
 
 }

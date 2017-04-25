@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface PermissionService extends AuthenticatedService, FindableResourceRepository<Role> {
+public interface PermissionService extends AuthenticatedService {
 
 	static final String RESOURCE_BUNDLE = "PermissionService";
 	static final String ROLE_REALM_ADMINISTRATOR = "Realm Administrator";
