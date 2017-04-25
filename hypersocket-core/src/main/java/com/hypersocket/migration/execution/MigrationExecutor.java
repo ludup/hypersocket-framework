@@ -47,7 +47,14 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -81,9 +88,9 @@ public class MigrationExecutor {
     @Autowired
     FileUploadService fileUploadService;
 
-    private Map<Class<?>, MigrationImporter> migrationImporterMap;
+    private Map<Class<?>, MigrationImporter<AbstractEntity<Long>>> migrationImporterMap;
 
-    private Map<Class<?>, MigrationExporter> migrationExporterMap;
+    private Map<Class<?>, MigrationExporter<AbstractEntity<Long>>> migrationExporterMap;
 
     private Map<Class<?>, MigrationExportCriteriaBuilder> migrationExportCriteriaBuilderMap;
 
@@ -129,21 +136,21 @@ public class MigrationExecutor {
                                 node.toString()));
                     }
 
-                    Class resourceClass = MigrationExecutor.class.getClassLoader().loadClass(className);
+                    Class<?> resourceClass = MigrationExecutor.class.getClassLoader().loadClass(className);
                     LookUpKey lookUpKey = migrationUtil.captureEntityLookup(node, resourceClass);
 
                     log.info("The look up key is {}", lookUpKey);
 
-                    AbstractEntity resource = null;
+                    AbstractEntity<Long> resource = null;
 
                     if (realm != null) {
                         if (migrationLookupCriteriaBuilderMap.containsKey(resourceClass)) {
                             MigrationLookupCriteriaBuilder migrationLookupCriteriaBuilder = migrationLookupCriteriaBuilderMap.get(resourceClass);
                             DetachedCriteria detachedCriteria = migrationLookupCriteriaBuilder.make(realm, lookUpKey, node);
                             List<?> list = migrationRepository.executeCriteria(detachedCriteria);
-                            resource = list != null && !list.isEmpty() ? (AbstractEntity) list.get(0) : null;
+                            resource = list != null && !list.isEmpty() ? (AbstractEntity<Long>) list.get(0) : null;
                         } else {
-                            resource = (AbstractEntity) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey, realm);
+                            resource = (AbstractEntity<Long>) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey, realm);
                         }
                     } else if (realm == null && Realm.class.equals(resourceClass)) {
                         resource = migrationRepository.findRealm(lookUpKey);
@@ -151,19 +158,19 @@ public class MigrationExecutor {
 
                     if (resource == null && migrationUtil.isResourceAllowNameOnlyLookUp(resourceClass)) {
                         //if no match with legacy let us see if some thing matching in realm by name
-                        resource = (AbstractEntity) migrationRepository.findEntityByNameLookUpKey(resourceClass, lookUpKey, realm);
+                        resource = (AbstractEntity<Long>) migrationRepository.findEntityByNameLookUpKey(resourceClass, lookUpKey, realm);
                     }
 
                     if (resource == null) {
                         log.info("Resource not found creating new.");
-                        resource = (AbstractEntity) resourceClass.newInstance();
+                        resource = (AbstractEntity<Long>) resourceClass.newInstance();
                     } else {
                         log.info("Resource found merging to resource with id {}", resource.getId());
                     }
 
                     ObjectReader objectReader = objectMapper.readerForUpdating(resource);
 
-                    resource = (AbstractEntity) objectReader.treeAsTokens(node).readValueAs(resourceClass);
+                    resource = (AbstractEntity<Long>) objectReader.treeAsTokens(node).readValueAs(resourceClass);
 
                     if (Realm.class.equals(resourceClass)) {
                         migrationRealm.realm = (Realm) resource;
@@ -179,7 +186,7 @@ public class MigrationExecutor {
                     handleTransientLocalGroup(resource);
 
                     if (migrationImporterMap.containsKey(resourceClass)) {
-                        MigrationImporter migrationImporter = migrationImporterMap.get(resourceClass);
+                        MigrationImporter<AbstractEntity<Long>> migrationImporter = migrationImporterMap.get(resourceClass);
                         log.info("Found migration importer for class {} as {}", resourceClass.getCanonicalName(),
                                 migrationImporter.getClass().getCanonicalName());
                         migrationImporter.process(resource);
@@ -188,7 +195,7 @@ public class MigrationExecutor {
                     migrationRepository.saveOrUpdate(resource);
 
                     if (migrationImporterMap.containsKey(resourceClass)) {
-                        MigrationImporter migrationImporter = migrationImporterMap.get(resourceClass);
+                        MigrationImporter<AbstractEntity<Long>> migrationImporter = migrationImporterMap.get(resourceClass);
                         log.info("Performing post save operation for class {} as {}", resourceClass.getCanonicalName(),
                                 migrationImporter.getClass().getCanonicalName());
                         migrationImporter.postSave(resource);
@@ -230,7 +237,7 @@ public class MigrationExecutor {
 
             Set<Short> keys = migrationOrderMap.keySet();
             for (Short key : keys) {
-                Collection migrationClassesList = migrationOrderMap.getCollection(key);
+                Collection<?> migrationClassesList = migrationOrderMap.getCollection(key);
                 for (Object migrationClasses : migrationClassesList) {
                     for (Class<? extends AbstractEntity<Long>> aClass : (List<Class<? extends AbstractEntity<Long>>>) migrationClasses) {
                         if(filtered && !entities.contains(aClass.getSimpleName())) {
@@ -252,7 +259,7 @@ public class MigrationExecutor {
 
                         List<MigrationObjectWithMeta> migrationObjectWithMetas = new ArrayList<>();
 
-                        for (AbstractEntity abstractEntity : objectList) {
+                        for (AbstractEntity<Long> abstractEntity : objectList) {
                             List<DatabaseProperty> databaseProperties;
                             if (abstractEntity instanceof AbstractResource) {
                                 databaseProperties = migrationRepository.findAllDatabaseProperties((AbstractResource) abstractEntity);
@@ -267,7 +274,7 @@ public class MigrationExecutor {
                                 migrationObjectWithMetas);
 
                         if (migrationExporterMap.containsKey(aClass)) {
-                            MigrationExporter migrationExporter = migrationExporterMap.get(aClass);
+                            MigrationExporter<AbstractEntity<Long>> migrationExporter = migrationExporterMap.get(aClass);
                             log.info("Found migration exporter for class {} as {}", aClass.getCanonicalName(),
                                     migrationExporter.getClass().getCanonicalName());
                             Map<String, List<Map<String, ?>>> customOperationsMap =
@@ -359,10 +366,10 @@ public class MigrationExecutor {
 
     private void importCustomOperations(String group, JsonNode jsonNode, MigrationRealm migrationRealm, MigrationExecutorTracker migrationExecutorTracker) {
         try {
-            Class resourceClass = MigrationExecutor.class.getClassLoader().loadClass(group);
+            Class<?> resourceClass = MigrationExecutor.class.getClassLoader().loadClass(group);
 
             if(migrationImporterMap.containsKey(resourceClass)) {
-                MigrationImporter migrationImporter = migrationImporterMap.get(resourceClass);
+                MigrationImporter<AbstractEntity<Long>> migrationImporter = migrationImporterMap.get(resourceClass);
                 log.info("Found migration importer for class {} as {}", resourceClass.getCanonicalName(),
                         migrationImporter.getClass().getCanonicalName());
                 migrationImporter.processCustomOperationsMap(jsonNode, migrationRealm.realm);
@@ -401,13 +408,13 @@ public class MigrationExecutor {
         }
     }
 
-    private void handleTransientLocalGroup(AbstractEntity resource) {
+    private void handleTransientLocalGroup(AbstractEntity<Long> resource) {
         if(resource instanceof LocalGroup) {
             processTransientLocalGroup((LocalGroup) resource);
         }
     }
 
-    private void handleDatabaseProperties(JsonNode nodeObjectPack, AbstractEntity resource) {
+    private void handleDatabaseProperties(JsonNode nodeObjectPack, AbstractEntity<Long> resource) {
         if(resource instanceof AbstractResource) {
             //currently associated if any
             List<DatabaseProperty> databasePropertyList = realmRepository.getPropertiesForResource((AbstractResource) resource);

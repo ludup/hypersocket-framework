@@ -14,7 +14,9 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AutomationResourceMigrationMixIn extends AutomationResource implements MigrationMixIn {
 
-    private AutomationResourceMigrationMixIn() {}
+	private static final long serialVersionUID = 9213384643402100633L;
+
+	private AutomationResourceMigrationMixIn() {}
 
     @Override
     @JsonSerialize(contentUsing = MigrationSerializerForResource.class)

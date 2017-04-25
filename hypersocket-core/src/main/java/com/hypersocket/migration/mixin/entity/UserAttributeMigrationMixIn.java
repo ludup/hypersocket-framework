@@ -13,7 +13,9 @@ import com.hypersocket.permissions.Role;
 
 public class UserAttributeMigrationMixIn extends UserAttribute implements MigrationMixIn{
 
-    private UserAttributeMigrationMixIn(){}
+	private static final long serialVersionUID = 6441279417398061366L;
+
+	private UserAttributeMigrationMixIn(){}
 
     @Override
     @JsonSerialize(using = MigrationSerializerForResource.class)

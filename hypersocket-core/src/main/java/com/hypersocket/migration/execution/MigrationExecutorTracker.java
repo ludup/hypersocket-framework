@@ -20,7 +20,7 @@ public class MigrationExecutorTracker {
     private Long customOperationSuccess = 0l;
     private Long customOperationFailure = 0l;
 
-    private Map<String, JsonNode> errorNodes = new HashMap();
+    private Map<String, JsonNode> errorNodes = new HashMap<>();
 
     public Long getSuccess() {
         return success;

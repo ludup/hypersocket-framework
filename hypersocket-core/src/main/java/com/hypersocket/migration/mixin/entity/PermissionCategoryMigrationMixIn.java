@@ -11,7 +11,9 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PermissionCategoryMigrationMixIn extends PermissionCategory implements MigrationMixIn {
 
-    private PermissionCategoryMigrationMixIn() {}
+	private static final long serialVersionUID = -595212227256506308L;
+
+	private PermissionCategoryMigrationMixIn() {}
 
     @Override
     @JsonIgnore

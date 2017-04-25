@@ -12,18 +12,20 @@ import org.apache.commons.beanutils.PropertyUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
-public class MigrationSerializerForLookUpKeys extends StdSerializer<AbstractEntity> {
+public class MigrationSerializerForLookUpKeys extends StdSerializer<AbstractEntity<Long>> {
 
-    protected MigrationSerializerForLookUpKeys() {
+	private static final long serialVersionUID = 1003528885274798166L;
+
+	protected MigrationSerializerForLookUpKeys() {
         this(null);
     }
 
-    protected MigrationSerializerForLookUpKeys(Class<AbstractEntity> t) {
+    protected MigrationSerializerForLookUpKeys(Class<AbstractEntity<Long>> t) {
         super(t);
     }
 
     @Override
-    public void serialize(AbstractEntity value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+    public void serialize(AbstractEntity<Long> value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         String[] propertyNames = getLookUpPropertyNames(value);
         gen.writeStartObject();
         for(String property : propertyNames) {
@@ -44,8 +46,8 @@ public class MigrationSerializerForLookUpKeys extends StdSerializer<AbstractEnti
         gen.writeEndObject();
     }
 
-    private void addAnyPropertiesFromCustomBean(AbstractEntity value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        Class aClass = value.getClass();
+    private void addAnyPropertiesFromCustomBean(AbstractEntity<Long> value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        Class<?> aClass = value.getClass();
         String customBean = String.format("%sJsonPropertiesAdder", aClass.getSimpleName());
         if(SpringApplicationContextProvider.getApplicationContext().containsBean(customBean)) {
             JsonPropertiesAdder jsonPropertiesAdder = (JsonPropertiesAdder) SpringApplicationContextProvider.
@@ -54,7 +56,7 @@ public class MigrationSerializerForLookUpKeys extends StdSerializer<AbstractEnti
         }
     }
 
-    private String[] getLookUpPropertyNames(AbstractEntity value) {
+    private String[] getLookUpPropertyNames(AbstractEntity<Long> value) {
         LookUpKeys keys = value.getClass().getAnnotation(LookUpKeys.class);
         if(keys == null) {
             throw new IllegalStateException(String.format("Keys not found on applied entity class %s",

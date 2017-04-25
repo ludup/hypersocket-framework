@@ -9,10 +9,11 @@ import com.hypersocket.migration.mixin.MigrationMixIn;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JobResourceMigrationMixIn extends JobResource implements MigrationMixIn {
 
-    private JobResourceMigrationMixIn() {}
+	private static final long serialVersionUID = -7409760857715680340L;
+
+	private JobResourceMigrationMixIn() {}
 
     @Override
-    //@JsonSerialize(contentUsing = MigrationSerializerForResource.class)
     @JsonDeserialize(contentUsing = MigrationDeserializer.class)
     public JobResource getParentJob() {
         return null;

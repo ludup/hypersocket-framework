@@ -10,10 +10,11 @@ import com.hypersocket.migration.mixin.MigrationMixIn;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthenticationModuleMigrationMixIn extends AuthenticationModule implements MigrationMixIn {
 
-    private AuthenticationModuleMigrationMixIn() {}
+	private static final long serialVersionUID = 7778234276212502938L;
+
+	private AuthenticationModuleMigrationMixIn() {}
 
     @Override
-    //@JsonSerialize(using = MigrationSerializerForResource.class)
     @JsonDeserialize(using = MigrationDeserializer.class)
     public AuthenticationScheme getScheme() {
         return null;

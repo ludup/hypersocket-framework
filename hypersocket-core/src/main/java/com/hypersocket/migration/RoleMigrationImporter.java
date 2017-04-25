@@ -40,7 +40,8 @@ public class RoleMigrationImporter implements MigrationImporter<Role>{
         return Role.class;
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     @Transactional
     public void processCustomOperationsMap(JsonNode jsonNode, Realm realm) {
         Map<String, Object> customOperationsList = jsonMapper.get().convertValue(jsonNode, Map.class);

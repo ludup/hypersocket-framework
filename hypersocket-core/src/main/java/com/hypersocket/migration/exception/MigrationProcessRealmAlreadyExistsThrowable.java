@@ -5,4 +5,6 @@ package com.hypersocket.migration.exception;
  * Need to escape it, hence going a level up in hierarchy.
  */
 public class MigrationProcessRealmAlreadyExistsThrowable extends Throwable{
+
+	private static final long serialVersionUID = -4650484146202400406L;
 }

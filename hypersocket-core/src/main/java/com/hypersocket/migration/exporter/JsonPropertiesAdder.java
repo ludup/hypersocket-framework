@@ -7,5 +7,5 @@ import com.hypersocket.repository.AbstractEntity;
 import java.io.IOException;
 
 public interface JsonPropertiesAdder {
-    void add(AbstractEntity value, JsonGenerator gen, SerializerProvider provider) throws IOException;
+    void add(AbstractEntity<?> value, JsonGenerator gen, SerializerProvider provider) throws IOException;
 }

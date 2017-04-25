@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.hypersocket.migration.helper.MigrationDeserializer;
 import com.hypersocket.migration.helper.MigrationSerializerForLookUpKeys;
-import com.hypersocket.migration.helper.MigrationSerializerForResource;
 import com.hypersocket.migration.mixin.MigrationMixIn;
 import com.hypersocket.permissions.Permission;
 import com.hypersocket.permissions.Role;
@@ -17,7 +16,9 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RoleMigrationMixIn extends Role implements MigrationMixIn {
 
-    private RoleMigrationMixIn() {}
+	private static final long serialVersionUID = -2378532731449669192L;
+
+	private RoleMigrationMixIn() {}
 
     @Override
     @JsonSerialize(contentUsing = MigrationSerializerForLookUpKeys.class)
@@ -27,8 +28,6 @@ public class RoleMigrationMixIn extends Role implements MigrationMixIn {
     }
 
     @Override
-    //@JsonSerialize(contentUsing = MigrationSerializerForResource.class)
-    //@JsonDeserialize(contentUsing = MigrationDeserializer.class)
     @JsonIgnore
     public Set<Principal> getPrincipals() {return null;}
 

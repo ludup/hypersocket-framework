@@ -102,7 +102,8 @@ public class CoreMigrationProperties implements MigrationProperties {
 
     private void buildLookupCriteriaMapAuthenticationModule(final Class<AuthenticationModule> authenticationModuleClass) {
         lookupCriteriaBuilderHashMap.put(authenticationModuleClass, new MigrationLookupCriteriaBuilder() {
-            @Override
+            @SuppressWarnings({ "unchecked", "rawtypes" })
+			@Override
             public DetachedCriteria make(Realm realm, LookUpKey lookUpKey, JsonNode node) {
                 MigrationRepository migrationRepository = (MigrationRepository) SpringApplicationContextProvider.
                         getApplicationContext().getBean("migrationRepository");
@@ -131,7 +132,8 @@ public class CoreMigrationProperties implements MigrationProperties {
 
     private void buildLookupCriteriaMapMessageResource(final Class<MessageResource> messageResourceClass) {
         lookupCriteriaBuilderHashMap.put(messageResourceClass, new MigrationLookupCriteriaBuilder() {
-            @Override
+            @SuppressWarnings("unchecked")
+			@Override
             public DetachedCriteria make(Realm realm, LookUpKey lookUpKey, JsonNode node) {
                 MigrationRepository migrationRepository = (MigrationRepository) SpringApplicationContextProvider.
                         getApplicationContext().getBean("migrationRepository");

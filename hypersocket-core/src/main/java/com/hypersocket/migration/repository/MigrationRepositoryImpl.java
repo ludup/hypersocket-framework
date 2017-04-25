@@ -22,7 +22,7 @@ import java.util.List;
 
 
 @Repository("migrationRepository")
-public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEntity> implements MigrationRepository {
+public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEntity<Long>> implements MigrationRepository {
 
     @Autowired
     MigrationUtil migrationUtil;
@@ -46,10 +46,10 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
             for (int i = 0; i < properties.length; i++) {
                 criteria.add(Restrictions.eq(properties[i], values[i]));
             }
-            List list = criteria.list();
+            List<T> list = criteria.list();
             return list != null && !list.isEmpty() ? (T) list.get(0) : null;
         } else {
-            List list = criteria.add(Restrictions.eq(lookUpKey.getProperty(), lookUpKey.getValue()))
+            List<T> list = criteria.add(Restrictions.eq(lookUpKey.getProperty(), lookUpKey.getValue()))
                     .list();
             return list != null && !list.isEmpty() ? (T) list.get(0) : null;
         }
@@ -57,14 +57,14 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
 
     @Override
     @Transactional
-    public void saveOrUpdate(AbstractEntity resource) {
+    public void saveOrUpdate(AbstractEntity<Long> resource) {
         save(resource, resource.getId() == null);
     }
 
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<AbstractEntity> findAllResourceInRealmOfType(Class aClass, Realm realm) {
+    public <T> List<T> findAllResourceInRealmOfType(Class<T> aClass, Realm realm) {
         Criteria criteria = createCriteria(aClass);
         String realmProperty = migrationUtil.getResourceRealmProperty(aClass);
         if(StringUtils.isNotBlank(realmProperty)) {
@@ -93,9 +93,10 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
         return realmRepository.getPropertiesForResource(abstractResource);
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     @Transactional(readOnly = true)
-    public <T> T findEntityByLegacyIdInRealm(Class<? extends AbstractResource> aClass, Long legacyId, Realm realm) {
+    public <T> T findEntityByLegacyIdInRealm(Class<T> aClass, Long legacyId, Realm realm) {
         Criteria criteria = createCriteria(aClass);
         criteria.add(Restrictions.eq("legacyId", legacyId));
         String realmProperty = migrationUtil.getResourceRealmProperty(aClass);
@@ -108,7 +109,8 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
                 .uniqueResult();
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     @Transactional(readOnly = true)
     public <T> T findEntityByNameLookUpKey(Class<T> aClass, LookUpKey lookUpKey, Realm realm) {
         Criteria criteria = createCriteria(aClass);
@@ -147,13 +149,15 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
                 setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     @Transactional(readOnly = true)
-    public List executeCriteria(DetachedCriteria criteria) {
+    public List<AbstractEntity<Long>> executeCriteria(DetachedCriteria criteria) {
         return criteria.getExecutableCriteria(sessionFactory.getCurrentSession()).list();
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     @Transactional(readOnly = true)
     public Realm findRealm(LookUpKey lookUpKey) {
         Criteria criteria = createCriteria(Realm.class);

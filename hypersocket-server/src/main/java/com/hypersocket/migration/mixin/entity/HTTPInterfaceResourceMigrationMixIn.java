@@ -12,7 +12,9 @@ import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HTTPInterfaceResourceMigrationMixIn extends HTTPInterfaceResource implements MigrationMixIn {
 
-    @Override
+	private static final long serialVersionUID = 6144823243005674611L;
+
+	@Override
     @JsonSerialize(using = MigrationSerializerForResource.class)
     @JsonDeserialize(using = MigrationDeserializer.class)
     public CertificateResource getCertificate() {

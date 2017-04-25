@@ -15,7 +15,9 @@ import java.util.Collection;
 
 public class MigrationBeanDeserializer extends BeanDeserializer {
 
-    MigrationCurrentStack migrationCurrentStack;
+	private static final long serialVersionUID = -8306775620484569378L;
+	
+	MigrationCurrentStack migrationCurrentStack;
 
     public MigrationBeanDeserializer(BeanDeserializerBase src, MigrationCurrentStack migrationCurrentStack) {
         super(src);

@@ -32,7 +32,7 @@ public class ApplicationMetaSource {
 
         try {
             for (BeanDefinition beanDefinition : classes) {
-                Class aClass = Class.forName(beanDefinition.getBeanClassName());
+                Class<?> aClass = Class.forName(beanDefinition.getBeanClassName());
                 entityMap.put(aClass.getSimpleName(), aClass);
             }
         }catch (ClassNotFoundException e) {

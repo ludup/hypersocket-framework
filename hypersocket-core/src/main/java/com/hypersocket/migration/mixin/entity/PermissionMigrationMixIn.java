@@ -13,7 +13,9 @@ import com.hypersocket.permissions.PermissionCategory;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PermissionMigrationMixIn extends Permission implements MigrationMixIn {
 
-    private PermissionMigrationMixIn() {}
+	private static final long serialVersionUID = 8283690353703758020L;
+
+	private PermissionMigrationMixIn() {}
 
     @Override
     @JsonIgnore(false)
