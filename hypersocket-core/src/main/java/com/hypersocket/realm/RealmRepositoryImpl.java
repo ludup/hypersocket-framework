@@ -34,7 +34,7 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional
 	public Realm createRealm(String name, String uuid, String module,
-			Map<String, String> properties, RealmProvider provider, Long owner,  @SuppressWarnings("unchecked") TransactionOperation<Realm>... ops) throws ResourceException {
+							 Map<String, String> properties, RealmProvider provider, Long owner,  @SuppressWarnings("unchecked") TransactionOperation<Realm>... ops) throws ResourceException {
 		Realm realm = new Realm();
 		realm.setName(name);
 		realm.setResourceCategory(module);
@@ -44,7 +44,7 @@ public class RealmRepositoryImpl extends
 		for(TransactionOperation<Realm> op : ops) {
 			op.beforeOperation(realm, properties);
 		}
-		
+
 		save(realm);
 
 		provider.setValues(realm, properties);
@@ -52,7 +52,7 @@ public class RealmRepositoryImpl extends
 		for(TransactionOperation<Realm> op : ops) {
 			op.afterOperation(realm, properties);
 		}
-		
+
 		return realm;
 	}
 
@@ -68,7 +68,7 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional
 	public Realm saveRealm(Realm realm, Map<String, String> properties,
-			RealmProvider provider) {
+						   RealmProvider provider) {
 
 		boolean isNew = realm.getId() == null;
 		save(realm);
@@ -87,13 +87,13 @@ public class RealmRepositoryImpl extends
 	public List<Realm> allRealms() {
 		return allEntities(Realm.class, new HiddenFilter(),
 				new DeletedCriteria(false), new DistinctRootEntity(),
-					new NullCriteria("owner"));
+				new NullCriteria("owner"));
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public List<Realm> searchRealms(String searchPattern, int start,
-			int length, ColumnSort[] sorting) {
+									int length, ColumnSort[] sorting) {
 		return search(Realm.class, "name", searchPattern, start, length,
 				sorting, new NullCriteria("owner"), new CriteriaConfiguration() {
 
@@ -140,7 +140,7 @@ public class RealmRepositoryImpl extends
 	public Realm getRealmByHost(String host) {
 		return getRealm("host", host);
 	}
-	
+
 	@Override
 	@Transactional(readOnly = true)
 	public Realm getRealmByOwner(Long owner) {

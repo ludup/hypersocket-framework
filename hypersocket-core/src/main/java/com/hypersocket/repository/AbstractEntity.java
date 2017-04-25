@@ -16,6 +16,7 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -31,6 +32,9 @@ public abstract class AbstractEntity<T> implements Serializable{
 	private static final long serialVersionUID = -8808550521563073042L;
 
 	public abstract T getId();
+
+	@Column(name="legacy_id")
+	T legacyId;
 	
 	@Column(name="deleted", nullable=false)
 	boolean deleted;
@@ -42,7 +46,7 @@ public abstract class AbstractEntity<T> implements Serializable{
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name="modified")
     Date modifiedDate = new Date();
-    
+
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
@@ -115,5 +119,19 @@ public abstract class AbstractEntity<T> implements Serializable{
 	
 	void setCreated(Date created) {
 		this.created = created;
+	}
+
+	@Transient
+	@JsonIgnore
+	public String _meta() {
+		return this.getClass().getCanonicalName();
+	}
+
+	public T getLegacyId() {
+		return legacyId == null ? getId() : legacyId;
+	}
+
+	public void setLegacyId(T legacyId) {
+		this.legacyId = legacyId;
 	}
 }

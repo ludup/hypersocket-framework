@@ -37,7 +37,7 @@
 		<property name="acquireRetryDelay" value="1000" />
 		<property name="acquireRetryAttempts" value="10" />
 	</bean>
-	
+    
 	<bean id="transactionManager"
 		class="org.springframework.orm.hibernate5.HibernateTransactionManager">
 		<property name="sessionFactory">

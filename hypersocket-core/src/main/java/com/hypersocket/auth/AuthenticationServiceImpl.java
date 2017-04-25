@@ -49,7 +49,6 @@ import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 
 @Service
-@Transactional
 public class AuthenticationServiceImpl extends
 		PasswordEnabledAuthenticatedServiceImpl implements
 		AuthenticationService {
@@ -373,7 +372,6 @@ public class AuthenticationServiceImpl extends
 
 		boolean success = false;
 
-		try {
 		if (state.isAuthenticationComplete()) {
 
 			if (state.getSession() != null) {
@@ -604,11 +602,7 @@ public class AuthenticationServiceImpl extends
 		}
 
 		return success;
-		
-		} catch(Throwable t) {
-			log.error("Authentication failed", t);
-			return false;
-		}
+
 	}
 
 	@Override 

@@ -125,6 +125,14 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Principal updateUserProperties(Principal principal, Map<String, String> properties) throws ResourceException;
 
+	Long getUserPropertyLong(Principal principal, String resourceKey);
+	
+	Integer getUserPropertyInt(Principal principal, String resourceKey);
+	
+	boolean getUserPropertyBoolean(Principal principal, String resourceKey);
+	
+	String getUserProperty(Principal principal, String resourceKey);
+	
 	Principal getPrincipalByEmail(Realm realm, String email);
 
 	List<Principal> getUserGroups(Principal principal);
@@ -132,4 +140,12 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	List<Principal> getGroupUsers(Principal principal);
 
 	List<Principal> getGroupGroups(Principal principal);
+
+	void setUserProperty(Principal principal, String resourceKey, Long val);
+
+	void setUserProperty(Principal principal, String resourceKey, Integer val);
+
+	void setUserProperty(Principal principal, String resourceKey, Boolean val);
+
+	void setUserProperty(Principal principal, String resourceKey, String val);
 }

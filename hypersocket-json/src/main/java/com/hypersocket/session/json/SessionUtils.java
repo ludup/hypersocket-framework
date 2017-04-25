@@ -89,10 +89,9 @@ public class SessionUtils {
 	}
 
 	/**
-	 * @deprecated Use AuthenticatedService.getCurrentPrincipal instead ensuring that a valid
+	 * Use AuthenticatedService.getCurrentPrincipal instead ensuring that a valid
 	 * principal context has been setup previously.
 	 */
-	@Deprecated
 	public Realm getCurrentRealm(HttpServletRequest request)
 			throws UnauthorizedException {
 		Session session = getActiveSession(request);
@@ -102,10 +101,9 @@ public class SessionUtils {
 	}
 
 	/**
-	 * @deprecated Use AuthenticatedService.getCurrentPrincipal instead ensuring that a valid
+	 * Use AuthenticatedService.getCurrentPrincipal instead ensuring that a valid
 	 * principal context has been setup previously.
 	 */
-	@Deprecated
 	public Principal getPrincipal(HttpServletRequest request)
 			throws UnauthorizedException {
 		Session session = getActiveSession(request);

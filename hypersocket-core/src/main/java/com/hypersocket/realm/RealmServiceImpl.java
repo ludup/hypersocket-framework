@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -16,10 +18,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.zip.ZipOutputStream;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
 
+import com.hypersocket.migration.execution.MigrationExecutor;
+import com.hypersocket.migration.file.FileUploadExporter;
+import com.hypersocket.resource.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,12 +70,6 @@ import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceConfirmationException;
-import com.hypersocket.resource.ResourceCreationException;
-import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.SessionServiceImpl;
@@ -139,7 +139,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	PrincipalRepository principalRepository; 
 
 	@Autowired
-	MessageResourceService messageService; 
+	MessageResourceService messageService;
+
+	@Autowired
+	MigrationExecutor migrationExecutor;
+
+	@Autowired
+	FileUploadExporter fileUploadExporter;
 
 	public static final Integer MESSAGE_NEW_USER_NEW_PASSWORD = 6001;
 	public static final Integer MESSAGE_NEW_USER_TMP_PASSWORD = 6002;
@@ -1905,6 +1911,33 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
+	public Long getUserPropertyLong(Principal principal, String resourceKey) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserPropertyLong(principal, resourceKey);
+	
+	}
+	
+	@Override
+	public Integer getUserPropertyInt(Principal principal, String resourceKey) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserPropertyInt(principal, resourceKey);
+	}
+	
+	@Override
+	public boolean getUserPropertyBoolean(Principal principal, String resourceKey) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserPropertyBoolean(principal, resourceKey);
+	}
+	
+	@Override
+	public String getUserProperty(Principal principal, String resourceKey) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		return provider.getUserProperty(principal, resourceKey);
+	}
+	
+	
+	
+	@Override
 	public long getPrincipalCount(Realm realm) {
 
 		RealmProvider provider = getProviderForRealm(realm);
@@ -1925,4 +1958,45 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		RealmProvider provider = getProviderForPrincipal(principal);
 		return provider.getUserProperties(principal);
 	}
+
+	@Override
+	public void setUserPropertyLong(Principal principal, String resourceKey, Long val) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		provider.setUserProperty(principal, resourceKey, val);
+	}
+
+	@Override
+	public void setUserPropertyInt(Principal principal, String resourceKey, Integer val) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		provider.setUserProperty(principal, resourceKey, val);
+	}
+
+	@Override
+	public void setUserPropertyBoolean(Principal principal, String resourceKey, Boolean val) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		provider.setUserProperty(principal, resourceKey, val);
+	}
+
+	@Override
+	public void setUserProperty(Principal principal, String resourceKey, String val) {
+		RealmProvider provider = getProviderForPrincipal(principal);
+		provider.setUserProperty(principal, resourceKey, val);
+	}
+
+	public void exportResources(OutputStream outputStream, Long realmId, boolean all, String[] entities) throws ResourceExportException, AccessDeniedException {
+		try {
+			Realm realm = realmRepository.getRealmById(realmId);
+			Set<String> entitiesSet = new HashSet<>();
+			if (!all && entities.length > 0) {
+				entitiesSet.addAll(Arrays.asList(entities));
+			}
+			migrationExecutor.startRealmExport(outputStream, realm, entitiesSet);
+			if(all || entitiesSet.contains("FileUpload")) {
+				fileUploadExporter.start(realm, (ZipOutputStream) outputStream);
+			}
+		}catch (IOException e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
+	}
 }
+

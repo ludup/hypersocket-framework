@@ -21,6 +21,8 @@ public interface AuthenticationSchemeRepository extends AbstractEntityRepository
 
 	public AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey);
 
+	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm, boolean onlyEnabled);
+
 	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm);
 
 	public AuthenticationScheme getSchemeById(Long id);
@@ -34,4 +36,6 @@ public interface AuthenticationSchemeRepository extends AbstractEntityRepository
 	AuthenticationScheme createScheme(Realm realm, String name, List<String> templates, String resourceKey,
 			boolean hidden, Integer maximumModules, AuthenticationModuleType type, String allowedModules,
 			String lastButtonResourceKey);
+
+	void enableAuthenticationScheme(String scheme);
 }

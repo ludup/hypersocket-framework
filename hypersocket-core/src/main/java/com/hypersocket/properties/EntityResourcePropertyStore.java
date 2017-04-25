@@ -63,6 +63,10 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		findableResourceRepositories.put(clz, repository);
 	}
 	
+	public FindableResourceRepository<?> getRepository(Class<?> clz) {
+		return findableResourceRepositories.get(clz);
+	}
+	
 	public void registerAttributeRepository(String attributeBean, EntityStoreRepository<?> repository) {
 		attributeRepositories.put(attributeBean, repository);
 	}

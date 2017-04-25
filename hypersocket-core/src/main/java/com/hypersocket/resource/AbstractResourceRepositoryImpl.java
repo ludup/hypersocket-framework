@@ -99,13 +99,14 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 					 */
 					if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
 						String val = getValue(resource, template.getResourceKey());
-						String newVal = properties.get(template.getResourceKey());
+						setValue(resource, template.getResourceKey(), properties.get(template.getResourceKey()));
 						
-						/* NOTE - I am not 100% sure about this. What if a value IS changing to (or from) null? */
+						String newVal = getValue(resource, template.getResourceKey());
+						
 						/**
-						 * Values will never be null because default value is either blank string or value of some string
-						 * and new value cannot have null passed to it because all values come from the javascript front
-						 * end.
+						 * LDP - Changed to getValue rather than use property value because the property
+						 * value may not be the same as the actual value, for example in the case of enum we
+						 * might have ordinal but getValue returns String.
 						 */
 						if(val == null) {
 							val = "";
@@ -116,8 +117,6 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 						if(!Objects.equals(val, newVal)) {
 							changedProperties.add(new PropertyChange(template.getResourceKey(), val, newVal));
 						}
-						
-						setValue(resource, template.getResourceKey(), newVal);
 						properties.remove(template.getResourceKey());
 					}
 				}

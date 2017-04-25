@@ -258,7 +258,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			changedDefault = true;
 		}
 		
-		final List<PropertyChange> changes = getRepository().populateEntityFields(resource, properties);
+		final List<PropertyChange> changes = populateEntityFields(resource, properties);
 		
 		try {
 			beforeUpdateResource(resource, properties);
@@ -287,6 +287,10 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		}
 	}
 
+	protected List<PropertyChange> populateEntityFields(T resource, Map<String,String> properties) {
+		return getRepository().populateEntityFields(resource, properties);
+	}
+	
 	/**
 	 * 
 	 * If the resource wants to fire particular events for particular property changes,

@@ -7,6 +7,30 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
+import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.hypersocket.bulk.BulkAssignment;
 import com.hypersocket.bulk.BulkAssignmentMode;
 import com.hypersocket.encrypt.EncryptionService;
@@ -23,20 +47,6 @@ import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.session.Session;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.PostConstruct;
-import java.util.*;
 
 @Repository
 public abstract class AbstractAssignableResourceRepositoryImpl<T extends AssignableResource>
@@ -434,18 +444,41 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 	
 	@Override
-	public void populateEntityFields(T resource, Map<String,String> properties) {
-		
+	public List<PropertyChange> populateEntityFields(T resource, Map<String,String> properties) {
+		List<PropertyChange> changedProperties = new ArrayList<>();
 		if(properties!=null) {
 			for(PropertyTemplate template : getPropertyTemplates(resource)) {
 				if(properties.containsKey(template.getResourceKey())) {
+					/**
+					 * Why was this commented out? We have to ensure we only attempt to update
+					 * entity properties. Some resources use a mixture of both.
+					 */
 					if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
+						String val = getValue(resource, template.getResourceKey());
 						setValue(resource, template.getResourceKey(), properties.get(template.getResourceKey()));
+						
+						String newVal = getValue(resource, template.getResourceKey());
+						
+						/**
+						 * LDP - Changed to getValue rather than use property value because the property
+						 * value may not be the same as the actual value, for example in the case of enum we
+						 * might have ordinal but getValue returns String.
+						 */
+						if(val == null) {
+							val = "";
+						}
+						if(newVal == null) {
+							newVal = "";
+						}
+						if(!Objects.equals(val, newVal)) {
+							changedProperties.add(new PropertyChange(template.getResourceKey(), val, newVal));
+						}
 						properties.remove(template.getResourceKey());
 					}
 				}
 			}
 		}
+		return changedProperties;
 	}
 	
 	@SuppressWarnings("unchecked")

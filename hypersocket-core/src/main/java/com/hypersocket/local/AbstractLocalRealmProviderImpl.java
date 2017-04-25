@@ -882,6 +882,45 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	}
 
 	@Override
+	public Long getUserPropertyLong(Principal principal, String resourceKey) {
+		return userRepository.getLongValue(principal, resourceKey);
+	}
+	
+	@Override
+	public Integer getUserPropertyInt(Principal principal, String resourceKey) {
+		return userRepository.getIntValue(principal, resourceKey);
+	}
+	
+	@Override
+	public boolean getUserPropertyBoolean(Principal principal, String resourceKey) {
+		return userRepository.getBooleanValue(principal, resourceKey);
+	}
+	
+	@Override
+	public String getUserProperty(Principal principal, String resourceKey) {
+		return userRepository.getValue(principal, resourceKey);
+	}
+	
+	@Override
+	public void setUserProperty(Principal principal, String resourceKey, Long val) {
+		userRepository.setValue(principal, resourceKey, val);
+	}
+
+	@Override
+	public void setUserProperty(Principal principal, String resourceKey, Integer val) {
+		userRepository.setValue(principal, resourceKey, val);
+	}
+
+	@Override
+	public void setUserProperty(Principal principal, String resourceKey, Boolean val) {
+		userRepository.setValue(principal, resourceKey, val);
+	}
+
+	@Override
+	public void setUserProperty(Principal principal, String resourceKey, String val) {
+		userRepository.setValue(principal, resourceKey, val);
+	}
+	@Override
 	public void onApplicationEvent(final SessionOpenEvent event) {
 	
 		if(event.getTargetPrincipal() instanceof LocalUser) {
@@ -889,8 +928,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			LocalUser user = (LocalUser) event.getTargetPrincipal();
 			user.setLastSignOn(new Date(event.getTimestamp()));
 			userRepository.saveUser(user, new HashMap<String,String>());
-		}
-				
+		}		
 	}
 
 }

@@ -57,7 +57,7 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 
 	long allRealmsResourcesCount();
 
-	void populateEntityFields(T resource, Map<String, String> properties);
+	List<PropertyChange> populateEntityFields(T resource, Map<String, String> properties);
 
 	boolean hasAssignedEveryoneRole(Realm realm, CriteriaConfiguration... configs);
 

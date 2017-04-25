@@ -2,6 +2,7 @@ package com.hypersocket.repository;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -17,9 +18,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
 
+import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
+import com.hypersocket.utils.HypersocketUtils;
 
 public class HibernateUtils {
 
@@ -102,9 +105,46 @@ public class HibernateUtils {
 			} else if(method.getReturnType().equals(Boolean.class)) {
 				criteria.add(Restrictions.eq(searchColumn, Boolean.parseBoolean(searchPattern)));
 			} else if(method.getReturnType().equals(Date.class)) {
-				/**
-				 * TODO more complex
-				 */
+				String[] elements = searchPattern.split(",");
+				if(elements.length > 0) {
+					Date to = new Date();
+					Date from;
+					if(StringUtils.isNumeric(elements[0])) {
+						Integer val = Integer.parseInt(elements[0]);
+						switch(val) {
+						case 1:
+							from = HypersocketUtils.today();
+							break;
+						case 2:
+							from = HypersocketUtils.yesterday();
+							to = HypersocketUtils.today();
+							break;
+						case 3:
+						{
+							Calendar c = Calendar.getInstance();
+							c.setTime(HypersocketUtils.today());
+							c.add(Calendar.DAY_OF_MONTH, -6);
+							from = c.getTime();
+							break;
+						}
+						case 4:
+						{
+							Calendar c = Calendar.getInstance();
+							c.setTime(HypersocketUtils.today());
+							c.add(Calendar.DAY_OF_MONTH, -29);
+							from = c.getTime();
+							break;
+						}
+						default:
+							// TODO custom use elements to create from to
+							throw new IllegalStateException("Custom date search is not implemented yet!");
+						}
+						criteria.add(Restrictions.and(
+								Restrictions.ge(searchColumn, from),
+								Restrictions.le(searchColumn, to)));
+						
+					}
+				}
 			} else if(Enum.class.isAssignableFrom(method.getReturnType())) {
 				
 				String[] matchValues = searchPattern.split(",");
@@ -117,12 +157,23 @@ public class HibernateUtils {
 					for(String matchValue : matchValues) {
 						if(e.name().startsWith(matchValue)) {
 							searchValues.add(e);
+						} else if(String.valueOf(e.ordinal()).equals(matchValue)) {
+							searchValues.add(e);
 						}
 					}
 				}
 				
 				if(searchValues.size() > 0) {
 					criteria.add(Restrictions.in(searchColumn, searchValues));
+				}
+			} else if(Resource.class.isAssignableFrom(method.getReturnType())) {
+				criteria.createAlias(searchColumn, "search");
+				if(StringUtils.isNumeric(searchPattern)) {
+					criteria.add(Restrictions.or(
+							Restrictions.eq("search.id", Long.parseLong(searchPattern)),
+							Restrictions.eq("search.name", searchPattern)));
+				} else {
+					criteria.add(Restrictions.ilike("search.name", searchPattern));
 				}
 			}
 		
