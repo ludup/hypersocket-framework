@@ -65,7 +65,7 @@ public class AuthenticationState {
 	}
 
 	public boolean isNew() {
-		return attempts <= 1;
+		return attempts < 1;
 	}
 
 	public Integer getCurrentIndex() {
