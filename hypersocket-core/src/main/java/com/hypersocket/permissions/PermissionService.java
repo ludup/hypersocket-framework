@@ -156,4 +156,8 @@ public interface PermissionService extends AuthenticatedService {
 	Collection<Principal> getPrincipalsByRole(Realm realm, Role... roles);
 
 	Collection<Principal> getPrincipalsByRole(Realm realm, Collection<Role> roles) throws ResourceNotFoundException, AccessDeniedException;
+	
+	void deleteResources(List<Role> resources) throws ResourceException, AccessDeniedException;
+	
+	List<Role> getResourcesByIds(Long...ids) throws AccessDeniedException;
 }
