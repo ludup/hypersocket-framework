@@ -47,6 +47,7 @@ import com.hypersocket.certs.InvalidPassphraseException;
 import com.hypersocket.certs.X509CertificateUtils;
 import com.hypersocket.certs.json.CertificateStatus;
 import com.hypersocket.i18n.I18N;
+import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
@@ -712,6 +713,46 @@ public class CertificateResourceController extends ResourceController {
 
 			return status;
 
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@AuthenticationRequired
+	@RequestMapping(value = "certificates/bulk", method = RequestMethod.DELETE, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus deleteResources(HttpServletRequest request,
+												HttpServletResponse response,
+												@RequestBody Long[] ids)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			
+			if(ids == null) {
+				ids = new Long[0];
+			}
+			
+			List<CertificateResource> certificateResources = resourceService.getResourcesByIds(ids);
+
+			if(certificateResources == null || certificateResources.isEmpty()) {
+				return new RequestStatus(false,
+						I18N.getResource(sessionUtils.getLocale(request),
+								I18NServiceImpl.USER_INTERFACE_BUNDLE,
+								"bulk.delete.empty"));
+			}else {
+				resourceService.deleteResources(certificateResources);
+				return new RequestStatus(true,
+						I18N.getResource(sessionUtils.getLocale(request),
+								I18NServiceImpl.USER_INTERFACE_BUNDLE,
+								"bulk.delete.success"));
+			}
+			
+		} catch (Exception e) {
+			return new RequestStatus(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}

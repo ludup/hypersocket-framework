@@ -24,8 +24,6 @@ import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -39,8 +37,6 @@ import java.util.*;
 @Controller
 public class CurrentRealmController extends ResourceController {
 	
-	static Logger log = LoggerFactory.getLogger(CurrentRealmController.class);
-
 	@Autowired
 	PrincipalSuspensionService suspensionService;
 
@@ -967,10 +963,7 @@ public class CurrentRealmController extends ResourceController {
 			}
 			
 		} catch (Exception e) {
-			log.error("Delete action failed for {}.", ids, e);
-			return new RequestStatus(false, I18N.getResource(sessionUtils.getLocale(request),
-					I18NServiceImpl.USER_INTERFACE_BUNDLE,
-					"bulk.delete.failure"));
+			return new RequestStatus(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -1010,10 +1003,7 @@ public class CurrentRealmController extends ResourceController {
 			}
 			
 		} catch (Exception e) {
-			log.error("Delete action failed for {}.", ids, e);
-			return new RequestStatus(false, I18N.getResource(sessionUtils.getLocale(request),
-					I18NServiceImpl.USER_INTERFACE_BUNDLE,
-					"bulk.delete.failure"));
+			return new RequestStatus(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}

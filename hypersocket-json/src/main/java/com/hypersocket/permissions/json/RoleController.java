@@ -11,8 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -55,8 +53,6 @@ import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 @Controller
 public class RoleController extends ResourceController {
 	
-	static Logger log = LoggerFactory.getLogger(RoleController.class);
-
 	@Autowired
 	PermissionService permissionService;
 
@@ -471,10 +467,7 @@ public class RoleController extends ResourceController {
 			}
 			
 		} catch (Exception e) {
-			log.error("Delete action failed for {}.", ids, e);
-			return new RequestStatus(false, I18N.getResource(sessionUtils.getLocale(request),
-					I18NServiceImpl.USER_INTERFACE_BUNDLE,
-					"bulk.delete.failure"));
+			return new RequestStatus(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}

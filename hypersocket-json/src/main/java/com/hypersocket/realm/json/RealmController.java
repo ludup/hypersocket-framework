@@ -480,10 +480,7 @@ public class RealmController extends ResourceController {
 			}
 			
 		} catch (Exception e) {
-			log.error("Delete action failed for {}.", ids, e);
-			return new RequestStatus(false, I18N.getResource(sessionUtils.getLocale(request),
-					I18NServiceImpl.USER_INTERFACE_BUNDLE,
-					"bulk.delete.failure"));
+			return new RequestStatus(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}
