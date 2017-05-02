@@ -15,11 +15,12 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LocalGroupMigrationMixIn extends LocalGroup implements MigrationMixIn {
 
-    private LocalGroupMigrationMixIn() {}
+	private static final long serialVersionUID = -4423025022806439898L;
+
+	private LocalGroupMigrationMixIn() {}
 
     @Override
     @JsonIgnore(false)
-    //@JsonSerialize(contentUsing = MigrationSerializerForResource.class)
     @JsonDeserialize(contentUsing = MigrationDeserializer.class)
     public Set<LocalGroup> getGroups() {
         return null;

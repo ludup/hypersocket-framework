@@ -18,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
 
-import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;

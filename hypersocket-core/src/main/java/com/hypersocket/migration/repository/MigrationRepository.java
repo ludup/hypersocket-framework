@@ -12,19 +12,19 @@ import java.util.List;
 public interface MigrationRepository {
     <T> T findEntityByLookUpKey(Class<T> aClass, LookUpKey lookUpKey, Realm realm);
 
-    void saveOrUpdate(AbstractEntity resource);
+    void saveOrUpdate(AbstractEntity<Long> resource);
 
     <T> List<T> findAllResourceInRealmOfType(Class<T> aClass, Realm realm);
 
     List<DatabaseProperty> findAllDatabaseProperties(AbstractResource abstractResource);
 
-    <T> T findEntityByLegacyIdInRealm(Class<? extends AbstractResource> aClass, Long legacyId, Realm realm);
+    <T> T findEntityByLegacyIdInRealm(Class<T> aClass, Long legacyId, Realm realm);
 
     <T> T findEntityByNameLookUpKey(Class<T> aClass, LookUpKey lookUpKey, Realm realm);
 
     <T> DetachedCriteria buildCriteriaFor(Class<T> aClass, String alias);
 
-    List executeCriteria(DetachedCriteria criteria);
+    <T> List<T> executeCriteria(DetachedCriteria criteria);
 
     Realm findRealm(LookUpKey lookUpKey);
 

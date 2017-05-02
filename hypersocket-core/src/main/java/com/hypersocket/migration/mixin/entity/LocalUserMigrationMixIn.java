@@ -11,7 +11,9 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LocalUserMigrationMixIn extends LocalUser implements MigrationMixIn {
 
-    private LocalUserMigrationMixIn() {}
+	private static final long serialVersionUID = 2032037336768069863L;
+
+	private LocalUserMigrationMixIn() {}
 
     @Override
     @JsonIgnore

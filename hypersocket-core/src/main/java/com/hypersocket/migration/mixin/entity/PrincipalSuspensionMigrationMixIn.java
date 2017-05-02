@@ -13,7 +13,9 @@ import com.hypersocket.realm.PrincipalSuspension;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PrincipalSuspensionMigrationMixIn extends PrincipalSuspension implements MigrationMixIn{
 
-    private PrincipalSuspensionMigrationMixIn(){}
+	private static final long serialVersionUID = 5855367347589092569L;
+
+	private PrincipalSuspensionMigrationMixIn(){}
 
     @Override
     @JsonSerialize(using = MigrationSerializerForResource.class)

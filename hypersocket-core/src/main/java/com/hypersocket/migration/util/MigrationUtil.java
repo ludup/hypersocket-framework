@@ -31,8 +31,7 @@ public class MigrationUtil {
     @Autowired
     MigrationCurrentStack migrationCurrentStack;
 
-    @SuppressWarnings("unchecked")
-    public LookUpKey captureEntityLookup(JsonNode node, Class aClass) {
+    public LookUpKey captureEntityLookup(JsonNode node, Class<?> aClass) {
         LookUpKeys annotation = (LookUpKeys) aClass.getAnnotation(LookUpKeys.class);
         LookUpKey lookUpKey;
         if(annotation != null) {
@@ -166,7 +165,7 @@ public class MigrationUtil {
         }
     }
 
-    public String getMappedBy(AbstractEntity object, final String property) {
+    public String getMappedBy(AbstractEntity<Long> object, final String property) {
         final StringBuilder mappedBy = new StringBuilder();
         ReflectionUtils.doWithFields(object.getClass(), new ReflectionUtils.FieldCallback() {
             @Override
@@ -192,8 +191,7 @@ public class MigrationUtil {
     }
 
 
-    @SuppressWarnings("unchecked")
-    public boolean isResourceAllowNameOnlyLookUp(Class aClass) {
+    public boolean isResourceAllowNameOnlyLookUp(Class<?> aClass) {
         return aClass.getAnnotation(AllowNameOnlyLookUp.class) != null;
     }
 }

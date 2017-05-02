@@ -35,7 +35,7 @@ public class MigrationObjectMapper {
 
     ObjectMapper objectMapper;
 
-    Map<String, Class> customMixInMap = new HashMap<>();
+    Map<String, Class<?>> customMixInMap = new HashMap<>();
 
     @PostConstruct
     private void postConstruct() {
@@ -55,7 +55,7 @@ public class MigrationObjectMapper {
     private void addMigrationMixIn() {
         MultiValueMap entityMap = applicationMetaSource.getEntityMap();
         for (Object object : entityMap.values()) {
-            Class aClass = (Class) object;
+            Class<?> aClass = (Class<?>) object;
             objectMapper.addMixIn(aClass, MigrationMixIn.class);
             String migrationMixInKey = String.format("%sMigrationMixIn", aClass.getSimpleName());
             if(customMixInMap.containsKey(migrationMixInKey)) {
@@ -73,8 +73,8 @@ public class MigrationObjectMapper {
         try {
             for (BeanDefinition beanDefinition : classes) {
                 String className = beanDefinition.getBeanClassName();
-                Class aClass = MigrationObjectMapper.class.getClassLoader().loadClass(className);
-                Class oldClass = customMixInMap.put(aClass.getSimpleName(), aClass);
+                Class<?> aClass = MigrationObjectMapper.class.getClassLoader().loadClass(className);
+                Class<?> oldClass = customMixInMap.put(aClass.getSimpleName(), aClass);
                 if(oldClass != null) {
                     throw new IllegalStateException(String.format("While adding class for key %s, map returned back object, " +
                             "meaning value already exists, " +

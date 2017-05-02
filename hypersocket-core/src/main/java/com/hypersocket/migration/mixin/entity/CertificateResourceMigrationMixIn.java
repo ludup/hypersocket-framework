@@ -8,7 +8,9 @@ import com.hypersocket.migration.mixin.MigrationMixIn;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CertificateResourceMigrationMixIn extends CertificateResource implements MigrationMixIn{
 
-    private CertificateResourceMigrationMixIn() {}
+	private static final long serialVersionUID = -2268375036679914892L;
+
+	private CertificateResourceMigrationMixIn() {}
 
     @Override
     @JsonIgnore(false)

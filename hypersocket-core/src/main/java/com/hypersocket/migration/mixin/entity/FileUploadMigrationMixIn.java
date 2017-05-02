@@ -8,7 +8,9 @@ import com.hypersocket.upload.FileUpload;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FileUploadMigrationMixIn extends FileUpload implements MigrationMixIn {
 
-    private FileUploadMigrationMixIn() {}
+	private static final long serialVersionUID = 4197453113499184809L;
+
+	private FileUploadMigrationMixIn() {}
 
     @Override
     @JsonIgnore

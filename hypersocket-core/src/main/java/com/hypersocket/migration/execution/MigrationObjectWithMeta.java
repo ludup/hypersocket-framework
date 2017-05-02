@@ -12,8 +12,7 @@ public class MigrationObjectWithMeta {
     AbstractEntity<Long> entity;
     List<DatabaseProperty>  databaseProperties;
 
-    @SuppressWarnings("unchecked")
-    public MigrationObjectWithMeta(AbstractEntity entity, List<DatabaseProperty> databaseProperties) {
+    public MigrationObjectWithMeta(AbstractEntity<Long> entity, List<DatabaseProperty> databaseProperties) {
         this.entity = entity;
         this.databaseProperties = databaseProperties;
     }

@@ -14,7 +14,9 @@ import com.hypersocket.permissions.Role;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthenticationSchemeMigrationMixIn extends AuthenticationScheme implements MigrationMixIn {
 
-    private AuthenticationSchemeMigrationMixIn() {}
+	private static final long serialVersionUID = -357467347226649908L;
+
+	private AuthenticationSchemeMigrationMixIn() {}
 
     @Override
     @JsonSerialize(contentUsing = MigrationSerializerForResource.class)

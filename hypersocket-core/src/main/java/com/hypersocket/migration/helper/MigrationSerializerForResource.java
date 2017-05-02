@@ -12,7 +12,9 @@ import java.io.IOException;
 
 public class MigrationSerializerForResource extends StdSerializer<Resource> {
 
-    protected MigrationSerializerForResource() {
+	private static final long serialVersionUID = 7942809978155764554L;
+
+	protected MigrationSerializerForResource() {
         this(null);
     }
 
@@ -31,8 +33,8 @@ public class MigrationSerializerForResource extends StdSerializer<Resource> {
         gen.writeEndObject();
     }
 
-    private void addAnyPropertiesFromCustomBean(AbstractEntity value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        Class aClass = value.getClass();
+    private void addAnyPropertiesFromCustomBean(AbstractEntity<Long> value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        Class<?> aClass = value.getClass();
         String customBean = String.format("%sJsonPropertiesAdder", aClass.getSimpleName());
         if(SpringApplicationContextProvider.getApplicationContext().containsBean(customBean)) {
             JsonPropertiesAdder jsonPropertiesAdder = (JsonPropertiesAdder) SpringApplicationContextProvider.

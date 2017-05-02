@@ -16,8 +16,16 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
 import javax.annotation.PostConstruct;
-import java.util.*;
 
 @Component
 public class MigrationHelperClassesInfoProvider {
@@ -27,9 +35,10 @@ public class MigrationHelperClassesInfoProvider {
     @Autowired
     ApplicationContext applicationContext;
 
-    private Map<Short, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = MultiValueMap.decorate(new TreeMap<>());
-    private Map<Class<?>, MigrationImporter> migrationImporterMap = new HashMap<>();
-    private Map<Class<?>, MigrationExporter> migrationExporterMap = new HashMap<>();
+    @SuppressWarnings("unchecked")
+	private Map<Short, List<Class<? extends AbstractEntity<Long>>>> migrationOrderMap = MultiValueMap.decorate(new TreeMap<>());
+    private Map<Class<?>, MigrationImporter<AbstractEntity<Long>>> migrationImporterMap = new HashMap<>();
+    private Map<Class<?>, MigrationExporter<AbstractEntity<Long>>> migrationExporterMap = new HashMap<>();
     private Map<Class<?>, MigrationExportCriteriaBuilder> migrationExportCriteriaBuilder = new HashMap<>();
     private Map<Class<?>, MigrationLookupCriteriaBuilder> migrationLookupCriteriaBuilder = new HashMap<>();
 
@@ -42,11 +51,11 @@ public class MigrationHelperClassesInfoProvider {
         return migrationOrderMap;
     }
 
-    public Map<Class<?>, MigrationImporter> getMigrationImporterMap() {
+    public Map<Class<?>, MigrationImporter<AbstractEntity<Long>>> getMigrationImporterMap() {
         return Collections.unmodifiableMap(migrationImporterMap);
     }
 
-    public Map<Class<?>, MigrationExporter> getMigrationExporterMap() {
+    public Map<Class<?>, MigrationExporter<AbstractEntity<Long>>> getMigrationExporterMap() {
         return Collections.unmodifiableMap(migrationExporterMap);
     }
 
@@ -58,7 +67,8 @@ public class MigrationHelperClassesInfoProvider {
         return Collections.unmodifiableMap(migrationLookupCriteriaBuilder);
     }
 
-    private void scanForMigrationHelperClasses() {
+    @SuppressWarnings("unchecked")
+	private void scanForMigrationHelperClasses() {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AssignableTypeFilter(MigrationProperties.class));
         scanner.addIncludeFilter(new AssignableTypeFilter(MigrationImporter.class));
@@ -69,7 +79,7 @@ public class MigrationHelperClassesInfoProvider {
         try {
             for (BeanDefinition beanDefinition : classes) {
                 String className = beanDefinition.getBeanClassName();
-                Class aClass = MigrationHelperClassesInfoProvider.class.getClassLoader().loadClass(className);
+                Class<?> aClass = MigrationHelperClassesInfoProvider.class.getClassLoader().loadClass(className);
                 if(MigrationProperties.class.isAssignableFrom(aClass)) {
                     MigrationProperties instance = (MigrationProperties) aClass.newInstance();
                     migrationOrderMap.put(instance.sortOrder(), instance.getOrderList());
@@ -82,10 +92,10 @@ public class MigrationHelperClassesInfoProvider {
                         migrationLookupCriteriaBuilder.putAll(instance.getLookupCriteriaMap());
                     }
                 } else if (MigrationImporter.class.isAssignableFrom(aClass)) {
-                    MigrationImporter instance = (MigrationImporter) applicationContext.getBean(aClass.getCanonicalName());
+                    MigrationImporter<AbstractEntity<Long>> instance = (MigrationImporter<AbstractEntity<Long>>) applicationContext.getBean(aClass.getCanonicalName());
                     migrationImporterMap.put(instance.getType(), instance);
                 } else if (MigrationExporter.class.isAssignableFrom(aClass)) {
-                    MigrationExporter instance = (MigrationExporter) applicationContext.getBean(aClass.getCanonicalName());
+                    MigrationExporter<AbstractEntity<Long>> instance = (MigrationExporter<AbstractEntity<Long>>) applicationContext.getBean(aClass.getCanonicalName());
                     migrationExporterMap.put(instance.getType(), instance);
                 }
             }
@@ -94,11 +104,12 @@ public class MigrationHelperClassesInfoProvider {
         }
     }
 
-    public List<String> getAllExportableClasses() {
+    @SuppressWarnings({ "unchecked" })
+	public List<String> getAllExportableClasses() {
         List<String> exportable = new ArrayList<>();
         Set<Short> keys = migrationOrderMap.keySet();
         for (Short key : keys) {
-            Collection migrationClassesList = ((MultiValueMap) migrationOrderMap).getCollection(key);
+            Collection<?> migrationClassesList = ((MultiValueMap) migrationOrderMap).getCollection(key);
             for (Object migrationClasses : migrationClassesList) {
                 for (Class<? extends AbstractEntity<Long>> aClass : (List<Class<? extends AbstractEntity<Long>>>) migrationClasses) {
                     exportable.add(aClass.getSimpleName());
