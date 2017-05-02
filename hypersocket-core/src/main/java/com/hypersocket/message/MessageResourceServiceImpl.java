@@ -1,6 +1,7 @@
 package com.hypersocket.message;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,6 +52,9 @@ import com.hypersocket.upload.FileUpload;
 import com.hypersocket.upload.FileUploadService;
 import com.hypersocket.utils.ITokenResolver;
 
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+
 
 @Service
 public class MessageResourceServiceImpl extends
@@ -84,6 +88,9 @@ public class MessageResourceServiceImpl extends
 	
 	@Autowired
 	ConfigurationService configurationService;
+	
+	@Autowired
+	FreeMarkerService templateService; 
 	
 	List<MessageRegistration> messageRegistrations = new ArrayList<MessageRegistration>();
 	List<Integer> messageIds = new ArrayList<Integer>();
@@ -320,7 +327,7 @@ public class MessageResourceServiceImpl extends
 	}
 
 	@Override
-	public void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Principal... principals) throws ResourceNotFoundException, AccessDeniedException {
+	public void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Principal... principals) throws ResourceException, AccessDeniedException {
 		
 		MessageResource message = repository.getMessageById(messageId, realm);
 		
@@ -353,11 +360,29 @@ public class MessageResourceServiceImpl extends
 		if(!recipients.isEmpty()) {
 			try {
 		
+				Template subjectTemplate = templateService.createTemplate("message.subject." + message.getId(), 
+						ReplacementUtils.processTokenReplacements(message.getSubject(), tokenResolver), 
+						message.getModifiedDate().getTime());
+				StringWriter subjectWriter = new StringWriter();
+				subjectTemplate.process(tokenResolver.getData(), subjectWriter);
+				
+				Template bodyTemplate = templateService.createTemplate("message.body." + message.getId(), 
+						ReplacementUtils.processTokenReplacements(message.getBody(), tokenResolver), 
+						message.getModifiedDate().getTime());
+				StringWriter bodyWriter = new StringWriter();
+				bodyTemplate.process(tokenResolver.getData(), bodyWriter);
+				
+				Template htmlTemplate = templateService.createTemplate("message.html." + message.getId(), 
+						ReplacementUtils.processTokenReplacements(message.getHtml(), tokenResolver), 
+						message.getModifiedDate().getTime());				
+				StringWriter htmlWriter = new StringWriter();
+				htmlTemplate.process(tokenResolver.getData(), htmlWriter);
+				
 				emailService.sendEmail(
 						realm,
-						ReplacementUtils.processTokenReplacements(message.getSubject(), tokenResolver),
-						ReplacementUtils.processTokenReplacements(message.getBody(), tokenResolver),
-						ReplacementUtils.processTokenReplacements(message.getHtml(), tokenResolver),
+						subjectWriter.toString(),
+						bodyWriter.toString(),
+						htmlWriter.toString(),
 						message.getReplyToName(),
 						message.getReplyToEmail(),
 						recipients.toArray(new RecipientHolder[0]), 
@@ -368,7 +393,7 @@ public class MessageResourceServiceImpl extends
 				
 			} catch (MailException e) { 
 				// Will be logged by mail API
-			} catch(ValidationException e) {
+			} catch(IOException | TemplateException | ValidationException e) {
 				log.error("Failed to send email", e);
 			}
 		}

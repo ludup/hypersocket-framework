@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class StaticResolver implements ITokenResolver {
 
-	Map<String,String> tokens = new HashMap<String,String>();
+	Map<String,Object> tokens = new HashMap<String,Object>();
 	public StaticResolver() {
 		
 	}
@@ -16,7 +16,14 @@ public class StaticResolver implements ITokenResolver {
 	
 	@Override
 	public final String resolveToken(String tokenName) {
-		return tokens.get(tokenName);
+		Object obj = tokens.get(tokenName);
+		if(obj==null) {
+			return "";
+		}
+		return obj.toString();
 	}
 
+	public Map<String,Object> getData() {
+		return  tokens;
+	}
 }

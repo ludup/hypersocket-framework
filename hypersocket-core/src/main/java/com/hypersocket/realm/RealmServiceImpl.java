@@ -548,17 +548,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	}
 
-	private void sendNewUserTemporaryPasswordNofification(Principal principal, String password) throws ResourceNotFoundException, AccessDeniedException {
+	private void sendNewUserTemporaryPasswordNofification(Principal principal, String password) throws ResourceException, AccessDeniedException {
 		PrincipalResolver resolver = new PrincipalResolver(principal, password);
 		messageService.sendMessage(MESSAGE_NEW_USER_TMP_PASSWORD, principal.getRealm(), resolver, principal);
 	}
 
-	private void sendNewUserSelfCreatedNofification(Principal principal, String password) throws ResourceNotFoundException, AccessDeniedException {
+	private void sendNewUserSelfCreatedNofification(Principal principal, String password) throws ResourceException, AccessDeniedException {
 		PrincipalResolver resolver = new PrincipalResolver(principal, password);
 		messageService.sendMessage(MESSAGE_NEW_USER_SELF_CREATED, principal.getRealm(), resolver, principal);
 	}
 	
-	private void sendNewUserFixedPasswordNotification(Principal principal, String password) throws ResourceNotFoundException, AccessDeniedException {
+	private void sendNewUserFixedPasswordNotification(Principal principal, String password) throws ResourceException, AccessDeniedException {
 		PrincipalResolver resolver = new PrincipalResolver(principal, password);
 		messageService.sendMessage(MESSAGE_NEW_USER_NEW_PASSWORD, principal.getRealm(), resolver, principal);
 	}

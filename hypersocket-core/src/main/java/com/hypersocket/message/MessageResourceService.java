@@ -1,5 +1,6 @@
 package com.hypersocket.message;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +12,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.utils.ITokenResolver;
@@ -30,7 +32,7 @@ public interface MessageResourceService extends
 			throws AccessDeniedException;
 
 	void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Principal... principals)
-			throws ResourceNotFoundException, AccessDeniedException;
+			throws AccessDeniedException, ResourceException;
 
 	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables);
 

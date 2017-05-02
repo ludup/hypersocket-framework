@@ -69,6 +69,7 @@ import com.hypersocket.server.websocket.WebsocketClient;
 import com.hypersocket.server.websocket.WebsocketClientCallback;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.utils.ITokenResolver;
+import com.hypersocket.utils.TokenAdapter;
 import com.hypersocket.utils.TokenReplacementReader;
 
 public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
@@ -366,7 +367,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		if(servletRequest.getAttribute("500.html")!=null) {
 			url = (URL) servletRequest.getAttribute("500.html");
 		}
-		ITokenResolver resolver = new ITokenResolver() {
+		ITokenResolver resolver = new TokenAdapter() {
 			
 			@Override
 			public String resolveToken(String tokenName) {
