@@ -485,13 +485,13 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Override
 	@SafeVarargs
 	@Transactional
-	public final void saveResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops) throws ResourceException {
+	public final List<PropertyChange> saveResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops) throws ResourceException {
 
 		for(TransactionOperation<T> op : ops) {
 			op.beforeSetProperties(resource, properties);
 		}
 		
-		populateEntityFields(resource, properties);
+		List<PropertyChange> changes = populateEntityFields(resource, properties);
 
 		for(TransactionOperation<T> op : ops) {
 			op.beforeOperation(resource, properties);
@@ -509,6 +509,8 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for(TransactionOperation<T> op : ops) {
 			op.afterOperation(resource, properties);
 		}
+		
+		return changes;
 	}
 	
 	@SuppressWarnings("unchecked")

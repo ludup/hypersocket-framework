@@ -307,11 +307,9 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			changedDefault = true;
 		}
 		
-		final List<PropertyChange> changes = populateEntityFields(resource, properties);
-		
 		try {
 			beforeUpdateResource(resource, properties);
-			getRepository().saveResource(resource, properties, ops);
+			List<PropertyChange> changes = getRepository().saveResource(resource, properties, ops);
 			updateFingerprint();
 			afterUpdateResource(resource, properties);
 			if(changes.size() > 0) {

@@ -131,13 +131,13 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 	@Override
 	@Transactional
 	@SafeVarargs
-	public final T saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops)  throws ResourceException {
+	public final List<PropertyChange> saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops)  throws ResourceException {
 	
 		for(TransactionOperation<T> op : ops) {
 			op.beforeSetProperties(resource, properties);
 		}
 		
-		populateEntityFields(resource, properties);
+		List<PropertyChange> changes = populateEntityFields(resource, properties);
 
 		for(TransactionOperation<T> op : ops) {
 			op.beforeOperation(resource, properties);
@@ -152,11 +152,11 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 			op.afterOperation(resource, properties);
 		}
 		
-		return resource;
+		return changes;
 	}
 	
-	@Transactional()
-	public T saveResource(T resource) throws ResourceException {
+	@Transactional
+	public List<PropertyChange> saveResource(T resource) throws ResourceException {
 		return saveResource(resource, null);
 	}
 

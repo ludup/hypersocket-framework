@@ -36,7 +36,7 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	List<T> getResources(Realm realm);
 
 	@SuppressWarnings("unchecked")
-	void saveResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops)
+	List<PropertyChange> saveResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops)
 			throws ResourceException;
 
 	List<T> search(Realm realm, String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting,
