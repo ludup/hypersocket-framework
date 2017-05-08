@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.cache.CacheUtils;
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -41,7 +42,7 @@ import com.sshtools.icongenerator.java2d.Java2DIconCanvas;
 
 @Controller
 public class LogoController extends ResourceController {
-
+    
 	static Logger log = LoggerFactory.getLogger(LogoController.class);
 	static MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
 	static Map<String, AwesomeIcon> map = new HashMap<String, AwesomeIcon>();
@@ -223,6 +224,7 @@ public class LogoController extends ResourceController {
 		// Respond
 		String contentType = mimeTypesMap.getContentType(spec + "." + ext);
 		response.setContentType(contentType);
+		CacheUtils.setDateAndCacheHeaders(response);
 
 		ImageIO.write(image, ext.toUpperCase(), response.getOutputStream());
 		response.flushBuffer();
