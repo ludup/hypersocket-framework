@@ -40,4 +40,6 @@ public interface AbstractResourceRepository<T extends AbstractResource> extends 
 
 	long getResourceCount(Realm realm);
 
+	void deleteResources(List<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException;
+
 }

@@ -112,5 +112,10 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 			throws ResourceNotFoundException, AccessDeniedException;
 
 	void bulkAssignRolesToResource(BulkAssignment bulkAssignment) throws ResourceException;
+	
+	void deleteResources(List<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) 
+			throws ResourceException, AccessDeniedException;
+	
+	List<T> getResourcesByIds(Long...ids) throws AccessDeniedException;
 
 }

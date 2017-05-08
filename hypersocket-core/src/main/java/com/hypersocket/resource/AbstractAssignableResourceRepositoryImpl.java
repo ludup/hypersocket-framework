@@ -706,4 +706,24 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			save(resource);
 		}
 	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly = true)
+	public List<T> getResourcesByIds(Long...ids) {
+		Criteria crit = createCriteria(getResourceClass());
+		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		crit.add(Restrictions.eq("deleted", false));
+		crit.add(Restrictions.in("id", ids));
+
+		return (List<T>) crit.list();
+	}
+
+	@Override
+	@Transactional
+	public void deleteResources(List<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException {
+		for (T resource: resources) {
+			deleteResource(resource, ops);
+		}
+	}
 }

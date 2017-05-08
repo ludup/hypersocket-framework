@@ -11,6 +11,8 @@ import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.i18n.I18N;
+import com.hypersocket.i18n.I18NServiceImpl;
+import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.json.ResourceStatusConfirmation;
@@ -440,6 +442,45 @@ public class RealmController extends ResourceController {
 		try {
 			return new ResourceList<String>(
 					migrationHelperClassesInfoProvider.getAllExportableClasses());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "realms/bulk", method = RequestMethod.DELETE, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus deleteResources(HttpServletRequest request,
+												HttpServletResponse response,
+												@RequestBody Long[] ids)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			
+			if(ids == null) {
+				ids = new Long[0];
+			}
+			
+			List<Realm> realmResources = realmService.getRealmsByIds(ids);
+
+			if(realmResources == null || realmResources.isEmpty()) {
+				return new RequestStatus(false,
+						I18N.getResource(sessionUtils.getLocale(request),
+								I18NServiceImpl.USER_INTERFACE_BUNDLE,
+								"bulk.delete.empty"));
+			}else {
+				realmService.deleteRealms(realmResources);
+				return new RequestStatus(true,
+						I18N.getResource(sessionUtils.getLocale(request),
+								I18NServiceImpl.USER_INTERFACE_BUNDLE,
+								"bulk.delete.success"));
+			}
+			
+		} catch (Exception e) {
+			return new RequestStatus(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}

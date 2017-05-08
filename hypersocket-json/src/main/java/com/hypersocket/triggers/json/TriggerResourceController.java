@@ -27,10 +27,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.AuthenticationRequiredButDontTouchSession;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.certificates.CertificateResource;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NServiceImpl;
+import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.json.SelectOption;
@@ -681,6 +683,46 @@ public class TriggerResourceController extends AbstractTriggerController {
 							return resourceService.getTriggerEventCount(searchPattern, sessionUtils.getLocale(request));
 						}
 					});
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@AuthenticationRequired
+	@RequestMapping(value = "triggers/bulk", method = RequestMethod.DELETE, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus deleteResources(HttpServletRequest request,
+												HttpServletResponse response,
+												@RequestBody Long[] ids)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			
+			if(ids == null) {
+				ids = new Long[0];
+			}
+			
+			List<TriggerResource> triggerResources = resourceService.getResourcesByIds(ids);
+
+			if(triggerResources == null || triggerResources.isEmpty()) {
+				return new RequestStatus(false,
+						I18N.getResource(sessionUtils.getLocale(request),
+								I18NServiceImpl.USER_INTERFACE_BUNDLE,
+								"bulk.delete.empty"));
+			}else {
+				resourceService.deleteResources(triggerResources);
+				return new RequestStatus(true,
+						I18N.getResource(sessionUtils.getLocale(request),
+								I18NServiceImpl.USER_INTERFACE_BUNDLE,
+								"bulk.delete.success"));
+			}
+			
+		} catch (Exception e) {
+			return new RequestStatus(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}

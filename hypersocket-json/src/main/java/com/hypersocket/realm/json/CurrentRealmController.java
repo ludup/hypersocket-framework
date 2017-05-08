@@ -5,6 +5,7 @@ import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.i18n.I18N;
+import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
@@ -22,6 +23,7 @@ import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -34,7 +36,7 @@ import java.util.*;
 
 @Controller
 public class CurrentRealmController extends ResourceController {
-
+	
 	@Autowired
 	PrincipalSuspensionService suspensionService;
 
@@ -926,5 +928,84 @@ public class CurrentRealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+	
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/bulk/groups", method = RequestMethod.DELETE, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus deleteGroupResources(HttpServletRequest request,
+												HttpServletResponse response,
+												@RequestBody Long[] ids)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			
+			if(ids == null) {
+				ids = new Long[0];
+			}
+			
+			List<Principal> groupResources = realmService.getGroupsByIds(ids);
 
+			if(groupResources == null || groupResources.isEmpty()) {
+				return new RequestStatus(false,
+						I18N.getResource(sessionUtils.getLocale(request),
+								I18NServiceImpl.USER_INTERFACE_BUNDLE,
+								"bulk.delete.empty"));
+			}else {
+				realmService.deleteGroups(getCurrentRealm(), groupResources);
+				return new RequestStatus(true,
+						I18N.getResource(sessionUtils.getLocale(request),
+								I18NServiceImpl.USER_INTERFACE_BUNDLE,
+								"bulk.delete.success"));
+			}
+			
+		} catch (Exception e) {
+			return new RequestStatus(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/bulk/users", method = RequestMethod.DELETE, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus deleteUserResources(HttpServletRequest request,
+												HttpServletResponse response,
+												@RequestBody Long[] ids)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			
+			if(ids == null) {
+				ids = new Long[0];
+			}
+			
+			List<Principal> userResources = realmService.getUsersByIds(ids);
+
+			if(userResources == null || userResources.isEmpty()) {
+				return new RequestStatus(false,
+						I18N.getResource(sessionUtils.getLocale(request),
+								I18NServiceImpl.USER_INTERFACE_BUNDLE,
+								"bulk.delete.empty"));
+			}else {
+				realmService.deleteUsers(getCurrentRealm(), userResources);
+				return new RequestStatus(true,
+						I18N.getResource(sessionUtils.getLocale(request),
+								I18NServiceImpl.USER_INTERFACE_BUNDLE,
+								"bulk.delete.success"));
+			}
+			
+		} catch (Exception e) {
+			return new RequestStatus(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 }

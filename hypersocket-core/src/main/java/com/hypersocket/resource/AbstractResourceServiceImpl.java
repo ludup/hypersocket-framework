@@ -613,4 +613,37 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		return resource;
 	}
 	
+	@Override
+	public void deleteResources(final List<T> resources, 
+			@SuppressWarnings("unchecked") final TransactionOperation<T>... ops) 
+			throws ResourceException, AccessDeniedException {
+		
+		if(assertPermissions) {
+			assertPermission(getDeletePermission());
+		}
+		
+		transactionService.doInTransaction(new TransactionCallback<Void>() {
+
+			@Override
+			public Void doInTransaction(TransactionStatus status) {
+				try {
+					getRepository().deleteResources(resources, ops);
+				} catch (ResourceException e) {
+					throw new IllegalStateException(e.getMessage(), e);
+				}
+				return null;
+			}
+		});
+		
+	}
+	
+	@Override
+	public List<T> getResourcesByIds(Long...ids) throws AccessDeniedException {
+		if(assertPermissions) {
+			assertPermission(getReadPermission());
+		}
+		
+		return getRepository().getResourcesByIds(ids);
+	}
+	
 }

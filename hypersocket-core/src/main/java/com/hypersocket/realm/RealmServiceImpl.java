@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 
 import com.hypersocket.attributes.AttributeType;
 import com.hypersocket.attributes.user.UserAttribute;
@@ -1997,6 +1998,99 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}catch (IOException e) {
 			throw new IllegalStateException(e.getMessage(), e);
 		}
+	}
+
+	@Override
+	public void deleteRealms(final List<Realm> resources)
+			throws ResourceException, AccessDeniedException {
+		transactionService.doInTransaction(new TransactionCallback<Void>() {
+
+			@Override
+			public Void doInTransaction(TransactionStatus status) {
+				for (Realm realm : resources) {
+					try {
+						deleteRealm(realm);
+					} catch (ResourceChangeException | AccessDeniedException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+				return null;
+			}
+		});
+		
+	}
+
+	@Override
+	public List<Realm> getRealmsByIds(Long... ids) throws AccessDeniedException {
+		assertPermission(RealmPermission.READ);
+		return realmRepository.getRealmsByIds(ids);
+	}
+
+	@Override
+	public void deleteUsers(final Realm realm, final List<Principal> users) throws ResourceException, AccessDeniedException {
+		transactionService.doInTransaction(new TransactionCallback<Void>() {
+
+			@Override
+			public Void doInTransaction(TransactionStatus status) {
+				for (Principal user : users) {
+					try {
+						deleteUser(realm, user);
+					} catch (ResourceChangeException | AccessDeniedException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+				return null;
+			}
+		});
+	}
+
+	/**
+	 * TODO : need to ask Lee if this needs refactoring, there are many realm providers, get by ids would need to replicated to all
+	 * hence pulling each record one by one.
+	 */
+	@Override
+	public List<Principal> getUsersByIds(Long...ids) throws AccessDeniedException {
+		return getPrincipalsByIds(ids);
+	}
+
+	@Override
+	public void deleteGroups(final Realm realm, final List<Principal> groups) throws ResourceException, AccessDeniedException {
+		transactionService.doInTransaction(new TransactionCallback<Void>() {
+
+			@Override
+			public Void doInTransaction(TransactionStatus status) {
+				for (Principal group : groups) {
+					try {
+						deleteGroup(realm, group);
+					} catch (ResourceChangeException | AccessDeniedException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+				return null;
+			}
+		});
+		
+	}
+
+	/**
+	 * TODO : need to ask Lee if this needs refactoring, there are many realm providers, get by ids would need to replicated to all
+	 * hence pulling each record one by one.
+	 */
+	@Override
+	public List<Principal> getGroupsByIds(Long... ids) throws AccessDeniedException {
+		return getPrincipalsByIds(ids);
+	}
+
+	private List<Principal> getPrincipalsByIds(Long... ids) throws AccessDeniedException {
+		List<Principal> principals = new ArrayList<>();
+		for (Long id : ids) {
+			Principal principal = getPrincipalById(id);
+			if(principal == null) {
+				throw new IllegalStateException(String.format("Principal by id %d not found.", id));
+			}
+			principals.add(principal);
+		}
+		return principals;
 	}
 }
 

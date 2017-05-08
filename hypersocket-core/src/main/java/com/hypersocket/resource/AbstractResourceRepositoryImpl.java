@@ -1,20 +1,5 @@
 package com.hypersocket.resource;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.annotation.PostConstruct;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
@@ -25,6 +10,19 @@ import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.tables.ColumnSort;
+import org.apache.commons.lang3.ArrayUtils;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Repository
 public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
@@ -235,4 +233,26 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 		
 	}
 	protected abstract Class<T> getResourceClass();
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly = true)
+	public List<T> getResourcesByIds(Long...ids) {
+		Criteria crit = createCriteria(getResourceClass());
+		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		crit.add(Restrictions.eq("deleted", false));
+		crit.add(Restrictions.in("id", ids));
+
+		processDefaultCriteria(crit);
+
+		return (List<T>) crit.list();
+	}
+
+	@Override
+	@Transactional
+	public void deleteResources(List<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException {
+		for (T resource: resources) {
+			deleteResource(resource, ops);
+		}
+	}
 }
