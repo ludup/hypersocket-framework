@@ -106,13 +106,14 @@ public class HibernateUtils {
 			} else if(method.getReturnType().equals(Date.class)) {
 				String[] elements = searchPattern.split(",");
 				if(elements.length > 0) {
-					Date to = new Date();
+					Date to;
 					Date from;
 					if(StringUtils.isNumeric(elements[0])) {
 						Integer val = Integer.parseInt(elements[0]);
 						switch(val) {
 						case 1:
 							from = HypersocketUtils.today();
+							to = HypersocketUtils.tomorrow();
 							break;
 						case 2:
 							from = HypersocketUtils.yesterday();
@@ -120,17 +121,19 @@ public class HibernateUtils {
 							break;
 						case 3:
 						{
+							to = HypersocketUtils.tomorrow();
 							Calendar c = Calendar.getInstance();
-							c.setTime(HypersocketUtils.today());
-							c.add(Calendar.DAY_OF_MONTH, -6);
+							c.setTime(to);
+							c.add(Calendar.DAY_OF_MONTH, -7);
 							from = c.getTime();
 							break;
 						}
 						case 4:
 						{
+							to = HypersocketUtils.tomorrow();
 							Calendar c = Calendar.getInstance();
-							c.setTime(HypersocketUtils.today());
-							c.add(Calendar.DAY_OF_MONTH, -29);
+							c.setTime(to);
+							c.add(Calendar.DAY_OF_MONTH, -30);
 							from = c.getTime();
 							break;
 						}
@@ -140,7 +143,7 @@ public class HibernateUtils {
 						}
 						criteria.add(Restrictions.and(
 								Restrictions.ge(searchColumn, from),
-								Restrictions.le(searchColumn, to)));
+								Restrictions.lt(searchColumn, to)));
 						
 					}
 				}

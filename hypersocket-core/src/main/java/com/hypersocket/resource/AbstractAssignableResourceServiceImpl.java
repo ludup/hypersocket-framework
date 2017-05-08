@@ -797,4 +797,33 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	protected void updateFingerprint() {
 		fingerprint = new BigInteger(130, random).toString(32);
 	}
+	
+	@Override
+	public void deleteResources(final List<T> resources, 
+			@SuppressWarnings("unchecked") final TransactionOperation<T>... ops) 
+			throws ResourceException, AccessDeniedException {
+		
+		assertPermission(getDeletePermission());
+		
+		transactionService.doInTransaction(new TransactionCallback<Void>() {
+
+			@Override
+			public Void doInTransaction(TransactionStatus status) {
+				try {
+					getRepository().deleteResources(resources, ops);
+				} catch (ResourceException e) {
+					throw new IllegalStateException(e.getMessage(), e);
+				}
+				return null;
+			}
+		});
+		
+	}
+	
+	@Override
+	public List<T> getResourcesByIds(Long...ids) throws AccessDeniedException {
+		assertPermission(getReadPermission());
+		
+		return getRepository().getResourcesByIds(ids);
+	}
 }

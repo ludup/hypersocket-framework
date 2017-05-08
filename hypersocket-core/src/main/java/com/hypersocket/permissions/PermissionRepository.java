@@ -119,4 +119,5 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 
 	public List<Role> searchNoPersonalNoAllUserRoles(final Realm realm, String searchPattern,
 													 int start, int length, ColumnSort[] sorting);
+	List<Role> getPermissionsByIds(Long...ids);
 }

@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.cache.CacheUtils;
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -36,7 +37,6 @@ import com.sshtools.icongenerator.java2d.Java2DIconCanvas;
 
 public abstract class IconResourceController<T extends Resource> extends ResourceController {
 
-	
 	static Logger log = LoggerFactory.getLogger(LogoController.class);
 	static MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
 	static Map<String, AwesomeIcon> map = new HashMap<String, AwesomeIcon>();
@@ -191,13 +191,13 @@ public abstract class IconResourceController<T extends Resource> extends Resourc
 		// Respond
 		String contentType = mimeTypesMap.getContentType(spec + "." + ext);
 		response.setContentType(contentType);
-
+		CacheUtils.setDateAndCacheHeaders(response);
+		
 		ImageIO.write(image, ext.toUpperCase(), response.getOutputStream());
 		response.flushBuffer();
 
 	}
-	
-
+    
 	static boolean isAuto(String value) {
 		return value.equalsIgnoreCase("auto")
 				|| value.equalsIgnoreCase("autoname")

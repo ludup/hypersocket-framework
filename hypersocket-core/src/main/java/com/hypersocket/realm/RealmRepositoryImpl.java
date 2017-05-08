@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Criteria;
+import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -204,6 +205,17 @@ public class RealmRepositoryImpl extends
 	@Transactional(readOnly=true)
 	public Realm getSystemRealm() {
 		return get("system", true, Realm.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly=true)
+	public List<Realm> getRealmsByIds(Long... ids) {
+		Criteria criteria = createCriteria(Realm.class);
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		criteria.add(Restrictions.in("id", ids));
+		criteria.add(Restrictions.eq("deleted", false));
+		return criteria.list();
 	}
 
 

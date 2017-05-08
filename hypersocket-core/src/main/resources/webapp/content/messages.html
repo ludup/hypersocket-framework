@@ -46,6 +46,7 @@
 							icon: 'fa-envelope-o',
 							infoHtml: getResource('messages.infoHtml'),
 							resourceUrl : "messages/message",
+							deleteResourcesUrl : "messages/bulk",
 							fields : [ {
 								name : "name"
 							}, {
@@ -65,6 +66,7 @@
 							canCopy: false,
 							canUpdate: currentMenu.canUpdate,
 							canDelete: currentMenu.canDelete,
+							checkbox : true,
 							validate : function() {
 
 								if ($('#resourceName').val() == '') {

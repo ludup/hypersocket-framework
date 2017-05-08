@@ -250,5 +250,16 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	void exportResources(OutputStream outputStream, Long realmId, boolean all, String[] entities) throws ResourceExportException, AccessDeniedException;
 
+	void deleteRealms(List<Realm> realms) throws ResourceException, AccessDeniedException;
+	
+	List<Realm> getRealmsByIds(Long...ids) throws AccessDeniedException;
+	
+	void deleteUsers(Realm realm, List<Principal> users) throws ResourceException, AccessDeniedException;
+	
+	List<Principal> getUsersByIds(Long...ids) throws AccessDeniedException;
+	
+	void deleteGroups(Realm realm, List<Principal> groups) throws ResourceException, AccessDeniedException;
+	
+	List<Principal> getGroupsByIds(Long...ids) throws AccessDeniedException;
 }
 

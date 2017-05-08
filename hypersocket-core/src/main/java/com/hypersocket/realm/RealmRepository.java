@@ -55,5 +55,7 @@ public interface RealmRepository extends
 	Realm getRealmByOwner(Long owner);
 
 	public Realm getSystemRealm();
+	
+	List<Realm> getRealmsByIds(Long...ids);
 
 }

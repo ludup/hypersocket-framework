@@ -788,11 +788,6 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		return repository.getPermissionById(id);
 	}
 
-	@Override
-	public Role getResourceById(Long id) throws ResourceNotFoundException, AccessDeniedException {
-		return getRoleById(id, null);
-	}
-
 	private interface EntityMatch<T> {
 		boolean validate(T t);
 	}
@@ -1160,6 +1155,29 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public boolean hasPermission(Principal principal, PermissionType permission) {
 		return hasPermission(principal, getPermission(permission.getResourceKey()));
+	}
+
+	@Override
+	public void deleteResources(final List<Role> resources) throws ResourceException, AccessDeniedException {
+		transactionService.doInTransaction(new TransactionCallback<Void>() {
+
+			@Override
+			public Void doInTransaction(TransactionStatus status) {
+				for (Role role : resources) {
+					try {
+						deleteRole(role);
+					} catch (ResourceChangeException | AccessDeniedException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+				return null;
+			}
+		});
+	}
+
+	@Override
+	public List<Role> getResourcesByIds(Long... ids) throws AccessDeniedException {
+		return repository.getResourcesByIds(ids);
 	}
 	
 }
