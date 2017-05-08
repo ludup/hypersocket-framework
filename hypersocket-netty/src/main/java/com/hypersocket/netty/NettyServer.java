@@ -648,7 +648,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			nettyResponse.setHeader("X-Frame-Options", configurationService.getValue("security.xFrameOptionsValue"));
 		}
 		
-		if(disableCache) {
+		if(disableCache && !nettyResponse.containsHeader("Cache-Control")) {
 			nettyResponse.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private");
 			nettyResponse.setHeader("Pragma", "no-cache");
 		}
