@@ -75,9 +75,9 @@ public class AuthenticatedController {
 	@Autowired
 	protected I18NService i18nService;
 
-	AuthenticationState createAuthenticationState(String scheme,
+	synchronized AuthenticationState createAuthenticationState(String scheme,
 			HttpServletRequest request, HttpServletResponse response,
-			Realm realm)
+			Realm realm, AuthenticationState mergeState)
 			throws AccessDeniedException, UnsupportedEncodingException {
 
 		if(realm==null) {
@@ -106,16 +106,21 @@ public class AuthenticatedController {
 		for(AuthenticationModule module : modules) {
 			if(authenticationService.getAuthenticator(module.getTemplate())==null) {
 				
-				state = createAuthenticationState("fallback", request, response, realm);
+				state = createAuthenticationState("fallback", request, response, realm, mergeState);
 				state.setLastErrorIsResourceKey(true);
 				state.setLastErrorMsg("revertedFallback.adminOnly");
 				return state;
 			}
 		}
-		Enumeration<?> names = request.getParameterNames();
-		while(names.hasMoreElements()) {
-			String name = (String) names.nextElement();
-			state.addParameter(name, URLDecoder.decode(request.getParameter(name), "UTF-8"));
+		
+		if(mergeState!=null) {
+			state.getParameters().putAll(mergeState.getParameters());
+		} else {
+			Enumeration<?> names = request.getParameterNames();
+			while(names.hasMoreElements()) {
+				String name = (String) names.nextElement();
+				state.addParameter(name, URLDecoder.decode(request.getParameter(name), "UTF-8"));
+			}
 		}
 		
 		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, state);

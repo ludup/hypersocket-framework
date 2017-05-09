@@ -102,7 +102,7 @@ public class LogonController extends AuthenticatedController {
 			HttpServletRequest request, HttpServletResponse response,
 			String scheme, Realm realm) throws AccessDeniedException, UnsupportedEncodingException {
 		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, null);
-		return createAuthenticationState(scheme, request, response, realm);
+		return createAuthenticationState(scheme, request, response, realm, null);
 	}
 	
 	@RequestMapping(value = "logon/switchRealm/{scheme}/{realm}", method = { RequestMethod.GET,
@@ -166,7 +166,7 @@ public class LogonController extends AuthenticatedController {
 					|| (!StringUtils.isEmpty(scheme) && !state.getScheme()
 							.getResourceKey().equals(scheme))) {
 				// We have not got login state so create
-				state = createAuthenticationState(scheme, request, response, getCurrentRealm());
+				state = createAuthenticationState(scheme, request, response, getCurrentRealm(), state);
 			}
 
 			String redirectHome = (String) request.getSession().getAttribute("redirectHome");
