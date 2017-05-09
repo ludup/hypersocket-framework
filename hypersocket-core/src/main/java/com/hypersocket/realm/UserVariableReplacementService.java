@@ -12,6 +12,6 @@ public interface UserVariableReplacementService {
 	
 	Set<String> getVariableNames(Principal realm);
 
-	String replaceVariables(Principal principal, String overrideUsername);
+	String replaceVariables(Principal principal, String value);
 
 }
