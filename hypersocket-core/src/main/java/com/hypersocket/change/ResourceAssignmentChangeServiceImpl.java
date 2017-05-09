@@ -23,6 +23,7 @@ import com.hypersocket.realm.events.GroupDeletedEvent;
 import com.hypersocket.realm.events.GroupUpdatedEvent;
 import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.AssignableResourceEvent;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.role.events.RoleCreatedEvent;
 import com.hypersocket.role.events.RoleDeletedEvent;
 import com.hypersocket.role.events.RoleUpdatedEvent;
@@ -255,7 +256,7 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 			
 			processAssignmentEvent(realm, resource, assigned, Collections.<Principal>emptySet());
 
-		} catch (AccessDeniedException e) {
+		} catch (ResourceException | AccessDeniedException e) {
 			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}

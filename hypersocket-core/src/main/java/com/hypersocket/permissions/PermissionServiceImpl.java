@@ -352,7 +352,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	
 	}
 
-	private void checkSystemAdministratorAssignments(Role role) throws ResourceChangeException {
+	private void checkSystemAdministratorAssignments(Role role) throws ResourceException, AccessDeniedException {
 		if(role.getName().equals(ROLE_SYSTEM_ADMINISTRATOR)) {
 			Collection<Principal> admins = getPrincipalsByRole(realmService.getSystemRealm(), role);
 			if(admins.size() <= 1) {
@@ -1032,8 +1032,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
-	public Collection<Principal> getPrincipalsByRole(Realm realm, Role... roles) {
-		return repository.getPrincpalsByRole(realm, Arrays.asList(roles));
+	public Collection<Principal> getPrincipalsByRole(Realm realm, Role... roles) throws ResourceNotFoundException, AccessDeniedException {
+		return getPrincipalsByRole(realm, Arrays.asList(roles));
 	}
 	
 	@Override
