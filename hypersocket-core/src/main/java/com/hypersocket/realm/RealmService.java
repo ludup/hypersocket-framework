@@ -250,4 +250,6 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	void setUserPropertyBoolean(Principal principal, String resourceKey, Boolean val);
 
 	void setUserProperty(Principal principal, String resourceKey, String val);
+
+	Realm getRealmByNameAndOwner(String name, Realm realm);
 }
