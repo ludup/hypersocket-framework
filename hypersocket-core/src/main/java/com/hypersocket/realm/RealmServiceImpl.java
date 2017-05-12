@@ -326,6 +326,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public Realm getRealmByName(String realm) {
 		return realmRepository.getRealmByName(realm);
 	}
+	
+	@Override
+	public Realm getRealmByNameAndOwner(String realm, Realm owner) {
+		return realmRepository.getRealmByNameAndOwner(realm, owner);
+	}
 
 	@Override
 	public boolean isRegistered(RealmProvider provider) {
