@@ -80,6 +80,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				(PropertyRepository) applicationContext.getBean("systemConfigurationRepositoryImpl"),
 				encryptionService);
 		propertyStoresById.put("db", configPropertyStore);
+		propertyStoresById.put("transient", new TransientPropertyStore());
 	}
 
 	public ResourceTemplateRepositoryImpl(boolean requiresDemoWrite) {
