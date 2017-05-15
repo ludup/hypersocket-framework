@@ -10,10 +10,10 @@ package com.hypersocket.json;
 import java.util.Collection;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-@JsonSerialize(include=Inclusion.NON_NULL)
+@JsonInclude(value=Include.NON_NULL)
 public class ResourceList<T> extends ResourceStatus<T> {
 
 	Collection<T> resources;

@@ -123,10 +123,6 @@ public class InboxProcessor {
 
 					}
 					
-					//Generate rawMessage file
-					// Extract message id
-					// Extract IP address received from
-					// Strip html content if no plain availabel (JSoup)
 					processor.processEmail(msg.getFrom(),
 							msg.getReplyTo(),
 							msg.getRecipients(RecipientType.TO), 
@@ -160,6 +156,7 @@ public class InboxProcessor {
 	 *            an array of Address objects
 	 * @return a string represents a list of addresses
 	 */
+	@SuppressWarnings("unused")
 	private String parseAddresses(Address[] address) {
 		String listAddress = "";
 
