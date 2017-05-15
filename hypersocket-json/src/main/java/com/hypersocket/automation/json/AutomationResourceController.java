@@ -24,7 +24,6 @@ import com.hypersocket.automation.AutomationResource;
 import com.hypersocket.automation.AutomationResourceColumns;
 import com.hypersocket.automation.AutomationResourceService;
 import com.hypersocket.automation.AutomationResourceServiceImpl;
-import com.hypersocket.certificates.CertificateResource;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.json.RequestStatus;

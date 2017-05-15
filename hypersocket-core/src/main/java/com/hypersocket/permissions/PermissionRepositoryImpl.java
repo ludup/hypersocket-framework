@@ -620,7 +620,6 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 				});
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly = true)
 	public List<Role> getPermissionsByIds(Long... ids) {
