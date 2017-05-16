@@ -327,12 +327,18 @@ public class MessageResourceServiceImpl extends
 	}
 
 	@Override
-	public void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Principal... principals) throws ResourceException, AccessDeniedException {
+	public void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Principal... principals) {
+		sendMessage(messageId, realm, tokenResolver, Arrays.asList(principals));
+	}
+	
+	@Override
+	public void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals) {
 		
 		MessageResource message = repository.getMessageById(messageId, realm);
 		
 		if(message==null) {
-			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.invalidMessageId", messageId);
+			log.error(String.format("Invalid message id %d", messageId));
+			return;
 		}
 		
 		if(!message.getEnabled()) {
@@ -353,8 +359,8 @@ public class MessageResourceServiceImpl extends
 				attachments.add(new EmailAttachment(upload.getFileName(), 
 						uploadService.getContentType(uuid), 
 						uploadService.getInputStream(uuid)));
-			} catch (IOException e) {
-				
+			} catch (ResourceNotFoundException | IOException e) {
+				log.error(String.format("Unable to locate upload %s", uuid), e);
 			}
 		}
 		if(!recipients.isEmpty()) {
@@ -393,7 +399,7 @@ public class MessageResourceServiceImpl extends
 				
 			} catch (MailException e) { 
 				// Will be logged by mail API
-			} catch(IOException | TemplateException | ValidationException e) {
+			} catch(AccessDeniedException | IOException | TemplateException | ValidationException e) {
 				log.error("Failed to send email", e);
 			}
 		}

@@ -11,7 +11,6 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
-import com.hypersocket.resource.ResourceException;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.utils.ITokenResolver;
 
@@ -29,8 +28,9 @@ public interface MessageResourceService extends
 	Collection<PropertyCategory> getPropertyTemplate(MessageResource resource)
 			throws AccessDeniedException;
 
-	void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Principal... principals)
-			throws AccessDeniedException, ResourceException;
+	void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Principal... principals);
+	
+	void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals);
 
 	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables);
 
