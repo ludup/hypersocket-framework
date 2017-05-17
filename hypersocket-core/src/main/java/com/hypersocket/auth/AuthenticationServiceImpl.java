@@ -366,9 +366,6 @@ public class AuthenticationServiceImpl extends
 	public boolean logon(AuthenticationState state, Map parameterMap)
 			throws AccessDeniedException, FallbackAuthenticationRequired {
 
-		state.setLastErrorMsg(null);
-		state.setLastErrorIsResourceKey(false);
-
 		boolean success = false;
 
 		if (state.isAuthenticationComplete()) {
@@ -579,6 +576,13 @@ public class AuthenticationServiceImpl extends
 								return logon(state, parameterMap);
 							}
 						}
+					} catch(IllegalStateException e) { 
+						
+						state.setLastErrorMsg("error.invalidConfiguration");
+						state.setLastErrorIsResourceKey(true);
+						state.revertModule();
+						success = false;
+						
 					} catch (AccessDeniedException e) {
 
 						eventService

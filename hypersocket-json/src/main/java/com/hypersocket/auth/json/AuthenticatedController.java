@@ -115,6 +115,8 @@ public class AuthenticatedController {
 		
 		if(mergeState!=null) {
 			state.getParameters().putAll(mergeState.getParameters());
+			state.setLastErrorIsResourceKey(mergeState.getLastErrorIsResourceKey());
+			state.setLastErrorMsg(mergeState.getLastErrorMsg());
 		} else {
 			Enumeration<?> names = request.getParameterNames();
 			while(names.hasMoreElements()) {

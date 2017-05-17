@@ -162,6 +162,11 @@ public class LogonController extends AuthenticatedController {
 
 
 		try {
+			if(state!=null) {
+				state.setLastErrorMsg(null);
+				state.setLastErrorIsResourceKey(false);
+			}
+			
 			if (state == null
 					|| (!StringUtils.isEmpty(scheme) && !state.getScheme()
 							.getResourceKey().equals(scheme))) {
