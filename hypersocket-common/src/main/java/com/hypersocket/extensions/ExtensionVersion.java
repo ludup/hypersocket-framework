@@ -22,6 +22,7 @@ public class ExtensionVersion extends JsonResource implements Comparable<Extensi
 	String repository;
 	String target;
 	Long modifiedDate;
+	String featureGroup;
 	boolean mandatory;
 	String[] dependsOn;
 	int weight;
@@ -122,6 +123,12 @@ public class ExtensionVersion extends JsonResource implements Comparable<Extensi
 	}
 	public void setTarget(String target) {
 		this.target = target;
+	}
+	public String getFeatureGroup() {
+		return featureGroup;
+	}
+	public void setFeatureGroup(String featureGroup) {
+		this.featureGroup = featureGroup;
 	}
 	@Override
 	public int compareTo(ExtensionVersion o) {
