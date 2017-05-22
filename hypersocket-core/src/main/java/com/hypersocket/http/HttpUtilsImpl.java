@@ -27,6 +27,7 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -94,6 +95,10 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 
 	@Override
 	public CloseableHttpClient createHttpClient(boolean allowSelfSigned) throws IOException {
+		return createHttpClient(allowSelfSigned, 30000);
+	}
+
+	protected CloseableHttpClient createHttpClient(boolean allowSelfSigned, int requestTimeout) throws IOException {
 
 		if(log.isDebugEnabled()) {
 			log.debug("Creating a new client");
@@ -113,7 +118,8 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 					.register("https", new ProxiedSSLSocketFactory(builder.build(), cb)).build();
 
 			PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(reg);
-			httpclient = HttpClients.custom().setConnectionManager(cm).setDefaultCookieStore(cookieStore).build();
+			RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(requestTimeout).setSocketTimeout(requestTimeout).setConnectTimeout(requestTimeout).build();
+			httpclient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(requestConfig).setDefaultCookieStore(cookieStore).build();
 
 			return httpclient;
 		} catch (Exception e) {
@@ -179,8 +185,10 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 		CloseableHttpClient client = createHttpClient(allowSelfSigned);
 
 		HttpGet request = new HttpGet(uri);
-		for (String key : headers.keySet()) {
-			request.setHeader(key, headers.get(key));
+		if(headers!=null) {
+			for (String key : headers.keySet()) {
+				request.setHeader(key, headers.get(key));
+			}
 		}
 
 		return client.execute(request);
