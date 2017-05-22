@@ -36,7 +36,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 	
 	@PostConstruct
 	private void postConstruct() {
-		entityPropertyStore = new EntityResourcePropertyStore(encryptionService);
+		entityPropertyStore = new EntityResourcePropertyStore(encryptionService, getResourceClass().getCanonicalName());
 	}
 	
 	protected ResourcePropertyStore getPropertyStore() {
