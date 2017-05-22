@@ -123,7 +123,9 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 			cachedValues = getCache();
 			if ("false".equals(cache) || !cachedValues.containsKey(cacheKey)) {
 				c = lookupPropertyValue(template, resource);
-				cachedValues.put(cacheKey, c);
+				if(c!=null) {
+					cachedValues.put(cacheKey, c);
+				}
 			} else {
 				c = cachedValues.get(cacheKey);
 			}
