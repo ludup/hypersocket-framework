@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,6 +185,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		
 		try {
 			beforeCreateResource(resource, properties);
+			resource.setLegacyId(ThreadLocalRandom.current().nextLong(1, Integer.MAX_VALUE));
 			getRepository().saveResource(resource, properties, ops);
 			updateFingerprint();
 			afterCreateResource(resource, properties);

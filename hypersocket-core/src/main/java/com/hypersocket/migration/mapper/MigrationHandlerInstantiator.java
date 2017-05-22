@@ -1,6 +1,7 @@
 package com.hypersocket.migration.mapper;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.JsonDeserializer.None;
 import com.fasterxml.jackson.databind.cfg.HandlerInstantiator;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
@@ -18,7 +19,17 @@ public class MigrationHandlerInstantiator extends HandlerInstantiator {
 
     @Override
     public JsonDeserializer<?> deserializerInstance(DeserializationConfig config, Annotated annotated, Class<?> deserClass) {
-        return migrationDeserializer;
+    	try{
+    		if(MigrationDeserializer.class.equals(deserClass)) {
+       		 	return migrationDeserializer;
+    		} else if(None.class.equals(deserClass)) {
+    			return null;
+    		}
+    		
+    		return (JsonDeserializer<?>) deserClass.newInstance();
+    	}catch (Exception e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
     }
 
     @Override

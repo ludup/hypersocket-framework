@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.PostConstruct;
 
@@ -192,6 +193,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			}
 			
 			resource.setAssignedRoles(resource.getRoles());
+			
+			resource.setLegacyId(ThreadLocalRandom.current().nextLong(1, Integer.MAX_VALUE));
 			
 			getRepository().saveResource(resource, properties, ops);
 			updateFingerprint();
