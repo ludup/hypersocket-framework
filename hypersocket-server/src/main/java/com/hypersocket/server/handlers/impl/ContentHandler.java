@@ -38,4 +38,6 @@ public interface ContentHandler {
 
 	void addDynamicPage(String path);
 
+	boolean hasAlias(String alias);
+
 }
