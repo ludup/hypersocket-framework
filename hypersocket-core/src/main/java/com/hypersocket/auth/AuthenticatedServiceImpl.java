@@ -222,6 +222,28 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		return getCurrentPrincipal().getPrincipalName();
 	}
 	
+	protected abstract Set<Role> getCurrentRoles();
+	
+	protected void assertPermissionOrRole(PermissionType permission, Role... roles)
+			throws AccessDeniedException {
+		Set<Role> principalRoles = getCurrentRoles();
+		for(Role role : roles) {
+			if(principalRoles.contains(role)) {
+				return;
+			}
+		}
+		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, permission);
+	}
+	
+	protected void assertRoleOrAnyPermission(Role role, PermissionType... permission)
+			throws AccessDeniedException {
+		Set<Role> principalRoles = getCurrentRoles();
+		if(principalRoles.contains(role)) {
+			return;
+		}
+		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, permission);
+	}
+	
 	protected void assertPermission(PermissionType permission)
 			throws AccessDeniedException {
 		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, permission);
