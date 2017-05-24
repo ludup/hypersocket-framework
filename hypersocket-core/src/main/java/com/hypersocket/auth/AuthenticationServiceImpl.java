@@ -856,9 +856,6 @@ public class AuthenticationServiceImpl extends
 				throw new PrincipalNotFoundException("You cannot logon using the current scheme [denied]");
 			}
 		}
-		
-		state.setRealm(principal.getRealm());
-		state.setPrincipal(principal);
 
 		return principal;
 	}
