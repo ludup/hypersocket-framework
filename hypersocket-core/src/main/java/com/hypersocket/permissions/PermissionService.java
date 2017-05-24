@@ -91,7 +91,7 @@ public interface PermissionService extends AuthenticatedService, FindableResourc
 
 	Role getPersonalRole(Principal principal);
 
-	Set<Role> getPrincipalRoles(Principal principal) throws AccessDeniedException;
+	Set<Role> getPrincipalRoles(Principal principal);
 
 	Set<Role> getPrincipalNonPersonalRoles(Principal principal);
 
@@ -156,4 +156,8 @@ public interface PermissionService extends AuthenticatedService, FindableResourc
 	Collection<Principal> getPrincipalsByRole(Realm realm, Role... roles);
 
 	Collection<Principal> getPrincipalsByRole(Realm realm, Collection<Role> roles) throws ResourceNotFoundException, AccessDeniedException;
+
+	public Role getRealmAdministratorRole(Realm realm);
+
+	Role getSystemAdministratorRole();
 }

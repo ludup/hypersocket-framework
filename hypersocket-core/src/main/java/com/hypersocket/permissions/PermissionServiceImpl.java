@@ -195,6 +195,11 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
+	protected Set<Role> getCurrentRoles() {
+		return getPrincipalRoles(getCurrentPrincipal());
+	}
+	
+	@Override
 	public Permission registerPermission(PermissionType type, PermissionCategory category) {
 		registeredPermissions.put(type.getResourceKey(), type);
 		return registerPermission(type.getResourceKey(), type.isSystem(), category, type.isHidden());
@@ -1160,6 +1165,16 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public boolean hasPermission(Principal principal, PermissionType permission) {
 		return hasPermission(principal, getPermission(permission.getResourceKey()));
+	}
+
+	@Override
+	public Role getRealmAdministratorRole(Realm realm) {
+		return repository.getRoleByName(ROLE_REALM_ADMINISTRATOR, realm);
+	}
+	
+	@Override
+	public Role getSystemAdministratorRole() {
+		return repository.getRoleByName(ROLE_SYSTEM_ADMINISTRATOR, realmService.getSystemRealm());
 	}
 	
 }
