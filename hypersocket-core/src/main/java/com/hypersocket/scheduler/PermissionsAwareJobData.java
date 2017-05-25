@@ -34,6 +34,7 @@ public class PermissionsAwareJobData extends JobDataMap {
 	public PermissionsAwareJobData(Session session, Realm currentRealm, Principal principal, Locale locale, String jobResourceKey) {
 		
 		put("jobName", jobResourceKey);
+		put("permissions", Boolean.TRUE);
 		
 		if(session!=null) {
 			put("session", session.getId());
