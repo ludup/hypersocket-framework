@@ -1,5 +1,7 @@
 package com.hypersocket.auth;
 
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.permissions.AccessDeniedException;
@@ -29,6 +31,11 @@ public abstract class AbstractAuthenticatedServiceImpl extends AuthenticatedServ
 	@Override
 	protected Role getPersonalRole(Principal principal) throws AccessDeniedException {
 		return permissionService.getPersonalRole(principal);
+	}
+	
+	@Override
+	protected Set<Role> getCurrentRoles() {
+		return permissionService.getPrincipalRoles(getCurrentPrincipal());
 	}
 	
 	public Session getSystemSession() {

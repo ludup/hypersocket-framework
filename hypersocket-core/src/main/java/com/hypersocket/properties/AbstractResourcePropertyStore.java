@@ -6,9 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.cache.Cache;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hypersocket.ApplicationContextServiceImpl;
+import com.hypersocket.cache.CacheService;
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResource;
@@ -18,7 +22,6 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 
 	static Logger log = LoggerFactory.getLogger(AbstractResourcePropertyStore.class);
 	
-	Map<String, String> cachedValues = new HashMap<String, String>();
 	Map<String, PropertyTemplate> templates = new HashMap<String, PropertyTemplate>();
 	Map<String, List<PropertyTemplate>> templatesByModule = new HashMap<String, List<PropertyTemplate>>();
 
@@ -31,6 +34,8 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		this.encryptionService = encryptionService;
 	}
 	
+	protected abstract String getCacheName();
+	
 	protected abstract String lookupPropertyValue(PropertyTemplate template);
 
 	protected abstract void doSetProperty(PropertyTemplate template, String value);
@@ -39,18 +44,40 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 	public void setProperty(PropertyTemplate template, String value) {
 
 		doSetProperty(template, value);
-		cachedValues.put(template.getResourceKey(), value);
+		
+		Cache<String, String> cache;
+		try {
+			cache = getCache();
+			cache.put(template.getResourceKey(), value);
+		} catch (CacheUnavailableException e) {
+		}
+		
 	}
 
+	protected Cache<String,String> getCache() throws CacheUnavailableException {
+		if(!ApplicationContextServiceImpl.isReady()) {
+			throw new CacheUnavailableException();
+		}
+		CacheService cacheService = ApplicationContextServiceImpl.getInstance().getBean(CacheService.class);
+		return cacheService.getCache(getCacheName(), String.class, String.class);
+	}
+	
 	@Override
 	public String getPropertyValue(PropertyTemplate template) {
 
 		String c = null;
-		if (!cachedValues.containsKey(template.getResourceKey())) {
+		
+		Cache<String, String> cache;
+		try {
+			cache = getCache();
+			if (!cache.containsKey(template.getResourceKey())) {
+				c = lookupPropertyValue(template);
+				cache.put(template.getResourceKey(), c);
+			} else {
+				c = cache.get(template.getResourceKey());
+			}
+		} catch (CacheUnavailableException e) {
 			c = lookupPropertyValue(template);
-			cachedValues.put(template.getResourceKey(), c);
-		} else {
-			c = cachedValues.get(template.getResourceKey());
 		}
 
 		return c;
@@ -91,11 +118,19 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		String c;
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
 		String cache = template.getAttributes().get("cache");
-		if ("false".equals(cache) || !cachedValues.containsKey(cacheKey)) {
+		Cache<String, String> cachedValues;
+		try {
+			cachedValues = getCache();
+			if ("false".equals(cache) || !cachedValues.containsKey(cacheKey)) {
+				c = lookupPropertyValue(template, resource);
+				if(c!=null) {
+					cachedValues.put(cacheKey, c);
+				}
+			} else {
+				c = cachedValues.get(cacheKey);
+			}
+		} catch (CacheUnavailableException e) {
 			c = lookupPropertyValue(template, resource);
-			cachedValues.put(cacheKey, c);
-		} else {
-			c = cachedValues.get(cacheKey);
 		}
 
 		return c;
@@ -106,11 +141,17 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		
 		String c;
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
-		if (!cachedValues.containsKey(cacheKey)) {
+		Cache<String, String> cachedValues;
+		try {
+			cachedValues = getCache();
+			if (!cachedValues.containsKey(cacheKey)) {
+				c = lookupPropertyValue(template, resource);
+				cachedValues.put(cacheKey, c);
+			} else {
+				c = cachedValues.get(cacheKey);
+			}
+		} catch (CacheUnavailableException e) {
 			c = lookupPropertyValue(template, resource);
-			cachedValues.put(cacheKey, c);
-		} else {
-			c = cachedValues.get(cacheKey);
 		}
 
 		if(template.isEncrypted() && ResourceUtils.isEncrypted(c)) {
@@ -132,8 +173,13 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 			AbstractResource resource, String value) {
 
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
-		cachedValues.remove(cacheKey);
-		
+		Cache<String, String> cachedValues;
+		try {
+			cachedValues = getCache();
+			cachedValues.remove(cacheKey);
+		} catch (CacheUnavailableException e) {
+		}
+
 		if(template.isEncrypted() && !ResourceUtils.isEncrypted(value)) {
 			value = encryptValue(resource.getUUID(), value, resolveRealm(resource));
 			doSetProperty(template, resource, value);

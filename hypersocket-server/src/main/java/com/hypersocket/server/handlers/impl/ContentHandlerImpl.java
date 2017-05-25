@@ -238,6 +238,11 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	}
 
 	@Override
+	public boolean hasAlias(String alias) {
+		return aliases.containsKey(alias);
+	}
+	
+	@Override
 	public void removeAlias(String alias) {
 		aliases.remove(alias);
 	}

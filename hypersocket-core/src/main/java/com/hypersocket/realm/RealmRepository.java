@@ -58,4 +58,6 @@ public interface RealmRepository extends
 	
 	List<Realm> getRealmsByIds(Long...ids);
 
+	Realm getRealmByNameAndOwner(String name, Realm owner);
+
 }

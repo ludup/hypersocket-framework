@@ -36,7 +36,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 	
 	@PostConstruct
 	private void postConstruct() {
-		entityPropertyStore = new EntityResourcePropertyStore(encryptionService);
+		entityPropertyStore = new EntityResourcePropertyStore(encryptionService, getResourceClass().getCanonicalName());
 	}
 	
 	protected ResourcePropertyStore getPropertyStore() {
@@ -69,8 +69,10 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 		return get("id", id, getResourceClass());
 	}
 
+	protected boolean isSoftDelete() {
+		return false;
+	}
 
-	
 	@Override
 	@Transactional
 	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException {
@@ -79,8 +81,12 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 			op.beforeOperation(resource, null);
 		}
 		
-		delete(resource);
-		
+		if(isSoftDelete()) {
+			resource.setDeleted(true);
+			save(resource);
+		} else {
+			delete(resource);
+		}
 		for(TransactionOperation<T> op : ops) {
 			op.afterOperation(resource, null);
 		}

@@ -23,6 +23,10 @@ public class ApplicationContextServiceImpl {
 		return instance;
 	}
 	
+	public static boolean isReady() {
+		return instance!=null;
+	}
+	
 	public <T> T getBean(Class<T> clz) {
 		return applicationContext.getBean(clz);
 	}

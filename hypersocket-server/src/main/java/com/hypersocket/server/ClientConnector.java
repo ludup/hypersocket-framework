@@ -9,7 +9,7 @@ public interface ClientConnector {
 
 	Integer getWeight();
 
-	boolean handlesConnect(InetSocketAddress addr);
+	boolean handlesConnect(InetSocketAddress addr) throws IOException;
 
 	void connect(InetSocketAddress addr, WebsocketClientCallback callback) throws IOException;
 

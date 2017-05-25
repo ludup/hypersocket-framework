@@ -52,7 +52,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	
 	@PostConstruct
 	private void postConstruct() {
-		entityPropertyStore = new EntityResourcePropertyStore(encryptionService);
+		entityPropertyStore = new EntityResourcePropertyStore(encryptionService, "localUserRepository");
 	}
 	
 	@Override

@@ -72,6 +72,12 @@ public class HazelcastSpringConfiguration {
     		networkConfig.setPort(Integer.parseInt(port));
     	}
     	
+    	if(environment.acceptsProfiles("HA") && "TCP/IP".equals(hazelcastProperties.get("ha.hazelcast.network.type"))){
+    		if(StringUtils.isNotBlank(hazelcastProperties.getProperty("ha.hazelcast.tcp.ip.interface"))) {
+    			networkConfig.getInterfaces().setEnabled(true).addInterface(hazelcastProperties.getProperty("ha.hazelcast.tcp.ip.interface"));
+    		}
+    	}
+    	
     	String outBoundPortDef = hazelcastProperties.getProperty("ha.hazelcast.outbound.port.range");
     	if(StringUtils.isNotEmpty(outBoundPortDef)){
     		networkConfig.addOutboundPortDefinition(outBoundPortDef);
@@ -151,6 +157,8 @@ public class HazelcastSpringConfiguration {
         		log.info(String.format("TCP/IP connection timeout is %s.", timeout));
         		tcpIpConfig.setConnectionTimeoutSeconds(Integer.parseInt(timeout));
         	}
+        	
+        	
         }else{
         	tcpIpConfig.setEnabled(false);
         }

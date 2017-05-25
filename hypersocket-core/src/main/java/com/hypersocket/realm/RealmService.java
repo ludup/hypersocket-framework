@@ -261,5 +261,8 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	void deleteGroups(Realm realm, List<Principal> groups) throws ResourceException, AccessDeniedException;
 	
 	List<Principal> getGroupsByIds(Long...ids) throws AccessDeniedException;
+
+	Realm getRealmByNameAndOwner(String name, Realm realm);
+
 }
 

@@ -61,7 +61,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	
 	@PostConstruct
 	private void postConstruct() {
-		entityPropertyStore = new EntityResourcePropertyStore(encryptionService);
+		entityPropertyStore = new EntityResourcePropertyStore(encryptionService, getResourceClass().getCanonicalName());
 	}
 
 	protected void beforeDelete(T resource) throws ResourceChangeException {

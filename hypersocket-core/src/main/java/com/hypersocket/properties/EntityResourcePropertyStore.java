@@ -42,9 +42,11 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	StringValue stringParser = new StringValue();
 	EntityStoreRepository<?> attributeRepository;
 	String attributeField;
+	String name;
 	
-	public EntityResourcePropertyStore(EncryptionService encryptionService) {
+	public EntityResourcePropertyStore(EncryptionService encryptionService, String name) {
 		
+		this.name = name;
 		primitiveParsers.put(Boolean.class, new BooleanValue());
 		primitiveParsers.put(Integer.class, new IntegerValue());
 		primitiveParsers.put(Long.class, new LongValue());
@@ -54,6 +56,9 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		setEncryptionService(encryptionService);
 	}
 	
+	protected String getCacheName() {
+		return name;
+	}
 	public boolean isDefaultStore() {
 		return false;
 	}

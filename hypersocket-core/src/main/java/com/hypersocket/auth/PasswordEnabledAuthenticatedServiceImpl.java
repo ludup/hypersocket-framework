@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,10 @@ public abstract class PasswordEnabledAuthenticatedServiceImpl
 		permissionService.verifyPermission(principal, strategy, permissions);
 	}
 	
+	@Override
+	protected Set<Role> getCurrentRoles() {
+		return permissionService.getPrincipalRoles(getCurrentPrincipal());
+	}
 	@Override
 	protected Role getPersonalRole(Principal principal) throws AccessDeniedException {
 		return permissionService.getPersonalRole(principal);

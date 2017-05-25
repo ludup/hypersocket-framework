@@ -20,6 +20,10 @@ public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 		return true;
 	}
 	
+	public String getCacheName() {
+		return "dbStoreCache";
+	}
+	
 	@Override
 	protected String lookupPropertyValue(AbstractPropertyTemplate template,
 			AbstractResource resource) {
