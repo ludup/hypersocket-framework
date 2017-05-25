@@ -27,7 +27,6 @@ public class RoleMigrationImporter implements MigrationImporter<Role>{
 
     @Override
     public void process(Role entity) {
-
     }
 
     @Override

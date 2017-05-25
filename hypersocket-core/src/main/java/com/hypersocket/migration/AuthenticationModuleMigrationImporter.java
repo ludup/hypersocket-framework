@@ -1,15 +1,16 @@
 package com.hypersocket.migration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.hypersocket.auth.AuthenticationModule;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.migration.importer.MigrationImporter;
 import com.hypersocket.migration.repository.MigrationRepository;
 import com.hypersocket.realm.Realm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 @Component("com.hypersocket.migration.AuthenticationModuleMigrationImporter")
 public class AuthenticationModuleMigrationImporter implements MigrationImporter<AuthenticationModule>{
@@ -30,6 +31,7 @@ public class AuthenticationModuleMigrationImporter implements MigrationImporter<
 
             migrationRepository.saveOrUpdate(authenticationScheme);
         }
+        
     }
 
     @Override
