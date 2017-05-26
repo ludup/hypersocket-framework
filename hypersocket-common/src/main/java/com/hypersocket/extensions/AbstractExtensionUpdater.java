@@ -315,7 +315,7 @@ public abstract class AbstractExtensionUpdater {
 
 			onUpdateFailure(e);
 
-			throw new IOException(e);
+			throw new IOException(e.getMessage(), e);
 		}
 
 		return totalUpdates > 0;

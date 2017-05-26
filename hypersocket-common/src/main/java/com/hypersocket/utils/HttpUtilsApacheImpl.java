@@ -42,7 +42,7 @@ public class HttpUtilsApacheImpl implements HttpUtils {
 				httpclient = HttpClients.custom().setSSLSocketFactory(cm).setDefaultCookieStore(cookieStore)
 						.build();
 			} catch (Exception e) {
-				throw new IOException(e);
+				throw new IOException(e.getMessage(), e);
 			}
 
 		} else {

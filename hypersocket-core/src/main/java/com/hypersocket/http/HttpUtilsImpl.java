@@ -123,7 +123,7 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 
 			return httpclient;
 		} catch (Exception e) {
-			throw new IOException(e);
+			throw new IOException(e.getMessage(), e);
 		}
 	}
 

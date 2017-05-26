@@ -12,7 +12,7 @@ public abstract class AbstractCipherStrategy {
             salt.nextBytes(rnd);
             return rnd;
         }catch (NoSuchAlgorithmException e){
-            throw new IllegalStateException(e);
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 }

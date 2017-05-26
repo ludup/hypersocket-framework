@@ -53,7 +53,7 @@ public class DefaultEncryptor implements Encryptor {
 
 			return Base64.encodeBase64String(byteCipherText);
 		} catch (Exception e) {
-			throw new IOException(e);
+			throw new IOException(e.getMessage(), e);
 		}
 
 	}
@@ -87,7 +87,7 @@ public class DefaultEncryptor implements Encryptor {
 			byte[] byteDecryptedText = aesCipherForDecryption.doFinal(tmp);
 			return new String(byteDecryptedText, "UTF-8");
 		} catch (Exception e) {
-			throw new IOException(e);
+			throw new IOException(e.getMessage(), e);
 		}
 	}
 	

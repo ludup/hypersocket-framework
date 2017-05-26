@@ -140,9 +140,9 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>,
 					+ ".properties");
 			remoteProperties.load(url.openStream());
 		} catch (MalformedURLException e) {
-			throw new IOException(e);
+			throw new IOException(e.getMessage(), e);
 		} catch (IOException ex) {
-			throw new IOException(ex);
+			throw new IOException(ex.getMessage(), ex);
 		}
 	}
 
