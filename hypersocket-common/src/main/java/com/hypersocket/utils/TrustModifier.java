@@ -33,7 +33,7 @@ public class TrustModifier {
 			 httpsConnection.setSSLSocketFactory(factory);
 			 httpsConnection.setHostnameVerifier(TRUSTING_HOSTNAME_VERIFIER);
 		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-			throw new IOException(e);
+			throw new IOException(e.getMessage(), e);
 		}
       }
    }

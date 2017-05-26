@@ -79,7 +79,7 @@ public class CommandExecutor {
 		try {
 			exitCode = p.waitFor();
 		} catch (InterruptedException e) {
-			throw new IOException(e);
+			throw new IOException(e.getMessage(), e);
 		}
 		
 		if (log.isDebugEnabled()) {
