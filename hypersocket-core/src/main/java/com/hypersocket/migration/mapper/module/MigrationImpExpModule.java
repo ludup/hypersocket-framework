@@ -35,16 +35,11 @@ public class MigrationImpExpModule extends Module{
 
             @Override
             public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config, BeanDescription beanDesc, JsonDeserializer<?> deserializer) {
-            if(deserializer instanceof BeanDeserializer) {
-                return new MigrationBeanDeserializer((BeanDeserializerBase) deserializer, migrationCurrentStack);
+            	if(deserializer instanceof BeanDeserializer) {
+	                return new MigrationBeanDeserializer((BeanDeserializerBase) deserializer, migrationCurrentStack);
+	            }
+	            return deserializer;
             }
-            return deserializer;
-            }
-
-						/*@Override
-						public JsonDeserializer<?> modifyCollectionDeserializer(DeserializationConfig config, CollectionType type, BeanDescription beanDesc, JsonDeserializer<?> deserializer) {
-							return new CollectionDeserializer();
-						}*/
         });
     }
 }

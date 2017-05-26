@@ -1,5 +1,33 @@
 package com.hypersocket.migration.execution;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.collections.map.MultiValueMap;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.criterion.DetachedCriteria;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -11,6 +39,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.hypersocket.local.LocalGroup;
+import com.hypersocket.migration.customized.MigrationCustomExport;
+import com.hypersocket.migration.customized.MigrationCustomImport;
 import com.hypersocket.migration.exception.MigrationProcessRealmAlreadyExistsThrowable;
 import com.hypersocket.migration.exception.MigrationProcessRealmNotFoundException;
 import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
@@ -32,25 +62,6 @@ import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.upload.FileUploadService;
-import org.apache.commons.collections.map.MultiValueMap;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.criterion.DetachedCriteria;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.PostConstruct;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 @Service
 public class MigrationExecutor {
@@ -81,13 +92,17 @@ public class MigrationExecutor {
     @Autowired
     FileUploadService fileUploadService;
 
-    private Map<Class<?>, MigrationImporter> migrationImporterMap;
+    private Map<Class<?>, MigrationImporter<AbstractEntity<Long>>> migrationImporterMap;
 
-    private Map<Class<?>, MigrationExporter> migrationExporterMap;
+    private Map<Class<?>, MigrationExporter<AbstractEntity<Long>>> migrationExporterMap;
 
     private Map<Class<?>, MigrationExportCriteriaBuilder> migrationExportCriteriaBuilderMap;
 
     private Map<Class<?>, MigrationLookupCriteriaBuilder> migrationLookupCriteriaBuilderMap;
+    
+    private Map<String, MigrationCustomImport<?>> migrationCustomImports;
+    
+    private Collection<MigrationCustomExport<?>> migrationCustomExports;
 
     @PostConstruct
     private void postConstruct() {
@@ -95,6 +110,8 @@ public class MigrationExecutor {
         migrationExporterMap = migrationHelperClassesInfoProvider.getMigrationExporterMap();
         migrationExportCriteriaBuilderMap = migrationHelperClassesInfoProvider.getMigrationExportCriteriaBuilder();
         migrationLookupCriteriaBuilderMap = migrationHelperClassesInfoProvider.getMigrationLookupCriteriaBuilder();
+        migrationCustomImports = migrationHelperClassesInfoProvider.getMigrationCustomImports();
+        migrationCustomExports = migrationHelperClassesInfoProvider.getMigrationCustomExports();
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -129,21 +146,21 @@ public class MigrationExecutor {
                                 node.toString()));
                     }
 
-                    Class resourceClass = MigrationExecutor.class.getClassLoader().loadClass(className);
+                    Class<?> resourceClass = MigrationExecutor.class.getClassLoader().loadClass(className);
                     LookUpKey lookUpKey = migrationUtil.captureEntityLookup(node, resourceClass);
 
                     log.info("The look up key is {}", lookUpKey);
 
-                    AbstractEntity resource = null;
+                    AbstractEntity<Long> resource = null;
 
                     if (realm != null) {
                         if (migrationLookupCriteriaBuilderMap.containsKey(resourceClass)) {
                             MigrationLookupCriteriaBuilder migrationLookupCriteriaBuilder = migrationLookupCriteriaBuilderMap.get(resourceClass);
                             DetachedCriteria detachedCriteria = migrationLookupCriteriaBuilder.make(realm, lookUpKey, node);
                             List<?> list = migrationRepository.executeCriteria(detachedCriteria);
-                            resource = list != null && !list.isEmpty() ? (AbstractEntity) list.get(0) : null;
+                            resource = list != null && !list.isEmpty() ? (AbstractEntity<Long>) list.get(0) : null;
                         } else {
-                            resource = (AbstractEntity) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey, realm);
+                            resource = (AbstractEntity<Long>) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey, realm);
                         }
                     } else if (realm == null && Realm.class.equals(resourceClass)) {
                         resource = migrationRepository.findRealm(lookUpKey);
@@ -151,19 +168,19 @@ public class MigrationExecutor {
 
                     if (resource == null && migrationUtil.isResourceAllowNameOnlyLookUp(resourceClass)) {
                         //if no match with legacy let us see if some thing matching in realm by name
-                        resource = (AbstractEntity) migrationRepository.findEntityByNameLookUpKey(resourceClass, lookUpKey, realm);
+                        resource = (AbstractEntity<Long>) migrationRepository.findEntityByNameLookUpKey(resourceClass, lookUpKey, realm);
                     }
 
                     if (resource == null) {
                         log.info("Resource not found creating new.");
-                        resource = (AbstractEntity) resourceClass.newInstance();
+                        resource = (AbstractEntity<Long>) resourceClass.newInstance();
                     } else {
                         log.info("Resource found merging to resource with id {}", resource.getId());
                     }
 
                     ObjectReader objectReader = objectMapper.readerForUpdating(resource);
 
-                    resource = (AbstractEntity) objectReader.treeAsTokens(node).readValueAs(resourceClass);
+                    resource = (AbstractEntity<Long>) objectReader.treeAsTokens(node).readValueAs(resourceClass);
 
                     if (Realm.class.equals(resourceClass)) {
                         migrationRealm.realm = (Realm) resource;
@@ -179,7 +196,7 @@ public class MigrationExecutor {
                     handleTransientLocalGroup(resource);
 
                     if (migrationImporterMap.containsKey(resourceClass)) {
-                        MigrationImporter migrationImporter = migrationImporterMap.get(resourceClass);
+                        MigrationImporter<AbstractEntity<Long>> migrationImporter = migrationImporterMap.get(resourceClass);
                         log.info("Found migration importer for class {} as {}", resourceClass.getCanonicalName(),
                                 migrationImporter.getClass().getCanonicalName());
                         migrationImporter.process(resource);
@@ -188,7 +205,7 @@ public class MigrationExecutor {
                     migrationRepository.saveOrUpdate(resource);
 
                     if (migrationImporterMap.containsKey(resourceClass)) {
-                        MigrationImporter migrationImporter = migrationImporterMap.get(resourceClass);
+                        MigrationImporter<AbstractEntity<Long>> migrationImporter = migrationImporterMap.get(resourceClass);
                         log.info("Performing post save operation for class {} as {}", resourceClass.getCanonicalName(),
                                 migrationImporter.getClass().getCanonicalName());
                         migrationImporter.postSave(resource);
@@ -230,7 +247,7 @@ public class MigrationExecutor {
 
             Set<Short> keys = migrationOrderMap.keySet();
             for (Short key : keys) {
-                Collection migrationClassesList = migrationOrderMap.getCollection(key);
+                Collection<?> migrationClassesList = migrationOrderMap.getCollection(key);
                 for (Object migrationClasses : migrationClassesList) {
                     for (Class<? extends AbstractEntity<Long>> aClass : (List<Class<? extends AbstractEntity<Long>>>) migrationClasses) {
                         if(filtered && !entities.contains(aClass.getSimpleName())) {
@@ -245,14 +262,14 @@ public class MigrationExecutor {
                             log.info("Criteria builder found for class {}", aClass.getSimpleName());
                             MigrationExportCriteriaBuilder migrationExportCriteriaBuilder = migrationExportCriteriaBuilderMap.get(aClass);
                             DetachedCriteria criteria = migrationExportCriteriaBuilder.make(realm);
-                            objectList = migrationRepository.executeCriteria(criteria);
+                            objectList = (List<AbstractEntity<Long>>) migrationRepository.executeCriteria(criteria);
                         } else {
                             objectList = (List<AbstractEntity<Long>>) migrationRepository.findAllResourceInRealmOfType(aClass, realm);
                         }
 
                         List<MigrationObjectWithMeta> migrationObjectWithMetas = new ArrayList<>();
 
-                        for (AbstractEntity abstractEntity : objectList) {
+                        for (AbstractEntity<Long> abstractEntity : objectList) {
                             List<DatabaseProperty> databaseProperties;
                             if (abstractEntity instanceof AbstractResource) {
                                 databaseProperties = migrationRepository.findAllDatabaseProperties((AbstractResource) abstractEntity);
@@ -267,7 +284,7 @@ public class MigrationExecutor {
                                 migrationObjectWithMetas);
 
                         if (migrationExporterMap.containsKey(aClass)) {
-                            MigrationExporter migrationExporter = migrationExporterMap.get(aClass);
+                            MigrationExporter<AbstractEntity<Long>> migrationExporter = migrationExporterMap.get(aClass);
                             log.info("Found migration exporter for class {} as {}", aClass.getCanonicalName(),
                                     migrationExporter.getClass().getCanonicalName());
                             Map<String, List<Map<String, ?>>> customOperationsMap =
@@ -281,8 +298,14 @@ public class MigrationExecutor {
                     }
                 }
             }
+            
+            for (MigrationCustomExport<?> migrationCustomExport : migrationCustomExports) {
+            	if(migrationCustomExport.include(entities)) {
+            		migrationCustomExport.export(realm, zos);
+            	}
+			} 
         }catch (IOException e) {
-            log.error("Problem in import process.", e);
+            log.error("Problem in export process.", e);
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
@@ -319,7 +342,17 @@ public class MigrationExecutor {
                     byte[] data = IOUtils.toByteArray(zipInputStream);
                     ByteArrayInputStream dataByteStream = new ByteArrayInputStream(data);
                     fileUploadService.createFile(dataByteStream, fileNameStripped, migrationRealm.realm, true);
-                }else {
+                } else if(fileName.startsWith("_custom")) {
+                	//e.g. _custom_FolderTreePath.json
+                	String classSimpleName = fileName.replace(".json", "").split("_")[2];
+                	MigrationCustomImport<?> migrationCustomImport = migrationCustomImports.get(classSimpleName);
+                	if(migrationCustomImport == null) {
+                		throw new IllegalStateException("We have a custom migration import file but no corresponding MigrationCustomImport");
+                	} else {
+                		log.info("Found custom migration file {}", classSimpleName);
+                		migrationCustomImport._import(fileName, migrationRealm.realm, zipInputStream, migrationExecutorTracker);
+                	}
+                } else {
                     //process json
                     ObjectMapper objectMapper = migrationObjectMapper.getObjectMapper();
                     jsonParser = objectMapper.getFactory().createParser(zipInputStream);
@@ -359,10 +392,10 @@ public class MigrationExecutor {
 
     private void importCustomOperations(String group, JsonNode jsonNode, MigrationRealm migrationRealm, MigrationExecutorTracker migrationExecutorTracker) {
         try {
-            Class resourceClass = MigrationExecutor.class.getClassLoader().loadClass(group);
+            Class<?> resourceClass = MigrationExecutor.class.getClassLoader().loadClass(group);
 
             if(migrationImporterMap.containsKey(resourceClass)) {
-                MigrationImporter migrationImporter = migrationImporterMap.get(resourceClass);
+                MigrationImporter<AbstractEntity<Long>> migrationImporter = migrationImporterMap.get(resourceClass);
                 log.info("Found migration importer for class {} as {}", resourceClass.getCanonicalName(),
                         migrationImporter.getClass().getCanonicalName());
                 migrationImporter.processCustomOperationsMap(jsonNode, migrationRealm.realm);
@@ -401,13 +434,13 @@ public class MigrationExecutor {
         }
     }
 
-    private void handleTransientLocalGroup(AbstractEntity resource) {
+    private void handleTransientLocalGroup(AbstractEntity<Long> resource) {
         if(resource instanceof LocalGroup) {
             processTransientLocalGroup((LocalGroup) resource);
         }
     }
 
-    private void handleDatabaseProperties(JsonNode nodeObjectPack, AbstractEntity resource) {
+    private void handleDatabaseProperties(JsonNode nodeObjectPack, AbstractEntity<Long> resource) {
         if(resource instanceof AbstractResource) {
             //currently associated if any
             List<DatabaseProperty> databasePropertyList = realmRepository.getPropertiesForResource((AbstractResource) resource);
@@ -439,7 +472,7 @@ public class MigrationExecutor {
                 DatabaseProperty databaseProperty = new DatabaseProperty();
                 databaseProperty.setResourceKey(key);
                 databaseProperty.setValue(databasePropertiesMap.get(key));
-                databaseProperty.setResourceId((Long) resource.getId());
+                databaseProperty.setResourceId(resource.getId());
                 databasePropertyList.add(databaseProperty);
             }
 

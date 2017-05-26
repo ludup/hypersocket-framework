@@ -1,5 +1,18 @@
 package com.hypersocket.migration.helper;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -14,14 +27,6 @@ import com.hypersocket.migration.util.MigrationUtil;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.resource.Resource;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.Collection;
 
 @Component
 public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
@@ -156,7 +161,7 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
                 log.info("Resource not found creating new for class {}.", resourceClass);
                 valueToUpdate = (AbstractEntity) resourceClass.newInstance();
             } else {
-                log.info("Resource found merging to resource with id {} and class {}",
+                log.info("Resource found merging to resource with id {} and {}",
                         valueToUpdate.getId(), resourceClass);
             }
 
@@ -168,7 +173,13 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity> {
                 //to begin with there was no collection
                 // we need to create one.
                 if(value == null) {
-                    value = propertyClass.newInstance();
+                    if(Set.class.isAssignableFrom(propertyClass)) {
+                    	value = new HashSet<>();
+                    } else if(List.class.isAssignableFrom(propertyClass)) {
+                    	value = new ArrayList<>();
+                    } else {
+                    	value = propertyClass.newInstance();
+                    }
                     PropertyUtils.setProperty(resourceRootBean, propertyName, value);
                 }
 

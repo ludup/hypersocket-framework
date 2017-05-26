@@ -1,14 +1,16 @@
 package com.hypersocket.meta;
 
-import com.hypersocket.repository.AbstractEntity;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.collections.map.MultiValueMap;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.Set;
+import com.hypersocket.repository.AbstractEntity;
 
 @Component
 public class ApplicationMetaSource {
@@ -17,18 +19,27 @@ public class ApplicationMetaSource {
 
     @PostConstruct
     private void postConstruct() {
-        scanEntityClasses();
+        scanEntityClassesInHypersocketPackage();
+        scanEntityClassesInNervepointPackage();
     }
 
     public MultiValueMap getEntityMap() {
         return entityMap;
     }
 
-    private void scanEntityClasses() {
-        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
+    private void scanEntityClassesInHypersocketPackage() {
+        scanEntityClasses("com.hypersocket");
+    }
+    
+    private void scanEntityClassesInNervepointPackage() {
+        scanEntityClasses("com.nervepoint");
+    }
+
+	private void scanEntityClasses(String _package) {
+		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AssignableTypeFilter(AbstractEntity.class));
 
-        final Set<BeanDefinition> classes = scanner.findCandidateComponents("com.hypersocket");
+        final Set<BeanDefinition> classes = scanner.findCandidateComponents(_package);
 
         try {
             for (BeanDefinition beanDefinition : classes) {
@@ -38,5 +49,5 @@ public class ApplicationMetaSource {
         }catch (ClassNotFoundException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-    }
+	}
 }

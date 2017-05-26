@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,7 +173,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 				fireResourceCreationEvent(resource, ex);
 				throw ex;
 			}
-			
+			resource.setLegacyId(ThreadLocalRandom.current().nextLong(1, Integer.MAX_VALUE));
 			getRepository().saveResource(resource, properties, ops);
 			updateFingerprint();
 			
@@ -322,6 +323,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		return getRepository().getResources(getCurrentRealm());
 	}
 	
+	@Override
 	public List<T> allResources() {
 		return getRepository().allResources();
 	}
@@ -609,7 +611,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		if(getRepository().hasAssignedEveryoneRole(realm)) {
 			return realmService.getPrincipalCount(realm);
 		} else {
-			Set<Principal> tmp = new HashSet<Principal>();
+			Set<Principal> tmp = new HashSet<>();
 			
 			for(Principal p : getRepository().getAssignedPrincipals(realm)) {
 				if(p.getType()==PrincipalType.USER) {

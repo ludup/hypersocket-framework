@@ -1,13 +1,7 @@
 package com.hypersocket.migration.repository;
 
-import com.hypersocket.migration.lookup.LookUpKey;
-import com.hypersocket.migration.util.MigrationUtil;
-import com.hypersocket.properties.DatabaseProperty;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmRepository;
-import com.hypersocket.repository.AbstractEntity;
-import com.hypersocket.repository.AbstractRepositoryImpl;
-import com.hypersocket.resource.AbstractResource;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
@@ -18,7 +12,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.hypersocket.migration.lookup.LookUpKey;
+import com.hypersocket.migration.util.MigrationUtil;
+import com.hypersocket.properties.DatabaseProperty;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmRepository;
+import com.hypersocket.repository.AbstractEntity;
+import com.hypersocket.repository.AbstractRepositoryImpl;
+import com.hypersocket.resource.AbstractResource;
 
 
 @Repository("migrationRepository")
@@ -93,9 +94,10 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
         return realmRepository.getPropertiesForResource(abstractResource);
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     @Transactional(readOnly = true)
-    public <T> T findEntityByLegacyIdInRealm(Class<? extends AbstractResource> aClass, Long legacyId, Realm realm) {
+    public <T> T findEntityByLegacyIdInRealm(Class<? extends AbstractEntity> aClass, Long legacyId, Realm realm) {
         Criteria criteria = createCriteria(aClass);
         criteria.add(Restrictions.eq("legacyId", legacyId));
         String realmProperty = migrationUtil.getResourceRealmProperty(aClass);
