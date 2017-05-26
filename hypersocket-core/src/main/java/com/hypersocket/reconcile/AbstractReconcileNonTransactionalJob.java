@@ -53,7 +53,7 @@ public abstract class AbstractReconcileNonTransactionalJob<T extends Resource> e
 		} catch(Throwable t) {
 			log.error("Resource reconcile failed", t);
 			fireReconcileFailedEvent(resource, t);
-			throw new IllegalStateException(t);
+			throw new IllegalStateException(t.getMessage(), t);
 		} finally {
 			getReconcileService().unlockResource(resource);
 		}

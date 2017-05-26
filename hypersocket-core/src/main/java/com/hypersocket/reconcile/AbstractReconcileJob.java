@@ -49,7 +49,7 @@ public abstract class AbstractReconcileJob<T extends Resource> extends Permissio
 			doReconcile(resource, initial);
 		
 		} catch(Throwable t) {
-			throw new IllegalStateException(t);
+			throw new IllegalStateException(t.getMessage(), t);
 		} finally {
 			getReconcileService().unlockResource(resource);
 		}
