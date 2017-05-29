@@ -30,7 +30,8 @@ public interface RealmRepository extends
 	public void delete(Realm realm);
 
 	Realm saveRealm(Realm realm, Map<String, String> properties,
-					RealmProvider provider);
+					RealmProvider provider,
+					  @SuppressWarnings("unchecked") TransactionOperation<Realm> ... ops) throws ResourceException;
 
 	Realm createRealm(String name, String uuid, String module,
 					  Map<String, String> properties, RealmProvider provider,

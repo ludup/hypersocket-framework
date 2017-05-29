@@ -960,6 +960,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		realmProvider.setValue(realm, resourceKey, value);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Realm updateRealm(Realm realm, String name, String type, Map<String, String> properties)
 			throws AccessDeniedException, ResourceChangeException, ResourceConfirmationException {
@@ -975,8 +976,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				}
 			}
 
+			String resourceCategory = realm.getResourceCategory();
+			final boolean changedType = !resourceCategory.equals(type);
+			
 			realm.setResourceCategory(type);
-			RealmProvider realmProvider = getProviderForRealm(realm.getResourceCategory());
+			final RealmProvider realmProvider = getProviderForRealm(realm.getResourceCategory());
 			
 			realmProvider.testConnection(properties, realm);
 			String oldName = realm.getName();
@@ -985,9 +989,27 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			realm.setName(name);
 
-			realm = realmRepository.saveRealm(realm, properties, getProviderForRealm(realm));
+			realm = realmRepository.saveRealm(realm, properties, getProviderForRealm(realm), new TransactionAdapter<Realm>() {
 
-			fireRealmUpdate(realm);
+				@Override
+				public void afterOperation(Realm realm, Map<String,String> properties) {
+					try {
+						
+						if(changedType) {
+							configurationService.setValue(realm, "realm.userEditableProperties",
+									ResourceUtils.implodeValues(realmProvider.getDefaultUserPropertyNames()));
+							
+							realm.setReadOnly(realmProvider.isReadOnly(realm));
+							realmRepository.saveRealm(realm);
+						}
+
+						fireRealmUpdate(realm);
+
+					} catch (Throwable e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					} 
+				}
+			});
 
 			eventService.publishEvent(new RealmUpdatedEvent(this, getCurrentSession(), oldName,
 					realmRepository.getRealmById(realm.getId())));

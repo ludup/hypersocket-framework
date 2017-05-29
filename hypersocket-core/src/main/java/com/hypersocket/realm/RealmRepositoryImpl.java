@@ -69,12 +69,23 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional
 	public Realm saveRealm(Realm realm, Map<String, String> properties,
-						   RealmProvider provider) {
+						   RealmProvider provider, 
+						   @SuppressWarnings("unchecked") TransactionOperation<Realm> ... ops) throws ResourceException {
 
 		boolean isNew = realm.getId() == null;
+		
+		for(TransactionOperation<Realm> op : ops) {
+			op.beforeOperation(realm, properties);
+		}
+
 		save(realm);
 
 		provider.setValues(realm, properties);
+
+		for(TransactionOperation<Realm> op : ops) {
+			op.afterOperation(realm, properties);
+		}
+
 
 		if (!isNew) {
 			refresh(realm);
