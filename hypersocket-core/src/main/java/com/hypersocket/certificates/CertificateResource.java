@@ -5,10 +5,12 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name="ssl_certificates")
+@AllowNameOnlyLookUp
 public class CertificateResource extends RealmResource {
 
 	@Column(name="type")
