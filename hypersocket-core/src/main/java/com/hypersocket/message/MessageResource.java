@@ -34,6 +34,9 @@ public class MessageResource extends RealmResource {
 	@Column(name="track")
 	Boolean track;
 	
+	@Column(name="system_only")
+	Boolean systemOnly;
+	
 	@Column(name="attachments", length=1024)
 	String attachments;
 	
@@ -136,6 +139,5 @@ public class MessageResource extends RealmResource {
 	public void setSupportedVariables(String supportedVariables) {
 		this.supportedVariables = supportedVariables;
 	}	
-	
 	
 }

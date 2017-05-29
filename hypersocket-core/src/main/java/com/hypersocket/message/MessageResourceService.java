@@ -40,10 +40,6 @@ public interface MessageResourceService extends
 
 	Set<String> getMessageVariables(MessageResource message);
 
-	MessageResource createResource(Integer messageId, String name, String subject, String body, String html,
-			Set<String> variables, Boolean enabled, Boolean track, Collection<FileUpload> attachments, Realm realm,
-			boolean system) throws ResourceCreationException, AccessDeniedException;
-
 	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system);
 
