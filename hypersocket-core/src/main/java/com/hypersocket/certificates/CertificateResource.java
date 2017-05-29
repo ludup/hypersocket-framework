@@ -6,10 +6,12 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name="ssl_certificates")
+@AllowNameOnlyLookUp
 public class CertificateResource extends RealmResource {
 
 	private static final long serialVersionUID = 2494558616152991393L;
