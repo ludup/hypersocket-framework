@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.hibernate.Criteria;
@@ -15,6 +16,8 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
@@ -49,6 +52,20 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 		}
 	}
 
+	@Transactional(readOnly=true)
+	@Override
+	public boolean isAuthenticatorInUse(final Realm realm, String resourceKey) {
+		return getCount(AuthenticationModule.class, "template", resourceKey, new DeletedCriteria(false), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.createAlias("scheme", "s");
+				criteria.add(Restrictions.eq("s.realm", realm));
+			}
+			
+		}) > 0;
+	}
+	
 	@Transactional(readOnly=true)
 	public AuthenticationScheme getSchemeByResourceKey(String resourceKey) {
 		return get("resourceKey", resourceKey, AuthenticationScheme.class);
@@ -121,5 +138,18 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 	@Override
 	protected Class<AuthenticationModule> getEntityClass() {
 		return AuthenticationModule.class;
+	}
+
+	@Override
+	public Collection<AuthenticationScheme> getSchemesForModule(Realm realm, final String resourceKey) {
+		return list(AuthenticationScheme.class, new DeletedCriteria(false), new RealmRestriction(realm), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.createAlias("modules", "m");
+				criteria.add(Restrictions.eq("m.template", resourceKey));
+			}
+			
+		});
 	}
 }

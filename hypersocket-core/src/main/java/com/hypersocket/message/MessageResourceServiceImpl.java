@@ -136,6 +136,9 @@ public class MessageResourceServiceImpl extends
 				for(MessageRegistration r : messageRegistrations) {
 					MessageResource message = repository.getMessageById(r.messageId, realm);
 					if(message==null) {
+						if(r.system && !realm.isSystem()) {
+							continue;
+						}
 						createI18nMessage(r.messageId, r.resourceBundle, r.resourceKey, r.variables, realm);
 					} else {
 						String vars = ResourceUtils.implodeValues(r.variables);
@@ -233,17 +236,24 @@ public class MessageResourceServiceImpl extends
 	
 	@Override
 	public void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables) {
+		registerI18nMessage(messageId, resourceBundle, resourceKey, variables, false);
+	}
+	
+	@Override
+	public void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables, boolean system) {
 		MessageRegistration r = new MessageRegistration();
 		r.messageId = messageId;
 		r.resourceBundle = resourceBundle;
 		r.resourceKey = resourceKey;
 		r.variables = variables;
+		r.system = system;
 		
 		messageRegistrations.add(r);
 		messageIds.add(messageId);
 	}
 	
-	private void createI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables, Realm realm) throws ResourceCreationException,
+	private void createI18nMessage(Integer messageId, String resourceBundle, 
+			String resourceKey, Set<String> variables, Realm realm) throws ResourceCreationException,
 			AccessDeniedException {
 		createResource(messageId, I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".name"),
 				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".subject"), 
@@ -251,12 +261,19 @@ public class MessageResourceServiceImpl extends
 				"", variables, true, false, null, realm);
 	}
 
-	
 	@Override
 	public MessageResource createResource(Integer messageId, String name, String subject, String body, String html, 
 			Set<String> variables,
 			Boolean enabled, Boolean track, 
 			Collection<FileUpload> attachments, Realm realm) throws ResourceCreationException,
+			AccessDeniedException {
+		return createResource(messageId, name, subject, body, html, variables, enabled, track, attachments, realm, false);
+	}
+	@Override
+	public MessageResource createResource(Integer messageId, String name, String subject, String body, String html, 
+			Set<String> variables,
+			Boolean enabled, Boolean track, 
+			Collection<FileUpload> attachments, Realm realm, boolean system) throws ResourceCreationException,
 			AccessDeniedException {
 
 		MessageResource resource = new MessageResource();
@@ -270,6 +287,7 @@ public class MessageResourceServiceImpl extends
 		resource.setEnabled(enabled);
 		resource.setTrack(track);
 		resource.setSupportedVariables(ResourceUtils.implodeValues(variables));
+		resource.setSystem(system);
 		
 		List<String> attachmentUUIDs = new ArrayList<String>();
 		if(attachments!=null) {
@@ -410,6 +428,7 @@ public class MessageResourceServiceImpl extends
 		Integer messageId;
 		String resourceBundle;
 		String resourceKey;
+		boolean system;
 	}
 
 }

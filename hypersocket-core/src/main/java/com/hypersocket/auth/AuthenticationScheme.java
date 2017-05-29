@@ -16,12 +16,13 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.resource.RealmResource;
 
@@ -61,7 +62,10 @@ public class AuthenticationScheme extends RealmResource {
 	@JoinTable(name = "scheme_denied_roles", joinColumns={@JoinColumn(name="resource_id")}, 
 			inverseJoinColumns={@JoinColumn(name="role_id")})
 	Set<Role> deniedRoles = new HashSet<Role>();
-
+	
+	@OneToMany(fetch=FetchType.LAZY, mappedBy="scheme") 
+	Set<AuthenticationModule> modules;
+	
 	public String getResourceKey() {
 		return resourceKey;
 	}

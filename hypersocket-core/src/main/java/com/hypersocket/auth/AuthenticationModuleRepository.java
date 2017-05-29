@@ -7,8 +7,10 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.Collection;
 import java.util.List;
 
+import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntityRepository;
 
 public interface AuthenticationModuleRepository extends AbstractEntityRepository<AuthenticationModule,Long> {
@@ -32,5 +34,9 @@ public interface AuthenticationModuleRepository extends AbstractEntityRepository
 			AuthenticationModule authenticationModule);
 
 	public void deleteModule(AuthenticationModule authenticationModule);
+
+	boolean isAuthenticatorInUse(Realm realm, String resourceKey);
+
+	public Collection<AuthenticationScheme> getSchemesForModule(Realm currentRealm, String resourceKey);
 
 }
