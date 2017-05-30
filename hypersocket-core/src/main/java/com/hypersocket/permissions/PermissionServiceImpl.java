@@ -1017,11 +1017,12 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	protected void saveRoleAttributes(Role role, Map<String, String> properties) {
 
-		for (PropertyTemplate template : attributeService.getPropertyResolver().getPropertyTemplates(role)) {
-			if (properties.containsKey(template.getResourceKey())) {
-
-				attributeRepository.setValue(role, template.getResourceKey(),
-						properties.get(template.getResourceKey()));
+		if(properties!=null) {
+			for (PropertyTemplate template : attributeService.getPropertyResolver().getPropertyTemplates(role)) {
+				if (properties.containsKey(template.getResourceKey())) {
+					attributeRepository.setValue(role, template.getResourceKey(),
+							properties.get(template.getResourceKey()));
+				}
 			}
 		}
 	}

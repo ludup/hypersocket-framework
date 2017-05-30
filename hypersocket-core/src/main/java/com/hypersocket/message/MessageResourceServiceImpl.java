@@ -341,7 +341,37 @@ public class MessageResourceServiceImpl extends
 	}
 	
 	@Override
+	public void sendMessageToEmailAddress(Integer messageId, Realm realm, ITokenResolver tokenResolver, String... principals) {
+		sendMessageToEmailAddress(messageId, realm, tokenResolver, Arrays.asList(principals));
+	}
+	
+	@Override
+	public void sendMessageToEmailAddress(Integer messageId, Realm realm, ITokenResolver tokenResolver, Collection<String> emails) {
+	
+		
+		List<RecipientHolder> recipients = new ArrayList<RecipientHolder>();
+		for(String email : emails) {
+			recipients.add(new RecipientHolder(ResourceUtils.getNamePairKey(email),
+					ResourceUtils.getNamePairValue(email)));
+		}
+		
+		sendMessage(messageId, realm, tokenResolver, recipients);
+	}
+	
+	@Override
 	public void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals) {
+
+		List<RecipientHolder> recipients = new ArrayList<RecipientHolder>();
+		for(Principal principal : principals) {
+			recipients.add(new RecipientHolder(principal, 
+					principal.getEmail()));
+		}
+		
+		sendMessage(messageId, realm, tokenResolver, recipients);
+	}
+	
+	
+	private void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, List<RecipientHolder> recipients ) {
 		
 		MessageResource message = repository.getMessageById(messageId, realm);
 		
@@ -353,12 +383,6 @@ public class MessageResourceServiceImpl extends
 		if(!message.getEnabled()) {
 			log.info(String.format("Message template %s has been disabled", message.getName()));
 			return;
-		}
-		
-		List<RecipientHolder> recipients = new ArrayList<RecipientHolder>();
-		for(Principal principal : principals) {
-			recipients.add(new RecipientHolder(principal, 
-					principal.getEmail()));
 		}
 		
 		List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();

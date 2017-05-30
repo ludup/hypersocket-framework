@@ -106,6 +106,7 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 //		}
 //	}
 
+	@SuppressWarnings("unchecked")
 	private void doCoreSetup() throws ResourceException {
 		
 		// Create the System realm
