@@ -246,7 +246,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public List<RealmProvider> getProviders() throws AccessDeniedException {
 
-		assertPermission(RealmPermission.READ);
+		assertPermissionOrRole(RealmPermission.READ, 
+				permissionService.getRealmAdministratorRole(getCurrentRealm()));
 
 		return new ArrayList<RealmProvider>(providersByModule.values());
 	}
@@ -318,6 +319,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Realm getRealmByName(String realm) {
 		return realmRepository.getRealmByName(realm);
+	}
+	
+	@Override
+	public Realm getRealmByNameAndOwner(String realm, Realm owner) {
+		return realmRepository.getRealmByNameAndOwner(realm, owner);
 	}
 
 	@Override
@@ -418,9 +424,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Realm getRealmById(Long id) throws AccessDeniedException {
 
-		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
+		Realm realm = realmRepository.getRealmById(id);
+		
+		assertRoleOrAnyPermission(permissionService.getRealmAdministratorRole(realm), 
+				RealmPermission.READ, SystemPermission.SWITCH_REALM);
 
-		return realmRepository.getRealmById(id);
+		return realm;
 	}
 	
 	@Override
@@ -937,7 +946,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void setRealmProperty(Realm realm, String resourceKey, String value) throws AccessDeniedException {
 
-		assertPermission(RealmPermission.UPDATE);
+		assertPermissionOrRole(RealmPermission.UPDATE, 
+				permissionService.getRealmAdministratorRole(realm));
 		RealmProvider realmProvider = getProviderForRealm(realm.getResourceCategory());
 
 		realmProvider.setValue(realm, resourceKey, value);
@@ -949,7 +959,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		try {
 
-			assertPermission(RealmPermission.UPDATE);
+			assertPermissionOrRole(RealmPermission.UPDATE, 
+					permissionService.getRealmAdministratorRole(getCurrentRealm()));
 
 			if (!realm.getName().equalsIgnoreCase(name)) {
 				if (realmRepository.getRealmByName(name) != null) {
@@ -1098,7 +1109,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Collection<PropertyCategory> getRealmPropertyTemplates(Realm realm) throws AccessDeniedException {
 
-		assertPermission(RealmPermission.READ);
+		assertPermissionOrRole(RealmPermission.READ, 
+				permissionService.getRealmAdministratorRole(realm));
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -1109,7 +1121,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Collection<PropertyCategory> getRealmPropertyTemplates(String module) throws AccessDeniedException {
 
-		assertPermission(RealmPermission.READ);
+		assertPermissionOrRole(RealmPermission.READ, 
+				permissionService.getRealmAdministratorRole(getCurrentRealm()));
 
 		RealmProvider provider = getProviderForRealm(module);
 

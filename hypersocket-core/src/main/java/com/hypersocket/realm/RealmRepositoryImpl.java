@@ -113,8 +113,8 @@ public class RealmRepositoryImpl extends
 				new DistinctRootEntity(), new NullCriteria("owner"));
 	}
 
-	protected Realm getRealm(String column, Object value) {
-		return get(column, value, Realm.class, true);
+	protected Realm getRealm(String column, Object value, CriteriaConfiguration...configurations ) {
+		return get(column, value, Realm.class, true, configurations);
 	}
 
 	@Override
@@ -126,19 +126,32 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional(readOnly = true)
 	public Realm getRealmByName(String name) {
-		return getRealm("name", name);
+		return getRealm("name", name, new NullCriteria("owner"));
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Realm getRealmByNameAndOwner(String name, final Realm owner) {
+		return getRealm("name", name, new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("owner", owner.getId()));
+			}
+			
+		});
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public Realm getRealmByName(String name, boolean deleted) {
-		return get("name", name, Realm.class, new DeletedCriteria(deleted));
+		return get("name", name, Realm.class, new DeletedCriteria(deleted), new NullCriteria("owner"));
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public Realm getRealmByHost(String host) {
-		return getRealm("host", host);
+		return getRealm("host", host, new NullCriteria("owner"));
 	}
 	
 	@Override
