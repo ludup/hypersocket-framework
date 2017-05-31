@@ -1328,8 +1328,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				} catch (ResourceChangeException e) {
 					throw new IllegalStateException(e.getMessage(), e);
 				} catch (Throwable e) {
-					throw new IllegalStateException(
-							new ResourceChangeException(RESOURCE_BUNDLE, "groupUser.unexpectedError", e.getMessage()));
+					ResourceChangeException ex = new ResourceChangeException(RESOURCE_BUNDLE, "groupUser.unexpectedError", e.getMessage());
+					throw new IllegalStateException(ex.getMessage(), ex);
 				}
 			}
 

@@ -889,4 +889,9 @@ public class AuthenticationServiceImpl extends
 		return new ArrayList<PostAuthenticationStep>(postAuthenticationSteps);
 	}
 
+	@Override
+	public boolean isAuthenticatorInUse(Realm realm, String resourceKey) {
+		return repository.isAuthenticatorInUse(realm, resourceKey);
+	}
+
 }

@@ -52,6 +52,8 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 
 	boolean isAuthenticatorInScheme(Realm realm, String schemeResourceKey, String resourceKey);
 
+	boolean isAuthenticatorInUse(Realm realm, String resourceKey);
+	
 	AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey) throws AccessDeniedException;
 
 	Session logonAnonymous(String remoteAddress,
