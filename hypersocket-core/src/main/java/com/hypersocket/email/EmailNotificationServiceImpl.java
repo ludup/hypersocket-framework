@@ -54,6 +54,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	
 	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
 
+	final static String SMTP_ENABLED = "smtp.enabled";
 	final static String SMTP_HOST = "smtp.host";
 	final static String SMTP_PORT = "smtp.port";
 	final static String SMTP_PROTOCOL = "smtp.protocol";
@@ -100,11 +101,11 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			int delay,
 			EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
 		
-		Mailer mail = new Mailer(configurationService.getValue(realm, SMTP_HOST), 
-				configurationService.getIntValue(realm, SMTP_PORT), 
-				configurationService.getValue(realm, SMTP_USERNAME),
-				configurationService.getDecryptedValue(realm, SMTP_PASSWORD),
-				TransportStrategy.values()[configurationService.getIntValue(realm, SMTP_PROTOCOL)]);
+		Mailer mail = new Mailer(getSMTPValue(realm, SMTP_HOST), 
+				getSMTPIntValue(realm, SMTP_PORT), 
+				getSMTPValue(realm, SMTP_USERNAME),
+				getSMTPDecryptedValue(realm, SMTP_PASSWORD),
+				TransportStrategy.values()[getSMTPIntValue(realm, SMTP_PROTOCOL)]);
 		
 		String archiveAddress = configurationService.getValue(realm, "email.archiveAddress");
 		List<RecipientHolder> archiveRecipients = new ArrayList<RecipientHolder>();
@@ -186,6 +187,30 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				.replace("${serverUrl}", serverUrl);
 	}
 	
+	private String getSMTPValue(Realm realm, String name) {
+		Realm systemRealm = realmService.getSystemRealm();
+		if(!configurationService.getBooleanValue(realm, SMTP_ENABLED)) {
+			realm = systemRealm;
+		}
+		return configurationService.getValue(realm, name);
+	}
+	
+	private int getSMTPIntValue(Realm realm, String name) {
+		Realm systemRealm = realmService.getSystemRealm();
+		if(!configurationService.getBooleanValue(realm, SMTP_ENABLED)) {
+			realm = systemRealm;
+		}
+		return configurationService.getIntValue(realm, name);
+	}
+	
+	private String getSMTPDecryptedValue(Realm realm, String name) {
+		Realm systemRealm = realmService.getSystemRealm();
+		if(!configurationService.getBooleanValue(realm, SMTP_ENABLED)) {
+			realm = systemRealm;
+		}
+		return configurationService.getDecryptedValue(realm, name);
+	}
+	
 	private void send(Realm realm, 
 			Mailer mail,
 			String subject, 
@@ -200,8 +225,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		
 		Email email = new Email();
 		
-		email.setFromAddress(configurationService.getValue(realm, SMTP_FROM_NAME), 
-				configurationService.getValue(realm, SMTP_FROM_ADDRESS));
+		email.setFromAddress(
+				getSMTPValue(realm, SMTP_FROM_NAME), 
+				getSMTPValue(realm, SMTP_FROM_ADDRESS));
 		
 		email.addRecipient(r.getName(), r.getEmail(), RecipientType.TO);
 		

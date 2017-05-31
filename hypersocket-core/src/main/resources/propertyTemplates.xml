@@ -7,22 +7,21 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email"
 		resourceBundle="EmailService" weight="600" group="messages">
-		<property resourceKey="smtp.host" inputType="text" weight="0"
-			defaultValue="localhost" />
-		<property resourceKey="smtp.port" inputType="integer"
-			minValue="1" maxValue="65535" weight="100" defaultValue="25" />
+		<property resourceKey="smtp.enabled" inputType="switch" weight="0" defaultValue="false" />
+		<property resourceKey="smtp.host" inputType="text" weight="50" defaultValue="localhost" visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
+		<property resourceKey="smtp.port" inputType="integer" minValue="1" maxValue="65535" weight="100" defaultValue="25"  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 		<property resourceKey="smtp.protocol" inputType="select"
-			url="emails/smtpProtocols" weight="200" defaultValue="0" nameIsResourceKey="true" />
+			url="emails/smtpProtocols" weight="200" defaultValue="0" nameIsResourceKey="true"  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 		<property resourceKey="smtp.username" inputType="text"
-			weight="300" defaultValue="" />
+			weight="300" defaultValue=""  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 		<property resourceKey="smtp.password" inputType="password"
-			weight="400" defaultValue="" encrypted="true" />
+			weight="400" defaultValue="" encrypted="true" visibilityDependsOn="smtp.enabled" visibilityDependsValue="true" />
 		<property resourceKey="smtp.fromAddress" inputType="text"
-			weight="500" defaultValue="admin@localhost.com" validateAll="email" />
+			weight="500" defaultValue="admin@localhost.com" validateAll="email"  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 		<property resourceKey="smtp.fromName" inputType="text"
-			weight="600" defaultValue="Server Administrator" />
+			weight="600" defaultValue="Server Administrator"  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 		<property resourceKey="smtp.delay" inputType="integer"
-			weight="600" defaultValue="250" minValue="0" maxValue="60000"/>
+			weight="600" defaultValue="250" minValue="0" maxValue="60000"  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.emailExtra"
 		resourceBundle="EmailService" weight="600"  group="messages">
