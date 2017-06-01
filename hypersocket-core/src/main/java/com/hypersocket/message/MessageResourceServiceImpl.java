@@ -400,19 +400,19 @@ public class MessageResourceServiceImpl extends
 			try {
 		
 				Template subjectTemplate = templateService.createTemplate("message.subject." + message.getId(), 
-						ReplacementUtils.processTokenReplacements(message.getSubject(), tokenResolver), 
+						message.getSubject(), 
 						message.getModifiedDate().getTime());
 				StringWriter subjectWriter = new StringWriter();
 				subjectTemplate.process(tokenResolver.getData(), subjectWriter);
 				
 				Template bodyTemplate = templateService.createTemplate("message.body." + message.getId(), 
-						ReplacementUtils.processTokenReplacements(message.getBody(), tokenResolver), 
+						message.getBody(), 
 						message.getModifiedDate().getTime());
 				StringWriter bodyWriter = new StringWriter();
 				bodyTemplate.process(tokenResolver.getData(), bodyWriter);
 				
 				Template htmlTemplate = templateService.createTemplate("message.html." + message.getId(), 
-						ReplacementUtils.processTokenReplacements(message.getHtml(), tokenResolver), 
+						message.getHtml(), 
 						message.getModifiedDate().getTime());				
 				StringWriter htmlWriter = new StringWriter();
 				htmlTemplate.process(tokenResolver.getData(), htmlWriter);
