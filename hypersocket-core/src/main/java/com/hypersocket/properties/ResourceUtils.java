@@ -29,12 +29,10 @@ public class ResourceUtils {
 			return new String[] { };
 		}
 		List<String> ret = new ArrayList<String>();
-		
 
-		StringTokenizer t = new StringTokenizer(values, "]|[");
+		String[] v = StringUtils.splitByWholeSeparator(values, "]|[");
 		
-		while (t.hasMoreTokens()) {
-			String val = t.nextToken();
+		for(String val : v){
 			StringTokenizer t2 = new StringTokenizer(val, "\r\n");
 			while(t2.hasMoreTokens()) {
 				ret.add(t2.nextToken());

@@ -441,12 +441,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 	public String[] getValues(String name) {
 
 		String values = getValue(name);
-		StringTokenizer t = new StringTokenizer(values, "]|[");
-		List<String> ret = new ArrayList<String>();
-		while (t.hasMoreTokens()) {
-			ret.add(t.nextToken());
-		}
-		return ret.toArray(new String[0]);
+		return StringUtils.splitByWholeSeparator(values, "]|[");
 	}
 
 	@Override
