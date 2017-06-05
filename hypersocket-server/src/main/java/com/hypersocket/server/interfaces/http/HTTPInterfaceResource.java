@@ -6,10 +6,12 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.hypersocket.certificates.CertificateResource;
+import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import com.hypersocket.server.interfaces.InterfaceResource;
 
 @Entity
 @Table(name="http_interfaces")
+@AllowNameOnlyLookUp
 public class HTTPInterfaceResource extends InterfaceResource {
 	
 	private static final long serialVersionUID = 7449184297753501756L;

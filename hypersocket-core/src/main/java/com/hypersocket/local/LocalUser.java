@@ -29,6 +29,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalStatus;
 import com.hypersocket.realm.PrincipalType;
@@ -37,6 +38,7 @@ import com.hypersocket.realm.UserPrincipal;
 @Entity
 @Table(name = "local_users")
 @XmlRootElement(name="user")
+@AllowNameOnlyLookUp
 public class LocalUser extends UserPrincipal implements Serializable {
 	
 	private static final long serialVersionUID = 4490274955679793663L;
@@ -47,7 +49,7 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Cascade({CascadeType.SAVE_UPDATE})
 	@JoinTable(name = "local_user_groups", joinColumns={@JoinColumn(name="uuid")}, inverseJoinColumns={@JoinColumn(name="guid")})
-	private Set<LocalGroup> groups = new HashSet<LocalGroup>();
+	private Set<LocalGroup> groups = new HashSet<>();
 
 	@OneToOne(mappedBy="user", optional=true)
 	@Cascade({CascadeType.DELETE})
@@ -90,6 +92,7 @@ public class LocalUser extends UserPrincipal implements Serializable {
 		return type;
 	}
 	
+	@Override
 	public PrincipalStatus getPrincipalStatus() {
 		if(getExpires()!=null) {
 			if(new Date().before(getExpires())) {
@@ -98,6 +101,7 @@ public class LocalUser extends UserPrincipal implements Serializable {
 		}
 		return PrincipalStatus.ENABLED;
 	}
+	@Override
 	public String getPrincipalDescription() {
 		return StringUtils.isBlank(getFullname()) ? getName() : getFullname();
 	}
@@ -136,6 +140,7 @@ public class LocalUser extends UserPrincipal implements Serializable {
 		this.fullname = fullname;
 	}
 
+	@Override
 	public String getEmail() {
 		return email;
 	}
@@ -152,6 +157,7 @@ public class LocalUser extends UserPrincipal implements Serializable {
 		this.mobile = mobile;
 	}
 	
+	@Override
 	public String getRealmModule() {
 		return LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY;
 	}
@@ -164,6 +170,7 @@ public class LocalUser extends UserPrincipal implements Serializable {
 		this.realmCategory = realmCategory;
 	}
 
+	@Override
 	public Date getExpires() {
 		return expires;
 	}

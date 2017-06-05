@@ -1,5 +1,33 @@
 package com.hypersocket.migration.execution;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.collections.map.MultiValueMap;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.criterion.DetachedCriteria;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -11,6 +39,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.hypersocket.local.LocalGroup;
+import com.hypersocket.migration.customized.MigrationCustomExport;
+import com.hypersocket.migration.customized.MigrationCustomImport;
 import com.hypersocket.migration.exception.MigrationProcessRealmAlreadyExistsThrowable;
 import com.hypersocket.migration.exception.MigrationProcessRealmNotFoundException;
 import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
@@ -32,32 +62,6 @@ import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.upload.FileUploadService;
-import org.apache.commons.collections.map.MultiValueMap;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.criterion.DetachedCriteria;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.PostConstruct;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 @Service
 public class MigrationExecutor {
@@ -95,6 +99,10 @@ public class MigrationExecutor {
     private Map<Class<?>, MigrationExportCriteriaBuilder> migrationExportCriteriaBuilderMap;
 
     private Map<Class<?>, MigrationLookupCriteriaBuilder> migrationLookupCriteriaBuilderMap;
+    
+    private Map<String, MigrationCustomImport<?>> migrationCustomImports;
+    
+    private Collection<MigrationCustomExport<?>> migrationCustomExports;
 
     @PostConstruct
     private void postConstruct() {
@@ -102,6 +110,8 @@ public class MigrationExecutor {
         migrationExporterMap = migrationHelperClassesInfoProvider.getMigrationExporterMap();
         migrationExportCriteriaBuilderMap = migrationHelperClassesInfoProvider.getMigrationExportCriteriaBuilder();
         migrationLookupCriteriaBuilderMap = migrationHelperClassesInfoProvider.getMigrationLookupCriteriaBuilder();
+        migrationCustomImports = migrationHelperClassesInfoProvider.getMigrationCustomImports();
+        migrationCustomExports = migrationHelperClassesInfoProvider.getMigrationCustomExports();
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -288,8 +298,14 @@ public class MigrationExecutor {
                     }
                 }
             }
+            
+            for (MigrationCustomExport<?> migrationCustomExport : migrationCustomExports) {
+            	if(migrationCustomExport.include(entities)) {
+            		migrationCustomExport.export(realm, zos);
+            	}
+			} 
         }catch (IOException e) {
-            log.error("Problem in import process.", e);
+            log.error("Problem in export process.", e);
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
@@ -326,7 +342,17 @@ public class MigrationExecutor {
                     byte[] data = IOUtils.toByteArray(zipInputStream);
                     ByteArrayInputStream dataByteStream = new ByteArrayInputStream(data);
                     fileUploadService.createFile(dataByteStream, fileNameStripped, migrationRealm.realm, true);
-                }else {
+                } else if(fileName.startsWith("_custom")) {
+                	//e.g. _custom_FolderTreePath.json
+                	String classSimpleName = fileName.replace(".json", "").split("_")[2];
+                	MigrationCustomImport<?> migrationCustomImport = migrationCustomImports.get(classSimpleName);
+                	if(migrationCustomImport == null) {
+                		throw new IllegalStateException("We have a custom migration import file but no corresponding MigrationCustomImport");
+                	} else {
+                		log.info("Found custom migration file {}", classSimpleName);
+                		migrationCustomImport._import(fileName, migrationRealm.realm, zipInputStream, migrationExecutorTracker);
+                	}
+                } else {
                     //process json
                     ObjectMapper objectMapper = migrationObjectMapper.getObjectMapper();
                     jsonParser = objectMapper.getFactory().createParser(zipInputStream);
@@ -446,7 +472,7 @@ public class MigrationExecutor {
                 DatabaseProperty databaseProperty = new DatabaseProperty();
                 databaseProperty.setResourceKey(key);
                 databaseProperty.setValue(databasePropertiesMap.get(key));
-                databaseProperty.setResourceId((Long) resource.getId());
+                databaseProperty.setResourceId(resource.getId());
                 databasePropertyList.add(databaseProperty);
             }
 
