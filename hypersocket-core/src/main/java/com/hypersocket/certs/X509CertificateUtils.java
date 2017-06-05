@@ -47,6 +47,9 @@ import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.DSAParameter;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -378,7 +381,7 @@ public class X509CertificateUtils {
 			builder.addRDN(BCStyle.L, l);
 			builder.addRDN(BCStyle.ST, s);
 			builder.addRDN(BCStyle.CN, cn);
-
+			
 			Date notBefore = new Date(System.currentTimeMillis() - 1000L * 60
 					* 60 * 24 * 30);
 			Date notAfter = new Date(System.currentTimeMillis()
@@ -389,6 +392,11 @@ public class X509CertificateUtils {
 			X509v3CertificateBuilder certGen = new JcaX509v3CertificateBuilder(
 					builder.build(), serial, notBefore, notAfter,
 					builder.build(), pair.getPublic());
+			
+			GeneralName altName = new GeneralName(GeneralName.dNSName, cn);
+			GeneralNames subjectAltName = new GeneralNames(altName);
+			certGen.addExtension(Extension.subjectAlternativeName, false, subjectAltName); 
+			
 			ContentSigner sigGen = new JcaContentSignerBuilder(
 					signatureType).setProvider(BC).build(
 					pair.getPrivate());
@@ -446,6 +454,10 @@ public class X509CertificateUtils {
 		PKCS10CertificationRequestBuilder builder = new JcaPKCS10CertificationRequestBuilder(
 				principal, publicKey);
 
+		GeneralName altName = new GeneralName(GeneralName.dNSName, CN);
+		GeneralNames subjectAltName = new GeneralNames(altName);
+		builder.addAttribute(Extension.subjectAlternativeName, subjectAltName);
+		
 		PKCS10CertificationRequest req = builder.build(cs);
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
