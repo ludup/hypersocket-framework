@@ -1,19 +1,17 @@
 package com.hypersocket.properties;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Element;
-
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
 
 public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileConfigurationStore {
 
@@ -41,31 +39,20 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 
 	static Logger log = LoggerFactory.getLogger(DatabasePropertiesFileConfigurationStore.class);
 	
-	private Map<String, File> templateLocationMap = new HashMap<String, File>();
-	private Map<String, Properties> propertiesMap = new HashMap<String, Properties>();
+	private Map<String, Properties> propertiesMap = new HashMap<>();
 
-	public DatabasePropertiesFileConfigurationStore() throws URISyntaxException {
-		templateLocationMap.put(MYSQL, getTemplateLocation( MYSQL.toLowerCase()));
-		templateLocationMap.put(POSTGRES, getTemplateLocation(POSTGRES.toLowerCase()));
-		templateLocationMap.put(MSSQL, getTemplateLocation(MSSQL.toLowerCase()));
-		templateLocationMap.put(DERBY, getTemplateLocation(DERBY.toLowerCase()));
-	}
-
+	@Override
 	public void init(Element element) throws IOException {
 		super.init(element);
 		fillUpMissingKeys();
 	}
 	
-	private File getTemplateLocation(String code) throws URISyntaxException {
-		URL url = DatabasePropertiesFileConfigurationStore.class.getClassLoader().
-				getResource(String.format("dbtemplates/%s_database.properties", code));
-		return new File(url.toURI());
-	}
-
 	private Properties getProperties(String vendor) {
 	 	try {
 			if (!propertiesMap.containsKey(vendor)) {
-				propertiesMap.put(vendor, readProperties(templateLocationMap.get(vendor)));
+				InputStream inputStream = DatabasePropertiesFileConfigurationStore.class.getClassLoader().
+				getResourceAsStream(String.format("dbtemplates/%s_database.properties", vendor.toLowerCase()));
+				propertiesMap.put(vendor, readProperties(inputStream));
 			}
 
 			return propertiesMap.get(vendor);

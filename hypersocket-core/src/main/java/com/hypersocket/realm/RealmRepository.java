@@ -61,4 +61,6 @@ public interface RealmRepository extends
 
 	Realm getRealmByNameAndOwner(String name, Realm owner);
 
+	Realm getRealmByNameAndOwner(String name, Realm owner);
+
 }

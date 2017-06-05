@@ -1,9 +1,11 @@
 package com.hypersocket.properties;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,12 +26,13 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 	static Logger log = LoggerFactory.getLogger(PropertiesFileConfigurationStore.class);
 	File propertiesFile;
 	Properties properties;
-	Map<String,PropertyTemplate> templates = new HashMap<String,PropertyTemplate>();
-	Map<String,List<PropertyTemplate>> templatesByModule = new HashMap<String,List<PropertyTemplate>>();
+	Map<String,PropertyTemplate> templates = new HashMap<>();
+	Map<String,List<PropertyTemplate>> templatesByModule = new HashMap<>();
 	
 	public PropertiesFileConfigurationStore() {
 	}
 	
+	@Override
 	public boolean isDefaultStore() {
 		return false;
 	}
@@ -55,18 +58,22 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 	}
 
 	protected Properties readProperties(File propertiesFile) throws IOException {
+		return readProperties(new BufferedInputStream(new FileInputStream(propertiesFile)));
+	}
+	
+	protected Properties readProperties(InputStream inputStream) throws IOException {
 		Properties properties = new Properties();
 
-		FileInputStream in = new FileInputStream(propertiesFile);
-
 		try {
-			properties.load(in);
+			properties.load(inputStream);
 		} finally {
-			FileUtils.closeQuietly(in);
+			FileUtils.closeQuietly(inputStream);
 		}
 
 		return properties;
 	}
+	
+	
 
 
 	protected void saveProperties() throws IOException {
