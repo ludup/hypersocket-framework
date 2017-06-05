@@ -6,7 +6,7 @@ public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 	String resourceKey;
 	String contentPath;
 	boolean large;
-	boolean visible = true;
+	boolean visible;
 	public OverviewWidget() {
 
 	}
@@ -18,6 +18,7 @@ public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 		this.resourceKey = resourceKey;
 		this.contentPath = contentPath;
 		this.large = large;
+		this.visible = true;
 	}
 
 	public OverviewWidget(boolean visible, int weight, String resourceKey, String contentPath,
