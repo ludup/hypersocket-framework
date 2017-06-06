@@ -82,9 +82,9 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@PostConstruct
 	private void registerProvider() throws Exception {
 
-		defaultProperties.add("user.fullname");
-		defaultProperties.add("user.email");
-		defaultProperties.add("user.mobile");
+		defaultProperties.add("fullname");
+		defaultProperties.add("email");
+		defaultProperties.add("mobile");
 		
 		realmService.registerRealmProvider(this);
 
