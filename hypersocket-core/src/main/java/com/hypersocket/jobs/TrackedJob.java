@@ -28,7 +28,7 @@ public abstract class TrackedJob extends PermissionsAwareJob {
 			onJobComplete();
 		} catch (Throwable t) {
 			onJobError(t);
-			throw new JobExecutionException(t);
+			throw new JobExecutionException(t.getMessage(), t);
 		}
 		
 	}

@@ -109,4 +109,8 @@ public interface HypersocketServer {
 	void registerClientConnector(ClientConnector connector);
 
 	void processDefaultResponse(HttpServletResponse response, boolean disableCache);
+	
+	String getDefaultRedirectPath();
+	
+	void setDefaultRedirectPath(String path);
 }

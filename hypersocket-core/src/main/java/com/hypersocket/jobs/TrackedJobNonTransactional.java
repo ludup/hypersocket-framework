@@ -28,7 +28,7 @@ public abstract class TrackedJobNonTransactional extends PermissionsAwareJobNonT
 			onJobComplete();
 		} catch (Throwable t) {
 			onJobError(t);
-			throw new JobExecutionException(t);
+			throw new JobExecutionException(t.getMessage(), t);
 		}
 		
 	}

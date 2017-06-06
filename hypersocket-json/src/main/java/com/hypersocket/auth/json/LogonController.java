@@ -30,6 +30,7 @@ import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.FallbackAuthenticationRequired;
 import com.hypersocket.json.AuthenticationRedirectResult;
 import com.hypersocket.json.AuthenticationResult;
+import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
@@ -39,7 +40,6 @@ import com.hypersocket.session.json.SessionUtils;
 @Controller
 public class LogonController extends AuthenticatedController {
 
-	
 	@RequestMapping(value = "logon/reset", method = { RequestMethod.GET, RequestMethod.POST}, produces = "application/json")
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -303,10 +303,11 @@ public class LogonController extends AuthenticatedController {
 		return params;
 	}
 
-	@RequestMapping(value = "logoff")
+	@RequestMapping(value = "logoff", method = { RequestMethod.GET,
+			RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public void logoff(HttpServletRequest request, HttpServletResponse response)
+	public ResourceStatus<String> logoff(HttpServletRequest request, HttpServletResponse response)
 			throws UnauthorizedException, SessionTimeoutException, AccessDeniedException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request),
@@ -320,6 +321,10 @@ public class LogonController extends AuthenticatedController {
 						SessionUtils.AUTHENTICATED_SESSION);
 			}
 			
+			/**
+			 * Logoff will return to default page.
+			 */
+			return new ResourceStatus<String>("/");
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -366,10 +371,11 @@ public class LogonController extends AuthenticatedController {
 		}
 	}
 	
-	@RequestMapping(value = "logoff/{id}")
+	@RequestMapping(value = "logoff/{id}", method = { RequestMethod.GET,
+			RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public void logoffSession(HttpServletRequest request,
+	public ResourceStatus<String> logoffSession(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String id)
 			throws UnauthorizedException, SessionTimeoutException {
 
@@ -381,6 +387,11 @@ public class LogonController extends AuthenticatedController {
 			if (session != null && sessionService.isLoggedOn(session, false)) {
 				sessionService.closeSession(session);
 			}
+			
+			/**
+			 * Logoff will return to default page.
+			 */
+			return new ResourceStatus<String>("/");
 		} finally {
 			clearAuthenticatedContext();
 		}

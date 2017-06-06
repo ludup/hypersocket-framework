@@ -83,6 +83,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	private List<String> controllerPackages = new ArrayList<String>();
 	
 	private Map<HTTPInterfaceResource,SSLContext> sslContexts = new HashMap<HTTPInterfaceResource,SSLContext>();
+	private String defaultRedirectPath = null;
 	
 	@Autowired
 	EventService eventService;
@@ -677,5 +678,13 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		return false;
 	}
 
-
+	@Override
+	public String getDefaultRedirectPath() {
+		return (defaultRedirectPath==null ? getUiPath() : defaultRedirectPath).replace("${uiPath}", getUiPath()).replace("${basePath}", getBasePath());
+	}
+	
+	@Override
+	public void setDefaultRedirectPath(String defaultRedirectPath) {
+		this.defaultRedirectPath = defaultRedirectPath;
+	}
 }
