@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.netty;
 
+import org.apache.http.HttpStatus;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
@@ -40,7 +41,7 @@ class ClientConnectCallbackImpl implements ChannelFutureListener {
 				
 			});
 		} else {
-			callback.websocketRejected(future.getCause());
+			callback.websocketRejected(future.getCause(), HttpStatus.SC_NOT_FOUND);
 		}
 	}
 	

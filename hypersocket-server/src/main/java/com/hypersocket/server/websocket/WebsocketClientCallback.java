@@ -13,7 +13,7 @@ public interface WebsocketClientCallback {
 
 	void websocketAccepted(WebsocketClient client);
 	
-	void websocketRejected(Throwable cause);
+	void websocketRejected(Throwable cause, int error);
 
 	void websocketClosed(WebsocketClient client);
 	

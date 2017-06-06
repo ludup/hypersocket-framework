@@ -175,9 +175,9 @@ public abstract class AbstractForwardingHandler<T extends ForwardingResource> im
 		}
 
 		@Override
-		public void websocketRejected(Throwable cause) {
+		public void websocketRejected(Throwable cause, int error) {
 
-			callback.websocketRejected(cause);
+			callback.websocketRejected(cause, error);
 
 			fireResourceSessionOpenFailedEvent(cause, session, resource, hostname, port);
 			

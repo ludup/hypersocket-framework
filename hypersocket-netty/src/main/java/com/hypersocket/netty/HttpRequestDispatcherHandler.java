@@ -720,8 +720,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		}
 
 		@Override
-		public void websocketRejected(Throwable cause) {
-			response.setStatus(HttpStatus.SC_NOT_FOUND);
+		public void websocketRejected(Throwable cause, int error) {
+			response.setStatus(error);
 			sendResponse(request, response, false);
 		}
 
