@@ -48,6 +48,16 @@ public abstract class Resource extends AbstractResource {
 		return system;
 	}
 
+	public Long getId() {
+		/**
+		 * Because AbstractResource uses generic super class with variable id type, if you
+		 * query the return type you will get Object rather than Long. We need to query 
+		 * this in Hibernate search configuration so we create a concrete method here
+		 * that returns the correct Long id type - LDP
+		 */
+		return super.getId();
+	}
+	
 	public void setSystem(boolean system) {
 		this.system = system;
 	}
