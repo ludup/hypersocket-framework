@@ -54,6 +54,8 @@ public abstract class AbstractExtensionUpdater {
 	
 	public abstract File getLocalRepositoryFile();
 	
+	public abstract Set<String> getNewFeatures();
+	
 	public final boolean update() throws IOException {
 
 		if (log.isInfoEnabled()) {
@@ -91,7 +93,10 @@ public abstract class AbstractExtensionUpdater {
 				case NOT_INSTALLED:
 					
 					if(ArrayUtils.contains(getUpdateTargets(), ExtensionTarget.valueOf(v.getTarget()))) {
-						if(v.isMandatory()) {
+						if(log.isInfoEnabled()) {
+							log.info(String.format("Checking install state for %s %s", v.getExtensionId(), v.getFeatureGroup()));
+						}
+						if(v.isMandatory() || getNewFeatures().contains(v.getFeatureGroup())) {
 							updates.add(v);
 							for(String depend : v.getDependsOn()) {
 								if(StringUtils.isNotBlank(depend)) {
