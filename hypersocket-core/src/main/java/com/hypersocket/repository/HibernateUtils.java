@@ -124,6 +124,8 @@ public class HibernateUtils {
 				if(searchValues.size() > 0) {
 					criteria.add(Restrictions.in(searchColumn, searchValues));
 				}
+			} else {
+				log.error(String.format("Failed to configure search with parameters search=%s column=%s type=%s", searchPattern, searchColumn, method.getReturnType().getName()));
 			}
 		
 		} catch(Throwable t) {
