@@ -32,6 +32,7 @@ import com.hypersocket.json.AuthenticationRedirectResult;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.json.SessionTimeoutException;
@@ -404,7 +405,8 @@ public class LogonController extends AuthenticatedController {
 		
 		checkRedirect(request,response);
 		return new AuthenticationSuccessResult(info,
-				configurationService.hasUserLocales(), session, homePage);
+				configurationService.hasUserLocales(), session, homePage,
+				getCurrentRole(session));
 		
 	}
 
@@ -415,8 +417,11 @@ public class LogonController extends AuthenticatedController {
 		
 		return new AuthenticationSuccessResult(info,
 				configurationService.hasUserLocales(), 
-				session, "");
+				session, "", getCurrentRole(session));
 		
 	}
 
+	private Role getCurrentRole(Session session) {
+		return configurationService.getBooleanValue(session.getCurrentRealm(), "feature.roleSelection") ? session.getCurrentRole() : null;
+	}
 }

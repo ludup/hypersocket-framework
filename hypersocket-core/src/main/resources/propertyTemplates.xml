@@ -57,7 +57,10 @@
 			includedLabelResourceKey="text.visible" excludedLabelResourceKey="text.notVisible"
 		    url="currentRealm/user/templateNames" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>
 	</propertyCategory>
-
+	<propertyCategory resourceKey="category.features"
+		 resourceBundle="PermissionService" weight="200">
+		<property resourceKey="feature.roleSelection" inputType="switch" defaultValue="false" weight="0" />
+	</propertyCategory>
 </propertyTemplates>
 
 		
