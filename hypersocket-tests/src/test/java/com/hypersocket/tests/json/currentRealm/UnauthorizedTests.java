@@ -7,7 +7,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.junit.Test;
 
 import com.hypersocket.json.JsonResourceList;
-import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.json.PropertyItem;
 import com.hypersocket.realm.json.CredentialsUpdate;
 import com.hypersocket.realm.json.GroupUpdate;
 import com.hypersocket.realm.json.UserUpdate;

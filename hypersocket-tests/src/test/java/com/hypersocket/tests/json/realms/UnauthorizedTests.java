@@ -6,7 +6,7 @@ import java.net.URISyntaxException;
 import org.apache.http.client.ClientProtocolException;
 import org.junit.Test;
 
-import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.json.PropertyItem;
 import com.hypersocket.realm.json.RealmUpdate;
 import com.hypersocket.tests.AbstractServerTest;
 

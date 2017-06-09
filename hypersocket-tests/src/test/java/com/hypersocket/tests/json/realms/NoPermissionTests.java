@@ -11,7 +11,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.hypersocket.auth.AuthenticationPermission;
-import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.json.PropertyItem;
 import com.hypersocket.realm.json.RealmUpdate;
 import com.hypersocket.tests.AbstractServerTest;
 

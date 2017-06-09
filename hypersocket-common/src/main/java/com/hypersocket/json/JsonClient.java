@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hypersocket.ServerInfo;
 import com.hypersocket.utils.HttpUtilsHolder;
 import com.hypersocket.utils.HypersocketUtils;
 
@@ -50,6 +51,35 @@ public class JsonClient {
 		this.hostname = hostname;
 		this.port = port;
 		this.path = path;
+	}
+	
+	public JsonClient(String hostname, int port) throws IOException {
+		this(hostname, port, false);
+	}
+	
+	public JsonClient(String hostname, int port, boolean allowSelfSigned) throws IOException {
+		this.hostname = hostname;
+		this.port = port;
+		this.path = "/discover";
+		
+		setAllowSelfSignedCertificates(allowSelfSigned);
+		try {
+			
+			if(log.isInfoEnabled()) {
+				log.info("Discovering server path configuration");
+			}
+			
+			String json = doGet("");
+			ServerInfo info = mapper.readValue(json, ServerInfo.class);
+			this.path = info.getBasePath();
+			
+			if(log.isInfoEnabled()) {
+				log.info(String.format("Server application path is %s", this.path));
+			}
+			
+		} catch (JsonStatusException | URISyntaxException e) {
+			throw new IOException(e.getMessage(), e);
+		}
 	}
 	
 	public void logon(String username, String password) throws URISyntaxException, IOException, JsonStatusException {
@@ -84,7 +114,7 @@ public class JsonClient {
 					JsonLogonResult.class);
 			session = logon.getSession();
 		} else {
-			session = null;
+			throw new IOException("Authentication failed");
 		}
 	}
 

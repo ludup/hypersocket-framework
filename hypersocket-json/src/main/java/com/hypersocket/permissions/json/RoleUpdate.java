@@ -9,7 +9,7 @@ package com.hypersocket.permissions.json;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.json.PropertyItem;
 
 @XmlRootElement(name="role")
 public class RoleUpdate {

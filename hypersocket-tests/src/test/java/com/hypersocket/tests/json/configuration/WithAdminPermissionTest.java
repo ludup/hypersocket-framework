@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.hypersocket.json.JsonConfiguration;
 import com.hypersocket.json.JsonConfigurationTemplate;
 import com.hypersocket.json.JsonResourceStatus;
-import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.json.PropertyItem;
 import com.hypersocket.tests.AbstractServerTest;
 import com.hypersocket.tests.json.configuration.AbstractConfigurationTest.Resources;
 

@@ -12,7 +12,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonResourceList;
-import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.json.PropertyItem;
 import com.hypersocket.realm.json.CredentialsUpdate;
 import com.hypersocket.realm.json.GroupUpdate;
 import com.hypersocket.realm.json.UserUpdate;

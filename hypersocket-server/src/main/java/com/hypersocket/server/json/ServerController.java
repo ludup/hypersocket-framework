@@ -9,6 +9,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.hypersocket.HypersocketVersion;
+import com.hypersocket.ServerInfo;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
@@ -71,6 +73,19 @@ public class ServerController extends AuthenticatedController {
 			HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		return new RequestStatus(true, HypersocketVersion.getVersion() + ";" + HypersocketVersion.getSerial());
+	}
+	
+	@RequestMapping(value = "server/discover", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ServerInfo discover(HttpServletRequest request,
+			HttpServletResponse response) {
+		
+		ServerInfo info = new ServerInfo();
+		info.setBasePath(server.getBasePath());
+		info.setVersion(HypersocketVersion.getVersion());
+		
+		return info;
 	}
 
 	@AuthenticationRequired

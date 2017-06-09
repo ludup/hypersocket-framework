@@ -5,16 +5,21 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.hypersocket.properties.json;
+package com.hypersocket.json;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
-@XmlRootElement(name="propertyItem")
 public class PropertyItem {
 
 	String id;
 	String value;
 	String message;
+	
+	public PropertyItem() {	
+	}
+	
+	public PropertyItem(String id, String value) {
+		this.id = id;
+		this.value = value;
+	}
 	
 	public String getId() {
 		return id;

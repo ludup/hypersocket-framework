@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class JsonResourceStatus {
 
 	boolean success;
-	String error;
+	String message;
 	
 	JsonResource resource;
 	
@@ -18,12 +18,12 @@ public class JsonResourceStatus {
 		this.success = success;
 	}
 
-	public String getError() {
-		return error;
+	public String getMessage() {
+		return message;
 	}
 
-	public void setError(String error) {
-		this.error = error;
+	public void setMessage(String message) {
+		this.message = message;
 	}
 
 	public JsonResource getResource() {

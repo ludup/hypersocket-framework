@@ -33,12 +33,12 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.config.ConfigurationServiceImpl;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.i18n.I18N;
+import com.hypersocket.json.PropertyItem;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.properties.json.PropertyItem;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.session.json.SessionTimeoutException;
 

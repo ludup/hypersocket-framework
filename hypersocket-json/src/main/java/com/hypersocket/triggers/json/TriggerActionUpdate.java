@@ -1,7 +1,7 @@
 package com.hypersocket.triggers.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.json.PropertyItem;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class TriggerActionUpdate {

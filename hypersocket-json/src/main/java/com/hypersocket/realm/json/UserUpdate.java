@@ -7,7 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.realm.json;
 
-import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.json.PropertyItem;
 
 public class UserUpdate {
 

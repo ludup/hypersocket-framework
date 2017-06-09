@@ -12,7 +12,7 @@ import org.springframework.util.Assert;
 
 import com.hypersocket.json.JsonResourceList;
 import com.hypersocket.json.JsonResourceStatus;
-import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.json.PropertyItem;
 import com.hypersocket.realm.json.CredentialsUpdate;
 import com.hypersocket.realm.json.GroupUpdate;
 import com.hypersocket.realm.json.UserUpdate;

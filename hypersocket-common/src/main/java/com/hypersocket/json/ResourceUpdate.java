@@ -1,7 +1,6 @@
-package com.hypersocket.resource;
+package com.hypersocket.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.hypersocket.properties.json.PropertyItem;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class ResourceUpdate {

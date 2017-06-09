@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.springframework.util.Assert;
 
 import com.hypersocket.json.JsonResourceStatus;
-import com.hypersocket.properties.json.PropertyItem;
+import com.hypersocket.json.PropertyItem;
 import com.hypersocket.realm.json.RealmUpdate;
 import com.hypersocket.tests.AbstractServerTest;
 
