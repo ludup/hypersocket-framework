@@ -40,6 +40,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.ServerResolver;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
@@ -398,23 +399,26 @@ public class MessageResourceServiceImpl extends
 		if(!recipients.isEmpty()) {
 			try {
 		
+				Map<String,Object> data = tokenResolver.getData();
+				data.putAll(new ServerResolver(realm).getData());
+				
 				Template subjectTemplate = templateService.createTemplate("message.subject." + message.getId(), 
 						message.getSubject(), 
 						message.getModifiedDate().getTime());
 				StringWriter subjectWriter = new StringWriter();
-				subjectTemplate.process(tokenResolver.getData(), subjectWriter);
+				subjectTemplate.process(data, subjectWriter);
 				
 				Template bodyTemplate = templateService.createTemplate("message.body." + message.getId(), 
 						message.getBody(), 
 						message.getModifiedDate().getTime());
 				StringWriter bodyWriter = new StringWriter();
-				bodyTemplate.process(tokenResolver.getData(), bodyWriter);
+				bodyTemplate.process(data, bodyWriter);
 				
 				Template htmlTemplate = templateService.createTemplate("message.html." + message.getId(), 
 						message.getHtml(), 
 						message.getModifiedDate().getTime());				
 				StringWriter htmlWriter = new StringWriter();
-				htmlTemplate.process(tokenResolver.getData(), htmlWriter);
+				htmlTemplate.process(data, htmlWriter);
 				
 				emailService.sendEmail(
 						realm,

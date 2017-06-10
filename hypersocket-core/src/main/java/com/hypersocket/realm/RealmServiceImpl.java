@@ -23,9 +23,6 @@ import java.util.zip.ZipOutputStream;
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
 
-import com.hypersocket.migration.execution.MigrationExecutor;
-import com.hypersocket.migration.file.FileUploadExporter;
-import com.hypersocket.resource.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +42,8 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.local.LocalRealmProviderImpl;
 import com.hypersocket.local.LocalUser;
 import com.hypersocket.message.MessageResourceService;
+import com.hypersocket.migration.execution.MigrationExecutor;
+import com.hypersocket.migration.file.FileUploadExporter;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
@@ -71,6 +70,13 @@ import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
+import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceConfirmationException;
+import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceExportException;
+import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.SessionServiceImpl;
@@ -151,6 +157,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public static final Integer MESSAGE_NEW_USER_NEW_PASSWORD = 6001;
 	public static final Integer MESSAGE_NEW_USER_TMP_PASSWORD = 6002;
 	public static final Integer MESSAGE_NEW_USER_SELF_CREATED = 6003;
+	public static final Integer MESSAGE_PASSWORD_CHANGED = 6004;
+	public static final Integer MESSAGE_PASSWORD_RESET = 6005;
+	
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -215,13 +224,19 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		EntityResourcePropertyStore.registerResourceService(Realm.class, realmRepository);
 		
 		messageService.registerI18nMessage(MESSAGE_NEW_USER_NEW_PASSWORD, RESOURCE_BUNDLE,
-				"realmService.newUserNewPassword", PrincipalResolver.getVariables());
+				"realmService.newUserNewPassword", PrincipalWithPasswordResolver.getVariables());
 		
 		messageService.registerI18nMessage(MESSAGE_NEW_USER_TMP_PASSWORD, RESOURCE_BUNDLE,
-				"realmService.newUserTmpPassword", PrincipalResolver.getVariables());
+				"realmService.newUserTmpPassword", PrincipalWithPasswordResolver.getVariables());
 
 		messageService.registerI18nMessage(MESSAGE_NEW_USER_SELF_CREATED, RESOURCE_BUNDLE,
-				"realmService.newUserSelfCreated", PrincipalResolver.getVariables());
+				"realmService.newUserSelfCreated", PrincipalWithPasswordResolver.getVariables());
+		
+		messageService.registerI18nMessage(MESSAGE_PASSWORD_CHANGED, RESOURCE_BUNDLE,
+				"realmService.passwordChanged", PrincipalWithPasswordResolver.getVariables());
+		
+		messageService.registerI18nMessage(MESSAGE_PASSWORD_RESET, RESOURCE_BUNDLE,
+				"realmService.passwordReset", PrincipalWithPasswordResolver.getVariables());
 	}
 
 	@Override
@@ -559,17 +574,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	private void sendNewUserTemporaryPasswordNofification(Principal principal, String password) throws ResourceException, AccessDeniedException {
-		PrincipalResolver resolver = new PrincipalResolver(principal, password);
+		PrincipalWithPasswordResolver resolver = new PrincipalWithPasswordResolver(principal, password);
 		messageService.sendMessage(MESSAGE_NEW_USER_TMP_PASSWORD, principal.getRealm(), resolver, principal);
 	}
 
 	private void sendNewUserSelfCreatedNofification(Principal principal, String password) throws ResourceException, AccessDeniedException {
-		PrincipalResolver resolver = new PrincipalResolver(principal, password);
+		PrincipalWithPasswordResolver resolver = new PrincipalWithPasswordResolver(principal, password);
 		messageService.sendMessage(MESSAGE_NEW_USER_SELF_CREATED, principal.getRealm(), resolver, principal);
 	}
 	
 	private void sendNewUserFixedPasswordNotification(Principal principal, String password) throws ResourceException, AccessDeniedException {
-		PrincipalResolver resolver = new PrincipalResolver(principal, password);
+		PrincipalWithPasswordResolver resolver = new PrincipalWithPasswordResolver(principal, password);
 		messageService.sendMessage(MESSAGE_NEW_USER_NEW_PASSWORD, principal.getRealm(), resolver, principal);
 	}
 
@@ -798,6 +813,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						proc.afterChangePassword(principal, newPassword, oldPassword);
 					}
 					
+					messageService.sendMessage(MESSAGE_PASSWORD_CHANGED, 
+							principal.getRealm(), 
+							new PrincipalWithoutPasswordResolver(principal), 
+							principal);
+					
 					eventService.publishEvent(new ChangePasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider, newPassword));
 					
 					return principal;
@@ -847,6 +867,18 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			for(PrincipalProcessor proc : principalProcessors) {
 				proc.afterSetPassword(principal, password);
+			}
+			
+			if(administrative) {
+				messageService.sendMessage(MESSAGE_PASSWORD_RESET, 
+						principal.getRealm(), 
+						new PrincipalWithPasswordResolver(principal, password), 
+						principal);
+			} else {
+				messageService.sendMessage(MESSAGE_PASSWORD_CHANGED, 
+						principal.getRealm(), 
+						new PrincipalWithoutPasswordResolver(principal), 
+						principal);
 			}
 			
 			eventService.publishEvent(

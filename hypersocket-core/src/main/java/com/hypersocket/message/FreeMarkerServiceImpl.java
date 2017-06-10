@@ -23,12 +23,7 @@ public class FreeMarkerServiceImpl implements FreeMarkerService {
 		cfg = new Configuration();
 		cfg.setDefaultEncoding("UTF-8");
 
-		if(Boolean.getBoolean("hypersocket.development")) {
-			cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
-		} else {
-			cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-		}
-		
+		cfg.setTemplateExceptionHandler(TemplateExceptionHandler.IGNORE_HANDLER);
 		cfg.setTemplateLoader(stringLoader);
 	}
 	

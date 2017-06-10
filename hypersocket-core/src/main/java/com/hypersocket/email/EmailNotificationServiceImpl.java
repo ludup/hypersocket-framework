@@ -90,9 +90,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	@Override
 	@SafeVarargs
 	public final void sendEmail(Realm realm, 
-			String subject, 
-			String text, 
-			String html, 
+			String recipeintSubject, 
+			String receipientText, 
+			String receipientHtml, 
 			String replyToName, 
 			String replyToEmail, 
 			RecipientHolder[] recipients, 
@@ -118,19 +118,15 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 		for(RecipientHolder r : recipients) {
 			
-			String recipeintSubject = replaceServerInfo(realm, replaceRecipientInfo(subject, r));
-			String receipientText = replaceServerInfo(realm, replaceRecipientInfo(text, r));
-			String receipientHtml = replaceServerInfo(realm, replaceRecipientInfo(html, r));
-			
 			String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
 			if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(receipientHtml)) {
 				try {
 					htmlTemplate = IOUtils.toString(uploadService.getInputStream(htmlTemplate));
-					htmlTemplate = replaceRecipientInfo(htmlTemplate.replace("${htmlContent}", receipientHtml), r);
+					htmlTemplate = htmlTemplate.replace("${htmlContent}", receipientHtml);
 					
 					String trackingImage = configurationService.getValue(realm, "email.trackingImage");
 					if(track && StringUtils.isNotBlank(trackingImage)) {
-						String trackingUri = trackerService.generateTrackingUri(subject, r.getName(), r.getEmail(), realm);
+						String trackingUri = trackerService.generateTrackingUri(recipeintSubject, r.getName(), r.getEmail(), realm);
 						htmlTemplate = htmlTemplate.replace("${trackingImage}", trackingUri);
 					} else {
 						String trackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);
@@ -161,30 +157,6 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 						replyToName, replyToEmail, false, recipient, delay, attachments);
 			}
 		}
-	}
-	
-	private String replaceRecipientInfo(String str, RecipientHolder r) {
-		if(str!=null) {
-			return str.replace("${email}", r.getEmail())
-					.replace("${firstName}", r.getFirstName())
-					.replace("${fullName}", r.getName())
-					.replace("${principalId}", r.getPrincipalId());
-		} else {
-			return str;
-		}
-	}
-	
-	private String replaceServerInfo(Realm realm, String str) {
-		String serverUrl = configurationService.getValue(realm,"email.externalHostname");
-		if(StringUtils.isBlank(serverUrl)) {
-			serverUrl = realmService.getRealmHostname(realm);
-		}
-		if(!serverUrl.startsWith("http")) {
-			serverUrl = String.format("https://%s/", serverUrl);
-		}
-		
-		return str.replace("${serverName}", configurationService.getValue(realm, "email.serverName"))
-				.replace("${serverUrl}", serverUrl);
 	}
 	
 	private String getSMTPValue(Realm realm, String name) {
