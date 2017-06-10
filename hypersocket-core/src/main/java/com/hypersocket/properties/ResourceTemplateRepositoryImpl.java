@@ -36,8 +36,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.triggers.ValidationException;
 
 @Repository
 public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryImpl
@@ -710,12 +712,13 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	private void validate(PropertyTemplate template, String value) {
 		
+
 		/**
 		 * LDP - this needs extending. Its design to support non-ui based
 		 * submissions and provide last defense against bad client submitting
 		 * invalid values
 		 */
-		
+	
 		if(StringUtils.isBlank(value)) {
 			/**
 			 * Will use default value;
@@ -747,6 +750,16 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 		}
 		
+		if(template.getAttributes().containsKey("validationBean")) {
+			try {
+				PropertyValidator v = ApplicationContextServiceImpl.getInstance().getBean(
+						template.getAttributes().get("validationBean"), PropertyValidator.class);
+				v.validate(template, value);
+			} catch (ValidationException e) {
+				throw new IllegalStateException(e.getMessage(), e);
+			}
+			
+		}
 	}
 
 	@Override

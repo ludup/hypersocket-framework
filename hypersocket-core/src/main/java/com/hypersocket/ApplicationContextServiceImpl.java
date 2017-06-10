@@ -30,4 +30,9 @@ public class ApplicationContextServiceImpl {
 	public <T> T getBean(Class<T> clz) {
 		return applicationContext.getBean(clz);
 	}
+	
+	@SuppressWarnings("unchecked")
+	public <T> T getBean(String name, Class<T> clz) {
+		return (T) applicationContext.getBean(name);
+	}
 }
