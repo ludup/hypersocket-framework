@@ -89,7 +89,7 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 
 	@Override
 	public FormTemplate createTemplate(AuthenticationState state) {
-		return new ChangePasswordTemplate(state);
+		return new ChangePasswordTemplate(state, "changePassword.text");
 	}
 
 	@Override

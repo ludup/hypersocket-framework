@@ -17,7 +17,7 @@ public class ChangePasswordTemplate extends FormTemplate {
 	public static final String PASSWORD_FIELD = "password";
 	public static final String CONFIRM_PASSWORD_FIELD = "confirmPassword";
 
-	public ChangePasswordTemplate(AuthenticationState state) {
+	public ChangePasswordTemplate(AuthenticationState state, String buttonResourceKey) {
 
 		setResourceKey(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
 
@@ -31,5 +31,7 @@ public class ChangePasswordTemplate extends FormTemplate {
 				.getResource(state.getLocale(),
 						AuthenticationServiceImpl.RESOURCE_BUNDLE,
 						"confirmPassword.label")));
+		
+		setLogonButtonResourceKey(buttonResourceKey);
 	}
 }
