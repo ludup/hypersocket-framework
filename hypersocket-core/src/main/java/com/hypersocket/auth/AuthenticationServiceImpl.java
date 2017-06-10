@@ -391,6 +391,10 @@ public class AuthenticationServiceImpl extends
 						state.setLastErrorIsResourceKey(false);
 						break;
 					}
+					case AUTHENTICATION_FAILURE_DISPALY_ERROR: 
+					{
+						break;
+					}
 					case AUTHENTICATION_SUCCESS: {
 
 						state.nextPostAuthenticationStep();
@@ -409,6 +413,7 @@ public class AuthenticationServiceImpl extends
 						success = true;
 						break;
 					}
+					
 					default: {
 						state.setLastErrorMsg("error.genericLogonError");
 						state.setLastErrorIsResourceKey(true);
@@ -446,6 +451,10 @@ public class AuthenticationServiceImpl extends
 				case INSUFFICIENT_DATA_NO_ERROR: {
 					state.setLastErrorMsg(null);
 					state.setLastErrorIsResourceKey(false);
+					break;
+				}
+				case AUTHENTICATION_FAILURE_DISPALY_ERROR: 
+				{
 					break;
 				}
 				case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {

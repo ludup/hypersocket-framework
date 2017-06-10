@@ -78,10 +78,10 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 			return AuthenticatorResult.AUTHENTICATION_SUCCESS;
 			
 		} catch (ResourceException e) {
-			state.setLastErrorMsg(e.getResourceKey());
-			state.setLastErrorIsResourceKey(true);
+			state.setLastErrorMsg(e.getMessage());
+			state.setLastErrorIsResourceKey(false);
 			
-			return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_CREDENTIALS;
+			return AuthenticatorResult.AUTHENTICATION_FAILURE_DISPALY_ERROR;
 		}
 		
 		
