@@ -12,6 +12,7 @@ import java.util.Map;
 
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.PropertyTemplateService;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceChangeException;
@@ -45,5 +46,7 @@ public interface ConfigurationService extends AuthenticatedService, PropertyTemp
 	String getDecryptedValue(Realm realm, String resourceKey);
 
 	void setValues(Realm realm, String string, String[] editable) throws ResourceChangeException, AccessDeniedException;
+
+	PropertyTemplate getPropertyTemplate(Realm realm, String string);
 
 }
