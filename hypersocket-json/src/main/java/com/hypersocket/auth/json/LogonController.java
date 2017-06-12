@@ -220,7 +220,8 @@ public class LogonController extends AuthenticatedController {
 										request.getParameterMap())
 								: authenticationService
 										.nextPostAuthenticationStep(state),
-						configurationService.hasUserLocales(), 
+						false,
+//						configurationService.hasUserLocales(), 
 						state.isNew(),
 						state.getCurrentIndex()==0,
 						!state.hasNextStep(), success || state.isNew(),
@@ -262,7 +263,8 @@ public class LogonController extends AuthenticatedController {
 									request.getParameterMap())
 							: authenticationService
 									.nextPostAuthenticationStep(state),
-					configurationService.hasUserLocales(), 
+					false,
+//					configurationService.hasUserLocales(), 
 					state.isNew(),
 					state.getCurrentIndex()==0,
 					!state.hasNextStep(), state.isNew(),
