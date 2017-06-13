@@ -368,7 +368,7 @@ public abstract class AbstractExtensionUpdater {
 				IOUtils.closeQuietly(out);
 			}
 
-			archiveFile.setLastModified(def.getModifiedDate() * 1000);
+			archiveFile.setLastModified(def.getModifiedDate());
 			log.info("Deleting temporary file " + archiveTmp);
 			archiveTmp.delete();
 
