@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -443,10 +444,17 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 				return;
 			}
 		}
-		
-		clientBootstrap.connect(
-				addr).addListener(
-				new ClientConnectCallbackImpl(callback));
+
+		SocketAddress local = callback.getLocalAddress();
+		if(local!=null) {
+			clientBootstrap.connect(
+					addr, local).addListener(
+					new ClientConnectCallbackImpl(callback));
+		} else {
+			clientBootstrap.connect(
+					addr).addListener(
+					new ClientConnectCallbackImpl(callback));
+		}
 
 	}
 

@@ -55,8 +55,10 @@ public class SocketForwardingWebsocketClientHandler extends SimpleChannelUpstrea
 			log.debug("Received exception from " + ch.getRemoteAddress(),
 					e.getCause());
 		}
+		if(socketClient!=null) {
+			socketClient.close();
+		}
 		
-		socketClient.close();
 	}
 
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)

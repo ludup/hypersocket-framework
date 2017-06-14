@@ -9,6 +9,7 @@ package com.hypersocket.server.forward;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.UserVariableReplacementService;
@@ -56,6 +58,9 @@ public abstract class AbstractForwardingHandler<T extends ForwardingResource> im
 
 	@Autowired
 	UserVariableReplacementService userVariableReplacement;
+	
+	@Autowired
+	ConfigurationService configurationService; 
 	
 	String path;
 	
@@ -207,6 +212,15 @@ public abstract class AbstractForwardingHandler<T extends ForwardingResource> im
 		@Override
 		public InetSocketAddress getRemoteAddress() {
 			return callback.getRemoteAddress();
+		}
+
+		@Override
+		public SocketAddress getLocalAddress() {
+			String restrictInterface = configurationService.getValue("realm.interface");
+			if(StringUtils.isBlank(restrictInterface)) {
+				return null;
+			}
+			return new InetSocketAddress(restrictInterface, 0);
 		}
 	}
 
