@@ -23,6 +23,7 @@ public class PropertyCategory implements Serializable {
 	int weight;
 	boolean userCreated;
 	boolean systemOnly = false;
+	boolean nonSystem = false;
 	boolean hidden;
 	String filter = "default";
 	String name = null;
@@ -105,6 +106,14 @@ public class PropertyCategory implements Serializable {
 
 	public void setSystemOnly(boolean systemOnly) {
 		this.systemOnly = systemOnly;
+	}
+
+	public boolean isNonSystem() {
+		return nonSystem;
+	}
+
+	public void setNonSystem(boolean nonSystem) {
+		this.nonSystem = nonSystem;
 	}
 
 	public void setFilter(String filter) {

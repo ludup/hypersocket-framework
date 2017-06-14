@@ -9,6 +9,10 @@
 		<property resourceKey="auth.chooseRealm" inputType="switch"
 			defaultValue="true" weight="0" />
 	</propertyCategory>
+	<propertyCategory resourceKey="category.email"
+		resourceBundle="EmailService" weight="200">
+			<property resourceKey="smtp.on" inputType="switch" weight="0" defaultValue="true"/>
+	</propertyCategory>
 	<propertyCategory resourceKey="category.security" resourceBundle="HypersocketServer" weight="400">
 		<property resourceKey="security.knownHosts" inputType="hidden" defaultValue="" weight="0"/>
 	    <property resourceKey="security.enableCSRFProtection" inputType="switch" defaultValue="true" weight="0"/>

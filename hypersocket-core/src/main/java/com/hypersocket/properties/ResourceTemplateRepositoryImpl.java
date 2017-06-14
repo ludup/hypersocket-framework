@@ -275,6 +275,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 					node.getAttribute("resourceBundle"), Integer.parseInt(node.getAttribute("weight")), false, group,
 					node.getAttribute("displayMode"), 
 					node.hasAttribute("system") && Boolean.parseBoolean(node.getAttribute("system")),
+					node.hasAttribute("nonSystem") && Boolean.parseBoolean(node.getAttribute("nonSystem")),
 					node.getAttribute("filter"),
 					node.hasAttribute("hidden") && Boolean.parseBoolean(node.getAttribute("hidden")),
 					node.getAttribute("visibilityDependsOn"),
@@ -490,7 +491,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	private PropertyCategory registerPropertyCategory(String resourceKey, String categoryNamespace, String bundle, int weight,
-			boolean userCreated, String group, String displayMode, boolean systemOnly, String filter, boolean hidden,
+			boolean userCreated, String group, String displayMode, boolean systemOnly, boolean nonSystem, String filter, boolean hidden,
 			String visibilityDependsOn, String visibilityDependsValue, String via) {
 
 		String categoryKey = resourceKey + "/" + bundle;
@@ -515,6 +516,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		category.setWeight(weight);
 		category.setUserCreated(userCreated);
 		category.setSystemOnly(systemOnly);
+		category.setNonSystem(nonSystem);
 		category.setFilter(filter);
 		category.setHidden(hidden);
 		category.setVisibilityDependsOn(visibilityDependsOn);
@@ -792,6 +794,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				tmp.setDisplayMode(c.getDisplayMode());
 				tmp.setUserCreated(c.isUserCreated());
 				tmp.setSystemOnly(c.isSystemOnly());
+				tmp.setNonSystem(c.isNonSystem());
 				tmp.setFilter(c.getFilter());
 				tmp.setName(c.getName());
 				tmp.setHidden(c.isHidden());
@@ -820,6 +823,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 					tmp.setUserCreated(c.isUserCreated());
 					tmp.setDisplayMode(c.getDisplayMode());
 					tmp.setSystemOnly(c.isSystemOnly());
+					tmp.setNonSystem(c.isNonSystem());
 					tmp.setFilter(c.getFilter());
 					tmp.setHidden(c.isHidden());
 				} else {
@@ -863,6 +867,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				tmp.setUserCreated(c.isUserCreated());
 				tmp.setDisplayMode(c.getDisplayMode());
 				tmp.setSystemOnly(c.isSystemOnly());
+				tmp.setNonSystem(c.isNonSystem());
 				tmp.setFilter(c.getFilter());
 				tmp.setName(c.getName());
 				tmp.setHidden(c.isHidden());
@@ -896,6 +901,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 					tmp.setFilter(c.getFilter());
 					tmp.setUserCreated(c.isUserCreated());
 					tmp.setSystemOnly(c.isSystemOnly());
+					tmp.setNonSystem(c.isNonSystem());
 					tmp.setName(c.getName());
 					tmp.setHidden(c.isHidden());
 					tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
