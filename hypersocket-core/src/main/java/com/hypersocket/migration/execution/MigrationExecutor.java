@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -183,11 +184,16 @@ public class MigrationExecutor {
                     resource = (AbstractEntity<Long>) objectReader.treeAsTokens(node).readValueAs(resourceClass);
 
                     if (Realm.class.equals(resourceClass)) {
-                        migrationRealm.realm = (Realm) resource;
+                    	Realm realmInProcess = (Realm) resource;
+                        migrationRealm.realm = realmInProcess;
                         realm = migrationRealm.realm;
                         //mergeData is false and realm by same name exists, throw error
                         if(!migrationRealm.mergeData && realmService.getRealmByName(realm.getName()) != null) {
                             throw new MigrationProcessRealmAlreadyExistsThrowable();
+                        }
+                        
+                        if(StringUtils.isBlank(realmInProcess.getUuid())) {
+                        	realmInProcess.setUuid(UUID.randomUUID().toString());
                         }
                     }
 
