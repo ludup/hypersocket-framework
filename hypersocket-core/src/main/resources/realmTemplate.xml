@@ -7,4 +7,9 @@
 		<property resourceKey="realm.host" inputType="multipleTextInput"
 			defaultValue="" weight="0" />
 	</propertyCategory>
+	<propertyCategory resourceKey="realm.interface"
+		resourceBundle="RealmService" weight="8889" system="true" displayMode="parent">
+		<property resourceKey="realm.interface" inputType="autoComplete"
+			defaultValue="" url="server/networkInterfaces" weight="0" valueAttr="id" remoteSearch="false"/>
+	</propertyCategory>
 </propertyTemplates>

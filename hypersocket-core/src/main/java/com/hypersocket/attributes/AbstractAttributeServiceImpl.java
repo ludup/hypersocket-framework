@@ -391,6 +391,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 					cat.setDisplayMode(t.getCategory().getDisplayMode());
 					cat.setUserCreated(true);
 					cat.setSystemOnly(t.getCategory().isSystemOnly());
+					cat.setNonSystem(t.getCategory().isNonSystem());
 					cat.setHidden(t.getCategory().isHidden());
 					cat.setFilter(t.getCategory().getFilter());
 					cat.setVisibilityDependsValue(t.getCategory().getVisibilityDependsValue());

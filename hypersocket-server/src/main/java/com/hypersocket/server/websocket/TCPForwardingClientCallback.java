@@ -7,9 +7,13 @@
  ******************************************************************************/
 package com.hypersocket.server.websocket;
 
+import java.net.SocketAddress;
+
 public interface TCPForwardingClientCallback extends WebsocketClientCallback {
 
 	int getPort();
 	
 	String getHostname();
+	
+	SocketAddress getLocalAddress();
 }

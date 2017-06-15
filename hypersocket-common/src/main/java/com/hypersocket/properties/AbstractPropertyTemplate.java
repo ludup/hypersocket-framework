@@ -183,5 +183,11 @@ public abstract class AbstractPropertyTemplate {
 		return StringUtils.isNotBlank(mapping);
 	}
 	
+	public boolean isSystemOnly() {
+		return attributes.containsKey("system") && attributes.get("system").equalsIgnoreCase("true");
+	}
 	
+	public boolean isNonSystem() {
+		return attributes.containsKey("nonSystem") && attributes.get("nonSystem").equalsIgnoreCase("true");
+	}
 }

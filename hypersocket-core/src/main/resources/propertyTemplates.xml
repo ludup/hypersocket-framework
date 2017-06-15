@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 <propertyTemplates>
-	<propertyCategory resourceKey="category.security"
+	<propertyCategory resourceKey="category.logon"
 		resourceBundle="AuthenticationService" group="authentication" weight="500">
 		<property resourceKey="logon.banner" inputType="textarea"
 			rows="5" maxLength="8000" defaultValue="" weight="0" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email"
 		resourceBundle="EmailService" weight="600" group="messages">
-		<property resourceKey="smtp.enabled" inputType="switch" weight="0" defaultValue="false" />
+		<property resourceKey="smtp.enabled" inputType="switch" weight="0" defaultValue="false" nonSystem="true"/>
 		<property resourceKey="smtp.host" inputType="text" weight="50" defaultValue="localhost" visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 		<property resourceKey="smtp.port" inputType="integer" minValue="1" maxValue="65535" weight="100" defaultValue="25"  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 		<property resourceKey="smtp.protocol" inputType="select"

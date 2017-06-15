@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.email.events.EmailEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -51,6 +52,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	
 	@Autowired
 	EventService eventService;
+	
+	@Autowired
+	SystemConfigurationService systemConfigurationService;
 	
 	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
 
@@ -100,6 +104,11 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			boolean track,
 			int delay,
 			EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
+		
+		if(!isEnabled()) {
+			log.warn("Sending messages is disabled. Enable SMTP settings in System realm to allow sending of emails");
+			return;
+		}
 		
 		Mailer mail = new Mailer(getSMTPValue(realm, SMTP_HOST), 
 				getSMTPIntValue(realm, SMTP_PORT), 
@@ -181,6 +190,10 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			realm = systemRealm;
 		}
 		return configurationService.getDecryptedValue(realm, name);
+	}
+	
+	private boolean isEnabled() {
+		return systemConfigurationService.getBooleanValue("smtp.on");
 	}
 	
 	private void send(Realm realm, 

@@ -244,5 +244,10 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	public void setValues(Realm realm, String resourceKey, String[] values) throws ResourceChangeException, AccessDeniedException {
 		setValue(realm, resourceKey, ResourceUtils.implodeValues(values));
 	}
+
+	@Override
+	public PropertyTemplate getPropertyTemplate(Realm realm, String resourceKey) {
+		return repository.getPropertyTemplate(realm, resourceKey);
+	}
 	
 }
