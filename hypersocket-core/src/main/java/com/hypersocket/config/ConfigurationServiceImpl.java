@@ -72,7 +72,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	
 	@Override
 	public String getValue(String resourceKey) {
-		return repository.getValue(getCurrentRealm(), resourceKey);
+		return getValue(getCurrentRealm(), resourceKey);
 	}
 
 	@Override
@@ -82,12 +82,17 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	
 	@Override
 	public Integer getIntValue(String name) throws NumberFormatException {
-		return repository.getIntValue(getCurrentRealm(), name);
+		return getIntValue(getCurrentRealm(), name);
 	}
 	
 	@Override
 	public Boolean getBooleanValue(Realm realm, String name) {
 		return repository.getBooleanValue(realm, name);
+	}
+	
+	@Override 
+	public Double getDoubleValue(String name) {
+		return getDoubleValue(getCurrentRealm(), name);
 	}
 	
 	@Override 
@@ -102,7 +107,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	
 	@Override
 	public Boolean getBooleanValue(String name) {
-		return repository.getBooleanValue(getCurrentRealm(), name);
+		return getBooleanValue(getCurrentRealm(), name);
 	}
 
 	@Override

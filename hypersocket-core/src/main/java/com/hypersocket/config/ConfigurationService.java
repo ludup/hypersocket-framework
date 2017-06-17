@@ -49,4 +49,6 @@ public interface ConfigurationService extends AuthenticatedService, PropertyTemp
 
 	PropertyTemplate getPropertyTemplate(Realm realm, String string);
 
+	Double getDoubleValue(String name);
+
 }
