@@ -2088,6 +2088,24 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
+	public void assignUserToGroup(Principal user, Principal group) throws ResourceException, AccessDeniedException {
+		
+		List<Principal> groups = new ArrayList<Principal>(getUserGroups(user));
+		groups.add(group);
+		
+		updateUser(user.getRealm(), user, user.getPrincipalName(), new HashMap<String,String>(), groups);
+	}
+	
+	@Override
+	public void unassignUserFromGroup(Principal user, Principal group) throws ResourceException, AccessDeniedException {
+		
+		List<Principal> groups = new ArrayList<Principal>(getUserGroups(user));
+		groups.remove(group);
+		
+		updateUser(user.getRealm(), user, user.getPrincipalName(), new HashMap<String,String>(), groups);
+	}
+	
+	@Override
 	public List<Realm> getRealmsByIds(Long... ids) throws AccessDeniedException {
 		assertPermission(RealmPermission.READ);
 		return realmRepository.getRealmsByIds(ids);
@@ -2111,10 +2129,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		});
 	}
 
-	/**
-	 * TODO : need to ask Lee if this needs refactoring, there are many realm providers, get by ids would need to replicated to all
-	 * hence pulling each record one by one.
-	 */
 	@Override
 	public List<Principal> getUsersByIds(Long...ids) throws AccessDeniedException {
 		return getPrincipalsByIds(ids);
@@ -2139,10 +2153,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		
 	}
 
-	/**
-	 * TODO : need to ask Lee if this needs refactoring, there are many realm providers, get by ids would need to replicated to all
-	 * hence pulling each record one by one.
-	 */
 	@Override
 	public List<Principal> getGroupsByIds(Long... ids) throws AccessDeniedException {
 		return getPrincipalsByIds(ids);
