@@ -544,8 +544,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					principals, filterSecretProperties(principal, provider, properties), password, forceChange,
 					selfCreated));
 
-			
-			
 			if(sendNotifications) {
 				if(selfCreated) {
 					sendNewUserSelfCreatedNofification(principal, password);

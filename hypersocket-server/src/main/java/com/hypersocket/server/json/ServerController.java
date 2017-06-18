@@ -31,6 +31,7 @@ import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.MultiselectElement;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
+import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
@@ -85,6 +86,14 @@ public class ServerController extends AuthenticatedController {
 		info.setVersion(HypersocketVersion.getVersion());
 		
 		return info;
+	}
+	
+	@RequestMapping(value = "server/whatsMyIP", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<String> whatsMyIp(HttpServletRequest request,
+			HttpServletResponse response) {
+		return new ResourceStatus<String>(request.getRemoteAddr());
 	}
 
 	@AuthenticationRequired
