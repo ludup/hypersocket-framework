@@ -1,4 +1,4 @@
-package com.hypersocket.tasks.alert;
+package com.hypersocket.alert;
 
 import java.util.Date;
 
@@ -7,15 +7,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import com.hypersocket.tasks.Task;
-
 @Entity
-@Table(name="alert_key")
+@Table(name="alert_keys")
 public class AlertKey {
 
 	@Id
@@ -23,8 +20,8 @@ public class AlertKey {
 	@Column(name="alert_key_id")
 	Long id;
 
-	@OneToOne
-	Task task;
+	@Column(name="resourceKey")
+	String resourceKey; 
 	
 	@Column(name="alert_key")
 	String key;
@@ -42,12 +39,12 @@ public class AlertKey {
 		this.id = id;
 	}
 	
-	public Task getTask() {
-		return task;
+	public String getResourceKey() {
+		return resourceKey;
 	}
 
-	public void setTask(Task task) {
-		this.task = task;
+	public void setResourceKey(String resourceKey) {
+		this.resourceKey = resourceKey;
 	}
 
 	public String getKey() {

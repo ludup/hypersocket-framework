@@ -1,7 +1,5 @@
 package com.hypersocket.tasks.alert;
 
-import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -10,6 +8,9 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.alert.AlertCallback;
+import com.hypersocket.alert.AlertKeyRepository;
+import com.hypersocket.alert.AlertService;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
@@ -40,19 +41,19 @@ public class AlertTask extends AbstractTaskProvider {
 	public static final String ATTR_ALERT_ID = "alert.id";
 
 	@Autowired
-	AlertTaskRepository repository;
+	private AlertKeyRepository repository;
 
 	@Autowired
-	TriggerResourceService triggerService;
+	private TriggerResourceService triggerService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Autowired
-	TaskProviderService taskService; 
-	
-	Map<String,Object> alertLocks = new HashMap<String,Object>();
-	Map<String,Long> lastAlertTimestamp = new HashMap<String,Long>();
+	private TaskProviderService taskService; 
+
+	@Autowired
+	private AlertService alertService; 
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -84,7 +85,9 @@ public class AlertTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public AbstractTaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	public AbstractTaskResult execute(final Task task, 
+			final Realm currentRealm, 
+			final SystemEvent event)
 			throws ValidationException {
 
 		StringBuffer key = new StringBuffer();
@@ -97,62 +100,21 @@ public class AlertTask extends AbstractTaskProvider {
 			key.append(event.getAttribute(attr));
 		}
 
-		int threshold = repository.getIntValue(task, ATTR_THRESHOLD);
-		int timeout = repository.getIntValue(task, ATTR_TIMEOUT);
-		int delay = repository.getIntValue(task,  ATTR_RESET_DELAY);
+		final int threshold = repository.getIntValue(task, ATTR_THRESHOLD);
+		final int timeout = repository.getIntValue(task, ATTR_TIMEOUT);
+		final int delay = repository.getIntValue(task,  ATTR_RESET_DELAY);
 		
 		String alertKey = key.toString();
-		Object alertLock = null;
 		
-		synchronized (alertLocks) {
-			if(!alertLocks.containsKey(alertKey)) {
-				alertLocks.put(alertKey, new Object());
-			}			
-			alertLock = alertLocks.get(alertKey);
-		}
+		
+		return alertService.processAlert(task.getResourceKey(), alertKey, delay, threshold, timeout, new AlertCallback<AlertEvent>() {
 
-		synchronized(alertLock) {
-	
-			if(lastAlertTimestamp.containsKey(alertKey)) {
-				long timestamp = lastAlertTimestamp.get(alertKey);
-				if((System.currentTimeMillis() - timestamp) < (delay * 1000)) {
-					/**
-					 * Do not generate alert because we are within the reset delay 
-					 * period of the last alert generated.
-					 */
-					return null;
-				} else {
-					lastAlertTimestamp.remove(alertKey);
-				}
+			@Override
+			public AlertEvent alert() {
+				return new AlertEvent(AlertTask.this, "event.alert", true, currentRealm, threshold, timeout, task, event);
 			}
 			
-			AlertKey ak = new AlertKey();
-			ak.setTask(task);
-			ak.setKey(alertKey);
-	
-			Calendar c = Calendar.getInstance();
-			ak.setTriggered(c.getTime());
-	
-			repository.saveKey(ak);
-	
-			c.add(Calendar.MINUTE, -timeout);
-			long count = repository
-					.getKeyCount(task, alertKey, c.getTime());
-	
-			if (count >= threshold) {
-	
-				repository.deleteKeys(task, alertKey);
-				
-				synchronized(alertLocks) {
-					alertLocks.remove(alertKey);
-				}
-				
-				lastAlertTimestamp.put(alertKey, System.currentTimeMillis());
-				return new AlertEvent(this, "event.alert", true,
-						currentRealm, threshold, timeout, task, event);
-			}
-		}
-		return null;
+		});
 	}
 	
 	public String[] getResultResourceKeys() {
