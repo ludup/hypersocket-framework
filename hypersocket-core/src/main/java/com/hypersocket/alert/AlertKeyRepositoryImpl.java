@@ -42,7 +42,7 @@ public class AlertKeyRepositoryImpl extends
 	@Override
 	@Transactional
 	public void deleteKeys(String resourceKey, String key) {
-		String hql = "delete from AlertKey a where a.task = :task and a.key = :key";
+		String hql = "delete from AlertKey a where a.resourceKey = :resourceKey and a.key = :key";
 		createQuery(hql, true)
 				.setParameter("resourceKey", resourceKey).setParameter("key", key)
 				.executeUpdate();

@@ -33,6 +33,7 @@ public class AuthenticationState {
 	String lastRealmName;
 	Realm realm;
 	Principal principal;
+	Principal lastPrincipal;
 	Session session;
 	int attempts = 0;
 	Locale locale;
@@ -273,4 +274,14 @@ public class AuthenticationState {
 	public boolean isHTTP() {
 		return environment.containsKey(BrowserEnvironment.HOST);
 	}
+
+	public Principal getLastPrincipal() {
+		return lastPrincipal;
+	}
+
+	public void setLastPrincipal(Principal lastPrincipal) {
+		this.lastPrincipal = lastPrincipal;
+	}
+	
+	
 }

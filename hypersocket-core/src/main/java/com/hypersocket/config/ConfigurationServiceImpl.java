@@ -254,5 +254,15 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	public PropertyTemplate getPropertyTemplate(Realm realm, String resourceKey) {
 		return repository.getPropertyTemplate(realm, resourceKey);
 	}
+
+	@Override
+	public Long getLongValue(Realm realm, String val) {
+		return repository.getLongValue(realm, val);
+	}
+
+	@Override
+	public Long getLongValue(String val) {
+		return getLongValue(getCurrentRealm(), val);
+	}
 	
 }

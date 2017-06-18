@@ -438,126 +438,114 @@ public class AuthenticationServiceImpl extends
 				eventService.publishEvent(new AuthenticationAttemptEvent(this,
 						state, authenticator, "hint.invalidPrincipal"));
 			} else {
-				switch (authenticator.authenticate(state, parameterMap)) {
-				case INSUFFICIENT_DATA: {
-					if (state.getLastErrorMsg() == null && parameterMap.size() > 1) {
-						if (state.getAttempts() >= 1) {
-							state.setLastErrorMsg("error.insufficentData");
-							state.setLastErrorIsResourceKey(true);
-						}
-					}
-					break;
-				}
-				case INSUFFICIENT_DATA_NO_ERROR: {
-					state.setLastErrorMsg(null);
-					state.setLastErrorIsResourceKey(false);
-					break;
-				}
-				case AUTHENTICATION_FAILURE_DISPALY_ERROR: 
-				{
-					break;
-				}
-				case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
-
-					if (!authenticator.isSecretModule() && state.hasNextStep()) {
-						state.fakeCredentials();
-						state.nextModule();
-					} else {
-						state.setLastErrorMsg("error.genericLogonError");
-						state.setLastErrorIsResourceKey(true);
-						eventService
-								.publishEvent(new AuthenticationAttemptEvent(
-										this, state, authenticator,
-										"hint.badCredentials"));
-					}
-
-					break;
-				}
-				case AUTHENTICATION_FAILURE_INVALID_PRINCIPAL: {
-
-					if (!authenticator.isSecretModule() && state.hasNextStep()) {
-						state.fakeCredentials();
-						state.nextModule();
-					} else {
-						state.setLastErrorMsg("error.genericLogonError");
-						state.setLastErrorIsResourceKey(true);
-						eventService
-								.publishEvent(new AuthenticationAttemptEvent(
-										this, state, authenticator,
-										"hint.invalidPrincipal"));
-					}
-					break;
-				}
-				case AUTHENTICATION_FAILURE_INVALID_REALM: {
-
-					if (!authenticator.isSecretModule() && state.hasNextStep()) {
-						state.fakeCredentials();
-						state.nextModule();
-					} else {
-						state.setLastErrorMsg("error.genericLogonError");
-						state.setLastErrorIsResourceKey(true);
-						eventService
-								.publishEvent(new AuthenticationAttemptEvent(
-										this, state, authenticator,
-										"hint.invalidRealm"));
-					}
-
-					break;
-				}
-				case AUTHENTICATION_SUCCESS: {
-					try {
-						success = true;
-
-						if(!state.getRealm().equals(currentRealm) && state.getCurrentIndex()==0) {
-							/**
-							 * The users realm is not the realm we started off in. We need to switch
-							 */
-							AuthenticationScheme realmScheme = schemeRepository.getSchemeByResourceKey(state.getRealm(), state.getScheme().getResourceKey());
-							List<AuthenticationModule> modules = repository.getModulesForScheme(state.getScheme());
-							if(modules.isEmpty()) {
-								throw new IllegalStateException("Incorrect authentication configured. Contact your Administrator");
+				
+				AuthenticatorResult result = authenticator.authenticate(state, parameterMap);
+				
+			
+				if(checkSuspensions(state, authenticator)) {
+				
+					switch (result) {
+					case INSUFFICIENT_DATA: {
+						if (state.getLastErrorMsg() == null && parameterMap.size() > 1) {
+							if (state.getAttempts() >= 1) {
+								state.setLastErrorMsg("error.insufficentData");
+								state.setLastErrorIsResourceKey(true);
 							}
-							if(state.getCurrentModule().getTemplate().equals(modules.get(0).getTemplate())) {
-								if(log.isInfoEnabled()) {
-									log.info(String.format("Switching realms from %s to %s", currentRealm.getName(), state.getRealm()));
+						}
+						break;
+					}
+					case INSUFFICIENT_DATA_NO_ERROR: {
+						state.setLastErrorMsg(null);
+						state.setLastErrorIsResourceKey(false);
+						break;
+					}
+					case AUTHENTICATION_FAILURE_DISPALY_ERROR: 
+					{
+						break;
+					}
+					case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
+	
+						if (!authenticator.isSecretModule() && state.hasNextStep()) {
+							state.fakeCredentials();
+							state.nextModule();
+						} else {
+							state.setLastErrorMsg("error.genericLogonError");
+							state.setLastErrorIsResourceKey(true);
+							eventService
+									.publishEvent(new AuthenticationAttemptEvent(
+											this, state, authenticator,
+											"hint.badCredentials"));
+						}
+	
+						break;
+					}
+					case AUTHENTICATION_FAILURE_INVALID_PRINCIPAL: {
+	
+						if (!authenticator.isSecretModule() && state.hasNextStep()) {
+							state.fakeCredentials();
+							state.nextModule();
+						} else {
+							state.setLastErrorMsg("error.genericLogonError");
+							state.setLastErrorIsResourceKey(true);
+							eventService
+									.publishEvent(new AuthenticationAttemptEvent(
+											this, state, authenticator,
+											"hint.invalidPrincipal"));
+						}
+						break;
+					}
+					case AUTHENTICATION_FAILURE_INVALID_REALM: {
+	
+						if (!authenticator.isSecretModule() && state.hasNextStep()) {
+							state.fakeCredentials();
+							state.nextModule();
+						} else {
+							state.setLastErrorMsg("error.genericLogonError");
+							state.setLastErrorIsResourceKey(true);
+							eventService
+									.publishEvent(new AuthenticationAttemptEvent(
+											this, state, authenticator,
+											"hint.invalidRealm"));
+						}
+	
+						break;
+					}
+					case AUTHENTICATION_SUCCESS: {
+						try {
+							success = true;
+	
+							if(!state.getRealm().equals(currentRealm) && state.getCurrentIndex()==0) {
+								/**
+								 * The users realm is not the realm we started off in. We need to switch
+								 */
+								AuthenticationScheme realmScheme = schemeRepository.getSchemeByResourceKey(state.getRealm(), state.getScheme().getResourceKey());
+								List<AuthenticationModule> modules = repository.getModulesForScheme(state.getScheme());
+								if(modules.isEmpty()) {
+									throw new IllegalStateException("Incorrect authentication configured. Contact your Administrator");
 								}
-								state.setScheme(realmScheme);
-								state.setModules(modules);
-							} else {
-								throw new IllegalStateException("Invalid realm configuration. Contact your Administrator");
+								if(state.getCurrentModule().getTemplate().equals(modules.get(0).getTemplate())) {
+									if(log.isInfoEnabled()) {
+										log.info(String.format("Switching realms from %s to %s", currentRealm.getName(), state.getRealm()));
+									}
+									state.setScheme(realmScheme);
+									state.setModules(modules);
+								} else {
+									throw new IllegalStateException("Invalid realm configuration. Contact your Administrator");
+								}
+								
 							}
 							
-						}
-						
-						state.nextModule();
-
-						
-						
-						if (state.isAuthenticationComplete()) {
-
-							permissionService.verifyPermission(
-									state.getPrincipal(),
-									PermissionStrategy.INCLUDE_IMPLIED,
-									AuthenticationPermission.LOGON,
-									SystemPermission.SYSTEM_ADMINISTRATION);
-
-							if (!realmService.verifyPrincipal(state
-									.getPrincipal())) {
-
-								eventService
-										.publishEvent(new AuthenticationAttemptEvent(
-												this, state, authenticator,
-												"hint.accountSuspended"));
-
-								// Principal is currently suspended from logon
-								state.setLastErrorMsg("error.accountSuspended");
-								state.setLastErrorIsResourceKey(true);
-								state.revertModule();
-								success = false;
-							} else {
-
-								eventService
-										.publishEvent(new AuthenticationAttemptEvent(
+							state.nextModule();
+	
+							if (state.isAuthenticationComplete()) {
+	
+								permissionService.verifyPermission(
+										state.getPrincipal(),
+										PermissionStrategy.INCLUDE_IMPLIED,
+										AuthenticationPermission.LOGON,
+										SystemPermission.SYSTEM_ADMINISTRATION);
+	
+								eventService.publishEvent(new AuthenticationAttemptEvent(
 												this, state, authenticator));
 
 								for (PostAuthenticationStep proc : postAuthenticationSteps) {
@@ -577,38 +565,37 @@ public class AuthenticationServiceImpl extends
 										success = logon(state, parameterMap);
 									}
 								}
+								
+							} else {
+								authenticator = nextAuthenticator(state);
+								
+								if(!authenticator.requiresUserInput()) {
+									return logon(state, parameterMap);
+								}
 							}
-						} else {
-							authenticator = nextAuthenticator(state);
+						} catch(IllegalStateException e) { 
 							
-							if(!authenticator.requiresUserInput()) {
-								return logon(state, parameterMap);
-							}
+							state.setLastErrorMsg("error.invalidConfiguration");
+							state.setLastErrorIsResourceKey(true);
+							state.revertModule();
+							success = false;
+							
+						} catch (AccessDeniedException e) {
+	
+							eventService.publishEvent(new AuthenticationAttemptEvent(
+											this, state, authenticator,
+											"hint.noPermission"));
+							// user does not have LOGON permission
+							state.setLastErrorMsg("error.noLogonPermission");
+							state.setLastErrorIsResourceKey(true);
+							state.revertModule();
+							success = false;
 						}
-					} catch(IllegalStateException e) { 
-						
-						state.setLastErrorMsg("error.invalidConfiguration");
-						state.setLastErrorIsResourceKey(true);
-						state.revertModule();
-						success = false;
-						
-					} catch (AccessDeniedException e) {
-
-						eventService
-								.publishEvent(new AuthenticationAttemptEvent(
-										this, state, authenticator,
-										"hint.noPermission"));
-						// user does not have LOGON permission
-						state.setLastErrorMsg("error.noLogonPermission");
-						state.setLastErrorIsResourceKey(true);
-						state.revertModule();
-						success = false;
+						break;
 					}
-					break;
-				}
+					}
 				}
 			}
-
 			state.authAttempted();
 
 		}
@@ -644,6 +631,21 @@ public class AuthenticationServiceImpl extends
 		return modifyTemplate(state, nextAuthenticator(state).createTemplate(state, params));
 	}
 
+	private boolean checkSuspensions(AuthenticationState state, Authenticator authenticator) {
+		if(state.getLastPrincipal()!=null) {
+			if (!realmService.verifyPrincipal(state.getLastPrincipal())) {
+				state.setLastErrorMsg("error.accountSuspended");
+				state.setLastErrorIsResourceKey(true);
+				
+				eventService.publishEvent(new AuthenticationAttemptEvent(
+						this, state, authenticator,
+						"hint.accountSuspended"));
+				return false;
+			} 
+		}
+		return true;
+	}
+	
 	protected FormTemplate modifyTemplate(AuthenticationState state,
 			FormTemplate template) {
 
@@ -845,6 +847,8 @@ public class AuthenticationServiceImpl extends
 			}
 		}
 
+		state.setLastPrincipal(principal);
+		
 		// We need to reset the scheme to the new principal realm.
 		state.setScheme(schemeRepository.getSchemeByResourceKey(principal.getRealm(), 
 				state.getScheme().getResourceKey()));
