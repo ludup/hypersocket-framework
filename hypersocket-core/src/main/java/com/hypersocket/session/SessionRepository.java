@@ -43,12 +43,18 @@ public interface SessionRepository extends AbstractEntityRepository<Session,Stri
 	Map<String, Long> getBrowserCount();
 
 	Map<String, Long> getBrowserCount(Date startDate, Date endDate);
+	
+	Map<String, Long> getBrowserCount(Date startDate, Date endDate, Realm realm);
 
 	Long getSessionCount(Date startDate, Date endDate, boolean distinctUsers);
+	
+	Long getSessionCount(Date startDate, Date endDate, boolean distinctUsers, Realm realm);
 
 	Long getActiveSessionCount(boolean distinctUsers);
 
 	Map<String, Long> getOSCount(Date startDate, Date endDate);
+	
+	Map<String, Long> getOSCount(Date startDate, Date endDate, Realm realm);
 
 	Map<String, Long> getIPCount(Date startDate, Date endDate);
 

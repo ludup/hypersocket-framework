@@ -171,6 +171,30 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	
 	@Override
 	@Transactional(readOnly=true)
+	public Map<String,Long> getBrowserCount(final Date startDate, final Date endDate, final Realm realm) {
+
+		List<?> ret = getCounts(Session.class, "userAgent", true, 5, new CriteriaConfiguration() {
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.ge("created", startDate));
+				criteria.add(Restrictions.lt("created", endDate));
+				criteria.add(Restrictions.eq("system", false));
+				criteria.add(Restrictions.eq("realm", realm));
+				criteria.add(Restrictions.not(Restrictions.eq("userAgent", "unknown")));
+			}
+		});
+		
+		Map<String,Long> results = new HashMap<String,Long>();
+		for(Object obj : ret) {
+			Object[] tmp = (Object[])obj;
+			results.put((String) tmp[0], (Long)tmp[1]);
+		}
+		
+		return results;
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
 	public Map<String,Long> getIPCount(final Date startDate, final Date endDate) {
 
 		List<?> ret = getCounts(Session.class, "remoteAddress", new CriteriaConfiguration() {
@@ -216,6 +240,30 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	
 	@Override
 	@Transactional(readOnly=true)
+	public Map<String,Long> getOSCount(final Date startDate, final Date endDate, final Realm realm) {
+
+		List<?> ret = getCounts(Session.class, "os", true, 5, new CriteriaConfiguration() {
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.ge("created", startDate));
+				criteria.add(Restrictions.lt("created", endDate));
+				criteria.add(Restrictions.eq("system", false));
+				criteria.add(Restrictions.not(Restrictions.eq("os", "")));
+				criteria.add(Restrictions.eq("realm", realm));
+			}
+		});
+		
+		Map<String,Long> results = new HashMap<String,Long>();
+		for(Object obj : ret) {
+			Object[] tmp = (Object[])obj;
+			results.put((String) tmp[0], (Long)tmp[1]);
+		}
+		
+		return results;
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
 	public Long getSessionCount(final Date startDate, final Date endDate, final boolean distinctUsers) {
 
 		Criteria criteria = createCriteria(Session.class);
@@ -226,6 +274,31 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 						Restrictions.ge("signedOut", startDate), Restrictions.isNull("signedOut")))));
 
 		criteria.add(Restrictions.eq("system", false));
+		
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
+		
+		if(distinctUsers) {
+			criteria.setProjection(Projections.countDistinct("principal"));
+		} else {
+			criteria.setProjection(Projections.rowCount());
+		}
+		return (long) criteria.uniqueResult();
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public Long getSessionCount(final Date startDate, final Date endDate, final boolean distinctUsers, final Realm realm) {
+
+		Criteria criteria = createCriteria(Session.class);
+		
+		criteria.add(Restrictions.or(
+				Restrictions.and(Restrictions.ge("created", startDate), Restrictions.lt("created", endDate)),
+				Restrictions.and(Restrictions.lt("created", startDate), Restrictions.or(
+						Restrictions.ge("signedOut", startDate), Restrictions.isNull("signedOut")))));
+
+		criteria.add(Restrictions.eq("system", false));
+		
+		criteria.add(Restrictions.eq("realm", realm));
 		
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
 		

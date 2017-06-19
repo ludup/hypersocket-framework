@@ -521,6 +521,17 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return repository.getBrowserCount(startDate, endDate);
 		
 	}
+	
+	@Override
+	public Map<String,Long> getBrowserCount(Date startDate, Date endDate, Realm realm) throws AccessDeniedException {
+		
+		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			throw new AccessDeniedException();
+		}
+		
+		return repository.getBrowserCount(startDate, endDate, realm);
+		
+	}
 
 	@Override
 	public Map<String,Long> getIPCount(Date startDate, Date endDate) throws AccessDeniedException {
@@ -541,6 +552,17 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 		
 		return repository.getOSCount(startDate, endDate);
+		
+	}
+	
+	@Override
+	public Map<String,Long> getOSCount(Date startDate, Date endDate, Realm realm) throws AccessDeniedException {
+		
+		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			throw new AccessDeniedException();
+		}
+		
+		return repository.getOSCount(startDate, endDate, realm);
 		
 	}
 	
