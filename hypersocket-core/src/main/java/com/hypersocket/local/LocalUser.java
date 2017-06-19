@@ -178,5 +178,28 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	public void setExpires(Date expires) {
 		this.expires = expires;
 	}
+
+	@Override
+	public boolean isPasswordExpiring() {
+		return false;
+	}
+
+	@Override
+	public boolean isPasswordChangeRequired() {
+		if(credentials!=null) {
+			return credentials.isPasswordChangeRequired();
+		}
+		return true;
+	}
+
+	@Override
+	public boolean isPasswordChangeAllowed() {
+		return true;
+	}
+
+	@Override
+	public Date getPasswordExpiry() {
+		return null;
+	}
 	
 }
