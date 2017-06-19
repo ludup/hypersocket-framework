@@ -98,6 +98,24 @@ public class LogonController extends AuthenticatedController {
 		}
 
 	}
+	
+	@RequestMapping(value = "logon/clear", method = { RequestMethod.GET}, produces = "application/json")
+	@ResponseStatus(value = HttpStatus.OK)
+	public void clearLogon(HttpServletRequest request,
+			HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException, IOException,
+			RedirectException {
+		
+		AuthenticationState currentState = 
+				(AuthenticationState) request.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
+		
+		if(currentState!=null) {
+			request.getSession().setAttribute(PREVIOUS_AUTHENTICATION_SCHEME,currentState.getScheme().getResourceKey());
+		}
+		
+		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, null);
+
+	}
 
 	public AuthenticationState resetAuthenticationState(
 			HttpServletRequest request, HttpServletResponse response,
