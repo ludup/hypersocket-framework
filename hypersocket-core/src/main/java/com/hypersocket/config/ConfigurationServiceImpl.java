@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
@@ -29,6 +30,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceChangeException;
 
 @Service
@@ -68,6 +70,15 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	@Override
 	public String getValue(Realm realm, String resourceKey) {
 		return repository.getValue(realm, resourceKey);
+	}
+	
+	@Override
+	public String getValueOrSystemDefault(Realm realm, String resourceKey) {
+		return repository.getValueOrDefault(realm, 
+				resourceKey, 
+				getValue(
+						ApplicationContextServiceImpl.getInstance().getBean(RealmService.class).getSystemRealm(), 
+						resourceKey));
 	}
 	
 	@Override
