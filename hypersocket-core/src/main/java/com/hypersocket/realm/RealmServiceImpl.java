@@ -531,13 +531,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 
 			for (PrincipalProcessor processor : principalProcessors) {
-				processor.beforeCreate(realm, username, properties);
+				processor.beforeCreate(realm, provider.getModule(), username, password, properties);
 			}
 			
 			Principal principal = provider.createUser(realm, username, properties, principals, password, forceChange);
 
 			for (PrincipalProcessor processor : principalProcessors) {
-				processor.afterCreate(principal, properties);
+				processor.afterCreate(principal, password, properties);
 			}
 			
 			eventService.publishEvent(new UserCreatedEvent(this, getCurrentSession(), realm, provider, principal,
@@ -1267,7 +1267,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			Principal principal = provider.createGroup(realm, name, properties, principals, groups);
 
 			for (PrincipalProcessor processor : principalProcessors) {
-				processor.afterCreate(principal, properties);
+				processor.afterCreate(principal, null, properties);
 			}
 
 			eventService.publishEvent(new GroupCreatedEvent(this, 

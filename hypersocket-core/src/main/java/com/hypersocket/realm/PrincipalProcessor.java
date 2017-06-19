@@ -10,9 +10,9 @@ public interface PrincipalProcessor {
 	
 	void afterUpdate(Principal principal, Map<String,String> properties) throws ResourceException;
 
-	void beforeCreate(Realm realm, String username, Map<String, String> properties) throws ResourceException;
+	void beforeCreate(Realm realm, String realmModule, String username, String password, Map<String, String> properties) throws ResourceException;
 	
-	void afterCreate(Principal principal, Map<String, String> properties) throws ResourceException;
+	void afterCreate(Principal principal, String password, Map<String, String> properties) throws ResourceException;
 	
 	void beforeChangePassword(Principal principal, String newPassword, String oldPassword) throws ResourceException;
 	
