@@ -16,4 +16,12 @@ public abstract class UserPrincipal extends Principal {
 	public abstract Date getLastPasswordChange();
 	
 	public abstract Date getLastSignOn();
+	
+	public abstract boolean isPasswordExpiring();
+	
+	public abstract boolean isPasswordChangeRequired();
+
+	public abstract boolean isPasswordChangeAllowed();
+
+	public abstract Date getPasswordExpiry();
 }
