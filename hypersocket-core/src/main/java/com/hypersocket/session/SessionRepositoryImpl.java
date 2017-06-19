@@ -122,6 +122,25 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	
 	@Override
 	@Transactional(readOnly=true)
+	public Long getActiveSessionCount(boolean distinctUsers, Realm realm) {
+		Criteria criteria = createCriteria(Session.class);
+
+		criteria.add(Restrictions.isNull("signedOut"));
+		criteria.add(Restrictions.eq("system", false));
+		criteria.add(Restrictions.eq("realm", realm));
+		
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
+		
+		if(distinctUsers) {
+			criteria.setProjection(Projections.countDistinct("principal"));
+		} else {
+			criteria.setProjection(Projections.rowCount());
+		}
+		return (long) criteria.uniqueResult();
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
 	public Long getActiveSessionCount() {
 		return getActiveSessionCount(false);
 	}

@@ -51,6 +51,8 @@ public interface SessionRepository extends AbstractEntityRepository<Session,Stri
 	Long getSessionCount(Date startDate, Date endDate, boolean distinctUsers, Realm realm);
 
 	Long getActiveSessionCount(boolean distinctUsers);
+	
+	Long getActiveSessionCount(boolean distinctUsers, Realm realm);
 
 	Map<String, Long> getOSCount(Date startDate, Date endDate);
 	
