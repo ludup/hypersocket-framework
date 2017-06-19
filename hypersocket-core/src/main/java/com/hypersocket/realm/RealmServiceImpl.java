@@ -1485,9 +1485,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		assertAnyPermission(ProfilePermission.READ);
 
 		RealmProvider provider = getProviderForPrincipal(principal);
-
+		RealmProvider realmProvider = getProviderForRealm(principal.getRealm());
+		
 		Collection<PropertyCategory> ret = provider.getUserProperties(principal);
 
+		
+			
 		Set<String> editable = new HashSet<String>(
 				Arrays.asList(configurationService.getValues(principal.getRealm(), "realm.userEditableProperties")));
 		Set<String> visible = new HashSet<String>(
@@ -1518,13 +1521,20 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					/**
 					 * These are built-in realm properties
 					 */
-					if (!editable.contains(t.getResourceKey())) {
-						if (!visible.contains(t.getResourceKey())) {
+					if(!realmProvider.equals(provider)) {
+						if (t.getDisplayMode() != null && t.getDisplayMode().equals("admin")) {
 							tmp.add(t);
+						}
+						continue;
+					} else {
+						if (!editable.contains(t.getResourceKey())) {
+							if (!visible.contains(t.getResourceKey())) {
+								tmp.add(t);
+								continue;
+							}
+							t.setReadOnly(true);
 							continue;
 						}
-						t.setReadOnly(true);
-						continue;
 					}
 				}
 			}
@@ -1535,6 +1545,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				results.add(c);
 			}
 		}
+		
 
 		return results;
 	}
