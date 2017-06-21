@@ -940,7 +940,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				@Override
 				public void afterOperation(Realm realm, Map<String,String> properties) {
 					try {
-						configurationService.setValue(realm, "realm.userEditableProperties",
+						configurationService.setValue(realm, "realm.userEditableProperties","");
+						configurationService.setValue(realm, "realm.userVisibleProperties",
 								ResourceUtils.implodeValues(realmProvider.getDefaultUserPropertyNames()));
 						
 						realm.setReadOnly(realmProvider.isReadOnly(realm));
