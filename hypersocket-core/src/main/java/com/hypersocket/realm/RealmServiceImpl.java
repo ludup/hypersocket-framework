@@ -1801,10 +1801,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		try {
 			assertAnyPermission(ProfilePermission.UPDATE, RealmPermission.UPDATE, UserPermission.UPDATE);
 
-			List<Principal> assosiated = provider.getAssociatedPrincipals(principal);
-
-			principal = provider.updateUser(realm, principal, principal.getPrincipalName(), currentProperties,
-					assosiated);
+			principal = provider.updateUserProperties(principal, currentProperties);
 
 			eventService.publishEvent(new ProfileUpdatedEvent(this, getCurrentSession(), realm, provider, principal,
 					filterSecretProperties(principal, provider, changedProperties)));
