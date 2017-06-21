@@ -10,14 +10,13 @@ package com.hypersocket.input;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlElement;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class FormTemplate {
 
 	protected String resourceKey;
+	protected String scheme;
 	protected List<InputField> fields = new ArrayList<InputField>();
 	protected boolean showLogonButton = true;
 	protected boolean showStartAgain = true;
@@ -25,7 +24,8 @@ public class FormTemplate {
 	protected String logonButtonIcon = null;
 	protected String formClass = null;
 	
-	public FormTemplate() {
+	public FormTemplate(String scheme) {
+		this.scheme = scheme;
 	}
 
 	public String getResourceKey() {
@@ -36,7 +36,10 @@ public class FormTemplate {
 		this.resourceKey = resourceKey;
 	}
 
-	@XmlElement(name="inputField")
+	public String getScheme() {
+		return scheme;
+	}
+	
 	public List<InputField> getInputFields() {
 		return fields;
 	}
