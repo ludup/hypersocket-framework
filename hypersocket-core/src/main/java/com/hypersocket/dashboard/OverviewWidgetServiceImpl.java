@@ -123,8 +123,10 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 		if(widgetList!=null) {
 			if(widgetList.containsKey(resourceKey)) {
 				for (OverviewWidget w : widgetList.get(resourceKey)) {
-					if (w.hasContent()) {
-						visibleWidgets.add(w);
+					if((w.isSystem() && getCurrentRealm().isSystem()) || !w.isSystem()){
+						if(w.hasContent()) {
+							visibleWidgets.add(w);
+						}
 					}
 				}
 			}

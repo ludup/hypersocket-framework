@@ -22,6 +22,6 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="local.userStatus"
 		resourceBundle="LocalRealm" weight="0">
-		<property resourceKey="expires" inputType="date" weight="0" defaultValue="" />
+		<property resourceKey="expires" inputType="date" weight="0" defaultValue="" displayMode="admin"/>
 	</propertyCategory>
 </propertyTemplates>

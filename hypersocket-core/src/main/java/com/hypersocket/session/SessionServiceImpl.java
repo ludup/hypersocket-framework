@@ -501,6 +501,16 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 	
 	@Override
+	public Long getActiveSessionCount(boolean distinctUsers, Realm realm) throws AccessDeniedException {
+
+		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			throw new AccessDeniedException();
+		}
+		
+		return repository.getActiveSessionCount(distinctUsers, realm);
+	}
+	
+	@Override
 	public Long getSessionCount(Date startDate, Date endDate, boolean distinctUsers) throws AccessDeniedException {
 		
 		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
@@ -508,6 +518,17 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 		
 		return repository.getSessionCount(startDate, endDate, distinctUsers);
+		
+	}
+	
+	@Override
+	public Long getSessionCount(Date startDate, Date endDate, boolean distinctUsers, Realm realm) throws AccessDeniedException {
+		
+		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			throw new AccessDeniedException();
+		}
+		
+		return repository.getSessionCount(startDate, endDate, distinctUsers, realm);
 		
 	}
 
@@ -519,6 +540,17 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 		
 		return repository.getBrowserCount(startDate, endDate);
+		
+	}
+	
+	@Override
+	public Map<String,Long> getBrowserCount(Date startDate, Date endDate, Realm realm) throws AccessDeniedException {
+		
+		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			throw new AccessDeniedException();
+		}
+		
+		return repository.getBrowserCount(startDate, endDate, realm);
 		
 	}
 
@@ -541,6 +573,17 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 		
 		return repository.getOSCount(startDate, endDate);
+		
+	}
+	
+	@Override
+	public Map<String,Long> getOSCount(Date startDate, Date endDate, Realm realm) throws AccessDeniedException {
+		
+		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			throw new AccessDeniedException();
+		}
+		
+		return repository.getOSCount(startDate, endDate, realm);
 		
 	}
 	

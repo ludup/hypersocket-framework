@@ -55,4 +55,6 @@ public interface ConfigurationService extends AuthenticatedService, PropertyTemp
 	
 	Long getLongValue(String val);
 
+	String getValueOrSystemDefault(Realm realm, String resourceKey);
+
 }

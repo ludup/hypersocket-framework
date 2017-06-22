@@ -7,17 +7,19 @@
  ******************************************************************************/
 package com.hypersocket.json;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 
 @Component
 public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
@@ -52,4 +54,10 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 		configurer.favorPathExtension(false);
 		super.configureContentNegotiation(configurer);
 	}
+	
+	@Override
+	public void configurePathMatch(PathMatchConfigurer configurer) {
+		configurer.setUseSuffixPatternMatch(false);
+	}
+	
 }

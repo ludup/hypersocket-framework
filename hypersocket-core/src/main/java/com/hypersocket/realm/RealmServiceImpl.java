@@ -531,13 +531,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 
 			for (PrincipalProcessor processor : principalProcessors) {
-				processor.beforeCreate(realm, username, properties);
+				processor.beforeCreate(realm, provider.getModule(), username, password, properties);
 			}
 			
 			Principal principal = provider.createUser(realm, username, properties, principals, password, forceChange);
 
 			for (PrincipalProcessor processor : principalProcessors) {
-				processor.afterCreate(principal, properties);
+				processor.afterCreate(principal, password, properties);
 			}
 			
 			eventService.publishEvent(new UserCreatedEvent(this, getCurrentSession(), realm, provider, principal,
@@ -940,7 +940,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				@Override
 				public void afterOperation(Realm realm, Map<String,String> properties) {
 					try {
-						configurationService.setValue(realm, "realm.userEditableProperties",
+						configurationService.setValue(realm, "realm.userEditableProperties","");
+						configurationService.setValue(realm, "realm.userVisibleProperties",
 								ResourceUtils.implodeValues(realmProvider.getDefaultUserPropertyNames()));
 						
 						realm.setReadOnly(realmProvider.isReadOnly(realm));
@@ -1267,7 +1268,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			Principal principal = provider.createGroup(realm, name, properties, principals, groups);
 
 			for (PrincipalProcessor processor : principalProcessors) {
-				processor.afterCreate(principal, properties);
+				processor.afterCreate(principal, null, properties);
 			}
 
 			eventService.publishEvent(new GroupCreatedEvent(this, 
@@ -1485,9 +1486,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		assertAnyPermission(ProfilePermission.READ);
 
 		RealmProvider provider = getProviderForPrincipal(principal);
-
+		RealmProvider realmProvider = getProviderForRealm(principal.getRealm());
+		
 		Collection<PropertyCategory> ret = provider.getUserProperties(principal);
 
+		
+			
 		Set<String> editable = new HashSet<String>(
 				Arrays.asList(configurationService.getValues(principal.getRealm(), "realm.userEditableProperties")));
 		Set<String> visible = new HashSet<String>(
@@ -1518,13 +1522,20 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					/**
 					 * These are built-in realm properties
 					 */
-					if (!editable.contains(t.getResourceKey())) {
-						if (!visible.contains(t.getResourceKey())) {
+					if(!realmProvider.equals(provider)) {
+						if (t.getDisplayMode() != null && t.getDisplayMode().equals("admin")) {
 							tmp.add(t);
+						}
+						continue;
+					} else {
+						if (!editable.contains(t.getResourceKey())) {
+							if (!visible.contains(t.getResourceKey())) {
+								tmp.add(t);
+								continue;
+							}
+							t.setReadOnly(true);
 							continue;
 						}
-						t.setReadOnly(true);
-						continue;
 					}
 				}
 			}
@@ -1535,6 +1546,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				results.add(c);
 			}
 		}
+		
 
 		return results;
 	}
@@ -1789,10 +1801,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		try {
 			assertAnyPermission(ProfilePermission.UPDATE, RealmPermission.UPDATE, UserPermission.UPDATE);
 
-			List<Principal> assosiated = provider.getAssociatedPrincipals(principal);
-
-			principal = provider.updateUser(realm, principal, principal.getPrincipalName(), currentProperties,
-					assosiated);
+			principal = provider.updateUserProperties(principal, currentProperties);
 
 			eventService.publishEvent(new ProfileUpdatedEvent(this, getCurrentSession(), realm, provider, principal,
 					filterSecretProperties(principal, provider, changedProperties)));

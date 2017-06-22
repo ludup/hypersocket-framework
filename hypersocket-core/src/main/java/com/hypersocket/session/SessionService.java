@@ -81,14 +81,26 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 
 	Map<String, Long> getBrowserCount(Date startDate, Date endDate)
 			throws AccessDeniedException;
+	
+	Map<String, Long> getBrowserCount(Date startDate, Date endDate, Realm realm)
+			throws AccessDeniedException;
 
 	Long getSessionCount(Date startDate, Date endDate, boolean distinctUsers)
+			throws AccessDeniedException;
+	
+	Long getSessionCount(Date startDate, Date endDate, boolean distinctUsers, Realm realm)
 			throws AccessDeniedException;
 
 	Long getActiveSessionCount(boolean distinctUsers)
 			throws AccessDeniedException;
+	
+	Long getActiveSessionCount(boolean distinctUsers, Realm realm)
+			throws AccessDeniedException;
 
 	Map<String, Long> getOSCount(Date startDate, Date endDate)
+			throws AccessDeniedException;
+	
+	Map<String, Long> getOSCount(Date startDate, Date endDate, Realm realm)
 			throws AccessDeniedException;
 
 	Map<String, Long> getIPCount(Date startDate, Date endDate)

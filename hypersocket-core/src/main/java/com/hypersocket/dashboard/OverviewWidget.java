@@ -9,6 +9,8 @@ public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 	boolean visible;
 	Long column;
 	Long position;
+	boolean system;
+	
 	public OverviewWidget() {
 
 	}
@@ -23,6 +25,7 @@ public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 		this.visible = true;
 		this.column = new Long(1);
 		this.position = new Long(-1);
+		this.system = false;
 	}
 
 	public OverviewWidget(boolean visible, int weight, String resourceKey, String contentPath,
@@ -35,10 +38,11 @@ public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 		this.visible = visible;
 		this.column = new Long(1);
 		this.position = new Long(-1);
+		this.system = false;
 	}
 	
 	public OverviewWidget(boolean visible, int weight, String resourceKey, String contentPath,
-			boolean large, Long column, Long position) {
+			boolean large, Long column, Long position, boolean system) {
 
 		this.weight = weight;
 		this.resourceKey = resourceKey;
@@ -47,6 +51,7 @@ public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 		this.visible = visible;
 		this.column = column;
 		this.position = position;
+		this.system = system;
 	}
 	
 	public int getWeight() {
@@ -111,6 +116,12 @@ public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 	}
 
 	public abstract boolean hasContent();
-	
-	
+
+	public boolean isSystem() {
+		return system;
+	}
+
+	public void setSystem(boolean system) {
+		this.system = system;
+	}
 }

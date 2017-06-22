@@ -531,6 +531,12 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	public String getValue(AbstractResource resource, String resourceKey) {
 		return getValue(resource, resourceKey, null);
 	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public String getValueOrDefault(AbstractResource resource, String resourceKey, String defaultValue) {
+		return getValue(resource, resourceKey, defaultValue);
+	}
 
 	@Override
 	@Transactional(readOnly = true)
@@ -551,8 +557,13 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				return configPropertyStore.getProperty(resource, resourceKey, defaultValue);
 			}
 		}
-
-		return ((ResourcePropertyStore) template.getPropertyStore()).getPropertyValue(template, resource);
+		
+		if(((ResourcePropertyStore) template.getPropertyStore()).hasPropertyValueSet(template, resource)) {
+			return ((ResourcePropertyStore) template.getPropertyStore()).getPropertyValue(template, resource);
+		} else{
+			return StringUtils.isBlank(defaultValue) ? template.getDefaultValue() : defaultValue;
+		}
+		
 	}
 
 	@Override
