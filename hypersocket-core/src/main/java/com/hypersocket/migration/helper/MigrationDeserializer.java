@@ -26,6 +26,7 @@ import com.hypersocket.migration.repository.MigrationRepository;
 import com.hypersocket.migration.util.MigrationUtil;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntity;
+import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.Resource;
 
 @Component
@@ -77,7 +78,7 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity<?>> {
 
             Class<?> resourceClass = MigrationDeserializer.class.getClassLoader().loadClass(className);
 
-            LookUpKey lookUpKey = migrationUtil.captureEntityLookup(node, resourceClass);
+            LookUpKey lookUpKey = migrationUtil.captureEntityLookup(node, resourceClass, false);
 
             log.info("The look up key is {}", lookUpKey);
 
@@ -136,6 +137,22 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity<?>> {
             if(valueToUpdate == null) {
                 //lets check db if we have something
                 valueToUpdate = (AbstractEntity<?>) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey, realm);
+                if(AbstractResource.class.isAssignableFrom(resourceClass) && valueToUpdate == null && isReference && lookUpKey.isLegacyId()) {
+                	// Some legacy records are bound to show legacy id in export json but in not in DB, due to legacy source code,
+                	// for such records we fallback to resource id, just in case, as legacy id in json will map to resource id.
+                	LookUpKey lookUpKeyWithResourceId = migrationUtil.captureEntityLookup(node, resourceClass, true);
+                	valueToUpdate = (AbstractEntity<Long>) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKeyWithResourceId, realm);
+                	if(valueToUpdate != null) {
+                		log.info("The look up key is {} (Resource Id )", lookUpKeyWithResourceId);
+                		//For some accidental case where import record shows legacy id which matches a record's resource id, but this record has
+                		//its own legacy id, means this is accidental mismatch, should not be processed, match is not correct.
+                		//Ideally this should not happen, but a check and log is better.
+                		if(valueToUpdate.getLegacyId() != null) {
+                			log.info("Resource with id {} has legacy id {}, resource will be set to null", valueToUpdate.getId(), valueToUpdate.getLegacyId());
+                			valueToUpdate = null;
+                		}
+                	}
+                }
                 if((valueToUpdate == null && isReference) ||
                         (valueToUpdate == null && migrationUtil.isResourceAllowNameOnlyLookUp(resourceClass))) {
                     //if no match with legacy let us see if some thing matching in realm by name

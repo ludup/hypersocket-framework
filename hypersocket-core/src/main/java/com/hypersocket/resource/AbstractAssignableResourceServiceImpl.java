@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.PostConstruct;
 
@@ -194,8 +193,6 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			
 			resource.setAssignedRoles(resource.getRoles());
 			
-			resource.setLegacyId(ThreadLocalRandom.current().nextLong(1, Integer.MAX_VALUE));
-			
 			getRepository().saveResource(resource, properties, ops);
 			updateFingerprint();
 			
@@ -274,13 +271,13 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			resource.setRealm(getCurrentRealm());
 		}
 		
-		Set<Role> assigned = new HashSet<Role>();
+		Set<Role> assigned = new HashSet<>();
 		if(roles!=null) {
 			assigned.addAll(roles);
 			assigned.removeAll(resource.getRoles());
 		}
 		
-		Set<Role> unassigned = new HashSet<Role>();
+		Set<Role> unassigned = new HashSet<>();
 		if(roles!=null) {
 			unassigned.addAll(resource.getRoles());
 			unassigned.removeAll(roles);
@@ -420,6 +417,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		return getRepository().getResources(getCurrentRealm());
 	}
 	
+	@Override
 	public List<T> allResources() {
 		return getRepository().allResources();
 	}

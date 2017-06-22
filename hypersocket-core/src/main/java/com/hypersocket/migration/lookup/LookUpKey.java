@@ -9,6 +9,7 @@ public class LookUpKey {
     private boolean composite;
     private String[] properties;
     private Object[] values;
+    private boolean legacyId;
 
     public String getProperty() {
         return property;
@@ -48,6 +49,27 @@ public class LookUpKey {
 
     public void setValues(Object[] values) {
         this.values = values;
+    }
+    
+    public boolean isLegacyId() {
+		return legacyId;
+	}
+
+	public void setLegacyId(boolean legacyId) {
+		this.legacyId = legacyId;
+	}
+
+	public boolean hasProperty(String property) {
+    	if(composite) {
+    		for (int i = 0; i < properties.length; i++) {
+				if(this.properties[i].equals(property)) {
+					return true;
+				}
+			}
+    		return false;
+    	} 
+    	
+    	return this.property.equals(property);
     }
 
     @Override
