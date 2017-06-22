@@ -1,12 +1,14 @@
 package com.hypersocket.migration.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
-import com.hypersocket.migration.annotation.LookUpKeys;
-import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
-import com.hypersocket.migration.lookup.LookUpKey;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.repository.AbstractEntity;
+import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
@@ -15,13 +17,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import java.beans.PropertyDescriptor;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
+import com.hypersocket.migration.annotation.LookUpKeys;
+import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
+import com.hypersocket.migration.lookup.LookUpKey;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.repository.AbstractEntity;
 
 @Component
 public class MigrationUtil {
@@ -31,20 +33,19 @@ public class MigrationUtil {
     @Autowired
     MigrationCurrentStack migrationCurrentStack;
 
-    @SuppressWarnings("unchecked")
-    public LookUpKey captureEntityLookup(JsonNode node, Class aClass) {
-        LookUpKeys annotation = (LookUpKeys) aClass.getAnnotation(LookUpKeys.class);
+    public LookUpKey captureEntityLookup(JsonNode node, Class<?> aClass, boolean replaceLegacyId) {
+        LookUpKeys annotation = aClass.getAnnotation(LookUpKeys.class);
         LookUpKey lookUpKey;
         if(annotation != null) {
             lookUpKey = captureEntityLookupFromLookupKeysAnnotation(node, annotation);
         } else {
-            lookUpKey = captureEntityLookup(node);
+            lookUpKey = captureEntityLookup(node, replaceLegacyId);
         }
 
         return lookUpKey;
     }
 
-    public LookUpKey captureEntityLookup(JsonNode node) {
+    public LookUpKey captureEntityLookup(JsonNode node, boolean replaceLegacyId) {
         LookUpKey lookUpKey = new LookUpKey();
 
         List<String> properties = new ArrayList<>();
@@ -52,7 +53,12 @@ public class MigrationUtil {
 
         JsonNode propertyNode = node.get("legacyId");
         if(propertyNode != null) {
-            properties.add("legacyId");
+        	lookUpKey.setLegacyId(true);
+        	if(replaceLegacyId) {
+        		properties.add("id");
+        	} else {
+        		properties.add("legacyId");
+        	}
             values.add(propertyNode.asLong());
         }
 
@@ -166,7 +172,7 @@ public class MigrationUtil {
         }
     }
 
-    public String getMappedBy(AbstractEntity object, final String property) {
+    public String getMappedBy(AbstractEntity<Long> object, final String property) {
         final StringBuilder mappedBy = new StringBuilder();
         ReflectionUtils.doWithFields(object.getClass(), new ReflectionUtils.FieldCallback() {
             @Override
@@ -192,8 +198,7 @@ public class MigrationUtil {
     }
 
 
-    @SuppressWarnings("unchecked")
-    public boolean isResourceAllowNameOnlyLookUp(Class aClass) {
+    public boolean isResourceAllowNameOnlyLookUp(Class<?> aClass) {
         return aClass.getAnnotation(AllowNameOnlyLookUp.class) != null;
     }
 }

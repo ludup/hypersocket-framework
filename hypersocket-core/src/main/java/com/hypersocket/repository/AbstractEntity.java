@@ -7,13 +7,20 @@
  ******************************************************************************/
 package com.hypersocket.repository;
 
+import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.*;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlTransient;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonValue;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -21,12 +28,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @MappedSuperclass
-@JsonIgnoreProperties({"createDate"})
-public abstract class AbstractEntity<T> {
+@JsonIgnoreProperties(ignoreUnknown=true)
+public abstract class AbstractEntity<T> implements Serializable{
+
+	private static final long serialVersionUID = -8808550521563073042L;
 
 	public abstract T getId();
 
 	@Column(name="legacy_id")
+	@Access(AccessType.PROPERTY)
 	T legacyId;
 	
 	@Column(name="deleted", nullable=false)
@@ -127,5 +137,4 @@ public abstract class AbstractEntity<T> {
 	public void setLegacyId(T legacyId) {
 		this.legacyId = legacyId;
 	}
-
 }
