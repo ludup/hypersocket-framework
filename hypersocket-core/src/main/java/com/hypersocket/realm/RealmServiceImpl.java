@@ -1267,10 +1267,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			Principal principal = provider.createGroup(realm, name, properties, principals, groups);
 
-			for (PrincipalProcessor processor : principalProcessors) {
-				processor.afterCreate(principal, null, properties);
-			}
-
 			eventService.publishEvent(new GroupCreatedEvent(this, 
 					getCurrentSession(), 
 					realm, 
