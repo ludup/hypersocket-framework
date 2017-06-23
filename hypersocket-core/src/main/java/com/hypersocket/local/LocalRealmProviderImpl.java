@@ -109,4 +109,9 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 		userRepository.setValue(principal, resourceKey, val);
 	}
 
+	@Override
+	public Principal reconcileUser(Principal principal) throws ResourceException {
+		return principal;
+	}
+
 }

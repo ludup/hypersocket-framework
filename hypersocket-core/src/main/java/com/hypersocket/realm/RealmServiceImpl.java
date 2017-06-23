@@ -2176,5 +2176,14 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 		return principals;
 	}
+
+	@Override
+	public boolean isLocked(Principal principal) throws ResourceException {
+		
+		RealmProvider provider = getProviderForPrincipal(principal);
+		principal = provider.reconcileUser(principal);
+		
+		return principal.getPrincipalStatus() == PrincipalStatus.LOCKED;
+	}
 }
 

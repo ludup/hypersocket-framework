@@ -148,4 +148,6 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	void setUserProperty(Principal principal, String resourceKey, Boolean val);
 
 	void setUserProperty(Principal principal, String resourceKey, String val);
+
+	Principal reconcileUser(Principal principal) throws ResourceException;
 }
