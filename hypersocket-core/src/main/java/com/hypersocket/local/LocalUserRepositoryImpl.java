@@ -383,4 +383,9 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	public Principal getUserByEmail(String email, Realm realm) {
 		return get("email", email, LocalUser.class, new RealmCriteria(realm));
 	}
+
+	@Override
+	public void resetRealm(Collection<Principal> admins) {
+		
+	}
 }

@@ -26,13 +26,24 @@ public abstract class SessionEvent extends SystemEvent {
 	
 	public SessionEvent(Object source, String resourceKey, boolean success,
 			Session session) {
-		this(source, resourceKey, success, session, session.getCurrentRealm());
+		this(source, resourceKey, success, session, session.getCurrentRealm(), false);
+	}
+	
+	public SessionEvent(Object source, String resourceKey, boolean success,
+			Session session, boolean hidden) {
+		this(source, resourceKey, success, session, session.getCurrentRealm(), hidden);
 	}
 	
 	public SessionEvent(Object source, String resourceKey, boolean success,
 			Session session, Realm realm) {
+		this(source, resourceKey, success, session, realm, false);
+	}
+	
+	public SessionEvent(Object source, String resourceKey, boolean success,
+			Session session, Realm realm, boolean hidden) {
 		super(source, resourceKey, success, realm);
 		this.session = session;
+		this.hidden = hidden;
 		addAttribute(ATTR_UUID, session.getId());
 		addAttribute(ATTR_PRINCIPAL_NAME, session.getCurrentPrincipal().getPrincipalName());
 		addAttribute(ATTR_PRINCIPAL_DESC, session.getCurrentPrincipal().getPrincipalDescription());

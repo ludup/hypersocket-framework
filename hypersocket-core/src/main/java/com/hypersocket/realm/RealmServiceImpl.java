@@ -12,6 +12,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -993,6 +995,72 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@SuppressWarnings("unchecked")
 	@Override
+	public Realm resetRealm(Realm realm) throws ResourceException, AccessDeniedException {
+		
+		try {
+
+			assertPermissionOrRole(RealmPermission.UPDATE, 
+					permissionService.getRealmAdministratorRole(getCurrentRealm()));
+
+			String resourceCategory = realm.getResourceCategory();
+			final RealmProvider oldProvider = getProviderForRealm(realm.getResourceCategory());
+			
+			final boolean changedType = !resourceCategory.equals(LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY);
+			
+			if(!changedType) {
+				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.realmCannotBeReset");
+			}
+			
+			final RealmProvider realmProvider = getProviderForRealm(realm.getResourceCategory());
+			
+			realm.setResourceCategory(LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY);
+			
+			clearCache(realm);
+
+			realm = realmRepository.saveRealm(realm, new HashMap<String,String>(), getProviderForRealm(realm), new TransactionAdapter<Realm>() {
+
+				@Override
+				public void afterOperation(Realm realm, Map<String,String> properties) {
+					try {
+						
+						oldProvider.resetRealm(realm);
+						realmProvider.resetRealm(realm);
+						
+						configurationService.setValue(realm, "realm.userEditableProperties",
+								ResourceUtils.implodeValues(realmProvider.getDefaultUserPropertyNames()));
+						
+						realm.setReadOnly(false);
+						realmRepository.saveRealm(realm);
+
+						fireRealmUpdate(realm);
+
+					} catch (Throwable e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					} 
+				}
+			});
+
+			eventService.publishEvent(new RealmUpdatedEvent(this, getCurrentSession(), realm.getName(),
+					realmRepository.getRealmById(realm.getId())));
+
+		} catch (AccessDeniedException e) {
+			eventService.publishEvent(new RealmUpdatedEvent(this, e, getCurrentSession(), realm));
+			throw e;
+		} catch (ResourceChangeException e) {
+			eventService.publishEvent(new RealmUpdatedEvent(this, e, getCurrentSession(), realm));
+			throw e;
+		} catch(ResourceConfirmationException e) {
+			throw e;
+		} catch (Throwable t) {
+			log.error("Unexpected error", t);
+			eventService.publishEvent(new RealmUpdatedEvent(this, t, getCurrentSession(), realm));
+			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
+		}
+		return realm;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
 	public Realm updateRealm(Realm realm, String name, String type, Map<String, String> properties)
 			throws AccessDeniedException, ResourceChangeException, ResourceConfirmationException {
 
@@ -1076,6 +1144,14 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	private void fireRealmCreate(Realm realm) throws ResourceCreationException {
 
+		Collections.<RealmListener>sort(realmListeners, new Comparator<RealmListener>() {
+
+			@Override
+			public int compare(RealmListener o1, RealmListener o2) {
+				return o1.getWeight().compareTo(o2.getWeight());
+			}
+		});
+		
 		for (RealmListener l : realmListeners) {
 			try {
 				l.onCreateRealm(realm);

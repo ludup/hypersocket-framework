@@ -270,5 +270,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean isLocked(Principal principal) throws ResourceException;
 
+	Realm resetRealm(Realm realm) throws ResourceException, AccessDeniedException;
+
 }
 

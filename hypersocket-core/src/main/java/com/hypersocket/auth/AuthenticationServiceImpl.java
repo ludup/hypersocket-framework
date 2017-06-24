@@ -193,6 +193,11 @@ public class AuthenticationServiceImpl extends
 						AuthenticationModuleType.HTML);
 
 			}
+			
+			@Override
+			public Integer getWeight() {
+				return Integer.MIN_VALUE + 1000;
+			}
 		});
 
 	}

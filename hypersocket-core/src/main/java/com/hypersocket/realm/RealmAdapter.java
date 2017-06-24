@@ -24,5 +24,10 @@ public class RealmAdapter implements RealmListener {
 	public boolean hasCreatedDefaultResources(Realm realm) {
 		return true;
 	}
+	
+	@Override
+	public Integer getWeight() {
+		return 0;
+	}
 
 }

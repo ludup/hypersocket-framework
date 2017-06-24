@@ -12,4 +12,6 @@ public interface RealmListener {
 	public void onUpdateRealm(Realm realm) throws ResourceException, AccessDeniedException;
 	
 	public void onDeleteRealm(Realm realm) throws ResourceException, AccessDeniedException;
+	
+	public Integer getWeight();
 }

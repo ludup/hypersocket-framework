@@ -134,13 +134,13 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 			assertPermission(ConfigurationPermission.UPDATE);
 			String oldValue = repository.getValue(realm, resourceKey);
 			repository.setValue(realm, resourceKey, value);
-			fireChangeEvent(resourceKey, oldValue, value, repository.getPropertyTemplate(realm, resourceKey).isHidden());
-			eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession()));
+			fireChangeEvent(realm, resourceKey, oldValue, value, repository.getPropertyTemplate(realm, resourceKey).isHidden());
+			eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession(), realm));
 		} catch (AccessDeniedException e) {
-			fireChangeEvent(resourceKey, e);
+			fireChangeEvent(realm, resourceKey, e);
 			throw e;
 		} catch (Throwable t) {
-			fireChangeEvent(resourceKey, t);
+			fireChangeEvent(realm, resourceKey, t);
 			throw new ResourceChangeException(ConfigurationService.RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
 		}
 	}
@@ -184,38 +184,38 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 			repository.setValues(getCurrentRealm(), values);
 			
 			for(String resourceKey : values.keySet()) {
-				fireChangeEvent(resourceKey, oldValues.get(resourceKey), values.get(resourceKey), repository.getPropertyTemplate(getCurrentRealm(), resourceKey).isHidden());
+				fireChangeEvent(getCurrentRealm(), resourceKey, oldValues.get(resourceKey), values.get(resourceKey), repository.getPropertyTemplate(getCurrentRealm(), resourceKey).isHidden());
 			}
 			
-			eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession()));
+			eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession(), getCurrentRealm()));
 		} catch (AccessDeniedException e) {
 			for(String resourceKey : values.keySet()) {
-				fireChangeEvent(resourceKey, e);
+				fireChangeEvent(getCurrentRealm(), resourceKey, e);
 			}
 			throw e;
 		} catch (Throwable t) {
 			for(String resourceKey : values.keySet()) {
-				fireChangeEvent(resourceKey, t);
+				fireChangeEvent(getCurrentRealm(), resourceKey, t);
 			}
 			throw new ResourceChangeException(ConfigurationService.RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
 		}
 	}
 	
-	private void fireChangeEvent(String resourceKey, String oldValue, String newValue, boolean hidden) {
+	private void fireChangeEvent(Realm realm, String resourceKey, String oldValue, String newValue, boolean hidden) {
 		if(resourceKey.equals("current.locale")) {
 			defaultLocale = i18nService.getLocale(newValue);
 		}
 
-		PropertyTemplate template = repository.getPropertyTemplate(getCurrentRealm(), resourceKey);
-		if(!template.isHidden()) {
-			eventPublisher.publishEvent(new ConfigurationValueChangedEvent(this, true,
-				getCurrentSession(), template, oldValue, newValue, hidden));
-		}
+		PropertyTemplate template = repository.getPropertyTemplate(realm, resourceKey);
+
+		eventPublisher.publishEvent(new ConfigurationValueChangedEvent(this, true,
+			getCurrentSession(), template, oldValue, newValue, hidden, realm));
+		
 	}
 
-	private void fireChangeEvent(String resourceKey, Throwable t) {
+	private void fireChangeEvent(Realm realm, String resourceKey, Throwable t) {
 		eventPublisher.publishEvent(new ConfigurationValueChangedEvent(this, resourceKey, t,
-				getCurrentSession()));
+				getCurrentSession(), realm));
 	}
 	
 	@Override
