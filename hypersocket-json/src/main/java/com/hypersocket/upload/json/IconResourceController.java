@@ -66,6 +66,13 @@ public abstract class IconResourceController<T extends Resource> extends Resourc
 			return;
 		} 
 		
+		long ifModifiedSince = request.getDateHeader("If-Modified-Since");
+		if(ifModifiedSince != -1 && resource.getModifiedDate().getTime() <= ifModifiedSince) {
+			CacheUtils.setDateAndCacheHeaders(response, resource.getModifiedDate().getTime());
+			response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+			return;
+		}
+		
 		url = HypersocketUtils.urlDecode(url.substring(7));
 		String name = resource.getName();
 		String ext;
@@ -191,7 +198,7 @@ public abstract class IconResourceController<T extends Resource> extends Resourc
 		// Respond
 		String contentType = mimeTypesMap.getContentType(spec + "." + ext);
 		response.setContentType(contentType);
-		CacheUtils.setDateAndCacheHeaders(response);
+		CacheUtils.setDateAndCacheHeaders(response, resource.getModifiedDate().getTime());
 		
 		ImageIO.write(image, ext.toUpperCase(), response.getOutputStream());
 		response.flushBuffer();
