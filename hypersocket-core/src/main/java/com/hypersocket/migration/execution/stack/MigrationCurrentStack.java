@@ -1,17 +1,15 @@
 package com.hypersocket.migration.execution.stack;
 
-import com.hypersocket.realm.Realm;
-import org.springframework.stereotype.Component;
-
 import java.util.Stack;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class MigrationCurrentStack {
 
     ThreadLocal<Stack<MigrationCurrentInfo>> currentState = new ThreadLocal<>();
-    ThreadLocal<Realm> currentRealm = new ThreadLocal<>();
 
-    public synchronized void addState(MigrationCurrentInfo migrationCurrentInfo) {
+    public void addState(MigrationCurrentInfo migrationCurrentInfo) {
         Stack<MigrationCurrentInfo> infoStack = currentState.get();
         if(infoStack == null) {
             infoStack = new Stack<>();
@@ -19,17 +17,6 @@ public class MigrationCurrentStack {
         }
 
         infoStack.push(migrationCurrentInfo);
-    }
-
-    public synchronized void addRealm(Realm realm) {
-        currentRealm.set(realm);
-    }
-
-    public Realm getCurrentRealm() {
-        if(currentRealm.get() == null) {
-            throw new IllegalStateException("State stack is not initialized with realm, please add realm.");
-        }
-        return currentRealm.get();
     }
 
     public MigrationCurrentInfo getState() {
@@ -45,10 +32,6 @@ public class MigrationCurrentStack {
     public void clearState() {
         if(currentState != null) {
             currentState.remove();
-        }
-
-        if(currentRealm != null) {
-            currentRealm.remove();
         }
     }
 
