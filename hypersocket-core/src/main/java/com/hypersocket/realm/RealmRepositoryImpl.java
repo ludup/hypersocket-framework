@@ -138,7 +138,7 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional(readOnly = true)
 	public Realm getRealmByName(String name) {
-		return getRealm("name", name, new NullCriteria("owner"));
+		return getRealm("name", name, new DeletedCriteria(false), new NullCriteria("owner"));
 	}
 	
 	@Override

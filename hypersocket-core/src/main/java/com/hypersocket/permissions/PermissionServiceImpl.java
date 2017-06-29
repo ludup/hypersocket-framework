@@ -167,6 +167,11 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 						new HashMap<String, String>());
 
 			}
+			
+			@Override
+			public Integer getWeight() {
+				return Integer.MIN_VALUE;
+			}
 
 		});
 		eventService.registerEvent(RoleEvent.class, RESOURCE_BUNDLE);

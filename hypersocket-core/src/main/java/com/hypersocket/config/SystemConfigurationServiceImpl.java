@@ -24,6 +24,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceChangeException;
 
 @Service
@@ -41,6 +42,9 @@ public class SystemConfigurationServiceImpl extends
 
 	@Autowired
 	EventService eventService;
+	
+	@Autowired
+	RealmService realmService; 
 
 	@PostConstruct
 	private void postConstruct() {
@@ -76,7 +80,7 @@ public class SystemConfigurationServiceImpl extends
 			String oldValue = repository.getValue(resourceKey);
 			repository.setValue(resourceKey, value);
 			fireChangeEvent(resourceKey, oldValue, value);
-			eventService.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession()));
+			eventService.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession(), getCurrentRealm()));
 		} catch (AccessDeniedException e) {
 			fireChangeEvent(resourceKey, e);
 			throw e;
@@ -130,7 +134,7 @@ public class SystemConfigurationServiceImpl extends
 						values.get(resourceKey));
 			}
 			
-			eventService.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession()));
+			eventService.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession(), getCurrentRealm()));
 		} catch (AccessDeniedException e) {
 			for (String resourceKey : values.keySet()) {
 				fireChangeEvent(resourceKey, e);
@@ -151,12 +155,12 @@ public class SystemConfigurationServiceImpl extends
 		eventService.publishEvent(new ConfigurationValueChangedEvent(this, true,
 				getCurrentSession(), repository
 						.getPropertyTemplate(resourceKey), oldValue, newValue,
-				repository.getPropertyTemplate(resourceKey).isHidden()));
+				repository.getPropertyTemplate(resourceKey).isHidden(), realmService.getSystemRealm()));
 	}
 
 	private void fireChangeEvent(String resourceKey, Throwable t) {
 		eventService.publishEvent(new ConfigurationValueChangedEvent(this,
-				resourceKey, t, getCurrentSession()));
+				resourceKey, t, getCurrentSession(), realmService.getSystemRealm()));
 	}
 
 	@Override

@@ -268,5 +268,9 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	void unassignUserFromGroup(Principal user, Principal group) throws ResourceException, AccessDeniedException;
 
+	boolean isLocked(Principal principal) throws ResourceException;
+
+	Realm resetRealm(Realm realm) throws ResourceException, AccessDeniedException;
+
 }
 

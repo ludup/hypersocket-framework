@@ -222,7 +222,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	
 	}
 	
-	protected void afterDeleteResource(T resource) throws ResourceException {
+	protected void afterDeleteResource(T resource) throws ResourceException, AccessDeniedException {
 		
 	}
 	

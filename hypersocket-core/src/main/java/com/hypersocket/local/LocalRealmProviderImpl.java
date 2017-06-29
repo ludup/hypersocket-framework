@@ -7,7 +7,10 @@
  ******************************************************************************/
 package com.hypersocket.local;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,11 +21,16 @@ import org.springframework.stereotype.Repository;
 
 import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceNotFoundException;
 
 @Repository
 public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl implements LocalRealmProvider {
@@ -50,6 +58,9 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 
 	@Autowired
 	PasswordEncryptionService encryptionService;
+	
+	@Autowired
+	PermissionService permissionService; 
 	
 	@Autowired
 	I18NService i18nService;
@@ -107,6 +118,26 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 	@Override
 	public void setUserProperty(Principal principal, String resourceKey, String val) {
 		userRepository.setValue(principal, resourceKey, val);
+	}
+
+	@Override
+	public Principal reconcileUser(Principal principal) throws ResourceException {
+		return principal;
+	}
+
+	@Override
+	public void resetRealm(Realm realm) throws ResourceNotFoundException, AccessDeniedException {
+		
+		List<Role> roles = new ArrayList<Role>();
+		roles.add(permissionService.getRealmAdministratorRole(realm));
+		if(realm.isSystem()) {
+			roles.add(permissionService.getSystemAdministratorRole());
+		}
+		
+		Collection<Principal> admins = permissionService.getPrincipalsByRole(realm, roles);
+		
+		userRepository.resetRealm(admins);
+		
 	}
 
 }

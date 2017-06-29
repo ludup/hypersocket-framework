@@ -6,6 +6,7 @@ import org.springframework.util.StringUtils;
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.events.SessionEvent;
 
@@ -22,9 +23,8 @@ public class ConfigurationValueChangedEvent extends SessionEvent {
 
 	public ConfigurationValueChangedEvent(Object source, boolean success,
 			Session session, PropertyTemplate property, String oldValue,
-			String newValue, boolean hidden) {
-		super(source, EVENT_RESOURCE_KEY, success, session);
-		this.hidden = hidden;
+			String newValue, boolean hidden, Realm realm) {
+		super(source, EVENT_RESOURCE_KEY, success, session, realm, hidden);
 		addAttribute(ATTR_CONFIG_DISPLAY_NAME,
 				I18NServiceImpl.tagForConversion(property.getCategory()
 						.getBundle(), property.getResourceKey()));
@@ -45,8 +45,8 @@ public class ConfigurationValueChangedEvent extends SessionEvent {
 	}
 
 	public ConfigurationValueChangedEvent(Object source, String resourceKey,
-			Throwable e, Session session) {
-		super(source, resourceKey, e, session);
+			Throwable e, Session session, Realm realm) {
+		super(source, resourceKey, e, session, realm);
 	}
 
 	public String[] getResourceKeys() {

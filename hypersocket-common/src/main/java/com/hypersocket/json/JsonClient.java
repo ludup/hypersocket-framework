@@ -137,6 +137,16 @@ public class JsonClient {
 		session = null;
 	}
 
+	public <T> T doPost(String url, Class<T> clz, NameValuePair... postVariables)
+			throws URISyntaxException, IOException, JsonStatusException {
+		
+		String json = doPost(url, postVariables);
+		
+		debugJSON(json);
+		
+		return mapper.readValue(json, clz);
+	}
+	
 	public String doPost(String url, NameValuePair... postVariables)
 			throws URISyntaxException, IOException, JsonStatusException {
 

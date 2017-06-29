@@ -13,10 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
 
 public interface RealmProvider extends ResourceTemplateRepository {
@@ -148,4 +150,8 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	void setUserProperty(Principal principal, String resourceKey, Boolean val);
 
 	void setUserProperty(Principal principal, String resourceKey, String val);
+
+	Principal reconcileUser(Principal principal) throws ResourceException;
+
+	void resetRealm(Realm realm) throws ResourceNotFoundException, AccessDeniedException;
 }
