@@ -20,7 +20,7 @@ import org.springframework.util.ReflectionUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import com.hypersocket.migration.annotation.LookUpKeys;
-import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
+import com.hypersocket.migration.execution.MigrationContext;
 import com.hypersocket.migration.lookup.LookUpKey;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntity;
@@ -31,7 +31,7 @@ public class MigrationUtil {
     static Logger log = LoggerFactory.getLogger(MigrationUtil.class);
 
     @Autowired
-    MigrationCurrentStack migrationCurrentStack;
+    MigrationContext migrationContext;
 
     public LookUpKey captureEntityLookup(JsonNode node, Class<?> aClass, boolean replaceLegacyId) {
         LookUpKeys annotation = aClass.getAnnotation(LookUpKeys.class);
@@ -151,7 +151,7 @@ public class MigrationUtil {
             String property;
             if((property = getResourceRealmProperty(resource.getClass())) != null
                     && PropertyUtils.getProperty(resource, property) == null) {
-                PropertyUtils.setProperty(resource, property, migrationCurrentStack.getCurrentRealm());
+                PropertyUtils.setProperty(resource, property, migrationContext.getCurrentRealm());
             }
         }catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);

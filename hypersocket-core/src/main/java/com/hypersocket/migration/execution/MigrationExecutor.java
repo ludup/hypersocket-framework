@@ -97,6 +97,10 @@ public class MigrationExecutor {
     @Autowired
     EncryptionService encryptionService;
 
+	@Autowired
+    MigrationContext migrationContext;
+
+
     private Map<Class<?>, MigrationImporter<AbstractEntity<Long>>> migrationImporterMap;
 
     private Map<Class<?>, MigrationExporter<AbstractEntity<Long>>> migrationExporterMap;
@@ -128,7 +132,7 @@ public class MigrationExecutor {
 
             if(realm != null) {
                 log.info("Processing import in realm {}", realm.getName());
-                migrationCurrentStack.addRealm(realm);
+                migrationContext.addRealm(realm);
             }
 
             ObjectMapper objectMapper = migrationObjectMapper.getObjectMapper();
@@ -262,7 +266,10 @@ public class MigrationExecutor {
         JsonGenerator jsonGenerator = null;
         ZipOutputStream zos = (ZipOutputStream) outputStream;
         try {
-            JsonFactory jsonFactory = new JsonFactory();
+        	migrationContext.initExport();
+        	migrationContext.addRealm(realm);
+
+        	JsonFactory jsonFactory = new JsonFactory();
             jsonGenerator = jsonFactory.createGenerator(outputStream);
             jsonGenerator.setCodec(migrationObjectMapper.getObjectMapper());
 
@@ -336,7 +343,10 @@ public class MigrationExecutor {
         }catch (IOException e) {
             log.error("Problem in export process.", e);
             throw new IllegalStateException(e.getMessage(), e);
-        }
+        }finally {
+			migrationCurrentStack.clearState();
+			migrationContext.clearContext();
+		}
     }
 
     
@@ -347,8 +357,7 @@ public class MigrationExecutor {
     	for (DatabaseProperty databaseProperty : databaseProperties) {
 			String value = databaseProperty.getValue();
 			if(ResourceUtils.isEncrypted(value)) {
-				databaseProperty.setValue(realmService.getProviderForRealm(realm)
-						.getDecryptedValue(resource, databaseProperty.getResourceKey()));
+				databaseProperty.setValue(getDecryptedValue(databaseProperty.getResourceKey(), value, resource, realm));
 			}
 		}
     }
@@ -358,6 +367,7 @@ public class MigrationExecutor {
         JsonParser jsonParser = null;
         MigrationExecutorTracker migrationExecutorTracker = new MigrationExecutorTracker();
         try {
+        	migrationContext.initImport();
             MigrationRealm migrationRealm = new MigrationRealm();
             migrationRealm.mergeData = mergeData;
 
@@ -427,6 +437,7 @@ public class MigrationExecutor {
                     //ignore
                 }
             }
+            migrationContext.clearContext();
         }
 
         return migrationExecutorTracker;
@@ -496,6 +507,30 @@ public class MigrationExecutor {
         }
     }
 
+    private String getDecryptedValue(String resourceKey, String value, AbstractResource resource, Realm realm) {
+		
+		String cacheKey = createCacheKey(resourceKey, resource);
+
+		return decryptValue(cacheKey, value, realm);
+	}
+    
+    private String decryptValue(String cacheKey, String value, Realm realm) {
+		try {
+			String e =  value.substring(5);
+			return encryptionService.decryptString(cacheKey, e, realm);
+		} catch(Exception e) {
+			log.warn("Unable to decrypt " + cacheKey + "; returning encrypted", e);
+			return value;
+		}
+	}
+    
+    private String createCacheKey(String resourceKey, AbstractResource resource) {
+		String key = resourceKey;
+		if (resource != null) {
+			key += "/" + resource.getId();
+		}
+		return key;
+	}
     public static class MigrationRealm {
         public Realm realm;
         public boolean mergeData;

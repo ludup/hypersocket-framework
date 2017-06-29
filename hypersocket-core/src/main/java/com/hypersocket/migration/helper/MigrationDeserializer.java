@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.hypersocket.migration.execution.MigrationContext;
 import com.hypersocket.migration.execution.stack.MigrationCurrentInfo;
 import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
 import com.hypersocket.migration.lookup.LookUpKey;
@@ -38,6 +39,9 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity<?>> {
 
     @Autowired
     MigrationCurrentStack migrationCurrentStack;
+    
+    @Autowired
+    MigrationContext migrationContext;
 
     @Autowired
     MigrationObjectMapper migrationObjectMapper;
@@ -64,7 +68,7 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity<?>> {
             boolean isValueToUpdateFromDb = false;
             JsonNode node = p.getCodec().readTree(p);
             MigrationCurrentInfo migrationCurrentInfo = migrationCurrentStack.getState();
-            Realm realm = migrationCurrentStack.getCurrentRealm();
+            Realm realm = migrationContext.getCurrentRealm();
             AbstractEntity<Long> resourceRootBean = (AbstractEntity<Long>) migrationCurrentInfo.getBean();
             String propertyName = migrationCurrentInfo.getPropName();
 
