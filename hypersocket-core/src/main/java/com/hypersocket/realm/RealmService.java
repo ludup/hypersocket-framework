@@ -15,7 +15,12 @@ import java.util.Map;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.resource.*;
+import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceConfirmationException;
+import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceExportException;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
 
 public interface RealmService extends PasswordEnabledAuthenticatedService {

@@ -49,6 +49,10 @@ public abstract class Resource extends AbstractResource {
 	@Transient
 	Map<String,String> properties;
 	
+	public Long getId() {
+		return super.getId();
+	}
+	
 	public boolean isSystem() {
 		return system;
 	}

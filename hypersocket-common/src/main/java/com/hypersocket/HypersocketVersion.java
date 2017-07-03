@@ -32,7 +32,7 @@ public class HypersocketVersion {
 	public static String getSerial() {
 		Preferences pref = Preferences.userNodeForPackage(HypersocketVersion.class);
 		
-		String hypersocketId = System.getProperty("hypersocket.id", "hypersocket-unknown");
+		String hypersocketId = System.getProperty("hypersocket.id", "hypersocket-one");
 		if(pref.get("hypersocket.serial", null)!=null) {
 			pref.put(hypersocketId, pref.get("hypersocket.serial", UUID.randomUUID().toString()));
 			pref.remove("hypersocket.serial");
@@ -91,7 +91,7 @@ public class HypersocketVersion {
 	}
 
 	public static String getProductId() {
-		return System.getProperty("hypersocket.id", "hypersocket-uber");
+		return System.getProperty("hypersocket.id", "hypersocket-one");
 	} 
 	
 	public static String getBrandId() {

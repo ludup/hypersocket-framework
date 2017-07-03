@@ -89,7 +89,7 @@ public class ExtensionPlace implements Serializable {
 			}
 			while (urls.hasMoreElements())
 				u.add(urls.nextElement());
-			String id = System.getProperty("hypersocket.id", "hypersocket-vpn");
+			String id = System.getProperty("hypersocket.id", "hypersocket-one");
 			if(id == null) {
 				throw new RuntimeException("System property hypersocket.id must be set for extension to function.");
 			}
