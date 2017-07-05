@@ -1,5 +1,13 @@
 package com.hypersocket.migration;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Restrictions;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeCategory;
@@ -12,12 +20,13 @@ import com.hypersocket.jobs.JobResource;
 import com.hypersocket.json.JsonMapper;
 import com.hypersocket.local.LocalGroup;
 import com.hypersocket.local.LocalUser;
+import com.hypersocket.local.LocalUserCredentials;
 import com.hypersocket.message.MessageResource;
 import com.hypersocket.migration.lookup.LookUpKey;
 import com.hypersocket.migration.properties.MigrationProperties;
+import com.hypersocket.migration.repository.MigrationExportCriteriaBuilder;
 import com.hypersocket.migration.repository.MigrationLookupCriteriaBuilder;
 import com.hypersocket.migration.repository.MigrationRepository;
-import com.hypersocket.migration.repository.MigrationExportCriteriaBuilder;
 import com.hypersocket.permissions.Permission;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.Role;
@@ -28,10 +37,6 @@ import com.hypersocket.secret.SecretKeyResource;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.util.SpringApplicationContextProvider;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
-
-import java.util.*;
 
 public class CoreMigrationProperties implements MigrationProperties {
 
@@ -43,9 +48,10 @@ public class CoreMigrationProperties implements MigrationProperties {
         buildCriteriaFor(AuthenticationModule.class);
         buildLookupCriteriaMapAuthenticationModule(AuthenticationModule.class);
         buildLookupCriteriaMapMessageResource(MessageResource.class);
+        buildCriteriaForLocalUserCredentials(LocalUserCredentials.class);
     }
 
-    @Override
+	@Override
     public Short sortOrder() {
         return 0;
     }
@@ -55,6 +61,7 @@ public class CoreMigrationProperties implements MigrationProperties {
         return Arrays.<Class<? extends AbstractEntity<Long>>>asList(
                 Realm.class,
                 LocalUser.class,
+                LocalUserCredentials.class,
                 LocalGroup.class,
                 PermissionCategory.class,
                 Permission.class,
@@ -128,7 +135,6 @@ public class CoreMigrationProperties implements MigrationProperties {
         });
     }
 
-
     private void buildLookupCriteriaMapMessageResource(final Class<MessageResource> messageResourceClass) {
         lookupCriteriaBuilderHashMap.put(messageResourceClass, new MigrationLookupCriteriaBuilder() {
             @Override
@@ -151,6 +157,23 @@ public class CoreMigrationProperties implements MigrationProperties {
             }
         });
     }
+    
+    private void buildCriteriaForLocalUserCredentials(final Class<LocalUserCredentials> localUserCredentials) {
+    	criteriaMap.put(localUserCredentials, new MigrationExportCriteriaBuilder() {
+			
+			@Override
+			public DetachedCriteria make(Realm realm) {
+				 MigrationRepository migrationRepository = (MigrationRepository) SpringApplicationContextProvider.
+	                        getApplicationContext().getBean("migrationRepository");
+	                DetachedCriteria criteria = migrationRepository.buildCriteriaFor(localUserCredentials, "luc");
+	                criteria.createAlias("luc.user", "user");
+	                criteria.createAlias("user.realm", "realm");
+	                criteria.add(Restrictions.eq("realm.id", realm.getId()));
+	                return criteria;
+			}
+		});
+		
+	}
 
 }
 

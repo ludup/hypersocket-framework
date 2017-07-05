@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,7 +183,6 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		
 		try {
 			beforeCreateResource(resource, properties);
-			resource.setLegacyId(ThreadLocalRandom.current().nextLong(1, Integer.MAX_VALUE));
 			getRepository().saveResource(resource, properties, ops);
 			updateFingerprint();
 			afterCreateResource(resource, properties);
@@ -231,6 +229,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	protected abstract void fireResourceCreationEvent(T resource, Throwable t);
 
+	@Override
 	@SafeVarargs
 	public final void updateResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {

@@ -1,10 +1,11 @@
 package com.hypersocket.migration.mapper;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hypersocket.meta.ApplicationMetaSource;
-import com.hypersocket.migration.mapper.module.MigrationImpExpModule;
-import com.hypersocket.migration.mixin.MigrationMixIn;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.collections.map.MultiValueMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +15,14 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hypersocket.meta.ApplicationMetaSource;
+import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
+import com.hypersocket.migration.mapper.module.MigrationImpExpModule;
+import com.hypersocket.migration.mapper.module.StringEnhancerModule;
+import com.hypersocket.migration.mixin.MigrationMixIn;
+import com.hypersocket.realm.RealmService;
 
 @Component
 public class MigrationObjectMapper {
@@ -26,13 +31,22 @@ public class MigrationObjectMapper {
 
     @Autowired
     MigrationImpExpModule migrationImpExpModule;
+    
+    @Autowired
+    StringEnhancerModule stringEnhancerModule;
 
     @Autowired
     MigrationHandlerInstantiator migrationHandlerInstantiator;
 
     @Autowired
     ApplicationMetaSource applicationMetaSource;
-
+    
+    @Autowired
+    MigrationCurrentStack migrationCurrentStack;
+    
+    @Autowired
+    RealmService realmService;
+    
     ObjectMapper objectMapper;
 
     Map<String, Class> customMixInMap = new HashMap<>();
@@ -40,9 +54,13 @@ public class MigrationObjectMapper {
     @PostConstruct
     private void postConstruct() {
         objectMapper = new ObjectMapper();
+        
         objectMapper.registerModule(migrationImpExpModule);
+        objectMapper.registerModule(stringEnhancerModule);
+        
         objectMapper.setHandlerInstantiator(migrationHandlerInstantiator);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        
         scanMigrationMixIn();
         addMigrationMixIn();
 
