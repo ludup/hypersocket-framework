@@ -7,11 +7,11 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -38,6 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.local.LocalGroup;
 import com.hypersocket.migration.customized.MigrationCustomExport;
 import com.hypersocket.migration.customized.MigrationCustomImport;
@@ -55,6 +56,7 @@ import com.hypersocket.migration.repository.MigrationRepository;
 import com.hypersocket.migration.util.MigrationUtil;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.DatabaseProperty;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
@@ -91,6 +93,13 @@ public class MigrationExecutor {
 
     @Autowired
     FileUploadService fileUploadService;
+    
+    @Autowired
+    EncryptionService encryptionService;
+
+	@Autowired
+    MigrationContext migrationContext;
+
 
     private Map<Class<?>, MigrationImporter<AbstractEntity<Long>>> migrationImporterMap;
 
@@ -123,7 +132,7 @@ public class MigrationExecutor {
 
             if(realm != null) {
                 log.info("Processing import in realm {}", realm.getName());
-                migrationCurrentStack.addRealm(realm);
+                migrationContext.addRealm(realm);
             }
 
             ObjectMapper objectMapper = migrationObjectMapper.getObjectMapper();
@@ -147,7 +156,7 @@ public class MigrationExecutor {
                     }
 
                     Class<?> resourceClass = MigrationExecutor.class.getClassLoader().loadClass(className);
-                    LookUpKey lookUpKey = migrationUtil.captureEntityLookup(node, resourceClass);
+                    LookUpKey lookUpKey = migrationUtil.captureEntityLookup(node, resourceClass, false);
 
                     log.info("The look up key is {}", lookUpKey);
 
@@ -155,23 +164,43 @@ public class MigrationExecutor {
 
                     if (realm != null) {
                         if (migrationLookupCriteriaBuilderMap.containsKey(resourceClass)) {
+                        	//explicit look up provided, we will use that
                             MigrationLookupCriteriaBuilder migrationLookupCriteriaBuilder = migrationLookupCriteriaBuilderMap.get(resourceClass);
                             DetachedCriteria detachedCriteria = migrationLookupCriteriaBuilder.make(realm, lookUpKey, node);
                             List<?> list = migrationRepository.executeCriteria(detachedCriteria);
                             resource = list != null && !list.isEmpty() ? (AbstractEntity<Long>) list.get(0) : null;
                         } else {
                             resource = (AbstractEntity<Long>) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey, realm);
+                            
+                            if(AbstractResource.class.isAssignableFrom(resourceClass) && resource == null && lookUpKey.isLegacyId()) {
+                            	// Some legacy records are bound to show legacy id in export json but in not in DB, due to legacy source code,
+                            	// for such records we fallback to resource id, just in case, as legacy id in json will map to resource id.
+                            	LookUpKey lookUpKeyWithResourceId = migrationUtil.captureEntityLookup(node, resourceClass, true);
+                            	resource = (AbstractEntity<Long>) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKeyWithResourceId, realm);
+                            	if(resource != null) {
+                            		log.info("The look up key is {} (Resource Id )", lookUpKeyWithResourceId);
+                            		//For some accidental case where import record shows legacy id which matches a record's resource id, but this record has
+                            		//its own legacy id, means this is accidental mismatch, should not be processed, match is not correct.
+                            		//Ideally this should not happen, but a check and log is better.
+                            		if(resource.getLegacyId() != null) {
+                            			log.info("Resource with id {} has legacy id {}, resource will be set to null", resource.getId(), resource.getLegacyId());
+                            			resource = null;
+                            		}
+                            	}
+                            }
                         }
                     } else if (realm == null && Realm.class.equals(resourceClass)) {
                         resource = migrationRepository.findRealm(lookUpKey);
                     }
 
                     if (resource == null && migrationUtil.isResourceAllowNameOnlyLookUp(resourceClass)) {
-                        //if no match with legacy let us see if some thing matching in realm by name
+                        //if no match with legacy or resource id let us see if some thing matching in realm by name and if 
+                    	//it is explicitly marked with annotation for name only look up
                         resource = (AbstractEntity<Long>) migrationRepository.findEntityByNameLookUpKey(resourceClass, lookUpKey, realm);
                     }
 
                     if (resource == null) {
+                    	//nothing there for this, lets create new
                         log.info("Resource not found creating new.");
                         resource = (AbstractEntity<Long>) resourceClass.newInstance();
                     } else {
@@ -183,11 +212,16 @@ public class MigrationExecutor {
                     resource = (AbstractEntity<Long>) objectReader.treeAsTokens(node).readValueAs(resourceClass);
 
                     if (Realm.class.equals(resourceClass)) {
-                        migrationRealm.realm = (Realm) resource;
+                    	Realm realmInProcess = (Realm) resource;
+                        migrationRealm.realm = realmInProcess;
                         realm = migrationRealm.realm;
                         //mergeData is false and realm by same name exists, throw error
                         if(!migrationRealm.mergeData && realmService.getRealmByName(realm.getName()) != null) {
                             throw new MigrationProcessRealmAlreadyExistsThrowable();
+                        }
+                        
+                        if(StringUtils.isBlank(realmInProcess.getUuid())) {
+                        	realmInProcess.setUuid(UUID.randomUUID().toString());
                         }
                     }
 
@@ -197,8 +231,7 @@ public class MigrationExecutor {
 
                     if (migrationImporterMap.containsKey(resourceClass)) {
                         MigrationImporter<AbstractEntity<Long>> migrationImporter = migrationImporterMap.get(resourceClass);
-                        log.info("Found migration importer for class {} as {}", resourceClass.getCanonicalName(),
-                                migrationImporter.getClass().getCanonicalName());
+                        log.info("Found migration importer for class {}", resourceClass.getCanonicalName());
                         migrationImporter.process(resource);
                     }
 
@@ -206,12 +239,11 @@ public class MigrationExecutor {
 
                     if (migrationImporterMap.containsKey(resourceClass)) {
                         MigrationImporter<AbstractEntity<Long>> migrationImporter = migrationImporterMap.get(resourceClass);
-                        log.info("Performing post save operation for class {} as {}", resourceClass.getCanonicalName(),
-                                migrationImporter.getClass().getCanonicalName());
+                        log.info("Performing post save operation for class {} ", resourceClass.getCanonicalName());
                         migrationImporter.postSave(resource);
                     }
 
-                    handleDatabaseProperties(nodeObjectPack, resource);
+                    handleDatabaseProperties(nodeObjectPack, resource, migrationRealm.realm);
 
                     migrationExecutorTracker.incrementSuccess();
                 }catch (Exception e) {
@@ -234,7 +266,10 @@ public class MigrationExecutor {
         JsonGenerator jsonGenerator = null;
         ZipOutputStream zos = (ZipOutputStream) outputStream;
         try {
-            JsonFactory jsonFactory = new JsonFactory();
+        	migrationContext.initExport();
+        	migrationContext.addRealm(realm);
+
+        	JsonFactory jsonFactory = new JsonFactory();
             jsonGenerator = jsonFactory.createGenerator(outputStream);
             jsonGenerator.setCodec(migrationObjectMapper.getObjectMapper());
 
@@ -273,6 +308,7 @@ public class MigrationExecutor {
                             List<DatabaseProperty> databaseProperties;
                             if (abstractEntity instanceof AbstractResource) {
                                 databaseProperties = migrationRepository.findAllDatabaseProperties((AbstractResource) abstractEntity);
+                                processEncrypted(databaseProperties, (AbstractResource) abstractEntity, realm);
                             } else {
                                 databaseProperties = Collections.emptyList();
                             }
@@ -307,15 +343,32 @@ public class MigrationExecutor {
         }catch (IOException e) {
             log.error("Problem in export process.", e);
             throw new IllegalStateException(e.getMessage(), e);
-        }
+        }finally {
+			migrationCurrentStack.clearState();
+			migrationContext.clearContext();
+		}
     }
 
-
+    
+    public void processEncrypted(List<DatabaseProperty> databaseProperties, AbstractResource resource, Realm realm) {
+    	if(databaseProperties == null) {
+    		return;
+    	}
+    	for (DatabaseProperty databaseProperty : databaseProperties) {
+			String value = databaseProperty.getValue();
+			if(ResourceUtils.isEncrypted(value)) {
+				databaseProperty.setValue(realmService.getProviderForRealm(realm)
+						.getDecryptedValue(resource, databaseProperty.getResourceKey()));
+			}
+		}
+    }
+    
     public MigrationExecutorTracker startRealmImport(InputStream inputStream, boolean mergeData) throws AccessDeniedException,
             ResourceCreationException, MigrationProcessRealmAlreadyExistsThrowable {
         JsonParser jsonParser = null;
         MigrationExecutorTracker migrationExecutorTracker = new MigrationExecutorTracker();
         try {
+        	migrationContext.initImport();
             MigrationRealm migrationRealm = new MigrationRealm();
             migrationRealm.mergeData = mergeData;
 
@@ -385,6 +438,7 @@ public class MigrationExecutor {
                     //ignore
                 }
             }
+            migrationContext.clearContext();
         }
 
         return migrationExecutorTracker;
@@ -440,45 +494,16 @@ public class MigrationExecutor {
         }
     }
 
-    private void handleDatabaseProperties(JsonNode nodeObjectPack, AbstractEntity<Long> resource) {
+    private void handleDatabaseProperties(JsonNode nodeObjectPack, AbstractEntity<Long> resource, Realm realm) throws IOException {
         if(resource instanceof AbstractResource) {
-            //currently associated if any
-            List<DatabaseProperty> databasePropertyList = realmRepository.getPropertiesForResource((AbstractResource) resource);
-
-            Map<String, String> databasePropertiesMap = new HashMap<>();
             JsonNode databasePropertiesObjectPack = nodeObjectPack.get("databaseProperties");
             Iterator<JsonNode> databasePropertiesIterator = databasePropertiesObjectPack.iterator();
             while (databasePropertiesIterator.hasNext()) {
                 JsonNode databaseProperties = databasePropertiesIterator.next();
                 String key = databaseProperties.get("resourceKey").asText();
                 String value = databaseProperties.get("value") == null ? null : databaseProperties.get("value").asText();
-                log.info("Recieved database property as {} and {}", key, value);
-                databasePropertiesMap.put(key, value);
-            }
-
-            //matching found :: update
-            for (DatabaseProperty databaseProperty : databasePropertyList) {
-                String key = databaseProperty.getResourceKey();
-                String value = databasePropertiesMap.get(key);
-                if(databasePropertiesMap.containsKey(key)) {
-                    databaseProperty.setValue(value);
-                    databasePropertiesMap.remove(key);
-                }
-            }
-
-            //no match new values : insert
-            Set<String> keySet = databasePropertiesMap.keySet();
-            for (String key: keySet) {
-                DatabaseProperty databaseProperty = new DatabaseProperty();
-                databaseProperty.setResourceKey(key);
-                databaseProperty.setValue(databasePropertiesMap.get(key));
-                databaseProperty.setResourceId(resource.getId());
-                databasePropertyList.add(databaseProperty);
-            }
-
-            //save or update all
-            for (DatabaseProperty databaseProperty : databasePropertyList) {
-                migrationRepository.saveOrUpdate(databaseProperty);
+                log.info("Recieved database property {}", key);
+                realmService.getProviderForRealm(realm).setValue((AbstractResource) resource, key, value);
             }
         }
     }

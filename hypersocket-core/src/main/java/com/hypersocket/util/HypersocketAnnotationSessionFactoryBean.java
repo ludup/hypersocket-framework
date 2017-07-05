@@ -35,7 +35,7 @@ public class HypersocketAnnotationSessionFactoryBean extends
 	public void setPackagesToScan(String...packagesToScan) {
 
 		PathMatchingResourcePatternResolver matcher = new PathMatchingResourcePatternResolver();
-		ArrayList<String> finalPackages = new ArrayList<String>(Arrays.asList(packagesToScan));
+		ArrayList<String> finalPackages = new ArrayList<>(Arrays.asList(packagesToScan));
 		
 		try {
 			Resource[] packages = matcher.getResources("classpath*:hibernate-ext.properties");

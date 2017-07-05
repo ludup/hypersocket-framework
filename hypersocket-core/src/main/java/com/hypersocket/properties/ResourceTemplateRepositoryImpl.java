@@ -55,22 +55,22 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Autowired
 	ApplicationContext applicationContext;
 	
-	Map<String, PropertyCategory> activeCategories = new HashMap<String, PropertyCategory>();
-	Map<String, PropertyTemplate> propertyTemplates = new HashMap<String, PropertyTemplate>();
+	Map<String, PropertyCategory> activeCategories = new HashMap<>();
+	Map<String, PropertyTemplate> propertyTemplates = new HashMap<>();
 	
-	Map<String, PropertyStore> propertyStoresByResourceKey = new HashMap<String, PropertyStore>();
-	Map<String, PropertyStore> propertyStoresById = new HashMap<String, PropertyStore>();
-	Set<PropertyStore> propertyStores = new HashSet<PropertyStore>();
+	Map<String, PropertyStore> propertyStoresByResourceKey = new HashMap<>();
+	Map<String, PropertyStore> propertyStoresById = new HashMap<>();
+	Set<PropertyStore> propertyStores = new HashSet<>();
 
-	List<PropertyTemplate> activeTemplates = new ArrayList<PropertyTemplate>();
-	Set<String> propertyNames = new HashSet<String>();
-	Set<String> variableNames = new HashSet<String>();
+	List<PropertyTemplate> activeTemplates = new ArrayList<>();
+	Set<String> propertyNames = new HashSet<>();
+	Set<String> variableNames = new HashSet<>();
 
-	Set<PropertyResolver> propertyResolvers = new HashSet<PropertyResolver>();
+	Set<PropertyResolver> propertyResolvers = new HashSet<>();
 	String resourceXmlPath;
 
-	static Map<String, List<ResourceTemplateRepository>> propertyContexts = new HashMap<String, List<ResourceTemplateRepository>>();
-	static Map<String, Set<PropertyTemplate>> propertyTemplatesByType = new HashMap<String, Set<PropertyTemplate>>();
+	static Map<String, List<ResourceTemplateRepository>> propertyContexts = new HashMap<>();
+	static Map<String, Set<PropertyTemplate>> propertyTemplatesByType = new HashMap<>();
 	
 	public ResourceTemplateRepositoryImpl() {
 		super();
@@ -106,7 +106,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public Set<String> getPropertyNames(AbstractResource resource) {
 
-		Set<String> results = new HashSet<String>();
+		Set<String> results = new HashSet<>();
 		results.addAll(propertyNames);
 		for (PropertyResolver r : propertyResolvers) {
 			results.addAll(r.getPropertyNames(resource));
@@ -117,7 +117,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public Set<String> getPropertyNames(AbstractResource resource, boolean includeResolvers) {
 
-		Set<String> results = new HashSet<String>();
+		Set<String> results = new HashSet<>();
 		results.addAll(propertyNames);
 		if (includeResolvers) {
 			for (PropertyResolver r : propertyResolvers) {
@@ -130,7 +130,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public Set<String> getVariableNames(AbstractResource resource) {
 
-		Set<String> results = new HashSet<String>();
+		Set<String> results = new HashSet<>();
 		results.addAll(variableNames);
 		for (PropertyResolver r : propertyResolvers) {
 			results.addAll(r.getVariableNames(resource));
@@ -141,6 +141,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	public static Set<String> getContextNames() {
 		return propertyContexts.keySet();
 	}
+	@Override
 	public void loadPropertyTemplates(String resourceXmlPath) {
 		loadPropertyTemplates(resourceXmlPath, false);
 	}
@@ -790,7 +791,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public Collection<PropertyCategory> getPropertyCategories(AbstractResource resource, PropertyFilter... filters) {
 
-		Map<String,PropertyCategory> cats = new HashMap<String,PropertyCategory>();
+		Map<String,PropertyCategory> cats = new HashMap<>();
 
 		for (PropertyCategory c : activeCategories.values()) {
 
@@ -847,7 +848,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 		}
 
-		List<PropertyCategory> list = new ArrayList<PropertyCategory>(cats.values());
+		List<PropertyCategory> list = new ArrayList<>(cats.values());
 		Collections.sort(list, new Comparator<PropertyCategory>() {
 			@Override
 			public int compare(PropertyCategory cat1, PropertyCategory cat2) {
@@ -861,7 +862,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public Collection<PropertyCategory> getPropertyCategories(AbstractResource resource, String group) {
 
-		Map<String,PropertyCategory> cats = new HashMap<String,PropertyCategory>();
+		Map<String,PropertyCategory> cats = new HashMap<>();
 		for (PropertyCategory c : activeCategories.values()) {
 			if (!c.getCategoryGroup().equals(group)) {
 				continue;
@@ -929,7 +930,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 		}
 		
-		List<PropertyCategory> list = new ArrayList<PropertyCategory>(cats.values());
+		List<PropertyCategory> list = new ArrayList<>(cats.values());
 		Collections.sort(list, new Comparator<PropertyCategory>() {
 			@Override
 			public int compare(PropertyCategory cat1, PropertyCategory cat2) {
@@ -943,7 +944,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public Collection<PropertyTemplate> getPropertyTemplates(AbstractResource resource) {
 
-		Set<PropertyTemplate> results = new HashSet<PropertyTemplate>();
+		Set<PropertyTemplate> results = new HashSet<>();
 		results.addAll(activeTemplates);
 		for (PropertyResolver r : propertyResolvers) {
 			results.addAll(r.getPropertyTemplates(resource));
@@ -953,7 +954,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	@Override
 	public Map<String, PropertyTemplate> getRepositoryTemplates() {
-		Map<String, PropertyTemplate> result = new HashMap<String, PropertyTemplate>();
+		Map<String, PropertyTemplate> result = new HashMap<>();
 		for (PropertyTemplate t : activeTemplates) {
 			result.put(t.getResourceKey(), t);
 		}
@@ -983,7 +984,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Transactional(readOnly = true)
 	public Map<String, String> getProperties(AbstractResource resource) {
 
-		Map<String, String> properties = new HashMap<String, String>();
+		Map<String, String> properties = new HashMap<>();
 		for (PropertyTemplate template : getPropertyTemplates(resource)) {
 			properties.put(template.getResourceKey(), getValue(resource, template.getResourceKey()));
 		}
@@ -994,7 +995,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Transactional(readOnly = true)
 	public Map<String, String> getProperties(AbstractResource resource, boolean decrypt) {
 
-		Map<String, String> properties = new HashMap<String, String>();
+		Map<String, String> properties = new HashMap<>();
 		for (PropertyTemplate template : getPropertyTemplates(resource)) {
 			if(template.isEncrypted()) {
 				properties.put(template.getResourceKey(), getDecryptedValue(resource, template.getResourceKey()));
@@ -1005,4 +1006,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		return properties;
 	}
 
+	public static Map<String, List<ResourceTemplateRepository>> getPropertyContexts() {
+		return Collections.unmodifiableMap(propertyContexts);
+	}
 }

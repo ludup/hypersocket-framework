@@ -28,7 +28,7 @@ public class ResourceUtils {
 		if(StringUtils.isBlank(values)) {
 			return new String[] { };
 		}
-		List<String> ret = new ArrayList<String>();
+		List<String> ret = new ArrayList<>();
 
 		String[] v = StringUtils.splitByWholeSeparator(values, "]|[");
 		
@@ -49,9 +49,9 @@ public class ResourceUtils {
 	public static String addToValues(String values, String value) {
 		List<String> vals;
 		if(StringUtils.isNotBlank(value)) {
-			vals = new ArrayList<String>(explodeCollectionValues(values));
+			vals = new ArrayList<>(explodeCollectionValues(values));
 		} else {
-			vals = new ArrayList<String>();
+			vals = new ArrayList<>();
 		}
 		vals.add(value);
 		return implodeValues(vals);
@@ -191,9 +191,11 @@ public class ResourceUtils {
 	
 	public static <T extends AbstractResource> String implodeNamePairValues(Collection<T> entities) {
 		return implodeNamePairValues(new NameValueImploder<T>() {
+			@Override
 			public String getId(T t) {
 				return String.valueOf(t.getId());
 			}
+			@Override
 			public String getName(T t) {
 				return t.getName();
 			}
@@ -230,7 +232,7 @@ public class ResourceUtils {
 	public static List<NameValuePair> explodeNamePairs(String values) {
 		
 		String[] pairs = explodeValues(values);
-		List<NameValuePair> result = new ArrayList<NameValuePair>();
+		List<NameValuePair> result = new ArrayList<>();
 		for(String pair : pairs) {
 			result.add(new NameValuePair(pair));
 		}
@@ -267,7 +269,7 @@ public class ResourceUtils {
 		}
 		return value.replaceFirst(getEncryptedTag(), "").replaceFirst(getUUIDEncryptedTag(), "");
 	}
-
+	
 	public static boolean isNamePair(String id) {
 		return id.indexOf("=") > -1;
 	}
@@ -281,7 +283,7 @@ public class ResourceUtils {
 	}
 	
 	public static Long[] createResourceIdArray(Collection<? extends Resource> resources) {
-		List<Long> ids = new ArrayList<Long>();
+		List<Long> ids = new ArrayList<>();
 		for(Resource r : resources) {
 			ids.add(r.getId());
 		}
@@ -290,7 +292,7 @@ public class ResourceUtils {
 
 	public static Map<String,String> filterResourceProperties(Collection<PropertyTemplate> templates, Map<String,String> properties) {
 		
-		Map<String,String> ret = new HashMap<String,String>();
+		Map<String,String> ret = new HashMap<>();
 		for(PropertyTemplate t : templates) {
 			if(!(t.getPropertyStore() instanceof EntityResourcePropertyStore)) {
 				String value = properties.get(t.getResourceKey());

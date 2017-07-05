@@ -10,6 +10,8 @@ package com.hypersocket.repository;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
@@ -34,6 +36,7 @@ public abstract class AbstractEntity<T> implements Serializable{
 	public abstract T getId();
 
 	@Column(name="legacy_id")
+	@Access(AccessType.PROPERTY)
 	T legacyId;
 	
 	@Column(name="deleted", nullable=false)
