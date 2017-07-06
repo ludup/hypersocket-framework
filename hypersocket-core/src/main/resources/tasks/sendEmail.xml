@@ -26,13 +26,9 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email.attachments"
 		resourceBundle="TriggerResourceService" weight="4000">
-		<property resourceKey="attach.event" inputType="switch"
-			weight="0" defaultValue="false"/>
-		<property resourceKey="attach.eventSourceType" inputType="multipleTextInput"
-			weight="0" defaultValue=""/>
 		<property resourceKey="attach.static" inputType="multipleFileInput"
 			weight="50" defaultValue="" allowEmpty="true" text=""/>
 		<property resourceKey="attach.dynamic" inputType="namePairs" showEmptyRow="false"
-			weight="100" defaultValue="" onlyName="false" text=""/>
+			weight="100" defaultValue="" onlyName="true" text=""/>
 	</propertyCategory>
 </propertyTemplates>

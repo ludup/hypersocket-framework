@@ -42,7 +42,6 @@ import com.hypersocket.triggers.ValidationException;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.upload.FileUploadService;
 import com.hypersocket.util.CloseOnEOFInputStream;
-import com.hypersocket.utils.HypersocketUtils;
 
 @Component
 public class EmailTask extends AbstractTaskProvider {
@@ -178,25 +177,7 @@ public class EmailTask extends AbstractTaskProvider {
 		}
 		
 		List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
-		
-		if(repository.getBooleanValue(task, ATTR_EVENT_SOURCE) && event instanceof EmailAttachmentSource) {
-			
-			String[] attachmentType = ResourceUtils.explodeValues(
-					repository.getValue(task, ATTR_EVENT_SOURCE_TYPE));
-			String[] eventAttachments = ((EmailAttachmentSource)event).getEmailAttachments();
-			for(String attachment : eventAttachments) {
-				try {
-					if(HypersocketUtils.isUUID(attachment)) {
-						addUUIDAttachment(attachment, attachmentType, attachments);
-					} else {
-						addFileAttachment(attachment, attachments, event);
-					}
-				} catch (Exception e) {
-					return new EmailTaskResult(this, currentRealm, task, e);
-				}
-			}
-			
-		}
+	
 		
 		for(String uuid : repository.getValues(task, ATTR_STATIC_ATTACHMENTS)) {
 			try {
@@ -256,14 +237,26 @@ public class EmailTask extends AbstractTaskProvider {
 	
 	private void addFileAttachment(String path, List<EmailAttachment> attachments, SystemEvent event) throws FileNotFoundException {
 		
-		String filename = ResourceUtils.getNamePairKey(path);
-		String filepath = ResourceUtils.getNamePairValue(path);
+		String filename = null;
+		String filepath;
+
+		if(ResourceUtils.isNamePair(path)) {
+			filename = ResourceUtils.getNamePairKey(path);
+			filename = processTokenReplacements(filename, event);
+			
+			filepath = ResourceUtils.getNamePairValue(path);
+		} else {
+			filepath = path;
+		}
 		
-		filename = processTokenReplacements(filename, event);
 		filepath = processTokenReplacements(filepath, event);
 		File file = new File(filepath);
 		if(!file.exists()) {
 			throw new FileNotFoundException(filepath + " does not exist");
+		}
+		
+		if(filename==null) {
+			filename = file.getName();
 		}
 		
 		attachments.add(new EmailAttachment(filename, uploadService.getContentType(file), 
