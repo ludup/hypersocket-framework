@@ -87,6 +87,5 @@ public class FormTemplate {
 	public void setShowStartAgain(boolean showStartAgain) {
 		this.showStartAgain = showStartAgain;
 	}
-	
-	
+
 }

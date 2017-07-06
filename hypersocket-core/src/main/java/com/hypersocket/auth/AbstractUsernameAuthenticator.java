@@ -1,11 +1,16 @@
 package com.hypersocket.auth;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 
 
@@ -17,6 +22,12 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 	@Autowired
 	AuthenticationService authenticationService;
 
+	@Autowired
+	SystemConfigurationService systemConfigurationService;
+	
+	@Autowired
+	RealmRepository realmRepository;
+	
 	@Override
 	public AuthenticatorResult authenticate(AuthenticationState state,
 			@SuppressWarnings("rawtypes") Map parameters)
@@ -55,6 +66,23 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 			return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
 		}
 
+	}
+	
+	protected List<Realm> getLogonRealms(AuthenticationState state) {
+		List<Realm> realms = new ArrayList<Realm>();
+		if(state.getHostRealm()==null) {
+			if (systemConfigurationService.getBooleanValue("auth.chooseRealm")) {
+				if(!realmService.isRealmStrictedToHost(state.getRealm())) {		
+					for(Realm realm : realmRepository.allRealms()) {
+						if(!realmService.isRealmStrictedToHost(realm)) {
+							realms.add(realm);
+						}
+					}
+				}
+			}
+		}
+//		}
+		return realms;
 	}
 	
 	protected abstract boolean processFields(AuthenticationState state,

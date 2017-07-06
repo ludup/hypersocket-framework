@@ -323,7 +323,8 @@ public class AuthenticationServiceImpl extends
 					hostHeader = hostHeader.substring(0, idx);
 				}
 
-				state.setRealm(realmService.getRealmByHost(hostHeader, realm));
+				state.setRealm(realmService.getRealmByHost(hostHeader, null));
+				state.setHostRealm(state.getRealm());
 			}
 		}
 
@@ -711,8 +712,8 @@ public class AuthenticationServiceImpl extends
 			throw new IllegalStateException(
 					"There are no post authentcation steps to process!");
 		}
-		return modifyTemplate(state, state.getCurrentPostAuthenticationStep()
-				.createTemplate(state));
+		FormTemplate t = modifyTemplate(state, state.getCurrentPostAuthenticationStep().createTemplate(state));
+		return t;
 	}
 
 	@Override

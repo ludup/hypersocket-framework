@@ -32,6 +32,7 @@ public class AuthenticationState {
 	String lastPrincipalName;
 	String lastRealmName;
 	Realm realm;
+	Realm hostRealm;
 	Principal principal;
 	Principal lastPrincipal;
 	Session session;
@@ -119,6 +120,7 @@ public class AuthenticationState {
 
 	public void setRealm(Realm realm) {
 		this.realm = realm;
+		this.hostRealm = null;
 	}
 
 	public Session getSession() {
@@ -281,6 +283,14 @@ public class AuthenticationState {
 
 	public void setLastPrincipal(Principal lastPrincipal) {
 		this.lastPrincipal = lastPrincipal;
+	}
+
+	public Realm getHostRealm() {
+		return hostRealm;
+	}
+
+	public void setHostRealm(Realm hostRealm) {
+		this.hostRealm = hostRealm;
 	}
 	
 	
