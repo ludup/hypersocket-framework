@@ -58,8 +58,12 @@ public class AuthenticationState {
 	public void clean() {
 		currentIndex = 0;
 		attempts = 0;
+		lastPrincipal = null;
+		lastPrincipalName = null;
+		lastRealmName = null;
 		lastErrorMsg = null;
 		lastErrorIsResourceKey = false;
+		parameters.clear();
 	}
 	
 	public void addParameter(String name, String value) {

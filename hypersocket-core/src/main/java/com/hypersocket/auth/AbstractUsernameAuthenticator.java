@@ -53,15 +53,14 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 			Principal principal = authenticationService.resolvePrincipalAndRealm(
 					state, username);
 
-			boolean result = verifyCredentials(state, principal, parameters);
+			AuthenticatorResult result = verifyCredentials(state, principal, parameters);
 
-			if (result) {
+			if (result == AuthenticatorResult.AUTHENTICATION_SUCCESS) {
 				state.setRealm(principal.getRealm());
 				state.setPrincipal(principal);
 			}
 
-			return result ? AuthenticatorResult.AUTHENTICATION_SUCCESS
-					: AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_CREDENTIALS;
+			return result;
 		} catch (PrincipalNotFoundException e) {
 			return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
 		}
@@ -88,7 +87,7 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 	protected abstract boolean processFields(AuthenticationState state,
 			@SuppressWarnings("rawtypes") Map parameters);
 
-	protected abstract boolean verifyCredentials(AuthenticationState state,
+	protected abstract AuthenticatorResult verifyCredentials(AuthenticationState state,
 			Principal principal, 
 			@SuppressWarnings("rawtypes") Map parameters);
 	

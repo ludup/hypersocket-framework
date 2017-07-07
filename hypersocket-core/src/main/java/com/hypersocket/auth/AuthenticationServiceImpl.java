@@ -646,6 +646,8 @@ public class AuthenticationServiceImpl extends
 				eventService.publishEvent(new AuthenticationAttemptEvent(
 						this, state, authenticator,
 						"hint.accountSuspended"));
+				
+				state.clean();
 				return false;
 			} 
 		}

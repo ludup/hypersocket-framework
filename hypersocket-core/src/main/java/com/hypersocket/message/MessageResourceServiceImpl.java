@@ -331,7 +331,7 @@ public class MessageResourceServiceImpl extends
 		Set<String> vars = new TreeSet<String>();
 		vars.addAll(ResourceUtils.explodeCollectionValues(message.getSupportedVariables()));
 		vars.addAll(Arrays.asList("trackingImage", "email", "firstName",
-				"fullName", "principalId", "serverUrl", "serverName"));
+				"fullName", "principalId", "serverUrl", "serverName", "serverHost"));
 		return vars;
 	}
 

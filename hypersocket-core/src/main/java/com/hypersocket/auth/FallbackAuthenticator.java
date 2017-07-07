@@ -31,7 +31,7 @@ public class FallbackAuthenticator extends UsernameAndPasswordAuthenticator {
 	}
 	
 	@Override
-	protected boolean verifyCredentials(AuthenticationState state,
+	protected AuthenticatorResult verifyCredentials(AuthenticationState state,
 			Principal principal, @SuppressWarnings("rawtypes") Map parameters) {
 		
 		/**
@@ -39,7 +39,7 @@ public class FallbackAuthenticator extends UsernameAndPasswordAuthenticator {
 		 * admin access to this authenticator.
 		 */
 		if(!permissionService.hasSystemPermission(principal)) {
-			return false;
+			return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_CREDENTIALS;
 		}
 		
 		return super.verifyCredentials(state, principal, parameters);

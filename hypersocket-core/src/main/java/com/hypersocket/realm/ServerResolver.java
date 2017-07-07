@@ -22,5 +22,6 @@ public class ServerResolver extends StaticResolver {
 		
 		addToken("serverName", configurationService.getValue(realm, "email.serverName"));
 		addToken("serverUrl", serverUrl);
+		addToken("serverHost", realmService.getRealmHostname(realm));
 	}
 }

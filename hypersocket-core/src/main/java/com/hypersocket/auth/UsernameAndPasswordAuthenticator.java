@@ -7,8 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -19,7 +17,6 @@ import org.springframework.stereotype.Component;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractResourceRepository;
@@ -103,7 +100,7 @@ public class UsernameAndPasswordAuthenticator extends
 	}
 
 	@Override
-	protected boolean verifyCredentials(AuthenticationState state,
+	protected AuthenticatorResult verifyCredentials(AuthenticationState state,
 			Principal principal, @SuppressWarnings("rawtypes") Map parameters) {
 
 		String password = AuthenticationUtils.getRequestParameter(parameters,
@@ -120,7 +117,7 @@ public class UsernameAndPasswordAuthenticator extends
 			state.addParameter("password", password);
 		}
 
-		return success;
+		return success ? AuthenticatorResult.AUTHENTICATION_SUCCESS : AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_CREDENTIALS;
 	}
 
 	@Override
