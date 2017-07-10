@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -247,7 +248,8 @@ public class FileUploadServiceImpl extends
 		}
 		
 		response.setContentType(contentType);
-
+		response.setStatus(HttpStatus.SC_OK);
+		
 		if(forceDownload) {
 			response.setHeader("Content-disposition", "attachment; filename="
 				+ fileUpload.getFileName());

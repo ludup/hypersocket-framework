@@ -208,7 +208,6 @@ public class FileStoreController extends ResourceController {
 	}
 
 	@RequestMapping(value = "files/download/{uuid}", method = RequestMethod.GET)
-	@ResponseStatus(value = HttpStatus.OK)
 	public void downloadFile(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String uuid)
 			throws AccessDeniedException, UnauthorizedException,
@@ -218,7 +217,6 @@ public class FileStoreController extends ResourceController {
 	}
 	
 	@RequestMapping(value = "files/download/{uuid}/{filename}", method = RequestMethod.GET)
-	@ResponseStatus(value = HttpStatus.OK)
 	public void downloadFile(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String uuid, 
 			@PathVariable String filename)
@@ -229,7 +227,6 @@ public class FileStoreController extends ResourceController {
 	}
 	
 	@RequestMapping(value = "files/public/{uuid}/{filename}", method = RequestMethod.GET)
-	@ResponseStatus(value = HttpStatus.OK)
 	public void downloadPublicFile(HttpServletRequest request,
 			HttpServletResponse response, 
 			@PathVariable String uuid,
@@ -241,7 +238,6 @@ public class FileStoreController extends ResourceController {
 	}
 	
 	@RequestMapping(value = "files/public/{uuid}", method = RequestMethod.GET)
-	@ResponseStatus(value = HttpStatus.OK)
 	public void downloadPublicFile(HttpServletRequest request,
 			HttpServletResponse response, 
 			@PathVariable String uuid)

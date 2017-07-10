@@ -60,15 +60,15 @@ public abstract class IconResourceController<T extends Resource> extends Resourc
 			HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException, IOException,
 			ResourceNotFoundException {
-
-		if(HypersocketUtils.isUUID(url)) {
-			fileService.downloadURIFile(url, request, response, false);
-			return;
-		} 
 		
 		if(CacheUtils.checkValidCache(request, response, resource.getModifiedDate().getTime())) {
 			return;
 		}
+		
+		if(HypersocketUtils.isUUID(url)) {
+			fileService.downloadURIFile(url, request, response, false);
+			return;
+		} 
 		
 		url = HypersocketUtils.urlDecode(url.substring(7));
 		String name = resource.getName();

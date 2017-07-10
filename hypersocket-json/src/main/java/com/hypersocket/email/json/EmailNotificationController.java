@@ -63,7 +63,6 @@ public class EmailNotificationController extends AuthenticatedController {
 	
 	
 	@RequestMapping(value = "emails/receipt/{id}/{filename}", method = RequestMethod.GET, produces = { "image/*" })
-	@ResponseStatus(value = HttpStatus.OK)
 	public void getReceipt(
 			HttpServletRequest request, HttpServletResponse response,
 			@PathVariable Long id,
