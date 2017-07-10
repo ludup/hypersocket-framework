@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -235,8 +237,9 @@ public class EmailTask extends AbstractTaskProvider {
 		}
 	}
 	
-	private void addFileAttachment(String path, List<EmailAttachment> attachments, SystemEvent event) throws FileNotFoundException {
+	private void addFileAttachment(String path, List<EmailAttachment> attachments, SystemEvent event) throws FileNotFoundException, UnsupportedEncodingException {
 		
+		path = URLDecoder.decode(path, "UTF-8");
 		String filename = null;
 		String filepath;
 

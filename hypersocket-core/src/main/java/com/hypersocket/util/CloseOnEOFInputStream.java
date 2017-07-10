@@ -11,7 +11,7 @@ import java.io.InputStream;
 public class CloseOnEOFInputStream extends InputStream {
 
 	InputStream in;
-	
+	boolean closed = false;
 	
 	public CloseOnEOFInputStream(InputStream in) {
 		this.in = in;
@@ -19,6 +19,9 @@ public class CloseOnEOFInputStream extends InputStream {
 
 	@Override
 	public int read() throws IOException {
+		if(closed) {
+			return -1;
+		}
 		int r = in.read();
 		checkClose(r);
 		return r;
@@ -26,6 +29,9 @@ public class CloseOnEOFInputStream extends InputStream {
 	
 	@Override
 	public int read(byte[] buf, int off, int len) throws IOException {
+		if(closed) {
+			return -1;
+		}
 		int r = in.read(buf, off, len);
 		checkClose(r);
 		return r;
@@ -34,6 +40,7 @@ public class CloseOnEOFInputStream extends InputStream {
 	private void checkClose(int r) throws IOException {
 		if(r==-1) {
 			in.close();
+			closed = true;
 		}
 	}
 
