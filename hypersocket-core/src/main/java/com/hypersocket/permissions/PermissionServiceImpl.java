@@ -225,7 +225,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
-	public Role createRole(String name, Realm realm) throws AccessDeniedException, ResourceCreationException {
+	public Role createRole(String name, Realm realm, RoleType type) throws AccessDeniedException, ResourceCreationException {
 		assertPermission(RolePermission.CREATE);
 		try {
 			getRole(name, realm);
@@ -234,20 +234,20 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			throw ex;
 		} catch (ResourceNotFoundException re) {
 			return createRole(name, realm, Collections.<Principal>emptyList(), Collections.<Permission>emptyList(),
-					null, false, false);
+					null, false, false, type);
 		}
 	}
 
 	@Override
 	public Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
-			Map<String, String> properties) throws AccessDeniedException, ResourceCreationException {
-		return createRole(name, realm, principals, permissions, properties, false, false);
+			Map<String, String> properties, RoleType type) throws AccessDeniedException, ResourceCreationException {
+		return createRole(name, realm, principals, permissions, properties, false, false, type);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
-			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole)
+			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole, RoleType type)
 			throws AccessDeniedException, ResourceCreationException {
 
 		assertPermission(RolePermission.CREATE);
@@ -263,6 +263,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				role.setRealm(realm);
 				role.setPersonalRole(isPrincipalRole);
 				role.setSystem(isSystemRole);
+				role.setType(type);
 				repository.saveRole(role, realm, principals.toArray(new Principal[0]), permissions, properties,
 						new TransactionAdapter<Role>() {
 
@@ -961,7 +962,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 						log.info(String.format("Creating role with name %s in realm %s.", roleName, realm.getName()));
 					}
 
-					Role role = createRole(roleName, realm);
+					Role role = createRole(roleName, realm, RoleType.CUSTOM);
 
 					assignRole(role, principals);
 
@@ -1055,11 +1056,11 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		return repository.getPrincpalsByRole(realm, roles);
 	}
 
-	protected void createPrincipalRole(Principal principal) {
+	protected void createPrincipalRole(Principal principal, RoleType type) {
 		if (principal.isPrimaryAccount()) {
 			try {
 				createRole(principal.getPrincipalName(), principal.getRealm(), Arrays.asList(principal),
-						Collections.<Permission>emptyList(), null, true, true);
+						Collections.<Permission>emptyList(), null, true, true, type);
 			} catch (ResourceCreationException | AccessDeniedException e) {
 				log.error("Failed to create principal role", e);
 			}
@@ -1084,7 +1085,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@SystemContextRequired
 	public void onUserCreated(UserCreatedEvent event) {
 		if (event.isSuccess()) {
-			createPrincipalRole(event.getTargetPrincipal());
+			createPrincipalRole(event.getTargetPrincipal(), RoleType.USER);
 		}
 	}
 
@@ -1102,7 +1103,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@SystemContextRequired
 	public void onGroupCreated(GroupCreatedEvent event) {
 		if (event.isSuccess()) {
-			createPrincipalRole(event.getTargetPrincipal());
+			createPrincipalRole(event.getTargetPrincipal(), RoleType.GROUP);
 		}
 	}
 

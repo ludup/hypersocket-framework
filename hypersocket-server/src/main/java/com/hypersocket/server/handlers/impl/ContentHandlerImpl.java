@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
-import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;

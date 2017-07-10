@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Permission;
 import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.permissions.RoleType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -72,7 +73,7 @@ public class core_1_DOT_3_DOT_0_R1 implements Runnable {
 							try {
 								permissionService.createRole(user.getPrincipalDescription(), realm, 
 										Arrays.asList(user), 
-										Collections.<Permission>emptyList(), null, true, true);
+										Collections.<Permission>emptyList(), null, true, true, RoleType.USER);
 							} catch (ResourceCreationException e) {
 								log.error("Could not create principal role", e);
 							}
@@ -81,7 +82,7 @@ public class core_1_DOT_3_DOT_0_R1 implements Runnable {
 							try { 
 								permissionService.createRole(group.getPrincipalName(), realm, 
 										Arrays.asList(group), 
-										Collections.<Permission>emptyList(), null, true, true);
+										Collections.<Permission>emptyList(), null, true, true, RoleType.GROUP);
 							} catch (ResourceCreationException e) {
 								log.error("Could not create principal role", e);
 							}

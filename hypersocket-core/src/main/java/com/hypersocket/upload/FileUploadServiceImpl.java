@@ -42,7 +42,6 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.util.CloseOnEOFInputStream;
 import com.hypersocket.utils.HypersocketUtils;
-import com.mchange.v1.cachedstore.CachedStoreUtils;
 
 @Service
 public class FileUploadServiceImpl extends

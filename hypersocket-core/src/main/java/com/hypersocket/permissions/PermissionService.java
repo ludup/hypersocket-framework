@@ -37,7 +37,7 @@ public interface PermissionService extends AuthenticatedService {
 
 	List<Permission> getPermissions(String...resourceKeys);
 
-	public Role createRole(String name, Realm realm) throws AccessDeniedException, ResourceCreationException;
+	public Role createRole(String name, Realm realm, RoleType type) throws AccessDeniedException, ResourceCreationException;
 
 	public void unassignRole(Role customerRole, Principal principal) throws AccessDeniedException, ResourceException;
 	
@@ -61,11 +61,11 @@ public interface PermissionService extends AuthenticatedService {
 	public List<Permission> allPermissions();
 
 	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
-			Map<String, String> properties)
+			Map<String, String> properties, RoleType type)
 			throws AccessDeniedException, ResourceCreationException;
 	
 	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
-			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole)
+			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole, RoleType type)
 			throws AccessDeniedException, ResourceCreationException;
 
 	Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions, Map<String,String> properties)

@@ -35,12 +35,13 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Permission;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
+import com.hypersocket.permissions.RoleColumns;
+import com.hypersocket.permissions.RoleType;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmColumns;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -219,7 +220,7 @@ public class RoleController extends ResourceController {
 
 						@Override
 						public Column getColumn(String col) {
-							return RealmColumns.valueOf(col.toUpperCase());
+							return RoleColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override
@@ -285,7 +286,7 @@ public class RoleController extends ResourceController {
 
 			if (role.getId() == null) {
 				newRole = permissionService.createRole(role.getName(), realm,
-						principals, permissions, values);
+						principals, permissions, values, RoleType.CUSTOM);
 			} else {
 				newRole = permissionService.updateRole(
 						permissionService.getRoleById(role.getId(), realm),
@@ -395,7 +396,7 @@ public class RoleController extends ResourceController {
 
 						@Override
 						public Column getColumn(String col) {
-							return RealmColumns.valueOf(col.toUpperCase());
+							return RoleColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override

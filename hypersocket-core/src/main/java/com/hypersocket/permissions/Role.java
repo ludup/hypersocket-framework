@@ -59,6 +59,9 @@ public class Role extends RealmResource {
 	@Column(name="personal_role", nullable=true)
 	Boolean personalRole = new Boolean(false);
 	
+	@Column(name="role_type")
+	RoleType type;
+	
 	public Set<Permission> getPermissions() {
 		return permissions;
 	}
@@ -97,5 +100,13 @@ public class Role extends RealmResource {
 
 	public void setPersonalRole(Boolean personalRole) {
 		this.personalRole = personalRole;
+	}
+
+	public RoleType getType() {
+		return type;
+	}
+
+	public void setType(RoleType type) {
+		this.type = type;
 	}
 }
