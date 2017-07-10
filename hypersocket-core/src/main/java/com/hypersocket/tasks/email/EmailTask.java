@@ -196,7 +196,7 @@ public class EmailTask extends AbstractTaskProvider {
 		for(String path : repository.getValues(task,  ATTR_DYNAMIC_ATTACHMENTS)) {
 			try {
 				addFileAttachment(path, attachments, event);
-			} catch (FileNotFoundException e) {
+			} catch (FileNotFoundException | UnsupportedEncodingException e) {
 				return new EmailTaskResult(this, currentRealm, task, e);
 			}
 		}
