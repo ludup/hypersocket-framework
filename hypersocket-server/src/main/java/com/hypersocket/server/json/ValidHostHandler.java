@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.config.SystemConfigurationService;
-import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.server.HypersocketServer;
 import com.hypersocket.server.handlers.HttpRequestHandler;

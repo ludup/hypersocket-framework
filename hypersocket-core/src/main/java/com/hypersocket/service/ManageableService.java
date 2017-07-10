@@ -1,5 +1,7 @@
 package com.hypersocket.service;
 
+import java.util.Collection;
+
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize(as=ManageableService.class)
@@ -9,14 +11,8 @@ public interface ManageableService {
 	
 	boolean start();
 	
-	String getResourceKey();
+	boolean isSystem();
 	
-	String getResourceBundle();
-	
-	boolean isRunning();
-	
-	boolean isError();
-	
-	String getErrorText();
+	Collection<ServiceStatus> getStatus();
 	
 }
