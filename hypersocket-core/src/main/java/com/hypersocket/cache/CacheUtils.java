@@ -1,5 +1,6 @@
 package com.hypersocket.cache;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -7,6 +8,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpHeaders;
@@ -37,11 +39,22 @@ public class CacheUtils {
         // Add cache headers
         time.add(Calendar.SECOND, HTTP_CACHE_SECONDS);
         response.setHeader(HttpHeaders.EXPIRES, dateFormatter.format(time.getTime()));
-        response.setHeader(HttpHeaders.CACHE_CONTROL, "private, max-age=" + HTTP_CACHE_SECONDS);
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "max-age=" + HTTP_CACHE_SECONDS);
 		response.setHeader( HttpHeaders.LAST_MODIFIED, dateFormatter.format(new Date(lastModified)));
     }
 
     public static void setDateAndCacheHeaders(HttpServletResponse response) {
     	setDateAndCacheHeaders(response, System.currentTimeMillis());
     }
+
+	public static boolean checkValidCache(HttpServletRequest request, HttpServletResponse response, long lastModified) throws IOException {
+		
+		long ifModifiedSince = request.getDateHeader("If-Modified-Since");
+		if(ifModifiedSince != -1 && lastModified <= ifModifiedSince) {
+			CacheUtils.setDateAndCacheHeaders(response, lastModified);
+			response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+			return true;
+		}
+		return false;
+	}
 }

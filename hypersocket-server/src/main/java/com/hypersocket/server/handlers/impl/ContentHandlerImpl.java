@@ -30,8 +30,10 @@ import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
+import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
@@ -115,6 +117,18 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			
 			// Cache Validation
 			if(!isDynamic(path)) {
+				String etag = request.getHeader(HttpHeaders.IF_NONE_MATCH);
+				if (etag != null && !etag.equals("")) {
+					String currentEtag = DigestUtils.sha256Hex(path + "|" + getLastModified(path));
+					if(currentEtag.equals(etag)) {
+						if(log.isDebugEnabled()) {
+							log.debug(path + " has not been modified");
+						}
+						sendNotModified(response);
+						return;
+					}
+					
+				}
 				String ifModifiedSince = request.getHeader(HttpHeaders.IF_MODIFIED_SINCE);
 				if (ifModifiedSince != null && !ifModifiedSince.equals("")) {
 				    SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
@@ -137,6 +151,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 						return;
 					}
 				}
+
 			}
 
 			long fileLength = getResourceLength(path);
@@ -320,12 +335,22 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
         // Add cache headers
         time.add(Calendar.SECOND, HTTP_CACHE_SECONDS);
         response.setHeader(HttpHeaders.EXPIRES, dateFormatter.format(time.getTime()));
-        response.setHeader(HttpHeaders.CACHE_CONTROL, "private, max-age=" + HTTP_CACHE_SECONDS);
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, max-age=" + HTTP_CACHE_SECONDS);
+       
         try {
-			response.setHeader(
-			        HttpHeaders.LAST_MODIFIED, dateFormatter.format(new Date(getLastModified(path))));
+        	 long lastModified = getLastModified(path);
+			response.setHeader(HttpHeaders.LAST_MODIFIED, dateFormatter.format(new Date()));
+			if(supportsEtag()) {
+	        	response.setHeader(HttpHeaders.ETAG, DigestUtils.sha256Hex(path + "|" + lastModified));
+	        }
 		} catch (FileNotFoundException e) {
 		}
+   
+        
+    }
+    
+    protected boolean supportsEtag() {
+    	return true;
     }
 
     /**

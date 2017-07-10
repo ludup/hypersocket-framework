@@ -49,4 +49,6 @@ public interface AuthenticatedService {
 
 	void setCurrentRole(Session session, Role role);
 
+	boolean hasSystemContext();
+
 }

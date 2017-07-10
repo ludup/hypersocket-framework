@@ -28,6 +28,7 @@ import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
@@ -275,6 +276,16 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	@Override
 	public boolean hasAuthenticatedContext() {
 		return currentPrincipal.get() != null;
+	}
+	
+	@Override 
+	public boolean hasSystemContext() {
+		try {
+			Principal principal = getCurrentPrincipal();
+			return principal.isSystem() && principal.getType() == PrincipalType.SYSTEM;
+		} catch (InvalidAuthenticationContext e) {
+			return false;
+		}
 	}
 	
 	@Override

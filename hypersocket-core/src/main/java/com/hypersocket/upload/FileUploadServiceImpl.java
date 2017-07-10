@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.hypersocket.cache.CacheUtils;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -40,6 +41,7 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.util.CloseOnEOFInputStream;
 import com.hypersocket.utils.HypersocketUtils;
+import com.mchange.v1.cachedstore.CachedStoreUtils;
 
 @Service
 public class FileUploadServiceImpl extends
@@ -233,11 +235,15 @@ public class FileUploadServiceImpl extends
 
 		FileUpload fileUpload = getFileUpload(uuid);
 
+		if(CacheUtils.checkValidCache(request, response, fileUpload.getModifiedDate().getTime())) {
+			return;
+		}
+		
 		InputStream in = getInputStream(uuid);
 		String contentType = mimeTypesMap.getContentType(fileUpload.getFileName());
 		
-		if(log.isInfoEnabled()) {
-			log.info(String.format("Setting Content-Type of request to %s", contentType));
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("Setting Content-Type of request to %s", contentType));
 		}
 		
 		response.setContentType(contentType);
@@ -249,6 +255,7 @@ public class FileUploadServiceImpl extends
 
 		// Let the HTTP server handle it.
 		request.setAttribute(CONTENT_INPUTSTREAM, in);
+		CacheUtils.setDateAndCacheHeaders(response, fileUpload.getModifiedDate().getTime());
 	}
 	
 	@Override

@@ -66,10 +66,7 @@ public abstract class IconResourceController<T extends Resource> extends Resourc
 			return;
 		} 
 		
-		long ifModifiedSince = request.getDateHeader("If-Modified-Since");
-		if(ifModifiedSince != -1 && resource.getModifiedDate().getTime() <= ifModifiedSince) {
-			CacheUtils.setDateAndCacheHeaders(response, resource.getModifiedDate().getTime());
-			response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+		if(CacheUtils.checkValidCache(request, response, resource.getModifiedDate().getTime())) {
 			return;
 		}
 		
