@@ -51,4 +51,6 @@ public interface AuthenticatedService {
 
 	boolean hasSystemContext();
 
+	void setupSystemContext();
+
 }

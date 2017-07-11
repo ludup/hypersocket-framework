@@ -85,6 +85,11 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	}
 	
 	@Override
+	public void setupSystemContext() {
+		setCurrentSession(sessionService.getSystemSession(), Locale.getDefault());
+	}
+	
+	@Override
 	public void setCurrentSession(Session session, Locale locale) {
 		setCurrentSession(session, session.getCurrentRealm(), locale);
 	}

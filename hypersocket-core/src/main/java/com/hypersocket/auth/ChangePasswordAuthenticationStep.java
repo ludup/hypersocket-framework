@@ -68,6 +68,8 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}
 		
+		authenticationService.setupSystemContext();
+		
 		try {
 			if(state.hasParameter("password")) {
 				realmService.changePassword(state.getPrincipal(), state.getParameter("password"), password);
@@ -82,6 +84,8 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 			state.setLastErrorIsResourceKey(false);
 			
 			return AuthenticatorResult.AUTHENTICATION_FAILURE_DISPALY_ERROR;
+		} finally {
+			authenticationService.clearPrincipalContext();
 		}
 		
 		
@@ -104,7 +108,7 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 
 	@Override
 	public boolean requiresSession(AuthenticationState state) {
-		return true;
+		return false;
 	}
 
 }

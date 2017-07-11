@@ -66,6 +66,9 @@ public class AuthenticationScheme extends RealmResource {
 	@OneToMany(fetch=FetchType.LAZY, mappedBy="scheme") 
 	Set<AuthenticationModule> modules;
 	
+	@Column
+	String deniedRoleError;
+	
 	public String getResourceKey() {
 		return resourceKey;
 	}
@@ -128,6 +131,14 @@ public class AuthenticationScheme extends RealmResource {
 
 	public Set<Role> getDeniedRoles() {
 		return deniedRoles;
+	}
+
+	public String getDeniedRoleError() {
+		return deniedRoleError;
+	}
+
+	public void setDeniedRoleError(String deniedRoleError) {
+		this.deniedRoleError = deniedRoleError;
 	}
 	
 
