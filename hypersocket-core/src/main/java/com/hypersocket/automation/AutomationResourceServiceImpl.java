@@ -75,9 +75,6 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	EventService eventService;
 
 	@Autowired
-	ClusteredSchedulerService schedulerService;
-
-	@Autowired
 	TaskProviderService taskService;
 
 	@Autowired
@@ -88,6 +85,12 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 
 	@Autowired
 	SessionService sessionService;
+	
+	@Autowired
+	ClusteredSchedulerService schedulerService;
+	
+	@Autowired
+	SchedulingResourceService resourceScheduler;
 	
 	public AutomationResourceServiceImpl() {
 		super("automationResource");
@@ -173,7 +176,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 
 	protected void afterDeleteResource(AutomationResource resource) throws ResourceChangeException {
 		try {
-			unschedule(resource);
+			resourceScheduler.unschedule(resource);
 
 		} catch (SchedulerException e) {
 			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.couldNotUnschedule", resource.getName(),
@@ -210,41 +213,17 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		return resource;
 	}
 
+	protected void schedule(AutomationResource resource) {
+		resourceScheduler.schedule(resource, resource.getStartDate(), resource.getStartTime(), 
+				resource.getEndDate(), resource.getEndTime(), resource.getRepeatType(), resource.getRepeatValue(), AutomationJob.class);
+	}
+	
 	private void setProperties(AutomationResource resource, Map<String, String> properties) {
 		TaskProvider provider = taskService.getTaskProvider(resource);
 		for (String resourceKey : provider.getPropertyNames(resource)) {
 			if (properties.containsKey(resourceKey)) {
 				provider.getRepository().setValue(resource, resourceKey, properties.get(resourceKey));
 			}
-		}
-	}
-
-	protected Date calculateDateTime(Date from, String time) {
-
-		Calendar c = Calendar.getInstance();
-		c.setTime(HypersocketUtils.today());
-		
-		Date ret = null;
-
-		if (from != null) {
-			c.setTime(from);
-			ret = c.getTime();
-		}
-
-		if (!StringUtils.isEmpty(time)) {
-			int idx = time.indexOf(':');
-			c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(time.substring(0, idx)));
-			c.set(Calendar.MINUTE, Integer.parseInt(time.substring(idx + 1)));
-			ret = c.getTime();
-		}
-
-		return ret;
-	}
-
-	protected void unschedule(AutomationResource resource) throws SchedulerException {
-
-		if (schedulerService.jobExists(resource.getId().toString())) {
-			schedulerService.cancelNow(resource.getId().toString());
 		}
 	}
 	
@@ -259,107 +238,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		schedulerService.scheduleNow(AutomationJob.class, scheduleId, data);
 	}
 
-	protected void schedule(AutomationResource resource) {
-
-		Date start = calculateDateTime(resource.getStartDate(), resource.getStartTime());
-		Date end = calculateDateTime(resource.getEndDate(), resource.getEndTime());
-
-		int interval = 0;
-		int repeat = -1;
-
-		if (resource.getRepeatValue() > 0) {
-
-			switch (resource.getRepeatType()) {
-			case DAYS:
-				interval = resource.getRepeatValue() * (60000 * 60 * 24);
-				break;
-			case HOURS:
-				interval = resource.getRepeatValue() * (60000 * 60);
-				break;
-			case MINUTES:
-				interval = resource.getRepeatValue() * 60000;
-				break;
-			case SECONDS:
-				interval = resource.getRepeatValue() * 1000;
-				break;
-			case NEVER:
-			default:
-				interval = 0;
-				repeat = 0;
-				break;
-			}
-		}
-
-		Date now = new Date();
-		if(start!=null && start.before(now)) {
-			if(end!=null && end.before(now)) {
-				// Start tomorrow, end tomorrow
-				if(resource.getStartDate()==null) {
-					start = DateUtils.addDays(start, 1);
-				}
-				if(resource.getEndDate()==null) {
-					end = DateUtils.addDays(end, 1);
-				}
-			} else if(interval == 0) {
-				// Start tomorrow?
-				if(resource.getStartDate()==null) {
-					start = DateUtils.addDays(start, 1);
-				}
-			} else if(interval > 0) {
-				while(start.before(now)) {
-					start = DateUtils.addMilliseconds(start, interval);
-				}
-			}
-		}
-		
-		if(start!=null && start.before(now)) {
-			if(log.isInfoEnabled()) {
-				log.info("Not scheduling " + resource.getName() + " because its schedule is in the past.");
-			}
-			return;
-		}
-		
-		if(start==null && end==null) {
-			if(resource.getRepeatType()==AutomationRepeatType.NEVER) {
-				log.info("Not scheudling " + resource.getName() + " because it is a non-repeating job with no start or end date/time.");
-				return;
-			}
-		}
-		
-		PermissionsAwareJobData data = new PermissionsAwareJobData(resource.getRealm(), resource.getName());
-		data.put("resourceId", resource.getId());
-
-		try {
-
-			String scheduleId = resource.getId().toString();
-
-			if (schedulerService.jobExists(scheduleId)) {
-
-				try {
-					if (start == null) {
-						schedulerService.rescheduleNow(scheduleId, interval, repeat, end);
-					} else {
-						schedulerService.rescheduleAt(scheduleId, start, interval, repeat, end);
-					}
-					return;
-				} catch (NotScheduledException e) {
-					if (log.isInfoEnabled()) {
-						log.info("Attempted to reschedule job but it was not scheduled.");
-					}
-				}
-
-			}
-
-			if (start == null || start.before(new Date())) {
-				schedulerService.scheduleNow(AutomationJob.class, scheduleId, data, interval, repeat, end);
-			} else {
-				schedulerService.scheduleAt(AutomationJob.class, scheduleId, data, start, interval, repeat, end);
-			}
-
-		} catch (SchedulerException e) {
-			log.error("Failed to schedule automation task " + resource.getName(), e);
-		}
-	}
+	
 
 	@Override
 	public AutomationResource createResource(String name, Realm realm, Map<String, String> properties)

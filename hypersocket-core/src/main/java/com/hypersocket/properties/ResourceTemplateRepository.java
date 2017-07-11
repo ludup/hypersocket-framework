@@ -77,6 +77,8 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	Long[] getLongValues(AbstractResource resource, String name);
 
+	Integer[] getIntValues(AbstractResource resource, String name);
+	
 	Map<String, String> getProperties(AbstractResource resource, boolean decrypt);
 
 	String getValueOrDefault(AbstractResource resource, String resourceKey, String defaultValue);

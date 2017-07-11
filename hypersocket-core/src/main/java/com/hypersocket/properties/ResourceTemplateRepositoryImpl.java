@@ -981,6 +981,17 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
+	public Integer[] getIntValues(AbstractResource resource, String name) {
+		String[] values = getValues(resource, name);
+		Integer[] results = new Integer[values.length];
+		for(int i=0;i<values.length;i++) {
+			results[i] = Integer.parseInt(values[i]);
+		}
+		return results;
+	}
+	
+	@Override
 	@Transactional(readOnly = true)
 	public Map<String, String> getProperties(AbstractResource resource) {
 

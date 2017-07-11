@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.automation.AutomationResource;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.EmailNotificationService;
@@ -47,6 +49,8 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.TransactionAdapter;
+import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.triggers.ValidationException;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.upload.FileUploadService;
@@ -92,7 +96,7 @@ public class MessageResourceServiceImpl extends
 	@Autowired
 	FreeMarkerService templateService; 
 	
-	List<MessageRegistration> messageRegistrations = new ArrayList<MessageRegistration>();
+	Map<Integer,MessageRegistration> messageRegistrations = new HashMap<Integer, MessageRegistration>();
 	List<Integer> messageIds = new ArrayList<Integer>();
 	
 	public MessageResourceServiceImpl() {
@@ -133,13 +137,16 @@ public class MessageResourceServiceImpl extends
 			@Override
 			public void onCreateRealm(Realm realm) throws ResourceException, AccessDeniedException {
 				
-				for(MessageRegistration r : messageRegistrations) {
+				for(MessageRegistration r : messageRegistrations.values()) {
 					MessageResource message = repository.getMessageById(r.messageId, realm);
 					if(message==null) {
 						if(r.systemOnly && !realm.isSystem()) {
 							continue;
 						}
 						createI18nMessage(r.messageId, r.resourceBundle, r.resourceKey, r.variables, realm);
+						if(r.repository!=null) {
+							r.repository.onCreated(getMessageById(r.messageId, realm));
+						}
 					} else {
 						String vars = ResourceUtils.implodeValues(r.variables);
 						if(!vars.equals(message.getSupportedVariables())) {
@@ -221,34 +228,57 @@ public class MessageResourceServiceImpl extends
 			throws ResourceChangeException, AccessDeniedException {
 
 		resource.setName(name);
+		updateResource(resource, properties, new TransactionAdapter<MessageResource>() {
 
-		/**
-		 * Set any additional fields on your resource here before calling
-		 * updateResource.
-		 * 
-		 * Remember to fill in the fire*Event methods to ensure events are fired
-		 * for all operations.
-		 */
-		updateResource(resource, properties);
+			@Override
+			public void afterOperation(MessageResource resource, Map<String, String> properties) {
+				setProperties(resource, properties);
+			}
+		});
 
 		return resource;
 	}
+
+	private void setProperties(MessageResource resource, Map<String, String> properties) {
+		MessageRegistration r = messageRegistrations.get(resource.getMessageId());
+		if(r==null) {
+			throw new IllegalStateException(String.format("Missing message template id %d", resource.getId()));
+		}
+		if(r.repository!=null) {
+			MessageTemplateRepository repository = r.repository;
+			for (String resourceKey : repository.getPropertyNames(resource)) {
+				if (properties.containsKey(resourceKey)) {
+					repository.setValue(resource, resourceKey, properties.get(resourceKey));
+				}
+			}
+			repository.onUpdated(resource);
+		}
+	}
 	
 	@Override
-	public void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables) {
+	public void registerI18nMessage(Integer messageId, String resourceBundle, 
+			String resourceKey, Set<String> variables) {
 		registerI18nMessage(messageId, resourceBundle, resourceKey, variables, false);
 	}
 	
 	@Override
-	public void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables, boolean system) {
+	public void registerI18nMessage(Integer messageId, String resourceBundle, 
+			String resourceKey, Set<String> variables, boolean system) {
+		registerI18nMessage(messageId, resourceBundle, resourceKey, variables, system, null);
+	}
+	
+	@Override
+	public void registerI18nMessage(Integer messageId, String resourceBundle, 
+			String resourceKey, Set<String> variables, boolean system, MessageTemplateRepository repository) {
 		MessageRegistration r = new MessageRegistration();
 		r.messageId = messageId;
 		r.resourceBundle = resourceBundle;
 		r.resourceKey = resourceKey;
 		r.variables = variables;
 		r.systemOnly = system;
+		r.repository = repository;
 		
-		messageRegistrations.add(r);
+		messageRegistrations.put(messageId, r);
 		messageIds.add(messageId);
 	}
 	
@@ -309,7 +339,19 @@ public class MessageResourceServiceImpl extends
 
 		assertPermission(MessageResourcePermission.READ);
 
-		return repository.getPropertyCategories(resource);
+		List<PropertyCategory> results = new ArrayList<PropertyCategory>(repository.getPropertyCategories(resource));
+		
+		MessageRegistration r = messageRegistrations.get(resource.getMessageId());
+		
+		if(r==null) {
+			throw new IllegalStateException(String.format("Missing message template id %d", resource.getMessageId()));
+		}
+		
+		if(r.repository!=null) {
+			results.addAll(r.repository.getPropertyCategories(resource));
+		}
+		
+		return results;
 	}
 
 	@Override
@@ -447,6 +489,12 @@ public class MessageResourceServiceImpl extends
 		String resourceBundle;
 		String resourceKey;
 		boolean systemOnly;
+		MessageTemplateRepository repository;
+	}
+
+	@Override
+	public MessageResource getMessageById(Integer id, Realm realm) {
+		return repository.getMessageById(id, realm);
 	}
 
 }

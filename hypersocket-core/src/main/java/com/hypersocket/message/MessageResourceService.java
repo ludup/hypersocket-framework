@@ -40,11 +40,16 @@ public interface MessageResourceService extends
 
 	Set<String> getMessageVariables(MessageResource message);
 
+	MessageResource getMessageById(Integer id, Realm realm);
+	
 	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system);
 
 	void sendMessageToEmailAddress(Integer messageId, Realm realm, ITokenResolver tokenResolver, Collection<String> emails);
 	
 	void sendMessageToEmailAddress(Integer messageId, Realm realm, ITokenResolver tokenResolver, String... emails);
+
+	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables,
+			boolean system, MessageTemplateRepository repository);
 
 }
