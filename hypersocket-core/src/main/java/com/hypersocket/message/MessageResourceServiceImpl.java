@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.automation.AutomationResource;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.EmailNotificationService;
@@ -50,7 +49,6 @@ import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
-import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.triggers.ValidationException;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.upload.FileUploadService;
