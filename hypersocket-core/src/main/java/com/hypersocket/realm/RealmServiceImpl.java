@@ -541,18 +541,20 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			for (PrincipalProcessor processor : principalProcessors) {
 				processor.afterCreate(principal, password, properties);
 			}
-			
+			provider.reconcileUser(principal);
 			eventService.publishEvent(new UserCreatedEvent(this, getCurrentSession(), realm, provider, principal,
 					principals, filterSecretProperties(principal, provider, properties), password, forceChange,
 					selfCreated));
 
 			if(sendNotifications) {
-				if(selfCreated) {
-					sendNewUserSelfCreatedNofification(principal, password);
-				} else if(forceChange) {
-					sendNewUserTemporaryPasswordNofification(principal, password);
-				} else {
-					sendNewUserFixedPasswordNotification(principal, password);
+				if(StringUtils.isNotBlank(principal.getEmail())) {
+					if(selfCreated) {
+						sendNewUserSelfCreatedNofification(principal, password);
+					} else if(forceChange) {
+						sendNewUserTemporaryPasswordNofification(principal, password);
+					} else {
+						sendNewUserFixedPasswordNotification(principal, password);
+					}
 				}
 			}
 			
@@ -1711,7 +1713,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public List<?> searchPrincipals(Realm realm, PrincipalType type, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting) throws AccessDeniedException {
-		return searchPrincipals(realm, type, null, searchColumn, searchPattern, start, length, sorting);
+		return searchPrincipals(realm, type, searchColumn, "name", searchPattern, start, length, sorting);
 	}
 	
 	@Override

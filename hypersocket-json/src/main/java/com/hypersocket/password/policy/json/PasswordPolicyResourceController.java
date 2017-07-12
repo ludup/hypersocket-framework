@@ -204,11 +204,16 @@ public class PasswordPolicyResourceController extends ResourceController {
 		try {
 			
 			Principal principal = realmService.getPrincipalById(getCurrentRealm(), id, PrincipalType.USER);
-			PasswordPolicyResource policy = resourceService.resolvePolicy(
-					principal);
+			
+			PasswordPolicyResource policy;
+			if(principal!=null) {
+				policy = resourceService.resolvePolicy(principal);
+			} else {
+				policy = resourceService.getDefaultPolicy(getCurrentRealm(), getCurrentRealm().getResourceCategory());
+			}
 			
 			analyserService.analyse(sessionUtils.getLocale(request), 
-					principal.getPrincipalName(), 
+					principal==null ? "" : principal.getPrincipalName(), 
 					HypersocketUtils.urlDecode(password).toCharArray(), 
 					policy);
 			

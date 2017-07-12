@@ -1,6 +1,7 @@
 package com.hypersocket.password.policy;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -426,5 +427,10 @@ public class PasswordPolicyResourceServiceImpl extends
 	@Override
 	public PasswordPolicyResource getDefaultPolicy(Realm realm, String moduleName) {
 		return repository.getDefaultPolicyByModule(realm, moduleName);
+	}
+
+	@Override
+	public Collection<PasswordPolicyResource> getPoliciesByGroup(Principal principal) {
+		return Collections.emptyList();
 	}
 }
