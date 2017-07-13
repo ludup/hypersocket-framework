@@ -280,14 +280,13 @@ public class AuthenticationServiceImpl extends
 			String schemeResourceKey, String remoteAddress,
 			Map<String, Object> environment, Locale locale, Realm realm)
 			throws AccessDeniedException {
-		
-		if(realm==null) {
-			realm = realmService.getDefaultRealm();
-		}
-		
+
 		AuthenticationState state = new AuthenticationState(remoteAddress,
 				locale, environment);
 
+		if(realm!=null) {
+			state.setRealm(realm);
+		}
 		// Can we determine the principal from the current information
 		if (environment
 				.containsKey(BrowserEnvironment.AUTHORIZATION.toString())) {
@@ -311,36 +310,18 @@ public class AuthenticationServiceImpl extends
 			}
 		}
 
-		if (state.getRealm() == null) {
-			if (environment.containsKey(BrowserEnvironment.HOST.toString())) {
-
-				// If not can we determine the realm from the current
-				// information
-				String hostHeader = environment.get(
-						BrowserEnvironment.HOST.toString()).toString();
-				int idx;
-				if ((idx = hostHeader.indexOf(':')) > -1) {
-					hostHeader = hostHeader.substring(0, idx);
-				}
-
-				state.setRealm(realmService.getRealmByHost(hostHeader, null));
-				state.setHostRealm(state.getRealm());
-			}
-		}
-
-		if (state.getRealm() == null) {
-			state.setRealm(realm);
-		}
-
 		AuthenticationScheme scheme = selectScheme(schemeResourceKey, state);
 		
 		if(scheme==null) {
+			if(realm==null) {
+				realm = realmService.getDefaultRealm();
+			}
 			if(schemeResourceKey!=null) {
 				scheme = getSchemeByResourceKey(
-						state.getRealm(),
+						realm,
 						schemeResourceKey);
 			} else {
-				scheme = getDefaultScheme(remoteAddress, environment, state.getRealm());
+				scheme = getDefaultScheme(remoteAddress, environment, realm);
 			}
 		}
 
@@ -519,18 +500,19 @@ public class AuthenticationServiceImpl extends
 						try {
 							success = true;
 	
-							if(!state.getRealm().equals(currentRealm) && state.getCurrentIndex()==0) {
+							if((currentRealm==null || !state.getRealm().equals(currentRealm)) && state.getCurrentIndex()==0) {
 								/**
 								 * The users realm is not the realm we started off in. We need to switch
 								 */
-								AuthenticationScheme realmScheme = schemeRepository.getSchemeByResourceKey(state.getRealm(), state.getScheme().getResourceKey());
+								AuthenticationScheme realmScheme = schemeRepository.getSchemeByResourceKey(
+										state.getRealm(), state.getScheme().getResourceKey());
 								List<AuthenticationModule> modules = repository.getModulesForScheme(state.getScheme());
 								if(modules.isEmpty()) {
 									throw new IllegalStateException("Incorrect authentication configured. Contact your Administrator");
 								}
 								if(state.getCurrentModule().getTemplate().equals(modules.get(0).getTemplate())) {
 									if(log.isInfoEnabled()) {
-										log.info(String.format("Switching realms from %s to %s", currentRealm.getName(), state.getRealm()));
+										log.info(String.format("Switching realms from %s to %s", currentRealm==null ? "unknown" : currentRealm.getName(), state.getRealm().getName()));
 									}
 									state.setScheme(realmScheme);
 									state.setModules(modules);
@@ -825,10 +807,7 @@ public class AuthenticationServiceImpl extends
 		// Set before we manipulate it
 		state.setLastPrincipalName(username);
 
-		Realm hostRealm = realmService.getRealmByHost((String) state
-				.getEnvironmentVariable(BrowserEnvironment.HOST.toString()),
-				null);
-
+		Realm hostRealm = state.getRealm();
 		String realmName = null;
 		if (hostRealm != null) {
 			realmName = hostRealm.getName();
@@ -840,7 +819,8 @@ public class AuthenticationServiceImpl extends
 					+ (hostRealm == null ? "all realms" : hostRealm.getName()));
 		}
 
-		Principal principal = realmService.getPrincipalByName(hostRealm,
+		Principal principal = realmService.getPrincipalByName(
+				hostRealm,
 				username, PrincipalType.USER);
 
 		if (principal == null) {
@@ -853,43 +833,8 @@ public class AuthenticationServiceImpl extends
 								.getName()));
 			}
 
-			if (!realmService.isRealmStrictedToHost(hostRealm)) {
-
-				hostRealm = null;
-
-				// Can we extract realm from username?
-				int idx;
-				idx = username.indexOf('\\');
-				if (idx > -1) {
-					realmName = username.substring(0, idx);
-					username = username.substring(idx + 1);
-				} else {
-					idx = username.indexOf('/');
-					if (idx > -1) {
-						realmName = username.substring(0, idx);
-						username = username.substring(idx + 1);
-					}
-				}
-
-				if (realmName != null) {
-					state.setLastRealmName(realmName);
-					hostRealm = realmService.getRealmByName(realmName);
-				}
-
-				principal = realmService.getPrincipalByName(hostRealm,
-						username, PrincipalType.USER);
-			}
-
-			if (principal == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("Still unable to find principal for "
-							+ username
-							+ " in "
-							+ (hostRealm == null ? "all realms" : hostRealm
-									.getName()));
-				}
-				throw new PrincipalNotFoundException();
-			}
+			throw new PrincipalNotFoundException();
+			
 		}
 
 		state.setLastPrincipal(principal);

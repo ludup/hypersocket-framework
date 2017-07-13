@@ -277,5 +277,11 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Realm resetRealm(Realm realm) throws ResourceException, AccessDeniedException;
 
+	Principal getUniquePrincipalForRealm(String username, Realm realm, PrincipalType... type) throws ResourceNotFoundException;
+
+	boolean isUserSelectingRealm();
+
+	String[] getRealmHostnames(Realm realm);
+
 }
 

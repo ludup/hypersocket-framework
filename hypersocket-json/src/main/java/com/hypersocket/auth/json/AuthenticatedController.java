@@ -79,11 +79,18 @@ public class AuthenticatedController {
 			HttpServletRequest request, HttpServletResponse response,
 			Realm realm, AuthenticationState mergeState)
 			throws AccessDeniedException, UnsupportedEncodingException {
-
-		if(realm==null) {
-			realm = realmService.getDefaultRealm();
-		}
 		
+		if(realm==null) {
+			realm = realmService.getRealmByHost(request.getServerName(), null);
+			if(realm!=null) {
+				if(!realmService.isRealmStrictedToHost(realm)) {
+					if(!realmService.isUserSelectingRealm()) {
+						realm = null;
+					}
+				}
+			}
+		}
+
 		Map<String, Object> environment = new HashMap<String, Object>();
 		for (BrowserEnvironment env : BrowserEnvironment.values()) {
 			if (request.getHeader(env.toString()) != null) {

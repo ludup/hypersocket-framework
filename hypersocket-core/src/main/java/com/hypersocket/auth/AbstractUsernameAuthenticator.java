@@ -44,6 +44,10 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 		if (username == null || username.equals("")) {
 			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}
+		
+		if(parameters.containsKey("realm")) {
+			state.setRealm(realmService.getRealmByName((String)parameters.get("realm")));
+		}
 
 		if(!processFields(state, parameters)) {
 			return AuthenticatorResult.INSUFFICIENT_DATA;

@@ -195,7 +195,8 @@ public class PasswordPolicyResourceController extends ResourceController {
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<PasswordPolicyResource> analysePassword(
-			HttpServletRequest request, HttpServletResponse response, @RequestParam String password, @RequestParam Long id)
+			HttpServletRequest request, HttpServletResponse response, @RequestParam String password, 
+					@RequestParam(required=false) Long id, @RequestParam(required=false) String username)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
@@ -203,17 +204,17 @@ public class PasswordPolicyResourceController extends ResourceController {
 				sessionUtils.getLocale(request));
 		try {
 			
-			Principal principal = realmService.getPrincipalById(getCurrentRealm(), id, PrincipalType.USER);
-			
 			PasswordPolicyResource policy;
-			if(principal!=null) {
+			if(id!=null) {
+				Principal principal = realmService.getPrincipalById(getCurrentRealm(), id, PrincipalType.USER);
 				policy = resourceService.resolvePolicy(principal);
+				username = principal.getPrincipalName();
 			} else {
 				policy = resourceService.getDefaultPolicy(getCurrentRealm(), getCurrentRealm().getResourceCategory());
 			}
 			
 			analyserService.analyse(sessionUtils.getLocale(request), 
-					principal==null ? "" : principal.getPrincipalName(), 
+					username, 
 					HypersocketUtils.urlDecode(password).toCharArray(), 
 					policy);
 			

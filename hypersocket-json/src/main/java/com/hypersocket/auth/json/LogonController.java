@@ -190,7 +190,7 @@ public class LogonController extends AuthenticatedController {
 					|| (!StringUtils.isEmpty(scheme) && !state.getScheme()
 							.getResourceKey().equals(scheme))) {
 				// We have not got login state so create
-				state = createAuthenticationState(scheme, request, response, getCurrentRealm(), state);
+				state = createAuthenticationState(scheme, request, response, null, state);
 			}
 
 			String redirectHome = (String) request.getSession().getAttribute("redirectHome");
@@ -214,6 +214,20 @@ public class LogonController extends AuthenticatedController {
 
 				setupAuthenticatedContext(state.getSession(), state.getLocale());
 				
+//				String[] hostnames = realmService.getRealmHostnames(state.getRealm());
+//				if(hostnames.length > 0) {
+//					String currentHostname = request.getServerName();
+//					boolean matched = false;
+//					for(String hostname : hostnames) {
+//						if(hostname.equals(currentHostname)) {
+//							matched = true;
+//							break;
+//						}
+//					}
+//					if(!matched) {
+//						state.setHomePage(request.getRequestURL().toString().replaceFirst(currentHostname, hostnames[0]));
+//					}
+//				}
 				try {
 					return getSuccessfulResult(
 							state.getSession(),

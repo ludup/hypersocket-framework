@@ -1,5 +1,6 @@
 package com.hypersocket.realm;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.hypersocket.resource.AbstractResourceRepository;
@@ -11,5 +12,9 @@ public interface PrincipalRepository extends AbstractResourceRepository<Principa
 			int length, ColumnSort[] sorting);
 
 	long getResourceCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern);
+
+	Collection<Principal> getPrincpalsByName(String username);
+
+	Collection<Principal> getPrincpalsByName(String username, Realm realm);
 
 }

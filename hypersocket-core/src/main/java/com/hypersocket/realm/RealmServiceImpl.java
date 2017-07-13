@@ -39,6 +39,7 @@ import com.hypersocket.attributes.user.UserAttributeService;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
 import com.hypersocket.local.LocalRealmProviderImpl;
@@ -129,6 +130,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Autowired
 	ConfigurationService configurationService;
+	
+	@Autowired
+	SystemConfigurationService systemConfigurationService;
 
 	@Autowired
 	UserAttributeService userAttributeService;
@@ -712,11 +716,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				return null;
 			}
 		} else {
-			Principal principal = getProviderForRealm(realm).getPrincipalByName(principalName, realm, type);
-			if(principal==null) {
-				return getLocalProvider().getPrincipalByName(principalName, realm, type);
+			try {
+				return getUniquePrincipalForRealm(principalName, realm, type);			
+			} catch (ResourceNotFoundException e) {
+				return null;
 			}
-			return principal;
 		}
 	}
 
@@ -1786,19 +1790,18 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 			return getPrincipalByName(realm, username, PrincipalType.USER);
 		}
+		
+		Collection<Principal> found = principalRepository.getPrincpalsByName(username);
+		return selectPrincipal(found, username);
+	}
+	
+	@Override
+	public Principal getUniquePrincipalForRealm(String username, Realm realm, PrincipalType... type) throws ResourceNotFoundException {	
+		Collection<Principal> found = principalRepository.getPrincpalsByName(username, realm);
+		return selectPrincipal(found, username);
+	}
 
-		List<Principal> found = new ArrayList<Principal>();
-		for (Realm r : internalAllRealms()) {
-			Principal p = getProviderForRealm(r).getPrincipalByName(username, r, type);
-			if (p != null) {
-				found.add(p);
-			} else {
-				p = getLocalProvider().getPrincipalByName(username, r, type);
-				if (p != null) {
-					found.add(p);
-				} 
-			}
-		}
+	protected Principal selectPrincipal(Collection<Principal> found, String username) throws ResourceNotFoundException {
 		if (found.size() != 1) {
 			if (found.size() > 1) {
 				// Fire Event 
@@ -1806,12 +1809,18 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					log.info("More than one principal found for username " + username);
 				}
 				for(Principal principal : found) {
+					if(principal.getRealm().isDeleted()) {
+						continue;
+					}
 					if(principal.isSystem() || permissionService.hasSystemPermission(principal)) {
 						log.info(String.format("Resolving duplicate principals to %s/%s [System User]", principal.getRealm().getName(), principal.getPrincipalName()));
 						return principal;
 					} 
 				}
 				for(Principal principal : found) {
+					if(principal.getRealm().isDeleted()) {
+						continue;
+					}
 					if(principal.getRealm().isDefaultRealm()) {
 						log.info(String.format("Resolving duplicate principals to %s/%s [Default Realm]", principal.getRealm().getName(), principal.getPrincipalName()));
 						return principal;
@@ -1821,9 +1830,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "principal.notFound");
 		}
-		return found.get(0);
+		return found.iterator().next();
 	}
-
+	
 	@Override
 	public List<Realm> getRealms(String searchPattern, int start, int length, ColumnSort[] sorting)
 			throws AccessDeniedException {
@@ -2258,6 +2267,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		principal = provider.reconcileUser(principal);
 		
 		return principal.getPrincipalStatus() == PrincipalStatus.LOCKED;
+	}
+
+	@Override
+	public boolean isUserSelectingRealm() {
+		return systemConfigurationService.getBooleanValue("auth.chooseRealm");
+	}
+	
+	@Override
+	public String[] getRealmHostnames(Realm realm) {
+		RealmProvider provder = getProviderForRealm(realm);
+		return provder.getValues(realm, "realm.host");
 	}
 }
 

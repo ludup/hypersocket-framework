@@ -1,5 +1,6 @@
 package com.hypersocket.realm;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.hibernate.Criteria;
@@ -8,7 +9,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.repository.CriteriaConfiguration;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
+import com.hypersocket.resource.RealmCriteria;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
@@ -18,15 +21,41 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	@Transactional(readOnly=true)
 	public List<Principal> search(Realm realm, PrincipalType type, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting) {
-		return super.search(realm, searchColumn, searchPattern, start, length, sorting, new PrincipalTypeCriteria(type));
+		return super.search(realm, searchColumn, searchPattern, start, length, sorting, new DeletedCriteria(false), new PrincipalTypeCriteria(type));
 	}
 
 	@Override
 	@Transactional(readOnly=true)
 	public long getResourceCount(Realm realm,  PrincipalType type,String searchColumn, String searchPattern) {
-		return super.getResourceCount(realm, searchColumn, searchPattern, new PrincipalTypeCriteria(type));
+		return super.getResourceCount(realm, searchColumn, searchPattern, new DeletedCriteria(false), new PrincipalTypeCriteria(type));
 	}
 
+	@Override
+	@Transactional(readOnly=true)
+	public Collection<Principal> getPrincpalsByName(final String username) {
+		return list(Principal.class, new DeletedCriteria(false), new CriteriaConfiguration() {
+			
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.or(Restrictions.eq("name", username),
+						Restrictions.eq("email", username)));
+			}
+		});
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public Collection<Principal> getPrincpalsByName(final String username, Realm realm) {
+		return list(Principal.class, new RealmCriteria(realm), new DeletedCriteria(false), new CriteriaConfiguration() {
+			
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.or(Restrictions.eq("name", username),
+						Restrictions.eq("email", username)));
+			}
+		});
+	}
+	
 	@Override
 	protected Class<Principal> getResourceClass() {
 		return Principal.class;

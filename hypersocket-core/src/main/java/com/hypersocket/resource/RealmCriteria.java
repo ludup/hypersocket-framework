@@ -25,6 +25,8 @@ public class RealmCriteria implements CriteriaConfiguration {
 			criteria.add(Restrictions.isNull(column));
 		} else {
 			criteria.add(Restrictions.eq(column, realm));
+			criteria.createAlias("realm", "r");
+			criteria.add(Restrictions.eq("r.deleted", false));
 		}
 	}
 
