@@ -42,6 +42,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.ServerResolver;
+import com.hypersocket.realm.UserPrincipal;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
@@ -388,6 +389,12 @@ public class MessageResourceServiceImpl extends
 	@Override
 	public void sendMessageToEmailAddress(Integer messageId, Realm realm, ITokenResolver tokenResolver, Collection<String> emails) {
 	
+		MessageResource message = repository.getMessageById(messageId, realm);
+		
+		if(message==null) {
+			log.error(String.format("Invalid message id %d", messageId));
+			return;
+		}
 		
 		List<RecipientHolder> recipients = new ArrayList<RecipientHolder>();
 		for(String email : emails) {
@@ -395,30 +402,50 @@ public class MessageResourceServiceImpl extends
 					ResourceUtils.getNamePairValue(email)));
 		}
 		
-		sendMessage(messageId, realm, tokenResolver, recipients);
+		
+		sendMessage(message, realm, tokenResolver, recipients);
 	}
 	
 	@Override
 	public void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals) {
 
-		List<RecipientHolder> recipients = new ArrayList<RecipientHolder>();
-		for(Principal principal : principals) {
-			recipients.add(new RecipientHolder(principal, 
-					principal.getEmail()));
-		}
-		
-		sendMessage(messageId, realm, tokenResolver, recipients);
-	}
-	
-	
-	private void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, List<RecipientHolder> recipients ) {
-		
 		MessageResource message = repository.getMessageById(messageId, realm);
 		
 		if(message==null) {
 			log.error(String.format("Invalid message id %d", messageId));
 			return;
 		}
+		
+		List<RecipientHolder> recipients = new ArrayList<RecipientHolder>();
+		EmailDeliveryStrategy strategy = message.getDeliveryStrategy();
+		
+		if(strategy!=EmailDeliveryStrategy.ONLY_ADDITIONAL) {
+			for(Principal principal : principals) {
+				switch(strategy) {
+				case ALL:
+					recipients.add(new RecipientHolder(principal, 
+							principal.getEmail()));
+					recipients.add(new RecipientHolder(principal, 
+							((UserPrincipal)principal).getSecondaryEmail()));
+					break;
+				case PRIMARY:
+					recipients.add(new RecipientHolder(principal, 
+							principal.getEmail()));
+					break;
+				case SECONDARY:
+					recipients.add(new RecipientHolder(principal, 
+							((UserPrincipal)principal).getSecondaryEmail()));
+					break;
+				default:
+				}
+			}
+		}
+		
+		sendMessage(message, realm, tokenResolver, recipients);
+	}
+	
+	
+	private void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, List<RecipientHolder> recipients ) {
 		
 		if(!message.getEnabled()) {
 			log.info(String.format("Message template %s has been disabled", message.getName()));
@@ -436,49 +463,53 @@ public class MessageResourceServiceImpl extends
 				log.error(String.format("Unable to locate upload %s", uuid), e);
 			}
 		}
-		if(!recipients.isEmpty()) {
-			try {
 		
-				Map<String,Object> data = tokenResolver.getData();
-				data.putAll(new ServerResolver(realm).getData());
-				
-				Template subjectTemplate = templateService.createTemplate("message.subject." + message.getId(), 
-						message.getSubject(), 
-						message.getModifiedDate().getTime());
-				StringWriter subjectWriter = new StringWriter();
-				subjectTemplate.process(data, subjectWriter);
-				
-				Template bodyTemplate = templateService.createTemplate("message.body." + message.getId(), 
-						message.getBody(), 
-						message.getModifiedDate().getTime());
-				StringWriter bodyWriter = new StringWriter();
-				bodyTemplate.process(data, bodyWriter);
-				
-				Template htmlTemplate = templateService.createTemplate("message.html." + message.getId(), 
-						message.getHtml(), 
-						message.getModifiedDate().getTime());				
-				StringWriter htmlWriter = new StringWriter();
-				htmlTemplate.process(data, htmlWriter);
-				
-				emailService.sendEmail(
-						realm,
-						subjectWriter.toString(),
-						bodyWriter.toString(),
-						htmlWriter.toString(),
-						message.getReplyToName(),
-						message.getReplyToEmail(),
-						recipients.toArray(new RecipientHolder[0]), 
-						ResourceUtils.explodeValues(message.getAdditionalTo()),
-						message.getTrack(), 
-						configurationService.getIntValue(realm, "smtp.delay"),
-						attachments.toArray(new EmailAttachment[0]));
-				
-			} catch (MailException e) { 
-				// Will be logged by mail API
-			} catch(AccessDeniedException | IOException | TemplateException | ValidationException e) {
-				log.error("Failed to send email", e);
-			}
+		for(String additional : ResourceUtils.explodeCollectionValues(message.getAdditionalTo())) {
+			recipients.add(new RecipientHolder("", additional));
 		}
+		
+		try {
+	
+			Map<String,Object> data = tokenResolver.getData();
+			data.putAll(new ServerResolver(realm).getData());
+			
+			Template subjectTemplate = templateService.createTemplate("message.subject." + message.getId(), 
+					message.getSubject(), 
+					message.getModifiedDate().getTime());
+			StringWriter subjectWriter = new StringWriter();
+			subjectTemplate.process(data, subjectWriter);
+			
+			Template bodyTemplate = templateService.createTemplate("message.body." + message.getId(), 
+					message.getBody(), 
+					message.getModifiedDate().getTime());
+			StringWriter bodyWriter = new StringWriter();
+			bodyTemplate.process(data, bodyWriter);
+			
+			Template htmlTemplate = templateService.createTemplate("message.html." + message.getId(), 
+					message.getHtml(), 
+					message.getModifiedDate().getTime());				
+			StringWriter htmlWriter = new StringWriter();
+			htmlTemplate.process(data, htmlWriter);
+			
+			emailService.sendEmail(
+					realm,
+					subjectWriter.toString(),
+					bodyWriter.toString(),
+					htmlWriter.toString(),
+					message.getReplyToName(),
+					message.getReplyToEmail(),
+					recipients.toArray(new RecipientHolder[0]), 
+					null,
+					message.getTrack(), 
+					configurationService.getIntValue(realm, "smtp.delay"),
+					attachments.toArray(new EmailAttachment[0]));
+			
+		} catch (MailException e) { 
+			// Will be logged by mail API
+		} catch(AccessDeniedException | IOException | TemplateException | ValidationException e) {
+			log.error("Failed to send email", e);
+		}
+		
 	}
 	
 	class MessageRegistration {

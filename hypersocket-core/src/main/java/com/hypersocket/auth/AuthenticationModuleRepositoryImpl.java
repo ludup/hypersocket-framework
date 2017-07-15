@@ -141,13 +141,13 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 	}
 
 	@Override
-	public Collection<AuthenticationScheme> getSchemesForModule(Realm realm, final String resourceKey) {
+	public Collection<AuthenticationScheme> getSchemesForModule(Realm realm, final String... resourceKeys) {
 		return list(AuthenticationScheme.class, new DeletedCriteria(false), new RealmRestriction(realm), new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.createAlias("modules", "m");
-				criteria.add(Restrictions.eq("m.template", resourceKey));
+				criteria.add(Restrictions.in("m.template", resourceKeys));
 			}
 			
 		});

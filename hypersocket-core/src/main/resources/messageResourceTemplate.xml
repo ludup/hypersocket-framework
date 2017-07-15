@@ -21,6 +21,8 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email.delivery"
 		resourceBundle="MessageResourceService" weight="4000">
+		<property resourceKey="deliveryStrategy" inputType="dropdown"
+			weight="10" defaultValue="PRIMARY" valueAttr="name" url="enum/com.hypersocket.message.EmailDeliveryStrategy/" allowEmpty="false"/>
 		<property resourceKey="additionalTo" inputType="multipleTextInput"
 			weight="50" defaultValue="" allowEmpty="true" validateAll="email"/>
 		<property resourceKey="replyToName" inputType="text"

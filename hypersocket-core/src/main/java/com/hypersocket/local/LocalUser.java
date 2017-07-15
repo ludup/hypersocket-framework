@@ -63,6 +63,9 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	
 	@Column(name="email")
 	String email;
+
+	@Column(name="secondary_email")
+	String secondaryEmail;
 	
 	@Column(name="mobile")
 	String mobile;
@@ -202,4 +205,12 @@ public class LocalUser extends UserPrincipal implements Serializable {
 		return null;
 	}
 	
+	@Override
+	public String getSecondaryEmail() {
+		return secondaryEmail;
+	}
+	
+	public void setSecondaryEmail(String secondaryEmail) {
+		this.secondaryEmail = secondaryEmail;
+	}
 }

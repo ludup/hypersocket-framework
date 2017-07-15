@@ -24,4 +24,8 @@ public abstract class UserPrincipal extends Principal {
 	public abstract boolean isPasswordChangeAllowed();
 
 	public abstract Date getPasswordExpiry();
+	
+	public abstract String getSecondaryEmail();
+	
+	public abstract String getMobile();
 }

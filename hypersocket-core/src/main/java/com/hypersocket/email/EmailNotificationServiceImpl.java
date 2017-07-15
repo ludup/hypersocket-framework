@@ -122,8 +122,6 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		if(StringUtils.isNotBlank(archiveAddress)) {
 			populateEmailList(new String[] {archiveAddress} , archiveRecipients, RecipientType.TO);
 		}
-		
-		populateEmailList(archiveAddresses, archiveRecipients, RecipientType.TO);
 
 		for(RecipientHolder r : recipients) {
 			

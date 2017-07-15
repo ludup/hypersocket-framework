@@ -40,6 +40,9 @@ public class MessageResource extends RealmResource {
 	@Column(name="attachments", length=1024)
 	String attachments;
 	
+	@Column(name="deliver_strategy")
+	EmailDeliveryStrategy deliveryStrategy;
+	
 	@Column(name="additional", length=1024)
 	String additionalTo;
 	
@@ -138,6 +141,14 @@ public class MessageResource extends RealmResource {
 
 	public void setSupportedVariables(String supportedVariables) {
 		this.supportedVariables = supportedVariables;
-	}	
+	}
+
+	public EmailDeliveryStrategy getDeliveryStrategy() {
+		return deliveryStrategy==null ? EmailDeliveryStrategy.PRIMARY : deliveryStrategy;
+	}
+
+	public void setDeliveryStrategy(EmailDeliveryStrategy deliveryStrategy) {
+		this.deliveryStrategy = deliveryStrategy;
+	}
 	
 }

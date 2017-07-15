@@ -426,7 +426,12 @@ public class AuthenticationServiceImpl extends
 						state, authenticator, "hint.invalidPrincipal"));
 			} else {
 				
-				AuthenticatorResult result = authenticator.authenticate(state, parameterMap);
+				AuthenticatorResult result;
+				if(state.getPrincipal()!=null && state.getPrincipal() instanceof FakePrincipal) {
+					result = AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
+				} else {
+					result = authenticator.authenticate(state, parameterMap);
+				}
 				
 				if(checkSuspensions(state, authenticator)) {
 				

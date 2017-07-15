@@ -37,6 +37,6 @@ public interface AuthenticationModuleRepository extends AbstractEntityRepository
 
 	boolean isAuthenticatorInUse(Realm realm, String resourceKey);
 
-	public Collection<AuthenticationScheme> getSchemesForModule(Realm currentRealm, String resourceKey);
+	public Collection<AuthenticationScheme> getSchemesForModule(Realm currentRealm, String... resourceKeys);
 
 }

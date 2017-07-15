@@ -21,11 +21,11 @@ public class RealmCriteria implements CriteriaConfiguration {
 	
 	@Override
 	public void configure(Criteria criteria) {
+		criteria.createAlias(column, "r");
 		if(realm==null) {
-			criteria.add(Restrictions.isNull(column));
+			criteria.add(Restrictions.eq("r.deleted", false));
 		} else {
 			criteria.add(Restrictions.eq(column, realm));
-			criteria.createAlias("realm", "r");
 			criteria.add(Restrictions.eq("r.deleted", false));
 		}
 	}

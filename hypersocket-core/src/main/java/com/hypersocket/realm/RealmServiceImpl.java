@@ -580,17 +580,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	private void sendNewUserTemporaryPasswordNofification(Principal principal, String password) throws ResourceException, AccessDeniedException {
-		PrincipalWithPasswordResolver resolver = new PrincipalWithPasswordResolver(principal, password);
+		PrincipalWithPasswordResolver resolver = new PrincipalWithPasswordResolver((UserPrincipal)principal, password);
 		messageService.sendMessage(MESSAGE_NEW_USER_TMP_PASSWORD, principal.getRealm(), resolver, principal);
 	}
 
 	private void sendNewUserSelfCreatedNofification(Principal principal, String password) throws ResourceException, AccessDeniedException {
-		PrincipalWithPasswordResolver resolver = new PrincipalWithPasswordResolver(principal, password);
+		PrincipalWithPasswordResolver resolver = new PrincipalWithPasswordResolver((UserPrincipal)principal, password);
 		messageService.sendMessage(MESSAGE_NEW_USER_SELF_CREATED, principal.getRealm(), resolver, principal);
 	}
 	
 	private void sendNewUserFixedPasswordNotification(Principal principal, String password) throws ResourceException, AccessDeniedException {
-		PrincipalWithPasswordResolver resolver = new PrincipalWithPasswordResolver(principal, password);
+		PrincipalWithPasswordResolver resolver = new PrincipalWithPasswordResolver((UserPrincipal)principal, password);
 		messageService.sendMessage(MESSAGE_NEW_USER_NEW_PASSWORD, principal.getRealm(), resolver, principal);
 	}
 
@@ -821,7 +821,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					
 					messageService.sendMessage(MESSAGE_PASSWORD_CHANGED, 
 							principal.getRealm(), 
-							new PrincipalWithoutPasswordResolver(principal), 
+							new PrincipalWithoutPasswordResolver((UserPrincipal)principal), 
 							principal);
 					
 					eventService.publishEvent(new ChangePasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider, newPassword));
@@ -878,12 +878,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			if(administrative) {
 				messageService.sendMessage(MESSAGE_PASSWORD_RESET, 
 						principal.getRealm(), 
-						new PrincipalWithPasswordResolver(principal, password), 
+						new PrincipalWithPasswordResolver((UserPrincipal)principal, password), 
 						principal);
 			} else {
 				messageService.sendMessage(MESSAGE_PASSWORD_CHANGED, 
 						principal.getRealm(), 
-						new PrincipalWithoutPasswordResolver(principal), 
+						new PrincipalWithoutPasswordResolver((UserPrincipal)principal), 
 						principal);
 			}
 			
@@ -2097,9 +2097,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	
 	@Override
 	public long getPrincipalCount(Realm realm) {
-
-		RealmProvider provider = getProviderForRealm(realm);
-		return provider.getPrincipalCount(realm, PrincipalType.USER, "name", "");
+		return principalRepository.getResourceCount(realm);
 	}
 
 	@Override

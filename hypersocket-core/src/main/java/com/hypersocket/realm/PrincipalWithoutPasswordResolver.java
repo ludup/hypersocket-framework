@@ -12,7 +12,7 @@ public class PrincipalWithoutPasswordResolver extends StaticResolver {
 
 	static Set<String> salutations = new HashSet<String>(Arrays.asList("MR", "MS", "MRS", "DR", "PROF"));
 	
-	public PrincipalWithoutPasswordResolver(Principal principal) {
+	public PrincipalWithoutPasswordResolver(UserPrincipal principal) {
 		super();
 		addToken("principalId", principal.getPrincipalName());
 		addToken("principalName", principal.getPrincipalName());
@@ -20,12 +20,14 @@ public class PrincipalWithoutPasswordResolver extends StaticResolver {
 		addToken("principalRealm", principal.getRealm().getName());
 		addToken("firstName", getFirstName(principal.getPrincipalDescription()));
 		addToken("email", principal.getEmail());
+		addToken("secondaryEmail", principal.getSecondaryEmail());
+		addToken("mobile", principal.getMobile());
 		addToken("fullName", principal.getPrincipalDescription());
 	}
 	
 	public static Set<String> getVariables() {
 		return new HashSet<String>(Arrays.asList("principalName", "principalId",
-				"principalDesc", "principalRealm", "firstName", "fullName", "email"));
+				"principalDesc", "principalRealm", "firstName", "fullName", "email", "secondaryEmail", "mobile"));
 	}
 	
 	public String getFirstName(String name) {

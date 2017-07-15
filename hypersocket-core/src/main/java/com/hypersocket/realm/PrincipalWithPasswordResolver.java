@@ -5,7 +5,7 @@ import java.util.Set;
 public class PrincipalWithPasswordResolver extends PrincipalWithoutPasswordResolver {
 
 	
-	public PrincipalWithPasswordResolver(Principal principal, String password) {
+	public PrincipalWithPasswordResolver(UserPrincipal principal, String password) {
 		super(principal);
 		addToken("password", password);
 	}

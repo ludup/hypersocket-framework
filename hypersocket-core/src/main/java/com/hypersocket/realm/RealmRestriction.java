@@ -7,30 +7,16 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
+import com.hypersocket.resource.RealmCriteria;
 
-import com.hypersocket.repository.CriteriaConfiguration;
-
-public class RealmRestriction implements CriteriaConfiguration {
-
-	private Realm realm;
-	private String column;
+public class RealmRestriction extends RealmCriteria {
 	
 	public RealmRestriction(Realm realm) {
 		this(realm, "realm");
 	}
 
 	public RealmRestriction(Realm realm, String column) {
-		this.realm = realm;
-		this.column = column;
-	}
-	
-	@Override
-	public void configure(Criteria criteria) {
-		if(realm!=null) {
-			criteria.add(Restrictions.eq(column, realm));
-		}
+		super(realm, column);
 	}
 
 }
