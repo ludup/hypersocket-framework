@@ -287,6 +287,11 @@ public class AuthenticationServiceImpl extends
 		if(realm!=null) {
 			state.setRealm(realm);
 		}
+		
+		if(log.isInfoEnabled()) {
+			log.info(String.format("Creating authentication state for %s realm", realm==null ? "unknown" : realm.getName()));
+		}
+		
 		// Can we determine the principal from the current information
 		if (environment
 				.containsKey(BrowserEnvironment.AUTHORIZATION.toString())) {
@@ -511,7 +516,7 @@ public class AuthenticationServiceImpl extends
 								 */
 								AuthenticationScheme realmScheme = schemeRepository.getSchemeByResourceKey(
 										state.getRealm(), state.getScheme().getResourceKey());
-								List<AuthenticationModule> modules = repository.getModulesForScheme(state.getScheme());
+								List<AuthenticationModule> modules = repository.getModulesForScheme(realmScheme);
 								if(modules.isEmpty()) {
 									throw new IllegalStateException("Incorrect authentication configured. Contact your Administrator");
 								}
