@@ -264,11 +264,16 @@ public class PasswordPolicyResourceServiceImpl extends
 		if(!realmService.canChangePassword(principal)) {
 			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.cannotChangePassword");
 		}
+		
+		checkPassword(principal, newPassword, false);
 
+	}
+
+	private void checkPassword(Principal principal, String newPassword, boolean administrative) throws ResourceChangeException {
 		try {
 			PasswordPolicyResource policy = resolvePolicy(principal);
 			
-			if(policy.getMinimumAge() > 0) {
+			if(policy.getMinimumAge() > 0 && !administrative) {
 				// Check age
 				UserPrincipal user = (UserPrincipal)principal;
 				if(user.getLastPasswordChange()!=null) {
@@ -296,9 +301,8 @@ public class PasswordPolicyResourceServiceImpl extends
 		} catch (ResourceNotFoundException e) {
 			log.info(String.format("No password policy found for %s", principal.getPrincipalName()));
 		}
-
 	}
-
+	
 	private void validatePassword(String username, PasswordPolicyResource policy, String password) throws ResourceChangeException {
 		try {
 			analyserService.analyse(getCurrentLocale(), 
@@ -363,7 +367,7 @@ public class PasswordPolicyResourceServiceImpl extends
 
 	@Override
 	public void beforeSetPassword(Principal principal, String password) throws ResourceException {
-		beforeChangePassword(principal, password, null);
+		checkPassword(principal, password, true);
 	}
 
 	@Override
