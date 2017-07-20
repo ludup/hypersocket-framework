@@ -52,5 +52,7 @@ public interface AuthenticatedService {
 	boolean hasSystemContext();
 
 	void setupSystemContext();
+	
+	void setupSystemContext(Realm realm);
 
 }

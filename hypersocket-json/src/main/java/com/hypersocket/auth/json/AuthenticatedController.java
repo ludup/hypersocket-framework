@@ -180,8 +180,7 @@ public class AuthenticatedController {
 	}
 	
 	protected void setupSystemContext(Realm realm) throws AccessDeniedException {
-		setupAuthenticatedContext(sessionService.getSystemSession(),
-				Locale.getDefault(), realm);
+		authenticationService.setupSystemContext(realm);	
 	}
 	
 	protected void setupAnonymousContext(String remoteAddress,
