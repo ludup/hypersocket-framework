@@ -40,6 +40,8 @@ public interface PasswordPolicyResourceService extends
 	Collection<PasswordPolicyResource> getPoliciesByGroup(Principal principal);
 
 	String generatePassword(PasswordPolicyResource policy);
+	
+	String generatePassword(PasswordPolicyResource policy, int length);
 
 
 }

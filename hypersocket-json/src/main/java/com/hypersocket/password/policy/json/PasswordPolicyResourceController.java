@@ -130,18 +130,18 @@ public class PasswordPolicyResourceController extends ResourceController {
 		
 	}
 	
-	@RequestMapping(value = "passwordPolicys/generate/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "passwordPolicys/generate/{id}/{length}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<String> generatePassword(
-			HttpServletRequest request, HttpServletResponse response, @PathVariable Long id)
+			HttpServletRequest request, HttpServletResponse response, @PathVariable Long id, @PathVariable Integer length)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
 		setupSystemContext();
 		try {
 			PasswordPolicyResource policy = resourceService.getResourceById(id);
-			return new ResourceStatus<String>(resourceService.generatePassword(policy));
+			return new ResourceStatus<String>(resourceService.generatePassword(policy, length));
 		} catch (ResourceNotFoundException e) {
 			return new ResourceStatus<String>(false, e.getMessage());
 		} finally {

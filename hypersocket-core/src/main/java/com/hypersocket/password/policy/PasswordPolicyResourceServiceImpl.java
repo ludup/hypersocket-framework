@@ -449,6 +449,11 @@ public class PasswordPolicyResourceServiceImpl extends
 	
 	@Override
 	public String generatePassword(PasswordPolicyResource policy) {
+		return generatePassword(policy, policy.getMinimumLength());
+	}
+	
+	@Override
+	public String generatePassword(PasswordPolicyResource policy, int length) {
 		
 		// create a password generator
 		PasswordGenerator generator = new PasswordGenerator();
@@ -474,7 +479,7 @@ public class PasswordPolicyResourceServiceImpl extends
 			rules.add(new PolicyNonAlphaNumericCharacterRule(minNonAlpha, policy.getValidSymbols()));
 		}
 		
-		return generator.generatePassword(policy.getMinimumLength(), rules);
+		return generator.generatePassword(Math.max(policy.getMinimumLength(), Math.min(policy.getMaximumLength(),length)), rules);
 	}
 	
 	class PolicyNonAlphaNumericCharacterRule extends NonAlphanumericCharacterRule {
