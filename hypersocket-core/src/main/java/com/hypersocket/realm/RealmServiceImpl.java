@@ -535,7 +535,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			if (provider.isReadOnly(realm)) {
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 			}
-
+			
+			Principal existing = getPrincipalByName(realm, username, PrincipalType.USER);
+			if(existing!=null) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.principalAlreadyExists", username);
+			}
+			
 			for (PrincipalProcessor processor : principalProcessors) {
 				processor.beforeCreate(realm, provider.getModule(), username, password, properties);
 			}
