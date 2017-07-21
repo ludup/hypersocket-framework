@@ -3,11 +3,11 @@
 	<propertyCategory resourceKey="category.collectMailTask"
 		resourceBundle="CollectMailTask" weight="1000">
 		<property resourceKey="collectMail.protocol" inputType="select"
-			weight="100" defaultValue="imap" options="pop3,imap"/>
+			weight="100" defaultValue="imap" options="pop3,imap" nameIsResourceKey="true"/>
 		<property resourceKey="collectMail.host" inputType="text"
 			weight="200" defaultValue="localhost" size="50" />
 		<property resourceKey="collectMail.port" inputType="text"
-			weight="300" defaultValue="0" size="5" />
+			weight="300" defaultValue="993" size="5" />
 		<property resourceKey="collectMail.username" inputType="text"
 			weight="400" defaultValue="" size="50" />
 		<property resourceKey="collectMail.password" inputType="password"

@@ -2096,8 +2096,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	
 	
 	@Override
-	public long getPrincipalCount(Realm realm) {
-		return principalRepository.getResourceCount(realm);
+	public long getPrincipalCount(Realm realm, PrincipalType type) {
+		return principalRepository.getResourceCount(realm, type);
 	}
 
 	@Override

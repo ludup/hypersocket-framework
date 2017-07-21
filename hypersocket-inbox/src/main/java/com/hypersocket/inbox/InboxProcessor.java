@@ -54,11 +54,17 @@ public class InboxProcessor {
 	 * @param password
 	 */
 	public void downloadEmails(String protocol, String host, String port, String userName, String password,
-			boolean allMessages, EmailProcessor processor) {
+			boolean allMessages, boolean secure, EmailProcessor processor) {
+		
+		if(protocol.equals("imap") && secure) {
+			protocol = "imaps";
+		}
+		
 		Properties properties = generateServerProperties(protocol, host, port);
-		Session session = Session.getDefaultInstance(properties);
+		Session session = Session.getInstance(properties);
 
 		try {
+
 			// connects to the message store
 			Store store = session.getStore(protocol);
 			store.connect(userName, password);
@@ -85,42 +91,16 @@ public class InboxProcessor {
 					msg.setFlag(Flag.SEEN, true);
 
 				String contentType = msg.getContentType().toLowerCase();
-				String textContent = "";
-				String htmlContent = "";
+				StringBuffer textContent = new StringBuffer();
+				StringBuffer htmlContent = new StringBuffer();
 				List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
 				try {
 					if (contentType.contains("text/plain")) {
-						textContent = msg.getContent().toString();
+						textContent.append(msg.getContent().toString());
 					} else if (contentType.contains("text/html")) {
-						htmlContent = msg.getContent().toString();
+						htmlContent.append(msg.getContent().toString());
 					} else if (contentType.contains("multipart")) {
-
-						Multipart multiPart = (Multipart) msg.getContent();
-
-						for (int x = 0; x < multiPart.getCount(); x++) {
-							MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(x);
-							contentType = part.getContentType().toLowerCase();
-							if (contentType.contains("text/plain")) {
-								textContent = part.getContent().toString();
-							} else if (contentType.contains("text/html")) {
-								htmlContent = part.getContent().toString();
-							} else if (Part.INLINE.equalsIgnoreCase(part.getDisposition()) 
-									|| Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
-
-								File attachment = File.createTempFile("email", "attachment");
-								OutputStream out = new FileOutputStream(attachment);
-								InputStream in = part.getInputStream();
-								try {
-									IOUtils.copy(in, out);
-									attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
-								} finally {
-									IOUtils.closeQuietly(out);
-									IOUtils.closeQuietly(in);
-								}
-
-							}
-						}
-
+						processMultipart((Multipart) msg.getContent(), textContent, htmlContent, attachments);
 					}
 					
 					processor.processEmail(msg.getFrom(),
@@ -128,8 +108,8 @@ public class InboxProcessor {
 							msg.getRecipients(RecipientType.TO), 
 							msg.getRecipients(RecipientType.CC), 
 							msg.getSubject(), 
-							textContent, 
-							htmlContent, 
+							textContent.toString(), 
+							htmlContent.toString(), 
 							msg.getSentDate(),
 							msg.getReceivedDate(),
 							attachments.toArray(new EmailAttachment[0]));
@@ -146,6 +126,34 @@ public class InboxProcessor {
 		} catch (MessagingException ex) {
 			System.out.println("Could not connect to the message store");
 			ex.printStackTrace();
+		}
+	}
+
+	private void processMultipart(Multipart multiPart, StringBuffer textContent, StringBuffer htmlContent, List<EmailAttachment> attachments) throws IOException, MessagingException {
+		for (int x = 0; x < multiPart.getCount(); x++) {
+			MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(x);
+			String contentType = part.getContentType().toLowerCase();
+			
+			if (contentType.contains("text/plain")) {
+				textContent.append(part.getContent().toString());
+			} else if (contentType.contains("text/html")) {
+				htmlContent.append(part.getContent().toString());
+			} else if (contentType.contains("multipart/alternative")) {
+				processMultipart((Multipart)part.getContent(), textContent, htmlContent, attachments);
+			} else if (Part.INLINE.equalsIgnoreCase(part.getDisposition()) 
+					|| Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
+				File attachment = File.createTempFile("email", "attachment");
+				OutputStream out = new FileOutputStream(attachment);
+				InputStream in = part.getInputStream();
+				try {
+					IOUtils.copy(in, out);
+					attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
+				} finally {
+					IOUtils.closeQuietly(out);
+					IOUtils.closeQuietly(in);
+				}
+
+			}
 		}
 	}
 
@@ -190,7 +198,7 @@ public class InboxProcessor {
 		String password = "xxxxxxx";
 
 		InboxProcessor receiver = new InboxProcessor();
-		receiver.downloadEmails(protocol, host, port, userName, password, true, new EmailProcessor() {
+		receiver.downloadEmails(protocol, host, port, userName, password, true, true, new EmailProcessor() {
 			
 			@Override
 			public void processEmail(Address[] from, Address[] replyTo, Address[] to, Address[] cc, String subject,

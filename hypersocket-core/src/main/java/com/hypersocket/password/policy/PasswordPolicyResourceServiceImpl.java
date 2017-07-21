@@ -1,9 +1,11 @@
 package com.hypersocket.password.policy;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,6 +49,13 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.utils.HypersocketUtils;
+
+import edu.vt.middleware.password.CharacterRule;
+import edu.vt.middleware.password.DigitCharacterRule;
+import edu.vt.middleware.password.LowercaseCharacterRule;
+import edu.vt.middleware.password.NonAlphanumericCharacterRule;
+import edu.vt.middleware.password.PasswordGenerator;
+import edu.vt.middleware.password.UppercaseCharacterRule;
 
 @Service
 public class PasswordPolicyResourceServiceImpl extends
@@ -436,5 +445,49 @@ public class PasswordPolicyResourceServiceImpl extends
 	@Override
 	public Collection<PasswordPolicyResource> getPoliciesByGroup(Principal principal) {
 		return Collections.emptyList();
+	}
+	
+	@Override
+	public String generatePassword(PasswordPolicyResource policy) {
+		
+		// create a password generator
+		PasswordGenerator generator = new PasswordGenerator();
+
+		// create character rules to generate passwords with
+		List<CharacterRule> rules = new ArrayList<CharacterRule>();
+		
+		int minDigis = policy.getMinimumDigits();
+		int minLowercase = policy.getMinimumLower();
+		int minUppcase = policy.getMinimumUpper();
+		int minNonAlpha = policy.getMinimumSymbol();
+		
+		if(minDigis > 0) {
+			rules.add(new DigitCharacterRule(minDigis));
+		}
+		if(minLowercase > 0) {
+			rules.add(new LowercaseCharacterRule(minLowercase));
+		}
+		if(minUppcase > 0) {
+			rules.add(new UppercaseCharacterRule(minUppcase));
+		}
+		if(minNonAlpha > 0) {
+			rules.add(new PolicyNonAlphaNumericCharacterRule(minNonAlpha, policy.getValidSymbols()));
+		}
+		
+		return generator.generatePassword(policy.getMinimumLength(), rules);
+	}
+	
+	class PolicyNonAlphaNumericCharacterRule extends NonAlphanumericCharacterRule {
+		String validSymbols;
+		public PolicyNonAlphaNumericCharacterRule(int num, String validSymbols) {
+			super(num);
+			this.validSymbols = validSymbols;
+		}
+		@Override
+		public String getValidCharacters() {
+			return validSymbols;
+		}
+		
+		
 	}
 }

@@ -118,7 +118,7 @@ public class CollectMailTask extends AbstractTaskProvider {
 		InboxProcessor receiver = new InboxProcessor();
 		final List<TaskResult> results = new ArrayList<>();
 
-		receiver.downloadEmails(protocol, host, port, userName, password, false, new EmailProcessor() {
+		receiver.downloadEmails(protocol, host, port, userName, password, false, secure, new EmailProcessor() {
 			@Override
 			public void processEmail(Address[] from, Address[] replyTo, Address[] to, Address[] cc, String subject,
 					String textContent, String htmlContent, Date sent, Date received, EmailAttachment... attachments) {

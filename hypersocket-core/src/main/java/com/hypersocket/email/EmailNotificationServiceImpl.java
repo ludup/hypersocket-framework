@@ -125,6 +125,11 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 		for(RecipientHolder r : recipients) {
 			
+			if(StringUtils.isBlank(r.getEmail())) {
+				log.warn(String.format("Missing email address for %s", r.getName()));
+				continue;
+			}
+			
 			String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
 			if(StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(receipientHtml)) {
 				try {
