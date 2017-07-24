@@ -270,7 +270,7 @@ public class MessageResourceServiceImpl extends
 	public void registerI18nMessage(Integer messageId, String resourceBundle, 
 			String resourceKey, Set<String> variables, boolean system,
 			MessageTemplateRepository repository) {
-		registerI18nMessage(messageId, resourceBundle, resourceKey, variables, system, null, true, EmailDeliveryStrategy.PRIMARY);
+		registerI18nMessage(messageId, resourceBundle, resourceKey, variables, system, repository, true, EmailDeliveryStrategy.PRIMARY);
 	}
 	
 	@Override

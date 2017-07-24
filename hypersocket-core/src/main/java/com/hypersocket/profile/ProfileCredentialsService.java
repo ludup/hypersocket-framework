@@ -5,7 +5,6 @@ import java.util.Collection;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
 

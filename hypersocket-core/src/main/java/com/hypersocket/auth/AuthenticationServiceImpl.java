@@ -667,8 +667,13 @@ public class AuthenticationServiceImpl extends
 	}
 
 	private boolean checkSuspensions(AuthenticationState state, Authenticator authenticator) {
-		if(state.getLastPrincipal()!=null) {
-			if (!realmService.verifyPrincipal(state.getLastPrincipal())) {
+		
+		Principal principal = state.getPrincipal();
+		if(principal==null) {
+			principal = state.getLastPrincipal();
+		}
+		if(principal!=null) {
+			if (!realmService.verifyPrincipal(principal)) {
 				state.setLastErrorMsg("error.accountSuspended");
 				state.setLastErrorIsResourceKey(true);
 				
