@@ -8,11 +8,13 @@ public class StatusView implements ServiceStatus {
 	boolean isRunning;
 	boolean isError;
 	String errorText;
+	String group;
 	public StatusView(ServiceStatus status) {
 		this.resourceKey = status.getResourceKey();
 		this.isRunning = status.isRunning();
 		this.isError = status.isError();
 		this.errorText = status.getErrorText();
+		this.group = status.getGroup();
 	}
 
 	@Override
@@ -35,4 +37,10 @@ public class StatusView implements ServiceStatus {
 		return errorText;
 	}
 
+	@Override
+	public String getGroup() {
+		return group;
+	}
+
+	
 }

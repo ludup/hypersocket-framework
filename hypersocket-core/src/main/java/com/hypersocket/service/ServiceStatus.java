@@ -10,4 +10,6 @@ public interface ServiceStatus {
 
 	String getErrorText();
 
+	String getGroup();
+
 }
