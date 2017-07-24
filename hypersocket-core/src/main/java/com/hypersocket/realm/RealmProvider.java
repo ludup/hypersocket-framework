@@ -154,4 +154,6 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	Principal reconcileUser(Principal principal) throws ResourceException;
 
 	void resetRealm(Realm realm) throws ResourceNotFoundException, AccessDeniedException;
+
+	void verifyConnection(Realm realm) throws ResourceException;
 }

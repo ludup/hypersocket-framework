@@ -140,4 +140,8 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 		
 	}
 
+	@Override
+	public void verifyConnection(Realm realm) throws ResourceException {
+	}
+
 }
