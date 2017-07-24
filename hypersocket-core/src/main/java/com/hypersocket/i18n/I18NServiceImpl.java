@@ -77,8 +77,9 @@ public class I18NServiceImpl implements I18NService {
 	}
 	
 	@Override
-	public void registerBundle(String bundle) {
+	public synchronized void registerBundle(String bundle) {
 		bundles.add(bundle);
+		resources.clear();
 	}
 
 	@Override
@@ -89,6 +90,7 @@ public class I18NServiceImpl implements I18NService {
 			for(String bundle : bundles) {
 				buildBundleMap(bundle, locale, tmp);
 			}
+			//return tmp;
 			resources.put(locale, tmp);
 		}
 		return resources.get(locale);
