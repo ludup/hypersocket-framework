@@ -35,7 +35,8 @@ public interface MessageResourceService extends
 	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables);
 
 	MessageResource createResource(Integer messageId, String name, String subject, String body, String html,
-			Set<String> variables, Boolean enabled, Boolean track, Collection<FileUpload> attachments, Realm realm)
+			Set<String> variables, Boolean enabled, Boolean track, 
+				Collection<FileUpload> attachments, Realm realm, EmailDeliveryStrategy delivery)
 			throws ResourceCreationException, AccessDeniedException;
 
 	Set<String> getMessageVariables(MessageResource message);
@@ -50,6 +51,12 @@ public interface MessageResourceService extends
 	void sendMessageToEmailAddress(Integer messageId, Realm realm, ITokenResolver tokenResolver, String... emails);
 
 	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables,
+			boolean system, MessageTemplateRepository repository, boolean enabled);
+
+	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system, MessageTemplateRepository repository);
+
+	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables,
+			boolean system, MessageTemplateRepository repository, boolean enabled, EmailDeliveryStrategy delivery);
 
 }

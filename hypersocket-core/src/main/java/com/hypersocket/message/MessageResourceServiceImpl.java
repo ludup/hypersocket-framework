@@ -142,7 +142,7 @@ public class MessageResourceServiceImpl extends
 						if(r.systemOnly && !realm.isSystem()) {
 							continue;
 						}
-						createI18nMessage(r.messageId, r.resourceBundle, r.resourceKey, r.variables, realm);
+						createI18nMessage(r.messageId, r.resourceBundle, r.resourceKey, r.variables, realm, r.enabled, r.delivery);
 						if(r.repository!=null) {
 							r.repository.onCreated(getMessageById(r.messageId, realm));
 						}
@@ -268,7 +268,21 @@ public class MessageResourceServiceImpl extends
 	
 	@Override
 	public void registerI18nMessage(Integer messageId, String resourceBundle, 
-			String resourceKey, Set<String> variables, boolean system, MessageTemplateRepository repository) {
+			String resourceKey, Set<String> variables, boolean system,
+			MessageTemplateRepository repository) {
+		registerI18nMessage(messageId, resourceBundle, resourceKey, variables, system, null, true, EmailDeliveryStrategy.PRIMARY);
+	}
+	
+	@Override
+	public void registerI18nMessage(Integer messageId, String resourceBundle, 
+			String resourceKey, Set<String> variables, boolean system,
+			MessageTemplateRepository repository, boolean enabled) {
+		registerI18nMessage(messageId, resourceBundle, resourceKey, variables, system, repository, enabled, EmailDeliveryStrategy.PRIMARY);
+	}
+	@Override
+	public void registerI18nMessage(Integer messageId, String resourceBundle, 
+			String resourceKey, Set<String> variables, boolean system,
+			MessageTemplateRepository repository, boolean enabled, EmailDeliveryStrategy delivery) {
 		MessageRegistration r = new MessageRegistration();
 		r.messageId = messageId;
 		r.resourceBundle = resourceBundle;
@@ -276,25 +290,27 @@ public class MessageResourceServiceImpl extends
 		r.variables = variables;
 		r.systemOnly = system;
 		r.repository = repository;
+		r.enabled = enabled;
+		r.delivery = delivery;
 		
 		messageRegistrations.put(messageId, r);
 		messageIds.add(messageId);
 	}
 	
 	private void createI18nMessage(Integer messageId, String resourceBundle, 
-			String resourceKey, Set<String> variables, Realm realm) throws ResourceCreationException,
+			String resourceKey, Set<String> variables, Realm realm, boolean enabled, EmailDeliveryStrategy delivery) throws ResourceCreationException,
 			AccessDeniedException {
 		createResource(messageId, I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".name"),
 				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".subject"), 
 				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".body"), 
-				"", variables, true, false, null, realm);
+				"", variables, enabled, false, null, realm, delivery);
 	}
 
 	@Override
 	public MessageResource createResource(Integer messageId, String name, String subject, String body, String html, 
 			Set<String> variables,
 			Boolean enabled, Boolean track, 
-			Collection<FileUpload> attachments, Realm realm) throws ResourceCreationException,
+			Collection<FileUpload> attachments, Realm realm, EmailDeliveryStrategy delivery) throws ResourceCreationException,
 			AccessDeniedException {
 
 		MessageResource resource = new MessageResource();
@@ -307,6 +323,7 @@ public class MessageResourceServiceImpl extends
 		resource.setHtml(html);
 		resource.setEnabled(enabled);
 		resource.setTrack(track);
+		resource.setDeliveryStrategy(delivery);
 		resource.setSupportedVariables(ResourceUtils.implodeValues(variables));
 		
 		List<String> attachmentUUIDs = new ArrayList<String>();
@@ -519,6 +536,8 @@ public class MessageResourceServiceImpl extends
 		String resourceKey;
 		boolean systemOnly;
 		MessageTemplateRepository repository;
+		boolean enabled = true;
+		EmailDeliveryStrategy delivery;
 	}
 
 	@Override

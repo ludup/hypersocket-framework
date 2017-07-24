@@ -1,5 +1,6 @@
 package com.hypersocket.profile;
 
+import java.util.Date;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -9,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
@@ -16,6 +19,7 @@ import org.hibernate.annotations.CascadeType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntity;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Entity
 @Table(name="profiles")
@@ -36,6 +40,10 @@ public class Profile extends AbstractEntity<Long>{
 	
 	@Column(name="state")
 	ProfileCredentialsState state;
+	
+	@Column(name="completed")
+	@Temporal(TemporalType.DATE)
+	Date completed;
 	
 	@Override
 	public Long getId() {
@@ -67,7 +75,18 @@ public class Profile extends AbstractEntity<Long>{
 	}
 
 	public void setState(ProfileCredentialsState state) {
+		if(state == ProfileCredentialsState.COMPLETE && this.state != ProfileCredentialsState.COMPLETE) {
+			completed = HypersocketUtils.today();
+		}
 		this.state = state;
+	}
+
+	public Date getCompleted() {
+		return completed;
+	}
+
+	public void setCompleted(Date completed) {
+		this.completed = completed;
 	}
 	
 	

@@ -1,6 +1,7 @@
 package com.hypersocket.profile;
 
 import java.util.Collection;
+import java.util.Date;
 
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
@@ -35,6 +36,19 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	
 	@Override
 	@Transactional(readOnly=true)
+	public long getCompleteProfileOnDateCount(Realm realm, final Date date) {
+		return getCount(Profile.class, new RealmCriteria(realm.isSystem() ? null : realm), new CriteriaConfiguration(){
+
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("state", ProfileCredentialsState.COMPLETE));
+				criteria.add(Restrictions.eq("completed", date));
+			} 
+		});
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
 	public long getIncompleteProfileCount(Realm realm) {
 		return getCount(Profile.class, new RealmCriteria(realm.isSystem() ? null : realm), new CriteriaConfiguration(){
 
@@ -59,7 +73,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 
 
 	@Override
-	public Collection<Profile> getPrincipalsWithProfileStatus(Realm realm, final ProfileCredentialsState...credentialsStates) {
+	public Collection<Profile> getProfilesWithStatus(Realm realm, final ProfileCredentialsState...credentialsStates) {
 		return list(Profile.class, new RealmCriteria(realm), new CriteriaConfiguration() {
 			
 			@Override
@@ -68,4 +82,5 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 			}
 		});
 	}
+	
 }
