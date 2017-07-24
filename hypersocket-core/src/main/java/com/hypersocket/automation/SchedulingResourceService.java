@@ -14,4 +14,6 @@ public interface SchedulingResourceService {
 	<T extends RealmResource> void schedule(T resource, Date startDate, String startTime, Date endDate, String endTime,
 			AutomationRepeatType repeatType, int repeatValue, Class<? extends Job> clz);
 
+	<T extends RealmResource> void scheduleNow(T resource, Class<? extends Job> clz);
+
 }

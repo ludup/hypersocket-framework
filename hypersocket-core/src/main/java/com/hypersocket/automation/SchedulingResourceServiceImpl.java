@@ -2,6 +2,7 @@ package com.hypersocket.automation;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -55,6 +56,7 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 
 		return ret;
 	}
+	
 	
 	@Override
 	public <T extends RealmResource> void schedule(T resource, Date startDate, String startTime, Date endDate, 
@@ -156,6 +158,19 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 				schedulerService.scheduleAt(clz, scheduleId, data, start, interval, repeat, end);
 			}
 
+		} catch (SchedulerException e) {
+			log.error("Failed to schedule automation task " + resource.getName(), e);
+		}
+	}
+	
+	@Override
+	public <T extends RealmResource> void scheduleNow(T resource, Class<? extends Job> clz) {
+
+		PermissionsAwareJobData data = new PermissionsAwareJobData(resource.getRealm(), resource.getName());
+		data.put("resourceId", resource.getId());
+
+		try {
+			schedulerService.scheduleNow(clz, UUID.randomUUID().toString(), data);
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule automation task " + resource.getName(), e);
 		}

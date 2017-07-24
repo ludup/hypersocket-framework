@@ -133,17 +133,23 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 			log.info(String.format("Creating profile for user %s", target.getPrincipalName()));
 		}
 		
-		Profile profile = new Profile();
-		profile.setId(target);
-		profile.setRealm(target.getRealm());
-		profile.setCredentials(collectAuthenticatorStates(profile, target, new HashMap<String,ProfileCredentials>()));
-		calculateCompleteness(profile);
+		Profile profile = generateProfile(target);
 		
 		if(log.isInfoEnabled()) {
 			log.info(String.format("Saving profile as %s for user %s", profile.getState(), target.getPrincipalName()));
 		}
 		
 		profileRepository.saveEntity(profile);
+	}
+	
+	@Override
+	public Profile generateProfile(Principal target) throws AccessDeniedException {
+		Profile profile = new Profile();
+		profile.setId(target);
+		profile.setRealm(target.getRealm());
+		profile.setCredentials(collectAuthenticatorStates(profile, target, new HashMap<String,ProfileCredentials>()));
+		calculateCompleteness(profile);
+		return profile;
 	}
 	
 	@Override

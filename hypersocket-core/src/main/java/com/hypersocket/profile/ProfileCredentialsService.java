@@ -30,4 +30,6 @@ public interface ProfileCredentialsService {
 
 	void updateProfile(Profile profile, Principal target) throws AccessDeniedException;
 
+	Profile generateProfile(Principal target) throws AccessDeniedException;
+
 }
