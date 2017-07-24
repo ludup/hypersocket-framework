@@ -24,6 +24,7 @@ import com.hypersocket.local.LocalUserRepository;
 import com.hypersocket.permissions.Permission;
 import com.hypersocket.permissions.PermissionRepository;
 import com.hypersocket.permissions.Role;
+import com.hypersocket.permissions.RoleType;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Principal;
@@ -134,7 +135,7 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 		userRepository.saveUser(system, new HashMap<String,String>());
 
 		// Create a system role
-		Role systemRole = permissionRepository.createRole("System", realm);
+		Role systemRole = permissionRepository.createRole("System", realm, RoleType.BUILTIN);
 		permissionRepository.grantPermission(systemRole,
 				permissionRepository
 						.getPermissionByResourceKey(SystemPermission.SYSTEM
@@ -151,7 +152,7 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 
 		// Create the System Administrator role
 		Role rAdmin = permissionRepository.createRole(
-				"System Administrator", realm, false, false, true, true);
+				"System Administrator", realm, false, false, true, true, RoleType.BUILTIN);
 		Permission pAdmin = permissionRepository
 				.getPermissionByResourceKey(SystemPermission.SYSTEM_ADMINISTRATION
 						.getResourceKey());

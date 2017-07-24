@@ -15,8 +15,6 @@ public interface ProfileCredentialsService {
 
 	Collection<AuthenticationScheme> filterUserSchemes(Principal principal, Collection<AuthenticationScheme> schemes) throws AccessDeniedException;
 
-	void onUserCreated(UserCreatedEvent event);
-
 	void onUserDeleted(UserDeletedEvent event);
 
 	void createProfile(Principal target) throws AccessDeniedException;
@@ -28,5 +26,9 @@ public interface ProfileCredentialsService {
 	void onCredentialsUpdated(ProfileCredentialsEvent event);
 
 	void onSessionOpen(SessionOpenEvent event);
+
+	void onBatchChange(ProfileBatchChangeEvent event);
+
+	void updateProfile(Profile profile, Principal target) throws AccessDeniedException;
 
 }

@@ -19,8 +19,12 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.profile.jobs.ProfileBatchUpdateJob;
+import com.hypersocket.profile.jobs.ProfileCreationJob;
+import com.hypersocket.profile.jobs.ProfileDeletionJob;
+import com.hypersocket.profile.jobs.ProfileUpdateJob;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.events.UserCreatedEvent;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
@@ -125,11 +129,20 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 	@Override
 	public void createProfile(Principal target) throws AccessDeniedException {
 		
+		if(log.isInfoEnabled()) {
+			log.info(String.format("Creating profile for user %s", target.getPrincipalName()));
+		}
+		
 		Profile profile = new Profile();
 		profile.setId(target);
 		profile.setRealm(target.getRealm());
 		profile.setCredentials(collectAuthenticatorStates(profile, target, new HashMap<String,ProfileCredentials>()));
 		calculateCompleteness(profile);
+		
+		if(log.isInfoEnabled()) {
+			log.info(String.format("Saving profile as %s for user %s", profile.getState(), target.getPrincipalName()));
+		}
+		
 		profileRepository.saveEntity(profile);
 	}
 	
@@ -139,16 +152,31 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 		if(profile==null) {
 			createProfile(target);
 		} else {
-			Map<String,ProfileCredentials> creds = new HashMap<String,ProfileCredentials>();
-			for(ProfileCredentials c : profile.getCredentials()) {
-				creds.put(c.getResourceKey(), c);
-			}
-			Set<ProfileCredentials> currentCreds = collectAuthenticatorStates(profile, target, creds);
-			profile.getCredentials().clear();
-			profile.getCredentials().addAll(currentCreds);
-			calculateCompleteness(profile);
-			profileRepository.saveEntity(profile);
+			updateProfile(profile, target);
 		}
+	}
+	
+	@Override
+	public void updateProfile(Profile profile, Principal target) throws AccessDeniedException {
+
+		if(log.isInfoEnabled()) {
+			log.info(String.format("Updating profile %s for user %s", profile.getState(), target.getPrincipalName()));
+		}
+		
+		Map<String,ProfileCredentials> creds = new HashMap<String,ProfileCredentials>();
+		for(ProfileCredentials c : profile.getCredentials()) {
+			creds.put(c.getResourceKey(), c);
+		}
+		Set<ProfileCredentials> currentCreds = collectAuthenticatorStates(profile, target, creds);
+		profile.getCredentials().clear();
+		profile.getCredentials().addAll(currentCreds);
+		calculateCompleteness(profile);
+		
+		if(log.isInfoEnabled()) {
+			log.info(String.format("Saving profile as %s for user %s", profile.getState(), target.getPrincipalName()));
+		}
+		profileRepository.saveEntity(profile);
+		
 	}
 	
 	@Override
@@ -160,13 +188,6 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 		}
 	}
 	
-	@EventListener
-	@Override
-	public void onUserCreated(UserCreatedEvent event) {
-		if(event.isSuccess()) {
-			fireProfileCreationJob(event.getTargetPrincipal());
-		}
-	}
 	
 	private void fireProfileCreationJob(Principal targetPrincipal) {
 		
@@ -229,5 +250,24 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 		if(event.isSuccess()) {
 			fireProfileCreationJob(event.getTargetPrincipal());
 		}
+	}
+	
+	@EventListener
+	@Override
+	public void onBatchChange(ProfileBatchChangeEvent event) {
+		if(event.isSuccess()) {
+			fireBatchUpdateJob(event.getCurrentRealm());
+		}
+	}
+
+	private void fireBatchUpdateJob(Realm currentRealm) {
+		PermissionsAwareJobData data = new PermissionsAwareJobData(currentRealm, "profileBatchUpdateJob");
+		
+		try {
+			schedulerService.scheduleNow(ProfileBatchUpdateJob.class, UUID.randomUUID().toString(), data);
+		} catch (SchedulerException e) {
+			log.error("Failed to schedule profile batch update job", e);
+		}
+		
 	}
 }

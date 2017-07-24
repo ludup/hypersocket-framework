@@ -151,7 +151,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 					log.info("Creating Administrator role for realm " + realm.getName());
 				}
 
-				repository.createRole(ROLE_REALM_ADMINISTRATOR, realm, false, false, true, true);
+				repository.createRole(ROLE_REALM_ADMINISTRATOR, realm, false, false, true, true, RoleType.BUILTIN);
 
 				if (log.isInfoEnabled()) {
 					log.info("Creating Everyone role for realm " + realm.getName());
@@ -164,7 +164,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				perms.add(getPermission(PasswordPermission.CHANGE.getResourceKey()));
 
 				repository.createRole(ROLE_EVERYONE, realm, false, true, false, true, perms,
-						new HashMap<String, String>());
+						new HashMap<String, String>(), RoleType.BUILTIN);
 
 			}
 			

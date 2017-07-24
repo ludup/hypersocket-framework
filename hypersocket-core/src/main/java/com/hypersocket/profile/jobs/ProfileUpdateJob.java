@@ -1,15 +1,16 @@
-package com.hypersocket.profile;
+package com.hypersocket.profile.jobs;
 
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.profile.ProfileCredentialsService;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.PermissionsAwareJob;
 
-public class ProfileCreationJob extends PermissionsAwareJob {
+public class ProfileUpdateJob extends PermissionsAwareJob {
 
 	@Autowired
 	RealmService realmService; 
@@ -27,7 +28,7 @@ public class ProfileCreationJob extends PermissionsAwareJob {
 			if(target==null) {
 				throw new JobExecutionException(String.format("Invalid principal id %d", principalId));
 			}
-			profileService.createProfile(target);
+			profileService.updateProfile(target);
 		} catch (AccessDeniedException e) {
 			throw new JobExecutionException(e.getMessage(), e);
 		}

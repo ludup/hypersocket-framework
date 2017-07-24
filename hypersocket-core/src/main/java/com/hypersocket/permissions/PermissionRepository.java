@@ -28,7 +28,7 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 			PermissionCategory category, boolean hidden);
 
 	public Role createRole(String name, Realm realm, boolean personalRole,
-			boolean allUsers, boolean allPermissions, boolean system);
+			boolean allUsers, boolean allPermissions, boolean system, RoleType type);
 
 	public PermissionCategory getCategoryById(Long id);
 
@@ -90,7 +90,7 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 
 	Role getPersonalRole(Principal principal);
 
-	Role createRole(String name, Realm realm);
+	Role createRole(String name, Realm realm, RoleType type);
 
 	Set<Role> getRolesForPrincipal(List<Principal> associatedPrincipals);
 	
@@ -109,7 +109,7 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 
 	void createRole(String name, Realm realm, boolean personalRole,
 			boolean allUsers, boolean allPermissions, boolean system,
-			Set<Permission> permissions, Map<String,String> properties) throws ResourceException;
+			Set<Permission> permissions, Map<String,String> properties, RoleType type) throws ResourceException;
 
 	Role getPersonalRole(Principal principal, boolean createIfNotFound);
 

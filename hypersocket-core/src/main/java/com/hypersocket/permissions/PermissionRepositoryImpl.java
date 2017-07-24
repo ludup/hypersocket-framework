@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hypersocket.properties.ResourceKeyRestriction;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
@@ -98,14 +99,14 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 
 	@Override
 	@Transactional
-	public Role createRole(String name, Realm realm) {
-		return createRole(name, realm, false, false, false, false);
+	public Role createRole(String name, Realm realm, RoleType type) {
+		return createRole(name, realm, false, false, false, false, type);
 	}
 
 	@Override
 	@Transactional
 	public Role createRole(String name, Realm realm, boolean personalRole,
-			boolean allUsers, boolean allPermissions, boolean system) {
+			boolean allUsers, boolean allPermissions, boolean system, RoleType type) {
 
 		Role role = new Role();
 		role.setName(name);
@@ -115,6 +116,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		role.setAllUsers(allUsers);
 		role.setAllPermissions(allPermissions);
 		role.setSystem(system);
+		role.setType(type);
 		
 		save(role);
 		return role;
@@ -154,9 +156,9 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@Override
 	public void createRole(String name, Realm realm, boolean personalRole,
 			boolean allUsers, boolean allPermissions, boolean system,
-			Set<Permission> permissions, Map<String,String> properties) throws ResourceException {
+			Set<Permission> permissions, Map<String,String> properties, RoleType type) throws ResourceException {
 		Role role = createRole(name, realm, personalRole, allUsers,
-				allPermissions, system);
+				allPermissions, system, type);
 		role.setPermissions(permissions);
 		saveResource(role, properties);
 		
@@ -474,7 +476,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		Role r = createRole(
 				principal.getRealm().getName() + "/"
 						+ principal.getPrincipalName(), principal.getRealm(),
-				true, false, false, false);
+				true, false, false, false, principal.getType()==PrincipalType.USER ? RoleType.USER : RoleType.GROUP);
 		assignRole(r, principal);
 		return r;
 	}

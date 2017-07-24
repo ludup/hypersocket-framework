@@ -78,7 +78,9 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 			
 			@Override
 			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.in("state", credentialsStates));
+				if(credentialsStates.length > 0) {
+					criteria.add(Restrictions.in("state", credentialsStates));
+				}
 			}
 		});
 	}
