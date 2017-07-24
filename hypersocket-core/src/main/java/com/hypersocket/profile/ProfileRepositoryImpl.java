@@ -1,5 +1,7 @@
 package com.hypersocket.profile;
 
+import java.util.Collection;
+
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
@@ -52,6 +54,18 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("state", ProfileCredentialsState.PARTIALLY_COMPLETE));
 			} 
+		});
+	}
+
+
+	@Override
+	public Collection<Profile> getPrincipalsWithProfileStatus(Realm realm, final ProfileCredentialsState...credentialsStates) {
+		return list(Profile.class, new RealmCriteria(realm), new CriteriaConfiguration() {
+			
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.in("state", credentialsStates));
+			}
 		});
 	}
 }

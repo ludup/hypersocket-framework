@@ -43,6 +43,7 @@ public class I18NServiceImpl implements I18NService {
 	List<Locale> supportedLocales = new ArrayList<Locale>();
 	
 	List<Message> allMessages;
+	HashMap<Locale,Map<String,String>> resources = new HashMap<Locale,Map<String,String>>();
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -81,12 +82,26 @@ public class I18NServiceImpl implements I18NService {
 	}
 
 	@Override
-	public Map<String,String> getResourceMap(Locale locale) {
-		HashMap<String,String> resources = new HashMap<String,String>();
-		for(String bundle : bundles) {
-			buildBundleMap(bundle, locale, resources);
+	public synchronized Map<String,String> getResourceMap(Locale locale) {
+		
+		if(!resources.containsKey(locale)) {
+			Map<String,String> tmp = new HashMap<String,String>();
+			for(String bundle : bundles) {
+				buildBundleMap(bundle, locale, tmp);
+			}
+			resources.put(locale, tmp);
 		}
-		return resources;
+		return resources.get(locale);
+	}
+	
+	@Override
+	public String getResource(String resourceKey, Locale locale) {
+		return getResourceMap(locale).get(resourceKey);
+	}
+	
+	@Override
+	public String getResource(String resourceKey) {
+		return getResource(resourceKey, Locale.getDefault());
 	}
 	
 	private void buildBundleMap(String bundle, Locale locale, Map<String,String> resources) {

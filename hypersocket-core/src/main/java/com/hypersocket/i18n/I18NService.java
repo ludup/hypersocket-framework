@@ -26,5 +26,9 @@ public interface I18NService {
 
 	Set<String> getBundles();
 
+	String getResource(String resourceKey, Locale locale);
+
+	String getResource(String resourceKey);
+
 
 }
