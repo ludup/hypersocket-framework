@@ -123,4 +123,8 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	Role getCurrentRole(Session session);
 	
 	void updateSession(Session session);
+
+	void notifyReaperListeners(Session session);
+
+	void registerReaperListener(SessionReaperListener listener);
 }

@@ -94,6 +94,8 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	
 	Session systemSession;
 	
+	List<SessionReaperListener> listeners = new ArrayList<SessionReaperListener>();
+	
 	@PostConstruct
 	private void postConstruct() throws AccessDeniedException {
 
@@ -118,6 +120,13 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		eventService.registerEvent(SessionOpenEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionClosedEvent.class, RESOURCE_BUNDLE);
 	
+	}
+	
+	@Override
+	public void registerReaperListener(SessionReaperListener listener) {
+		synchronized(listeners) {
+			listeners.add(listener);
+		}
 	}
 	
 	@Override
@@ -329,7 +338,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		session.setSignedOut(new Date());
 		session.setNonCookieKey(null);
-		closeSession(session);
+
 		repository.updateSession(session);
 
 		if (!session.isSystem()) {
@@ -747,5 +756,14 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			clearPrincipalContext();
 		}
 	
+	}
+
+	@Override
+	public void notifyReaperListeners(Session session) {
+		synchronized(listeners) {
+			for(SessionReaperListener listener : listeners) {
+				listener.processSession(session);
+			}
+		}
 	}
 }

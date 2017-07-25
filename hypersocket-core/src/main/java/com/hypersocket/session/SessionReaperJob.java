@@ -44,8 +44,10 @@ public class SessionReaperJob extends PermissionsAwareJob {
 						if(firstRun) {
 							if(realmService.getRealmPropertyBoolean(session.getPrincipalRealm(), "session.closeOnShutdown")) {
 								sessionService.closeSession(session);
+								continue;
 							}
 						}
+						sessionService.notifyReaperListeners(session);
 					}
 				}
 			}
