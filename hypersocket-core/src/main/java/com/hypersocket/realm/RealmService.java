@@ -34,7 +34,10 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	void registerRealmProvider(RealmProvider provider);
 
-	Realm createRealm(String name, String module, Long owner, Map<String, String> properties)
+	Realm createPrimaryRealm(String name, String module, Map<String, String> properties)
+			throws AccessDeniedException, ResourceCreationException, ResourceConfirmationException;
+	
+	Realm createRealm(String name, String module, Realm parent, Long owner, Map<String, String> properties)
 			throws AccessDeniedException, ResourceCreationException, ResourceConfirmationException;
 
 	void deleteRealm(String name) throws ResourceChangeException, ResourceNotFoundException, AccessDeniedException;

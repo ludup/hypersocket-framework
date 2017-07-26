@@ -928,7 +928,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Realm createRealm(String name, String module, Long owner, Map<String, String> properties)
+	public Realm createPrimaryRealm(String name, String module, Map<String, String> properties)
+			throws AccessDeniedException, ResourceCreationException, ResourceConfirmationException {
+		return createRealm(name, module, null, null, properties);
+	}
+	
+	@Override
+	public Realm createRealm(String name, String module, Realm parent, Long owner, Map<String, String> properties)
 			throws AccessDeniedException, ResourceCreationException, ResourceConfirmationException {
 
 		try {
@@ -948,7 +954,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			@SuppressWarnings("unchecked")
 			Realm realm = realmRepository.createRealm(name, UUID.randomUUID().toString(), module, properties,
-					realmProvider, owner, new TransactionAdapter<Realm>() {
+					realmProvider, parent, owner, owner==null, new TransactionAdapter<Realm>() {
 
 				@Override
 				public void afterOperation(Realm realm, Map<String,String> properties) {

@@ -35,11 +35,13 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional
 	public Realm createRealm(String name, String uuid, String module,
-							 Map<String, String> properties, RealmProvider provider, Long owner,  @SuppressWarnings("unchecked") TransactionOperation<Realm>... ops) throws ResourceException {
+							 Map<String, String> properties, RealmProvider provider, Realm parent, Long owner, Boolean publicRealm, @SuppressWarnings("unchecked") TransactionOperation<Realm>... ops) throws ResourceException {
 		Realm realm = new Realm();
 		realm.setName(name);
 		realm.setResourceCategory(module);
 		realm.setOwner(owner);
+		realm.setParent(parent);
+		realm.setPublicRealm(publicRealm);
 		realm.setUuid(uuid);
 
 		for(TransactionOperation<Realm> op : ops) {
@@ -99,7 +101,7 @@ public class RealmRepositoryImpl extends
 	public List<Realm> allRealms() {
 		return allEntities(Realm.class, new HiddenFilter(),
 				new DeletedCriteria(false), new DistinctRootEntity(),
-				new NullCriteria("owner"));
+				new PublicRealmCriteria());
 	}
 
 	@Override
@@ -107,7 +109,7 @@ public class RealmRepositoryImpl extends
 	public List<Realm> searchRealms(String searchPattern, int start,
 									int length, ColumnSort[] sorting) {
 		return search(Realm.class, "name", searchPattern, start, length,
-				sorting, new NullCriteria("owner"), new CriteriaConfiguration() {
+				sorting, new PublicRealmCriteria(), new CriteriaConfiguration() {
 
 					@Override
 					public void configure(Criteria criteria) {
@@ -122,7 +124,7 @@ public class RealmRepositoryImpl extends
 	public List<Realm> allRealms(String resourceKey) {
 		return list("resourceCategory", resourceKey, Realm.class,
 				new HiddenFilter(), new DeletedCriteria(false),
-				new DistinctRootEntity(), new NullCriteria("owner"));
+				new DistinctRootEntity(), new PublicRealmCriteria());
 	}
 
 	protected Realm getRealm(String column, Object value, CriteriaConfiguration...configurations ) {
@@ -138,7 +140,7 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional(readOnly = true)
 	public Realm getRealmByName(String name) {
-		return getRealm("name", name, new DeletedCriteria(false), new NullCriteria("owner"));
+		return getRealm("name", name, new DeletedCriteria(false), new PublicRealmCriteria());
 	}
 	
 	@Override
@@ -157,13 +159,13 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional(readOnly = true)
 	public Realm getRealmByName(String name, boolean deleted) {
-		return get("name", name, Realm.class, new DeletedCriteria(deleted), new NullCriteria("owner"));
+		return get("name", name, Realm.class, new DeletedCriteria(deleted), new PublicRealmCriteria());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public Realm getRealmByHost(String host) {
-		return getRealm("host", host, new NullCriteria("owner"));
+		return getRealm("host", host, new PublicRealmCriteria());
 	}
 
 	@Override
@@ -185,7 +187,7 @@ public class RealmRepositoryImpl extends
 	@Transactional(readOnly = true)
 	public Long countRealms(String searchPattern) {
 		return getCount(Realm.class, "name", searchPattern,
-				new NullCriteria("owner"), new CriteriaConfiguration() {
+				new PublicRealmCriteria(), new CriteriaConfiguration() {
 
 					@Override
 					public void configure(Criteria criteria) {

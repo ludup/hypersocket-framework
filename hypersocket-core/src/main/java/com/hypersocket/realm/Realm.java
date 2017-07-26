@@ -9,12 +9,14 @@ package com.hypersocket.realm;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.resource.Resource;
 
 @Entity
@@ -33,6 +35,12 @@ public class Realm extends Resource {
 	@Column(name = "owner_id")
 	Long owner;
 
+	@OneToOne(optional=true)
+	Realm parent;
+	
+	@Column(name="public")
+	Boolean publicRealm;
+	
 	public boolean isDefaultRealm() {
 		return defaultRealm;
 	}
@@ -67,6 +75,25 @@ public class Realm extends Resource {
 	}
 
 	public boolean isPrimaryRealm() {
-		return owner==null;
+		return owner==null && parent==null;
 	}
+
+	@JsonIgnore
+	public Realm getParent() {
+		return parent;
+	}
+
+	public void setParent(Realm parent) {
+		this.parent = parent;
+	}
+
+	public Boolean getPublicRealm() {
+		return publicRealm==null ? isPrimaryRealm() : publicRealm;
+	}
+
+	public void setPublicRealm(Boolean publicRealm) {
+		this.publicRealm = publicRealm;
+	}
+	
+	
 }

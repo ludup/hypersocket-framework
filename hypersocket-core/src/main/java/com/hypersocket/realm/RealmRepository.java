@@ -35,7 +35,7 @@ public interface RealmRepository extends
 
 	Realm createRealm(String name, String uuid, String module,
 					  Map<String, String> properties, RealmProvider provider,
-					  Long owner,
+					  Realm parent, Long owner, Boolean publicRealm,
 					  @SuppressWarnings("unchecked") TransactionOperation<Realm> ... ops) throws ResourceException;
 
 	Realm getRealmByName(String name, boolean deleted);

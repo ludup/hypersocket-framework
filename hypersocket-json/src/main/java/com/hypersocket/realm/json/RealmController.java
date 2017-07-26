@@ -239,7 +239,7 @@ public class RealmController extends ResourceController {
 				newRealm = realmService.updateRealm(realmService.getRealmById(realm.getId()), realm.getName(),
 						realm.getType(), properties);
 			} else {
-				newRealm = realmService.createRealm(realm.getName(), realm.getType(), null, properties);
+				newRealm = realmService.createPrimaryRealm(realm.getName(), realm.getType(), properties);
 			}
 
 			return new ResourceStatus<Realm>(newRealm,
