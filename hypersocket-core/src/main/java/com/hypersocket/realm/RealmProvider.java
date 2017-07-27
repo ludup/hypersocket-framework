@@ -33,7 +33,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Principal getPrincipalByName(String principalName, Realm realm, PrincipalType... acceptTypes);
 
-	boolean verifyPassword(Principal principal, char[] password);
+	boolean verifyPassword(Principal principal, char[] password) throws LogonException, IOException;
 
 	boolean isReadOnly(Realm realm);
 

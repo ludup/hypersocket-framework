@@ -106,9 +106,9 @@ public class RealmRepositoryImpl extends
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Realm> searchRealms(String searchPattern, int start,
+	public List<Realm> searchRealms(String searchPattern, String searchColumn, int start,
 									int length, ColumnSort[] sorting) {
-		return search(Realm.class, "name", searchPattern, start, length,
+		return search(Realm.class, searchColumn, searchPattern, start, length,
 				sorting, new PublicRealmCriteria(), new CriteriaConfiguration() {
 
 					@Override
@@ -185,8 +185,8 @@ public class RealmRepositoryImpl extends
 
 	@Override
 	@Transactional(readOnly = true)
-	public Long countRealms(String searchPattern) {
-		return getCount(Realm.class, "name", searchPattern,
+	public Long countRealms(String searchPattern, String searchColumn) {
+		return getCount(Realm.class, searchColumn, searchPattern,
 				new PublicRealmCriteria(), new CriteriaConfiguration() {
 
 					@Override

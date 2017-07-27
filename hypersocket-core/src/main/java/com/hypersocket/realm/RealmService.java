@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
@@ -59,7 +60,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Principal getPrincipalByName(Realm realm, String principalName, PrincipalType... type);
 
-	boolean verifyPassword(Principal principal, char[] password);
+	boolean verifyPassword(Principal principal, char[] password) throws LogonException, IOException;
 
 	void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon, boolean administrative)
 			throws AccessDeniedException, ResourceException;
@@ -112,9 +113,9 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	List<Principal> allGroups(Realm realm) throws AccessDeniedException;
 
-	List<?> getRealms(String searchPattern, int start, int length, ColumnSort[] sorting) throws AccessDeniedException;
+	List<?> getRealms(String searchPattern, String searchColumn, int start, int length, ColumnSort[] sorting) throws AccessDeniedException;
 
-	Long getRealmCount(String searchPattern) throws AccessDeniedException;
+	Long getRealmCount(String searchPattern, String searchColumn) throws AccessDeniedException;
 
 	Collection<PropertyCategory> getGroupPropertyTemplates(String module) throws AccessDeniedException;
 

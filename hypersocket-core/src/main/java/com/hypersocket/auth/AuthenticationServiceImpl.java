@@ -457,6 +457,14 @@ public class AuthenticationServiceImpl extends
 					}
 					case AUTHENTICATION_FAILURE_DISPALY_ERROR: 
 					{
+						if (!authenticator.isSecretModule() && state.hasNextStep()) {
+							state.fakeCredentials();
+							state.nextModule();
+						} else {
+							eventService
+									.publishEvent(new AuthenticationAttemptEvent(
+											this, state, authenticator, false));
+						}
 						break;
 					}
 					case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
@@ -848,7 +856,7 @@ public class AuthenticationServiceImpl extends
 								.getName()));
 			}
 
-			throw new PrincipalNotFoundException();
+			throw new PrincipalNotFoundException(String.format("%s is not a valid username", username));
 			
 		}
 

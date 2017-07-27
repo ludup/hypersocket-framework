@@ -32,6 +32,19 @@ public class AuthenticationAttemptEvent extends SystemEvent {
 						resourceKey));
 	}
 	
+	public AuthenticationAttemptEvent(Object source, AuthenticationState state, Authenticator authenticator, boolean success) {
+		this(source, success, state, authenticator);
+		if(state.getLastErrorIsResourceKey()) {
+			addAttribute(AuthenticationAttemptEvent.ATTR_HINT, 
+					I18NServiceImpl.tagForConversion(
+							AuthenticationService.RESOURCE_BUNDLE, 
+							state.getLastErrorMsg()));
+		} else {
+			addAttribute(AuthenticationAttemptEvent.ATTR_HINT, 
+					state.getLastErrorMsg());
+		}
+	}
+	
 	private AuthenticationAttemptEvent(Object source,
 			boolean success, AuthenticationState state, Authenticator authenticator) {
 		super(source, EVENT_RESOURCE_KEY, success, state.getRealm());
@@ -49,8 +62,8 @@ public class AuthenticationAttemptEvent extends SystemEvent {
 				state.getLastRealmName());
 	}
 
-	public AuthenticationAttemptEvent(Object source, String resourceKey, Throwable e, Realm currentRealm) {
-		super(source, resourceKey, e, currentRealm);
+	public AuthenticationAttemptEvent(Object source, Throwable e, Realm currentRealm) {
+		super(source, EVENT_RESOURCE_KEY, e, currentRealm);
 	}
 	
 	public String getResourceBundle() {

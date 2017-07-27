@@ -170,9 +170,12 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 		data.put("resourceId", resource.getId());
 
 		try {
+			if(log.isInfoEnabled()) {
+				log.info(String.format("Scheduling %s", clz.getName()));
+			}
 			schedulerService.scheduleNow(clz, UUID.randomUUID().toString(), data);
 		} catch (SchedulerException e) {
-			log.error("Failed to schedule automation task " + resource.getName(), e);
+			log.error("Failed to schedule task " + resource.getName(), e);
 		}
 	}
 }

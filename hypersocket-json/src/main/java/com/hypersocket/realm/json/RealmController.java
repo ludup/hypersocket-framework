@@ -151,13 +151,13 @@ public class RealmController extends ResourceController {
 				@Override
 				public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
 									   ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
-					return realmService.getRealms(searchPattern, start, length, sorting);
+					return realmService.getRealms(searchPattern, searchColumn, start, length, sorting);
 				}
 
 				@Override
 				public Long getTotalCount(String searchColumn, String searchPattern)
 						throws UnauthorizedException, AccessDeniedException {
-					return realmService.getRealmCount(searchPattern);
+					return realmService.getRealmCount(searchPattern, searchColumn);
 				}
 			});
 		} finally {

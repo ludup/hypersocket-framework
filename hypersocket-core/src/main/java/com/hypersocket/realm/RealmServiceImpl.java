@@ -693,19 +693,26 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean verifyPassword(Principal principal, char[] password) {
+	public boolean verifyPassword(Principal principal, char[] password) throws LogonException, IOException {
 
 		/**
 		 * Adds support for session tokens. These can be created and used
 		 * instead of passwords where we may not have, or want to distribute the
 		 * password to an external service.
 		 */
-		String pwd = new String(password);
-		if (pwd.startsWith(SessionServiceImpl.TOKEN_PREFIX)) {
-			Principal tokenPrincipal = sessionService.getSessionTokenResource(pwd, Principal.class);
-			return tokenPrincipal!=null && tokenPrincipal.equals(principal);
-		} else {
-			return getProviderForPrincipal(principal).verifyPassword(principal, password);
+		try {
+			String pwd = new String(password);
+			if (pwd.startsWith(SessionServiceImpl.TOKEN_PREFIX)) {
+				Principal tokenPrincipal = sessionService.getSessionTokenResource(pwd, Principal.class);
+				return tokenPrincipal!=null && tokenPrincipal.equals(principal);
+			} else {
+				return getProviderForPrincipal(principal).verifyPassword(principal, password);
+			}
+		} catch(LogonException e) {
+			if(configurationService.getBooleanValue(principal.getRealm(), "logon.verboseErrors")) {
+				throw e;
+			}
+			return false;
 		}
 	}
 
@@ -1845,20 +1852,20 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 	
 	@Override
-	public List<Realm> getRealms(String searchPattern, int start, int length, ColumnSort[] sorting)
+	public List<Realm> getRealms(String searchPattern, String searchColumn, int start, int length, ColumnSort[] sorting)
 			throws AccessDeniedException {
 
 		assertPermission(RealmPermission.READ);
 
-		return realmRepository.searchRealms(searchPattern, start, length, sorting);
+		return realmRepository.searchRealms(searchPattern, searchColumn, start, length, sorting);
 	}
 
 	@Override
-	public Long getRealmCount(String searchPattern) throws AccessDeniedException {
+	public Long getRealmCount(String searchPattern, String searchColumn) throws AccessDeniedException {
 
 		assertPermission(RealmPermission.READ);
 
-		return realmRepository.countRealms(searchPattern);
+		return realmRepository.countRealms(searchPattern, searchColumn);
 	}
 
 	@Override

@@ -144,7 +144,7 @@ public abstract class AbstractSchedulerServiceImpl implements SchedulerService {
 	public void rescheduleIn(String scheduleId, int millis, long interval)
 			throws SchedulerException, NotScheduledException {
 		reschedule(scheduleId, DateBuilder.futureDate(millis,
-				DateBuilder.IntervalUnit.MILLISECOND), interval, 0, null);
+				DateBuilder.IntervalUnit.MILLISECOND), interval, SimpleTrigger.REPEAT_INDEFINITELY, null);
 	}
 
 	@Override
@@ -220,7 +220,9 @@ public abstract class AbstractSchedulerServiceImpl implements SchedulerService {
 		}
 
 		if (log.isInfoEnabled()) {
-			log.info("Scheduling job with id "
+			log.info("Scheduling job " 
+					+ clz.getSimpleName()
+					+ " with id "
 					+ scheduleId
 					+ " to start "
 					+ (start == null ? "now" : "at "

@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.io.IOException;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.input.FormTemplate;
+import com.hypersocket.realm.LogonException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
@@ -110,14 +112,20 @@ public class UsernameAndPasswordAuthenticator extends
 			password = state
 					.getParameter(UsernameAndPasswordTemplate.PASSWORD_FIELD);
 		}
-		boolean success = realmService.verifyPassword(principal,
-				password.toCharArray());
-
-		if (success) {
-			state.addParameter("password", password);
+		
+		boolean result = false;
+		try {
+			result = realmService.verifyPassword(principal, password.toCharArray());
+			if(result) {
+				state.addParameter("password", password);
+			}
+			return result ? AuthenticatorResult.AUTHENTICATION_SUCCESS
+					: AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_CREDENTIALS;
+		} catch (IOException | LogonException e) {
+			state.setLastErrorIsResourceKey(false);
+			state.setLastErrorMsg(e.getMessage());
+			return AuthenticatorResult.AUTHENTICATION_FAILURE_DISPALY_ERROR;
 		}
-
-		return success ? AuthenticatorResult.AUTHENTICATION_SUCCESS : AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_CREDENTIALS;
 	}
 
 	@Override

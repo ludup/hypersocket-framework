@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
@@ -28,6 +29,9 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 	@Autowired
 	RealmRepository realmRepository;
 	
+	@Autowired
+	ConfigurationService configurationService; 
+	
 	@Override
 	public AuthenticatorResult authenticate(AuthenticationState state,
 			@SuppressWarnings("rawtypes") Map parameters)
@@ -37,8 +41,7 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 				UsernameAndPasswordTemplate.USERNAME_FIELD);
 
 		if (username == null || username.equals("")) {
-			username = state
-					.getParameter(UsernameAndPasswordTemplate.USERNAME_FIELD);
+			username = state.getParameter(UsernameAndPasswordTemplate.USERNAME_FIELD);
 		}
 
 		if (username == null || username.equals("")) {
@@ -66,6 +69,11 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 
 			return result;
 		} catch (PrincipalNotFoundException e) {
+			if(configurationService.getBooleanValue(state.getRealm()==null? realmService.getDefaultRealm() : state.getRealm(), "logon.verboseErrors")) {
+				state.setLastErrorIsResourceKey(false);
+				state.setLastErrorMsg(e.getMessage());
+				return AuthenticatorResult.AUTHENTICATION_FAILURE_DISPALY_ERROR;
+			}
 			return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
 		}
 

@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.alert.AlertCallback;
-import com.hypersocket.alert.AlertKeyRepository;
 import com.hypersocket.alert.AlertService;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
@@ -41,8 +40,8 @@ public class AlertTask extends AbstractTaskProvider {
 	public static final String ATTR_ALERT_ID = "alert.id";
 
 	@Autowired
-	private AlertKeyRepository repository;
-
+	private AlertTaskRepository taskRepository; 
+	
 	@Autowired
 	private TriggerResourceService triggerService;
 
@@ -92,7 +91,7 @@ public class AlertTask extends AbstractTaskProvider {
 
 		StringBuffer key = new StringBuffer();
 
-		for (String attr : ResourceUtils.explodeValues(repository.getValue(task,
+		for (String attr : ResourceUtils.explodeValues(taskRepository.getValue(task,
 				ATTR_KEY))) {
 			if (key.length() > 0) {
 				key.append("|");
@@ -100,9 +99,9 @@ public class AlertTask extends AbstractTaskProvider {
 			key.append(event.getAttribute(attr));
 		}
 
-		final int threshold = repository.getIntValue(task, ATTR_THRESHOLD);
-		final int timeout = repository.getIntValue(task, ATTR_TIMEOUT);
-		final int delay = repository.getIntValue(task,  ATTR_RESET_DELAY);
+		final int threshold = taskRepository.getIntValue(task, ATTR_THRESHOLD);
+		final int timeout = taskRepository.getIntValue(task, ATTR_TIMEOUT);
+		final int delay = taskRepository.getIntValue(task,  ATTR_RESET_DELAY);
 		
 		String alertKey = key.toString();
 		
@@ -123,7 +122,7 @@ public class AlertTask extends AbstractTaskProvider {
 
 	@Override
 	public ResourceTemplateRepository getRepository() {
-		return repository;
+		return taskRepository;
 	}
 
 	private void registerDynamicEvent(TriggerResource trigger) {
@@ -137,8 +136,8 @@ public class AlertTask extends AbstractTaskProvider {
 		I18N.overrideMessage(
 				Locale.ENGLISH,
 				new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
-						resourceKey + ".warning", repository.getValue(trigger,
-								"alert.text"), repository.getValue(trigger,
+						resourceKey + ".warning", taskRepository.getValue(trigger,
+								"alert.text"), taskRepository.getValue(trigger,
 								"alert.text")));
 
 		I18N.flushOverrides();

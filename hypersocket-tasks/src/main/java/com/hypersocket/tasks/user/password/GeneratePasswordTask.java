@@ -98,7 +98,7 @@ public class GeneratePasswordTask extends AbstractTaskProvider {
 		
 		if(principal==null) {
 			return new GeneratePasswordTaskResult(this, 
-					new PrincipalNotFoundException(), 
+					new PrincipalNotFoundException(String.format("%s is not a valid username", principalName)), 
 					currentRealm, 
 					task, 
 					principalName);
