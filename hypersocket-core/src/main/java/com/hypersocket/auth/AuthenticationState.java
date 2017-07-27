@@ -39,6 +39,7 @@ public class AuthenticationState {
 	int attempts = 0;
 	Locale locale;
 	String homePage = "";
+	boolean hasEnded = false;
 	
 	Map<String, String> parameters = new HashMap<String, String>();
 	Map<String, Object> environment = new HashMap<String, Object>();
@@ -295,6 +296,14 @@ public class AuthenticationState {
 
 	public void setHostRealm(Realm hostRealm) {
 		this.hostRealm = hostRealm;
+	}
+
+	public boolean hasEnded() {
+		return hasEnded;
+	}
+
+	public void setHasEnded(boolean hasEnded) {
+		this.hasEnded = hasEnded;
 	}
 	
 	
