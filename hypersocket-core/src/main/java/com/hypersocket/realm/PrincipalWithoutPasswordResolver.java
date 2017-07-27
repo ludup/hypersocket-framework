@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.utils.StaticResolver;
 
 public class PrincipalWithoutPasswordResolver extends StaticResolver {
@@ -20,7 +21,7 @@ public class PrincipalWithoutPasswordResolver extends StaticResolver {
 		addToken("principalRealm", principal.getRealm().getName());
 		addToken("firstName", getFirstName(principal.getPrincipalDescription()));
 		addToken("email", principal.getEmail());
-		addToken("secondaryEmail", principal.getSecondaryEmail());
+		addToken("secondaryEmail", ResourceUtils.createDelimitedString(ResourceUtils.explodeCollectionValues(principal.getSecondaryEmail()), "\r\n"));
 		addToken("mobile", principal.getMobile());
 		addToken("fullName", principal.getPrincipalDescription());
 	}

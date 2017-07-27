@@ -210,4 +210,8 @@ public class HibernateUtils {
 		}
 	}
 
+	public static boolean isString(Class<?> clz, String column) {
+		return ReflectionUtils.findMethod(clz, "get" + StringUtils.capitalize(column)).getReturnType().equals(String.class);
+	}
+
 }

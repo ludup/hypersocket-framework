@@ -17,7 +17,7 @@
 			defaultValue="" />
 		<property resourceKey="email" inputType="text" weight="100" allowEmpty="true" validateAll="email"
 			defaultValue="" />
-		<property resourceKey="secondaryEmail" inputType="text" weight="200" allowEmpty="true" validateAll="email"
+		<property resourceKey="secondaryEmail" inputType="multipleTextInput" weight="200" allowEmpty="true" validateAll="email"
 			defaultValue="" />
 		<property resourceKey="mobile" inputType="text" weight="300"
 			defaultValue="" />

@@ -442,16 +442,18 @@ public class MessageResourceServiceImpl extends
 				case ALL:
 					recipients.add(new RecipientHolder(principal, 
 							principal.getEmail()));
-					recipients.add(new RecipientHolder(principal, 
-							((UserPrincipal)principal).getSecondaryEmail()));
+					for(String email : ResourceUtils.explodeCollectionValues(((UserPrincipal)principal).getSecondaryEmail())) {
+						recipients.add(new RecipientHolder(principal, email));
+					}
 					break;
 				case PRIMARY:
 					recipients.add(new RecipientHolder(principal, 
 							principal.getEmail()));
 					break;
 				case SECONDARY:
-					recipients.add(new RecipientHolder(principal, 
-							((UserPrincipal)principal).getSecondaryEmail()));
+					for(String email : ResourceUtils.explodeCollectionValues(((UserPrincipal)principal).getSecondaryEmail())) {
+						recipients.add(new RecipientHolder(principal, email));
+					}
 					break;
 				default:
 				}
