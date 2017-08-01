@@ -213,8 +213,10 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			} else if(t.getCause() instanceof ResourceException) {
 				throw (ResourceException)t.getCause();
 			} else  {
-				throw new ResourceCreationException(RESOURCE_BUNDLE_DEFAULT,
+				ResourceCreationException e = new ResourceCreationException(RESOURCE_BUNDLE_DEFAULT,
 						"generic.create.error", t.getMessage());
+				e.initCause(t);
+				throw e;
 			}
 		}
 	
