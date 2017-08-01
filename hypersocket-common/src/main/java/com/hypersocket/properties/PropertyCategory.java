@@ -34,6 +34,25 @@ public class PropertyCategory implements Serializable {
 	
 	public PropertyCategory() {
 		
+		
+	}
+	
+	public PropertyCategory(PropertyCategory other) {
+
+		setBundle(other.getBundle());
+		setCategoryGroup(other.getCategoryGroup());
+		setCategoryNamespace(other.getCategoryNamespace());
+		setCategoryKey(other.getCategoryKey());
+		setWeight(other.getWeight());
+		setUserCreated(other.isUserCreated());
+		setDisplayMode(other.getDisplayMode());
+		setSystemOnly(other.isSystemOnly());
+		setNonSystem(other.isNonSystem());
+		setFilter(other.getFilter());
+		setName(other.getName());
+		setHidden(other.isHidden());
+		setVisibilityDependsValue(other.getVisibilityDependsValue());
+		setVisibilityDependsOn(other.getVisibilityDependsOn());
 	}
 	
 	public int getId() {

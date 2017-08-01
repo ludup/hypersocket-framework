@@ -466,6 +466,15 @@ public class PasswordPolicyResourceServiceImpl extends
 		int minUppcase = policy.getMinimumUpper();
 		int minNonAlpha = policy.getMinimumSymbol();
 		
+		/* If there are no special requirements, make some up. It seems this
+		 * library needs at least one rule */
+		if(minDigis < 1 && minLowercase<1 && minUppcase < 1 &&  minNonAlpha < 1) {
+			rules.add(new DigitCharacterRule(1));
+			rules.add(new LowercaseCharacterRule(1));
+			rules.add(new UppercaseCharacterRule(1));
+			rules.add(new PolicyNonAlphaNumericCharacterRule(1, policy.getValidSymbols()));
+		}
+		
 		if(minDigis > 0) {
 			rules.add(new DigitCharacterRule(minDigis));
 		}

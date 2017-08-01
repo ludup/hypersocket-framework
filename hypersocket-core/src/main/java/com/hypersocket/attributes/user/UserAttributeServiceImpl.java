@@ -28,6 +28,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.role.events.RoleEvent;
 
 @Service
@@ -72,7 +73,7 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 		eventService.registerEvent(UserAttributeCreatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(UserAttributeUpdatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(UserAttributeDeletedEvent.class, RESOURCE_BUNDLE);
-
+		
 		super.init();
 	}
 
@@ -165,7 +166,7 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 			template.setResourceKey(attr.getVariableName());
 		}
 
-		template.getAttributes().put("inputType", attr.getType().toString().toLowerCase());
+		template.getAttributes().put("inputType", attr.getType().getInputType());
 		template.getAttributes().put("filter", "custom");
 		
 		template.setDefaultValue(defaultValue);
@@ -204,9 +205,27 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 		/**
 		 * Really quick hack. We will do better.
 		 */
-		userPropertyTemplates.clear();
+		synchronized (userPropertyTemplates) {
+			userPropertyTemplates.clear();
+		}
 	}
 	
+	@Override
+	protected void afterCreateResource(UserAttribute resource, Map<String, String> properties)
+			throws ResourceException {
+		synchronized (userPropertyTemplates) {
+			userPropertyTemplates.clear();
+		}
+	}
+
+	@Override
+	protected void afterUpdateResource(UserAttribute resource, Map<String, String> properties)
+			throws ResourceException {
+		synchronized (userPropertyTemplates) {
+			userPropertyTemplates.clear();
+		}
+	}
+
 	@Override
 	protected void fireResourceCreationEvent(UserAttribute resource) {
 		eventService.publishEvent(new UserAttributeCreatedEvent(this,

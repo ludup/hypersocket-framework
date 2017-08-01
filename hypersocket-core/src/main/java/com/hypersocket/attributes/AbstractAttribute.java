@@ -81,7 +81,7 @@ public abstract class AbstractAttribute<C extends RealmAttributeCategory<?>> ext
 	}
 
 	public String generateMetaData() {
-		return "{ \"inputType\": \"" + type.toString().toLowerCase() + "\", \"filter\": \"custom\" }";
+		return "{ \"inputType\": \"" + type.getInputType() + "\", \"filter\": \"custom\" }";
 	}
 
 	public String getDescription() {

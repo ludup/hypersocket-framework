@@ -7,7 +7,11 @@ public enum AttributeType {
 	SWITCH("switch"),
 	CHECKBOX("checkbox"),
 	SELECT("select"),
-	MULTIPLE_TEXT("multipleTextInput");
+	MULTIPLE_TEXT("multipleTextInput"),
+	DATE("date"),
+	COLOR("color"),
+	TIME("time"),
+	SLIDER("slider");
 
 	AttributeType(String inputType) {
 		this.inputType = inputType;

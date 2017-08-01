@@ -276,7 +276,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 			template.setResourceKey(attr.getVariableName());
 		}
 
-		template.getAttributes().put("inputType", attr.getType().toString().toLowerCase());
+		template.getAttributes().put("inputType", attr.getType().getInputType());
 		template.getAttributes().put("filter", "custom");
 		
 		template.setDefaultValue(defaultValue);
@@ -381,23 +381,19 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 			Map<Integer,PropertyCategory> results = new HashMap<Integer,PropertyCategory>();
 			
 			for(PropertyTemplate t : userTemplates.values()) {
+				
+				if(t == null) {
+					log.warn("BUG: NULL property template");
+					continue;
+				}
+
+				if(t.getCategory() == null) {
+					log.warn("BUG: NULL property template");
+					continue;
+				}
+				
 				if(!results.containsKey(t.getCategory().getId())) {
-					PropertyCategory cat = new PropertyCategory();
-					cat.setBundle(t.getCategory().getBundle());
-					cat.setCategoryGroup(service.categoryGroup);
-					cat.setCategoryNamespace(t.getCategory().getCategoryNamespace());
-					cat.setCategoryKey(t.getCategory().getCategoryKey());
-					cat.setWeight(t.getCategory().getWeight());
-					cat.setDisplayMode(t.getCategory().getDisplayMode());
-					cat.setUserCreated(true);
-					cat.setSystemOnly(t.getCategory().isSystemOnly());
-					cat.setNonSystem(t.getCategory().isNonSystem());
-					cat.setHidden(t.getCategory().isHidden());
-					cat.setFilter(t.getCategory().getFilter());
-					cat.setVisibilityDependsValue(t.getCategory().getVisibilityDependsValue());
-					cat.setVisibilityDependsOn(t.getCategory().getVisibilityDependsOn());
-					cat.setName(t.getCategory().getName());
-					
+					PropertyCategory cat = new PropertyCategory(t.getCategory());
 					results.put(cat.getId(), cat);
 				}
 				results.get(t.getCategory().getId()).getTemplates().add(new ResourcePropertyTemplate(t, resource));

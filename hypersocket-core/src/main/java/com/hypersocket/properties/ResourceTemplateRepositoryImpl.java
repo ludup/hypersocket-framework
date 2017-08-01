@@ -684,12 +684,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 		if (properties != null) {
 			for (String resourceKey : properties.keySet()) {
-				if (propertyTemplates.containsKey(resourceKey)) {
-					setValue(resource, resourceKey, properties.get(resourceKey));
-				}
-				else {
-					log.warn(String.format("Request to set property %s which does not exist in template %s", resourceKey, resource.toString()));
-				}
+				setValue(resource, resourceKey, properties.get(resourceKey));
 			}
 		}
 	}
@@ -798,28 +793,14 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			PropertyCategory tmp;
 			
 			if(!cats.containsKey(c.getCategoryKey())) {
-				tmp = new PropertyCategory();
-				tmp.setBundle(c.getBundle());
-				tmp.setCategoryNamespace(c.getCategoryNamespace());
-				tmp.setCategoryKey(c.getCategoryKey());
-				tmp.setWeight(c.getWeight());
-				tmp.setDisplayMode(c.getDisplayMode());
-				tmp.setUserCreated(c.isUserCreated());
-				tmp.setSystemOnly(c.isSystemOnly());
-				tmp.setNonSystem(c.isNonSystem());
-				tmp.setFilter(c.getFilter());
-				tmp.setName(c.getName());
-				tmp.setHidden(c.isHidden());
-				tmp.setVisibilityDependsOn(c.getVisibilityDependsOn());
-				tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
+				tmp = new PropertyCategory(c);
 			} else {
 				tmp = cats.get(c.getCategoryKey());
 			}
 
-			for (AbstractPropertyTemplate t : c.getTemplates()) {
-				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
-			}
-			cats.put(c.getCategoryKey(), tmp);
+			filter(resource, c, tmp, filters);
+			if(!tmp.getTemplates().isEmpty())
+				cats.put(c.getCategoryKey(), tmp);
 		}
 
 		for (PropertyResolver r : propertyResolvers) {
@@ -827,24 +808,13 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				PropertyCategory tmp;
 				
 				if(!cats.containsKey(c.getCategoryKey())) {
-					tmp = new PropertyCategory();
-					tmp.setBundle(c.getBundle());
-					tmp.setCategoryNamespace(c.getCategoryNamespace());
-					tmp.setCategoryKey(c.getCategoryKey());
-					tmp.setWeight(c.getWeight());
-					tmp.setUserCreated(c.isUserCreated());
-					tmp.setDisplayMode(c.getDisplayMode());
-					tmp.setSystemOnly(c.isSystemOnly());
-					tmp.setNonSystem(c.isNonSystem());
-					tmp.setFilter(c.getFilter());
-					tmp.setHidden(c.isHidden());
+					tmp = new PropertyCategory(c);
 				} else {
 					tmp = cats.get(c.getCategoryKey());
 				}
-				for (AbstractPropertyTemplate t : c.getTemplates()) {
-					tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
-				}
-				cats.put(c.getCategoryKey(), tmp);
+				filter(resource, c, tmp, filters);
+				if(!tmp.getTemplates().isEmpty())
+					cats.put(c.getCategoryKey(), tmp);
 			}
 		}
 
@@ -859,6 +829,24 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		return list;
 	}
 
+	protected void filter(AbstractResource resource, PropertyCategory category, PropertyCategory filteredCategory, PropertyFilter... filters) {
+		for (AbstractPropertyTemplate t : category.getTemplates()) {
+			if(filters.length == 0)
+				filteredCategory.getTemplates().add(new ResourcePropertyTemplate(t, resource));
+			else {
+				boolean add = true;
+				for(PropertyFilter filter : filters) {
+					if(!filter.filterProperty(t)) {
+						add = false;
+						break;
+					}
+				}
+				if(add)
+					filteredCategory.getTemplates().add(t);
+			}
+		}
+	}
+
 	@Override
 	public Collection<PropertyCategory> getPropertyCategories(AbstractResource resource, String group) {
 
@@ -871,28 +859,13 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			PropertyCategory tmp;
 			
 			if(!cats.containsKey(c.getCategoryKey())) {
-				tmp = new PropertyCategory();
-				tmp.setBundle(c.getBundle());
-				tmp.setCategoryNamespace(c.getCategoryNamespace());
-				tmp.setCategoryKey(c.getCategoryKey());
-				tmp.setWeight(c.getWeight());
-				tmp.setUserCreated(c.isUserCreated());
-				tmp.setDisplayMode(c.getDisplayMode());
-				tmp.setSystemOnly(c.isSystemOnly());
-				tmp.setNonSystem(c.isNonSystem());
-				tmp.setFilter(c.getFilter());
-				tmp.setName(c.getName());
-				tmp.setHidden(c.isHidden());
-				tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
-				tmp.setVisibilityDependsOn(c.getVisibilityDependsOn());
+				tmp = new PropertyCategory(c);
 
 			} else {
 				tmp = cats.get(c.getCategoryKey());
 			}
 			
-			for (AbstractPropertyTemplate t : c.getTemplates()) {
-				tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
-			}
+			filter(resource, c, tmp);
 			cats.put(c.getCategoryKey(), tmp);
 		}
 
@@ -904,28 +877,13 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				PropertyCategory tmp;
 				
 				if(!cats.containsKey(c.getCategoryKey())) {
-					tmp = new PropertyCategory();
-					tmp.setBundle(c.getBundle());
-					tmp.setCategoryNamespace(c.getCategoryNamespace());
-					tmp.setCategoryKey(c.getCategoryKey());
-					tmp.setWeight(c.getWeight());
-					tmp.setDisplayMode(c.getDisplayMode());
-					tmp.setFilter(c.getFilter());
-					tmp.setUserCreated(c.isUserCreated());
-					tmp.setSystemOnly(c.isSystemOnly());
-					tmp.setNonSystem(c.isNonSystem());
-					tmp.setName(c.getName());
-					tmp.setHidden(c.isHidden());
-					tmp.setVisibilityDependsValue(c.getVisibilityDependsValue());
-					tmp.setVisibilityDependsOn(c.getVisibilityDependsOn());
+					tmp = new PropertyCategory(c);
 
 				} else {
 					tmp = cats.get(c.getCategoryKey());
 				}
 
-				for (AbstractPropertyTemplate t : c.getTemplates()) {
-					tmp.getTemplates().add(new ResourcePropertyTemplate(t, resource));
-				}
+				filter(resource, c, tmp);
 				cats.put(c.getCategoryKey(), tmp);
 			}
 		}
