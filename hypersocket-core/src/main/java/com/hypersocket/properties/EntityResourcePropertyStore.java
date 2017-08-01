@@ -52,6 +52,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		primitiveParsers.put(Long.class, new LongValue());
 		primitiveParsers.put(Double.class, new DoubleValue());
 		primitiveParsers.put(Date.class, new DateValue());
+		primitiveParsers.put(int.class, new IntegerValue());
+		primitiveParsers.put(long.class, new LongValue());
 		
 		setEncryptionService(encryptionService);
 	}
