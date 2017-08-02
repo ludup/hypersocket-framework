@@ -1880,7 +1880,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		 */
 		String[] editableProperties = configurationService.getValues(realm, "realm.userEditableProperties");
 
-		Map<String, String> currentProperties = provider.getUserPropertyValues(principal);
 		Map<String, String> changedProperties = new HashMap<String, String>();
 
 		Collection<PropertyTemplate> userAttributes = userAttributeService.getPropertyResolver().getPropertyTemplates(principal);
@@ -1899,11 +1898,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 		}
 
-		currentProperties.putAll(changedProperties);
 		try {
 			assertAnyPermission(ProfilePermission.UPDATE, RealmPermission.UPDATE, UserPermission.UPDATE);
 
-			principal = provider.updateUserProperties(principal, currentProperties);
+			principal = provider.updateUserProperties(principal, changedProperties);
 
 			eventService.publishEvent(new ProfileUpdatedEvent(this, getCurrentSession(), realm, provider, principal,
 					filterSecretProperties(principal, provider, changedProperties)));

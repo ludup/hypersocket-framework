@@ -841,8 +841,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 						break;
 					}
 				}
-				if(add)
-					filteredCategory.getTemplates().add(t);
+				if(add) {
+					filteredCategory.getTemplates().add(new ResourcePropertyTemplate(t, resource));
+				}
 			}
 		}
 	}

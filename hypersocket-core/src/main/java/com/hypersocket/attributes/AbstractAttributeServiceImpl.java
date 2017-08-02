@@ -64,7 +64,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	private Class<?> permissionType;
 	private String resourceBundle;
 	private String categoryGroup;
-	
+
 	private PropertyResolver propertyResolver;
 	
 	public AbstractAttributeServiceImpl(String resourceBundle, Class<A> resourceClass, Class<?> permissionType,
@@ -418,5 +418,13 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 			return userTemplates.containsKey(resourceKey);
 
 		}
+	}
+	
+	public String getCategoryGroup() {
+		return categoryGroup;
+	}
+
+	public void setCategoryGroup(String categoryGroup) {
+		this.categoryGroup = categoryGroup;
 	}
 }
