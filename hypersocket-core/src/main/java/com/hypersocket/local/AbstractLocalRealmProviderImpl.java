@@ -931,4 +931,13 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		}		
 	}
 
+	@Override
+	public Collection<String> getEditablePropertyNames(Realm realm) {
+		return getUserPropertyNames(null);
+	}
+
+	@Override
+	public Collection<String> getVisiblePropertyNames(Realm realm) {
+		return getUserPropertyNames(null);
+	}
 }

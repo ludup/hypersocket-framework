@@ -1587,8 +1587,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		
 		Collection<PropertyCategory> ret = provider.getUserProperties(principal);
 
-		
-			
 		Set<String> editable = new HashSet<String>(
 				Arrays.asList(configurationService.getValues(principal.getRealm(), "realm.userEditableProperties")));
 		Set<String> visible = new HashSet<String>(
@@ -1676,6 +1674,28 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		RealmProvider provider = principal != null ? getProviderForPrincipal(principal) : getProviderForRealm(realm);
 
 		return provider.getUserPropertyNames(principal);
+
+	}
+	
+	@Override
+	public Collection<String> getEditablePropertyNames(Realm realm) throws AccessDeniedException {
+
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
+
+		RealmProvider provider =getProviderForRealm(realm);
+
+		return provider.getEditablePropertyNames(realm);
+
+	}
+	
+	@Override
+	public Collection<String> getVisiblePropertyNames(Realm realm) throws AccessDeniedException {
+
+		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
+
+		RealmProvider provider = getProviderForRealm(realm);
+
+		return provider.getVisiblePropertyNames(realm);
 
 	}
 

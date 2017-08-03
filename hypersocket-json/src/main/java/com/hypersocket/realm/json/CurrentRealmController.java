@@ -557,6 +557,47 @@ public class CurrentRealmController extends ResourceController {
 		}
 
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/user/editableNames", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<String> getEditableNames(
+			HttpServletRequest request)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<String>(
+				realmService.getEditablePropertyNames(sessionUtils.getCurrentRealm(request)));
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/user/visibleNames", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<String> getVisibleNames(
+			HttpServletRequest request)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<String>(
+				realmService.getVisiblePropertyNames(sessionUtils.getCurrentRealm(request)));
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/group/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody

@@ -160,6 +160,10 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Collection<String> getUserPropertyNames(Realm realm, Principal principal) throws AccessDeniedException;
 
+	Collection<String> getEditablePropertyNames(Realm realm) throws AccessDeniedException;
+	
+	Collection<String> getVisiblePropertyNames(Realm realm) throws AccessDeniedException;
+
 	String[] getRealmPropertyArray(Realm realm, String resourceKey);
 
 	Collection<PropertyCategory> getUserProfileTemplates(Principal principal) throws AccessDeniedException;

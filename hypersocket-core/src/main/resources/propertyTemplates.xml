@@ -53,10 +53,10 @@
 		resourceBundle="RealmService" weight="999999" group="userProfiles">
 		<property resourceKey="realm.userEditableProperties" inputType="multipleSelect" 
 			includedLabelResourceKey="text.editable" excludedLabelResourceKey="text.notEditable"
-		    url="currentRealm/user/templateNames" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>
+		    url="currentRealm/user/editableNames" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>
 		<property resourceKey="realm.userVisibleProperties" inputType="multipleSelect" 
 			includedLabelResourceKey="text.visible" excludedLabelResourceKey="text.notVisible"
-		    url="currentRealm/user/templateNames" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>
+		    url="currentRealm/user/visibleNames" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.features"
 		 resourceBundle="PermissionService" weight="200">

@@ -156,4 +156,8 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	void resetRealm(Realm realm) throws ResourceNotFoundException, AccessDeniedException;
 
 	void verifyConnection(Realm realm) throws ResourceException;
+
+	Collection<String> getEditablePropertyNames(Realm realm);
+
+	Collection<String> getVisiblePropertyNames(Realm realm);
 }
