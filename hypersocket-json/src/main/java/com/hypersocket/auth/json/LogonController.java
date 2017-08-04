@@ -170,7 +170,11 @@ public class LogonController extends AuthenticatedController {
 			if(state==null) {
 				session = sessionUtils.touchSession(request, response);
 				if (session != null) {
-					return getSuccessfulResult(session, flash, request, response);
+					try {
+						return getSuccessfulResult(session, flash, request, response);
+					} finally {
+						clearAuthenticatedContext();
+					}
 				}
 			}
 		} catch (UnauthorizedException e) {
@@ -214,20 +218,6 @@ public class LogonController extends AuthenticatedController {
 
 				setupAuthenticatedContext(state.getSession(), state.getLocale());
 				
-//				String[] hostnames = realmService.getRealmHostnames(state.getRealm());
-//				if(hostnames.length > 0) {
-//					String currentHostname = request.getServerName();
-//					boolean matched = false;
-//					for(String hostname : hostnames) {
-//						if(hostname.equals(currentHostname)) {
-//							matched = true;
-//							break;
-//						}
-//					}
-//					if(!matched) {
-//						state.setHomePage(request.getRequestURL().toString().replaceFirst(currentHostname, hostnames[0]));
-//					}
-//				}
 				try {
 					return getSuccessfulResult(
 							state.getSession(),

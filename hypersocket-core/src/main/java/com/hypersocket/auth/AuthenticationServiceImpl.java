@@ -44,6 +44,7 @@ import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserVariableReplacementService;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 
@@ -284,9 +285,11 @@ public class AuthenticationServiceImpl extends
 		AuthenticationState state = new AuthenticationState(remoteAddress,
 				locale, environment);
 
-		if(realm!=null) {
-			state.setRealm(realm);
+		if(realm==null) {
+			realm = realmService.getDefaultRealm();
 		}
+		
+		state.setRealm(realm);
 		
 		if(log.isInfoEnabled()) {
 			log.info(String.format("Creating authentication state for %s realm", realm==null ? "unknown" : realm.getName()));
@@ -362,8 +365,10 @@ public class AuthenticationServiceImpl extends
 
 		if (state.isAuthenticationComplete()) {
 
+			boolean clearContext = false;
 			if (state.getSession() != null) {
 				setCurrentSession(state.getSession(), state.getLocale());
+				clearContext = true;
 			}
 
 			try {
@@ -414,7 +419,9 @@ public class AuthenticationServiceImpl extends
 					}
 				}
 			} finally {
-				clearPrincipalContext();
+				if(clearContext) {
+					clearPrincipalContext();
+				}
 			}
 		} else {
 			Authenticator authenticator = nextAuthenticator(state);
@@ -842,9 +849,18 @@ public class AuthenticationServiceImpl extends
 					+ (hostRealm == null ? "all realms" : hostRealm.getName()));
 		}
 
-		Principal principal = realmService.getPrincipalByName(
-				hostRealm,
-				username, PrincipalType.USER);
+		Principal principal = null;
+		
+		if(realmService.isRealmStrictedToHost(hostRealm)) {
+			principal =  realmService.getPrincipalByName(
+					hostRealm,
+					username, PrincipalType.USER);
+		} else {
+			try {
+				principal = realmService.getUniquePrincipal(username, PrincipalType.USER);
+			} catch (ResourceNotFoundException e) {
+			}
+		}
 
 		if (principal == null) {
 
