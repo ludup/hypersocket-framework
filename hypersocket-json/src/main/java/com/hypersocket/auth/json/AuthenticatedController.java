@@ -81,14 +81,7 @@ public class AuthenticatedController {
 			throws AccessDeniedException, UnsupportedEncodingException {
 		
 		if(realm==null) {
-			realm = realmService.getRealmByHost(request.getServerName(), null);
-			if(realm!=null) {
-				if(!realmService.isRealmStrictedToHost(realm)) {
-					if(!realmService.isUserSelectingRealm()) {
-						realm = null;
-					}
-				}
-			}
+			realm = realmService.getRealmByHost(request.getServerName());
 		}
 
 		Map<String, Object> environment = new HashMap<String, Object>();
