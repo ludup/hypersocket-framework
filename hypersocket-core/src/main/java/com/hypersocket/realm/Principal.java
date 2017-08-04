@@ -62,9 +62,20 @@ public abstract class Principal extends RealmResource {
 	@Column(name="principal_type")
 	PrincipalType principalType = getType();
 	
+	@Column(name="primary_email")
+	String primaryEmail;
+	
 	@JsonIgnore
 	public Realm getRealm() {
 		return super.getRealm();
+	}
+	
+	public String getPrimaryEmail() {
+		return primaryEmail;
+	}
+
+	public void setPrimaryEmail(String primaryEmail) {
+		this.primaryEmail = primaryEmail;
 	}
 	
 	public abstract String getEmail();

@@ -166,6 +166,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public static final Integer MESSAGE_PASSWORD_CHANGED = 6004;
 	public static final Integer MESSAGE_PASSWORD_RESET = 6005;
 	
+	Map<String,PrincipalFilter> principalFilters = new HashMap<String,PrincipalFilter>();
+	Map<String,PrincipalFilter> builtInPrincipalFilters = new HashMap<String,PrincipalFilter>();
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -243,11 +245,23 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		
 		messageService.registerI18nMessage(MESSAGE_PASSWORD_RESET, RESOURCE_BUNDLE,
 				"realmService.passwordReset", PrincipalWithPasswordResolver.getVariables());
+		
+		registerBuiltInPrincipalFilter(new LocalAccountFilter());
+		registerBuiltInPrincipalFilter(new RemoteAccountFilter());
 	}
 
 	@Override
 	public void registerPrincipalProcessor(PrincipalProcessor processor) {
 		principalProcessors.add(processor);
+	}
+	
+	private void registerBuiltInPrincipalFilter(PrincipalFilter filter) {
+		builtInPrincipalFilters.put(filter.getResourceKey(), filter);
+	}
+	
+	@Override
+	public void registerPrincipalFilter(PrincipalFilter filter) {
+		principalFilters.put(filter.getResourceKey(), filter);
 	}
 
 	@Override
@@ -1766,8 +1780,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		assertAnyPermission(UserPermission.READ, GroupPermission.READ, ProfilePermission.READ, RealmPermission.READ);
 
 		if(StringUtils.isNotBlank(module)) {
-			RealmProvider provider = getProviderForRealm(module);
-			return provider.getPrincipals(realm, type, searchColumn, searchPattern, start, length, sorting);
+			PrincipalFilter filter = principalFilters.get(module);
+			if(filter==null) {
+				filter = builtInPrincipalFilters.get(module);
+			}
+			return filter.getPrincipals(realm, type, searchColumn, searchPattern, start, length, sorting);
 		} else {
 			return principalRepository.search(realm, type, searchColumn, searchPattern, start, length, sorting);
 		}
@@ -1784,8 +1801,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		assertAnyPermission(UserPermission.READ, GroupPermission.READ, ProfilePermission.READ, RealmPermission.READ);
 
 		if(StringUtils.isNotBlank(module)) {
-			RealmProvider provider = getProviderForRealm(module);
-			return provider.getPrincipalCount(realm, type, searchColumn, searchPattern);
+			PrincipalFilter filter = principalFilters.get(module);
+			if(filter==null) {
+				filter = builtInPrincipalFilters.get(module);
+			}
+			return filter.getPrincipalCount(realm, type, searchColumn, searchPattern);
 		} else {
 			return principalRepository.getResourceCount(realm, type, searchColumn, searchPattern);
 		}
@@ -2313,6 +2333,56 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public String[] getRealmHostnames(Realm realm) {
 		RealmProvider provder = getProviderForRealm(realm);
 		return provder.getValues(realm, "realm.host");
+	}
+
+	@Override
+	public Collection<String> getPrincipalFilters() {
+		return principalFilters.keySet();
+	}
+	
+	
+	class LocalAccountFilter implements PrincipalFilter {
+
+		@Override
+		public String getResourceKey() {
+			return "filter.accounts.local";
+		}
+
+		@Override
+		public List<?> getPrincipals(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
+				int start, int length, ColumnSort[] sorting) {
+			RealmProvider local = getLocalProvider();
+			return local.getPrincipals(realm, type, searchColumn, searchPattern, start, length, sorting);
+		}
+
+		@Override
+		public Long getPrincipalCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern) {
+			RealmProvider local = getLocalProvider();
+			return local.getPrincipalCount(realm, type, searchColumn, searchPattern);
+		}
+		
+	}
+	
+	class RemoteAccountFilter implements PrincipalFilter {
+
+		@Override
+		public String getResourceKey() {
+			return "filter.accounts.remote";
+		}
+
+		@Override
+		public List<?> getPrincipals(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
+				int start, int length, ColumnSort[] sorting) {
+			RealmProvider remote = getProviderForRealm(realm);
+			return remote.getPrincipals(realm, type, searchColumn, searchPattern, start, length, sorting);
+		}
+
+		@Override
+		public Long getPrincipalCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern) {
+			RealmProvider remote = getProviderForRealm(realm);
+			return remote.getPrincipalCount(realm, type, searchColumn, searchPattern);
+		}
+		
 	}
 }
 

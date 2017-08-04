@@ -291,5 +291,9 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	String[] getRealmHostnames(Realm realm);
 
+	void registerPrincipalFilter(PrincipalFilter filter);
+
+	Collection<String> getPrincipalFilters();
+
 }
 

@@ -2,16 +2,24 @@ package com.hypersocket.profile;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.hibernate.Criteria;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.Subqueries;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.local.PrincipalTypeRestriction;
+import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.RealmCriteria;
+import com.hypersocket.tables.ColumnSort;
 
 @Repository
 public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile, Long> implements ProfileRepository {
@@ -82,6 +90,123 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 					criteria.add(Restrictions.in("state", credentialsStates));
 				}
 			}
+		});
+	}
+
+
+	@Override
+	@Transactional(readOnly=true)
+	public List<?> searchIncompleteProfiles(final Realm realm, String searchColumn, String searchPattern, ColumnSort[] sorting, int start, int length) {
+		return search(Principal.class, searchColumn, searchPattern, start, length, sorting, new RealmCriteria(realm), new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
+						.add(Restrictions.eq("p.realm.id", realm.getId()))
+						.add(Restrictions.in("p.state", 
+							new ProfileCredentialsState[] { ProfileCredentialsState.COMPLETE, ProfileCredentialsState.NOT_REQUIRED }))  
+					    		.setProjection( Projections.property("p.id"));
+				
+				criteria.add(Subqueries.propertyNotIn("id", profileSubquery));
+			}
+			
+		});
+	}
+
+
+	@Override
+	@Transactional(readOnly=true)
+	public Long searchIncompleteProfilesCount(final Realm realm, String searchColumn, String searchPattern) {
+		
+		return getCount(Principal.class, searchColumn, searchPattern, new RealmCriteria(realm), new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
+						.add(Restrictions.eq("p.realm.id", realm.getId()))
+						.add(Restrictions.in("p.state", 
+							new ProfileCredentialsState[] { ProfileCredentialsState.COMPLETE, ProfileCredentialsState.NOT_REQUIRED }))  
+					    		.setProjection( Projections.property("p.id"));
+				
+				criteria.add(Subqueries.propertyNotIn("id", profileSubquery));
+			}
+			
+		});
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public List<?> searchCompleteProfiles(final Realm realm, String searchColumn, String searchPattern, ColumnSort[] sorting, int start, int length) {
+		return search(Principal.class, searchColumn, searchPattern, start, length, sorting, new RealmCriteria(realm), new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
+						.add(Restrictions.eq("p.realm.id", realm.getId()))
+						.add(Restrictions.in("p.state", 
+							new ProfileCredentialsState[] { ProfileCredentialsState.COMPLETE }))  
+					    		.setProjection( Projections.property("p.id"));
+				
+				criteria.add(Subqueries.propertyIn("id", profileSubquery));
+			}
+			
+		});
+	}
+
+
+	@Override
+	@Transactional(readOnly=true)
+	public Long searchCompleteProfilesCount(final Realm realm, String searchColumn, String searchPattern) {
+		
+		return getCount(Principal.class, searchColumn, searchPattern, new RealmCriteria(realm), new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
+						.add(Restrictions.eq("p.realm.id", realm.getId()))
+						.add(Restrictions.in("p.state", 
+							new ProfileCredentialsState[] { ProfileCredentialsState.COMPLETE }))  
+					    		.setProjection( Projections.property("p.id"));
+				
+				criteria.add(Subqueries.propertyIn("id", profileSubquery));
+			}
+			
+		});
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public List<?> searchNeverVisitedProfiles(final Realm realm, String searchColumn, String searchPattern, ColumnSort[] sorting, int start, int length) {
+		return search(Principal.class, searchColumn, searchPattern, start, length, sorting, new RealmCriteria(realm), new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
+						.add(Restrictions.eq("p.realm.id", realm.getId()))
+						.setProjection( Projections.property("p.id"));
+				
+				criteria.add(Subqueries.propertyNotIn("id", profileSubquery));
+			}
+			
+		});
+	}
+
+
+	@Override
+	@Transactional(readOnly=true)
+	public Long searchNeverVisitedProfilesCount(final Realm realm, String searchColumn, String searchPattern) {
+		
+		return getCount(Principal.class, searchColumn, searchPattern, new RealmCriteria(realm), new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p") 
+								.add(Restrictions.eq("p.realm.id", realm.getId()))
+					    		.setProjection( Projections.property("p.id"));
+				
+				criteria.add(Subqueries.propertyNotIn("id", profileSubquery));
+			}
+			
 		});
 	}
 	

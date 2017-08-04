@@ -150,6 +150,7 @@ public class LocalUser extends UserPrincipal implements Serializable {
 
 	public void setEmail(String email) {
 		this.email = email;
+		setPrimaryEmail(email);
 	}
 
 	public String getMobile() {

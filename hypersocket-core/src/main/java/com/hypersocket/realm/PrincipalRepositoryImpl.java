@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
+import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.RealmCriteria;
 import com.hypersocket.tables.ColumnSort;
@@ -80,5 +81,11 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 			criteria.add(Restrictions.eq("principalType", type));
 		}
 		
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public Collection<Principal> allPrincipals() {
+		return allEntities(Principal.class, new DeletedCriteria(false), new HiddenCriteria(false));
 	}
 }

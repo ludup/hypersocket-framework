@@ -23,7 +23,7 @@ public class PrincipalTypeRestriction implements CriteriaConfiguration {
 	
 	@Override
 	public void configure(Criteria criteria) {
-		criteria.add(Restrictions.eq("type", type));
+		criteria.add(Restrictions.eq("principalType", type));
 	}
 
 }
