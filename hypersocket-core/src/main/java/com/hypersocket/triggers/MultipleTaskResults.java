@@ -22,6 +22,14 @@ public class MultipleTaskResults extends AbstractTaskResult {
 	}
 
 	@Override
+	public boolean isSuccess() {
+		for(TaskResult r : results)
+			if(!r.isSuccess())
+				return false;
+		return super.isSuccess();
+	}
+
+	@Override
 	public boolean isPublishable() {
 		return false;
 	}
