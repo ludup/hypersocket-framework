@@ -237,12 +237,13 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	
 
 	@Override
-	public AutomationResource createResource(String name, Realm realm, Map<String, String> properties)
+	public AutomationResource createResource(String name, Realm realm, String resourceKey, Map<String, String> properties)
 			throws ResourceCreationException, AccessDeniedException {
 
 		AutomationResource resource = new AutomationResource();
 		resource.setName(name);
 		resource.setRealm(realm);
+		resource.setResourceKey(resourceKey);
 
 		createResource(resource, properties, new TransactionAdapter<AutomationResource>() {
 

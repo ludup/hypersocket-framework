@@ -49,10 +49,10 @@ public class AutomationResource extends Task {
 	String endTime;
 	
 	@Column(name="repeat_type")
-	AutomationRepeatType repeatType;
+	AutomationRepeatType repeatType = AutomationRepeatType.NEVER;
 	
 	@Column(name="repeat_value")
-	Integer repeatValue;
+	Integer repeatValue = 1;
 	
 	@Column(name="notes")
 	@Lob

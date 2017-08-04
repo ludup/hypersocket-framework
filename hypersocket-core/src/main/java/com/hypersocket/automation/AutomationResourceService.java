@@ -22,7 +22,7 @@ public interface AutomationResourceService extends
 	AutomationResource updateResource(AutomationResource resourceById, String name, Map<String,String> properties)
 			throws ResourceChangeException, AccessDeniedException;
 
-	AutomationResource createResource(String name, Realm realm, Map<String,String> properties)
+	AutomationResource createResource(String name, Realm realm, String resourceKey, Map<String,String> properties)
 			throws ResourceCreationException, AccessDeniedException;
 
 	Collection<PropertyCategory> getPropertyTemplate() throws AccessDeniedException;

@@ -255,6 +255,7 @@ public class AutomationResourceController extends AbstractTriggerController {
 				newResource = resourceService.createResource(
 						resource.getName(),
 						realm,
+						null,
 						properties);
 			}
 			return new ResourceStatus<AutomationResource>(newResource,
