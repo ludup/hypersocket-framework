@@ -19,4 +19,9 @@ public class ResourceNotFoundException extends ResourceException {
 			Object... args) {
 		super(bundle, resourceKey, args);
 	}
+	
+	public ResourceNotFoundException(String bundle, String resourceKey,
+			Throwable cause, Object... args) {
+		super(bundle, resourceKey, args);
+	}
 }

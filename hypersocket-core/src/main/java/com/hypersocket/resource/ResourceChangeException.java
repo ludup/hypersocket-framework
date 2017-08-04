@@ -18,4 +18,8 @@ public class ResourceChangeException extends ResourceException {
 	public ResourceChangeException(String bundle, String resourceKey, Object... args) {
 		super(bundle, resourceKey, args);
 	}
+	
+	public ResourceChangeException(String bundle, String resourceKey, Throwable cause, Object... args) {
+		super(bundle, resourceKey, args);
+	}
 }

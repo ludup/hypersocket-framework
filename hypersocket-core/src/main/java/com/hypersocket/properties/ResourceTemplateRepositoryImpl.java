@@ -684,7 +684,32 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 		if (properties != null) {
 			for (String resourceKey : properties.keySet()) {
-				setValue(resource, resourceKey, properties.get(resourceKey));
+				
+				/*
+				 * I'm sure this setValue() / setValues() in
+				 * ResourceTemplateRepositoryImpl is wrong (i.e. this reversion
+				 * is still wrong). i dont understand why setValues() behaves
+				 * differently to setValue(). If you go through setValue(), it
+				 * will correctly store the attribute in the database (as
+				 * opposed to tryying to set it via reflect on the entity),
+				 * because it finds the PropertyTemplate either from the
+				 * propertyTemplates map OR by going through the resolvers
+				 * (which is what i want). But in in setValues(), it will only
+				 * ever work if its in the map. that doesnt make sense. surely
+				 * it should be either one thing or the other, or at least
+				 * setValue() and setValues() should have very different names.
+				 * 
+				 * Is there problem here actually setValue() falling through
+				 * to configPropertyStore.setValue() if the template cannot be
+				 * found any other way?
+				 */
+				
+//				if (propertyTemplates.containsKey(resourceKey)) {
+					setValue(resource, resourceKey, properties.get(resourceKey));
+//				}
+//				else {
+//					log.warn(String.format("Request to set property %s which does not exist in template %s", resourceKey, resource.toString()));
+//				}
 			}
 		}
 	}

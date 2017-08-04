@@ -9,6 +9,11 @@ public class ResourceExportException extends ResourceException {
 		super(bundle, resourceKey, args);
 	}
 	
+	public ResourceExportException(String bundle, String resourceKey,
+			Throwable cause, Object... args) {
+		super(bundle, resourceKey, cause, args);
+	}
+	
 	public ResourceExportException(ResourceException e) {
 		super(e);
 	}
