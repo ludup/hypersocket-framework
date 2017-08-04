@@ -55,9 +55,7 @@ public class CollectMailTaskResult extends AbstractTaskResult {
 
 	}
 
-	public CollectMailTaskResult(Object source, Throwable e, Realm currentRealm, Task task, Address[] from,
-			Address[] replyTo, Address[] to, Address[] cc, String subject, String textContent, String htmlContent,
-			Date sent, Date received, String... attachments) {
+	public CollectMailTaskResult(Object source, Throwable e, Realm currentRealm, Task task) {
 		super(source, EVENT_RESOURCE_KEY, e, currentRealm, task);
 	}
 

@@ -45,13 +45,13 @@ public class CollectMailTask extends AbstractTaskProvider {
 
 	public static final String RESOURCE_BUNDLE = "CollectMailTask";
 
-	private static final String ATTR_PROTOCOL = "collectMail.protocol";
-	private static final String ATTR_HOST = "collectMail.host";
-	private static final String ATTR_PORT = "collectMail.port";
-	private static final String ATTR_USERNAME = "collectMail.username";
-	private static final String ATTR_PASSWORD = "collectMail.password";
-	private static final String ATTR_SECURE = "collectMail.secure";
-	private static final String ATTR_ATTACHMENTS = "collectMail.attachments";
+	public static final String ATTR_PROTOCOL = "collectMail.protocol";
+	public static final String ATTR_HOST = "collectMail.host";
+	public static final String ATTR_PORT = "collectMail.port";
+	public static final String ATTR_USERNAME = "collectMail.username";
+	public static final String ATTR_PASSWORD = "collectMail.password";
+	public static final String ATTR_SECURE = "collectMail.secure";
+	public static final String ATTR_ATTACHMENTS = "collectMail.attachments";
 
 	@Autowired
 	CollectMailTaskRepository repository;
@@ -101,10 +101,10 @@ public class CollectMailTask extends AbstractTaskProvider {
 		String protocol = processTokenReplacements(repository.getValue(task, ATTR_PROTOCOL), event);
 		String host = processTokenReplacements(repository.getValue(task, ATTR_HOST), event);
 		String port = processTokenReplacements(repository.getValue(task, ATTR_PORT), event);
-		boolean secure = "true"
-				.equals(processTokenReplacements(repository.getValue(task, ATTR_SECURE), event));
-		final boolean doAttachments = "true".equals(processTokenReplacements(repository.getValue(task, ATTR_ATTACHMENTS), event));
-		
+		boolean secure = "true".equals(processTokenReplacements(repository.getValue(task, ATTR_SECURE), event));
+		final boolean doAttachments = "true"
+				.equals(processTokenReplacements(repository.getValue(task, ATTR_ATTACHMENTS), event));
+
 		if (StringUtils.isBlank(port) || port.equals("0")) {
 			if (protocol.equals("pop3"))
 				port = secure ? "995" : "110";
@@ -118,36 +118,45 @@ public class CollectMailTask extends AbstractTaskProvider {
 		InboxProcessor receiver = new InboxProcessor();
 		final List<TaskResult> results = new ArrayList<>();
 
-		receiver.downloadEmails(protocol, host, port, userName, password, false, secure, new EmailProcessor() {
-			@Override
-			public void processEmail(Address[] from, Address[] replyTo, Address[] to, Address[] cc, String subject,
-					String textContent, String htmlContent, Date sent, Date received, EmailAttachment... attachments) {
-				List<String> attachmentUUIDs = new ArrayList<>();
-				if (doAttachments) {
-					for (EmailAttachment attachment : attachments) {
-						try {
-							final InputStream inputStream = attachment.getInputStream();
+		try {
+			receiver.downloadEmails(protocol, host, port, userName, password, false, secure, new EmailProcessor() {
+				@Override
+				public void processEmail(Address[] from, Address[] replyTo, Address[] to, Address[] cc, String subject,
+						String textContent, String htmlContent, Date sent, Date received,
+						EmailAttachment... attachments) {
+					List<String> attachmentUUIDs = new ArrayList<>();
+					if (doAttachments) {
+						for (EmailAttachment attachment : attachments) {
 							try {
-								FileUpload upload = fileUploadService.createFile(inputStream, attachment.getFilename(),
-										currentRealm, true, attachment.getContentType(),
-										fileUploadService.getDefaultStore());
-								attachmentUUIDs.add(upload.getName());
-							} finally {
-								IOUtils.closeQuietly(inputStream);
+								final InputStream inputStream = attachment.getInputStream();
+								try {
+									FileUpload upload = fileUploadService.createFile(inputStream,
+											attachment.getFilename(), currentRealm, true, attachment.getContentType(),
+											fileUploadService.getDefaultStore());
+									attachmentUUIDs.add(upload.getName());
+								} finally {
+									IOUtils.closeQuietly(inputStream);
+								}
+							} catch (ResourceCreationException e) {
+								log.error(String.format("Failed to attach %s", attachment.getFilename()), e);
+								results.add(new CollectMailTaskResult(this, e, currentRealm, task));
+							} catch (AccessDeniedException e) {
+								log.error(String.format("Access denied for attaching %s", attachment.getFilename()), e);
+								results.add(new CollectMailTaskResult(this, e, currentRealm, task));
+							} catch (IOException e) {
+								log.error(String.format("I/O error attaching %s", attachment.getFilename()), e);
+								results.add(new CollectMailTaskResult(this, e, currentRealm, task));
 							}
-						} catch (ResourceCreationException e) {
-							log.error(String.format("Failed to attach %s", attachment.getFilename()), e);
-						} catch (AccessDeniedException e) {
-							log.error(String.format("Access denied for attaching %s", attachment.getFilename()), e);
-						} catch (IOException e) {
-							log.error(String.format("I/O error attaching %s", attachment.getFilename()), e);
 						}
 					}
+					results.add(new CollectMailTaskResult(this, true, currentRealm, task, from, replyTo, to, cc,
+							subject, textContent, htmlContent, sent, received, attachmentUUIDs.toArray(new String[0])));
 				}
-				results.add(new CollectMailTaskResult(this, true, currentRealm, task, from, replyTo, to, cc, subject,
-						textContent, htmlContent, sent, received, attachmentUUIDs.toArray(new String[0])));
-			}
-		});
+			});
+		} catch (Exception e) {
+			log.error("Failed to collect mail.", e);
+			results.add(new CollectMailTaskResult(this, e, currentRealm, task));
+		}
 		// Task is performed here
 		return new MultipleTaskResults(this, currentRealm, task, results);
 	}

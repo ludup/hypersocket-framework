@@ -110,7 +110,13 @@ public class FileStoreController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			return new ResourceStatus<FileUpload>(resourceService.getFileUpload(uuid));
+			FileUpload fileUpload = null;
+			if(!StringUtils.isNumeric(uuid)) {
+				fileUpload = resourceService.getFileUpload(uuid);
+			} else {
+				fileUpload = resourceService.getResourceById(Long.parseLong(uuid));
+			}
+			return new ResourceStatus<FileUpload>(fileUpload);
 
 		} catch(ResourceException ex) { 
 			return new ResourceStatus<FileUpload>(false, ex.getMessage());

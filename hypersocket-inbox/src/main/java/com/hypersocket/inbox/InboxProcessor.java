@@ -52,95 +52,90 @@ public class InboxProcessor {
 	 * @param port
 	 * @param userName
 	 * @param password
+	 * @throws MessagingException 
 	 */
 	public void downloadEmails(String protocol, String host, String port, String userName, String password,
-			boolean allMessages, boolean secure, EmailProcessor processor) {
-		
-		if(protocol.equals("imap") && secure) {
+			boolean allMessages, boolean secure, EmailProcessor processor) throws MessagingException {
+
+		if (protocol.equals("imap") && secure) {
 			protocol = "imaps";
 		}
-		
+
 		Properties properties = generateServerProperties(protocol, host, port);
 		Session session = Session.getInstance(properties);
 
+		// connects to the message store
+		Store store = session.getStore(protocol);
 		try {
-
-			// connects to the message store
-			Store store = session.getStore(protocol);
 			store.connect(userName, password);
 
 			// opens the inbox folder
 			Folder folderInbox = store.getFolder("INBOX");
-			if(allMessages)
+			if (allMessages)
 				folderInbox.open(Folder.READ_ONLY);
 			else
 				folderInbox.open(Folder.READ_WRITE);
+			try {
 
-			// fetches new messages from server
-			Message[] messages;
-			if (allMessages) {
-				messages = folderInbox.getMessages();
-			} else {
-				messages = folderInbox.search(new FlagTerm(new Flags(Flag.SEEN), false));
-			}
-
-			for (int i = 0; i < messages.length; i++) {
-				Message msg = messages[i];
-				
-				if(!allMessages)
-					msg.setFlag(Flag.SEEN, true);
-
-				String contentType = msg.getContentType().toLowerCase();
-				StringBuffer textContent = new StringBuffer();
-				StringBuffer htmlContent = new StringBuffer();
-				List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
-				try {
-					if (contentType.contains("text/plain")) {
-						textContent.append(msg.getContent().toString());
-					} else if (contentType.contains("text/html")) {
-						htmlContent.append(msg.getContent().toString());
-					} else if (contentType.contains("multipart")) {
-						processMultipart((Multipart) msg.getContent(), textContent, htmlContent, attachments);
-					}
-					
-					processor.processEmail(msg.getFrom(),
-							msg.getReplyTo(),
-							msg.getRecipients(RecipientType.TO), 
-							msg.getRecipients(RecipientType.CC), 
-							msg.getSubject(), 
-							textContent.toString(), 
-							htmlContent.toString(), 
-							msg.getSentDate(),
-							msg.getReceivedDate(),
-							attachments.toArray(new EmailAttachment[0]));
-
-				} catch (IOException e) {
-					e.printStackTrace();
+				// fetches new messages from server
+				Message[] messages;
+				if (allMessages) {
+					messages = folderInbox.getMessages();
+				} else {
+					messages = folderInbox.search(new FlagTerm(new Flags(Flag.SEEN), false));
 				}
-		
-			}
 
+				for (int i = 0; i < messages.length; i++) {
+					Message msg = messages[i];
+
+					if (!allMessages)
+						msg.setFlag(Flag.SEEN, true);
+
+					String contentType = msg.getContentType().toLowerCase();
+					StringBuffer textContent = new StringBuffer();
+					StringBuffer htmlContent = new StringBuffer();
+					List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
+					try {
+						if (contentType.contains("text/plain")) {
+							textContent.append(msg.getContent().toString());
+						} else if (contentType.contains("text/html")) {
+							htmlContent.append(msg.getContent().toString());
+						} else if (contentType.contains("multipart")) {
+							processMultipart((Multipart) msg.getContent(), textContent, htmlContent, attachments);
+						}
+
+						processor.processEmail(msg.getFrom(), msg.getReplyTo(), msg.getRecipients(RecipientType.TO),
+								msg.getRecipients(RecipientType.CC), msg.getSubject(), textContent.toString(),
+								htmlContent.toString(), msg.getSentDate(), msg.getReceivedDate(),
+								attachments.toArray(new EmailAttachment[0]));
+
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+
+				}
+			} finally {
+				folderInbox.close(false);
+			}
+		} finally {
 			// disconnect
-			folderInbox.close(false);
 			store.close();
-		} catch (MessagingException ex) {
-			System.out.println("Could not connect to the message store");
-			ex.printStackTrace();
 		}
 	}
 
-	private void processMultipart(Multipart multiPart, StringBuffer textContent, StringBuffer htmlContent, List<EmailAttachment> attachments) throws IOException, MessagingException {
+	private void processMultipart(Multipart multiPart, StringBuffer textContent, StringBuffer htmlContent,
+			List<EmailAttachment> attachments) throws IOException, MessagingException {
 		for (int x = 0; x < multiPart.getCount(); x++) {
 			MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(x);
 			String contentType = part.getContentType().toLowerCase();
-			
+
 			if (contentType.contains("text/plain")) {
 				textContent.append(part.getContent().toString());
 			} else if (contentType.contains("text/html")) {
 				htmlContent.append(part.getContent().toString());
 			} else if (contentType.contains("multipart/alternative")) {
-				processMultipart((Multipart)part.getContent(), textContent, htmlContent, attachments);
-			} else if (Part.INLINE.equalsIgnoreCase(part.getDisposition()) 
+				processMultipart((Multipart) part.getContent(), textContent, htmlContent, attachments);
+			} else if (Part.INLINE.equalsIgnoreCase(part.getDisposition())
 					|| Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
 				File attachment = File.createTempFile("email", "attachment");
 				OutputStream out = new FileOutputStream(attachment);
@@ -182,8 +177,9 @@ public class InboxProcessor {
 
 	/**
 	 * Test downloading e-mail messages
+	 * @throws MessagingException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws MessagingException {
 		// for POP3
 		// String protocol = "pop3";
 		// String host = "pop.gmail.com";
@@ -199,12 +195,12 @@ public class InboxProcessor {
 
 		InboxProcessor receiver = new InboxProcessor();
 		receiver.downloadEmails(protocol, host, port, userName, password, true, true, new EmailProcessor() {
-			
+
 			@Override
 			public void processEmail(Address[] from, Address[] replyTo, Address[] to, Address[] cc, String subject,
 					String textContent, String htmlContent, Date sent, Date received, EmailAttachment... attachments) {
 				// TODO Auto-generated method stub
-				
+
 			}
 		});
 	}
