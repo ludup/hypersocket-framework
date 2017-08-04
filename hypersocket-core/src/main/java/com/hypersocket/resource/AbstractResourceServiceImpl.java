@@ -41,14 +41,14 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			EventPropertyCollector, AuthenticatedService {
 
 	private static SecureRandom random = new SecureRandom();
-	
+
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
 
 	protected static final String RESOURCE_BUNDLE_DEFAULT = "AssignableResourceService";
 
 	protected final String resourceCategory;
-	
+
 	@Autowired
 	protected
 	RealmService realmService;
@@ -56,33 +56,33 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	protected boolean assertPermissions = true;
 
 	String fingerprint;
-	
+
 	@Autowired
-	TransactionService transactionService; 
-	
+	TransactionService transactionService;
+
 	protected abstract AbstractResourceRepository<T> getRepository();
 
 	protected abstract String getResourceBundle();
 
 	public abstract Class<? extends PermissionType> getPermissionType();
-	
+
 	protected abstract Class<T> getResourceClass();
-	
+
 	protected AbstractResourceServiceImpl(String resourceCategory) {
 		this.resourceCategory = resourceCategory;
 		updateFingerprint();
 	}
-	
+
 	@Override
 	public void extendPropertyTemplates(String path) {
 		getRepository().loadPropertyTemplates(path);
 	}
-	
+
 	@Override
 	public String getResourceCategory() {
 		return resourceCategory;
 	}
-	
+
 	protected PermissionType getUpdatePermission() {
 		return getPermission("UPDATE");
 	}
@@ -106,7 +106,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	protected PermissionType getDeletePermission(T resource) {
 		return getDeletePermission();
 	}
-	
+
 	protected PermissionType getReadPermission() {
 		return getPermission("READ");
 	}
@@ -114,13 +114,13 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	protected void setAssertPermissions(boolean assertPermissions) {
 		this.assertPermissions = assertPermissions;
 	}
-	
+
 	protected PermissionType getPermission(String name) {
-		
+
 		if(getPermissionType()==null) {
 			return SystemPermission.SYSTEM_ADMINISTRATION;
 		}
-		
+
 		try {
 			Field f = getPermissionType().getField(name);
 
@@ -136,14 +136,14 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public Set<String> getPropertyNames(String resourceKey, Realm realm) {
 		return getRepository().getPropertyNames(null);
 	}
-	
+
 	@Override
 	@SafeVarargs
 	public final void createResource(T resource, TransactionOperation<T>... ops) throws ResourceCreationException,
 			AccessDeniedException {
 		createResource(resource, new HashMap<String,String>(), ops);
 	}
-	
+
 	protected boolean checkUnique(T resource, boolean create) throws AccessDeniedException {
 		try {
 			if(!create) {
@@ -157,7 +157,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			return true;
 		}
 	}
-	
+
 	@Override
 	@SafeVarargs
 	public final void createResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceCreationException,
@@ -170,10 +170,10 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			throw new ResourceCreationException(RESOURCE_BUNDLE_DEFAULT,
 					"generic.create.error", "Calling method should set realm");
 		}
-		
+
 		resource.setResourceCategory(resourceCategory);
 		getRepository().populateEntityFields(resource, properties);
-		
+
 		if(!checkUnique(resource, true)) {
 			ResourceCreationException ex = new ResourceCreationException(
 					RESOURCE_BUNDLE_DEFAULT, "generic.alreadyExists.error",
@@ -181,7 +181,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			fireResourceCreationEvent(resource, ex);
 			throw ex;
 		}
-		
+
 		try {
 			beforeCreateResource(resource, properties);
 			getRepository().saveResource(resource, properties, ops);
@@ -195,37 +195,37 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 				throw (ResourceCreationException) t;
 			} else {
 				throw new ResourceCreationException(RESOURCE_BUNDLE_DEFAULT,
-						"generic.create.error", t.getMessage());
+						"generic.create.error", t.getMessage(),t );
 			}
 		}
-		
+
 
 	}
 
 	protected void beforeCreateResource(T resource, Map<String,String> properties) throws ResourceException {
-		
+
 	}
-	
+
 	protected void afterCreateResource(T resource, Map<String,String> properties) throws ResourceException {
-		
+
 	}
-	
+
 	protected void beforeUpdateResource(T resource, Map<String,String> properties) throws ResourceException {
-		
+
 	}
-	
+
 	protected void afterUpdateResource(T resource, Map<String,String> properties) throws ResourceException {
-		
+
 	}
-	
+
 	protected void beforeDeleteResource(T resource) throws ResourceException, AccessDeniedException {
-	
+
 	}
-	
+
 	protected void afterDeleteResource(T resource) throws ResourceException, AccessDeniedException {
-		
+
 	}
-	
+
 	protected abstract void fireResourceCreationEvent(T resource);
 
 	protected abstract void fireResourceCreationEvent(T resource, Throwable t);
@@ -234,9 +234,9 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	@SafeVarargs
 	public final void updateResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceChangeException,
 			AccessDeniedException {
-		
+
 		boolean changedDefault = false;
-		
+
 		if(assertPermissions) {
 			assertPermission(getUpdatePermission(resource));
 		}
@@ -245,7 +245,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			resource.setRealm(isSystemResource() ? realmService.getSystemRealm() : getCurrentRealm());
 			changedDefault = true;
 		}
-		
+
 		if(!checkUnique(resource, false)) {
 			ResourceChangeException ex = new ResourceChangeException(
 					RESOURCE_BUNDLE_DEFAULT, "generic.alreadyExists.error",
@@ -253,14 +253,14 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			fireResourceUpdateEvent(resource, ex);
 			throw ex;
 		}
-		
+
 		if(!Objects.equals(resource.getResourceCategory(), resourceCategory)) {
 			resource.setResourceCategory(resourceCategory);
 			changedDefault = true;
 		}
-		
-		
-		
+
+
+
 		try {
 			beforeUpdateResource(resource, properties);
 			List<PropertyChange> changes = getRepository().saveResource(resource, properties, ops);
@@ -271,7 +271,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			}
 			else {
 				changedDefault = true;
-			}	
+			}
 			if(changedDefault) {
 				fireResourceUpdateEvent(resource);
 			}
@@ -288,17 +288,22 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		}
 	}
 
-	protected List<PropertyChange> populateEntityFields(T resource, Map<String,String> properties) {
-		return getRepository().populateEntityFields(resource, properties);
+
+	protected List<PropertyChange> calculateChanges(T resource, Map<String,String> properties) {
+		return getRepository().calculateChanges(resource, properties);
 	}
-	
+
+	protected void populateEntityFields(T resource, Map<String,String> properties) {
+		getRepository().populateEntityFields(resource, properties);
+	}
+
 	/**
-	 * 
+	 *
 	 * If the resource wants to fire particular events for particular property changes,
 	 * then it should override this method. The list of resourceKey's for the properties
 	 * will be  supplied, and a boolean indicating whether the default resource change
 	 * event should be fired.
-	 * 
+	 *
 	 * @param changes list of resourceKey changes
 	 * @param resource resource being updated
 	 * @return fire default resource change event
@@ -326,7 +331,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		if(assertPermissions) {
 			assertPermission(getDeletePermission(resource));
 		}
-		
+
 		try {
 			beforeDeleteResource(resource);
 			getRepository().deleteResource(resource, ops);
@@ -372,7 +377,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 		return getRepository().search(isSystemResource() ? realmService.getSystemRealm() : realm, searchColumn, search, start, length, sorting);
 	}
-	
+
 	protected boolean isSystemResource() {
 		return false;
 	}
@@ -397,7 +402,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public T getResourceByName(String name) throws ResourceNotFoundException {
 		return getResourceByName(name, false);
 	}
-	
+
 	@Override
 	public T getResourceByName(String name, boolean searchAllRealms) throws ResourceNotFoundException {
 		T resource = getRepository().getResourceByName(name, searchAllRealms ? null : isSystemResource() ? realmService.getSystemRealm() : getCurrentRealm());
@@ -407,14 +412,14 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		}
 		return resource;
 	}
-	
+
 	@Override
 	public T getResourceByName(String name, Realm realm) throws ResourceNotFoundException, AccessDeniedException {
-		
+
 		if(assertPermissions) {
 			assertPermission(getReadPermission());
 		}
-		
+
 		T resource = getRepository().getResourceByName(name, isSystemResource() ? realmService.getSystemRealm() : realm);
 		if (resource == null) {
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE_DEFAULT,
@@ -425,41 +430,41 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	@Override
 	public T getResourceById(Long id) throws ResourceNotFoundException, AccessDeniedException {
-		
+
 		if(assertPermissions) {
 			assertPermission(getReadPermission());
 		}
-		
+
 		T resource = getRepository().getResourceById(id);
 		if (resource == null) {
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE_DEFAULT,
 					"error.invalidResourceId", id);
 		}
-		
-		
+
+
 		return resource;
 	}
-	
+
 	@Override
 	public Collection<PropertyCategory> getResourceTemplate() {
 		return getRepository().getPropertyCategories(null);
 	}
-	
+
 	@Override
 	public Collection<PropertyCategory> getResourceProperties(T resource) {
 		return getRepository().getPropertyCategories(resource);
 	}
-	
+
 	@Override
 	public String getResourceProperty(T resource, String resourceKey) {
 		return getRepository().getValue(resource, resourceKey);
 	}
-	
+
 	@Override
 	public boolean getResourceBooleanProperty(T resource, String resourceKey) {
 		return getRepository().getBooleanValue(resource, resourceKey);
 	}
-	
+
 	@Override
 	public int getResourceIntProperty(T resource, String resourceKey) {
 		return getRepository().getIntValue(resource, resourceKey);
@@ -469,12 +474,12 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public Long getResourceLongProperty(T resource, String resourceKey) {
 		return getRepository().getLongValue(resource, resourceKey);
 	}
-	
+
 	@Override
 	public String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException, AccessDeniedException {
 		return exportResources(Arrays.asList(resources));
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public String exportResoure(Long id) throws ResourceNotFoundException,
@@ -488,31 +493,31 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		List<T> list = allResources();
 		return exportResources(list);
 	}
-	
+
 	protected boolean isExportingAdditionalProperties() {
 		return true;
 	}
-	
+
 	protected void prepareExport(T resource) throws ResourceException, AccessDeniedException {
 		if(isExportingAdditionalProperties()) {
 			resource.setProperties(getRepository().getProperties(resource));
 		}
 	}
-	
+
 	protected void prepareImport(T resource, Realm realm) throws ResourceCreationException, AccessDeniedException {
-		
+
 	}
-	
+
 	@Override
 	public String exportResources(Collection<T> resources) throws ResourceExportException, AccessDeniedException {
 
 		if(resources.isEmpty()) {
 			throw new ResourceExportException(RESOURCE_BUNDLE_DEFAULT, "error.nothingToExport");
 		}
-		
+
 		ObjectMapper mapper = new ObjectMapper();
-		
-		
+
+
 		try {
 			for(T resource : resources) {
 				prepareExport(resource);
@@ -527,60 +532,60 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			throw new ResourceExportException(e);
 		}
 	}
-	
+
 	@Override
 	public Collection<T> importResources(final String json, final Realm realm, final boolean dropCurrent) throws AccessDeniedException, ResourceException {
-		
+
 		return transactionService.doInTransaction(new TransactionCallback<Collection<T>>() {
 
 			@Override
 			public Collection<T> doInTransaction(TransactionStatus status) {
-				
+
 				try {
-				
+
 					if(dropCurrent) {
 						for(T resource : getResources(isSystemResource() ? realmService.getSystemRealm() : realm)) {
 							performImportDropResources(resource);
 						}
 					}
 					ObjectMapper mapper = new ObjectMapper();
-					
+
 					Collection<T> resources = mapper.readValue(json, mapper.getTypeFactory().constructCollectionType(List.class, getResourceClass()));
 					for(T resource : resources) {
 						performImport(resource, isSystemResource() ? realmService.getSystemRealm() : realm);
 					}
-					
+
 					return resources;
-				} catch(ResourceException e) { 
+				} catch(ResourceException e) {
 					throw new IllegalStateException(e.getMessage(), e);
 				}catch (AccessDeniedException | IOException e) {
 					ResourceImportException ex = new ResourceImportException(RESOURCE_BUNDLE_DEFAULT, "error.importError", e.getMessage());
 					throw new IllegalStateException(ex.getMessage(), ex);
-				}			
+				}
 			}
 		});
-		
+
 	}
 
 	@Override
 	public final String getFingerprint() {
 		return fingerprint;
 	}
-	
+
 	protected void performImportDropResources(T resource) throws ResourceChangeException, AccessDeniedException {
 		deleteResource(resource);
 	}
-	
+
 	protected void performImport(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 		resource.setRealm(realm);
 		checkImportName(resource, isSystemResource() ? realmService.getSystemRealm() : realm);
-		createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() : 
+		createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() :
 			ResourceUtils.filterResourceProperties(getRepository().getPropertyTemplates(null), resource.getProperties()));
 	}
-	
-	
+
+
 	protected void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
-		
+
 		try {
 			prepareImport(resource, isSystemResource() ? realmService.getSystemRealm() : realm);
 			getResourceByName(resource.getName(), isSystemResource() ? realmService.getSystemRealm() : realm);
@@ -589,41 +594,41 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			return;
 		}
 	}
-	
+
 	protected final void updateFingerprint() {
 		fingerprint = new BigInteger(130, random).toString(32);
 	}
-	
+
 	protected void prepareCopy(T resource) throws ResourceCreationException {
-		
+
 	}
-	
+
 	@Override
 	public T copyResource(T resource) throws ResourceCreationException, AccessDeniedException {
-		
+
 		resource.setId(null);
 		String name = resource.getName();
 		do {
 			name = name + " [copy]";
 		} while(getRepository().getResourceByName(name, getCurrentRealm())!=null);
-		
+
 		resource.setName(name);
-		
+
 		prepareCopy(resource);
-		
+
 		createResource(resource);
 		return resource;
 	}
-	
+
 	@Override
-	public void deleteResources(final List<T> resources, 
-			@SuppressWarnings("unchecked") final TransactionOperation<T>... ops) 
+	public void deleteResources(final List<T> resources,
+			@SuppressWarnings("unchecked") final TransactionOperation<T>... ops)
 			throws ResourceException, AccessDeniedException {
-		
+
 		if(assertPermissions) {
 			assertPermission(getDeletePermission());
 		}
-		
+
 		transactionService.doInTransaction(new TransactionCallback<Void>() {
 
 			@Override
@@ -636,16 +641,16 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 				return null;
 			}
 		});
-		
+
 	}
-	
+
 	@Override
 	public List<T> getResourcesByIds(Long...ids) throws AccessDeniedException {
 		if(assertPermissions) {
 			assertPermission(getReadPermission());
 		}
-		
+
 		return getRepository().getResourcesByIds(ids);
 	}
-	
+
 }

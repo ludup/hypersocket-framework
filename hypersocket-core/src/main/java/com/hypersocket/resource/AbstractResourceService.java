@@ -23,7 +23,7 @@ public interface AbstractResourceService<T extends RealmResource> extends Authen
 	@SuppressWarnings("unchecked") 
 	void updateResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops)
 			throws ResourceChangeException, AccessDeniedException;
-	
+
 	@SuppressWarnings("unchecked") 
 	void updateResource(T resource, TransactionOperation<T>... ops)
 			throws ResourceChangeException, AccessDeniedException;

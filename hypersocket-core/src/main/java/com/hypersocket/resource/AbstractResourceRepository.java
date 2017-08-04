@@ -34,12 +34,15 @@ public interface AbstractResourceRepository<T extends AbstractResource> extends 
 
 	long allRealmsResourcesCount();
 
-	List<PropertyChange> populateEntityFields(T resource, Map<String, String> properties);
+	void populateEntityFields(T resource, Map<String, String> properties);
+
+	List<PropertyChange> calculateChanges(T resource, Map<String, String> properties);
 
 	EntityResourcePropertyStore getEntityStore();
 
 	long getResourceCount(Realm realm);
 
 	void deleteResources(List<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException;
+
 
 }
