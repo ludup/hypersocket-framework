@@ -10,15 +10,16 @@ public class ResourceConfirmationException extends ResourceException {
 			String resourceKey, 
 			String[] options,
 			Object... args) {
-		this(bundle, resourceKey, options, null, args);
+		this(null, bundle, resourceKey, options, args);
 	}
 	
-	public ResourceConfirmationException(String bundle, 
+	public ResourceConfirmationException(
+			Throwable cause,
+			String bundle, 
 			String resourceKey, 
 			String[] options,
-			Throwable cause,
 			Object... args) {
-		super(bundle, resourceKey, cause, args);
+		super(cause, bundle, resourceKey, args);
 		this.options = options;
 	}
 

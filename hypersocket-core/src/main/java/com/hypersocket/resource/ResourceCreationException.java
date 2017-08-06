@@ -20,7 +20,7 @@ public class ResourceCreationException extends ResourceException {
 		super(bundle, resourceKey, args);
 	}
 	
-	public ResourceCreationException(String bundle, String resourceKey, Throwable cause, Object... args) {
-		super(bundle, resourceKey, cause, args);
+	public ResourceCreationException(Throwable cause, String bundle, String resourceKey, Object... args) {
+		super(cause, bundle, resourceKey, args);
 	}
 }

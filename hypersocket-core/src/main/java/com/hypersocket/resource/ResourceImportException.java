@@ -9,9 +9,9 @@ public class ResourceImportException extends ResourceException {
 		super(bundle, resourceKey, args);
 	}
 	
-	public ResourceImportException(String bundle, String resourceKey,
-			Throwable cause, Object... args) {
-		super(bundle, resourceKey, cause, args);
+	public ResourceImportException(Throwable cause, String bundle, String resourceKey,
+			Object... args) {
+		super(cause, bundle, resourceKey, args);
 	}
 
 }

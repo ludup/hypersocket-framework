@@ -593,7 +593,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (Exception e) {
 			eventService.publishEvent(new UserCreatedEvent(this, e, getCurrentSession(), realm, provider, username,
 					filterSecretProperties(null, provider, properties), principals));
-			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.unexpectedError", e.getMessage());
+			throw new ResourceCreationException(e, RESOURCE_BUNDLE, "error.unexpectedError", e.getMessage());
 		}
 
 	}
@@ -649,7 +649,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (Exception e) {
 			eventService.publishEvent(new UserUpdatedEvent(this, e, getCurrentSession(), user.getRealm(), provider, user.getPrincipalName(),
 					filterSecretProperties(user, provider, properties), associated));
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "updateUser.unexpectedError", e.getMessage());
+			throw new ResourceChangeException(e, RESOURCE_BUNDLE, "updateUser.unexpectedError", e.getMessage());
 		}
 	}
 	
@@ -688,7 +688,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (Exception e) {
 			eventService.publishEvent(new UserUpdatedEvent(this, e, getCurrentSession(), realm, provider, username,
 					filterSecretProperties(user, provider, properties), principals));
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "updateUser.unexpectedError", e.getMessage());
+			throw new ResourceChangeException(e, RESOURCE_BUNDLE, "updateUser.unexpectedError", e.getMessage());
 		}
 	}
 
@@ -1008,7 +1008,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			throw e;
 		} catch (Throwable t) {
 			eventService.publishEvent(new RealmCreatedEvent(this, t, getCurrentSession(), name, module));
-			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.genericError", name, t.getMessage());
+			throw new ResourceCreationException(t, RESOURCE_BUNDLE, "error.genericError", name, t.getMessage());
 		}
 	}
 
@@ -1092,7 +1092,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (Throwable t) {
 			log.error("Unexpected error", t);
 			eventService.publishEvent(new RealmUpdatedEvent(this, t, getCurrentSession(), realm));
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
+			throw new ResourceChangeException(t, RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
 		}
 		return realm;
 	}
@@ -1162,7 +1162,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (Throwable t) {
 			log.error("Unexpected error", t);
 			eventService.publishEvent(new RealmUpdatedEvent(this, t, getCurrentSession(), realm));
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
+			throw new ResourceChangeException(t, RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
 		}
 		return realm;
 	}
@@ -1269,7 +1269,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			throw e;
 		} catch (Throwable t) {
 			eventService.publishEvent(new RealmDeletedEvent(this, t, getCurrentSession(), realm));
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.unexpectedError", t);
+			throw new ResourceChangeException(t, RESOURCE_BUNDLE, "error.unexpectedError");
 		}
 	}
 
@@ -1400,7 +1400,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (Exception e) {
 			eventService.publishEvent(
 					new GroupCreatedEvent(this, e, getCurrentSession(), realm, provider, name, principals));
-			throw new ResourceCreationException(RESOURCE_BUNDLE, "createGroup.unexpectedError", e.getMessage());
+			throw new ResourceCreationException(e, RESOURCE_BUNDLE, "createGroup.unexpectedError", e.getMessage());
 		}
 	}
 
@@ -1469,8 +1469,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				} catch (ResourceChangeException e) {
 					throw new IllegalStateException(e.getMessage(), e);
 				} catch (Throwable e) {
-					ResourceChangeException ex = new ResourceChangeException(RESOURCE_BUNDLE, "groupUser.unexpectedError", e.getMessage());
-					ex.initCause(e);
+					ResourceChangeException ex = new ResourceChangeException(RESOURCE_BUNDLE, "groupUser.unexpectedError", e.getMessage(), e);
 					throw new IllegalStateException(ex.getMessage(), ex);
 				}
 			}
@@ -1513,7 +1512,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (Throwable e) {
 			eventService.publishEvent(
 					new GroupDeletedEvent(this, e, getCurrentSession(), realm, provider, group.getPrincipalName(), assosiatedPrincipals));
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "deleteGroup.unexpectedError", e.getMessage());
+			throw new ResourceChangeException(e, RESOURCE_BUNDLE, "deleteGroup.unexpectedError", e.getMessage());
 		}
 	}
 
@@ -1559,7 +1558,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (Throwable e) {
 			eventService.publishEvent(
 					new UserDeletedEvent(this, e, getCurrentSession(), realm, provider, user.getPrincipalName()));
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "deleteUser.unexpectedError", e.getMessage());
+			throw new ResourceChangeException(e, RESOURCE_BUNDLE, "deleteUser.unexpectedError", e.getMessage());
 		}
 
 	}

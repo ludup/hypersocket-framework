@@ -21,14 +21,14 @@ public class ResourceException extends Exception {
 	Object[] args;
 	
 	public ResourceException(ResourceException e) {
-		this(e.getBundle(), e.getResourceKey(), e.getCause(), e.getArgs());
+		this(e.getCause(), e.getBundle(), e.getResourceKey(), e.getArgs());
 	}
 	
 	public ResourceException(String bundle, String resourceKey, Object... args) {
-		this(bundle, resourceKey, null, args);
+		this(null, bundle, resourceKey, args);
 	}	
 
-	public ResourceException(String bundle, String resourceKey, Throwable cause, Object... args) {
+	public ResourceException(Throwable cause, String bundle, String resourceKey, Object... args) {
 		super(I18N.getResource(Locale.getDefault(), bundle, resourceKey, args));
 		if(cause != null)
 			initCause(cause);

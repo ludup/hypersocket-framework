@@ -281,7 +281,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				return role;
 			} catch (Throwable te) {
 				eventService.publishEvent(new RoleCreatedEvent(this, name, te, getCurrentSession(), realm));
-				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.resourceCreateError", te.getMessage(), te);
+				throw new ResourceCreationException(te, RESOURCE_BUNDLE, "error.resourceCreateError", te.getMessage());
 			}
 		}
 	}
@@ -664,7 +664,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		} catch (Throwable te) {
 			eventService
 					.publishEvent(new RoleDeletedEvent(this, role.getName(), te, getCurrentSession(), role.getRealm()));
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.resourceDeleteError", te.getMessage(), te);
+			throw new ResourceChangeException(te, RESOURCE_BUNDLE, "error.resourceDeleteError", te.getMessage());
 		}
 	}
 
@@ -711,7 +711,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		} catch (Throwable e) {
 			eventService
 					.publishEvent(new RoleUpdatedEvent(this, role.getName(), e, getCurrentSession(), role.getRealm()));
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.resourceUpdateError", e.getMessage(), e);
+			throw new ResourceChangeException(e, RESOURCE_BUNDLE, "error.resourceUpdateError", e.getMessage());
 		}
 	}
 
@@ -778,7 +778,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		} catch (Throwable te) {
 			eventService
 					.publishEvent(new RoleUpdatedEvent(this, role.getName(), te, getCurrentSession(), role.getRealm()));
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.resourceUpdateError", te.getMessage(), te);
+			throw new ResourceChangeException(te, RESOURCE_BUNDLE, "error.resourceUpdateError", te.getMessage());
 		}
 	}
 

@@ -15,12 +15,12 @@ public class ResourceBadRequestException extends ResourceException {
 
 	public ResourceBadRequestException(String bundle, String resourceKey,String code,
                                        Object... args) {
-		this(bundle, resourceKey, code, null, args);
+		this(null, bundle, resourceKey, code, args);
 	}
 	
-	public ResourceBadRequestException(String bundle, String resourceKey,String code, Throwable cause,
+	public ResourceBadRequestException(Throwable cause, String bundle, String resourceKey,String code, 
             Object... args) {
-		super(bundle, resourceKey, args);
+		super(cause, bundle, resourceKey, args);
 		this.code = code;
 	}
 
