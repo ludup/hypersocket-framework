@@ -14,12 +14,6 @@ public class FileUploadMigrationMixIn extends FileUpload implements MigrationMix
 
     @Override
     @JsonIgnore
-    public String getUrl() {
-        return null;
-    }
-
-    @Override
-    @JsonIgnore
     public String getContent() {
         return null;
     }

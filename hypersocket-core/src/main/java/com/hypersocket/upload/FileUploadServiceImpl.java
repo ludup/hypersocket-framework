@@ -174,7 +174,8 @@ public class FileUploadServiceImpl extends
 
 				din = new DigestInputStream(in, md5);
 
-				fileUpload.setFileSize(uploadStore.writeFile(realm, filename, fileUpload.getUUID(), din));
+				fileUpload.setFileSize(uploadStore.writeFile(String.format("%d/%s", 
+						fileUpload.getRealm().getId(), fileUpload.getName()), din));
 
 				String md5String = Hex.encodeHexString(md5.digest());
 				fileUpload.setMd5Sum(md5String);
@@ -332,13 +333,12 @@ public class FileUploadServiceImpl extends
 		DefaultFileStore() {
 		}
 		
-		public long writeFile(Realm realm, String filename, String uuid, InputStream in)
+		public long writeFile(String path, InputStream in)
 				throws IOException {
 
 			File f = new File(
 					System.getProperty("hypersocket.uploadPath", DEFAULT_UPLOAD_PATH)
-					+ realm.getId() 
-					+ "/" + uuid);
+					+ path);
 			f.getParentFile().mkdirs();
 			f.createNewFile();
 
@@ -355,12 +355,11 @@ public class FileUploadServiceImpl extends
 		}
 
 		@Override
-		public InputStream getInputStream(FileUpload upload) throws IOException {
+		public InputStream getInputStream(String path) throws IOException {
 			
 			File f = new File(
 					System.getProperty("hypersocket.uploadPath", DEFAULT_UPLOAD_PATH)
-					+ upload.getRealm().getId() 
-					+ "/" + upload.getName());
+					+ path);
 			return new FileInputStream(f);
 		}
 	}
@@ -377,7 +376,8 @@ public class FileUploadServiceImpl extends
 	@Override
 	public InputStream getInputStream(String uuid) throws IOException {
 		try {
-			return defaultStore.getInputStream(getFileUpload(uuid));
+			FileUpload upload = getFileUpload(uuid);
+			return defaultStore.getInputStream((String.format("%d/%s", upload.getRealm().getId(), upload.getName())));
 		} catch (ResourceNotFoundException e) {
 			throw new IOException(e.getMessage(), e);
 		}
@@ -419,7 +419,7 @@ public class FileUploadServiceImpl extends
 			
 			try {
 				b = new Base64InputStream(IOUtils.toInputStream(resource.getContent(), "UTF-8"), false);
-				defaultStore.writeFile(resource.getRealm(), resource.getFileName(), resource.getName(), b);
+				defaultStore.writeFile(String.format("%d/%s", resource.getRealm().getId(), resource.getName()), b);
 				 
 			} catch(IOException ex) {
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.fileIO", ex.getMessage());

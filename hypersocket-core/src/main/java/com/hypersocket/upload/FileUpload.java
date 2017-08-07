@@ -68,14 +68,6 @@ public class FileUpload extends RealmResource {
 	public void setType(String type) {
 		this.type = type;
 	}
-	
-	void setUrl(String url) {
-		this.url = url;
-	}
-	
-	public String getUrl() {
-		return url;
-	}
 
 	public void setShortCode(String shortCode) {
 		this.shortCode = shortCode;
