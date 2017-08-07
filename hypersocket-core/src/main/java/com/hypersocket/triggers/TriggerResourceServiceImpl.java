@@ -37,6 +37,7 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractResourceRepository;
@@ -162,6 +163,27 @@ public class TriggerResourceServiceImpl extends
 						} catch (MediaNotFoundException e) {
 							return "";
 						}
+					}
+				});
+		replacementVariables.put("administrators.email",
+				new ReplacementVariableProvider() {
+					@Override
+					public String getReplacementValue(String variable) {
+						StringBuffer buf = new StringBuffer();
+						try {
+							for(Principal principal : permissionService.getPrincipalsByRole(
+									getCurrentRealm(), permissionService.getRealmAdministratorRole(getCurrentRealm()))) {
+								if(StringUtils.isNotBlank(principal.getPrimaryEmail())) {
+									if(buf.length() > 0) {
+										buf.append("\r\n");
+									}
+									buf.append(principal.getPrimaryEmail());
+								}
+							}
+						} catch (ResourceNotFoundException | AccessDeniedException e) {
+							log.error("Failed to lookup administrators emails", e);
+						}
+						return buf.toString();
 					}
 				});
 	}
