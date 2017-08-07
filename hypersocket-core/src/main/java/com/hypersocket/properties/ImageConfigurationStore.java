@@ -88,16 +88,6 @@ public class ImageConfigurationStore implements ResourcePropertyStore {
 
 	}
 
-//	@Override
-//	public List<Property> getProperties(String module) {
-//		
-//		List<Property> props = new ArrayList<Property>();
-//		for(PropertyTemplate template : templatesByModule.get(module)) {
-//			props.add(new ImageProperty(template.getResourceKey(), createURL(resourceKeyImages.getProperty(template.getResourceKey()))));
-//		}
-//		return props;
-//	}
-//	
 	private String createURL(String filename) {
 		return System.getProperty("hypersocket.appPath", "/hypersocket") + "/"+ id + "/" + filename;
 	}
@@ -128,7 +118,7 @@ public class ImageConfigurationStore implements ResourcePropertyStore {
 
 		id = element.getAttribute("id");
 		
-		imageResources = new File(filename.item(0).getTextContent().replace("${hypersocket.conf}", System.getProperty("hypersocket.conf", "conf")));
+		imageResources = new File(filename.item(0).getTextContent().replace("${hypersocket.conf}", HypersocketUtils.getConfigDir().getAbsolutePath()));
 		imageResources.mkdirs();
 		
 		resourceKeyImages = new Properties();

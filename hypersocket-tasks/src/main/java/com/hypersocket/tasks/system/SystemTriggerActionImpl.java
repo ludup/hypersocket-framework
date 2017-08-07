@@ -91,4 +91,8 @@ public class SystemTriggerActionImpl extends AbstractTaskProvider {
 		return repository;
 	}
 	
+	@Override
+	public boolean isSystem() {
+		return true;
+	}
 }

@@ -1,6 +1,7 @@
 package com.hypersocket.resource;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,9 +37,15 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 	@Autowired
 	EncryptionService encryptionService;
 	
+	List<TransactionOperation<T>> defaultOperations = new ArrayList<TransactionOperation<T>>();
+	
 	@PostConstruct
 	private void postConstruct() {
 		entityPropertyStore = new EntityResourcePropertyStore(encryptionService, getResourceClass().getCanonicalName());
+	}
+	
+	protected void addDefaultOperation(TransactionOperation<T> op) {
+		defaultOperations.add(op);
 	}
 	
 	protected ResourcePropertyStore getPropertyStore() {
@@ -133,14 +140,20 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 	@SafeVarargs
 	public final List<PropertyChange> saveResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops)  throws ResourceException {
 	
-		for(TransactionOperation<T> op : ops) {
+		List<TransactionOperation<T>> operations = new ArrayList<TransactionOperation<T>>();
+		if(!defaultOperations.isEmpty()) {
+			operations.addAll(defaultOperations);
+		}
+		Collections.addAll(operations, ops);
+		
+		for(TransactionOperation<T> op : operations) {
 			op.beforeSetProperties(resource, properties);
 		}
 
 		final List<PropertyChange> changes = calculateChanges(resource, properties);
 		populateEntityFields(resource, properties);
 
-		for(TransactionOperation<T> op : ops) {
+		for(TransactionOperation<T> op : operations) {
 			op.beforeOperation(resource, properties);
 		}
 		
@@ -149,7 +162,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 		// Now set any remaining values
 		setValues(resource, properties);
 		
-		for(TransactionOperation<T> op : ops) {
+		for(TransactionOperation<T> op : operations) {
 			op.afterOperation(resource, properties);
 		}
 		

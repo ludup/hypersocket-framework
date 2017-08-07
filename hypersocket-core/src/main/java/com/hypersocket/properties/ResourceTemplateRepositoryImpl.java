@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.w3c.dom.Document;
@@ -54,6 +55,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	@Autowired
 	ApplicationContext applicationContext;
+	
+	@Autowired
+	Environment environment;
 	
 	Map<String, PropertyCategory> activeCategories = new HashMap<>();
 	Map<String, PropertyTemplate> propertyTemplates = new HashMap<>();
@@ -453,6 +457,23 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			Node n = pnode.getAttributes().item(i);
 			if(!isKnownAttributeName(n.getNodeName())) {
 				template.attributes.put(n.getNodeName(), n.getNodeValue());
+			}
+		}
+		
+		
+		
+		if(template.getAttributes().containsKey("profile")) {
+			boolean isHA = environment.acceptsProfiles("HA");
+			String profile = template.getAttributes().get("profile");
+			if(profile.startsWith("!")) {
+				profile = profile.substring(1);
+				if(profile.equals("HA") && isHA) {
+					template.setHidden(true);
+				}
+			} else {
+				if(profile.equals("HA") && !isHA) {
+					template.setHidden(true);
+				}
 			}
 		}
 		

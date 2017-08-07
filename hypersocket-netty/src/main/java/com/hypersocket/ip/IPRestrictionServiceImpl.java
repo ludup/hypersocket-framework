@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.netty.handler.ipfilter.IpFilterRule;
 import org.jboss.netty.handler.ipfilter.IpSubnetFilterRule;
 import org.slf4j.Logger;
@@ -20,7 +21,6 @@ import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.ResourceChangeException;
-import com.mysql.jdbc.StringUtils;
 
 @Service
 public class IPRestrictionServiceImpl implements IPRestrictionService, ApplicationListener<ApplicationEvent> {
@@ -141,7 +141,7 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 				String[] newValues = c.getAttribute(ConfigurationValueChangedEvent.ATTR_NEW_VALUE).split("\\r\\n");
 				
 				for(String ip : newValues) {
-					if(StringUtils.isEmptyOrWhitespaceOnly(ip)) {
+					if(StringUtils.isBlank(ip)) {
 						continue;
 					}
 					boolean found = false;
@@ -158,7 +158,7 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 					}
 				}
 				for(String ip : oldValues) {
-					if(StringUtils.isEmptyOrWhitespaceOnly(ip)) {
+					if(StringUtils.isBlank(ip)) {
 						continue;
 					}
 					boolean found = false;

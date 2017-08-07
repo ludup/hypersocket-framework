@@ -84,6 +84,8 @@ import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.tables.DefaultTableFilter;
+import com.hypersocket.tables.TableFilter;
 import com.hypersocket.transactions.TransactionCallbackWithError;
 import com.hypersocket.transactions.TransactionService;
 import com.hypersocket.upgrade.UpgradeService;
@@ -166,8 +168,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public static final Integer MESSAGE_PASSWORD_CHANGED = 6004;
 	public static final Integer MESSAGE_PASSWORD_RESET = 6005;
 	
-	Map<String,PrincipalFilter> principalFilters = new HashMap<String,PrincipalFilter>();
-	Map<String,PrincipalFilter> builtInPrincipalFilters = new HashMap<String,PrincipalFilter>();
+	Map<String,TableFilter> principalFilters = new HashMap<String,TableFilter>();
+	Map<String,TableFilter> builtInPrincipalFilters = new HashMap<String,TableFilter>();
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -226,7 +228,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		upgradeService.registerListener(this);
 
-		realmCache = cacheService.getCache("realmCache", String.class, Object.class);
+		realmCache = cacheService.getCacheOrCreate("realmCache", String.class, Object.class);
 		
 		EntityResourcePropertyStore.registerResourceService(Principal.class, principalRepository);
 		EntityResourcePropertyStore.registerResourceService(Realm.class, realmRepository);
@@ -255,12 +257,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		principalProcessors.add(processor);
 	}
 	
-	private void registerBuiltInPrincipalFilter(PrincipalFilter filter) {
+	private void registerBuiltInPrincipalFilter(TableFilter filter) {
 		builtInPrincipalFilters.put(filter.getResourceKey(), filter);
 	}
 	
 	@Override
-	public void registerPrincipalFilter(PrincipalFilter filter) {
+	public void registerPrincipalFilter(TableFilter filter) {
 		principalFilters.put(filter.getResourceKey(), filter);
 	}
 
@@ -1778,14 +1780,28 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		assertAnyPermission(UserPermission.READ, GroupPermission.READ, ProfilePermission.READ, RealmPermission.READ);
 
-		if(StringUtils.isNotBlank(module)) {
-			PrincipalFilter filter = principalFilters.get(module);
-			if(filter==null) {
-				filter = builtInPrincipalFilters.get(module);
+		switch(type) {
+		case USER:
+		{
+			if(StringUtils.isNotBlank(module)) {
+				TableFilter filter = principalFilters.get(module);
+				if(filter==null) {
+					filter = builtInPrincipalFilters.get(module);
+				}
+				return filter.searchResources(realm, searchColumn, searchPattern, start, length, sorting);
+			} else {
+				return principalRepository.search(realm, type, searchColumn, searchPattern, start, length, sorting);
 			}
-			return filter.getPrincipals(realm, type, searchColumn, searchPattern, start, length, sorting);
-		} else {
-			return principalRepository.search(realm, type, searchColumn, searchPattern, start, length, sorting);
+		}
+		default:
+		{
+			if(StringUtils.isNotBlank(module)) {
+				RealmProvider provider = getProviderForRealm(module);
+				return provider.getPrincipals(realm, type, searchColumn, searchPattern, start, length, sorting);
+			} else {
+				return principalRepository.search(realm, type, searchColumn, searchPattern, start, length, sorting);
+			}
+		}
 		}
 	}
 
@@ -1799,14 +1815,30 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		assertAnyPermission(UserPermission.READ, GroupPermission.READ, ProfilePermission.READ, RealmPermission.READ);
 
-		if(StringUtils.isNotBlank(module)) {
-			PrincipalFilter filter = principalFilters.get(module);
-			if(filter==null) {
-				filter = builtInPrincipalFilters.get(module);
+		
+		
+		switch(type) {
+		case USER:
+		{
+			if(StringUtils.isNotBlank(module)) {
+				TableFilter filter = principalFilters.get(module);
+				if(filter==null) {
+					filter = builtInPrincipalFilters.get(module);
+				}
+				return filter.searchResourcesCount(realm, searchColumn, searchPattern);
+			} else {
+				return principalRepository.getResourceCount(realm, type, searchColumn, searchPattern);
 			}
-			return filter.getPrincipalCount(realm, type, searchColumn, searchPattern);
-		} else {
-			return principalRepository.getResourceCount(realm, type, searchColumn, searchPattern);
+		}
+		default:
+		{
+			if(StringUtils.isNotBlank(module)) {
+				RealmProvider provider = getProviderForRealm(module);
+				return provider.getPrincipalCount(realm, type, searchColumn, searchPattern);
+			} else {
+				return principalRepository.getResourceCount(realm, type, searchColumn, searchPattern);
+			}
+		}
 		}
 	}
 
@@ -2335,12 +2367,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Collection<String> getPrincipalFilters() {
-		return principalFilters.keySet();
+	public Collection<TableFilter> getPrincipalFilters() {
+		return principalFilters.values();
 	}
 	
 	
-	class LocalAccountFilter implements PrincipalFilter {
+	class LocalAccountFilter extends DefaultTableFilter {
 
 		@Override
 		public String getResourceKey() {
@@ -2348,21 +2380,21 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 
 		@Override
-		public List<?> getPrincipals(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
-				int start, int length, ColumnSort[] sorting) {
+		public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start,
+				int length, ColumnSort[] sorting) {
 			RealmProvider local = getLocalProvider();
-			return local.getPrincipals(realm, type, searchColumn, searchPattern, start, length, sorting);
+			return local.getPrincipals(realm, PrincipalType.USER, searchColumn, searchPattern, start, length, sorting);
 		}
 
 		@Override
-		public Long getPrincipalCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern) {
+		public Long searchResourcesCount(Realm realm, String searchColumn, String searchPattern) {
 			RealmProvider local = getLocalProvider();
-			return local.getPrincipalCount(realm, type, searchColumn, searchPattern);
+			return local.getPrincipalCount(realm, PrincipalType.USER, searchColumn, searchPattern);
 		}
 		
 	}
 	
-	class RemoteAccountFilter implements PrincipalFilter {
+	class RemoteAccountFilter extends DefaultTableFilter {
 
 		@Override
 		public String getResourceKey() {
@@ -2370,16 +2402,16 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 
 		@Override
-		public List<?> getPrincipals(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
-				int start, int length, ColumnSort[] sorting) {
+		public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start,
+				int length, ColumnSort[] sorting) {
 			RealmProvider remote = getProviderForRealm(realm);
-			return remote.getPrincipals(realm, type, searchColumn, searchPattern, start, length, sorting);
+			return remote.getPrincipals(realm, PrincipalType.USER, searchColumn, searchPattern, start, length, sorting);
 		}
 
 		@Override
-		public Long getPrincipalCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern) {
+		public Long searchResourcesCount(Realm realm, String searchColumn, String searchPattern) {
 			RealmProvider remote = getProviderForRealm(realm);
-			return remote.getPrincipalCount(realm, type, searchColumn, searchPattern);
+			return remote.getPrincipalCount(realm, PrincipalType.USER, searchColumn, searchPattern);
 		}
 		
 	}

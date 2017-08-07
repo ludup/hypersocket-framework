@@ -20,6 +20,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.hypersocket.utils.FileUtils;
+import com.hypersocket.utils.HypersocketUtils;
 
 public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStore {
 
@@ -45,7 +46,7 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 			throw new IOException("<propertyStore> of type PropertiesFileConfigurationStore requires a child <filename> element");
 		}
 		
-		this.propertiesFile = new File(filename.item(0).getTextContent().replace("${hypersocket.conf}", System.getProperty("hypersocket.conf", "conf")));
+		this.propertiesFile = new File(filename.item(0).getTextContent().replace("${hypersocket.conf}", HypersocketUtils.getConfigDir().getAbsolutePath()));
 		
 		String createAttribute = element.getAttribute("create");
 		if("true".equals(createAttribute) && !this.propertiesFile.exists()){

@@ -17,12 +17,16 @@ public class CacheService {
 	private CacheManager cacheManager;
 	
 	
-	public <K,V> Cache<K, V> getCache(String name,Class<K> key, Class<V> value){
+	public <K,V> Cache<K, V> getCacheOrCreate(String name,Class<K> key, Class<V> value){
 		return cache(name, key, value, baseConfiguration(key, value));
 	}
 	
-	public <K,V> Cache<K, V> getCache(String name,Class<K> key, Class<V> value,Factory<? extends ExpiryPolicy> expiryPolicyFactory){
+	public <K,V> Cache<K, V> getCacheOrCreate(String name,Class<K> key, Class<V> value,Factory<? extends ExpiryPolicy> expiryPolicyFactory){
 		return cache(name, key, value, ((MutableConfiguration<K, V>)baseConfiguration(key, value)).setExpiryPolicyFactory(expiryPolicyFactory));
+	}
+	
+	public <K,V> Cache<K, V> getCacheIfExists(String name, Class<K> key, Class<V> value){
+		return cacheManager.getCache(name,key,value);
 	}
 	
 	public CacheManager getCacheManager(){

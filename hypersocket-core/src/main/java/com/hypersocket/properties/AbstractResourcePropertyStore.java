@@ -59,7 +59,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 			throw new CacheUnavailableException();
 		}
 		CacheService cacheService = ApplicationContextServiceImpl.getInstance().getBean(CacheService.class);
-		return cacheService.getCache(getCacheName(), String.class, String.class);
+		return cacheService.getCacheOrCreate(getCacheName(), String.class, String.class);
 	}
 	
 	@Override

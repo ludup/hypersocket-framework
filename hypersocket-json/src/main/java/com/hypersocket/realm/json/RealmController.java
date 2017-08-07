@@ -64,6 +64,7 @@ import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.tables.TableFilter;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller
@@ -499,7 +500,7 @@ public class RealmController extends ResourceController {
 	@RequestMapping(value = "realms/users/filters", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<String> getUserFilters(
+	public ResourceList<TableFilter> getUserFilters(
 			HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
@@ -507,7 +508,7 @@ public class RealmController extends ResourceController {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			return new ResourceList<String>(
+			return new ResourceList<TableFilter>(
 					realmService.getPrincipalFilters());
 		} finally {
 			clearAuthenticatedContext();

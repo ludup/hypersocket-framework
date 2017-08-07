@@ -380,7 +380,11 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws 
 			AccessDeniedException, ResourceException {
 
-		assertPermission(getDeletePermission(resource));
+		if(!resource.getPersonal()) {
+			assertPermission(getDeletePermission(resource));
+		} else {
+			assertRoleOrAnyPermission(permissionService.getPersonalRole(getCurrentPrincipal()));
+		}
 
 		try {
 			resource.setUnassignedRoles(resource.getRoles());

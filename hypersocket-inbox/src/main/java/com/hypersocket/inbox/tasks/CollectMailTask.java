@@ -170,4 +170,8 @@ public class CollectMailTask extends AbstractTaskProvider {
 		return repository;
 	}
 
+	@Override
+	public boolean isSystem() {
+		return false;
+	}
 }

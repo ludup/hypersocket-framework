@@ -133,9 +133,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			}
 		});
 
-		permissionsCache = cacheService.getCache("permissionsCache", Object.class, Set.class);
+		permissionsCache = cacheService.getCacheOrCreate("permissionsCache", Object.class, Set.class);
 
-		roleCache = cacheService.getCache("roleCache", Object.class, Set.class);
+		roleCache = cacheService.getCacheOrCreate("roleCache", Object.class, Set.class);
 
 		realmService.registerRealmListener(new RealmAdapter() {
 

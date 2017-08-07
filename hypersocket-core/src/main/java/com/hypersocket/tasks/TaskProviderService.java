@@ -16,4 +16,8 @@ public interface TaskProviderService extends AuthenticatedService {
 
 	List<String> getAutomationTasks();
 
+	boolean isDisableSystemTasks();
+
+	void setDisableSystemTasks(boolean disableSystemTasks);
+
 }

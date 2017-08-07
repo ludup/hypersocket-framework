@@ -94,7 +94,7 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 //		
 //		attributeRepository.saveAttribute(attr);
 //		
-//		File conf = new File(System.getProperty("hypersocket.conf", "conf"));
+//		File conf = new File(HypersocketUtils.getConfigDir());
 //		File userAttributes = new File(conf, "i18n" + File.separator + "UserAttributes.properties");
 //		if(!userAttributes.exists()) {
 //			userAttributes.getParentFile().mkdirs();

@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
@@ -69,6 +70,11 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		}
 	}
 
+	protected Session getCurrentSession() {
+		return hibernateTemplate.getSessionFactory().getCurrentSession();
+		
+	}
+	
 	@Transactional
 	protected AbstractEntity<K> save(AbstractEntity<K> entity) {
 

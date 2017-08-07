@@ -16,12 +16,15 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
+import javax.cache.Cache;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticationService;
+import com.hypersocket.cache.CacheService;
 import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.EmailNotificationService;
@@ -44,6 +47,9 @@ public class I18NServiceImpl implements I18NService {
 	
 	List<Message> allMessages;
 	HashMap<Locale,Map<String,String>> resources = new HashMap<Locale,Map<String,String>>();
+	
+	@Autowired
+	CacheService cacheService; 
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -83,17 +89,18 @@ public class I18NServiceImpl implements I18NService {
 	}
 
 	@Override
-	public synchronized Map<String,String> getResourceMap(Locale locale) {
+	public synchronized Cache<String,String> getResourceMap(Locale locale) {
 		
-		if(!resources.containsKey(locale)) {
-			Map<String,String> tmp = new HashMap<String,String>();
+		String cacheKey = "i18n-" + locale.toString();
+		Cache<String,String> cache = cacheService.getCacheIfExists(cacheKey,String.class, String.class);
+
+		if(cache==null) {
+			cache = cacheService.getCacheOrCreate(cacheKey, String.class, String.class);
 			for(String bundle : bundles) {
-				buildBundleMap(bundle, locale, tmp);
+				buildBundleMap(bundle, locale, cache);
 			}
-			//return tmp;
-			resources.put(locale, tmp);
 		}
-		return resources.get(locale);
+		return cache;
 	}
 	
 	@Override
@@ -106,7 +113,7 @@ public class I18NServiceImpl implements I18NService {
 		return getResource(resourceKey, Locale.getDefault());
 	}
 	
-	private void buildBundleMap(String bundle, Locale locale, Map<String,String> resources) {
+	private void buildBundleMap(String bundle, Locale locale, Cache<String,String> resources) {
 		for(String key :  I18N.getResourceKeys(locale, bundle)) {
 			resources.put(key, I18N.getResource(locale, bundle, key));
 		}

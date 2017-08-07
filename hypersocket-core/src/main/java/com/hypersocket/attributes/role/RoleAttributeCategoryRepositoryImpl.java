@@ -39,7 +39,6 @@ public class RoleAttributeCategoryRepositoryImpl extends
 		I18N.overrideMessage(Locale.ENGLISH, new Message("RoleAttributes",
 				"attributeCategory" + String.valueOf(resource.getId()) + ".label",
 				"", resource.getName()));
-		I18N.flushOverrides();
 	};
 	
 	@Override

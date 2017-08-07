@@ -39,7 +39,6 @@ public class UserAttributeCategoryRepositoryImpl extends
 		I18N.overrideMessage(Locale.ENGLISH, new Message("UserAttributes",
 				"attributeCategory" + String.valueOf(resource.getId()) + ".label",
 				"", resource.getName()));
-		I18N.flushOverrides();
 	};
 	
 	@Override

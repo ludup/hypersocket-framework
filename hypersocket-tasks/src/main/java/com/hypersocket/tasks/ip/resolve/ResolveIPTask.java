@@ -134,4 +134,8 @@ public class ResolveIPTask extends AbstractTaskProvider {
 		return repository;
 	}
 
+	@Override
+	public boolean isSystem() {
+		return false;
+	}
 }

@@ -9,10 +9,14 @@ package com.hypersocket.i18n.json;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.cache.Cache;
+import javax.cache.Cache.Entry;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -26,6 +30,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.i18n.I18NService;
@@ -54,12 +60,24 @@ public class I18NController extends AuthenticatedController {
 				request.getHeader(HttpHeaders.USER_AGENT),
 				request.getParameterMap());
 		try {
-			Map<String,String> results = i18nService.getResourceMap(sessionUtils.getLocale(request));
+			Cache<String,String> results = i18nService.getResourceMap(sessionUtils.getLocale(request));
 			results.put("LANG", sessionUtils.getLocale(request).getLanguage());
-			return results;
+			return serializeCache(results);
 		} finally {
 			clearAuthenticatedContext();
 		}
+	}
+	
+	private Map<String,String> serializeCache(Cache<String,String> cache) throws JsonGenerationException, JsonMappingException, IOException {
+		
+		Map<String,String> m = new HashMap<String,String>();
+		
+		for(Iterator<Entry<String,String>> it = cache.iterator(); it.hasNext();) {
+			Entry<String,String> e = it.next();
+			m.put(e.getKey(), e.getValue());
+		}
+		return m;
+
 	}
 	
 	@RequestMapping(value="i18n/{locale}", method = RequestMethod.GET, produces = {"application/json"})
@@ -72,9 +90,9 @@ public class I18NController extends AuthenticatedController {
 				request.getHeader(HttpHeaders.USER_AGENT),
 				request.getParameterMap());
 		try {
-			Map<String,String> results = i18nService.getResourceMap(i18nService.getLocale(locale));
+			Cache<String,String> results = i18nService.getResourceMap(i18nService.getLocale(locale));
 			results.put("LANG", locale);
-			return results;
+			return serializeCache(results);
 		} finally {
 			clearAuthenticatedContext();
 		}

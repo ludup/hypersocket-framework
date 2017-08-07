@@ -41,7 +41,7 @@ public class AlertServiceImpl implements AlertService {
 
 		synchronized(alertLock) {
 	
-			Cache<String,Long> lastAlertTimestamp = cacheService.getCache("alertTimestampCache", String.class, Long.class);
+			Cache<String,Long> lastAlertTimestamp = cacheService.getCacheOrCreate("alertTimestampCache", String.class, Long.class);
 			if(lastAlertTimestamp.containsKey(alertKey)) {
 				long timestamp = lastAlertTimestamp.get(alertKey);
 				if((System.currentTimeMillis() - timestamp) < (delay * 1000)) {

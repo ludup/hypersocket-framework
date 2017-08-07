@@ -140,7 +140,6 @@ public class AlertTask extends AbstractTaskProvider {
 								"alert.text"), taskRepository.getValue(trigger,
 								"alert.text")));
 
-		I18N.flushOverrides();
 		EventDefinition def = new EventDefinition(
 				TriggerResourceServiceImpl.RESOURCE_BUNDLE, resourceKey, "", null);
 		if(sourceEvent != null)
@@ -172,6 +171,11 @@ public class AlertTask extends AbstractTaskProvider {
 	@Override
 	public boolean supportsTriggers() {
 		return true;
+	}
+
+	@Override
+	public boolean isSystem() {
+		return false;
 	}
 
 }

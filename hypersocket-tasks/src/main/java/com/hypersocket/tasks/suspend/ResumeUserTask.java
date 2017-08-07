@@ -116,4 +116,9 @@ public class ResumeUserTask extends AbstractTaskProvider {
 	public ResourceTemplateRepository getRepository() {
 		return repository;
 	}
+	
+	@Override
+	public boolean isSystem() {
+		return false;
+	}
 }

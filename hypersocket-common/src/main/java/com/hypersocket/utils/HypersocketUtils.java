@@ -68,8 +68,7 @@ public class HypersocketUtils {
 	}
 
 	public static File getConfigDir() {
-		return new File(System.getProperty(
-				"hypersocket.conf", "conf"));
+		return new File(System.getProperty("hypersocket.conf", "conf"));
 	}
 	/**
 	 * Encapsulate a part of a string by a given character.useful in hiding part of a password

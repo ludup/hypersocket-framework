@@ -4,9 +4,6 @@
 		type="com.hypersocket.properties.PropertiesFileConfigurationStore">
 		<filename>${hypersocket.conf}/hypersocket.properties</filename>
 	</propertyStore>
-	<propertyStore id="blockedIPStore" bean="blockedIPConfigurationStore"
-		type="com.hypersocket.properties.BlockedIPConfigurationStore">
-	</propertyStore>
 	<propertyCategory resourceKey="category.server" resourceBundle="HypersocketServer" weight="0">
 		<property resourceKey="application.name" inputType="text" refreshUserInterface="true"
 			restart="true" defaultValue="Hypersocket" weight="0" alphaNumericSpacesOnly="true"/>
@@ -45,7 +42,7 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="category.security" resourceBundle="HypersocketServer" weight="400">
 	    <property resourceKey="server.blockIPs" inputType="multipleTextInput"
-			restart="false" weight="8888" store="blockedIPStore" allowEmpty="true"/>
+			restart="false" weight="8888" allowEmpty="true"/>
 	</propertyCategory>
 		<propertyCategory resourceKey="category.authentication"
 		 resourceBundle="AuthenticationService" weight="0">

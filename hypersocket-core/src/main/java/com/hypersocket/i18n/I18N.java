@@ -7,43 +7,26 @@
  ******************************************************************************/
 package com.hypersocket.i18n;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
-import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.Vector;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.hypersocket.utils.FileUtils;
+import com.hypersocket.ApplicationContextServiceImpl;
 
 public class I18N {
 
 	static Logger log = Logger.getLogger(I18N.class);
 	
-	static File overideDirector = new File(System.getProperty(
-			"hypersocket.conf", "conf"), "i18n");
-	static Map<File, Properties> overideProperties = new HashMap<File, Properties>();
-
 	private I18N() {
 	}
 
@@ -68,13 +51,10 @@ public class I18N {
 				
 		}
 		
-		if(hasOverideBundle(locale, resourceBundle)) {
-			try {
-				ResourceBundle rb = new OverrideResourceBundle(locale, resourceBundle);
-				keys.addAll(rb.keySet());
-			} catch (IOException e1) {
-				log.error("Failed to load override file for bundle " + resourceBundle);
-			}
+		I18nOverrideRepository repository = ApplicationContextServiceImpl.getInstance().getBean(I18nOverrideRepository.class);
+		
+		if(repository.hasResources(locale, resourceBundle)) {
+			keys.addAll(repository.getResourceKeys(locale, resourceBundle));
 		} 
 
 		return keys;
@@ -82,84 +62,17 @@ public class I18N {
 	
 	public static void overrideMessage(Locale locale, Message message) {
 		
-		File overrideFile = getOverrideFile(locale, message.getBundle());
-		if (!overideProperties.containsKey(overrideFile)) {
-			overideProperties.put(overrideFile, new Properties());
-			
-			if(overrideFile.exists()) {
-				Properties p = overideProperties.get(overrideFile);
-				InputStream in = null;
-				try {
-					in = new FileInputStream(overrideFile);
-					p.load(in);
-				} catch (IOException e) {
-				} finally {
-					IOUtils.closeQuietly(in);
-				}
-			}
-		}
-		
-		Properties properties = overideProperties.get(overrideFile);
-		properties.put(message.getId(), message.getTranslated());
-
+		ApplicationContextServiceImpl.getInstance()
+		.getBean(I18nOverrideRepository.class)
+			.createResource(locale, message.getBundle(), message.getId(), message.getTranslated());
 	}
 	
-	public static void removeOverrideMessage(Locale locale, Message message) {
-		
-		File overrideFile = getOverrideFile(locale, message.getBundle());
-		if (!overideProperties.containsKey(overrideFile)) {
-			overideProperties.put(overrideFile, new Properties());
-			
-			if(overrideFile.exists()) {
-				Properties p = overideProperties.get(overrideFile);
-				InputStream in = null;
-				try {
-					in = new FileInputStream(overrideFile);
-					p.load(in);
-				} catch (IOException e) {
-				} finally {
-					IOUtils.closeQuietly(in);
-				}
-			}
-		}
-		
-		Properties properties = overideProperties.get(overrideFile);
-		properties.remove(message.getId());
-
+	public static void removeOverrideMessage(Locale locale, Message message) {		
+		ApplicationContextServiceImpl.getInstance()
+			.getBean(I18nOverrideRepository.class)
+				.deleteResource(locale, message.getBundle(), message.getId());
 	}
 
-	public static void flushOverrides() {
-		
-		for(File f : overideProperties.keySet()) {
-			try {
-				Properties properties = overideProperties.get(f);
-				f.getParentFile().mkdirs();
-				f.createNewFile();
-				FileOutputStream out = new FileOutputStream(f);
-				try {
-					properties.store(out, "Hypersocket message bundle override file");
-				} finally {
-					FileUtils.closeQuietly(out);
-				}
-			} catch (IOException e) {
-				log.error("Failed to flush override file " + f.getName(), e);
-			}
-		}
-	}
-	
-	private static File getOverrideFile(Locale locale, String bundle) {
-		/**
-		 * We only care about English language, not variant so this should
-		 * work for en_GB, en and en_US etc.
-		 */
-		if (locale.getLanguage().equals(Locale.ENGLISH.getLanguage())) {
-			return new File(overideDirector, bundle
-					+ ".properties");
-		} else {
-			return new File(overideDirector, bundle + "_"
-					+ locale.toString() + ".properties");
-		}
-	}
 	public static String getResource(Locale locale, String resourceBundle,
 			String key, Object... arguments) {
 		
@@ -171,43 +84,19 @@ public class I18N {
 					"You must specify a resource bundle for key " + key);
 		}
 
-		File overideFile = getOverrideFile(locale, resourceBundle);
-		
+		I18nOverride override = ApplicationContextServiceImpl.getInstance()
+					.getBean(I18nOverrideRepository.class)
+						.getResource(locale, resourceBundle, key);
 
-		if (overideFile.exists()) {
-
-			if (!overideProperties.containsKey(overideFile)) {
-
-				Properties properties = new Properties();
-				try {
-					InputStream in = new FileInputStream(overideFile);
-					try {
-						properties.load(in);
-					} catch (IOException ex) {
-					} finally {
-						FileUtils.closeQuietly(in);
-					}
-					
-					overideProperties.put(overideFile, properties);
-				} catch (FileNotFoundException e) {
-					
-				}
+		if (override!=null) {
+			String localizedString = override.getValue();
+			if (arguments == null || arguments.length == 0) {
+				return localizedString;
 			}
-			
-			if(overideProperties.containsKey(overideFile)) {
-				Properties properties = overideProperties.get(overideFile);
-				
-				if(properties.containsKey(key)) {
-					String localizedString = properties.getProperty(key);
-					if (arguments == null || arguments.length == 0) {
-						return localizedString;
-					}
 
-					MessageFormat messageFormat = new MessageFormat(localizedString);
-					messageFormat.setLocale(locale);
-					return messageFormat.format(formatParameters(arguments));
-				}
-			}
+			MessageFormat messageFormat = new MessageFormat(localizedString);
+			messageFormat.setLocale(locale);
+			return messageFormat.format(formatParameters(arguments));
 		}
 		
 		String bundlePath = resourceBundle;
@@ -272,19 +161,6 @@ public class I18N {
 		}
 		return formatted.toArray(new Object[formatted.size()]);
 	}
-
-	public static boolean hasOverideBundle(Locale locale, String resourceBundle) {
-		if (resourceBundle == null) {
-			throw new IllegalArgumentException(
-					"You must specify a resource bundle " + resourceBundle);
-		}
-
-		if(resourceBundle.startsWith("i18n/")) {
-			resourceBundle = resourceBundle.substring(5);
-		}
-		File overideFile = getOverrideFile(locale, resourceBundle);
-		return overideFile.exists();
-	}
 	
 	public static boolean hasOveride(Locale locale, String resourceBundle,
 			String key) {
@@ -297,67 +173,9 @@ public class I18N {
 					"You must specify a resource bundle for key " + key);
 		}
 
-		File overideFile = getOverrideFile(locale, resourceBundle);
-		
-
-		if (overideFile.exists()) {
-
-			if (!overideProperties.containsKey(overideFile)) {
-
-				Properties properties = new Properties();
-				try {
-					InputStream in = new FileInputStream(overideFile);
-					try {
-						properties.load(in);
-					} catch (IOException ex) {
-					} finally {
-						FileUtils.closeQuietly(in);
-					}
-					
-					overideProperties.put(overideFile, properties);
-				} catch (FileNotFoundException e) {
-					
-				}
-			}
-			
-			if(overideProperties.containsKey(overideFile)) {
-				Properties properties = overideProperties.get(overideFile);
-				
-				return properties.containsKey(key) && StringUtils.isNotEmpty(properties.getProperty(key));
-			}
-		}
-		
-		return false;
-	}
-	
-	static class OverrideResourceBundle extends ResourceBundle {
-
-		Properties props;
-		Vector<String> names;
-		
-		public OverrideResourceBundle(Locale locale, String resourceBundle) throws FileNotFoundException, IOException {
-			File overideFile = getOverrideFile(locale, resourceBundle);
-			props = new Properties();
-			InputStream in = new FileInputStream(overideFile);
-			try {
-				props.load(in);
-			} finally {
-				IOUtils.closeQuietly(in);
-			}
-			names = new Vector<String>();
-			for(Object key : props.keySet()) {
-				names.add(key.toString());
-			}
-		}
-		@Override
-		protected Object handleGetObject(String key) {
-			return props.getProperty(key);
-		}
-
-		@Override
-		public Enumeration<String> getKeys() {
-			return names.elements();
-		}
-		
+		I18nOverride override = ApplicationContextServiceImpl.getInstance()
+				.getBean(I18nOverrideRepository.class)
+					.getResource(locale, resourceBundle, key);
+		return override!=null;
 	}
 }

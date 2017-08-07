@@ -50,6 +50,8 @@ import com.hypersocket.realm.RealmColumns;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.realm.UserVariableReplacementService;
+import com.hypersocket.realm.ou.OrganizationalUnit;
+import com.hypersocket.realm.ou.OrganizationalUnitService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
@@ -57,6 +59,7 @@ import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Controller
 public class CurrentRealmController extends ResourceController {
@@ -69,6 +72,9 @@ public class CurrentRealmController extends ResourceController {
 
 	@Autowired
 	PermissionService permissionService;
+	
+	@Autowired
+	OrganizationalUnitService ouService;
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/groups/list", method = RequestMethod.GET, produces = { "application/json" })
@@ -146,7 +152,7 @@ public class CurrentRealmController extends ResourceController {
 				sessionUtils.getLocale(request));
 
 		final Realm currentRealm = sessionUtils.getCurrentRealm(request);
-		final String module = request.getParameter("module");
+		final String module = request.getParameter("filter");
 
 		try {
 			BootstrapTableResult<?> r = processDataTablesRequest(request,
@@ -164,7 +170,7 @@ public class CurrentRealmController extends ResourceController {
 								AccessDeniedException {
 							return realmService.searchPrincipals(
 									currentRealm,
-									PrincipalType.USER, module, searchColumn, searchPattern, start,
+									PrincipalType.USER, module, searchColumn, HypersocketUtils.urlDecode(searchPattern), start,
 									length, sorting);
 						}
 
@@ -177,7 +183,7 @@ public class CurrentRealmController extends ResourceController {
 									PrincipalType.USER, 
 									module, 
 									searchColumn,
-									searchPattern);
+									HypersocketUtils.urlDecode(searchPattern));
 						}
 					});
 			return r;
@@ -1203,4 +1209,22 @@ public class CurrentRealmController extends ResourceController {
 		}
 	}
 
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/organizationalUnits", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<OrganizationalUnit> listOUs(HttpServletRequest request,
+			HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<OrganizationalUnit>(ouService.getOrganizationalUnits(getCurrentRealm()));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 }

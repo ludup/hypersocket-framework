@@ -65,6 +65,9 @@ public abstract class Principal extends RealmResource {
 	@Column(name="primary_email")
 	String primaryEmail;
 	
+	@Column(name="ou", length=1024)
+	String organizationalUnit;
+	
 	@JsonIgnore
 	public Realm getRealm() {
 		return super.getRealm();
@@ -143,6 +146,14 @@ public abstract class Principal extends RealmResource {
 		this.parentPrincipal = parentPrincipal;
 	}
 	
+	public String getOrganizationalUnit() {
+		return organizationalUnit;
+	}
+
+	public void setOrganizationalUnit(String organizationalUnit) {
+		this.organizationalUnit = organizationalUnit;
+	}
+
 	public abstract String getRealmModule();
 
 }

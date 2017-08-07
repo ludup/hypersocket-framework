@@ -181,5 +181,10 @@ public class BlockIPTask extends AbstractTaskProvider {
 		}
 		
 	}
+	
+	@Override
+	public boolean isSystem() {
+		return true;
+	}
 
 }

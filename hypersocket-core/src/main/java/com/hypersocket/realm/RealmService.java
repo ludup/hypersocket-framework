@@ -23,6 +23,7 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceExportException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.tables.TableFilter;
 
 public interface RealmService extends PasswordEnabledAuthenticatedService {
 
@@ -291,9 +292,9 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	String[] getRealmHostnames(Realm realm);
 
-	void registerPrincipalFilter(PrincipalFilter filter);
+	void registerPrincipalFilter(TableFilter filter);
 
-	Collection<String> getPrincipalFilters();
+	Collection<TableFilter> getPrincipalFilters();
 
 }
 

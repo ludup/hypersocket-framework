@@ -34,7 +34,6 @@ public class UserAttributeRepositoryImpl extends
 				new Message("UserAttributes", attr.getVariableName() + ".info", "", attr
 						.getDescription()));
 
-		I18N.flushOverrides();
 	}
 	
 	@Override

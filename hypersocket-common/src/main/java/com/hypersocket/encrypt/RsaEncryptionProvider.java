@@ -22,12 +22,14 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.lf5.util.StreamUtils;
 
+import com.hypersocket.utils.HypersocketUtils;
+
 public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 
 	static public RsaEncryptionProvider instance;
 	
-	File prvFile = new File(System.getProperty("hypersocket.conf", "conf"), "secrets");
-	File pubFile = new File(System.getProperty("hypersocket.conf", "conf"), "secrets.pub");
+	File prvFile = new File(HypersocketUtils.getConfigDir(), "secrets");
+	File pubFile = new File(HypersocketUtils.getConfigDir(), "secrets.pub");
 	
 	PrivateKey privateKey;
 	PublicKey publicKey;

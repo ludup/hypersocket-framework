@@ -119,4 +119,9 @@ public class UnblockIPTask extends AbstractTaskProvider {
 	public ResourceTemplateRepository getRepository() {
 		return repository;
 	}
+	
+	@Override
+	public boolean isSystem() {
+		return true;
+	}
 }

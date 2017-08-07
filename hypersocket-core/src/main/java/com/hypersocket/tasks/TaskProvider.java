@@ -42,4 +42,6 @@ public interface TaskProvider {
 	boolean supportsTriggers();
 
 	Collection<String> getPropertyNames(Task task);
+	
+	boolean isSystem();
 }

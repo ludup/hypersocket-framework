@@ -12,11 +12,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.cache.Cache;
+
 public interface I18NService {
 
 	void registerBundle(String bundle);
 
-	Map<String,String> getResourceMap(Locale locale);
+	Cache<String, String> getResourceMap(Locale locale);
 
 	Locale getLocale(String locale);
 

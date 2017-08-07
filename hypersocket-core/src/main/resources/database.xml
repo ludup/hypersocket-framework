@@ -60,6 +60,7 @@
 				<prop key="hibernate.connection.useUnicode">true</prop>
 				<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
 				<prop key="hibernate.connection.charSet">UTF-8</prop>
+				<prop key="hibernate.jdbc.use_streams_for_binary">true</prop>
 				<!-- <prop key="hibernate.id.new_generator_mappings">false</prop> -->
 				
 				<!-- https://hibernate.atlassian.net/browse/HHH-9106 -->
@@ -67,7 +68,7 @@
 	
 				<!-- Hibernate 2nd Level Configuration -->
 				<prop key="hibernate.cache.use_query_cache">true</prop>
-				<prop key="hibernate.cache.use_minimal_puts">true</prop>
+				<prop key="hibernate.cache.use_miÂnimal_puts">true</prop>
 				<prop key="hibernate.cache.use_second_level_cache">true</prop>
 				<prop key="hibernate.cache.default_cache_concurrency_strategy">read-write</prop>
 				<!-- 

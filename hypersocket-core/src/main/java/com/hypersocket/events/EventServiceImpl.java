@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -19,9 +18,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.config.ConfigurationChangedEvent;
 import com.hypersocket.config.ConfigurationServiceImpl;
-import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
-import com.hypersocket.i18n.Message;
 import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.resource.AssignableResourceEvent;
 
@@ -153,8 +150,6 @@ public class EventServiceImpl implements EventService {
 		if (log.isInfoEnabled()) {
 			log.info("Registering event class " + eventClass.getName());
 		}
-
-		Map<String,String> resources = i18nService.getResourceMap(Locale.ENGLISH);
 		
 		try {
 			String resourceKey = (String) eventClass.getField(
@@ -171,12 +166,6 @@ public class EventServiceImpl implements EventService {
 				log.info("Process event with resource key " + resourceKey);
 			}
 
-			checkResourceKey(resourceKey, resourceBundle, resources);
-			if(!resourceKey.endsWith(".event")) {
-				checkResourceKey(resourceKey + ".success", resourceBundle, resources);
-				checkResourceKey(resourceKey + ".failure", resourceBundle, resources);
-			}
-
 			eventDefinitions.put(resourceKey, new EventDefinition(
 					resourceBundle, resourceKey, i18nNamespace, propertyCollector));
 
@@ -188,7 +177,6 @@ public class EventServiceImpl implements EventService {
 							&& field.getName().startsWith("ATTR_")) {
 						try {
 							String attributeName = (String) field.get(null);
-							checkResourceKey(attributeName, resourceBundle, resources);
 							eventDefinitions.get(resourceKey)
 									.getAttributeNames().add(attributeName);
 							if (log.isDebugEnabled()) {
@@ -203,44 +191,10 @@ public class EventServiceImpl implements EventService {
 		} catch (Throwable t) {
 			throw new IllegalStateException("Failed to register event class "
 					+ eventClass.getName(), t);
-		} finally {
-			if(Boolean.getBoolean("hypersocket.development")) {
-				I18N.flushOverrides();
-			}
-		}
+		} 
 
 	}
-
-	private boolean checkResourceKey(String resourceKey, String resourceBundle, Map<String,String> resources) {
-
-		if(!resources.containsKey(resourceKey)) {
-			if(Boolean.getBoolean("hypersocket.development")) {
-				I18N.overrideMessage(
-						Locale.ENGLISH, 
-						new Message(resourceBundle,
-								resourceKey, 
-								"", 
-								""));
-			}
-			
-			log.error("Missing resource key " + resourceBundle + "/"
-					+ resourceKey);
-			
-			return false;
-
-		} else {
-			if(Boolean.getBoolean("hypersocket.development")) {
-				I18N.removeOverrideMessage(
-						Locale.ENGLISH, 
-						new Message(resourceBundle,
-								resourceKey, 
-								"", 
-								""));
-			}
-			return true;
-		}
-	}
-
+	
 	@Override
 	public void publishEvent(SystemEvent event) {
 		

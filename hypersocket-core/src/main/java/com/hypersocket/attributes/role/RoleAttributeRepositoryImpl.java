@@ -30,7 +30,6 @@ public class RoleAttributeRepositoryImpl extends
 				new Message("RoleAttributes", attr.getVariableName() + ".info", "", attr
 						.getDescription()));
 
-		I18N.flushOverrides();
 	}
 	
 	@Override

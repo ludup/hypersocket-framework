@@ -268,15 +268,17 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	protected void assertAnyPermission(PermissionStrategy strategy,
 			PermissionType... permissions) throws AccessDeniedException {
 
-		if (log.isWarnEnabled() && !hasAuthenticatedContext()) {
-			log.warn("Permission " + permissions[0].getResourceKey()
-					+ " is being asserted without a principal in context");
-		}
-
-		if(hasSessionContext()) {
-			if(getCurrentSession().isImpersonating() && getCurrentSession().isInheritPermissions()) {
-				verifyPermission(getCurrentSession().getInheritedPrincipal(), strategy, permissions);
-				return;
+		if(permissions.length > 0) {
+			if (log.isWarnEnabled() && !hasAuthenticatedContext()) {
+				log.warn("Permission " + permissions[0].getResourceKey()
+						+ " is being asserted without a principal in context");
+			}
+	
+			if(hasSessionContext()) {
+				if(getCurrentSession().isImpersonating() && getCurrentSession().isInheritPermissions()) {
+					verifyPermission(getCurrentSession().getInheritedPrincipal(), strategy, permissions);
+					return;
+				}
 			}
 		}
 		
