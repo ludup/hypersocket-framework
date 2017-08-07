@@ -368,6 +368,7 @@ public class FileUploadServiceImpl extends
 			File f = new File(
 					System.getProperty("hypersocket.uploadPath", DEFAULT_UPLOAD_PATH)
 					+ path);
+			f.getParentFile().mkdirs();
 			return new FileOutputStream(f);
 		}
 	}
