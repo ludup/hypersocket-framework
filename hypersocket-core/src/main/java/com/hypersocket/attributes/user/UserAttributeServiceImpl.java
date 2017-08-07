@@ -166,6 +166,9 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 			template.setResourceKey(attr.getVariableName());
 		}
 
+		template.setName(attr.getName());
+		template.setDescription(attr.getDescription());
+		
 		template.getAttributes().put("inputType", attr.getType().getInputType());
 		template.getAttributes().put("filter", "custom");
 		template.getAttributes().put("userAttribute", "true");

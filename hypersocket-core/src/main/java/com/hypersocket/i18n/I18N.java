@@ -19,6 +19,8 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+import javax.cache.Cache;
+
 import org.apache.log4j.Logger;
 
 import com.hypersocket.ApplicationContextServiceImpl;
@@ -54,6 +56,9 @@ public class I18N {
 		I18nOverrideRepository repository = ApplicationContextServiceImpl.getInstance().getBean(I18nOverrideRepository.class);
 		
 		if(repository.hasResources(locale, resourceBundle)) {
+			if(log.isInfoEnabled()) {
+				log.info("i18n overrides exist in bundle " + resourceBundle);
+			}
 			keys.addAll(repository.getResourceKeys(locale, resourceBundle));
 		} 
 
@@ -65,6 +70,7 @@ public class I18N {
 		ApplicationContextServiceImpl.getInstance()
 		.getBean(I18nOverrideRepository.class)
 			.createResource(locale, message.getBundle(), message.getId(), message.getTranslated());
+
 	}
 	
 	public static void removeOverrideMessage(Locale locale, Message message) {		

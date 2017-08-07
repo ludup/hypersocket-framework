@@ -34,6 +34,7 @@ public class RoleAttributeCategoryRepositoryImpl extends
 		return (List<RoleAttributeCategory>) crit.list();
 	}
 
+	@Override
 	protected void afterSave(RoleAttributeCategory resource, java.util.Map<String,String> properties) {
 		
 		I18N.overrideMessage(Locale.ENGLISH, new Message("RoleAttributes",

@@ -19,7 +19,7 @@ import com.hypersocket.resource.AbstractAssignableResourceRepositoryImpl;
 public class RoleAttributeRepositoryImpl extends
 		AbstractAssignableResourceRepositoryImpl<RoleAttribute> implements RoleAttributeRepository {
 
-
+	@Override
 	protected void afterSave(RoleAttribute attr, java.util.Map<String,String> properties) {
 		
 		I18N.overrideMessage(Locale.ENGLISH, new Message("RoleAttributes",

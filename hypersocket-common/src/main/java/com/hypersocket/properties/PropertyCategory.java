@@ -34,7 +34,6 @@ public class PropertyCategory implements Serializable {
 	
 	public PropertyCategory() {
 		
-		
 	}
 	
 	public PropertyCategory(PropertyCategory other) {

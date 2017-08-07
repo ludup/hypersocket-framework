@@ -157,10 +157,14 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 			op.beforeOperation(resource, properties);
 		}
 		
+		beforeSave(resource, properties);
+		
 		resource = (T) save(resource);
 
 		// Now set any remaining values
 		setValues(resource, properties);
+		
+		afterSave(resource, properties);
 		
 		for(TransactionOperation<T> op : operations) {
 			op.afterOperation(resource, properties);
@@ -169,6 +173,14 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 		return changes;
 	}
 	
+	protected void afterSave(T resource, Map<String, String> properties) {
+
+	}
+
+	protected void beforeSave(T resource, Map<String, String> properties) {
+		
+	}
+
 	@Transactional
 	public List<PropertyChange> saveResource(T resource) throws ResourceException {
 		return saveResource(resource, null);

@@ -91,7 +91,7 @@ public class I18NServiceImpl implements I18NService {
 	@Override
 	public synchronized Cache<String,String> getResourceMap(Locale locale) {
 		
-		String cacheKey = "i18n-" + locale.toString();
+		String cacheKey = "i18n-" + locale.getLanguage();
 		Cache<String,String> cache = cacheService.getCacheIfExists(cacheKey,String.class, String.class);
 
 		if(cache==null) {

@@ -34,13 +34,6 @@ public class UserAttributeCategoryRepositoryImpl extends
 		return (List<UserAttributeCategory>) crit.list();
 	}
 
-	protected void afterSave(UserAttributeCategory resource, java.util.Map<String,String> properties) {
-		
-		I18N.overrideMessage(Locale.ENGLISH, new Message("UserAttributes",
-				"attributeCategory" + String.valueOf(resource.getId()) + ".label",
-				"", resource.getName()));
-	};
-	
 	@Override
 	@Transactional(readOnly=true)
 	public Long getMaximumCategoryWeight() {
