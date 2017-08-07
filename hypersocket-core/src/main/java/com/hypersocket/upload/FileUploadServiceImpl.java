@@ -362,6 +362,14 @@ public class FileUploadServiceImpl extends
 					+ path);
 			return new FileInputStream(f);
 		}
+
+		@Override
+		public OutputStream getOutputStream(String path) throws IOException {
+			File f = new File(
+					System.getProperty("hypersocket.uploadPath", DEFAULT_UPLOAD_PATH)
+					+ path);
+			return new FileOutputStream(f);
+		}
 	}
 
 	@Override
