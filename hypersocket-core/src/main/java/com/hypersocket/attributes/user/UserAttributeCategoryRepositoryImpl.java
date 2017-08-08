@@ -1,7 +1,6 @@
 package com.hypersocket.attributes.user;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
@@ -9,8 +8,6 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hypersocket.i18n.I18N;
-import com.hypersocket.i18n.Message;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 

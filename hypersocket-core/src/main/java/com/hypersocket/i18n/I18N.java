@@ -19,8 +19,6 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import javax.cache.Cache;
-
 import org.apache.log4j.Logger;
 
 import com.hypersocket.ApplicationContextServiceImpl;
