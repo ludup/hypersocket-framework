@@ -398,7 +398,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			if (t instanceof ResourceChangeException) {
 				throw (ResourceChangeException) t;
 			} else {
-				throw new ResourceChangeException(RESOURCE_BUNDLE_DEFAULT,
+				throw new ResourceChangeException(t, RESOURCE_BUNDLE_DEFAULT,
 						"generic.delete.error", t.getMessage());
 			}
 		}

@@ -158,7 +158,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 					}
 					return ResourceUtils.implodeResourceValues((Collection<? extends Resource>) m.invoke(resource));
 				} else {
-					throw new IllegalStateException("Unhandled Collection type!");
+					throw new IllegalStateException("Unhandled Collection type for " + template.getResourceKey() + "! Type " + m.getReturnType() + " is not an enum, nor is it assignable as a Resource.");
 				}
 			} else {
 				Object obj = m.invoke(resource);
