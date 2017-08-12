@@ -35,7 +35,7 @@ import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
@@ -170,7 +170,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		eventService.publishEvent(new AutomationResourceUpdatedEvent(this, resource, t, getCurrentSession()));
 	}
 
-	protected void afterDeleteResource(AutomationResource resource) throws ResourceChangeException {
+	protected void afterDeleteResource(AutomationResource resource) throws ResourceException {
 		try {
 			resourceScheduler.unschedule(resource);
 
@@ -193,7 +193,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 
 	@Override
 	public AutomationResource updateResource(AutomationResource resource, String name, Map<String, String> properties)
-			throws ResourceChangeException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		resource.setName(name);
 
@@ -238,7 +238,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 
 	@Override
 	public AutomationResource createResource(String name, Realm realm, String resourceKey, Map<String, String> properties)
-			throws ResourceCreationException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		AutomationResource resource = new AutomationResource();
 		resource.setName(name);
@@ -300,7 +300,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 			List<TriggerCondition> anyConditions, 
 			final TriggerResource parent,
 			final AutomationResource automation)
-			throws ResourceCreationException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 		
 		triggerService.createResource(name, TriggerType.AUTOMATION, event,
 				result, task, properties, realm, allConditions,
@@ -312,7 +312,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 					automation.getChildTriggers().add(resource);
 					try {
 						updateResource(automation);
-					} catch (ResourceChangeException e) {
+					} catch (ResourceException e) {
 						throw new IllegalStateException(e.getMessage(), e);
 					} catch (AccessDeniedException e) {
 						throw new IllegalStateException(e.getMessage(), e);
@@ -331,7 +331,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	public AutomationResource updateTrigger(TriggerResource trigger, String name, String event,
 			TriggerResultType result, String task, Map<String, String> properties, List<TriggerCondition> allConditions,
 			List<TriggerCondition> anyConditions, final TriggerResource parent, final AutomationResource automation)
-					throws ResourceChangeException, AccessDeniedException {
+					throws ResourceException, AccessDeniedException {
 		
 		triggerService.updateResource(trigger, name, TriggerType.AUTOMATION, event,
 				result, task, properties, allConditions,

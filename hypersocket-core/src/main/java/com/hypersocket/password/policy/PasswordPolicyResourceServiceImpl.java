@@ -278,7 +278,7 @@ public class PasswordPolicyResourceServiceImpl extends
 
 	}
 
-	private void checkPassword(Principal principal, String newPassword, boolean administrative) throws ResourceChangeException {
+	private void checkPassword(Principal principal, String newPassword, boolean administrative) throws ResourceException {
 		try {
 			PasswordPolicyResource policy = resolvePolicy(principal);
 			
@@ -312,7 +312,7 @@ public class PasswordPolicyResourceServiceImpl extends
 		}
 	}
 	
-	private void validatePassword(String username, PasswordPolicyResource policy, String password) throws ResourceChangeException {
+	private void validatePassword(String username, PasswordPolicyResource policy, String password) throws ResourceException {
 		try {
 			analyserService.analyse(getCurrentLocale(), 
 					username, 

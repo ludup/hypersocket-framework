@@ -3,14 +3,12 @@ package com.hypersocket.realm;
 import java.util.Collection;
 import java.util.Date;
 
-import com.hypersocket.resource.ResourceCreationException;
-import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.ResourceException;
 
 public interface PrincipalSuspensionService {
 
 	PrincipalSuspension createPrincipalSuspension(Principal principal,
-			Date startDate, Long duration, PrincipalSuspensionType type) throws ResourceNotFoundException,
-			ResourceCreationException;
+			Date startDate, Long duration, PrincipalSuspensionType type) throws ResourceException;
 
 	PrincipalSuspension deletePrincipalSuspension(Principal principal, PrincipalSuspensionType type);
 

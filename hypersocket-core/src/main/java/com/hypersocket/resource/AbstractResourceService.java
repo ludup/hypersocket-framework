@@ -14,19 +14,19 @@ public interface AbstractResourceService<T extends RealmResource> extends Authen
 
 	@SuppressWarnings("unchecked") 
 	void createResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops)
-			throws ResourceCreationException, AccessDeniedException;
+			throws AccessDeniedException, ResourceException;
 
 	@SuppressWarnings("unchecked") 
 	void createResource(T resource, TransactionOperation<T>... ops)
-			throws ResourceCreationException, AccessDeniedException;
+			throws ResourceException, AccessDeniedException;
 	
 	@SuppressWarnings("unchecked") 
 	void updateResource(T resource, Map<String, String> properties, TransactionOperation<T>... ops)
-			throws ResourceChangeException, AccessDeniedException;
+			throws ResourceException, AccessDeniedException;
 
 	@SuppressWarnings("unchecked") 
 	void updateResource(T resource, TransactionOperation<T>... ops)
-			throws ResourceChangeException, AccessDeniedException;
+			throws ResourceException, AccessDeniedException;
 
 	List<T> getResources(Realm realm) throws AccessDeniedException;
 
@@ -72,7 +72,7 @@ public interface AbstractResourceService<T extends RealmResource> extends Authen
 	void extendPropertyTemplates(String string);
 
 	void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops)
-			throws ResourceChangeException, AccessDeniedException;
+			throws ResourceException, AccessDeniedException;
 
 	Collection<T> importResources(String json, Realm realm, boolean dropCurrent)
 			throws AccessDeniedException, ResourceException;
@@ -82,7 +82,7 @@ public interface AbstractResourceService<T extends RealmResource> extends Authen
 	T getResourceByName(String name, 
 			boolean searchAllRealms) throws ResourceNotFoundException;
 
-	T copyResource(T resource) throws ResourceCreationException, AccessDeniedException;
+	T copyResource(T resource) throws ResourceException, AccessDeniedException;
 
 	void deleteResources(List<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) 
 			throws ResourceException, AccessDeniedException;

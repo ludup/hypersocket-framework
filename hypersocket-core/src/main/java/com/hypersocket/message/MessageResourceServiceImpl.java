@@ -45,8 +45,6 @@ import com.hypersocket.realm.ServerResolver;
 import com.hypersocket.realm.UserPrincipal;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
@@ -224,7 +222,7 @@ public class MessageResourceServiceImpl extends
 	@Override
 	public MessageResource updateResource(MessageResource resource,
 			String name, Map<String, String> properties)
-			throws ResourceChangeException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		resource.setName(name);
 		updateResource(resource, properties, new TransactionAdapter<MessageResource>() {
@@ -298,7 +296,7 @@ public class MessageResourceServiceImpl extends
 	}
 	
 	private void createI18nMessage(Integer messageId, String resourceBundle, 
-			String resourceKey, Set<String> variables, Realm realm, boolean enabled, EmailDeliveryStrategy delivery) throws ResourceCreationException,
+			String resourceKey, Set<String> variables, Realm realm, boolean enabled, EmailDeliveryStrategy delivery) throws ResourceException,
 			AccessDeniedException {
 		createResource(messageId, I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".name"),
 				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".subject"), 
@@ -310,7 +308,7 @@ public class MessageResourceServiceImpl extends
 	public MessageResource createResource(Integer messageId, String name, String subject, String body, String html, 
 			Set<String> variables,
 			Boolean enabled, Boolean track, 
-			Collection<FileUpload> attachments, Realm realm, EmailDeliveryStrategy delivery) throws ResourceCreationException,
+			Collection<FileUpload> attachments, Realm realm, EmailDeliveryStrategy delivery) throws ResourceException,
 			AccessDeniedException {
 
 		MessageResource resource = new MessageResource();
@@ -372,7 +370,7 @@ public class MessageResourceServiceImpl extends
 
 	@Override
 	public MessageResource createResource(String name, Realm realm, Map<String, String> properties)
-			throws ResourceCreationException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 		
 		MessageResource resource = new MessageResource();
 		resource.setName(name);

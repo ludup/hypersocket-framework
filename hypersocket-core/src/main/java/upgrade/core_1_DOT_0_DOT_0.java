@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 
 public class core_1_DOT_0_DOT_0 implements Runnable {
 	
@@ -34,7 +34,7 @@ public class core_1_DOT_0_DOT_0 implements Runnable {
 		}
 	}
 
-	private void doCoreSetup() throws ResourceCreationException {
+	private void doCoreSetup() throws ResourceException {
 		
 	
 		for(Realm realm : realmRepository.allRealms()) {

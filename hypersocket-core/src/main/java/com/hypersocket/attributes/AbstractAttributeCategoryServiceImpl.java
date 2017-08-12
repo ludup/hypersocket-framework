@@ -21,6 +21,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionAdapter;
 
 @Service
@@ -83,7 +84,7 @@ public abstract class AbstractAttributeCategoryServiceImpl<A extends AbstractAtt
 
 	@Override
 	public T createAttributeCategory(String name,
-			int weight) throws ResourceCreationException,
+			int weight) throws ResourceException,
 			AccessDeniedException {
 		assertPermission(createPermission);
 
@@ -113,7 +114,7 @@ public abstract class AbstractAttributeCategoryServiceImpl<A extends AbstractAtt
 
 	@Override
 	public T updateAttributeCategory(T category, String name,
-			int weight) throws ResourceChangeException, AccessDeniedException {
+			int weight) throws ResourceException, AccessDeniedException {
 		assertPermission(updatePermission);
 
 		T current = attributeCategoryRepository.getResourceByName(name, getCurrentRealm());
@@ -140,7 +141,7 @@ public abstract class AbstractAttributeCategoryServiceImpl<A extends AbstractAtt
 
 	@Override
 	public void deleteAttributeCategory(T category)
-			throws AccessDeniedException, ResourceChangeException {
+			throws AccessDeniedException, ResourceException {
 
 		assertPermission(deletePermission);
 		

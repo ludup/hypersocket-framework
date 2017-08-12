@@ -42,8 +42,6 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
@@ -323,7 +321,7 @@ public class TriggerResourceServiceImpl extends
 			Long attachment,
 			boolean allRealms,
 			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
-			throws ResourceChangeException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		resource.getConditions().clear();
 
@@ -367,7 +365,7 @@ public class TriggerResourceServiceImpl extends
 			Long attachment,
 			boolean allRealms,
 			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
-			throws ResourceCreationException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		TriggerResource resource = new TriggerResource();
 
@@ -401,7 +399,7 @@ public class TriggerResourceServiceImpl extends
 
 	@Override
 	public void deleteResource(final TriggerResource resource)
-			throws ResourceChangeException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		super.deleteResource(resource,
 				new TransactionAdapter<TriggerResource>() {
@@ -617,7 +615,7 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	protected void performImportDropResources(TriggerResource resource)
-			throws ResourceChangeException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 		deleteResource(resource);
 	}
 

@@ -37,7 +37,7 @@ public interface PermissionService extends AuthenticatedService {
 
 	List<Permission> getPermissions(String...resourceKeys);
 
-	public Role createRole(String name, Realm realm, RoleType type) throws AccessDeniedException, ResourceCreationException;
+	public Role createRole(String name, Realm realm, RoleType type) throws AccessDeniedException, ResourceException;
 
 	public void unassignRole(Role customerRole, Principal principal) throws AccessDeniedException, ResourceException;
 	
@@ -54,7 +54,7 @@ public interface PermissionService extends AuthenticatedService {
 
 	Role getRole(String name, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
 
-	void deleteRole(Role name) throws ResourceChangeException, AccessDeniedException;
+	void deleteRole(Role name) throws ResourceException, AccessDeniedException;
 
 	List<Role> allRoles(Realm realm) throws AccessDeniedException;
 
@@ -62,14 +62,14 @@ public interface PermissionService extends AuthenticatedService {
 
 	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
 			Map<String, String> properties, RoleType type)
-			throws AccessDeniedException, ResourceCreationException;
+			throws AccessDeniedException, ResourceException;
 	
 	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
 			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole, RoleType type)
-			throws AccessDeniedException, ResourceCreationException;
+			throws AccessDeniedException, ResourceException;
 
 	Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions, Map<String,String> properties)
-			throws AccessDeniedException, ResourceChangeException;
+			throws AccessDeniedException, ResourceException;
 
 	public Role getRoleById(Long id, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
 
@@ -111,7 +111,7 @@ public interface PermissionService extends AuthenticatedService {
 
 	Permission registerPermission(PermissionType type, PermissionCategory category);
 
-	void grantPermission(Role everyone, Permission permission) throws AccessDeniedException, ResourceChangeException;
+	void grantPermission(Role everyone, Permission permission) throws AccessDeniedException, ResourceException;
 
 	void revokePermissions(Principal principal, @SuppressWarnings("unchecked") TransactionAdapter<Principal>... ops)
 			throws ResourceException, AccessDeniedException;

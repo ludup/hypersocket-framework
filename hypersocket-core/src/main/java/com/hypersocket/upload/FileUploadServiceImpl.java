@@ -122,7 +122,7 @@ public class FileUploadServiceImpl extends
 
 	@Override
 	public FileUpload createFile(final MultipartFile file, final Realm realm, String type)
-			throws ResourceCreationException, AccessDeniedException,
+			throws ResourceException, AccessDeniedException,
 			IOException {
 
 		return createFile(file, realm, true, type, getDefaultStore());
@@ -131,7 +131,7 @@ public class FileUploadServiceImpl extends
 	@Override
 	public FileUpload createFile(MultipartFile file, Realm realm,
 			boolean persist, String type, FileStore uploadStore)
-			throws ResourceCreationException, AccessDeniedException,
+			throws ResourceException, AccessDeniedException,
 			IOException {
 
 		return createFile(file.getInputStream(), file.getOriginalFilename(),
@@ -141,7 +141,7 @@ public class FileUploadServiceImpl extends
 	@Override
 	public FileUpload createFile(InputStream in, String filename, Realm realm,
 			boolean persist)
-			throws ResourceCreationException, AccessDeniedException,
+			throws ResourceException, AccessDeniedException,
 			IOException {
 		return createFile(in, filename, realm, persist, mimeTypesMap.getContentType(filename), defaultStore);
 	}
@@ -149,7 +149,7 @@ public class FileUploadServiceImpl extends
 	@Override
 	public FileUpload createFile(InputStream in, String filename, Realm realm,
 			boolean persist, String type, FileStore uploadStore)
-			throws ResourceCreationException, AccessDeniedException,
+			throws ResourceException, AccessDeniedException,
 			IOException {
 
 		FileUpload fileUpload = new FileUpload();
@@ -210,7 +210,7 @@ public class FileUploadServiceImpl extends
 
 	@Override
 	public void deleteFile(FileUpload fileUpload)
-			throws ResourceChangeException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		try {
 			File file = new File(System.getProperty("hypersocket.uploadPath", DEFAULT_UPLOAD_PATH)
@@ -318,7 +318,7 @@ public class FileUploadServiceImpl extends
 
 	@Override
 	public FileUpload createFile(File outputFile, String filename,
-			Realm realm, boolean persist, String type) throws ResourceCreationException, AccessDeniedException, IOException {
+			Realm realm, boolean persist, String type) throws ResourceException, AccessDeniedException, IOException {
 		
 		InputStream in = new FileInputStream(outputFile);
 		try {
@@ -393,7 +393,7 @@ public class FileUploadServiceImpl extends
 	}
 	
 	@Override
-	public FileUpload copyFile(String uuid) throws ResourceNotFoundException, ResourceCreationException, AccessDeniedException, IOException {
+	public FileUpload copyFile(String uuid) throws ResourceNotFoundException, ResourceException, AccessDeniedException, IOException {
 		
 		FileUpload u = getFileUpload(uuid);
 		return createFile(getInputStream(u.getName()), 

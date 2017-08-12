@@ -27,8 +27,6 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 
@@ -146,7 +144,7 @@ public class JobResourceServiceImpl extends
 	@Override
 	public JobResource updateResource(JobResource resource,
 			String name, Map<String, String> properties)
-			throws ResourceChangeException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		resource.setName(name);
 
@@ -157,7 +155,7 @@ public class JobResourceServiceImpl extends
 
 	@Override
 	public JobResource createResource(String name, Realm realm,
-			Map<String, String> properties) throws ResourceCreationException,
+			Map<String, String> properties) throws ResourceException,
 			AccessDeniedException {
 
 		JobResource resource = new JobResource();

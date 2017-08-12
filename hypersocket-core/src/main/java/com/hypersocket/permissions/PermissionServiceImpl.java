@@ -225,7 +225,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
-	public Role createRole(String name, Realm realm, RoleType type) throws AccessDeniedException, ResourceCreationException {
+	public Role createRole(String name, Realm realm, RoleType type) throws AccessDeniedException, ResourceException {
 		assertPermission(RolePermission.CREATE);
 		try {
 			getRole(name, realm);
@@ -240,7 +240,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@Override
 	public Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
-			Map<String, String> properties, RoleType type) throws AccessDeniedException, ResourceCreationException {
+			Map<String, String> properties, RoleType type) throws AccessDeniedException, ResourceException {
 		return createRole(name, realm, principals, permissions, properties, false, false, type);
 	}
 
@@ -248,7 +248,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
 			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole, RoleType type)
-			throws AccessDeniedException, ResourceCreationException {
+			throws AccessDeniedException, ResourceException {
 
 		assertPermission(RolePermission.CREATE);
 		try {
@@ -644,7 +644,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
-	public void deleteRole(Role role) throws AccessDeniedException, ResourceChangeException {
+	public void deleteRole(Role role) throws AccessDeniedException, ResourceException {
 		assertPermission(RolePermission.DELETE);
 		try {
 
@@ -698,7 +698,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@Override
 	public void grantPermission(Role role, Permission permission)
-			throws AccessDeniedException, ResourceChangeException {
+			throws AccessDeniedException, ResourceException {
 
 		assertPermission(RolePermission.UPDATE);
 
@@ -718,7 +718,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@SuppressWarnings("unchecked")
 	@Override
 	public Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions,
-			Map<String, String> properties) throws AccessDeniedException, ResourceChangeException {
+			Map<String, String> properties) throws AccessDeniedException, ResourceException {
 
 		assertPermission(RolePermission.UPDATE);
 		if(principals!=null) {
@@ -967,7 +967,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 					assignRole(role, principals);
 
 					return role;
-				} catch (AccessDeniedException | ResourceCreationException e) {
+				} catch (AccessDeniedException | ResourceException e) {
 					throw new IllegalStateException(e.getMessage(), e);
 				}
 			}
@@ -1061,7 +1061,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			try {
 				createRole(principal.getPrincipalName(), principal.getRealm(), Arrays.asList(principal),
 						Collections.<Permission>emptyList(), null, true, true, type);
-			} catch (ResourceCreationException | AccessDeniedException e) {
+			} catch (ResourceException | AccessDeniedException e) {
 				log.error("Failed to create principal role", e);
 			}
 		}
@@ -1074,7 +1074,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				if (role != null) {
 					deleteRole(role);
 				}
-			} catch (ResourceChangeException | AccessDeniedException e) {
+			} catch (ResourceException | AccessDeniedException e) {
 				log.error("Failed to delete principal role", e);
 			}
 		}
@@ -1178,7 +1178,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				for (Role role : resources) {
 					try {
 						deleteRole(role);
-					} catch (ResourceChangeException | AccessDeniedException e) {
+					} catch (ResourceException | AccessDeniedException e) {
 						throw new IllegalStateException(e.getMessage(), e);
 					}
 				}

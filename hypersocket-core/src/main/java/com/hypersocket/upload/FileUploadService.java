@@ -12,29 +12,28 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 
 public interface FileUploadService extends AbstractResourceService<FileUpload> {
 
 	public FileUpload createFile(MultipartFile file, Realm realm, String type)
-			throws ResourceCreationException, AccessDeniedException,
+			throws ResourceException, AccessDeniedException,
 			IOException;
 
 //	public FileUpload getFileByUuid(String uuid) throws ResourceNotFoundException;
 
 	public void deleteFile(FileUpload fileUpload)
-			throws ResourceChangeException, AccessDeniedException;
+			throws ResourceException, AccessDeniedException;
 
 	FileUpload createFile(MultipartFile file, Realm realm, boolean persist,
 			String type,
-			FileStore uploadStore) throws ResourceCreationException,
+			FileStore uploadStore) throws ResourceException,
 			AccessDeniedException, IOException;
 
 	FileUpload createFile(InputStream file, String filename, Realm realm,
 			boolean persist, String type, FileStore uploadStore)
-			throws ResourceCreationException, AccessDeniedException,
+			throws ResourceException, AccessDeniedException,
 			IOException;
 
 	void downloadURIFile(String uuid, HttpServletRequest request,
@@ -47,7 +46,7 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 	public String getContentType(File file);
 
 	FileUpload createFile(File outputFile, String filename, Realm realm, boolean persist, String type)
-			throws ResourceCreationException, AccessDeniedException, IOException;
+			throws ResourceException, AccessDeniedException, IOException;
 
 	FileStore getDefaultStore();
 
@@ -58,7 +57,7 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 	String getFilenameContentType(String filename) throws ResourceNotFoundException, IOException;
 	
 	FileUpload createFile(InputStream in, String filename, Realm realm, boolean persist)
-			throws ResourceCreationException, AccessDeniedException, IOException;
+			throws ResourceException, AccessDeniedException, IOException;
 
 	public InputStream getInputStream(String uuid) throws IOException;
 
@@ -67,5 +66,5 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 	FileUpload getFileUpload(String uuid) throws ResourceNotFoundException;
 
 	FileUpload copyFile(String uuid)
-			throws ResourceNotFoundException, ResourceCreationException, AccessDeniedException, IOException;
+			throws ResourceNotFoundException, ResourceException, AccessDeniedException, IOException;
 }

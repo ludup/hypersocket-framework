@@ -64,19 +64,19 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		entityPropertyStore = new EntityResourcePropertyStore(encryptionService, getResourceClass().getCanonicalName());
 	}
 
-	protected void beforeDelete(T resource) throws ResourceChangeException {
+	protected void beforeDelete(T resource) throws ResourceException {
 				
 	}
 	
-	protected void afterDelete(T resource) throws ResourceChangeException {
+	protected void afterDelete(T resource) throws ResourceException {
 		
 	}
 	
-	protected void beforeSave(T resource, Map<String,String> properties) throws ResourceChangeException {
+	protected void beforeSave(T resource, Map<String,String> properties) throws ResourceException {
 		
 	}
 	
-	protected void afterSave(T resource, Map<String,String> properties) throws ResourceChangeException {
+	protected void afterSave(T resource, Map<String,String> properties) throws ResourceException {
 		
  	}
 		 	

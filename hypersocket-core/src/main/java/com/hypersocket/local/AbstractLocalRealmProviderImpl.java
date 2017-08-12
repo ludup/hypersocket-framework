@@ -42,6 +42,7 @@ import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.events.SessionOpenEvent;
 import com.hypersocket.tables.ColumnSort;
@@ -113,8 +114,8 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 				result.addAll(userRepository.allGroups(realm));
 				break;
 			case SERVICE:
-				break;
 			case SYSTEM:
+			case TEMPLATE:
 				break;
 			}
 		}
@@ -137,12 +138,12 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 				principal = userRepository.getGroupByName(principalName, realm);
 				break;
 			case SERVICE:
-				principal = userRepository.getUserByNameAndType(principalName, realm, PrincipalType.SERVICE);
-				break;
 			case SYSTEM:
+			case TEMPLATE:
 				principal = userRepository.getUserByNameAndType(principalName,
-						realm, PrincipalType.SYSTEM);
+						realm, type);
 				break;
+				
 			}
 			if (principal != null)
 				break;
@@ -199,7 +200,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	public Principal createUser(Realm realm, String username,
 			Map<String, String> properties, List<Principal> principals,
 			String password, boolean forceChange)
-			throws ResourceCreationException {
+			throws ResourceException {
 		
 		try {
 			
@@ -243,7 +244,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 	}
 
-	protected void checkExpiry(LocalUser user) throws ResourceNotFoundException, ResourceCreationException {
+	protected void checkExpiry(LocalUser user) throws ResourceNotFoundException, ResourceException {
 
 		PrincipalSuspension suspension = suspensionService.getSuspension(user, PrincipalSuspensionType.EXPIRY);
 
@@ -260,7 +261,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Transactional
 	public Principal updateUser(Realm realm, Principal principal,
 			String username, Map<String, String> properties,
-			List<Principal> principals) throws ResourceChangeException {
+			List<Principal> principals) throws ResourceException {
 
 		try {
 
@@ -300,7 +301,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	@Transactional
 	public Principal updateUserProperties(Principal principal,
-			Map<String, String> properties) throws ResourceChangeException {
+			Map<String, String> properties) throws ResourceException {
 
 		try {
 
@@ -329,7 +330,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	@Transactional
 	public void changePassword(Principal principal, char[] oldPassword,
-			char[] newPassword) throws ResourceChangeException,
+			char[] newPassword) throws ResourceException,
 			ResourceCreationException {
 		if(!verifyPassword(principal, oldPassword)) {
 			throw new ResourceChangeException(getResourceBundle(), "invalid.password");
@@ -341,7 +342,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	@Transactional
 	public void setPassword(Principal principal, char[] password,
-			boolean forceChangeAtNextLogon, boolean administrative) throws ResourceCreationException {
+			boolean forceChangeAtNextLogon, boolean administrative) throws ResourceException {
 
 		if (!(principal instanceof LocalUser)) {
 			throw new IllegalStateException("Principal is not a LocalUser");
@@ -380,7 +381,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	@Transactional
 	public void setPassword(Principal principal, String password,
-			boolean forceChangeAtNextLogon, boolean administrative) throws ResourceCreationException {
+			boolean forceChangeAtNextLogon, boolean administrative) throws ResourceException {
 		setPassword(principal, password.toCharArray(), forceChangeAtNextLogon, administrative);
 	}
 
@@ -399,8 +400,8 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 				principal = userRepository.getGroupById(id, realm, false);
 				break;
 			case SERVICE:
-				break;
 			case SYSTEM:
+			case TEMPLATE:
 				principal = userRepository.getUserByIdAndType(id, realm,
 						PrincipalType.SYSTEM);
 				break;
@@ -427,6 +428,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 				break;
 			case SERVICE:
 			case SYSTEM:
+			case TEMPLATE:
 				break;
 			}
 			if (principal != null)
@@ -454,7 +456,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	@Transactional
 	public Principal createGroup(Realm realm, String name,
-			Map<String, String> properties, List<Principal> principals, List<Principal> groups) throws ResourceCreationException {
+			Map<String, String> properties, List<Principal> principals, List<Principal> groups) throws ResourceException {
 
 		LocalGroup group = new LocalGroup();
 		group.setName(name);
@@ -489,7 +491,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 	@Override
 	@Transactional
-	public void deleteGroup(Principal group) throws ResourceChangeException {
+	public void deleteGroup(Principal group) throws ResourceException {
 
 		if (!(group instanceof LocalGroup)) {
 			throw new IllegalStateException(
@@ -504,7 +506,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	@Transactional
 	public Principal updateGroup(Realm realm, Principal group, String name,
-			Map<String, String> properties, List<Principal> principals, List<Principal> groups) throws ResourceChangeException {
+			Map<String, String> properties, List<Principal> principals, List<Principal> groups) throws ResourceException {
 		if (!(group instanceof LocalGroup)) {
 			throw new IllegalStateException(
 					"Principal is not of type LocalGroup");
@@ -554,7 +556,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	@Transactional
 	public Principal createGroup(Realm realm, String name, Map<String, String> properties)
-			throws ResourceCreationException {
+			throws ResourceException {
 		return createGroup(realm, name, properties, null, null);
 	}
 
@@ -574,7 +576,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 	@Override
 	@Transactional
-	public void deleteRealm(Realm realm) throws ResourceChangeException {
+	public void deleteRealm(Realm realm) throws ResourceException {
 
 		for (Principal group : userRepository.allGroups(realm)) {
 			deleteGroup(group);
@@ -798,19 +800,19 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 	@Override
 	public Principal disableAccount(Principal principal)
-			throws ResourceChangeException {
+			throws ResourceException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Principal enableAccount(Principal principal)
-			throws ResourceChangeException {
+			throws ResourceException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Principal unlockAccount(Principal principal)
-			throws ResourceChangeException {
+			throws ResourceException {
 		throw new UnsupportedOperationException();
 	}
 

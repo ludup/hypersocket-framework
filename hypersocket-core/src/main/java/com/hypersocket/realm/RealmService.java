@@ -16,9 +16,7 @@ import java.util.Map;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceConfirmationException;
-import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceExportException;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -37,12 +35,12 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	void registerRealmProvider(RealmProvider provider);
 
 	Realm createPrimaryRealm(String name, String module, Map<String, String> properties)
-			throws AccessDeniedException, ResourceCreationException, ResourceConfirmationException;
+			throws AccessDeniedException, ResourceException, ResourceConfirmationException;
 	
 	Realm createRealm(String name, String module, Realm parent, Long owner, Map<String, String> properties)
-			throws AccessDeniedException, ResourceCreationException, ResourceConfirmationException;
+			throws AccessDeniedException, ResourceException, ResourceConfirmationException;
 
-	void deleteRealm(String name) throws ResourceChangeException, ResourceNotFoundException, AccessDeniedException;
+	void deleteRealm(String name) throws ResourceException, ResourceNotFoundException, AccessDeniedException;
 
 	List<Realm> allRealms() throws AccessDeniedException;
 
@@ -54,10 +52,10 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Principal createUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
 						 String password, boolean forceChange, boolean selfCreated, boolean sendNotifications)
-			throws ResourceCreationException, AccessDeniedException;
+			throws ResourceException, AccessDeniedException;
 
 	Principal updateUser(Realm realm, Principal user, String username, Map<String, String> properties,
-						 List<Principal> principals) throws ResourceChangeException, AccessDeniedException;
+						 List<Principal> principals) throws ResourceException, AccessDeniedException;
 
 	Principal getPrincipalByName(Realm realm, String principalName, PrincipalType... type);
 
@@ -73,26 +71,26 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	List<RealmProvider> getProviders() throws AccessDeniedException;
 
-	void deleteRealm(Realm realm) throws AccessDeniedException, ResourceChangeException;
+	void deleteRealm(Realm realm) throws AccessDeniedException, ResourceException;
 
 	Collection<PropertyCategory> getRealmPropertyTemplates(Realm realm) throws AccessDeniedException;
 
 	Realm updateRealm(Realm realm, String name, String module, Map<String, String> properties)
-			throws AccessDeniedException, ResourceChangeException, ResourceConfirmationException;
+			throws AccessDeniedException, ResourceException, ResourceConfirmationException;
 
 	Principal getPrincipalById(Realm realm, Long id, PrincipalType... type) throws AccessDeniedException;
 
 	boolean requiresPasswordChange(Principal principal, Realm realm);
 
 	Principal createGroup(Realm realm, String name, Map<String, String> properties, List<Principal> principals,
-						  List<Principal> groups) throws ResourceCreationException, AccessDeniedException;
+						  List<Principal> groups) throws ResourceException, AccessDeniedException;
 
 	Principal updateGroup(Realm realm, Principal principal, String name, Map<String, String> properties,
 						  List<Principal> principals, List<Principal> groups) throws AccessDeniedException, ResourceException;
 
-	void deleteGroup(Realm realm, Principal group) throws ResourceChangeException, AccessDeniedException;
+	void deleteGroup(Realm realm, Principal group) throws ResourceException, AccessDeniedException;
 
-	void deleteUser(Realm realm, Principal user) throws ResourceChangeException, AccessDeniedException;
+	void deleteUser(Realm realm, Principal user) throws ResourceException, AccessDeniedException;
 
 	Collection<PropertyCategory> getUserPropertyTemplates(Principal principalById) throws AccessDeniedException;
 
@@ -206,7 +204,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	boolean canChangePassword(Principal currentPrincipal);
 
 	Principal updateUserProperties(Principal user, Map<String, String> properties)
-			throws ResourceChangeException, AccessDeniedException;
+			throws ResourceException, AccessDeniedException;
 
 	Realm getRealmByOwner(Long owner) throws AccessDeniedException;
 
@@ -218,7 +216,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Principal createLocalUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
 							  String password, boolean forceChange, boolean selfCreated, boolean sendNotifications)
-			throws ResourceCreationException, AccessDeniedException;
+			throws ResourceException, AccessDeniedException;
 
 	Long getSearchPrincipalsCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern) throws AccessDeniedException;
 

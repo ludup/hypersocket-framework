@@ -18,9 +18,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.hypersocket.resource.Resource;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
-import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.tables.json.BootstrapTableController;
 
 @Controller
@@ -28,25 +26,12 @@ public class ResourceController extends BootstrapTableController<Resource> {
 
 	static Logger log = LoggerFactory.getLogger(ResourceController.class);
 	
-	@ExceptionHandler(ResourceChangeException.class)
+	@ExceptionHandler(ResourceException.class)
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	public void resourceChangeError(HttpServletRequest request,
-			HttpServletResponse response, ResourceChangeException e) {
-		log.error("Resource change error", e);
+			HttpServletResponse response, ResourceException e) {
+		log.error("Resource error", e);
 	}
 
-	@ExceptionHandler(ResourceCreationException.class)
-	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
-	public void resourceChangeError(HttpServletRequest request,
-			HttpServletResponse response, ResourceCreationException e) {
-		log.error("Resource creation error", e);
-	}
-	
-	@ExceptionHandler(ResourceNotFoundException.class)
-	@ResponseStatus(value = HttpStatus.NOT_FOUND)
-	public void resourceChangeError(HttpServletRequest request,
-			HttpServletResponse response, ResourceNotFoundException e) {
-		log.error("Resource not found error", e);
-	}
 	
 }

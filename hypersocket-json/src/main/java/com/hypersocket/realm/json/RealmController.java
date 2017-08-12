@@ -55,7 +55,6 @@ import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.realm.UserVariableReplacementService;
-import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceExportException;
@@ -308,7 +307,7 @@ public class RealmController extends ResourceController {
 			return new ResourceStatus<Realm>(true, I18N.getResource(sessionUtils.getLocale(request),
 					RealmService.RESOURCE_BUNDLE, "info.realm.deleted", previousName));
 
-		} catch (ResourceChangeException e) {
+		} catch (ResourceException e) {
 			return new ResourceStatus<Realm>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();

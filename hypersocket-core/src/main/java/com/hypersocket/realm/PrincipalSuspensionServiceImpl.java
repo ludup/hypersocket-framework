@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.resource.ResourceCreationException;
-import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.session.SessionService;
@@ -32,8 +32,7 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	
 	@Override
 	public PrincipalSuspension createPrincipalSuspension(Principal principal,
-			Date startDate, Long duration, PrincipalSuspensionType type) throws ResourceNotFoundException,
-			ResourceCreationException {
+			Date startDate, Long duration, PrincipalSuspensionType type) throws ResourceException {
 
 		String name = principal.getPrincipalName();
 
@@ -90,7 +89,7 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 		return principalSuspension;
 	}
 
-	private void scheduleResume(Principal principal, Date startDate, long duration) throws ResourceCreationException {
+	private void scheduleResume(Principal principal, Date startDate, long duration) throws ResourceException {
 		
 		Calendar c = Calendar.getInstance();
 		c.setTime(startDate);

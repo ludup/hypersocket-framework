@@ -14,8 +14,7 @@ import com.hypersocket.events.EventDefinition;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
 
@@ -36,7 +35,7 @@ public interface TriggerResourceService extends
 			Long attachment,
 			boolean allRealms,
 			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
-			throws ResourceCreationException, AccessDeniedException;
+			throws ResourceException, AccessDeniedException;
 
 	TriggerResource updateResource(
 			TriggerResource resource,
@@ -52,7 +51,7 @@ public interface TriggerResourceService extends
 			Long attachment,
 			boolean allRealms,
 			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
-			throws ResourceChangeException, AccessDeniedException;
+			throws ResourceException, AccessDeniedException;
 
 	void registerConditionProvider(TriggerConditionProvider condition);
 
@@ -83,7 +82,7 @@ public interface TriggerResourceService extends
 	Collection<String> getTasks() throws AccessDeniedException;
 
 	void deleteResource(TriggerResource resource)
-			throws ResourceChangeException, AccessDeniedException;
+			throws ResourceException, AccessDeniedException;
 
 	void downloadTemplateImage(String uuid, HttpServletRequest request,
 			HttpServletResponse response) throws IOException;

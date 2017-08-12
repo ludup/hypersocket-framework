@@ -157,7 +157,7 @@ public class RoleController extends ResourceController {
 					sessionUtils.getLocale(request),
 					PermissionService.RESOURCE_BUNDLE, "info.role.deleted",
 					role.getName()));
-		} catch (ResourceChangeException e) {
+		} catch (ResourceException e) {
 			return new ResourceStatus<Role>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();

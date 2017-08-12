@@ -26,6 +26,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceException;
 
 @Service
 public class SystemConfigurationServiceImpl extends
@@ -74,7 +75,7 @@ public class SystemConfigurationServiceImpl extends
 
 	@Override
 	public void setValue(String resourceKey, String value)
-			throws AccessDeniedException, ResourceChangeException {
+			throws AccessDeniedException, ResourceException {
 		try {
 			assertPermission(ConfigurationPermission.UPDATE);
 			String oldValue = repository.getValue(resourceKey);
@@ -94,13 +95,13 @@ public class SystemConfigurationServiceImpl extends
 
 	@Override
 	public void setValue(String resourceKey, Integer value)
-			throws AccessDeniedException, ResourceChangeException {
+			throws AccessDeniedException, ResourceException {
 		setValue(resourceKey, String.valueOf(value));
 	}
 
 	@Override
 	public void setValue(String name, Boolean value)
-			throws AccessDeniedException, ResourceChangeException {
+			throws AccessDeniedException, ResourceException {
 		setValue(name, value.toString());
 	}
 
@@ -118,7 +119,7 @@ public class SystemConfigurationServiceImpl extends
 
 	@Override
 	public void setValues(Map<String, String> values)
-			throws AccessDeniedException, ResourceChangeException {
+			throws AccessDeniedException, ResourceException {
 
 		try {
 			assertPermission(ConfigurationPermission.UPDATE);
@@ -172,7 +173,7 @@ public class SystemConfigurationServiceImpl extends
 
 	@Override
 	public void setValues(String resourceKey, String[] array)
-			throws ResourceChangeException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 		setValue(resourceKey, ResourceUtils.implodeValues(array));
 	}
 }

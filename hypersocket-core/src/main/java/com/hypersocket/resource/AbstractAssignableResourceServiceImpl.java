@@ -634,7 +634,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		}
 	}
 	
-	protected void prepareImport(T resource, Realm realm) throws ResourceCreationException, AccessDeniedException {
+	protected void prepareImport(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 		
 	}
 	

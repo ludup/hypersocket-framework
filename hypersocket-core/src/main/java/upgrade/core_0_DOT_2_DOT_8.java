@@ -13,7 +13,7 @@ import com.hypersocket.local.LocalUser;
 import com.hypersocket.local.LocalUserRepository;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.RealmRepository;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 
 public class core_0_DOT_2_DOT_8 implements Runnable {
 	
@@ -35,7 +35,7 @@ public class core_0_DOT_2_DOT_8 implements Runnable {
 		}
 	}
 
-	private void doCoreSetup() throws ResourceCreationException {
+	private void doCoreSetup() throws ResourceException {
 		
 		LocalUser user = userRepository.getUserByName("admin", realmRepository.getDefaultRealm());
 		user.setType(PrincipalType.USER);

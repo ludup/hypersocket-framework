@@ -62,7 +62,7 @@ import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.resource.AbstractResource;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.upload.FileUploadService;
 
 @Service
@@ -364,7 +364,7 @@ public class MigrationExecutor {
     }
     
     public MigrationExecutorTracker startRealmImport(InputStream inputStream, boolean mergeData) throws AccessDeniedException,
-            ResourceCreationException, MigrationProcessRealmAlreadyExistsThrowable {
+    		ResourceException, MigrationProcessRealmAlreadyExistsThrowable {
         JsonParser jsonParser = null;
         MigrationExecutorTracker migrationExecutorTracker = new MigrationExecutorTracker();
         try {

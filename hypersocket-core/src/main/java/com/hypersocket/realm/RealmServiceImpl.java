@@ -509,7 +509,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Principal createLocalUser(Realm realm, String username, Map<String,String> properties,
 			List<Principal> principals, String password, boolean forceChange, boolean selfCreated, boolean sendNotifications)
-					throws ResourceCreationException, AccessDeniedException {
+					throws ResourceException, AccessDeniedException {
 		
 		RealmProvider provider = getLocalProvider();
 		
@@ -523,7 +523,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Principal createUser(Realm realm, String username, Map<String, String> properties,
 			List<Principal> principals, String password, boolean forceChange, boolean selfCreated, boolean sendNotifications)
-					throws ResourceCreationException, AccessDeniedException {
+					throws ResourceException, AccessDeniedException {
 		return createUser(realm, 
 				username, properties, 
 				principals, password, 
@@ -542,7 +542,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			Principal parent, 
 			RealmProvider provider,
 			boolean sendNotifications)
-					throws ResourceCreationException, AccessDeniedException {
+					throws ResourceException, AccessDeniedException {
 
 		try {
 
@@ -617,7 +617,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Principal updateUserProperties(Principal user, 
-			Map<String, String> properties) throws ResourceChangeException, AccessDeniedException {
+			Map<String, String> properties) throws ResourceException, AccessDeniedException {
 
 		final RealmProvider provider = getProviderForPrincipal(user);
 
@@ -657,7 +657,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	
 	@Override
 	public Principal updateUser(Realm realm, Principal user, String username, Map<String, String> properties,
-			List<Principal> principals) throws ResourceChangeException, AccessDeniedException {
+			List<Principal> principals) throws ResourceException, AccessDeniedException {
 
 		final RealmProvider provider = getProviderForPrincipal(user);
 
@@ -754,7 +754,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public void deleteRealm(String name)
-			throws ResourceChangeException, ResourceNotFoundException, AccessDeniedException {
+			throws ResourceException, ResourceNotFoundException, AccessDeniedException {
 
 		assertPermission(RealmPermission.DELETE);
 
@@ -952,13 +952,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Realm createPrimaryRealm(String name, String module, Map<String, String> properties)
-			throws AccessDeniedException, ResourceCreationException, ResourceConfirmationException {
+			throws AccessDeniedException, ResourceException, ResourceConfirmationException {
 		return createRealm(name, module, null, null, properties);
 	}
 	
 	@Override
 	public Realm createRealm(String name, String module, Realm parent, Long owner, Map<String, String> properties)
-			throws AccessDeniedException, ResourceCreationException, ResourceConfirmationException {
+			throws AccessDeniedException, ResourceException, ResourceConfirmationException {
 
 		try {
 			assertPermission(RealmPermission.CREATE);
@@ -1102,7 +1102,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@SuppressWarnings("unchecked")
 	@Override
 	public Realm updateRealm(Realm realm, String name, String type, Map<String, String> properties)
-			throws AccessDeniedException, ResourceChangeException, ResourceConfirmationException {
+			throws AccessDeniedException, ResourceException, ResourceConfirmationException {
 
 		try {
 
@@ -1169,7 +1169,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return realm;
 	}
 
-	private void fireRealmUpdate(Realm realm) throws ResourceChangeException {
+	private void fireRealmUpdate(Realm realm) throws ResourceException {
 
 		for (RealmListener l : realmListeners) {
 			try {
@@ -1182,7 +1182,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 	}
 
-	private void fireRealmCreate(Realm realm) throws ResourceCreationException {
+	private void fireRealmCreate(Realm realm) throws ResourceException {
 
 		Collections.<RealmListener>sort(realmListeners, new Comparator<RealmListener>() {
 
@@ -1203,7 +1203,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 	}
 
-	private void fireRealmDelete(Realm realm) throws ResourceChangeException {
+	private void fireRealmDelete(Realm realm) throws ResourceException {
 
 		for (RealmListener l : realmListeners) {
 			try {
@@ -1217,7 +1217,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void deleteRealm(Realm realm) throws AccessDeniedException, ResourceChangeException {
+	public void deleteRealm(Realm realm) throws AccessDeniedException, ResourceException {
 
 		try {
 
@@ -1362,7 +1362,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Principal createGroup(Realm realm, String name, Map<String, String> properties, 
 			final List<Principal> principals,
-			final List<Principal> groups) throws ResourceCreationException, AccessDeniedException {
+			final List<Principal> groups) throws ResourceException, AccessDeniedException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -1486,7 +1486,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void deleteGroup(Realm realm, Principal group) throws ResourceChangeException, AccessDeniedException {
+	public void deleteGroup(Realm realm, Principal group) throws ResourceException, AccessDeniedException {
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -1520,7 +1520,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void deleteUser(Realm realm, Principal user) throws ResourceChangeException, AccessDeniedException {
+	public void deleteUser(Realm realm, Principal user) throws ResourceException, AccessDeniedException {
 
 		final RealmProvider provider = getProviderForPrincipal(user);
 
@@ -2253,7 +2253,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				for (Realm realm : resources) {
 					try {
 						deleteRealm(realm);
-					} catch (ResourceChangeException | AccessDeniedException e) {
+					} catch (ResourceException | AccessDeniedException e) {
 						throw new IllegalStateException(e.getMessage(), e);
 					}
 				}
@@ -2296,7 +2296,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				for (Principal user : users) {
 					try {
 						deleteUser(realm, user);
-					} catch (ResourceChangeException | AccessDeniedException e) {
+					} catch (ResourceException | AccessDeniedException e) {
 						throw new IllegalStateException(e.getMessage(), e);
 					}
 				}
@@ -2319,7 +2319,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				for (Principal group : groups) {
 					try {
 						deleteGroup(realm, group);
-					} catch (ResourceChangeException | AccessDeniedException e) {
+					} catch (ResourceException | AccessDeniedException e) {
 						throw new IllegalStateException(e.getMessage(), e);
 					}
 				}

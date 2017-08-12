@@ -801,7 +801,7 @@ public class CurrentRealmController extends ResourceController {
 							RealmService.RESOURCE_BUNDLE, "info.group.deleted",
 							oldName));
 
-		} catch (ResourceChangeException e) {
+		} catch (ResourceException e) {
 			return new ResourceStatus<Principal>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
@@ -830,7 +830,7 @@ public class CurrentRealmController extends ResourceController {
 					sessionUtils.getLocale(request),
 					RealmService.RESOURCE_BUNDLE, "info.user.deleted", oldName));
 
-		} catch (ResourceChangeException e) {
+		} catch (ResourceException e) {
 			return new ResourceStatus<Principal>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();

@@ -32,6 +32,7 @@ import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceException;
 
 @Service
 public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
@@ -123,13 +124,13 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public void setValue(String resourceKey, String value)
-			throws AccessDeniedException, ResourceChangeException {
+			throws AccessDeniedException, ResourceException {
 		setValue(getCurrentRealm(), resourceKey, value);
 	}
 	
 	@Override
 	public void setValue(Realm realm, String resourceKey, String value)
-			throws AccessDeniedException, ResourceChangeException {
+			throws AccessDeniedException, ResourceException {
 		try {
 			assertPermission(ConfigurationPermission.UPDATE);
 			String oldValue = repository.getValue(realm, resourceKey);
@@ -147,13 +148,13 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public void setValue(String resourceKey, Integer value)
-			throws AccessDeniedException, ResourceChangeException {
+			throws AccessDeniedException, ResourceException {
 		setValue(resourceKey, String.valueOf(value));
 	}
 
 	@Override
 	public void setValue(String name, Boolean value)
-			throws AccessDeniedException, ResourceChangeException {
+			throws AccessDeniedException, ResourceException {
 		setValue(name, String.valueOf(value));
 	}
 	
@@ -172,7 +173,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public void setValues(Map<String, String> values)
-			throws AccessDeniedException, ResourceChangeException {
+			throws AccessDeniedException, ResourceException {
 
 		try {
 			assertPermission(ConfigurationPermission.UPDATE);
@@ -232,7 +233,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	}
 	
 	@Override
-	public void setValues(String resourceKey, String[] array) throws ResourceChangeException, AccessDeniedException {
+	public void setValues(String resourceKey, String[] array) throws ResourceException, AccessDeniedException {
 		setValue(resourceKey, ResourceUtils.implodeValues(array));
 	}
 	
@@ -257,7 +258,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void setValues(Realm realm, String resourceKey, String[] values) throws ResourceChangeException, AccessDeniedException {
+	public void setValues(Realm realm, String resourceKey, String[] values) throws ResourceException, AccessDeniedException {
 		setValue(realm, resourceKey, ResourceUtils.implodeValues(values));
 	}
 

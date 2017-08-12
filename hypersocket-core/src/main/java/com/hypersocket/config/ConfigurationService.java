@@ -15,14 +15,14 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.PropertyTemplateService;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceException;
 
 
 public interface ConfigurationService extends AuthenticatedService, PropertyTemplateService {
 
 	public static final String RESOURCE_BUNDLE = "ConfigurationService";
 
-	void setValues(Map<String, String> values) throws AccessDeniedException, ResourceChangeException;
+	void setValues(Map<String, String> values) throws AccessDeniedException, ResourceException;
 
 	String getValue(Realm realm, String resourceKey);
 
@@ -33,7 +33,7 @@ public interface ConfigurationService extends AuthenticatedService, PropertyTemp
 	String[] getValues(Realm realm, String string);
 
 	void setValue(Realm realm, String resourceKey, String value)
-			throws AccessDeniedException, ResourceChangeException;
+			throws AccessDeniedException, ResourceException;
 
 	Double getDoubleValue(Realm realm, String name);
 
@@ -45,7 +45,7 @@ public interface ConfigurationService extends AuthenticatedService, PropertyTemp
 
 	String getDecryptedValue(Realm realm, String resourceKey);
 
-	void setValues(Realm realm, String string, String[] editable) throws ResourceChangeException, AccessDeniedException;
+	void setValues(Realm realm, String string, String[] editable) throws ResourceException, AccessDeniedException;
 
 	PropertyTemplate getPropertyTemplate(Realm realm, String string);
 

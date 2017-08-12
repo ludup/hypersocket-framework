@@ -63,6 +63,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 
 @Service
@@ -198,7 +199,7 @@ public class CertificateResourceServiceImpl extends
 	@Override
 	public CertificateResource updateResource(CertificateResource resource,
 			String name, Map<String, String> properties)
-			throws ResourceChangeException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		resource.setName(name);
 
@@ -241,7 +242,7 @@ public class CertificateResourceServiceImpl extends
 	@Override
 	public CertificateResource createResource(String name, Realm realm,
 			Map<String, String> properties, boolean system)
-			throws ResourceCreationException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		CertificateResource resource = new CertificateResource();
 		resource.setName(name);
@@ -305,7 +306,7 @@ public class CertificateResourceServiceImpl extends
 	public CertificateResource createResource(String name, Realm realm,
 			CertificateType type, String cn, String ou, String o, String l,
 			String s, String c, boolean system)
-			throws ResourceCreationException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		Map<String, String> properties = new HashMap<String, String>();
 
@@ -351,7 +352,7 @@ public class CertificateResourceServiceImpl extends
 	}
 
 	@Override
-	public KeyStore getDefaultCertificate() throws ResourceCreationException,
+	public KeyStore getDefaultCertificate() throws ResourceException,
 			AccessDeniedException {
 
 		CertificateResource resource;
@@ -432,7 +433,7 @@ public class CertificateResourceServiceImpl extends
 	@Override
 	public void updateCertificate(CertificateResource resource,
 			MultipartFile file, MultipartFile bundle)
-			throws ResourceChangeException {
+			throws ResourceException {
 		try {
 			updateCertificate(resource, file.getInputStream(), bundle==null ? null : bundle.getInputStream());
 		} catch (IOException e) {
@@ -444,7 +445,7 @@ public class CertificateResourceServiceImpl extends
 	@Override
 	public void updateCertificate(CertificateResource resource,
 			InputStream file, InputStream bundle)
-			throws ResourceChangeException {
+			throws ResourceException {
 
 		try {
 			X509Certificate cert = X509CertificateUtils
@@ -493,7 +494,7 @@ public class CertificateResourceServiceImpl extends
 	@Override
 	public CertificateResource importPrivateKey(InputStream key,
 			String passphrase, InputStream file, InputStream bundle)
-			throws ResourceCreationException, InvalidPassphraseException {
+			throws ResourceException, InvalidPassphraseException {
 
 		CertificateResource resource = new CertificateResource();
 
@@ -515,7 +516,7 @@ public class CertificateResourceServiceImpl extends
 	@Override
 	public CertificateResource importPrivateKey(MultipartFile key,
 			String passphrase, MultipartFile file, MultipartFile bundle)
-			throws ResourceCreationException, InvalidPassphraseException {
+			throws ResourceException, InvalidPassphraseException {
 
 		CertificateResource resource = new CertificateResource();
 
@@ -537,7 +538,7 @@ public class CertificateResourceServiceImpl extends
 	@Override
 	public CertificateResource replacePrivateKey(CertificateResource resource,
 			MultipartFile key, String passphrase, MultipartFile file,
-			MultipartFile bundle) throws ResourceChangeException,
+			MultipartFile bundle) throws ResourceException,
 			InvalidPassphraseException, IOException {
 		return replacePrivateKey(resource, key.getInputStream(), passphrase, 
 				file.getInputStream(), bundle.getInputStream());
@@ -546,7 +547,7 @@ public class CertificateResourceServiceImpl extends
 	@Override
 	public CertificateResource replacePrivateKey(CertificateResource resource,
 			InputStream key, String passphrase, InputStream file,
-			InputStream bundle) throws ResourceChangeException,
+			InputStream bundle) throws ResourceException,
 			InvalidPassphraseException {
 
 		try {
@@ -638,7 +639,7 @@ public class CertificateResourceServiceImpl extends
 
 	@Override
 	public CertificateResource importPfx(MultipartFile pfx, String passphrase)
-			throws ResourceCreationException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		CertificateResource resource = new CertificateResource();
 
@@ -660,15 +661,13 @@ public class CertificateResourceServiceImpl extends
 
 	@Override
 	public CertificateResource replacePfx(CertificateResource resource,
-			MultipartFile pfx, String passphrase) throws AccessDeniedException,
-			ResourceChangeException, IOException {
+			MultipartFile pfx, String passphrase) throws AccessDeniedException, ResourceException, IOException {
 		return replacePfx(resource, pfx.getInputStream(), passphrase);
 	}
 	
 	@Override
 	public CertificateResource replacePfx(CertificateResource resource,
-			InputStream pfx, String passphrase) throws AccessDeniedException,
-			ResourceChangeException {
+			InputStream pfx, String passphrase) throws AccessDeniedException, ResourceException {
 
 		try {
 			internalDoPfx(resource, pfx, passphrase);
@@ -786,13 +785,13 @@ public class CertificateResourceServiceImpl extends
 	}
 
 	@Override
-	public KeyStore getResourceKeystore(CertificateResource resource) throws ResourceCreationException {
+	public KeyStore getResourceKeystore(CertificateResource resource) throws ResourceException {
 		return getResourceKeystore(resource, "hypersocket", "changeit");
 	}
 	
 	@Override
 	public KeyStore getResourceKeystore(CertificateResource resource,
-			String alias, String password) throws ResourceCreationException {
+			String alias, String password) throws ResourceException {
 
 		try {
 			ByteArrayInputStream keyStream = new ByteArrayInputStream(resource

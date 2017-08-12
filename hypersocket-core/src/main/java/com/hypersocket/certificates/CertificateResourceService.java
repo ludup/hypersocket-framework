@@ -14,8 +14,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
-import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 
 public interface CertificateResourceService extends
 		AbstractResourceService<CertificateResource> {
@@ -24,11 +23,11 @@ public interface CertificateResourceService extends
 	
 	CertificateResource updateResource(CertificateResource resourceById,
 			String name, Map<String, String> properties)
-			throws ResourceChangeException, AccessDeniedException;
+			throws ResourceException, AccessDeniedException;
 
 	CertificateResource createResource(String name, Realm realm,
 			Map<String, String> properties, boolean system)
-			throws ResourceCreationException, AccessDeniedException;
+			throws ResourceException, AccessDeniedException;
 
 	Collection<PropertyCategory> getPropertyTemplate()
 			throws AccessDeniedException;
@@ -36,48 +35,48 @@ public interface CertificateResourceService extends
 	Collection<PropertyCategory> getPropertyTemplate(
 			CertificateResource resource) throws AccessDeniedException;
 
-	KeyStore getDefaultCertificate() throws ResourceCreationException,
+	KeyStore getDefaultCertificate() throws ResourceException,
 			AccessDeniedException;
 
 	String generateCSR(CertificateResource resourceById)
 			throws UnsupportedEncodingException, Exception;
 
 	void updateCertificate(CertificateResource resource, MultipartFile file,
-			MultipartFile bundle) throws ResourceChangeException;
+			MultipartFile bundle) throws ResourceException;
 
 	CertificateResource importPrivateKey(MultipartFile key, String passphrase,
 			MultipartFile file, MultipartFile bundle)
-			throws ResourceCreationException, InvalidPassphraseException;
+			throws ResourceException, InvalidPassphraseException;
 	
 	CertificateResource importPrivateKey(InputStream key, String passphrase,
 			InputStream file, InputStream bundle)
-			throws ResourceCreationException, InvalidPassphraseException;
+			throws ResourceException, InvalidPassphraseException;
 
-	CertificateResource importPfx(MultipartFile key, String passphrase) throws ResourceCreationException, AccessDeniedException;
+	CertificateResource importPfx(MultipartFile key, String passphrase) throws ResourceException, AccessDeniedException;
 
 	CertificateResource createResource(String name, Realm realm,
 			CertificateType type, String cn, String ou, String o, String l,
 			String s, String c, boolean system)
-			throws ResourceCreationException, AccessDeniedException;
+			throws ResourceException, AccessDeniedException;
 
 	KeyStore getResourceKeystore(CertificateResource resourceByName,
-			String string, String string2) throws ResourceCreationException;
+			String string, String string2) throws ResourceException;
 
 	CertificateResource replacePfx(CertificateResource resource, MultipartFile key,
-			String passphrase) throws AccessDeniedException, ResourceChangeException, IOException;
+			String passphrase) throws AccessDeniedException, ResourceException, IOException;
 
 	CertificateResource replacePrivateKey(CertificateResource resourceById, MultipartFile key,
-			String passphrase, MultipartFile file, MultipartFile bundle) throws InvalidPassphraseException, ResourceChangeException, IOException;
+			String passphrase, MultipartFile file, MultipartFile bundle) throws InvalidPassphraseException, ResourceException, IOException;
 
-	KeyStore getResourceKeystore(CertificateResource resource) throws ResourceCreationException;
+	KeyStore getResourceKeystore(CertificateResource resource) throws ResourceException;
 
 	void updateCertificate(CertificateResource resource, InputStream file, InputStream bundle)
-			throws ResourceChangeException;
+			throws ResourceException;
 
 	CertificateResource replacePfx(CertificateResource resource, InputStream pfx, String passphrase)
-			throws AccessDeniedException, ResourceChangeException;
+			throws AccessDeniedException, ResourceException;
 
 	CertificateResource replacePrivateKey(CertificateResource resource, InputStream key, String passphrase,
-			InputStream file, InputStream bundle) throws ResourceChangeException, InvalidPassphraseException;
+			InputStream file, InputStream bundle) throws ResourceException, InvalidPassphraseException;
 
 }

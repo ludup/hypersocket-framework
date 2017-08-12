@@ -12,13 +12,13 @@ import java.util.Map;
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyTemplateService;
-import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceException;
 
 
 public interface SystemConfigurationService extends AuthenticatedService, PropertyTemplateService {
 
 	public static final String RESOURCE_BUNDLE = "ConfigurationService";
 
-	void setValues(Map<String, String> values) throws AccessDeniedException, ResourceChangeException;
+	void setValues(Map<String, String> values) throws AccessDeniedException, ResourceException;
 
 }

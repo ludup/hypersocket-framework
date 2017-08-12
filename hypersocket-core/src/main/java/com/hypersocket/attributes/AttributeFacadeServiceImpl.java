@@ -14,7 +14,6 @@ import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.NameValuePair;
-import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 
@@ -55,7 +54,7 @@ public class AttributeFacadeServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public AttributeCategory<?> createAttributeCategory(String name,
-			String context, int weight) throws ResourceCreationException,
+			String context, int weight) throws ResourceException,
 			AccessDeniedException {
 		return categoryService.createAttributeCategory(name, weight);
 	}

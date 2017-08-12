@@ -20,7 +20,6 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceCreatedEvent;
 import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceDeletedEvent;
@@ -154,7 +153,7 @@ public class HTTPInterfaceResourceServiceImpl extends
 	@Override
 	public HTTPInterfaceResource updateResource(HTTPInterfaceResource resource,
 			String name, Map<String, String> properties)
-			throws ResourceChangeException, AccessDeniedException {
+			throws ResourceException, AccessDeniedException {
 
 		resource.setName(name);
 
@@ -180,7 +179,7 @@ public class HTTPInterfaceResourceServiceImpl extends
 
 	@Override
 	public HTTPInterfaceResource createResource(String name, Realm realm,
-			Map<String, String> properties) throws ResourceCreationException,
+			Map<String, String> properties) throws ResourceException,
 			AccessDeniedException {
 
 		HTTPInterfaceResource resource = new HTTPInterfaceResource();

@@ -26,7 +26,7 @@ import com.hypersocket.inbox.InboxProcessor;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.ResourceCreationException;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -137,7 +137,7 @@ public class CollectMailTask extends AbstractTaskProvider {
 								} finally {
 									IOUtils.closeQuietly(inputStream);
 								}
-							} catch (ResourceCreationException e) {
+							} catch (ResourceException e) {
 								log.error(String.format("Failed to attach %s", attachment.getFilename()), e);
 								results.add(new CollectMailTaskResult(this, e, currentRealm, task));
 							} catch (AccessDeniedException e) {

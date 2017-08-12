@@ -139,7 +139,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	@Override
 	@SafeVarargs
-	public final void createResource(T resource, TransactionOperation<T>... ops) throws ResourceCreationException,
+	public final void createResource(T resource, TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
 		createResource(resource, new HashMap<String,String>(), ops);
 	}
@@ -160,7 +160,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	@Override
 	@SafeVarargs
-	public final void createResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceCreationException,
+	public final void createResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
 
 		if(assertPermissions) {
@@ -190,9 +190,18 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			fireResourceCreationEvent(resource);
 		} catch (Throwable t) {
 			log.error("Failed to create resource", t);
+			/**
+			 * LDP - we don't want to fire an event for a confirmation
+			 */
+			if(t instanceof ResourceConfirmationException) {
+				throw (ResourceConfirmationException) t;
+			}
 			fireResourceCreationEvent(resource, t);
-			if (t instanceof ResourceCreationException) {
-				throw (ResourceCreationException) t;
+			/**
+			 * LDP - Rethrow any type of ResourceException
+			 */
+			if (t instanceof ResourceException) {
+				throw (ResourceException) t;
 			} else {
 				throw new ResourceCreationException(RESOURCE_BUNDLE_DEFAULT,
 						"generic.create.error", t.getMessage(),t );
@@ -232,7 +241,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	@Override
 	@SafeVarargs
-	public final void updateResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceChangeException,
+	public final void updateResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
 
 		boolean changedDefault = false;
@@ -314,7 +323,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	@Override
 	@SafeVarargs
-	public final void updateResource(T resource, TransactionOperation<T>... ops) throws ResourceChangeException,
+	public final void updateResource(T resource, TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
 		updateResource(resource, new HashMap<String,String>(), ops);
 	}
@@ -325,7 +334,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	@SafeVarargs
 	@Override
-	public final void deleteResource(T resource, TransactionOperation<T>... ops) throws ResourceChangeException,
+	public final void deleteResource(T resource, TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
 
 		if(assertPermissions) {
@@ -504,7 +513,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		}
 	}
 
-	protected void prepareImport(T resource, Realm realm) throws ResourceCreationException, AccessDeniedException {
+	protected void prepareImport(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 
 	}
 
@@ -572,7 +581,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		return fingerprint;
 	}
 
-	protected void performImportDropResources(T resource) throws ResourceChangeException, AccessDeniedException {
+	protected void performImportDropResources(T resource) throws ResourceException, AccessDeniedException {
 		deleteResource(resource);
 	}
 
@@ -599,12 +608,12 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		fingerprint = new BigInteger(130, random).toString(32);
 	}
 
-	protected void prepareCopy(T resource) throws ResourceCreationException {
+	protected void prepareCopy(T resource) throws ResourceException {
 
 	}
 
 	@Override
-	public T copyResource(T resource) throws ResourceCreationException, AccessDeniedException {
+	public T copyResource(T resource) throws ResourceException, AccessDeniedException {
 
 		resource.setId(null);
 		String name = resource.getName();

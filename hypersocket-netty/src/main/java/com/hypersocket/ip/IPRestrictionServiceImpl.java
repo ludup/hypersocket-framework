@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceException;
 
 @Service
 public class IPRestrictionServiceImpl implements IPRestrictionService, ApplicationListener<ApplicationEvent> {
@@ -71,7 +71,7 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 			String[] oldValues = configurationService.getValues("server.blockIPs");
 			try {
 				configurationService.setValues("server.blockIPs", ArrayUtils.add(oldValues, addr));
-			} catch (ResourceChangeException | AccessDeniedException e) {
+			} catch (ResourceException | AccessDeniedException e) {
 				throw new IllegalStateException("Failed to permanently block " + addr);
 			}
 		} else {
