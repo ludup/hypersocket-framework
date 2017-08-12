@@ -120,10 +120,20 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 			}
 			return;
 		}
+
+		String scheduleId = resource.getId().toString();
 		
 		if(start==null && end==null) {
 			if(repeatType==AutomationRepeatType.NEVER) {
-				log.info("Not scheudling " + resource.getName() + " because it is a non-repeating job with no start or end date/time.");
+				log.info("Not scheduling " + resource.getName() + " because it is a non-repeating job with no start or end date/time.");
+				try {
+					if (schedulerService.jobExists(scheduleId)) {
+						schedulerService.cancelNow(scheduleId);
+					}
+				}
+				catch(Exception e) {
+					log.error("Failed to cancel existing job.", e);
+				}
 				return;
 			}
 		}
@@ -132,8 +142,6 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 		data.put("resourceId", resource.getId());
 
 		try {
-
-			String scheduleId = resource.getId().toString();
 
 			if (schedulerService.jobExists(scheduleId)) {
 
