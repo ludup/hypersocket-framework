@@ -1881,13 +1881,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			return getPrincipalByName(realm, username, PrincipalType.USER);
 		}
 		
-		Collection<Principal> found = principalRepository.getPrincpalsByName(username);
+		Collection<Principal> found = principalRepository.getPrincpalsByName(username, type);
 		return selectPrincipal(found, username);
 	}
 	
 	@Override
 	public Principal getUniquePrincipalForRealm(String username, Realm realm, PrincipalType... type) throws ResourceNotFoundException {	
-		Collection<Principal> found = principalRepository.getPrincpalsByName(username, realm);
+		Collection<Principal> found = principalRepository.getPrincpalsByName(username, realm, type);
 		return selectPrincipal(found, username);
 	}
 

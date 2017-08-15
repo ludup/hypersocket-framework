@@ -15,9 +15,9 @@ public interface PrincipalRepository extends AbstractResourceRepository<Principa
 	
 	long getResourceCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern);
 
-	Collection<Principal> getPrincpalsByName(String username);
+	Collection<Principal> getPrincpalsByName(String username, PrincipalType... types);
 
-	Collection<Principal> getPrincpalsByName(String username, Realm realm);
+	Collection<Principal> getPrincpalsByName(String username, Realm realm, PrincipalType... types);
 
 	Collection<Principal> allPrincipals();
 
