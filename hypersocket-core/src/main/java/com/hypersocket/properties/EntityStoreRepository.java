@@ -5,7 +5,7 @@ import com.hypersocket.resource.FindableResourceRepository;
 
 public interface EntityStoreRepository<T extends AbstractResource> extends FindableResourceRepository<T> {
 
-	T createEntity();
+	T createEntity(Object resource);
 	
 	Class<?> getEntityClass();
 	

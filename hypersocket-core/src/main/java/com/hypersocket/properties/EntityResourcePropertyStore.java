@@ -108,10 +108,10 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 				try {
 					m.invoke(resource, result = attributeRepository.getResourceById(resource.getId()));
 					if(result==null) {
-						m.invoke(resource, result = attributeRepository.createEntity());
+						m.invoke(resource, result = attributeRepository.createEntity(resource));
 					}
 				} catch (ResourceNotFoundException e) {
-					m.invoke(resource, result = attributeRepository.createEntity());
+					m.invoke(resource, result = attributeRepository.createEntity(resource));
 				}
 			}
 			if(result==null) {
