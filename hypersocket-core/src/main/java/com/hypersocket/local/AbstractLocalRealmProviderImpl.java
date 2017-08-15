@@ -320,7 +320,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 			return user;
 		} catch (Exception e) {
-			throw new ResourceChangeException(getResourceBundle(),
+			throw new ResourceChangeException(e, getResourceBundle(),
 					"error.updateFailed", principal.getPrincipalName(),
 					e.getMessage());
 		}

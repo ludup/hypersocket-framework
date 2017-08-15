@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.HiddenCriteria;
+import com.hypersocket.repository.PrincipalTypesCriteria;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.RealmCriteria;
 import com.hypersocket.tables.ColumnSort;
@@ -39,8 +40,8 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 
 	@Override
 	@Transactional(readOnly=true)
-	public Collection<Principal> getPrincpalsByName(final String username) {
-		return list(Principal.class, new DeletedCriteria(false), new CriteriaConfiguration() {
+	public Collection<Principal> getPrincpalsByName(final String username, final PrincipalType... types) {
+		return list(Principal.class, new DeletedCriteria(false), new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
 			
 			@Override
 			public void configure(Criteria criteria) {
@@ -52,8 +53,8 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	
 	@Override
 	@Transactional(readOnly=true)
-	public Collection<Principal> getPrincpalsByName(final String username, Realm realm) {
-		return list(Principal.class, new RealmCriteria(realm), new DeletedCriteria(false), new CriteriaConfiguration() {
+	public Collection<Principal> getPrincpalsByName(final String username, Realm realm, final PrincipalType... types) {
+		return list(Principal.class, new RealmCriteria(realm), new DeletedCriteria(false), new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
 			
 			@Override
 			public void configure(Criteria criteria) {
