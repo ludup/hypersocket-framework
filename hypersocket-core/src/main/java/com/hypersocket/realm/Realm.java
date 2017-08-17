@@ -38,7 +38,7 @@ public class Realm extends Resource {
 	@OneToOne(optional=true)
 	Realm parent;
 	
-	@Column(name="public")
+	@Column(name="public_realm")
 	Boolean publicRealm;
 	
 	public boolean isDefaultRealm() {

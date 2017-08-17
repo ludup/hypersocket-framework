@@ -279,7 +279,7 @@ public class AuthenticationState {
 	}
 	
 	public boolean isHTTP() {
-		return environment.containsKey(BrowserEnvironment.HOST);
+		return environment.containsKey(BrowserEnvironment.HOST.toString());
 	}
 
 	public Principal getLastPrincipal() {
