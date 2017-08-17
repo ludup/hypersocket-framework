@@ -20,6 +20,7 @@ public class FormTemplate {
 	protected List<InputField> fields = new ArrayList<InputField>();
 	protected boolean showLogonButton = true;
 	protected boolean showStartAgain = true;
+	protected boolean overrideStartAgain = false;
 	protected String logonButtonResourceKey = null;
 	protected String logonButtonIcon = null;
 	protected String formClass = null;
@@ -86,6 +87,14 @@ public class FormTemplate {
 
 	public void setShowStartAgain(boolean showStartAgain) {
 		this.showStartAgain = showStartAgain;
+	}
+
+	public void setOverrideStartAgain(boolean overrideStartAgain) {
+		this.overrideStartAgain = overrideStartAgain;
+	}
+	
+	public boolean isOverrideStartAgain() {
+		return overrideStartAgain;
 	}
 
 }
