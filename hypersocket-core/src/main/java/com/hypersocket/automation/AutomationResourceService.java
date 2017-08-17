@@ -11,6 +11,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.triggers.TriggerCondition;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.TriggerResultType;
@@ -47,5 +48,10 @@ public interface AutomationResourceService extends
 					throws ResourceException, AccessDeniedException;
 
 	void runNow(AutomationResource resource) throws SchedulerException;
+
+	List<?> getCsvAutomations(Realm currentRealm, String searchColumn, String searchPattern, int start, int length,
+			ColumnSort[] sorting);
+
+	Long getCsvAutomationsCount(Realm currentRealm, String searchColumn, String searchPattern);
 
 }

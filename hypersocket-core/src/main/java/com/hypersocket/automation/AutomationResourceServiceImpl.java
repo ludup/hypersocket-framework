@@ -41,6 +41,7 @@ import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.session.SessionService;
+import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.TriggerCondition;
@@ -405,6 +406,15 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 			log.error("Failed to schedule daily automation jobs", e);
 		}
 
+	}
+	
+	public List<?> getCsvAutomations(Realm realm, String searchColumn, String searchPattern, int start, int length,
+			ColumnSort[] sorting){
+		return repository.getCsvAutomations(realm, searchColumn, searchPattern, start, length, sorting);
+	}
+
+	public Long getCsvAutomationsCount(Realm realm, String searchColumn, String searchPattern){
+		return repository.getCsvAutomationsCount(realm, searchColumn, searchPattern);
 	}
 
 }

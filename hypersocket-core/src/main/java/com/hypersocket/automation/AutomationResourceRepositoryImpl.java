@@ -2,15 +2,28 @@ package com.hypersocket.automation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
+import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.browser.BrowserLaunchable;
+import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionOperation;
+import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.TriggerResourceRepository;
 
@@ -67,6 +80,41 @@ public class AutomationResourceRepositoryImpl extends
 		}
 		trigger.setParentTrigger(null);
 		save(trigger);
+	}
+	
+	@Transactional(readOnly=true)
+	@Override
+	public List<?> getCsvAutomations(Realm realm, String searchColumn, String searchPattern, int start, int length,
+			ColumnSort[] sorting) {
+
+		Criteria criteria = createCriteria(AutomationResource.class);
+		
+		if (StringUtils.isNotBlank(searchPattern)) {
+			criteria.add(Restrictions.ilike("name", searchPattern));
+		}
+		
+
+		criteria.add(Restrictions.eq("realm", realm)).add(Restrictions.eq("resourceKey", "auditLogReportGeneration"));
+
+		
+		
+		return criteria.list();
+	}
+
+	@Override
+	public Long getCsvAutomationsCount(Realm realm, String searchColumn, String searchPattern) {
+Criteria criteria = createCriteria(AutomationResource.class);
+		
+		if (StringUtils.isNotBlank(searchPattern)) {
+			criteria.add(Restrictions.ilike("name", searchPattern));
+		}
+		
+
+		criteria.add(Restrictions.eq("realm", realm)).add(Restrictions.eq("resourceKey", "auditLogReportGeneration"));
+
+		
+		
+		return new Long(criteria.list().size());
 	}
 
 }
