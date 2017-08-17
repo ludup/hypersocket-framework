@@ -678,7 +678,7 @@ public class AuthenticationServiceImpl extends
 	public FormTemplate nextAuthenticationTemplate(AuthenticationState state,
 			Map params) {
 		
-		return modifyTemplate(state, nextAuthenticator(state).createTemplate(state, params));
+		return modifyTemplate(state, nextAuthenticator(state).createTemplate(state, params), false);
 	}
 
 	private boolean checkSuspensions(AuthenticationState state, Authenticator authenticator) {
@@ -704,10 +704,10 @@ public class AuthenticationServiceImpl extends
 	}
 	
 	protected FormTemplate modifyTemplate(AuthenticationState state,
-			FormTemplate template) {
+			FormTemplate template, boolean authenticated) {
 
 		for (AuthenticationServiceListener l : listeners) {
-			l.modifyTemplate(state, template);
+			l.modifyTemplate(state, template, authenticated);
 		}
 		return template;
 	}
@@ -763,7 +763,7 @@ public class AuthenticationServiceImpl extends
 			throw new IllegalStateException(
 					"There are no post authentcation steps to process!");
 		}
-		FormTemplate t = modifyTemplate(state, state.getCurrentPostAuthenticationStep().createTemplate(state));
+		FormTemplate t = modifyTemplate(state, state.getCurrentPostAuthenticationStep().createTemplate(state), true);
 		return t;
 	}
 
