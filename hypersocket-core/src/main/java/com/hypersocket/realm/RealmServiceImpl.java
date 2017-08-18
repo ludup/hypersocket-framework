@@ -1121,7 +1121,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			realm.setResourceCategory(type);
 			final RealmProvider realmProvider = getProviderForRealm(realm.getResourceCategory());
 			
-			realmProvider.testConnection(properties, realm);
+			/**
+			 * Switch to system context in the updated realm so that updates from system realm 
+			 * will be be able to correctly route through a secure node.
+			 */
+			setupSystemContext(realm);
+			try {
+				realmProvider.testConnection(properties, realm);
+			} finally {
+				clearPrincipalContext();
+			}
+			
 			String oldName = realm.getName();
 
 			clearCache(realm);
