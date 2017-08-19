@@ -19,6 +19,7 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 	public static final String POSTGRES = "POSTGRES";
 	public static final String MSSQL = "MSSQL";
 	public static final String DERBY = "DERBY";
+	public static final String H2 = "H2";
 
 
 	public static final String JDBC_HIBERNATE_DIALECT = "jdbc.hibernate.dialect";
@@ -93,13 +94,13 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 			}else if(JDBC_DATABASE.equals(template.getResourceKey())){
 				properties.put(JDBC_DATABASE, value);
 			}else if(JDBC_HOST.equals(template.getResourceKey())){
-				if(DERBY.equals(currentVendor)) {
+				if(DERBY.equals(currentVendor) || H2.equals(currentVendor)) {
 					properties.put(JDBC_HOST, null);
 				}else{
 					properties.put(JDBC_HOST, value);
 				}
 			}else if(JDBC_PORT.equals(template.getResourceKey())){
-				if(DERBY.equals(currentVendor)) {
+				if(DERBY.equals(currentVendor) || H2.equals(currentVendor)) {
 					properties.put(JDBC_PORT, null);
 				}else{
 					properties.put(JDBC_PORT, value);
@@ -176,6 +177,7 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 		public static final String SCHEME_POSTGRESQL = "postgresql";
 		public static final String SCHEME_MSSQL = "sqlserver";
 		public static final String SCHEME_DERBY = "derby";
+		public static final String SCHEME_H2 = "h2";
 
 		public static String SCHEME = "SCHEME";
 		public static String HOST = "HOST";
@@ -195,6 +197,8 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 				return parseMsSql(uri);
 			}else if(uri.contains(SCHEME_DERBY)){
 				return parseDerby(uri);
+			}else if(uri.contains(SCHEME_H2)){
+				return parseH2(uri);
 			}
 
 			return Collections.<String, String>emptyMap();
@@ -232,6 +236,24 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 				return tokens;
 			}
 		}
+		
+		private static Map<String, String> parseH2(String uri){
+			String[] parts = uri.split(":");
+			//server
+			if(parts[2].startsWith("//")){
+				String toParse = uri.replaceAll("jdbc:", "");
+				return makeTokens(toParse);
+			}else{//embedded
+				String toParse = cleanUpDerbySubProtocol(uri);
+				Map<String, String> tokens = new HashMap<>();
+				tokens.put(SCHEME, mapDatabase("h2"));
+				tokens.put(HOST, "localhost");
+				tokens.put(PORT, "0");
+				tokens.put(PATH, "");
+				tokens.put(DATABASE, processEmbeddedDerbyDatabase(toParse.split(":")[2]));
+				return tokens;
+			}
+		}
 
 		private static String processEmbeddedDerbyDatabase(String value) {
 			return value.split(";")[0];
@@ -247,6 +269,8 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 					return MSSQL;
 				case SCHEME_DERBY:
 					return DERBY;
+				case SCHEME_H2:
+					return H2;
 			}
 
 			return "";

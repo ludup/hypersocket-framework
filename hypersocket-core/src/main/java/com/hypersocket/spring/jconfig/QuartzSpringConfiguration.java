@@ -37,8 +37,9 @@ public class QuartzSpringConfiguration {
 	static Logger log = LoggerFactory.getLogger(QuartzSpringConfiguration.class);
 	
 	private static final String POSTGRES = "postgres";
-	private static final String MYSQL = "mysql";//innodb
-	//not tested
+	private static final String MYSQL = "mysql";
+	private static final String H2 = "h2";
+	
 	private static final String ORACLE = "oracle";
 	private static final String MSSQL = "ms";
 	private static final String DERBY = "derby";
@@ -48,6 +49,7 @@ public class QuartzSpringConfiguration {
 	static {
 		databaseScript.put(POSTGRES, "/conf/quartz-tables-postgres.sql");
 		databaseScript.put(MYSQL, "/conf/quartz-tables-mysql.sql");
+		databaseScript.put(H2, "/conf/quartz-tables-h2.sql");
 		databaseScript.put(ORACLE, "/conf/quartz-tables-oracle.sql");
 		databaseScript.put(MSSQL, "/conf/quartz-tables-mssql.sql");
 		databaseScript.put(DERBY, "/conf/quartz-tables-derby.sql");
@@ -146,9 +148,17 @@ public class QuartzSpringConfiguration {
 				log.info(String.format("Reading sql file from location %s", databaseFile));
 				
 				LineIterator iterator = IOUtils.lineIterator(inputStreamOfDatabaseFile, "UTF-8");
+				StringBuilder s = new StringBuilder();
 				while (iterator.hasNext()) {
 					String sql = (String) iterator.next();
-					statement.addBatch(sql);
+					if(s.length() > 0) {
+						s.append(" ");
+					}
+					s.append(sql);
+					if(sql.trim().endsWith(";")) {
+						statement.addBatch(s.toString());
+						s.setLength(0);
+					}
 				}
 				statement.executeBatch();
 				connection.commit();
@@ -184,6 +194,8 @@ public class QuartzSpringConfiguration {
 			return databaseScript.get(MYSQL);
 		}else if(databaseProductName.toLowerCase().contains("postgres")){
 			return databaseScript.get(POSTGRES);
+		}else if(databaseProductName.toLowerCase().contains("h2")){
+			return databaseScript.get(H2);
 		}else if(databaseProductName.toLowerCase().contains("oracle")){
 			return databaseScript.get(ORACLE);
 		}else if(databaseProductName.toLowerCase().contains("mssql")){
