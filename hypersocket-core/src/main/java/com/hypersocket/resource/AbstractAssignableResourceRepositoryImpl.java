@@ -44,6 +44,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
+import com.hypersocket.repository.HibernateUtils;
 import com.hypersocket.session.Session;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
@@ -217,8 +218,10 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 		Criteria criteria = createCriteria(getResourceClass());
 		
+		Map<String,Criteria> assosications = new HashMap<String,Criteria>();
+		
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.ilike(StringUtils.isBlank(searchColumn) ? "name" : searchColumn, searchPattern));
+			HibernateUtils.configureSearch(searchColumn, searchPattern, criteria, getClass(), assosications);
 		}
 
 		for (CriteriaConfiguration c : configs) {
@@ -239,7 +242,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria = createCriteria(getResourceClass());
 		
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.ilike(StringUtils.isBlank(searchColumn) ? "name" : searchColumn, searchPattern));
+			HibernateUtils.configureSearch(searchColumn, searchPattern, criteria, getClass(), assosications);
 		}
 
 		for (CriteriaConfiguration c : configs) {
@@ -318,8 +321,10 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 		Criteria criteria = createCriteria(getResourceClass());
 		
+		Map<String,Criteria> assosications = new HashMap<String,Criteria>();
+		
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.ilike(StringUtils.isBlank(searchColumn) ? "name" : searchColumn, searchPattern));
+			HibernateUtils.configureSearch(searchColumn, searchPattern, criteria, getClass(), assosications);
 		}
 
 		for (CriteriaConfiguration c : configs) {
@@ -339,7 +344,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		criteria = createCriteria(getResourceClass());
 		
 		if (StringUtils.isNotBlank(searchPattern)) {
-			criteria.add(Restrictions.ilike(StringUtils.isBlank(searchColumn) ? "name" : searchColumn, searchPattern));
+			HibernateUtils.configureSearch(searchColumn, searchPattern, criteria, getClass(), assosications);
 		}
 
 		for (CriteriaConfiguration c : configs) {
