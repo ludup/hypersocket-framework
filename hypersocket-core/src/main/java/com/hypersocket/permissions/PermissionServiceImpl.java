@@ -509,12 +509,11 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			}
 
 			for (PermissionType t : permissions) {
-				for (PermissionType p : derivedPrincipalPermissions) {
-					if (t.getResourceKey().equals(p.getResourceKey())) {
-						return;
-					}
+				if(derivedPrincipalPermissions.contains(t)) {
+					return;
 				}
 			}
+			
 			Locale currentLocale = null;
 			try {
 				currentLocale = getCurrentLocale();
