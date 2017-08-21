@@ -351,8 +351,8 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			throws AccessDeniedException {
 
 		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION,
-				SystemPermission.SYSTEM, SystemPermission.SWITCH_REALM);
-
+					SystemPermission.SYSTEM,SystemPermission.SWITCH_REALM);
+		
 		if (log.isInfoEnabled()) {
 			log.info("Switching " + session.getPrincipal().getName() + " to "
 					+ realm.getName() + " realm");
@@ -380,9 +380,10 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				}
 				
 				verifyPermission(getCurrentSession().getPrincipal(),
-						PermissionStrategy.EXCLUDE_IMPLIED,
+						PermissionStrategy.INCLUDE_IMPLIED,
 						SystemPermission.SYSTEM_ADMINISTRATION,
-						SystemPermission.SYSTEM);
+						SystemPermission.SYSTEM,
+						SystemPermission.SWITCH_REALM);
 				
 				return;
 			}
@@ -398,7 +399,8 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 		
 		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION,
-				SystemPermission.SYSTEM);
+				SystemPermission.SYSTEM, 
+				SystemPermission.SWITCH_REALM);
 		
 		} finally {
 			clearElevatedPermissions();
@@ -426,7 +428,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		session.setImpersonatedPrincipal(principal);
 		session.setInheritPermissions(inheritPermissions);
 
-		setCurrentSession(session, getCurrentLocale());
+		session.setCurrentRealm(principal.getRealm());
 		setCurrentRole(permissionService.getPersonalRole(principal));
 		repository.updateSession(session);
 	}
@@ -689,7 +691,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		session.setImpersonatedPrincipal(null);
 		session.setInheritPermissions(false);
 
-		setCurrentSession(session, getCurrentLocale());
+		session.setCurrentRealm(session.getCurrentPrincipal().getRealm());
 		setCurrentRole(permissionService.getPersonalRole(session.getCurrentPrincipal()));
 		repository.updateSession(session);
 	}
