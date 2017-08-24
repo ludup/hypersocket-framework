@@ -19,6 +19,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.RealmCriteria;
+import com.hypersocket.resource.RealmsCriteria;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
@@ -32,8 +33,8 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	
 	@Override
 	@Transactional(readOnly=true)
-	public long getCompleteProfileCount(Realm realm) {
-		return getCount(Profile.class, new RealmCriteria(realm.isSystem() ? null : realm), new CriteriaConfiguration(){
+	public long getCompleteProfileCount(Collection<Realm>  realm) {
+		return getCount(Profile.class, new RealmsCriteria(realm), new CriteriaConfiguration(){
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -44,8 +45,8 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	
 	@Override
 	@Transactional(readOnly=true)
-	public long getCompleteProfileOnDateCount(Realm realm, final Date date) {
-		return getCount(Profile.class, new RealmCriteria(realm.isSystem() ? null : realm), new CriteriaConfiguration(){
+	public long getCompleteProfileOnDateCount(Collection<Realm> realm, final Date date) {
+		return getCount(Profile.class, new RealmsCriteria(realm), new CriteriaConfiguration(){
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -57,8 +58,8 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	
 	@Override
 	@Transactional(readOnly=true)
-	public long getIncompleteProfileCount(Realm realm) {
-		return getCount(Profile.class, new RealmCriteria(realm.isSystem() ? null : realm), new CriteriaConfiguration(){
+	public long getIncompleteProfileCount(Collection<Realm> realm) {
+		return getCount(Profile.class, new RealmsCriteria(realm), new CriteriaConfiguration(){
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -69,8 +70,8 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	
 	@Override
 	@Transactional(readOnly=true)
-	public long getPartiallyCompleteProfileCount(Realm realm) {
-		return getCount(Profile.class, new RealmCriteria(realm.isSystem() ? null : realm), new CriteriaConfiguration(){
+	public long getPartiallyCompleteProfileCount(Collection<Realm> realm) {
+		return getCount(Profile.class, new RealmsCriteria(realm), new CriteriaConfiguration(){
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -81,8 +82,8 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 
 
 	@Override
-	public Collection<Profile> getProfilesWithStatus(Realm realm, final ProfileCredentialsState...credentialsStates) {
-		return list(Profile.class, new RealmCriteria(realm), new CriteriaConfiguration() {
+	public Collection<Profile> getProfilesWithStatus(Collection<Realm> realm, final ProfileCredentialsState...credentialsStates) {
+		return list(Profile.class, new RealmsCriteria(realm), new CriteriaConfiguration() {
 			
 			@Override
 			public void configure(Criteria criteria) {

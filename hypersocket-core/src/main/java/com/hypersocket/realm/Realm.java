@@ -16,7 +16,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.resource.Resource;
 
 @Entity
@@ -78,9 +77,12 @@ public class Realm extends Resource {
 		return owner==null && parent==null;
 	}
 
-	@JsonIgnore
 	public Realm getParent() {
 		return parent;
+	}
+	
+	public boolean hasParent() {
+		return parent!=null;
 	}
 
 	public void setParent(Realm parent) {

@@ -192,6 +192,8 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Realm getRealmByHost(String host, Realm defaultRealm);
 
 	long getPrincipalCount(Realm realm, PrincipalType type);
+	
+	long getPrincipalCount(Collection<Realm> realms, PrincipalType type);
 
 	boolean getRealmPropertyBoolean(Realm realm, String string);
 

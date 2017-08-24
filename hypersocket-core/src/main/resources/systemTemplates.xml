@@ -25,10 +25,10 @@
 			allowEmpty="false" weight="100" />
 		<property resourceKey="jdbc.database" inputType="text" store="databaseConfiguration"
 			allowEmpty="false" weight="200" defaultValue="hypersocket" />	
-		<property resourceKey="jdbc.host" inputType="text" store="databaseConfiguration" visibilityDependsOn="jdbc.vendor"
-				  visibilityDependsValue="!DERBY" allowEmpty="false" weight="300" defaultValue="localhost" />
-		<property resourceKey="jdbc.port" inputType="integer" store="databaseConfiguration"  visibilityDependsOn="jdbc.vendor"
-				  visibilityDependsValue="!DERBY" allowEmpty="false" weight="400" defaultValue="3306" minValue="1" maxValue="65535"/>
+		<property resourceKey="jdbc.host" inputType="text" store="databaseConfiguration" visibilityDependsOn="jdbc.vendor,jdbc.vendor"
+				  visibilityDependsValue="!DERBY,!H2" allowEmpty="false" weight="300" defaultValue="localhost" />
+		<property resourceKey="jdbc.port" inputType="integer" store="databaseConfiguration"  visibilityDependsOn="jdbc.vendor,jdbc.vendor"
+				  visibilityDependsValue="!DERBY,!H2" allowEmpty="false" weight="400" defaultValue="3306" minValue="1" maxValue="65535"/>
 		<property resourceKey="jdbc.username" inputType="text" store="databaseConfiguration"
 			allowEmpty="false" weight="500" defaultValue="hypersocket" />
 		<property resourceKey="jdbc.password" inputType="password" store="databaseConfiguration"

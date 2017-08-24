@@ -34,6 +34,12 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	
 	@Override
 	@Transactional(readOnly=true)
+	public long getResourceCount(Collection<Realm> realms,  PrincipalType type) {
+		return super.getResourceCount(realms, "", "", new DeletedCriteria(false), new PrincipalTypeCriteria(type));
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
 	public long getResourceCount(Realm realm,  PrincipalType type) {
 		return super.getResourceCount(realm, "", "", new DeletedCriteria(false), new PrincipalTypeCriteria(type));
 	}
