@@ -8,6 +8,7 @@
 package com.hypersocket.realm.json;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -369,6 +370,63 @@ public class RealmController extends ResourceController {
 		}
 	}
 
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "realms/ownership", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public BootstrapTableResult<?> realmOwnership(final HttpServletRequest request, HttpServletResponse response) 
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+
+		try {
+
+			final List<Realm> realms = new ArrayList<Realm>();
+			realms.addAll(realmService.getRealmsByOwner());
+			
+			BootstrapTableResult<?> r = processDataTablesRequest(request, new BootstrapTablePageProcessor() {
+
+				@Override
+				public Column getColumn(String col) {
+					return PrincipalColumns.valueOf(col.toUpperCase());
+				}
+
+				@Override
+				public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
+									   ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
+					
+					
+					List<Realm> toRemove = new ArrayList<Realm>();
+					searchPattern = searchPattern.replace("*", ".*");
+					for(Realm realm : realms) {
+						if(searchPattern.contains("*")) {
+							if(realm.getName().matches(searchPattern)) {
+								continue;
+							}
+						} else {
+							if(realm.getName().startsWith(searchPattern) || realm.getName().endsWith(searchPattern)) {
+								continue;
+							}
+						}
+						toRemove.add(realm);
+					}
+					realms.removeAll(toRemove);
+					return realms.subList(start,  start + Math.min(length, realms.size()));
+				}
+
+				@Override
+				public Long getTotalCount(String searchColumn, String searchPattern)
+						throws UnauthorizedException, AccessDeniedException {
+					return new Long(realms.size());
+				}
+			});
+			return r;
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "realms/export", method = RequestMethod.POST, produces = { "text/plain" })
 	@ResponseStatus(value = HttpStatus.OK)

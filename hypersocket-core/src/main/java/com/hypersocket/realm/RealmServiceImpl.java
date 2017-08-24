@@ -161,6 +161,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Autowired
 	FileUploadExporter fileUploadExporter;
+	
+	List<RealmOwnershipResolver> ownershipResolvers = new ArrayList<RealmOwnershipResolver>();
 
 	public static final Integer MESSAGE_NEW_USER_NEW_PASSWORD = 6001;
 	public static final Integer MESSAGE_NEW_USER_TMP_PASSWORD = 6002;
@@ -264,6 +266,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void registerPrincipalFilter(TableFilter filter) {
 		principalFilters.put(filter.getResourceKey(), filter);
+	}
+	
+	@Override
+	public void registerOwnershipResolver(RealmOwnershipResolver resolver) {
+		ownershipResolvers.add(resolver);
 	}
 
 	@Override
@@ -466,13 +473,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Realm getRealmById(Long id) throws AccessDeniedException {
+	public Realm getRealmById(Long id) {
 
 		Realm realm = realmRepository.getRealmById(id);
 		
-		assertRoleOrAnyPermission(permissionService.getRealmAdministratorRole(realm), 
-				RealmPermission.READ, SystemPermission.SWITCH_REALM);
-
 		return realm;
 	}
 	
@@ -765,17 +769,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 
 		deleteRealm(realm);
-	}
-
-	private boolean hasSystemAdministrator(Realm r) {
-
-		Set<Principal> sysAdmins = permissionService.getUsersWithPermissions(SystemPermission.SYSTEM_ADMINISTRATION);
-		for (Principal p : sysAdmins) {
-			if (p.getRealm().equals(r)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	@Override
@@ -1236,27 +1229,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			if (realm.isDefaultRealm()) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.cannotDeleteDefault", realm.getName());
 			}
-
-			List<Realm> realms = realmRepository.allRealms();
-			if (realm.getOwner()==null && realms.size() == 1) {
-				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.zeroRealms", realm.getName());
-			}
-
-			realms.remove(realm);
-
-			if (hasSystemAdministrator(realm)) {
-				boolean systemAdministratorPresent = false;
-
-				for (Realm r : realms) {
-					if (hasSystemAdministrator(r)) {
-						systemAdministratorPresent = true;
-						break;
-					}
-				}
-
-				if (!systemAdministratorPresent) {
-					throw new ResourceChangeException(RESOURCE_BUNDLE, "error.zeroSysAdmins", realm.getName());
-				}
+			
+			if (realm.isSystem()) {
+				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.cannotDeleteSystem", realm.getName());
 			}
 
 			/**
@@ -2424,6 +2399,32 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			return remote.getPrincipalCount(realm, PrincipalType.USER, searchColumn, searchPattern);
 		}
 		
+	}
+
+	@Override
+	public Collection<? extends Realm> getRealmsByOwner() {
+		
+		if(getCurrentRealm().isSystem()) {
+			try {
+				assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION, SystemPermission.SYSTEM);
+				return allRealms();
+			} catch (AccessDeniedException e) {
+			}
+		}
+		
+		Set<Realm> realms = new HashSet<Realm>();
+		realms.add(getCurrentRealm());
+		realms.addAll(realmRepository.getRealmsByParent(getCurrentRealm()));
+		
+		for(RealmOwnershipResolver resolver : ownershipResolvers) {
+			realms.addAll(resolver.resolveRealms(getCurrentPrincipal()));
+		}
+		return realms;
+	}
+
+	@Override
+	public Collection<? extends Realm> getRealmsByParent(Realm currentRealm) {
+		return realmRepository.getRealmsByParent(currentRealm);
 	}
 }
 

@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -242,6 +243,22 @@ public class RealmRepositoryImpl extends
 		criteria.add(Restrictions.in("id", ids));
 		criteria.add(Restrictions.eq("deleted", false));
 		return criteria.list();
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public Collection<? extends Realm> getRealmsByParent(final Realm realm) {
+		if(realm.isSystem()) {
+			return allRealms();
+		}
+		return list(Realm.class, new DeletedCriteria(false), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("parent", realm));
+			}
+			
+		});
 	}
 
 

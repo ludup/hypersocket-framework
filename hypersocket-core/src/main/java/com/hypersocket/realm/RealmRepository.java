@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -60,5 +61,7 @@ public interface RealmRepository extends
 	List<Realm> getRealmsByIds(Long...ids);
 
 	Realm getRealmByNameAndOwner(String name, Realm owner);
+
+	Collection<? extends Realm> getRealmsByParent(Realm currentRealm);
 
 }
