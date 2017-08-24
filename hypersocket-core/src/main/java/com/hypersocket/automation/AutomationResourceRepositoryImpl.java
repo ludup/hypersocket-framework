@@ -7,6 +7,7 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.ResourceException;
@@ -34,6 +35,7 @@ public class AutomationResourceRepositoryImpl extends
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional
 	public void deleteResource(AutomationResource resource, TransactionOperation<AutomationResource>... ops) throws ResourceException {
 		
 		

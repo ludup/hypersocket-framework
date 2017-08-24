@@ -96,6 +96,22 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		refresh(permission);
 		return permission;
 	}
+	
+	@Override
+	@Transactional
+	public Permission updatePermission(String name, boolean system,
+			PermissionCategory category, boolean hidden) {
+
+		Permission permission = get("resourceKey", name, Permission.class);
+		permission.setResourceKey(name);
+		permission.setCategory(category);
+		permission.setHidden(hidden);
+		permission.setSystem(system);
+		save(permission);
+		flush();
+		refresh(permission);
+		return permission;
+	}
 
 	@Override
 	@Transactional
@@ -279,7 +295,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 							criteria.add(Restrictions.in("id", permissions));
 						}
 					}
-				}, JOIN_ROLES, new HiddenCriteria(false));
+				}, JOIN_ROLES);
 	}
 
 	@Override

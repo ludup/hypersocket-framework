@@ -216,6 +216,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		if (result == null) {
 			repository.createPermission(resourceKey, system, category, hidden);
 			result = repository.getPermissionByResourceKey(resourceKey);
+		} else {
+			result = repository.updatePermission(resourceKey, system, category, hidden);
 		}
 		registerPermissionIds.add(result.getId());
 		if (!system) {

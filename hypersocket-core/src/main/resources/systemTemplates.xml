@@ -5,7 +5,7 @@
 		<filename>${hypersocket.conf}/database.properties</filename>
 	</propertyStore>
 	<propertyCategory resourceKey="category.authentication"
-		 resourceBundle="AuthenticationService" weight="100">
+		 resourceBundle="AuthenticationService" weight="100" hidden="true">
 		<property resourceKey="auth.chooseRealm" inputType="switch"
 			defaultValue="true" weight="0" />
 	</propertyCategory>
