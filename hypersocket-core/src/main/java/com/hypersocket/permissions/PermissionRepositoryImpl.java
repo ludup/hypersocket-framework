@@ -31,7 +31,6 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DistinctRootEntity;
-import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.ResourceException;

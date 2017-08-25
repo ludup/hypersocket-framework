@@ -374,8 +374,13 @@ public class AuthenticationServiceImpl extends
 			try {
 				if (state.getCurrentPostAuthenticationStep() != null) {
 
-					switch (state.getCurrentPostAuthenticationStep().process(
-							state, parameterMap)) {
+					preProcess(state.getCurrentPostAuthenticationStep(), state, parameterMap);
+					
+					AuthenticatorResult result = state.getCurrentPostAuthenticationStep().process(state, parameterMap);
+					
+					postProcess(state.getCurrentPostAuthenticationStep(), result, state, parameterMap);
+					
+					switch (result) {
 					case INSUFFICIENT_DATA: {
 						if (state.getLastErrorMsg() == null) {
 							state.setLastErrorMsg("error.insufficentData");
@@ -394,6 +399,8 @@ public class AuthenticationServiceImpl extends
 					}
 					case AUTHENTICATION_SUCCESS: {
 
+						
+						
 						state.nextPostAuthenticationStep();
 
 						if (state.canCreateSession()) {
@@ -442,7 +449,11 @@ public class AuthenticationServiceImpl extends
 				if(state.getPrincipal()!=null && state.getPrincipal() instanceof FakePrincipal) {
 					result = AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
 				} else {
+					preProcess(authenticator, state, parameterMap);
+					
 					result = authenticator.authenticate(state, parameterMap);
+					
+					postProcess(authenticator, result, state, parameterMap);
 				}
 				
 				if(checkSuspensions(state, authenticator)) {
@@ -652,6 +663,49 @@ public class AuthenticationServiceImpl extends
 
 		return success;
 
+	}
+
+	private void postProcess(Authenticator authenticator, AuthenticatorResult result, AuthenticationState state,
+			@SuppressWarnings("rawtypes") Map parameterMap) {
+		for(AuthenticationServiceListener listener : listeners) {
+			try {
+				listener.postProcess(authenticator, result, state, parameterMap);
+			} catch (Throwable e) {
+				log.error("Error post processing authentication", e);
+			}
+		}
+	}
+
+	private void preProcess(Authenticator authenticator, AuthenticationState state, @SuppressWarnings("rawtypes") Map parameterMap) {
+		for(AuthenticationServiceListener listener : listeners) {
+			try {
+				listener.preProcess(authenticator, state, parameterMap);
+			} catch (Throwable e) {
+				log.error("Error pre processing authentication", e);
+			}
+		}
+	}
+
+	private void preProcess(PostAuthenticationStep currentPostAuthenticationStep, AuthenticationState state,
+			@SuppressWarnings("rawtypes") Map parameterMap) {
+		for(AuthenticationServiceListener listener : listeners) {
+			try {
+				listener.preProcess(currentPostAuthenticationStep, state, parameterMap);
+			} catch (Throwable e) {
+				log.error("Error pre processing post authentication", e);
+			}
+		}
+	}
+
+	private void postProcess(PostAuthenticationStep currentPostAuthenticationStep, AuthenticatorResult result,
+			AuthenticationState state, @SuppressWarnings("rawtypes") Map parameterMap) {
+		for(AuthenticationServiceListener listener : listeners) {
+			try {
+				listener.postProcess(currentPostAuthenticationStep, result, state, parameterMap);
+			} catch (Throwable e) {
+				log.error("Error post processing post authentication", e);
+			}
+		}
 	}
 
 	@Override 

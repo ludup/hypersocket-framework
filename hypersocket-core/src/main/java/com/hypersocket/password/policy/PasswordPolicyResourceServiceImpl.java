@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticationService;
-import com.hypersocket.auth.AuthenticationServiceListener;
+import com.hypersocket.auth.AuthenticationServiceAdapter;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.ChangePasswordTemplate;
 import com.hypersocket.events.EventService;
@@ -61,7 +61,7 @@ import edu.vt.middleware.password.UppercaseCharacterRule;
 public class PasswordPolicyResourceServiceImpl extends
 		AbstractAssignableResourceServiceImpl<PasswordPolicyResource> 
 			implements PasswordPolicyResourceService, PrincipalProcessor,
-			AuthenticationServiceListener, PolicyResolver {
+			PolicyResolver {
 
 	public static final String RESOURCE_BUNDLE = "PasswordPolicyResourceService";
 
@@ -123,7 +123,14 @@ public class PasswordPolicyResourceServiceImpl extends
 
 		EntityResourcePropertyStore.registerResourceService(PasswordPolicyResource.class, repository);
 		
-		authenticationService.registerListener(this);
+		authenticationService.registerListener(new AuthenticationServiceAdapter() {
+			@Override
+			public void modifyTemplate(AuthenticationState state, FormTemplate template, boolean authenticated) {
+				if(template instanceof ChangePasswordTemplate) {
+					template.getInputFields().add(new DivField("logonPasswordPolicyHolder", "${uiPath}/content/injectedPasswordPolicy.html"));
+				}
+			}
+		});
 		
 		realmService.registerPrincipalProcessor(this);
 
@@ -413,13 +420,6 @@ public class PasswordPolicyResourceServiceImpl extends
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.noPolicyAssigned", currentPrincipal.getPrincipalName());
 		}
 		return realmPolicy;
-	}
-
-	@Override
-	public void modifyTemplate(AuthenticationState state, FormTemplate template, boolean authenticated) {
-		if(template instanceof ChangePasswordTemplate) {
-			template.getInputFields().add(new DivField("logonPasswordPolicyHolder", "${uiPath}/content/injectedPasswordPolicy.html"));
-		}
 	}
 
 	@Override
