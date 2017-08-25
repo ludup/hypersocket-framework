@@ -1,5 +1,7 @@
 package com.hypersocket.profile.jobs;
 
+import java.util.Arrays;
+
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +28,7 @@ public class ProfileBatchUpdateJob extends PermissionsAwareJob {
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {
 		
 		try {
-			for(Profile profile : repository.getProfilesWithStatus(getCurrentRealm())) {
+			for(Profile profile : repository.getProfilesWithStatus(Arrays.asList(getCurrentRealm()))) {
 				profileService.updateProfile(realmService.getPrincipalById(profile.getId()));
 			}
 			

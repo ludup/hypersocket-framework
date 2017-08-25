@@ -1,6 +1,7 @@
 package com.hypersocket.resource;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -229,6 +230,15 @@ public abstract class AbstractResourceRepositoryImpl<T extends AbstractResource>
 		return getCount(getResourceClass(), searchColumn, searchPattern,
 				ArrayUtils.addAll(configs, new RealmCriteria(
 						realm), new DeletedCriteria(false), new DefaultCriteriaConfiguration()));
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public long getResourceCount(Collection<Realm> realms, String searchColumn, String searchPattern,
+			CriteriaConfiguration... configs) {
+		return getCount(getResourceClass(), searchColumn, searchPattern,
+				ArrayUtils.addAll(configs, new RealmsCriteria(
+						realms), new DeletedCriteria(false), new DefaultCriteriaConfiguration()));
 	}
 
 	

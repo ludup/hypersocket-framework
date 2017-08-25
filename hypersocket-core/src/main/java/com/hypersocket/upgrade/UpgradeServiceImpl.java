@@ -115,6 +115,8 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 						databaseType = "postgres";
 					} else if(databaseType.equals("Microsoft SQL Server")) {
 						databaseType = "mssql";
+					} else if(databaseType.equals("H2")) {
+						databaseType = "mysql";
 					} else {
 						log.info(databaseType + " is not a supported database type");
 						databaseType = "unknown";

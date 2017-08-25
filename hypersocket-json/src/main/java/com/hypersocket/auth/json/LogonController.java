@@ -255,11 +255,11 @@ public class LogonController extends AuthenticatedController {
 		} catch(FallbackAuthenticationRequired e) {
 			return resetLogon(request, response, "fallback", false);
 		} catch(RedirectException e) {
-			return new AuthenticationRedirectResult(
-					configurationService.getValue(state.getRealm(),
-							"logon.banner"),
-					flash!=null ? flash : state.getLastErrorMsg(),
-					configurationService.hasUserLocales(), e.getMessage());
+			/**
+			 * This is a hard redirect i.e. the logon method has been called directly by the browser 
+			 * not by javascript. If you need to redirect javascript then use JsonRedirectException.
+			 */
+			throw e;
 		} catch(JsonRedirectException e) {
 			return new AuthenticationRedirectResult(
 					configurationService.getValue(state.getRealm(),

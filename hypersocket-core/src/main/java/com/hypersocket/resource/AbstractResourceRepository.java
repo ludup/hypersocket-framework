@@ -1,5 +1,6 @@
 package com.hypersocket.resource;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +44,9 @@ public interface AbstractResourceRepository<T extends AbstractResource> extends 
 	long getResourceCount(Realm realm);
 
 	void deleteResources(List<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException;
+
+	long getResourceCount(Collection<Realm> realms, String searchColumn, String searchPattern,
+			CriteriaConfiguration... configs);
 
 
 }

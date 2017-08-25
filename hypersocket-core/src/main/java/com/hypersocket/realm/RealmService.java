@@ -48,7 +48,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Realm getRealmByHost(String host);
 
-	Realm getRealmById(Long id) throws AccessDeniedException;
+	Realm getRealmById(Long id);
 
 	Principal createUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
 						 String password, boolean forceChange, boolean selfCreated, boolean sendNotifications)
@@ -192,6 +192,8 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Realm getRealmByHost(String host, Realm defaultRealm);
 
 	long getPrincipalCount(Realm realm, PrincipalType type);
+	
+	long getPrincipalCount(Collection<Realm> realms, PrincipalType type);
 
 	boolean getRealmPropertyBoolean(Realm realm, String string);
 
@@ -293,6 +295,12 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	void registerPrincipalFilter(TableFilter filter);
 
 	Collection<TableFilter> getPrincipalFilters();
+
+	Collection<? extends Realm> getRealmsByOwner();
+
+	void registerOwnershipResolver(RealmOwnershipResolver resolver);
+
+	Collection<? extends Realm> getRealmsByParent(Realm currentRealm);
 
 }
 

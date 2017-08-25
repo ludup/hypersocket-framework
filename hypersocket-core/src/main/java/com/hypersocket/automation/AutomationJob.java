@@ -12,7 +12,6 @@ import com.hypersocket.automation.events.AutomationTaskFinishedEvent;
 import com.hypersocket.automation.events.AutomationTaskStartedEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
-import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
@@ -58,12 +57,7 @@ public class AutomationJob extends AbstractTriggerJob {
 		Long realmId = context.getTrigger().getJobDataMap().getLong("realm");
 		
 		final AutomationResource resource;
-		Realm realm = null;
-		try {
-			realm = realmService.getRealmById(realmId);
-		} catch (AccessDeniedException e) {
-			log.error("Could not find realm id " + resourceId + " to execute job", e);
-		}
+		Realm realm = realmService.getRealmById(realmId);
 		
 		try {
 			resource = automationService.getResourceById(resourceId);

@@ -216,6 +216,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		if (result == null) {
 			repository.createPermission(resourceKey, system, category, hidden);
 			result = repository.getPermissionByResourceKey(resourceKey);
+		} else {
+			result = repository.updatePermission(resourceKey, system, category, hidden);
 		}
 		registerPermissionIds.add(result.getId());
 		if (!system) {
@@ -509,12 +511,11 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			}
 
 			for (PermissionType t : permissions) {
-				for (PermissionType p : derivedPrincipalPermissions) {
-					if (t.getResourceKey().equals(p.getResourceKey())) {
-						return;
-					}
+				if(derivedPrincipalPermissions.contains(t)) {
+					return;
 				}
 			}
+			
 			Locale currentLocale = null;
 			try {
 				currentLocale = getCurrentLocale();

@@ -349,7 +349,6 @@ public class Session extends AbstractEntity<String> {
 		return impersonatedPrincipal != null;
 	}
 
-	@JsonIgnore
 	public Principal getInheritedPrincipal() {
 		return getPrincipal();
 	}

@@ -416,7 +416,7 @@ public class PasswordPolicyResourceServiceImpl extends
 	}
 
 	@Override
-	public void modifyTemplate(AuthenticationState state, FormTemplate template) {
+	public void modifyTemplate(AuthenticationState state, FormTemplate template, boolean authenticated) {
 		if(template instanceof ChangePasswordTemplate) {
 			template.getInputFields().add(new DivField("logonPasswordPolicyHolder", "${uiPath}/content/injectedPasswordPolicy.html"));
 		}

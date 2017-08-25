@@ -95,9 +95,15 @@ public class I18NServiceImpl implements I18NService {
 		Cache<String,String> cache = cacheService.getCacheIfExists(cacheKey,String.class, String.class);
 
 		if(cache==null) {
+			if(log.isInfoEnabled()) {
+				log.info("Building i18n resources map for UI");
+			}
 			cache = cacheService.getCacheOrCreate(cacheKey, String.class, String.class);
 			for(String bundle : bundles) {
 				buildBundleMap(bundle, locale, cache);
+			}
+			if(log.isInfoEnabled()) {
+				log.info("Completed i18n resources map");
 			}
 		}
 		return cache;

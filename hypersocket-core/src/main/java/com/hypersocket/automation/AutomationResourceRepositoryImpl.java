@@ -47,6 +47,7 @@ public class AutomationResourceRepositoryImpl extends
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional
 	public void deleteResource(AutomationResource resource, TransactionOperation<AutomationResource>... ops) throws ResourceException {
 		
 		

@@ -5,10 +5,24 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.hypersocket.constraint;
+package com.hypersocket.repository;
 
-public enum ConstraintType {
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
 
-	IP,
-	USER_AGENT;
+public class BooleanCriteria implements CriteriaConfiguration {
+
+	String column;
+	boolean value;
+	
+	public BooleanCriteria(String column, boolean value) {
+		this.value = value;
+	}
+	
+	@Override
+	public void configure(Criteria criteria) {
+		criteria.add(Restrictions.eq(column, value));
+
+	}
+
 }

@@ -183,8 +183,6 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		
 		try {
 		
-			beforeCreateResource(resource, properties);
-			
 			if(!checkUnique(resource, true)) {
 				ResourceException ex = createDuplicateException(resource);
 				fireResourceCreationEvent(resource, ex);
@@ -192,6 +190,8 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			}
 			
 			resource.setAssignedRoles(resource.getRoles());
+			
+			beforeCreateResource(resource, properties);
 			
 			getRepository().saveResource(resource, properties, ops);
 			updateFingerprint();
@@ -223,19 +223,19 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 	}
 
-	protected void beforeCreateResource(T resource, Map<String,String> properties) throws ResourceException {
+	protected void beforeCreateResource(T resource, Map<String,String> properties) throws AccessDeniedException, ResourceException {
 		
 	}
 
-	protected void afterCreateResource(T resource, Map<String,String> properties) throws  ResourceException {
+	protected void afterCreateResource(T resource, Map<String,String> properties) throws  AccessDeniedException, ResourceException {
 		
 	}
 	
-	protected void beforeUpdateResource(T resource, Map<String,String> properties) throws ResourceException {
+	protected void beforeUpdateResource(T resource, Map<String,String> properties) throws AccessDeniedException, ResourceException {
 		
 	}
 	
-	protected void afterUpdateResource(T resource, Map<String,String> properties) throws ResourceException {
+	protected void afterUpdateResource(T resource, Map<String,String> properties) throws AccessDeniedException, ResourceException {
 		
 	}
 	
