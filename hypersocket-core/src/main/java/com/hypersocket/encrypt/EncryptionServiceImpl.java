@@ -18,7 +18,6 @@ import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.secret.SecretKeyService;
 import com.hypersocket.transactions.TransactionService;
 
 @Service
@@ -26,9 +25,6 @@ public class EncryptionServiceImpl implements EncryptionService {
 
 	static Logger log = LoggerFactory.getLogger(EncryptionServiceImpl.class);
 	
-	@Autowired
-	SecretKeyService secretKeyService;
-
 	@Autowired
 	@Qualifier("defaultEncryptor")
 	Encryptor encryptor;
@@ -38,14 +34,11 @@ public class EncryptionServiceImpl implements EncryptionService {
 	
 	@Override
 	public String encryptString(String reference, String data, Realm realm) throws IOException {
-		
 		return ResourceUtils.addEncryptedTag(encryptor.encryptString(reference, data, realm));
-
 	}
 	
 	@Override
-	public String decryptString(String reference, String data, Realm realm) throws IOException{
-		
+	public String decryptString(String reference, String data, Realm realm) throws IOException{	
 		return encryptor.decryptString(reference, ResourceUtils.removeEncryptedTag(data), realm);
 	}
 

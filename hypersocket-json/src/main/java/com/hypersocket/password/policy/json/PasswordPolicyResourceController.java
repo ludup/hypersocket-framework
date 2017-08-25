@@ -186,7 +186,6 @@ public class PasswordPolicyResourceController extends ResourceController {
 		}
 	}
 	
-	@AuthenticationRequired
 	@RequestMapping(value = "passwordPolicys/policy/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -195,19 +194,15 @@ public class PasswordPolicyResourceController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		Principal principal = realmService.getPrincipalById(id);
+		
 		try {
-			return new ResourceStatus<PasswordPolicyResource>(
-					resourceService.resolvePolicy(
-							realmService.getPrincipalById(getCurrentRealm(), id, PrincipalType.USER)));
+			return new ResourceStatus<PasswordPolicyResource>(resourceService.resolvePolicy(principal));
 		} catch (ResourceNotFoundException e) {
 			return new ResourceStatus<PasswordPolicyResource>(false, e.getMessage());
 		} catch (UnsupportedOperationException e) {
 			return new ResourceStatus<PasswordPolicyResource>(false, "Unsupported");
-		} finally {
-			clearAuthenticatedContext();
-		}
+		}  
 	}
 	
 	@AuthenticationRequired

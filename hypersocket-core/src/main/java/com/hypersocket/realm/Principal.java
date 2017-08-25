@@ -73,6 +73,10 @@ public abstract class Principal extends RealmResource {
 		return super.getRealm();
 	}
 	
+	public String getRealmName() {
+		return super.getRealm().getName();
+	}
+	
 	public String getPrimaryEmail() {
 		return primaryEmail;
 	}

@@ -1294,19 +1294,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Deprecated
 	public Principal getPrincipalById(Realm realm, Long id, PrincipalType... type) throws AccessDeniedException {
 
-		if(getCurrentPrincipal().getId()!=id) {
-			assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
-		}
 		Principal principal = principalRepository.getResourceById(id);
 		return principal;
 	}
 	
 	@Override
-	public Principal getPrincipalById(Long id) throws AccessDeniedException {
-
-		if(getCurrentPrincipal().getId()!=id) {
-			assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
-		}
+	public Principal getPrincipalById(Long id) {
 
 		Principal principal = principalRepository.getResourceById(id);
 		return principal;

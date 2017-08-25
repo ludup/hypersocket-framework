@@ -244,7 +244,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Map<String, String> filterSecretProperties(Principal principal, RealmProvider provider,
 											   Map<String, String> properties);
 
-	Principal getPrincipalById(Long id) throws AccessDeniedException;
+	Principal getPrincipalById(Long id);
 
 	Long getUserPropertyLong(Principal principal, String resourceKey);
 
