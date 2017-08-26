@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 
@@ -28,7 +30,7 @@ public class EventServiceImpl implements EventService {
 	static Logger log = LoggerFactory.getLogger(EventServiceImpl.class);
 
 	Map<String, EventDefinition> eventDefinitions = new HashMap<String, EventDefinition>();
-
+	Set<String> attributeNames = new TreeSet<String>();
 	public static final String RESOURCE_BUNDLE = "EventService";
 
 	@Autowired
@@ -139,6 +141,7 @@ public class EventServiceImpl implements EventService {
 		}
 		
 		eventDefinitions.put(def.getResourceKey(), def);
+		attributeNames.addAll(def.getAttributeNames());
 	}
 
 	
@@ -179,6 +182,7 @@ public class EventServiceImpl implements EventService {
 							String attributeName = (String) field.get(null);
 							eventDefinitions.get(resourceKey)
 									.getAttributeNames().add(attributeName);
+							attributeNames.add(attributeName);
 							if (log.isDebugEnabled()) {
 								log.debug("Added attribute " + attributeName);
 							}
@@ -229,5 +233,10 @@ public class EventServiceImpl implements EventService {
 	@Override
 	public List<EventDefinition> getEvents() {
 		return new ArrayList<EventDefinition>(eventDefinitions.values());
+	}
+	
+	@Override
+	public Set<String> getAttributeNames() {
+		return attributeNames;
 	}
 }

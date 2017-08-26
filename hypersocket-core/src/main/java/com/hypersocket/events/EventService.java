@@ -1,6 +1,7 @@
 package com.hypersocket.events;
 
 import java.util.List;
+import java.util.Set;
 
 public interface EventService  {
 
@@ -24,5 +25,7 @@ public interface EventService  {
 	void delayEvents(Boolean val);
 
 	void rollbackDelayedEvents(boolean fireFailedEvents);
+
+	Set<String> getAttributeNames();
 
 }
