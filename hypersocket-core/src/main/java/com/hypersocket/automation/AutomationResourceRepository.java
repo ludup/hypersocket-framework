@@ -15,4 +15,5 @@ public interface AutomationResourceRepository extends
 
 	Long getCsvAutomationsCount(Realm realm, String searchColumn, String searchPattern);
 
+	AutomationResource getAutomationById(Long id, Realm currentRealm);
 }

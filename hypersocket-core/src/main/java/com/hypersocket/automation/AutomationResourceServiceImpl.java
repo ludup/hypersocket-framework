@@ -1,13 +1,28 @@
 package com.hypersocket.automation;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
+import javax.cache.Cache;
+import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -24,6 +39,7 @@ import com.hypersocket.automation.events.AutomationResourceUpdatedEvent;
 import com.hypersocket.automation.events.AutomationTaskFinishedEvent;
 import com.hypersocket.automation.events.AutomationTaskStartedEvent;
 import com.hypersocket.events.EventService;
+import com.hypersocket.events.SystemEventStatus;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
@@ -51,6 +67,8 @@ import com.hypersocket.triggers.TriggerResultType;
 import com.hypersocket.triggers.TriggerType;
 import com.hypersocket.utils.HypersocketUtils;
 
+import antlr.StringUtils;
+
 @Service
 public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<AutomationResource>
 		implements AutomationResourceService, ApplicationListener<ContextStartedEvent> {
@@ -58,6 +76,13 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	private static Logger log = LoggerFactory.getLogger(AutomationResourceServiceImpl.class);
 
 	public static final String RESOURCE_BUNDLE = "AutomationResourceService";
+	
+	private static final String TEXT_IP = "text.ip";
+	private static final String TEXT_SUMMARY = "text.summary";
+	private static final String TEXT_TIMESTAMP = "text.timestamp";
+	private static final String TEXT_REALM = "text.realm";
+	private static final String TEXT_STATUS = "text.status";
+	private static final String TEXT_EVENT = "text.event";
 
 	@Autowired
 	AutomationResourceRepository repository;
@@ -416,5 +441,179 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	public Long getCsvAutomationsCount(Realm realm, String searchColumn, String searchPattern){
 		return repository.getCsvAutomationsCount(realm, searchColumn, searchPattern);
 	}
+	
+//	@Override
+//	public void generateChart(AutomationResource resource, HttpServletResponse response, Locale locale) throws AccessDeniedException{
+//		System.out.println("asd");
+//		Collection<PropertyCategory> automationProperties = getPropertyTemplate(resource);
+//		for (PropertyCategory t : automationProperties) {
+//			if (properties.containsKey(t.getResourceKey())) {
+//				if (t.getDisplayMode() == null || !t.getDisplayMode().equals("admin")) {
+//					changedProperties.put(t.getResourceKey(), properties.get(t.getResourceKey()));
+//				}
+//			}
+//		}
+//		resource.getProperties();
+//		resource.
+//		resource.
+//	}
+//	@Override
+//	public void generateChart(Realm realm, AuditFilterResource filter, Date startDate, Date endDate, String filename,
+//			boolean outputHeaders, String delimiter, CommonEndOfLineEnum terminate, String wrap, String escape,
+//			String attributes, ColumnSort[] sort, OutputStream out, Locale locale)
+//			throws AccessDeniedException, UnsupportedEncodingException {
+//		assertPermission(AuditLogPermission.READ);
+
+//		List<Map<String, String>> fileRows = generateCSVRows(realm, filter, startDate, endDate, attributes, sort, locale);
+//		List<String> headers = new ArrayList<String>();
+//		headers.add(TEXT_EVENT);
+//		headers.add(TEXT_STATUS);
+//		headers.add(TEXT_REALM);
+//		headers.add(TEXT_TIMESTAMP);
+//		headers.add(TEXT_IP);
+//		headers.add(TEXT_SUMMARY);
+//		Cache<String, String> i18n = i18nService.getResourceMap(locale);
+//		Set<String> includeAttributes = new HashSet<String>();
+//		includeAttributes.addAll(Arrays.asList(attributes.split(",")));
+//		for (String attributeName : includeAttributes) {
+//			headers.add(attributeName);
+//		}
+//		ICsvMapWriter mapWriter = null;
+//		Writer writer = new OutputStreamWriter(out, "UTF-8");
+//		try {
+//			String terminateCharacter = terminate.getCharacter();
+//
+//			final CsvPreference preferences = new CsvPreference.Builder(wrap.charAt(0), delimiter.charAt(0),
+//					terminateCharacter).surroundingSpacesNeedQuotes(true).build();
+//			mapWriter = new CsvMapWriter(writer, preferences);
+//
+//			final CellProcessor[] processors = getProcessors(headers.size());
+//			if (outputHeaders) {
+//
+//				List<String> i18nHeaders = new ArrayList<String>();
+//				for (String header : headers) {
+//					String txt = i18n.get(header);
+//					if (StringUtils.isNotBlank(txt)) {
+//						i18nHeaders.add(txt);
+//					} else {
+//						i18nHeaders.add(header);
+//					}
+//
+//				}
+//				mapWriter.writeHeader(i18nHeaders.toArray(new String[0]));
+//			}
+//			for (Map<String, String> row : fileRows) {
+//				mapWriter.write(row, headers.toArray(new String[0]), processors);
+//			}
+//			mapWriter.flush();
+//		} catch (IOException e) {
+//			log.error("Error generating CSV", e);
+//			throw new IllegalStateException(e.getMessage(), e);
+//		} finally {
+//			IOUtils.closeQuietly(mapWriter);
+//			IOUtils.closeQuietly(writer);
+//		}
+//
+//	}
+//
+//	protected List<Map<String, String>> generateCSVRows(Realm realm, AuditFilterResource filter, Date startDate, Date endDate,
+//			String attributes, ColumnSort[] sort, Locale locale) throws AccessDeniedException {
+//
+//		Collection<Realm> realms = new ArrayList<Realm>();
+//		if(realm==null) {
+//			realms.add(getCurrentRealm());
+//			realms.addAll(realmService.getRealmsByParent(getCurrentRealm()));
+//		} else {
+//			realms.add(realm);
+//		}
+//		
+//		
+//		Collection<String> eventList = null;
+//		Collection<SystemEventStatus> statusList = null;
+//
+//		if (filter.getIncludedEvents() != null && !"".equalsIgnoreCase(filter.getIncludedEvents())) {
+//			eventList = new ArrayList<String>(Arrays.asList(filter.getIncludedEvents().split("\\]|\\[")));
+//		}
+//		if (filter.getStatuses() != null && !filter.getStatuses().isEmpty()) {
+//			statusList = new ArrayList<SystemEventStatus>(filter.getStatuses());
+//		}
+//
+//		List<AuditLog> auditLogList = auditRepository.search(eventList, statusList, 
+//				startDate, endDate, sort, realms);
+//
+//		List<String> headers = new ArrayList<String>();
+//		headers.add(TEXT_EVENT);
+//		headers.add(TEXT_STATUS);
+//		headers.add(TEXT_REALM);
+//		headers.add(TEXT_TIMESTAMP);
+//		headers.add(TEXT_IP);
+//		headers.add(TEXT_SUMMARY);
+//
+//		Set<String> includeAttributes = new HashSet<String>();
+//		includeAttributes.addAll(Arrays.asList(attributes.split("\\]\\|\\[")));
+//
+//		List<Map<String, String>> fileRows = new ArrayList<Map<String, String>>();
+//
+//		Cache<String, String> i18n = i18nService.getResourceMap(locale);
+//		for (AuditLog auditLog : auditLogList) {
+//			final Map<String, String> auditLogMap = new HashMap<String, String>();
+//			auditLogMap.put(TEXT_EVENT, i18n.get(auditLog.getResourceKey()));
+//			auditLogMap.put(TEXT_STATUS, auditLog.getStatus().toString());
+//			auditLogMap.put(TEXT_REALM, auditLog.getRealm().getName());
+//			auditLogMap.put(TEXT_TIMESTAMP,
+//					HypersocketUtils.formatDate(new Date(auditLog.getTimestamp()), "yyyy-MM-dd HH:mm:ss"));
+//
+//			String summary = "";
+//			if (SystemEventStatus.WARNING.equals(auditLog.getStatus())) {
+//				summary = i18n.get(auditLog.getResourceKey() + ".warning");
+//			} else if (SystemEventStatus.FAILURE.equals(auditLog.getStatus())) {
+//				summary = i18n.get(auditLog.getResourceKey() + ".failure");
+//			} else if (SystemEventStatus.SUCCESS.equals(auditLog.getStatus())) {
+//				summary = i18n.get(auditLog.getResourceKey() + ".success");
+//			}
+//
+//			Map<String, AuditLogAttribute> attributeMap = auditLog.getAttributes();
+//			for (String attribute : attributeMap.keySet()) {
+//				if (includeAttributes.contains(attribute)) {
+//					headers.add(attribute);
+//				}
+//				auditLogMap.put(attribute, attributeMap.get(attribute).getValue());
+//			}
+//
+//			if (StringUtils.isNotBlank(summary)) {
+//				Matcher m = Pattern.compile("\\$?\\{(.*?)\\}").matcher(summary);
+//				while (m.find()) {
+//					String attrKey = m.group().replace('$', ' ').replace('{', ' ').replace('}', ' ').trim();
+//					if (attributeMap.containsKey(attrKey)) {
+//						String attributeValue = attributeMap.get(attrKey).getValue();
+//						if (attributeValue.startsWith("i18n") && attributeValue.split("/").length == 3) {
+//							String resourceKey = attributeValue.split("/")[2];
+//							String value = i18n.get(resourceKey);
+//							if (value == null) {
+//								value = resourceKey;
+//							}
+//							summary = summary.replace(m.group(), value);
+//						} else {
+//							summary = summary.replace(m.group(), attributeValue);
+//						}
+//					}
+//				}
+//				auditLogMap.put(TEXT_SUMMARY, summary);
+//			}
+//
+//			if (attributeMap.containsKey("attr.ipAddress")) {
+//				auditLogMap.put(TEXT_IP, attributeMap.get("attr.ipAddress").getValue());
+//			}
+//
+//			fileRows.add(auditLogMap);
+//		}
+//
+//		return fileRows;
+//	}
+//
+//	@Override
+//	public AutomationResource getAutomationById(Long id, Realm currentRealm) {
+//		return repository.getAutomationById(id, currentRealm);
+//	}
 
 }
