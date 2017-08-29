@@ -371,11 +371,6 @@ public class FileUploadServiceImpl extends
 			f.getParentFile().mkdirs();
 			return new FileOutputStream(f);
 		}
-
-		@Override
-		public boolean supportsOutputStream() {
-			return true;
-		}
 	}
 
 	@Override
