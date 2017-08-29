@@ -174,7 +174,7 @@ public class FileUploadServiceImpl extends
 
 				din = new DigestInputStream(in, md5);
 
-				fileUpload.setFileSize(uploadStore.writeFile(String.format("%d/%s", 
+				fileUpload.setFileSize(uploadStore.upload(String.format("%d/%s", 
 						fileUpload.getRealm().getId(), fileUpload.getName()), din));
 
 				String md5String = Hex.encodeHexString(md5.digest());
@@ -333,7 +333,7 @@ public class FileUploadServiceImpl extends
 		DefaultFileStore() {
 		}
 		
-		public long writeFile(String path, InputStream in)
+		public long upload(String path, InputStream in)
 				throws IOException {
 
 			File f = new File(
@@ -370,6 +370,11 @@ public class FileUploadServiceImpl extends
 					+ path);
 			f.getParentFile().mkdirs();
 			return new FileOutputStream(f);
+		}
+
+		@Override
+		public boolean supportsOutputStream() {
+			return true;
 		}
 	}
 
@@ -428,7 +433,7 @@ public class FileUploadServiceImpl extends
 			
 			try {
 				b = new Base64InputStream(IOUtils.toInputStream(resource.getContent(), "UTF-8"), false);
-				defaultStore.writeFile(String.format("%d/%s", resource.getRealm().getId(), resource.getName()), b);
+				defaultStore.upload(String.format("%d/%s", resource.getRealm().getId(), resource.getName()), b);
 				 
 			} catch(IOException ex) {
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.fileIO", ex.getMessage());

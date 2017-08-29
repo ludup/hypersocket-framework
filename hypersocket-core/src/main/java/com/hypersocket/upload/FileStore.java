@@ -6,9 +6,9 @@ import java.io.OutputStream;
 
 public interface FileStore {
 
-	long writeFile(String path, InputStream in) throws IOException;
-
 	InputStream getInputStream(String path) throws IOException;
 
 	OutputStream getOutputStream(String path) throws IOException;
+
+	long upload(String path, InputStream in) throws IOException;
 }
