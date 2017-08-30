@@ -131,7 +131,7 @@ public class FileStoreController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<FileUpload> createFile(HttpServletRequest request,
 			HttpServletResponse response,
-			@RequestPart(value = "file") MultipartFile file)
+			@RequestPart(value = "file") MultipartFile file, @RequestParam(required=false) Boolean publicFile)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
@@ -142,7 +142,7 @@ public class FileStoreController extends ResourceController {
 			FileUpload fileUpload;
 
 			Realm realm = sessionUtils.getCurrentRealm(request);
-			fileUpload = resourceService.createFile(file, realm, "upload");
+			fileUpload = resourceService.createFile(file, realm, "upload", publicFile==null ? false : publicFile);
 
 			return new ResourceStatus<FileUpload>(fileUpload, I18N.getResource(
 					sessionUtils.getLocale(request),
@@ -213,15 +213,17 @@ public class FileStoreController extends ResourceController {
 		}
 	}
 
+	@AuthenticationRequired
 	@RequestMapping(value = "files/download/{uuid}", method = RequestMethod.GET)
 	public void downloadFile(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String uuid)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, IOException, ResourceNotFoundException {
 
-			resourceService.downloadURIFile(uuid, request, response, true);
+			resourceService.downloadURIFile(uuid, request, response, true, false);
 	}
 	
+	@AuthenticationRequired
 	@RequestMapping(value = "files/download/{uuid}/{filename}", method = RequestMethod.GET)
 	public void downloadFile(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String uuid, 
@@ -229,7 +231,7 @@ public class FileStoreController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, IOException, ResourceNotFoundException {
 
-			resourceService.downloadURIFile(uuid, request, response, true);
+			resourceService.downloadURIFile(uuid, request, response, true, false);
 	}
 	
 	@RequestMapping(value = "files/public/{uuid}/{filename}", method = RequestMethod.GET)
@@ -240,7 +242,7 @@ public class FileStoreController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, IOException, ResourceNotFoundException {
 
-		resourceService.downloadURIFile(uuid, request, response, true);
+		resourceService.downloadURIFile(uuid, request, response, true, true);
 	}
 	
 	@RequestMapping(value = "files/public/{uuid}", method = RequestMethod.GET)
@@ -253,7 +255,7 @@ public class FileStoreController extends ResourceController {
 		/**
 		 * TODO only files that are declared public
 		 */
-		resourceService.downloadURIFile(uuid, request, response, true);
+		resourceService.downloadURIFile(uuid, request, response, true, true);
 	}
 	
 	@AuthenticationRequired

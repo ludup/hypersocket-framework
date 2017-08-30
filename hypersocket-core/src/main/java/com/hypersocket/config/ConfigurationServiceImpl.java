@@ -83,6 +83,24 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	}
 	
 	@Override
+	public Integer getIntValueOrSystemDefault(Realm realm, String resourceKey) {
+		return repository.getIntValueOrDefault(realm, 
+				resourceKey, 
+				getIntValue(
+						ApplicationContextServiceImpl.getInstance().getBean(RealmService.class).getSystemRealm(), 
+						resourceKey));
+	}
+	
+	@Override
+	public Boolean getBooleanValueOrSystemDefault(Realm realm, String resourceKey) {
+		return repository.getBooleanValueOrDefault(realm, 
+				resourceKey, 
+				getBooleanValue(
+						ApplicationContextServiceImpl.getInstance().getBean(RealmService.class).getSystemRealm(), 
+						resourceKey));
+	}
+	
+	@Override
 	public String getValue(String resourceKey) {
 		return getValue(getCurrentRealm(), resourceKey);
 	}

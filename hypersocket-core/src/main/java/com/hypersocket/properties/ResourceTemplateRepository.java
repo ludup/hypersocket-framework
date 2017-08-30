@@ -83,4 +83,9 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 
 	String getValueOrDefault(AbstractResource resource, String resourceKey, String defaultValue);
 
+	Boolean getBooleanValueOrDefault(AbstractResource resource, String name, Boolean defaultValue);
+
+	Integer getIntValueOrDefault(AbstractResource resource, String name, Integer defaultValue)
+			throws NumberFormatException;
+
 }

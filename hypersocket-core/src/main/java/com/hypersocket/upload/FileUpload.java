@@ -25,6 +25,9 @@ public class FileUpload extends RealmResource {
 	@Column(name = "type")
 	String type;
 	
+	@Column(name = "is_public")
+	Boolean isPublic;
+	
 	@Transient
 	String url;
 	
@@ -84,4 +87,14 @@ public class FileUpload extends RealmResource {
 	public void setContent(String content) {
 		this.content = content;
 	}
+
+	public Boolean getPublicFile() {
+		return isPublic;
+	}
+
+	public void setPublicFile(Boolean isPublic) {
+		this.isPublic = isPublic;
+	}
+	
+	
 }

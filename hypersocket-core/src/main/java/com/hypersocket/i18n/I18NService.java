@@ -14,6 +14,8 @@ import java.util.Set;
 
 import javax.cache.Cache;
 
+import org.springframework.context.event.ContextStartedEvent;
+
 public interface I18NService {
 
 	void registerBundle(String bundle);
@@ -31,6 +33,8 @@ public interface I18NService {
 	String getResource(String resourceKey, Locale locale);
 
 	String getResource(String resourceKey);
+
+	void onContextStarted(ContextStartedEvent event);
 
 
 }

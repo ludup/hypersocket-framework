@@ -8,7 +8,6 @@ import com.hypersocket.resource.AbstractResource;
 public interface ConfigurationRepository extends ResourceTemplateRepository {
 
 	void setValues(AbstractResource resource, Map<String, String> values);
-
 	
 
 }

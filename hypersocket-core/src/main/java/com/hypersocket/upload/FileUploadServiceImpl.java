@@ -121,34 +121,33 @@ public class FileUploadServiceImpl extends
 	}
 
 	@Override
-	public FileUpload createFile(final MultipartFile file, final Realm realm, String type)
+	public FileUpload createFile(final MultipartFile file, final Realm realm, String type, boolean publicFile)
 			throws ResourceException, AccessDeniedException,
 			IOException {
 
-		return createFile(file, realm, true, type, getDefaultStore());
+		return createFile(file, realm, type, getDefaultStore(), publicFile);
 	}
 
 	@Override
 	public FileUpload createFile(MultipartFile file, Realm realm,
-			boolean persist, String type, FileStore uploadStore)
+			String type, FileStore uploadStore, boolean publicFile)
 			throws ResourceException, AccessDeniedException,
 			IOException {
 
 		return createFile(file.getInputStream(), file.getOriginalFilename(),
-				realm, persist, type, uploadStore);
+				realm, type, uploadStore, publicFile);
 	}
 
 	@Override
-	public FileUpload createFile(InputStream in, String filename, Realm realm,
-			boolean persist)
+	public FileUpload createFile(InputStream in, String filename, Realm realm, boolean publicFile)
 			throws ResourceException, AccessDeniedException,
 			IOException {
-		return createFile(in, filename, realm, persist, mimeTypesMap.getContentType(filename), defaultStore);
+		return createFile(in, filename, realm, mimeTypesMap.getContentType(filename), defaultStore, publicFile);
 	}
 	
 	@Override
 	public FileUpload createFile(InputStream in, String filename, Realm realm,
-			boolean persist, String type, FileStore uploadStore)
+			String type, FileStore uploadStore, boolean publicFile)
 			throws ResourceException, AccessDeniedException,
 			IOException {
 
@@ -157,6 +156,8 @@ public class FileUploadServiceImpl extends
 		fileUpload.setRealm(realm);
 		fileUpload.setName(fileUpload.getUUID());
 		fileUpload.setType(type);
+		fileUpload.setPublicFile(publicFile);
+		
 		String shortCode;
 		do {
 			shortCode = HypersocketUtils.generateRandomAlphaNumericString(6);
@@ -185,9 +186,7 @@ public class FileUploadServiceImpl extends
 				IOUtils.closeQuietly(in);
 			}
 
-			if (persist) {
-				createResource(fileUpload, new HashMap<String, String>());
-			}
+			createResource(fileUpload, new HashMap<String, String>());
 
 			return fileUpload;
 		} catch (Throwable e) {
@@ -231,11 +230,15 @@ public class FileUploadServiceImpl extends
 	}
 
 	@Override
-	public void downloadURIFile(String uuid, HttpServletRequest request, HttpServletResponse response, boolean forceDownload)
+	public void downloadURIFile(String uuid, HttpServletRequest request, HttpServletResponse response, boolean forceDownload, boolean requirePublic)
 			throws IOException, AccessDeniedException, ResourceNotFoundException {
 
 		FileUpload fileUpload = getFileUpload(uuid);
 
+		if(requirePublic && !fileUpload.getPublicFile()) {
+			throw new AccessDeniedException();
+		}
+		
 		if(CacheUtils.checkValidCache(request, response, fileUpload.getModifiedDate().getTime())) {
 			return;
 		}
@@ -318,11 +321,11 @@ public class FileUploadServiceImpl extends
 
 	@Override
 	public FileUpload createFile(File outputFile, String filename,
-			Realm realm, boolean persist, String type) throws ResourceException, AccessDeniedException, IOException {
+			Realm realm, String type, boolean publicFile) throws ResourceException, AccessDeniedException, IOException {
 		
 		InputStream in = new FileInputStream(outputFile);
 		try {
-			return createFile(in, filename, realm, persist, type, getDefaultStore());
+			return createFile(in, filename, realm, type, getDefaultStore(), publicFile);
 		} finally {
 			IOUtils.closeQuietly(in);
 		}
@@ -397,7 +400,7 @@ public class FileUploadServiceImpl extends
 		
 		FileUpload u = getFileUpload(uuid);
 		return createFile(getInputStream(u.getName()), 
-				u.getFileName(), u.getRealm(), true);
+				u.getFileName(), u.getRealm(), u.getPublicFile());
 	}
 
 	@Override

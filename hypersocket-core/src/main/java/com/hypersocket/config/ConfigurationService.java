@@ -57,4 +57,8 @@ public interface ConfigurationService extends AuthenticatedService, PropertyTemp
 
 	String getValueOrSystemDefault(Realm realm, String resourceKey);
 
+	Boolean getBooleanValueOrSystemDefault(Realm realm, String string);
+
+	Integer getIntValueOrSystemDefault(Realm realm, String string);
+
 }

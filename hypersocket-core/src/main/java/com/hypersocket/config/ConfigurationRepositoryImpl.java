@@ -26,4 +26,5 @@ public class ConfigurationRepositoryImpl extends ResourceTemplateRepositoryImpl 
 			setValue(resource, e.getKey(), e.getValue());
 		}
 	}
+
 }

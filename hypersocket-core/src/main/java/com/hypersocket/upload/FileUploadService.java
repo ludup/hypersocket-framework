@@ -17,36 +17,37 @@ import com.hypersocket.resource.ResourceNotFoundException;
 
 public interface FileUploadService extends AbstractResourceService<FileUpload> {
 
-	public FileUpload createFile(MultipartFile file, Realm realm, String type)
+	public FileUpload createFile(MultipartFile file, Realm realm, String type, boolean publicFile)
 			throws ResourceException, AccessDeniedException,
 			IOException;
 
-//	public FileUpload getFileByUuid(String uuid) throws ResourceNotFoundException;
-
-	public void deleteFile(FileUpload fileUpload)
-			throws ResourceException, AccessDeniedException;
-
-	FileUpload createFile(MultipartFile file, Realm realm, boolean persist,
+	FileUpload createFile(MultipartFile file, Realm realm, 
 			String type,
-			FileStore uploadStore) throws ResourceException,
+			FileStore uploadStore, boolean publicFile) throws ResourceException,
 			AccessDeniedException, IOException;
 
 	FileUpload createFile(InputStream file, String filename, Realm realm,
-			boolean persist, String type, FileStore uploadStore)
+			 String type, FileStore uploadStore, boolean publicFile)
 			throws ResourceException, AccessDeniedException,
 			IOException;
 
+	FileUpload createFile(File outputFile, String filename, Realm realm,  String type, boolean publicFile)
+			throws ResourceException, AccessDeniedException, IOException;
+
+	FileUpload createFile(InputStream in, String filename, Realm realm, boolean publicFile)
+			throws ResourceException, AccessDeniedException, IOException;
+	
+	public void deleteFile(FileUpload fileUpload)
+			throws ResourceException, AccessDeniedException;
+	
 	void downloadURIFile(String uuid, HttpServletRequest request,
-			HttpServletResponse response, boolean forceDownload)
+			HttpServletResponse response, boolean forceDownload, boolean requirePublic)
 			throws IOException, AccessDeniedException, ResourceNotFoundException;
 
 	String getContentType(String uuid) throws ResourceNotFoundException,
 			IOException;
 
 	public String getContentType(File file);
-
-	FileUpload createFile(File outputFile, String filename, Realm realm, boolean persist, String type)
-			throws ResourceException, AccessDeniedException, IOException;
 
 	FileStore getDefaultStore();
 
@@ -55,9 +56,6 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 	String getContentType(String uuid, boolean isUUID) throws ResourceNotFoundException, IOException;
 
 	String getFilenameContentType(String filename) throws ResourceNotFoundException, IOException;
-	
-	FileUpload createFile(InputStream in, String filename, Realm realm, boolean persist)
-			throws ResourceException, AccessDeniedException, IOException;
 
 	public InputStream getInputStream(String uuid) throws IOException;
 

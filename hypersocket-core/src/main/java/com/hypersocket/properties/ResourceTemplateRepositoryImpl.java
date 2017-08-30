@@ -624,6 +624,20 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			return Integer.parseInt(getPropertyTemplate(resource, name).getDefaultValue());
 		}
 	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Integer getIntValueOrDefault(AbstractResource resource, String name, Integer defaultValue) throws NumberFormatException {
+		try {
+			String val = getValue(resource, name);
+			if(val==null) {
+				return defaultValue;
+			}
+			return Integer.parseInt(val);
+		} catch (NumberFormatException e) {
+			return Integer.parseInt(getPropertyTemplate(resource, name).getDefaultValue());
+		}
+	}
 
 	@Override
 	@Transactional(readOnly = true)
@@ -687,7 +701,23 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	public Boolean getBooleanValue(AbstractResource resource, String name) {
 		return Boolean.parseBoolean(getValue(resource, name));
 	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Boolean getBooleanValueOrDefault(AbstractResource resource, String name, Boolean defaultValue) {
+		try {
+			String val = getValue(resource, name);
+			if(val==null) {
+				return defaultValue;
+			}
+			return Boolean.parseBoolean(val);
+		} catch (NumberFormatException e) {
+			return Boolean.parseBoolean(getPropertyTemplate(resource, name).getDefaultValue());
+		}
+		
+	}
 
+	
 	@Override
 	public boolean hasPropertyTemplate(AbstractResource resource, String key) {
 		return propertyTemplates.containsKey(key);

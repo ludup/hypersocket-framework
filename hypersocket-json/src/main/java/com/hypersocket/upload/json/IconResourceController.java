@@ -66,7 +66,7 @@ public abstract class IconResourceController<T extends Resource> extends Resourc
 		}
 		
 		if(HypersocketUtils.isUUID(url)) {
-			fileService.downloadURIFile(url, request, response, false);
+			fileService.downloadURIFile(url, request, response, false, false);
 			return;
 		} 
 		
