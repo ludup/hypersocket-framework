@@ -89,7 +89,7 @@ public class FileUpload extends RealmResource {
 	}
 
 	public Boolean getPublicFile() {
-		return isPublic;
+		return isPublic == null ? Boolean.FALSE : isPublic;
 	}
 
 	public void setPublicFile(Boolean isPublic) {
