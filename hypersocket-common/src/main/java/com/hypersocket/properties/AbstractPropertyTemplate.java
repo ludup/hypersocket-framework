@@ -190,4 +190,18 @@ public abstract class AbstractPropertyTemplate {
 	public boolean isNonSystem() {
 		return attributes.containsKey("nonSystem") && attributes.get("nonSystem").equalsIgnoreCase("true");
 	}
+	
+	public boolean isSecret() {
+		if(attributes.containsKey("inputType")) {
+			switch(attributes.get("inputType")) {
+			case "password":
+			case "hidden":
+				return true;
+			default:
+				return false;
+			}
+		}
+		return false;
+	}
+	
 }

@@ -133,6 +133,12 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 			c = lookupPropertyValue(template, resource);
 		}
 
+		/**
+		 * Keep cached version encrypted.
+		 */
+		if(template.isEncrypted() && !template.isSecret()) {
+			return getDecryptedValue(template, resource);
+		}
 		return c;
 	}
 	
