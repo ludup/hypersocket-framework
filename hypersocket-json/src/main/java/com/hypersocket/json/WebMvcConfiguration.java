@@ -62,8 +62,9 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 		converters.remove(jc);
 		
 		MyJackson2HttpMessageConverter c = new MyJackson2HttpMessageConverter();
-		ObjectMapper mapper = c.getObjectMapper();
+		ObjectMapper mapper = jc.getObjectMapper();
 		mapper.registerModule(new Hibernate5Module().disable(Hibernate5Module.Feature.USE_TRANSIENT_ANNOTATION));
+		c.setObjectMapper(mapper);
 		
 		converters.add(c);
 		
