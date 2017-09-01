@@ -1,4 +1,4 @@
-package com.hypersocket.netty;
+package com.hypersocket.servlet.request;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -6,7 +6,7 @@ public class Request {
 
 	static ThreadLocal<HttpServletRequest> threadRequests = new ThreadLocal<HttpServletRequest>();
 	
-	static void set(HttpServletRequest request) {
+	public static void set(HttpServletRequest request) {
 		threadRequests.set(request);
 	}
 	
@@ -18,7 +18,7 @@ public class Request {
 		return threadRequests.get()!=null;
 	}
 	
-	static void remove() {
+	public static void remove() {
 		threadRequests.remove();
 	}
 }

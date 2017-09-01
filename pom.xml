@@ -46,6 +46,7 @@
 	<modules>
 		<module>hypersocket-common</module>
 		<module>hypersocket-core</module>
+		<module>hypersocket-servlet-common</module>
 		<module>hypersocket-server</module>
 		<module>hypersocket-json</module>
 		<module>hypersocket-netty</module>

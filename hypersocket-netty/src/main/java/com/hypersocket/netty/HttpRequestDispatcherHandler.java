@@ -68,6 +68,7 @@ import com.hypersocket.server.interfaces.http.HTTPProtocol;
 import com.hypersocket.server.websocket.WebsocketClient;
 import com.hypersocket.server.websocket.WebsocketClientCallback;
 import com.hypersocket.servlet.HypersocketSession;
+import com.hypersocket.servlet.request.Request;
 import com.hypersocket.utils.ITokenResolver;
 import com.hypersocket.utils.TokenAdapter;
 import com.hypersocket.utils.TokenReplacementReader;

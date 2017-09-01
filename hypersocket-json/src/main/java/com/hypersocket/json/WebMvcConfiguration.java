@@ -7,10 +7,14 @@
  ******************************************************************************/
 package com.hypersocket.json;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
@@ -18,8 +22,12 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
+import com.hypersocket.auth.AuthenticationService;
+import com.hypersocket.servlet.request.Request;
+import com.hypersocket.session.json.SessionUtils;
 
 @Component
 public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
@@ -30,7 +38,13 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 
 	@Autowired
 	RestApiInterceptor restApiInterceptor;
+	
+	@Autowired
+	AuthenticationService authenticationService; 
 
+	@Autowired
+	SessionUtils sessionUtils; 
+	
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(interceptor).addPathPatterns("/**").excludePathPatterns("/**/v1/rest/**");
@@ -60,4 +74,34 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 		configurer.setUseSuffixPatternMatch(false);
 	}
 	
+	@Override
+    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        converters.add(new MyJackson2HttpMessageConverter());
+        super.configureMessageConverters(converters);
+    }
+	
+	
+	class MyJackson2HttpMessageConverter extends MappingJackson2HttpMessageConverter {
+
+		@Override
+		protected void writeInternal(Object object, Type type, HttpOutputMessage outputMessage)
+				throws IOException, HttpMessageNotWritableException {
+			
+			boolean invokedContext = false;
+			if(sessionUtils.hasActiveSession(Request.get())) {
+				authenticationService.setCurrentSession(
+						sessionUtils.getActiveSession(Request.get()),
+						sessionUtils.getLocale(Request.get()));
+				invokedContext = true;
+			}
+			try {
+				super.writeInternal(object, type, outputMessage);	
+			} finally {
+				if(invokedContext) {
+					authenticationService.clearPrincipalContext();
+				}
+			}
+		}
+		
+	}
 }
