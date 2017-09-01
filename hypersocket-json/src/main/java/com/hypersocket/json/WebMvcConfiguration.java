@@ -22,7 +22,6 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import com.hypersocket.auth.AuthenticationService;
@@ -54,12 +53,20 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 
 	@Override
 	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+		MappingJackson2HttpMessageConverter jc = null;
 		for (HttpMessageConverter<?> converter : converters) {
 			if (converter instanceof MappingJackson2HttpMessageConverter) {
-				ObjectMapper mapper = ((MappingJackson2HttpMessageConverter) converter).getObjectMapper();
-				mapper.registerModule(new Hibernate5Module().disable(Hibernate5Module.Feature.USE_TRANSIENT_ANNOTATION));
+				jc = (MappingJackson2HttpMessageConverter) converter;
 			}
 		}
+		converters.remove(jc);
+		
+		MyJackson2HttpMessageConverter c = new MyJackson2HttpMessageConverter();
+		ObjectMapper mapper = c.getObjectMapper();
+		mapper.registerModule(new Hibernate5Module().disable(Hibernate5Module.Feature.USE_TRANSIENT_ANNOTATION));
+		
+		converters.add(c);
+		
 		super.extendMessageConverters(converters);
 	}
 	
@@ -73,12 +80,6 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 	public void configurePathMatch(PathMatchConfigurer configurer) {
 		configurer.setUseSuffixPatternMatch(false);
 	}
-	
-	@Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        converters.add(new MyJackson2HttpMessageConverter());
-        super.configureMessageConverters(converters);
-    }
 	
 	
 	class MyJackson2HttpMessageConverter extends MappingJackson2HttpMessageConverter {

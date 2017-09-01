@@ -332,6 +332,9 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				if(log.isDebugEnabled()) {
 					log.debug("Attempted to perform operation on closed channel", e);
 				}
+			} catch(IOException ex) { 
+				log.error(String.format("I/O error HTTP request worker: %s", ex.getMessage()));
+				ctx.getChannel().close();
 			} catch(Throwable t) {
 				log.error("Exception in HTTP request worker", t);
 				ctx.getChannel().close();
@@ -611,9 +614,13 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			throws Exception {
 
 		if (log.isErrorEnabled() && !(e.getCause() instanceof ClosedChannelException)) {
-			log.error("Exception in http request remoteAddress="
-					+ e.getChannel().getRemoteAddress() + " localAddress="
-					+ e.getChannel().getLocalAddress(), e.getCause());
+			if(e.getCause() instanceof IOException) {
+				log.error("Exception in HTTP request worker", e.getCause().getMessage());
+			} else {
+				log.error("Exception in http request remoteAddress="
+						+ e.getChannel().getRemoteAddress() + " localAddress="
+						+ e.getChannel().getLocalAddress(), e.getCause());
+			}
 		}
 
 		ctx.getChannel().close();
