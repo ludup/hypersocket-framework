@@ -615,7 +615,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 		if (log.isErrorEnabled() && !(e.getCause() instanceof ClosedChannelException)) {
 			if(e.getCause() instanceof IOException) {
-				log.error("Exception in HTTP request worker", e.getCause().getMessage());
+				log.error(String.format("Exception in HTTP request worker: %s", e.getCause().getMessage()));
 			} else {
 				log.error("Exception in http request remoteAddress="
 						+ e.getChannel().getRemoteAddress() + " localAddress="
