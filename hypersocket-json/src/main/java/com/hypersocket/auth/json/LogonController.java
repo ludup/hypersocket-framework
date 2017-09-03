@@ -177,6 +177,8 @@ public class LogonController extends AuthenticatedController {
 					}
 				}
 			}
+		} catch (AccessDeniedException e) {
+			// We are already in login so just continue
 		} catch (UnauthorizedException e) {
 			// We are already in login so just continue
 		} catch (SessionTimeoutException ex) {
