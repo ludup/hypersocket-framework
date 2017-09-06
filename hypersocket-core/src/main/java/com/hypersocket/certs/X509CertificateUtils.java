@@ -43,11 +43,13 @@ import java.util.List;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.io.IOUtils;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.DSAParameter;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -454,9 +456,11 @@ public class X509CertificateUtils {
 		PKCS10CertificationRequestBuilder builder = new JcaPKCS10CertificationRequestBuilder(
 				principal, publicKey);
 
+		ExtensionsGenerator extGen = new ExtensionsGenerator();
 		GeneralName altName = new GeneralName(GeneralName.dNSName, CN);
 		GeneralNames subjectAltName = new GeneralNames(altName);
-		builder.addAttribute(Extension.subjectAlternativeName, subjectAltName);
+        extGen.addExtension(Extension.subjectAlternativeName, false, subjectAltName);
+		builder.addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, extGen.generate());
 		
 		PKCS10CertificationRequest req = builder.build(cs);
 
