@@ -22,14 +22,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hypersocket.annotation.HypersocketExtension;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
-import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
+import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 
 @Repository
-public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepositoryImpl<AuthenticationScheme,Long>
+public class AuthenticationSchemeRepositoryImpl extends AbstractResourceRepositoryImpl<AuthenticationScheme>
 		implements AuthenticationSchemeRepository {
 
 	Set<String> enabledSchemes = new HashSet<String>();
@@ -78,7 +78,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 		scheme.setAllowedModules(allowedModules);
 		scheme.setLastButtonResourceKey(lastButtonResourceKey);
 		
-		saveEntity(scheme);
+		save(scheme);
 
 		int idx = 0;
 		for (String t : templates) {
@@ -166,7 +166,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	@Transactional
 	public void saveScheme(AuthenticationScheme s) {
 		s.setResourceCategory("authenticationScheme");
-		saveEntity(s);
+		save(s);
 	}
 
 	@Override
@@ -176,7 +176,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	}
 
 	@Override
-	protected Class<AuthenticationScheme> getEntityClass() {
+	protected Class<AuthenticationScheme> getResourceClass() {
 		return AuthenticationScheme.class;
 	}
 }

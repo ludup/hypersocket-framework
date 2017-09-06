@@ -26,7 +26,7 @@ import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.role.events.RoleEvent;
 
 @Service
@@ -86,7 +86,7 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 	}
 
 	@Override
-	protected Role checkResource(AbstractResource resource) {
+	protected Role checkResource(SimpleResource resource) {
 		if(resource==null) {
 			return null;
 		}

@@ -5,87 +5,87 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 
 public interface ResourceTemplateRepository extends PropertyRepository {
 
 	void loadPropertyTemplates(String xmlResourcePath);
 	
-	String getValue(AbstractResource resource, String resourceKey);
+	String getValue(SimpleResource resource, String resourceKey);
 
-	Integer getIntValue(AbstractResource resource, String resourceKey) throws NumberFormatException;
+	Integer getIntValue(SimpleResource resource, String resourceKey) throws NumberFormatException;
 
-	Boolean getBooleanValue(AbstractResource resource, String resourceKey);
+	Boolean getBooleanValue(SimpleResource resource, String resourceKey);
 
-	Long getLongValue(AbstractResource resource, String name)
+	Long getLongValue(SimpleResource resource, String name)
 			throws NumberFormatException;
 	
-	void setValue(AbstractResource resource, String resourceKey, String value);
+	void setValue(SimpleResource resource, String resourceKey, String value);
 
-	void setValue(AbstractResource resource, String resourceKey, Integer value);
+	void setValue(SimpleResource resource, String resourceKey, Integer value);
 
-	void setValue(AbstractResource resource, String resourceKey, Long value);
+	void setValue(SimpleResource resource, String resourceKey, Long value);
 	
-	void setValue(AbstractResource resource, String name, Boolean value);
+	void setValue(SimpleResource resource, String name, Boolean value);
 
-	void setValue(AbstractResource resource, String name, Date value);
+	void setValue(SimpleResource resource, String name, Date value);
 	
-	Collection<PropertyCategory> getPropertyCategories(AbstractResource resource, PropertyFilter... filters);
+	Collection<PropertyCategory> getPropertyCategories(SimpleResource resource, PropertyFilter... filters);
 	
-	String[] getValues(AbstractResource resource, String name);
+	String[] getValues(SimpleResource resource, String name);
 
-	Collection<PropertyTemplate> getPropertyTemplates(AbstractResource resource);
+	Collection<PropertyTemplate> getPropertyTemplates(SimpleResource resource);
 
 	Collection<PropertyCategory> getPropertyCategories(
-			AbstractResource resource, String group);
+			SimpleResource resource, String group);
 
-	Set<String> getPropertyNames(AbstractResource resource);
+	Set<String> getPropertyNames(SimpleResource resource);
 	
-	Map<String,String> getProperties(AbstractResource resource);
+	Map<String,String> getProperties(SimpleResource resource);
 
-	PropertyTemplate getPropertyTemplate(AbstractResource resource, String resourceKey);
+	PropertyTemplate getPropertyTemplate(SimpleResource resource, String resourceKey);
 
-	boolean hasPropertyTemplate(AbstractResource resource, String key);
+	boolean hasPropertyTemplate(SimpleResource resource, String key);
 
-	boolean hasPropertyValueSet(AbstractResource resource, String resourceKey);
+	boolean hasPropertyValueSet(SimpleResource resource, String resourceKey);
 	
-	Set<String> getVariableNames(AbstractResource resource);
+	Set<String> getVariableNames(SimpleResource resource);
 
-	void setValues(AbstractResource resource,
+	void setValues(SimpleResource resource,
 			Map<String, String> properties);
 
-	Date getDateValue(AbstractResource resource, String name)
+	Date getDateValue(SimpleResource resource, String name)
 			throws NumberFormatException;
 
 	void registerPropertyResolver(PropertyResolver resolver);
 
 	ResourcePropertyStore getDatabasePropertyStore();
 
-	Double getDoubleValue(AbstractResource resource, String resourceKey);
+	Double getDoubleValue(SimpleResource resource, String resourceKey);
 
-	void setDoubleValue(AbstractResource resource, String resourceKey,
+	void setDoubleValue(SimpleResource resource, String resourceKey,
 			Double value);
 
-	Set<String> getPropertyNames(AbstractResource resource,
+	Set<String> getPropertyNames(SimpleResource resource,
 			boolean includeResolvers);
 
-	String getValue(AbstractResource resource, String resourceKey, String defaultValue);
+	String getValue(SimpleResource resource, String resourceKey, String defaultValue);
 
 	Map<String, PropertyTemplate> getRepositoryTemplates();
 
-	String getDecryptedValue(AbstractResource resource, String resourceKey);
+	String getDecryptedValue(SimpleResource resource, String resourceKey);
 
-	Long[] getLongValues(AbstractResource resource, String name);
+	Long[] getLongValues(SimpleResource resource, String name);
 
-	Integer[] getIntValues(AbstractResource resource, String name);
+	Integer[] getIntValues(SimpleResource resource, String name);
 	
-	Map<String, String> getProperties(AbstractResource resource, boolean decrypt);
+	Map<String, String> getProperties(SimpleResource resource, boolean decrypt);
 
-	String getValueOrDefault(AbstractResource resource, String resourceKey, String defaultValue);
+	String getValueOrDefault(SimpleResource resource, String resourceKey, String defaultValue);
 
-	Boolean getBooleanValueOrDefault(AbstractResource resource, String name, Boolean defaultValue);
+	Boolean getBooleanValueOrDefault(SimpleResource resource, String name, Boolean defaultValue);
 
-	Integer getIntValueOrDefault(AbstractResource resource, String name, Integer defaultValue)
+	Integer getIntValueOrDefault(SimpleResource resource, String name, Integer defaultValue)
 			throws NumberFormatException;
 
 }

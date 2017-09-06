@@ -61,7 +61,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.repository.AbstractEntity;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.upload.FileUploadService;
 
@@ -172,7 +172,7 @@ public class MigrationExecutor {
                         } else {
                             resource = (AbstractEntity<Long>) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey, realm);
                             
-                            if(AbstractResource.class.isAssignableFrom(resourceClass) && resource == null && lookUpKey.isLegacyId()) {
+                            if(SimpleResource.class.isAssignableFrom(resourceClass) && resource == null && lookUpKey.isLegacyId()) {
                             	// Some legacy records are bound to show legacy id in export json but in not in DB, due to legacy source code,
                             	// for such records we fallback to resource id, just in case, as legacy id in json will map to resource id.
                             	LookUpKey lookUpKeyWithResourceId = migrationUtil.captureEntityLookup(node, resourceClass, true);
@@ -306,9 +306,9 @@ public class MigrationExecutor {
 
                         for (AbstractEntity<Long> abstractEntity : objectList) {
                             List<DatabaseProperty> databaseProperties;
-                            if (abstractEntity instanceof AbstractResource) {
-                                databaseProperties = migrationRepository.findAllDatabaseProperties((AbstractResource) abstractEntity);
-                                processEncrypted(databaseProperties, (AbstractResource) abstractEntity, realm);
+                            if (abstractEntity instanceof SimpleResource) {
+                                databaseProperties = migrationRepository.findAllDatabaseProperties((SimpleResource) abstractEntity);
+                                processEncrypted(databaseProperties, (SimpleResource) abstractEntity, realm);
                             } else {
                                 databaseProperties = Collections.emptyList();
                             }
@@ -350,7 +350,7 @@ public class MigrationExecutor {
     }
 
     
-    public void processEncrypted(List<DatabaseProperty> databaseProperties, AbstractResource resource, Realm realm) {
+    public void processEncrypted(List<DatabaseProperty> databaseProperties, SimpleResource resource, Realm realm) {
     	if(databaseProperties == null) {
     		return;
     	}
@@ -495,7 +495,7 @@ public class MigrationExecutor {
     }
 
     private void handleDatabaseProperties(JsonNode nodeObjectPack, AbstractEntity<Long> resource, Realm realm) throws IOException {
-        if(resource instanceof AbstractResource) {
+        if(resource instanceof SimpleResource) {
             JsonNode databasePropertiesObjectPack = nodeObjectPack.get("databaseProperties");
             Iterator<JsonNode> databasePropertiesIterator = databasePropertiesObjectPack.iterator();
             while (databasePropertiesIterator.hasNext()) {
@@ -503,7 +503,7 @@ public class MigrationExecutor {
                 String key = databaseProperties.get("resourceKey").asText();
                 String value = databaseProperties.get("value") == null ? null : databaseProperties.get("value").asText();
                 log.info("Recieved database property {}", key);
-                realmService.getProviderForRealm(realm).setValue((AbstractResource) resource, key, value);
+                realmService.getProviderForRealm(realm).setValue((SimpleResource) resource, key, value);
             }
         }
     }

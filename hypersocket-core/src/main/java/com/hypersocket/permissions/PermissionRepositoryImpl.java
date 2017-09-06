@@ -18,6 +18,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
+import org.hibernate.Query;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
@@ -641,6 +642,14 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@Transactional(readOnly = true)
 	public List<Role> getPermissionsByIds(Long... ids) {
 		return getResourcesByIds(ids);
+	}
+
+	@Override
+	@Transactional
+	public void deleteRealm(Realm realm) {
+		Query q2 = createQuery("delete from Role where realm = :r", true);
+		q2.setParameter("r", realm);
+		q2.executeUpdate();
 	}
 
 

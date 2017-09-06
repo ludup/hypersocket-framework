@@ -23,6 +23,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
+import org.hibernate.Query;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
@@ -732,5 +733,13 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for (T resource: resources) {
 			deleteResource(resource, ops);
 		}
+	}
+	
+	@Override
+	@Transactional
+	public void clearRealm(Realm realm) {
+		Query q = createQuery(String.format("delete from %s where realm = :r", getResourceClass().getSimpleName()), true);
+		q.setParameter("r", realm);
+		q.executeUpdate();
 	}
 }

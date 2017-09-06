@@ -76,4 +76,6 @@ public interface LocalUserRepository extends ResourceTemplateRepository, Abstrac
 	public Principal getUserByEmail(String email, Realm realm);
 
 	public void resetRealm(Collection<Principal> admins);
+
+	void deleteRealm(Realm realm);
 }

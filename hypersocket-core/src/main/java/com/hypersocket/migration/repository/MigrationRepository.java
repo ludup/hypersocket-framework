@@ -4,7 +4,7 @@ import com.hypersocket.migration.lookup.LookUpKey;
 import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntity;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 import org.hibernate.criterion.DetachedCriteria;
 
 import java.util.List;
@@ -16,7 +16,7 @@ public interface MigrationRepository {
 
     <T> List<T> findAllResourceInRealmOfType(Class<T> aClass, Realm realm);
 
-    List<DatabaseProperty> findAllDatabaseProperties(AbstractResource abstractResource);
+    List<DatabaseProperty> findAllDatabaseProperties(SimpleResource abstractResource);
 
     <T> T findEntityByLegacyIdInRealm(Class<T> aClass, Long legacyId, Realm realm);
 

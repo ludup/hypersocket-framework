@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.utils.HypersocketUtils;
@@ -57,15 +57,15 @@ public class ResourceUtils {
 		return implodeValues(vals);
 	}
 	
-	public static <T extends AbstractResource> String createCommaSeparatedString(Collection<T> resources) {
+	public static <T extends SimpleResource> String createCommaSeparatedString(Collection<T> resources) {
 		return createDelimitedResourceString(resources, ",");
 	}
 	
-	public static <T extends AbstractResource> String createCommaSeparatedString(Collection<T> resources, ResourceNameCallback<T> callback) {
+	public static <T extends SimpleResource> String createCommaSeparatedString(Collection<T> resources, ResourceNameCallback<T> callback) {
 		return createDelimitedResourceString(resources, ",", callback);
 	}
 	
-	public static <T extends AbstractResource> String createDelimitedResourceString(Collection<T> resources, String delimiter) {
+	public static <T extends SimpleResource> String createDelimitedResourceString(Collection<T> resources, String delimiter) {
 		return createDelimitedResourceString(resources, delimiter, new ResourceNameCallback<T>() {
 
 			@Override
@@ -75,7 +75,7 @@ public class ResourceUtils {
 			
 		});
 	}
-	public static <T extends AbstractResource> String createDelimitedResourceString(Collection<T> resources, String delimiter, ResourceNameCallback<T> callback) {
+	public static <T extends SimpleResource> String createDelimitedResourceString(Collection<T> resources, String delimiter, ResourceNameCallback<T> callback) {
 		StringBuffer buf = new StringBuffer();
 		for(T r : resources) {
 			if(buf.length() > 0) {
@@ -164,10 +164,10 @@ public class ResourceUtils {
 		return "!ENU!";
 	}
 
-	public static <T extends AbstractResource> String implodeResourceValues(Collection<T> entities) {
+	public static <T extends SimpleResource> String implodeResourceValues(Collection<T> entities) {
 		
 		StringBuilder buf = new StringBuilder();
-		for(AbstractResource e : entities) {
+		for(SimpleResource e : entities) {
 			if(buf.length() > 0) {
 				buf.append("]|[");
 			}
@@ -176,7 +176,7 @@ public class ResourceUtils {
 		return buf.toString();
 	}
 	
-	public static <T extends AbstractResource> String implodeResourceNames(Collection<T> entities,
+	public static <T extends SimpleResource> String implodeResourceNames(Collection<T> entities,
 			ResourceNameCallback<T> callback) {
 		
 		StringBuilder buf = new StringBuilder();
@@ -189,7 +189,7 @@ public class ResourceUtils {
 		return buf.toString();
 	}
 	
-	public static <T extends AbstractResource> String implodeNamePairValues(Collection<T> entities) {
+	public static <T extends SimpleResource> String implodeNamePairValues(Collection<T> entities) {
 		return implodeNamePairValues(new NameValueImploder<T>() {
 			@Override
 			public String getId(T t) {
@@ -215,7 +215,7 @@ public class ResourceUtils {
 		return buf.toString();
 	}
 	
-	public static <T extends AbstractResource> String implodeNamePairValues(NameValueImploder<T> imploder, Collection<T> entities) {
+	public static <T extends SimpleResource> String implodeNamePairValues(NameValueImploder<T> imploder, Collection<T> entities) {
 		
 		StringBuilder buf = new StringBuilder();
 		for(T e : entities) {

@@ -27,7 +27,7 @@ import com.hypersocket.migration.repository.MigrationRepository;
 import com.hypersocket.migration.util.MigrationUtil;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntity;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.resource.Resource;
 
 @Component
@@ -141,7 +141,7 @@ public class MigrationDeserializer extends StdDeserializer<AbstractEntity<?>> {
             if(valueToUpdate == null) {
                 //lets check db if we have something
                 valueToUpdate = (AbstractEntity<?>) migrationRepository.findEntityByLookUpKey(resourceClass, lookUpKey, realm);
-                if(AbstractResource.class.isAssignableFrom(resourceClass) && valueToUpdate == null && isReference && lookUpKey.isLegacyId()) {
+                if(SimpleResource.class.isAssignableFrom(resourceClass) && valueToUpdate == null && isReference && lookUpKey.isLegacyId()) {
                 	// Some legacy records are bound to show legacy id in export json but in not in DB, due to legacy source code,
                 	// for such records we fallback to resource id, just in case, as legacy id in json will map to resource id.
                 	LookUpKey lookUpKeyWithResourceId = migrationUtil.captureEntityLookup(node, resourceClass, true);

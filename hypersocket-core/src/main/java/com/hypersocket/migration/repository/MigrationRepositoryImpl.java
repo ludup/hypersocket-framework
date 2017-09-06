@@ -7,7 +7,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.repository.AbstractRepositoryImpl;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
@@ -89,7 +89,7 @@ public class MigrationRepositoryImpl extends AbstractRepositoryImpl<AbstractEnti
 
     @Override
     @Transactional(readOnly = true)
-    public List<DatabaseProperty> findAllDatabaseProperties(AbstractResource abstractResource) {
+    public List<DatabaseProperty> findAllDatabaseProperties(SimpleResource abstractResource) {
         return realmRepository.getPropertiesForResource(abstractResource);
     }
 

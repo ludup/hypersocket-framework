@@ -21,7 +21,7 @@ import com.hypersocket.migration.execution.stack.MigrationCurrentStack;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 
 @Component
 public class StringDeserializers extends Base {
@@ -55,8 +55,8 @@ public class StringDeserializers extends Base {
 					JsonNode node = p.getCodec().readTree(p);
 					String value = node.asText();
 
-					if(bean instanceof AbstractResource) {
-						final AbstractResource resource = (AbstractResource) bean;
+					if(bean instanceof SimpleResource) {
+						final SimpleResource resource = (SimpleResource) bean;
 						PropertyTemplate propertyTemplate = serializersUtil.getPropertyTemplate(resource, propName);
 						
 						if(propertyTemplate != null && propertyTemplate.isEncrypted() && !ResourceUtils.isEncrypted(value)) {

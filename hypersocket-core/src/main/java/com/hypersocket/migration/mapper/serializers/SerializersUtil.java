@@ -12,7 +12,7 @@ import com.hypersocket.migration.execution.MigrationContext;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 
 @Component
 public class SerializersUtil {
@@ -23,7 +23,7 @@ public class SerializersUtil {
 	MigrationContext migrationContext;
 
 	@SuppressWarnings("unchecked")
-	public PropertyTemplate getPropertyTemplate(final AbstractResource resource, final String currentName) {
+	public PropertyTemplate getPropertyTemplate(final SimpleResource resource, final String currentName) {
 		Map<String, PropertyTemplate> templateCache = (Map<String, PropertyTemplate>) migrationContext.get(TEMPLATE_CACHE);
 		if(templateCache == null) {
 			templateCache = new HashMap<>();

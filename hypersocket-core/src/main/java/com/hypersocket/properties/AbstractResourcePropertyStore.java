@@ -15,7 +15,7 @@ import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.cache.CacheService;
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.resource.RealmResource;
 
 public abstract class AbstractResourcePropertyStore implements ResourcePropertyStore {
@@ -88,7 +88,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		return templates.keySet();
 	}
 
-	private String createCacheKey(String resourceKey, AbstractResource resource) {
+	private String createCacheKey(String resourceKey, SimpleResource resource) {
 		String key = resourceKey;
 		if (resource != null) {
 			key += "/" + resource.getId();
@@ -110,11 +110,11 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		return templates.get(resourceKey);
 	}
 
-	protected abstract String lookupPropertyValue(AbstractPropertyTemplate template, AbstractResource resource);
+	protected abstract String lookupPropertyValue(AbstractPropertyTemplate template, SimpleResource resource);
 	
 	@Override
 	public String getPropertyValue(AbstractPropertyTemplate template,
-			AbstractResource resource) {
+			SimpleResource resource) {
 		String c;
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
 		String cache = template.getAttributes().get("cache");
@@ -143,7 +143,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 	}
 	
 	@Override
-	public String getDecryptedValue(AbstractPropertyTemplate template, AbstractResource resource) {
+	public String getDecryptedValue(AbstractPropertyTemplate template, SimpleResource resource) {
 		
 		String c;
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
@@ -171,12 +171,12 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		return c;
 	}
 	
-	protected abstract void doSetProperty(AbstractPropertyTemplate template, AbstractResource resource, String value);
+	protected abstract void doSetProperty(AbstractPropertyTemplate template, SimpleResource resource, String value);
 
 
 	@Override
 	public void setPropertyValue(AbstractPropertyTemplate template,
-			AbstractResource resource, String value) {
+			SimpleResource resource, String value) {
 
 		String cacheKey = createCacheKey(template.getResourceKey(), resource);
 		Cache<String, String> cachedValues;
@@ -213,7 +213,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 	}
 	
 	
-	private Realm resolveRealm(AbstractResource resource) {
+	private Realm resolveRealm(SimpleResource resource) {
 		if(resource instanceof RealmResource) {
 			return ((RealmResource) resource).getRealm();
 		} else if(resource instanceof Realm) {

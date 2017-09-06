@@ -7,12 +7,12 @@ import javax.persistence.Table;
 
 import com.hypersocket.migration.annotation.LookUpKeys;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 
 @Entity
 @Table(name="password_history")
 @LookUpKeys(propertyNames = {"legacyId"})
-public class PasswordHistory extends AbstractResource {
+public class PasswordHistory extends SimpleResource {
 
 	private static final long serialVersionUID = 8886201399925580320L;
 

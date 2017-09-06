@@ -11,11 +11,11 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.hypersocket.realm.Principal;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 
 @Entity
 @Table(name="email_receipts")
-public class EmailReceipt extends AbstractResource {
+public class EmailReceipt extends SimpleResource {
 
 	private static final long serialVersionUID = 903483817231146776L;
 

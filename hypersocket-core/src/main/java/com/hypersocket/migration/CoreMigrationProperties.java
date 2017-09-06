@@ -14,7 +14,6 @@ import com.hypersocket.attributes.user.UserAttributeCategory;
 import com.hypersocket.auth.AuthenticationModule;
 import com.hypersocket.automation.AutomationResource;
 import com.hypersocket.certificates.CertificateResource;
-import com.hypersocket.dashboard.message.DashboardMessage;
 import com.hypersocket.interfaceState.UserInterfaceState;
 import com.hypersocket.jobs.JobResource;
 import com.hypersocket.json.JsonMapper;
@@ -72,7 +71,6 @@ public class CoreMigrationProperties implements MigrationProperties {
                 FileUpload.class,
                 SecretKeyResource.class,
                 AuthenticationModule.class,
-                DashboardMessage.class,
                 UserInterfaceState.class,
                 JobResource.class,
                 MessageResource.class,

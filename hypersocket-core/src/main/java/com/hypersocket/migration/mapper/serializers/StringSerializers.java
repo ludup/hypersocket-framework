@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 
 @Component
 public class StringSerializers extends Serializers.Base {
@@ -32,8 +32,8 @@ public class StringSerializers extends Serializers.Base {
 				@Override
 				public void serialize(String value, JsonGenerator gen, SerializerProvider serializers)
 						throws IOException, JsonProcessingException {
-					if(gen.getOutputContext().getCurrentValue() instanceof AbstractResource) {
-						final AbstractResource resource = (AbstractResource) gen.getOutputContext().getCurrentValue();
+					if(gen.getOutputContext().getCurrentValue() instanceof SimpleResource) {
+						final SimpleResource resource = (SimpleResource) gen.getOutputContext().getCurrentValue();
 						final String currentName = gen.getOutputContext().getCurrentName();
 						System.out.println("currentName " + currentName);
 						PropertyTemplate propertyTemplate = serializersUtil.getPropertyTemplate(resource, currentName);

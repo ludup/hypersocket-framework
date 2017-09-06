@@ -122,4 +122,6 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 	List<Role> getPermissionsByIds(Long...ids);
 
 	Permission updatePermission(String name, boolean system, PermissionCategory category, boolean hidden);
+
+	public void deleteRealm(Realm realm);
 }

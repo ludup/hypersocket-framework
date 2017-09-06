@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.DistinctRootEntity;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.resource.ResourceRestriction;
 
 @Repository
@@ -50,7 +50,7 @@ public abstract class PropertyRepositoryImpl extends AbstractRepositoryImpl<Long
 
 	@Override
 	@Transactional(readOnly=true)
-	public DatabaseProperty getProperty(String resourceKey, AbstractResource resource) {
+	public DatabaseProperty getProperty(String resourceKey, SimpleResource resource) {
 		return get("resourceKey", resourceKey, DatabaseProperty.class, new ResourceRestriction(resource));
 	}
 	
@@ -62,13 +62,13 @@ public abstract class PropertyRepositoryImpl extends AbstractRepositoryImpl<Long
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<DatabaseProperty> getPropertiesForResource(AbstractResource resource) {
+	public List<DatabaseProperty> getPropertiesForResource(SimpleResource resource) {
 		return list("resource", resource.getId(), DatabaseProperty.class);
 	}
 
 	@Override
 	@Transactional
-	public void deletePropertiesForResource(AbstractResource resource) {
+	public void deletePropertiesForResource(SimpleResource resource) {
 		
 		List<DatabaseProperty> properties = getPropertiesForResource(resource);
 		for(Property p : properties) {
@@ -78,12 +78,17 @@ public abstract class PropertyRepositoryImpl extends AbstractRepositoryImpl<Long
 	
 	@Override
 	@Transactional
-	public void deleteProperties(AbstractResource resource, String... resourceKeys) {
+	public void deleteProperties(SimpleResource resource, String... resourceKeys) {
 		
-		Query query = createQuery("delete from DatabaseProperty where resourceKey in (:resourceKeys) and resource = :resource", true);
-		query.setParameterList("resourceKeys", resourceKeys);
-		query.setParameter("resource", resource.getId());
-		
+		Query query = null;
+		if(resourceKeys.length > 0) {
+			query = createQuery("delete from DatabaseProperty where resourceKey in (:resourceKeys) and resource = :resource", true);
+			query.setParameterList("resourceKeys", resourceKeys);
+			query.setParameter("resource", resource.getId());
+		} else {
+			query = createQuery("delete from DatabaseProperty where resource = :resource", true);
+			query.setParameter("resource", resource.getId());
+		}
 		query.executeUpdate();
 	}
 	

@@ -27,7 +27,7 @@ import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.role.events.RoleEvent;
 
@@ -88,7 +88,7 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 	}
 
 	@Override
-	protected Principal checkResource(AbstractResource resource) {
+	protected Principal checkResource(SimpleResource resource) {
 		if(resource==null) {
 			return null;
 		}

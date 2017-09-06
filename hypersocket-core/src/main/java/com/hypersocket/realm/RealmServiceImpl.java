@@ -49,6 +49,7 @@ import com.hypersocket.migration.execution.MigrationExecutor;
 import com.hypersocket.migration.file.FileUploadExporter;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
+import com.hypersocket.permissions.PermissionRepository;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.AbstractPropertyTemplate;
@@ -73,6 +74,9 @@ import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
+import com.hypersocket.resource.AbstractAssignableResourceRepository;
+import com.hypersocket.resource.AbstractResourceRepository;
+import com.hypersocket.resource.FindableResourceRepository;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceCreationException;
@@ -108,6 +112,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Autowired
 	PermissionService permissionService;
 
+	@Autowired
+	PermissionRepository permissionRepository;
+	
 	@Autowired
 	EventService eventService;
 
@@ -1220,7 +1227,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void deleteRealm(Realm realm) throws AccessDeniedException, ResourceException {
+	public void deleteRealm(final Realm realm) throws AccessDeniedException, ResourceException {
 
 		try {
 
@@ -1238,13 +1245,45 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			 * Get a copy of the realm to delete so we can fire events with the
 			 * current realm detail as delete will rename it
 			 */
-			Realm deletedRealm = getRealmById(realm.getId());
+			
+			transactionService.doInTransaction(new TransactionCallback<Void>() {
 
-			clearCache(deletedRealm);
+				@SuppressWarnings("unchecked")
+				@Override
+				public Void doInTransaction(TransactionStatus status) {
+					try {
+						Realm deletedRealm = getRealmById(realm.getId());
 
-			fireRealmDelete(deletedRealm);
+						clearCache(deletedRealm);
 
-			realmRepository.delete(deletedRealm);
+						fireRealmDelete(deletedRealm);
+						
+						for(FindableResourceRepository<?> repository : EntityResourcePropertyStore.getRepositories()) {
+							if(repository instanceof AbstractResourceRepository && !(repository instanceof RealmRepository)) {
+								((AbstractResourceRepository<?>)repository).clearRealm(realm);
+							}
+							if(repository instanceof AbstractAssignableResourceRepository) {
+								((AbstractAssignableResourceRepository<?>)repository).clearRealm(realm);
+							}
+						}
+						
+						permissionRepository.deleteRealm(realm);
+						
+						getLocalProvider().deleteRealm(realm);
+						
+						RealmProvider provider = getProviderForRealm(realm);
+						provider.deleteRealm(realm);
+						
+						configurationService.deleteRealm(realm);
+						
+						realmRepository.delete(deletedRealm);
+						return null;
+					} catch (ResourceException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+			});
+			
 
 			eventService.publishEvent(new RealmDeletedEvent(this, getCurrentSession(), realm));
 
