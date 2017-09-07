@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
@@ -35,6 +36,20 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 			AuthenticationScheme scheme) {
 		return allEntities(AuthenticationModule.class, new SchemeRestriction(
 				scheme));
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public List<AuthenticationModule> getModulesForRealm(
+			final Realm realm) {
+		return allEntities(AuthenticationModule.class, new CriteriaConfiguration() {
+			
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.createAlias("scheme","s");
+				criteria.add(Restrictions.eq("s.realm", realm));
+			}
+		});
 	}
 
 	class SchemeRestriction implements CriteriaConfiguration {
@@ -151,5 +166,13 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 			}
 			
 		});
+	}
+
+	@Override
+	@Transactional
+	public void deleteRealm(Realm realm) {
+		for(AuthenticationModule m : getModulesForRealm(realm)) {
+			delete(m);
+		}
 	}
 }

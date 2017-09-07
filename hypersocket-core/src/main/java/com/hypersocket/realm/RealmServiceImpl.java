@@ -75,7 +75,7 @@ import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
-import com.hypersocket.resource.AbstractResourceRepository;
+import com.hypersocket.resource.AbstractSimpleResourceRepository;
 import com.hypersocket.resource.FindableResourceRepository;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceConfirmationException;
@@ -1248,7 +1248,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			
 			transactionService.doInTransaction(new TransactionCallback<Void>() {
 
-				@SuppressWarnings("unchecked")
 				@Override
 				public Void doInTransaction(TransactionStatus status) {
 					try {
@@ -1259,8 +1258,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						fireRealmDelete(deletedRealm);
 						
 						for(FindableResourceRepository<?> repository : EntityResourcePropertyStore.getRepositories()) {
-							if(repository instanceof AbstractResourceRepository && !(repository instanceof RealmRepository)) {
-								((AbstractResourceRepository<?>)repository).clearRealm(realm);
+							if(repository instanceof AbstractSimpleResourceRepository
+									&& !(repository instanceof RealmRepository)
+									&& !(repository instanceof PermissionRepository)) {
+								((AbstractSimpleResourceRepository<?>)repository).clearRealm(realm);
 							}
 							if(repository instanceof AbstractAssignableResourceRepository) {
 								((AbstractAssignableResourceRepository<?>)repository).clearRealm(realm);

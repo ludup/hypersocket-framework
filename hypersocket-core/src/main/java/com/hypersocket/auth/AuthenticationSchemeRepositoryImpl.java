@@ -16,6 +16,7 @@ import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +33,23 @@ import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 public class AuthenticationSchemeRepositoryImpl extends AbstractResourceRepositoryImpl<AuthenticationScheme>
 		implements AuthenticationSchemeRepository {
 
+	@Autowired
+	AuthenticationModuleRepository moduleRepository; 
+	
 	Set<String> enabledSchemes = new HashSet<String>();
+	
+	@Override
+	@Transactional
+	public void clearRealm(Realm realm) {
+		
+		moduleRepository.deleteRealm(realm);
+		
+		for(AuthenticationScheme s : allSchemes(realm)) {
+			s.getAllowedRoles().clear();
+			s.getDeniedRoles().clear();
+			delete(s);
+		}
+	}
 	
 	@Override
 	public void enableAuthenticationScheme(String scheme) {
