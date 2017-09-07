@@ -131,7 +131,19 @@ public class FileStoreController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<FileUpload> createFile(HttpServletRequest request,
 			HttpServletResponse response,
-			@RequestPart(value = "file") MultipartFile file, @RequestParam(required=false) Boolean publicFile)
+			@RequestPart(value = "file") MultipartFile file)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		return createFile(request, response, file, false);
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "files/file/{publicFile}", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<FileUpload> createFile(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestPart(value = "file") MultipartFile file, @PathVariable Boolean publicFile)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
