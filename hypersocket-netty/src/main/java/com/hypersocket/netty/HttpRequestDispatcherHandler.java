@@ -56,7 +56,9 @@ import org.jboss.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFa
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.json.RestApi;
 import com.hypersocket.netty.forwarding.NettyWebsocketClient;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -312,7 +314,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 							if(log.isDebugEnabled()) {
 								log.debug(handler.getName() + " is processing HTTP request");
 							}
-							server.processDefaultResponse(nettyResponse, handler.getDisableCache());
+							server.processDefaultResponse(servletRequest, nettyResponse, handler.getDisableCache());
 							handler.handleHttpRequest(servletRequest, nettyResponse,
 									HttpRequestDispatcherHandler.this);
 							return;
@@ -320,7 +322,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					}
 				}
 		
-				server.processDefaultResponse(nettyResponse, true);
+				server.processDefaultResponse(servletRequest, nettyResponse, true);
 				send404(servletRequest, nettyResponse);
 				sendResponse(servletRequest, nettyResponse, false);
 		
@@ -424,7 +426,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				}
 			}
 			
-			addStandardHeaders(servletResponse);
+			addStandardHeaders(servletRequest, servletResponse);
 
 			InputStream content = processContent(
 					servletRequest,
@@ -567,7 +569,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		return null;
 	}
 
-	private void addStandardHeaders(HttpResponseServletWrapper servletResponse) {
+	private void addStandardHeaders(HttpServletRequest request, HttpResponseServletWrapper servletResponse) {
 
 		servletResponse.setHeader("Server", server.getApplicationName());
 
@@ -580,6 +582,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 		servletResponse.setHeader("Date",
 				DateUtils.formatDate(new Date(System.currentTimeMillis())));
+		
 	}
 
 	@Override

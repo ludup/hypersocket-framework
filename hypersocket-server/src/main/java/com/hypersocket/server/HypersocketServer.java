@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.ApplicationContext;
@@ -108,7 +109,7 @@ public interface HypersocketServer {
 
 	void registerClientConnector(ClientConnector connector);
 
-	void processDefaultResponse(HttpServletResponse response, boolean disableCache);
+	void processDefaultResponse(HttpServletRequest request, HttpServletResponse response, boolean disableCache);
 	
 	String getDefaultRedirectPath();
 	

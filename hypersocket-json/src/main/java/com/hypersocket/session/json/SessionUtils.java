@@ -230,10 +230,7 @@ public class SessionUtils {
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
 		cookie.setPath("/");
 		response.addCookie(cookie);
-		
-		if(request.isSecure() && systemConfigurationService.getBooleanValue("security.strictTransportSecurity")) {
-			response.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubdomains");
-		}
+	
 	}
 
 	public Locale getLocale(HttpServletRequest request) {
