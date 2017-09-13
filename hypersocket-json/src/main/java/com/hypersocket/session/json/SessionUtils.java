@@ -161,32 +161,46 @@ public class SessionUtils {
 
 	public Session getSession(HttpServletRequest request)
 			throws UnauthorizedException, SessionTimeoutException {
-		
+
+		/**
+		 * This method SHOULD NOT touch the session.
+		 */
 		Session session = null;
-		if (request.getSession().getAttribute(AUTHENTICATED_SESSION) == null) {
-			if (log.isDebugEnabled()) {
-				log.debug("Session object not attached to HTTP session");
+		
+		if(request.getParameterMap().containsKey(HYPERSOCKET_API_KEY)) {
+			session = sessionService.getSession(request.getParameter(HYPERSOCKET_API_KEY));
+		} else if(request.getHeader(HYPERSOCKET_API_SESSION) != null) {
+			session = sessionService.getSession((String)request.getHeader(HYPERSOCKET_API_SESSION));
+		}
+		
+		if (session != null && sessionService.isLoggedOn(session, false)) {
+			return session;
+		}
+		
+		if (request.getAttribute(AUTHENTICATED_SESSION) != null) {
+			session = (Session) request.getAttribute(AUTHENTICATED_SESSION);
+			if(sessionService.isLoggedOn(session, false)) {
+				return session;
 			}
-			session = getActiveSession(request);
-			if (session == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("No session attached to request");
-				}
-				throw new UnauthorizedException();
-			}
-			if (!sessionService.isLoggedOn(session, false)) {
-				throw new SessionTimeoutException();
-			}
-		} else {
+		}
+		
+		if (request.getSession().getAttribute(AUTHENTICATED_SESSION) != null) {
 			session = (Session) request.getSession().getAttribute(
 					AUTHENTICATED_SESSION);
-			if (!sessionService.isLoggedOn(session, false)) {
-				throw new UnauthorizedException();
+			if(sessionService.isLoggedOn(session, false)) {
+				return session;
+			}
+		}
+		for (Cookie c : request.getCookies()) {
+			if (c.getName().equals(HYPERSOCKET_API_SESSION)) {
+				session = sessionService.getSession(c.getValue());
+				if (session != null && sessionService.isLoggedOn(session, false)) {
+					return session;
+				}
 			}
 		}
 
-		return session;
-
+		throw new UnauthorizedException();
 	}
 	
 	private void verifySameSiteRequest(HttpServletRequest request, Session session) throws AccessDeniedException, UnauthorizedException {
@@ -200,7 +214,7 @@ public class SessionUtils {
 			requestToken = request.getParameter("token");
 			if(requestToken==null) {
 				log.warn(String.format("CSRF token missing from %s", request.getRemoteAddr()));
-				throw new AccessDeniedException("CSRF token missing");
+				throw new UnauthorizedException();
 			}
 		}
 		
@@ -318,7 +332,11 @@ public class SessionUtils {
 	}
 
 	public boolean hasActiveSession(HttpServletRequest request) {
-		return getActiveSession(request)!=null;
+		try {
+			return getSession(request)!=null;
+		} catch (UnauthorizedException | SessionTimeoutException e) {
+			return false;
+		}
 	}
 
 }

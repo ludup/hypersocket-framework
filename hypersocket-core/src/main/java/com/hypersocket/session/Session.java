@@ -225,7 +225,16 @@ public class Session extends AbstractEntity<String> {
 	}
 
 	public Date getLastUpdated() {
-		return sessionTimeout == Integer.MAX_VALUE ? new Date() : lastUpdated == null ? getModifiedDate() : lastUpdated;
+		if(sessionTimeout != null && sessionTimeout == Integer.MAX_VALUE) {
+			return new Date();
+		}
+		if(lastUpdated != null) {
+			return lastUpdated;
+		}
+		if(getModifiedDate() != null) {
+			return getModifiedDate();
+		}
+		return new Date();
 	}
 
 	public void setAuthenticationScheme(AuthenticationScheme scheme) {
