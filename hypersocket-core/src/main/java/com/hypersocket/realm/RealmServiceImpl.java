@@ -298,7 +298,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public List<RealmProvider> getProviders() throws AccessDeniedException {
 
 		assertPermissionOrRole(RealmPermission.READ, 
-				permissionService.getRealmAdministratorRole(getCurrentRealm()));
+				permissionService.getRealmAdministratorRole(getCurrentPrincipal().getRealm()));
 
 		return new ArrayList<RealmProvider>(providersByModule.values());
 	}
