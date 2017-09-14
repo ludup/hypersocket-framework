@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.auth.PasswordEncryptionType;
+import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.MediaNotFoundException;
@@ -75,6 +76,9 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	
 	@Autowired
 	PrincipalSuspensionService suspensionService; 
+	
+	@Autowired
+	ConfigurationService configurationService;
 	
 	PropertyCategory userDetailsCategory;
 
@@ -359,7 +363,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		try {
 			byte[] salt = encryptionService.generateSalt();
 			PasswordEncryptionType passwordEncoding = PasswordEncryptionType
-					.valueOf(getValue(principal.getRealm(), "password.encoding"));
+					.valueOf(configurationService.getValue(principal.getRealm(), "password.encoding"));
 			byte[] encryptedPassword = encryptionService.getEncryptedPassword(
 					password, salt, passwordEncoding);
 
