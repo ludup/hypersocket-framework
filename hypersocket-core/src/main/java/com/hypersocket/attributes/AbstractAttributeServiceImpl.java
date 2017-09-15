@@ -93,10 +93,6 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	}
 	
 	protected void init() {
-		
-		for(A attr : getRepository().allResources()) {
-			registerAttribute(attr);
-		}
 	}
 
 
@@ -131,11 +127,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		attribute.setVariableName(variableName);
 		attribute.setOptions(options);
 		
-		updateResource(attribute, roles, new HashMap<String,String>(), new TransactionAdapter<A>() {
-			public void afterOperation(A resource, Map<String,String> properties) {
-				registerAttribute(resource);		
-			}
-		});
+		updateResource(attribute, roles, new HashMap<String,String>());
 
 		return attribute;
 
@@ -179,11 +171,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		attribute.getRoles().clear();
 		attribute.getRoles().addAll(roles);
 
-		createResource(attribute, new HashMap<String,String>(), new TransactionAdapter<A>() {
-			public void afterOperation(A resource, Map<String,String> properties) {
-				registerAttribute(resource);		
-			}
-		});
+		createResource(attribute, new HashMap<String,String>());
 
 		return attribute;
 	}
@@ -228,7 +216,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	
 	protected abstract Map<String, PropertyTemplate> getAttributeTemplates(R principal);
 
-	protected void registerAttribute(A attr) {
+	protected PropertyTemplate registerAttribute(A attr) {
 
 		String resourceKey = "attributeCategory"
 				+ String.valueOf(attr.getCategory().getId());
@@ -238,10 +226,10 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 			cat = categoryService.registerPropertyCategory(attr.getCategory());
 		} 
 		
-		registerPropertyItem(cat, attr);
+		return createPropertyTemplate(cat, attr);
 	}
 
-	protected void registerPropertyItem(PropertyCategory cat, A attr) {
+	protected PropertyTemplate createPropertyTemplate(PropertyCategory cat, A attr) {
 
 		if (log.isInfoEnabled()) {
 			log.info("Registering property " + attr.getVariableName());
@@ -333,6 +321,8 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 						return cat1.getWeight().compareTo(cat2.getWeight());
 					}
 				});
+		
+		return template;
 	}
 
 	protected ResourcePropertyStore getStore() {

@@ -7,9 +7,9 @@
  ******************************************************************************/
 package com.hypersocket.properties;
 
-
-
 public class PropertyTemplate extends AbstractPropertyTemplate {
+
+	private static final long serialVersionUID = -167704344518669201L;
 
 	@Override
 	public String getValue() {

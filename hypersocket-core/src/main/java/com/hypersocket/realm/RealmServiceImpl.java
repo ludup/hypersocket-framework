@@ -1678,7 +1678,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
 
-		RealmProvider provider =getProviderForRealm(realm);
+		RealmProvider provider = getProviderForRealm(realm);
 
 		return provider.getEditablePropertyNames(realm);
 

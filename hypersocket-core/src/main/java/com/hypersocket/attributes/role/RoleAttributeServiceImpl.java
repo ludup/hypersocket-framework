@@ -1,16 +1,12 @@
 package com.hypersocket.attributes.role;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.cache.Cache;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +17,9 @@ import com.hypersocket.attributes.role.events.RoleAttributeCreatedEvent;
 import com.hypersocket.attributes.role.events.RoleAttributeDeletedEvent;
 import com.hypersocket.attributes.role.events.RoleAttributeEvent;
 import com.hypersocket.attributes.role.events.RoleAttributeUpdatedEvent;
+import com.hypersocket.cache.CacheService;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.Role;
-import com.hypersocket.properties.AbstractPropertyTemplate;
-import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.role.events.RoleEvent;
@@ -45,8 +40,9 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 	@Autowired
 	RoleAttributeCategoryService userAttributeCategoryService;
 
-	Map<Role, Map<String, PropertyTemplate>> userPropertyTemplates = new HashMap<Role, Map<String, PropertyTemplate>>();
-
+	@Autowired
+	CacheService cacheService; 
+	
 	public RoleAttributeServiceImpl() {
 		super(RESOURCE_BUNDLE, RoleAttribute.class, RoleAttributePermission.class, RoleAttributePermission.CREATE,
 				RoleAttributePermission.READ, RoleAttributePermission.UPDATE, RoleAttributePermission.DELETE, "RoleAttributes");
@@ -96,107 +92,116 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 		return (Role) resource;
 	}
 
+	@SuppressWarnings("unchecked")
 	protected Map<String, PropertyTemplate> getAttributeTemplates(Role role) {
 
+		@SuppressWarnings("rawtypes")
+		Cache<Long,Map> userPropertyTemplates = 
+				cacheService.getCacheOrCreate("roleAttributeTemplates",Long.class, Map.class);
+		
 
-		synchronized (userPropertyTemplates) {
-
-			if (role!=null && userPropertyTemplates.containsKey(role)) {
-				return userPropertyTemplates.get(role);
-			}
-
-			Collection<RoleAttribute> attributes = getRepository().getResources(getCurrentRealm());
-			Map<String, PropertyTemplate> results = new HashMap<String, PropertyTemplate>();
-
-			for (RoleAttribute attr : attributes) {
-				results.put(attr.getVariableName(), propertyTemplates.get(attr.getVariableName()));
-			}
-
-			if(role!=null) {
-				userPropertyTemplates.put(role, results);
-			}
-			return results;
+		if (role!=null && userPropertyTemplates.containsKey(role.getId())) {
+			return userPropertyTemplates.get(role.getId());
 		}
+
+		Collection<RoleAttribute> attributes = getRepository().getResources(getCurrentRealm());
+		Map<String, PropertyTemplate> results = new HashMap<String, PropertyTemplate>();
+
+		for (RoleAttribute attr : attributes) {
+			results.put(attr.getVariableName(), propertyTemplates.get(attr.getVariableName()));
+		}
+
+		if(role!=null) {
+			userPropertyTemplates.put(role.getId(), results);
+		}
+		return results;
+
 
 	}
-
-	public void registerPropertyItem(PropertyCategory cat, RoleAttribute attr) {
-
-		if (log.isInfoEnabled()) {
-			log.info("Registering property " + attr.getVariableName());
-		}
-		
-		String defaultValue =  attr.getDefaultValue();
-		if (attr.getDefaultValue() != null && attr.getDefaultValue().startsWith("classpath:")) {
-			String url = attr.getDefaultValue().substring(10);
-			InputStream in = getClass().getResourceAsStream(url);
-			try {
-				if (in != null) {
-					try {
-						defaultValue = IOUtils.toString(in);
-					} catch (IOException e) {
-						log.error(
-								"Failed to load default value classpath resource "
-										+ defaultValue, e);
-					}
-				} else {
-					log.error("Failed to load default value classpath resource "
-							+ url);
-				}
-			} finally {
-				IOUtils.closeQuietly(in);
-			}
-		}
-
-
-		PropertyTemplate template = propertyTemplates.get(attr.getVariableName());
-		if (template == null) {
-			template = new PropertyTemplate();
-			template.setResourceKey(attr.getVariableName());
-		}
-
-		template.getAttributes().put("inputType", attr.getType().getInputType());
-		template.getAttributes().put("filter", "custom");
-		
-		template.setName(attr.getName());
-		template.setDescription(attr.getDescription());
-		template.setDefaultValue(defaultValue);
-		template.setWeight(attr.getWeight());
-		template.setHidden(attr.getHidden());
-		template.setDisplayMode(attr.getDisplayMode().equalsIgnoreCase("admin") ? "admin" : "");
-		template.setReadOnly(attr.getReadOnly());
-		template.setMapping("");
-		template.setCategory(cat);
-		template.setEncrypted(attr.getEncrypted());
-		template.setDefaultsToProperty("");
-		template.setPropertyStore(userAttributeRepository.getDatabasePropertyStore());
-
-		cat.getTemplates().remove(template);
-		cat.getTemplates().add(template);
-
-		propertyTemplates.put(attr.getVariableName(), template);
-
-		Collections.sort(cat.getTemplates(),
-				new Comparator<AbstractPropertyTemplate>() {
-					@Override
-					public int compare(AbstractPropertyTemplate cat1,
-							AbstractPropertyTemplate cat2) {
-						return cat1.getWeight().compareTo(cat2.getWeight());
-					}
-				});
-
-
-		synchronized (userPropertyTemplates) {
-			userPropertyTemplates.clear();	
+	
+	private void resetAttributeCache() {
+		@SuppressWarnings("rawtypes")
+		Cache<Long,Map> userPropertyTemplates = 
+				cacheService.getCacheIfExists("roleAttributeTemplates",Long.class, Map.class);
+		if(userPropertyTemplates!=null) {
+			userPropertyTemplates.clear();
 		}
 	}
+
+//	public void registerPropertyItem(PropertyCategory cat, RoleAttribute attr) {
+//
+//		if (log.isInfoEnabled()) {
+//			log.info("Registering property " + attr.getVariableName());
+//		}
+//		
+//		String defaultValue =  attr.getDefaultValue();
+//		if (attr.getDefaultValue() != null && attr.getDefaultValue().startsWith("classpath:")) {
+//			String url = attr.getDefaultValue().substring(10);
+//			InputStream in = getClass().getResourceAsStream(url);
+//			try {
+//				if (in != null) {
+//					try {
+//						defaultValue = IOUtils.toString(in);
+//					} catch (IOException e) {
+//						log.error(
+//								"Failed to load default value classpath resource "
+//										+ defaultValue, e);
+//					}
+//				} else {
+//					log.error("Failed to load default value classpath resource "
+//							+ url);
+//				}
+//			} finally {
+//				IOUtils.closeQuietly(in);
+//			}
+//		}
+//
+//
+//		PropertyTemplate template = propertyTemplates.get(attr.getVariableName());
+//		if (template == null) {
+//			template = new PropertyTemplate();
+//			template.setResourceKey(attr.getVariableName());
+//		}
+//
+//		template.getAttributes().put("inputType", attr.getType().getInputType());
+//		template.getAttributes().put("filter", "custom");
+//		
+//		template.setName(attr.getName());
+//		template.setDescription(attr.getDescription());
+//		template.setDefaultValue(defaultValue);
+//		template.setWeight(attr.getWeight());
+//		template.setHidden(attr.getHidden());
+//		template.setDisplayMode(attr.getDisplayMode().equalsIgnoreCase("admin") ? "admin" : "");
+//		template.setReadOnly(attr.getReadOnly());
+//		template.setMapping("");
+//		template.setCategory(cat);
+//		template.setEncrypted(attr.getEncrypted());
+//		template.setDefaultsToProperty("");
+//		template.setPropertyStore(userAttributeRepository.getDatabasePropertyStore());
+//
+//		cat.getTemplates().remove(template);
+//		cat.getTemplates().add(template);
+//
+//		propertyTemplates.put(attr.getVariableName(), template);
+//
+//		Collections.sort(cat.getTemplates(),
+//				new Comparator<AbstractPropertyTemplate>() {
+//					@Override
+//					public int compare(AbstractPropertyTemplate cat1,
+//							AbstractPropertyTemplate cat2) {
+//						return cat1.getWeight().compareTo(cat2.getWeight());
+//					}
+//				});
+//
+//
+//		synchronized (userPropertyTemplates) {
+//			userPropertyTemplates.clear();	
+//		}
+//	}
 
 	@Override
 	public void onApplicationEvent(RoleEvent event) {
-		/**
-		 * Really quick hack. We will do better.
-		 */
-		userPropertyTemplates.clear();
+		resetAttributeCache();
 	}
 	
 	@Override
