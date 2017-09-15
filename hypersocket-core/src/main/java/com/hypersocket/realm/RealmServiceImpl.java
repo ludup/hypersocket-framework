@@ -2407,7 +2407,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Collection<? extends Realm> getRealmsByOwner() {
+	public Collection<Realm> getRealmsByOwner() {
 		
 		if(getCurrentRealm().isSystem()) {
 			try {
@@ -2428,7 +2428,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Collection<? extends Realm> getRealmsByParent(Realm currentRealm) {
+	public Collection<Realm> getRealmsByParent(Realm currentRealm) {
 		return realmRepository.getRealmsByParent(currentRealm);
 	}
 }

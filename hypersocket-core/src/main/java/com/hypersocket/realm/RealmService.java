@@ -296,11 +296,11 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Collection<TableFilter> getPrincipalFilters();
 
-	Collection<? extends Realm> getRealmsByOwner();
+	Collection<Realm> getRealmsByOwner();
 
 	void registerOwnershipResolver(RealmOwnershipResolver resolver);
 
-	Collection<? extends Realm> getRealmsByParent(Realm currentRealm);
+	Collection<Realm> getRealmsByParent(Realm currentRealm);
 
 }
 
