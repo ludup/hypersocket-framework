@@ -1925,29 +1925,33 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public void updateProfile(Realm realm, Principal principal, Map<String, String> properties)
 			throws AccessDeniedException, ResourceException {
 
-		RealmProvider provider = getProviderForRealm(realm);
-
-		/**
-		 * This ensures we only ever update those properties that are allowed
-		 */
-		String[] editableProperties = configurationService.getValues(realm, "realm.userEditableProperties");
-
+		RealmProvider provider = getProviderForPrincipal(principal);
+		RealmProvider realmProvider = getProviderForRealm(principal.getRealm());
 		Map<String, String> changedProperties = new HashMap<String, String>();
+		
+		if(realmProvider.equals(provider)) {
+			/**
+			 * This ensures we only ever update those properties that are allowed
+			 */
+			String[] editableProperties = configurationService.getValues(realm, "realm.userEditableProperties");
 
-		Collection<PropertyTemplate> userAttributes = userAttributeService.getPropertyResolver().getPropertyTemplates(principal);
-
-		for (String allowed : editableProperties) {
-			if (properties.containsKey(allowed)) {
-				changedProperties.put(allowed, properties.get(allowed));
-			}
-		}
-
-		for (PropertyTemplate t : userAttributes) {
-			if (properties.containsKey(t.getResourceKey())) {
-				if (t.getDisplayMode() == null || !t.getDisplayMode().equals("admin")) {
-					changedProperties.put(t.getResourceKey(), properties.get(t.getResourceKey()));
+			Collection<PropertyTemplate> userAttributes = userAttributeService.getPropertyResolver().getPropertyTemplates(principal);
+	
+			for (String allowed : editableProperties) {
+				if (properties.containsKey(allowed)) {
+					changedProperties.put(allowed, properties.get(allowed));
 				}
 			}
+	
+			for (PropertyTemplate t : userAttributes) {
+				if (properties.containsKey(t.getResourceKey())) {
+					if (t.getDisplayMode() == null || !t.getDisplayMode().equals("admin")) {
+						changedProperties.put(t.getResourceKey(), properties.get(t.getResourceKey()));
+					}
+				}
+			}
+		} else {
+			changedProperties.putAll(properties);
 		}
 
 		try {
