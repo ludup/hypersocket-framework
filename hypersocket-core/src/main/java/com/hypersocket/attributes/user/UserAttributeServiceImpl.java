@@ -88,7 +88,6 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 		return (Principal) resource;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected Map<String, PropertyTemplate> getAttributeTemplates(Principal principal) {
 
 		if (principal == null) {

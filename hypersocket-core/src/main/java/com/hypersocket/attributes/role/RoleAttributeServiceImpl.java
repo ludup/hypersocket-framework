@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
-import javax.cache.Cache;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,6 @@ import com.hypersocket.attributes.role.events.RoleAttributeCreatedEvent;
 import com.hypersocket.attributes.role.events.RoleAttributeDeletedEvent;
 import com.hypersocket.attributes.role.events.RoleAttributeEvent;
 import com.hypersocket.attributes.role.events.RoleAttributeUpdatedEvent;
-import com.hypersocket.cache.CacheService;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.PropertyTemplate;

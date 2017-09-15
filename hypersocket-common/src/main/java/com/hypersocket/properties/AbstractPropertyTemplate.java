@@ -1,6 +1,5 @@
 package com.hypersocket.properties;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,10 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public abstract class AbstractPropertyTemplate implements Serializable {
+public abstract class AbstractPropertyTemplate {
 
-	private static final long serialVersionUID = -1753866617860865290L;
-	
 	String resourceKey;
 	String defaultValue;
 	String defaultsToProperty;
