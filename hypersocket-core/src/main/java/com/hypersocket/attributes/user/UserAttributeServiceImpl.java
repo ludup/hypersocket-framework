@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
-import javax.cache.Cache;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +17,10 @@ import com.hypersocket.attributes.user.events.UserAttributeDeletedEvent;
 import com.hypersocket.attributes.user.events.UserAttributeEvent;
 import com.hypersocket.attributes.user.events.UserAttributeUpdatedEvent;
 import com.hypersocket.auth.FakePrincipal;
-import com.hypersocket.cache.CacheService;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.AbstractResource;
-import com.hypersocket.resource.ResourceException;
-import com.hypersocket.role.events.RoleEvent;
 
 @Service
 public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserAttribute, UserAttributeCategory, Principal>
@@ -42,9 +38,6 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 	@Autowired
 	UserAttributeCategoryService userAttributeCategoryService;
 
-	@Autowired
-	CacheService cacheService;
-	
 	FakePrincipal allUsersPrincial = new FakePrincipal("allusers");
 
 	public UserAttributeServiceImpl() {
@@ -102,17 +95,9 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 			principal = allUsersPrincial;
 		}
 
-		Cache<Long,Map> userPropertyTemplates = 
-					cacheService.getCacheOrCreate("userAttributeTemplates",Long.class, Map.class);
-
-		if (userPropertyTemplates.containsKey(principal.getId())) {
-			return (Map<String, PropertyTemplate>)userPropertyTemplates.get(principal.getId());
-		}
-
 		Collection<UserAttribute> attributes;
 
 		if(principal.equals(allUsersPrincial)) {
-
 			attributes = getRepository().getResources(principal.getRealm());
 		} else {
 			attributes = getPersonalResources(principal);
@@ -127,9 +112,7 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 			results.put(attr.getVariableName(), propertyTemplates.get(attr.getVariableName()));
 		}
 
-		userPropertyTemplates.put(principal.getId(), results);
 		return results;
-		
 
 	}
 
@@ -205,32 +188,7 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 //			userPropertyTemplates.clear();	
 //		}
 //	}
-
-	@Override
-	public void onApplicationEvent(RoleEvent event) {
-		resetAttributeCache();
-	}
 	
-	private void resetAttributeCache() {
-		@SuppressWarnings("rawtypes")
-		Cache<Long,Map> userPropertyTemplates = 
-				cacheService.getCacheIfExists("userAttributeTemplates",Long.class, Map.class);
-		if(userPropertyTemplates!=null) {
-			userPropertyTemplates.clear();
-		}
-	}
-	
-	@Override
-	protected void afterCreateResource(UserAttribute resource, Map<String, String> properties)
-			throws ResourceException {
-		resetAttributeCache();
-	}
-
-	@Override
-	protected void afterUpdateResource(UserAttribute resource, Map<String, String> properties)
-			throws ResourceException {
-		resetAttributeCache();
-	}
 
 	@Override
 	protected void fireResourceCreationEvent(UserAttribute resource) {

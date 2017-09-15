@@ -39,7 +39,7 @@ import com.hypersocket.role.events.RoleEvent;
 
 @Service
 public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C>, C extends RealmAttributeCategory<A>, R extends AbstractResource> extends AbstractAssignableResourceServiceImpl<A> implements
-		AttributeService<A, C>, ApplicationListener<RoleEvent> {
+		AttributeService<A, C> {
 
 	static Logger log = LoggerFactory.getLogger(AbstractAttributeServiceImpl.class);
 	public static final String RESOURCE_BUNDLE = "UserAttributes";

@@ -22,7 +22,6 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.resource.AbstractResource;
-import com.hypersocket.role.events.RoleEvent;
 
 @Service
 public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleAttribute, RoleAttributeCategory, Role>
@@ -39,9 +38,6 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 
 	@Autowired
 	RoleAttributeCategoryService userAttributeCategoryService;
-
-	@Autowired
-	CacheService cacheService; 
 	
 	public RoleAttributeServiceImpl() {
 		super(RESOURCE_BUNDLE, RoleAttribute.class, RoleAttributePermission.class, RoleAttributePermission.CREATE,
@@ -92,42 +88,22 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 		return (Role) resource;
 	}
 
-	@SuppressWarnings("unchecked")
 	protected Map<String, PropertyTemplate> getAttributeTemplates(Role role) {
-
-		@SuppressWarnings("rawtypes")
-		Cache<Long,Map> userPropertyTemplates = 
-				cacheService.getCacheOrCreate("roleAttributeTemplates",Long.class, Map.class);
-		
-
-		if (role!=null && userPropertyTemplates.containsKey(role.getId())) {
-			return userPropertyTemplates.get(role.getId());
-		}
 
 		Collection<RoleAttribute> attributes = getRepository().getResources(getCurrentRealm());
 		Map<String, PropertyTemplate> results = new HashMap<String, PropertyTemplate>();
 
 		for (RoleAttribute attr : attributes) {
+			if(!propertyTemplates.containsKey(attr.getVariableName())) {
+				propertyTemplates.put(attr.getVariableName(), registerAttribute(attr));
+			}
 			results.put(attr.getVariableName(), propertyTemplates.get(attr.getVariableName()));
 		}
 
-		if(role!=null) {
-			userPropertyTemplates.put(role.getId(), results);
-		}
 		return results;
-
 
 	}
 	
-	private void resetAttributeCache() {
-		@SuppressWarnings("rawtypes")
-		Cache<Long,Map> userPropertyTemplates = 
-				cacheService.getCacheIfExists("roleAttributeTemplates",Long.class, Map.class);
-		if(userPropertyTemplates!=null) {
-			userPropertyTemplates.clear();
-		}
-	}
-
 //	public void registerPropertyItem(PropertyCategory cat, RoleAttribute attr) {
 //
 //		if (log.isInfoEnabled()) {
@@ -198,11 +174,6 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 //			userPropertyTemplates.clear();	
 //		}
 //	}
-
-	@Override
-	public void onApplicationEvent(RoleEvent event) {
-		resetAttributeCache();
-	}
 	
 	@Override
 	protected void fireResourceCreationEvent(RoleAttribute resource) {
