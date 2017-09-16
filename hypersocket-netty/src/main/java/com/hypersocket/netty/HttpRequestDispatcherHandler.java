@@ -56,9 +56,7 @@ import org.jboss.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFa
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.auth.json.UnauthorizedException;
-import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.json.RestApi;
 import com.hypersocket.netty.forwarding.NettyWebsocketClient;
 import com.hypersocket.permissions.AccessDeniedException;

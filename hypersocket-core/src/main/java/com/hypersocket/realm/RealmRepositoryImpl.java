@@ -247,7 +247,7 @@ public class RealmRepositoryImpl extends
 
 	@Override
 	@Transactional(readOnly=true)
-	public Collection<? extends Realm> getRealmsByParent(final Realm realm) {
+	public Collection<Realm> getRealmsByParent(final Realm realm) {
 		if(realm.isSystem()) {
 			return allRealms();
 		}

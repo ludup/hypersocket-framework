@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.events.EventService;
@@ -34,12 +33,10 @@ import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.TransactionAdapter;
-import com.hypersocket.role.events.RoleEvent;
 
 @Service
 public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C>, C extends RealmAttributeCategory<A>, R extends AbstractResource> extends AbstractAssignableResourceServiceImpl<A> implements
-		AttributeService<A, C>, ApplicationListener<RoleEvent> {
+		AttributeService<A, C> {
 
 	static Logger log = LoggerFactory.getLogger(AbstractAttributeServiceImpl.class);
 	public static final String RESOURCE_BUNDLE = "UserAttributes";
@@ -93,10 +90,6 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	}
 	
 	protected void init() {
-		
-		for(A attr : getRepository().allResources()) {
-			registerAttribute(attr);
-		}
 	}
 
 
@@ -131,11 +124,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		attribute.setVariableName(variableName);
 		attribute.setOptions(options);
 		
-		updateResource(attribute, roles, new HashMap<String,String>(), new TransactionAdapter<A>() {
-			public void afterOperation(A resource, Map<String,String> properties) {
-				registerAttribute(resource);		
-			}
-		});
+		updateResource(attribute, roles, new HashMap<String,String>());
 
 		return attribute;
 
@@ -179,11 +168,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		attribute.getRoles().clear();
 		attribute.getRoles().addAll(roles);
 
-		createResource(attribute, new HashMap<String,String>(), new TransactionAdapter<A>() {
-			public void afterOperation(A resource, Map<String,String> properties) {
-				registerAttribute(resource);		
-			}
-		});
+		createResource(attribute, new HashMap<String,String>());
 
 		return attribute;
 	}
@@ -228,7 +213,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	
 	protected abstract Map<String, PropertyTemplate> getAttributeTemplates(R principal);
 
-	protected void registerAttribute(A attr) {
+	protected PropertyTemplate registerAttribute(A attr) {
 
 		String resourceKey = "attributeCategory"
 				+ String.valueOf(attr.getCategory().getId());
@@ -238,10 +223,10 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 			cat = categoryService.registerPropertyCategory(attr.getCategory());
 		} 
 		
-		registerPropertyItem(cat, attr);
+		return createPropertyTemplate(cat, attr);
 	}
 
-	protected void registerPropertyItem(PropertyCategory cat, A attr) {
+	protected PropertyTemplate createPropertyTemplate(PropertyCategory cat, A attr) {
 
 		if (log.isInfoEnabled()) {
 			log.info("Registering property " + attr.getVariableName());
@@ -333,6 +318,8 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 						return cat1.getWeight().compareTo(cat2.getWeight());
 					}
 				});
+		
+		return template;
 	}
 
 	protected ResourcePropertyStore getStore() {

@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.PermissionScope;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
@@ -235,7 +236,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	protected abstract Set<Role> getCurrentRoles();
 	
-	protected void assertPermissionOrRole(PermissionType permission, Role... roles)
+	protected void assertPermissionOrRole(PermissionScope scope, PermissionType permission, Role... roles)
 			throws AccessDeniedException {
 		Set<Role> principalRoles = getCurrentRoles();
 		for(Role role : roles) {
@@ -244,6 +245,59 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 			}
 		}
 		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, permission);
+	}
+	
+	protected void assertAnyPermissionOrRealmAdministrator(PermissionScope scope, PermissionType... permission)
+			throws AccessDeniedException {
+		Realm parentRealm = getCurrentPrincipal().getRealm();
+		Realm assertRealm = getCurrentRealm();
+		
+		if(scope == PermissionScope.INCLUDE_CHILD_REALMS) {
+			while(assertRealm.hasParent()) {
+				assertRealm = assertRealm.getParent();
+				if(parentRealm.equals(assertRealm)) {
+					break;
+				}
+			}
+		}
+		if(!parentRealm.equals(assertRealm)) {
+			assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, permission);
+		}
+		
+		for(Role role : getCurrentRoles()) {
+			if(role.isSystem() && role.isAllPermissions()) {
+				return;
+			}
+		}
+		
+		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, permission);
+	}
+	
+	protected void assertRealmAdministrator(PermissionScope scope)
+			throws AccessDeniedException {
+		Realm parentRealm = getCurrentPrincipal().getRealm();
+		Realm assertRealm = getCurrentRealm();
+		
+		if(scope==PermissionScope.INCLUDE_CHILD_REALMS) {
+			while(assertRealm.hasParent()) {
+				assertRealm = assertRealm.getParent();
+				if(parentRealm.equals(assertRealm)) {
+					break;
+				}
+			}
+		}
+		
+		if(!parentRealm.equals(assertRealm)) {
+			throw new AccessDeniedException();
+		}
+		
+		for(Role role : getCurrentRoles()) {
+			if(role.isSystem() && role.isAllPermissions()) {
+				return;
+			}
+		}
+		
+		throw new AccessDeniedException();
 	}
 	
 	protected void assertRoleOrAnyPermission(Role role, PermissionType... permission)

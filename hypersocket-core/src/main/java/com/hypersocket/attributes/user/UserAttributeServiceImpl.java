@@ -1,16 +1,11 @@
 package com.hypersocket.attributes.user;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +18,9 @@ import com.hypersocket.attributes.user.events.UserAttributeEvent;
 import com.hypersocket.attributes.user.events.UserAttributeUpdatedEvent;
 import com.hypersocket.auth.FakePrincipal;
 import com.hypersocket.permissions.PermissionCategory;
-import com.hypersocket.properties.AbstractPropertyTemplate;
-import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.AbstractResource;
-import com.hypersocket.resource.ResourceException;
-import com.hypersocket.role.events.RoleEvent;
 
 @Service
 public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserAttribute, UserAttributeCategory, Principal>
@@ -47,7 +38,6 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 	@Autowired
 	UserAttributeCategoryService userAttributeCategoryService;
 
-	Map<Principal, Map<String, PropertyTemplate>> userPropertyTemplates = new HashMap<Principal, Map<String, PropertyTemplate>>();
 	FakePrincipal allUsersPrincial = new FakePrincipal("allusers");
 
 	public UserAttributeServiceImpl() {
@@ -104,131 +94,100 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 			principal = allUsersPrincial;
 		}
 
-		synchronized (userPropertyTemplates) {
+		Collection<UserAttribute> attributes;
 
-			if (userPropertyTemplates.containsKey(principal)) {
-				return userPropertyTemplates.get(principal);
-			}
-
-			Collection<UserAttribute> attributes;
-
-			if(principal.equals(allUsersPrincial)) {
-
-				attributes = getRepository().getResources(principal.getRealm());
-			} else {
-				attributes = getPersonalResources(principal);
-			}
-
-			Map<String, PropertyTemplate> results = new HashMap<String, PropertyTemplate>();
-
-			for (UserAttribute attr : attributes) {
-				results.put(attr.getVariableName(), propertyTemplates.get(attr.getVariableName()));
-			}
-
-			userPropertyTemplates.put(principal, results);
-			return results;
+		if(principal.equals(allUsersPrincial)) {
+			attributes = getRepository().getResources(principal.getRealm());
+		} else {
+			attributes = getPersonalResources(principal);
 		}
+
+		Map<String, PropertyTemplate> results = new HashMap<String, PropertyTemplate>();
+
+		for (UserAttribute attr : attributes) {
+			if(!propertyTemplates.containsKey(attr.getVariableName())) {
+				propertyTemplates.put(attr.getVariableName(), registerAttribute(attr));
+			}
+			results.put(attr.getVariableName(), propertyTemplates.get(attr.getVariableName()));
+		}
+
+		return results;
 
 	}
 
-	public void registerPropertyItem(PropertyCategory cat, UserAttribute attr) {
-
-		if (log.isInfoEnabled()) {
-			log.info("Registering property " + attr.getVariableName());
-		}
-		
-		String defaultValue =  attr.getDefaultValue();
-		if (attr.getDefaultValue() != null && attr.getDefaultValue().startsWith("classpath:")) {
-			String url = attr.getDefaultValue().substring(10);
-			InputStream in = getClass().getResourceAsStream(url);
-			try {
-				if (in != null) {
-					try {
-						defaultValue = IOUtils.toString(in);
-					} catch (IOException e) {
-						log.error(
-								"Failed to load default value classpath resource "
-										+ defaultValue, e);
-					}
-				} else {
-					log.error("Failed to load default value classpath resource "
-							+ url);
-				}
-			} finally {
-				IOUtils.closeQuietly(in);
-			}
-		}
-
-
-		PropertyTemplate template = propertyTemplates.get(attr.getVariableName());
-		if (template == null) {
-			template = new PropertyTemplate();
-			template.setResourceKey(attr.getVariableName());
-		}
-
-		template.setName(attr.getName());
-		template.setDescription(attr.getDescription());
-		
-		template.getAttributes().put("inputType", attr.getType().getInputType());
-		template.getAttributes().put("filter", "custom");
-		template.getAttributes().put("userAttribute", "true");
-		
-		template.setDefaultValue(defaultValue);
-		template.setWeight(attr.getWeight());
-		template.setHidden(attr.getHidden());
-		template.setDisplayMode(attr.getDisplayMode().equalsIgnoreCase("admin") ? "admin" : "");
-		template.setReadOnly(attr.getReadOnly());
-		template.setMapping("");
-		template.setCategory(cat);
-		template.setEncrypted(attr.getEncrypted());
-		template.setDefaultsToProperty("");
-		template.setPropertyStore(userAttributeRepository.getDatabasePropertyStore());
-
-		cat.getTemplates().remove(template);
-		cat.getTemplates().add(template);
-
-		propertyTemplates.put(attr.getVariableName(), template);
-
-		Collections.sort(cat.getTemplates(),
-				new Comparator<AbstractPropertyTemplate>() {
-					@Override
-					public int compare(AbstractPropertyTemplate cat1,
-							AbstractPropertyTemplate cat2) {
-						return cat1.getWeight().compareTo(cat2.getWeight());
-					}
-				});
-
-
-		synchronized (userPropertyTemplates) {
-			userPropertyTemplates.clear();	
-		}
-	}
-
-	@Override
-	public void onApplicationEvent(RoleEvent event) {
-		/**
-		 * Really quick hack. We will do better.
-		 */
-		synchronized (userPropertyTemplates) {
-			userPropertyTemplates.clear();
-		}
-	}
+//	public void registerPropertyItem(PropertyCategory cat, UserAttribute attr) {
+//
+//		if (log.isInfoEnabled()) {
+//			log.info("Registering property " + attr.getVariableName());
+//		}
+//		
+//		String defaultValue =  attr.getDefaultValue();
+//		if (attr.getDefaultValue() != null && attr.getDefaultValue().startsWith("classpath:")) {
+//			String url = attr.getDefaultValue().substring(10);
+//			InputStream in = getClass().getResourceAsStream(url);
+//			try {
+//				if (in != null) {
+//					try {
+//						defaultValue = IOUtils.toString(in);
+//					} catch (IOException e) {
+//						log.error(
+//								"Failed to load default value classpath resource "
+//										+ defaultValue, e);
+//					}
+//				} else {
+//					log.error("Failed to load default value classpath resource "
+//							+ url);
+//				}
+//			} finally {
+//				IOUtils.closeQuietly(in);
+//			}
+//		}
+//
+//
+//		PropertyTemplate template = propertyTemplates.get(attr.getVariableName());
+//		if (template == null) {
+//			template = new PropertyTemplate();
+//			template.setResourceKey(attr.getVariableName());
+//		}
+//
+//		template.setName(attr.getName());
+//		template.setDescription(attr.getDescription());
+//		
+//		template.getAttributes().put("inputType", attr.getType().getInputType());
+//		template.getAttributes().put("filter", "custom");
+//		template.getAttributes().put("userAttribute", "true");
+//		
+//		template.setDefaultValue(defaultValue);
+//		template.setWeight(attr.getWeight());
+//		template.setHidden(attr.getHidden());
+//		template.setDisplayMode(attr.getDisplayMode().equalsIgnoreCase("admin") ? "admin" : "");
+//		template.setReadOnly(attr.getReadOnly());
+//		template.setMapping("");
+//		template.setCategory(cat);
+//		template.setEncrypted(attr.getEncrypted());
+//		template.setDefaultsToProperty("");
+//		template.setPropertyStore(userAttributeRepository.getDatabasePropertyStore());
+//
+//		cat.getTemplates().remove(template);
+//		cat.getTemplates().add(template);
+//
+//		propertyTemplates.put(attr.getVariableName(), template);
+//
+//		Collections.sort(cat.getTemplates(),
+//				new Comparator<AbstractPropertyTemplate>() {
+//					@Override
+//					public int compare(AbstractPropertyTemplate cat1,
+//							AbstractPropertyTemplate cat2) {
+//						return cat1.getWeight().compareTo(cat2.getWeight());
+//					}
+//				});
+//
+//
+//		synchronized (userPropertyTemplates) {
+//			userPropertyTemplates.clear();	
+//		}
+//	}
 	
-	@Override
-	protected void afterCreateResource(UserAttribute resource, Map<String, String> properties)
-			throws ResourceException {
-		synchronized (userPropertyTemplates) {
-			userPropertyTemplates.clear();
-		}
-	}
-
-	@Override
-	protected void afterUpdateResource(UserAttribute resource, Map<String, String> properties)
-			throws ResourceException {
-		synchronized (userPropertyTemplates) {
-			userPropertyTemplates.clear();
-		}
-	}
 
 	@Override
 	protected void fireResourceCreationEvent(UserAttribute resource) {

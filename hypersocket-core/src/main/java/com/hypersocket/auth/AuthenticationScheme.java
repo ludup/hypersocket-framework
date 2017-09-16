@@ -22,6 +22,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.resource.RealmResource;
@@ -125,14 +126,17 @@ public class AuthenticationScheme extends RealmResource {
 		this.lastButtonResourceKey = lastButtonResourceKey;
 	}
 	
+	@JsonIgnore
 	public Set<Role> getAllowedRoles() {
 		return allowedRoles;
 	}
 
+	@JsonIgnore
 	public Set<Role> getDeniedRoles() {
 		return deniedRoles;
 	}
 
+	@JsonIgnore
 	public String getDeniedRoleError() {
 		return deniedRoleError;
 	}
