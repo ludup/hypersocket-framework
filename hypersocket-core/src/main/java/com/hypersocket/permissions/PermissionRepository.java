@@ -117,9 +117,11 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 
 	List<Permission> getPermissionsByResourceKeys(final String...resourceKeys);
 
-	public List<Role> searchNoPersonalNoAllUserRoles(final Realm realm, String searchPattern,
+	List<Role> searchNoPersonalNoAllUserRoles(final Realm realm, String searchPattern,
 													 int start, int length, ColumnSort[] sorting);
 	List<Role> getPermissionsByIds(Long...ids);
 
 	Permission updatePermission(String name, boolean system, PermissionCategory category, boolean hidden);
+
+	Role getRoleByResourceCategory(String resourceCategory);
 }
