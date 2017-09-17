@@ -1878,7 +1878,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					if(principal.getRealm().isDeleted()) {
 						continue;
 					}
-					if(principal.isSystem() || permissionService.hasSystemPermission(principal)) {
+					if(principal.isSystem() || permissionService.hasAdministrativePermission(principal)) {
 						log.info(String.format("Resolving duplicate principals to %s/%s [System User]", principal.getRealm().getName(), principal.getPrincipalName()));
 						return principal;
 					} 
