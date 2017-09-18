@@ -50,6 +50,7 @@ import com.hypersocket.migration.file.FileUploadExporter;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionRepository;
+import com.hypersocket.permissions.PermissionScope;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.AbstractPropertyTemplate;
@@ -304,9 +305,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public List<RealmProvider> getProviders() throws AccessDeniedException {
 
-		assertPermissionOrRole(RealmPermission.READ, 
-				permissionService.getRealmAdministratorRole(getCurrentRealm()));
-
+		assertAnyPermissionOrRealmAdministrator(PermissionScope.INCLUDE_CHILD_REALMS, RealmPermission.READ);
+		
 		return new ArrayList<RealmProvider>(providersByModule.values());
 	}
 
@@ -1026,8 +1026,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void setRealmProperty(Realm realm, String resourceKey, String value) throws AccessDeniedException {
 
-		assertPermissionOrRole(RealmPermission.UPDATE, 
-				permissionService.getRealmAdministratorRole(realm));
+		assertAnyPermissionOrRealmAdministrator(PermissionScope.INCLUDE_CHILD_REALMS, RealmPermission.UPDATE);
 		RealmProvider realmProvider = getProviderForRealm(realm.getResourceCategory());
 
 		realmProvider.setValue(realm, resourceKey, value);
@@ -1039,8 +1038,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		
 		try {
 
-			assertPermissionOrRole(RealmPermission.UPDATE, 
-					permissionService.getRealmAdministratorRole(getCurrentRealm()));
+			assertAnyPermissionOrRealmAdministrator(PermissionScope.INCLUDE_CHILD_REALMS, RealmPermission.UPDATE);
 
 			String resourceCategory = realm.getResourceCategory();
 			final RealmProvider oldProvider = getProviderForRealm(realm.getResourceCategory());
@@ -1106,8 +1104,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		try {
 
-			assertPermissionOrRole(RealmPermission.UPDATE, 
-					permissionService.getRealmAdministratorRole(getCurrentRealm()));
+			assertAnyPermissionOrRealmAdministrator(PermissionScope.INCLUDE_CHILD_REALMS, RealmPermission.UPDATE);
 
 			if (!realm.getName().equalsIgnoreCase(name)) {
 				if (realmRepository.getRealmByName(name) != null) {
@@ -1310,8 +1307,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Collection<PropertyCategory> getRealmPropertyTemplates(Realm realm) throws AccessDeniedException {
 
-		assertPermissionOrRole(RealmPermission.READ, 
-				permissionService.getRealmAdministratorRole(realm));
+		assertAnyPermissionOrRealmAdministrator(PermissionScope.INCLUDE_CHILD_REALMS, RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(realm);
 
@@ -1322,8 +1318,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Collection<PropertyCategory> getRealmPropertyTemplates(String module) throws AccessDeniedException {
 
-		assertPermissionOrRole(RealmPermission.READ, 
-				permissionService.getRealmAdministratorRole(getCurrentRealm()));
+		assertAnyPermissionOrRealmAdministrator(PermissionScope.INCLUDE_CHILD_REALMS, RealmPermission.READ);
 
 		RealmProvider provider = getProviderForRealm(module);
 
@@ -1718,7 +1713,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		assertAnyPermission(UserPermission.READ, ProfilePermission.READ, RealmPermission.READ);
 
-		RealmProvider provider =getProviderForRealm(realm);
+		RealmProvider provider = getProviderForRealm(realm);
 
 		return provider.getEditablePropertyNames(realm);
 
@@ -1923,7 +1918,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					if(principal.getRealm().isDeleted()) {
 						continue;
 					}
-					if(principal.isSystem() || permissionService.hasSystemPermission(principal)) {
+					if(principal.isSystem() || permissionService.hasAdministrativePermission(principal)) {
 						log.info(String.format("Resolving duplicate principals to %s/%s [System User]", principal.getRealm().getName(), principal.getPrincipalName()));
 						return principal;
 					} 
@@ -1965,29 +1960,33 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public void updateProfile(Realm realm, Principal principal, Map<String, String> properties)
 			throws AccessDeniedException, ResourceException {
 
-		RealmProvider provider = getProviderForRealm(realm);
-
-		/**
-		 * This ensures we only ever update those properties that are allowed
-		 */
-		String[] editableProperties = configurationService.getValues(realm, "realm.userEditableProperties");
-
+		RealmProvider provider = getProviderForPrincipal(principal);
+		RealmProvider realmProvider = getProviderForRealm(principal.getRealm());
 		Map<String, String> changedProperties = new HashMap<String, String>();
+		
+		if(realmProvider.equals(provider)) {
+			/**
+			 * This ensures we only ever update those properties that are allowed
+			 */
+			String[] editableProperties = configurationService.getValues(realm, "realm.userEditableProperties");
 
-		Collection<PropertyTemplate> userAttributes = userAttributeService.getPropertyResolver().getPropertyTemplates(principal);
-
-		for (String allowed : editableProperties) {
-			if (properties.containsKey(allowed)) {
-				changedProperties.put(allowed, properties.get(allowed));
-			}
-		}
-
-		for (PropertyTemplate t : userAttributes) {
-			if (properties.containsKey(t.getResourceKey())) {
-				if (t.getDisplayMode() == null || !t.getDisplayMode().equals("admin")) {
-					changedProperties.put(t.getResourceKey(), properties.get(t.getResourceKey()));
+			Collection<PropertyTemplate> userAttributes = userAttributeService.getPropertyResolver().getPropertyTemplates(principal);
+	
+			for (String allowed : editableProperties) {
+				if (properties.containsKey(allowed)) {
+					changedProperties.put(allowed, properties.get(allowed));
 				}
 			}
+	
+			for (PropertyTemplate t : userAttributes) {
+				if (properties.containsKey(t.getResourceKey())) {
+					if (t.getDisplayMode() == null || !t.getDisplayMode().equals("admin")) {
+						changedProperties.put(t.getResourceKey(), properties.get(t.getResourceKey()));
+					}
+				}
+			}
+		} else {
+			changedProperties.putAll(properties);
 		}
 
 		try {
@@ -2443,7 +2442,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Collection<? extends Realm> getRealmsByOwner() {
+	public Collection<Realm> getRealmsByOwner() {
 		
 		if(getCurrentRealm().isSystem()) {
 			try {
@@ -2464,7 +2463,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Collection<? extends Realm> getRealmsByParent(Realm currentRealm) {
+	public Collection<Realm> getRealmsByParent(Realm currentRealm) {
 		return realmRepository.getRealmsByParent(currentRealm);
 	}
 }

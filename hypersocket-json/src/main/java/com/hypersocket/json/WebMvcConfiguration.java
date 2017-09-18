@@ -25,7 +25,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import com.hypersocket.auth.AuthenticationService;
+import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.servlet.request.Request;
+import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.session.json.SessionUtils;
 
 @Component
@@ -91,10 +93,14 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 			
 			boolean invokedContext = false;
 			if(sessionUtils.hasActiveSession(Request.get())) {
-				authenticationService.setCurrentSession(
-						sessionUtils.getActiveSession(Request.get()),
-						sessionUtils.getLocale(Request.get()));
-				invokedContext = true;
+				try {
+					authenticationService.setCurrentSession(
+							sessionUtils.getSession(Request.get()),
+							sessionUtils.getLocale(Request.get()));
+					invokedContext = true;
+				} catch (UnauthorizedException | SessionTimeoutException e) {
+				}
+				
 			}
 			try {
 				super.writeInternal(object, type, outputMessage);	

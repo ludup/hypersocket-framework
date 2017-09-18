@@ -27,6 +27,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -650,7 +651,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	}
 
 	@Override
-	public void processDefaultResponse(HttpServletResponse nettyResponse, boolean disableCache) {
+	public void processDefaultResponse(HttpServletRequest request, HttpServletResponse nettyResponse, boolean disableCache) {
 		
 		if(configurationService.getBooleanValue("security.xFrameOptionsEnabled")) {
 			nettyResponse.setHeader("X-Frame-Options", configurationService.getValue("security.xFrameOptionsValue"));
@@ -662,5 +663,10 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		}
 		nettyResponse.setHeader("X-Content-Type-Options", "nosniff");
 		nettyResponse.setHeader("X-XSS-Protection", "1; mode=block");
+		
+		if(request.isSecure() 
+				&& configurationService.getBooleanValue("security.strictTransportSecurity")) {
+			nettyResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubdomains");
+		}
 	}
 }

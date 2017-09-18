@@ -3,6 +3,7 @@ package com.hypersocket.scheduler;
 import java.util.Locale;
 
 import org.quartz.Job;
+import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
@@ -59,9 +60,8 @@ public abstract class PermissionsAwareJobNonTransactional implements Job, Runnab
 		
 		try {
 
-			if (context.getTrigger().getJobDataMap() instanceof PermissionsAwareJobData) {
-				PermissionsAwareJobData data = (PermissionsAwareJobData) context
-						.getTrigger().getJobDataMap();
+			if (context.getTrigger().getJobDataMap().containsKey("permissions")) {
+				JobDataMap data = context.getTrigger().getJobDataMap();
 				if(data.containsKey("session")) {
 					session = sessionService.getSession(data.getString("session"));
 					realm = session.getCurrentRealm();

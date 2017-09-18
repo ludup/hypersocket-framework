@@ -86,6 +86,10 @@ public class ResourceUtils {
 		return buf.toString();
 	}
 	
+	public static String createDelimitedString(String[] resources, String delimiter) {
+		return createDelimitedString(Arrays.asList(resources), delimiter);
+	}
+	
 	public static String createDelimitedString(Collection<String> resources, String delimiter) {
 		StringBuffer buf = new StringBuffer();
 		for(String r : resources) {

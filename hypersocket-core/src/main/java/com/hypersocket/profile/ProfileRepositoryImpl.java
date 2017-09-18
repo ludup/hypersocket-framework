@@ -18,6 +18,7 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.resource.RealmCriteria;
 import com.hypersocket.resource.RealmsCriteria;
 import com.hypersocket.tables.ColumnSort;
@@ -209,6 +210,13 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 			}
 			
 		});
+	}
+
+
+	@Override
+	@Transactional(readOnly=true)
+	public boolean hasCompletedProfile(Principal principal) {
+		return get("id", principal.getId(), Profile.class, new DeletedCriteria(false)) != null;
 	}
 	
 }
