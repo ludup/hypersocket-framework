@@ -7,8 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
-import java.util.List;
-
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Realm;
 

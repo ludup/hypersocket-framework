@@ -8,7 +8,6 @@
 package com.hypersocket.realm;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -20,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.zip.ZipOutputStream;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
@@ -45,8 +43,6 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.local.LocalRealmProviderImpl;
 import com.hypersocket.local.LocalUser;
 import com.hypersocket.message.MessageResourceService;
-import com.hypersocket.migration.execution.MigrationExecutor;
-import com.hypersocket.migration.file.FileUploadExporter;
 import com.hypersocket.password.policy.PasswordPolicyResourceService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
@@ -85,7 +81,6 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.ResourceExportException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
@@ -166,12 +161,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Autowired
 	MessageResourceService messageService;
-
-	@Autowired
-	MigrationExecutor migrationExecutor;
-
-	@Autowired
-	FileUploadExporter fileUploadExporter;
 	
 	@Autowired
 	OrganizationalUnitRepository ouRepository;
@@ -2269,22 +2258,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public void setUserProperty(Principal principal, String resourceKey, String val) {
 		RealmProvider provider = getProviderForPrincipal(principal);
 		provider.setUserProperty(principal, resourceKey, val);
-	}
-
-	public void exportResources(OutputStream outputStream, Long realmId, boolean all, String[] entities) throws ResourceExportException, AccessDeniedException {
-		try {
-			Realm realm = realmRepository.getRealmById(realmId);
-			Set<String> entitiesSet = new HashSet<>();
-			if (!all && entities.length > 0) {
-				entitiesSet.addAll(Arrays.asList(entities));
-			}
-			migrationExecutor.startRealmExport(outputStream, realm, entitiesSet);
-			if(all || entitiesSet.contains("FileUpload")) {
-				fileUploadExporter.start(realm, (ZipOutputStream) outputStream);
-			}
-		}catch (IOException e) {
-			throw new IllegalStateException(e.getMessage(), e);
-		}
 	}
 
 	@Override

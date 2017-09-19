@@ -7,12 +7,10 @@
  ******************************************************************************/
 package com.hypersocket.realm.json;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,10 +24,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
@@ -41,11 +37,6 @@ import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.json.ResourceStatusConfirmation;
-import com.hypersocket.migration.exception.MigrationProcessRealmAlreadyExistsThrowable;
-import com.hypersocket.migration.exception.MigrationProcessRealmNotFoundException;
-import com.hypersocket.migration.execution.MigrationExecutor;
-import com.hypersocket.migration.execution.MigrationExecutorTracker;
-import com.hypersocket.migration.info.MigrationHelperClassesInfoProvider;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.PrincipalColumns;
@@ -58,8 +49,6 @@ import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.realm.UserVariableReplacementService;
 import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.ResourceExportException;
-import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
@@ -74,12 +63,6 @@ public class RealmController extends ResourceController {
 
 	@Autowired
 	UserVariableReplacementService userVariableReplacement;
-
-	@Autowired
-	MigrationExecutor migrationExecutor;
-
-	@Autowired
-	MigrationHelperClassesInfoProvider migrationHelperClassesInfoProvider;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "realms/realm/{id}", method = RequestMethod.GET, produces = { "application/json" })
@@ -426,132 +409,7 @@ public class RealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
-	
-	@AuthenticationRequired
-	@RequestMapping(value = "realms/export", method = RequestMethod.POST, produces = { "text/plain" })
-	@ResponseStatus(value = HttpStatus.OK)
-	@ResponseBody
-	public void exportAll(HttpServletRequest request,
-						  HttpServletResponse response) throws AccessDeniedException,
-			UnauthorizedException, SessionTimeoutException,
-			ResourceNotFoundException, ResourceExportException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			Thread.sleep(1000);
-		} catch (Exception e) {
-		}
-		ZipOutputStream zos = null;
-		try {
-			Boolean all = Boolean.parseBoolean(request.getParameter("all"));
-			String list = request.getParameter("list");
-			Long realmId = Long.parseLong(request.getParameter("resource"));
-
-			log.info("Starting realm export for realm id {} with all {} and list {}", realmId, all, list);
-
-			String[] entities = list.split(",");
-
-			response.reset();
-			response.setContentType("application/zip");
-			response.setHeader("Content-Disposition", "attachment; filename=\""
-					+ "realmResource.zip\"");
-			zos = new
-					ZipOutputStream(response.getOutputStream());
-			realmService.exportResources(zos, realmId, all, entities);
-
-		} catch (IOException e) {
-			log.error("Problem in exporting realm resource.", e);
-			throw new IllegalStateException(e.getMessage(), e);
-		} finally {
-			if(zos != null) {
-				try {
-					zos.flush();
-					zos.close();
-				}catch (IOException e) {
-					//ignore
-				}
-			}
-			clearAuthenticatedContext();
-		}
-
-	}
-
-
-	@AuthenticationRequired
-	@RequestMapping(value = "realms/import", method = { RequestMethod.POST }, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceStatus<String> importRealm(
-			HttpServletRequest request, HttpServletResponse response,
-			@RequestParam(value = "file") MultipartFile zipFile,
-			@RequestParam(required = false) boolean mergeData)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			Thread.sleep(2000);
-		} catch (Exception e) {
-		}
-
-		MigrationExecutorTracker migrationExecutorTracker = null;
-		try {
-
-			migrationExecutorTracker = migrationExecutor.startRealmImport(zipFile.getInputStream(), mergeData);
-			String msgKey = "realm.import.success";
-
-			if(migrationExecutorTracker.getFailure() != 0 || migrationExecutorTracker.getCustomOperationFailure() != 0) {
-				msgKey = "realm.import.partial.success";
-				migrationExecutorTracker.logErrorNodes();
-			}
-
-			return new ResourceStatus<String>(true,
-					I18N.getResource(sessionUtils.getLocale(request),
-							RealmService.RESOURCE_BUNDLE,
-							msgKey));
-
-		} catch (MigrationProcessRealmAlreadyExistsThrowable e) {
-			log.error("Problem in importing realm resource.", e);
-			return new ResourceStatus<String>(false, I18N.getResource(sessionUtils.getLocale(request),
-					RealmService.RESOURCE_BUNDLE,
-					"realm.import.no.merge.realm.exists.failure"));
-		} catch(MigrationProcessRealmNotFoundException e) {
-			log.error("Problem in importing realm resource.", e);
-			return new ResourceStatus<String>(false, I18N.getResource(sessionUtils.getLocale(request),
-					RealmService.RESOURCE_BUNDLE,
-					"realm.import.no.realm.failure"));
-		} catch (Exception e) {
-			if(migrationExecutorTracker != null) {
-				migrationExecutorTracker.logErrorNodes();
-			}
-			log.error("Problem in importing realm resource.", e);
-			return new ResourceStatus<String>(false, I18N.getResource(sessionUtils.getLocale(request),
-					RealmService.RESOURCE_BUNDLE,
-					"realm.import.failure"));
-		} finally {
-			clearAuthenticatedContext();
-		}
-	}
-
-	@AuthenticationRequired
-	@RequestMapping(value = "exportables/list", method = RequestMethod.GET, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<String> getExportables(
-			HttpServletRequest request, HttpServletResponse response)
-			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<String>(
-					migrationHelperClassesInfoProvider.getAllExportableClasses());
-		} finally {
-			clearAuthenticatedContext();
-		}
-	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "realms/users/filters", method = RequestMethod.GET, produces = { "application/json" })
