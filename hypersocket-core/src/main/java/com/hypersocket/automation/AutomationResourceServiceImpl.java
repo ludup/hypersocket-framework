@@ -31,6 +31,7 @@ import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
@@ -116,6 +117,13 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		eventService.registerEvent(AutomationTaskStartedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(AutomationTaskFinishedEvent.class, RESOURCE_BUNDLE);
 		EntityResourcePropertyStore.registerResourceService(AutomationResource.class, repository);
+		
+		realmService.registerRealmListener(new RealmAdapter() {
+			@Override
+			public void onDeleteRealm(Realm realm) throws ResourceException, AccessDeniedException {
+				getRepository().deleteRealm(realm);
+			}	
+		});
 	}
 
 	@Override

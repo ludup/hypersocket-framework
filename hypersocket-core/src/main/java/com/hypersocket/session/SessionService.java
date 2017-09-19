@@ -127,4 +127,6 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	void notifyReaperListeners(Session session);
 
 	void registerReaperListener(SessionReaperListener listener);
+
+	void deleteRealm(Realm realm);
 }

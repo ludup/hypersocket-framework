@@ -48,7 +48,7 @@ public interface AbstractSimpleResourceRepository<T extends SimpleResource> exte
 	long getResourceCount(Collection<Realm> realms, String searchColumn, String searchPattern,
 			CriteriaConfiguration... configs);
 
-	void clearRealm(Realm realm);
+	void deleteRealm(Realm realm);
 
 
 }

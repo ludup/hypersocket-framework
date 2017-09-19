@@ -56,7 +56,13 @@ public class PasswordHistoryServiceImpl implements PasswordHistroyService {
 				return configurationService.getBooleanValue(realm, "passwordHistory.configured");
 			}
 			
+			
+			@Override
+			public void onDeleteRealm(Realm realm) {
+				repository.deleteRealm(realm);
+			}
 		});
+	
 	}
 	
 	@Override

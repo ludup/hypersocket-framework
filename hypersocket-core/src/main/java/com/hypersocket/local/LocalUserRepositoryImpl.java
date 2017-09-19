@@ -394,6 +394,10 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	@Transactional
 	public void deleteRealm(Realm realm) {
 		
+		Query q3 = createQuery("delete from LocalUserCredentials where user.id in (select user.id from LocalUser user where realm = :r)", true);
+		q3.setParameter("r", realm);
+		q3.executeUpdate();
+		
 		Query q2 = createQuery("delete from LocalGroup where realm = :r", true);
 		q2.setParameter("r", realm);
 		q2.executeUpdate();

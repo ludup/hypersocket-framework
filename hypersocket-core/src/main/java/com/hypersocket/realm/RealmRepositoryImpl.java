@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Criteria;
-import org.hibernate.Query;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
@@ -258,7 +257,7 @@ public class RealmRepositoryImpl extends
 		});
 	}
 	@Override
-	public void clearRealm(Realm realm) {
+	public void deleteRealm(Realm realm) {
 	}
 
 }

@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
+import org.hibernate.Query;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -29,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.decibel.uasparser.OnlineUpdater;
 import com.decibel.uasparser.UASparser;
@@ -768,4 +770,10 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 		}
 	}
+
+	@Override
+	public void deleteRealm(Realm realm) {
+		repository.deleteRealm(realm);
+	}
+
 }

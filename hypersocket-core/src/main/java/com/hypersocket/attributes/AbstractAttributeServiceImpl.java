@@ -28,11 +28,14 @@ import com.hypersocket.properties.PropertyResolver;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourcePropertyTemplate;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractAssignableResourceServiceImpl;
-import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.SimpleResource;
 
 @Service
 public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C>, C extends RealmAttributeCategory<A>, R extends SimpleResource> extends AbstractAssignableResourceServiceImpl<A> implements
@@ -48,6 +51,9 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	@Autowired
 	protected EventService eventService;
 
+	@Autowired
+	protected RealmService realmService; 
+	
 	protected AttributeCategoryRepository<C> categoryRepository;
 	protected AttributeCategoryService<A, C> categoryService; 
 
@@ -90,6 +96,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	}
 	
 	protected void init() {
+
 	}
 
 

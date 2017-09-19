@@ -16,9 +16,13 @@ import com.hypersocket.attributes.role.events.RoleAttributeCreatedEvent;
 import com.hypersocket.attributes.role.events.RoleAttributeDeletedEvent;
 import com.hypersocket.attributes.role.events.RoleAttributeEvent;
 import com.hypersocket.attributes.role.events.RoleAttributeUpdatedEvent;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.SimpleResource;
 
 @Service
@@ -62,6 +66,14 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 		eventService.registerEvent(RoleAttributeUpdatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(RoleAttributeDeletedEvent.class, RESOURCE_BUNDLE);
 
+		realmService.registerRealmListener(new RealmAdapter() {
+			@Override
+			public void onDeleteRealm(Realm realm) throws ResourceException, AccessDeniedException {
+				getRepository().deleteRealm(realm);
+				userAttributeCategoryRepository.deleteRealm(realm);
+			}	
+		});
+		
 		super.init();
 	}
 	

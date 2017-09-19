@@ -47,6 +47,7 @@ import com.hypersocket.local.LocalUser;
 import com.hypersocket.message.MessageResourceService;
 import com.hypersocket.migration.execution.MigrationExecutor;
 import com.hypersocket.migration.file.FileUploadExporter;
+import com.hypersocket.password.policy.PasswordPolicyResourceService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionRepository;
@@ -75,7 +76,9 @@ import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
+import com.hypersocket.realm.ou.OrganizationalUnitRepository;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
+import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractSimpleResourceRepository;
 import com.hypersocket.resource.FindableResourceRepository;
 import com.hypersocket.resource.ResourceChangeException;
@@ -169,6 +172,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Autowired
 	FileUploadExporter fileUploadExporter;
+	
+	@Autowired
+	OrganizationalUnitRepository ouRepository;
+	
+	@Autowired
+	PasswordPolicyResourceService passwordPolicyService;
 	
 	List<RealmOwnershipResolver> ownershipResolvers = new ArrayList<RealmOwnershipResolver>();
 
@@ -1252,26 +1261,36 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 						clearCache(deletedRealm);
 
+						sessionService.deleteRealm(realm);
+						
 						fireRealmDelete(deletedRealm);
 						
 						for(FindableResourceRepository<?> repository : EntityResourcePropertyStore.getRepositories()) {
 							if(repository instanceof AbstractSimpleResourceRepository
 									&& !(repository instanceof RealmRepository)
 									&& !(repository instanceof PermissionRepository)) {
-								((AbstractSimpleResourceRepository<?>)repository).clearRealm(realm);
+								AbstractResourceRepository<?> r = (AbstractResourceRepository<?>)repository;
+								if(r.isDeletable()) {
+									r.deleteRealm(realm);
+								}
 							}
 							if(repository instanceof AbstractAssignableResourceRepository) {
-								((AbstractAssignableResourceRepository<?>)repository).clearRealm(realm);
+								AbstractAssignableResourceRepository<?> r = (AbstractAssignableResourceRepository<?>)repository;
+								if(r.isDeletable()) {
+									r.deleteRealm(realm);
+								}
 							}
 						}
 						
 						permissionRepository.deleteRealm(realm);
 						
+						ouRepository.deleteRealm(realm);
 						getLocalProvider().deleteRealm(realm);
 						
 						RealmProvider provider = getProviderForRealm(realm);
 						provider.deleteRealm(realm);
 						
+						passwordPolicyService.deleteRealm(realm);
 						configurationService.deleteRealm(realm);
 						
 						realmRepository.delete(deletedRealm);

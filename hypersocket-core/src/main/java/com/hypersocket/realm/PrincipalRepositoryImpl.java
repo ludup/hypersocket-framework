@@ -95,4 +95,8 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	public Collection<Principal> allPrincipals() {
 		return allEntities(Principal.class, new DeletedCriteria(false), new HiddenCriteria(false));
 	}
+	
+	public boolean isDeletable() {
+		return false;
+	}
 }

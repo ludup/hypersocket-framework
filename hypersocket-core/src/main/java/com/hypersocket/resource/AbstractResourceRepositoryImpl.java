@@ -16,10 +16,16 @@ public abstract class AbstractResourceRepositoryImpl<T extends RealmResource>
 	
 	@Override
 	@Transactional
-	public void clearRealm(Realm realm) {
-		log.info(getResourceClass().getSimpleName());
-		Query q = createQuery(String.format("delete from %s where realm = :r", getResourceClass().getSimpleName()), true);
+	public void deleteRealm(Realm realm) {
+		String hql = String.format("delete from %s where realm = :r", getResourceClass().getSimpleName());
+		Query q = createQuery(hql, true);
 		q.setParameter("r", realm);
-		q.executeUpdate();
+		log.info(String.format("Deleted %d %s entries", q.executeUpdate(), getResourceClass().getSimpleName()));
+		flush();
+	}
+	
+	@Override
+	public boolean isDeletable() {
+		return true;
 	}
 }

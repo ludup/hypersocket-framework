@@ -16,6 +16,8 @@ import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +35,8 @@ import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 public class AuthenticationSchemeRepositoryImpl extends AbstractResourceRepositoryImpl<AuthenticationScheme>
 		implements AuthenticationSchemeRepository {
 
+	static Logger log = LoggerFactory.getLogger(AuthenticationSchemeRepositoryImpl.class);
+	
 	@Autowired
 	AuthenticationModuleRepository moduleRepository; 
 	
@@ -40,15 +44,20 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	
 	@Override
 	@Transactional
-	public void clearRealm(Realm realm) {
+	public void deleteRealm(Realm realm) {
+		
 		
 		moduleRepository.deleteRealm(realm);
-		
-		for(AuthenticationScheme s : allSchemes(realm)) {
+		int count = 0;
+		for(AuthenticationScheme s : allEntities(AuthenticationScheme.class, new RealmRestriction(realm))) {
 			s.getAllowedRoles().clear();
 			s.getDeniedRoles().clear();
+			save(s);
 			delete(s);
+			count++;
 		}
+		log.info(String.format("Deleted %d AuthenticationScheme", count));
+		flush();
 	}
 	
 	@Override

@@ -38,4 +38,6 @@ public interface ProfileRepository extends AbstractEntityRepository<Profile, Lon
 
 	boolean hasCompletedProfile(Principal principal);
 
+	void deleteRealm(Realm realm);
+
 }
