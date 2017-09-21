@@ -50,5 +50,7 @@ public interface AbstractSimpleResourceRepository<T extends SimpleResource> exte
 
 	void deleteRealm(Realm realm);
 
+	void touch(T resource);
+
 
 }

@@ -145,6 +145,7 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 		if(!defaultOperations.isEmpty()) {
 			operations.addAll(defaultOperations);
 		}
+		
 		Collections.addAll(operations, ops);
 		
 		for(TransactionOperation<T> op : operations) {
@@ -172,6 +173,11 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 		}
 		
 		return changes;
+	}
+	
+	@Override
+	public void touch(T resource) {
+		save(resource);
 	}
 	
 	protected void afterSave(T resource, Map<String, String> properties) {
