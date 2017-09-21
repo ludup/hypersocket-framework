@@ -260,23 +260,30 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				if (ctx.getChannel().getLocalAddress() instanceof InetSocketAddress) {
 					
 					if (interfaceResource.getProtocol()==HTTPProtocol.HTTP && interfaceResource.getRedirectHTTPS()) {
-						// Redirect the plain port to SSL
-						String host = nettyRequest.getHeader(HttpHeaders.HOST);
-						if(host==null) {
-							nettyResponse.sendError(400, "No Host Header");
+						
+						if(nettyRequest.getUri().equals("/health-check")) {
+							nettyResponse.setStatus(HttpStatus.SC_OK);
+							sendResponse(servletRequest, nettyResponse, false);
+							return;
 						} else {
-							int idx;
-							if ((idx = host.indexOf(':')) > -1) {
-								host = host.substring(0, idx);
+							// Redirect the plain port to SSL
+							String host = nettyRequest.getHeader(HttpHeaders.HOST);
+							if(host==null) {
+								nettyResponse.sendError(400, "No Host Header");
+							} else {
+								int idx;
+								if ((idx = host.indexOf(':')) > -1) {
+									host = host.substring(0, idx);
+								}
+								nettyResponse.sendRedirect("https://"
+										+ host
+										+ (interfaceResource.getRedirectPort() != 443 ? ":"
+												+ String.valueOf(interfaceResource.getRedirectPort()) : "")
+										+ nettyRequest.getUri());
 							}
-							nettyResponse.sendRedirect("https://"
-									+ host
-									+ (interfaceResource.getRedirectPort() != 443 ? ":"
-											+ String.valueOf(interfaceResource.getRedirectPort()) : "")
-									+ nettyRequest.getUri());
+							sendResponse(servletRequest, nettyResponse, false);
+							return;
 						}
-						sendResponse(servletRequest, nettyResponse, false);
-						return;
 					}
 				}
 		
