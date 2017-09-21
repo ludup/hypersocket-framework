@@ -155,7 +155,7 @@ public class FileStoreController extends ResourceController {
 			FileUpload fileUpload;
 
 			Realm realm = sessionUtils.getCurrentRealm(request);
-			fileUpload = resourceService.createFile(file, realm, "upload", publicFile==null ? false : publicFile);
+			fileUpload = resourceService.createFile(file, realm, publicFile==null ? false : publicFile);
 
 			return new ResourceStatus<FileUpload>(fileUpload, I18N.getResource(
 					sessionUtils.getLocale(request),

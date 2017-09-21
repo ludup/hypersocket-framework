@@ -131,8 +131,8 @@ public class CollectMailTask extends AbstractTaskProvider {
 								final InputStream inputStream = attachment.getInputStream();
 								try {
 									FileUpload upload = fileUploadService.createFile(inputStream,
-											attachment.getFilename(), currentRealm, attachment.getContentType(),
-											fileUploadService.getDefaultStore(), false);
+											attachment.getFilename(), currentRealm,
+											fileUploadService.getDefaultStore(), false, attachment.getContentType());
 									attachmentUUIDs.add(upload.getName());
 								} finally {
 									IOUtils.closeQuietly(inputStream);
