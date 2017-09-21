@@ -987,6 +987,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						realm.setReadOnly(realmProvider.isReadOnly(realm));
 						realmRepository.saveRealm(realm);
 						
+						String externalHost = getRealmHostname(realm);
+						if(StringUtils.isNotBlank(externalHost)) {
+							configurationService.setValue("email.externalHostname", externalHost);
+						}
 						fireRealmCreate(realm);
 
 					} catch (Throwable e) {
@@ -1147,6 +1151,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 							realmRepository.saveRealm(realm);
 						}
 
+						String externalHost = getRealmHostname(realm);
+						if(StringUtils.isNotBlank(externalHost)) {
+							configurationService.setValue("email.externalHostname", externalHost);
+						}
+						
 						fireRealmUpdate(realm);
 
 					} catch (Throwable e) {
