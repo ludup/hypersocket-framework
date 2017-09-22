@@ -176,6 +176,7 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 	}
 	
 	@Override
+	@Transactional
 	public void touch(T resource) {
 		save(resource);
 	}
