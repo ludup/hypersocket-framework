@@ -29,7 +29,6 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalStatus;
 import com.hypersocket.realm.PrincipalType;
@@ -38,7 +37,6 @@ import com.hypersocket.realm.UserPrincipal;
 @Entity
 @Table(name = "local_users")
 @XmlRootElement(name="user")
-@AllowNameOnlyLookUp
 public class LocalUser extends UserPrincipal implements Serializable {
 	
 	private static final long serialVersionUID = 4490274955679793663L;

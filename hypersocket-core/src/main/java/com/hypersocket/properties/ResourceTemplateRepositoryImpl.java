@@ -39,7 +39,7 @@ import org.xml.sax.SAXException;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.encrypt.EncryptionService;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.triggers.ValidationException;
 
 @Repository
@@ -108,7 +108,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	@Override
-	public Set<String> getPropertyNames(AbstractResource resource) {
+	public Set<String> getPropertyNames(SimpleResource resource) {
 
 		Set<String> results = new HashSet<>();
 		results.addAll(propertyNames);
@@ -119,7 +119,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	@Override
-	public Set<String> getPropertyNames(AbstractResource resource, boolean includeResolvers) {
+	public Set<String> getPropertyNames(SimpleResource resource, boolean includeResolvers) {
 
 		Set<String> results = new HashSet<>();
 		results.addAll(propertyNames);
@@ -132,7 +132,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	@Override
-	public Set<String> getVariableNames(AbstractResource resource) {
+	public Set<String> getVariableNames(SimpleResource resource) {
 
 		Set<String> results = new HashSet<>();
 		results.addAll(variableNames);
@@ -377,7 +377,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	@Override
-	public PropertyTemplate getPropertyTemplate(AbstractResource resource, String resourceKey) {
+	public PropertyTemplate getPropertyTemplate(SimpleResource resource, String resourceKey) {
 
 		for (PropertyResolver r : propertyResolvers) {
 			if (r.hasPropertyTemplate(resource, resourceKey)) {
@@ -550,19 +550,19 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	@Override
 	@Transactional(readOnly = true)
-	public String getValue(AbstractResource resource, String resourceKey) {
+	public String getValue(SimpleResource resource, String resourceKey) {
 		return getValue(resource, resourceKey, null);
 	}
 	
 	@Override
 	@Transactional(readOnly = true)
-	public String getValueOrDefault(AbstractResource resource, String resourceKey, String defaultValue) {
+	public String getValueOrDefault(SimpleResource resource, String resourceKey, String defaultValue) {
 		return getValue(resource, resourceKey, defaultValue);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public String getValue(AbstractResource resource, String resourceKey, String defaultValue) {
+	public String getValue(SimpleResource resource, String resourceKey, String defaultValue) {
 
 		PropertyTemplate template = propertyTemplates.get(resourceKey);
 
@@ -590,7 +590,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	@Override
 	@Transactional(readOnly = true)
-	public String getDecryptedValue(AbstractResource resource, String resourceKey) {
+	public String getDecryptedValue(SimpleResource resource, String resourceKey) {
 
 		PropertyTemplate template = propertyTemplates.get(resourceKey);
 
@@ -613,7 +613,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	@Override
 	@Transactional(readOnly = true)
-	public Integer getIntValue(AbstractResource resource, String name) throws NumberFormatException {
+	public Integer getIntValue(SimpleResource resource, String name) throws NumberFormatException {
 		try {
 			String val = getValue(resource, name);
 			if(val==null) {
@@ -627,7 +627,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	
 	@Override
 	@Transactional(readOnly = true)
-	public Integer getIntValueOrDefault(AbstractResource resource, String name, Integer defaultValue) throws NumberFormatException {
+	public Integer getIntValueOrDefault(SimpleResource resource, String name, Integer defaultValue) throws NumberFormatException {
 		try {
 			String val = getValue(resource, name);
 			if(val==null) {
@@ -641,7 +641,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	@Override
 	@Transactional(readOnly = true)
-	public Long getLongValue(AbstractResource resource, String name) throws NumberFormatException {
+	public Long getLongValue(SimpleResource resource, String name) throws NumberFormatException {
 		try {
 			return Long.parseLong(getValue(resource, name));
 		} catch(NumberFormatException e) { 
@@ -651,7 +651,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	@Override
 	@Transactional(readOnly = true)
-	public Date getDateValue(AbstractResource resource, String name) throws NumberFormatException {
+	public Date getDateValue(SimpleResource resource, String name) throws NumberFormatException {
 		/**
 		 * I don't like this but it needs some thorough testing to re-factor to same as 
 		 * getIntValue or getDoubleValue
@@ -666,7 +666,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	@Override
 	@Transactional(readOnly = true)
-	public Double getDoubleValue(AbstractResource resource, String resourceKey) {
+	public Double getDoubleValue(SimpleResource resource, String resourceKey) {
 		try {
 			String val = getValue(resource, resourceKey);
 			if(val==null) {
@@ -680,31 +680,31 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	@Override
 	@Transactional
-	public void setDoubleValue(AbstractResource resource, String resourceKey, Double value) {
+	public void setDoubleValue(SimpleResource resource, String resourceKey, Double value) {
 		setValue(resource, resourceKey, Double.toString(value));
 	}
 
 	@Override
 	@Transactional
-	public void setValue(AbstractResource resource, String name, Long value) {
+	public void setValue(SimpleResource resource, String name, Long value) {
 		setValue(resource, name, Long.toString(value));
 	}
 
 	@Override
 	@Transactional
-	public void setValue(AbstractResource resource, String name, Date value) {
+	public void setValue(SimpleResource resource, String name, Date value) {
 		setValue(resource, name, value.getTime());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public Boolean getBooleanValue(AbstractResource resource, String name) {
+	public Boolean getBooleanValue(SimpleResource resource, String name) {
 		return Boolean.parseBoolean(getValue(resource, name));
 	}
 	
 	@Override
 	@Transactional(readOnly = true)
-	public Boolean getBooleanValueOrDefault(AbstractResource resource, String name, Boolean defaultValue) {
+	public Boolean getBooleanValueOrDefault(SimpleResource resource, String name, Boolean defaultValue) {
 		try {
 			String val = getValue(resource, name);
 			if(val==null) {
@@ -719,19 +719,19 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	
 	@Override
-	public boolean hasPropertyTemplate(AbstractResource resource, String key) {
+	public boolean hasPropertyTemplate(SimpleResource resource, String key) {
 		return propertyTemplates.containsKey(key);
 	}
 
 	@Override
-	public boolean hasPropertyValueSet(AbstractResource resource, String resourceKey) {
+	public boolean hasPropertyValueSet(SimpleResource resource, String resourceKey) {
 		PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
 		return ((ResourcePropertyStore) template.getPropertyStore()).hasPropertyValueSet(template, resource);
 	}
 
 	@Override
 	@Transactional
-	public void setValues(AbstractResource resource, Map<String, String> properties) {
+	public void setValues(SimpleResource resource, Map<String, String> properties) {
 
 		if (properties != null) {
 			for (String resourceKey : properties.keySet()) {
@@ -767,7 +767,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	@Override
 	@Transactional
-	public void setValue(AbstractResource resource, String resourceKey, String value) {
+	public void setValue(SimpleResource resource, String resourceKey, String value) {
 
 		PropertyTemplate template = propertyTemplates.get(resourceKey);
 
@@ -849,18 +849,18 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	@Override
 	@Transactional
-	public void setValue(AbstractResource resource, String resourceKey, Integer value) {
+	public void setValue(SimpleResource resource, String resourceKey, Integer value) {
 		setValue(resource, resourceKey, String.valueOf(value));
 	}
 
 	@Override
 	@Transactional
-	public void setValue(AbstractResource resource, String name, Boolean value) {
+	public void setValue(SimpleResource resource, String name, Boolean value) {
 		setValue(resource, name, String.valueOf(value));
 	}
 
 	@Override
-	public Collection<PropertyCategory> getPropertyCategories(AbstractResource resource, PropertyFilter... filters) {
+	public Collection<PropertyCategory> getPropertyCategories(SimpleResource resource, PropertyFilter... filters) {
 
 		Map<String,PropertyCategory> cats = new HashMap<>();
 
@@ -905,7 +905,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		return list;
 	}
 
-	protected void filter(AbstractResource resource, PropertyCategory category, PropertyCategory filteredCategory, PropertyFilter... filters) {
+	protected void filter(SimpleResource resource, PropertyCategory category, PropertyCategory filteredCategory, PropertyFilter... filters) {
 		for (AbstractPropertyTemplate t : category.getTemplates()) {
 			if(filters.length == 0)
 				filteredCategory.getTemplates().add(new ResourcePropertyTemplate(t, resource));
@@ -925,7 +925,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	@Override
-	public Collection<PropertyCategory> getPropertyCategories(AbstractResource resource, String group) {
+	public Collection<PropertyCategory> getPropertyCategories(SimpleResource resource, String group) {
 
 		Map<String,PropertyCategory> cats = new HashMap<>();
 		for (PropertyCategory c : activeCategories.values()) {
@@ -977,7 +977,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	@Override
-	public Collection<PropertyTemplate> getPropertyTemplates(AbstractResource resource) {
+	public Collection<PropertyTemplate> getPropertyTemplates(SimpleResource resource) {
 
 		Set<PropertyTemplate> results = new HashSet<>();
 		results.addAll(activeTemplates);
@@ -998,7 +998,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	@Override
 	@Transactional(readOnly = true)
-	public String[] getValues(AbstractResource resource, String name) {
+	public String[] getValues(SimpleResource resource, String name) {
 
 		String values = getValue(resource, name);
 		return ResourceUtils.explodeValues(values);
@@ -1006,7 +1006,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	@Override
 	@Transactional(readOnly=true)
-	public Long[] getLongValues(AbstractResource resource, String name) {
+	public Long[] getLongValues(SimpleResource resource, String name) {
 		String[] values = getValues(resource, name);
 		Long[] results = new Long[values.length];
 		for(int i=0;i<values.length;i++) {
@@ -1017,7 +1017,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	
 	@Override
 	@Transactional(readOnly=true)
-	public Integer[] getIntValues(AbstractResource resource, String name) {
+	public Integer[] getIntValues(SimpleResource resource, String name) {
 		String[] values = getValues(resource, name);
 		Integer[] results = new Integer[values.length];
 		for(int i=0;i<values.length;i++) {
@@ -1028,7 +1028,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	
 	@Override
 	@Transactional(readOnly = true)
-	public Map<String, String> getProperties(AbstractResource resource) {
+	public Map<String, String> getProperties(SimpleResource resource) {
 
 		Map<String, String> properties = new HashMap<>();
 		for (PropertyTemplate template : getPropertyTemplates(resource)) {
@@ -1039,7 +1039,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	
 	@Override
 	@Transactional(readOnly = true)
-	public Map<String, String> getProperties(AbstractResource resource, boolean decrypt) {
+	public Map<String, String> getProperties(SimpleResource resource, boolean decrypt) {
 
 		Map<String, String> properties = new HashMap<>();
 		for (PropertyTemplate template : getPropertyTemplates(resource)) {

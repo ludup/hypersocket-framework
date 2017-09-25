@@ -28,14 +28,15 @@ import com.hypersocket.properties.PropertyResolver;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourcePropertyTemplate;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractAssignableResourceServiceImpl;
-import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.SimpleResource;
 
 @Service
-public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C>, C extends RealmAttributeCategory<A>, R extends AbstractResource> extends AbstractAssignableResourceServiceImpl<A> implements
+public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C>, C extends RealmAttributeCategory<A>, R extends SimpleResource> extends AbstractAssignableResourceServiceImpl<A> implements
 		AttributeService<A, C> {
 
 	static Logger log = LoggerFactory.getLogger(AbstractAttributeServiceImpl.class);
@@ -48,6 +49,9 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	@Autowired
 	protected EventService eventService;
 
+	@Autowired
+	protected RealmService realmService; 
+	
 	protected AttributeCategoryRepository<C> categoryRepository;
 	protected AttributeCategoryService<A, C> categoryService; 
 
@@ -90,6 +94,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	}
 	
 	protected void init() {
+
 	}
 
 
@@ -209,7 +214,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		return resourceClass;
 	}
 	
-	protected abstract R checkResource(AbstractResource resource);
+	protected abstract R checkResource(SimpleResource resource);
 	
 	protected abstract Map<String, PropertyTemplate> getAttributeTemplates(R principal);
 
@@ -332,7 +337,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		return getRepository().getAttributeByVariableName(attributeName, getCurrentRealm());
 	}
 	
-	public static class AttributePropertyResolver<A extends AbstractAttribute<C>, C extends RealmAttributeCategory<A>, R extends AbstractResource> implements PropertyResolver {
+	public static class AttributePropertyResolver<A extends AbstractAttribute<C>, C extends RealmAttributeCategory<A>, R extends SimpleResource> implements PropertyResolver {
 		
 		protected AbstractAttributeServiceImpl<A,C,R> service;
 
@@ -341,19 +346,19 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		}
 		
 		@Override
-		public Collection<String> getPropertyNames(AbstractResource resource) {
+		public Collection<String> getPropertyNames(SimpleResource resource) {
 			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
 			return userTemplates.keySet();
 		}
 
 		@Override
-		public Collection<String> getVariableNames(AbstractResource resource) {
+		public Collection<String> getVariableNames(SimpleResource resource) {
 			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
 			return userTemplates.keySet();
 		}
 		
 		@Override
-		public PropertyTemplate getPropertyTemplate(AbstractResource resource,
+		public PropertyTemplate getPropertyTemplate(SimpleResource resource,
 				String resourceKey) {
 			
 			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
@@ -362,7 +367,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 
 		@Override
 		public Collection<PropertyCategory> getPropertyCategories(
-				AbstractResource resource) {
+				SimpleResource resource) {
 			
 			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
 			Map<Integer,PropertyCategory> results = new HashMap<Integer,PropertyCategory>();
@@ -391,14 +396,14 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 
 		@Override
 		public Collection<PropertyTemplate> getPropertyTemplates(
-				AbstractResource resource) {
+				SimpleResource resource) {
 			
 			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
 			return userTemplates.values();
 		}
 
 		@Override
-		public boolean hasPropertyTemplate(AbstractResource resource,
+		public boolean hasPropertyTemplate(SimpleResource resource,
 				String resourceKey) {
 
 			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));

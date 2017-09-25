@@ -294,5 +294,10 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	public Long getLongValue(String val) {
 		return getLongValue(getCurrentRealm(), val);
 	}
+
+	@Override
+	public void deleteRealm(Realm realm) {
+		repository.deleteRealm(realm);
+	}
 	
 }

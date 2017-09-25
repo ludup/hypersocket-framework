@@ -2,23 +2,23 @@ package com.hypersocket.properties;
 
 import java.util.Collection;
 
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 
 public interface PropertyResolver {
 
-	Collection<String> getPropertyNames(AbstractResource resource);
+	Collection<String> getPropertyNames(SimpleResource resource);
 
-	Collection<String> getVariableNames(AbstractResource resource);
+	Collection<String> getVariableNames(SimpleResource resource);
 
-	PropertyTemplate getPropertyTemplate(AbstractResource resource,
+	PropertyTemplate getPropertyTemplate(SimpleResource resource,
 			String resourceKey);
 
 	Collection<PropertyCategory> getPropertyCategories(
-			AbstractResource resource);
+			SimpleResource resource);
 
 	Collection<PropertyTemplate> getPropertyTemplates(
-			AbstractResource resource);
+			SimpleResource resource);
 
-	boolean hasPropertyTemplate(AbstractResource resource, String resourceKey);
+	boolean hasPropertyTemplate(SimpleResource resource, String resourceKey);
 
 }

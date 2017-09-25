@@ -10,10 +10,8 @@ import com.hypersocket.resource.RealmResource;
 @Table(name = "interface_state")
 public class UserInterfaceState extends RealmResource {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 5075850205303090191L;
+	
 	@Column(name = "preferences", length = 8000)
 	String preferences;
 

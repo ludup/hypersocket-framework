@@ -16,6 +16,7 @@ import javax.annotation.PostConstruct;
 
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
+import org.hibernate.Query;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -387,5 +388,24 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	@Override
 	public void resetRealm(Collection<Principal> admins) {
 		
+	}
+	
+	@Override
+	@Transactional
+	public void deleteRealm(Realm realm) {
+		
+		Query q3 = createQuery("delete from LocalUserCredentials where user.id in (select user.id from LocalUser user where realm = :r)", true);
+		q3.setParameter("r", realm);
+		q3.executeUpdate();
+		
+		Query q2 = createQuery("delete from LocalGroup where realm = :r", true);
+		q2.setParameter("r", realm);
+		q2.executeUpdate();
+		
+		Query q = createQuery("delete from LocalUser where realm = :r", true);
+		q.setParameter("r", realm);
+		q.executeUpdate();
+		
+
 	}
 }

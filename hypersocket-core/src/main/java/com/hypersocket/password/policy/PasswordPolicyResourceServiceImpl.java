@@ -504,4 +504,9 @@ public class PasswordPolicyResourceServiceImpl extends
 		
 		
 	}
+	
+	@Override
+	public void deleteRealm(Realm realm) {
+		repository.deleteRealm(realm);
+	}
 }

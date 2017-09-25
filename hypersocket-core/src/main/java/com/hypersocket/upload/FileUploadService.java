@@ -17,17 +17,21 @@ import com.hypersocket.resource.ResourceNotFoundException;
 
 public interface FileUploadService extends AbstractResourceService<FileUpload> {
 
-	public FileUpload createFile(MultipartFile file, Realm realm, String type, boolean publicFile)
+	public FileUpload createFile(MultipartFile file, Realm realm, boolean publicFile)
 			throws ResourceException, AccessDeniedException,
 			IOException;
 
 	FileUpload createFile(MultipartFile file, Realm realm, 
-			String type,
 			FileStore uploadStore, boolean publicFile) throws ResourceException,
 			AccessDeniedException, IOException;
 
 	FileUpload createFile(InputStream file, String filename, Realm realm,
-			 String type, FileStore uploadStore, boolean publicFile)
+			FileStore uploadStore, boolean publicFile)
+			throws ResourceException, AccessDeniedException,
+			IOException;
+	
+	FileUpload createFile(InputStream file, String filename, Realm realm,
+			FileStore uploadStore, boolean publicFile, String contentType)
 			throws ResourceException, AccessDeniedException,
 			IOException;
 
@@ -35,6 +39,9 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 			throws ResourceException, AccessDeniedException, IOException;
 
 	FileUpload createFile(InputStream in, String filename, Realm realm, boolean publicFile)
+			throws ResourceException, AccessDeniedException, IOException;
+	
+	FileUpload createFile(InputStream in, String filename, String contentType, Realm realm, boolean publicFile)
 			throws ResourceException, AccessDeniedException, IOException;
 	
 	public void deleteFile(FileUpload fileUpload)

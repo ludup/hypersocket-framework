@@ -260,23 +260,30 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				if (ctx.getChannel().getLocalAddress() instanceof InetSocketAddress) {
 					
 					if (interfaceResource.getProtocol()==HTTPProtocol.HTTP && interfaceResource.getRedirectHTTPS()) {
-						// Redirect the plain port to SSL
-						String host = nettyRequest.getHeader(HttpHeaders.HOST);
-						if(host==null) {
-							nettyResponse.sendError(400, "No Host Header");
+						
+						if(nettyRequest.getUri().equals("/health-check")) {
+							nettyResponse.setStatus(HttpStatus.SC_OK);
+							sendResponse(servletRequest, nettyResponse, false);
+							return;
 						} else {
-							int idx;
-							if ((idx = host.indexOf(':')) > -1) {
-								host = host.substring(0, idx);
+							// Redirect the plain port to SSL
+							String host = nettyRequest.getHeader(HttpHeaders.HOST);
+							if(host==null) {
+								nettyResponse.sendError(400, "No Host Header");
+							} else {
+								int idx;
+								if ((idx = host.indexOf(':')) > -1) {
+									host = host.substring(0, idx);
+								}
+								nettyResponse.sendRedirect("https://"
+										+ host
+										+ (interfaceResource.getRedirectPort() != 443 ? ":"
+												+ String.valueOf(interfaceResource.getRedirectPort()) : "")
+										+ nettyRequest.getUri());
 							}
-							nettyResponse.sendRedirect("https://"
-									+ host
-									+ (interfaceResource.getRedirectPort() != 443 ? ":"
-											+ String.valueOf(interfaceResource.getRedirectPort()) : "")
-									+ nettyRequest.getUri());
+							sendResponse(servletRequest, nettyResponse, false);
+							return;
 						}
-						sendResponse(servletRequest, nettyResponse, false);
-						return;
 					}
 				}
 		
@@ -614,9 +621,9 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
 			throws Exception {
 
-		if (log.isErrorEnabled() && !(e.getCause() instanceof ClosedChannelException)) {
+		if (log.isDebugEnabled() && !(e.getCause() instanceof ClosedChannelException)) {
 			if(e.getCause() instanceof IOException) {
-				log.error(String.format("Exception in HTTP request worker: %s", e.getCause().getMessage()));
+				log.debug(String.format("Exception in HTTP request worker: %s", e.getCause().getMessage()));
 			} else {
 				log.error("Exception in http request remoteAddress="
 						+ e.getChannel().getRemoteAddress() + " localAddress="

@@ -2,13 +2,15 @@ package com.hypersocket.resource;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hypersocket.ApplicationContextServiceImpl;
+import com.hypersocket.properties.PropertyRepository;
 import com.hypersocket.repository.AbstractEntity;
 
 import javax.persistence.*;
 import java.util.UUID;
 
 @MappedSuperclass
-public abstract class AbstractResource extends AbstractEntity<Long> {
+public abstract class SimpleResource extends AbstractEntity<Long> {
 
 	private static final long serialVersionUID = 306989572401186385L;
 	@Id
@@ -37,4 +39,8 @@ public abstract class AbstractResource extends AbstractEntity<Long> {
 	
 	public abstract String getName();
 
+	@PreRemove
+	public void onDelete() {
+		ApplicationContextServiceImpl.getInstance().getBean(PropertyRepository.class).deleteProperties(this);
+	}
 }

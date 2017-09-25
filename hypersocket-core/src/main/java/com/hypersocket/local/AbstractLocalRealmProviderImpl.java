@@ -583,15 +583,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	@Transactional
 	public void deleteRealm(Realm realm) throws ResourceException {
-
-		for (Principal group : userRepository.allGroups(realm)) {
-			deleteGroup(group);
-		}
-
-		for (Principal user : userRepository.allUsers(realm)) {
-			deleteUser(user);
-		}
-
+		userRepository.deleteRealm(realm);
 	}
 
 	@Override

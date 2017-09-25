@@ -13,5 +13,7 @@ import com.hypersocket.realm.Realm;
 public interface AssignableResourceRepository extends ResourceTemplateRepository {
 
 	long getResourceCount(Realm realm);
+
+	void deleteRealm(Realm realm);
 	
 }

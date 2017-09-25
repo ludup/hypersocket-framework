@@ -16,23 +16,49 @@ import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.annotation.HypersocketExtension;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
-import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
+import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 
 @Repository
-public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepositoryImpl<AuthenticationScheme,Long>
+public class AuthenticationSchemeRepositoryImpl extends AbstractResourceRepositoryImpl<AuthenticationScheme>
 		implements AuthenticationSchemeRepository {
 
+	static Logger log = LoggerFactory.getLogger(AuthenticationSchemeRepositoryImpl.class);
+	
+	@Autowired
+	AuthenticationModuleRepository moduleRepository; 
+	
 	Set<String> enabledSchemes = new HashSet<String>();
+	
+	@Override
+	@Transactional
+	public void deleteRealm(Realm realm) {
+		
+		
+		moduleRepository.deleteRealm(realm);
+		int count = 0;
+		for(AuthenticationScheme s : allEntities(AuthenticationScheme.class, new RealmRestriction(realm))) {
+			s.getAllowedRoles().clear();
+			s.getDeniedRoles().clear();
+			save(s);
+			delete(s);
+			count++;
+		}
+		log.info(String.format("Deleted %d AuthenticationScheme", count));
+		flush();
+	}
 	
 	@Override
 	public void enableAuthenticationScheme(String scheme) {
@@ -78,7 +104,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 		scheme.setAllowedModules(allowedModules);
 		scheme.setLastButtonResourceKey(lastButtonResourceKey);
 		
-		saveEntity(scheme);
+		save(scheme);
 
 		int idx = 0;
 		for (String t : templates) {
@@ -166,7 +192,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	@Transactional
 	public void saveScheme(AuthenticationScheme s) {
 		s.setResourceCategory("authenticationScheme");
-		saveEntity(s);
+		save(s);
 	}
 
 	@Override
@@ -176,7 +202,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractEntityRepository
 	}
 
 	@Override
-	protected Class<AuthenticationScheme> getEntityClass() {
+	protected Class<AuthenticationScheme> getResourceClass() {
 		return AuthenticationScheme.class;
 	}
 }

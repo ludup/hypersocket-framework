@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hypersocket.auth.json.AuthenticationRequired;
+import com.hypersocket.auth.json.AuthenticationRequiredButDontTouchSession;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.i18n.I18N;
@@ -154,7 +155,7 @@ public class FileStoreController extends ResourceController {
 			FileUpload fileUpload;
 
 			Realm realm = sessionUtils.getCurrentRealm(request);
-			fileUpload = resourceService.createFile(file, realm, "upload", publicFile==null ? false : publicFile);
+			fileUpload = resourceService.createFile(file, realm, publicFile==null ? false : publicFile);
 
 			return new ResourceStatus<FileUpload>(fileUpload, I18N.getResource(
 					sessionUtils.getLocale(request),
@@ -225,7 +226,7 @@ public class FileStoreController extends ResourceController {
 		}
 	}
 
-	@AuthenticationRequired
+	@AuthenticationRequiredButDontTouchSession
 	@RequestMapping(value = "files/download/{uuid}", method = RequestMethod.GET)
 	public void downloadFile(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String uuid)
@@ -235,7 +236,7 @@ public class FileStoreController extends ResourceController {
 			resourceService.downloadURIFile(uuid, request, response, true, false);
 	}
 	
-	@AuthenticationRequired
+	@AuthenticationRequiredButDontTouchSession
 	@RequestMapping(value = "files/download/{uuid}/{filename}", method = RequestMethod.GET)
 	public void downloadFile(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String uuid, 

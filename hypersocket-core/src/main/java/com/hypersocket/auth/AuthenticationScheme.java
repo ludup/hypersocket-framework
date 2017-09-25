@@ -23,13 +23,11 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name = "auth_schemes")
-@AllowNameOnlyLookUp
 public class AuthenticationScheme extends RealmResource {
 
 	private static final long serialVersionUID = 96922791807675582L;

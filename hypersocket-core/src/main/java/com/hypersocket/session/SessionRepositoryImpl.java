@@ -15,6 +15,7 @@ import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
@@ -421,5 +422,14 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		}
 		
 		return results;
+	}
+	
+
+	@Override
+	@Transactional
+	public void deleteRealm(Realm realm) {
+		Query q = createQuery("delete from Session where realm = :r or currentRealm = :r", true);
+		q.setParameter("r", realm);
+		log.info(String.format("Deleted %d Session", q.executeUpdate()));
 	}
 }

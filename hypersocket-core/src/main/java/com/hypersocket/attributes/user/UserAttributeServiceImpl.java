@@ -17,10 +17,14 @@ import com.hypersocket.attributes.user.events.UserAttributeDeletedEvent;
 import com.hypersocket.attributes.user.events.UserAttributeEvent;
 import com.hypersocket.attributes.user.events.UserAttributeUpdatedEvent;
 import com.hypersocket.auth.FakePrincipal;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
+import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.SimpleResource;
 
 @Service
 public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserAttribute, UserAttributeCategory, Principal>
@@ -64,6 +68,13 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 		eventService.registerEvent(UserAttributeUpdatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(UserAttributeDeletedEvent.class, RESOURCE_BUNDLE);
 		
+		realmService.registerRealmListener(new RealmAdapter() {
+			@Override
+			public void onDeleteRealm(Realm realm) throws ResourceException, AccessDeniedException {
+				getRepository().deleteRealm(realm);
+				userAttributeCategoryRepository.deleteRealm(realm);
+			}	
+		});
 		super.init();
 	}
 
@@ -78,7 +89,7 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 	}
 
 	@Override
-	protected Principal checkResource(AbstractResource resource) {
+	protected Principal checkResource(SimpleResource resource) {
 		if(resource==null) {
 			return null;
 		}

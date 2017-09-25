@@ -7,6 +7,7 @@ import java.lang.reflect.ParameterizedType;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,7 +25,7 @@ import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.resource.FindableResourceRepository;
 import com.hypersocket.resource.RealmResource;
 import com.hypersocket.resource.Resource;
@@ -58,6 +59,10 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		setEncryptionService(encryptionService);
 	}
 	
+	public static Collection<FindableResourceRepository<?>> getRepositories() {
+		return Collections.unmodifiableCollection(findableResourceRepositories.values());
+	}
+	
 	protected String getCacheName() {
 		return name;
 	}
@@ -88,14 +93,14 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		throw new UnsupportedOperationException("Entity resource property store requires an entity resource to set property value");
 	}
 	
-	private Object resolveTargetEntity(AbstractResource resource, AbstractPropertyTemplate template) {
+	private Object resolveTargetEntity(SimpleResource resource, AbstractPropertyTemplate template) {
 		if(template.getAttributes().containsKey("via")) {
 			return getAttributeEntity(resource, template);
 		}
 		return resource;
 	}
 	
-	private Object getAttributeEntity(AbstractResource resource, AbstractPropertyTemplate template) {
+	private Object getAttributeEntity(SimpleResource resource, AbstractPropertyTemplate template) {
 		try {
 			String attributeField = template.getAttributes().get("via");
 			EntityStoreRepository<?> attributeRepository = attributeRepositories.get(attributeField);
@@ -127,7 +132,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	@SuppressWarnings("unchecked")
 	@Override
 	protected String lookupPropertyValue(AbstractPropertyTemplate template,
-			AbstractResource entity) {
+			SimpleResource entity) {
 		
 		if(entity==null) {
 			return template.getDefaultValue();
@@ -185,11 +190,11 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	
 
 	public void setField(AbstractPropertyTemplate template,
-			AbstractResource resource, String value) {
+			SimpleResource resource, String value) {
 		doSetProperty(template, resource, value);
 	}
 	
-	public void setPropertyValue(AbstractPropertyTemplate template, AbstractResource resource, String value) {
+	public void setPropertyValue(AbstractPropertyTemplate template, SimpleResource resource, String value) {
 		
 		// Prevent caching until resource has an id.
 		if(resource.getId()==null) {
@@ -201,7 +206,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	
 	@Override
 	protected void doSetProperty(AbstractPropertyTemplate template,
-			AbstractResource entity, String value) {
+			SimpleResource entity, String value) {
 		
 		if(value==null) {
 			// We don't support setting null values. Caller may have set values on object directly
@@ -425,7 +430,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 
 	@Override
 	public boolean hasPropertyValueSet(AbstractPropertyTemplate template,
-			AbstractResource resource) {
+			SimpleResource resource) {
 
 		Object entity = resolveTargetEntity(resource, template);
 		String methodName = "get" + StringUtils.capitalize(template.getResourceKey());

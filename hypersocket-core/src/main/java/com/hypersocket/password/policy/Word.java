@@ -7,11 +7,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 
 @Entity
 @Table(name = "words")
-public class Word extends AbstractResource {
+public class Word extends SimpleResource {
 
 	private static final long serialVersionUID = 3518709658570275084L;
 

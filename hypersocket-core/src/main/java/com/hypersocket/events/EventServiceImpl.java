@@ -42,12 +42,19 @@ public class EventServiceImpl implements EventService {
 	ThreadLocal<Boolean> isDelayingEvents = new ThreadLocal<Boolean>();
 	ThreadLocal<LinkedList<SystemEvent>> delayedEvents = new ThreadLocal<LinkedList<SystemEvent>>();
 	
+	List<EventExtender> extenders = new ArrayList<EventExtender>();
+	
 	@Override
 	public void delayEvents(Boolean val) {
 		isDelayingEvents.set(val);
 		if(delayedEvents.get()!=null) {
 			delayedEvents.set(null);
 		}
+	}
+	
+	@Override
+	public void registerExtender(EventExtender extender) {
+		extenders.add(extender);
 	}
 	
 	@Override
@@ -217,10 +224,17 @@ public class EventServiceImpl implements EventService {
 				log.error(event.getResourceKey() + " failed", event.getException());
 			}
 			
-			eventPublisher.publishEvent(event);
+			eventPublisher.publishEvent(extendEvent(event));
 		}
 	}
 
+	private SystemEvent extendEvent(SystemEvent event) {
+		for(EventExtender e : extenders) {
+			e.extendEvent(event);
+		}
+		return event;
+	}
+	
 	private boolean isDelayEvent() {
 		return isDelayingEvents.get()!=null && isDelayingEvents.get();
 	}

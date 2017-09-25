@@ -8,7 +8,6 @@
 package com.hypersocket.realm;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -20,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.zip.ZipOutputStream;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
@@ -45,10 +43,10 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.local.LocalRealmProviderImpl;
 import com.hypersocket.local.LocalUser;
 import com.hypersocket.message.MessageResourceService;
-import com.hypersocket.migration.execution.MigrationExecutor;
-import com.hypersocket.migration.file.FileUploadExporter;
+import com.hypersocket.password.policy.PasswordPolicyResourceService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
+import com.hypersocket.permissions.PermissionRepository;
 import com.hypersocket.permissions.PermissionScope;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.SystemPermission;
@@ -74,11 +72,15 @@ import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
+import com.hypersocket.realm.ou.OrganizationalUnitRepository;
+import com.hypersocket.resource.AbstractAssignableResourceRepository;
+import com.hypersocket.resource.AbstractResourceRepository;
+import com.hypersocket.resource.AbstractSimpleResourceRepository;
+import com.hypersocket.resource.FindableResourceRepository;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.ResourceExportException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
@@ -109,6 +111,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Autowired
 	PermissionService permissionService;
 
+	@Autowired
+	PermissionRepository permissionRepository;
+	
 	@Autowired
 	EventService eventService;
 
@@ -156,12 +161,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Autowired
 	MessageResourceService messageService;
-
+	
 	@Autowired
-	MigrationExecutor migrationExecutor;
-
+	OrganizationalUnitRepository ouRepository;
+	
 	@Autowired
-	FileUploadExporter fileUploadExporter;
+	PasswordPolicyResourceService passwordPolicyService;
 	
 	List<RealmOwnershipResolver> ownershipResolvers = new ArrayList<RealmOwnershipResolver>();
 
@@ -982,6 +987,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						realm.setReadOnly(realmProvider.isReadOnly(realm));
 						realmRepository.saveRealm(realm);
 						
+						String externalHost = getRealmHostname(realm);
+						if(StringUtils.isNotBlank(externalHost)) {
+							configurationService.setValue(realm, "email.externalHostname", externalHost);
+						}
 						fireRealmCreate(realm);
 
 					} catch (Throwable e) {
@@ -1142,6 +1151,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 							realmRepository.saveRealm(realm);
 						}
 
+						String externalHost = getRealmHostname(realm);
+						if(StringUtils.isNotBlank(externalHost)) {
+							configurationService.setValue(realm, "email.externalHostname", externalHost);
+						}
+						
 						fireRealmUpdate(realm);
 
 					} catch (Throwable e) {
@@ -1217,7 +1231,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void deleteRealm(Realm realm) throws AccessDeniedException, ResourceException {
+	public void deleteRealm(final Realm realm) throws AccessDeniedException, ResourceException {
 
 		try {
 
@@ -1235,13 +1249,56 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			 * Get a copy of the realm to delete so we can fire events with the
 			 * current realm detail as delete will rename it
 			 */
-			Realm deletedRealm = getRealmById(realm.getId());
+			
+			transactionService.doInTransaction(new TransactionCallback<Void>() {
 
-			clearCache(deletedRealm);
+				@Override
+				public Void doInTransaction(TransactionStatus status) {
+					try {
+						Realm deletedRealm = getRealmById(realm.getId());
 
-			fireRealmDelete(deletedRealm);
+						clearCache(deletedRealm);
 
-			realmRepository.delete(deletedRealm);
+						sessionService.deleteRealm(realm);
+						
+						fireRealmDelete(deletedRealm);
+						
+						for(FindableResourceRepository<?> repository : EntityResourcePropertyStore.getRepositories()) {
+							if(repository instanceof AbstractSimpleResourceRepository
+									&& !(repository instanceof RealmRepository)
+									&& !(repository instanceof PermissionRepository)) {
+								AbstractResourceRepository<?> r = (AbstractResourceRepository<?>)repository;
+								if(r.isDeletable()) {
+									r.deleteRealm(realm);
+								}
+							}
+							if(repository instanceof AbstractAssignableResourceRepository) {
+								AbstractAssignableResourceRepository<?> r = (AbstractAssignableResourceRepository<?>)repository;
+								if(r.isDeletable()) {
+									r.deleteRealm(realm);
+								}
+							}
+						}
+						
+						permissionRepository.deleteRealm(realm);
+						
+						ouRepository.deleteRealm(realm);
+						getLocalProvider().deleteRealm(realm);
+						
+						RealmProvider provider = getProviderForRealm(realm);
+						provider.deleteRealm(realm);
+						
+						passwordPolicyService.deleteRealm(realm);
+						configurationService.deleteRealm(realm);
+						
+						realmRepository.delete(deletedRealm);
+						return null;
+					} catch (ResourceException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+			});
+			
 
 			eventService.publishEvent(new RealmDeletedEvent(this, getCurrentSession(), realm));
 
@@ -1878,7 +1935,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					if(principal.getRealm().isDeleted()) {
 						continue;
 					}
-					if(principal.isSystem() || permissionService.hasSystemPermission(principal)) {
+					if(principal.isSystem() || permissionService.hasAdministrativePermission(principal)) {
 						log.info(String.format("Resolving duplicate principals to %s/%s [System User]", principal.getRealm().getName(), principal.getPrincipalName()));
 						return principal;
 					} 
@@ -2210,22 +2267,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public void setUserProperty(Principal principal, String resourceKey, String val) {
 		RealmProvider provider = getProviderForPrincipal(principal);
 		provider.setUserProperty(principal, resourceKey, val);
-	}
-
-	public void exportResources(OutputStream outputStream, Long realmId, boolean all, String[] entities) throws ResourceExportException, AccessDeniedException {
-		try {
-			Realm realm = realmRepository.getRealmById(realmId);
-			Set<String> entitiesSet = new HashSet<>();
-			if (!all && entities.length > 0) {
-				entitiesSet.addAll(Arrays.asList(entities));
-			}
-			migrationExecutor.startRealmExport(outputStream, realm, entitiesSet);
-			if(all || entitiesSet.contains("FileUpload")) {
-				fileUploadExporter.start(realm, (ZipOutputStream) outputStream);
-			}
-		}catch (IOException e) {
-			throw new IllegalStateException(e.getMessage(), e);
-		}
 	}
 
 	@Override

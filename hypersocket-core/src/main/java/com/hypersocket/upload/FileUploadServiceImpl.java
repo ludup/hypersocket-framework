@@ -121,33 +121,44 @@ public class FileUploadServiceImpl extends
 	}
 
 	@Override
-	public FileUpload createFile(final MultipartFile file, final Realm realm, String type, boolean publicFile)
+	public FileUpload createFile(InputStream in, String filename, String contentType, Realm realm, boolean publicFile)
+			throws ResourceException, AccessDeniedException, IOException {
+		return createFile(in, filename, realm, getDefaultStore(), publicFile, contentType);
+	}
+	@Override
+	public FileUpload createFile(final MultipartFile file, final Realm realm, boolean publicFile)
 			throws ResourceException, AccessDeniedException,
 			IOException {
 
-		return createFile(file, realm, type, getDefaultStore(), publicFile);
+		return createFile(file, realm, getDefaultStore(), publicFile);
 	}
 
 	@Override
 	public FileUpload createFile(MultipartFile file, Realm realm,
-			String type, FileStore uploadStore, boolean publicFile)
+			FileStore uploadStore, boolean publicFile)
 			throws ResourceException, AccessDeniedException,
 			IOException {
 
 		return createFile(file.getInputStream(), file.getOriginalFilename(),
-				realm, type, uploadStore, publicFile);
+				realm, uploadStore, publicFile);
 	}
 
 	@Override
 	public FileUpload createFile(InputStream in, String filename, Realm realm, boolean publicFile)
 			throws ResourceException, AccessDeniedException,
 			IOException {
-		return createFile(in, filename, realm, mimeTypesMap.getContentType(filename), defaultStore, publicFile);
+		return createFile(in, filename, realm, defaultStore, publicFile);
 	}
-	
 	@Override
 	public FileUpload createFile(InputStream in, String filename, Realm realm,
-			String type, FileStore uploadStore, boolean publicFile)
+			FileStore uploadStore, boolean publicFile)
+			throws ResourceException, AccessDeniedException,
+			IOException {
+		return createFile(in, filename, realm, uploadStore, publicFile, mimeTypesMap.getContentType(filename));
+	}
+	@Override
+	public FileUpload createFile(InputStream in, String filename, Realm realm,
+			FileStore uploadStore, boolean publicFile, String contentType)
 			throws ResourceException, AccessDeniedException,
 			IOException {
 
@@ -155,7 +166,7 @@ public class FileUploadServiceImpl extends
 		fileUpload.setFileName(filename);
 		fileUpload.setRealm(realm);
 		fileUpload.setName(fileUpload.getUUID());
-		fileUpload.setType(type);
+		fileUpload.setType(contentType);
 		fileUpload.setPublicFile(publicFile);
 		
 		String shortCode;
@@ -325,7 +336,7 @@ public class FileUploadServiceImpl extends
 		
 		InputStream in = new FileInputStream(outputFile);
 		try {
-			return createFile(in, filename, realm, type, getDefaultStore(), publicFile);
+			return createFile(in, filename, realm, getDefaultStore(), publicFile);
 		} finally {
 			IOUtils.closeQuietly(in);
 		}

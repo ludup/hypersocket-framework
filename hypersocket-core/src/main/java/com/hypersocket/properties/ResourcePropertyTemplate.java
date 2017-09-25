@@ -7,13 +7,13 @@
  ******************************************************************************/
 package com.hypersocket.properties;
 
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 
 public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 
-	AbstractResource resource;
+	SimpleResource resource;
 	
-	public ResourcePropertyTemplate(AbstractPropertyTemplate t, AbstractResource resource) {
+	public ResourcePropertyTemplate(AbstractPropertyTemplate t, SimpleResource resource) {
 		this.resourceKey = t.getResourceKey();
 		this.defaultValue = t.getDefaultValue();
 		this.mapping = t.getMapping();
@@ -41,11 +41,11 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 		return ((ResourcePropertyStore)propertyStore).getPropertyValue(this, resource);
 	}
 	
-	public AbstractResource getResource() {
+	public SimpleResource getResource() {
 		return resource;
 	}
 	
-	public void setResource(AbstractResource resource) {
+	public void setResource(SimpleResource resource) {
 		this.resource = resource;
 	}
 	

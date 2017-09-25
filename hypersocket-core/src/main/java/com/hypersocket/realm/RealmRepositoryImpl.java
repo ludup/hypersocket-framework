@@ -20,16 +20,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
-import com.hypersocket.resource.AbstractResourceRepositoryImpl;
+import com.hypersocket.resource.AbstractSimpleResourceRepositoryImpl;
 import com.hypersocket.resource.HiddenFilter;
-import com.hypersocket.resource.RealmResource;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
 public class RealmRepositoryImpl extends
-		AbstractResourceRepositoryImpl<RealmResource> implements
+		AbstractSimpleResourceRepositoryImpl<Realm> implements
 		RealmRepository {
 
 
@@ -178,10 +177,7 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional
 	public void delete(Realm realm) {
-		realm.setDeleted(true);
-		realm.setName(realm.getName() + "[#" + realm.getId() + " deleted]");
-
-		save(realm);
+		super.delete(realm);
 	}
 
 	@Override
@@ -199,8 +195,8 @@ public class RealmRepositoryImpl extends
 	}
 
 	@Override
-	protected Class<RealmResource> getResourceClass() {
-		return RealmResource.class;
+	protected Class<Realm> getResourceClass() {
+		return Realm.class;
 	}
 
 	@Override
@@ -260,6 +256,8 @@ public class RealmRepositoryImpl extends
 			
 		});
 	}
-
+	@Override
+	public void deleteRealm(Realm realm) {
+	}
 
 }

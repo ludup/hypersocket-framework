@@ -38,5 +38,9 @@ public class PasswordPolicyResourceRepositoryImpl extends
 		});
 	}
 
+	@Override
+	public boolean isDeletable() {
+		return false;
+	}
 
 }

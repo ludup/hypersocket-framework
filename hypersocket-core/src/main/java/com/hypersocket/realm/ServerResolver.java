@@ -12,16 +12,14 @@ public class ServerResolver extends StaticResolver {
 		
 		ConfigurationService configurationService = ApplicationContextServiceImpl.getInstance().getBean(ConfigurationService.class);
 		RealmService realmService = ApplicationContextServiceImpl.getInstance().getBean(RealmService.class);
-		String serverUrl = configurationService.getValue(realm,"email.externalHostname");
-		if(StringUtils.isBlank(serverUrl)) {
-			serverUrl = realmService.getRealmHostname(realm);
+		String serverHost = configurationService.getValue(realm,"email.externalHostname");
+		if(StringUtils.isBlank(serverHost)) {
+			serverHost = realmService.getRealmHostname(realm);
 		}
-		if(!serverUrl.startsWith("http")) {
-			serverUrl = String.format("https://%s/", serverUrl);
-		}
+		String serverUrl = String.format("https://%s/", serverHost);
 		
 		addToken("serverName", configurationService.getValue(realm, "email.serverName"));
 		addToken("serverUrl", serverUrl);
-		addToken("serverHost", realmService.getRealmHostname(realm));
+		addToken("serverHost", serverHost);
 	}
 }

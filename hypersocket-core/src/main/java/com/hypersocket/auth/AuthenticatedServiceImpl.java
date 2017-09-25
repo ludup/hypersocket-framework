@@ -253,11 +253,8 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		Realm assertRealm = getCurrentRealm();
 		
 		if(scope == PermissionScope.INCLUDE_CHILD_REALMS) {
-			while(assertRealm.hasParent()) {
+			while(!parentRealm.equals(assertRealm) && assertRealm.hasParent()) {
 				assertRealm = assertRealm.getParent();
-				if(parentRealm.equals(assertRealm)) {
-					break;
-				}
 			}
 		}
 		if(!parentRealm.equals(assertRealm)) {
@@ -279,11 +276,8 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		Realm assertRealm = getCurrentRealm();
 		
 		if(scope==PermissionScope.INCLUDE_CHILD_REALMS) {
-			while(assertRealm.hasParent()) {
+			while(!parentRealm.equals(assertRealm) && assertRealm.hasParent()) {
 				assertRealm = assertRealm.getParent();
-				if(parentRealm.equals(assertRealm)) {
-					break;
-				}
 			}
 		}
 		
