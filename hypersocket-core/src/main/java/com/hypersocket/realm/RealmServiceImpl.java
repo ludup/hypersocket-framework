@@ -989,7 +989,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						
 						String externalHost = getRealmHostname(realm);
 						if(StringUtils.isNotBlank(externalHost)) {
-							configurationService.setValue("email.externalHostname", externalHost);
+							configurationService.setValue(realm, "email.externalHostname", externalHost);
 						}
 						fireRealmCreate(realm);
 
@@ -1153,7 +1153,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 						String externalHost = getRealmHostname(realm);
 						if(StringUtils.isNotBlank(externalHost)) {
-							configurationService.setValue("email.externalHostname", externalHost);
+							configurationService.setValue(realm, "email.externalHostname", externalHost);
 						}
 						
 						fireRealmUpdate(realm);
