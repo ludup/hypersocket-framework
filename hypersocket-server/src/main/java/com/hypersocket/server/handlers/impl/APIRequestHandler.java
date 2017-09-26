@@ -34,7 +34,7 @@ public class APIRequestHandler extends ServletRequestHandler {
 
 	@Override
 	public boolean getDisableCache() {
-		return true;
+		return false;
 	}
 
 }
