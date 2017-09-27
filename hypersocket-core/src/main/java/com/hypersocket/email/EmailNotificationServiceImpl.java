@@ -153,6 +153,10 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				}	
 			}
 			
+			recipeintSubject = processDefaultReplacements(recipeintSubject, r);
+			receipientText = processDefaultReplacements(receipientText, r);
+			receipientHtml = processDefaultReplacements(receipientHtml, r);
+			
 			send(realm, mail, 
 					recipeintSubject, 
 					receipientText, 
@@ -171,6 +175,14 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		}
 	}
 	
+	private String processDefaultReplacements(String str, RecipientHolder r) {
+		str = str.replace("${email}", r.getEmail());
+		str = str.replace("${firstName}", r.getFirstName());
+		str = str.replace("${fullName}", r.getName());
+		str = str.replace("${principalId}", r.getPrincipalId());
+		return str;
+	}
+
 	private String getSMTPValue(Realm realm, String name) {
 		Realm systemRealm = realmService.getSystemRealm();
 		if(!configurationService.getBooleanValue(realm, SMTP_ENABLED)) {
