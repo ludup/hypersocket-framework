@@ -47,7 +47,7 @@ public class TemplateResource extends RealmResource {
 	}
 
 	public String getTemplateLogo() {
-		return templateLogo;
+		return templateLogo == null || templateLogo.equals("") ? "logo://100_autotype_autotype_auto.png" : templateLogo;
 	}
 
 	public void setTemplateLogo(String templateLogo) {

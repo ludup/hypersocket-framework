@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.attributes.AbstractAttributeCategoryServiceImpl;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.Realm;
 
 @Service
 public class RoleAttributeCategoryServiceImpl extends AbstractAttributeCategoryServiceImpl<RoleAttribute, RoleAttributeCategory>
@@ -36,9 +37,9 @@ public class RoleAttributeCategoryServiceImpl extends AbstractAttributeCategoryS
 
 
 	@Override
-	protected PropertyCategory registerPropertyCategory(String resourceKey, String categoryNamespace, String bundle, int weight, boolean hidden, String name, String visibilityDependsOn,
+	protected PropertyCategory registerPropertyCategory(Realm realm, String resourceKey, String categoryNamespace, String bundle, int weight, boolean hidden, String name, String visibilityDependsOn,
 			String visibilityDependsValue) {
-		final PropertyCategory cat = super.registerPropertyCategory(resourceKey, categoryNamespace, bundle, weight, hidden, name, visibilityDependsOn, visibilityDependsValue);
+		final PropertyCategory cat = super.registerPropertyCategory(realm, resourceKey, categoryNamespace, bundle, weight, hidden, name, visibilityDependsOn, visibilityDependsValue);
 		cat.setCategoryGroup("userAttribute");
 		return cat;
 	}

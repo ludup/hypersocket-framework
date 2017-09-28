@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -201,6 +202,18 @@ public class ResourceUtils {
 			}
 		}, entities);
 	}
+	public static String implodeMap(Map<String, String> pairs) {
+		StringBuilder buf = new StringBuilder();
+		for(Map.Entry<String, String> en : pairs.entrySet()) {
+			if(buf.length() > 0) {
+				buf.append("]|[");
+			}
+			buf.append(en.getKey());
+			buf.append("=");
+			buf.append(HypersocketUtils.urlEncode(en.getValue()));
+		}
+		return buf.toString();
+	}
 	
 	public static String implodeNamePairs(Collection<NameValuePair> pairs) {
 		StringBuilder buf = new StringBuilder();
@@ -227,6 +240,14 @@ public class ResourceUtils {
 			buf.append(HypersocketUtils.urlEncode(imploder.getName(e)));
 		}
 		return buf.toString();
+	}
+
+	public static Map<String, String> explodeMap(String values) {
+		Map<String, String> result = new LinkedHashMap<>();
+		for(NameValuePair pair : explodeNamePairs(values)) {
+			result.put(pair.getName(), pair.getValue());
+		}
+		return result;
 	}
 
 	public static List<NameValuePair> explodeNamePairs(String values) {

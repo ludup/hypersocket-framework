@@ -11,7 +11,8 @@ public enum AttributeType {
 	DATE("date"),
 	COLOR("color"),
 	TIME("time"),
-	SLIDER("slider");
+	SLIDER("slider"),
+	LOGO("logoInput");
 
 	AttributeType(String inputType) {
 		this.inputType = inputType;

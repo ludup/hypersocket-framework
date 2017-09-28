@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceException;
 
@@ -25,9 +26,9 @@ public interface AttributeCategoryService<A extends AbstractAttribute<T>, T exte
 
 	public Long getMaximumCategoryWeight() throws AccessDeniedException;
 
-	Collection<PropertyCategory> getPropertyCategories();
+	Collection<PropertyCategory> getPropertyCategories(Realm realm);
 
-	PropertyCategory getCategoryByResourceKey(String resourceKey);
+	PropertyCategory getCategoryByResourceKey(Realm realm, String resourceKey);
 
 	PropertyCategory registerPropertyCategory(T c);
 

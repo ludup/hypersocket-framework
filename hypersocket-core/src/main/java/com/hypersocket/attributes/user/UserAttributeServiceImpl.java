@@ -39,16 +39,16 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 	public static final String RESOURCE_BUNDLE = "UserAttributes";
 
 	@Autowired
-	UserAttributeRepository userAttributeRepository;
+	private UserAttributeRepository userAttributeRepository;
 
 	@Autowired
-	UserAttributeCategoryRepository userAttributeCategoryRepository;
+	private UserAttributeCategoryRepository userAttributeCategoryRepository;
 
 	@Autowired
-	UserAttributeCategoryService userAttributeCategoryService;
+	private UserAttributeCategoryService userAttributeCategoryService;
 
-	Map<Principal, Map<String, PropertyTemplate>> userPropertyTemplates = new HashMap<Principal, Map<String, PropertyTemplate>>();
-	FakePrincipal allUsersPrincial = new FakePrincipal("allusers");
+	private Map<Principal, Map<String, PropertyTemplate>> userPropertyTemplates = new HashMap<Principal, Map<String, PropertyTemplate>>();
+	private FakePrincipal allUsersPrincial = new FakePrincipal("allusers");
 
 	public UserAttributeServiceImpl() {
 		super(RESOURCE_BUNDLE, UserAttribute.class, UserAttributePermission.class, UserAttributePermission.CREATE,
@@ -104,11 +104,11 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 			principal = allUsersPrincial;
 		}
 
-		synchronized (userPropertyTemplates) {
+		synchronized (lock) {
 
-			if (userPropertyTemplates.containsKey(principal)) {
-				return userPropertyTemplates.get(principal);
-			}
+//			if (userPropertyTemplates.containsKey(principal)) {
+//				return userPropertyTemplates.get(principal);
+//			}
 
 			Collection<UserAttribute> attributes;
 
@@ -120,9 +120,11 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 			}
 
 			Map<String, PropertyTemplate> results = new HashMap<String, PropertyTemplate>();
-
-			for (UserAttribute attr : attributes) {
-				results.put(attr.getVariableName(), propertyTemplates.get(attr.getVariableName()));
+			Map<String, PropertyTemplate> templates = propertyTemplates.get(principal.getRealm());
+			if(templates != null) {
+				for (UserAttribute attr : attributes) {
+					results.put(attr.getVariableName(), templates.get(attr.getVariableName()));
+				}
 			}
 
 			userPropertyTemplates.put(principal, results);
@@ -160,46 +162,50 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 		}
 
 
-		PropertyTemplate template = propertyTemplates.get(attr.getVariableName());
-		if (template == null) {
-			template = new PropertyTemplate();
-			template.setResourceKey(attr.getVariableName());
-		}
+		PropertyTemplate template;
+		synchronized (lock) {
+			Map<String, PropertyTemplate> templates = propertyTemplates.get(attr.getRealm());
+			if (templates == null) {
+				templates = new HashMap<>();
+				propertyTemplates.put(attr.getRealm(), templates);
+			}
+			template = templates.get(attr.getVariableName());
+			if (template == null) {
+				template = new PropertyTemplate();
+				template.setResourceKey(attr.getVariableName());
+			}
 
-		template.setName(attr.getName());
-		template.setDescription(attr.getDescription());
-		
-		template.getAttributes().put("inputType", attr.getType().getInputType());
-		template.getAttributes().put("filter", "custom");
-		template.getAttributes().put("userAttribute", "true");
-		
-		template.setDefaultValue(defaultValue);
-		template.setWeight(attr.getWeight());
-		template.setHidden(attr.getHidden());
-		template.setDisplayMode(attr.getDisplayMode().equalsIgnoreCase("admin") ? "admin" : "");
-		template.setReadOnly(attr.getReadOnly());
-		template.setMapping("");
-		template.setCategory(cat);
-		template.setEncrypted(attr.getEncrypted());
-		template.setDefaultsToProperty("");
-		template.setPropertyStore(userAttributeRepository.getDatabasePropertyStore());
-
-		cat.getTemplates().remove(template);
-		cat.getTemplates().add(template);
-
-		propertyTemplates.put(attr.getVariableName(), template);
-
-		Collections.sort(cat.getTemplates(),
-				new Comparator<AbstractPropertyTemplate>() {
-					@Override
-					public int compare(AbstractPropertyTemplate cat1,
-							AbstractPropertyTemplate cat2) {
-						return cat1.getWeight().compareTo(cat2.getWeight());
-					}
-				});
-
-
-		synchronized (userPropertyTemplates) {
+			template.setName(attr.getName());
+			template.setDescription(attr.getDescription());
+			
+			template.getAttributes().put("inputType", attr.getType().getInputType());
+			template.getAttributes().put("filter", "custom");
+			template.getAttributes().put("userAttribute", "true");
+			
+			template.setDefaultValue(defaultValue);
+			template.setWeight(attr.getWeight());
+			template.setHidden(attr.getHidden());
+			template.setDisplayMode(attr.getDisplayMode().equalsIgnoreCase("admin") ? "admin" : "");
+			template.setReadOnly(attr.getReadOnly());
+			template.setMapping("");
+			template.setCategory(cat);
+			template.setEncrypted(attr.getEncrypted());
+			template.setDefaultsToProperty("");
+			template.setPropertyStore(userAttributeRepository.getDatabasePropertyStore());
+	
+			cat.getTemplates().remove(template);
+			cat.getTemplates().add(template);
+	
+			templates.put(attr.getVariableName(), template);
+	
+			Collections.sort(cat.getTemplates(),
+					new Comparator<AbstractPropertyTemplate>() {
+						@Override
+						public int compare(AbstractPropertyTemplate cat1,
+								AbstractPropertyTemplate cat2) {
+							return cat1.getWeight().compareTo(cat2.getWeight());
+						}
+					});
 			userPropertyTemplates.clear();	
 		}
 	}
@@ -209,7 +215,7 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 		/**
 		 * Really quick hack. We will do better.
 		 */
-		synchronized (userPropertyTemplates) {
+		synchronized (lock) {
 			userPropertyTemplates.clear();
 		}
 	}
@@ -217,7 +223,7 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 	@Override
 	protected void afterCreateResource(UserAttribute resource, Map<String, String> properties)
 			throws ResourceException {
-		synchronized (userPropertyTemplates) {
+		synchronized (lock) {
 			userPropertyTemplates.clear();
 		}
 	}
@@ -225,7 +231,7 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 	@Override
 	protected void afterUpdateResource(UserAttribute resource, Map<String, String> properties)
 			throws ResourceException {
-		synchronized (userPropertyTemplates) {
+		synchronized (lock) {
 			userPropertyTemplates.clear();
 		}
 	}

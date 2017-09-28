@@ -9,33 +9,59 @@ package com.hypersocket.properties;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class PropertyCategory implements Serializable {
 
 	private static final long serialVersionUID = -9161050636516897409L;
 
-	String categoryKey;
-	String categoryGroup;
-	String categoryNamespace;
-	String bundle;
-	String displayMode;
-	int weight;
-	boolean userCreated;
-	boolean systemOnly = false;
-	boolean nonSystem = false;
-	boolean hidden;
-	String filter = "default";
-	String name = null;
-	String visibilityDependsOn = "";
-	String visibilityDependsValue = "";
-	
-	List<AbstractPropertyTemplate> templates = new ArrayList<AbstractPropertyTemplate>();
-	
-	public PropertyCategory() {
-		
+	private String categoryKey;
+	private String categoryGroup;
+	private String categoryNamespace;
+	private String bundle;
+	private String displayMode;
+	private int weight;
+	private boolean userCreated;
+	private boolean systemOnly = false;
+	private boolean nonSystem = false;
+	private boolean hidden;
+	private String filter = "default";
+	private String name = null;
+	private String visibilityDependsOn = "";
+	private String visibilityDependsValue = "";
+	private List<AbstractPropertyTemplate> templates = new ArrayList<AbstractPropertyTemplate>();
+
+	@SafeVarargs
+	public static Collection<PropertyCategory> mergeCategories(Collection<PropertyCategory>... categoryLists) {
+		int i = 0;
+		for (Collection<PropertyCategory> l : categoryLists)
+			i += l.size();
+		List<PropertyCategory> all = new ArrayList<>(i);
+		for (Collection<PropertyCategory> l : categoryLists) {
+			if (l != null) {
+				for (PropertyCategory c : l) {
+					if (!all.contains(c)) {
+						all.add(c);
+					}
+				}
+			}
+		}
+		return all;
 	}
-	
+
+	public static PropertyCategory findCategory(String key, Iterable<PropertyCategory> it) {
+		for (PropertyCategory c : it) {
+			if (c.getCategoryKey().equals(key)) {
+				return c;
+			}
+		}
+		return null;
+	}
+
+	public PropertyCategory() {
+	}
+
 	public PropertyCategory(PropertyCategory other) {
 
 		setBundle(other.getBundle());
@@ -53,19 +79,44 @@ public class PropertyCategory implements Serializable {
 		setVisibilityDependsValue(other.getVisibilityDependsValue());
 		setVisibilityDependsOn(other.getVisibilityDependsOn());
 	}
-	
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((categoryKey == null) ? 0 : categoryKey.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PropertyCategory other = (PropertyCategory) obj;
+		if (categoryKey == null) {
+			if (other.categoryKey != null)
+				return false;
+		} else if (!categoryKey.equals(other.categoryKey))
+			return false;
+		return true;
+	}
+
 	public int getId() {
 		return categoryKey.hashCode();
 	}
-	
+
 	public String getCategoryNamespace() {
 		return categoryNamespace;
 	}
-	
+
 	public void setCategoryNamespace(String categoryNamespace) {
 		this.categoryNamespace = categoryNamespace;
 	}
-	
+
 	public String getCategoryKey() {
 		return categoryKey;
 	}
@@ -81,7 +132,7 @@ public class PropertyCategory implements Serializable {
 	public void setBundle(String bundle) {
 		this.bundle = bundle;
 	}
-	
+
 	public List<AbstractPropertyTemplate> getTemplates() {
 		return templates;
 	}
@@ -89,15 +140,15 @@ public class PropertyCategory implements Serializable {
 	public Integer getWeight() {
 		return weight;
 	}
-	
+
 	public void setWeight(int weight) {
 		this.weight = weight;
 	}
-	
+
 	public void setUserCreated(boolean userCreated) {
 		this.userCreated = userCreated;
 	}
-	
+
 	public boolean isUserCreated() {
 		return userCreated;
 	}
@@ -137,7 +188,7 @@ public class PropertyCategory implements Serializable {
 	public void setFilter(String filter) {
 		this.filter = !"".equals(filter) ? filter : "default";
 	}
-	
+
 	public String getFilter() {
 		return filter;
 	}
@@ -151,11 +202,11 @@ public class PropertyCategory implements Serializable {
 	}
 
 	public String getName() {
-		return name;		
+		return name;
 	}
 
 	public void setName(String name) {
-		this.name = name;		
+		this.name = name;
 	}
 
 	public String getVisibilityDependsOn() {
@@ -173,6 +224,5 @@ public class PropertyCategory implements Serializable {
 	public void setVisibilityDependsValue(String visibilityDependsValue) {
 		this.visibilityDependsValue = visibilityDependsValue;
 	}
-	
-	
+
 }

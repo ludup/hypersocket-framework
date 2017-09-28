@@ -6,6 +6,7 @@ import java.util.Set;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.NameValuePair;
+import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyResolver;
 import com.hypersocket.resource.AbstractAssignableResourceService;
 import com.hypersocket.resource.ResourceException;
@@ -30,6 +31,8 @@ public interface AttributeService<A extends AbstractAttribute<?>, C extends Real
 	public A getAttributeByVariableName(String attributeName) throws AccessDeniedException;
 
 	PropertyResolver getPropertyResolver();
+	
+	void registerPropertyItem(PropertyCategory cat, A attr);
 
 
 }

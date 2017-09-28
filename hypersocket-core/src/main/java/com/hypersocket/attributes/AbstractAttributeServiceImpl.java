@@ -29,6 +29,7 @@ import com.hypersocket.properties.PropertyResolver;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourcePropertyTemplate;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractAssignableResourceServiceImpl;
 import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.ResourceChangeException;
@@ -54,7 +55,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	protected AttributeCategoryRepository<C> categoryRepository;
 	protected AttributeCategoryService<A, C> categoryService; 
 
-	protected Map<String, PropertyTemplate> propertyTemplates = new HashMap<String, PropertyTemplate>();
+	protected Map<Realm, Map<String, PropertyTemplate>> propertyTemplates = new HashMap<Realm, Map<String, PropertyTemplate>>();
 	
 	private PermissionType readPermission;
 	private PermissionType deletePermission;
@@ -64,8 +65,8 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	private Class<?> permissionType;
 	private String resourceBundle;
 	private String categoryGroup;
-
 	private PropertyResolver propertyResolver;
+	protected Object lock = new Object();
 	
 	public AbstractAttributeServiceImpl(String resourceBundle, Class<A> resourceClass, Class<?> permissionType,
 			PermissionType createPermission, PermissionType readPermission, PermissionType updatePermission, PermissionType deletePermission,
@@ -233,7 +234,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		String resourceKey = "attributeCategory"
 				+ String.valueOf(attr.getCategory().getId());
 		
-		PropertyCategory cat = categoryService.getCategoryByResourceKey(resourceKey);
+		PropertyCategory cat = categoryService.getCategoryByResourceKey(attr.getRealm(), resourceKey);
 		if (cat==null) {
 			cat = categoryService.registerPropertyCategory(attr.getCategory());
 		} 
@@ -241,7 +242,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		registerPropertyItem(cat, attr);
 	}
 
-	protected void registerPropertyItem(PropertyCategory cat, A attr) {
+	public void registerPropertyItem(PropertyCategory cat, A attr) {
 
 		if (log.isInfoEnabled()) {
 			log.info("Registering property " + attr.getVariableName());
@@ -268,29 +269,11 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 				IOUtils.closeQuietly(in);
 			}
 		}
-
-
-		PropertyTemplate template = propertyTemplates.get(attr.getVariableName());
-		if (template == null) {
-			template = new PropertyTemplate();
-			template.setResourceKey(attr.getVariableName());
-		}
-
-		template.getAttributes().put("inputType", attr.getType().getInputType());
-		template.getAttributes().put("filter", "custom");
 		
-		template.setDefaultValue(defaultValue);
-		template.setName(attr.getName());
-		template.setDescription(attr.getDescription());
-		template.setWeight(attr.getWeight());
-		template.setHidden(attr.getHidden());
-		template.setDisplayMode(attr.getDisplayMode().equalsIgnoreCase("admin") ? "admin" : "");
-		template.setReadOnly(attr.getReadOnly());
-		template.setMapping("");
-		template.setCategory(cat);
+
+		StringBuffer buf = new StringBuffer();
+		StringBuffer attrBuf = new StringBuffer();
 		if(!attr.getOptions().isEmpty()) {
-			StringBuffer buf = new StringBuffer();
-			StringBuffer attrBuf = new StringBuffer();
 			buf.append("{");
 			buf.append("\"");
 			buf.append("options");
@@ -312,27 +295,57 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 			}
 			buf.append("]");
 			buf.append("}");
-			template.setMetaData(buf.toString());
-			template.getAttributes().put("options", StringEscapeUtils.escapeEcmaScript(attrBuf.toString()));
 		}
-		
-		template.setEncrypted(attr.getEncrypted());
-		template.setDefaultsToProperty("");
-		template.setPropertyStore(getStore());
 
-		cat.getTemplates().remove(template);
-		cat.getTemplates().add(template);
 
-		propertyTemplates.put(attr.getVariableName(), template);
-
-		Collections.sort(cat.getTemplates(),
-				new Comparator<AbstractPropertyTemplate>() {
-					@Override
-					public int compare(AbstractPropertyTemplate cat1,
-							AbstractPropertyTemplate cat2) {
-						return cat1.getWeight().compareTo(cat2.getWeight());
-					}
-				});
+		PropertyTemplate template;
+		synchronized(lock) {
+			Map<String, PropertyTemplate> templates = propertyTemplates.get(attr.getRealm());
+			if(templates == null) {
+				templates = new HashMap<>();
+				propertyTemplates.put(attr.getRealm(), templates);
+			}
+			template = templates.get(attr.getVariableName());
+			if (template == null) {
+				template = new PropertyTemplate();
+				template.setResourceKey(attr.getVariableName());
+			}
+	
+			template.getAttributes().put("inputType", attr.getType().getInputType());
+			template.getAttributes().put("filter", "custom");
+			
+			template.setDefaultValue(defaultValue);
+			template.setName(attr.getName());
+			template.setDescription(attr.getDescription());
+			template.setWeight(attr.getWeight());
+			template.setHidden(attr.getHidden());
+			template.setDisplayMode(attr.getDisplayMode().equalsIgnoreCase("admin") ? "admin" : "");
+			template.setReadOnly(attr.getReadOnly());
+			template.setMapping("");
+			template.setCategory(cat);
+			if(!attr.getOptions().isEmpty()) {
+				template.setMetaData(buf.toString());
+				template.getAttributes().put("options", StringEscapeUtils.escapeEcmaScript(attrBuf.toString()));
+			}
+			
+			template.setEncrypted(attr.getEncrypted());
+			template.setDefaultsToProperty("");
+			template.setPropertyStore(getStore());
+	
+			cat.getTemplates().remove(template);
+			cat.getTemplates().add(template);
+	
+			templates.put(attr.getVariableName(), template);
+	
+			Collections.sort(cat.getTemplates(),
+					new Comparator<AbstractPropertyTemplate>() {
+						@Override
+						public int compare(AbstractPropertyTemplate cat1,
+								AbstractPropertyTemplate cat2) {
+							return cat1.getWeight().compareTo(cat2.getWeight());
+						}
+					});
+		}
 	}
 
 	protected ResourcePropertyStore getStore() {

@@ -109,7 +109,12 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 			Map<String, PropertyTemplate> results = new HashMap<String, PropertyTemplate>();
 
 			for (RoleAttribute attr : attributes) {
-				results.put(attr.getVariableName(), propertyTemplates.get(attr.getVariableName()));
+				synchronized(lock) {
+					Map<String, PropertyTemplate> templates = propertyTemplates.get(role.getRealm());
+					if(templates != null) {
+						results.put(attr.getVariableName(), templates.get(attr.getVariableName()));
+					}
+				}
 			}
 
 			if(role!=null) {
@@ -148,42 +153,47 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 			}
 		}
 
+		PropertyTemplate template;
+		synchronized (lock) {
+			Map<String, PropertyTemplate> templates = propertyTemplates.get(attr.getRealm());
+			if (templates == null) {
+				templates = new HashMap<>();
+				propertyTemplates.put(attr.getRealm(), templates);
+			}
+			template = templates.get(attr.getVariableName());
+			if (template == null) {
+				template = new PropertyTemplate();
+				template.setResourceKey(attr.getVariableName());
+			}
 
-		PropertyTemplate template = propertyTemplates.get(attr.getVariableName());
-		if (template == null) {
-			template = new PropertyTemplate();
-			template.setResourceKey(attr.getVariableName());
+			template.getAttributes().put("inputType", attr.getType().getInputType());
+			template.getAttributes().put("filter", "custom");
+
+			template.setName(attr.getName());
+			template.setDescription(attr.getDescription());
+			template.setDefaultValue(defaultValue);
+			template.setWeight(attr.getWeight());
+			template.setHidden(attr.getHidden());
+			template.setDisplayMode(attr.getDisplayMode().equalsIgnoreCase("admin") ? "admin" : "");
+			template.setReadOnly(attr.getReadOnly());
+			template.setMapping("");
+			template.setCategory(cat);
+			template.setEncrypted(attr.getEncrypted());
+			template.setDefaultsToProperty("");
+			template.setPropertyStore(userAttributeRepository.getDatabasePropertyStore());
+
+			cat.getTemplates().remove(template);
+			cat.getTemplates().add(template);
+
+			templates.put(attr.getVariableName(), template);
+
+			Collections.sort(cat.getTemplates(), new Comparator<AbstractPropertyTemplate>() {
+				@Override
+				public int compare(AbstractPropertyTemplate cat1, AbstractPropertyTemplate cat2) {
+					return cat1.getWeight().compareTo(cat2.getWeight());
+				}
+			});
 		}
-
-		template.getAttributes().put("inputType", attr.getType().getInputType());
-		template.getAttributes().put("filter", "custom");
-		
-		template.setName(attr.getName());
-		template.setDescription(attr.getDescription());
-		template.setDefaultValue(defaultValue);
-		template.setWeight(attr.getWeight());
-		template.setHidden(attr.getHidden());
-		template.setDisplayMode(attr.getDisplayMode().equalsIgnoreCase("admin") ? "admin" : "");
-		template.setReadOnly(attr.getReadOnly());
-		template.setMapping("");
-		template.setCategory(cat);
-		template.setEncrypted(attr.getEncrypted());
-		template.setDefaultsToProperty("");
-		template.setPropertyStore(userAttributeRepository.getDatabasePropertyStore());
-
-		cat.getTemplates().remove(template);
-		cat.getTemplates().add(template);
-
-		propertyTemplates.put(attr.getVariableName(), template);
-
-		Collections.sort(cat.getTemplates(),
-				new Comparator<AbstractPropertyTemplate>() {
-					@Override
-					public int compare(AbstractPropertyTemplate cat1,
-							AbstractPropertyTemplate cat2) {
-						return cat1.getWeight().compareTo(cat2.getWeight());
-					}
-				});
 
 
 		synchronized (userPropertyTemplates) {

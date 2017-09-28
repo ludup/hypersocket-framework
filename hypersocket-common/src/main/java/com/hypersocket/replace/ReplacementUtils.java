@@ -14,6 +14,8 @@ public class ReplacementUtils {
 	static Logger log = LoggerFactory.getLogger(ReplacementUtils.class);
 	
 	public static String processTokenReplacements(String value, ITokenResolver tokenResolver) {
+		if(value == null)
+			return null;
 		
 		Pattern pattern = Pattern.compile("\\$\\{(.*?)\\}");
 		Matcher matcher = pattern.matcher(value);

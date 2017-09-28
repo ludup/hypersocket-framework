@@ -13,6 +13,6 @@ public class PropertyTemplate extends AbstractPropertyTemplate {
 
 	@Override
 	public String getValue() {
-		return propertyStore.getPropertyValue(this);
+		return propertyStore == null ? null : propertyStore.getPropertyValue(this);
 	}
 }
