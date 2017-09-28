@@ -27,6 +27,8 @@ import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +56,8 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		extends ResourceTemplateRepositoryImpl implements
 		AbstractAssignableResourceRepository<T> {
 
-
+	static Logger log = LoggerFactory.getLogger(AbstractAssignableResourceRepositoryImpl.class);
+	
 	protected EntityResourcePropertyStore entityPropertyStore;
 
 	@Autowired
@@ -538,6 +541,20 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Override
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
+	public List<T> allRealmResources(Realm realm) {
+
+		Criteria crit = createCriteria(getResourceClass());
+		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		crit.setFetchMode("roles", FetchMode.SELECT);
+		crit.add(Restrictions.eq("deleted", false));
+		crit.add(Restrictions.eq("realm", realm));
+
+		return (List<T>) crit.list();
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
 	public List<T> allResources() {
 
 		Criteria crit = createCriteria(getResourceClass());
@@ -732,5 +749,27 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		for (T resource: resources) {
 			deleteResource(resource, ops);
 		}
+	}
+	
+	@Override
+	@Transactional
+	public void deleteRealm(Realm realm) {
+		
+		int count = 0;
+		for(T t : allRealmResources(realm)) {
+			log.info(String.format("Deleting %s", t.getName()));
+			t.getRoles().clear();
+			save(t);
+			delete(t);
+			count++;
+		}
+
+		log.info(String.format("Deleted %d %s",count, getResourceClass().getSimpleName()));
+		flush();
+	}
+	
+	@Override
+	public boolean isDeletable() {
+		return true;
 	}
 }

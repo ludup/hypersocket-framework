@@ -7,18 +7,26 @@
  ******************************************************************************/
 package com.hypersocket.permissions;
 
-import com.hypersocket.migration.annotation.LookUpKeys;
-import com.hypersocket.repository.AbstractEntity;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
-
-import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+
+import com.hypersocket.repository.AbstractEntity;
+
 @Entity
 @Table(name = "permission_category", uniqueConstraints = {@UniqueConstraint(columnNames={"resource_bundle", "resource_key"})})
-@LookUpKeys(propertyNames = {"resourceBundle", "resourceKey"})
 public class PermissionCategory extends AbstractEntity<Long> {
 
 	private static final long serialVersionUID = -9024441856361180370L;

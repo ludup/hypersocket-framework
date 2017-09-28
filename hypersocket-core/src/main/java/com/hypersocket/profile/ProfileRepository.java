@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntityRepository;
 import com.hypersocket.tables.ColumnSort;
@@ -34,5 +35,9 @@ public interface ProfileRepository extends AbstractEntityRepository<Profile, Lon
 			int start, int length);
 
 	Long searchNeverVisitedProfilesCount(Realm realm, String searchColumn, String searchPattern);
+
+	boolean hasCompletedProfile(Principal principal);
+
+	void deleteRealm(Realm realm);
 
 }

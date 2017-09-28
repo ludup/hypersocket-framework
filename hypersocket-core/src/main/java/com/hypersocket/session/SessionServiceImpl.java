@@ -768,4 +768,10 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 		}
 	}
+
+	@Override
+	public void deleteRealm(Realm realm) {
+		repository.deleteRealm(realm);
+	}
+
 }

@@ -61,4 +61,6 @@ public interface ConfigurationService extends AuthenticatedService, PropertyTemp
 
 	Integer getIntValueOrSystemDefault(Realm realm, String string);
 
+	void deleteRealm(Realm realm);
+
 }

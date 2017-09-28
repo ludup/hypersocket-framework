@@ -21,6 +21,8 @@ import com.hypersocket.encrypt.RsaEncryptionProvider;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceCreationException;
@@ -38,6 +40,9 @@ public class SecretKeyServiceImpl extends
 	@Autowired
 	SecretKeyRepository repository;
 	
+	@Autowired
+	RealmService realmService; 
+	
 	EncryptionProvider encryptionProvider;
 	
 	public SecretKeyServiceImpl() {
@@ -49,6 +54,14 @@ public class SecretKeyServiceImpl extends
 		if(encryptionProvider==null) {
 			encryptionProvider = RsaEncryptionProvider.getInstance();
 		}
+		realmService.registerRealmListener(new RealmAdapter() {
+
+			@Override
+			public void onDeleteRealm(Realm realm) throws ResourceException, AccessDeniedException {
+				repository.deleteRealm(realm);
+			}
+			
+		});
 	}
 	
 	@Override

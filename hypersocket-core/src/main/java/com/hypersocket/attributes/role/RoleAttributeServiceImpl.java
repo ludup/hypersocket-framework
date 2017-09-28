@@ -14,6 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.attributes.AbstractAttributeServiceImpl;
@@ -26,7 +27,7 @@ import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.role.events.RoleEvent;
 
 @Service
@@ -37,15 +38,15 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 	public static final String RESOURCE_BUNDLE = "RoleAttributes";
 
 	@Autowired
-	RoleAttributeRepository userAttributeRepository;
+	private RoleAttributeRepository userAttributeRepository;
 
 	@Autowired
-	RoleAttributeCategoryRepository userAttributeCategoryRepository;
+	private RoleAttributeCategoryRepository userAttributeCategoryRepository;
 
 	@Autowired
-	RoleAttributeCategoryService userAttributeCategoryService;
+	private RoleAttributeCategoryService userAttributeCategoryService;
 
-	Map<Role, Map<String, PropertyTemplate>> userPropertyTemplates = new HashMap<Role, Map<String, PropertyTemplate>>();
+	private Map<Role, Map<String, PropertyTemplate>> userPropertyTemplates = new HashMap<Role, Map<String, PropertyTemplate>>();
 
 	public RoleAttributeServiceImpl() {
 		super(RESOURCE_BUNDLE, RoleAttribute.class, RoleAttributePermission.class, RoleAttributePermission.CREATE,
@@ -54,7 +55,7 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 
 	@PostConstruct
 	protected void init() {
-		
+
 		categoryRepository = userAttributeCategoryRepository;
 		categoryService = userAttributeCategoryService;
 
@@ -74,7 +75,7 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 
 		super.init();
 	}
-	
+
 	@Override
 	protected RoleAttributeRepository getRepository() {
 		return userAttributeRepository;
@@ -86,7 +87,7 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 	}
 
 	@Override
-	protected Role checkResource(AbstractResource resource) {
+	protected Role checkResource(SimpleResource resource) {
 		if(resource==null) {
 			return null;
 		}
@@ -125,12 +126,12 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 
 	}
 
-	public void registerPropertyItem(PropertyCategory cat, RoleAttribute attr) {
+	public PropertyTemplate registerPropertyItem(PropertyCategory cat, RoleAttribute attr) {
 
 		if (log.isInfoEnabled()) {
 			log.info("Registering property " + attr.getVariableName());
 		}
-		
+
 		String defaultValue =  attr.getDefaultValue();
 		if (attr.getDefaultValue() != null && attr.getDefaultValue().startsWith("classpath:")) {
 			String url = attr.getDefaultValue().substring(10);
@@ -197,18 +198,23 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 
 
 		synchronized (userPropertyTemplates) {
-			userPropertyTemplates.clear();	
+			userPropertyTemplates.clear();
 		}
+		
+		return template;
 	}
 
+
+
 	@Override
+	@EventListener
 	public void onApplicationEvent(RoleEvent event) {
 		/**
 		 * Really quick hack. We will do better.
 		 */
 		userPropertyTemplates.clear();
 	}
-	
+
 	@Override
 	protected void fireResourceCreationEvent(RoleAttribute resource) {
 		eventService.publishEvent(new RoleAttributeCreatedEvent(this,
@@ -236,12 +242,12 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 	@Override
 	protected void fireResourceDeletionEvent(RoleAttribute resource) {
 		eventService.publishEvent(new RoleAttributeDeletedEvent(this,
-				getCurrentSession(), resource));	
+				getCurrentSession(), resource));
 	}
 
 	@Override
 	protected void fireResourceDeletionEvent(RoleAttribute resource, Throwable t) {
 		eventService.publishEvent(new RoleAttributeDeletedEvent(this, t,
-				getCurrentSession(), resource));	
+				getCurrentSession(), resource));
 	}
 }

@@ -5,10 +5,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +21,7 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.resource.RealmCriteria;
 import com.hypersocket.resource.RealmsCriteria;
 import com.hypersocket.tables.ColumnSort;
@@ -25,6 +29,8 @@ import com.hypersocket.tables.ColumnSort;
 @Repository
 public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile, Long> implements ProfileRepository {
 
+	static Logger log = LoggerFactory.getLogger(ProfileRepositoryImpl.class);
+	
 	@Override
 	protected Class<Profile> getEntityClass() {
 		return Profile.class;
@@ -209,6 +215,22 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 			}
 			
 		});
+	}
+
+
+	@Override
+	@Transactional(readOnly=true)
+	public boolean hasCompletedProfile(Principal principal) {
+		return get("id", principal.getId(), Profile.class, new DeletedCriteria(false)) != null;
+	}
+
+
+	@Override
+	@Transactional
+	public void deleteRealm(Realm realm) {
+		Query q = createQuery("delete from Profile where realm = :r", true);
+		q.setParameter("r", realm);
+		log.info(String.format("Deleted %d Profile", q.executeUpdate()));
 	}
 	
 }

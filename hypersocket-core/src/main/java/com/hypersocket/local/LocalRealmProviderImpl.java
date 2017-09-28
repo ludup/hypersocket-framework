@@ -139,6 +139,11 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 		userRepository.resetRealm(admins);
 		
 	}
+	
+	@Override
+	public void deleteRealm(Realm realm) {
+		userRepository.deleteRealm(realm);
+	}
 
 	@Override
 	public void verifyConnection(Realm realm) throws ResourceException {

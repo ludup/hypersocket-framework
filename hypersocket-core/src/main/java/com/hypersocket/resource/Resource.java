@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Inheritance(strategy=InheritanceType.JOINED)
 @Table(name="resources")
-public abstract class Resource extends AbstractResource {
+public abstract class Resource extends SimpleResource {
 	
 	private static final long serialVersionUID = 6795842573539622186L;
 

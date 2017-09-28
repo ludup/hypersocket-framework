@@ -10,9 +10,9 @@ package com.hypersocket.auth;
 import java.util.List;
 
 import com.hypersocket.realm.Realm;
-import com.hypersocket.repository.AbstractEntityRepository;
+import com.hypersocket.resource.AbstractResourceRepository;
 
-public interface AuthenticationSchemeRepository extends AbstractEntityRepository<AuthenticationScheme,Long> {
+public interface AuthenticationSchemeRepository extends AbstractResourceRepository<AuthenticationScheme> {
 
 	public AuthenticationScheme createScheme(Realm realm, String name, List<String> modules,
 			String resourceKey, boolean hidden, Integer maximum, AuthenticationModuleType type);

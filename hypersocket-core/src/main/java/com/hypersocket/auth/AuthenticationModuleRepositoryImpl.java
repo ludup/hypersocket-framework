@@ -13,6 +13,8 @@ import java.util.List;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,7 @@ import com.hypersocket.repository.OrderByAsc;
 public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepositoryImpl<AuthenticationModule,Long>
 		implements AuthenticationModuleRepository {
 
+	static Logger log = LoggerFactory.getLogger(AuthenticationModuleRepositoryImpl.class);
 	
 	@Override
 	@Transactional(readOnly=true)
@@ -35,6 +38,20 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 			AuthenticationScheme scheme) {
 		return allEntities(AuthenticationModule.class, new SchemeRestriction(
 				scheme));
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public List<AuthenticationModule> getModulesForRealm(
+			final Realm realm) {
+		return allEntities(AuthenticationModule.class, new CriteriaConfiguration() {
+			
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.createAlias("scheme","s");
+				criteria.add(Restrictions.eq("s.realm", realm));
+			}
+		});
 	}
 
 	class SchemeRestriction implements CriteriaConfiguration {
@@ -151,5 +168,18 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 			}
 			
 		});
+	}
+
+	@Override
+	@Transactional
+	public void deleteRealm(Realm realm) {
+		
+		int count = 0;
+		for(AuthenticationModule m : getModulesForRealm(realm)) {
+			delete(m);
+			count++;
+		}
+		log.info(String.format("Deleted %d AuthenticationModule", count));
+		flush();
 	}
 }

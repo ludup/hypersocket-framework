@@ -24,14 +24,12 @@ import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
-import com.hypersocket.migration.annotation.AllowNameOnlyLookUp;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name = "roles")
 @XmlRootElement(name="role")
-@AllowNameOnlyLookUp
 public class Role extends RealmResource {
 
 	private static final long serialVersionUID = -9007753723140808832L;

@@ -28,7 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.auth.PasswordEncryptionType;
+import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.PropertyFilter;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
@@ -75,6 +78,9 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	
 	@Autowired
 	PrincipalSuspensionService suspensionService; 
+	
+	@Autowired
+	ConfigurationService configurationService;
 	
 	PropertyCategory userDetailsCategory;
 
@@ -359,7 +365,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		try {
 			byte[] salt = encryptionService.generateSalt();
 			PasswordEncryptionType passwordEncoding = PasswordEncryptionType
-					.valueOf(getValue(principal.getRealm(), "password.encoding"));
+					.valueOf(configurationService.getValue(principal.getRealm(), "password.encoding"));
 			byte[] encryptedPassword = encryptionService.getEncryptedPassword(
 					password, salt, passwordEncoding);
 
@@ -577,15 +583,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	@Transactional
 	public void deleteRealm(Realm realm) throws ResourceException {
-
-		for (Principal group : userRepository.allGroups(realm)) {
-			deleteGroup(group);
-		}
-
-		for (Principal user : userRepository.allUsers(realm)) {
-			deleteUser(user);
-		}
-
+		userRepository.deleteRealm(realm);
 	}
 
 	@Override
@@ -933,13 +931,42 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		}		
 	}
 
+	private Collection<String> convertNames(Collection<PropertyCategory> cats) {
+		Set<String> names = new HashSet<String>();
+		for(PropertyCategory c : cats) {
+			for(AbstractPropertyTemplate t : c.getTemplates()) {
+				names.add(t.getResourceKey());
+			}
+		}
+		return names;
+	}
+	
 	@Override
 	public Collection<String> getEditablePropertyNames(Realm realm) {
-		return getUserPropertyNames(null);
+		final boolean editable = !isReadOnly(realm);
+		return convertNames(userRepository.getPropertyCategories(null, new PropertyFilter() {
+			@Override
+			public boolean filterProperty(AbstractPropertyTemplate t) {
+				if("true".equals(t.getAttributes().get("userAttribute"))) {
+					return !t.isReadOnly();
+				}
+				return editable && !t.isReadOnly() && !t.isHidden() && !"hidden".equals(t.getAttributes().get("inputType"));
+			}
+		}));
 	}
 
 	@Override
 	public Collection<String> getVisiblePropertyNames(Realm realm) {
-		return getUserPropertyNames(null);
+		return convertNames(userRepository.getPropertyCategories(null, new PropertyFilter() {
+
+			@Override
+			public boolean filterProperty(AbstractPropertyTemplate t) {
+				if("true".equals(t.getAttributes().get("userAttribute"))) {
+					return true;
+				}
+				return !t.isHidden() && !"hidden".equals(t.getAttributes().get("inputType"));
+			}
+			
+		}));
 	}
 }

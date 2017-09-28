@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.annotation.PostConstruct;
+
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +27,10 @@ import com.hypersocket.profile.jobs.ProfileDeletionJob;
 import com.hypersocket.profile.jobs.ProfileUpdateJob;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.events.UserDeletedEvent;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.session.events.SessionOpenEvent;
@@ -44,7 +49,22 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 	@Autowired
 	ClusteredSchedulerService schedulerService; 
 	
+	@Autowired
+	RealmService realmService; 
+	
 	Map<String,ProfileCredentialsProvider> providers = new HashMap<String,ProfileCredentialsProvider>();
+	
+	@PostConstruct
+	private void postConstruct() {
+		realmService.registerRealmListener(new RealmAdapter() {
+
+			@Override
+			public void onDeleteRealm(Realm realm) throws ResourceException, AccessDeniedException {
+				profileRepository.deleteRealm(realm);
+			}
+		
+		});
+	}
 	
 	@Override
 	public void registerProvider(ProfileCredentialsProvider provider) {

@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.events.EventService;
@@ -30,33 +29,34 @@ import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourcePropertyTemplate;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractAssignableResourceServiceImpl;
-import com.hypersocket.resource.AbstractResource;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.TransactionAdapter;
-import com.hypersocket.role.events.RoleEvent;
+import com.hypersocket.resource.SimpleResource;
 
 @Service
-public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C>, C extends RealmAttributeCategory<A>, R extends AbstractResource> extends AbstractAssignableResourceServiceImpl<A> implements
-		AttributeService<A, C>, ApplicationListener<RoleEvent> {
+public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C>, C extends RealmAttributeCategory<A>, R extends SimpleResource>
+		extends AbstractAssignableResourceServiceImpl<A> implements AttributeService<A, C> {
 
 	static Logger log = LoggerFactory.getLogger(AbstractAttributeServiceImpl.class);
 	public static final String RESOURCE_BUNDLE = "UserAttributes";
 
 	@Autowired
-	protected
-	I18NService i18nService;
-	
+	protected I18NService i18nService;
+
 	@Autowired
 	protected EventService eventService;
 
+	@Autowired
+	protected RealmService realmService;
+
 	protected AttributeCategoryRepository<C> categoryRepository;
-	protected AttributeCategoryService<A, C> categoryService; 
+	protected AttributeCategoryService<A, C> categoryService;
 
 	protected Map<Realm, Map<String, PropertyTemplate>> propertyTemplates = new HashMap<Realm, Map<String, PropertyTemplate>>();
-	
+
 	private PermissionType readPermission;
 	private PermissionType deletePermission;
 	private PermissionType createPermission;
@@ -67,10 +67,10 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	private String categoryGroup;
 	private PropertyResolver propertyResolver;
 	protected Object lock = new Object();
-	
+
 	public AbstractAttributeServiceImpl(String resourceBundle, Class<A> resourceClass, Class<?> permissionType,
-			PermissionType createPermission, PermissionType readPermission, PermissionType updatePermission, PermissionType deletePermission,
-			String categoryGroup) {
+			PermissionType createPermission, PermissionType readPermission, PermissionType updatePermission,
+			PermissionType deletePermission, String categoryGroup) {
 		super("attribute");
 		this.categoryGroup = categoryGroup;
 		this.resourceBundle = resourceBundle;
@@ -80,45 +80,40 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		this.readPermission = readPermission;
 		this.updatePermission = updatePermission;
 		this.deletePermission = deletePermission;
-		
+
 		propertyResolver = createPropertyResolver();
 	}
-	
+
 	@Override
 	public PropertyResolver getPropertyResolver() {
 		return propertyResolver;
 	}
-	
+
 	protected PropertyResolver createPropertyResolver() {
-		return new AttributePropertyResolver<A,C,R>(this);
-	}
-	
-	protected void init() {
-		
-		for(A attr : getRepository().allResources()) {
-			registerAttribute(attr);
-		}
+		return new AttributePropertyResolver<A, C, R>(this);
 	}
 
+	protected void init() {
+
+	}
 
 	@Override
-	public A updateAttribute(A attribute, String name,
-			Long category, String description, String defaultValue, int weight,
-			String type, String displayMode, Boolean readOnly, Boolean encrypted,
-			String variableName, Set<Role> roles, Collection<NameValuePair> options) throws AccessDeniedException, ResourceException {
+	public A updateAttribute(A attribute, String name, Long category, String description, String defaultValue,
+			int weight, String type, String displayMode, Boolean readOnly, Boolean encrypted, String variableName,
+			Set<Role> roles, Collection<NameValuePair> options) throws AccessDeniedException, ResourceException {
 
 		assertPermission(updatePermission);
 
 		attribute.setName(name);
-		if (!attribute.getOldName().equalsIgnoreCase(name) && getRepository().getResourceByName(attribute.getName(), getCurrentRealm()) != null) {
-			throw new ResourceChangeException(resourceBundle,
-					"attribute.nameInUse.error", name);
+		if (!attribute.getOldName().equalsIgnoreCase(name)
+				&& getRepository().getResourceByName(attribute.getName(), getCurrentRealm()) != null) {
+			throw new ResourceChangeException(resourceBundle, "attribute.nameInUse.error", name);
 		}
-		
+
 		A varAttribute = getRepository().getAttributeByVariableName(attribute.getVariableName(), getCurrentRealm());
 		if (varAttribute != null && !varAttribute.getId().equals(attribute.getId())) {
-			throw new ResourceChangeException(resourceBundle,
-					"attribute.variableInUse.error", attribute.getVariableName());
+			throw new ResourceChangeException(resourceBundle, "attribute.variableInUse.error",
+					attribute.getVariableName());
 		}
 
 		attribute.setCategory(categoryRepository.getResourceById(category));
@@ -131,23 +126,18 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		attribute.setEncrypted(encrypted);
 		attribute.setVariableName(variableName);
 		attribute.setOptions(options);
-		
-		updateResource(attribute, roles, new HashMap<String,String>(), new TransactionAdapter<A>() {
-			public void afterOperation(A resource, Map<String,String> properties) {
-				registerAttribute(resource);		
-			}
-		});
+
+		updateResource(attribute, roles, new HashMap<String, String>());
 
 		return attribute;
 
 	}
 
 	@Override
-	public A createAttribute(String name, Long category,
-			String description, String defaultValue, int weight, String type,
-			String displayMode, Boolean readOnly, Boolean encrypted, String variableName, Set<Role> roles, Collection<NameValuePair> options)
-			throws ResourceException, AccessDeniedException {
-		
+	public A createAttribute(String name, Long category, String description, String defaultValue, int weight,
+			String type, String displayMode, Boolean readOnly, Boolean encrypted, String variableName, Set<Role> roles,
+			Collection<NameValuePair> options) throws ResourceException, AccessDeniedException {
+
 		A attribute = createNewAttributeInstance();
 
 		assertPermission(createPermission);
@@ -155,23 +145,21 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		attribute.setName(name);
 
 		if (getRepository().getResourceByName(attribute.getName(), getCurrentRealm()) != null) {
-			throw new ResourceCreationException(resourceBundle,
-					"attribute.nameInUse.error", name);
-		}
-		
-		if (getRepository().getAttributeByVariableName(attribute.getVariableName(), getCurrentRealm()) != null) {
-			throw new ResourceCreationException(resourceBundle,
-					"attribute.variableInUse.error", attribute.getVariableName());
+			throw new ResourceCreationException(resourceBundle, "attribute.nameInUse.error", name);
 		}
 
-		C cat = categoryRepository
-				.getResourceById(category);
+		if (getRepository().getAttributeByVariableName(attribute.getVariableName(), getCurrentRealm()) != null) {
+			throw new ResourceCreationException(resourceBundle, "attribute.variableInUse.error",
+					attribute.getVariableName());
+		}
+
+		C cat = categoryRepository.getResourceById(category);
 		attribute.setCategory(cat);
 		attribute.setDescription(description);
 		attribute.setDefaultValue(defaultValue);
 		attribute.setWeight(weight);
 		attribute.setType(AttributeType.valueOf(type));
-		
+
 		attribute.setDisplayMode(displayMode);
 		attribute.setReadOnly(readOnly);
 		attribute.setEncrypted(encrypted);
@@ -180,11 +168,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		attribute.getRoles().clear();
 		attribute.getRoles().addAll(roles);
 
-		createResource(attribute, new HashMap<String,String>(), new TransactionAdapter<A>() {
-			public void afterOperation(A resource, Map<String,String> properties) {
-				registerAttribute(resource);		
-			}
-		});
+		createResource(attribute, new HashMap<String, String>());
 
 		return attribute;
 	}
@@ -193,11 +177,10 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void deleteAttribute(A attribute)
-			throws AccessDeniedException, ResourceException {
+	public void deleteAttribute(A attribute) throws AccessDeniedException, ResourceException {
 
 		assertPermission(deletePermission);
-		
+
 		deleteResource(attribute);
 
 	}
@@ -224,31 +207,30 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	protected Class<A> getResourceClass() {
 		return resourceClass;
 	}
-	
-	protected abstract R checkResource(AbstractResource resource);
-	
+
+	protected abstract R checkResource(SimpleResource resource);
+
 	protected abstract Map<String, PropertyTemplate> getAttributeTemplates(R principal);
 
-	protected void registerAttribute(A attr) {
+	protected PropertyTemplate registerAttribute(A attr) {
 
-		String resourceKey = "attributeCategory"
-				+ String.valueOf(attr.getCategory().getId());
-		
+		String resourceKey = "attributeCategory" + String.valueOf(attr.getCategory().getId());
+
 		PropertyCategory cat = categoryService.getCategoryByResourceKey(attr.getRealm(), resourceKey);
-		if (cat==null) {
+		if (cat == null) {
 			cat = categoryService.registerPropertyCategory(attr.getCategory());
-		} 
-		
-		registerPropertyItem(cat, attr);
+		}
+
+		return registerPropertyItem(cat, attr);
 	}
 
-	public void registerPropertyItem(PropertyCategory cat, A attr) {
+	public PropertyTemplate registerPropertyItem(PropertyCategory cat, A attr) {
 
 		if (log.isInfoEnabled()) {
 			log.info("Registering property " + attr.getVariableName());
 		}
-		
-		String defaultValue =  attr.getDefaultValue();
+
+		String defaultValue = attr.getDefaultValue();
 		if (attr.getDefaultValue() != null && attr.getDefaultValue().startsWith("classpath:")) {
 			String url = attr.getDefaultValue().substring(10);
 			InputStream in = getClass().getResourceAsStream(url);
@@ -257,31 +239,27 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 					try {
 						defaultValue = IOUtils.toString(in);
 					} catch (IOException e) {
-						log.error(
-								"Failed to load default value classpath resource "
-										+ defaultValue, e);
+						log.error("Failed to load default value classpath resource " + defaultValue, e);
 					}
 				} else {
-					log.error("Failed to load default value classpath resource "
-							+ url);
+					log.error("Failed to load default value classpath resource " + url);
 				}
 			} finally {
 				IOUtils.closeQuietly(in);
 			}
 		}
-		
 
 		StringBuffer buf = new StringBuffer();
 		StringBuffer attrBuf = new StringBuffer();
-		if(!attr.getOptions().isEmpty()) {
+		if (!attr.getOptions().isEmpty()) {
 			buf.append("{");
 			buf.append("\"");
 			buf.append("options");
 			buf.append("\": ");
 			buf.append("[");
 			int pair = 0;
-			for(NameValuePair nvp : attr.getOptions()) {
-				if(pair > 0) {
+			for (NameValuePair nvp : attr.getOptions()) {
+				if (pair > 0) {
 					buf.append(",");
 					attrBuf.append(",");
 				}
@@ -297,11 +275,10 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 			buf.append("}");
 		}
 
-
 		PropertyTemplate template;
-		synchronized(lock) {
+		synchronized (lock) {
 			Map<String, PropertyTemplate> templates = propertyTemplates.get(attr.getRealm());
-			if(templates == null) {
+			if (templates == null) {
 				templates = new HashMap<>();
 				propertyTemplates.put(attr.getRealm(), templates);
 			}
@@ -310,10 +287,10 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 				template = new PropertyTemplate();
 				template.setResourceKey(attr.getVariableName());
 			}
-	
+
 			template.getAttributes().put("inputType", attr.getType().getInputType());
 			template.getAttributes().put("filter", "custom");
-			
+
 			template.setDefaultValue(defaultValue);
 			template.setName(attr.getName());
 			template.setDescription(attr.getDescription());
@@ -323,28 +300,28 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 			template.setReadOnly(attr.getReadOnly());
 			template.setMapping("");
 			template.setCategory(cat);
-			if(!attr.getOptions().isEmpty()) {
+			if (!attr.getOptions().isEmpty()) {
 				template.setMetaData(buf.toString());
 				template.getAttributes().put("options", StringEscapeUtils.escapeEcmaScript(attrBuf.toString()));
 			}
-			
+
 			template.setEncrypted(attr.getEncrypted());
 			template.setDefaultsToProperty("");
 			template.setPropertyStore(getStore());
-	
+
 			cat.getTemplates().remove(template);
 			cat.getTemplates().add(template);
-	
+
 			templates.put(attr.getVariableName(), template);
-	
-			Collections.sort(cat.getTemplates(),
-					new Comparator<AbstractPropertyTemplate>() {
-						@Override
-						public int compare(AbstractPropertyTemplate cat1,
-								AbstractPropertyTemplate cat2) {
-							return cat1.getWeight().compareTo(cat2.getWeight());
-						}
-					});
+
+			Collections.sort(cat.getTemplates(), new Comparator<AbstractPropertyTemplate>() {
+				@Override
+				public int compare(AbstractPropertyTemplate cat1, AbstractPropertyTemplate cat2) {
+					return cat1.getWeight().compareTo(cat2.getWeight());
+				}
+			});
+
+			return template;
 		}
 	}
 
@@ -357,82 +334,85 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		assertPermission(readPermission);
 		return getRepository().getAttributeByVariableName(attributeName, getCurrentRealm());
 	}
-	
-	public static class AttributePropertyResolver<A extends AbstractAttribute<C>, C extends RealmAttributeCategory<A>, R extends AbstractResource> implements PropertyResolver {
-		
-		protected AbstractAttributeServiceImpl<A,C,R> service;
 
-		public AttributePropertyResolver(AbstractAttributeServiceImpl<A,C,R> service) {
+	public static class AttributePropertyResolver<A extends AbstractAttribute<C>, C extends RealmAttributeCategory<A>, R extends SimpleResource>
+			implements PropertyResolver {
+
+		protected AbstractAttributeServiceImpl<A, C, R> service;
+
+		public AttributePropertyResolver(AbstractAttributeServiceImpl<A, C, R> service) {
 			this.service = service;
 		}
-		
+
 		@Override
-		public Collection<String> getPropertyNames(AbstractResource resource) {
-			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
+		public Collection<String> getPropertyNames(SimpleResource resource) {
+			Map<String, PropertyTemplate> userTemplates = service
+					.getAttributeTemplates(service.checkResource(resource));
 			return userTemplates.keySet();
 		}
 
 		@Override
-		public Collection<String> getVariableNames(AbstractResource resource) {
-			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
+		public Collection<String> getVariableNames(SimpleResource resource) {
+			Map<String, PropertyTemplate> userTemplates = service
+					.getAttributeTemplates(service.checkResource(resource));
 			return userTemplates.keySet();
 		}
-		
+
 		@Override
-		public PropertyTemplate getPropertyTemplate(AbstractResource resource,
-				String resourceKey) {
-			
-			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
+		public PropertyTemplate getPropertyTemplate(SimpleResource resource, String resourceKey) {
+
+			Map<String, PropertyTemplate> userTemplates = service
+					.getAttributeTemplates(service.checkResource(resource));
 			return userTemplates.get(resourceKey);
 		}
 
 		@Override
-		public Collection<PropertyCategory> getPropertyCategories(
-				AbstractResource resource) {
-			
-			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
-			Map<Integer,PropertyCategory> results = new HashMap<Integer,PropertyCategory>();
-			
-			for(PropertyTemplate t : userTemplates.values()) {
-				
-				if(t == null) {
+		public Collection<PropertyCategory> getPropertyCategories(SimpleResource resource) {
+
+			Map<String, PropertyTemplate> userTemplates = service
+					.getAttributeTemplates(service.checkResource(resource));
+			Map<Integer, PropertyCategory> results = new HashMap<Integer, PropertyCategory>();
+
+			for (PropertyTemplate t : userTemplates.values()) {
+
+				if (t == null) {
 					log.warn("BUG: NULL property template");
 					continue;
 				}
 
-				if(t.getCategory() == null) {
+				if (t.getCategory() == null) {
 					log.warn("BUG: NULL property template");
 					continue;
 				}
-				
-				if(!results.containsKey(t.getCategory().getId())) {
+
+				if (!results.containsKey(t.getCategory().getId())) {
 					PropertyCategory cat = new PropertyCategory(t.getCategory());
 					results.put(cat.getId(), cat);
 				}
 				results.get(t.getCategory().getId()).getTemplates().add(new ResourcePropertyTemplate(t, resource));
 			}
-			
+
 			return results.values();
 		}
 
 		@Override
-		public Collection<PropertyTemplate> getPropertyTemplates(
-				AbstractResource resource) {
-			
-			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
+		public Collection<PropertyTemplate> getPropertyTemplates(SimpleResource resource) {
+
+			Map<String, PropertyTemplate> userTemplates = service
+					.getAttributeTemplates(service.checkResource(resource));
 			return userTemplates.values();
 		}
 
 		@Override
-		public boolean hasPropertyTemplate(AbstractResource resource,
-				String resourceKey) {
+		public boolean hasPropertyTemplate(SimpleResource resource, String resourceKey) {
 
-			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
+			Map<String, PropertyTemplate> userTemplates = service
+					.getAttributeTemplates(service.checkResource(resource));
 			return userTemplates.containsKey(resourceKey);
 
 		}
 	}
-	
+
 	public String getCategoryGroup() {
 		return categoryGroup;
 	}

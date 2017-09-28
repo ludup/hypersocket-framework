@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.w3c.dom.Element;
 
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 
 public class TransientPropertyStore implements ResourcePropertyStore {
 
@@ -47,17 +47,17 @@ public class TransientPropertyStore implements ResourcePropertyStore {
 	}
 
 	@Override
-	public String getPropertyValue(AbstractPropertyTemplate template, AbstractResource resource) {
+	public String getPropertyValue(AbstractPropertyTemplate template, SimpleResource resource) {
 		return "";
 	}
 
 	@Override
-	public void setPropertyValue(AbstractPropertyTemplate template, AbstractResource resource, String value) {
+	public void setPropertyValue(AbstractPropertyTemplate template, SimpleResource resource, String value) {
 
 	}
 
 	@Override
-	public boolean hasPropertyValueSet(AbstractPropertyTemplate template, AbstractResource resource) {
+	public boolean hasPropertyValueSet(AbstractPropertyTemplate template, SimpleResource resource) {
 		return false;
 	}
 
@@ -67,7 +67,7 @@ public class TransientPropertyStore implements ResourcePropertyStore {
 	}
 
 	@Override
-	public String getDecryptedValue(AbstractPropertyTemplate template, AbstractResource resource) {
+	public String getDecryptedValue(AbstractPropertyTemplate template, SimpleResource resource) {
 		return "";
 	}
 

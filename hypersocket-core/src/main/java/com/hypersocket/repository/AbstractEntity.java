@@ -10,8 +10,6 @@ package com.hypersocket.repository;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
@@ -34,10 +32,6 @@ public abstract class AbstractEntity<T> implements Serializable{
 	private static final long serialVersionUID = -8808550521563073042L;
 
 	public abstract T getId();
-
-	@Column(name="legacy_id")
-	@Access(AccessType.PROPERTY)
-	T legacyId;
 	
 	@Column(name="deleted", nullable=false)
 	boolean deleted;
@@ -130,11 +124,4 @@ public abstract class AbstractEntity<T> implements Serializable{
 		return this.getClass().getCanonicalName();
 	}
 
-	public T getLegacyId() {
-		return legacyId == null ? getId() : legacyId;
-	}
-
-	public void setLegacyId(T legacyId) {
-		this.legacyId = legacyId;
-	}
 }

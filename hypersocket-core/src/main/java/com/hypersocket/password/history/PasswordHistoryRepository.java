@@ -3,6 +3,7 @@ package com.hypersocket.password.history;
 import java.util.Collection;
 
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntityRepository;
 
 public interface PasswordHistoryRepository extends AbstractEntityRepository<PasswordHistory, Long> {
@@ -12,4 +13,6 @@ public interface PasswordHistoryRepository extends AbstractEntityRepository<Pass
 	PasswordHistory getHistoryFor(Principal principal, String password);
 
 	void savePassword(PasswordHistory p);
+
+	void deleteRealm(Realm realm);
 }

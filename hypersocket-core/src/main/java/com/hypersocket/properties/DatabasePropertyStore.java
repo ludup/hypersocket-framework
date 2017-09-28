@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.w3c.dom.Element;
 
 import com.hypersocket.encrypt.EncryptionService;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.resource.SimpleResource;
 
 public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 
@@ -26,11 +26,11 @@ public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 	
 	@Override
 	protected String lookupPropertyValue(AbstractPropertyTemplate template,
-			AbstractResource resource) {
+			SimpleResource resource) {
 		return getProperty(resource, template.getResourceKey(), template.getDefaultValue());
 	}
 	
-	public String getProperty(AbstractResource resource, String resourceKey, String defaultValue) {
+	public String getProperty(SimpleResource resource, String resourceKey, String defaultValue) {
 		// Look up property on resource
 		Property p = repository.getProperty(resourceKey, resource);
 		if (p == null || p.getValue()==null) {
@@ -41,18 +41,18 @@ public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 
 	@Override
 	public boolean hasPropertyValueSet(AbstractPropertyTemplate template,
-			AbstractResource resource) {
+			SimpleResource resource) {
 		Property p = repository.getProperty(template.getResourceKey(), resource);
 		return p!=null;
 	}
 
 	@Override
 	protected void doSetProperty(AbstractPropertyTemplate template,
-			AbstractResource resource, String value) {
+			SimpleResource resource, String value) {
 		setProperty(resource, template.getResourceKey(), value);
 	}
 	
-	public void setProperty(AbstractResource resource, String resourceKey, String value) {
+	public void setProperty(SimpleResource resource, String resourceKey, String value) {
 		DatabaseProperty property = repository.getProperty(
 				resourceKey, resource);
 		if (property == null) {

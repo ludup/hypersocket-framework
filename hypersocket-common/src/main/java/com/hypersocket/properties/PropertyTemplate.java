@@ -7,8 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.properties;
 
-
-
 public class PropertyTemplate extends AbstractPropertyTemplate {
 
 	@Override

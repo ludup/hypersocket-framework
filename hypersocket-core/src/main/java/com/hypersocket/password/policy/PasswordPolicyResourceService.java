@@ -43,5 +43,7 @@ public interface PasswordPolicyResourceService extends
 	
 	String generatePassword(PasswordPolicyResource policy, int length);
 
+	void deleteRealm(Realm realm);
+
 
 }

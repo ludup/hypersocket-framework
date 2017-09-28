@@ -14,6 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.attributes.AbstractAttributeServiceImpl;
@@ -22,18 +23,22 @@ import com.hypersocket.attributes.user.events.UserAttributeDeletedEvent;
 import com.hypersocket.attributes.user.events.UserAttributeEvent;
 import com.hypersocket.attributes.user.events.UserAttributeUpdatedEvent;
 import com.hypersocket.auth.FakePrincipal;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.resource.AbstractResource;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
+import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.role.events.RoleEvent;
+import com.hypersocket.resource.SimpleResource;
 
 @Service
-public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserAttribute, UserAttributeCategory, Principal>
-		implements UserAttributeService {
+public class UserAttributeServiceImpl extends
+		AbstractAttributeServiceImpl<UserAttribute, UserAttributeCategory, Principal> implements UserAttributeService {
 
 	static Logger log = LoggerFactory.getLogger(UserAttributeServiceImpl.class);
 	public static final String RESOURCE_BUNDLE = "UserAttributes";
@@ -47,12 +52,16 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 	@Autowired
 	private UserAttributeCategoryService userAttributeCategoryService;
 
+	@Autowired
+	private RealmService realmService;
+
 	private Map<Principal, Map<String, PropertyTemplate>> userPropertyTemplates = new HashMap<Principal, Map<String, PropertyTemplate>>();
 	private FakePrincipal allUsersPrincial = new FakePrincipal("allusers");
 
 	public UserAttributeServiceImpl() {
 		super(RESOURCE_BUNDLE, UserAttribute.class, UserAttributePermission.class, UserAttributePermission.CREATE,
-				UserAttributePermission.READ, UserAttributePermission.UPDATE, UserAttributePermission.DELETE, "userAttributes");
+				UserAttributePermission.READ, UserAttributePermission.UPDATE, UserAttributePermission.DELETE,
+				"userAttributes");
 	}
 
 	@PostConstruct
@@ -73,7 +82,14 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 		eventService.registerEvent(UserAttributeCreatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(UserAttributeUpdatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(UserAttributeDeletedEvent.class, RESOURCE_BUNDLE);
-		
+
+		realmService.registerRealmListener(new RealmAdapter() {
+			@Override
+			public void onDeleteRealm(Realm realm) throws ResourceException, AccessDeniedException {
+				getRepository().deleteRealm(realm);
+				userAttributeCategoryRepository.deleteRealm(realm);
+			}
+		});
 		super.init();
 	}
 
@@ -81,18 +97,18 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 	protected UserAttributeRepository getRepository() {
 		return userAttributeRepository;
 	}
-	
+
 	@Override
 	protected UserAttribute createNewAttributeInstance() {
 		return new UserAttribute();
 	}
 
 	@Override
-	protected Principal checkResource(AbstractResource resource) {
-		if(resource==null) {
+	protected Principal checkResource(SimpleResource resource) {
+		if (resource == null) {
 			return null;
 		}
-		if(!(resource instanceof Principal)) {
+		if (!(resource instanceof Principal)) {
 			throw new IllegalArgumentException("Resource must be a Principal in order to get attributes");
 		}
 		return (Principal) resource;
@@ -106,13 +122,13 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 
 		synchronized (lock) {
 
-//			if (userPropertyTemplates.containsKey(principal)) {
-//				return userPropertyTemplates.get(principal);
-//			}
+			// if (userPropertyTemplates.containsKey(principal)) {
+			// return userPropertyTemplates.get(principal);
+			// }
 
 			Collection<UserAttribute> attributes;
 
-			if(principal.equals(allUsersPrincial)) {
+			if (principal.equals(allUsersPrincial)) {
 
 				attributes = getRepository().getResources(principal.getRealm());
 			} else {
@@ -121,7 +137,7 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 
 			Map<String, PropertyTemplate> results = new HashMap<String, PropertyTemplate>();
 			Map<String, PropertyTemplate> templates = propertyTemplates.get(principal.getRealm());
-			if(templates != null) {
+			if (templates != null) {
 				for (UserAttribute attr : attributes) {
 					results.put(attr.getVariableName(), templates.get(attr.getVariableName()));
 				}
@@ -133,13 +149,13 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 
 	}
 
-	public void registerPropertyItem(PropertyCategory cat, UserAttribute attr) {
+	public PropertyTemplate registerPropertyItem(PropertyCategory cat, UserAttribute attr) {
 
 		if (log.isInfoEnabled()) {
 			log.info("Registering property " + attr.getVariableName());
 		}
-		
-		String defaultValue =  attr.getDefaultValue();
+
+		String defaultValue = attr.getDefaultValue();
 		if (attr.getDefaultValue() != null && attr.getDefaultValue().startsWith("classpath:")) {
 			String url = attr.getDefaultValue().substring(10);
 			InputStream in = getClass().getResourceAsStream(url);
@@ -148,19 +164,15 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 					try {
 						defaultValue = IOUtils.toString(in);
 					} catch (IOException e) {
-						log.error(
-								"Failed to load default value classpath resource "
-										+ defaultValue, e);
+						log.error("Failed to load default value classpath resource " + defaultValue, e);
 					}
 				} else {
-					log.error("Failed to load default value classpath resource "
-							+ url);
+					log.error("Failed to load default value classpath resource " + url);
 				}
 			} finally {
 				IOUtils.closeQuietly(in);
 			}
 		}
-
 
 		PropertyTemplate template;
 		synchronized (lock) {
@@ -177,11 +189,11 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 
 			template.setName(attr.getName());
 			template.setDescription(attr.getDescription());
-			
+
 			template.getAttributes().put("inputType", attr.getType().getInputType());
 			template.getAttributes().put("filter", "custom");
 			template.getAttributes().put("userAttribute", "true");
-			
+
 			template.setDefaultValue(defaultValue);
 			template.setWeight(attr.getWeight());
 			template.setHidden(attr.getHidden());
@@ -192,26 +204,26 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 			template.setEncrypted(attr.getEncrypted());
 			template.setDefaultsToProperty("");
 			template.setPropertyStore(userAttributeRepository.getDatabasePropertyStore());
-	
+
 			cat.getTemplates().remove(template);
 			cat.getTemplates().add(template);
-	
+
 			templates.put(attr.getVariableName(), template);
-	
-			Collections.sort(cat.getTemplates(),
-					new Comparator<AbstractPropertyTemplate>() {
-						@Override
-						public int compare(AbstractPropertyTemplate cat1,
-								AbstractPropertyTemplate cat2) {
-							return cat1.getWeight().compareTo(cat2.getWeight());
-						}
-					});
-			userPropertyTemplates.clear();	
+
+			Collections.sort(cat.getTemplates(), new Comparator<AbstractPropertyTemplate>() {
+				@Override
+				public int compare(AbstractPropertyTemplate cat1, AbstractPropertyTemplate cat2) {
+					return cat1.getWeight().compareTo(cat2.getWeight());
+				}
+			});
+			userPropertyTemplates.clear();
+			return template;
 		}
 	}
 
 	@Override
-	public void onApplicationEvent(RoleEvent event) {
+	@EventListener
+	public void onApplicationEvent(UserEvent event) {
 		/**
 		 * Really quick hack. We will do better.
 		 */
@@ -219,7 +231,7 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 			userPropertyTemplates.clear();
 		}
 	}
-	
+
 	@Override
 	protected void afterCreateResource(UserAttribute resource, Map<String, String> properties)
 			throws ResourceException {
@@ -238,38 +250,32 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 
 	@Override
 	protected void fireResourceCreationEvent(UserAttribute resource) {
-		eventService.publishEvent(new UserAttributeCreatedEvent(this,
-				getCurrentSession(), resource));
+		eventService.publishEvent(new UserAttributeCreatedEvent(this, getCurrentSession(), resource));
 	}
 
 	@Override
 	protected void fireResourceCreationEvent(UserAttribute resource, Throwable t) {
-		eventService.publishEvent(new UserAttributeCreatedEvent(this, t,
-				getCurrentSession(), resource));
+		eventService.publishEvent(new UserAttributeCreatedEvent(this, t, getCurrentSession(), resource));
 	}
 
 	@Override
 	protected void fireResourceUpdateEvent(UserAttribute resource) {
-		eventService.publishEvent(new UserAttributeUpdatedEvent(this,
-				getCurrentSession(), resource));
+		eventService.publishEvent(new UserAttributeUpdatedEvent(this, getCurrentSession(), resource));
 	}
 
 	@Override
 	protected void fireResourceUpdateEvent(UserAttribute resource, Throwable t) {
-		eventService.publishEvent(new UserAttributeUpdatedEvent(this, t,
-				getCurrentSession(), resource));
+		eventService.publishEvent(new UserAttributeUpdatedEvent(this, t, getCurrentSession(), resource));
 	}
 
 	@Override
 	protected void fireResourceDeletionEvent(UserAttribute resource) {
-		eventService.publishEvent(new UserAttributeDeletedEvent(this,
-				getCurrentSession(), resource));	
+		eventService.publishEvent(new UserAttributeDeletedEvent(this, getCurrentSession(), resource));
 	}
 
 	@Override
 	protected void fireResourceDeletionEvent(UserAttribute resource, Throwable t) {
-		eventService.publishEvent(new UserAttributeDeletedEvent(this, t,
-				getCurrentSession(), resource));	
+		eventService.publishEvent(new UserAttributeDeletedEvent(this, t, getCurrentSession(), resource));
 	}
 
 }

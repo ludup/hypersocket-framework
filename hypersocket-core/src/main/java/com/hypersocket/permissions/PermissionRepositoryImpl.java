@@ -18,6 +18,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
+import org.hibernate.Query;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
@@ -30,6 +31,7 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.AssignableResource;
@@ -641,6 +643,20 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@Transactional(readOnly = true)
 	public List<Role> getPermissionsByIds(Long... ids) {
 		return getResourcesByIds(ids);
+	}
+
+	@Override
+	@Transactional
+	public void deleteRealm(Realm realm) {
+		Query q2 = createQuery("delete from Role where realm = :r", true);
+		q2.setParameter("r", realm);
+		q2.executeUpdate();
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Role getRoleByResourceCategory(String resourceCategory) {
+		return get("resourceCategory", resourceCategory, Role.class, new DeletedCriteria(false));
 	}
 
 

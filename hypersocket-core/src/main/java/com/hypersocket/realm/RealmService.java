@@ -8,7 +8,6 @@
 package com.hypersocket.realm;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,6 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.resource.ResourceExportException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.TableFilter;
@@ -262,8 +260,6 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	void setUserProperty(Principal principal, String resourceKey, String val);
 
-	void exportResources(OutputStream outputStream, Long realmId, boolean all, String[] entities) throws ResourceExportException, AccessDeniedException;
-
 	void deleteRealms(List<Realm> realms) throws ResourceException, AccessDeniedException;
 	
 	List<Realm> getRealmsByIds(Long...ids) throws AccessDeniedException;
@@ -296,11 +292,11 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Collection<TableFilter> getPrincipalFilters();
 
-	Collection<? extends Realm> getRealmsByOwner();
+	Collection<Realm> getRealmsByOwner();
 
 	void registerOwnershipResolver(RealmOwnershipResolver resolver);
 
-	Collection<? extends Realm> getRealmsByParent(Realm currentRealm);
+	Collection<Realm> getRealmsByParent(Realm currentRealm);
 
 }
 

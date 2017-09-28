@@ -1,9 +1,4 @@
 <?xml version="1.0" ?>
 <propertyTemplates extends="realmTemplate.xml">
-	<propertyCategory resourceKey="local.security"
-		resourceBundle="LocalRealm" weight="100">
-		<property resourceKey="password.encoding" inputType="select"
-		    	options="PBKDF2_SHA1_1000,PBKDF2_SHA1_20000"
-			defaultValue="PBKDF2_SHA1_20000" weight="0" />
-	</propertyCategory>
+
 </propertyTemplates>

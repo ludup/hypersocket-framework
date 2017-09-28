@@ -11,14 +11,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.hypersocket.resource.AbstractResourceRepository;
-import com.hypersocket.resource.RealmResource;
+import com.hypersocket.resource.AbstractSimpleResourceRepository;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
 
 public interface RealmRepository extends
-		AbstractResourceRepository<RealmResource> {
+		AbstractSimpleResourceRepository<Realm> {
 
 	public List<Realm> allRealms();
 
@@ -62,6 +61,6 @@ public interface RealmRepository extends
 
 	Realm getRealmByNameAndOwner(String name, Realm owner);
 
-	Collection<? extends Realm> getRealmsByParent(Realm currentRealm);
+	Collection<Realm> getRealmsByParent(Realm currentRealm);
 
 }

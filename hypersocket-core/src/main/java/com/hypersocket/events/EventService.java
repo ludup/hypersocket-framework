@@ -28,4 +28,6 @@ public interface EventService  {
 
 	Set<String> getAttributeNames();
 
+	void registerExtender(EventExtender extender);
+
 }
