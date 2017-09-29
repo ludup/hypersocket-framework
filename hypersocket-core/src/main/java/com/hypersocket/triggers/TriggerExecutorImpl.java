@@ -27,6 +27,7 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
+import com.hypersocket.scheduler.LocalSchedulerService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskResult;
@@ -53,7 +54,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 	TaskProviderService taskService; 
 	
 	@Autowired
-	ClusteredSchedulerService schedulerService; 
+	LocalSchedulerService schedulerService; 
 	
 	@Autowired
 	ConfigurationService configurationService; 
@@ -105,7 +106,6 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 			data.put("event", sourceEvent);
 			data.put("sourceEvent", sourceEvent);
 			data.put("trigger", trigger);
-			data.put("realm", currentRealm);
 			
 			try {
 				String scheduleId = UUID.randomUUID().toString();
