@@ -3,10 +3,12 @@ package com.hypersocket.email;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.mail.Message.RecipientType;
+import javax.mail.Session;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +32,8 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.ServerResolver;
+import com.hypersocket.replace.ReplacementUtils;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.triggers.ValidationException;
@@ -90,6 +94,16 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		sendEmail(realm, subject, text, html, replyToName, replyToEmail, recipients, new String[0], track, delay, attachments);
 	}
 	
+	private Session createSession(Realm realm) {
+		
+		Properties properties = new Properties();
+	    properties.put("mail.smtp.auth", "false");
+	    properties.put("mail.smtp.starttls.enable", TransportStrategy.values()[getSMTPIntValue(realm, SMTP_PROTOCOL)]==TransportStrategy.SMTP_PLAIN ? "false" : "true");
+	    properties.put("mail.smtp.host", getSMTPValue(realm, SMTP_HOST));
+	    properties.put("mail.smtp.port", getSMTPIntValue(realm, SMTP_PORT));
+
+	    return Session.getInstance(properties);
+	}
 	
 	@Override
 	@SafeVarargs
@@ -110,11 +124,17 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			return;
 		}
 		
-		Mailer mail = new Mailer(getSMTPValue(realm, SMTP_HOST), 
-				getSMTPIntValue(realm, SMTP_PORT), 
-				getSMTPValue(realm, SMTP_USERNAME),
-				getSMTPDecryptedValue(realm, SMTP_PASSWORD),
-				TransportStrategy.values()[getSMTPIntValue(realm, SMTP_PROTOCOL)]);
+		Mailer mail;
+		
+		if(StringUtils.isNotBlank(getSMTPValue(realm, SMTP_USERNAME))) {
+			mail = new Mailer(getSMTPValue(realm, SMTP_HOST), 
+					getSMTPIntValue(realm, SMTP_PORT), 
+					getSMTPValue(realm, SMTP_USERNAME),
+					getSMTPDecryptedValue(realm, SMTP_PASSWORD),
+					TransportStrategy.values()[getSMTPIntValue(realm, SMTP_PROTOCOL)]);
+		} else {
+			mail = new Mailer(createSession(realm));
+		}
 		
 		String archiveAddress = configurationService.getValue(realm, "email.archiveAddress");
 		List<RecipientHolder> archiveRecipients = new ArrayList<RecipientHolder>();
@@ -153,9 +173,11 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				}	
 			}
 			
-			recipeintSubject = processDefaultReplacements(recipeintSubject, r);
-			receipientText = processDefaultReplacements(receipientText, r);
-			receipientHtml = processDefaultReplacements(receipientHtml, r);
+			ServerResolver serverResolver = new ServerResolver(realm);
+			
+			recipeintSubject = processDefaultReplacements(recipeintSubject, r, serverResolver);
+			receipientText = processDefaultReplacements(receipientText, r, serverResolver);
+			receipientHtml = processDefaultReplacements(receipientHtml, r, serverResolver);
 			
 			send(realm, mail, 
 					recipeintSubject, 
@@ -175,12 +197,13 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		}
 	}
 	
-	private String processDefaultReplacements(String str, RecipientHolder r) {
+	private String processDefaultReplacements(String str, RecipientHolder r, ServerResolver serverResolver) {
 		str = str.replace("${email}", r.getEmail());
 		str = str.replace("${firstName}", r.getFirstName());
 		str = str.replace("${fullName}", r.getName());
 		str = str.replace("${principalId}", r.getPrincipalId());
-		return str;
+		
+		return ReplacementUtils.processTokenReplacements(str, serverResolver);
 	}
 
 	private String getSMTPValue(Realm realm, String name) {
