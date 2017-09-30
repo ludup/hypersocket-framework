@@ -45,5 +45,7 @@ public interface PasswordPolicyResourceService extends
 
 	void deleteRealm(Realm realm);
 
+	PasswordPolicyResource getLocalPolicy(Realm realm);
+
 
 }

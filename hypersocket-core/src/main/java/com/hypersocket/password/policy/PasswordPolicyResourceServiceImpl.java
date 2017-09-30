@@ -434,7 +434,7 @@ public class PasswordPolicyResourceServiceImpl extends
 
 	@Override
 	public PasswordPolicyResource getDefaultPasswordPolicy(Realm realm) {
-		return getDefaultPolicy(realm, LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY);
+		return getDefaultPolicy(realm, realm.getResourceCategory());
 	}
 
 	@Override
@@ -508,5 +508,10 @@ public class PasswordPolicyResourceServiceImpl extends
 	@Override
 	public void deleteRealm(Realm realm) {
 		repository.deleteRealm(realm);
+	}
+
+	@Override
+	public PasswordPolicyResource getLocalPolicy(Realm realm) {
+		return getDefaultPolicy(realm, LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY);
 	}
 }
