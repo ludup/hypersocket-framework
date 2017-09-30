@@ -378,4 +378,17 @@ public class HypersocketUtils {
 		return url.replace(" ", "%20");
 	}
 
+	public static Date thirtyDays() {
+		
+		Calendar date = Calendar.getInstance();
+		date.set(Calendar.HOUR_OF_DAY, 0);
+		date.set(Calendar.MINUTE, 0);
+		date.set(Calendar.SECOND, 0);
+		date.set(Calendar.MILLISECOND, 0);
+		
+		date.add(Calendar.DAY_OF_MONTH, 30);
+		
+		return date.getTime();
+	}
+
 }
