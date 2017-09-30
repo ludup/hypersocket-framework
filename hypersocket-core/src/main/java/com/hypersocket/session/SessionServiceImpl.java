@@ -691,7 +691,6 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		session.setImpersonatedPrincipal(null);
 		session.setInheritPermissions(false);
 
-		session.setCurrentRealm(session.getCurrentPrincipal().getRealm());
 		setCurrentRole(permissionService.getPersonalRole(session.getCurrentPrincipal()));
 		repository.updateSession(session);
 	}
