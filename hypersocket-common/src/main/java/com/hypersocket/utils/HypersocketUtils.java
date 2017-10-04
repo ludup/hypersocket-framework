@@ -314,7 +314,7 @@ public class HypersocketUtils {
 	}
 	
 	public static String generateRandomAlphaNumericString(int length) {
-	    return new BigInteger(130, random).toString(32).substring(0,  length);
+	    return new BigInteger(length * 8, random).toString(32).substring(0,  length);
 	}
 
 
