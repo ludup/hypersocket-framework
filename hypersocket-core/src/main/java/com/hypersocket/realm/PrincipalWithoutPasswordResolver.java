@@ -24,11 +24,12 @@ public class PrincipalWithoutPasswordResolver extends StaticResolver {
 		addToken("secondaryEmail", ResourceUtils.createDelimitedString(ResourceUtils.explodeCollectionValues(principal.getSecondaryEmail()), "\r\n"));
 		addToken("mobile", principal.getMobile());
 		addToken("fullName", principal.getPrincipalDescription());
+		addToken("realmName", principal.getRealm().getName());
 	}
 	
 	public static Set<String> getVariables() {
 		return new HashSet<String>(Arrays.asList("principalName", "principalId",
-				"principalDesc", "principalRealm", "firstName", "fullName", "email", "secondaryEmail", "mobile"));
+				"principalDesc", "principalRealm", "firstName", "fullName", "email", "secondaryEmail", "mobile", "realmName"));
 	}
 	
 	public String getFirstName(String name) {

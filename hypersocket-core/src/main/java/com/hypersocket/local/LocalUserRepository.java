@@ -1,5 +1,5 @@
 /*******************************************************************************
-x * Copyright (c) 2013 Hypersocket Limited.
+x * Copyright (c) 2013 LogonBox Limited.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License v3.0
  * which accompanies this distribution, and is available at

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Hypersocket Limited.
+ * Copyright (c) 2013 LogonBox Limited.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License v3.0
  * which accompanies this distribution, and is available at
@@ -691,7 +691,6 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		session.setImpersonatedPrincipal(null);
 		session.setInheritPermissions(false);
 
-		session.setCurrentRealm(session.getCurrentPrincipal().getRealm());
 		setCurrentRole(permissionService.getPersonalRole(session.getCurrentPrincipal()));
 		repository.updateSession(session);
 	}

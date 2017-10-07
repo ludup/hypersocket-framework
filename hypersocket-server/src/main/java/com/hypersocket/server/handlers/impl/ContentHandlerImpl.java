@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Hypersocket Limited.
+ * Copyright (c) 2013 LogonBox Limited.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License v3.0
  * which accompanies this distribution, and is available at
@@ -334,11 +334,11 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
         // Add cache headers
         time.add(Calendar.SECOND, HTTP_CACHE_SECONDS);
         response.setHeader(HttpHeaders.EXPIRES, dateFormatter.format(time.getTime()));
-        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, max-age=" + HTTP_CACHE_SECONDS);
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "max-age=" + HTTP_CACHE_SECONDS);
        
         try {
         	 long lastModified = getLastModified(path);
-			response.setHeader(HttpHeaders.LAST_MODIFIED, dateFormatter.format(new Date()));
+			response.setHeader(HttpHeaders.LAST_MODIFIED, dateFormatter.format(lastModified));
 			if(supportsEtag()) {
 	        	response.setHeader(HttpHeaders.ETAG, DigestUtils.sha256Hex(path + "|" + lastModified));
 	        }
