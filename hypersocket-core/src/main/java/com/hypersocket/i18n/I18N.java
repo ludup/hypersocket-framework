@@ -118,7 +118,7 @@ public class I18N {
 
 			MessageFormat messageFormat = new MessageFormat(localizedString);
 			messageFormat.setLocale(locale);
-			return messageFormat.format(formatParameters(arguments), new StringBuffer(), new FieldPosition(0)).toString();
+			return messageFormat.format(formatParameters(arguments));
 		} catch (MissingResourceException mre) {
 			return "Missing resource key [i18n/" + resourceBundle + "/" + key + "]";
 		}
