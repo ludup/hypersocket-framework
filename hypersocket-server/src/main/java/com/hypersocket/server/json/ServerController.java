@@ -6,7 +6,9 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
@@ -189,9 +191,8 @@ public class ServerController extends AuthenticatedController {
 		
 		try {
 			List<MultiselectElement> protocols = new ArrayList<MultiselectElement>();
-	
-			for (String proto : TimeZone.getAvailableIDs()) {
-				protocols.add(new MultiselectElement(proto, proto));
+			for (String id : TimeZone.getAvailableIDs()) {
+				protocols.add(new MultiselectElement(id, id));
 			}
 			return new ResourceList<MultiselectElement>(protocols);
 		} finally {

@@ -2,6 +2,8 @@ package com.hypersocket.automation;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.RealmResource;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.NotScheduledException;
@@ -27,6 +31,9 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 	@Autowired
 	ClusteredSchedulerService schedulerService;
 
+	@Autowired
+	ConfigurationService configurationService; 
+	
 	@Override
 	public <T extends RealmResource> void unschedule(T resource) throws SchedulerException {
 
@@ -35,10 +42,16 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 		}
 	}
 	
-	protected Date calculateDateTime(Date from, String time) {
+	protected Date calculateDateTime(Realm realm, Date from, String time) {
 
 		Calendar c = Calendar.getInstance();
+		String timezone = configurationService.getValue(realm, "realm.defaultTimezone");
+		if(StringUtils.isBlank(timezone)) {
+			timezone = TimeZone.getDefault().getID();
+		}
+		
 		c.setTime(HypersocketUtils.today());
+		c.setTimeZone(TimeZone.getTimeZone(timezone));
 		
 		Date ret = null;
 
@@ -63,8 +76,8 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 			String endTime, AutomationRepeatType repeatType,
 			int repeatValue, Class<? extends Job> clz) {
 
-		Date start = calculateDateTime(startDate, startTime);
-		Date end = calculateDateTime(endDate, endTime);
+		Date start = calculateDateTime(resource.getRealm(), startDate, startTime);
+		Date end = calculateDateTime(resource.getRealm(), endDate, endTime);
 
 		int interval = 0;
 		int repeat = -1;
