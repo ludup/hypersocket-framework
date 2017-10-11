@@ -204,12 +204,13 @@ public class EmailTask extends AbstractTaskProvider {
 		String replyToName = processTokenReplacements(repository.getValue(task, "email.replyToName"), event);
 		String replyToEmail = processTokenReplacements(repository.getValue(task, "email.replyToEmail"), event);
 		boolean track = repository.getBooleanValue(task, "email.track");
+		boolean useTemplate = repository.getBooleanValue(task, "email.useTemplate");
 		int delay = repository.getIntValue(task, "email.delay");
 		
 		try {
 			emailService.sendEmail(currentRealm, subject, body, bodyHtml,
 					replyToName, replyToEmail, 
-					recipients.toArray(new RecipientHolder[0]), track, delay, attachments.toArray(new EmailAttachment[0]));
+					recipients.toArray(new RecipientHolder[0]), track, useTemplate, delay, attachments.toArray(new EmailAttachment[0]));
 
 			return new EmailTaskResult(this, currentRealm, task);
 		} catch (Exception ex) {

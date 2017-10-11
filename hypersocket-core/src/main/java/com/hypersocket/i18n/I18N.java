@@ -8,7 +8,6 @@
 package com.hypersocket.i18n;
 
 import java.text.DateFormat;
-import java.text.FieldPosition;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;

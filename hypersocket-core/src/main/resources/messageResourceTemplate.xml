@@ -11,6 +11,7 @@
 		resourceBundle="TriggerResourceService" weight="2000">
 		<property resourceKey="html" inputType="html" rows="10" url="messages/variables/{id}"
 			cols="100" maxlength="8000" defaultValue="" weight="100" allowEmpty="true"/>
+		<property resourceKey="useTemplate" inputType="switch" weight="0" defaultValue="true"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.options"
 		resourceBundle="MessageResourceService" weight="3000">

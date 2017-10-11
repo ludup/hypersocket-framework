@@ -37,6 +37,9 @@ public class MessageResource extends RealmResource {
 	@Column(name="system_only")
 	Boolean systemOnly;
 	
+	@Column(name="use_template")
+	Boolean useTemplate;
+	
 	@Column(name="attachments", length=1024)
 	String attachments;
 	
@@ -149,6 +152,14 @@ public class MessageResource extends RealmResource {
 
 	public void setDeliveryStrategy(EmailDeliveryStrategy deliveryStrategy) {
 		this.deliveryStrategy = deliveryStrategy;
+	}
+
+	public Boolean getUseTemplate() {
+		return useTemplate==null ? Boolean.TRUE : useTemplate;
+	}
+
+	public void setUseTemplate(Boolean useTemplate) {
+		this.useTemplate = useTemplate;
 	}
 	
 }
