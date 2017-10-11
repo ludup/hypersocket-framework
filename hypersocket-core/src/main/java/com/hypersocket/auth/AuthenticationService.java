@@ -68,7 +68,7 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 	int getAuthenticatorCount(Realm realm, String schemeResourceKey);
 	
 	Principal resolvePrincipalAndRealm(AuthenticationState state,
-			String username) throws AccessDeniedException,
+			String username, Realm selectedRealm) throws AccessDeniedException,
 			PrincipalNotFoundException;
 
 	void setAuthenticationSchemeSelector(AuthenticationSchemeSelector authenticationSelector);

@@ -52,7 +52,7 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.or(Restrictions.eq("name", username),
-						Restrictions.eq("email", username)));
+						Restrictions.eq("primaryEmail", username)));
 			}
 		});
 	}
@@ -65,7 +65,7 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.or(Restrictions.eq("name", username),
-						Restrictions.eq("email", username)));
+						Restrictions.eq("primaryEmail", username)));
 			}
 		});
 	}

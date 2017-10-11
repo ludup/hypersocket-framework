@@ -48,17 +48,18 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}
 		
+		Realm selectedRealm = null;
 		if(parameters.containsKey("realm")) {
-			state.setRealm(realmService.getRealmByName((String)parameters.get("realm")));
+			selectedRealm = realmService.getRealmByName((String)parameters.get("realm"));
 		}
 
 		if(!processFields(state, parameters)) {
 			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}
-
+		
 		try {
 			Principal principal = authenticationService.resolvePrincipalAndRealm(
-					state, username);
+					state, username, selectedRealm);
 
 			AuthenticatorResult result = verifyCredentials(state, principal, parameters);
 
