@@ -3,7 +3,7 @@ package com.hypersocket.input;
 public class AnchorField extends InputField {
 
 	boolean isLogonApiLink = true;
-	
+
 	public AnchorField() {
 	}
 
@@ -17,5 +17,12 @@ public class AnchorField extends InputField {
 		super(InputFieldType.a, resourceKey, defaultValue, required, label);
 		this.isLogonApiLink = isLogonApiLink;
 	}
+	
+	public boolean isLogonApiLink() {
+		return isLogonApiLink;
+	}
 
+	public void setLogonApiLink(boolean isLogonApiLink) {
+		this.isLogonApiLink = isLogonApiLink;
+	}
 }
