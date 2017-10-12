@@ -47,7 +47,7 @@ public abstract class Principal extends RealmResource {
 	Set<Role> roles = new HashSet<Role>();
 	
 	@Fetch(FetchMode.SELECT)
-	@OneToMany(fetch = FetchType.LAZY, mappedBy="principal")
+	@OneToMany(fetch = FetchType.EAGER, mappedBy="principal")
 	Set<PrincipalSuspension> suspensions;
 	
 	@Fetch(FetchMode.SELECT)
@@ -133,6 +133,14 @@ public abstract class Principal extends RealmResource {
 		builder.append(getName(), r.getName());
 	}
 
+	public boolean isSuspended() {
+		for(PrincipalSuspension s : suspensions) {
+			if(s.isActive()) {
+				return true;
+			}
+		}
+		return false;
+	}
 	@JsonIgnore
 	public Set<Principal> getLinkedPrincipals() {
 		return linkedPrincipals;
