@@ -43,4 +43,6 @@ public interface AuthenticationModuleRepository extends AbstractEntityRepository
 
 	List<AuthenticationModule> getModulesForRealm(Realm scheme);
 
+	boolean isModuleInScheme(Realm realm, String resourceKey, String... resourceKeys);
+
 }
