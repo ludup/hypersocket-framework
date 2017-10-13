@@ -134,9 +134,11 @@ public abstract class Principal extends RealmResource {
 	}
 
 	public boolean isSuspended() {
-		for(PrincipalSuspension s : suspensions) {
-			if(s.isActive()) {
-				return true;
+		if(suspensions!=null) {
+			for(PrincipalSuspension s : suspensions) {
+				if(s.isActive()) {
+					return true;
+				}
 			}
 		}
 		return false;
