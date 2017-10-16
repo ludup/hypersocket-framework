@@ -65,11 +65,23 @@ public abstract class PermissionsAwareJob extends TransactionalJob implements Ru
 					realm = session.getCurrentRealm();
 					principal = session.getCurrentPrincipal();
 				}
+				
 				if(data.containsKey("realm")) {
-					realm = realmRepository.getRealmById(data.getLong("realm"));
+					Object obj = data.get("realm");
+					if(obj instanceof Long) {
+						realm = realmRepository.getRealmById(data.getLong("realm"));
+					} else if(obj instanceof Realm) {
+						realm = (Realm)obj;
+					}
+					
 				}
 				if(data.containsKey("principal")) {
-					principal = realmService.getPrincipalById(realm, data.getLong("principal"), PrincipalType.USER);
+					Object obj = data.get("principal");
+					if(obj instanceof Long) {
+						principal = realmService.getPrincipalById(realm, data.getLong("principal"), PrincipalType.USER);
+					} else if(obj instanceof Principal) {
+						principal = (Principal)obj;
+					}
 				}
 				if(data.containsKey("locale")) {
 					locale = Locale.forLanguageTag(data.getString("locale"));
