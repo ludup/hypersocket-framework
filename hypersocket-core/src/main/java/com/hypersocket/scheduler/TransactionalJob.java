@@ -30,7 +30,7 @@ public abstract class TransactionalJob implements Job {
 	
 	protected abstract void onExecute(JobExecutionContext context);
 
-	protected void beforeTransaction(JobExecutionContext context) { 
+	protected void beforeTransaction(JobExecutionContext context) throws JobExecutionException { 
 		
 	}
 	
