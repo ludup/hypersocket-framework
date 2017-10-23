@@ -139,8 +139,25 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		}
 		
 		Object resource = resolveTargetEntity(entity, template);
+		
+		String fieldName = template.hasMapping() ? template.getMapping() : template.getResourceKey();
+		while(fieldName.contains(".")) {
+			try {
+				String entityName = StringUtils.substringBefore(fieldName, ".");
+				String entityGetMethod = "get" + StringUtils.capitalize(entityName);
+				Method m = resource.getClass().getMethod(entityGetMethod, (Class<?>[])null);
+				resource = m.invoke(resource, (Object[])null);
+				if(resource==null) {
+					return null;
+				}
+				fieldName = StringUtils.substringAfter(fieldName, ".");
+			} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				throw new IllegalStateException(e.getMessage(), e);
+			}
+		}
+		
 		Throwable t;
-		String methodName = "get" + StringUtils.capitalize(template.hasMapping() ? template.getMapping() : template.getResourceKey());
+		String methodName = "get" + StringUtils.capitalize(fieldName);
 		try {
 			
 			Method m = resource.getClass().getMethod(methodName, (Class<?>[])null);
@@ -214,9 +231,31 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		}
 		
 		Object resource = resolveTargetEntity(entity, template);
+		
+		String fieldName = template.hasMapping() ? template.getMapping() : template.getResourceKey();
+		while(fieldName.contains(".")) {
+			try {
+				String entityName = StringUtils.substringBefore(fieldName, ".");
+				String entityGetMethod = "get" + StringUtils.capitalize(entityName);
+				Method m = resource.getClass().getMethod(entityGetMethod, (Class<?>[])null);
+				Class<?> entityClass = m.getReturnType();
+				resource = m.invoke(resource, (Object[])null);
+				if(resource==null) {
+					resource = entityClass.getConstructor((Class<?>[])null).newInstance();
+					m = entity.getClass().getMethod("set" + StringUtils.capitalize(entityName), entityClass);
+					m.invoke(entity, resource);
+				}
+				fieldName = StringUtils.substringAfter(fieldName, ".");
+			} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException e) {
+				throw new IllegalStateException(e.getMessage(), e);
+			}
+		}
+		
+		
 		Method[] methods = resource.getClass().getMethods();
 		
-		String methodName = "set" + StringUtils.capitalize(template.hasMapping() ? template.getMapping() : template.getResourceKey());
+		String methodName = "set" + StringUtils.capitalize(fieldName);
+
 		for(Method m : methods) {
 			if(m.getName().equals(methodName)) {
 				Class<?> clz = m.getParameterTypes()[0];
