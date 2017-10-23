@@ -189,9 +189,8 @@ public class ServerController extends AuthenticatedController {
 		
 		try {
 			List<MultiselectElement> protocols = new ArrayList<MultiselectElement>();
-	
-			for (String proto : TimeZone.getAvailableIDs()) {
-				protocols.add(new MultiselectElement(proto, proto));
+			for (String id : TimeZone.getAvailableIDs()) {
+				protocols.add(new MultiselectElement(id, id));
 			}
 			return new ResourceList<MultiselectElement>(protocols);
 		} finally {

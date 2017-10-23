@@ -8,7 +8,6 @@
 package com.hypersocket.i18n;
 
 import java.text.DateFormat;
-import java.text.FieldPosition;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -118,7 +117,7 @@ public class I18N {
 
 			MessageFormat messageFormat = new MessageFormat(localizedString);
 			messageFormat.setLocale(locale);
-			return messageFormat.format(formatParameters(arguments), new StringBuffer(), new FieldPosition(0)).toString();
+			return messageFormat.format(formatParameters(arguments));
 		} catch (MissingResourceException mre) {
 			return "Missing resource key [i18n/" + resourceBundle + "/" + key + "]";
 		}

@@ -4,6 +4,7 @@ import com.hypersocket.permissions.PermissionType;
 
 public enum PasswordPermission implements PermissionType {
 
+	RESET("password.reset"),
 	CHANGE("password.change");
 
 	private final String val;

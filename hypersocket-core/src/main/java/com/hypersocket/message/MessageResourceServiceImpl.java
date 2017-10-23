@@ -518,6 +518,7 @@ public class MessageResourceServiceImpl extends
 					recipients.toArray(new RecipientHolder[0]), 
 					null,
 					message.getTrack(), 
+					message.getUseTemplate(),
 					configurationService.getIntValue(realm, "smtp.delay"),
 					attachments.toArray(new EmailAttachment[0]));
 			

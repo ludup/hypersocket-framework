@@ -11,6 +11,7 @@
 		resourceBundle="TriggerResourceService" weight="2000">
 		<property resourceKey="email.bodyHtml" inputType="html" rows="10"
 			cols="100" maxlength="8000" defaultValue="" weight="100" allowEmpty="true"/>
+		<property resourceKey="email.useTemplate" inputType="switch" weight="0" defaultValue="true"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email.delivery"
 		resourceBundle="TriggerResourceService" weight="3000">

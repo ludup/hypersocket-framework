@@ -40,14 +40,13 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
-import com.hypersocket.permissions.PermissionService;
-import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
+import com.hypersocket.realm.UserPermission;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
@@ -362,50 +361,8 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		repository.updateSession(session);
 	}
 
-	protected void assertImpersonationPermission() throws AccessDeniedException {
-		
-		elevatePermissions(RolePermission.READ);
-		
-		try {
-		if (hasSessionContext()) {
-			if (getCurrentSession().isImpersonating()) {
-				
-				try {
-					if(permissionService.hasRole(getCurrentSession().getPrincipal(), 
-							permissionService.getRole(PermissionService.ROLE_REALM_ADMINISTRATOR, 
-									getCurrentSession().getPrincipal().getRealm()))) {
-						return;
-					}
-				} catch (ResourceNotFoundException e) {
-				}
-				
-				verifyPermission(getCurrentSession().getPrincipal(),
-						PermissionStrategy.INCLUDE_IMPLIED,
-						SystemPermission.SYSTEM_ADMINISTRATION,
-						SystemPermission.SYSTEM,
-						SystemPermission.SWITCH_REALM);
-				
-				return;
-			}
-		}
-
-		try {
-			if(permissionService.hasRole(getCurrentPrincipal(), 
-					permissionService.getRole(PermissionService.ROLE_REALM_ADMINISTRATOR, 
-							getCurrentPrincipal().getRealm()))) {
-				return;
-			}
-		} catch (ResourceNotFoundException e) {
-		}
-		
-		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION,
-				SystemPermission.SYSTEM, 
-				SystemPermission.SWITCH_REALM);
-		
-		} finally {
-			clearElevatedPermissions();
-		}
-
+	protected void assertImpersonationPermission() throws AccessDeniedException {	
+		assertPermission(UserPermission.IMPERSONATE);
 	}
 
 	@Override
@@ -681,7 +638,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void revertPrincipal(Session session) throws AccessDeniedException {
 
-		assertImpersonationPermission();
+		if(session.getImpersonatedPrincipal()==null) {
+			throw new AccessDeniedException("You are not impersonating anyone!");
+		}
 
 		if (log.isInfoEnabled()) {
 			log.info("Switching " + session.getCurrentPrincipal().getName()

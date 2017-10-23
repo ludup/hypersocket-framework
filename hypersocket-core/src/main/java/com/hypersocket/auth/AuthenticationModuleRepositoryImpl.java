@@ -158,6 +158,7 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public Collection<AuthenticationScheme> getSchemesForModule(Realm realm, final String... resourceKeys) {
 		return list(AuthenticationScheme.class, new DeletedCriteria(false), new RealmRestriction(realm), new CriteriaConfiguration() {
 
@@ -168,6 +169,21 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 			}
 			
 		});
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public boolean isModuleInScheme(Realm realm, final String resourceKey, final String... resourceKeys) {
+		return getCount(AuthenticationScheme.class, new DeletedCriteria(false), new RealmRestriction(realm), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("resourceKey", resourceKey));
+				criteria.createAlias("modules", "m");
+				criteria.add(Restrictions.in("m.template", resourceKeys));
+			}
+			
+		}) > 0; 
 	}
 
 	@Override

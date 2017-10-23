@@ -44,6 +44,11 @@ public abstract class PermissionsAwareJob extends TransactionalJob implements Ru
 	
 	JobExecutionContext context;
 	
+	protected Realm realm;
+	protected Principal principal;
+	protected Locale locale;
+	protected Session session;
+	
 	@Override
 	public void onExecute(JobExecutionContext context) {
 		this.context = context;
@@ -51,10 +56,10 @@ public abstract class PermissionsAwareJob extends TransactionalJob implements Ru
 	}
 	
 	public void run() {
-		Realm realm = realmService.getSystemRealm();
-		Principal principal = realmService.getSystemPrincipal();
-		Locale locale = Locale.getDefault();
-		Session session = sessionService.getSystemSession();
+		realm = realmService.getSystemRealm();
+		principal = realmService.getSystemPrincipal();
+		locale = Locale.getDefault();
+		session = sessionService.getSystemSession();
 		
 		try {
 
@@ -65,11 +70,23 @@ public abstract class PermissionsAwareJob extends TransactionalJob implements Ru
 					realm = session.getCurrentRealm();
 					principal = session.getCurrentPrincipal();
 				}
+				
 				if(data.containsKey("realm")) {
-					realm = realmRepository.getRealmById(data.getLong("realm"));
+					Object obj = data.get("realm");
+					if(obj instanceof Long) {
+						realm = realmRepository.getRealmById(data.getLong("realm"));
+					} else if(obj instanceof Realm) {
+						realm = (Realm)obj;
+					}
+					
 				}
 				if(data.containsKey("principal")) {
-					principal = realmService.getPrincipalById(realm, data.getLong("principal"), PrincipalType.USER);
+					Object obj = data.get("principal");
+					if(obj instanceof Long) {
+						principal = realmService.getPrincipalById(realm, data.getLong("principal"), PrincipalType.USER);
+					} else if(obj instanceof Principal) {
+						principal = (Principal)obj;
+					}
 				}
 				if(data.containsKey("locale")) {
 					locale = Locale.forLanguageTag(data.getString("locale"));

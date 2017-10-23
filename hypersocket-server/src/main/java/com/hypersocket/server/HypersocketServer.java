@@ -114,4 +114,8 @@ public interface HypersocketServer {
 	String getDefaultRedirectPath();
 	
 	void setDefaultRedirectPath(String path);
+
+	HomePageResolver getHomePageResolver();
+
+	void setHomePageResolver(HomePageResolver homePageResolver);
 }

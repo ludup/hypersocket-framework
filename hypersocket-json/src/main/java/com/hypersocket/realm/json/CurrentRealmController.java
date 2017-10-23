@@ -52,7 +52,6 @@ import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.realm.UserVariableReplacementService;
 import com.hypersocket.realm.ou.OrganizationalUnit;
 import com.hypersocket.realm.ou.OrganizationalUnitService;
-import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.BootstrapTableResult;
@@ -537,7 +536,7 @@ public class CurrentRealmController extends ResourceController {
 			return new RequestStatus(true, I18N.getResource(
 					sessionUtils.getLocale(request),
 					RealmServiceImpl.RESOURCE_BUNDLE, "profile.saved"));
-		} catch (ResourceChangeException e) {
+		} catch (AccessDeniedException | ResourceException e) {
 			return new RequestStatus(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
@@ -771,7 +770,7 @@ public class CurrentRealmController extends ResourceController {
 							: "info.group.created", principal
 							.getPrincipalName()));
 
-		} catch (ResourceException e) {
+		} catch (AccessDeniedException | ResourceException e) {
 			return new ResourceStatus<Principal>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
@@ -801,7 +800,7 @@ public class CurrentRealmController extends ResourceController {
 							RealmService.RESOURCE_BUNDLE, "info.group.deleted",
 							oldName));
 
-		} catch (ResourceException e) {
+		} catch (AccessDeniedException | ResourceException e) {
 			return new ResourceStatus<Principal>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
@@ -830,7 +829,7 @@ public class CurrentRealmController extends ResourceController {
 					sessionUtils.getLocale(request),
 					RealmService.RESOURCE_BUNDLE, "info.user.deleted", oldName));
 
-		} catch (ResourceException e) {
+		} catch (AccessDeniedException | ResourceException e) {
 			return new ResourceStatus<Principal>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
@@ -884,7 +883,7 @@ public class CurrentRealmController extends ResourceController {
 									: "info.user.created", principal
 									.getPrincipalName()));
 
-		} catch (ResourceException e) {
+		} catch (AccessDeniedException | ResourceException e) {
 			return new ResourceStatus<Principal>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
@@ -948,7 +947,7 @@ public class CurrentRealmController extends ResourceController {
 					I18N.getResource(sessionUtils.getLocale(request),
 							RealmServiceImpl.RESOURCE_BUNDLE,
 							"password.change.success"));
-		} catch (ResourceException re) {
+		} catch (AccessDeniedException | ResourceException re) {
 			return new RequestStatus(false, re.getMessage());
 
 		} finally {
@@ -1018,8 +1017,7 @@ public class CurrentRealmController extends ResourceController {
 			return new ResourceStatus<PrincipalSuspension>(principalSuspension,
 					I18N.getResource(sessionUtils.getLocale(request),
 							RealmService.RESOURCE_BUNDLE,
-							"suspendUser.resumeSuccess", principalSuspension
-									.getPrincipal().getPrincipalName()));
+							"suspendUser.resumeSuccess", principal.getPrincipalName()));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -1164,7 +1162,7 @@ public class CurrentRealmController extends ResourceController {
 					RealmService.RESOURCE_BUNDLE,
 					"group.add.to.user", principal.getPrincipalName(), group.getPrincipalName()));
 			
-		} catch (ResourceException e) {
+		} catch (AccessDeniedException | ResourceException e) {
 			return new ResourceStatus<>(false, e.getMessage());
 		}finally {
 			clearAuthenticatedContext();
@@ -1202,7 +1200,7 @@ public class CurrentRealmController extends ResourceController {
 					RealmService.RESOURCE_BUNDLE,
 						"group.remove.from.user", principal.getPrincipalName(), group.getPrincipalName()));
 
-		} catch (ResourceException e) {
+		} catch (AccessDeniedException | ResourceException e) {
 			return new ResourceStatus<>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();

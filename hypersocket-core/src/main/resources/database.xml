@@ -68,7 +68,7 @@
 	
 				<!-- Hibernate 2nd Level Configuration -->
 				<prop key="hibernate.cache.use_query_cache">true</prop>
-				<prop key="hibernate.cache.use_miÂnimal_puts">true</prop>
+				<prop key="hibernate.cache.use_minimal_puts">true</prop>
 				<prop key="hibernate.cache.use_second_level_cache">true</prop>
 				<prop key="hibernate.cache.default_cache_concurrency_strategy">read-write</prop>
 				<!-- 

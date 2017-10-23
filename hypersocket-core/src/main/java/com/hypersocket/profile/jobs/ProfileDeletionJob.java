@@ -21,7 +21,7 @@ public class ProfileDeletionJob extends PermissionsAwareJob {
 	@Override
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {
 		
-		Long principalId = context.getJobDetail().getJobDataMap().getLong("targetPrincipalId");
+		Long principalId = context.getTrigger().getJobDataMap().getLong("targetPrincipalId");
 		
 		try {
 			Principal target = realmService.getPrincipalById(principalId);

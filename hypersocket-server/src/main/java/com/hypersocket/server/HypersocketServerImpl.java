@@ -84,6 +84,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	
 	private Map<HTTPInterfaceResource,SSLContext> sslContexts = new HashMap<HTTPInterfaceResource,SSLContext>();
 	private String defaultRedirectPath = null;
+	private HomePageResolver homePageResolver = null;
 	
 	@Autowired
 	EventService eventService;
@@ -680,6 +681,9 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 	@Override
 	public String getDefaultRedirectPath() {
+		if(homePageResolver!=null) {
+			return homePageResolver.getHomePage().replace("${uiPath}", getUiPath()).replace("${basePath}", getBasePath());
+		}
 		return (defaultRedirectPath==null ? getUiPath() : defaultRedirectPath).replace("${uiPath}", getUiPath()).replace("${basePath}", getBasePath());
 	}
 	
@@ -687,4 +691,15 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	public void setDefaultRedirectPath(String defaultRedirectPath) {
 		this.defaultRedirectPath = defaultRedirectPath;
 	}
+
+	@Override
+	public HomePageResolver getHomePageResolver() {
+		return homePageResolver;
+	}
+
+	@Override
+	public void setHomePageResolver(HomePageResolver homePageResolver) {
+		this.homePageResolver = homePageResolver;
+	}
+
 }
