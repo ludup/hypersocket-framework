@@ -725,6 +725,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		 * instead of passwords where we may not have, or want to distribute the
 		 * password to an external service.
 		 */
+		
+		setupSystemContext(principal.getRealm());
 		try {
 			String pwd = new String(password);
 			if (pwd.startsWith(SessionServiceImpl.TOKEN_PREFIX)) {
@@ -738,6 +740,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				throw e;
 			}
 			return false;
+		} finally {
+			clearPrincipalContext();
 		}
 	}
 
