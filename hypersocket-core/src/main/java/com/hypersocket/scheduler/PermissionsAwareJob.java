@@ -44,6 +44,11 @@ public abstract class PermissionsAwareJob extends TransactionalJob implements Ru
 	
 	JobExecutionContext context;
 	
+	protected Realm realm;
+	protected Principal principal;
+	protected Locale locale;
+	protected Session session;
+	
 	@Override
 	public void onExecute(JobExecutionContext context) {
 		this.context = context;
@@ -51,10 +56,10 @@ public abstract class PermissionsAwareJob extends TransactionalJob implements Ru
 	}
 	
 	public void run() {
-		Realm realm = realmService.getSystemRealm();
-		Principal principal = realmService.getSystemPrincipal();
-		Locale locale = Locale.getDefault();
-		Session session = sessionService.getSystemSession();
+		realm = realmService.getSystemRealm();
+		principal = realmService.getSystemPrincipal();
+		locale = Locale.getDefault();
+		session = sessionService.getSystemSession();
 		
 		try {
 
