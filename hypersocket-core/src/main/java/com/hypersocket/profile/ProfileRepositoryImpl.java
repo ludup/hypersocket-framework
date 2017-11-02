@@ -228,6 +228,10 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	@Override
 	@Transactional
 	public void deleteRealm(Realm realm) {
+		Query q2 = createQuery("delete from ProfileCredentials where profile.id in (select id from Profile where realm = :r)", true);
+		q2.setParameter("r", realm);
+		log.info(String.format("Deleted %d Profile Credentials", q2.executeUpdate()));
+		
 		Query q = createQuery("delete from Profile where realm = :r", true);
 		q.setParameter("r", realm);
 		log.info(String.format("Deleted %d Profile", q.executeUpdate()));
