@@ -1,14 +1,14 @@
 <?xml version="1.0" ?>
 <propertyTemplates context="realm">
 	<propertyCategory resourceKey="realm.options"
-		resourceBundle="RealmService" weight="8888" system="true" displayMode="parent">
+		resourceBundle="RealmService" weight="8888" system="true" displayMode="parent" filter="advanced">
 		<property resourceKey="realm.hostRestriction" inputType="switch"
 			defaultValue="false" weight="0" />
 		<property resourceKey="realm.host" inputType="multipleTextInput"
 			defaultValue="" weight="0" />
 	</propertyCategory>
 	<propertyCategory resourceKey="realm.interface"
-		resourceBundle="RealmService" weight="8889" system="true" displayMode="parent">
+		resourceBundle="RealmService" weight="8889" system="true" displayMode="parent" filter="advanced">
 		<property resourceKey="realm.interface" inputType="autoComplete"
 			defaultValue="" url="server/networkInterfaces" weight="0" valueAttr="id" remoteSearch="false"/>
 	</propertyCategory>
