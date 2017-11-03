@@ -65,6 +65,11 @@
 		 resourceBundle="PermissionService" weight="200" hidden="true">
 		<property resourceKey="feature.roleSelection" inputType="switch" defaultValue="false" weight="0" hidden="true"/>
 	</propertyCategory>
+	<propertyCategory resourceKey="category.missingEmail" resourceBundle="MissingEmailAddressService" weight="1000" group="authentication">
+		<property resourceKey="missingEmail.required" inputType="select"
+			    options="required.none,required.pripary,required.secondary,required.all" nameIsResourceKey="true"
+				defaultValue="required.none" weight="0" />
+	</propertyCategory>
 </propertyTemplates>
 
 		
