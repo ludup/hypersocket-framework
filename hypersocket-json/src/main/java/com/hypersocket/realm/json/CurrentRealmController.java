@@ -272,7 +272,7 @@ public class CurrentRealmController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return realmService.searchPrincipals(
-									sessionUtils.getCurrentRealm(request),
+									currentRealm,
 									PrincipalType.GROUP,
 									currentRealm.getResourceCategory(),
 									searchPattern, start,
@@ -284,7 +284,7 @@ public class CurrentRealmController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return realmService.getSearchPrincipalsCount(
-									sessionUtils.getCurrentRealm(request),
+									currentRealm,
 									PrincipalType.GROUP, 
 									currentRealm.getResourceCategory(),
 									searchPattern);

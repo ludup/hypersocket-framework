@@ -43,6 +43,7 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.resource.RealmResource;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
@@ -719,7 +720,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 	@Override
 	@Transactional(readOnly=true)
-	public Collection<PropertyCategory> getUserProperties(Principal principal) {
+	public Collection<PropertyCategory> getUserProperties(RealmResource principal) {
 		return userRepository.getPropertyCategories(principal);
 	}
 

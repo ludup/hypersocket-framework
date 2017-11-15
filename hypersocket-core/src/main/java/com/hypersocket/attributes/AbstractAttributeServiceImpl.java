@@ -28,6 +28,7 @@ import com.hypersocket.properties.PropertyResolver;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourcePropertyTemplate;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractAssignableResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
@@ -368,6 +369,10 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		@Override
 		public Collection<PropertyCategory> getPropertyCategories(
 				SimpleResource resource) {
+			
+			if(!(resource instanceof Principal)) {
+				return Collections.<PropertyCategory>emptyList();
+			}
 			
 			Map<String,PropertyTemplate> userTemplates = service.getAttributeTemplates(service.checkResource(resource));
 			Map<Integer,PropertyCategory> results = new HashMap<Integer,PropertyCategory>();

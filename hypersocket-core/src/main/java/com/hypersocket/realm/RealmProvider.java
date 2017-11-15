@@ -16,6 +16,8 @@ import java.util.Set;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.resource.RealmResource;
+import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
@@ -83,7 +85,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	List<?> getPrincipals(Realm realm, PrincipalType type, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting);
 
-	Collection<PropertyCategory> getUserProperties(Principal principal);
+	Collection<PropertyCategory> getUserProperties(RealmResource principal);
 
 	Collection<PropertyCategory> getRealmProperties(Realm realm);
 
@@ -159,4 +161,8 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	Collection<String> getEditablePropertyNames(Realm realm);
 
 	Collection<String> getVisiblePropertyNames(Realm realm);
+
+	Collection<PropertyCategory> getPrincipalTemplate(Resource resource);
+
+	Collection<PropertyCategory> getPrincipalTemplate();
 }

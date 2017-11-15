@@ -19,12 +19,14 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
@@ -64,6 +66,9 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 	
 	@Autowired
 	I18NService i18nService;
+	
+	@Autowired
+	LocalPrincipalTemplateRepository templateRepository;
 	
 	PropertyCategory userDetailsCategory;
 
@@ -149,4 +154,12 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 	public void verifyConnection(Realm realm) throws ResourceException {
 	}
 
+	public boolean supportsTemplates() {
+		return true;
+	}
+	
+	@JsonIgnore
+	public ResourceTemplateRepository getTemplateRepository() {
+		return templateRepository;
+	}
 }

@@ -648,6 +648,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@Override
 	@Transactional
 	public void deleteRealm(Realm realm) {
+	
 		Query q2 = createQuery("delete from Role where realm = :r", true);
 		q2.setParameter("r", realm);
 		q2.executeUpdate();

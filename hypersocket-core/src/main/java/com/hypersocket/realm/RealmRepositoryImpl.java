@@ -256,8 +256,17 @@ public class RealmRepositoryImpl extends
 			
 		});
 	}
+	
 	@Override
 	public void deleteRealm(Realm realm) {
+		
+		realm.setDeleted(true);
+		save(realm);
+	}
+
+	@Override
+	public boolean isDeletable() {
+		return false;
 	}
 
 }

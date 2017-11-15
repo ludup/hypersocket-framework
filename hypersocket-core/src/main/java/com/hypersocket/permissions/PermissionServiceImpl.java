@@ -279,7 +279,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 					permissionsCache.remove(p);
 					roleCache.remove(p);
 				}
-				eventService.publishEvent(new RoleCreatedEvent(this, getCurrentSession(), realm, role));
+				eventService.publishEvent(new RoleCreatedEvent(this, getCurrentSession(), realm, role, principals));
 				return role;
 			} catch (Throwable te) {
 				eventService.publishEvent(new RoleCreatedEvent(this, name, te, getCurrentSession(), realm));
@@ -655,13 +655,16 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				}
 			}
 
+			Collection<Principal> revoked = new ArrayList<Principal>();
+			revoked.addAll(role.getPrincipals());
+			
 			role.getPrincipals().clear();
 			role.getPermissions().clear();
 			repository.saveRole(role);
 			repository.deleteRole(role);
 			permissionsCache.removeAll();
 			roleCache.removeAll();
-			eventService.publishEvent(new RoleDeletedEvent(this, getCurrentSession(), role.getRealm(), role));
+			eventService.publishEvent(new RoleDeletedEvent(this, getCurrentSession(), role.getRealm(), role, revoked));
 		} catch (Throwable te) {
 			eventService
 					.publishEvent(new RoleDeletedEvent(this, role.getName(), te, getCurrentSession(), role.getRealm()));
