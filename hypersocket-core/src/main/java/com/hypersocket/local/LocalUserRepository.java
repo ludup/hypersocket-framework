@@ -78,4 +78,6 @@ public interface LocalUserRepository extends ResourceTemplateRepository, Abstrac
 	public void resetRealm(Collection<Principal> admins);
 
 	void deleteRealm(Realm realm);
+
+	public Collection<LocalUserCredentials> allCredentials();
 }

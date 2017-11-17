@@ -391,4 +391,12 @@ public class HypersocketUtils {
 		return date.getTime();
 	}
 
+	public static byte[] getUTF8Bytes(String str) {
+		try {
+			return str.getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
+	}
+
 }

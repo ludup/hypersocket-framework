@@ -20,6 +20,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.hypersocket.auth.PasswordEncryptionType;
 import com.hypersocket.repository.AbstractEntity;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Entity
 @Table(name="local_user_credentials")
@@ -38,8 +39,14 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 	@Column(name="password", nullable=false)
 	byte[] password;
 	
+	@Column(name="encoded_password", length=1024)
+	String encodedPassword;
+	
 	@Column(name="salt", nullable=false)
 	byte[] salt;
+	
+	@Column(name="encoded_salt")
+	String encodedSalt;
 	
 	@Column(name="encryption_type", nullable=false)
 	PasswordEncryptionType encryptionType;
@@ -59,16 +66,8 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 		return password;
 	}
 	
-	public void setPassword(byte[] password) {
-		this.password = password;
-	}
-	
 	public byte[] getSalt() {
 		return salt;
-	}
-	
-	public void setSalt(byte[] salt) {
-		this.salt = salt;
 	}
 	
 	public PasswordEncryptionType getEncryptionType() {
@@ -103,5 +102,21 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 		builder.append(user==null ? -1 : user.getId(), creds==null ? -1 : creds.getUser().getId());
 	}
 
+	public String getEncodedPassword() {
+		return encodedPassword;
+	}
 
+	public void setEncodedPassword(String encodedPassword) {
+		this.encodedPassword = encodedPassword;
+		this.password = HypersocketUtils.getUTF8Bytes(encodedPassword);
+	}
+
+	public String getEncodedSalt() {
+		return encodedSalt;
+	}
+
+	public void setEncodedSalt(String encodedSalt) {
+		this.encodedSalt = encodedSalt;
+		this.salt =  HypersocketUtils.getUTF8Bytes(encodedSalt);
+	}
 }

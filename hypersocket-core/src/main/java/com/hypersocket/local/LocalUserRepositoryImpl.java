@@ -408,4 +408,9 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		
 
 	}
+
+	@Override
+	public Collection<LocalUserCredentials> allCredentials() {
+		return list(LocalUserCredentials.class);
+	}
 }

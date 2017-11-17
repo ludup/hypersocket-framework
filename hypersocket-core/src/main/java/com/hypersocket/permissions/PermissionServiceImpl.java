@@ -633,9 +633,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
-	public Role getRole(String name, Realm realm) throws ResourceNotFoundException, AccessDeniedException {
-
-		assertAnyPermission(RolePermission.READ);
+	public Role getRole(String name, Realm realm) throws ResourceNotFoundException {
 
 		Role role = repository.getRoleByName(name, realm);
 		if (role == null) {
@@ -915,7 +913,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@Override
 	public boolean hasEveryoneRole(Collection<Role> roles, Realm realm)
-			throws AccessDeniedException, ResourceNotFoundException {
+			throws ResourceNotFoundException {
 
 		Role everyone = getRole(ROLE_EVERYONE, realm);
 		return roles.contains(everyone);
@@ -1053,7 +1051,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 	
 	@Override
-	public Collection<Principal> getPrincipalsByRole(Realm realm, Collection<Role> roles) throws ResourceNotFoundException, AccessDeniedException {
+	public Collection<Principal> getPrincipalsByRole(Realm realm, Collection<Role> roles) throws ResourceNotFoundException {
 		if(hasEveryoneRole(roles, realm)) {
 			return realmService.allUsers(realm);
 		}
