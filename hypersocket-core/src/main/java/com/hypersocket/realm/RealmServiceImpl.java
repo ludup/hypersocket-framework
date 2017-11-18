@@ -988,7 +988,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						realmRepository.saveRealm(realm);
 						
 						String externalHost = getRealmHostname(realm);
-						if(StringUtils.isNotBlank(externalHost)) {
+						String currentExternalHost = configurationService.getValue(realm, "email.externalHostname");
+						if(StringUtils.isNotBlank(externalHost) && (StringUtils.isBlank(currentExternalHost) || !currentExternalHost.equals(externalHost))) {
 							configurationService.setValue(realm, "email.externalHostname", externalHost);
 						}
 						fireRealmCreate(realm);
