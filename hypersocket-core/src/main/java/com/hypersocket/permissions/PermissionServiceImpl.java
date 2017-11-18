@@ -49,6 +49,7 @@ import com.hypersocket.i18n.I18N;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.PasswordPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.ProfilePermission;
@@ -1098,7 +1099,14 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@SystemContextRequired
 	public void onUserDeleted(UserDeletedEvent event) {
 		if (event.isSuccess()) {
-			for(Role role : getRolesByPrincipal(event.getTargetPrincipal())) {
+			Collection<Role> roles = getRolesByPrincipal(event.getTargetPrincipal());
+			if(log.isInfoEnabled()) {
+				log.info(String.format("Deleting user %s with %d roles [%s]", 
+						event.getTargetPrincipal(), 
+						roles.size(), 
+						ResourceUtils.createCommaSeparatedString(roles)));
+			}
+			for(Role role : roles) {
 				if(!role.isPersonalRole() && !role.isAllUsers()) {
 					role.getPrincipals().remove(event.getTargetPrincipal());
 					repository.saveRole(role);
@@ -1122,7 +1130,14 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@SystemContextRequired
 	public void onGroupDeleted(GroupDeletedEvent event) {
 		if (event.isSuccess()) {
-			for(Role role : getRolesByPrincipal(event.getTargetPrincipal())) {
+			Collection<Role> roles = getRolesByPrincipal(event.getTargetPrincipal());
+			if(log.isInfoEnabled()) {
+				log.info(String.format("Deleting group %s with %d roles [%s]", 
+						event.getTargetPrincipal(), 
+						roles.size(), 
+						ResourceUtils.createCommaSeparatedString(roles)));
+			}
+			for(Role role : roles) {
 				if(!role.isPersonalRole() && !role.isAllUsers()) {
 					role.getPrincipals().remove(event.getTargetPrincipal());
 					repository.saveRole(role);
