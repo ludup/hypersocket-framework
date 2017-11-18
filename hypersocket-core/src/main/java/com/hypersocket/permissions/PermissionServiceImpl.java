@@ -1098,6 +1098,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@SystemContextRequired
 	public void onUserDeleted(UserDeletedEvent event) {
 		if (event.isSuccess()) {
+			for(Role role : getRolesByPrincipal(event.getTargetPrincipal())) {
+				role.getPrincipals().remove(role);
+				repository.saveRole(role);
+			}
 			deletePrincipalRole(event.getTargetPrincipal());
 		}
 	}
@@ -1116,6 +1120,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@SystemContextRequired
 	public void onGroupDeleted(GroupDeletedEvent event) {
 		if (event.isSuccess()) {
+			for(Role role : getRolesByPrincipal(event.getTargetPrincipal())) {
+				role.getPrincipals().remove(role);
+				repository.saveRole(role);
+			}
 			deletePrincipalRole(event.getTargetPrincipal());
 		}
 	}
