@@ -1099,8 +1099,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public void onUserDeleted(UserDeletedEvent event) {
 		if (event.isSuccess()) {
 			for(Role role : getRolesByPrincipal(event.getTargetPrincipal())) {
-				role.getPrincipals().remove(event.getTargetPrincipal());
-				repository.saveRole(role);
+				if(!role.isPersonalRole() && !role.isAllUsers()) {
+					role.getPrincipals().remove(event.getTargetPrincipal());
+					repository.saveRole(role);
+				}
 			}
 			deletePrincipalRole(event.getTargetPrincipal());
 		}
@@ -1121,8 +1123,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public void onGroupDeleted(GroupDeletedEvent event) {
 		if (event.isSuccess()) {
 			for(Role role : getRolesByPrincipal(event.getTargetPrincipal())) {
-				role.getPrincipals().remove(event.getTargetPrincipal());
-				repository.saveRole(role);
+				if(!role.isPersonalRole() && !role.isAllUsers()) {
+					role.getPrincipals().remove(event.getTargetPrincipal());
+					repository.saveRole(role);
+				}
 			}
 			deletePrincipalRole(event.getTargetPrincipal());
 		}
