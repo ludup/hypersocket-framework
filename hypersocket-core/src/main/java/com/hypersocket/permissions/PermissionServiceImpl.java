@@ -643,6 +643,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@Override
 	public void deleteRole(Role role) throws AccessDeniedException, ResourceException {
+		deleteRole(role, true);
+	}
+	
+	protected void deleteRole(Role role, boolean needEvent) throws AccessDeniedException, ResourceException {
 		assertPermission(RolePermission.DELETE);
 		try {
 
@@ -661,10 +665,16 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			repository.deleteRole(role);
 			permissionsCache.removeAll();
 			roleCache.removeAll();
-			eventService.publishEvent(new RoleDeletedEvent(this, getCurrentSession(), role.getRealm(), role, revoked));
+			if(needEvent) {
+				eventService.publishEvent(new RoleDeletedEvent(
+						this, getCurrentSession(), role.getRealm(), role, revoked));
+			}
 		} catch (Throwable te) {
-			eventService
-					.publishEvent(new RoleDeletedEvent(this, role.getName(), te, getCurrentSession(), role.getRealm()));
+			
+			if(needEvent) {
+				eventService.publishEvent(new RoleDeletedEvent(
+						this, role.getName(), te, getCurrentSession(), role.getRealm()));
+			}
 			throw new ResourceChangeException(te, RESOURCE_BUNDLE, "error.resourceDeleteError", te.getMessage());
 		}
 	}
@@ -864,22 +874,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 						op.beforeOperation(principal, new HashMap<String, String>());
 					}
 
-					Collection<Role> roles = getRolesByPrincipal(principal);
-					if(log.isInfoEnabled()) {
-						log.info(String.format("Revoking principal permissioms %s with %d roles [%s]", 
-								principal.getPrincipalName(), 
-								roles.size(), 
-								ResourceUtils.createCommaSeparatedString(roles)));
-					}
-					
-					for(Role role : roles) {
-						if(!role.isPersonalRole() && !role.isAllUsers()) {
-							role.getPrincipals().remove(principal);
-							repository.saveRole(role);
-						}
-					}
-					
-					deletePrincipalRole(principal);
+					revokePermissionsNonTransactional(principal);
 
 					for (TransactionAdapter<Principal> op : ops) {
 						op.afterOperation(principal, new HashMap<String, String>());
@@ -893,6 +888,28 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 		});
 
+	}
+	
+	@Override
+	public void revokePermissionsNonTransactional(Principal principal) {
+		
+		Collection<Role> roles = getRolesByPrincipal(principal);
+		if(log.isInfoEnabled()) {
+			log.info(String.format("Revoking principal permissioms %s with %d roles [%s]", 
+					principal.getPrincipalName(), 
+					roles.size(), 
+					ResourceUtils.createCommaSeparatedString(roles)));
+		}
+		
+		for(Role role : roles) {
+			if(!role.isPersonalRole() && !role.isAllUsers()) {
+				role.getPrincipals().remove(principal);
+				repository.saveRole(role);
+			}
+		}
+		
+		deletePrincipalRole(principal);
+		
 	}
 
 	@Override
@@ -1081,7 +1098,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			try {
 				Role role = repository.getPersonalRole(principal, false);
 				if (role != null) {
-					deleteRole(role);
+					deleteRole(role, false);
 				}
 			} catch (ResourceException | AccessDeniedException e) {
 				log.error("Failed to delete principal role", e);

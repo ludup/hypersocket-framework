@@ -8,7 +8,6 @@
 package com.hypersocket.realm;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -16,7 +15,6 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -25,13 +23,10 @@ import javax.xml.bind.annotation.XmlElement;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hypersocket.permissions.Role;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
@@ -39,12 +34,6 @@ import com.hypersocket.resource.RealmResource;
 public abstract class Principal extends RealmResource {
 
 	private static final long serialVersionUID = -2289438956153713201L;
-
-	@ManyToMany(fetch = FetchType.LAZY)
-	@Cascade({ CascadeType.SAVE_UPDATE, CascadeType.MERGE })
-	@JoinTable(name = "role_principals", joinColumns = { @JoinColumn(name = "principal_id") }, inverseJoinColumns = { @JoinColumn(name = "role_id") })
-	@Fetch(FetchMode.SELECT)
-	Set<Role> roles = new HashSet<Role>();
 	
 	@Fetch(FetchMode.SELECT)
 	@OneToMany(fetch = FetchType.EAGER, mappedBy="principal")
@@ -143,6 +132,7 @@ public abstract class Principal extends RealmResource {
 		}
 		return false;
 	}
+	
 	@JsonIgnore
 	public Set<Principal> getLinkedPrincipals() {
 		return linkedPrincipals;

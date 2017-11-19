@@ -167,4 +167,6 @@ public interface PermissionService extends AuthenticatedService {
 
 	Role getSystemAdministratorRole();
 
+	void revokePermissionsNonTransactional(Principal principal);
+
 }
