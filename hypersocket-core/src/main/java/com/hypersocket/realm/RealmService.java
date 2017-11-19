@@ -106,7 +106,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean findUniquePrincipal(String user);
 
-	List<Principal> allUsers(Realm realm) throws AccessDeniedException;
+	List<Principal> allUsers(Realm realm);
 
 	List<Principal> allGroups(Realm realm) throws AccessDeniedException;
 

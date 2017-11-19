@@ -19,6 +19,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -187,7 +188,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 		try {
 			return encryptionService.authenticate(password,
-					creds.getPassword(), creds.getSalt(),
+					Base64.decodeBase64(creds.getEncodedPassword()), Base64.decodeBase64(creds.getEncodedSalt()),
 					creds.getEncryptionType());
 		} catch (Throwable e) {
 			if (log.isDebugEnabled()) {
@@ -372,8 +373,8 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 			creds.setUser(localUser);
 			creds.setEncryptionType(passwordEncoding);
-			creds.setPassword(encryptedPassword);
-			creds.setSalt(salt);
+			creds.setEncodedPassword(Base64.encodeBase64String(encryptedPassword));
+			creds.setEncodedSalt(Base64.encodeBase64String(salt));
 			creds.setPasswordChangeRequired(forceChangeAtNextLogon);
 
 			userRepository.saveCredentials(creds);

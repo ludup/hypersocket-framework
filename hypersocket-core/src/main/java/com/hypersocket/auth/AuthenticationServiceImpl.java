@@ -743,6 +743,7 @@ public class AuthenticationServiceImpl extends
 		}
 		if(principal!=null) {
 			if (!realmService.verifyPrincipal(principal)) {
+				state.clean();
 				state.setLastErrorMsg("error.accountSuspended");
 				state.setLastErrorIsResourceKey(true);
 				
@@ -750,7 +751,7 @@ public class AuthenticationServiceImpl extends
 						this, state, authenticator,
 						"hint.accountSuspended"));
 				
-				state.clean();
+				
 				return false;
 			} 
 		}

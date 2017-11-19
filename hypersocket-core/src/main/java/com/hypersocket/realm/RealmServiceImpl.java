@@ -328,10 +328,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public List<Principal> allUsers(Realm realm) throws AccessDeniedException {
-
-		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
-
+	public List<Principal> allUsers(Realm realm) {
 		return allPrincipals(realm, PrincipalType.USER);
 	}
 

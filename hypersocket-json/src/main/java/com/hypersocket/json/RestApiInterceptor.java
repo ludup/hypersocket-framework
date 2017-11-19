@@ -121,7 +121,7 @@ public class RestApiInterceptor extends HandlerInterceptorAdapter {
 
 		try {
 			return encryptionService.authenticate(password.toCharArray(),
-					creds.getPassword(), creds.getSalt(),
+					Base64.decode(creds.getEncodedPassword()), Base64.decode(creds.getEncodedSalt()),
 					creds.getEncryptionType());
 
 		} catch (Throwable e) {
