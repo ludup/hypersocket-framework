@@ -328,7 +328,6 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		}
 
 		save(role);
-
 	}
 
 	@SuppressWarnings("unchecked")

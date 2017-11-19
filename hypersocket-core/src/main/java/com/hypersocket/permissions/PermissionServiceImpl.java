@@ -58,10 +58,8 @@ import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
 import com.hypersocket.realm.events.GroupCreatedEvent;
-import com.hypersocket.realm.events.GroupDeletedEvent;
 import com.hypersocket.realm.events.GroupEvent;
 import com.hypersocket.realm.events.UserCreatedEvent;
-import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AssignableResource;
@@ -868,14 +866,22 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 						op.beforeOperation(principal, new HashMap<String, String>());
 					}
 
-					Role role = repository.getPersonalRole(principal, false);
-					if (role != null) {
-						deleteRole(role);
+					Collection<Role> roles = getRolesByPrincipal(principal);
+					if(log.isInfoEnabled()) {
+						log.info(String.format("Revoking principal permissioms %s with %d roles [%s]", 
+								principal.getPrincipalName(), 
+								roles.size(), 
+								ResourceUtils.createCommaSeparatedString(roles)));
 					}
-
-					for (Role r : getPrincipalRoles(principal)) {
-						repository.unassignRole(r, principal);
+					
+					for(Role role : roles) {
+						if(!role.isPersonalRole() && !role.isAllUsers()) {
+							role.getPrincipals().remove(principal);
+							repository.saveRole(role);
+						}
 					}
+					
+					deletePrincipalRole(principal);
 
 					for (TransactionAdapter<Principal> op : ops) {
 						op.afterOperation(principal, new HashMap<String, String>());
@@ -1094,27 +1100,27 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		}
 	}
 
-	@Override
-	@EventListener
-	@SystemContextRequired
-	public void onUserDeleted(UserDeletedEvent event) {
-		if (event.isSuccess()) {
-			Collection<Role> roles = getRolesByPrincipal(event.getTargetPrincipal());
-			if(log.isInfoEnabled()) {
-				log.info(String.format("Deleting user %s with %d roles [%s]", 
-						event.getTargetPrincipal(), 
-						roles.size(), 
-						ResourceUtils.createCommaSeparatedString(roles)));
-			}
-			for(Role role : roles) {
-				if(!role.isPersonalRole() && !role.isAllUsers()) {
-					role.getPrincipals().remove(event.getTargetPrincipal());
-					repository.saveRole(role);
-				}
-			}
-			deletePrincipalRole(event.getTargetPrincipal());
-		}
-	}
+//	@Override
+//	@EventListener
+//	@SystemContextRequired
+//	public void onUserDeleted(UserDeletedEvent event) {
+//		if (event.isSuccess()) {
+//			Collection<Role> roles = getRolesByPrincipal(event.getTargetPrincipal());
+//			if(log.isInfoEnabled()) {
+//				log.info(String.format("Deleting user %s with %d roles [%s]", 
+//						event.getTargetPrincipal().getPrincipalName(), 
+//						roles.size(), 
+//						ResourceUtils.createCommaSeparatedString(roles)));
+//			}
+//			for(Role role : roles) {
+//				if(!role.isPersonalRole() && !role.isAllUsers()) {
+//					role.getPrincipals().remove(event.getTargetPrincipal());
+//					repository.saveRole(role);
+//				}
+//			}
+//			deletePrincipalRole(event.getTargetPrincipal());
+//		}
+//	}
 
 	@Override
 	@EventListener
@@ -1125,27 +1131,27 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		}
 	}
 
-	@Override
-	@EventListener
-	@SystemContextRequired
-	public void onGroupDeleted(GroupDeletedEvent event) {
-		if (event.isSuccess()) {
-			Collection<Role> roles = getRolesByPrincipal(event.getTargetPrincipal());
-			if(log.isInfoEnabled()) {
-				log.info(String.format("Deleting group %s with %d roles [%s]", 
-						event.getTargetPrincipal(), 
-						roles.size(), 
-						ResourceUtils.createCommaSeparatedString(roles)));
-			}
-			for(Role role : roles) {
-				if(!role.isPersonalRole() && !role.isAllUsers()) {
-					role.getPrincipals().remove(event.getTargetPrincipal());
-					repository.saveRole(role);
-				}
-			}
-			deletePrincipalRole(event.getTargetPrincipal());
-		}
-	}
+//	@Override
+//	@EventListener
+//	@SystemContextRequired
+//	public void onGroupDeleted(GroupDeletedEvent event) {
+//		if (event.isSuccess()) {
+//			Collection<Role> roles = getRolesByPrincipal(event.getTargetPrincipal());
+//			if(log.isInfoEnabled()) {
+//				log.info(String.format("Deleting group %s with %d roles [%s]", 
+//						event.getTargetPrincipal().getPrincipalName(), 
+//						roles.size(), 
+//						ResourceUtils.createCommaSeparatedString(roles)));
+//			}
+//			for(Role role : roles) {
+//				if(!role.isPersonalRole() && !role.isAllUsers()) {
+//					role.getPrincipals().remove(event.getTargetPrincipal());
+//					repository.saveRole(role);
+//				}
+//			}
+//			deletePrincipalRole(event.getTargetPrincipal());
+//		}
+//	}
 	
 	@Override
 	public Collection<Principal> resolveUsers(Collection<Role> roles, Realm realm) throws ResourceNotFoundException, AccessDeniedException {

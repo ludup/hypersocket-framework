@@ -1522,10 +1522,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		});
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void deleteGroup(Realm realm, Principal group) throws ResourceException, AccessDeniedException {
+	public void deleteGroup(Realm realm, final Principal group) throws ResourceException, AccessDeniedException {
 
-		RealmProvider provider = getProviderForRealm(realm);
+		final RealmProvider provider = getProviderForRealm(realm);
 
 		Collection<Principal> assosiatedPrincipals = provider.getAssociatedPrincipals(group);
 		
@@ -1536,7 +1537,16 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 			}
 
-			provider.deleteGroup(group);
+			permissionService.revokePermissions(group, new TransactionAdapter<Principal>() {
+				@Override
+				public void beforeOperation(Principal resource, Map<String, String> properties) throws ResourceException {
+					try {
+						provider.deleteGroup(group);
+					} catch (ResourceChangeException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+			});
 
 			eventService.publishEvent(new GroupDeletedEvent(this, getCurrentSession(), realm, provider, group, assosiatedPrincipals));
 
@@ -1575,7 +1585,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			permissionService.revokePermissions(user, new TransactionAdapter<Principal>() {
 				@Override
-				public void afterOperation(Principal resource, Map<String, String> properties) throws ResourceException {
+				public void beforeOperation(Principal resource, Map<String, String> properties) throws ResourceException {
 					try {
 						provider.deleteUser(resource);
 					} catch (ResourceChangeException e) {

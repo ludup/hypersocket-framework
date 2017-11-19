@@ -7,21 +7,23 @@
  ******************************************************************************/
 package com.hypersocket.permissions;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.events.GroupCreatedEvent;
-import com.hypersocket.realm.events.GroupDeletedEvent;
 import com.hypersocket.realm.events.UserCreatedEvent;
-import com.hypersocket.realm.events.UserDeletedEvent;
-import com.hypersocket.resource.*;
+import com.hypersocket.resource.AbstractAssignableResourceRepository;
+import com.hypersocket.resource.AssignableResource;
+import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.tables.ColumnSort;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public interface PermissionService extends AuthenticatedService {
 
@@ -143,11 +145,11 @@ public interface PermissionService extends AuthenticatedService {
 
 	void onUserCreated(UserCreatedEvent event);
 
-	void onUserDeleted(UserDeletedEvent event);
+//	void onUserDeleted(UserDeletedEvent event);
 
 	void onGroupCreated(GroupCreatedEvent event);
 
-	void onGroupDeleted(GroupDeletedEvent event);
+//	void onGroupDeleted(GroupDeletedEvent event);
 
 	Set<Principal> resolveUsers(Collection<Principal> principals);
 
