@@ -3,9 +3,10 @@ package com.hypersocket.batch;
 import java.util.Collection;
 
 import com.hypersocket.resource.AbstractResourceRepository;
+import com.hypersocket.resource.RealmResource;
 
-public interface BatchProcessingItemRepository extends AbstractResourceRepository<BatchItem> {
+public interface BatchProcessingItemRepository<T extends RealmResource> extends AbstractResourceRepository<T> {
 
-	Collection<BatchItem> allResources();
+	Collection<T> allResources();
 
 }

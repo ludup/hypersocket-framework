@@ -5,18 +5,16 @@ import java.util.Collection;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
+import com.hypersocket.resource.RealmResource;
 
-public abstract class BatchProcessingItemRepositoryImpl extends AbstractResourceRepositoryImpl<BatchItem> implements BatchProcessingItemRepository {
+public abstract class BatchProcessingItemRepositoryImpl<T extends RealmResource> 
+		extends AbstractResourceRepositoryImpl<T> implements BatchProcessingItemRepository<T> {
 
-	@Override
-	protected Class<BatchItem> getResourceClass() {
-		return BatchItem.class;
-	}
 
 	@Override
 	@Transactional(readOnly=true)
-	public Collection<BatchItem> allResources() {
-		return allEntities(BatchItem.class);
+	public Collection<T> allResources() {
+		return list(getResourceClass());
 	}
 
 }

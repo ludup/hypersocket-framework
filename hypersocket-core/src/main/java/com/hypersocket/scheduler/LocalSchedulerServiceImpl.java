@@ -31,7 +31,7 @@ public class LocalSchedulerServiceImpl extends AbstractSchedulerServiceImpl impl
 		props.setProperty("org.quartz.scheduler.instanceId", "LOCAL_JOBS");
 		props.setProperty("org.quartz.threadPool.class", "com.hypersocket.scheduler.LocalThreadPool");
 		props.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore");
-		props.setProperty("org.quartz.threadPool.threadCount", "5");
+		props.setProperty("org.quartz.threadPool.threadCount", "50");
 		
 		StdSchedulerFactory schedFact = new org.quartz.impl.StdSchedulerFactory(props);
 		

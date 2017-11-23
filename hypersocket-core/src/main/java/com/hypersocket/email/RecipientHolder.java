@@ -3,6 +3,8 @@ package com.hypersocket.email;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -15,6 +17,17 @@ public class RecipientHolder {
 	Principal principal;
 	
 	static Set<String> salutations = new HashSet<String>(Arrays.asList("MR", "MS", "MRS", "DR", "PROF"));
+	
+	public RecipientHolder(String name) {
+		
+		Pattern depArrHours = Pattern.compile("(?:\"?([^\"]*)\"?\\s)?(?:<?(.+@[^>]+)>?)");
+		Matcher matcher = depArrHours.matcher(name);
+		matcher.find();
+		this.name = matcher.group(1);
+		this.email = matcher.group(2);
+
+	}
+	
 	public RecipientHolder(String name, String email) {
 		this.name = name;
 		this.email = email;
@@ -57,5 +70,17 @@ public class RecipientHolder {
 		}
 		return principal.getId().toString();
 	}
+
+	@Override
+	public String toString() {
+		return String.format("%s <%s>", name, email);
+	}
 	
+	public static void main(String[] srgs) {
+		
+		new RecipientHolder("Lee Painter <lee@javassh.com>");
+		new RecipientHolder("Lee <lee@javassh.com>");
+		new RecipientHolder("\"Lee Painter\" <lee@javassh.com>");
+		
+	}
 }

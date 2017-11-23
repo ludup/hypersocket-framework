@@ -244,7 +244,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public final void updateResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
 
-		boolean changedDefault = false;
+		boolean changedDefault = !resource.getName().equals(resource.getOldName());
 
 		if(assertPermissions) {
 			assertPermission(getUpdatePermission(resource));
@@ -268,8 +268,6 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			changedDefault = true;
 		}
 
-
-
 		try {
 			beforeUpdateResource(resource, properties);
 			List<PropertyChange> changes = getRepository().saveResource(resource, properties, ops);
@@ -278,9 +276,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			if(changes.size() > 0) {
 				changedDefault = changedDefault || fireNonStandardEvents(resource, changes);
 			}
-			else {
-				changedDefault = true;
-			}
+
 			if(changedDefault) {
 				fireResourceUpdateEvent(resource);
 			}
