@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.batch.BatchProcessingItemRepository;
 import com.hypersocket.batch.BatchProcessingServiceImpl;
-import com.hypersocket.properties.ResourceNameCallback;
-import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 
 public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatchItem> implements EmailBatchService {

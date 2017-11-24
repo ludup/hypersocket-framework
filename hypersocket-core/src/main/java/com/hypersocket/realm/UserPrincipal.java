@@ -28,4 +28,6 @@ public abstract class UserPrincipal extends Principal {
 	public abstract String getSecondaryEmail();
 	
 	public abstract String getMobile();
+
+	public abstract void setSecondaryEmail(String email);
 }
