@@ -39,9 +39,10 @@ public class OrganizationalUnitRepositoryImpl extends
 	
 	@Override
 	@Transactional
-	public void removeAll() {
-		String hql = "delete from OrganizationalUnit o";
+	public void removeAll(Realm realm) {
+		String hql = "delete from OrganizationalUnit o where o.realm = :realm";
 		createQuery(hql, true)
+				.setParameter("realm", realm)
 				.executeUpdate();
 	}
 }

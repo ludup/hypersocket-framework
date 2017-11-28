@@ -11,6 +11,6 @@ public interface OrganizationalUnitRepository extends AbstractResourceRepository
 
 	void saveOrganizationalUnit(OrganizationalUnit ou);
 
-	void removeAll();
+	void removeAll(Realm realm);
 
 }
