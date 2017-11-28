@@ -127,7 +127,20 @@ public class PasswordPolicyResourceController extends ResourceController {
 		return new ResourceStatus<PasswordPolicyResource>(resourceService.getDefaultPolicy(
 				realm, 
 				realm.getResourceCategory()));
+	}
+	
+	@RequestMapping(value = "passwordPolicys/default/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<PasswordPolicyResource> getDefaultPolicyForRealm(
+			HttpServletRequest request, HttpServletResponse response, @PathVariable Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		Realm realm = realmService.getRealmById(id);
 		
+		return new ResourceStatus<PasswordPolicyResource>(resourceService.getDefaultPolicy(
+				realm, 
+				realm.getResourceCategory()));
 	}
 	
 	@RequestMapping(value = "passwordPolicys/generate/{id}/{length}", method = RequestMethod.GET, produces = { "application/json" })
