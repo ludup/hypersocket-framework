@@ -633,19 +633,21 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		}
 		if(event instanceof ConfigurationValueChangedEvent) {
 			ConfigurationValueChangedEvent configEvent = (ConfigurationValueChangedEvent) event;
-			if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.ciphers") 
-					|| configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.protocols")) {
-				rebuildEnabledCipherSuites();
-			}
-			if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("application.path")) {
-				System.setProperty("hypersocket.appPath", getBasePath());
-				if(log.isInfoEnabled()) {
-					log.info(String.format("Application path changed to %s", getBasePath()));
+			if(configEvent.hasAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY)){
+				if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.ciphers") 
+						|| configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.protocols")) {
+					rebuildEnabledCipherSuites();
 				}
-			} else if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ui.path")) {
-				System.setProperty("hypersocket.uiPath", getUiPath());
-				if(log.isInfoEnabled()) {
-					log.info(String.format("UI path changed to %s", getUiPath()));
+				if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("application.path")) {
+					System.setProperty("hypersocket.appPath", getBasePath());
+					if(log.isInfoEnabled()) {
+						log.info(String.format("Application path changed to %s", getBasePath()));
+					}
+				} else if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ui.path")) {
+					System.setProperty("hypersocket.uiPath", getUiPath());
+					if(log.isInfoEnabled()) {
+						log.info(String.format("UI path changed to %s", getUiPath()));
+					}
 				}
 			}
 			

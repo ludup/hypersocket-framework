@@ -36,6 +36,7 @@ import com.hypersocket.properties.PropertyFilter;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
+import com.hypersocket.realm.PasswordCreator;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalSuspension;
 import com.hypersocket.realm.PrincipalSuspensionService;
@@ -207,7 +208,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Transactional
 	public Principal createUser(Realm realm, String username,
 			Map<String, String> properties, List<Principal> principals,
-			String password, boolean forceChange)
+			PasswordCreator passwordCreator, boolean forceChange)
 			throws ResourceException {
 		
 		try {
@@ -241,8 +242,8 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 			checkExpiry(user);
 			
-			if(password!=null) {
-				setPassword(user, password, forceChange, true);
+			if(passwordCreator!=null) {
+				setPassword(user, passwordCreator.createPassword(principal), forceChange, true);
 			}
 			return user;
 		} catch (Exception e) {

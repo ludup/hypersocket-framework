@@ -9,6 +9,8 @@ package com.hypersocket.local;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -50,6 +52,15 @@ public abstract class AbstractRealmProvider extends ResourceTemplateRepositoryIm
 			return getTemplateRepository().getPropertyCategories(null);
 		} else {
 			return Collections.<PropertyCategory>emptyList();
+		}
+	}
+	
+	@Override
+	public Map<String,String> getPrincipalTemplateProperties(Resource resource) {
+		if(supportsTemplates()) {
+			return getTemplateRepository().getProperties(resource);
+		} else {
+			return new HashMap<String,String>();
 		}
 	}
 }

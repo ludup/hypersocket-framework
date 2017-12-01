@@ -27,6 +27,7 @@ import com.hypersocket.permissions.Role;
 import com.hypersocket.permissions.RoleType;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.realm.DefaultPasswordCreator;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -148,7 +149,7 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 
 		// Create the default admin user
 		Principal admin = localRealmProvider.createUser(realm, "admin",
-				null, groups, "admin", true);
+				null, groups, new DefaultPasswordCreator("admin"), true);
 
 		// Create the System Administrator role
 		Role rAdmin = permissionRepository.createRole(

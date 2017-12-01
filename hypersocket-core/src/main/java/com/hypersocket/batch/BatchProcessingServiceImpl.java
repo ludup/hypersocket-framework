@@ -39,7 +39,7 @@ public abstract class BatchProcessingServiceImpl<T extends RealmResource> implem
 		
 		String jobKey = getJobKey();
 		JobDataMap data = new PermissionsAwareJobData(jobKey);
-		data.put("clz", getClass());
+		data.put("clz", getClass().getInterfaces()[0]);
 		try {
 			if(!schedulerService.jobExists(jobKey)) {
 				schedulerService.scheduleIn(BatchJob.class, jobKey, data , getBatchInterval(), getBatchInterval());

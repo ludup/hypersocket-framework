@@ -533,12 +533,37 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				null, getProviderForRealm(realm),
 				sendNotifications);
 	}
-
-
+	
 	
 	public Principal createUser(Realm realm, String username, Map<String, String> properties,
 			List<Principal> principals, 
-			String password, 
+			final String password, 
+			boolean forceChange, 
+			boolean selfCreated,
+			Principal parent, 
+			RealmProvider provider,
+			boolean sendNotifications)
+					throws ResourceException, AccessDeniedException {
+		return createUser(realm, username, properties, principals, 
+				new DefaultPasswordCreator(password), forceChange, selfCreated, parent, provider, sendNotifications);
+	}
+
+	@Override
+	public Principal createUser(Realm realm, String username, Map<String, String> properties,
+			List<Principal> principals, PasswordCreator password, boolean forceChange, boolean selfCreated,
+			boolean sendNotifications) throws ResourceException, AccessDeniedException {
+		return createUser(realm, 
+				username, properties, 
+				principals, password, 
+				forceChange, selfCreated, 
+				null, getProviderForRealm(realm),
+				sendNotifications);
+	}
+	
+	@Override
+	public Principal createUser(Realm realm, String username, Map<String, String> properties,
+			List<Principal> principals, 
+			PasswordCreator passwordCreator, 
 			boolean forceChange, 
 			boolean selfCreated,
 			Principal parent, 
@@ -560,27 +585,28 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 			
 			for (PrincipalProcessor processor : principalProcessors) {
-				processor.beforeCreate(realm, provider.getModule(), username, password, properties);
+				processor.beforeCreate(realm, provider.getModule(), username, properties);
 			}
 			
-			Principal principal = provider.createUser(realm, username, properties, principals, password, forceChange);
+			Principal principal = provider.createUser(realm, username, properties, principals, passwordCreator, forceChange);
 
 			for (PrincipalProcessor processor : principalProcessors) {
-				processor.afterCreate(principal, password, properties);
+				processor.afterCreate(principal, passwordCreator.getPassword(), properties);
 			}
+			
 			provider.reconcileUser(principal);
 			eventService.publishEvent(new UserCreatedEvent(this, getCurrentSession(), realm, provider, principal,
-					principals, filterSecretProperties(principal, provider, properties), password, forceChange,
+					principals, filterSecretProperties(principal, provider, properties), passwordCreator.getPassword(), forceChange,
 					selfCreated));
 
 			if(sendNotifications) {
 				if(StringUtils.isNotBlank(principal.getEmail())) {
 					if(selfCreated) {
-						sendNewUserSelfCreatedNofification(principal, password);
+						sendNewUserSelfCreatedNofification(principal, passwordCreator.getPassword());
 					} else if(forceChange) {
-						sendNewUserTemporaryPasswordNofification(principal, password);
+						sendNewUserTemporaryPasswordNofification(principal, passwordCreator.getPassword());
 					} else {
-						sendNewUserFixedPasswordNotification(principal, password);
+						sendNewUserFixedPasswordNotification(principal, passwordCreator.getPassword());
 					}
 				}
 			}
