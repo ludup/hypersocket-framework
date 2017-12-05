@@ -51,7 +51,15 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Principal createUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
 						 String password, boolean forceChange, boolean selfCreated, boolean sendNotifications)
 			throws ResourceException, AccessDeniedException;
+	
+	Principal createUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
+			 PasswordCreator password, boolean forceChange, boolean selfCreated, boolean sendNotifications)
+					 throws ResourceException, AccessDeniedException;
 
+	Principal createUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
+			PasswordCreator passwordCreator, boolean forceChange, boolean selfCreated, Principal parent,
+			RealmProvider provider, boolean sendNotifications) throws ResourceException, AccessDeniedException;
+	
 	Principal updateUser(Realm realm, Principal user, String username, Map<String, String> properties,
 						 List<Principal> principals) throws ResourceException, AccessDeniedException;
 
@@ -106,7 +114,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean findUniquePrincipal(String user);
 
-	List<Principal> allUsers(Realm realm) throws AccessDeniedException;
+	List<Principal> allUsers(Realm realm);
 
 	List<Principal> allGroups(Realm realm) throws AccessDeniedException;
 

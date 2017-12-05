@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @MappedSuperclass
 @JsonIgnoreProperties(ignoreUnknown=true)
-public abstract class AbstractEntity<T> implements Serializable{
+public abstract class AbstractEntity<T> implements Serializable {
 
 	private static final long serialVersionUID = -8808550521563073042L;
 

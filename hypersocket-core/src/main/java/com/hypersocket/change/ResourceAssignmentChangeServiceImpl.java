@@ -264,15 +264,13 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 	protected void processEveryoneUnassignment(Realm realm, AssignableResource resource, Collection<Principal> keepAssigned) {
 	
 		// Everyone was unassigned but some users were assigned too.
-		try {
-			Set<Principal> unassigned = new HashSet<Principal>();
-			unassigned.addAll(realmService.allUsers(realm));
-			unassigned.removeAll(keepAssigned);
-			
-			processAssignmentEvent(realm, resource, Collections.<Principal>emptySet(), unassigned);
+		
+		Set<Principal> unassigned = new HashSet<Principal>();
+		unassigned.addAll(realmService.allUsers(realm));
+		unassigned.removeAll(keepAssigned);
+		
+		processAssignmentEvent(realm, resource, Collections.<Principal>emptySet(), unassigned);
 
-		} catch (AccessDeniedException e) {
-			throw new IllegalStateException(e.getMessage(), e);
-		}
+		
 	}
 }

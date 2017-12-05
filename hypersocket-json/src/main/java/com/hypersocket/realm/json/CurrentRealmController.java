@@ -195,7 +195,7 @@ public class CurrentRealmController extends ResourceController {
 	@RequestMapping(value = "currentRealm/groups/filter/{userId}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public BootstrapTableResult<?> tableRolesFilterByUser(final HttpServletRequest request,
+	public BootstrapTableResult<?> tableGroupsFilterByUser(final HttpServletRequest request,
 											  HttpServletResponse response,
 											@PathVariable("userId") final Long userId) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
@@ -217,10 +217,9 @@ public class CurrentRealmController extends ResourceController {
 											   int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							List<?> groups = realmService.allGroups(getCurrentRealm());
-
+							
 							Principal principal = realmService.getPrincipalById(userId);
-
+							List<?> groups = realmService.allGroups(principal.getRealm());
 							final List<Principal> principalGroups = realmService.getUserGroups(principal);
 
 							CollectionUtils.filter(groups, new Predicate() {
@@ -272,7 +271,7 @@ public class CurrentRealmController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return realmService.searchPrincipals(
-									sessionUtils.getCurrentRealm(request),
+									currentRealm,
 									PrincipalType.GROUP,
 									currentRealm.getResourceCategory(),
 									searchPattern, start,
@@ -284,7 +283,7 @@ public class CurrentRealmController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return realmService.getSearchPrincipalsCount(
-									sessionUtils.getCurrentRealm(request),
+									currentRealm,
 									PrincipalType.GROUP, 
 									currentRealm.getResourceCategory(),
 									searchPattern);
@@ -1175,7 +1174,7 @@ public class CurrentRealmController extends ResourceController {
 			produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceStatus<Boolean> deleteRoleFromUser(HttpServletRequest request,
+	public ResourceStatus<Boolean> deleteGroupFromUser(HttpServletRequest request,
 											  HttpServletResponse response,  
 											  @PathVariable("groupId") Long groupId,
 											  @PathVariable("userId") Long userId)

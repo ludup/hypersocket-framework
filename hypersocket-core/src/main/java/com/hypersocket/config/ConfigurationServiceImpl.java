@@ -151,10 +151,13 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 			throws AccessDeniedException, ResourceException {
 		try {
 			assertPermission(ConfigurationPermission.UPDATE);
-			String oldValue = repository.getValue(realm, resourceKey);
-			repository.setValue(realm, resourceKey, value);
-			fireChangeEvent(realm, resourceKey, oldValue, value, repository.getPropertyTemplate(realm, resourceKey).isHidden());
-			eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession(), realm));
+			PropertyTemplate template = repository.getPropertyTemplate(realm, resourceKey);
+			if(template!=null) {
+				String oldValue = repository.getValue(realm, resourceKey);
+				repository.setValue(realm, resourceKey, value);
+				fireChangeEvent(realm, resourceKey, oldValue, value, template.isHidden());
+				eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession(), realm));
+			}
 		} catch (AccessDeniedException e) {
 			fireChangeEvent(realm, resourceKey, e);
 			throw e;

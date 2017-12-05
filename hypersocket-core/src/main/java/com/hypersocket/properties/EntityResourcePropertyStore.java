@@ -201,7 +201,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		} catch (InvocationTargetException e) {
 			t = e;
 		}
-		throw new IllegalStateException(methodName + " not found", t);
+		log.error(methodName + " not found", t);
+		return "";
 	}
 	
 	

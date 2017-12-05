@@ -7,15 +7,60 @@
  ******************************************************************************/
 package com.hypersocket.local;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.attributes.user.UserAttributeService;
+import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 import com.hypersocket.realm.RealmProvider;
+import com.hypersocket.resource.Resource;
 
 
 public abstract class AbstractRealmProvider extends ResourceTemplateRepositoryImpl implements RealmProvider {
 
 	@Autowired
 	protected UserAttributeService userAttributeService;
+	
+	public boolean supportsTemplates() {
+		return false;
+	}
+	
+	@JsonIgnore
+	public ResourceTemplateRepository getTemplateRepository() {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public Collection<PropertyCategory> getPrincipalTemplate(Resource resource) {
+		if(supportsTemplates()) {
+			return getTemplateRepository().getPropertyCategories(resource);
+		} else {
+			return Collections.<PropertyCategory>emptyList();
+		}
+	}
+
+	@Override
+	public Collection<PropertyCategory> getPrincipalTemplate() {
+		if(supportsTemplates()) {
+			return getTemplateRepository().getPropertyCategories(null);
+		} else {
+			return Collections.<PropertyCategory>emptyList();
+		}
+	}
+	
+	@Override
+	public Map<String,String> getPrincipalTemplateProperties(Resource resource) {
+		if(supportsTemplates()) {
+			return getTemplateRepository().getProperties(resource);
+		} else {
+			return new HashMap<String,String>();
+		}
+	}
 }

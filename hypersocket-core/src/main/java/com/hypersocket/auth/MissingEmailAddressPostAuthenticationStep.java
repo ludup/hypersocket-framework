@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,10 +18,12 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.input.ParagraphField;
 import com.hypersocket.input.TextInputField;
-import com.hypersocket.local.LocalUser;
-import com.hypersocket.local.LocalUserRepository;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.profile.ProfileRepository;
+import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.UserPrincipal;
+import com.hypersocket.resource.ResourceException;
+import com.hypersocket.session.SessionService;
 
 @Component
 public class MissingEmailAddressPostAuthenticationStep implements PostAuthenticationStep{
@@ -52,7 +55,10 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 	ConfigurationService configurationService;
 	
 	@Autowired
-	LocalUserRepository localUserRepository;
+	RealmService realmService; 
+	
+	@Autowired
+	SessionService sessionService; 
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -62,10 +68,11 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 	
 	@Override
 	public boolean requiresProcessing(AuthenticationState state) {
-		LocalUser localUser = (LocalUser)localUserRepository.getUserById(state.getPrincipal().getId(), state.getRealm(), false);
+		
+		UserPrincipal principal = (UserPrincipal) state.getPrincipal();
 		String required = configurationService.getValue(state.getRealm(), "missingEmail.required");
-		boolean primariExists = localUser.getEmail() != null &&  !"".equals(localUser.getEmail());
-		boolean secondaryExists = localUser.getSecondaryEmail() != null && !"".equals(localUser.getSecondaryEmail());
+		boolean primariExists = StringUtils.isNotBlank(principal.getEmail());
+		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryEmail());
 		if(((REQUIRE_ALL.equals(required) || REQUIRE_PRIMARY.equals(required)) && !primariExists)
 				|| ((REQUIRE_ALL.equals(required) || REQUIRE_SECONDARY.equals(required)) && !secondaryExists)){
 			return true;
@@ -84,11 +91,12 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 	}
 
 	@Override
-	public AuthenticatorResult process(AuthenticationState state, Map parameters) throws AccessDeniedException {
+	public AuthenticatorResult process(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException {
 		String required = configurationService.getValue(state.getRealm(), "missingEmail.required");
-		LocalUser localUser = (LocalUser)localUserRepository.getUserById(state.getPrincipal().getId(), state.getRealm(), false);
-		boolean primariExists = localUser.getEmail() != null &&  !"".equals(localUser.getEmail());
-		boolean secondaryExists = localUser.getSecondaryEmail() != null && !"".equals(localUser.getSecondaryEmail());
+		
+		final UserPrincipal principal = (UserPrincipal)state.getPrincipal();
+		boolean primariExists = StringUtils.isNotBlank(principal.getEmail());
+		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryEmail());
 		boolean error = false;
 		
 		if((REQUIRE_ALL.equals(required) || REQUIRE_PRIMARY.equals(required)) && !primariExists){
@@ -120,13 +128,24 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 		if(error){
 			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}else{
+			final Map<String,String> properties = new HashMap<String,String>();
 			if((REQUIRE_ALL.equals(required) || REQUIRE_PRIMARY.equals(required)) && !primariExists){
-				localUser.setEmail((String)parameters.get(PARAM_PRIMARY));
+				properties.put("email", (String)parameters.get(PARAM_PRIMARY));
 			}
 			if((REQUIRE_ALL.equals(required) || REQUIRE_SECONDARY.equals(required)) && !secondaryExists){
-				localUser.setSecondaryEmail((String)parameters.get(PARAM_SECONDARY));
+				properties.put("secondaryEmail", (String)parameters.get(PARAM_SECONDARY));
 			}
-			localUserRepository.saveUser(localUser, new HashMap<String, String>());
+			
+			sessionService.executeInSystemContext(new Runnable() {
+				public void run() {
+					try {
+						realmService.updateUserProperties(principal, properties);
+					} catch (ResourceException | AccessDeniedException e) {
+						e.printStackTrace();
+					}
+				}
+			});
+			
 			return AuthenticatorResult.AUTHENTICATION_SUCCESS;
 		}
 	}
@@ -134,22 +153,19 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 	@Override
 	public FormTemplate createTemplate(AuthenticationState state) {
 		String required = configurationService.getValue(state.getRealm(), "missingEmail.required");
-		LocalUser localUser = (LocalUser)localUserRepository.getUserById(state.getPrincipal().getId(), state.getRealm(), false);
-		boolean primariExists = localUser.getEmail() != null &&  !"".equals(localUser.getEmail());
-		boolean secondaryExists = localUser.getSecondaryEmail() != null && !"".equals(localUser.getSecondaryEmail());
+		
+		UserPrincipal principal = (UserPrincipal)state.getPrincipal();
+		boolean primariExists = StringUtils.isNotBlank(principal.getEmail());
+		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryEmail());
 		
 		FormTemplate t = new FormTemplate(state.getScheme().getResourceKey());
 		t.getInputFields().add(new ParagraphField("missingEmail.paragraph", true));
-		if((REQUIRE_ALL.equals(required) || REQUIRE_PRIMARY.equals(required)) && !primariExists && state.getParameter(PARAM_PRIMARY) != null){
-			t.getInputFields().add(new TextInputField(PARAM_PRIMARY, state.getParameter(PARAM_PRIMARY), true, I18N.getResource(state.getLocale(), RESOURCE_BUNDLE, "missingEmailAddress.primary")));
-		}else{
-			t.getInputFields().add(new TextInputField(PARAM_PRIMARY, "", true, I18N.getResource(state.getLocale(), RESOURCE_BUNDLE, "missingEmailAddress.primary")));
+		if((REQUIRE_ALL.equals(required) || REQUIRE_PRIMARY.equals(required)) && !primariExists){
+			t.getInputFields().add(new TextInputField(PARAM_PRIMARY, state.getParameter(PARAM_PRIMARY)!=null ? state.getParameter(PARAM_PRIMARY) : "", true, I18N.getResource(state.getLocale(), RESOURCE_BUNDLE, "missingEmailAddress.primary")));
 		}
 			
-		if((REQUIRE_ALL.equals(required) || REQUIRE_SECONDARY.equals(required)) && !secondaryExists && state.getParameter(PARAM_SECONDARY) != null){
-			t.getInputFields().add(new TextInputField(PARAM_SECONDARY, state.getParameter(PARAM_SECONDARY), true, I18N.getResource(state.getLocale(), RESOURCE_BUNDLE, "missingEmailAddress.secondary")));
-		}else{
-			t.getInputFields().add(new TextInputField(PARAM_SECONDARY, "", true, I18N.getResource(state.getLocale(), RESOURCE_BUNDLE, "missingEmailAddress.secondary")));
+		if((REQUIRE_ALL.equals(required) || REQUIRE_SECONDARY.equals(required)) && !secondaryExists){
+			t.getInputFields().add(new TextInputField(PARAM_SECONDARY, state.getParameter(PARAM_SECONDARY)!=null ? state.getParameter(PARAM_SECONDARY) : "", true, I18N.getResource(state.getLocale(), RESOURCE_BUNDLE, "missingEmailAddress.secondary")));
 		}
 		return t;
 	}

@@ -517,13 +517,6 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			String visibilityDependsOn, String visibilityDependsValue, String via) {
 
 		String categoryKey = resourceKey + "/" + bundle;
-//		if (activeCategories.containsKey(categoryKey)) {
-//			PropertyCategory cat = activeCategories.get(categoryKey);
-//			return cat;
-//			throw new IllegalStateException("Cannot register " + resourceKey + "/" + bundle
-//					+ " as the resource key is already registered by bundle "
-//					+ activeCategories.get(resourceKey).getBundle());
-//		}
 
 		if (activeCategories.containsKey(categoryKey)) {
 			return activeCategories.get(categoryKey);

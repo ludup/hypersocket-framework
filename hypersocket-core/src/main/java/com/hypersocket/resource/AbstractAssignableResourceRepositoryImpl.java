@@ -751,12 +751,18 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional
 	public void deleteRealm(Realm realm) {
 		
+		Criteria crit = createCriteria(getResourceClass());
+		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		crit.setFetchMode("roles", FetchMode.SELECT);
+		crit.add(Restrictions.eq("realm", realm));
+
 		int count = 0;
-		for(T t : allRealmResources(realm)) {
+		for(T t : (List<T>)crit.list()) {
 			log.info(String.format("Deleting %s", t.getName()));
 			t.getRoles().clear();
 			save(t);

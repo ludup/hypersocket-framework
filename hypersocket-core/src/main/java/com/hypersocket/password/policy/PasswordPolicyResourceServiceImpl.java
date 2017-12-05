@@ -353,6 +353,7 @@ public class PasswordPolicyResourceServiceImpl extends
 	
 	@Override
 	public void beforeUpdate(Principal principal, Map<String, String> properties) throws ResourceException {
+	
 	}
 
 	@Override
@@ -360,20 +361,13 @@ public class PasswordPolicyResourceServiceImpl extends
 	}
 
 	@Override
-	public void beforeCreate(Realm realm, String realmModule, String username, String password, Map<String,String> properties) throws ResourceException {
-		
-		PasswordPolicyResource policy = repository.getDefaultPolicyByModule(realm, realmModule);
-		if(policy!=null) {
-			validatePassword(username, policy, password);
-		}
-		
+	public void beforeCreate(Realm realm, String realmModule, String username, Map<String,String> properties) throws ResourceException {
+
 	}
 	
 	@Override
 	public void afterCreate(Principal principal, String password, Map<String, String> properties) throws ResourceException {
-
 		passwordHistoryService.recordPassword(principal, password);
-		
 	}
 
 	@Override

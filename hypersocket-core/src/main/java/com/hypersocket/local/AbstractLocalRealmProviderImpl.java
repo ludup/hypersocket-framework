@@ -19,6 +19,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ import com.hypersocket.properties.PropertyFilter;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
+import com.hypersocket.realm.PasswordCreator;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalSuspension;
 import com.hypersocket.realm.PrincipalSuspensionService;
@@ -43,6 +45,7 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.resource.RealmResource;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
@@ -186,7 +189,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 		try {
 			return encryptionService.authenticate(password,
-					creds.getPassword(), creds.getSalt(),
+					Base64.decodeBase64(creds.getEncodedPassword()), Base64.decodeBase64(creds.getEncodedSalt()),
 					creds.getEncryptionType());
 		} catch (Throwable e) {
 			if (log.isDebugEnabled()) {
@@ -205,7 +208,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Transactional
 	public Principal createUser(Realm realm, String username,
 			Map<String, String> properties, List<Principal> principals,
-			String password, boolean forceChange)
+			PasswordCreator passwordCreator, boolean forceChange)
 			throws ResourceException {
 		
 		try {
@@ -239,8 +242,8 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 			checkExpiry(user);
 			
-			if(password!=null) {
-				setPassword(user, password, forceChange, true);
+			if(passwordCreator!=null) {
+				setPassword(user, passwordCreator.createPassword(principal), forceChange, true);
 			}
 			return user;
 		} catch (Exception e) {
@@ -371,8 +374,8 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 			creds.setUser(localUser);
 			creds.setEncryptionType(passwordEncoding);
-			creds.setPassword(encryptedPassword);
-			creds.setSalt(salt);
+			creds.setEncodedPassword(Base64.encodeBase64String(encryptedPassword));
+			creds.setEncodedSalt(Base64.encodeBase64String(salt));
 			creds.setPasswordChangeRequired(forceChangeAtNextLogon);
 
 			userRepository.saveCredentials(creds);
@@ -719,7 +722,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 	@Override
 	@Transactional(readOnly=true)
-	public Collection<PropertyCategory> getUserProperties(Principal principal) {
+	public Collection<PropertyCategory> getUserProperties(RealmResource principal) {
 		return userRepository.getPropertyCategories(principal);
 	}
 

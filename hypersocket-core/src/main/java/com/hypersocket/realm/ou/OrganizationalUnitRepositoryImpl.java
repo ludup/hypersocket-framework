@@ -32,7 +32,17 @@ public class OrganizationalUnitRepositoryImpl extends
 	}
 
 	@Override
+
 	protected Class<OrganizationalUnit> getResourceClass() {
 		return OrganizationalUnit.class;
+	}
+	
+	@Override
+	@Transactional
+	public void removeAll(Realm realm) {
+		String hql = "delete from OrganizationalUnit o where o.realm = :realm";
+		createQuery(hql, true)
+				.setParameter("realm", realm)
+				.executeUpdate();
 	}
 }

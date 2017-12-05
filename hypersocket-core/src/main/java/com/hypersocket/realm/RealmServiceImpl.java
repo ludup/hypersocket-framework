@@ -73,10 +73,6 @@ import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
 import com.hypersocket.realm.ou.OrganizationalUnitRepository;
-import com.hypersocket.resource.AbstractAssignableResourceRepository;
-import com.hypersocket.resource.AbstractResourceRepository;
-import com.hypersocket.resource.AbstractSimpleResourceRepository;
-import com.hypersocket.resource.FindableResourceRepository;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceCreationException;
@@ -332,10 +328,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public List<Principal> allUsers(Realm realm) throws AccessDeniedException {
-
-		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
-
+	public List<Principal> allUsers(Realm realm) {
 		return allPrincipals(realm, PrincipalType.USER);
 	}
 
@@ -540,12 +533,37 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				null, getProviderForRealm(realm),
 				sendNotifications);
 	}
-
-
+	
 	
 	public Principal createUser(Realm realm, String username, Map<String, String> properties,
 			List<Principal> principals, 
-			String password, 
+			final String password, 
+			boolean forceChange, 
+			boolean selfCreated,
+			Principal parent, 
+			RealmProvider provider,
+			boolean sendNotifications)
+					throws ResourceException, AccessDeniedException {
+		return createUser(realm, username, properties, principals, 
+				new DefaultPasswordCreator(password), forceChange, selfCreated, parent, provider, sendNotifications);
+	}
+
+	@Override
+	public Principal createUser(Realm realm, String username, Map<String, String> properties,
+			List<Principal> principals, PasswordCreator password, boolean forceChange, boolean selfCreated,
+			boolean sendNotifications) throws ResourceException, AccessDeniedException {
+		return createUser(realm, 
+				username, properties, 
+				principals, password, 
+				forceChange, selfCreated, 
+				null, getProviderForRealm(realm),
+				sendNotifications);
+	}
+	
+	@Override
+	public Principal createUser(Realm realm, String username, Map<String, String> properties,
+			List<Principal> principals, 
+			PasswordCreator passwordCreator, 
 			boolean forceChange, 
 			boolean selfCreated,
 			Principal parent, 
@@ -567,27 +585,28 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 			
 			for (PrincipalProcessor processor : principalProcessors) {
-				processor.beforeCreate(realm, provider.getModule(), username, password, properties);
+				processor.beforeCreate(realm, provider.getModule(), username, properties);
 			}
 			
-			Principal principal = provider.createUser(realm, username, properties, principals, password, forceChange);
+			Principal principal = provider.createUser(realm, username, properties, principals, passwordCreator, forceChange);
 
 			for (PrincipalProcessor processor : principalProcessors) {
-				processor.afterCreate(principal, password, properties);
+				processor.afterCreate(principal, passwordCreator.getPassword(), properties);
 			}
+			
 			provider.reconcileUser(principal);
 			eventService.publishEvent(new UserCreatedEvent(this, getCurrentSession(), realm, provider, principal,
-					principals, filterSecretProperties(principal, provider, properties), password, forceChange,
+					principals, filterSecretProperties(principal, provider, properties), passwordCreator.getPassword(), forceChange,
 					selfCreated));
 
 			if(sendNotifications) {
 				if(StringUtils.isNotBlank(principal.getEmail())) {
 					if(selfCreated) {
-						sendNewUserSelfCreatedNofification(principal, password);
+						sendNewUserSelfCreatedNofification(principal, passwordCreator.getPassword());
 					} else if(forceChange) {
-						sendNewUserTemporaryPasswordNofification(principal, password);
+						sendNewUserTemporaryPasswordNofification(principal, passwordCreator.getPassword());
 					} else {
-						sendNewUserFixedPasswordNotification(principal, password);
+						sendNewUserFixedPasswordNotification(principal, passwordCreator.getPassword());
 					}
 				}
 			}
@@ -992,7 +1011,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						realmRepository.saveRealm(realm);
 						
 						String externalHost = getRealmHostname(realm);
-						if(StringUtils.isNotBlank(externalHost)) {
+						String currentExternalHost = configurationService.getValue(realm, "email.externalHostname");
+						if(StringUtils.isNotBlank(externalHost) && (StringUtils.isBlank(currentExternalHost) || !currentExternalHost.equals(externalHost))) {
 							configurationService.setValue(realm, "email.externalHostname", externalHost);
 						}
 						fireRealmCreate(realm);
@@ -1254,55 +1274,58 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			 * current realm detail as delete will rename it
 			 */
 			
-			transactionService.doInTransaction(new TransactionCallback<Void>() {
-
-				@Override
-				public Void doInTransaction(TransactionStatus status) {
-					try {
-						Realm deletedRealm = getRealmById(realm.getId());
-
-						clearCache(deletedRealm);
-
-						sessionService.deleteRealm(realm);
-						
-						fireRealmDelete(deletedRealm);
-						
-						for(FindableResourceRepository<?> repository : EntityResourcePropertyStore.getRepositories()) {
-							if(repository instanceof AbstractSimpleResourceRepository
-									&& !(repository instanceof RealmRepository)
-									&& !(repository instanceof PermissionRepository)) {
-								AbstractResourceRepository<?> r = (AbstractResourceRepository<?>)repository;
-								if(r.isDeletable()) {
-									r.deleteRealm(realm);
-								}
-							}
-							if(repository instanceof AbstractAssignableResourceRepository) {
-								AbstractAssignableResourceRepository<?> r = (AbstractAssignableResourceRepository<?>)repository;
-								if(r.isDeletable()) {
-									r.deleteRealm(realm);
-								}
-							}
-						}
-						
-						permissionRepository.deleteRealm(realm);
-						
-						ouRepository.deleteRealm(realm);
-						getLocalProvider().deleteRealm(realm);
-						
-						RealmProvider provider = getProviderForRealm(realm);
-						provider.deleteRealm(realm);
-						
-						passwordPolicyService.deleteRealm(realm);
-						configurationService.deleteRealm(realm);
-						
-						realmRepository.delete(deletedRealm);
-						return null;
-					} catch (ResourceException e) {
-						throw new IllegalStateException(e.getMessage(), e);
-					}
-				}
-			});
+			fireRealmDelete(realm);
 			
+			realmRepository.deleteRealm(realm);
+			
+//			transactionService.doInTransaction(new TransactionCallback<Void>() {
+//
+//				@Override
+//				public Void doInTransaction(TransactionStatus status) {
+//					try {
+//						Realm deletedRealm = getRealmById(realm.getId());
+//
+//						clearCache(deletedRealm);
+//
+//						sessionService.deleteRealm(realm);
+//						
+//						fireRealmDelete(deletedRealm);
+//						
+//						for(FindableResourceRepository<?> repository : EntityResourcePropertyStore.getRepositories()) {
+//							if(repository instanceof AbstractSimpleResourceRepository
+//									&& !(repository instanceof RealmRepository)
+//									&& !(repository instanceof PermissionRepository)) {
+//								if(repository.isDeletable()) {
+//									repository.deleteRealm(realm);
+//								}
+//							}
+//							if(repository instanceof AbstractAssignableResourceRepository) {
+//								AbstractAssignableResourceRepository<?> r = (AbstractAssignableResourceRepository<?>)repository;
+//								if(r.isDeletable()) {
+//									r.deleteRealm(realm);
+//								}
+//							}
+//						}
+//						
+//						permissionRepository.deleteRealm(realm);
+//						
+//						ouRepository.deleteRealm(realm);
+//						getLocalProvider().deleteRealm(realm);
+//						
+//						RealmProvider provider = getProviderForRealm(realm);
+//						provider.deleteRealm(realm);
+//						
+//						passwordPolicyService.deleteRealm(realm);
+//						configurationService.deleteRealm(realm);
+//						
+//						realmRepository.delete(deletedRealm);
+//						return null;
+//					} catch (ResourceException e) {
+//						throw new IllegalStateException(e.getMessage(), e);
+//					}
+//				}
+//			});
+//			
 
 			eventService.publishEvent(new RealmDeletedEvent(this, getCurrentSession(), realm));
 
@@ -1522,10 +1545,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		});
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void deleteGroup(Realm realm, Principal group) throws ResourceException, AccessDeniedException {
+	public void deleteGroup(Realm realm, final Principal group) throws ResourceException, AccessDeniedException {
 
-		RealmProvider provider = getProviderForRealm(realm);
+		final RealmProvider provider = getProviderForRealm(realm);
 
 		Collection<Principal> assosiatedPrincipals = provider.getAssociatedPrincipals(group);
 		
@@ -1536,7 +1560,16 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 			}
 
-			provider.deleteGroup(group);
+			permissionService.revokePermissions(group, new TransactionAdapter<Principal>() {
+				@Override
+				public void beforeOperation(Principal resource, Map<String, String> properties) throws ResourceException {
+					try {
+						provider.deleteGroup(group);
+					} catch (ResourceChangeException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+			});
 
 			eventService.publishEvent(new GroupDeletedEvent(this, getCurrentSession(), realm, provider, group, assosiatedPrincipals));
 
@@ -1575,7 +1608,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			permissionService.revokePermissions(user, new TransactionAdapter<Principal>() {
 				@Override
-				public void afterOperation(Principal resource, Map<String, String> properties) throws ResourceException {
+				public void beforeOperation(Principal resource, Map<String, String> properties) throws ResourceException {
 					try {
 						provider.deleteUser(resource);
 					} catch (ResourceChangeException e) {
