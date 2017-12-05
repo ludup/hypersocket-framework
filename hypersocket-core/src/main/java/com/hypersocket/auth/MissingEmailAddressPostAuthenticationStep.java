@@ -32,7 +32,7 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 	public static final String RESOURCE_BUNDLE = "MissingEmailAddressService";
 	
 	public static final String REQUIRE_NONE = "required.none";
-	public static final String REQUIRE_PRIMARY = "required.pripary";
+	public static final String REQUIRE_PRIMARY = "required.primary";
 	public static final String REQUIRE_SECONDARY = "required.secondary";
 	public static final String REQUIRE_ALL = "required.all";
 	
@@ -121,6 +121,15 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 				error = true;
 			}else if(!error && !validateEmailAddress(secondaryEmail)){
 				state.setLastErrorMsg("error.secondaryInvalid");
+				state.setLastErrorIsResourceKey(true);
+				error = true;
+			}
+		}
+		if(!error && (REQUIRE_ALL.equals(required) || REQUIRE_SECONDARY.equals(required))){
+			String primary = (principal.getEmail() != null && !"".equals(principal.getEmail())) ? principal.getEmail() : (String)parameters.get(PARAM_PRIMARY);
+			String secondary = (principal.getSecondaryEmail() != null && !"".equals(principal.getSecondaryEmail())) ? principal.getSecondaryEmail() : (String)parameters.get(PARAM_SECONDARY);
+			if(primary != null && primary.equals(secondary)){
+				state.setLastErrorMsg("error.duplicatedEmail");
 				state.setLastErrorIsResourceKey(true);
 				error = true;
 			}
