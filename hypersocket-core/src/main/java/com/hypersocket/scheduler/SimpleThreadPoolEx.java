@@ -95,7 +95,7 @@ public class SimpleThreadPoolEx implements ThreadPool {
      * 
      * @param threadCount
      *          the number of worker <code>Threads</code> in the pool, must
-     *          be > 0.
+     *          be greater than 0.
      * @param threadPriority
      *          the thread priority for the worker threads.
      * 
