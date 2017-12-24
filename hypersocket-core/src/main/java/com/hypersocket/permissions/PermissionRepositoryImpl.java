@@ -370,8 +370,8 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	public Set<Principal> getPrincipalsWithPermissions(PermissionType permission) {
 
 		Criteria crit = createCriteria(Principal.class)
-				.setResultTransformer(
-						CriteriaSpecification.DISTINCT_ROOT_ENTITY)
+				.add(Restrictions.eq("deleted", false))
+				.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY)
 				.createCriteria("roles")
 				.createCriteria("permissions")
 				.add(Restrictions.eq("resourceKey", permission.getResourceKey()));
@@ -576,6 +576,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		}
 		Criteria crit = createCriteria(Principal.class);
 		crit.add(Restrictions.eq("realm", realm));
+		crit.add(Restrictions.eq("deleted", false));
 		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY)
 			.createCriteria("roles")
 			.add(Restrictions.in("id", ResourceUtils.createResourceIdArray(roles)));
