@@ -23,7 +23,6 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.profile.jobs.ProfileBatchUpdateJob;
 import com.hypersocket.profile.jobs.ProfileCreationJob;
-import com.hypersocket.profile.jobs.ProfileDeletionJob;
 import com.hypersocket.profile.jobs.ProfileUpdateJob;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -254,21 +253,10 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 	@Override
 	public void onUserDeleted(UserDeletedEvent event) {
 		if(event.isSuccess()) {
-			fireProfileDeletionJob(event.getTargetPrincipal());
+			deleteProfile(event.getTargetPrincipal());
 		}
 	}
 
-	private void fireProfileDeletionJob(Principal targetPrincipal) {
-		
-		PermissionsAwareJobData data = new PermissionsAwareJobData(targetPrincipal.getRealm(), "profileDeletionJob");
-		data.put("targetPrincipalId", targetPrincipal.getId());
-		
-		try {
-			schedulerService.scheduleNow(ProfileDeletionJob.class, UUID.randomUUID().toString(), data);
-		} catch (SchedulerException e) {
-			log.error("Failed to schedule profile deletion job", e);
-		}
-	}
 	
 	@EventListener
 	@Override
