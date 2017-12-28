@@ -475,7 +475,7 @@ public class AuthenticationServiceImpl extends
 					}
 					case AUTHENTICATION_FAILURE_DISPALY_ERROR: 
 					{
-						if (!authenticator.isSecretModule() && state.hasNextStep()) {
+						if (authenticator.isIdentityModule() && state.hasNextStep()) {
 							state.fakeCredentials();
 							state.nextModule();
 						} else {
@@ -487,7 +487,7 @@ public class AuthenticationServiceImpl extends
 					}
 					case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
 	
-						if (!authenticator.isSecretModule() && state.hasNextStep()) {
+						if (authenticator.isIdentityModule() && state.hasNextStep()) {
 							state.fakeCredentials();
 							state.nextModule();
 						} else {
@@ -503,7 +503,7 @@ public class AuthenticationServiceImpl extends
 					}
 					case AUTHENTICATION_FAILURE_INVALID_PRINCIPAL: {
 	
-						if (!authenticator.isSecretModule() && state.hasNextStep()) {
+						if (authenticator.isIdentityModule() && state.hasNextStep()) {
 							state.fakeCredentials();
 							state.nextModule();
 						} else {
@@ -518,7 +518,7 @@ public class AuthenticationServiceImpl extends
 					}
 					case AUTHENTICATION_FAILURE_INVALID_REALM: {
 	
-						if (!authenticator.isSecretModule() && state.hasNextStep()) {
+						if (authenticator.isIdentityModule() && state.hasNextStep()) {
 							state.fakeCredentials();
 							state.nextModule();
 						} else {
@@ -741,7 +741,7 @@ public class AuthenticationServiceImpl extends
 		if(principal==null) {
 			principal = state.getLastPrincipal();
 		}
-		if(principal!=null) {
+		if(principal!=null && !(principal instanceof FakePrincipal)) {
 			if (!realmService.verifyPrincipal(principal)) {
 				state.clean();
 				state.setLastErrorMsg("error.accountSuspended");
