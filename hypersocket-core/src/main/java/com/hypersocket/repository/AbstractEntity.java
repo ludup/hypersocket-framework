@@ -131,7 +131,7 @@ public abstract class AbstractEntity<T> implements Serializable{
 	}
 
 	public T getLegacyId() {
-		return legacyId == null ? getId() : legacyId;
+		return legacyId;
 	}
 
 	public void setLegacyId(T legacyId) {

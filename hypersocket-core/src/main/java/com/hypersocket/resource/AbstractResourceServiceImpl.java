@@ -476,6 +476,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		try {
 			for(T resource : resources) {
 				prepareExport(resource);
+				resource.setLegacyId(resource.getId());
 				resource.setId(null);
 				resource.setRealm(null);
 			}
