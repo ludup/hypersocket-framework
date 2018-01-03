@@ -499,7 +499,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 
 	@Override
-	public String exportAllResoures() throws ResourceExportException {
+	public String exportAllResources() throws ResourceExportException {
 		List<T> list = getResources();
 		return exportResources(list, true);
 	}

@@ -60,7 +60,7 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	String exportResoure(Long id) throws ResourceNotFoundException,
 			ResourceExportException, AccessDeniedException;
 
-	String exportAllResoures() throws ResourceExportException;
+	String exportAllResources() throws ResourceExportException;
 
 	T getResourceByName(String name, Realm realm)
 			throws ResourceNotFoundException, AccessDeniedException;
