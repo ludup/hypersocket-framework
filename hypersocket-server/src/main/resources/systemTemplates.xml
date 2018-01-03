@@ -11,6 +11,8 @@
 			restart="true" defaultValue="hypersocket" weight="100" />
 		<property resourceKey="ui.path" inputType="text" refreshUserInterface="true"
 			defaultValue="ui" weight="200" />
+		<property resourceKey="server.defaultRedirect" inputType="text" defaultValue="" weight="400" />
+	<!-- Following are hidden as they are the old way and needed for upgrade -->
 		<property resourceKey="http.port" inputType="hidden" minValue="1"
 			maxValue="65535" restart="true" defaultValue="80" weight="300"
 			store="hypersocketServer" />
@@ -22,6 +24,7 @@
 		<property resourceKey="listening.interfaces" inputType="hidden"
 			restart="false" url="server/networkInterfaces" selectAllIfEmpty="true"
 			weight="600" store="hypersocketServer" />
+			
 	</propertyCategory>
 	<propertyCategory resourceKey="category.ssl" resourceBundle="HypersocketServer" weight="200">
 		<property resourceKey="ssl.strict" inputType="switch"

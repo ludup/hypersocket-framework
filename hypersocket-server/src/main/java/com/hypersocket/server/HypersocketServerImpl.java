@@ -32,6 +32,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
@@ -683,9 +684,14 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 	@Override
 	public String getDefaultRedirectPath() {
+		if(StringUtils.isNotBlank(configurationService.getValue("server.defaultRedirect"))) {
+			return configurationService.getValue("server.defaultRedirect");
+		}
+		
 		if(homePageResolver!=null) {
 			return homePageResolver.getHomePage().replace("${uiPath}", getUiPath()).replace("${basePath}", getBasePath());
 		}
+		
 		return (defaultRedirectPath==null ? getUiPath() : defaultRedirectPath).replace("${uiPath}", getUiPath()).replace("${basePath}", getBasePath());
 	}
 	
