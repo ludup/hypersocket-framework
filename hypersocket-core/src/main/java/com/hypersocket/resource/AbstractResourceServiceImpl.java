@@ -527,6 +527,11 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 
 	protected void prepareImport(T resource, Realm realm) throws ResourceException, AccessDeniedException {
+		
+		if(log.isInfoEnabled()) {
+			log.info(String.format("Preparing import %s", resource.getName()));
+		}
+		
 		resource.preserveTimestamp();
 	}
 
@@ -621,7 +626,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		String name = resource.getName();
 		int i=1;
 		while(!checkUnique(resource, true)) {
-			resource.setName(String.format("%s [#%s]", name, i++));
+			resource.setName(String.format("%s [#%d]", name, i++));
 		}
 	}
 

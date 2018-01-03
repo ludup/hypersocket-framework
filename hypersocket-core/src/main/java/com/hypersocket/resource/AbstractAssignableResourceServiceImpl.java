@@ -636,6 +636,11 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	
 	protected void prepareImport(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 		
+		if(log.isInfoEnabled()) {
+			log.info(String.format("Preparing import %s", resource.getName()));
+		}
+		
+		resource.preserveTimestamp();
 	}
 	
 	@Override
@@ -705,13 +710,13 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	protected void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
+
+		prepareImport(resource, isSystemResource() ? realmService.getSystemRealm() : realm);
 		
-		try {
-			prepareImport(resource, realm);
-			getResourceByName(resource.getName(), realm);
-			resource.setName(resource.getName() + " [imported]");
-		} catch(ResourceNotFoundException e) {
-			return;
+		String name = resource.getName();
+		int i=1;
+		while(!checkUnique(resource, true)) {
+			resource.setName(String.format("%s [#%d]", name, i++));
 		}
 	}
 	
