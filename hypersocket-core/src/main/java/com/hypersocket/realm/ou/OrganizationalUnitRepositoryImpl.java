@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
+import com.hypersocket.resource.RealmCriteria;
 
 @Repository
 public class OrganizationalUnitRepositoryImpl extends
@@ -40,9 +41,17 @@ public class OrganizationalUnitRepositoryImpl extends
 	@Override
 	@Transactional
 	public void removeAll(Realm realm) {
-		String hql = "delete from OrganizationalUnit o where o.realm = :realm";
-		createQuery(hql, true)
-				.setParameter("realm", realm)
-				.executeUpdate();
+		if(getCount(OrganizationalUnit.class, new RealmCriteria(realm)) > 0) {
+			/**
+			 * This breaks in the cloud?!?!
+			 */
+//			String hql = "delete from OrganizationalUnit o where o.realm = :realm";
+//			createQuery(hql, true)
+//					.setParameter("realm", realm)
+//					.executeUpdate();
+			for(OrganizationalUnit o : list(OrganizationalUnit.class, new RealmCriteria(realm))) {
+				delete(o);
+			}
+		}
 	}
 }
