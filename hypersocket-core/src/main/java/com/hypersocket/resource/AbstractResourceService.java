@@ -42,6 +42,8 @@ public interface AbstractResourceService<T extends RealmResource> extends Authen
 
 	T getResourceById(Long id) throws ResourceNotFoundException, AccessDeniedException;
 
+	T getResourceByLegacyId(Long id) throws ResourceNotFoundException, AccessDeniedException;
+	
 	Collection<PropertyCategory> getResourceTemplate();
 
 	Collection<PropertyCategory> getResourceProperties(T resource);

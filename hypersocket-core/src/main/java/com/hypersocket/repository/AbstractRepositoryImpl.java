@@ -80,7 +80,9 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 		checkDemoMode();
 
-		entity.setLastModified(new Date());
+		if(!entity.isPreserveTimestamp()) {
+			entity.setModifiedDate(new Date());
+		}
 
 		if(entity.getId() != null) {
 			entity = hibernateTemplate.merge(entity);
@@ -108,7 +110,9 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		checkDemoMode();
 
 		if(entity instanceof AbstractEntity<?>) {
-			((AbstractEntity<?>)entity).setLastModified(new Date());
+			if(!((AbstractEntity<?>)entity).isPreserveTimestamp()) {
+				((AbstractEntity<?>)entity).setModifiedDate(new Date());
+			}
 		}
 		if(!isNew) {
 			hibernateTemplate.merge(entity);

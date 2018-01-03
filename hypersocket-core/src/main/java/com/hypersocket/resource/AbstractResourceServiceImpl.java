@@ -449,6 +449,23 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 		return resource;
 	}
+	
+	@Override
+	public T getResourceByLegacyId(Long id) throws ResourceNotFoundException, AccessDeniedException {
+
+		if(assertPermissions) {
+			assertPermission(getReadPermission());
+		}
+
+		T resource = getRepository().getResourceByLegacyId(id);
+		if (resource == null) {
+			throw new ResourceNotFoundException(RESOURCE_BUNDLE_DEFAULT,
+					"error.invalidResourceId", id);
+		}
+
+
+		return resource;
+	}
 
 	@Override
 	public Collection<PropertyCategory> getResourceTemplate() {
@@ -510,7 +527,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 
 	protected void prepareImport(T resource, Realm realm) throws ResourceException, AccessDeniedException {
-
+		resource.preserveTimestamp();
 	}
 
 	@Override
@@ -526,6 +543,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		try {
 			for(T resource : resources) {
 				prepareExport(resource);
+				resource.setLegacyId(resource.getId());
 				resource.setId(null);
 				resource.setRealm(null);
 			}
@@ -552,7 +570,10 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 						for(T resource : getResources(isSystemResource() ? realmService.getSystemRealm() : realm)) {
 							performImportDropResources(resource);
 						}
+						onCompleteImportDropResources(realm);
 					}
+					
+					
 					ObjectMapper mapper = new ObjectMapper();
 
 					Collection<T> resources = mapper.readValue(json, mapper.getTypeFactory().constructCollectionType(List.class, getResourceClass()));
@@ -572,6 +593,10 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	}
 
+	protected void onCompleteImportDropResources(Realm realm) throws AccessDeniedException, ResourceException {
+		
+	}
+	
 	@Override
 	public final String getFingerprint() {
 		return fingerprint;
@@ -591,12 +616,12 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	protected void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 
-		try {
-			prepareImport(resource, isSystemResource() ? realmService.getSystemRealm() : realm);
-			getResourceByName(resource.getName(), isSystemResource() ? realmService.getSystemRealm() : realm);
-			resource.setName(resource.getName() + " [imported]");
-		} catch(ResourceNotFoundException e) {
-			return;
+		prepareImport(resource, isSystemResource() ? realmService.getSystemRealm() : realm);
+		
+		String name = resource.getName();
+		int i=1;
+		while(!checkUnique(resource, true)) {
+			resource.setName(String.format("%s [#%s]", name, i++));
 		}
 	}
 

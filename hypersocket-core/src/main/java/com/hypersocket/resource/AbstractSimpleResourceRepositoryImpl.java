@@ -78,6 +78,12 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 	public T getResourceById(Long id) {
 		return get("id", id, getResourceClass());
 	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public T getResourceByLegacyId(Long id) {
+		return get("legacyId", id, getResourceClass());
+	}
 
 	protected boolean isSoftDelete() {
 		return false;

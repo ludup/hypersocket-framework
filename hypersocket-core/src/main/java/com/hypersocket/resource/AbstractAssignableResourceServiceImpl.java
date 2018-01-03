@@ -650,6 +650,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			for(T resource : resources) {
 				prepareExport(resource, stripIdentity);
 				if(stripIdentity) {
+					resource.setLegacyId(resource.getId());
 					resource.setId(null);
 					resource.setRealm(null);
 					resource.getRoles().clear();

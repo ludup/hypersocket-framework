@@ -52,5 +52,7 @@ public interface AbstractSimpleResourceRepository<T extends SimpleResource> exte
 
 	void touch(T resource);
 
+	T getResourceByLegacyId(Long id);
+
 
 }

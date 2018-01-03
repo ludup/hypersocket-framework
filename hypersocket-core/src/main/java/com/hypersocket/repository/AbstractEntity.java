@@ -12,8 +12,6 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -44,6 +42,12 @@ public abstract class AbstractEntity<T> implements Serializable {
     @Column(name="modified")
     Date modifiedDate = new Date();
 
+	@Column(name="legacy_id")
+	Long legacyId;
+	
+	@Transient
+	boolean preserveTimestamp = false;
+	
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
@@ -62,13 +66,11 @@ public abstract class AbstractEntity<T> implements Serializable {
 		return modifiedDate;
 	}
 	
-	@PreUpdate
-	@PrePersist
-	public void updateModifiedTimestamp() {
-		modifiedDate = new Date();
+	public void setModifiedDate(Date modifiedDate) {
+		this.modifiedDate = modifiedDate;
 	}
 	
-	public void setCreatedDate(Date created) {
+	public void setCreateDate(Date created) {
 		this.created = created;
 	}
 	
@@ -109,19 +111,27 @@ public abstract class AbstractEntity<T> implements Serializable {
 	protected void doEqualsOnKeys(EqualsBuilder builder, Object obj) {
 
 	}
-	
-	void setLastModified(Date date) {
-		modifiedDate = date;
-	}
-	
-	void setCreated(Date created) {
-		this.created = created;
-	}
 
 	@Transient
 	@JsonIgnore
 	public String _meta() {
 		return this.getClass().getCanonicalName();
+	}
+
+	public Long getLegacyId() {
+		return legacyId;
+	}
+
+	public void setLegacyId(Long legacyId) {
+		this.legacyId = legacyId;
+	}
+
+	public void preserveTimestamp() {
+		this.preserveTimestamp = true;
+	}
+	
+	boolean isPreserveTimestamp() {
+		return preserveTimestamp;
 	}
 
 }
