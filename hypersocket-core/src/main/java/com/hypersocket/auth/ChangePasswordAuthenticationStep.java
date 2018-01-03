@@ -71,11 +71,7 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 		authenticationService.setupSystemContext(state.getRealm());
 		
 		try {
-			if(state.hasParameter("password")) {
-				realmService.changePassword(state.getPrincipal(), state.getParameter("password"), password);
-			} else {
-				realmService.setPassword(state.getPrincipal(), password, false, false);
-			}
+			doPasswordChange(state, password);
 			
 			return AuthenticatorResult.AUTHENTICATION_SUCCESS;
 			
@@ -91,6 +87,24 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 		
 	}
 
+	protected void doPasswordChange(AuthenticationState state, String password) throws AccessDeniedException, ResourceException {
+		if(state.hasParameter("password")) {
+			realmService.changePassword(state.getPrincipal(), state.getParameter("password"), password);
+		} else {
+			realmService.setPassword(state.getPrincipal(), password, 
+					isForceChangeRequired(state), 
+					isAdministrative(state));
+		}
+	}
+
+	protected boolean isForceChangeRequired(AuthenticationState principal) {
+		return false;
+	}
+	
+	protected boolean isAdministrative(AuthenticationState principal) {
+		return false;
+	}
+	
 	@Override
 	public FormTemplate createTemplate(AuthenticationState state) {
 		return new ChangePasswordTemplate(state, "changePassword.text");
