@@ -24,6 +24,7 @@ import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.RealmResource;
 
@@ -60,6 +61,7 @@ public class Role extends RealmResource {
 	@Column(name="role_type")
 	RoleType type;
 	
+	@JsonIgnore
 	public Set<Permission> getPermissions() {
 		return permissions;
 	}
@@ -68,6 +70,7 @@ public class Role extends RealmResource {
 		this.permissions = permissions;
 	}	
 	
+	@JsonIgnore
 	public Set<Principal> getPrincipals() {
 		return principals;
 	}

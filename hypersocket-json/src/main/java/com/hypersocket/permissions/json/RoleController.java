@@ -202,6 +202,48 @@ public class RoleController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "roles/permissions/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<Permission> listRolePermissions(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<Permission>(
+					permissionService.getRoleById(id, getCurrentRealm()).getPermissions());
+		} catch (ResourceNotFoundException e) {
+			return new ResourceList<Permission>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "roles/principals/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<Principal> listRoleUsers(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<Principal>(
+					permissionService.getRoleById(id, getCurrentRealm()).getPrincipals());
+		} catch (ResourceNotFoundException e) {
+			return new ResourceList<Principal>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/table", method = RequestMethod.GET, produces = { "application/json" })
