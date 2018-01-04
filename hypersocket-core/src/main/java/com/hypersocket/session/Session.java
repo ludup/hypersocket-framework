@@ -222,6 +222,16 @@ public class Session extends AbstractEntity<String> {
 
 	public void touch() {
 		lastUpdated = new Date();
+		
+		if (isReadyForUpdate()) {
+			ApplicationContextServiceImpl.getInstance().getBean(SessionRepository.class).updateSession(this);
+			if (log.isDebugEnabled()) {
+				log.debug("Session "
+						+ getPrincipal().getPrincipalName()
+						+ "/" + getId()
+						+ " state has been updated");
+			}
+		}
 	}
 
 	public Date getLastUpdated() {

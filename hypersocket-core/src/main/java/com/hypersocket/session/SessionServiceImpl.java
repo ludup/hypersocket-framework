@@ -285,16 +285,6 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			if (touch) {
 				session.touch();
-				if (session.isReadyForUpdate()) {
-					repository.updateSession(session);
-					if (log.isDebugEnabled()) {
-						log.debug("Session "
-								+ session.getPrincipal().getPrincipalName()
-								+ "/" + session.getId()
-								+ " state has been updated");
-					}
-				}
-
 			}
 			return true;
 		} else {
