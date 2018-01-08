@@ -1,6 +1,7 @@
 package com.hypersocket.properties;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -222,7 +223,9 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 				Class<?> clz = m.getParameterTypes()[0];
 				if(clz.isEnum()){
 					try {
-						Enum<?>[] enumConstants = (Enum<?>[]) resource.getClass().getDeclaredField(template.getResourceKey()).getType().getEnumConstants();
+						Field field = getField(resource.getClass(), template.getResourceKey());
+						field.setAccessible(true);
+						Enum<?>[] enumConstants = (Enum<?>[]) field.getType().getEnumConstants();
 						if(NumberUtils.isNumber(value)){//ordinal
 							Enum<?> enumConstant = enumConstants[Integer.parseInt(value)];
 							m.invoke(resource, enumConstant);
@@ -237,7 +240,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 						}
 						throw new IllegalArgumentException(String.format("Matching enum value could not be fetched for value %s", value));
 						
-					} catch (NoSuchFieldException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+					} catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 						log.error("Could not set " + template.getResourceKey() + " enum value " + value + " for resource " + resource.getClass().getName(), e);
 						throw new IllegalStateException("Could not set " + template.getResourceKey() + " enum value " + value + " for resource " + resource.getClass().getName(), e);
 					}
@@ -329,6 +332,18 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		if(log.isDebugEnabled()) {
 			log.debug(template.getResourceKey() + " is not a property of the entity " + resource.getClass().getName());
 		}
+	}
+	
+	private static Field getField(Class<?> clazz, String name) {
+	    Field field = null;
+	    while (clazz != null && field == null) {
+	        try {
+	            field = clazz.getDeclaredField(name);
+	        } catch (Exception e) {
+	        }
+	        clazz = clazz.getSuperclass();
+	    }
+	    return field;
 	}
 
 	@SuppressWarnings("unchecked")
