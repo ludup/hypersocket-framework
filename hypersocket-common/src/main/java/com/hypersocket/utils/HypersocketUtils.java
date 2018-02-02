@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import javax.xml.soap.SOAPException;
@@ -397,6 +398,10 @@ public class HypersocketUtils {
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalStateException(e.getMessage(), e);
 		}
+	}
+
+	public static Date convertToUTC(Date date, TimeZone tz) {
+		return new Date(date.getTime() + tz.getOffset(date.getTime()));
 	}
 
 }
