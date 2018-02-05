@@ -42,5 +42,5 @@ public interface Authenticator {
 	
 	boolean isPropertiesModule();
 
-	boolean requiresUserInput();
+	boolean requiresUserInput(AuthenticationState state);
 }

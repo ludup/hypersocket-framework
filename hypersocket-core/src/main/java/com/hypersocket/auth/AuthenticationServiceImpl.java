@@ -630,7 +630,7 @@ public class AuthenticationServiceImpl extends
 							} else {
 								authenticator = nextAuthenticator(state);
 								
-								if(!authenticator.requiresUserInput()) {
+								if(!authenticator.requiresUserInput(state)) {
 									return logon(state, parameterMap);
 								}
 							}
