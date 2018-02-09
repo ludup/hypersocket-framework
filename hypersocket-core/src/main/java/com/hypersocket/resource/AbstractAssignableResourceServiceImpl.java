@@ -561,12 +561,12 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		
 		T resource = getRepository().getResourceById(id);
 		if (resource == null) {
-			assertPermission(getReadPermission());
+			//assertPermission(getReadPermission());
 			throw new ResourceNotFoundException(getResourceBundle(),
 					"error.invalidResourceId", id);
 		}
 		
-		assertPrincipalAssignment(resource, getReadPermission());
+		//assertPrincipalAssignment(resource, getReadPermission());
 		
 		return resource;
 	}
