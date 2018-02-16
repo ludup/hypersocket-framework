@@ -31,21 +31,21 @@ public class MessageResourceRepositoryImpl extends
 
 	@Override
 	@Transactional(readOnly=true)
-	public MessageResource getMessageById(Integer id, Realm realm) {
-		return get("messageId", id, MessageResource.class,  new RealmCriteria(realm));
+	public MessageResource getMessageById(String id, Realm realm) {
+		return get("resourceKey", id, MessageResource.class,  new RealmCriteria(realm));
 	}
 
 	@Override
 	@Transactional(readOnly=true)
-	public boolean hasMissingMessages(final Realm realm, final List<Integer> messageIds) {
+	public boolean hasMissingMessages(final Realm realm, final List<String> resourceKeys) {
 		return getCount(MessageResource.class, new RealmCriteria(realm), new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.in("messageId", messageIds));
+				criteria.add(Restrictions.in("resourceKey", resourceKeys));
 			}
 			
-		}) != messageIds.size();
+		}) != resourceKeys.size();
 	}
 
 }

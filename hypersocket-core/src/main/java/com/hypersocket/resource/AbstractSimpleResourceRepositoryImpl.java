@@ -261,6 +261,12 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 		return getCount(getResourceClass(), new DeletedCriteria(false), new DefaultCriteriaConfiguration());
 	}
 	
+	@Override
+	@Transactional(readOnly=true)
+	public Collection<T> allRealmsResources() {
+		return list(getResourceClass(), new DeletedCriteria(false), new DefaultCriteriaConfiguration());
+	}
+	
 	protected void processDefaultCriteria(Criteria criteria) {
 		
 	}

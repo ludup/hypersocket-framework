@@ -34,7 +34,7 @@ import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.config.TcpIpConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.hibernate.HazelcastLocalCacheRegionFactory;
+import com.hazelcast.hibernate.HazelcastCacheRegionFactory;
 
 @Configuration
 public class HazelcastSpringConfiguration {
@@ -100,7 +100,7 @@ public class HazelcastSpringConfiguration {
     
     @Bean(destroyMethod = "stop")
     RegionFactory regionFactory(HazelcastInstance instance){
-    	HazelcastLocalCacheRegionFactory cacheRegionFactory = new HazelcastLocalCacheRegionFactory(instance);
+    	HazelcastCacheRegionFactory cacheRegionFactory = new HazelcastCacheRegionFactory(instance);
     	return cacheRegionFactory;
     }
     

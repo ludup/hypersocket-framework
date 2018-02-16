@@ -11,8 +11,8 @@ public interface MessageResourceRepository extends
 
 	Collection<MessageResource> getMessagesByEvent(String className);
 
-	MessageResource getMessageById(Integer id, Realm realm);
+	MessageResource getMessageById(String resourceKey, Realm realm);
 
-	boolean hasMissingMessages(Realm realm, List<Integer> messageIds);
+	boolean hasMissingMessages(Realm realm, List<String> messageIds);
 
 }

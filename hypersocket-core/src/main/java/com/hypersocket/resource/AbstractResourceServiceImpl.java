@@ -404,6 +404,11 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 
 	@Override
+	public Collection<T> allRealmsResources() {
+		return getRepository().allRealmsResources();
+	}
+	
+	@Override
 	public T getResourceByName(String name) throws ResourceNotFoundException {
 		return getResourceByName(name, false);
 	}

@@ -2,12 +2,13 @@ package com.hypersocket.realm.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.hypersocket.events.ChargeableEvent;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.session.Session;
 
-public class SetPasswordEvent extends UserEvent {
+public class SetPasswordEvent extends UserEvent implements ChargeableEvent {
 
 	private static final long serialVersionUID = -7054465917307746647L;
 
@@ -33,5 +34,10 @@ public class SetPasswordEvent extends UserEvent {
 
 	public String[] getResourceKeys() {
 		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
+
+	@Override
+	public Double getCharge() {
+		return 5D;
 	}
 }

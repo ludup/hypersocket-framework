@@ -27,35 +27,35 @@ public interface MessageResourceService extends
 	Collection<PropertyCategory> getPropertyTemplate(MessageResource resource)
 			throws AccessDeniedException;
 
-	void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Principal... principals);
+	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Principal... principals);
 	
-	void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals);
+	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals);
 
-	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables);
+	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables);
 
-	MessageResource createResource(Integer messageId, String name, String subject, String body, String html,
+	MessageResource createResource(String resourceKey, String name, String subject, String body, String html,
 			Set<String> variables, Boolean enabled, Boolean track, 
 				Collection<FileUpload> attachments, Realm realm, EmailDeliveryStrategy delivery)
 			throws ResourceException, AccessDeniedException;
 
 	Set<String> getMessageVariables(MessageResource message);
 
-	MessageResource getMessageById(Integer id, Realm realm);
+	MessageResource getMessageById(String resourceKey, Realm realm);
 	
-	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables,
+	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system);
 
-	void sendMessageToEmailAddress(Integer messageId, Realm realm, ITokenResolver tokenResolver, Collection<String> emails);
+	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails);
 	
-	void sendMessageToEmailAddress(Integer messageId, Realm realm, ITokenResolver tokenResolver, String... emails);
+	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, String... emails);
 
-	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables,
+	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system, MessageTemplateRepository repository, boolean enabled);
 
-	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables,
+	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system, MessageTemplateRepository repository);
 
-	void registerI18nMessage(Integer messageId, String resourceBundle, String resourceKey, Set<String> variables,
+	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system, MessageTemplateRepository repository, boolean enabled, EmailDeliveryStrategy delivery);
 
 }

@@ -1,0 +1,5 @@
+EXIT IF FRESH
+TRY
+alter table message_resource drop index UK9xqc0hmt00ccs83taidphyqs9;
+alter table message_resource drop column message_id;
+CATCH

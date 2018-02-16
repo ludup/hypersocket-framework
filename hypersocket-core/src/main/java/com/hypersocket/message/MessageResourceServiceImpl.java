@@ -93,8 +93,8 @@ public class MessageResourceServiceImpl extends
 	@Autowired
 	FreeMarkerService templateService; 
 	
-	Map<Integer,MessageRegistration> messageRegistrations = new HashMap<Integer, MessageRegistration>();
-	List<Integer> messageIds = new ArrayList<Integer>();
+	Map<String,MessageRegistration> messageRegistrations = new HashMap<String, MessageRegistration>();
+	List<String> messageIds = new ArrayList<String>();
 	
 	public MessageResourceServiceImpl() {
 		super("Message");
@@ -135,16 +135,24 @@ public class MessageResourceServiceImpl extends
 			public void onCreateRealm(Realm realm) throws ResourceException, AccessDeniedException {
 				
 				for(MessageRegistration r : messageRegistrations.values()) {
-					MessageResource message = repository.getMessageById(r.messageId, realm);
+					MessageResource message = repository.getMessageById(r.getMessageId(), realm);
+					if(message==null) {
+						message = repository.getResourceByName(I18N.getResource(
+								Locale.getDefault(), r.resourceBundle, r.resourceKey + ".name"), realm);
+					}
 					if(message==null) {
 						if(r.systemOnly && !realm.isSystem()) {
 							continue;
 						}
-						createI18nMessage(r.messageId, r.resourceBundle, r.resourceKey, r.variables, realm, r.enabled, r.delivery);
+						createI18nMessage(r.resourceBundle, r.resourceKey, r.variables, realm, r.enabled, r.delivery);
 						if(r.repository!=null) {
-							r.repository.onCreated(getMessageById(r.messageId, realm));
+							r.repository.onCreated(getMessageById(r.getMessageId(), realm));
 						}
 					} else {
+						if(message.getResourceKey()==null) {
+							message.setResourceKey(r.resourceKey);
+							repository.saveResource(message);
+						}
 						String vars = ResourceUtils.implodeValues(r.variables);
 						if(!vars.equals(message.getSupportedVariables())) {
 							message.setSupportedVariables(vars);
@@ -237,7 +245,7 @@ public class MessageResourceServiceImpl extends
 	}
 
 	private void setProperties(MessageResource resource, Map<String, String> properties) {
-		MessageRegistration r = messageRegistrations.get(resource.getMessageId());
+		MessageRegistration r = messageRegistrations.get(resource.getResourceKey());
 		if(r==null) {
 			throw new IllegalStateException(String.format("Missing message template id %d", resource.getId()));
 		}
@@ -253,36 +261,35 @@ public class MessageResourceServiceImpl extends
 	}
 	
 	@Override
-	public void registerI18nMessage(Integer messageId, String resourceBundle, 
+	public void registerI18nMessage(String resourceBundle, 
 			String resourceKey, Set<String> variables) {
-		registerI18nMessage(messageId, resourceBundle, resourceKey, variables, false);
+		registerI18nMessage(resourceBundle, resourceKey, variables, false);
 	}
 	
 	@Override
-	public void registerI18nMessage(Integer messageId, String resourceBundle, 
+	public void registerI18nMessage(String resourceBundle, 
 			String resourceKey, Set<String> variables, boolean system) {
-		registerI18nMessage(messageId, resourceBundle, resourceKey, variables, system, null);
+		registerI18nMessage(resourceBundle, resourceKey, variables, system, null);
 	}
 	
 	@Override
-	public void registerI18nMessage(Integer messageId, String resourceBundle, 
+	public void registerI18nMessage(String resourceBundle, 
 			String resourceKey, Set<String> variables, boolean system,
 			MessageTemplateRepository repository) {
-		registerI18nMessage(messageId, resourceBundle, resourceKey, variables, system, repository, true, EmailDeliveryStrategy.PRIMARY);
+		registerI18nMessage(resourceBundle, resourceKey, variables, system, repository, true, EmailDeliveryStrategy.PRIMARY);
 	}
 	
 	@Override
-	public void registerI18nMessage(Integer messageId, String resourceBundle, 
+	public void registerI18nMessage(String resourceBundle, 
 			String resourceKey, Set<String> variables, boolean system,
 			MessageTemplateRepository repository, boolean enabled) {
-		registerI18nMessage(messageId, resourceBundle, resourceKey, variables, system, repository, enabled, EmailDeliveryStrategy.PRIMARY);
+		registerI18nMessage(resourceBundle, resourceKey, variables, system, repository, enabled, EmailDeliveryStrategy.PRIMARY);
 	}
 	@Override
-	public void registerI18nMessage(Integer messageId, String resourceBundle, 
+	public void registerI18nMessage(String resourceBundle, 
 			String resourceKey, Set<String> variables, boolean system,
 			MessageTemplateRepository repository, boolean enabled, EmailDeliveryStrategy delivery) {
 		MessageRegistration r = new MessageRegistration();
-		r.messageId = messageId;
 		r.resourceBundle = resourceBundle;
 		r.resourceKey = resourceKey;
 		r.variables = variables;
@@ -291,28 +298,28 @@ public class MessageResourceServiceImpl extends
 		r.enabled = enabled;
 		r.delivery = delivery;
 		
-		messageRegistrations.put(messageId, r);
-		messageIds.add(messageId);
+		messageRegistrations.put(r.getMessageId(), r);
+		messageIds.add(r.getMessageId());
 	}
 	
-	private void createI18nMessage(Integer messageId, String resourceBundle, 
+	private void createI18nMessage(String resourceBundle, 
 			String resourceKey, Set<String> variables, Realm realm, boolean enabled, EmailDeliveryStrategy delivery) throws ResourceException,
 			AccessDeniedException {
-		createResource(messageId, I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".name"),
+		createResource(resourceKey, I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".name"),
 				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".subject"), 
 				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".body"), 
 				"", variables, enabled, false, null, realm, delivery);
 	}
 
 	@Override
-	public MessageResource createResource(Integer messageId, String name, String subject, String body, String html, 
+	public MessageResource createResource(String resourceKey, String name, String subject, String body, String html, 
 			Set<String> variables,
 			Boolean enabled, Boolean track, 
 			Collection<FileUpload> attachments, Realm realm, EmailDeliveryStrategy delivery) throws ResourceException,
 			AccessDeniedException {
 
 		MessageResource resource = new MessageResource();
-		resource.setMessageId(messageId);
+		resource.setResourceKey(resourceKey);
 		resource.setSystem(true);
 		resource.setName(name);
 		resource.setRealm(realm);
@@ -355,10 +362,10 @@ public class MessageResourceServiceImpl extends
 
 		List<PropertyCategory> results = new ArrayList<PropertyCategory>(repository.getPropertyCategories(resource));
 		
-		MessageRegistration r = messageRegistrations.get(resource.getMessageId());
+		MessageRegistration r = messageRegistrations.get(resource.getResourceKey());
 		
 		if(r==null) {
-			throw new IllegalStateException(String.format("Missing message template id %d", resource.getMessageId()));
+			throw new IllegalStateException(String.format("Missing message template id %s", resource.getResourceKey()));
 		}
 		
 		if(r.repository!=null) {
@@ -392,22 +399,22 @@ public class MessageResourceServiceImpl extends
 	}
 
 	@Override
-	public void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Principal... principals) {
-		sendMessage(messageId, realm, tokenResolver, Arrays.asList(principals));
+	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Principal... principals) {
+		sendMessage(resourceKey, realm, tokenResolver, Arrays.asList(principals));
 	}
 	
 	@Override
-	public void sendMessageToEmailAddress(Integer messageId, Realm realm, ITokenResolver tokenResolver, String... principals) {
-		sendMessageToEmailAddress(messageId, realm, tokenResolver, Arrays.asList(principals));
+	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, String... principals) {
+		sendMessageToEmailAddress(resourceKey, realm, tokenResolver, Arrays.asList(principals));
 	}
 	
 	@Override
-	public void sendMessageToEmailAddress(Integer messageId, Realm realm, ITokenResolver tokenResolver, Collection<String> emails) {
+	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails) {
 	
-		MessageResource message = repository.getMessageById(messageId, realm);
+		MessageResource message = repository.getMessageById(resourceKey, realm);
 		
 		if(message==null) {
-			log.error(String.format("Invalid message id %d", messageId));
+			log.error(String.format("Invalid message id %s", resourceKey));
 			return;
 		}
 		
@@ -422,12 +429,12 @@ public class MessageResourceServiceImpl extends
 	}
 	
 	@Override
-	public void sendMessage(Integer messageId, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals) {
+	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals) {
 
-		MessageResource message = repository.getMessageById(messageId, realm);
+		MessageResource message = repository.getMessageById(resourceKey, realm);
 		
 		if(message==null) {
-			log.error(String.format("Invalid message id %d", messageId));
+			log.error(String.format("Invalid message id %s", resourceKey));
 			return;
 		}
 		
@@ -532,18 +539,21 @@ public class MessageResourceServiceImpl extends
 	
 	class MessageRegistration {
 		Set<String> variables;
-		Integer messageId;
 		String resourceBundle;
 		String resourceKey;
 		boolean systemOnly;
 		MessageTemplateRepository repository;
 		boolean enabled = true;
 		EmailDeliveryStrategy delivery;
+		
+		public String getMessageId() {
+			return resourceKey;
+		}
 	}
 
 	@Override
-	public MessageResource getMessageById(Integer id, Realm realm) {
-		return repository.getMessageById(id, realm);
+	public MessageResource getMessageById(String resourceKey, Realm realm) {
+		return repository.getMessageById(resourceKey, realm);
 	}
 
 }

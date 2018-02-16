@@ -35,6 +35,8 @@ public interface AbstractSimpleResourceRepository<T extends SimpleResource> exte
 
 	long allRealmsResourcesCount();
 
+	Collection<T> allRealmsResources();
+	
 	void populateEntityFields(T resource, Map<String, String> properties);
 
 	List<PropertyChange> calculateChanges(T resource, Map<String, String> properties);

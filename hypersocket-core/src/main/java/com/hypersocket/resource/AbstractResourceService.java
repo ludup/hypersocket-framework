@@ -91,4 +91,6 @@ public interface AbstractResourceService<T extends RealmResource> extends Authen
 	
 	List<T> getResourcesByIds(Long...ids) throws AccessDeniedException;
 
+	Collection<T> allRealmsResources();
+
 }

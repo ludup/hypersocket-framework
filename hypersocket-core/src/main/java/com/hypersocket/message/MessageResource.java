@@ -9,13 +9,13 @@ import javax.persistence.UniqueConstraint;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
-@Table(name="message_resource", uniqueConstraints = @UniqueConstraint(columnNames = {"message_id", "realm_id"}))
+@Table(name="message_resource", uniqueConstraints = @UniqueConstraint(columnNames = {"resource_key", "realm_id"}))
 public class MessageResource extends RealmResource {
 
 	private static final long serialVersionUID = -5676595715637581705L;
 
-	@Column(name="message_id")
-	Integer messageId;
+	@Column(name="resource_key", nullable=true)
+	String resourceKey;
 	
 	@Column(name="subject", length=1024)
 	String subject;
@@ -57,14 +57,6 @@ public class MessageResource extends RealmResource {
 
 	@Column(name="variables")
 	String supportedVariables;
-	
-	public Integer getMessageId() {
-		return messageId;
-	}
-
-	public void setMessageId(Integer messageId) {
-		this.messageId = messageId;
-	}
 
 	public String getSubject() {
 		return subject;
@@ -162,4 +154,11 @@ public class MessageResource extends RealmResource {
 		this.useTemplate = useTemplate;
 	}
 	
+	public String getResourceKey() {
+		return resourceKey;
+	}
+
+	public void setResourceKey(String resourceKey) {
+		this.resourceKey = resourceKey;
+	}
 }

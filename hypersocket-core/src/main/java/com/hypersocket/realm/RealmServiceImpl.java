@@ -166,11 +166,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	
 	List<RealmOwnershipResolver> ownershipResolvers = new ArrayList<RealmOwnershipResolver>();
 
-	public static final Integer MESSAGE_NEW_USER_NEW_PASSWORD = 6001;
-	public static final Integer MESSAGE_NEW_USER_TMP_PASSWORD = 6002;
-	public static final Integer MESSAGE_NEW_USER_SELF_CREATED = 6003;
-	public static final Integer MESSAGE_PASSWORD_CHANGED = 6004;
-	public static final Integer MESSAGE_PASSWORD_RESET = 6005;
+	public static final String MESSAGE_NEW_USER_NEW_PASSWORD = "realmService.newUserNewPassword";
+	public static final String MESSAGE_NEW_USER_TMP_PASSWORD = "realmService.newUserTmpPassword";
+	public static final String MESSAGE_NEW_USER_SELF_CREATED = "realmService.newUserSelfCreated";
+	public static final String MESSAGE_PASSWORD_CHANGED = "realmService.passwordChanged";
+	public static final String MESSAGE_PASSWORD_RESET = "realmService.passwordReset";
 	
 	Map<String,TableFilter> principalFilters = new HashMap<String,TableFilter>();
 	Map<String,TableFilter> builtInPrincipalFilters = new HashMap<String,TableFilter>();
@@ -237,19 +237,19 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		EntityResourcePropertyStore.registerResourceService(Principal.class, principalRepository);
 		EntityResourcePropertyStore.registerResourceService(Realm.class, realmRepository);
 		
-		messageService.registerI18nMessage(MESSAGE_NEW_USER_NEW_PASSWORD, RESOURCE_BUNDLE,
+		messageService.registerI18nMessage(RESOURCE_BUNDLE,
 				"realmService.newUserNewPassword", PrincipalWithPasswordResolver.getVariables());
 		
-		messageService.registerI18nMessage(MESSAGE_NEW_USER_TMP_PASSWORD, RESOURCE_BUNDLE,
+		messageService.registerI18nMessage(RESOURCE_BUNDLE,
 				"realmService.newUserTmpPassword", PrincipalWithPasswordResolver.getVariables());
 
-		messageService.registerI18nMessage(MESSAGE_NEW_USER_SELF_CREATED, RESOURCE_BUNDLE,
+		messageService.registerI18nMessage(RESOURCE_BUNDLE,
 				"realmService.newUserSelfCreated", PrincipalWithPasswordResolver.getVariables());
 		
-		messageService.registerI18nMessage(MESSAGE_PASSWORD_CHANGED, RESOURCE_BUNDLE,
+		messageService.registerI18nMessage(RESOURCE_BUNDLE,
 				"realmService.passwordChanged", PrincipalWithPasswordResolver.getVariables());
 		
-		messageService.registerI18nMessage(MESSAGE_PASSWORD_RESET, RESOURCE_BUNDLE,
+		messageService.registerI18nMessage(RESOURCE_BUNDLE,
 				"realmService.passwordReset", PrincipalWithPasswordResolver.getVariables());
 		
 		registerBuiltInPrincipalFilter(new LocalAccountFilter());
