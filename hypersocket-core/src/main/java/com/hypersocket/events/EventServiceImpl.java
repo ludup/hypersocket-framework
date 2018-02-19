@@ -66,16 +66,18 @@ public class EventServiceImpl implements EventService {
 			}
 			
 			LinkedList<SystemEvent> events = delayedEvents.get();
-			synchronized (events) {
-				isDelayingEvents.set(false);
-				List<SystemEvent> tmp = new LinkedList<SystemEvent>(events);
-				
-				for(SystemEvent event : tmp) {
-					publishEvent(event);
+			if(events!=null) {
+				synchronized (events) {
+					isDelayingEvents.set(false);
+					List<SystemEvent> tmp = new LinkedList<SystemEvent>(events);
+					
+					for(SystemEvent event : tmp) {
+						publishEvent(event);
+					}
+					
+					delayedEvents.get().clear();
+					delayedEvents.set(null);
 				}
-				
-				delayedEvents.get().clear();
-				delayedEvents.set(null);
 			}
 		} catch(Throwable t) {
 			log.error("Failed to process delayed events", t);

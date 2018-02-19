@@ -2,7 +2,6 @@ package com.hypersocket.password.policy.json;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +36,7 @@ import com.hypersocket.password.policy.PasswordPolicyResourceService;
 import com.hypersocket.password.policy.PasswordPolicyResourceServiceImpl;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Role;
+import com.hypersocket.permissions.RoleUtils;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
@@ -397,10 +397,7 @@ public class PasswordPolicyResourceController extends ResourceController {
 
 			Realm realm = sessionUtils.getCurrentRealm(request);
 
-			Set<Role> roles = new HashSet<Role>();
-			for (Long id : resource.getRoles()) {
-				roles.add(permissionRepository.getRoleById(id));
-			}
+			Set<Role> roles = RoleUtils.processPermissions(resource.getRoles());
 			
 			Map<String, String> properties = new HashMap<String, String>();
 			for (PropertyItem i : resource.getProperties()) {

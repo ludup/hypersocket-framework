@@ -306,5 +306,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Collection<Realm> getRealmsByParent(Realm currentRealm);
 
+	Map<String, String> getRealmProperties(Realm realm);
+
 }
 

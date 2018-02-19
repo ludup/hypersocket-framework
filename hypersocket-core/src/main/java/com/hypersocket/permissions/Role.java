@@ -19,6 +19,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.Fetch;
@@ -60,6 +61,9 @@ public class Role extends RealmResource {
 	
 	@Column(name="role_type")
 	RoleType type;
+	
+	@Column(name="principal_name")
+	String principalName;
 	
 	@JsonIgnore
 	public Set<Permission> getPermissions() {
@@ -110,4 +114,15 @@ public class Role extends RealmResource {
 	public void setType(RoleType type) {
 		this.type = type;
 	}
+
+	public String getPrincipalName() {
+		return principalName == null ? 
+				isPersonalRole() ? StringUtils.substringAfter(getName(), "/") : getName()
+			   : principalName;
+	}
+
+	public void setPrincipalName(String principalName) {
+		this.principalName = principalName;
+	}
+	
 }

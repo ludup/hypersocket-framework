@@ -994,10 +994,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			final RealmProvider realmProvider = getProviderForRealm(module);
 
 			realmProvider.assertCreateRealm(properties);
-			realmProvider.testConnection(properties);
+
+			Map<String,String> allDefaultProperties = realmProvider.getProperties(null);
+			allDefaultProperties.putAll(properties);
+			realmProvider.testConnection(allDefaultProperties);
 
 			@SuppressWarnings("unchecked")
-			Realm realm = realmRepository.createRealm(name, UUID.randomUUID().toString(), module, properties,
+			Realm realm = realmRepository.createRealm(name, UUID.randomUUID().toString(), module, allDefaultProperties,
 					realmProvider, parent, owner, owner==null, new TransactionAdapter<Realm>() {
 
 				@Override
@@ -1150,10 +1153,34 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			 */
 			setupSystemContext(realm);
 			try {
-				realmProvider.testConnection(properties, realm);
+				Map<String,String> existingProperties = getRealmProperties(realm);
+				existingProperties.putAll(properties);
+				realmProvider.testConnection(existingProperties, realm);
 			} finally {
 				clearPrincipalContext();
 			}
+			
+			/**
+			 * Not currently used but left in case we want this in future.
+			 */
+//			boolean reconfigured = false;
+//			for(PropertyCategory cat : getRealmPropertyTemplates(realm)) {
+//				for(AbstractPropertyTemplate t : cat.getTemplates()) {
+//					if(t.getAttributes().containsKey("reconfigure") && "true".equalsIgnoreCase(t.getAttributes().get("reconfigure"))) {
+//						if(properties.containsKey(t.getResourceKey())) {
+//							reconfigured = true;
+//							break;
+//						}
+//					}
+//				}
+//				if(reconfigured) {
+//					break;
+//				}
+//			}
+//			
+//			if(reconfigured) {
+//				setRealmProperty(realm, "realm.initialReconcile", "true");
+//			}
 			
 			String oldName = realm.getName();
 
@@ -2503,6 +2530,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Collection<Realm> getRealmsByParent(Realm currentRealm) {
 		return realmRepository.getRealmsByParent(currentRealm);
+	}
+
+	@Override
+	public Map<String, String> getRealmProperties(Realm realm) {
+		RealmProvider provider = getProviderForRealm(realm);
+		return provider.getProperties(realm);
 	}
 }
 

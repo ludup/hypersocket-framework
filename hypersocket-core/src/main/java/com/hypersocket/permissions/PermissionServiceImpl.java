@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -42,7 +41,6 @@ import com.hypersocket.auth.AuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.auth.InvalidAuthenticationContext;
 import com.hypersocket.cache.CacheService;
-import com.hypersocket.context.SystemContextRequired;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18N;
@@ -57,9 +55,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
-import com.hypersocket.realm.events.GroupCreatedEvent;
 import com.hypersocket.realm.events.GroupEvent;
-import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AssignableResource;
@@ -1082,17 +1078,6 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		return repository.getPrincpalsByRole(realm, roles);
 	}
 
-	protected void createPrincipalRole(Principal principal, RoleType type) {
-		if (principal.isPrimaryAccount()) {
-			try {
-				createRole(principal.getPrincipalName(), principal.getRealm(), Arrays.asList(principal),
-						Collections.<Permission>emptyList(), null, true, true, type);
-			} catch (ResourceException | AccessDeniedException e) {
-				log.error("Failed to create principal role", e);
-			}
-		}
-	}
-
 	protected void deletePrincipalRole(Principal principal) {
 		if (principal.isPrimaryAccount()) {
 			try {
@@ -1105,68 +1090,6 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			}
 		}
 	}
-
-	@Override
-	@EventListener
-	@SystemContextRequired
-	public void onUserCreated(UserCreatedEvent event) {
-		if (event.isSuccess()) {
-			createPrincipalRole(event.getTargetPrincipal(), RoleType.USER);
-		}
-	}
-
-//	@Override
-//	@EventListener
-//	@SystemContextRequired
-//	public void onUserDeleted(UserDeletedEvent event) {
-//		if (event.isSuccess()) {
-//			Collection<Role> roles = getRolesByPrincipal(event.getTargetPrincipal());
-//			if(log.isInfoEnabled()) {
-//				log.info(String.format("Deleting user %s with %d roles [%s]", 
-//						event.getTargetPrincipal().getPrincipalName(), 
-//						roles.size(), 
-//						ResourceUtils.createCommaSeparatedString(roles)));
-//			}
-//			for(Role role : roles) {
-//				if(!role.isPersonalRole() && !role.isAllUsers()) {
-//					role.getPrincipals().remove(event.getTargetPrincipal());
-//					repository.saveRole(role);
-//				}
-//			}
-//			deletePrincipalRole(event.getTargetPrincipal());
-//		}
-//	}
-
-	@Override
-	@EventListener
-	@SystemContextRequired
-	public void onGroupCreated(GroupCreatedEvent event) {
-		if (event.isSuccess()) {
-			createPrincipalRole(event.getTargetPrincipal(), RoleType.GROUP);
-		}
-	}
-
-//	@Override
-//	@EventListener
-//	@SystemContextRequired
-//	public void onGroupDeleted(GroupDeletedEvent event) {
-//		if (event.isSuccess()) {
-//			Collection<Role> roles = getRolesByPrincipal(event.getTargetPrincipal());
-//			if(log.isInfoEnabled()) {
-//				log.info(String.format("Deleting group %s with %d roles [%s]", 
-//						event.getTargetPrincipal().getPrincipalName(), 
-//						roles.size(), 
-//						ResourceUtils.createCommaSeparatedString(roles)));
-//			}
-//			for(Role role : roles) {
-//				if(!role.isPersonalRole() && !role.isAllUsers()) {
-//					role.getPrincipals().remove(event.getTargetPrincipal());
-//					repository.saveRole(role);
-//				}
-//			}
-//			deletePrincipalRole(event.getTargetPrincipal());
-//		}
-//	}
 	
 	@Override
 	public Collection<Principal> resolveUsers(Collection<Role> roles, Realm realm) throws ResourceNotFoundException, AccessDeniedException {
@@ -1251,6 +1174,11 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public Role getSystemAdministratorRole() {
 		return repository.getRoleByName(ROLE_SYSTEM_ADMINISTRATOR, realmService.getSystemRealm());
+	}
+
+	@Override
+	public Role getRoleById(Long id) {
+		return repository.getResourceById(id);
 	}
 	
 }

@@ -1,6 +1,5 @@
 package com.hypersocket.attributes.json;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -19,6 +18,7 @@ import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Role;
+import com.hypersocket.permissions.RoleUtils;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.BootstrapTableResult;
@@ -98,12 +98,7 @@ public abstract class AbstractAttributeController<A extends AbstractAttribute<C>
 
 			A newAttribute;
 
-			Set<Role> roles = new HashSet<Role>();
-			if(attribute.getRoles()!=null) {
-				for (Long id : attribute.getRoles()) {
-					roles.add(permissionRepository.getRoleById(id));
-				}
-			}
+			Set<Role> roles = RoleUtils.processPermissions(attribute.getRoles());
 
 			if (attribute.getId() != null) {
 				newAttribute = service.updateAttribute(service.getResourceById(attribute.getId()), attribute.getName(),

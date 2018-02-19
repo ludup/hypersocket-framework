@@ -69,7 +69,7 @@ public class TransactionServiceImpl implements TransactionService {
 			log.error("Error in transaction", e);
 			eventService.rollbackDelayedEvents(true);
 			transaction.doTransacationError(e);
-			throw new ResourceException(AuthenticationService.RESOURCE_BUNDLE, "error.transactionFailed", e.getMessage());
+			throw new ResourceException(AuthenticationService.RESOURCE_BUNDLE, "error.transactionFailed", e.getMessage(), e);
 		} finally {
 			eventService.delayEvents(false);
 		}

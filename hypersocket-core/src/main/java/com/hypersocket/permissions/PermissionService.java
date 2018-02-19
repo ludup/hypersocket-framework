@@ -16,8 +16,6 @@ import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.events.GroupCreatedEvent;
-import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.ResourceException;
@@ -143,14 +141,6 @@ public interface PermissionService extends AuthenticatedService {
 	void registerAssignableRepository(Class<? extends AssignableResource> clz,
 			AbstractAssignableResourceRepository<?> repository);
 
-	void onUserCreated(UserCreatedEvent event);
-
-//	void onUserDeleted(UserDeletedEvent event);
-
-	void onGroupCreated(GroupCreatedEvent event);
-
-//	void onGroupDeleted(GroupDeletedEvent event);
-
 	Set<Principal> resolveUsers(Collection<Principal> principals);
 
 	Collection<Principal> resolveUsers(Collection<Role> roles, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
@@ -168,5 +158,7 @@ public interface PermissionService extends AuthenticatedService {
 	Role getSystemAdministratorRole();
 
 	void revokePermissionsNonTransactional(Principal principal);
+
+	 Role getRoleById(Long id);
 
 }

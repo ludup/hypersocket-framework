@@ -243,7 +243,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			checkExpiry(user);
 			
 			if(passwordCreator!=null) {
-				setPassword(user, passwordCreator.createPassword(principal), forceChange, true);
+				setPassword(user, passwordCreator.createPassword(user), forceChange, true);
 			}
 			return user;
 		} catch (Exception e) {
