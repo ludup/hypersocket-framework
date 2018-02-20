@@ -577,13 +577,25 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		if(roles.isEmpty()) {
 			return new HashSet<Principal>();
 		}
+		
 		Criteria crit = createCriteria(Principal.class);
 		crit.add(Restrictions.eq("realm", realm));
 		crit.add(Restrictions.eq("deleted", false));
-		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY)
-			.createCriteria("roles")
-			.add(Restrictions.in("id", ResourceUtils.createResourceIdArray(roles)));
-
+		
+		boolean allUsers = false;
+		for(Role r : roles) {
+			if(r.isAllUsers()) {
+				allUsers = true;
+				break;
+			}
+		}
+		
+		if(!allUsers) {
+			crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY)
+				.createCriteria("roles")
+				.add(Restrictions.in("id", ResourceUtils.createResourceIdArray(roles)));
+		}
+		
 		Set<Principal> results = new HashSet<Principal>(crit.list());
 		return results;
 	}
