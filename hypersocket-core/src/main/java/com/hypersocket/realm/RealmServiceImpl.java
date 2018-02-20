@@ -73,6 +73,9 @@ import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
 import com.hypersocket.realm.ou.OrganizationalUnitRepository;
+import com.hypersocket.resource.AbstractAssignableResourceRepository;
+import com.hypersocket.resource.AbstractSimpleResourceRepository;
+import com.hypersocket.resource.FindableResourceRepository;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceCreationException;
@@ -1301,58 +1304,58 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			 * current realm detail as delete will rename it
 			 */
 			
-			fireRealmDelete(realm);
-			
-			realmRepository.deleteRealm(realm);
-			
-//			transactionService.doInTransaction(new TransactionCallback<Void>() {
-//
-//				@Override
-//				public Void doInTransaction(TransactionStatus status) {
-//					try {
-//						Realm deletedRealm = getRealmById(realm.getId());
-//
-//						clearCache(deletedRealm);
-//
-//						sessionService.deleteRealm(realm);
-//						
-//						fireRealmDelete(deletedRealm);
-//						
-//						for(FindableResourceRepository<?> repository : EntityResourcePropertyStore.getRepositories()) {
-//							if(repository instanceof AbstractSimpleResourceRepository
-//									&& !(repository instanceof RealmRepository)
-//									&& !(repository instanceof PermissionRepository)) {
-//								if(repository.isDeletable()) {
-//									repository.deleteRealm(realm);
-//								}
-//							}
-//							if(repository instanceof AbstractAssignableResourceRepository) {
-//								AbstractAssignableResourceRepository<?> r = (AbstractAssignableResourceRepository<?>)repository;
-//								if(r.isDeletable()) {
-//									r.deleteRealm(realm);
-//								}
-//							}
-//						}
-//						
-//						permissionRepository.deleteRealm(realm);
-//						
-//						ouRepository.deleteRealm(realm);
-//						getLocalProvider().deleteRealm(realm);
-//						
-//						RealmProvider provider = getProviderForRealm(realm);
-//						provider.deleteRealm(realm);
-//						
-//						passwordPolicyService.deleteRealm(realm);
-//						configurationService.deleteRealm(realm);
-//						
-//						realmRepository.delete(deletedRealm);
-//						return null;
-//					} catch (ResourceException e) {
-//						throw new IllegalStateException(e.getMessage(), e);
-//					}
-//				}
-//			});
+//			fireRealmDelete(realm);
 //			
+//			realmRepository.deleteRealm(realm);
+			
+			transactionService.doInTransaction(new TransactionCallback<Void>() {
+
+				@Override
+				public Void doInTransaction(TransactionStatus status) {
+					try {
+						Realm deletedRealm = getRealmById(realm.getId());
+
+						clearCache(deletedRealm);
+
+						sessionService.deleteRealm(realm);
+						
+						fireRealmDelete(deletedRealm);
+						
+						for(FindableResourceRepository<?> repository : EntityResourcePropertyStore.getRepositories()) {
+							if(repository instanceof AbstractSimpleResourceRepository
+									&& !(repository instanceof RealmRepository)
+									&& !(repository instanceof PermissionRepository)) {
+								if(repository.isDeletable()) {
+									repository.deleteRealm(realm);
+								}
+							}
+							if(repository instanceof AbstractAssignableResourceRepository) {
+								AbstractAssignableResourceRepository<?> r = (AbstractAssignableResourceRepository<?>)repository;
+								if(r.isDeletable()) {
+									r.deleteRealm(realm);
+								}
+							}
+						}
+						
+						permissionRepository.deleteRealm(realm);
+						
+						ouRepository.deleteRealm(realm);
+						getLocalProvider().deleteRealm(realm);
+						
+						RealmProvider provider = getProviderForRealm(realm);
+						provider.deleteRealm(realm);
+						
+						passwordPolicyService.deleteRealm(realm);
+						configurationService.deleteRealm(realm);
+						
+						realmRepository.deleteRealm(deletedRealm);
+						return null;
+					} catch (ResourceException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+			});
+			
 
 			eventService.publishEvent(new RealmDeletedEvent(this, getCurrentSession(), realm));
 
