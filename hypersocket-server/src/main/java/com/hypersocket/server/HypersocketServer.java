@@ -29,7 +29,6 @@ import com.hypersocket.server.websocket.TCPForwardingClientCallback;
 public interface HypersocketServer {
 
 	final static String RESOURCE_BUNDLE = "HypersocketServer";
-	
 
 	public abstract List<HttpRequestHandler> getHttpHandlers();
 

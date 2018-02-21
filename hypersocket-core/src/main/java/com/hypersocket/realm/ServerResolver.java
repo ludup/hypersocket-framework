@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.utils.HypersocketUtils;
 import com.hypersocket.utils.StaticResolver;
 
 public class ServerResolver extends StaticResolver {
@@ -21,5 +22,11 @@ public class ServerResolver extends StaticResolver {
 		addToken("serverName", configurationService.getValue(realm, "email.serverName"));
 		addToken("serverUrl", serverUrl);
 		addToken("serverHost", serverHost);
+		addToken("serverBaseUrl", String.format("https://%s%s/", serverHost, System.getProperty("hypersocket.appPath")));
+		addToken("serverApiUrl", String.format("https://%s%s/api/", serverHost, System.getProperty("hypersocket.appPath")));
+		addToken("serverUiUrl", String.format("https://%s%s/", serverHost, System.getProperty("hypersocket.uiPath")));
+		
+		addToken("basePath", System.getProperty("hypersocket.appPath"));
+		addToken("uiPath", System.getProperty("hypersocket.uiPath"));
 	}
 }

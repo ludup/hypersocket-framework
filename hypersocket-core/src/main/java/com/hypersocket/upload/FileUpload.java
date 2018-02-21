@@ -95,6 +95,4 @@ public class FileUpload extends RealmResource {
 	public void setPublicFile(Boolean isPublic) {
 		this.isPublic = isPublic;
 	}
-	
-	
 }
