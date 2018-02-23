@@ -1308,6 +1308,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 //			
 //			realmRepository.deleteRealm(realm);
 			
+			eventService.delayEvents(true);
+			
 			transactionService.doInTransaction(new TransactionCallback<Void>() {
 
 				@Override
@@ -1338,8 +1340,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						}
 						
 						permissionRepository.deleteRealm(realm);
-						
 						ouRepository.deleteRealm(realm);
+						
+						suspensionRepository.deleteRealm(realm);
 						getLocalProvider().deleteRealm(realm);
 						
 						RealmProvider provider = getProviderForRealm(realm);
@@ -1356,16 +1359,19 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				}
 			});
 			
-
+			eventService.publishDelayedEvents();
 			eventService.publishEvent(new RealmDeletedEvent(this, getCurrentSession(), realm));
 
 		} catch (AccessDeniedException e) {
+			eventService.rollbackDelayedEvents(false);
 			eventService.publishEvent(new RealmDeletedEvent(this, e, getCurrentSession(), realm));
 			throw e;
 		} catch (ResourceChangeException e) {
+			eventService.rollbackDelayedEvents(false);
 			eventService.publishEvent(new RealmDeletedEvent(this, e, getCurrentSession(), realm));
 			throw e;
 		} catch (Throwable t) {
+			eventService.rollbackDelayedEvents(false);
 			eventService.publishEvent(new RealmDeletedEvent(this, t, getCurrentSession(), realm));
 			throw new ResourceChangeException(t, RESOURCE_BUNDLE, "error.unexpectedError");
 		}

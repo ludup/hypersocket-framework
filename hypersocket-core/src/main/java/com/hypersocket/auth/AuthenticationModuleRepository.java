@@ -41,7 +41,7 @@ public interface AuthenticationModuleRepository extends AbstractEntityRepository
 
 	public void deleteRealm(Realm realm);
 
-	List<AuthenticationModule> getModulesForRealm(Realm scheme);
+	Collection<AuthenticationModule> getModulesForRealm(Realm scheme);
 
 	boolean isModuleInScheme(Realm realm, String resourceKey, String... resourceKeys);
 

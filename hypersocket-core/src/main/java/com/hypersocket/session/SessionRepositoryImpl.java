@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.session;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -427,7 +428,21 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 
 	@Override
 	@Transactional
-	public void deleteRealm(Realm realm) {
+	public void deleteRealm(final Realm realm) {
+		
+		Collection<Session> sessions = list(Session.class, new CriteriaConfiguration() {
+			
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.createAlias("impersonatedPrincipal", "i");
+				criteria.add(Restrictions.eq("i.realm", realm));
+			}
+		});
+		
+		for(Session session : sessions) {
+			delete(session);
+		}
+		
 		Query q = createQuery("delete from Session where realm = :r or currentRealm = :r", true);
 		q.setParameter("r", realm);
 		log.info(String.format("Deleted %d Session", q.executeUpdate()));

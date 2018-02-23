@@ -46,7 +46,6 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	@Transactional
 	public void deleteRealm(Realm realm) {
 		
-		
 		moduleRepository.deleteRealm(realm);
 		int count = 0;
 		for(AuthenticationScheme s : allEntities(AuthenticationScheme.class, new RealmRestriction(realm))) {
@@ -56,8 +55,8 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 			delete(s);
 			count++;
 		}
+		
 		log.info(String.format("Deleted %d AuthenticationScheme", count));
-		flush();
 	}
 	
 	@Override

@@ -27,6 +27,8 @@ public interface AbstractSimpleResourceRepository<T extends SimpleResource> exte
 	
 	List<T> getResources(Realm realm);
 
+	List<T> getResources(Realm realm, boolean includeDeleted);
+	
 	List<T> search(Realm realm, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting, CriteriaConfiguration... configs);
 

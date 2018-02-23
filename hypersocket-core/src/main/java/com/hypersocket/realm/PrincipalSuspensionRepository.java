@@ -17,4 +17,6 @@ public interface PrincipalSuspensionRepository extends
 	
 	Collection<PrincipalSuspension> getSuspensions(Principal principal);
 
+	void deleteRealm(Realm realm);
+
 }

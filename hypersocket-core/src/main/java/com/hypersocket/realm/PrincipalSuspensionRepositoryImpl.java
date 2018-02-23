@@ -3,6 +3,7 @@ package com.hypersocket.realm;
 import java.util.Collection;
 
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +55,18 @@ public class PrincipalSuspensionRepositoryImpl extends
 	@Transactional
 	public void saveSuspension(PrincipalSuspension principalSuspension) {
 		save(principalSuspension);
+	}
+
+	@Override
+	@Transactional
+	public void deleteRealm(Realm realm) {
+		
+		String hql = String.format("delete from PrincipalSuspension where realm = :r");
+		Query q = createQuery(hql, true);
+		q.setParameter("r", realm);
+		q.executeUpdate();
+		
+		flush();
 	}
 	
 }

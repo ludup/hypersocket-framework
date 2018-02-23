@@ -42,9 +42,9 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 	
 	@Override
 	@Transactional(readOnly=true)
-	public List<AuthenticationModule> getModulesForRealm(
+	public Collection<AuthenticationModule> getModulesForRealm(
 			final Realm realm) {
-		return allEntities(AuthenticationModule.class, new CriteriaConfiguration() {
+		return list(AuthenticationModule.class, new CriteriaConfiguration() {
 			
 			@Override
 			public void configure(Criteria criteria) {
@@ -196,6 +196,5 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 			count++;
 		}
 		log.info(String.format("Deleted %d AuthenticationModule", count));
-		flush();
 	}
 }

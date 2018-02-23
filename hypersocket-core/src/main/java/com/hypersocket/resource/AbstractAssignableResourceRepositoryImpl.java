@@ -793,6 +793,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		}
 
 		log.info(String.format("Deleted %d %s",count, getResourceClass().getSimpleName()));
+		
 		flush();
 	}
 	

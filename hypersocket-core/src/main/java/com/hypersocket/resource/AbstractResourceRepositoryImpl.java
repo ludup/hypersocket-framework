@@ -17,6 +17,9 @@ public abstract class AbstractResourceRepositoryImpl<T extends RealmResource>
 	@Override
 	@Transactional
 	public void deleteRealm(Realm realm) {
+		
+		log.info(String.format("Deleting %s", getClass().getName()));
+		
 		String hql = String.format("delete from %s where realm = :r", getResourceClass().getSimpleName());
 		Query q = createQuery(hql, true);
 		q.setParameter("r", realm);

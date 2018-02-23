@@ -219,6 +219,27 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 		
 		return (List<T>) crit.list();
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly=true)
+	public List<T> getResources(Realm realm, boolean includeDeleted) {
+
+		Criteria crit = createCriteria(getResourceClass());
+		crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		if(includeDeleted) {
+			crit.add(Restrictions.eq("deleted", false));
+		}
+		if(realm==null) {
+			crit.add(Restrictions.isNull("realm"));
+		} else {
+			crit.add(Restrictions.eq("realm", realm));
+		}
+		
+		processDefaultCriteria(crit);
+		
+		return (List<T>) crit.list();
+	}
 
 	@Override
 	@Transactional(readOnly=true)
