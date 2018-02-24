@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.config.ConfigurationService;
-import com.hypersocket.utils.HypersocketUtils;
 import com.hypersocket.utils.StaticResolver;
 
 public class ServerResolver extends StaticResolver {

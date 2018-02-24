@@ -17,6 +17,7 @@ public class FreeMarkerServiceImpl implements FreeMarkerService {
 	private Configuration cfg;
 	private StringTemplateLoader stringLoader = new StringTemplateLoader();
 	
+	@SuppressWarnings("deprecation")
 	@PostConstruct
 	private void postConstruct() {
 		
