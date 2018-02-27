@@ -20,11 +20,13 @@ public abstract class AbstractResourceRepositoryImpl<T extends RealmResource>
 		
 		log.info(String.format("Deleting %s", getClass().getName()));
 		
-		String hql = String.format("delete from %s where realm = :r", getResourceClass().getSimpleName());
-		Query q = createQuery(hql, true);
-		q.setParameter("r", realm);
-		log.info(String.format("Deleted %d %s entries", q.executeUpdate(), getResourceClass().getSimpleName()));
-		flush();
+		if(getCount(getResourceClass(), new RealmCriteria(realm)) > 0) {
+			String hql = String.format("delete from %s where realm = :r", getResourceClass().getSimpleName());
+			Query q = createQuery(hql, true);
+			q.setParameter("r", realm);
+			log.info(String.format("Deleted %d %s entries", q.executeUpdate(), getResourceClass().getSimpleName()));
+			flush();
+		}
 	}
 	
 	@Override
