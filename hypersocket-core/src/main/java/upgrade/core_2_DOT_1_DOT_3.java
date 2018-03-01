@@ -40,9 +40,7 @@ public class core_2_DOT_1_DOT_3 implements Runnable {
 	public void doit() {
 
 		log.info("Upgrading personal roles");
-		
-		
-		
+
 		for(Role role : permissionRepository.allRealmsResources()) {
 			
 			if(role.isPersonalRole()) {

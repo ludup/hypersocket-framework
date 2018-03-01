@@ -452,7 +452,8 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 						criteria.setFetchMode("resources", FetchMode.SELECT);
 						criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 						criteria.add(Restrictions.eq("realm", realm));
-						criteria.add(Restrictions.in("type", Arrays.asList(RoleType.BUILTIN, RoleType.CUSTOM)));
+						criteria.add(Restrictions.or(Restrictions.isNull("type"),
+								Restrictions.in("type", Arrays.asList(RoleType.BUILTIN, RoleType.CUSTOM))));
 					}
 				});
 	}
@@ -467,10 +468,10 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 					public void configure(Criteria criteria) {
 						criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 						criteria.add(Restrictions.eq("hidden", false));
-						criteria.add(Restrictions.in("type", Arrays.asList(RoleType.BUILTIN, RoleType.CUSTOM)));
-						criteria.add(Restrictions.or(
-								Restrictions.eq("realm", realm),
-								Restrictions.isNull("realm")));
+						criteria.add(Restrictions.eq("realm", realm));
+						criteria.add(Restrictions.or(Restrictions.isNull("type"),
+								Restrictions.in("type", Arrays.asList(RoleType.BUILTIN, RoleType.CUSTOM))));
+						
 					}
 				});
 	}
