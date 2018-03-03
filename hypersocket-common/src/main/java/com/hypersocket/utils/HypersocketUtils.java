@@ -145,6 +145,10 @@ public class HypersocketUtils {
 	}
 	
 	public static Date today() {
+		return todayCalendar().getTime();
+	}
+	
+	public static Calendar todayCalendar() {
 		
 		Calendar date = Calendar.getInstance();
 		date.set(Calendar.HOUR_OF_DAY, 0);
@@ -152,7 +156,7 @@ public class HypersocketUtils {
 		date.set(Calendar.SECOND, 0);
 		date.set(Calendar.MILLISECOND, 0);
 		
-		return date.getTime();
+		return date;
 	}
 	
 	public static Date tomorrow() {

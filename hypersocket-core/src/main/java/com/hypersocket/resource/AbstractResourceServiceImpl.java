@@ -163,9 +163,12 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public final void createResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
 
+		processName(resource, properties);
+		
 		if(assertPermissions) {
 			assertPermission(getCreatePermission(resource));
 		}
+		
 		if(resource.getRealm()==null) {
 			throw new ResourceCreationException(RESOURCE_BUNDLE_DEFAULT,
 					"generic.create.error", "Calling method should set realm");
@@ -239,11 +242,19 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 
 	protected abstract void fireResourceCreationEvent(T resource, Throwable t);
 
+	protected void processName(T resource, Map<String,String> properties) {
+		if(properties.containsKey("name")) {
+			resource.setName(properties.get("name"));
+		}
+	}
+	
 	@Override
 	@SafeVarargs
 	public final void updateResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
 
+		processName(resource, properties);
+		
 		boolean changedDefault = resource.getOldName()!=null && !resource.getName().equals(resource.getOldName());
 
 		if(assertPermissions) {

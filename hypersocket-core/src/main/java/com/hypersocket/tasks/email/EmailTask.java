@@ -15,6 +15,9 @@ import javax.annotation.PostConstruct;
 import javax.mail.Message.RecipientType;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,8 @@ import com.hypersocket.email.RecipientHolder;
 import com.hypersocket.email.events.EmailEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
+import com.hypersocket.html.HtmlTemplateResource;
+import com.hypersocket.html.HtmlTemplateResourceRepository;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
@@ -80,6 +85,9 @@ public class EmailTask extends AbstractTaskProvider {
 	
 	@Autowired
 	FileUploadService uploadService; 
+	
+	@Autowired
+	HtmlTemplateResourceRepository htmlTemplateRepository;
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -204,13 +212,27 @@ public class EmailTask extends AbstractTaskProvider {
 		String replyToName = processTokenReplacements(repository.getValue(task, "email.replyToName"), event);
 		String replyToEmail = processTokenReplacements(repository.getValue(task, "email.replyToEmail"), event);
 		boolean track = repository.getBooleanValue(task, "email.track");
-		boolean useTemplate = repository.getBooleanValue(task, "email.useTemplate");
+		String templateStr = repository.getValue(task, "email.htmlTemplate");
+		HtmlTemplateResource template = null;
+		if(StringUtils.isNotBlank(templateStr) && StringUtils.isNumeric(templateStr)) {
+			template = htmlTemplateRepository.getResourceById(Long.parseLong(templateStr));
+			
+			if(template!=null && StringUtils.isNotBlank(template.getHtml())) {
+				
+				Document doc = Jsoup.parse(template.getHtml());
+				Elements elements = doc.select(template.getContentSelector());
+				elements.first().append(template.getHtml());
+				bodyHtml = doc.toString();		
+				bodyHtml = processTokenReplacements(bodyHtml, event);
+			}
+		}
+		
 		int delay = repository.getIntValue(task, "email.delay");
 		
 		try {
 			emailService.sendEmail(currentRealm, subject, body, bodyHtml,
 					replyToName, replyToEmail, 
-					recipients.toArray(new RecipientHolder[0]), track, useTemplate, delay, attachments.toArray(new EmailAttachment[0]));
+					recipients.toArray(new RecipientHolder[0]), track, delay, attachments.toArray(new EmailAttachment[0]));
 
 			return new EmailTaskResult(this, currentRealm, task);
 		} catch (Exception ex) {

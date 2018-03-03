@@ -1,6 +1,5 @@
 package com.hypersocket.email;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -10,7 +9,6 @@ import java.util.regex.Pattern;
 import javax.mail.Message.RecipientType;
 import javax.mail.Session;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 import org.codemonkey.simplejavamail.MailException;
@@ -77,21 +75,21 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 	@Override
 	@SafeVarargs
-	public final void sendEmail(String subject, String text, String html, RecipientHolder[] recipients, boolean track, boolean useHtmlTemplate, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
-		sendEmail(getCurrentRealm(), subject, text, html, recipients, track, useHtmlTemplate, delay, attachments);
+	public final void sendEmail(String subject, String text, String html, RecipientHolder[] recipients, boolean track, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
+		sendEmail(getCurrentRealm(), subject, text, html, recipients, track, delay, attachments);
 	}
 	
 	@Override
 	@SafeVarargs
-	public final void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients, boolean track, boolean useHtmlTemplate, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
-		sendEmail(realm, subject, text, html, null, null, recipients, track, useHtmlTemplate, delay, attachments);
+	public final void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients, boolean track, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
+		sendEmail(realm, subject, text, html, null, null, recipients, track, delay, attachments);
 	}
 	
 	@Override
 	public void sendEmail(Realm realm, String subject, String text, String html, String replyToName,
-			String replyToEmail, RecipientHolder[] recipients, boolean track, boolean useHtmlTemplate, int delay, EmailAttachment... attachments)
+			String replyToEmail, RecipientHolder[] recipients, boolean track, int delay, EmailAttachment... attachments)
 			throws MailException, AccessDeniedException, ValidationException {
-		sendEmail(realm, subject, text, html, replyToName, replyToEmail, recipients, new String[0], track, useHtmlTemplate, delay, attachments);
+		sendEmail(realm, subject, text, html, replyToName, replyToEmail, recipients, new String[0], track, delay, attachments);
 	}
 	
 	private Session createSession(Realm realm) {
@@ -116,7 +114,6 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			RecipientHolder[] recipients, 
 			String[] archiveAddresses,
 			boolean track,
-			boolean useHtmlTemplate,
 			int delay,
 			EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
 		
@@ -149,18 +146,6 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			if(StringUtils.isBlank(r.getEmail())) {
 				log.warn(String.format("Missing email address for %s", r.getName()));
 				continue;
-			}
-			
-			String htmlTemplate = configurationService.getValue(realm, "email.htmlTemplate");
-			if(useHtmlTemplate && StringUtils.isNotBlank(htmlTemplate) && StringUtils.isNotBlank(receipientHtml)) {
-				try {
-					htmlTemplate = IOUtils.toString(uploadService.getInputStream(htmlTemplate));
-					htmlTemplate = htmlTemplate.replace("${htmlContent}", receipientHtml);
-
-					receipientHtml = htmlTemplate;
-				} catch (IOException e) {
-					log.error("Cannot find HTML template", e);
-				}	
 			}
 			
 			if(StringUtils.isNotBlank(receipientHtml)) {

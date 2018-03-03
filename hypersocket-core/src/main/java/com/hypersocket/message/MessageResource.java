@@ -2,10 +2,13 @@ package com.hypersocket.message;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.hypersocket.html.HtmlTemplateResource;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
@@ -58,6 +61,10 @@ public class MessageResource extends RealmResource {
 	@Column(name="variables")
 	String supportedVariables;
 
+	@ManyToOne
+	@JoinColumn(name="html_template")
+	HtmlTemplateResource htmlTemplate;
+	
 	public String getSubject() {
 		return subject;
 	}
@@ -145,14 +152,6 @@ public class MessageResource extends RealmResource {
 	public void setDeliveryStrategy(EmailDeliveryStrategy deliveryStrategy) {
 		this.deliveryStrategy = deliveryStrategy;
 	}
-
-	public Boolean getUseTemplate() {
-		return useTemplate==null ? Boolean.TRUE : useTemplate;
-	}
-
-	public void setUseTemplate(Boolean useTemplate) {
-		this.useTemplate = useTemplate;
-	}
 	
 	public String getResourceKey() {
 		return resourceKey;
@@ -160,5 +159,13 @@ public class MessageResource extends RealmResource {
 
 	public void setResourceKey(String resourceKey) {
 		this.resourceKey = resourceKey;
+	}
+
+	public HtmlTemplateResource getHtmlTemplate() {
+		return htmlTemplate;
+	}
+
+	public void setHtmlTemplate(HtmlTemplateResource htmlTemplate) {
+		this.htmlTemplate = htmlTemplate;
 	}
 }

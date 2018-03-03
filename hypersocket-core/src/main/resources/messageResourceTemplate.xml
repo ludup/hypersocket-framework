@@ -2,6 +2,7 @@
 <propertyTemplates context="messageResource">
 	<propertyCategory resourceKey="category.plain"
 		resourceBundle="MessageResourceService" weight="1000">
+		<property resourceKey="name" inputType="text"  weight="0" defaultValue="" disabled="true" />
 		<property resourceKey="subject" inputType="text" url="messages/variables/{id}"
 			weight="80" defaultValue="" size="255" allowEmpty="false" invalidResourceKey="error.subjectRequired"/>
 		<property resourceKey="body" inputType="textarea" rows="10" url="messages/variables/{id}"
@@ -11,7 +12,7 @@
 		resourceBundle="TriggerResourceService" weight="2000">
 		<property resourceKey="html" inputType="html" rows="10" url="messages/variables/{id}"
 			cols="100" maxlength="8000" defaultValue="" weight="100" allowEmpty="true"/>
-		<property resourceKey="useTemplate" inputType="switch" weight="0" defaultValue="true"/>
+		<property resourceKey="htmlTemplate" emptySelectionAllowed="true" valueAttr="id" inputType="select" url="htmlTemplates/list" weight="0" defaultValue=""/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.options"
 		resourceBundle="MessageResourceService" weight="3000">

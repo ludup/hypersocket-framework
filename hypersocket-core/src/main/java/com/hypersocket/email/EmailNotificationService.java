@@ -22,17 +22,17 @@ public interface EmailNotificationService {
 			RecipientType type) throws ValidationException;
 
 	void sendEmail(String subject, String text, String html, RecipientHolder[] recipients,
-			boolean track, boolean useHtmlTemplate, int delay, EmailAttachment... attachments)
+			boolean track, int delay, EmailAttachment... attachments)
 			throws MailException, AccessDeniedException, ValidationException;
 
 	void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients, boolean track, 
-			boolean useHtmlTemplate, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException;
+			int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException;
 
 	void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail,
-			RecipientHolder[] recipients, boolean track, boolean useHtmlTemplate, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException;
+			RecipientHolder[] recipients, boolean track, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException;
 
 	void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail,
-			RecipientHolder[] recipients, String[] archiveAddresses, boolean track, boolean useHtmlTemplate, int delay, EmailAttachment... attachments)
+			RecipientHolder[] recipients, String[] archiveAddresses, boolean track, int delay, EmailAttachment... attachments)
 			throws MailException, ValidationException, AccessDeniedException;
 
 }

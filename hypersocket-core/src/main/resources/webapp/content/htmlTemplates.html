@@ -1,0 +1,73 @@
+<div id="contentHtmlTemplates">
+	<input type="hidden" id="resourceId" name="resourceId" value="" />
+	<input type="hidden" id="resourceName" name="resourceName" value="" />
+	<div  id="addHtmlTemplateForm" dialog-for="contentHtmlTemplates">
+		<div id="templateProperties"></div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	$(document).ready(function() {
+				$('#contentHtmlTemplates').localize();
+			
+				$('#contentHtmlTemplates').ajaxResourcePage(
+						{
+							id : "HtmlTemplate",
+							tableUrl : "htmlTemplates/table",
+							title: getResource("htmlTemplates.label"),
+							icon: 'fa-code',
+							resourceUrl : "htmlTemplates/htmlTemplate",
+							fields : [ {
+								name : "name"
+							}],
+							resourceKey : "htmlTemplate",
+							canCreate: currentMenu.canCreate,
+							canUpdate: currentMenu.canUpdate,
+							canDelete: currentMenu.canDelete,
+							resourceView: 'samePage',
+							validate : function() {
+
+								if(!$('#htmlTemplateProperties').validateProperties()) {
+									showError("error.correctValidationErrors");
+									return false;
+								}
+								
+								return true;
+							},
+							clearDialog : function(create) {
+								
+								$('#resourceId').val('');
+							},
+							createResource : function() {
+								resource = new Object();
+								resource.id = $('#resourceId').val();
+								
+								$('#templateProperties').saveProperties(true,
+										function(items) {
+											resource.properties = items;
+								});
+								
+								return resource;
+							},
+							displayResource : function(resource, readOnly) {
+								
+								$('#resourceId').val(resource.id);
+							},
+							propertyOptions: { 
+								propertySelector : '#templateProperties',
+								templateUrl : 'htmlTemplates/template/', 
+								propertiesUrl: 'htmlTemplates/properties/',
+								showButtons : false, 
+								showAdditionalTabButtons: false,
+								maintainButtonState: false,
+								i18nNamespace: 'htmlTemplate',
+								canUpdate : currentMenu.canUpdate,
+								useTemplates : true
+							},
+							complete : function() {
+								loadComplete();
+							}
+						});
+
+			});
+</script>

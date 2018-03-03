@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="htmlTemplateResource">
+	<propertyCategory resourceKey="category.htmlTemplate"
+		resourceBundle="HtmlTemplateResourceService" weight="0">
+		<property resourceKey="name" inputType="text"  weight="0" defaultValue="" />
+		<property resourceKey="contentSelector" inputType="text"  weight="100" defaultValue="body" allowEmpty="false" />
+		<property resourceKey="html" inputType="html" defaultValue="" weight="200" allowEmpty="false"/>
+	</propertyCategory>
+</propertyTemplates>

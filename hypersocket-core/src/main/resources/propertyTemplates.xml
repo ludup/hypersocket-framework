@@ -26,8 +26,6 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="category.emailExtra"
 		resourceBundle="EmailService" weight="600"  group="messages">
-		<property resourceKey="email.htmlTemplate" inputType="fileInput"
-			weight="700" defaultValue="" automaticUpload="true" showUploadButton="false" />
 		<property resourceKey="email.trackingImage" inputType="fileInput" weight="700" defaultValue="" publicFile="true" automaticUpload="true" showUploadButton="false" />
 		<property resourceKey="email.archiveAddress" inputType="text" weight="800" defaultValue="" />
 		<property resourceKey="email.serverName" inputType="text" weight="900" defaultValue="Hypersocket Server" />

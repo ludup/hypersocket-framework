@@ -1,37 +1,9 @@
-<!-- 
-	Replace any Message or Messages with Capitalized name of your resources e.g. Application or Applications
-	Replace any message or messages with lower case name of your resources e.g. application or applications
- -->
-
 <div id="contentMessages">
-	<div class="modal" id="addMessageForm" tabindex="-1" role="dialog" dialog-for="contentMessages">
-		<div class="modal-dialog modal-lg">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal"
-						aria-hidden="true">&times;</button>
-					<h4 class="modal-title"></h4>
-				</div>
-				<div class="modal-body">
-					<div class="propertyItem form-group">
-						<label class="col-xs-3 control-label" localize="message.name.label"></label>
-						<div class="propertyValue col-xs-9">
-							<input type="text" class="form-control"
-								placeholder="" id="resourceName" maxlength="" name="resourceName" value="">
-							<div>
-								<span class="help-block" localize="message.name.info"></span>
-							</div>
-						</div>
-					</div>
-					
-					<div id="messageProperties"></div>
-					<input type="hidden" id="resourceId" name="resourceId" value="" />
-				</div>
-				<div class="modal-footer"></div>
-			</div>
-		</div>
+	<input type="hidden" id="resourceId" name="resourceId" value="" />
+	<input type="hidden" id="resourceName" name="resourceName" value="" />
+	<div  id="addMessageForm" dialog-for="contentMessages">
+		<div id="messageProperties"></div>
 	</div>
-
 </div>
 
 <script type="text/javascript">
@@ -64,6 +36,7 @@
 							resourceKey : "message",
 							canCreate: false,
 							canCopy: false,
+							resourceView: 'samePage',
 							canUpdate: currentMenu.canUpdate,
 							canDelete: currentMenu.canDelete,
 							checkbox : true,
@@ -85,19 +58,7 @@
 								
 								$('#resourceId').val('');
 								$('#resourceName').val('');
-								
-								$('#messageProperties').clearProperties();
-								if(create) {
-									$('#messageProperties').propertyPage({ 
-										url : 'messages/template/', 
-										showButtons : false, 
-										i18nNamespace: "message",
-										canUpdate : currentMenu.canUpdate, 
-										useTemplates : true 
-									});
-								}
 
-								$('.tabPropertiesTab').first().trigger('click');
 							},
 							createResource : function() {
 								resource = new Object();
@@ -115,15 +76,18 @@
 								
 								$('#resourceId').val(resource.id);
 								$('#resourceName').val(resource.name);
-								
-								$('#messageProperties').propertyPage(
-										{ url : 'messages/properties/' + resource.id, 
-											showButtons : false, 
-											i18nNamespace: "message",
-											resource: resource,
-											canUpdate : currentMenu.canUpdate && !readOnly
-								});
 							
+							},
+							propertyOptions: { 
+								propertySelector : '#messageProperties',
+								templateUrl : 'messages/template/', 
+								propertiesUrl: 'messages/properties/',
+								showButtons : false, 
+								showAdditionalTabButtons: false,
+								maintainButtonState: false,
+								i18nNamespace: 'message',
+								canUpdate : currentMenu.canUpdate,
+								useTemplates : true
 							},
 							complete : function() {
 								loadComplete();

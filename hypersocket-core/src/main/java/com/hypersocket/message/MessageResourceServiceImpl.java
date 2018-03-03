@@ -14,7 +14,11 @@ import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.codemonkey.simplejavamail.MailException;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -509,8 +513,19 @@ public class MessageResourceServiceImpl extends
 			StringWriter bodyWriter = new StringWriter();
 			bodyTemplate.process(data, bodyWriter);
 			
+			String receipientHtml = "";
+			
+			if(message.getHtmlTemplate()!=null && StringUtils.isNotBlank(message.getHtml())) {
+				
+				Document doc = Jsoup.parse(message.getHtmlTemplate().getHtml());
+				Elements elements = doc.select(message.getHtmlTemplate().getContentSelector());
+				elements.first().append(message.getHtml());
+				receipientHtml = doc.toString();
+					
+			}
+			
 			Template htmlTemplate = templateService.createTemplate("message.html." + message.getId(), 
-					message.getHtml(), 
+					receipientHtml, 
 					message.getModifiedDate().getTime());				
 			StringWriter htmlWriter = new StringWriter();
 			htmlTemplate.process(data, htmlWriter);
@@ -525,7 +540,6 @@ public class MessageResourceServiceImpl extends
 					recipients.toArray(new RecipientHolder[0]), 
 					null,
 					message.getTrack(), 
-					message.getUseTemplate(),
 					configurationService.getIntValue(realm, "smtp.delay"),
 					attachments.toArray(new EmailAttachment[0]));
 			

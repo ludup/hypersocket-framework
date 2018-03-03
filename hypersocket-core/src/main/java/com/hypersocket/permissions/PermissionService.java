@@ -132,7 +132,7 @@ public interface PermissionService extends AuthenticatedService {
 
 	public Set<String> getRolePropertyNames();
 
-	public boolean hasRole(Principal principal, Collection<Role> roles) throws AccessDeniedException;
+	public boolean hasRole(Principal principal, Collection<Role> roles);
 
 	boolean hasEveryoneRole(Collection<Role> roles, Realm realm) throws AccessDeniedException, ResourceNotFoundException;
 
