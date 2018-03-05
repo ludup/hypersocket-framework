@@ -108,7 +108,6 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 
 	public void setEncodedPassword(String encodedPassword) {
 		this.encodedPassword = encodedPassword;
-		this.password = HypersocketUtils.getUTF8Bytes(encodedPassword);
 	}
 
 	public String getEncodedSalt() {
@@ -118,5 +117,13 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 	public void setEncodedSalt(String encodedSalt) {
 		this.encodedSalt = encodedSalt;
 		this.salt =  HypersocketUtils.getUTF8Bytes(encodedSalt);
+	}
+	
+	void setPassword(byte[] password) {
+		this.password = password;
+	}
+	
+	void setSalt(byte[] salt) {
+		this.salt = salt;
 	}
 }

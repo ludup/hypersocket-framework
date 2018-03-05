@@ -243,7 +243,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	protected abstract void fireResourceCreationEvent(T resource, Throwable t);
 
 	protected void processName(T resource, Map<String,String> properties) {
-		if(properties.containsKey("name")) {
+		if(properties!=null && properties.containsKey("name")) {
 			resource.setName(properties.get("name"));
 		}
 	}

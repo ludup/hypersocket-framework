@@ -39,7 +39,6 @@
 			url="i18n/locales" defaultValue="en" weight="100" nameIsResourceKey="true" hidden="true"/>
 		<property resourceKey="realm.defaultTimezone" inputType="select" url="server/timezones" 
 					emptySelectionAllowed="true" emptySelectionTextDefaultValue="" weight="400"/>
-	    
 	</propertyCategory>
 	<propertyCategory resourceKey="category.sessions"
 		resourceBundle="SessionService" weight="800">
@@ -65,6 +64,12 @@
 	<propertyCategory resourceKey="category.features"
 		 resourceBundle="PermissionService" weight="200" hidden="true">
 		<property resourceKey="feature.roleSelection" inputType="switch" defaultValue="false" weight="0" hidden="true"/>
+	</propertyCategory>
+	<propertyCategory resourceKey="category.security"
+		 resourceBundle="RealmService" weight="500" group="authentication">
+		<property resourceKey="password.encoding" inputType="select"
+		    		url="enum/com.hypersocket.auth.PasswordEncryptionType/"
+						defaultValue="PBKDF2_SHA256_50000" weight="0" nameAttr="name" valueAttr="name"/>	
 	</propertyCategory>
 </propertyTemplates>
 

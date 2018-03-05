@@ -189,7 +189,8 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 		try {
 			return encryptionService.authenticate(password,
-					Base64.decodeBase64(creds.getEncodedPassword()), Base64.decodeBase64(creds.getEncodedSalt()),
+					Base64.decodeBase64(creds.getEncodedPassword()), 
+					Base64.decodeBase64(creds.getEncodedSalt()),
 					creds.getEncryptionType());
 		} catch (Throwable e) {
 			if (log.isDebugEnabled()) {
@@ -377,13 +378,16 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			creds.setEncodedPassword(Base64.encodeBase64String(encryptedPassword));
 			creds.setEncodedSalt(Base64.encodeBase64String(salt));
 			creds.setPasswordChangeRequired(forceChangeAtNextLogon);
-
+			creds.setPassword(encryptedPassword);
+			creds.setSalt(salt);
+			
 			userRepository.saveCredentials(creds);
 
 		} catch (Throwable e) {
 			throw new ResourceCreationException(getResourceBundle(),
 					"error.creatingPassword", principal.getPrincipalName(),
-					e.getMessage());
+					e.getMessage(),
+					e);
 		}
 	}
 
