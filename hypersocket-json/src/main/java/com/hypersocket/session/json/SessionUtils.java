@@ -229,7 +229,7 @@ public class SessionUtils {
 			HttpServletResponse response, Session session) {
 
 		Cookie cookie = new Cookie(HYPERSOCKET_API_SESSION, session.getId());
-		cookie.setMaxAge(60 * session.getTimeout());
+		cookie.setMaxAge((session.getTimeout() > 0 ? 60 * session.getTimeout() : Integer.MAX_VALUE));
 		if(request.getProtocol().equalsIgnoreCase("https")) {
 			cookie.setSecure(true);
 		} else {
@@ -240,7 +240,7 @@ public class SessionUtils {
 		response.addCookie(cookie);
 		
 		cookie = new Cookie(HYPERSOCKET_CSRF_TOKEN, session.getCsrfToken());
-		cookie.setMaxAge(60 * session.getTimeout());
+		cookie.setMaxAge((session.getTimeout() > 0 ? 60 * session.getTimeout() : Integer.MAX_VALUE));
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
 		cookie.setPath("/");
 		response.addCookie(cookie);

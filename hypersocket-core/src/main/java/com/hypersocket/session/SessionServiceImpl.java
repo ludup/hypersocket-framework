@@ -255,34 +255,35 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		
 		if (session.getSignedOut() == null) {
 
-			Calendar currentTime = Calendar.getInstance();
-			Calendar c = Calendar.getInstance();
-			if(session.getLastUpdated()!=null) {
-				c.setTime(session.getLastUpdated());
-				c.add(Calendar.MINUTE, session.getTimeout());
-			}
-			if (log.isDebugEnabled()) {
-				log.debug("Checking session timeout currentTime="
-						+ currentTime.getTime() + " lastUpdated="
-						+ session.getLastUpdated() + " timeoutThreshold="
-						+ c.getTime());
-			}
-
-			if (c.before(currentTime)) {
-				if (log.isDebugEnabled()) {
-					log.debug("Session has timed out");
+			if(session.getTimeout() > 0) {
+				Calendar currentTime = Calendar.getInstance();
+				Calendar c = Calendar.getInstance();
+				if(session.getLastUpdated()!=null) {
+					c.setTime(session.getLastUpdated());
+					c.add(Calendar.MINUTE, session.getTimeout());
 				}
-				closeSession(session);
-
 				if (log.isDebugEnabled()) {
-					log.debug("Session "
-							+ session.getPrincipal().getPrincipalName() + "/"
-							+ session.getId() + " is now closed");
+					log.debug("Checking session timeout currentTime="
+							+ currentTime.getTime() + " lastUpdated="
+							+ session.getLastUpdated() + " timeoutThreshold="
+							+ c.getTime());
 				}
-
-				return false;
+	
+				if (c.before(currentTime)) {
+					if (log.isDebugEnabled()) {
+						log.debug("Session has timed out");
+					}
+					closeSession(session);
+	
+					if (log.isDebugEnabled()) {
+						log.debug("Session "
+								+ session.getPrincipal().getPrincipalName() + "/"
+								+ session.getId() + " is now closed");
+					}
+	
+					return false;
+				}
 			}
-
 			if (touch) {
 				session.touch();
 			}
