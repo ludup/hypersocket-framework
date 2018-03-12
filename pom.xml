@@ -90,18 +90,18 @@
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
-<!-- 			<plugin> -->
-<!-- 				<groupId>com.nervepoint</groupId> -->
-<!-- 				<artifactId>google-translate-v2-java-maven-plugin</artifactId> -->
-<!-- 				<executions> -->
-<!-- 					<execution> -->
-<!-- 						<phase>process-resources</phase> -->
-<!-- 						<goals> -->
-<!-- 							<goal>translate</goal> -->
-<!-- 						</goals> -->
-<!-- 					</execution> -->
-<!-- 				</executions> -->
-<!-- 			</plugin> -->
+			<plugin>
+				<groupId>com.nervepoint</groupId>
+				<artifactId>google-translate-v2-java-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>translate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -187,54 +187,63 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>exec-maven-plugin</artifactId>
 				</plugin>
-<!-- 				<plugin> -->
-<!-- 					<groupId>com.nervepoint</groupId> -->
-<!-- 					<artifactId>google-translate-v2-java-maven-plugin</artifactId> -->
-<!-- 					<version>0.0.3</version> -->
-<!-- 					<configuration> -->
-<!-- 						<apikey>${googleAPIKey}</apikey> -->
-<!-- 						<cacheTag>alpha</cacheTag> -->
-<!-- 						<sourceDirectory>${basedir}/src/main/resources/i18n</sourceDirectory> -->
-<!-- 						<targetDirectory>${basedir}/target/classes/i18n</targetDirectory> -->
-<!-- 						<languages>da,nl,fi,fr,de,it,no,pl,ru,sv,es,ja</languages> -->
-<!-- 						<failOnMissingSourceDir>false</failOnMissingSourceDir> -->
-<!-- 					</configuration> -->
-<!-- 					<executions> -->
-<!-- 						<execution> -->
-<!-- 							<goals> -->
-<!-- 								<goal>translate</goal> -->
-<!-- 							</goals> -->
-<!-- 						</execution> -->
-<!-- 					</executions> -->
-<!-- 				</plugin> -->
-<!-- 				<plugin> -->
-<!-- 					<groupId>org.eclipse.m2e</groupId> -->
-<!-- 					<artifactId>lifecycle-mapping</artifactId> -->
-<!-- 					<version>1.0.0</version> -->
-<!-- 					<configuration> -->
-<!-- 						<lifecycleMappingMetadata> -->
-<!-- 							<pluginExecutions> -->
-<!-- 								<pluginExecution> -->
-<!-- 									<pluginExecutionFilter> -->
-<!-- 										<groupId>com.nervepoint</groupId> -->
-<!-- 										<artifactId> -->
-<!-- 											google-translate-v2-java-maven-plugin -->
-<!-- 										</artifactId> -->
-<!-- 										<versionRange> -->
-<!-- 											[0.0.3,) -->
-<!-- 										</versionRange> -->
-<!-- 										<goals> -->
-<!-- 											<goal>translate</goal> -->
-<!-- 										</goals> -->
-<!-- 									</pluginExecutionFilter> -->
-<!-- 									<action> -->
-<!-- 										<ignore></ignore> -->
-<!-- 									</action> -->
-<!-- 								</pluginExecution> -->
-<!-- 							</pluginExecutions> -->
-<!-- 						</lifecycleMappingMetadata> -->
-<!-- 					</configuration> -->
-<!-- 				</plugin> -->
+				<plugin>
+					<groupId>com.nervepoint</groupId>
+					<artifactId>google-translate-v2-java-maven-plugin</artifactId>
+					<version>0.0.5-SNAPSHOT</version>
+					<configuration>
+						<apikey>${googleAPIKey}</apikey>
+						<cacheTag>main</cacheTag>
+						<sourceDirectory>${basedir}/src/main/resources/i18n</sourceDirectory>
+						<targetDirectory>${basedir}/target/classes/i18n</targetDirectory>
+						<languages>da,nl,fi,fr,de,it,no,pl,ru,sv,es,ja</languages>
+						<failOnMissingSourceDir>false</failOnMissingSourceDir>
+						<noTranslatePattern>
+							<param><![CDATA[<a.*href.*>.*</a>]]></param>
+							<param>\$\{[/|!]*[a-zA-Z_\.0-9]*\}</param>
+							<param>\%\{[/|!]*[a-zA-Z_\.0-9]*\}</param>
+							<param>\=\{[/|!]*[a-zA-Z_\.0-9]*\}</param>
+							<param>\#\{[/|!]*[a-zA-Z_\.0-9]*\}</param>
+							<param>\{[0-9]+\}</param>
+							<param><![CDATA[\&lt\;[\w/]+\&gt\;]]></param>
+						</noTranslatePattern>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>translate</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>com.nervepoint</groupId>
+										<artifactId>
+											google-translate-v2-java-maven-plugin
+										</artifactId>
+										<versionRange>
+											[0.0.3,)
+										</versionRange>
+										<goals>
+											<goal>translate</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
