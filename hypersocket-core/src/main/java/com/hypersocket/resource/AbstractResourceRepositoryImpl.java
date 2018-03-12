@@ -12,6 +12,7 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
@@ -100,7 +101,7 @@ public abstract class AbstractResourceRepositoryImpl<T extends Resource>
 				if(properties.containsKey(resourceKey)) {
 					PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
 					if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
-						setValue(resource, resourceKey, properties.get(resourceKey));
+						setValue(resource, resourceKey, StringUtils.trimWhitespace(properties.get(resourceKey)));
 						properties.remove(resourceKey);
 					}
 				}

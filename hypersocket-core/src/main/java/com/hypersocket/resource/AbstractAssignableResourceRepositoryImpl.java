@@ -488,7 +488,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			if(properties.containsKey(resourceKey)) {
 				PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
 				if(template.getPropertyStore() instanceof EntityResourcePropertyStore) {
-					setValue(resource, resourceKey, properties.get(resourceKey));
+					setValue(resource, resourceKey, StringUtils.trim(properties.get(resourceKey)));
 					properties.remove(resourceKey);
 				}
 			}

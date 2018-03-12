@@ -18,6 +18,7 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -68,7 +69,7 @@ public abstract class Resource extends AbstractResource {
 	
 	public void setName(String name) {
 		this.oldName = this.name;
-		this.name = name;
+		this.name = StringUtils.trimWhitespace(name);
 	}
 
 	public boolean hasNameChanged() {

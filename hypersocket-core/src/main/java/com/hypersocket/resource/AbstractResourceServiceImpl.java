@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -144,6 +145,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 	
 	protected boolean checkUnique(T resource, boolean create) throws AccessDeniedException {
+		
 		try {
 			if(!create) {
 				if(!resource.hasNameChanged()) {
