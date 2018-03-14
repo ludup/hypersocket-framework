@@ -1,15 +1,16 @@
 <div id="contentMessages">
 	<input type="hidden" id="resourceId" name="resourceId" value="" />
 	<input type="hidden" id="resourceName" name="resourceName" value="" />
-	<div  id="addMessageForm" dialog-for="contentMessages">
-		<div id="messageProperties"></div>
-	</div>
 </div>
 
 <script type="text/javascript">
 	$(document).ready(function() {
+		
+				if(!$('#addMessageForm').length) {
+					$('#contentMessages').append('<div  id="addMessageForm" dialog-for="contentMessages"><div id="messageProperties"></div></div>');
+				}
+				
 				$('#contentMessages').localize();
-			
 				$('#contentMessages').ajaxResourcePage(
 						{
 							id : "Message",

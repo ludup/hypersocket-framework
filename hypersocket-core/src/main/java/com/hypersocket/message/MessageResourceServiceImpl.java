@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.EmailNotificationService;
+import com.hypersocket.email.EmailTrackerService;
 import com.hypersocket.email.RecipientHolder;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18N;
@@ -96,6 +97,9 @@ public class MessageResourceServiceImpl extends
 	
 	@Autowired
 	FreeMarkerService templateService; 
+	
+	@Autowired
+	EmailTrackerService trackerService; 
 	
 	Map<String,MessageRegistration> messageRegistrations = new HashMap<String, MessageRegistration>();
 	List<String> messageIds = new ArrayList<String>();
@@ -498,50 +502,71 @@ public class MessageResourceServiceImpl extends
 		
 		try {
 	
-			Map<String,Object> data = tokenResolver.getData();
-			data.putAll(new ServerResolver(realm).getData());
-			
-			Template subjectTemplate = templateService.createTemplate("message.subject." + message.getId(), 
-					message.getSubject(), 
-					message.getModifiedDate().getTime());
-			StringWriter subjectWriter = new StringWriter();
-			subjectTemplate.process(data, subjectWriter);
-			
-			Template bodyTemplate = templateService.createTemplate("message.body." + message.getId(), 
-					message.getBody(), 
-					message.getModifiedDate().getTime());
-			StringWriter bodyWriter = new StringWriter();
-			bodyTemplate.process(data, bodyWriter);
-			
-			String receipientHtml = "";
-			
-			if(message.getHtmlTemplate()!=null && StringUtils.isNotBlank(message.getHtml())) {
+			for(RecipientHolder recipient : recipients) {
 				
-				Document doc = Jsoup.parse(message.getHtmlTemplate().getHtml());
-				Elements elements = doc.select(message.getHtmlTemplate().getContentSelector());
-				elements.first().append(message.getHtml());
-				receipientHtml = doc.toString();
+				Map<String,Object> data = tokenResolver.getData();
+				data.putAll(new ServerResolver(realm).getData());
+				data.put("email", recipient.getEmail());
+				data.put("firstName", recipient.getFirstName());
+				data.put("fullName", recipient.getName());
+				data.put("principalId", recipient.getPrincipalId());
+				
+				Template subjectTemplate = templateService.createTemplate("message.subject." + message.getId(), 
+						message.getSubject(), 
+						message.getModifiedDate().getTime());
+				StringWriter subjectWriter = new StringWriter();
+				subjectTemplate.process(data, subjectWriter);
+				
+				String trackingImage = configurationService.getValue(realm, "email.trackingImage");
+				if(message.getTrack() && StringUtils.isNotBlank(trackingImage)) {
+					data.put("trackingImage", trackerService.generateTrackingUri(subjectWriter.toString(), 
+							recipient.getName(), recipient.getEmail(), realm));
+				} else {
+					try {
+						data.put("trackingImage", trackerService.generateNonTrackingUri(trackingImage, realm));
+					} catch (ResourceNotFoundException e) {
+					}
+				}
+				
+				Template bodyTemplate = templateService.createTemplate("message.body." + message.getId(), 
+						message.getBody(), 
+						message.getModifiedDate().getTime());
+				StringWriter bodyWriter = new StringWriter();
+				bodyTemplate.process(data, bodyWriter);
+				
+				String receipientHtml = "";
+				
+				if(message.getHtmlTemplate()!=null && StringUtils.isNotBlank(message.getHtml())) {
 					
+					Document doc = Jsoup.parse(message.getHtmlTemplate().getHtml());
+					Elements elements = doc.select(message.getHtmlTemplate().getContentSelector());
+					if(elements.isEmpty()) {
+						throw new IllegalStateException(String.format("Invalid content selector %s",message.getHtmlTemplate().getContentSelector()));
+					}
+					elements.first().append(message.getHtml());
+					receipientHtml = doc.toString();		
+				}
+				
+				Template htmlTemplate = templateService.createTemplate("message.html." + message.getId(), 
+						receipientHtml, 
+						message.getModifiedDate().getTime());				
+				StringWriter htmlWriter = new StringWriter();
+				htmlTemplate.process(data, htmlWriter);
+				
+				emailService.sendEmail(
+						realm,
+						subjectWriter.toString(),
+						bodyWriter.toString(),
+						htmlWriter.toString(),
+						message.getReplyToName(),
+						message.getReplyToEmail(),
+						new RecipientHolder[] { recipient }, 
+						null,
+						message.getTrack(), 
+						configurationService.getIntValue(realm, "smtp.delay"),
+						attachments.toArray(new EmailAttachment[0]));
 			}
 			
-			Template htmlTemplate = templateService.createTemplate("message.html." + message.getId(), 
-					receipientHtml, 
-					message.getModifiedDate().getTime());				
-			StringWriter htmlWriter = new StringWriter();
-			htmlTemplate.process(data, htmlWriter);
-			
-			emailService.sendEmail(
-					realm,
-					subjectWriter.toString(),
-					bodyWriter.toString(),
-					htmlWriter.toString(),
-					message.getReplyToName(),
-					message.getReplyToEmail(),
-					recipients.toArray(new RecipientHolder[0]), 
-					null,
-					message.getTrack(), 
-					configurationService.getIntValue(realm, "smtp.delay"),
-					attachments.toArray(new EmailAttachment[0]));
 			
 		} catch (MailException e) { 
 			// Will be logged by mail API

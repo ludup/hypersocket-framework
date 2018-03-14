@@ -23,7 +23,7 @@ public class FreeMarkerServiceImpl implements FreeMarkerService {
 		
 		cfg = new Configuration();
 		cfg.setDefaultEncoding("UTF-8");
-
+		cfg.setTagSyntax(Configuration.AUTO_DETECT_TAG_SYNTAX);
 		cfg.setTemplateExceptionHandler(TemplateExceptionHandler.IGNORE_HANDLER);
 		cfg.setTemplateLoader(stringLoader);
 	}
