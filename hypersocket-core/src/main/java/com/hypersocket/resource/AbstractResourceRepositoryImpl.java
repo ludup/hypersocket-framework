@@ -1,6 +1,5 @@
 package com.hypersocket.resource;
 
-import org.hibernate.Query;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,13 +19,13 @@ public abstract class AbstractResourceRepositoryImpl<T extends RealmResource>
 		
 		log.info(String.format("Deleting %s", getClass().getName()));
 		
-		if(getCount(getResourceClass(), new RealmCriteria(realm)) > 0) {
-			String hql = String.format("delete from %s where realm = :r", getResourceClass().getSimpleName());
-			Query q = createQuery(hql, true);
-			q.setParameter("r", realm);
-			log.info(String.format("Deleted %d %s entries", q.executeUpdate(), getResourceClass().getSimpleName()));
-			flush();
+		int count = 0;
+		for(T resource : getResources(realm)) {
+			delete(resource);
+			count++;
 		}
+		flush();		
+		log.info(String.format("Deleted %d %s entries", count, getResourceClass().getSimpleName()));
 	}
 	
 	@Override
