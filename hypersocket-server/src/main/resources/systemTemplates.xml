@@ -12,6 +12,7 @@
 		<property resourceKey="ui.path" inputType="text" refreshUserInterface="true"
 			defaultValue="ui" weight="200" />
 		<property resourceKey="server.defaultRedirect" inputType="text" defaultValue="" weight="400" />
+		<property resourceKey="server.robotsTxt" inputType="textarea" defaultValue="User-agent: *\r\nDisallow: /\r\n" weight="500" />
 	<!-- Following are hidden as they are the old way and needed for upgrade -->
 		<property resourceKey="http.port" inputType="hidden" minValue="1"
 			maxValue="65535" restart="true" defaultValue="80" weight="300"
