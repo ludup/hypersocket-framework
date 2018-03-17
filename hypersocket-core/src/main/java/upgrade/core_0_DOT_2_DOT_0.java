@@ -7,11 +7,16 @@
  ******************************************************************************/
 package upgrade;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.attributes.user.UserAttributeRepository;
@@ -33,6 +38,7 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.utils.HypersocketUtils;
 
 public class core_0_DOT_2_DOT_0 implements Runnable {
 
@@ -147,9 +153,20 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 
 		List<Principal> groups = new ArrayList<Principal>();
 
+		Preferences prefs = Preferences.userRoot();
+		
+		String username = prefs.node("hsf").get("hsfUsername", "admin");
+		String password = prefs.node("hsf").get("hsfPassword", "admin");
+
+		try {
+			if(prefs.nodeExists("hsf")) {
+				prefs.node("hsf").clear();
+			}
+		} catch (BackingStoreException e) {
+		}
 		// Create the default admin user
-		Principal admin = localRealmProvider.createUser(realm, "admin",
-				null, groups, new DefaultPasswordCreator("admin"), true);
+		Principal admin = localRealmProvider.createUser(realm, username,
+				null, groups, new DefaultPasswordCreator(password), true);
 
 		// Create the System Administrator role
 		Role rAdmin = permissionRepository.createRole(
