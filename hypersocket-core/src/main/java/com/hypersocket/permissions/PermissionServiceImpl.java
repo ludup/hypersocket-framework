@@ -398,7 +398,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public Set<Permission> getPrincipalPermissions(Principal principal) {
 
-		if (!permissionsCache.containsKey(principal)) {
+		if (!permissionsCache.containsKey(principal) || permissionsCache.get(principal)==null) {
 
 			List<Principal> principals = realmService.getAssociatedPrincipals(principal);
 			Set<Permission> principalPermissions = repository.getPrincipalPermissions(principals);
