@@ -41,10 +41,12 @@ public class ValidHostHandler extends HttpRequestHandler {
 	@Override
 	public boolean handlesRequest(HttpServletRequest request) {
 		Boolean result = (Boolean) request.getSession().getAttribute("validatedHost");
+		String host = request.getServerName();
 		if(result == null 
+				&& host != null 
 				&& systemConfigurationService.getBooleanValue("auth.validateHost") 
-				&& !(request.getServerName().equals("localhost") || request.getServerName().equals("127.0.0.1"))) {
-			result = realmService.getRealmByHost(request.getServerName(), null) == null;
+				&& !(host.equals("localhost") || host.equals("127.0.0.1"))) {
+			result = realmService.getRealmByHost(host , null) == null;
 			request.getSession().setAttribute("validatedHost", result);
 			return result;
 		} else {
