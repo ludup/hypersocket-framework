@@ -155,12 +155,13 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 
 		Preferences prefs = Preferences.userRoot();
 		
-		String username = prefs.node("hsf").get("hsfUsername", "admin");
-		String password = prefs.node("hsf").get("hsfPassword", "admin");
+		String username = prefs.node("hsf").get("username", "admin");
+		String password = prefs.node("hsf").get("password", "admin");
 
 		try {
 			if(prefs.nodeExists("hsf")) {
 				prefs.node("hsf").clear();
+				prefs.node("hsf").sync();
 			}
 		} catch (BackingStoreException e) {
 		}
