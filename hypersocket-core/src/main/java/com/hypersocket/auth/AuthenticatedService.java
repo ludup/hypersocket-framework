@@ -55,4 +55,6 @@ public interface AuthenticatedService {
 	
 	void setupSystemContext(Realm realm);
 
+	void setupSystemContext(Principal principal);
+
 }
