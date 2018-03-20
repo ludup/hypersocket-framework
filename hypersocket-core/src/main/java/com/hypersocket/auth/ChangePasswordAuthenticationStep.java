@@ -68,7 +68,7 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}
 		
-		authenticationService.setupSystemContext(state.getRealm());
+		authenticationService.setupSystemContext(state.getPrincipal());
 		
 		try {
 			doPasswordChange(state, password);
