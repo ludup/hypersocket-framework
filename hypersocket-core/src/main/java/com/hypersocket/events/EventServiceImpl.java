@@ -4,13 +4,17 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +28,7 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.i18n.Message;
 import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.resource.AssignableResourceEvent;
+import com.hypersocket.triggers.TriggerResourceServiceImpl;
 
 @Service
 public class EventServiceImpl implements EventService {
@@ -144,6 +149,58 @@ public class EventServiceImpl implements EventService {
 		eventDefinitions.put(def.getResourceKey(), def);
 	}
 
+	@Override
+	public void registerDynamicEvent(String resourceKey, String name, Set<String> attributeNames, 
+			String successMessage, String failureMessage, String warningMessage) {
+		
+		I18N.overrideMessage(Locale.ENGLISH,
+				new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+						resourceKey, name, name));
+		
+		I18N.overrideMessage(
+				Locale.ENGLISH,
+				new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+						resourceKey + ".success", 
+						successMessage, 
+						successMessage));
+	
+		I18N.overrideMessage(
+				Locale.ENGLISH,
+				new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+						resourceKey + ".failure", 
+						failureMessage,
+						failureMessage));
+
+		I18N.overrideMessage(
+				Locale.ENGLISH,
+				new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+						resourceKey + ".warning", 
+						failureMessage,
+						failureMessage));
+		
+		Set<String> variableNames = new HashSet<String>();
+		
+		for(String attributeName : attributeNames) {
+			String tmp = WordUtils.capitalize(StringUtils.replaceChars(attributeName,  ".-_", "   "));
+			String var = resourceKey + "." + StringUtils.replaceChars(attributeName.toLowerCase(),  "-_ ", "...");
+			I18N.overrideMessage(
+					Locale.ENGLISH,
+					new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+							var, 
+							tmp,
+							tmp));
+			variableNames.add(var);
+		}
+		
+		I18N.flushOverrides();
+		
+		EventDefinition def = new EventDefinition(
+				TriggerResourceServiceImpl.RESOURCE_BUNDLE, resourceKey, "", null);
+
+		def.getAttributeNames().addAll(variableNames);
+		
+		registerEventDefinition(def);
+	}
 	
 	@Override
 	public void registerEvent(Class<? extends SystemEvent> eventClass,

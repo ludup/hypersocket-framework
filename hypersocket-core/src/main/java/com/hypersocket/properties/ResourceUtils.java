@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -207,5 +209,13 @@ public class ResourceUtils {
 
 	public static String implodeObjectValues(Collection<?> array) {
 		return StringUtils.join(array.toArray(new Object[0]), "]|[");	
+	}
+
+	public static Set<String> getNameValues(String values) {
+		Set<String> names = new HashSet<String>();
+		for(String np : explodeCollectionValues(values)) {
+			names.add(getNamePairKey(np));
+		}
+		return names;
 	}
 }

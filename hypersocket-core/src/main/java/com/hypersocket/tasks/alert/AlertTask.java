@@ -1,8 +1,8 @@
 package com.hypersocket.tasks.alert;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -13,8 +13,6 @@ import org.springframework.stereotype.Component;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
-import com.hypersocket.i18n.I18N;
-import com.hypersocket.i18n.Message;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
@@ -164,33 +162,20 @@ public class AlertTask extends AbstractTaskProvider {
 		return repository;
 	}
 
-	private void registerDynamicEvent(TriggerResource trigger) {
-		EventDefinition sourceEvent = eventService.getEventDefinition(trigger.getEvent());
-
-		String resourceKey = "event.alert." + trigger.getId();
-
-		I18N.overrideMessage(Locale.ENGLISH,
-				new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
-						resourceKey, trigger.getName(), trigger.getName()));
-		I18N.overrideMessage(
-				Locale.ENGLISH,
-				new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
-						resourceKey + ".warning", repository.getValue(trigger,
-								"alert.text"), repository.getValue(trigger,
-								"alert.text")));
-
-		I18N.flushOverrides();
-		EventDefinition def = new EventDefinition(
-				TriggerResourceServiceImpl.RESOURCE_BUNDLE, resourceKey, "", null);
-		if(sourceEvent != null)
-			def.getAttributeNames().addAll(sourceEvent.getAttributeNames());
-
-		eventService.registerEventDefinition(def);
-	}
-
 	@Override
 	public void taskCreated(Task task) {
 		registerDynamicEvent((TriggerResource)task);
+	}
+
+	private void registerDynamicEvent(TriggerResource trigger) {
+		
+		String resourceKey = "event.alert." + trigger.getId();
+		EventDefinition sourceEvent = eventService.getEventDefinition(trigger.getEvent());
+
+		eventService.registerDynamicEvent(resourceKey, 
+				trigger.getName(), 
+				sourceEvent!=null ? sourceEvent.getAttributeNames() : Collections.<String>emptySet(), 
+				"", "", repository.getValue(trigger, "alert.text"));
 	}
 
 	@Override
