@@ -2490,6 +2490,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			RealmProvider local = getLocalProvider();
 			return local.getPrincipalCount(realm, PrincipalType.USER, searchColumn, searchPattern);
 		}
+
+		@Override
+		public List<?> searchPersonalResources(Principal principal, String searchColumn, String searchPattern,
+				int start, int length, ColumnSort[] sorting) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Long searchPersonalResourcesCount(Principal principal, String searchColumn, String searchPattern) {
+			throw new UnsupportedOperationException();
+		}
 		
 	}
 	
@@ -2511,6 +2522,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		public Long searchResourcesCount(Realm realm, String searchColumn, String searchPattern) {
 			RealmProvider remote = getProviderForRealm(realm);
 			return remote.getPrincipalCount(realm, PrincipalType.USER, searchColumn, searchPattern);
+		}
+		
+		@Override
+		public List<?> searchPersonalResources(Principal principal, String searchColumn, String searchPattern,
+				int start, int length, ColumnSort[] sorting) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Long searchPersonalResourcesCount(Principal principal, String searchColumn, String searchPattern) {
+			throw new UnsupportedOperationException();
 		}
 		
 	}
