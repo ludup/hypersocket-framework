@@ -125,6 +125,7 @@ public class AlertTask extends AbstractTaskProvider {
 		return taskRepository;
 	}
 
+
 	private void registerDynamicEvent(TriggerResource trigger) {
 		EventDefinition sourceEvent = eventService.getEventDefinition(trigger.getEvent());
 
