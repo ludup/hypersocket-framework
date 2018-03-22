@@ -45,10 +45,6 @@ public class OrganizationalUnitRepositoryImpl extends
 			/**
 			 * This breaks in the cloud?!?!
 			 */
-//			String hql = "delete from OrganizationalUnit o where o.realm = :realm";
-//			createQuery(hql, true)
-//					.setParameter("realm", realm)
-//					.executeUpdate();
 			for(OrganizationalUnit o : list(OrganizationalUnit.class, new RealmCriteria(realm))) {
 				delete(o);
 			}
