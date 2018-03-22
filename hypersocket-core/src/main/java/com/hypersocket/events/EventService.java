@@ -30,4 +30,8 @@ public interface EventService  {
 
 	void registerExtender(EventExtender extender);
 
+	void registerDynamicEvent(String resourceKey, String name, Set<String> attributeNames, String successMessage,
+			String failureMessage, String warningMessage);
+
+
 }
