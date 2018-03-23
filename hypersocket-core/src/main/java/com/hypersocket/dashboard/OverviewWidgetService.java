@@ -17,4 +17,6 @@ public interface OverviewWidgetService {
 	public Collection<Link> getVideos() throws ResourceException;
 	
 	public Collection<Link> getDocumentation() throws ResourceException;
+
+	Collection<Link> getFirstSteps() throws ResourceException;
 }

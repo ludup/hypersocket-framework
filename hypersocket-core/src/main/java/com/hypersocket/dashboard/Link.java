@@ -8,6 +8,7 @@ public class Link {
 	String name;
 	String url;
 	String icon;
+	String desc;
 	Integer weight = 0;
 	
 	public Link() {
@@ -44,6 +45,14 @@ public class Link {
 
 	public void setWeight(Integer weight) {
 		this.weight = weight;
+	}
+
+	public String getDesc() {
+		return desc;
+	}
+
+	public void setDesc(String desc) {
+		this.desc = desc;
 	}
 
 	

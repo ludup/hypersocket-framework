@@ -108,4 +108,25 @@ public class OverviewWidgetController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "overview/firstSteps", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<Link> getFirstSteps(HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+				return new ResourceList<Link>(service.getFirstSteps());
+			
+		} catch (ResourceException e) {
+			return new ResourceList<Link>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 }

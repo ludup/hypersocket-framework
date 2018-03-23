@@ -40,10 +40,12 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	private Collection<Link> cachedLinks = null;
 	private Collection<Link> cachedVideos = null;
 	private Collection<Link> cachedDocumentation = null;
+	private Collection<Link> cachedFirstSteps = null;
 
 	private long lastLinkUpdate = 0;
 	private long lastVideoUpdate = 0;
 	private long lastDocumentationUpdate = 0;
+	private long lastFirstStepsUpdate = 0;
 
 	@Autowired
 	I18NService i18nService;
@@ -95,6 +97,17 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 			}
 		});
 		
+		this.registerWidget(HELPZONE, new OverviewWidget(0, "overview.firstSteps.title",
+				"firstSteps", true) {
+			public boolean hasContent() {
+				try {
+					return getFirstSteps().size() > 0;
+				} catch (ResourceException e) {
+					return false;
+				}
+			}
+		});
+		
 		
 	}
 
@@ -134,24 +147,19 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 				List<Link> results = new ArrayList<Link>();
 
-				String content = IOUtils.toString(httpUtils
-						.doHttpGet("http://updates.hypersocket.com/messages/"
-								+ HypersocketVersion.getBrandId()
-								+ "/links.json", true));
-				
-				// Get global links
-				results.addAll(Arrays.asList(mapper.readValue(content, Link[].class)));
-
-				// Get product links
+				// Get global documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
-						.doHttpGet("http://updates.hypersocket.com/messages/"
-								+ HypersocketVersion.getProductId()
-								+ "/links.json", true), Link[].class)));
+						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/links-"
+								+ HypersocketVersion.getBrandId(), true), Link[].class)));
+
+				// Get product documentation
+				results.addAll(Arrays.asList(mapper.readValue(httpUtils
+						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/links-"
+								+ HypersocketVersion.getProductId(), true), Link[].class)));
 
 				cachedLinks = sort(results);
 				lastLinkUpdate = System.currentTimeMillis();
 			} catch (Throwable e) {
-				e.printStackTrace();
 				throw new ResourceException(RESOURCE_BUNDLE,
 						"error.readingArticleList", e.getMessage());
 			}
@@ -171,17 +179,15 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 				List<Link> results = new ArrayList<Link>();
 
-				// Get global videos
+				// Get global documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
-						.doHttpGet("http://updates.hypersocket.com/messages/"
-								+ HypersocketVersion.getBrandId()
-								+ "/videos.json", true), Link[].class)));
+						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/videos-"
+								+ HypersocketVersion.getBrandId(), true), Link[].class)));
 
-				// Get product videos
+				// Get product documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
-						.doHttpGet("http://updates.hypersocket.com/messages/"
-								+ HypersocketVersion.getProductId()
-								+ "/videos.json", true), Link[].class)));
+						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/videos-"
+								+ HypersocketVersion.getProductId(), true), Link[].class)));
 
 				cachedVideos = sort(results);
 				lastVideoUpdate = System.currentTimeMillis();
@@ -219,15 +225,13 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 				// Get global documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
-						.doHttpGet("http://updates.hypersocket.com/messages/"
-								+ HypersocketVersion.getBrandId()
-								+ "/documentation.json", true), Link[].class)));
+						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/docs-"
+								+ HypersocketVersion.getBrandId(), true), Link[].class)));
 
 				// Get product documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
-						.doHttpGet("http://updates.hypersocket.com/messages/"
-								+ HypersocketVersion.getProductId()
-								+ "/documentation.json", true), Link[].class)));
+						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/docs-"
+								+ HypersocketVersion.getProductId(), true), Link[].class)));
 
 				cachedDocumentation = sort(results);
 				lastDocumentationUpdate = System.currentTimeMillis();
@@ -238,5 +242,37 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 		}
 
 		return cachedDocumentation;
+	}
+	
+	@Override
+	public Collection<Link> getFirstSteps() throws ResourceException {
+
+		if (System.currentTimeMillis() - lastFirstStepsUpdate > (24 * 60 * 60 * 1000)) {
+
+			ObjectMapper mapper = new ObjectMapper();
+
+			try {
+
+				List<Link> results = new ArrayList<Link>();
+
+				// Get global documentation
+				results.addAll(Arrays.asList(mapper.readValue(httpUtils
+						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/steps-"
+								+ HypersocketVersion.getBrandId(), true), Link[].class)));
+
+				// Get product documentation
+				results.addAll(Arrays.asList(mapper.readValue(httpUtils
+						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/steps-"
+								+ HypersocketVersion.getProductId(), true), Link[].class)));
+
+				cachedFirstSteps = sort(results);
+				lastFirstStepsUpdate = System.currentTimeMillis();
+			} catch (Throwable e) {
+				throw new ResourceException(RESOURCE_BUNDLE,
+						"error.readingDocumentationList", e.getMessage());
+			}
+		}
+
+		return cachedFirstSteps;
 	}
 }
