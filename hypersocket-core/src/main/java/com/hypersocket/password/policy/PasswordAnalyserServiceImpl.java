@@ -111,7 +111,10 @@ public class PasswordAnalyserServiceImpl implements PasswordAnalyserService, Ser
 			for (char ch : password) {
 				if (Character.isLetter(ch)) {
 					bui.append(ch);
-				} else {
+					if(bui.length() > 3) {
+						words.add(bui.toString());
+					}
+ 				} else {
 					if (bui.length() > 0) {
 						words.add(bui.toString());
 						bui.setLength(0);
