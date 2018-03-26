@@ -200,6 +200,9 @@ public class LogonController extends AuthenticatedController {
 			}
 
 			String redirectHome = (String) request.getSession().getAttribute("redirectHome");
+			if(redirectHome==null && request.getParameterMap().containsKey("redirectHome")) {
+				redirectHome = request.getParameter("redirectHome");
+			}
 			if(redirectHome!=null) {
 				state.setHomePage(redirectHome);
 				request.getSession().removeAttribute("redirectHome");
