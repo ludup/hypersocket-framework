@@ -43,9 +43,6 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 	I18NService i18nService;
 	
 	@Autowired
-	MissingEmailAddressRepository repository;
-	
-	@Autowired
 	ProfileRepository profileRepository;
 	
 	@Autowired

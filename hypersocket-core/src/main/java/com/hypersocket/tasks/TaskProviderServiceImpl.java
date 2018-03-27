@@ -28,8 +28,10 @@ public class TaskProviderServiceImpl extends AbstractAuthenticatedServiceImpl im
 	Map<String, TaskProvider> registeredTasks = new HashMap<String, TaskProvider>();
 	List<String> triggerTasks = new ArrayList<String>();
 	List<String> nonSystemTriggerTasks = new ArrayList<String>();
+	List<String> realmTriggerTasks = new ArrayList<String>();
 	List<String> automationTasks = new ArrayList<String>();
 	List<String> nonSystemAutomationTasks = new ArrayList<String>();
+	List<String> realmAutomationTasks = new ArrayList<String>();
 	
 	boolean disableSystemTasks = false;
 	
@@ -44,16 +46,24 @@ public class TaskProviderServiceImpl extends AbstractAuthenticatedServiceImpl im
 		for (String resourceKey : action.getResourceKeys()) {
 			registeredTasks.put(resourceKey, action);
 			if(action.supportsAutomation()) {
-				automationTasks.add(resourceKey);
-				if(!action.isSystem()) {
-					nonSystemAutomationTasks.add(resourceKey);
+				if(action.isRealmTask()) {
+					 realmAutomationTasks.add(resourceKey);
+				} else {
+					automationTasks.add(resourceKey);
+					if(!action.isSystem()) {
+						nonSystemAutomationTasks.add(resourceKey);
+					}
 				}
 			}
 			
 			if(action.supportsTriggers()) {
-				triggerTasks.add(resourceKey);
-				if(!action.isSystem()) {
-					nonSystemTriggerTasks.add(resourceKey);
+				if(action.isRealmTask()) {
+					realmTriggerTasks.add(resourceKey);
+				} else {
+					triggerTasks.add(resourceKey);
+					if(!action.isSystem()) {
+						nonSystemTriggerTasks.add(resourceKey);
+					}
 				}
 			}
 		}
@@ -66,12 +76,26 @@ public class TaskProviderServiceImpl extends AbstractAuthenticatedServiceImpl im
 
 	@Override
 	public List<String> getTriggerTasks() {
-		return getCurrentRealm().isSystem() || !isDisableSystemTasks() ? triggerTasks : nonSystemTriggerTasks;
+		List<String> results = new ArrayList<String>();
+		results.addAll(getCurrentRealm().isSystem() || !isDisableSystemTasks() ? triggerTasks : nonSystemTriggerTasks);	
+		for(String resourceKey : realmTriggerTasks) {
+			if((registeredTasks.get(resourceKey)).isRealmSupported(getCurrentRealm())) {
+				results.add(resourceKey);
+			}
+		}
+		return results;
 	}
 	
 	@Override
 	public List<String> getAutomationTasks() {
-		return getCurrentRealm().isSystem() || !isDisableSystemTasks() ? automationTasks : nonSystemAutomationTasks;
+		List<String> results = new ArrayList<String>();
+		results.addAll(getCurrentRealm().isSystem() || !isDisableSystemTasks() ? automationTasks : nonSystemAutomationTasks);
+		for(String resourceKey : realmTriggerTasks) {
+			if((registeredTasks.get(resourceKey)).isRealmSupported(getCurrentRealm())) {
+				results.add(resourceKey);
+			}
+		}
+		return results;
 	}
 	
 	@Override

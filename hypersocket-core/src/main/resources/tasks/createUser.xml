@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="createUser">
+	<propertyCategory resourceKey="category.principalInfo" resourceBundle="TaskProviderService" weight="-1000">
+		<property resourceKey="createUser.principalName" inputType="text" defaultValue="" weight="100" />
+	</propertyCategory>
+</propertyTemplates>

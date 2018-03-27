@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.triggers.TriggerResourceService;
 
@@ -118,5 +119,15 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	@Override
 	public boolean supportsTriggers() {
 		return true;
+	}
+	
+	@Override
+	public boolean isRealmTask() {
+		return false;
+	}
+	
+	@Override
+	public boolean isRealmSupported(Realm realm) {
+		return false;
 	}
 }

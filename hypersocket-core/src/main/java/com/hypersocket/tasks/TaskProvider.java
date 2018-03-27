@@ -44,4 +44,8 @@ public interface TaskProvider {
 	Collection<String> getPropertyNames(Task task);
 	
 	boolean isSystem();
+
+	boolean isRealmTask();
+
+	boolean isRealmSupported(Realm realm);
 }

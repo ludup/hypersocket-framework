@@ -96,7 +96,7 @@ public class AutomationJob extends AbstractTriggerJob {
 				result = executeTask(resource, provider, event);
 			}
 			
-			if(result.isSuccess()) {
+			if(result==null || result.isSuccess()) {
 				eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource));
 			} else {
 				eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource, false));
