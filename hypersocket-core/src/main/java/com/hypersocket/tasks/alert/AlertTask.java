@@ -41,9 +41,6 @@ public class AlertTask extends AbstractTaskProvider {
 
 	@Autowired
 	private AlertTaskRepository taskRepository; 
-	
-	@Autowired
-	private TriggerResourceService triggerService;
 
 	@Autowired
 	private EventService eventService;
@@ -61,10 +58,6 @@ public class AlertTask extends AbstractTaskProvider {
 		eventService.registerEvent(AlertEvent.class,
 				TaskProviderServiceImpl.RESOURCE_BUNDLE);
 
-		for (TriggerResource trigger : triggerService
-				.getTriggersByResourceKey(ACTION_GENERATE_ALERT)) {
-			registerDynamicEvent(trigger);
-		}
 	}
 
 	@Override
@@ -125,38 +118,14 @@ public class AlertTask extends AbstractTaskProvider {
 		return taskRepository;
 	}
 
-
-	private void registerDynamicEvent(TriggerResource trigger) {
-		EventDefinition sourceEvent = eventService.getEventDefinition(trigger.getEvent());
-
-		String resourceKey = "event.alert." + trigger.getId();
-
-		I18N.overrideMessage(Locale.ENGLISH,
-				new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
-						resourceKey, trigger.getName(), trigger.getName()));
-		I18N.overrideMessage(
-				Locale.ENGLISH,
-				new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
-						resourceKey + ".warning", taskRepository.getValue(trigger,
-								"alert.text"), taskRepository.getValue(trigger,
-								"alert.text")));
-
-		EventDefinition def = new EventDefinition(
-				TriggerResourceServiceImpl.RESOURCE_BUNDLE, resourceKey, "", null);
-		if(sourceEvent != null)
-			def.getAttributeNames().addAll(sourceEvent.getAttributeNames());
-
-		eventService.registerEventDefinition(def);
-	}
-
 	@Override
 	public void taskCreated(Task task) {
-		registerDynamicEvent((TriggerResource)task);
+		alertService.registerDynamicEvent((TriggerResource)task);
 	}
 
 	@Override
 	public void taskUpdated(Task task) {
-		registerDynamicEvent((TriggerResource)task);
+		alertService.registerDynamicEvent((TriggerResource)task);
 	}
 
 	@Override

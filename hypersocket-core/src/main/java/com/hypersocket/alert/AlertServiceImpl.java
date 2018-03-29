@@ -2,14 +2,26 @@ package com.hypersocket.alert;
 
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.cache.Cache;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.cache.CacheService;
+import com.hypersocket.events.EventDefinition;
+import com.hypersocket.events.EventService;
+import com.hypersocket.i18n.I18N;
+import com.hypersocket.i18n.Message;
+import com.hypersocket.tasks.alert.AlertTask;
+import com.hypersocket.tasks.alert.AlertTaskRepository;
+import com.hypersocket.triggers.TriggerResource;
+import com.hypersocket.triggers.TriggerResourceService;
+import com.hypersocket.triggers.TriggerResourceServiceImpl;
 
 @Service
 public class AlertServiceImpl implements AlertService {
@@ -22,6 +34,47 @@ public class AlertServiceImpl implements AlertService {
 	
 	Map<String,Object> alertLocks = new HashMap<String,Object>();
 	
+	@Autowired
+	EventService eventService; 
+	
+	@Autowired
+	TriggerResourceService triggerService; 
+	
+	@Autowired
+	AlertTaskRepository taskRepository; 
+	
+	@Override
+	public void registerDynamicEvent(TriggerResource trigger) {
+		EventDefinition sourceEvent = eventService.getEventDefinition(trigger.getEvent());
+
+		String resourceKey = "event.alert." + trigger.getId();
+
+		I18N.overrideMessage(Locale.ENGLISH,
+				new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+						resourceKey, trigger.getName(), trigger.getName()));
+		I18N.overrideMessage(
+				Locale.ENGLISH,
+				new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
+						resourceKey + ".warning", taskRepository.getValue(trigger,
+								"alert.text"), taskRepository.getValue(trigger,
+								"alert.text")));
+
+		EventDefinition def = new EventDefinition(
+				TriggerResourceServiceImpl.RESOURCE_BUNDLE, resourceKey, "", null);
+		if(sourceEvent != null)
+			def.getAttributeNames().addAll(sourceEvent.getAttributeNames());
+
+		eventService.registerEventDefinition(def);
+	}
+	
+	@EventListener
+	@Override
+	public void onStartup(ContextStartedEvent event) {
+		for (TriggerResource trigger : triggerService
+				.getTriggersByResourceKey(AlertTask.ACTION_GENERATE_ALERT)) {
+			registerDynamicEvent(trigger);
+		}
+	}
 	@Override
 	public <T> T processAlert(
 			String resourceKey,
