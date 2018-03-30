@@ -167,4 +167,5 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	Collection<PropertyCategory> getPrincipalTemplate();
 
 	Map<String, String> getPrincipalTemplateProperties(Resource resource);
+
 }

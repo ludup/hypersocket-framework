@@ -39,7 +39,6 @@ import com.hypersocket.permissions.Role;
 import com.hypersocket.permissions.RoleUtils;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AssignableResourceUpdate;
 import com.hypersocket.resource.ResourceColumns;
@@ -218,7 +217,6 @@ public class PasswordPolicyResourceController extends ResourceController {
 		}  
 	}
 	
-	@AuthenticationRequired
 	@RequestMapping(value = "passwordPolicys/analyse", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -228,13 +226,13 @@ public class PasswordPolicyResourceController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		setupSystemContext(sessionUtils.getCurrentRealmOrDefault(request));
+		
 		try {
 			
 			PasswordPolicyResource policy;
 			if(id!=null) {
-				Principal principal = realmService.getPrincipalById(getCurrentRealm(), id, PrincipalType.USER);
+				Principal principal = realmService.getPrincipalById(id);
 				policy = resourceService.resolvePolicy(principal);
 				username = principal.getPrincipalName();
 			} else {

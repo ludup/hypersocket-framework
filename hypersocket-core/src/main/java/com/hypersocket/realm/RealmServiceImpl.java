@@ -296,7 +296,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				}
 			}
 		});
-
 	}
 
 	@Override
@@ -1993,8 +1992,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	
 	@Override
 	public Principal getUniquePrincipalForRealm(String username, Realm realm, PrincipalType... type) throws ResourceNotFoundException {	
-		Collection<Principal> found = principalRepository.getPrincpalsByName(username, realm, type);
-		return selectPrincipal(found, username);
+		return getProviderForRealm(realm).getPrincipalByName(username, realm, type);
 	}
 
 	protected Principal selectPrincipal(Collection<Principal> found, String username) throws ResourceNotFoundException {
