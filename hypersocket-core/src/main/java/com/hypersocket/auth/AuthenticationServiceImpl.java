@@ -932,7 +932,17 @@ public class AuthenticationServiceImpl extends
 								.getName()));
 			}
 
-			throw new PrincipalNotFoundException(String.format("%s is not a valid username", username));
+			if(authRealm!=null) {
+				if (log.isDebugEnabled()) {
+					log.debug("Performing realm direct lookup for principal " + username + " in "
+							+ authRealm.getName());
+				}
+				principal = realmService.getPrincipalByName(authRealm, username, PrincipalType.USER);
+			}
+			
+			if(principal==null) {
+				throw new PrincipalNotFoundException(String.format("%s is not a valid username", username));
+			}
 			
 		}
 

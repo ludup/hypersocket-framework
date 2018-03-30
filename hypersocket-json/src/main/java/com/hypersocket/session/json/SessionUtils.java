@@ -24,6 +24,7 @@ import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionResourceToken;
 import com.hypersocket.session.SessionService;
@@ -48,6 +49,9 @@ public class SessionUtils {
 	
 	@Autowired
 	SystemConfigurationService systemConfigurationService; 
+	
+	@Autowired
+	RealmService realmService; 
 	
 	public Session getActiveSession(HttpServletRequest request) {
 		
@@ -97,6 +101,18 @@ public class SessionUtils {
 		Session session = getActiveSession(request);
 		if (session == null)
 			throw new UnauthorizedException();
+		return session.getCurrentRealm();
+	}
+	
+	/**
+	 * Use AuthenticatedService.getCurrentPrincipal instead ensuring that a valid
+	 * principal context has been setup previously.
+	 */
+	public Realm getCurrentRealmOrDefault(HttpServletRequest request)
+			throws UnauthorizedException {
+		Session session = getActiveSession(request);
+		if (session == null)
+			return realmService.getRealmByHost(request.getServerName());
 		return session.getCurrentRealm();
 	}
 

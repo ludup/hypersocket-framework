@@ -1,6 +1,5 @@
 package com.hypersocket.tasks.alert;
 
-import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -10,11 +9,8 @@ import org.springframework.stereotype.Component;
 
 import com.hypersocket.alert.AlertCallback;
 import com.hypersocket.alert.AlertService;
-import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
-import com.hypersocket.i18n.I18N;
-import com.hypersocket.i18n.Message;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
@@ -24,7 +20,6 @@ import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskProviderServiceImpl;
 import com.hypersocket.triggers.AbstractTaskResult;
 import com.hypersocket.triggers.TriggerResource;
-import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.ValidationException;
 
