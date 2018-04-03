@@ -1,5 +1,7 @@
 package com.hypersocket.triggers;
 
+import java.util.List;
+
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
@@ -39,7 +41,7 @@ public abstract class AbstractTriggerJob extends PermissionsAwareJobNonTransacti
 			throws JobExecutionException;
 	
 	protected void processEventTrigger(TriggerResource trigger,
-			SystemEvent event, SystemEvent originalEvent) throws ValidationException {
-		triggerExecutor.processEventTrigger(trigger, event, originalEvent);
+			SystemEvent event, List<SystemEvent> sourceEvents) throws ValidationException {
+		triggerExecutor.processEventTrigger(trigger, event, sourceEvents);
 	}
 }

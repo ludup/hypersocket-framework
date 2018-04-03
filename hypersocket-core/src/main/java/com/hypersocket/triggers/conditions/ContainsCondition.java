@@ -1,5 +1,7 @@
 package com.hypersocket.triggers.conditions;
 
+import java.util.List;
+
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.triggers.TriggerCondition;
 import com.hypersocket.triggers.TriggerResource;
@@ -9,13 +11,15 @@ public class ContainsCondition implements Condition {
 
 	@Override
 	public boolean checkCondition(TriggerCondition condition, TriggerResource trigger,
-			SystemEvent event) throws ValidationException {
-		if (!event.hasAttribute(condition.getAttributeKey())) {
+			List<SystemEvent> sourceEvents) throws ValidationException {
+
+		String value = TriggerAttributeHelper.getAttribute(condition.getAttributeKey(), sourceEvents);
+		
+		if (value==null) {
 			return false;
 		}
 
-		return event.getAttribute(condition.getAttributeKey()).toString()
-				.contains(condition.getConditionValue());
+		return value.contains(condition.getConditionValue());
 	}
 
 	@Override

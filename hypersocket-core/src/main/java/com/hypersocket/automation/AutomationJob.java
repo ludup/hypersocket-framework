@@ -1,5 +1,8 @@
 package com.hypersocket.automation;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
@@ -77,6 +80,8 @@ public class AutomationJob extends AbstractTriggerJob {
 			eventService.publishEvent(event);
 			
 			TaskResult result;
+			final List<SystemEvent> sourceEvents = new ArrayList<SystemEvent>();
+			sourceEvents.add(event);
 			
 			if(resource.getTransactional()) {
 				result = transactionService.doInTransaction(new TransactionCallback<TaskResult>() {
@@ -85,7 +90,7 @@ public class AutomationJob extends AbstractTriggerJob {
 					public TaskResult doInTransaction(TransactionStatus status) {
 
 						try {
-							return executeTask(resource, provider, event);
+							return executeTask(resource, provider, sourceEvents);
 						} catch (ValidationException e) {
 							throw new IllegalStateException(e.getMessage(), e);
 						}
@@ -93,7 +98,7 @@ public class AutomationJob extends AbstractTriggerJob {
 					
 				});
 			} else {
-				result = executeTask(resource, provider, event);
+				result = executeTask(resource, provider, sourceEvents);
 			}
 			
 			if(result==null || result.isSuccess()) {
@@ -107,8 +112,11 @@ public class AutomationJob extends AbstractTriggerJob {
 	}
 
 	
-	private TaskResult executeTask(AutomationResource resource, TaskProvider provider, SystemEvent event) throws ValidationException {
-		TaskResult outputEvent = provider.execute(resource, event.getCurrentRealm(), event);
+	private TaskResult executeTask(AutomationResource resource, TaskProvider provider, List<SystemEvent> event) throws ValidationException {
+		
+		SystemEvent lastEvent = event.get(event.size()-1);
+		
+		TaskResult outputEvent = provider.execute(resource, lastEvent.getCurrentRealm(), event);
 		
 		if(outputEvent!=null) {
 

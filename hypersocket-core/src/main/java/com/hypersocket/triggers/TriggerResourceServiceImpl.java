@@ -145,64 +145,81 @@ public class TriggerResourceServiceImpl extends
 
 		eventService.registerEvent(TriggerExecutedEvent.class, RESOURCE_BUNDLE);
 
-		replacementVariables.put("currentUser.email",
-				new ReplacementVariableProvider() {
-					@Override
-					public String getReplacementValue(String variable) {
-						return 	getCurrentPrincipal().getEmail();
-					}
-				});
-		replacementVariables.put("currentUser.phone",
-				new ReplacementVariableProvider() {
-					@Override
-					public String getReplacementValue(String variable) {
-						try {
-							return realmService.getPrincipalAddress(
-									getCurrentPrincipal(), MediaType.PHONE);
-						} catch (MediaNotFoundException e) {
-							return "";
-						}
-					}
-				});
-		replacementVariables.put("administrators.email",
-				new ReplacementVariableProvider() {
-					@Override
-					public String getReplacementValue(String variable) {
-						StringBuffer buf = new StringBuffer();
-						try {
-							for(Principal principal : permissionService.getPrincipalsByRole(
-									getCurrentRealm(), permissionService.getRealmAdministratorRole(getCurrentRealm()))) {
-								if(StringUtils.isNotBlank(principal.getPrimaryEmail())) {
-									if(buf.length() > 0) {
-										buf.append("\r\n");
-									}
-									buf.append(principal.getPrimaryEmail());
-								}
-							}
-						} catch (ResourceNotFoundException | AccessDeniedException e) {
-							log.error("Failed to lookup administrators emails", e);
-						}
-						return buf.toString();
-					}
-				});
-		
-		realmService.registerRealmListener(new RealmAdapter() {
+		new DefaultVariableReplacementProvider("default.currentUser.email") {
+				
 			@Override
-			public void onDeleteRealm(Realm realm) throws ResourceException, AccessDeniedException {
-				getRepository().deleteRealm(realm);
-			}	
-		});
+			public String getReplacementValue(String variable) {
+				return 	getCurrentPrincipal().getEmail();
+			}
+				
+		};
+		
+		new DefaultVariableReplacementProvider("default.currentUser.phone") {
+			
+			@Override
+			public String getReplacementValue(String variable) {
+				try {
+					return realmService.getPrincipalAddress(
+							getCurrentPrincipal(), MediaType.PHONE);
+				} catch (MediaNotFoundException e) {
+					return "";
+				}
+			}
+				
+		};
+		
+		new DefaultVariableReplacementProvider("default.administrators.email") {
+			
+			@Override
+			public String getReplacementValue(String variable) {
+				StringBuffer buf = new StringBuffer();
+				try {
+					for(Principal principal : permissionService.getPrincipalsByRole(
+							getCurrentRealm(), permissionService.getRealmAdministratorRole(getCurrentRealm()))) {
+						if(StringUtils.isNotBlank(principal.getPrimaryEmail())) {
+							if(buf.length() > 0) {
+								buf.append("\r\n");
+							}
+							buf.append(principal.getPrimaryEmail());
+						}
+					}
+				} catch (ResourceNotFoundException | AccessDeniedException e) {
+					log.error("Failed to lookup administrators emails", e);
+				}
+				return buf.toString();
+			}
+				
+		};
 	}
 
+	@Override 
+	public void registerReplacementVariables(ReplacementVariableProvider provider) {
+		for(String variable : provider.getReplacementVariableNames()) {
+			replacementVariables.put(variable, provider);
+		}
+	}
+	
 	@Override
 	public Set<String> getDefaultVariableNames() {
-		return new HashSet<String>(replacementVariables.keySet());
+		Set<String> tmp = new HashSet<String>();
+		for(ReplacementVariableProvider provider : replacementVariables.values()) {
+			tmp.addAll(provider.getReplacementVariableNames());
+		}
+		return tmp;
 	}
 
 	@Override
 	public String getDefaultVariableValue(String variableName) {
-		return replacementVariables.get(variableName).getReplacementValue(
-				variableName);
+		/*
+		 * Backwards compatibiltiy
+		 */
+		if(variableName.startsWith("currentUser.")) {
+			variableName = "default." + variableName;
+		}
+		if(variableName.equals("administrators.email")) {
+			variableName = "default." + variableName;
+		}
+		return replacementVariables.get(variableName).getReplacementValue(variableName);
 	}
 
 	@Override
@@ -514,7 +531,9 @@ public class TriggerResourceServiceImpl extends
 			}
 			
 			try {
-				triggerExecutor.scheduleOrExecuteTrigger(trigger, sourceEvent);
+				List<SystemEvent> sourceEvents = new ArrayList<SystemEvent>();
+				sourceEvents.add(sourceEvent);
+				triggerExecutor.scheduleOrExecuteTrigger(trigger, sourceEvents);
 			} catch (ValidationException e) {
 				log.error("Trigger execution failed", e);
 			}
@@ -718,5 +737,21 @@ public class TriggerResourceServiceImpl extends
 			}
 		});
 		return new Long(ret.size());
+	}
+	
+	abstract class DefaultVariableReplacementProvider implements ReplacementVariableProvider {
+
+		String variable;
+		Set<String> variables;
+		DefaultVariableReplacementProvider(String variable) {
+			this.variable = variable;
+			this.variables =  new HashSet<String>();
+			replacementVariables.put(variable, this);
+		}
+		
+		@Override
+		public Set<String> getReplacementVariableNames() {
+			return variables;
+		}
 	}
 }

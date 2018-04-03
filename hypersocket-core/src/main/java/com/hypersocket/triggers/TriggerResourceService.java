@@ -93,4 +93,6 @@ public interface TriggerResourceService extends
 	List<EventDefinition> getTriggerEvents(String pattern, Locale locale);
 	
 	Long getTriggerEventCount(String pattern, Locale locale);
+
+	void registerReplacementVariables(ReplacementVariableProvider provider);
 }

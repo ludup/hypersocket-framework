@@ -1,5 +1,6 @@
 package com.hypersocket.tasks.system;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -66,7 +67,7 @@ public class SystemTriggerActionImpl extends AbstractTaskProvider {
 	}
 
 	@Override
-	public AbstractTaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	public AbstractTaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event)
 			throws ValidationException {
 
 		Long delay = repository.getLongValue(task, "operation.delay");

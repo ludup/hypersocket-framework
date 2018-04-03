@@ -3,6 +3,7 @@ package com.hypersocket.tasks.ip.monitor;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -84,7 +85,7 @@ public class MonitorPortTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public AbstractTaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	public AbstractTaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event)
 			throws ValidationException {
 		String ipAddress = processTokenReplacements(repository.getValue(task, ATTR_IP), event);
 		int port = Integer.valueOf(repository.getValue(task, ATTR_PORT));

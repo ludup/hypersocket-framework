@@ -33,7 +33,7 @@ public abstract class AbstractCreateUserTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event) throws ValidationException {
+	public TaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event) throws ValidationException {
 
 		String principalName = getRepository().getValue(task, "createUser.principalName");
 		boolean sendNotifications = true; // Get from task property

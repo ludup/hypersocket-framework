@@ -1,5 +1,7 @@
 package com.hypersocket.tasks;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +14,7 @@ public abstract class AbstractRetryTaskProvider extends AbstractTaskProvider {
 	static Logger log = LoggerFactory.getLogger(AbstractRetryTaskProvider.class);
 	
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event) throws ValidationException {
+	public TaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event) throws ValidationException {
 		
 		boolean retry = getRepository().getBooleanValue(task, "retry.enabled");
 		if(retry) {
@@ -50,5 +52,5 @@ public abstract class AbstractRetryTaskProvider extends AbstractTaskProvider {
 		}
 	}
 
-	protected abstract TaskResult onExecute(Task task, Realm currentRealm, SystemEvent event) throws ValidationException;
+	protected abstract TaskResult onExecute(Task task, Realm currentRealm, List<SystemEvent> event) throws ValidationException;
 }

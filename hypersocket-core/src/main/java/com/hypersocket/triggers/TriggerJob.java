@@ -1,5 +1,7 @@
 package com.hypersocket.triggers;
 
+import java.util.List;
+
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -13,7 +15,8 @@ public class TriggerJob extends AbstractTriggerJob {
 	public void executeJob(JobExecutionContext context)
 			throws JobExecutionException {
 
-		SystemEvent source = (SystemEvent) context.getTrigger().getJobDataMap().get("sourceEvent");
+		@SuppressWarnings("unchecked")
+		List<SystemEvent> source = (List<SystemEvent>) context.getTrigger().getJobDataMap().get("sourceEvent");
 		SystemEvent event = (SystemEvent) context.getTrigger().getJobDataMap().get("event");
 		
 		if(log.isInfoEnabled()) {

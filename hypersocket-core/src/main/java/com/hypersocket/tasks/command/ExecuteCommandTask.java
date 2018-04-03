@@ -1,6 +1,7 @@
 package com.hypersocket.tasks.command;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -64,7 +65,7 @@ public class ExecuteCommandTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public AbstractTaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	public AbstractTaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event)
 			throws ValidationException {
 
 		String command = processTokenReplacements(repository.getValue(task,

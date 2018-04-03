@@ -1,5 +1,7 @@
 package com.hypersocket.triggers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.quartz.JobDataMap;
@@ -68,7 +70,9 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 	}
 	
 	@Override
-	public void scheduleOrExecuteTrigger(TriggerResource trigger, SystemEvent sourceEvent) throws ValidationException {
+	public void scheduleOrExecuteTrigger(TriggerResource trigger, List<SystemEvent> sourceEvents) throws ValidationException {
+		
+		SystemEvent sourceEvent = sourceEvents.get(sourceEvents.size()-1);
 		
 		if(sourceEvent instanceof SynchronousEvent || sourceEvent instanceof TaskResultCallback) {
 			try {
@@ -76,7 +80,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 					log.info(String.format("Processing synchronous event %s with trigger %s", 
 							sourceEvent.getResourceKey(), trigger.getName()));
 				}
-				processEventTrigger(trigger, sourceEvent, sourceEvent);
+				processEventTrigger(trigger, sourceEvent, sourceEvents);
 			} catch (ValidationException e) {
 				log.error("Trigger failed validation", e);
 			}
@@ -101,9 +105,9 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 					hasAuthenticatedContext() ? getCurrentLocale()
 							: configurationService.getDefaultLocale(),
 					"triggerExecutionJob");
-
+			
 			data.put("event", sourceEvent);
-			data.put("sourceEvent", sourceEvent);
+			data.put("sourceEvent", sourceEvents);
 			data.put("trigger", trigger);
 			
 			try {
@@ -118,7 +122,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 
 	@Override
 	public void processEventTrigger(TriggerResource trigger,
-			SystemEvent result, SystemEvent sourceEvent) throws ValidationException {
+			SystemEvent result, List<SystemEvent> sourceEvents) throws ValidationException {
 		
 		if (log.isInfoEnabled()) {
 			log.info("Processing trigger " + trigger.getName());
@@ -133,12 +137,12 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 			return;
 		}
 		
-		if (checkConditions(trigger, result)) {
+		if (checkConditions(trigger, result, sourceEvents)) {
 			
 			if(log.isInfoEnabled()) {
 				log.info("Trigger conditions match. Performing task for " + trigger.getName() + " [" + trigger.getResourceKey() + "]");
 			}
-			executeTrigger(trigger, result, sourceEvent);
+			executeTrigger(trigger, result, sourceEvents);
 			
 		} else {
 			if(log.isInfoEnabled()) {
@@ -153,11 +157,11 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 
 	}
 
-	protected boolean checkConditions(TriggerResource trigger, SystemEvent event)
+	protected boolean checkConditions(TriggerResource trigger, SystemEvent event, List<SystemEvent> sourceEvents)
 			throws ValidationException {
 
 		for (TriggerCondition condition : trigger.getAllConditions()) {
-			if (!checkCondition(condition, trigger, event)) {
+			if (!checkCondition(condition, trigger, event, sourceEvents)) {
 				if (log.isDebugEnabled()) {
 					log.debug("Trigger " + trigger.getName()
 							+ " failed processing all conditions due to "
@@ -172,7 +176,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 		if (trigger.getAnyConditions().size() > 0) {
 			boolean conditionPassed = false;
 			for (TriggerCondition condition : trigger.getAnyConditions()) {
-				if (checkCondition(condition, trigger, event)) {
+				if (checkCondition(condition, trigger, event, sourceEvents)) {
 					conditionPassed = true;
 					break;
 				}
@@ -191,7 +195,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 	}
 
 	private boolean checkCondition(TriggerCondition condition,
-			TriggerResource trigger, SystemEvent event)
+			TriggerResource trigger, SystemEvent event, List<SystemEvent> sourceEvents)
 			throws ValidationException {
 
 		TriggerConditionProvider provider = triggerService
@@ -203,10 +207,10 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 							+ condition.getConditionKey() + " is not available");
 		}
 		
-		return provider.checkCondition(condition, trigger, event);
+		return provider.checkCondition(condition, trigger, event, sourceEvents);
 	}
 
-	protected void executeTrigger(final TriggerResource trigger, final SystemEvent lastResult, SystemEvent sourceEvent)
+	protected void executeTrigger(final TriggerResource trigger, final SystemEvent lastResult, final List<SystemEvent> sourceEvents)
 			throws ValidationException {
 
 		final TaskProvider provider = taskService
@@ -223,7 +227,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 				@Override
 				public TaskResult doInTransaction(TransactionStatus status) {
 					try {
-						return  provider.execute(trigger, lastResult.getCurrentRealm(), lastResult);
+						return  provider.execute(trigger, lastResult.getCurrentRealm(), sourceEvents);
 					} catch (ValidationException e) {
 						throw new IllegalStateException(e.getMessage(), e);
 					}
@@ -233,6 +237,8 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 	
 			if(outputEvent!=null) {
 				
+				sourceEvents.add(outputEvent.getEvent());
+				
 				if(outputEvent instanceof MultipleTaskResults) {
 					MultipleTaskResults results = (MultipleTaskResults) outputEvent;
 					for(TaskResult result : results.getResults()) {
@@ -241,7 +247,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 							eventService.publishEvent(result.getEvent());
 						}
 						
-						processResult(trigger, result, sourceEvent);
+						processResult(trigger, result, new ArrayList<SystemEvent>(sourceEvents));
 					}
 					
 				} else {
@@ -250,7 +256,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 						eventService.publishEvent(outputEvent.getEvent());
 					}
 					
-					processResult(trigger, outputEvent, sourceEvent);
+					processResult(trigger, outputEvent, sourceEvents);
 				}
 			}
 		} catch(ResourceException | AccessDeniedException e) {
@@ -258,7 +264,9 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 		}
 	}
 	
-	protected void processResult(TriggerResource trigger, TaskResult result, SystemEvent sourceEvent) throws ValidationException {
+	protected void processResult(TriggerResource trigger, TaskResult result, List<SystemEvent> sourceEvents) throws ValidationException {
+		
+		SystemEvent sourceEvent = sourceEvents.get(sourceEvents.size()-1);
 		
 		if(sourceEvent instanceof TaskResultCallback) {
 			TaskResultCallback callbackEvent = (TaskResultCallback) sourceEvent;
@@ -270,7 +278,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 		
 		if (!trigger.getChildTriggers().isEmpty()) {
 			for(TriggerResource t : trigger.getChildTriggers()) {
-				processEventTrigger(t, result.getEvent(), sourceEvent);
+				processEventTrigger(t, result.getEvent(), new ArrayList<SystemEvent>(sourceEvents));
 			}
 			
 		} 

@@ -1,5 +1,6 @@
 package com.hypersocket.tasks.user.password.change;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -79,19 +80,25 @@ public class ChangePasswordTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event)
 			throws ValidationException {
 
 		String principalName = processTokenReplacements(repository.getValue(task, "changePassword.principalName"), event);
 		boolean forceChange = repository.getBooleanValue(task, "changePassword.forceChange");
-		
+		boolean generate = repository.getBooleanValue(task, "changePassword.generate");
 		try {
 			
 			Principal principal = realmService.getPrincipalByName(currentRealm, principalName, PrincipalType.USER);	
-			String password = policyService.generatePassword(policyService.resolvePolicy(principal));			
+			String password;
+			if(generate) {
+				password = policyService.generatePassword(policyService.resolvePolicy(principal));			
+			} else {
+				password = processTokenReplacements(repository.getDecryptedValue(task, "changePassword.password"), event);
+			}
+			
 			realmService.setPassword(principal, password, forceChange, true);
 
-			return new ChangePasswordTaskResult(this, currentRealm, task, principal, password);
+			return new ChangePasswordTaskResult(this, currentRealm, task, principal, password, generate);
 		} catch (AccessDeniedException | ResourceException e) {
 			return new ChangePasswordTaskResult(this, e, currentRealm, task);
 		}

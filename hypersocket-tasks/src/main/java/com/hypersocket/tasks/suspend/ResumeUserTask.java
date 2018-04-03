@@ -1,5 +1,6 @@
 package com.hypersocket.tasks.suspend;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -82,7 +83,7 @@ public class ResumeUserTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public AbstractTaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	public AbstractTaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event)
 			throws ValidationException {
 
 		String name = processTokenReplacements(repository.getValue(task, "resumeUser.name"), event);

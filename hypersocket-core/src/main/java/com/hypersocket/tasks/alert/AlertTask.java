@@ -1,5 +1,6 @@
 package com.hypersocket.tasks.alert;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -74,9 +75,10 @@ public class AlertTask extends AbstractTaskProvider {
 	@Override
 	public AbstractTaskResult execute(final Task task, 
 			final Realm currentRealm, 
-			final SystemEvent event)
+			final List<SystemEvent> event)
 			throws ValidationException {
 
+		final SystemEvent lastEvent = event.get(event.size()-1);
 		StringBuffer key = new StringBuffer();
 
 		for (String attr : ResourceUtils.explodeValues(taskRepository.getValue(task,
@@ -84,7 +86,7 @@ public class AlertTask extends AbstractTaskProvider {
 			if (key.length() > 0) {
 				key.append("|");
 			}
-			key.append(event.getAttribute(attr));
+			key.append(lastEvent.getAttribute(attr));
 		}
 
 		final int threshold = taskRepository.getIntValue(task, ATTR_THRESHOLD);
@@ -98,7 +100,7 @@ public class AlertTask extends AbstractTaskProvider {
 
 			@Override
 			public AlertEvent alert() {
-				return new AlertEvent(AlertTask.this, "event.alert", true, currentRealm, threshold, timeout, task, event);
+				return new AlertEvent(AlertTask.this, "event.alert", true, currentRealm, threshold, timeout, task, lastEvent);
 			}
 			
 		});

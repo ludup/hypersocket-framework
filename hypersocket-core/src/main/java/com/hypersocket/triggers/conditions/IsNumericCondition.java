@@ -1,5 +1,7 @@
 package com.hypersocket.triggers.conditions;
 
+import java.util.List;
+
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.hypersocket.events.SystemEvent;
@@ -11,12 +13,15 @@ public class IsNumericCondition implements Condition {
 
 	@Override
 	public boolean checkCondition(TriggerCondition condition, TriggerResource trigger,
-			SystemEvent event) throws ValidationException {
-		if (!event.hasAttribute(condition.getAttributeKey())) {
+			List<SystemEvent> sourceEvents) throws ValidationException {
+
+		String value = TriggerAttributeHelper.getAttribute(condition.getAttributeKey(), sourceEvents);
+		
+		if (value==null) {
 			return false;
 		}
 
-		return NumberUtils.isNumber(event.getAttribute(condition.getAttributeKey()).toString());
+		return NumberUtils.isNumber(value);
 	}
 
 	@Override

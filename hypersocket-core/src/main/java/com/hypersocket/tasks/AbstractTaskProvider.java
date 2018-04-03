@@ -1,6 +1,7 @@
 package com.hypersocket.tasks;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -16,6 +17,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.triggers.TriggerResourceService;
+import com.hypersocket.triggers.conditions.TriggerAttributeHelper;
 
 public abstract class AbstractTaskProvider implements TaskProvider {
 
@@ -30,14 +32,14 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	@Autowired
 	TriggerResourceService triggerService;
 	
-	protected String[] processTokenReplacements(String[] values, SystemEvent event) {
+	protected String[] processTokenReplacements(String[] values, List<SystemEvent> events) {
 		for(int i=0;i<values.length;i++) {
-			values[i] = processTokenReplacements(values[i], event);
+			values[i] = processTokenReplacements(values[i], events);
 		}
 		return values;
 	}
 	
-	protected String processTokenReplacements(String value, SystemEvent event) {
+	protected String processTokenReplacements(String value, List<SystemEvent> events) {
 		
 		if(value==null) {
 			return null;
@@ -50,15 +52,15 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 		int i = 0;
 		while (matcher.find()) {
 			String attributeName = matcher.group(1);
-			String replacement;
+			String replacement = TriggerAttributeHelper.getAttribute(attributeName, events);
 
-			if(event.getAttributes().containsKey(attributeName)) {
-				replacement = event.getAttribute(attributeName);
-			} else if(defaultAttributes.contains(attributeName)) {
-				replacement = triggerService.getDefaultVariableValue(attributeName);
-			} else {
-				log.warn("Failed to find replacement token " + attributeName);
-				continue;	
+			if(replacement==null) {
+				if(defaultAttributes.contains(attributeName)) {
+					replacement = triggerService.getDefaultVariableValue(attributeName);
+				} else {
+					log.warn("Failed to find replacement token " + attributeName);
+					continue;	
+				}
 			}
 		    builder.append(value.substring(i, matcher.start()));
 		    if (replacement == null) {

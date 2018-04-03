@@ -16,11 +16,13 @@ public class ChangePasswordTaskResult extends AbstractTaskResult {
 	
 	public static final String ATTR_PRINCIPAL_NAME = CommonAttributes.ATTR_PRINCIPAL_NAME;
 	public static final String ATTR_PASSWORD = "attr.password";
+	public static final String ATTR_GENERATED = "attr.generated";
 	
 	public ChangePasswordTaskResult(Object source, 
-			Realm currentRealm, Task task, Principal principal, String password) {
+			Realm currentRealm, Task task, Principal principal, String password, boolean generated) {
 		super(source, EVENT_RESOURCE_KEY, true, currentRealm, task);
 		addAttribute(ATTR_PRINCIPAL_NAME, principal.getPrincipalName());
+		addAttribute(ATTR_GENERATED, String.valueOf(generated));
 		addAttribute(ATTR_PASSWORD, password);
 	}
 

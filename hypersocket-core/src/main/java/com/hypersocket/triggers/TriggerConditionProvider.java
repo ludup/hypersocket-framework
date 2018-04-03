@@ -1,5 +1,7 @@
 package com.hypersocket.triggers;
 
+import java.util.List;
+
 import com.hypersocket.events.SystemEvent;
 
 public interface TriggerConditionProvider {
@@ -9,6 +11,6 @@ public interface TriggerConditionProvider {
 	String[] getResourceKeys();
 
 	boolean checkCondition(TriggerCondition condition, TriggerResource trigger,
-			SystemEvent event) throws ValidationException;
+			SystemEvent event, List<SystemEvent> sourceEvents) throws ValidationException;
 
 }

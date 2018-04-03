@@ -257,6 +257,22 @@ public class TriggerResourceController extends AbstractTriggerController {
 			clearAuthenticatedContext();
 		}
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "triggers/defaultAttributes", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<String> getEventAttributes(HttpServletRequest request) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			return new ResourceList<String>(
+					resourceService.getDefaultVariableNames());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/tasks", method = RequestMethod.GET, produces = { "application/json" })

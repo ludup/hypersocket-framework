@@ -95,7 +95,7 @@ public class CollectMailTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(final Task task, final Realm currentRealm, SystemEvent event) throws ValidationException {
+	public TaskResult execute(final Task task, final Realm currentRealm, List<SystemEvent> event) throws ValidationException {
 
 		// for IMAP
 		String protocol = processTokenReplacements(repository.getValue(task, ATTR_PROTOCOL), event);

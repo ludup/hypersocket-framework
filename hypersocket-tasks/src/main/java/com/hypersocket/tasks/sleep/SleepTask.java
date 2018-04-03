@@ -1,5 +1,6 @@
 package com.hypersocket.tasks.sleep;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -71,7 +72,7 @@ public class SleepTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event)
 			throws ValidationException {
 
 		Long sleepTime = repository.getLongValue(task, "sleep.milli");

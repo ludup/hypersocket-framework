@@ -167,7 +167,7 @@ public class EmailTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event)
 			throws ValidationException {
 
 		
@@ -260,7 +260,7 @@ public class EmailTask extends AbstractTaskProvider {
 		}
 	}
 	
-	private void addFileAttachment(String path, List<EmailAttachment> attachments, SystemEvent event) throws FileNotFoundException, UnsupportedEncodingException {
+	private void addFileAttachment(String path, List<EmailAttachment> attachments, List<SystemEvent> event) throws FileNotFoundException, UnsupportedEncodingException {
 		
 		path = URLDecoder.decode(path, "UTF-8");
 		String filename = null;
@@ -295,7 +295,7 @@ public class EmailTask extends AbstractTaskProvider {
 
 	private String populateEmailList(Task task,
 			String attributeName, List<RecipientHolder> recipients,
-			RecipientType type, SystemEvent event)
+			RecipientType type, List<SystemEvent> event)
 			throws ValidationException {
 
 		String value = processTokenReplacements(repository.getValue(task, attributeName), event);

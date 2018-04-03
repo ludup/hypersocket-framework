@@ -79,7 +79,7 @@ public class ResolveIPTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public AbstractTaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	public AbstractTaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event)
 			throws ValidationException {
 
 		String[] values = ResourceUtils.explodeValues(repository.getValue(task, "resolveIP.hostnames"));

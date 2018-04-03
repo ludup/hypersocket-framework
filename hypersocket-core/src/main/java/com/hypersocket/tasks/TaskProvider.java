@@ -1,6 +1,7 @@
 package com.hypersocket.tasks;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import com.hypersocket.events.SystemEvent;
@@ -18,7 +19,7 @@ public interface TaskProvider {
 	void validate(Task task, Map<String, String> parameters)
 			throws ValidationException;
 
-	TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	TaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event)
 			throws ValidationException;
 	
 	ResourceTemplateRepository getRepository();

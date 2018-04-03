@@ -1,6 +1,7 @@
 package com.hypersocket.tasks.resource;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -35,7 +36,7 @@ public abstract class AbstractCreateAssignableResourceTask<T extends AssignableR
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event) throws ValidationException {
+	public TaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event) throws ValidationException {
 		
 		AbstractAssignableResourceService<T> service = getService();
 		Map<String,String> properties = new HashMap<String,String>();

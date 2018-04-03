@@ -1,5 +1,7 @@
 package com.hypersocket.triggers.conditions;
 
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.hypersocket.events.SystemEvent;
@@ -11,12 +13,15 @@ public class IsEmptyCondition implements Condition {
 
 	@Override
 	public boolean checkCondition(TriggerCondition condition, TriggerResource trigger,
-			SystemEvent event) throws ValidationException {
-		if (!event.hasAttribute(condition.getAttributeKey())) {
+			List<SystemEvent> sourceEvents) throws ValidationException {
+
+		String value = TriggerAttributeHelper.getAttribute(condition.getAttributeKey(), sourceEvents);
+		
+		if (value==null) {
 			return false;
 		}
 
-		return StringUtils.isBlank(event.getAttribute(condition.getAttributeKey()).toString());
+		return StringUtils.isBlank(value);
 	}
 
 	@Override
