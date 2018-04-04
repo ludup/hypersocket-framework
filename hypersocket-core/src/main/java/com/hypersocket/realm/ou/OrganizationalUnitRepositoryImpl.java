@@ -42,13 +42,6 @@ public class OrganizationalUnitRepositoryImpl extends
 	@Transactional
 	public void removeAll(Realm realm) {
 		if(getCount(OrganizationalUnit.class, new RealmCriteria(realm)) > 0) {
-			/**
-			 * This breaks in the cloud?!?!
-			 */
-//			String hql = "delete from OrganizationalUnit o where o.realm = :realm";
-//			createQuery(hql, true)
-//					.setParameter("realm", realm)
-//					.executeUpdate();
 			for(OrganizationalUnit o : list(OrganizationalUnit.class, new RealmCriteria(realm))) {
 				delete(o);
 			}
