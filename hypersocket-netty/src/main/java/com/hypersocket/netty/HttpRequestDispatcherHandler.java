@@ -46,6 +46,7 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpChunk;
 import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
@@ -226,7 +227,10 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				if(aliases.containsKey(reverseUri)) {
 					String path = processReplacements(aliases.get(reverseUri));
 					if(path.startsWith("redirect:")) {
-						nettyResponse.sendRedirect(path.substring(9), true);
+						String redirPath = path.substring(9);
+						if(StringUtils.isNotBlank(servletRequest.getQueryString()))
+							redirPath += "?" + servletRequest.getQueryString();
+						nettyResponse.sendRedirect(redirPath, false /* Don't use a permanent redirection as the alias target may change */);
 						sendResponse(servletRequest, nettyResponse, false);
 						return;
 					} else {
@@ -317,7 +321,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 						}
 						if (handler.handlesRequest(servletRequest)) {
 							if(log.isDebugEnabled()) {
-								log.debug(handler.getName() + " is processing HTTP request");
+								log.debug(String.format("%s is processing HTTP request for %s", handler.getName(), reverseUri));
 							}
 							server.processDefaultResponse(servletRequest, nettyResponse, handler.getDisableCache());
 							handler.handleHttpRequest(servletRequest, nettyResponse,
@@ -416,8 +420,9 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 		try {
 
+			final HttpResponse nettyResponse = servletResponse.getNettyResponse();
 			if(!StringUtils.equals(RestApi.API_REST, (CharSequence) servletRequest.getAttribute(RestApi.API_REST))) {
-				switch (servletResponse.getNettyResponse().getStatus().getCode()) {
+				switch (nettyResponse.getStatus().getCode()) {
 					case HttpStatus.SC_NOT_FOUND: {
 						send404(servletRequest, servletResponse);
 						break;
@@ -442,11 +447,11 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			if (log.isDebugEnabled()) {
 				synchronized (log) {
 					log.debug("Begin Response >>>>>>");
-					log.debug(servletResponse.getNettyResponse().getStatus()
+					log.debug(nettyResponse.getStatus()
 							.toString());
-					for (String header : servletResponse.getNettyResponse()
+					for (String header : nettyResponse
 							.getHeaderNames()) {
-						for (String value : servletResponse.getNettyResponse()
+						for (String value : nettyResponse
 								.getHeaders(header)) {
 							log.debug(header + ": " + value);
 						}
@@ -459,7 +464,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 				try {
 					servletResponse.getChannel().write(
-							servletResponse.getNettyResponse());
+							nettyResponse);
 
 					if (log.isDebugEnabled()) {
 						try {
@@ -479,9 +484,12 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					log.error("Unexpected exception writing content stream", e);
 				}
 			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Sending non-content response");
+				}
 				servletResponse
 						.getChannel()
-						.write(servletResponse.getNettyResponse())
+						.write(nettyResponse)
 						.addListener(
 								new CheckCloseStateListener(servletResponse));
 			}
