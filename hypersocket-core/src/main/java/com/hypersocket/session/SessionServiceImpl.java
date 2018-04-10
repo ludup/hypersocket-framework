@@ -341,7 +341,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			throws AccessDeniedException {
 
 		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION,
-					SystemPermission.SYSTEM,SystemPermission.SWITCH_REALM);
+					SystemPermission.SYSTEM, SystemPermission.SWITCH_REALM);
 		
 		if (log.isInfoEnabled()) {
 			log.info("Switching " + session.getPrincipal().getName() + " to "

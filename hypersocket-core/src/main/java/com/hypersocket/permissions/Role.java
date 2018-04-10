@@ -27,6 +27,7 @@ import org.hibernate.annotations.FetchMode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
@@ -49,6 +50,12 @@ public class Role extends RealmResource {
 	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
 	@JoinTable(name = "role_principals", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
 	Set<Principal> principals = new HashSet<>();
+	
+	@ManyToMany(fetch=FetchType.EAGER)
+	@Fetch(FetchMode.SUBSELECT)
+	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
+	@JoinTable(name = "role_realms", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
+	Set<Realm> realms = new HashSet<>();
 	
 	@Column(name="all_users", nullable=false)
 	boolean allUsers;
@@ -124,5 +131,19 @@ public class Role extends RealmResource {
 	public void setPrincipalName(String principalName) {
 		this.principalName = principalName;
 	}
+	
+	@JsonIgnore
+	public Set<Realm> getDelegatedRealms() {
+		return realms;
+	}
+
+	public void setDelegatedRealms(Set<Realm> realms) {
+		this.realms = realms;
+	}
+
+	public boolean isDelegatedRole() {
+		return !realms.isEmpty();
+	}
+	
 	
 }

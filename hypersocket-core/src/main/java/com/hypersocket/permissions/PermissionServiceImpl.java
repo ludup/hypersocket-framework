@@ -231,20 +231,20 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			throw ex;
 		} catch (ResourceNotFoundException re) {
 			return createRole(name, realm, Collections.<Principal>emptyList(), Collections.<Permission>emptyList(),
-					null, false, false, type);
+					null, null, false, false, type, false, false);
 		}
 	}
 
 	@Override
-	public Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
-			Map<String, String> properties, RoleType type) throws AccessDeniedException, ResourceException {
-		return createRole(name, realm, principals, permissions, properties, false, false, type);
+	public Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions, List<Realm> realms,
+			Map<String, String> properties, RoleType type, boolean allUsers, boolean allPerms) throws AccessDeniedException, ResourceException {
+		return createRole(name, realm, principals, permissions, realms, properties, false, false, type, allUsers, allPerms);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
-			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole, RoleType type)
+	public Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions, List<Realm> realms,
+			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole, RoleType type, boolean allUsers, boolean allPerms)
 			throws AccessDeniedException, ResourceException {
 
 		assertPermission(RolePermission.CREATE);
@@ -258,6 +258,11 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				Role role = new Role();
 				role.setName(name);
 				role.setRealm(realm);
+				if(realms!=null) {
+					role.getDelegatedRealms().addAll(realms);
+				}
+				role.setAllPermissions(allPerms);
+				role.setAllUsers(allUsers);
 				role.setPersonalRole(isPrincipalRole);
 				role.setSystem(isSystemRole);
 				role.setType(type);
@@ -270,10 +275,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 							}
 
 						});
-				for (Principal p : principals) {
-					permissionsCache.remove(p);
-					roleCache.remove(p);
-				}
+				permissionsCache.removeAll();
+				roleCache.removeAll();
 				eventService.publishEvent(new RoleCreatedEvent(this, getCurrentSession(), realm, role, principals));
 				return role;
 			} catch (Throwable te) {
@@ -303,8 +306,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				throw new AccessDeniedException("You cannot assign a personal role to any principal");
 			}
 			repository.assignRole(role, principal);
-			permissionsCache.remove(principal);
-			roleCache.remove(principal);
+			permissionsCache.removeAll();
+			roleCache.removeAll();
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					Arrays.asList(principal), new ArrayList<Principal>()));
 		} catch (Throwable e) {
@@ -324,10 +327,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				throw new AccessDeniedException("You cannot assign a personal role to any principal");
 			}
 			repository.assignRole(role, principals);
-			for (Principal principal : principals) {
-				permissionsCache.remove(principal);
-				roleCache.remove(principal);
-			}
+			permissionsCache.removeAll();
+			roleCache.removeAll();
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					Arrays.asList(principals), new ArrayList<Principal>()));
 		} catch (Throwable e) {
@@ -349,8 +350,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				throw new AccessDeniedException("You cannot unassign a personal role from any principal");
 			}
 			repository.unassignRole(role, principal);
-			permissionsCache.remove(principal);
-			roleCache.remove(principal);
+			permissionsCache.removeAll();
+			roleCache.removeAll();
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					new ArrayList<Principal>(), Arrays.asList(principal)));
 		} catch (Throwable e) {
@@ -381,10 +382,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				throw new AccessDeniedException("You cannot unassign a personal role from any principal");
 			}
 			repository.unassignRole(role, principals);
-			for (Principal principal : principals) {
-				permissionsCache.remove(principal);
-				roleCache.remove(principal);
-			}
+			permissionsCache.removeAll();
+			roleCache.removeAll();
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					new ArrayList<Principal>(), Arrays.asList(principals)));
 		} catch (Throwable e) {
@@ -394,31 +393,57 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Set<Permission> getPrincipalPermissions(Principal principal) {
+		return getPrincipalPermissions(getCurrentRealm(), principal);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Set<Permission> getPrincipalPermissions(Realm realm, Principal principal) {
+		
+		String cacheKey = String.format("%d:::%d", principal.getId(), realm.getId());
+		
+		if (!permissionsCache.containsKey(cacheKey) || permissionsCache.get(cacheKey)==null) {
 
-		if (!permissionsCache.containsKey(principal) || permissionsCache.get(principal)==null) {
-
-			List<Principal> principals = realmService.getAssociatedPrincipals(principal);
-			Set<Permission> principalPermissions = repository.getPrincipalPermissions(principals);
-
-			Set<Role> roles = repository.getAllUserRoles(principal.getRealm());
-			for (Role r : roles) {
-				principalPermissions.addAll(r.getPermissions());
+			boolean isDelegatedRealm = !principal.getRealm().equals(realm);
+			Set<Permission> principalPermissions = new HashSet<Permission>();
+			Set<Role> roles;
+			if(!isDelegatedRealm) {
+				roles = getPrincipalRoles(principal);
+			} else {
+				roles = getDelegatedRoles(principal, realm);
 			}
 
-			roles = repository.getRolesForPrincipal(principals);
 			for (Role r : roles) {
+				if(r.getDelegatedRealms().isEmpty() && isDelegatedRealm
+						|| !r.getDelegatedRealms().isEmpty() && !isDelegatedRealm) {
+					continue;
+				}
 				if (r.isAllPermissions()) {
-					principalPermissions.addAll(repository.getAllPermissions(registerPermissionIds, false));
+					principalPermissions.addAll(repository.getAllPermissions(registerPermissionIds, realm.isSystem()));
+					break;
+				} else {
+					principalPermissions.addAll(r.getPermissions());
 				}
 			}
 
-			permissionsCache.put(principal, principalPermissions);
+			permissionsCache.put(cacheKey, principalPermissions);
 		}
 
-		return new HashSet<Permission>(permissionsCache.get(principal));
+		return new HashSet<Permission>(permissionsCache.get(cacheKey));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Set<Role> getDelegatedRoles(Principal principal, Realm realm) {
+		
+		String cacheKey = String.format("%d:::%d", principal.getId(), realm.getId());
+		if (!roleCache.containsKey(cacheKey)) {
+			roleCache.put(cacheKey, repository.getDelegatedRoles(principal.getRealm(), realm));
+		}
+
+		return (Set<Role>) roleCache.get(cacheKey);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -517,6 +542,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			} catch (InvalidAuthenticationContext iac) {
 				currentLocale = Locale.getDefault();
 			}
+			
 			throw new AccessDeniedException(
 					I18N.getResource(currentLocale, PermissionService.RESOURCE_BUNDLE, "error.accessDenied"));
 
@@ -532,8 +558,32 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			}
 			throw new AccessDeniedException();
 		}
+		
+
+		if(hasSystemPermission(principal)) {
+			return;
+		}
 
 		Set<Permission> principalPermissions = getPrincipalPermissions(principal);
+
+		verifyPermission(principal, strategy, principalPermissions, permissions);
+	}
+	
+	@Override
+	public void verifyPermission(Realm realm, Principal principal, PermissionStrategy strategy, PermissionType... permissions)
+			throws AccessDeniedException {
+		if (principal == null) {
+			if (log.isInfoEnabled()) {
+				log.info("Denying permission because principal is null");
+			}
+			throw new AccessDeniedException();
+		}
+
+		if(hasSystemPermission(principal)) {
+			return;
+		}
+		
+		Set<Permission> principalPermissions = getPrincipalPermissions(realm, principal);
 
 		verifyPermission(principal, strategy, principalPermissions, permissions);
 	}
@@ -541,7 +591,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public boolean hasSystemPermission(Principal principal) {
 
-		Set<Permission> principalPermissions = getPrincipalPermissions(principal);
+		Set<Permission> principalPermissions = getPrincipalPermissions(principal.getRealm(), principal);
 		if (hasElevatedPermissions()) {
 			for (PermissionType perm : getElevatedPermissions()) {
 				principalPermissions.add(getPermission(perm.getResourceKey()));
@@ -553,12 +603,22 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public boolean hasAdministrativePermission(Principal principal) {
 
-		Set<Role> roles = new HashSet<Role>();
-		roles.add(repository.getRoleByName(ROLE_REALM_ADMINISTRATOR, principal.getRealm()));
-		if (principal.getRealm().isSystem()) {
-			roles.add(repository.getRoleByName(ROLE_SYSTEM_ADMINISTRATOR, principal.getRealm()));
+		Set<Role> roles = getPrincipalRoles(principal);
+		for(Role r : roles) {
+			if(!isDelegatedRealm() && r.isDelegatedRole()
+					|| isDelegatedRealm() && !r.isDelegatedRole()) {
+				continue;
+			}
+			if(r.isAllPermissions()) {
+				return true;
+			}
 		}
-		return hasRole(principal, roles);
+		return false;
+//		roles.add(repository.getRoleByName(ROLE_REALM_ADMINISTRATOR, principal.getRealm()));
+//		if (principal.getRealm().isSystem()) {
+//			roles.add(repository.getRoleByName(ROLE_SYSTEM_ADMINISTRATOR, principal.getRealm()));
+//		}
+//		return hasRole(principal, roles);
 	}
 
 	@Override
@@ -620,11 +680,6 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			}
 		}
 		return false;
-	}
-
-	@Override
-	public Set<Principal> getUsersWithPermissions(PermissionType permissions) {
-		return repository.getPrincipalsWithPermissions(permissions);
 	}
 
 	@Override
@@ -724,8 +779,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions,
-			Map<String, String> properties) throws AccessDeniedException, ResourceException {
+	public Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions, List<Realm> realms,
+			Map<String, String> properties, boolean allUsers, boolean allPerm) throws AccessDeniedException, ResourceException {
 
 		assertPermission(RolePermission.UPDATE);
 		if(principals!=null) {
@@ -744,6 +799,24 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			role.setName(name);
 		}
 		try {
+			Set<Realm> assignRealms = new HashSet<Realm>();
+			Set<Realm> unassignRealms = new HashSet<Realm>();
+			
+			if(realms!=null) {
+				
+				role.setDelegatedRealms(new HashSet<Realm>(realms));
+				
+				unassignRealms.addAll(getEntitiesNotIn(realms, role.getDelegatedRealms(),
+						new EntityMatch<Realm>() {
+							@Override
+							public boolean validate(Realm t) {
+								return t.getParent().equals(getCurrentRealm());
+							}
+	
+				}));
+				assignRealms.addAll(realms);
+				assignRealms.removeAll(role.getDelegatedRealms());
+			}
 			Set<Principal> assignPrincipals = new HashSet<Principal>();
 			Set<Principal> unassignPrincipals = new HashSet<Principal>();
 			
@@ -767,6 +840,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				revokePermissions.addAll(getEntitiesNotIn(permissions, role.getPermissions(), null));
 				grantPermissions.addAll(getEntitiesNotIn(role.getPermissions(), permissions, null));
 			}
+			
+			role.setAllPermissions(allPerm);
+			role.setAllUsers(allUsers);
 			
 			repository.updateRole(role, unassignPrincipals, assignPrincipals, revokePermissions, grantPermissions,
 					properties, new TransactionAdapter<Role>() {

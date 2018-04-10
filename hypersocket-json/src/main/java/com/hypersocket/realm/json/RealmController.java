@@ -115,6 +115,24 @@ public class RealmController extends ResourceController {
 		}
 
 	}
+	
+
+	@AuthenticationRequired
+	@RequestMapping(value = "realms/children", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<Realm> listChildRealms(HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<Realm>(realmService.getRealmsByParent(getCurrentRealm()));
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "realms/table", method = RequestMethod.GET, produces = { "application/json" })

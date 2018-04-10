@@ -19,7 +19,10 @@ public class RoleUpdate {
 	String[] users;
 	String[] groups;
 	Long[] permissions;
+	Long[] realms;
 	PropertyItem[] properties;
+	boolean allUsers;
+	boolean allPerms;
 	
 	public RoleUpdate() {
 		
@@ -71,6 +74,30 @@ public class RoleUpdate {
 
 	public void setProperties(PropertyItem[] properties) {
 		this.properties = properties;
+	}
+
+	public Long[] getRealms() {
+		return realms;
+	}
+
+	public void setRealms(Long[] realms) {
+		this.realms = realms;
+	}
+
+	public boolean isAllUsers() {
+		return allUsers;
+	}
+
+	public void setAllUsers(boolean allUsers) {
+		this.allUsers = allUsers;
+	}
+
+	public boolean isAllPerms() {
+		return allPerms;
+	}
+
+	public void setAllPerms(boolean allPerms) {
+		this.allPerms = allPerms;
 	}
 	
 	

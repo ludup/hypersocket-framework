@@ -85,6 +85,10 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		return elevatedPermissions.get()!=null && !elevatedPermissions.get().isEmpty();
 	}
 	
+	protected boolean isDelegatedRealm() {
+		return !getCurrentRealm().equals(getCurrentPrincipal().getRealm());
+	}
+	
 	@Override
 	public void setupSystemContext() {
 		setCurrentSession(sessionService.getSystemSession(), Locale.getDefault());

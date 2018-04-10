@@ -601,6 +601,7 @@ public class AuthenticationServiceImpl extends
 							if (state.isAuthenticationComplete()) {
 	
 								permissionService.verifyPermission(
+										state.getRealm(),
 										state.getPrincipal(),
 										PermissionStrategy.INCLUDE_IMPLIED,
 										AuthenticationPermission.LOGON,

@@ -225,6 +225,27 @@ public class RoleController extends ResourceController {
 	}
 	
 	@AuthenticationRequired
+	@RequestMapping(value = "roles/realms/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<Realm> listRoleRealms(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return new ResourceList<Realm>(
+					permissionService.getRoleById(id, getCurrentRealm()).getDelegatedRealms());
+		} catch (ResourceNotFoundException e) {
+			return new ResourceList<Realm>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
 	@RequestMapping(value = "roles/principals/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -303,6 +324,11 @@ public class RoleController extends ResourceController {
 			Role newRole;
 			Realm realm = sessionUtils.getCurrentRealm(request);
 
+			List<Realm> realms = new ArrayList<Realm>();
+			for (Long id : role.getRealms()) {
+				realms.add(realmService.getRealmById(id));
+			}
+			
 			List<Principal> principals = new ArrayList<Principal>();
 			for (String user : role.getUsers()) {
 				principals.add(realmService.getPrincipalById(realm, 
@@ -328,11 +354,11 @@ public class RoleController extends ResourceController {
 
 			if (role.getId() == null) {
 				newRole = permissionService.createRole(role.getName(), realm,
-						principals, permissions, values, RoleType.CUSTOM);
+						principals, permissions, realms, values, RoleType.CUSTOM, role.isAllUsers(), role.isAllPerms());
 			} else {
 				newRole = permissionService.updateRole(
 						permissionService.getRoleById(role.getId(), realm),
-						role.getName(), principals, permissions, values);
+						role.getName(), principals, permissions, realms, values, role.isAllUsers(), role.isAllPerms());
 			}
 
 			return new ResourceStatus<Role>(newRole, I18N.getResource(

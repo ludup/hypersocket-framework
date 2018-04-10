@@ -66,7 +66,8 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 
 	public void unassignRole(Role role, Principal... principal);
 
-	Set<Permission> getPrincipalPermissions(Collection<Principal> principals,
+	Set<Permission> getDelegatedPrincipalPermissions(Realm currentRealm,
+			Collection<Principal> principals,
 			PermissionType... permissionTypes);
 
 	Set<Principal> getPrincipalsWithPermissions(PermissionType permissions);
@@ -126,5 +127,9 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 	void deleteRealm(Realm realm);
 
 	Role getRoleByResourceCategory(String resourceCategory);
+
+	Set<Permission> getPrincipalPermissions(Collection<Principal> principals, PermissionType... permissionTypes);
+
+	Set<Role> getDelegatedRoles(Realm parent, Realm child);
 
 }

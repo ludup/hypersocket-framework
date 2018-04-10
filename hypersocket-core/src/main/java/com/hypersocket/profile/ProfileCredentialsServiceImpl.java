@@ -63,6 +63,8 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 			}
 		
 		});
+		
+//		registerProvider(new EmailProfileProvider());
 	}
 	
 	@Override

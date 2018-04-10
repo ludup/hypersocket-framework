@@ -333,6 +333,43 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly = true)
+	public Set<Permission> getDelegatedPrincipalPermissions(Realm currentRealm,
+			Collection<Principal> principals, PermissionType... permissionTypes) {
+
+		if (principals == null) {
+			return new HashSet<Permission>();
+		}
+
+		Criteria crit = createCriteria(Permission.class).setResultTransformer(
+				CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+
+		List<String> list = new ArrayList<String>();
+		for (PermissionType t : permissionTypes) {
+			list.add(t.getResourceKey());
+		}
+
+		if (list.size() > 0) {
+			crit = crit.add(Restrictions.in("resourceKey", list));
+		}
+
+		List<Long> ids = new ArrayList<Long>();
+		for (Principal p : principals) {
+			ids.add(p.getId());
+		}
+
+		crit = crit.createCriteria("roles");
+		
+		crit.createCriteria("realms").add(Restrictions.in("id", Arrays.asList(currentRealm.getId())));
+		
+		crit = crit.createCriteria("principals").add(Restrictions.in("id", ids));
+
+		return new HashSet<Permission>(crit.list());
+
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly = true)
 	public Set<Permission> getPrincipalPermissions(
 			Collection<Principal> principals, PermissionType... permissionTypes) {
 
@@ -357,8 +394,11 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 			ids.add(p.getId());
 		}
 
-		crit = crit.createCriteria("roles").createCriteria("principals")
-				.add(Restrictions.in("id", ids));
+		crit = crit.createCriteria("roles");
+
+		crit.add(Restrictions.isEmpty("realms"));
+		
+		crit = crit.createCriteria("principals").add(Restrictions.in("id", ids));
 
 		return new HashSet<Permission>(crit.list());
 
@@ -613,6 +653,21 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 					@Override
 					public void configure(Criteria criteria) {
 						criteria.add(Restrictions.eq("allUsers", true));
+						criteria.add(Restrictions.isEmpty("realms"));
+					}
+				}));
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Set<Role> getDelegatedRoles(Realm parent, final Realm child) {
+
+		return new HashSet<Role>(allEntities(Role.class,
+				JOIN_PRINCIPALS_PERMISSIONS, new RealmRestriction(parent),
+				new CriteriaConfiguration() {
+					@Override
+					public void configure(Criteria criteria) {
+						criteria.createCriteria("realms").add(Restrictions.in("id", Arrays.asList(child.getId())));
 					}
 				}));
 	}

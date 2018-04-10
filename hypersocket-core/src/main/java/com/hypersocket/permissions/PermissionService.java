@@ -49,8 +49,9 @@ public interface PermissionService extends AuthenticatedService {
 
 	void verifyPermission(Principal principal, PermissionStrategy strategy, PermissionType... permission)
 			throws AccessDeniedException;
-
-	Set<Principal> getUsersWithPermissions(PermissionType permissions);
+	
+	void verifyPermission(Realm realm, Principal principal, PermissionStrategy strategy, PermissionType... permission)
+			throws AccessDeniedException;
 
 	Role getRole(String name, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
 
@@ -60,15 +61,15 @@ public interface PermissionService extends AuthenticatedService {
 
 	public List<Permission> allPermissions();
 
-	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
-			Map<String, String> properties, RoleType type)
+	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions, List<Realm> realms,
+			Map<String, String> properties, RoleType type, boolean allUsers, boolean allPerms)
 			throws AccessDeniedException, ResourceException;
 	
-	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions,
-			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole, RoleType type)
+	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions, List<Realm> realms,
+			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole, RoleType type, boolean allUsers, boolean allPerms)
 			throws AccessDeniedException, ResourceException;
 
-	Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions, Map<String,String> properties)
+	Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions, List<Realm> realms, Map<String,String> properties, boolean allUsers, boolean allPerm)
 			throws AccessDeniedException, ResourceException;
 
 	public Role getRoleById(Long id, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
@@ -160,5 +161,9 @@ public interface PermissionService extends AuthenticatedService {
 	void revokePermissionsNonTransactional(Principal principal);
 
 	 Role getRoleById(Long id);
+
+	Set<Permission> getPrincipalPermissions(Realm realm, Principal principal);
+
+	Set<Role> getDelegatedRoles(Principal principal, Realm realm);
 
 }

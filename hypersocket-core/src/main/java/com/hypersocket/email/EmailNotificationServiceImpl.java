@@ -68,6 +68,8 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	final static String SMTP_PASSWORD = "smtp.password";
 	final static String SMTP_FROM_ADDRESS = "smtp.fromAddress";
 	final static String SMTP_FROM_NAME = "smtp.fromName";
+	final static String SMTP_REPLY_ADDRESS = "smtp.replyAddress";
+	final static String SMTP_REPLY_NAME = "smtp.replyName";
 	
 	public static final String EMAIL_PATTERN = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 	
@@ -242,13 +244,18 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				getSMTPValue(realm, SMTP_FROM_NAME), 
 				getSMTPValue(realm, SMTP_FROM_ADDRESS));
 		
+		if(StringUtils.isNotBlank(replyToName) && StringUtils.isNotBlank(replyToEmail)) {
+			email.setReplyToAddress(replyToName, replyToEmail);
+		} else if(StringUtils.isNotBlank(getSMTPValue(realm, SMTP_REPLY_NAME))
+				&& StringUtils.isNotBlank(getSMTPValue(realm, SMTP_REPLY_ADDRESS))) {
+			email.setReplyToAddress(getSMTPValue(realm, SMTP_REPLY_NAME), getSMTPValue(realm, SMTP_REPLY_ADDRESS));
+		}
+		
 		email.addRecipient(r.getName(), r.getEmail(), RecipientType.TO);
 		
 		email.setSubject(subject);
 		
-		if(StringUtils.isNotBlank(replyToName) && StringUtils.isNotBlank(replyToEmail)) {
-			email.setReplyToAddress(replyToName, replyToEmail);
-		}
+		
 		
 		if(StringUtils.isNotBlank(htmlText)) {
 			email.setTextHTML(htmlText);
