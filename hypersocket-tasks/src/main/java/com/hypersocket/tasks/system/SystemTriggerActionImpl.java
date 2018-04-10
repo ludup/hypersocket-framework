@@ -42,6 +42,7 @@ public class SystemTriggerActionImpl extends AbstractTaskProvider {
 	
 	@Autowired
 	TaskProviderService taskService; 
+	
 	@PostConstruct
 	private void postConstruct() {
 	
