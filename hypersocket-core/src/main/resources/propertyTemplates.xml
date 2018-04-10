@@ -21,8 +21,13 @@
 			weight="500" defaultValue="admin@localhost.com" validateAll="email"  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 		<property resourceKey="smtp.fromName" inputType="text"
 			weight="600" defaultValue="Server Administrator"  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
+		<property resourceKey="smtp.replyAddress" inputType="text"
+			weight="700" defaultValue="" validateAll="email"  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
+		<property resourceKey="smtp.replyName" inputType="text"
+			weight="800" defaultValue=""  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
+		
 		<property resourceKey="smtp.delay" inputType="integer"
-			weight="600" defaultValue="250" minValue="0" maxValue="60000"  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
+			weight="900" defaultValue="250" minValue="0" maxValue="60000"  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.emailExtra"
 		resourceBundle="EmailService" weight="600"  group="messages">
