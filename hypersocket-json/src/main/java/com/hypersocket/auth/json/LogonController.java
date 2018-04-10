@@ -171,7 +171,9 @@ public class LogonController extends AuthenticatedController {
 				session = sessionUtils.touchSession(request, response);
 				if (session != null) {
 					try {
-						return getSuccessfulResult(session, flash, request, response);
+						return getSuccessfulResult(session, flash, 
+								session.getStateParameter("homePage"),
+								request, response);
 					} finally {
 						clearAuthenticatedContext();
 					}
@@ -222,6 +224,10 @@ public class LogonController extends AuthenticatedController {
 				request.getSession().removeAttribute(AUTHENTICATION_STATE_KEY);
 
 				setupAuthenticatedContext(state.getSession(), state.getLocale());
+				
+				if(StringUtils.isNotBlank(state.getHomePage())) {
+					state.getSession().setStateParameter("homePage", state.getHomePage());
+				}
 				
 				try {
 					return getSuccessfulResult(
