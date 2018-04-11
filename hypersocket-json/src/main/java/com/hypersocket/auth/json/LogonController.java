@@ -445,17 +445,6 @@ public class LogonController extends AuthenticatedController {
 		
 	}
 
-	private AuthenticationResult getSuccessfulResult(Session session,
-			String info, HttpServletRequest request, HttpServletResponse response) throws IOException, RedirectException {
-		
-		checkRedirect(request,response);
-		
-		return new AuthenticationSuccessResult(info,
-				configurationService.hasUserLocales(), 
-				session, "", getCurrentRole(session));
-		
-	}
-
 	private Role getCurrentRole(Session session) {
 		return configurationService.getBooleanValue(session.getCurrentRealm(), "feature.roleSelection") ? session.getCurrentRole() : null;
 	}
