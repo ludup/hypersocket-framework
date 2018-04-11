@@ -33,9 +33,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -47,7 +45,6 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.bouncycastle.asn1.x509.DSAParameter;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -335,27 +332,8 @@ public class X509CertificateUtils {
 
 	private static KeyPair loadKeyPair(PEMKeyPair privatekey)
 			throws CertificateException {
-		try {
-			PEMKeyPair pair = (PEMKeyPair) privatekey;
-
-			byte[] encodedPublicKey = pair.getPublicKeyInfo().getEncoded();
-			byte[] encodedPrivateKey = pair.getPrivateKeyInfo().getEncoded();
-
-			// Generate KeyPair.
-			KeyFactory keyFactory = KeyFactory
-					.getInstance(pair.getPublicKeyInfo().getAlgorithm()
-							.getParameters() instanceof DSAParameter ? "DSA"
-							: "RSA");
-
-			X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(
-					encodedPublicKey);
-			PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
-
-			PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(
-					encodedPrivateKey);
-			PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
-
-			return new KeyPair(publicKey, privateKey);
+		try {			
+			return new JcaPEMKeyConverter().getKeyPair(privatekey);
 		} catch (Exception e) {
 			throw new CertificateException(
 					"Failed to convert PEMKeyPair into JCE KeyPair", e);
