@@ -8,11 +8,18 @@
 package com.hypersocket.realm;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.ServletOutputStream;
+
 import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
+import com.hypersocket.export.CommonEndOfLine;
+import com.hypersocket.export.CommonEndOfLineEnum;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.resource.ResourceConfirmationException;
@@ -307,6 +314,14 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Collection<Realm> getRealmsByParent(Realm currentRealm);
 
 	Map<String, String> getRealmProperties(Realm realm);
+
+	List<CommonEndOfLine> getCommonEndOfLine();
+
+	void downloadCSV(Realm realm, String search, String searchPattern, String module, String filename,
+			boolean outputHeaders, String delimiters, CommonEndOfLineEnum eol, String wrap, String escape,
+			String attributes, ColumnSort[] sort, OutputStream output, Locale locale) throws AccessDeniedException, UnsupportedEncodingException;
+
+	Collection<String> getAllUserAttributeNames(Realm realm);
 
 }
 

@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.export.CommonEndOfLine;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.json.PropertyItem;
@@ -483,6 +484,25 @@ public class RealmController extends ResourceController {
 			
 		} catch (Exception e) {
 			return new RequestStatus(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "realms/eol", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<CommonEndOfLine> getResources(HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			return new ResourceList<CommonEndOfLine>(
+					realmService.getCommonEndOfLine());
 		} finally {
 			clearAuthenticatedContext();
 		}

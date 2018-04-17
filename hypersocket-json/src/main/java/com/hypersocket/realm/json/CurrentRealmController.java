@@ -1,5 +1,7 @@
 package com.hypersocket.realm.json;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,6 +30,8 @@ import com.hypersocket.auth.PrincipalNotFoundException;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.export.AttributeView;
+import com.hypersocket.export.CommonEndOfLineEnum;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.json.PropertyItem;
@@ -53,11 +57,14 @@ import com.hypersocket.realm.UserVariableReplacementService;
 import com.hypersocket.realm.ou.OrganizationalUnit;
 import com.hypersocket.realm.ou.OrganizationalUnitService;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.tables.Sort;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
+import com.hypersocket.triggers.TriggerResourceColumns;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Controller
@@ -358,6 +365,60 @@ public class CurrentRealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/attributes", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public BootstrapTableResult<?> getAttributes(final HttpServletRequest request,
+			HttpServletResponse respons) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			
+			return processDataTablesRequest(request,
+					new BootstrapTablePageProcessor() {
+
+						@Override
+						public Column getColumn(String col) {
+							return TriggerResourceColumns.valueOf(col.toUpperCase());
+						}
+
+						@Override
+						public List<?> getPage(String searchColumn, String searchPattern, int start,
+								int length, ColumnSort[] sorting)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							List<AttributeView> l = search(searchColumn, searchPattern);
+							start = Math.min(l.size(), start);
+							length = Math.min(length, l.size() - start);
+							return l.subList(start, start + length);
+						}
+
+						@Override
+						public Long getTotalCount(String searchColumn, String searchPattern)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							return (long)search(searchColumn, searchPattern).size();
+						}
+						
+						List<AttributeView> search(String searchColumn, String searchPattern) {
+							List<AttributeView> l = new ArrayList<>();
+							for(String a : realmService.getAllUserAttributeNames(getCurrentRealm())) {
+								if(searchPattern.equals("") || a.toLowerCase().contains(searchPattern.toLowerCase()))
+									l.add(new AttributeView(a));
+							}
+							
+							return l;
+						}
+					});
+		} finally {
+			clearAuthenticatedContext();
+		}
 	}
 
 	@AuthenticationRequired
@@ -1220,6 +1281,37 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return new ResourceList<OrganizationalUnit>(ouService.getOrganizationalUnits(getCurrentRealm()));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/csv", method = RequestMethod.POST, produces = { "application/octet-stream" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public void downloadCSV(HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException, ParseException, IOException, NumberFormatException, ResourceNotFoundException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+		try {
+			String headerKey = "Content-Disposition";
+	        String headerValue = String.format("attachment; filename=\"%s\"",
+	        		request.getParameter("filename"));
+	        response.setHeader(headerKey, headerValue);
+			ColumnSort sorting = new ColumnSort(RealmColumns.valueOf(request.getParameter("sortColumn").toUpperCase()), Sort.valueOf(request.getParameter("sortOrder").toUpperCase()));
+			ColumnSort[] sortArray = new ColumnSort[1];
+			sortArray[0] = sorting;
+			Realm realm = null;
+			if(org.apache.commons.lang3.StringUtils.isNumeric(request.getParameter("realm"))) {
+				realm = realmService.getRealmById(Long.parseLong(request.getParameter("realm")));
+			}
+			realmService.downloadCSV(realm, request.getParameter("search"),request.getParameter("searchPattern"),request.getParameter("filter"), 
+					request.getParameter("filename"), Boolean.valueOf(request.getParameter("outputHeaders")), 
+					request.getParameter("delimiter"), CommonEndOfLineEnum.valueOf(request.getParameter("terminate")),
+					request.getParameter("wrap"), request.getParameter("escape"), 
+					request.getParameter("attributes"), sortArray, 
+					response.getOutputStream(), sessionUtils.getLocale(request));
+			
 		} finally {
 			clearAuthenticatedContext();
 		}
