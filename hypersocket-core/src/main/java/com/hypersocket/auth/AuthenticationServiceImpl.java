@@ -562,37 +562,39 @@ public class AuthenticationServiceImpl extends
 //							state.setScheme(schemeRepository.getSchemeByResourceKey(principal.getRealm(), 
 //									state.getScheme().getResourceKey()));
 							
-							if(!state.getScheme().getAllowedRoles().isEmpty()) {
-								boolean found = false;
-								for(Role role : state.getScheme().getAllowedRoles()) {
-									if(permissionService.hasRole(state.getPrincipal(), role)) {
-										found = true;
+							if(state.getPrincipal()!=null) {
+								if(!state.getScheme().getAllowedRoles().isEmpty()) {
+									boolean found = false;
+									for(Role role : state.getScheme().getAllowedRoles()) {
+										if(permissionService.hasRole(state.getPrincipal(), role)) {
+											found = true;
+											break;
+										}
+									}
+									
+									if(!found) {
+										state.setLastErrorMsg(StringUtils.isNotBlank(state.getScheme().getDeniedRoleError()) ? state.getScheme().getDeniedRoleError() : "error.roleNotAllowed");
+										state.setLastErrorIsResourceKey(true);
+										success = false;
 										break;
 									}
 								}
 								
-								if(!found) {
-									state.setLastErrorMsg(StringUtils.isNotBlank(state.getScheme().getDeniedRoleError()) ? state.getScheme().getDeniedRoleError() : "error.roleNotAllowed");
-									state.setLastErrorIsResourceKey(true);
-									success = false;
-									break;
-								}
-							}
-							
-							if(!state.getScheme().getDeniedRoles().isEmpty()) {
-								boolean found = false;
-								for(Role role : state.getScheme().getDeniedRoles()) {
-									if(role.getPrincipals().contains(state.getPrincipal())) {
-										found = true;
+								if(!state.getScheme().getDeniedRoles().isEmpty()) {
+									boolean found = false;
+									for(Role role : state.getScheme().getDeniedRoles()) {
+										if(role.getPrincipals().contains(state.getPrincipal())) {
+											found = true;
+											break;
+										}
+									}
+									
+									if(found) {
+										state.setLastErrorMsg(StringUtils.isNotBlank(state.getScheme().getDeniedRoleError()) ? state.getScheme().getDeniedRoleError() : "error.roleDenied");
+										state.setLastErrorIsResourceKey(true);
+										success = false;
 										break;
 									}
-								}
-								
-								if(found) {
-									state.setLastErrorMsg(StringUtils.isNotBlank(state.getScheme().getDeniedRoleError()) ? state.getScheme().getDeniedRoleError() : "error.roleDenied");
-									state.setLastErrorIsResourceKey(true);
-									success = false;
-									break;
 								}
 							}
 							
