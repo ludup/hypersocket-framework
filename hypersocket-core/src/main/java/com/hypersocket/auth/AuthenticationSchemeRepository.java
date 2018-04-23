@@ -15,7 +15,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 public interface AuthenticationSchemeRepository extends AbstractResourceRepository<AuthenticationScheme> {
 
 	public AuthenticationScheme createScheme(Realm realm, String name, List<String> modules,
-			String resourceKey, boolean hidden, Integer maximum, AuthenticationModuleType type);
+			String resourceKey, boolean hidden, Integer maximum, AuthenticationModuleType type, boolean supportsHomeRedirect);
 
 	List<AuthenticationScheme> allSchemes(Realm realm);
 
@@ -35,7 +35,7 @@ public interface AuthenticationSchemeRepository extends AbstractResourceReposito
 
 	AuthenticationScheme createScheme(Realm realm, String name, List<String> templates, String resourceKey,
 			boolean hidden, Integer maximumModules, AuthenticationModuleType type, String allowedModules,
-			String lastButtonResourceKey);
+			String lastButtonResourceKey, boolean supportsHomeRedirect);
 
 	void enableAuthenticationScheme(String scheme);
 }

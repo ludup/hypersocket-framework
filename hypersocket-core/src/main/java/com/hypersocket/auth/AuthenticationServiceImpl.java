@@ -149,7 +149,7 @@ public class AuthenticationServiceImpl extends
 				modules.add(FallbackAuthenticator.RESOURCE_KEY);
 
 				schemeRepository.createScheme(realm, "fallback", modules,
-						"fallback", true, 1, AuthenticationModuleType.BASIC);
+						"fallback", true, 1, AuthenticationModuleType.BASIC, false);
 
 			}
 		});
@@ -179,7 +179,7 @@ public class AuthenticationServiceImpl extends
 				schemeRepository.createScheme(realm,
 						ANONYMOUS_AUTHENTICATION_SCHEME, modules,
 						ANONYMOUS_AUTHENTICATION_RESOURCE_KEY, true, 0,
-						AuthenticationModuleType.HIDDEN);
+						AuthenticationModuleType.HIDDEN, false);
 
 				if (log.isInfoEnabled()) {
 					log.info("Creating " + BROWSER_AUTHENTICATION_SCHEME
@@ -191,7 +191,7 @@ public class AuthenticationServiceImpl extends
 				schemeRepository.createScheme(realm,
 						BROWSER_AUTHENTICATION_SCHEME, modules,
 						BROWSER_AUTHENTICATION_RESOURCE_KEY, false, 10,
-						AuthenticationModuleType.HTML);
+						AuthenticationModuleType.HTML, true);
 
 			}
 			

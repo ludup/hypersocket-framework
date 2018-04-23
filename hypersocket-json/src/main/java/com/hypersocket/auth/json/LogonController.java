@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,12 +27,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.hypersocket.auth.AuthenticationRequiredResult;
+import com.hypersocket.auth.AuthenticationServiceImpl;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.FallbackAuthenticationRequired;
 import com.hypersocket.json.AuthenticationRedirectResult;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
@@ -41,6 +44,9 @@ import com.hypersocket.session.json.SessionUtils;
 @Controller
 public class LogonController extends AuthenticatedController {
 
+	@Autowired
+	PermissionService permissionService; 
+	
 	@RequestMapping(value = "logon/reset", method = { RequestMethod.GET, RequestMethod.POST}, produces = "application/json")
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -201,13 +207,15 @@ public class LogonController extends AuthenticatedController {
 				state = createAuthenticationState(scheme, request, response, null, state);
 			}
 
-			String redirectHome = (String) request.getSession().getAttribute("redirectHome");
-			if(redirectHome==null && request.getParameterMap().containsKey("redirectHome")) {
-				redirectHome = request.getParameter("redirectHome");
-			}
-			if(redirectHome!=null) {
-				state.setHomePage(redirectHome);
-				request.getSession().removeAttribute("redirectHome");
+			if(state.getScheme().supportsHomeRedirect()) {
+				String redirectHome = (String) request.getSession().getAttribute("redirectHome");
+				if(redirectHome==null && request.getParameterMap().containsKey("redirectHome")) {
+					redirectHome = request.getParameter("redirectHome");
+				}
+				if(redirectHome!=null) {
+					state.setHomePage(redirectHome);
+					request.getSession().removeAttribute("redirectHome");
+				}
 			}
 			
 			boolean success = authenticationService.logon(state,
@@ -229,11 +237,16 @@ public class LogonController extends AuthenticatedController {
 					state.getSession().setStateParameter("homePage", state.getHomePage());
 				}
 				
+				boolean redirectHome = state.getScheme().supportsHomeRedirect();
+				if(state.getScheme().getResourceKey().equals(AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY)
+					&& permissionService.hasAdministrativePermission(state.getPrincipal())) {
+						redirectHome = false;
+				}
 				try {
 					return getSuccessfulResult(
 							state.getSession(),
 							flash,
-							state.getHomePage(),
+							redirectHome ? state.getHomePage() : "",
 							request, 
 							response);
 				} finally {
