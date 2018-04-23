@@ -400,7 +400,7 @@ public class AuthenticationServiceImpl extends
 					case AUTHENTICATION_SUCCESS: {
 
 						
-						
+						success = true;
 						state.nextPostAuthenticationStep();
 
 						if (state.canCreateSession()) {
@@ -414,7 +414,7 @@ public class AuthenticationServiceImpl extends
 								success = logon(state, parameterMap);
 							}
 						}
-						success = true;
+						
 						break;
 					}
 					
