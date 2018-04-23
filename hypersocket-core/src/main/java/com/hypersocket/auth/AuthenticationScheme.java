@@ -68,6 +68,9 @@ public class AuthenticationScheme extends RealmResource {
 	@Column
 	String deniedRoleError;
 	
+	@Column
+	Boolean supportsHomeRedirect;
+	
 	public String getResourceKey() {
 		return resourceKey;
 	}
@@ -141,6 +144,14 @@ public class AuthenticationScheme extends RealmResource {
 
 	public void setDeniedRoleError(String deniedRoleError) {
 		this.deniedRoleError = deniedRoleError;
+	}
+
+	public boolean supportsHomeRedirect() {
+		return supportsHomeRedirect==null ? Boolean.FALSE : supportsHomeRedirect;
+	}
+
+	public void setSupportsHomeRedirect(boolean supportsHomeRedirect) {
+		this.supportsHomeRedirect = supportsHomeRedirect;
 	}
 	
 

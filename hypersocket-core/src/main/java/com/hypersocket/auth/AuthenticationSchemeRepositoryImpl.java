@@ -77,8 +77,8 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	@Transactional
 	public AuthenticationScheme createScheme(Realm realm, String name,
 			List<String> templates, String resourceKey, boolean hidden,
-			Integer maximumModules, AuthenticationModuleType type) {
-		return createScheme(realm, name, templates, resourceKey, hidden, maximumModules, type, null, null);
+			Integer maximumModules, AuthenticationModuleType type, boolean supportsHomeRedirect) {
+		return createScheme(realm, name, templates, resourceKey, hidden, maximumModules, type, null, null, supportsHomeRedirect);
 	}
 	
 	@Override
@@ -91,7 +91,8 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 			Integer maximumModules, 
 			AuthenticationModuleType type, 
 			String allowedModules, 
-			String lastButtonResourceKey) {
+			String lastButtonResourceKey,
+			boolean supportsHomeRedirect) {
 		AuthenticationScheme scheme = new AuthenticationScheme();
 		scheme.setName(name);
 		scheme.setRealm(realm);
@@ -102,7 +103,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 		scheme.setMaximumModules(maximumModules);
 		scheme.setAllowedModules(allowedModules);
 		scheme.setLastButtonResourceKey(lastButtonResourceKey);
-		
+		scheme.setSupportsHomeRedirect(supportsHomeRedirect);
 		save(scheme);
 
 		int idx = 0;
