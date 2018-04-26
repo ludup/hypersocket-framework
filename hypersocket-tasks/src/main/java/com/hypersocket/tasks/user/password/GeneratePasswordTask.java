@@ -126,7 +126,7 @@ public class GeneratePasswordTask extends AbstractTaskProvider {
 		}
 	}
 	
-	public String generatePassword(int digits, 
+	public static String generatePassword(int digits, 
 			int lower, 
 			int upper, 
 			int symbols, 
