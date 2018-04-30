@@ -237,11 +237,13 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 	
 			if(outputEvent!=null) {
 				
-				sourceEvents.add(outputEvent.getEvent());
+				
 				
 				if(outputEvent instanceof MultipleTaskResults) {
 					MultipleTaskResults results = (MultipleTaskResults) outputEvent;
 					for(TaskResult result : results.getResults()) {
+						
+						sourceEvents.add(result.getEvent());
 						
 						if(result.isPublishable()) {
 							eventService.publishEvent(result.getEvent());
@@ -252,6 +254,8 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 					
 				} else {
 				
+					sourceEvents.add(outputEvent.getEvent());
+					
 					if(outputEvent.isPublishable()) {
 						eventService.publishEvent(outputEvent.getEvent());
 					}

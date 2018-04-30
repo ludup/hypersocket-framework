@@ -112,11 +112,11 @@ public class AutomationJob extends AbstractTriggerJob {
 	}
 
 	
-	private TaskResult executeTask(AutomationResource resource, TaskProvider provider, List<SystemEvent> event) throws ValidationException {
+	private TaskResult executeTask(AutomationResource resource, TaskProvider provider, List<SystemEvent> sourceEvents) throws ValidationException {
 		
-		SystemEvent lastEvent = event.get(event.size()-1);
+		SystemEvent lastEvent = sourceEvents.get(sourceEvents.size()-1);
 		
-		TaskResult outputEvent = provider.execute(resource, lastEvent.getCurrentRealm(), event);
+		TaskResult outputEvent = provider.execute(resource, lastEvent.getCurrentRealm(), sourceEvents);
 		
 		if(outputEvent!=null) {
 
@@ -124,23 +124,27 @@ public class AutomationJob extends AbstractTriggerJob {
 				MultipleTaskResults results = (MultipleTaskResults) outputEvent;
 				for(TaskResult result : results.getResults()) {
 					
+					sourceEvents.add(result.getEvent());
+					
 					if(result.isPublishable()) {
 						eventService.publishEvent(result.getEvent());
 					}
 					
 					for(TriggerResource trigger : resource.getChildTriggers()) {
-						processEventTrigger(trigger, result.getEvent(), event);
+						processEventTrigger(trigger, result.getEvent(), new ArrayList<SystemEvent>(sourceEvents));
 					}
 				}
 				
 			} else {
 
+				sourceEvents.add(outputEvent.getEvent());
+				
 				if(outputEvent.isPublishable()) {
 					eventService.publishEvent(outputEvent.getEvent());
 				}
 				
 				for(TriggerResource trigger : resource.getChildTriggers()) {
-					processEventTrigger(trigger, outputEvent.getEvent(), event);
+					processEventTrigger(trigger, outputEvent.getEvent(), sourceEvents);
 				}
 			}
 		}
