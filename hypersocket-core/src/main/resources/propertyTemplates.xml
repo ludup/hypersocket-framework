@@ -56,6 +56,13 @@
 			defaultValue="false" weight="100" />
 		<property resourceKey="session.altHomePage" inputType="text"
 			defaultValue="" weight="300" />
+		<property resourceKey="session.altHomePage.onSchemes" inputType="multipleSelect"
+		    	url="authentication/schemes" defaultValue="basic" 
+		    	nameAttr="resourceKey"
+		    	nameIsResourceKey="true"
+		    	valueAttr="resourceKey"
+		    	resourceKeyTemplate="{0}.label"
+		    	weight="400"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="realm.userProfiles"
 		resourceBundle="RealmService" weight="999999" group="userProfiles">
