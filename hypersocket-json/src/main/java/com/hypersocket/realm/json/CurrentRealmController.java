@@ -207,17 +207,37 @@ public class CurrentRealmController extends ResourceController {
 			return processDataTablesRequest(request,
 					new BootstrapTablePageProcessor() {
 
+						ThreadLocal<List<?>> results = new  ThreadLocal<List<?>>();
+						
 						@Override
 						public Column getColumn(String col) {
 							return RealmColumns.valueOf(col.toUpperCase());
 						}
 
 						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
+						public List<?> getPage(String searchColumn, final String searchPattern, int start,
 											   int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
 							
+								List<?> r = filter(searchColumn, searchPattern);
+								results.set(r);
+								return results.get().subList(start, Math.min(start+length, r.size()));
+
+						}
+
+						@Override
+						public Long getTotalCount(String searchColumn, String searchPattern)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							try {
+								return new Long(results.get().size());
+							} finally {
+								results.remove();
+							}
+						}
+						
+						List<?> filter(final String searchColumn,  final String searchPattern) throws AccessDeniedException {
 							Principal principal = realmService.getPrincipalById(userId);
 							List<?> groups = realmService.allGroups(principal.getRealm());
 							final List<Principal> principalGroups = realmService.getUserGroups(principal);
@@ -225,18 +245,28 @@ public class CurrentRealmController extends ResourceController {
 							CollectionUtils.filter(groups, new Predicate() {
 								@Override
 								public boolean evaluate(Object o) {
-									return !principalGroups.contains(o);
+									if(!principalGroups.contains(o)) {
+										Principal principal = (Principal)o;
+										if(searchPattern.equals("*")) {
+											return true;
+										}
+										if(searchPattern.contains("*")) {
+											if(searchPattern.startsWith("*")) {
+												return principal.getPrincipalName().endsWith(searchPattern.substring(1));
+											} else if(searchPattern.endsWith("*")) {
+												return principal.getPrincipalName().startsWith(searchPattern.replace("*", ""));
+											} else {
+												return principal.getPrincipalName().contains(searchPattern.replace("*", ""));
+											}
+										} else {
+											return principal.getPrincipalName().startsWith(searchPattern);
+										}
+									}
+									return false;
 								}
 							});
-
+							
 							return groups;
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return 0l;
 						}
 					});
 		} finally {
