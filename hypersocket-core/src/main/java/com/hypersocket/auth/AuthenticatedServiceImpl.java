@@ -299,6 +299,16 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		throw new AccessDeniedException();
 	}
 	
+	protected void assertRole(Role... roles) throws AccessDeniedException {
+		Set<Role> principalRoles = getCurrentRoles();
+		for(Role role : roles) {
+			if(principalRoles.contains(role)) {
+				return;
+			}
+		}
+		throw new AccessDeniedException("User does not have an authorized role");
+	}
+	
 	protected void assertRoleOrAnyPermission(Role role, PermissionType... permission)
 			throws AccessDeniedException {
 		Set<Role> principalRoles = getCurrentRoles();
