@@ -360,7 +360,11 @@ public class Session extends AbstractEntity<String> {
 		if (stateParameters == null) {
 			stateParameters = new HashMap<String, String>();
 		}
-		stateParameters.put(name, value);
+		if(value==null) {
+			stateParameters.remove(name);
+		} else {
+			stateParameters.put(name, value);
+		}
 		writeState();
 	}
 
