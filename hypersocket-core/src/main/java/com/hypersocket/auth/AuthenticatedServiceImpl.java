@@ -253,6 +253,17 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		assertAnyPermission(PermissionStrategy.INCLUDE_IMPLIED, permission);
 	}
 	
+	protected void assertAdministrativePermission() throws AccessDeniedException {
+		
+		for(Role role : getCurrentRoles()) {
+			if(role.isAllPermissions()) {
+				return;
+			}
+		}
+		
+		throw new AccessDeniedException();
+	}
+	
 	protected void assertAnyPermissionOrRealmAdministrator(PermissionScope scope, PermissionType... permission)
 			throws AccessDeniedException {
 		Realm parentRealm = getCurrentPrincipal().getRealm();
