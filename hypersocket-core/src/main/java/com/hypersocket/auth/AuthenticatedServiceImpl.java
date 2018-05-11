@@ -28,6 +28,7 @@ import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.Role;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -306,7 +307,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 				return;
 			}
 		}
-		throw new AccessDeniedException("User does not have an authorized role");
+		throw new AccessDeniedException("User is not a member of " + ResourceUtils.createCommaSeparatedString(Arrays.asList(roles)) + " in ");
 	}
 	
 	protected void assertRoleOrAnyPermission(Role role, PermissionType... permission)
