@@ -11,8 +11,10 @@ import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -39,6 +41,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.certificates.CertificateProvider;
 import com.hypersocket.certificates.CertificateResource;
 import com.hypersocket.certificates.CertificateResourceColumns;
 import com.hypersocket.certificates.CertificateResourceService;
@@ -54,6 +57,7 @@ import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.json.ResourceUpdate;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.properties.NameValuePair;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceException;
@@ -69,6 +73,29 @@ public class CertificateResourceController extends ResourceController {
 
 	@Autowired
 	CertificateResourceService resourceService;
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "certificates/providers", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<NameValuePair> getStates(
+			HttpServletRequest request)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			List<NameValuePair> results = new ArrayList<NameValuePair>();
+			for(Map.Entry<String, CertificateProvider> en : resourceService.getProviders().entrySet()) {
+				results.add(new NameValuePair("certificateProvider." + en.getKey(), en.getKey()));
+			}
+			return new ResourceList<NameValuePair>(results);
+		} catch(Exception e) { 
+			return new ResourceList<NameValuePair>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/list", method = RequestMethod.GET, produces = { "application/json" })

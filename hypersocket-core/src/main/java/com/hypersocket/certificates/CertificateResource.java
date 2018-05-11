@@ -50,6 +50,17 @@ public class CertificateResource extends RealmResource {
 	@Column(name="signature_type")
 	String signatureAlgorithm;
 	
+	@Column(name="provider")
+	String provider;
+	
+	public String getProvider() {
+		return provider;
+	}
+
+	public void setProvider(String provider) {
+		this.provider = provider;
+	}
+
 	public CertificateType getCertType() {
 		return type;
 	}

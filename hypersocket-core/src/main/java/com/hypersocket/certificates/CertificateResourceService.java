@@ -21,6 +21,8 @@ public interface CertificateResourceService extends
 	
 	static final String RESOURCE_BUNDLE = "CertificateResourceService";
 	
+	void registerProvider(CertificateProvider provider);
+	
 	CertificateResource updateResource(CertificateResource resourceById,
 			String name, Map<String, String> properties)
 			throws ResourceException, AccessDeniedException;
@@ -78,5 +80,7 @@ public interface CertificateResourceService extends
 
 	CertificateResource replacePrivateKey(CertificateResource resource, InputStream key, String passphrase,
 			InputStream file, InputStream bundle) throws ResourceException, InvalidPassphraseException;
+
+	Map<String, CertificateProvider> getProviders();
 
 }

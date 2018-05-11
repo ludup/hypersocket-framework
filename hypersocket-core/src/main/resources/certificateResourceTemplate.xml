@@ -2,10 +2,11 @@
 <propertyTemplates context="certificateResource">
 	<propertyCategory resourceKey="cert.cert" resourceBundle="CertificateResourceService" weight="0" displayMode='create'>
 		<property resourceKey="certType" inputType="select" weight="0" nameIsResourceKey="true" defaultValue="RSA_2048" options="RSA_1024,RSA_2048,RSA_4096,DSA_1024" displayMode='create'/>
+		<property resourceKey="provider" inputType="select" weight="0" nameIsResourceKey="true" allowEmpty="false" url="certificates/providers" displayMode='create'/>
 	</propertyCategory>
 	<propertyCategory resourceKey="cert.details" resourceBundle="CertificateResourceService" weight="100">
 			<property resourceKey="commonName" inputType="text" weight="0" defaultValue="" />
-			<property resourceKey="organizationalUnit" inputType="text" weight="100" defaultValue="" />		
+			<property resourceKey="organizationalUnit" inputType="text" weight="100" defaultValue="" />
 			<property resourceKey="organization" inputType="text" weight="200" defaultValue="" />
 			<property resourceKey="location" inputType="text" weight="300" defaultValue="" />
 			<property resourceKey="state" inputType="text" weight="400" defaultValue="" />

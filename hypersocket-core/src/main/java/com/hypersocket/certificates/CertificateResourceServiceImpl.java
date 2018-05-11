@@ -20,6 +20,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -77,19 +78,22 @@ public class CertificateResourceServiceImpl extends
 	public static final String DEFAULT_CERTIFICATE_NAME = "Default SSL Certificate";
 
 	@Autowired
-	CertificateResourceRepository repository;
+	private CertificateResourceRepository repository;
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
 	@Autowired
-	PermissionService permissionService;
+	private PermissionService permissionService;
 
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
+	
+	//
+	private Map<String, CertificateProvider> providers = new HashMap<>();
 
 	public CertificateResourceServiceImpl() {
 		super("certificates");
@@ -124,6 +128,8 @@ public class CertificateResourceServiceImpl extends
 				RESOURCE_BUNDLE, this);
 
 		EntityResourcePropertyStore.registerResourceService(CertificateResource.class, repository);
+		
+		registerProvider(new DefaultCertificateProvider());
 	}
 
 	@Override
@@ -204,21 +210,8 @@ public class CertificateResourceServiceImpl extends
 		resource.setName(name);
 
 		try {
-			KeyPair pair = X509CertificateUtils.loadKeyPairFromPEM(
-					new ByteArrayInputStream(resource.getPrivateKey().getBytes(
-							"UTF-8")), null);
-			Certificate cert = populateCertificate(properties, pair,
-					resource.getSignatureAlgorithm());
-
-			ByteArrayOutputStream certFile = new ByteArrayOutputStream();
-			X509CertificateUtils.saveCertificate(new Certificate[] { cert },
-					certFile);
-
-			resource.setCertificate(new String(certFile.toByteArray(), "UTF-8"));
-			resource.setBundle(null);
-
+			getProvider(properties).update(resource, name, properties);
 			updateResource(resource, properties);
-
 			return resource;
 		} catch (CertificateException e) {
 			log.error("Failed to generate certificate", e);
@@ -248,48 +241,10 @@ public class CertificateResourceServiceImpl extends
 		resource.setName(name);
 		resource.setRealm(realm);
 		resource.setSystem(system);
-
-		CertificateType type = CertificateType.valueOf(properties
-				.get("certType"));
-
-		KeyPair pair = null;
-		String signatureAlgorithm = null;
+		
 		try {
-			switch (type) {
-			case RSA_1024:
-				pair = X509CertificateUtils.generatePrivateKey("RSA", 1024);
-				signatureAlgorithm = "SHA1WithRSAEncryption";
-				break;
-			case RSA_2048:
-				pair = X509CertificateUtils.generatePrivateKey("RSA", 2048);
-				signatureAlgorithm = "SHA1WithRSAEncryption";
-				break;
-			case DSA_1024:
-				pair = X509CertificateUtils.generatePrivateKey("DSA", 1024);
-				signatureAlgorithm = "SHA1WithDSA";
-				break;
-			default:
-				throw new ResourceCreationException(RESOURCE_BUNDLE,
-						"error.unsupportedType");
-			}
-
-			Certificate cert = populateCertificate(properties, pair,
-					signatureAlgorithm);
-			resource.setSignatureAlgorithm(signatureAlgorithm);
-
-			ByteArrayOutputStream privateKeyFile = new ByteArrayOutputStream();
-			X509CertificateUtils.saveKeyPair(pair, privateKeyFile);
-
-			ByteArrayOutputStream certFile = new ByteArrayOutputStream();
-			X509CertificateUtils.saveCertificate(new Certificate[] { cert },
-					certFile);
-
-			resource.setPrivateKey(new String(privateKeyFile.toByteArray(),
-					"UTF-8"));
-			resource.setCertificate(new String(certFile.toByteArray(), "UTF-8"));
-
+			getProvider(properties).create(resource, properties);
 			createResource(resource, properties);
-
 			return resource;
 		} catch (CertificateException e) {
 			log.error("Failed to generate certificate", e);
@@ -300,6 +255,14 @@ public class CertificateResourceServiceImpl extends
 			throw new ResourceCreationException(RESOURCE_BUNDLE,
 					"error.certificateError", e.getMessage());
 		}
+	}
+
+	private CertificateProvider getProvider(Map<String, String> properties) {
+		final String providerId = properties.get("provider");
+		CertificateProvider provider = providers.get(StringUtils.isBlank(providerId) ? "default" : providerId);
+		if(provider == null)
+			throw new IllegalArgumentException(String.format("No provider with ID of %s", providerId));
+		return provider;
 	}
 
 	@Override
@@ -319,18 +282,6 @@ public class CertificateResourceServiceImpl extends
 		properties.put("country", c);
 
 		return createResource(name, realm, properties, system);
-	}
-
-	private Certificate populateCertificate(Map<String, String> properties,
-			KeyPair pair, String signatureType) {
-		return X509CertificateUtils.generateSelfSignedCertificate(
-				properties.get("commonName"),
-				properties.get("organizationalUnit"),
-				properties.get("organization"), 
-				properties.get("location"),
-				properties.get("state"), 
-				properties.get("country"), pair,
-				signatureType);
 	}
 
 	@Override
@@ -785,6 +736,13 @@ public class CertificateResourceServiceImpl extends
 	}
 
 	@Override
+	public void registerProvider(CertificateProvider provider) {
+		if(providers.containsKey(provider.getResourceKey()))
+			throw new IllegalArgumentException(String.format("The provider %s is alread registered.", provider.getResourceKey()));
+		providers.put(provider.getResourceKey(), provider);
+	}
+
+	@Override
 	public KeyStore getResourceKeystore(CertificateResource resource) throws ResourceException {
 		return getResourceKeystore(resource, "hypersocket", "changeit");
 	}
@@ -822,6 +780,11 @@ public class CertificateResourceServiceImpl extends
 					"error.certificateError", e.getMessage());
 		}
 
+	}
+
+	@Override
+	public Map<String, CertificateProvider> getProviders() {
+		return Collections.unmodifiableMap(providers);
 	}
 
 
