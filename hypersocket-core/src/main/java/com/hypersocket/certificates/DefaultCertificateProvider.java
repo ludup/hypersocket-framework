@@ -1,6 +1,5 @@
 package com.hypersocket.certificates;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;

@@ -82,9 +82,6 @@ import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
 import com.hypersocket.realm.ou.OrganizationalUnitRepository;
-import com.hypersocket.resource.AbstractAssignableResourceRepository;
-import com.hypersocket.resource.AbstractSimpleResourceRepository;
-import com.hypersocket.resource.FindableResourceRepository;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceCreationException;
@@ -1292,18 +1289,18 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 	}
 
-	private void fireRealmDelete(Realm realm) throws ResourceException {
-
-		for (RealmListener l : realmListeners) {
-			try {
-				l.onDeleteRealm(realm);
-			} catch (ResourceChangeException e) {
-				throw e;
-			} catch (Throwable t) {
-				log.error("Caught error in RealmListener", t);
-			}
-		}
-	}
+//	private void fireRealmDelete(Realm realm) throws ResourceException {
+//
+//		for (RealmListener l : realmListeners) {
+//			try {
+//				l.onDeleteRealm(realm);
+//			} catch (ResourceChangeException e) {
+//				throw e;
+//			} catch (Throwable t) {
+//				log.error("Caught error in RealmListener", t);
+//			}
+//		}
+//	}
 
 	@Override
 	public void deleteRealm(final Realm realm) throws AccessDeniedException, ResourceException {
