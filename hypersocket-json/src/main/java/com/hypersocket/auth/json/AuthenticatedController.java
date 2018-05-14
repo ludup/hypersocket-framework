@@ -176,6 +176,10 @@ public class AuthenticatedController {
 		authenticationService.setupSystemContext(realm);	
 	}
 	
+	protected void setupSystemContext(Principal principal) {
+		authenticationService.setupSystemContext(principal);
+	}
+	
 	protected void setupSystemContext() throws AccessDeniedException {
 		authenticationService.setupSystemContext(realmService.getSystemRealm());	
 	}
