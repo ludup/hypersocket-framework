@@ -63,4 +63,6 @@ public interface RealmRepository extends
 
 	Collection<Realm> getRealmsByParent(Realm currentRealm);
 
+	void deleteRealmSoftly(Realm realm);
+
 }

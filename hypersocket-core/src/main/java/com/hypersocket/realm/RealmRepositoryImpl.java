@@ -267,5 +267,12 @@ public class RealmRepositoryImpl extends
 	public void deleteRealm(Realm realm) {
 		delete(realm);
 	}
+	
+	@Override
+	@Transactional
+	public void deleteRealmSoftly(Realm realm) {
+		realm.setDeleted(true);
+		save(realm);
+	}
 
 }
