@@ -237,11 +237,10 @@ public class LogonController extends AuthenticatedController {
 				List<String> schemes = Arrays.asList(
 						configurationService.getValues(state.getRealm(), "session.altHomePage.onSchemes"));
 				
-				boolean performRedirect =  state.getScheme().supportsHomeRedirect() || schemes.contains(state.getScheme().getResourceKey());
-				 
-				if(permissionService.hasAdministrativePermission(state.getPrincipal())) {
-					performRedirect = false;
-				}
+				boolean performRedirect =  state.getScheme().supportsHomeRedirect() 
+						|| (schemes.contains(state.getScheme().getResourceKey())
+								&& !permissionService.hasAdministrativePermission(state.getPrincipal()));
+			
 				
 				try {
 					return getSuccessfulResult(
