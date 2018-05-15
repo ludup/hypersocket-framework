@@ -178,7 +178,7 @@ public class LogonController extends AuthenticatedController {
 				if (session != null) {
 					try {
 						return getSuccessfulResult(session, flash, 
-								session.getStateParameter("homePage"),
+								state!=null ? state.getHomePage() : "",
 								request, response);
 					} finally {
 						clearAuthenticatedContext();
@@ -232,10 +232,6 @@ public class LogonController extends AuthenticatedController {
 				request.getSession().removeAttribute(AUTHENTICATION_STATE_KEY);
 
 				setupAuthenticatedContext(state.getSession(), state.getLocale());
-				
-				if(StringUtils.isNotBlank(state.getHomePage())) {
-					state.getSession().setStateParameter("homePage", state.getHomePage());
-				}
 				
 				boolean redirectHome = state.getScheme().supportsHomeRedirect();
 				if(state.getScheme().getResourceKey().equals(AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY)
