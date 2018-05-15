@@ -8,6 +8,7 @@
 package com.hypersocket.auth;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,6 +38,7 @@ import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.permissions.SystemPermission;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -798,10 +800,16 @@ public class AuthenticationServiceImpl extends
 			}
 		} 
 		
-		String altHomePage = configurationService.getValue("session.altHomePage");
+		String altHomePage = configurationService.getValue(state.getRealm(), "session.altHomePage");
 		if(StringUtils.isNotBlank(altHomePage)) {
-			altHomePage = variableReplacement.replaceVariables(getCurrentPrincipal(), altHomePage);
-			state.setHomePage(altHomePage);
+			
+			List<String> schemes = Arrays.asList(
+					configurationService.getValues(state.getRealm(), "session.altHomePage.onSchemes"));
+			
+			if(schemes.contains(state.getScheme().getResourceKey())) {
+				altHomePage = variableReplacement.replaceVariables(getCurrentPrincipal(), altHomePage);
+				state.setHomePage(altHomePage);
+			}
 		} 
 		
 		return session;
