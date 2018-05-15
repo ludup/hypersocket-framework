@@ -193,7 +193,7 @@ public class AuthenticationServiceImpl extends
 				schemeRepository.createScheme(realm,
 						BROWSER_AUTHENTICATION_SCHEME, modules,
 						BROWSER_AUTHENTICATION_RESOURCE_KEY, false, 10,
-						AuthenticationModuleType.HTML, true);
+						AuthenticationModuleType.HTML, false);
 
 			}
 			
