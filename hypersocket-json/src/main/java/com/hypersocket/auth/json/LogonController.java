@@ -9,7 +9,9 @@ package com.hypersocket.auth.json;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -207,16 +209,15 @@ public class LogonController extends AuthenticatedController {
 				state = createAuthenticationState(scheme, request, response, null, state);
 			}
 
-			if(state.getScheme().supportsHomeRedirect()) {
-				String redirectHome = (String) request.getSession().getAttribute("redirectHome");
-				if(redirectHome==null && request.getParameterMap().containsKey("redirectHome")) {
-					redirectHome = request.getParameter("redirectHome");
-				}
-				if(redirectHome!=null) {
-					state.setHomePage(redirectHome);
-					request.getSession().removeAttribute("redirectHome");
-				}
+			String redirectHome = (String) request.getSession().getAttribute("redirectHome");
+			if(redirectHome==null && request.getParameterMap().containsKey("redirectHome")) {
+				redirectHome = request.getParameter("redirectHome");
 			}
+			if(redirectHome!=null) {
+				state.setHomePage(redirectHome);
+				request.getSession().removeAttribute("redirectHome");
+			}
+
 			
 			boolean success = authenticationService.logon(state,
 					decodeParameters(request.getParameterMap()));
@@ -233,16 +234,20 @@ public class LogonController extends AuthenticatedController {
 
 				setupAuthenticatedContext(state.getSession(), state.getLocale());
 				
-				boolean redirectHome = state.getScheme().supportsHomeRedirect();
-				if(state.getScheme().getResourceKey().equals(AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY)
-					&& permissionService.hasAdministrativePermission(state.getPrincipal())) {
-						redirectHome = false;
+				List<String> schemes = Arrays.asList(
+						configurationService.getValues(state.getRealm(), "session.altHomePage.onSchemes"));
+				
+				boolean performRedirect =  state.getScheme().supportsHomeRedirect() || schemes.contains(state.getScheme().getResourceKey());
+				 
+				if(permissionService.hasAdministrativePermission(state.getPrincipal())) {
+					performRedirect = false;
 				}
+				
 				try {
 					return getSuccessfulResult(
 							state.getSession(),
 							flash,
-							redirectHome ? state.getHomePage() : "",
+							performRedirect ? state.getHomePage() : "",
 							request, 
 							response);
 				} finally {
