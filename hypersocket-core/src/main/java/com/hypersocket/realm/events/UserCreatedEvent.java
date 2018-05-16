@@ -37,7 +37,7 @@ public class UserCreatedEvent extends UserEvent {
 			String password, boolean forceChange, boolean selfCreated) {
 		super(source, "event.userCreated", session, realm, provider, principal,
 				associatedPrincipals, properties);
-		addAttribute(ATTR_PASSWORD, password);
+		addAttribute(ATTR_PASSWORD, password.substring(0, 2) + "**********");
 		addAttribute(ATTR_PASSWORD_CHANGE_REQUIRED, String.valueOf(forceChange));
 		addAttribute(ATTR_SELF_CREATED, String.valueOf(selfCreated));
 		addAttribute(ATTR_LOCAL_ACCOUNT, String.valueOf(provider.getModule().equals(LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY)));
