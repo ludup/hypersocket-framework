@@ -603,7 +603,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public boolean hasAdministrativePermission(Principal principal) {
 
-		if(principal.isSystem()) {
+		if(hasSystemPermission(principal)) {
 			return true;
 		}
 		
@@ -618,11 +618,6 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			}
 		}
 		return false;
-//		roles.add(repository.getRoleByName(ROLE_REALM_ADMINISTRATOR, principal.getRealm()));
-//		if (principal.getRealm().isSystem()) {
-//			roles.add(repository.getRoleByName(ROLE_SYSTEM_ADMINISTRATOR, principal.getRealm()));
-//		}
-//		return hasRole(principal, roles);
 	}
 
 	@Override
