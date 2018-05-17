@@ -603,6 +603,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public boolean hasAdministrativePermission(Principal principal) {
 
+		if(principal.isSystem()) {
+			return true;
+		}
+		
 		Set<Role> roles = getPrincipalRoles(principal);
 		for(Role r : roles) {
 			if(!isDelegatedRealm() && r.isDelegatedRole()
