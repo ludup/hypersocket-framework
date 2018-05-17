@@ -553,12 +553,26 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public boolean hasAdministrativePermission(Principal principal) {
 
-		Set<Role> roles = new HashSet<Role>();
-		roles.add(repository.getRoleByName(ROLE_REALM_ADMINISTRATOR, principal.getRealm()));
-		if (principal.getRealm().isSystem()) {
-			roles.add(repository.getRoleByName(ROLE_SYSTEM_ADMINISTRATOR, principal.getRealm()));
+		if(principal.isSystem()) {
+			return true;
 		}
-		return hasRole(principal, roles);
+		
+		Set<Role> roles = getPrincipalRoles(principal);
+		for(Role r : roles) {
+			if(!isDelegatedRealm() && r.isDelegatedRole()
+					|| isDelegatedRealm() && !r.isDelegatedRole()) {
+				continue;
+			}
+			if(r.isAllPermissions()) {
+				return true;
+			}
+		}
+		return false;
+//		roles.add(repository.getRoleByName(ROLE_REALM_ADMINISTRATOR, principal.getRealm()));
+//		if (principal.getRealm().isSystem()) {
+//			roles.add(repository.getRoleByName(ROLE_SYSTEM_ADMINISTRATOR, principal.getRealm()));
+//		}
+//		return hasRole(principal, roles);
 	}
 
 	@Override
