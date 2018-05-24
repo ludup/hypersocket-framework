@@ -2,6 +2,8 @@ package com.hypersocket.session.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.hypersocket.ApplicationContextServiceImpl;
+import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.realm.Principal;
@@ -19,6 +21,7 @@ public abstract class SessionEvent extends SystemEvent {
 	public static final String ATTR_PRINCIPAL_NAME = CommonAttributes.ATTR_PRINCIPAL_NAME;
 	public static final String ATTR_PRINCIPAL_DESC = "attr.principalDesc";
 	public static final String ATTR_IMPERSONATOR = "attr.impersonator";
+	public static final String ATTR_IMPERSONATOR_DESC = "attr.impersonatorDesc";
 	public static final String ATTR_PRINCIPAL_REALM = CommonAttributes.ATTR_PRINCIPAL_REALM;
 	public static final String ATTR_IP_ADDRESS = CommonAttributes.ATTR_IP_ADDRESS;
 	
@@ -40,18 +43,11 @@ public abstract class SessionEvent extends SystemEvent {
 	}
 	
 	public SessionEvent(Object source, String resourceKey, boolean success,
-			Session session, Realm realm, boolean hidden) {
-		super(source, resourceKey, success, realm);
+			Session session, Realm currentRealm, boolean hidden) {
+		super(source, resourceKey, success, currentRealm);
 		this.session = session;
 		this.hidden = hidden;
-		addAttribute(ATTR_UUID, session.getId());
-		addAttribute(ATTR_PRINCIPAL_NAME, session.getCurrentPrincipal().getPrincipalName());
-		addAttribute(ATTR_PRINCIPAL_DESC, session.getCurrentPrincipal().getPrincipalDescription());
-		addAttribute(ATTR_PRINCIPAL_REALM, realm.getName());
-		addAttribute(ATTR_IP_ADDRESS, session.getRemoteAddress());
-		if(session.isImpersonating()) {
-			addAttribute(ATTR_IMPERSONATOR, session.getInheritedPrincipal().getPrincipalName());
-		}
+		addAttributes(session, currentRealm);
 	}
 	
 	public SessionEvent(Object source, String resourceKey, Throwable e,
@@ -63,13 +59,29 @@ public abstract class SessionEvent extends SystemEvent {
 			Session session, Realm currentRealm) {
 		super(source, resourceKey, e, currentRealm);
 		this.session = session;
+		addAttributes(session, currentRealm);
+	}
+	
+	private void addAttributes(Session session, Realm currentRealm) {
+		
 		addAttribute(ATTR_UUID, session.getId());
-		addAttribute(ATTR_PRINCIPAL_NAME, session.getCurrentPrincipal().getPrincipalName());
-		addAttribute(ATTR_PRINCIPAL_DESC, session.getCurrentPrincipal().getPrincipalDescription());
-		addAttribute(ATTR_PRINCIPAL_REALM, session.getCurrentRealm().getName());
+		
+		AuthenticationService authService = ApplicationContextServiceImpl.getInstance().getBean(AuthenticationService.class);
+		 
+		if(authService.hasAuthenticatedContext()) {
+			addAttribute(ATTR_PRINCIPAL_NAME, authService.getCurrentPrincipal().getPrincipalName());
+			addAttribute(ATTR_PRINCIPAL_DESC, authService.getCurrentPrincipal().getPrincipalDescription());
+		} else {
+			addAttribute(ATTR_PRINCIPAL_NAME, session.getCurrentPrincipal().getPrincipalName());
+			addAttribute(ATTR_PRINCIPAL_DESC, session.getCurrentPrincipal().getPrincipalDescription());
+		}
+		
+		addAttribute(ATTR_PRINCIPAL_REALM, currentRealm.getName());
 		addAttribute(ATTR_IP_ADDRESS, session.getRemoteAddress());
+		
 		if(session.isImpersonating()) {
 			addAttribute(ATTR_IMPERSONATOR, session.getInheritedPrincipal().getPrincipalName());
+			addAttribute(ATTR_IMPERSONATOR_DESC, session.getInheritedPrincipal().getPrincipalDescription());
 		}
 	}
 	
