@@ -10,6 +10,8 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 
 public interface CertificateProvider {
+	
+	boolean isRequireCertificateDetails();
 
 	String getResourceKey();
 	

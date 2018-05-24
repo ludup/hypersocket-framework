@@ -58,6 +58,11 @@ public class DefaultCertificateProvider extends AbstractCertificateProvider {
 
 	}
 
+	@Override
+	public boolean isRequireCertificateDetails() {
+		return true;
+	}
+
 	private Certificate populateCertificate(Map<String, String> properties, KeyPair pair, String signatureType) {
 		return X509CertificateUtils.generateSelfSignedCertificate(properties.get("commonName"),
 				properties.get("organizationalUnit"), properties.get("organization"), properties.get("location"),

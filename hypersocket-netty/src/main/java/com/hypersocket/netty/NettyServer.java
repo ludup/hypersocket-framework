@@ -89,65 +89,67 @@ import com.hypersocket.session.SessionService;
 public class NettyServer extends HypersocketServerImpl implements ObjectSizeEstimator  {
 
 	static final String RESOURCE_BUNDLE = "NettyServer";
-	
+
 	static Logger log = LoggerFactory.getLogger(NettyServer.class);
 
 	private ClientBootstrap clientBootstrap = null;
 	private ServerBootstrap serverBootstrap = null;
 	Map<HTTPInterfaceResource,Set<Channel>> httpChannels;
 	Map<HTTPInterfaceResource,Set<Channel>> httpsChannels;
-	
+
 	ExecutorService executor;
-	
+
 	@Autowired
 	ExtendedIpFilterRuleHandler ipFilterHandler;
-	
+
 	MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
 	Map<String,List<Channel>> channelsByIPAddress = new HashMap<String,List<Channel>>();
-	
+
 	ExecutionHandler executionHandler;
-	
+
 	@Autowired
-	IPRestrictionService ipRestrictionService; 
-	
+	IPRestrictionService ipRestrictionService;
+
 	@Autowired
-	SystemConfigurationService configurationService; 
-	
+	SystemConfigurationService configurationService;
+
 	@Autowired
-	EventService eventService; 
-	
+	EventService eventService;
+
 	@Autowired
 	SessionService sessionService;
-	
+
 	@Autowired
 	I18NService i18nService;
-	
+
 	@Autowired
 	RealmService realmService;
-	
+
 	NettyThreadFactory nettyThreadFactory;
-	
+
 	List<ClientConnector> clientConnectors = new ArrayList<ClientConnector>();
-	
+
+	private Set<String> preventUrlRedirection = new HashSet<>();
+
 	public NettyServer() {
 
 	}
-	
+
 	@PostConstruct
 	private void postConstruct() {
-		
+
 		nettyThreadFactory = new NettyThreadFactory();
-		
+
 		executionHandler = new ExecutionHandler(
 	            new OrderedMemoryAwareThreadPoolExecutor(
-	            		configurationService.getIntValue("netty.maxChannels"), 
-	            		configurationService.getIntValue("netty.maxChannelMemory"), 
+	            		configurationService.getIntValue("netty.maxChannels"),
+	            		configurationService.getIntValue("netty.maxChannelMemory"),
 	            		configurationService.getIntValue("netty.maxTotalMemory"),
 	            		60 * 5,
 	            		TimeUnit.SECONDS,
 	            		this,
 	            		nettyThreadFactory));
-		
+
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}
 
@@ -158,7 +160,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	public ServerBootstrap getServerBootstrap() {
 		return serverBootstrap;
 	}
-	
+
 	@Override
 	public void registerClientConnector(ClientConnector connector) {
 		clientConnectors.add(connector);
@@ -170,7 +172,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			}
 		});
 	}
-	
+
 	@Override
 	public ExecutorService getExecutor() {
 		return executor;
@@ -178,11 +180,11 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 	@Override
 	protected void doStart() throws IOException {
-		
+
 		System.setProperty("hypersocket.netty.debug", "true");
-		
+
 		executor = Executors.newCachedThreadPool(new NettyThreadFactory());
-		
+
 		clientBootstrap = new ClientBootstrap(
 				new NioClientSocketChannelFactory(
 						executor,
@@ -217,34 +219,34 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			}
 		});
 
-		
-		serverBootstrap.setOption("child.receiveBufferSize", 
+
+		serverBootstrap.setOption("child.receiveBufferSize",
 				configurationService.getIntValue("netty.receiveBuffer"));
-		serverBootstrap.setOption("child.sendBufferSize", 
+		serverBootstrap.setOption("child.sendBufferSize",
 				configurationService.getIntValue("netty.sendBuffer"));
-		serverBootstrap.setOption("backlog", 
+		serverBootstrap.setOption("backlog",
 				configurationService.getIntValue("netty.backlog"));
-		
+
 		httpChannels = new HashMap<HTTPInterfaceResource,Set<Channel>>();
 		httpsChannels = new HashMap<HTTPInterfaceResource,Set<Channel>>();
-		
-		HTTPInterfaceResourceRepository interfaceRepository = 
+
+		HTTPInterfaceResourceRepository interfaceRepository =
 				(HTTPInterfaceResourceRepository) getApplicationContext().getBean("HTTPInterfaceResourceRepositoryImpl");
-		
+
 		if(interfaceRepository==null) {
 			throw new IOException("Cannot get interface configuration from application context!");
 		}
-		
+
 		for(HTTPInterfaceResource resource : interfaceRepository.allInterfaces()) {
 			bindInterface(resource);
 		}
-		
+
 		if(httpChannels.size()==0 && httpsChannels.size()==0) {
-			
+
 			if(log.isInfoEnabled()) {
 				log.info("Failed to startup any interfaces. Creating emergency listeners");
 			}
-			
+
 			HTTPInterfaceResource tmp = new HTTPInterfaceResource();
 			tmp.setId(0L);
 			tmp.setInterfaces("127.0.0.1");
@@ -252,14 +254,14 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			tmp.setProtocol(HTTPProtocol.HTTP.toString());
 			tmp.setRealm(realmService.getSystemRealm());
 			bindInterface(tmp);
-			
+
 			HTTPInterfaceResource tmp2 = new HTTPInterfaceResource();
 			tmp.setId(1L);
 			tmp2.setInterfaces("::");
 			tmp2.setPort(0);
 			tmp2.setProtocol(HTTPProtocol.HTTP.toString());
 			tmp.setRealm(realmService.getSystemRealm());
-			
+
 			bindInterface(tmp2);
 		}
 	}
@@ -279,69 +281,69 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		}
 		return ((InetSocketAddress)httpsChannels.values().iterator().next().iterator().next().getLocalAddress()).getPort();
 	}
-	
+
 	protected void unbindInterface(HTTPInterfaceResource interfaceResource) {
-		
+
 		Set<Channel> channels = httpChannels.get(interfaceResource);
-		
+
 		closeChannels(interfaceResource, channels);
-		
+
 		channels = httpsChannels.get(interfaceResource);
-		
+
 		closeChannels(interfaceResource, channels);
 	}
-	
+
 	protected void closeChannels(HTTPInterfaceResource interfaceResource, Set<Channel> channels) {
-		
+
 		for(Channel channel : channels) {
 			InetSocketAddress addr = (InetSocketAddress) channel.getLocalAddress();
 			try {
 				ChannelFuture future = channel.close();
 				future.await(30000);
 				if(future.isDone() && future.isSuccess()) {
-					eventService.publishEvent(new HTTPInterfaceStoppedEvent(this, 
-							sessionService.getSystemSession(), 
+					eventService.publishEvent(new HTTPInterfaceStoppedEvent(this,
+							sessionService.getSystemSession(),
 							interfaceResource, addr.getAddress().getHostAddress(), addr.getPort()));
 				} else {
-					eventService.publishEvent(new HTTPInterfaceStoppedEvent(this, 
+					eventService.publishEvent(new HTTPInterfaceStoppedEvent(this,
 							interfaceResource,
-							new IllegalStateException("Timeout exceeded before channel was closed."), 
+							new IllegalStateException("Timeout exceeded before channel was closed."),
 							sessionService.getSystemSession(),
 							addr.getAddress().getHostAddress(), addr.getPort()));
 				}
-				
+
 			} catch (InterruptedException e) {
-				
-				eventService.publishEvent(new HTTPInterfaceStoppedEvent(this, 
+
+				eventService.publishEvent(new HTTPInterfaceStoppedEvent(this,
 						interfaceResource,
-						e, 
+						e,
 						sessionService.getSystemSession(),
 						addr.getAddress().getHostAddress(), addr.getPort()));
 			}
-			
+
 		}
-		
+
 		channels.clear();
 	}
-	
+
 	protected void bindInterface(HTTPInterfaceResource interfaceResource) throws IOException {
-			
+
 		Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
-		
+
 		Set<String> interfacesToBind = new HashSet<String>();
-		
+
 		if(!interfaceResource.getAllInterfaces()) {
 			interfacesToBind.addAll(ResourceUtils.explodeCollectionValues(interfaceResource.getInterfaces()));
 		}
-		
+
 		httpChannels.put(interfaceResource, new HashSet<Channel>());
 		httpsChannels.put(interfaceResource, new HashSet<Channel>());
-		
+
 		if(interfacesToBind.isEmpty()) {
-			
+
 			try {
 				if(log.isInfoEnabled()) {
-					log.info("Binding server to all interfaces on port " 
+					log.info("Binding server to all interfaces on port "
 							+ interfaceResource.getPort());
 				}
 				Channel ch = serverBootstrap.bind(new InetSocketAddress(interfaceResource.getPort()));
@@ -353,45 +355,45 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 				default:
 					httpsChannels.get(interfaceResource).add(ch);
 				}
-				
-				eventService.publishEvent(new HTTPInterfaceStartedEvent(this, 
-						sessionService.getSystemSession(), 
+
+				eventService.publishEvent(new HTTPInterfaceStartedEvent(this,
+						sessionService.getSystemSession(),
 						interfaceResource,
 						((InetSocketAddress)ch.getLocalAddress()).getAddress().getHostAddress()));
-				
+
 				if(log.isInfoEnabled()) {
 					log.info("Bound " + interfaceResource.getProtocol() + " to port "
 							+ ((InetSocketAddress)ch.getLocalAddress()).getPort());
 				}
 			} catch (Exception e1) {
-				eventService.publishEvent(new HTTPInterfaceStartedEvent(this, 
+				eventService.publishEvent(new HTTPInterfaceStartedEvent(this,
 						interfaceResource,
-						e1, 
+						e1,
 						sessionService.getSystemSession(),
 						"::"));
 			}
 		} else {
 			while(e.hasMoreElements())  {
-				
+
 				NetworkInterface i = e.nextElement();
-			
+
 				Enumeration<InetAddress> inetAddresses = i.getInetAddresses();
-				
+
 				for (InetAddress inetAddress : Collections.list(inetAddresses)) {
-					
+
 					if(interfacesToBind.contains(inetAddress.getHostAddress())) {
 						try {
 							if(log.isInfoEnabled()) {
-								log.info("Binding " + interfaceResource.getProtocol() + " server to interface " 
-										+ i.getDisplayName() 
-										+ " " 
-										+ inetAddress.getHostAddress() 
-										+ ":" 
+								log.info("Binding " + interfaceResource.getProtocol() + " server to interface "
+										+ i.getDisplayName()
+										+ " "
+										+ inetAddress.getHostAddress()
+										+ ":"
 										+ interfaceResource.getPort());
 							}
-							
+
 							Channel ch = serverBootstrap.bind(new InetSocketAddress(inetAddress, interfaceResource.getPort()));
-							
+
 							ch.setAttachment(interfaceResource);
 							switch(interfaceResource.getProtocol()) {
 							case HTTP:
@@ -400,27 +402,27 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 							default:
 								httpsChannels.get(interfaceResource).add(ch);
 							}
-							
-							eventService.publishEvent(new HTTPInterfaceStartedEvent(this, 
-									sessionService.getSystemSession(), 
+
+							eventService.publishEvent(new HTTPInterfaceStartedEvent(this,
+									sessionService.getSystemSession(),
 									interfaceResource,
 									((InetSocketAddress)ch.getLocalAddress()).getAddress().getHostAddress()));
-							
+
 							if(log.isInfoEnabled()) {
-								log.info("Bound " + interfaceResource.getProtocol() + " to " 
-										+ inetAddress.getHostAddress() 
-										+ ":" 
+								log.info("Bound " + interfaceResource.getProtocol() + " to "
+										+ inetAddress.getHostAddress()
+										+ ":"
 										+ ((InetSocketAddress)ch.getLocalAddress()).getPort());
 							}
-						
+
 						} catch(ChannelException ex) {
-							
-							eventService.publishEvent(new HTTPInterfaceStartedEvent(this, 
+
+							eventService.publishEvent(new HTTPInterfaceStartedEvent(this,
 									interfaceResource,
-									ex, 
+									ex,
 									sessionService.getSystemSession(),
 									inetAddress.getHostAddress()));
-							
+
 							log.error("Failed to bind port", ex);
 						}
 					}
@@ -428,7 +430,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			}
 		}
 	}
-	
+
 	@Override
 	protected void doStop() {
 
@@ -438,7 +440,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	public void connect(TCPForwardingClientCallback callback) throws IOException {
 
 		InetSocketAddress addr = new InetSocketAddress(callback.getHostname(), callback.getPort());
-		
+
 		for(ClientConnector connector : clientConnectors) {
 			if(connector.handlesConnect(addr)) {
 				connector.connect(addr, callback);
@@ -461,16 +463,16 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 	@Override
 	public void restart(final Long delay) {
-		
+
 		Thread t = new Thread() {
 			public void run() {
 				if(log.isInfoEnabled()) {
 					log.info("Restarting the server in " + delay + " seconds");
 				}
-				
+
 				try {
 					Thread.sleep(delay * 1000);
-					
+
 					if(log.isInfoEnabled()) {
 						log.info("Restarting...");
 					}
@@ -480,14 +482,14 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 				}
 			}
 		};
-		
+
 		t.start();
-		
+
 	}
 
 	@Override
 	public void shutdown(final Long delay) {
-		
+
 		Thread t = new Thread() {
 			public void run() {
 				if(log.isInfoEnabled()) {
@@ -495,7 +497,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 				}
 				try {
 					Thread.sleep(delay * 1000);
-					
+
 					if(log.isInfoEnabled()) {
 						log.info("Shutting down");
 					}
@@ -505,11 +507,11 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 				}
 			}
 		};
-		
+
 		t.start();
 
 	}
-	
+
 	class NettyThreadFactory implements ThreadFactory {
 
 		@Override
@@ -518,13 +520,13 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			t.setContextClassLoader(Main.getInstance().getClassLoader());
 			return t;
 		}
-		
+
 	}
 
 	public ChannelHandler getIpFilter() {
 		return ipFilterHandler;
 	}
-	
+
 
 	class MonitorChannelHandler extends SimpleChannelHandler {
 
@@ -532,16 +534,16 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		public void channelBound(ChannelHandlerContext ctx, ChannelStateEvent e)
 				throws Exception {
 			InetAddress addr = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getAddress();
-			
+
 			if(log.isDebugEnabled()) {
 				log.debug("Opening channel from " + addr.toString());
 			}
-			
+
 			synchronized (channelsByIPAddress) {
 				if(!channelsByIPAddress.containsKey(addr.getHostAddress())) {
 					channelsByIPAddress.put(addr.getHostAddress(), new ArrayList<Channel>());
 				}
-				channelsByIPAddress.get(addr.getHostAddress()).add(ctx.getChannel());				
+				channelsByIPAddress.get(addr.getHostAddress()).add(ctx.getChannel());
 			}
 
 		}
@@ -550,29 +552,28 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		public void channelUnbound(ChannelHandlerContext ctx,
 				ChannelStateEvent e) throws Exception {
 			InetAddress addr = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getAddress();
-			
+
 			if(log.isDebugEnabled()) {
 				log.debug("Closing channel from " + addr.toString());
 			}
-			
+
 			synchronized (channelsByIPAddress) {
 				channelsByIPAddress.get(addr.getHostAddress()).remove(ctx.getChannel());
 				if(channelsByIPAddress.get(addr.getHostAddress()).isEmpty()) {
 					channelsByIPAddress.remove(addr.getHostAddress());
 				}
 			}
-			
+
 		}
 	}
-	
+
 	protected void processApplicationEvent(final SystemEvent event) {
-		
 		if(event instanceof HTTPInterfaceResourceEvent) {
 			executor.execute(new Runnable() {
 				public void run() {
 					try {
 						HTTPInterfaceResource resource = (HTTPInterfaceResource) ((HTTPInterfaceResourceEvent) event).getResource();
-						
+
 						if(event instanceof HTTPInterfaceResourceCreatedEvent) {
 							bindInterface(resource);
 						} else if(event instanceof HTTPInterfaceResourceUpdatedEvent) {
@@ -581,35 +582,46 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 						} else if(event instanceof HTTPInterfaceResourceDeletedEvent) {
 							bindInterface(resource);
 						}
-					
+
 					} catch (IOException e) {
 						log.error("Failed to reconfigure interfaces", e);
-					} 
+					}
 				}
 			});
-		} 
+		}
+	}
+
+	public void setRedirectable(String uri, boolean redirectable) {
+		if(redirectable)
+			preventUrlRedirection.remove(uri);
+		else
+			preventUrlRedirection.add(uri);
+	}
+
+	public boolean isRedirectable(String uri) {
+		return !preventUrlRedirection.contains(uri);
 	}
 
 	@Override
 	public int estimateSize(Object obj) {
-		
+
 		int size = 1024;
 		if(obj instanceof ChannelUpstreamEventRunnable) {
 			ChannelUpstreamEventRunnable e = (ChannelUpstreamEventRunnable) obj;
 			if(e.getEvent() instanceof UpstreamMessageEvent) {
 				UpstreamMessageEvent evt = (UpstreamMessageEvent) e.getEvent();
-				
+
 				if(evt.getMessage() instanceof HttpRequest) {
 					HttpRequest request = (HttpRequest) evt.getMessage();
-				
+
 					size = (int) HttpHeaders.getContentLength(request, 1024);
 				}
-				
+
 				if(evt.getMessage() instanceof HttpChunk) {
 					HttpChunk chunk = (HttpChunk) evt.getMessage();
 					size = chunk.getContent().readableBytes();
 				}
-				
+
 				if(evt.getMessage() instanceof WebSocketFrame) {
 					WebSocketFrame frame = (WebSocketFrame) evt.getMessage();
 					size = frame.getBinaryData().readableBytes();
@@ -621,50 +633,50 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		} else if(obj instanceof ChannelDownstreamEventRunnable) {
 			ChannelDownstreamEventRunnable e = (ChannelDownstreamEventRunnable) obj;
 			if(e.getEvent() instanceof DownstreamMessageEvent) {
-				
+
 				DownstreamMessageEvent evt = (DownstreamMessageEvent) e.getEvent();
-			
+
 				if(evt.getMessage() instanceof HttpRequest) {
 					HttpRequest request = (HttpRequest) evt.getMessage();
-				
+
 					size = (int) HttpHeaders.getContentLength(request, 1024);
 				}
-				
+
 				if(evt.getMessage() instanceof HttpChunk) {
 					HttpChunk chunk = (HttpChunk) evt.getMessage();
 					size = chunk.getContent().readableBytes();
 				}
-				
+
 				if(evt.getMessage() instanceof WebSocketFrame) {
 					WebSocketFrame frame = (WebSocketFrame) evt.getMessage();
 					size = frame.getBinaryData().readableBytes();
 				}
-				
+
 				if(log.isDebugEnabled()) {
 					log.debug(String.format("Outgoing message is %d bytes in size", size));
 				}
 			}
 		}
 
-		
+
 		return size;
 	}
 
 	@Override
 	public void processDefaultResponse(HttpServletRequest request, HttpServletResponse nettyResponse, boolean disableCache) {
-		
+
 		if(configurationService.getBooleanValue("security.xFrameOptionsEnabled")) {
 			nettyResponse.setHeader("X-Frame-Options", configurationService.getValue("security.xFrameOptionsValue"));
 		}
-		
+
 		if(disableCache && !nettyResponse.containsHeader("Cache-Control")) {
 			nettyResponse.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private");
 			nettyResponse.setHeader("Pragma", "no-cache");
 		}
 		nettyResponse.setHeader("X-Content-Type-Options", "nosniff");
 		nettyResponse.setHeader("X-XSS-Protection", "1; mode=block");
-		
-		if(request.isSecure() 
+
+		if(request.isSecure()
 				&& configurationService.getBooleanValue("security.strictTransportSecurity")) {
 			nettyResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubdomains");
 		}

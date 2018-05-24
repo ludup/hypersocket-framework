@@ -18,7 +18,9 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -263,7 +265,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		
 				if (ctx.getChannel().getLocalAddress() instanceof InetSocketAddress) {
 					
-					if (interfaceResource.getProtocol()==HTTPProtocol.HTTP && interfaceResource.getRedirectHTTPS()) {
+					if (interfaceResource.getProtocol()==HTTPProtocol.HTTP && server.isRedirectable(nettyRequest.getUri()) && interfaceResource.getRedirectHTTPS()) {
 						
 						if(nettyRequest.getUri().equals("/health-check")) {
 							nettyResponse.setStatus(HttpStatus.SC_OK);

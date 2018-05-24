@@ -98,6 +98,10 @@ public interface HypersocketServer {
 
 	void addAlias(String alias, String path);
 	
+	boolean isRedirectable(String uri);
+	
+	void setRedirectable(String uri, boolean redirectable);
+	
 	Map<String,String> getAliases();
 
 	void removeAlias(String alias);
