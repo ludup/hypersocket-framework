@@ -58,6 +58,9 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	@Autowired
 	SessionService sessionService;  
 
+	@Autowired
+	PermissionService permissionService;
+	
 	@Override
 	public void elevatePermissions(PermissionType... permissions) {
 		if(elevatedPermissions.get()==null) {
@@ -255,10 +258,8 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	protected void assertAdministrativePermission() throws AccessDeniedException {
 		
-		for(Role role : getCurrentRoles()) {
-			if(role.isAllPermissions()) {
-				return;
-			}
+		if(permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			return;
 		}
 		
 		throw new AccessDeniedException();

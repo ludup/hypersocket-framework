@@ -558,6 +558,15 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		}
 		
 		Set<Role> roles = getPrincipalRoles(principal);
+		
+		if(roles.contains(getSystemAdministratorRole())) {
+			return true;
+		}
+		
+		if(roles.contains(getRealmAdministratorRole(principal.getRealm()))) {
+			return true;
+		}
+		
 		for(Role r : roles) {
 			if(r.isAllPermissions()) {
 				return true;
