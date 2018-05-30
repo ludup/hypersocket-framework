@@ -57,9 +57,6 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	@Autowired
 	SessionService sessionService;  
-
-	@Autowired
-	PermissionService permissionService;
 	
 	@Override
 	public void elevatePermissions(PermissionType... permissions) {
@@ -258,12 +255,14 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	protected void assertAdministrativePermission() throws AccessDeniedException {
 		
-		if(permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+		if(hasAdministrativePermission(getCurrentPrincipal())) {
 			return;
 		}
 		
 		throw new AccessDeniedException();
 	}
+	
+	protected abstract boolean hasAdministrativePermission(Principal principal);
 	
 	protected void assertAnyPermissionOrRealmAdministrator(PermissionScope scope, PermissionType... permission)
 			throws AccessDeniedException {

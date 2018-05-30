@@ -51,6 +51,11 @@ public abstract class PasswordEnabledAuthenticatedServiceImpl
 	}
 	
 	@Override
+	protected boolean hasAdministrativePermission(Principal principal) {
+		return permissionService.hasAdministrativePermission(principal);
+	}
+	
+	@Override
 	public String getCurrentPassword() {
 		if(currentSession.get()==null) {
 			throw new IllegalStateException("Cannot determine current session for getCurrentPassword");
