@@ -258,15 +258,15 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	}
 	
 	protected void assertAdministrativePermission() throws AccessDeniedException {
-		
-		for(Role role : getCurrentRoles()) {
-			if(role.isAllPermissions()) {
-				return;
-			}
+
+		if(hasAdministrativePermission(getCurrentPrincipal())) {
+			return;
 		}
 		
 		throw new AccessDeniedException();
 	}
+	
+	protected abstract boolean hasAdministrativePermission(Principal principal);
 	
 	protected void assertAnyPermissionOrRealmAdministrator(PermissionScope scope, PermissionType... permission)
 			throws AccessDeniedException {

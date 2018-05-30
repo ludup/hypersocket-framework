@@ -41,5 +41,10 @@ public abstract class AbstractAuthenticatedServiceImpl extends AuthenticatedServ
 	public Session getSystemSession() {
 		return sessionService.getSystemSession();
 	}
+	
+	@Override
+	protected boolean hasAdministrativePermission(Principal principal) {
+		return permissionService.hasAdministrativePermission(principal);
+	}
 
 }
