@@ -1,5 +1,7 @@
 package com.hypersocket.realm.events;
 
+import java.util.Date;
+
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.hypersocket.events.CommonAttributes;
@@ -56,6 +58,11 @@ public class ResourceEvent extends SessionEvent {
 		}
 	}
 
+	public void setTimestamp(Date timestamp) {
+		setAltTimestamp(timestamp.getTime());
+		addAttribute(ATTR_CREATED, HypersocketUtils.formatDateTime(timestamp));
+		addAttribute(ATTR_LAST_MODIFIED, HypersocketUtils.formatDateTime(timestamp));
+	}
 
 	public RealmResource getResource() {
 		return resource;

@@ -21,6 +21,7 @@ public abstract class SystemEvent extends AbstractEvent {
 	SystemEventStatus status;
 	Throwable exception;
 	Realm currentRealm;
+	long altTimestamp = -1;
 	protected boolean hidden;
 	
 	Map<String,String> attributes = new HashMap<String,String>();
@@ -58,6 +59,14 @@ public abstract class SystemEvent extends AbstractEvent {
 		
 	}
 	
+	public void setAltTimestamp(long altTimestamp) {
+		this.altTimestamp = altTimestamp;
+	}
+
+	public long getAltTimestamp() {
+		return altTimestamp;
+	}
+
 	public Throwable getException() {
 		return exception;
 	}

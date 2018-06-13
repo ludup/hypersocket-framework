@@ -1,6 +1,7 @@
 package com.hypersocket.triggers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +30,8 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.LocalSchedulerService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
+import com.hypersocket.tasks.DynamicResultsTaskProvider;
+import com.hypersocket.tasks.DynamicTaskExecutionContext;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskResult;
@@ -38,81 +41,77 @@ import com.hypersocket.transactions.TransactionService;
 public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implements TriggerExecutor {
 
 	static Logger log = LoggerFactory.getLogger(TriggerExecutor.class);
-	
+
 	@Autowired
 	TriggerResourceService triggerService;
 
 	@Autowired
-	AuthenticationService authenticationService; 
-	
+	AuthenticationService authenticationService;
+
 	@Autowired
-	I18NService i18nService; 
-	
+	I18NService i18nService;
+
 	@Autowired
-	EventService eventService; 
-	
+	EventService eventService;
+
 	@Autowired
-	TaskProviderService taskService; 
-	
+	TaskProviderService taskService;
+
 	@Autowired
-	LocalSchedulerService schedulerService; 
-	
+	LocalSchedulerService schedulerService;
+
 	@Autowired
-	ConfigurationService configurationService; 
-	
+	ConfigurationService configurationService;
+
 	@Autowired
 	RealmService realmService;
-	
+
 	@Autowired
 	TransactionService transactionService;
-	
+
 	public TriggerExecutorImpl() {
 	}
-	
+
 	@Override
-	public void scheduleOrExecuteTrigger(TriggerResource trigger, List<SystemEvent> sourceEvents) throws ValidationException {
-		
-		SystemEvent sourceEvent = sourceEvents.get(sourceEvents.size()-1);
-		
-		if(sourceEvent instanceof SynchronousEvent || sourceEvent instanceof TaskResultCallback) {
+	public void scheduleOrExecuteTrigger(TriggerResource trigger, List<SystemEvent> sourceEvents)
+			throws ValidationException {
+
+		SystemEvent sourceEvent = sourceEvents.get(sourceEvents.size() - 1);
+
+		if (sourceEvent instanceof SynchronousEvent || sourceEvent instanceof TaskResultCallback) {
 			try {
-				if(log.isInfoEnabled()) {
-					log.info(String.format("Processing synchronous event %s with trigger %s", 
+				if (log.isInfoEnabled()) {
+					log.info(String.format("Processing synchronous event %s with trigger %s",
 							sourceEvent.getResourceKey(), trigger.getName()));
 				}
 				processEventTrigger(trigger, sourceEvent, sourceEvents);
 			} catch (ValidationException e) {
 				log.error("Trigger failed validation", e);
 			}
-			
+
 		} else {
-		
+
 			Principal principal = realmService.getSystemPrincipal();
-			
+
 			Realm currentRealm = sourceEvent.getCurrentRealm();
-			if(sourceEvent.hasAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME)) {
-				principal = realmService.getPrincipalByName(
-						currentRealm, 
-						sourceEvent.getAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME),
-						PrincipalType.USER);
-			} else if(hasAuthenticatedContext()) {
+			if (sourceEvent.hasAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME)) {
+				principal = realmService.getPrincipalByName(currentRealm,
+						sourceEvent.getAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME), PrincipalType.USER);
+			} else if (hasAuthenticatedContext()) {
 				principal = getCurrentPrincipal();
 			}
-			
-			JobDataMap data = new PermissionsAwareJobData(
-					currentRealm,
-					principal,
-					hasAuthenticatedContext() ? getCurrentLocale()
-							: configurationService.getDefaultLocale(),
+
+			JobDataMap data = new PermissionsAwareJobData(currentRealm, principal,
+					hasAuthenticatedContext() ? getCurrentLocale() : configurationService.getDefaultLocale(),
 					"triggerExecutionJob");
-			
+
 			data.put("event", sourceEvent);
 			data.put("sourceEvent", sourceEvents);
 			data.put("trigger", trigger);
-			
+
 			try {
 				String scheduleId = UUID.randomUUID().toString();
-				
+
 				schedulerService.scheduleNow(TriggerJob.class, scheduleId, data);
 			} catch (SchedulerException e) {
 				log.error("Failed to schedule event trigger job", e);
@@ -121,33 +120,33 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 	}
 
 	@Override
-	public void processEventTrigger(TriggerResource trigger,
-			SystemEvent result, List<SystemEvent> sourceEvents) throws ValidationException {
-		
+	public void processEventTrigger(TriggerResource trigger, SystemEvent result, List<SystemEvent> sourceEvents)
+			throws ValidationException {
+
 		if (log.isInfoEnabled()) {
 			log.info("Processing trigger " + trigger.getName());
 		}
-		
-		if(trigger.getResult() != TriggerResultType.EVENT_ANY_RESULT
+
+		if (trigger.getResult() != TriggerResultType.EVENT_ANY_RESULT
 				&& result.getStatus().ordinal() != trigger.getResult().ordinal()) {
-			if(log.isInfoEnabled()) {
-				log.info("Not processing trigger " + trigger.getName() + " with result " + trigger.getResult().toString()
-						+ " because event status is " + result.getStatus().toString());
+			if (log.isInfoEnabled()) {
+				log.info("Not processing trigger " + trigger.getName() + " with result "
+						+ trigger.getResult().toString() + " because event status is " + result.getStatus().toString());
 			}
 			return;
 		}
-		
+
 		if (checkConditions(trigger, result, sourceEvents)) {
-			
-			if(log.isInfoEnabled()) {
-				log.info("Trigger conditions match. Performing task for " + trigger.getName() + " [" + trigger.getResourceKey() + "]");
+
+			if (log.isInfoEnabled()) {
+				log.info("Trigger conditions match. Performing task for " + trigger.getName() + " ["
+						+ trigger.getResourceKey() + "]");
 			}
 			executeTrigger(trigger, result, sourceEvents);
-			
+
 		} else {
-			if(log.isInfoEnabled()) {
-				log.info("Not processing trigger " 
-						+ trigger.getName() 
+			if (log.isInfoEnabled()) {
+				log.info("Not processing trigger " + trigger.getName()
 						+ " because its conditions do not match the current event attributes");
 			}
 		}
@@ -163,11 +162,9 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 		for (TriggerCondition condition : trigger.getAllConditions()) {
 			if (!checkCondition(condition, trigger, event, sourceEvents)) {
 				if (log.isDebugEnabled()) {
-					log.debug("Trigger " + trigger.getName()
-							+ " failed processing all conditions due to "
-							+ condition.getConditionKey() + " attributeValue="
-							+ condition.getAttributeKey() + " conditionValue="
-							+ condition.getConditionValue());
+					log.debug("Trigger " + trigger.getName() + " failed processing all conditions due to "
+							+ condition.getConditionKey() + " attributeValue=" + condition.getAttributeKey()
+							+ " conditionValue=" + condition.getConditionValue());
 				}
 				return false;
 			}
@@ -181,11 +178,9 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 					break;
 				}
 				if (log.isDebugEnabled()) {
-					log.debug("Trigger " + trigger.getName()
-							+ " failed processing any conditions due to "
-							+ condition.getConditionKey() + " attributeValue="
-							+ condition.getAttributeKey() + " conditionValue="
-							+ condition.getConditionValue());
+					log.debug("Trigger " + trigger.getName() + " failed processing any conditions due to "
+							+ condition.getConditionKey() + " attributeValue=" + condition.getAttributeKey()
+							+ " conditionValue=" + condition.getConditionValue());
 				}
 			}
 			return conditionPassed;
@@ -194,98 +189,123 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 		return true;
 	}
 
-	private boolean checkCondition(TriggerCondition condition,
-			TriggerResource trigger, SystemEvent event, List<SystemEvent> sourceEvents)
-			throws ValidationException {
+	private boolean checkCondition(TriggerCondition condition, TriggerResource trigger, SystemEvent event,
+			List<SystemEvent> sourceEvents) throws ValidationException {
 
-		TriggerConditionProvider provider = triggerService
-				.getConditionProvider(condition);
+		TriggerConditionProvider provider = triggerService.getConditionProvider(condition);
 
 		if (provider == null) {
 			throw new ValidationException(
-					"Failed to check condition because provider "
-							+ condition.getConditionKey() + " is not available");
+					"Failed to check condition because provider " + condition.getConditionKey() + " is not available");
 		}
-		
+
 		return provider.checkCondition(condition, trigger, event, sourceEvents);
 	}
 
-	protected void executeTrigger(final TriggerResource trigger, final SystemEvent lastResult, final List<SystemEvent> sourceEvents)
-			throws ValidationException {
+	protected void executeTrigger(final TriggerResource trigger, final SystemEvent lastResult,
+			final List<SystemEvent> sourceEvents) throws ValidationException {
 
-		final TaskProvider provider = taskService
-				.getTaskProvider(trigger.getResourceKey());
+		final TaskProvider provider = taskService.getTaskProvider(trigger.getResourceKey());
 		if (provider == null) {
 			throw new ValidationException(
-					"Failed to execute task because provider "
-							+ trigger.getResourceKey() + " is not available");
+					"Failed to execute task because provider " + trigger.getResourceKey() + " is not available");
 		}
 
 		try {
 			TaskResult outputEvent = transactionService.doInTransaction(new TransactionCallback<TaskResult>() {
-	
+
 				@Override
 				public TaskResult doInTransaction(TransactionStatus status) {
 					try {
-						return  provider.execute(trigger, lastResult.getCurrentRealm(), sourceEvents);
+						if (provider instanceof DynamicResultsTaskProvider) {
+							
+							DynamicResultsTaskProvider dProvider = (DynamicResultsTaskProvider) provider;
+							return dProvider.execute(new DynamicTaskExecutionContext() {
+								@Override
+								public void addResults(TaskResult result) {
+
+
+									/* The whole point of DynamicResultsTaskProvider is to keep memory usage during imports and 
+									 * other large data tasks to a minimum. So we cannot store evey single propogated
+									 * event in the chain (sourceEvents), so we restrict to this event and its result. 
+									 * 
+									 * TODO Check with LDP, I'm not entirely should of the consequences of this, but it appears
+									 * it may be something to do with conditions? 
+									 */
+									List<SystemEvent> results = new ArrayList<SystemEvent>();
+									results.add(lastResult);
+									results.add(result.getEvent());
+
+
+									if (result.isPublishable()) {
+										eventService.publishEvent(result.getEvent());
+									}
+									try {
+										processResult(trigger, result, results);
+									} catch (ValidationException e) {
+										throw new IllegalStateException(e.getMessage(), e);
+									}
+								}
+							}, trigger, lastResult.getCurrentRealm(), sourceEvents);
+						} else {
+							return provider.execute(trigger, lastResult.getCurrentRealm(), sourceEvents);
+						}
 					} catch (ValidationException e) {
 						throw new IllegalStateException(e.getMessage(), e);
 					}
 				}
-				
+
 			});
-	
-			if(outputEvent!=null) {
-				
-				
-				
-				if(outputEvent instanceof MultipleTaskResults) {
+
+			if (outputEvent != null) {
+
+				if (outputEvent instanceof MultipleTaskResults) {
 					MultipleTaskResults results = (MultipleTaskResults) outputEvent;
-					for(TaskResult result : results.getResults()) {
-						
+					for (TaskResult result : results.getResults()) {
+
 						sourceEvents.add(result.getEvent());
-						
-						if(result.isPublishable()) {
+
+						if (result.isPublishable()) {
 							eventService.publishEvent(result.getEvent());
 						}
-						
+
 						processResult(trigger, result, new ArrayList<SystemEvent>(sourceEvents));
 					}
-					
+
 				} else {
-				
+
 					sourceEvents.add(outputEvent.getEvent());
-					
-					if(outputEvent.isPublishable()) {
+
+					if (outputEvent.isPublishable()) {
 						eventService.publishEvent(outputEvent.getEvent());
 					}
-					
+
 					processResult(trigger, outputEvent, sourceEvents);
 				}
 			}
-		} catch(ResourceException | AccessDeniedException e) {
+		} catch (ResourceException | AccessDeniedException e) {
 			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}
-	
-	protected void processResult(TriggerResource trigger, TaskResult result, List<SystemEvent> sourceEvents) throws ValidationException {
-		
-		SystemEvent sourceEvent = sourceEvents.get(sourceEvents.size()-1);
-		
-		if(sourceEvent instanceof TaskResultCallback) {
+
+	protected void processResult(TriggerResource trigger, TaskResult result, List<SystemEvent> sourceEvents)
+			throws ValidationException {
+
+		SystemEvent sourceEvent = sourceEvents.get(sourceEvents.size() - 1);
+
+		if (sourceEvent instanceof TaskResultCallback) {
 			TaskResultCallback callbackEvent = (TaskResultCallback) sourceEvent;
 			try {
 				callbackEvent.processResult(result);
 			} catch (Throwable e) {
 			}
 		}
-		
+
 		if (!trigger.getChildTriggers().isEmpty()) {
-			for(TriggerResource t : trigger.getChildTriggers()) {
+			for (TriggerResource t : trigger.getChildTriggers()) {
 				processEventTrigger(t, result.getEvent(), new ArrayList<SystemEvent>(sourceEvents));
 			}
-			
-		} 
+
+		}
 	}
 }
-

@@ -18,6 +18,8 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
+import com.hypersocket.tasks.DynamicResultsTaskProvider;
+import com.hypersocket.tasks.DynamicTaskExecutionContext;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskResult;
@@ -112,11 +114,43 @@ public class AutomationJob extends AbstractTriggerJob {
 	}
 
 	
-	private TaskResult executeTask(AutomationResource resource, TaskProvider provider, List<SystemEvent> sourceEvents) throws ValidationException {
+	private TaskResult executeTask(final AutomationResource resource, TaskProvider provider, final List<SystemEvent> sourceEvents) throws ValidationException {
 		
-		SystemEvent lastEvent = sourceEvents.get(sourceEvents.size()-1);
+		final SystemEvent lastEvent = sourceEvents.get(sourceEvents.size()-1);
 		
-		TaskResult outputEvent = provider.execute(resource, lastEvent.getCurrentRealm(), sourceEvents);
+		TaskResult outputEvent;
+		if (provider instanceof DynamicResultsTaskProvider) {
+			DynamicResultsTaskProvider dProvider = (DynamicResultsTaskProvider) provider;
+			outputEvent = dProvider.execute(new DynamicTaskExecutionContext() {
+				@Override
+				public void addResults(TaskResult result) {
+
+					/* The whole point of DynamicResultsTaskProvider is to keep memory usage during imports and 
+					 * other large data tasks to a minimum. So we cannot store evey single propogated
+					 * event in the chain (sourceEvents), so we restrict to this event and its result. 
+					 * 
+					 * TODO Check with LDP, I'm not entirely should of the consequences of this, but it appears
+					 * it may be something to do with conditions? 
+					 */
+					List<SystemEvent> results = new ArrayList<SystemEvent>();
+					results.add(lastEvent);
+					results.add(result.getEvent());
+
+					if (result.isPublishable()) {
+						eventService.publishEvent(result.getEvent());
+					}
+					try {
+						for(TriggerResource trigger : resource.getChildTriggers()) {
+							processEventTrigger(trigger, result.getEvent(), results);
+						}
+					} catch (ValidationException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+			}, resource, lastEvent.getCurrentRealm(), sourceEvents);
+		} else {
+			outputEvent = provider.execute(resource, lastEvent.getCurrentRealm(), sourceEvents);
+		}
 		
 		if(outputEvent!=null) {
 

@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,96 +16,110 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.conditions.TriggerAttributeHelper;
+import com.hypersocket.util.TextProcessor;
+import com.hypersocket.util.TextProcessor.Resolver;
 
 public abstract class AbstractTaskProvider implements TaskProvider {
 
 	static Logger log = LoggerFactory.getLogger(AbstractTaskProvider.class);
-	
+
 	@Autowired
 	EventService eventService;
-	
+
 	@Autowired
 	RealmService realmService;
-	
+
 	@Autowired
 	TriggerResourceService triggerService;
-	
+
+
 	protected String[] processTokenReplacements(String[] values, List<SystemEvent> events) {
-		for(int i=0;i<values.length;i++) {
-			values[i] = processTokenReplacements(values[i], events);
+		return processTokenReplacements(values, events, false);
+	}
+
+	protected String[] processTokenReplacements(String[] values, List<SystemEvent> events, boolean evaluateScripts) {
+		for (int i = 0; i < values.length; i++) {
+			values[i] = processTokenReplacements(values[i], events, evaluateScripts);
 		}
 		return values;
 	}
-	
-	protected String processTokenReplacements(String value, List<SystemEvent> events) {
-		
-		if(value==null) {
-			return null;
-		}
-		Pattern pattern = Pattern.compile("\\$\\{(.*?)\\}");
-		Matcher matcher = pattern.matcher(value);
 
-		StringBuilder builder = new StringBuilder();
-		Set<String> defaultAttributes = triggerService.getDefaultVariableNames();
-		int i = 0;
-		while (matcher.find()) {
-			String attributeName = matcher.group(1);
-			String replacement = TriggerAttributeHelper.getAttribute(attributeName, events);
-
-			if(replacement==null) {
-				if(defaultAttributes.contains(attributeName)) {
-					replacement = triggerService.getDefaultVariableValue(attributeName);
-				} else {
-					log.warn("Failed to find replacement token " + attributeName);
-					continue;	
-				}
-			}
-		    builder.append(value.substring(i, matcher.start()));
-		    if (replacement == null) {
-		        builder.append(matcher.group(0));
-		    } else {
-		        builder.append(replacement);
-		    }
-		    i = matcher.end();
-			
-		}
-		
-	    builder.append(value.substring(i, value.length()));
-		
-		return builder.toString();
+	protected String processTokenReplacements(String value, final List<SystemEvent> events) {
+		return processTokenReplacements(value, events, false);
 	}
 	
+	protected String processTokenReplacements(String value, final List<SystemEvent> events, boolean evaluateScripts) {
+
+		if (value == null) {
+			return null;
+		}
+		final Set<String> defaultAttributes = triggerService.getDefaultVariableNames();
+		TextProcessor tp = new TextProcessor();
+		tp.setEvaluateScripts(evaluateScripts);
+		
+		if(evaluateScripts) {
+			/* When evaluating scripts, it should be possible to access the property
+			 * values from the bindings. This means the pattern based approach for
+			 * resolving variables won't work, so we have to add them all.
+			 * 
+			 * We might as well expose the entire event object itself.
+			 * 
+			 * The value is also made available
+			 */
+			SystemEvent lastEvent = events.get(events.size()-1);
+			tp.addBindings("event", lastEvent);
+			tp.addBindings("value", value);
+			tp.addBindings("events", events);
+		}
+		
+		tp.addResolver(new Resolver() {
+			@Override
+			public String evaluate(String variable) {
+				return TriggerAttributeHelper.getAttribute(variable, events);
+			}
+		});
+		tp.addResolver(new Resolver() {
+			@Override
+			public String evaluate(String variable) {
+				if(defaultAttributes.contains(variable)) {
+					return triggerService.getDefaultVariableValue(variable);
+				}
+				return null;
+			}
+		});
+		return tp.process(value);
+	}
+
 	@Override
 	public Collection<PropertyCategory> getPropertyTemplate(Task task) {
 		return getRepository().getPropertyCategories(task);
 	}
 
 	@Override
-	public Collection<PropertyCategory> getProperties(
-			Task task) {
+	public Collection<PropertyCategory> getProperties(Task task) {
 		return getRepository().getPropertyCategories(task);
 	}
-	
+
 	@Override
-	public Map<String,String> getTaskProperties(Task task) {
+	public Map<String, String> getTaskProperties(Task task) {
 		return getRepository().getProperties(task);
 	}
-	
-	@Override 
+
+	@Override
 	public Collection<String> getPropertyNames(Task task) {
 		return getRepository().getPropertyNames(task);
 	}
-	
+
 	@Override
 	public void taskCreated(Task task) {
-		
+
 	}
-	
+
 	@Override
 	public void taskUpdated(Task task) {
-		
+
 	}
-	
+
 	@Override
 	public void taskDeleted(Task task) {
 		getRepository().deletePropertiesForResource(task);
@@ -117,17 +129,17 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	public boolean supportsAutomation() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean supportsTriggers() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean isRealmTask() {
 		return false;
 	}
-	
+
 	@Override
 	public boolean isRealmSupported(Realm realm) {
 		return false;
