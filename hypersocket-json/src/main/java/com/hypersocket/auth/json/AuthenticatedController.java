@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -202,6 +203,10 @@ public class AuthenticatedController {
 
 	protected void clearAnonymousContext() {
 		clearAuthenticatedContext();
+	}
+	
+	protected <T> T callAsSystemContext(Callable<T> callable, Realm realm) {
+		return authenticationService.callAsSystemContext(callable, realm);
 	}
 	
 	protected void setupAuthenticatedContext(Session session, Locale locale) {

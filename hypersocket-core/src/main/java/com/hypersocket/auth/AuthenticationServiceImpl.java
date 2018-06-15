@@ -1002,4 +1002,21 @@ public class AuthenticationServiceImpl extends
 		}
 	}
 
+	@Override
+	public <T> T callAsSystemContext(Callable<T> callable, Realm realm) {
+		setupSystemContext(realm);
+		try {
+			try {
+				return callable.call();
+			} catch(RuntimeException re) {
+				throw re;
+			}catch (Exception e) {
+				throw new IllegalStateException(String.format("Call as %s failed.", realm.getName()), e);
+			}
+		}
+		finally {
+			clearPrincipalContext();
+		}
+	}
+
 }

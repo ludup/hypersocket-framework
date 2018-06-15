@@ -80,4 +80,6 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 
 	<T> T callAs(Callable<T> callable, Principal principal);
 
+	<T> T callAsSystemContext(Callable<T> callable, Realm realm);
+
 }
