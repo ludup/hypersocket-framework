@@ -5,7 +5,7 @@ public class ResourceStatusInformation<T> extends ResourceStatus<T> {
 	boolean information = false;
 	Object[] args;
 
-	public ResourceStatusInformation(String message, Object[] args) {
+	public ResourceStatusInformation(String message, Object... args) {
 		this.success = false;
 		this.information = true;
 		this.message = message;
