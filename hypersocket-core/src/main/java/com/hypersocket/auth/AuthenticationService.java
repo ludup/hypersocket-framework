@@ -10,6 +10,7 @@ package com.hypersocket.auth;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -76,5 +77,7 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 	void registerAuthenticatorSelector(AuthenticatorSelector selector);
 
 	Authenticator nextAuthenticator(AuthenticationState state);
+
+	<T> T callAs(Callable<T> callable, Principal principal);
 
 }

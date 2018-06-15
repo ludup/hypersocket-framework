@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import javax.annotation.PostConstruct;
 
@@ -982,6 +983,23 @@ public class AuthenticationServiceImpl extends
 	@Override
 	public boolean isAuthenticatorInUse(Realm realm, String resourceKey) {
 		return repository.isAuthenticatorInUse(realm, resourceKey);
+	}
+
+	@Override
+	public <T> T callAs(Callable<T> callable, Principal principal) {
+		setupSystemContext(principal);
+		try {
+			try {
+				return callable.call();
+			} catch(RuntimeException re) {
+				throw re;
+			}catch (Exception e) {
+				throw new IllegalStateException(String.format("Call as %s failed.", principal.getName()), e);
+			}
+		}
+		finally {
+			clearPrincipalContext();
+		}
 	}
 
 }
