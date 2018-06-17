@@ -23,7 +23,6 @@ import java.util.concurrent.Callable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +36,8 @@ import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.BrowserEnvironment;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.i18n.I18NService;
-import com.hypersocket.json.ResourceList;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionRepository;
-import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -208,7 +205,7 @@ public class AuthenticatedController {
 		clearAuthenticatedContext();
 	}
 	
-	protected <T> T callAsSystemContext(Callable<T> callable, Realm realm) {
+	protected <T> T callAsSystemContext(Callable<T> callable, Realm realm) throws Exception {
 		return authenticationService.callAsSystemContext(callable, realm);
 	}
 	

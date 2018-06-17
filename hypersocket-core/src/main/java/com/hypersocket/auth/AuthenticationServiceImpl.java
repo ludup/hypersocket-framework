@@ -1019,4 +1019,13 @@ public class AuthenticationServiceImpl extends
 		}
 	}
 
+	@Override
+	public void runAsSystemContext(Runnable runnable, Realm realm) {
+		setupSystemContext(realm);
+		try {
+			runnable.run();
+		} finally {
+			clearPrincipalContext();
+		}
+	}
 }
