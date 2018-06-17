@@ -48,4 +48,8 @@ public class HypersocketServletConfig implements ServletConfig {
 		Enumeration params = initParameters.keys();
 		return params;
 	}
+	
+	public void setInitParameter(String key, String value) {
+		initParameters.setProperty(key, value);
+	}
 }

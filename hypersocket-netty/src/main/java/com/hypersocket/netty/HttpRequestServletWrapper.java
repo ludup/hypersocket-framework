@@ -16,9 +16,11 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -81,7 +83,6 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 		this.secure = secure;
 		this.context = context;
 		this.session = session;
-		
 
 		parseUri(request.getUri());
 
@@ -393,7 +394,19 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public Enumeration<Locale> getLocales() {
-		throw new UnsupportedOperationException();
+		final Iterator<Locale> it = Arrays.asList(getLocale()).iterator();
+		return new Enumeration<Locale>() {
+
+			@Override
+			public boolean hasMoreElements() {
+				return it.hasNext();
+			}
+
+			@Override
+			public Locale nextElement() {
+				return it.next();
+			}
+		};
 	}
 
 	@Override

@@ -415,12 +415,18 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		
 	}
 
-	public void sendResponse(final HttpRequestServletWrapper servletRequest,
+	@Override
+	public void sendResponse(HttpServletRequest request,
+			HttpServletResponse response, boolean chunked) {
+		sendResponse(request,
+				(HttpResponseServletWrapper) response, chunked);
+	}
+
+	public void sendResponse(final HttpServletRequest servletRequest,
 			final HttpResponseServletWrapper servletResponse, boolean chunked) {
 
 		try {
-
-			final HttpResponse nettyResponse = servletResponse.getNettyResponse();
+			HttpResponse nettyResponse = ((HttpResponseServletWrapper)servletResponse).getNettyResponse();
 			if(!StringUtils.equals(RestApi.API_REST, (CharSequence) servletRequest.getAttribute(RestApi.API_REST))) {
 				switch (nettyResponse.getStatus().getCode()) {
 					case HttpStatus.SC_NOT_FOUND: {
@@ -444,7 +450,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					servletResponse.getRequest().getHeader(
 							HttpHeaders.ACCEPT_ENCODING));
 
-			if (log.isDebugEnabled()) {
+			if (log.isDebugEnabled() && nettyResponse != null) {
 				synchronized (log) {
 					log.debug("Begin Response >>>>>>");
 					log.debug(nettyResponse.getStatus()
@@ -529,7 +535,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 	}
 
 	private InputStream processContent(
-			HttpRequestServletWrapper servletRequest,
+			HttpServletRequest servletRequest,
 			HttpResponseServletWrapper servletResponse, String acceptEncodings) {
 
 		InputStream writer = (InputStream) servletRequest
@@ -663,13 +669,6 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					+ ch.getRemoteAddress() + " localAddress="
 					+ ch.getLocalAddress());
 		}
-	}
-
-	@Override
-	public void sendResponse(HttpServletRequest request,
-			HttpServletResponse response, boolean chunked) {
-		sendResponse((HttpRequestServletWrapper) request,
-				(HttpResponseServletWrapper) response, chunked);
 	}
 
 	class WebsocketConnectCallback implements WebsocketClientCallback {
