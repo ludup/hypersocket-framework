@@ -39,7 +39,9 @@ public class I18nOverrideRepositoryImpl extends AbstractEntityRepositoryImpl<I18
 
 			@Override
 			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.eq("locale", locale.toString()));
+				criteria.add(Restrictions.or(
+						Restrictions.eq("locale", locale.toString()),
+						Restrictions.eq("locale", locale.getLanguage())));
 				criteria.add(Restrictions.eq("bundle", resourceBundle));
 			}
 		});
@@ -83,16 +85,25 @@ public class I18nOverrideRepositoryImpl extends AbstractEntityRepositoryImpl<I18
 			cache.put(id, translated);
 		}
 		
+		cacheKey = "i18n-" + locale.getLanguage();
+		cache = cacheService.getCacheIfExists(cacheKey, String.class, String.class);
+		if(cache!=null) {
+			cache.put(id, translated);
+		}
+		
 	}
 
 	@Override
 	@Transactional(readOnly=true)
 	public boolean hasResources(final Locale locale, final String resourceBundle) {
+		
 		return getCount(I18nOverride.class, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.eq("locale", locale.toString()));
+				criteria.add(Restrictions.or(
+						Restrictions.eq("locale", locale.toString()),
+						Restrictions.eq("locale", locale.getLanguage())));
 				criteria.add(Restrictions.eq("bundle", resourceBundle));
 			}
 			
@@ -104,7 +115,9 @@ public class I18nOverrideRepositoryImpl extends AbstractEntityRepositoryImpl<I18
 	@Transactional(readOnly=true)
 	public Collection<? extends String> getResourceKeys(Locale locale, String resourceBundle) {
 		Criteria criteria = createCriteria(I18nOverride.class);
-		criteria.add(Restrictions.eq("locale", locale.toString()));
+		criteria.add(Restrictions.or(
+				Restrictions.eq("locale", locale.toString()),
+				Restrictions.eq("locale", locale.getLanguage())));
 		criteria.add(Restrictions.eq("bundle", resourceBundle));
 		criteria.setProjection(Projections.property("name"));
 		@SuppressWarnings("rawtypes")
