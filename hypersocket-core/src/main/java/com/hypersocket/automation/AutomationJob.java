@@ -126,13 +126,11 @@ public class AutomationJob extends AbstractTriggerJob {
 				public void addResults(TaskResult result) {
 
 					/* The whole point of DynamicResultsTaskProvider is to keep memory usage during imports and 
-					 * other large data tasks to a minimum. So we cannot store evey single propogated
-					 * event in the chain (sourceEvents), so we restrict to this event and its result. 
-					 * 
-					 * TODO Check with LDP, I'm not entirely should of the consequences of this, but it appears
-					 * it may be something to do with conditions? 
+					 * other large data tasks to a minimum. So we cannot store every single propagated
+					 * event in the chain (sourceEvents), so we restrict to the current source events, 
+					 * this event and its result but do not ADD to the source events. 
 					 */
-					List<SystemEvent> results = new ArrayList<SystemEvent>();
+					List<SystemEvent> results = new ArrayList<SystemEvent>(sourceEvents);
 					results.add(lastEvent);
 					results.add(result.getEvent());
 
