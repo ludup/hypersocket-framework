@@ -193,7 +193,7 @@ public class EventServiceImpl implements EventService {
 		
 		for(String attributeName : attributeNames) {
 			String tmp = WordUtils.capitalize(StringUtils.replaceChars(attributeName,  ".-_", "   "));
-			String var = resourceKey + "." + StringUtils.replaceChars(attributeName.toLowerCase(),  "-_ ", "...");
+			String var = resourceKey + "." + attributeName;
 			I18N.overrideMessage(
 					Locale.ENGLISH,
 					new Message(TriggerResourceServiceImpl.RESOURCE_BUNDLE,
