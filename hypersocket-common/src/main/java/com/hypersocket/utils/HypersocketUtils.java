@@ -129,6 +129,10 @@ public class HypersocketUtils {
 		return formatDate(date, "EEE, d MMM yyyy");
 	}
 	
+	public static String formatShortDate(long date) {
+		return formatShortDate(new Date(date));
+	}
+	
 	/**
 	 * Parse a date on a given format. 
 	 * @param date
