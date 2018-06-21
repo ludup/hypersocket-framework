@@ -177,6 +177,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		str = str.replace("${basePath}", getBasePath());
 		return str;
 	}
+	
 	@Override
 	public boolean isAliasFor(String alias, String page) {
 		

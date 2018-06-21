@@ -224,7 +224,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				}
 				
 				Map<String,String> aliases = server.getAliases();
-				if(aliases.containsKey(reverseUri)) {
+				while(aliases.containsKey(reverseUri)) {
 					String path = processReplacements(aliases.get(reverseUri));
 					if(path.startsWith("redirect:")) {
 						String redirPath = path.substring(9);
@@ -236,6 +236,10 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					} else {
 						servletRequest.setAttribute(BROWSER_URI, nettyRequest.getUri());
 						servletRequest.parseUri(path);
+						reverseUri = path;
+						reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
+						reverseUri = reverseUri.replace(server.getUiPath(), "${uiPath}");
+						reverseUri = reverseUri.replace(server.getBasePath(), "${basePath}");
 					}
 				}
 				
