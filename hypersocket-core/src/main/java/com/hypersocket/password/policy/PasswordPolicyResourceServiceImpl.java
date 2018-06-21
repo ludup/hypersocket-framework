@@ -145,6 +145,7 @@ public class PasswordPolicyResourceServiceImpl extends
 					 PasswordPolicyResource policy = new PasswordPolicyResource();
 					 policy.setContainDictionaryWord(false);
 					 policy.setContainUsername(false);
+					 policy.setAdditionalAnalysis(true);
 					 policy.setDN("LocalUserDefaultPolicy");
 					 policy.setMaximumAge(0);
 					 policy.setMaximumLength(64);

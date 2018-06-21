@@ -69,6 +69,9 @@ public class PasswordPolicyResource extends AssignableResource {
 	@Column(name="default_policy")
 	Boolean defaultPolicy;
 	
+	@Column(name="additional_analysis", nullable = false, columnDefinition = "bit default TRUE")
+	Boolean additionalAnalysis;
+	
 	public Integer getMinimumLength() {
 		return minimumLength;
 	}
@@ -223,6 +226,14 @@ public class PasswordPolicyResource extends AssignableResource {
 
 	public void setDefaultPolicy(Boolean defaultPolicy) {
 		this.defaultPolicy = defaultPolicy;
+	}
+
+	public Boolean getAdditionalAnalysis() {
+		return additionalAnalysis;
+	}
+
+	public void setAdditionalAnalysis(Boolean additionalAnalysis) {
+		this.additionalAnalysis = additionalAnalysis;
 	}
 	
 	
