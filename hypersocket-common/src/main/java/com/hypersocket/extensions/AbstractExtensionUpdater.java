@@ -56,6 +56,8 @@ public abstract class AbstractExtensionUpdater {
 	
 	public abstract Set<String> getNewFeatures();
 	
+	protected abstract boolean getInstallMandatoryExtensions();
+	
 	public final boolean update() throws IOException {
 
 		if (log.isInfoEnabled()) {
@@ -96,7 +98,7 @@ public abstract class AbstractExtensionUpdater {
 						if(log.isInfoEnabled()) {
 							log.info(String.format("Checking install state for %s %s", v.getExtensionId(), v.getFeatureGroup()));
 						}
-						if(v.isMandatory() || getNewFeatures().contains(v.getFeatureGroup())) {
+						if(getInstallMandatoryExtensions() && v.isMandatory() || getNewFeatures().contains(v.getFeatureGroup())) {
 							updates.add(v);
 							for(String depend : v.getDependsOn()) {
 								if(StringUtils.isNotBlank(depend)) {
