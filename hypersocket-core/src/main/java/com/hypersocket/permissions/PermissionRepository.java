@@ -130,6 +130,6 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 
 	Set<Permission> getPrincipalPermissions(Collection<Principal> principals, PermissionType... permissionTypes);
 
-	Set<Role> getDelegatedRoles(Realm parent, Realm child);
+	Set<Role> getPrincipalRolesForRealm(List<Principal> principals, Realm realm);
 
 }

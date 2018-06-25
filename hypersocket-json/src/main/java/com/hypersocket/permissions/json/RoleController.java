@@ -237,7 +237,7 @@ public class RoleController extends ResourceController {
 
 		try {
 			return new ResourceList<Realm>(
-					permissionService.getRoleById(id, getCurrentRealm()).getDelegatedRealms());
+					permissionService.getRoleById(id, getCurrentRealm()).getPermissionRealms());
 		} catch (ResourceNotFoundException e) {
 			return new ResourceList<Realm>(false, e.getMessage());
 		} finally {

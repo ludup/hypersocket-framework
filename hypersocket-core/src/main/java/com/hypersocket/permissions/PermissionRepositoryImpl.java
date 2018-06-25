@@ -128,6 +128,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		Role role = new Role();
 		role.setName(name);
 		role.setRealm(realm);
+		role.setPermissionRealms(new HashSet<Realm>(Arrays.asList(realm)));
 		role.setResourceCategory("role");
 		role.setPersonalRole(personalRole);
 		role.setAllUsers(allUsers);
@@ -135,8 +136,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		role.setSystem(system);
 		role.setType(type);
 		
-		save(role);
-		return role;
+		return (Role) save(role);
 	}
 
 	@Override
@@ -613,6 +613,36 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly = true)
+	public Set<Role> getPrincipalRolesForRealm(List<Principal> principals, Realm realm) {
+
+		if (principals == null) {
+			return new HashSet<Role>();
+		}
+
+		Criteria crit = createCriteria(Role.class).setResultTransformer(
+				CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+
+		List<Long> ids = new ArrayList<Long>();
+		for (Principal p : principals) {
+			ids.add(p.getId());
+		}
+
+		crit.createCriteria("realms").add(Restrictions.in("id", Arrays.asList(realm.getId())));
+		
+		crit = crit.createCriteria("principals")
+				.add(Restrictions.in("id", ids));
+
+		Set<Role> roles = new HashSet<Role>(crit.list());
+		
+		if(principals.get(0).getRealm().equals(realm)) {
+			roles.addAll(getAllUserRoles(principals.get(0).getRealm()));
+		}
+		return roles;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly = true)
 	public Collection<Principal> getPrincpalsByRole(Realm realm, Collection<Role> roles) {
 
 		if(roles.isEmpty()) {
@@ -645,7 +675,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 
 	@Override
 	@Transactional(readOnly = true)
-	public Set<Role> getAllUserRoles(Realm realm) {
+	public Set<Role> getAllUserRoles(final Realm realm) {
 
 		return new HashSet<Role>(allEntities(Role.class,
 				JOIN_PRINCIPALS_PERMISSIONS, new RealmRestriction(realm),
@@ -653,21 +683,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 					@Override
 					public void configure(Criteria criteria) {
 						criteria.add(Restrictions.eq("allUsers", true));
-						criteria.add(Restrictions.isEmpty("realms"));
-					}
-				}));
-	}
-	
-	@Override
-	@Transactional(readOnly = true)
-	public Set<Role> getDelegatedRoles(Realm parent, final Realm child) {
-
-		return new HashSet<Role>(allEntities(Role.class,
-				JOIN_PRINCIPALS_PERMISSIONS, new RealmRestriction(parent),
-				new CriteriaConfiguration() {
-					@Override
-					public void configure(Criteria criteria) {
-						criteria.createCriteria("realms").add(Restrictions.in("id", Arrays.asList(child.getId())));
+						criteria.createCriteria("realms").add(Restrictions.in("id", Arrays.asList(realm.getId())));
 					}
 				}));
 	}

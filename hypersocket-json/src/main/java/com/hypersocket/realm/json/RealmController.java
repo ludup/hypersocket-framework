@@ -311,7 +311,7 @@ public class RealmController extends ResourceController {
 			return new ResourceStatus<Realm>(true, I18N.getResource(sessionUtils.getLocale(request),
 					RealmService.RESOURCE_BUNDLE, "info.realm.deleted", previousName));
 
-		} catch (ResourceException e) {
+		} catch (AccessDeniedException | ResourceException e) {
 			return new ResourceStatus<Realm>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
@@ -326,7 +326,6 @@ public class RealmController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 		try {
-
 			return new ResourceList<RealmProvider>(realmService.getProviders());
 		} finally {
 			clearAuthenticatedContext();

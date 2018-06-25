@@ -258,9 +258,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				Role role = new Role();
 				role.setName(name);
 				role.setRealm(realm);
-				if(realms!=null) {
-					role.getDelegatedRealms().addAll(realms);
-				}
+				role.getPermissionRealms().addAll(realms);
+				
 				role.setAllPermissions(allPerms);
 				role.setAllUsers(allUsers);
 				role.setPersonalRole(isPrincipalRole);
@@ -406,20 +405,22 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		
 		if (!permissionsCache.containsKey(cacheKey) || permissionsCache.get(cacheKey)==null) {
 
-			boolean isDelegatedRealm = !principal.getRealm().equals(realm);
 			Set<Permission> principalPermissions = new HashSet<Permission>();
-			Set<Role> roles;
-			if(!isDelegatedRealm) {
-				roles = getPrincipalRoles(principal);
-			} else {
-				roles = getDelegatedRoles(principal, realm);
-			}
-
+			Set<Role> roles = getPrincipalRoles(principal);
+		
 			for (Role r : roles) {
-				if(r.getDelegatedRealms().isEmpty() && isDelegatedRealm
-						|| !r.getDelegatedRealms().isEmpty() && !isDelegatedRealm) {
+				if(!r.getPermissionRealms().contains(realm) || r.getPermissionRealms().size() > 1) {
+					/**
+					 * This user has roles in other realms than their home realm. This implies
+					 * that they can switch realms
+					 */
+					principalPermissions.add(repository.getPermissionByResourceKey(SystemPermission.SWITCH_REALM.getResourceKey()));
+				}
+				
+				if(!r.getPermissionRealms().contains(realm)) {
 					continue;
 				}
+				
 				if (r.isAllPermissions()) {
 					principalPermissions.addAll(repository.getAllPermissions(registerPermissionIds, realm.isSystem()));
 					break;
@@ -436,11 +437,11 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Set<Role> getDelegatedRoles(Principal principal, Realm realm) {
+	public Set<Role> getPrincipalRolesForRealm(Principal principal, Realm realm) {
 		
 		String cacheKey = String.format("%d:::%d", principal.getId(), realm.getId());
 		if (!roleCache.containsKey(cacheKey)) {
-			roleCache.put(cacheKey, repository.getDelegatedRoles(principal.getRealm(), realm));
+			roleCache.put(cacheKey, repository.getPrincipalRolesForRealm(realmService.getAssociatedPrincipals(principal), realm));
 		}
 
 		return (Set<Role>) roleCache.get(cacheKey);
@@ -609,8 +610,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		
 		Set<Role> roles = getPrincipalRoles(principal);
 		for(Role r : roles) {
-			if(!isDelegatedRealm() && r.isDelegatedRole()
-					|| isDelegatedRealm() && !r.isDelegatedRole()) {
+			if(!r.getPermissionRealms().contains(getCurrentRealm())) {
 				continue;
 			}
 			if(r.isAllPermissions()) {
@@ -803,9 +803,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			
 			if(realms!=null) {
 				
-				role.setDelegatedRealms(new HashSet<Realm>(realms));
+				role.setPermissionRealms(new HashSet<Realm>(realms));
 				
-				unassignRealms.addAll(getEntitiesNotIn(realms, role.getDelegatedRealms(),
+				unassignRealms.addAll(getEntitiesNotIn(realms, role.getPermissionRealms(),
 						new EntityMatch<Realm>() {
 							@Override
 							public boolean validate(Realm t) {
@@ -814,7 +814,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	
 				}));
 				assignRealms.addAll(realms);
-				assignRealms.removeAll(role.getDelegatedRealms());
+				assignRealms.removeAll(role.getPermissionRealms());
 			}
 			Set<Principal> assignPrincipals = new HashSet<Principal>();
 			Set<Principal> unassignPrincipals = new HashSet<Principal>();

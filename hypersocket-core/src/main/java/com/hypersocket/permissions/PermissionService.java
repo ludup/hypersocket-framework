@@ -164,6 +164,6 @@ public interface PermissionService extends AuthenticatedService {
 
 	Set<Permission> getPrincipalPermissions(Realm realm, Principal principal);
 
-	Set<Role> getDelegatedRoles(Principal principal, Realm realm);
+	Set<Role> getPrincipalRolesForRealm(Principal principal, Realm realm);
 
 }

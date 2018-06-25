@@ -20,8 +20,6 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -39,7 +37,7 @@ public class Role extends RealmResource {
 
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Fetch(FetchMode.SUBSELECT)
-	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
+//	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
 	@JoinTable(name = "role_permissions", 
 		joinColumns = {@JoinColumn(name="role_id")}, 
 		inverseJoinColumns = {@JoinColumn(name="permission_id")})
@@ -47,13 +45,12 @@ public class Role extends RealmResource {
 
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Fetch(FetchMode.SUBSELECT)
-	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
+//	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
 	@JoinTable(name = "role_principals", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
 	Set<Principal> principals = new HashSet<>();
 	
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Fetch(FetchMode.SUBSELECT)
-	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
 	@JoinTable(name = "role_realms", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
 	Set<Realm> realms = new HashSet<>();
 	
@@ -133,17 +130,11 @@ public class Role extends RealmResource {
 	}
 	
 	@JsonIgnore
-	public Set<Realm> getDelegatedRealms() {
+	public Set<Realm> getPermissionRealms() {
 		return realms;
 	}
 
-	public void setDelegatedRealms(Set<Realm> realms) {
+	public void setPermissionRealms(Set<Realm> realms) {
 		this.realms = realms;
 	}
-
-	public boolean isDelegatedRole() {
-		return !realms.isEmpty();
-	}
-	
-	
 }

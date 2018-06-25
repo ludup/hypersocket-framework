@@ -328,7 +328,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public List<RealmProvider> getProviders() throws AccessDeniedException {
 
-		assertAnyPermissionOrRealmAdministrator(PermissionScope.INCLUDE_CHILD_REALMS, RealmPermission.READ);
+		assertAnyPermissionOrRealmAdministrator(PermissionScope.INCLUDE_CHILD_REALMS, RealmPermission.READ, UserPermission.READ, SystemPermission.SWITCH_REALM);
 
 		return new ArrayList<RealmProvider>(providersByModule.values());
 	}
@@ -2047,7 +2047,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public List<Realm> getRealms(String searchPattern, String searchColumn, int start, int length, ColumnSort[] sorting)
 			throws AccessDeniedException {
 
-		assertPermission(RealmPermission.READ);
+		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
 
 		return realmRepository.searchRealms(searchPattern, searchColumn, start, length, sorting);
 	}
@@ -2055,7 +2055,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Long getRealmCount(String searchPattern, String searchColumn) throws AccessDeniedException {
 
-		assertPermission(RealmPermission.READ);
+		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
 
 		return realmRepository.countRealms(searchPattern, searchColumn);
 	}

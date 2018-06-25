@@ -119,8 +119,9 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 		realm.setHidden(false);
 		realm.setSystem(true);
 		
-		realmRepository.saveRealm(realm, new HashMap<String,String>(), localRealmProvider);
-
+		realm = realmRepository.saveRealm(realm, new HashMap<String,String>(), localRealmProvider);
+		realmRepository.flush();
+		
 		configurationRepository.setValue(realm, "realm.userEditableProperties",
 				ResourceUtils.implodeValues(Arrays.asList("email", "fullname", "mobile")));
 		
@@ -160,7 +161,6 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 
 		permissionRepository.grantPermission(rAdmin, pAdmin);
 		rAdmin.getPrincipals().add(admin);
-
 		permissionRepository.saveRole(rAdmin);
 	}
 
