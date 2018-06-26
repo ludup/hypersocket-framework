@@ -59,6 +59,9 @@ public class Role extends RealmResource {
 	
 	@Column(name="all_permissions", nullable=false)
 	boolean allPermissions;
+
+	@Column(name="all_realms", nullable=false)
+	Boolean allRealms = Boolean.FALSE;
 	
 	@Column(name="personal_role", nullable=true)
 	Boolean personalRole = new Boolean(false);
@@ -109,6 +112,14 @@ public class Role extends RealmResource {
 
 	public void setPersonalRole(Boolean personalRole) {
 		this.personalRole = personalRole;
+	}
+
+	public boolean isAllRealms() {
+		return allRealms == null ? Boolean.FALSE.booleanValue() : allRealms;
+	}
+
+	public void setAllRealms(boolean allRealms) {
+		this.allRealms = allRealms;
 	}
 
 	public RoleType getType() {

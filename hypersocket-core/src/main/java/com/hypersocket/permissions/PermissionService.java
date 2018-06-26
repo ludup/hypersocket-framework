@@ -62,14 +62,14 @@ public interface PermissionService extends AuthenticatedService {
 	public List<Permission> allPermissions();
 
 	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions, List<Realm> realms,
-			Map<String, String> properties, RoleType type, boolean allUsers, boolean allPerms)
+			Map<String, String> properties, RoleType type, boolean allUsers, boolean allPerms, boolean allRealms)
 			throws AccessDeniedException, ResourceException;
 	
 	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions, List<Realm> realms,
-			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole, RoleType type, boolean allUsers, boolean allPerms)
+			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole, RoleType type, boolean allUsers, boolean allPerms, boolean allRealms)
 			throws AccessDeniedException, ResourceException;
 
-	Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions, List<Realm> realms, Map<String,String> properties, boolean allUsers, boolean allPerm)
+	Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions, List<Realm> realms, Map<String,String> properties, boolean allUsers, boolean allPerm, boolean allRealms)
 			throws AccessDeniedException, ResourceException;
 
 	public Role getRoleById(Long id, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
@@ -165,5 +165,7 @@ public interface PermissionService extends AuthenticatedService {
 	Set<Permission> getPrincipalPermissions(Realm realm, Principal principal);
 
 	Set<Role> getPrincipalRolesForRealm(Principal principal, Realm realm);
+
+	Set<Realm> getPrincipalPermissionRealms(Principal principal);
 
 }

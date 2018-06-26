@@ -43,9 +43,9 @@ public interface RealmRepository extends
 	List<Realm> allRealms(String resourceKey);
 
 	List<Realm> searchRealms(String searchPattern, String searchColumn, int start, int length,
-							 ColumnSort[] sorting);
+							 ColumnSort[] sorting, Realm currentRealm, Collection<Realm> filter);
 
-	public Long countRealms(String searchPattern, String searchColumn);
+	public Long countRealms(String searchPattern, String searchColumn, Realm currentRealm, Collection<Realm> filter);
 
 	Realm saveRealm(Realm realm);
 

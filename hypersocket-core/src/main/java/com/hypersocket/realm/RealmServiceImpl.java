@@ -2049,7 +2049,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
 
-		return realmRepository.searchRealms(searchPattern, searchColumn, start, length, sorting);
+		return realmRepository.searchRealms(searchPattern, searchColumn, start, length, sorting, getCurrentRealm(),
+				permissionService.hasSystemPermission(getCurrentPrincipal()) ? Collections.<Realm>emptyList() : 
+					permissionService.getPrincipalPermissionRealms(getCurrentPrincipal()));
 	}
 
 	@Override
@@ -2057,7 +2059,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
 
-		return realmRepository.countRealms(searchPattern, searchColumn);
+		return realmRepository.countRealms(searchPattern, searchColumn, getCurrentRealm(),
+				permissionService.hasSystemPermission(getCurrentPrincipal()) ? Collections.<Realm>emptyList() : 
+					permissionService.getPrincipalPermissionRealms(getCurrentPrincipal()));
 	}
 
 	@Override

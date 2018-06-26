@@ -23,6 +23,7 @@ public class RoleUpdate {
 	PropertyItem[] properties;
 	boolean allUsers;
 	boolean allPerms;
+	boolean allRealms;
 	
 	public RoleUpdate() {
 		
@@ -98,6 +99,14 @@ public class RoleUpdate {
 
 	public void setAllPerms(boolean allPerms) {
 		this.allPerms = allPerms;
+	}
+
+	public boolean isAllRealms() {
+		return allRealms;
+	}
+
+	public void setAllRealms(boolean allRealms) {
+		this.allRealms = allRealms;
 	}
 	
 	

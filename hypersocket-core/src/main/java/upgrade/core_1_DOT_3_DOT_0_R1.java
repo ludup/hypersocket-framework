@@ -65,7 +65,8 @@ public class core_1_DOT_3_DOT_0_R1 implements Runnable {
 										null,
 										null,
 										false,
-										true);
+										true,
+										false);
 						} catch (ResourceNotFoundException e1) {
 						}
 						
@@ -77,7 +78,7 @@ public class core_1_DOT_3_DOT_0_R1 implements Runnable {
 							try {
 								permissionService.createRole(user.getPrincipalDescription(), realm, 
 										Arrays.asList(user), 
-										Collections.<Permission>emptyList(), null, null, true, true, RoleType.USER, false, false);
+										Collections.<Permission>emptyList(), null, null, true, true, RoleType.USER, false, false, false);
 							} catch (ResourceCreationException e) {
 								log.error("Could not create principal role", e);
 							}
@@ -86,7 +87,7 @@ public class core_1_DOT_3_DOT_0_R1 implements Runnable {
 							try { 
 								permissionService.createRole(group.getPrincipalName(), realm, 
 										Arrays.asList(group), 
-										Collections.<Permission>emptyList(), null, null, true, true, RoleType.GROUP, false, false);
+										Collections.<Permission>emptyList(), null, null, true, true, RoleType.GROUP, false, false, false);
 							} catch (ResourceCreationException e) {
 								log.error("Could not create principal role", e);
 							}

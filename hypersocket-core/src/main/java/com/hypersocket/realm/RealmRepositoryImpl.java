@@ -17,6 +17,7 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
@@ -107,7 +108,7 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional(readOnly = true)
 	public List<Realm> searchRealms(String searchPattern, String searchColumn, int start,
-									int length, ColumnSort[] sorting) {
+									int length, ColumnSort[] sorting, Realm currentRealm, Collection<Realm> filter) {
 		return search(Realm.class, searchColumn, searchPattern, start, length,
 				sorting, new PublicRealmCriteria(), new CriteriaConfiguration() {
 
@@ -115,6 +116,12 @@ public class RealmRepositoryImpl extends
 					public void configure(Criteria criteria) {
 						criteria.add(Restrictions.eq("hidden", false));
 						criteria.add(Restrictions.eq("deleted", false));
+						if(!currentRealm.isSystem()) {
+							criteria.add(Restrictions.eq("parent", currentRealm));
+						}
+						if(!filter.isEmpty()) {
+							criteria.add(Restrictions.in("id", ResourceUtils.createResourceIdArray(filter)));
+						}
 					}
 				});
 	}
@@ -182,7 +189,7 @@ public class RealmRepositoryImpl extends
 
 	@Override
 	@Transactional(readOnly = true)
-	public Long countRealms(String searchPattern, String searchColumn) {
+	public Long countRealms(String searchPattern, String searchColumn, Realm currentRealm, Collection<Realm> filter) {
 		return getCount(Realm.class, searchColumn, searchPattern,
 				new PublicRealmCriteria(), new CriteriaConfiguration() {
 
@@ -190,6 +197,12 @@ public class RealmRepositoryImpl extends
 					public void configure(Criteria criteria) {
 						criteria.add(Restrictions.eq("hidden", false));
 						criteria.add(Restrictions.eq("deleted", false));
+						if(!currentRealm.isSystem()) {
+							criteria.add(Restrictions.eq("parent", currentRealm));
+						}
+						if(!filter.isEmpty()) {
+							criteria.add(Restrictions.in("id", ResourceUtils.createResourceIdArray(filter)));
+						}
 					}
 				});
 	}

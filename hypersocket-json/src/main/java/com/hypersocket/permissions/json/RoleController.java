@@ -354,11 +354,11 @@ public class RoleController extends ResourceController {
 
 			if (role.getId() == null) {
 				newRole = permissionService.createRole(role.getName(), realm,
-						principals, permissions, realms, values, RoleType.CUSTOM, role.isAllUsers(), role.isAllPerms());
+						principals, permissions, realms, values, RoleType.CUSTOM, role.isAllUsers(), role.isAllPerms(), role.isAllRealms());
 			} else {
 				newRole = permissionService.updateRole(
 						permissionService.getRoleById(role.getId(), realm),
-						role.getName(), principals, permissions, realms, values, role.isAllUsers(), role.isAllPerms());
+						role.getName(), principals, permissions, realms, values, role.isAllUsers(), role.isAllPerms(), role.isAllRealms());
 			}
 
 			return new ResourceStatus<Role>(newRole, I18N.getResource(

@@ -231,20 +231,20 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			throw ex;
 		} catch (ResourceNotFoundException re) {
 			return createRole(name, realm, Collections.<Principal>emptyList(), Collections.<Permission>emptyList(),
-					null, null, false, false, type, false, false);
+					null, null, false, false, type, false, false, false);
 		}
 	}
 
 	@Override
 	public Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions, List<Realm> realms,
-			Map<String, String> properties, RoleType type, boolean allUsers, boolean allPerms) throws AccessDeniedException, ResourceException {
-		return createRole(name, realm, principals, permissions, realms, properties, false, false, type, allUsers, allPerms);
+			Map<String, String> properties, RoleType type, boolean allUsers, boolean allPerms, boolean allRealms) throws AccessDeniedException, ResourceException {
+		return createRole(name, realm, principals, permissions, realms, properties, false, false, type, allUsers, allPerms, allRealms);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions, List<Realm> realms,
-			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole, RoleType type, boolean allUsers, boolean allPerms)
+			Map<String, String> properties, boolean isPrincipalRole, boolean isSystemRole, RoleType type, boolean allUsers, boolean allPerms, boolean allRealms)
 			throws AccessDeniedException, ResourceException {
 
 		assertPermission(RolePermission.CREATE);
@@ -262,6 +262,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				
 				role.setAllPermissions(allPerms);
 				role.setAllUsers(allUsers);
+				role.setAllRealms(allRealms);
 				role.setPersonalRole(isPrincipalRole);
 				role.setSystem(isSystemRole);
 				role.setType(type);
@@ -779,7 +780,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@SuppressWarnings("unchecked")
 	@Override
 	public Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions, List<Realm> realms,
-			Map<String, String> properties, boolean allUsers, boolean allPerm) throws AccessDeniedException, ResourceException {
+			Map<String, String> properties, boolean allUsers, boolean allPerm, boolean allRealms) throws AccessDeniedException, ResourceException {
 
 		assertPermission(RolePermission.UPDATE);
 		if(principals!=null) {
@@ -842,6 +843,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			
 			role.setAllPermissions(allPerm);
 			role.setAllUsers(allUsers);
+			role.setAllRealms(allRealms);
 			
 			repository.updateRole(role, unassignPrincipals, assignPrincipals, revokePermissions, grantPermissions,
 					properties, new TransactionAdapter<Role>() {
@@ -1254,6 +1256,23 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public Role getRoleById(Long id) {
 		return repository.getResourceById(id);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Set<Realm> getPrincipalPermissionRealms(Principal principal) {
+		
+		String cacheKey = String.format("%d:::permissionRealms", principal.getId());
+		
+		if (!roleCache.containsKey(cacheKey)) {
+			Set<Realm> realms = new HashSet<Realm>();
+			for(Role r : repository.getRolesForPrincipal(realmService.getAssociatedPrincipals(principal))) {
+				realms.addAll(r.getPermissionRealms());
+			}
+			roleCache.put(cacheKey, realms);
+		}
+
+		return (Set<Realm>) roleCache.get(cacheKey);
 	}
 	
 }
