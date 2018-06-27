@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="digestTask">
+	<propertyCategory resourceKey="category.digestTask" resourceBundle="DigestTask"  weight="0">
+		<property resourceKey="digest.source" inputType="select" options="UPLOAD,PATH,TEXT" weight="0" defaultValue="UPLOAD" system="true"/>
+		<property resourceKey="digest.sourceFile" visibilityDependsOn="digest.source" visibilityDependsValue="PATH" inputType="text" weight="100" defaultValue="" system="true"/>
+		<property resourceKey="digest.sourceText" visibilityDependsOn="digest.source" visibilityDependsValue="TEXT" inputType="textarea" weight="100" defaultValue=""/>
+		<property resourceKey="digest.sourceUpload"  visibilityDependsOn="digest.source" visibilityDependsValue="UPLOAD" 
+				inputType="fileInput" showDeleteButton="true" automaticUpload="true" weight="200" defaultValue="" />
+		<property resourceKey="digest.type" inputType="select" options="MD5,SHA1,SHA256,SHA512" weight="300" defaultValue="SHA256" />
+	</propertyCategory>
+</propertyTemplates>
