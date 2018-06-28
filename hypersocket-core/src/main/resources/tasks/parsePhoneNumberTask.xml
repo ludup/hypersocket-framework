@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="parsePhoneNumberTask">
+	<propertyCategory resourceKey="category.parsePhoneNumberTask"
+		resourceBundle="ParsePhoneNumberTask" weight="1000">
+			<property resourceKey="parseNumber.input" inputType="text"  weight="0" defaultValue="" />
+			<property resourceKey="parseNumber.countryCode" inputType="countries"  weight="400" defaultValue="us" />
+	</propertyCategory>
+</propertyTemplates>

@@ -346,6 +346,13 @@
 			<artifactId>decibelinsight-uasparser</artifactId>
 			<version>1.0.12</version>
 		</dependency>
+		
+				<!-- https://mvnrepository.com/artifact/com.googlecode.libphonenumber/libphonenumber -->
+		<dependency>
+			<groupId>com.googlecode.libphonenumber</groupId>
+			<artifactId>libphonenumber</artifactId>
+			<version>8.9.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
