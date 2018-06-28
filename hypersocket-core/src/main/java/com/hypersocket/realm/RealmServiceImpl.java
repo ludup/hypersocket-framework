@@ -282,7 +282,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			
 			@Override
 			public ProfileCredentialsState hasCredentials(Principal principal) throws AccessDeniedException {
-				return verifyPrincipalEmailCredentials((UserPrincipal)principal);
+				return verifyPrincipalMobileCredentials((UserPrincipal)principal);
 			}
 
 			@Override
