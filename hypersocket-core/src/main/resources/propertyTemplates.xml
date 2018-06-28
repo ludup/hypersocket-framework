@@ -66,6 +66,9 @@
 		<property resourceKey="missingEmail.required" inputType="select"
 			    options="required.none,required.primary,required.secondary,required.all" nameIsResourceKey="true"
 				defaultValue="required.none" weight="0" />
+		<property resourceKey="missingPhone.required" inputType="select"
+			    options="required.none,required.primary,required.secondary,required.all" nameIsResourceKey="true"
+				defaultValue="required.none" weight="0" />
 		<property resourceKey="realm.userEditableProperties" inputType="multipleSelect" 
 			includedLabelResourceKey="text.editable" excludedLabelResourceKey="text.notEditable"
 		    url="currentRealm/user/editableNames" valuesIsObjectList="false" nameIsResourceKey="true" weight="100"/>

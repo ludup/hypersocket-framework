@@ -62,11 +62,14 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	@Column(name="email")
 	String email;
 
-	@Column(name="secondary_email")
+	@Column(name="secondary_email", length=8000)
 	String secondaryEmail;
 	
 	@Column(name="mobile")
 	String mobile;
+	
+	@Column(name="secondary_mobile", length=8000)
+	String secondaryMobile;
 	
 	@Column(name="realm_category")
 	String realmCategory;
@@ -212,4 +215,14 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	public void setSecondaryEmail(String secondaryEmail) {
 		this.secondaryEmail = secondaryEmail;
 	}
+
+	public String getSecondaryMobile() {
+		return secondaryMobile;
+	}
+
+	public void setSecondaryMobile(String secondaryMobile) {
+		this.secondaryMobile = secondaryMobile;
+	}
+	
+	
 }
