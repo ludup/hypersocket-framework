@@ -3,6 +3,7 @@ package com.hypersocket.tasks.digest;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.MessageDigest;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -76,7 +77,7 @@ public class DigestTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event)
 			throws ValidationException {
 
 		String source = repository.getValue(task, "digest.source");

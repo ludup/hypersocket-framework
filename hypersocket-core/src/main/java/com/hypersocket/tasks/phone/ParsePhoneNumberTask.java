@@ -1,5 +1,6 @@
 package com.hypersocket.tasks.phone;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -69,7 +70,7 @@ public class ParsePhoneNumberTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(Task task, Realm currentRealm, SystemEvent event)
+	public TaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event)
 			throws ValidationException {
 
 		String phoneNumber = processTokenReplacements(repository.getValue(task, "parseNumber.input"), event);
