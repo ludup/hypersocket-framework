@@ -26,9 +26,9 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.SessionService;
 
 @Component
-public class MissingEmailAddressPostAuthenticationStep implements PostAuthenticationStep{
+public class MissingPhoneNumberPostAuthenticationStep implements PostAuthenticationStep{
 
-	public static final String RESOURCE_KEY = "missingEmailAddress";
+	public static final String RESOURCE_KEY = "missingPhone";
 	public static final String RESOURCE_BUNDLE = "MissingEmailAddressService";
 	
 	public static final String REQUIRE_NONE = "required.none";
@@ -36,8 +36,8 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 	public static final String REQUIRE_SECONDARY = "required.secondary";
 	public static final String REQUIRE_ALL = "required.all";
 	
-	public static final String PARAM_PRIMARY = "primaryEmail";
-	public static final String PARAM_SECONDARY = "secondaryEmail";
+	public static final String PARAM_PRIMARY = "primaryPhone";
+	public static final String PARAM_SECONDARY = "secondaryPhone";
 	
 	@Autowired
 	I18NService i18nService;
@@ -67,9 +67,9 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 	public boolean requiresProcessing(AuthenticationState state) {
 		
 		UserPrincipal principal = (UserPrincipal) state.getPrincipal();
-		String required = configurationService.getValue(state.getRealm(), "missingEmail.required");
-		boolean primariExists = StringUtils.isNotBlank(principal.getEmail());
-		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryEmail());
+		String required = configurationService.getValue(state.getRealm(), "missingPhone.required");
+		boolean primariExists = StringUtils.isNotBlank(principal.getMobile());
+		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryMobile());
 		if(((REQUIRE_ALL.equals(required) || REQUIRE_PRIMARY.equals(required)) && !primariExists)
 				|| ((REQUIRE_ALL.equals(required) || REQUIRE_SECONDARY.equals(required)) && !secondaryExists)){
 			return true;
@@ -79,7 +79,7 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 
 	@Override
 	public int getOrderPriority() {
-		return 0;
+		return 1;
 	}
 
 	@Override
@@ -89,44 +89,44 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 
 	@Override
 	public AuthenticatorResult process(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException {
-		String required = configurationService.getValue(state.getRealm(), "missingEmail.required");
+		String required = configurationService.getValue(state.getRealm(), "missingPhone.required");
 		
 		final UserPrincipal principal = (UserPrincipal)state.getPrincipal();
-		boolean primariExists = StringUtils.isNotBlank(principal.getEmail());
-		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryEmail());
+		boolean primariExists = StringUtils.isNotBlank(principal.getMobile());
+		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryMobile());
 		boolean error = false;
 		
 		if((REQUIRE_ALL.equals(required) || REQUIRE_PRIMARY.equals(required)) && !primariExists){
-			String primaryEmail = (String)parameters.get(PARAM_PRIMARY);
-			state.getParameters().put(PARAM_PRIMARY, primaryEmail);
-			if(primaryEmail == null || "".equals(primaryEmail)){
-				state.setLastErrorMsg("error.primaryMandatory");
+			String primaryPhone = (String)parameters.get(PARAM_PRIMARY);
+			state.getParameters().put(PARAM_PRIMARY, primaryPhone);
+			if(primaryPhone == null || "".equals(primaryPhone)){
+				state.setLastErrorMsg("error.primaryPhoneMandatory");
 				state.setLastErrorIsResourceKey(true);
 				error = true;
-			}else if(!validateEmailAddress(primaryEmail)){
-				state.setLastErrorMsg("error.primaryInvalid");
+			}else if(!validatePhoneNumber(primaryPhone)){
+				state.setLastErrorMsg("error.primaryPhoneInvalid");
 				state.setLastErrorIsResourceKey(true);
 				error = true;
 			}
 		}
 		if((REQUIRE_ALL.equals(required) || REQUIRE_SECONDARY.equals(required)) && !secondaryExists){
-			String secondaryEmail = (String)parameters.get(PARAM_SECONDARY);
-			state.getParameters().put(PARAM_SECONDARY, secondaryEmail);
-			if(!error && secondaryEmail == null || "".equals(secondaryEmail)){
-				state.setLastErrorMsg("error.secondaryMandatory");
+			String secondaryPhone = (String)parameters.get(PARAM_SECONDARY);
+			state.getParameters().put(PARAM_SECONDARY, secondaryPhone);
+			if(!error && secondaryPhone == null || "".equals(secondaryPhone)){
+				state.setLastErrorMsg("error.secondaryPhoneMandatory");
 				state.setLastErrorIsResourceKey(true);
 				error = true;
-			}else if(!error && !validateEmailAddress(secondaryEmail)){
-				state.setLastErrorMsg("error.secondaryInvalid");
+			}else if(!error && !validatePhoneNumber(secondaryPhone)){
+				state.setLastErrorMsg("error.secondaryPhoneInvalid");
 				state.setLastErrorIsResourceKey(true);
 				error = true;
 			}
 		}
 		if(!error && (REQUIRE_ALL.equals(required) || REQUIRE_SECONDARY.equals(required))){
-			String primary = (principal.getEmail() != null && !"".equals(principal.getEmail())) ? principal.getEmail() : (String)parameters.get(PARAM_PRIMARY);
-			String secondary = (principal.getSecondaryEmail() != null && !"".equals(principal.getSecondaryEmail())) ? principal.getSecondaryEmail() : (String)parameters.get(PARAM_SECONDARY);
+			String primary = (principal.getMobile() != null && !"".equals(principal.getMobile())) ? principal.getMobile() : (String)parameters.get(PARAM_PRIMARY);
+			String secondary = (principal.getSecondaryMobile() != null && !"".equals(principal.getSecondaryMobile())) ? principal.getSecondaryMobile() : (String)parameters.get(PARAM_SECONDARY);
 			if(primary != null && primary.equals(secondary)){
-				state.setLastErrorMsg("error.duplicatedEmail");
+				state.setLastErrorMsg("error.duplicatedPhone");
 				state.setLastErrorIsResourceKey(true);
 				error = true;
 			}
@@ -136,10 +136,10 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 		}else{
 			final Map<String,String> properties = new HashMap<String,String>();
 			if((REQUIRE_ALL.equals(required) || REQUIRE_PRIMARY.equals(required)) && !primariExists){
-				properties.put("email", (String)parameters.get(PARAM_PRIMARY));
+				properties.put("mobile", (String)parameters.get(PARAM_PRIMARY));
 			}
 			if((REQUIRE_ALL.equals(required) || REQUIRE_SECONDARY.equals(required)) && !secondaryExists){
-				properties.put("secondaryEmail", (String)parameters.get(PARAM_SECONDARY));
+				properties.put("secondaryMobile", (String)parameters.get(PARAM_SECONDARY));
 			}
 			
 			sessionService.executeInSystemContext(new Runnable() {
@@ -158,20 +158,20 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 
 	@Override
 	public FormTemplate createTemplate(AuthenticationState state) {
-		String required = configurationService.getValue(state.getRealm(), "missingEmail.required");
+		String required = configurationService.getValue(state.getRealm(), "missingPhone.required");
 		
 		UserPrincipal principal = (UserPrincipal)state.getPrincipal();
-		boolean primariExists = StringUtils.isNotBlank(principal.getEmail());
-		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryEmail());
+		boolean primariExists = StringUtils.isNotBlank(principal.getMobile());
+		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryMobile());
 		
 		FormTemplate t = new FormTemplate(state.getScheme().getResourceKey());
-		t.getInputFields().add(new ParagraphField("missingEmail.paragraph", true));
+		t.getInputFields().add(new ParagraphField("missingPhone.paragraph", true));
 		if((REQUIRE_ALL.equals(required) || REQUIRE_PRIMARY.equals(required)) && !primariExists){
-			t.getInputFields().add(new TextInputField(PARAM_PRIMARY, state.getParameter(PARAM_PRIMARY)!=null ? state.getParameter(PARAM_PRIMARY) : "", true, I18N.getResource(state.getLocale(), RESOURCE_BUNDLE, "missingEmailAddress.primary")));
+			t.getInputFields().add(new TextInputField(PARAM_PRIMARY, state.getParameter(PARAM_PRIMARY)!=null ? state.getParameter(PARAM_PRIMARY) : "", true, I18N.getResource(state.getLocale(), RESOURCE_BUNDLE, "missingPhone.primary")));
 		}
 			
 		if((REQUIRE_ALL.equals(required) || REQUIRE_SECONDARY.equals(required)) && !secondaryExists){
-			t.getInputFields().add(new TextInputField(PARAM_SECONDARY, state.getParameter(PARAM_SECONDARY)!=null ? state.getParameter(PARAM_SECONDARY) : "", true, I18N.getResource(state.getLocale(), RESOURCE_BUNDLE, "missingEmailAddress.secondary")));
+			t.getInputFields().add(new TextInputField(PARAM_SECONDARY, state.getParameter(PARAM_SECONDARY)!=null ? state.getParameter(PARAM_SECONDARY) : "", true, I18N.getResource(state.getLocale(), RESOURCE_BUNDLE, "missingPhone.secondary")));
 		}
 		return t;
 	}
@@ -186,28 +186,8 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 		return true;
 	}
 	
-	private boolean validateEmailAddress(String val) {
-		
-		Pattern p = Pattern.compile(EmailNotificationServiceImpl.EMAIL_NAME_PATTERN);
-
-		Matcher m = p.matcher(val);
-
-		if (m.find()) {
-			@SuppressWarnings("unused")
-			String name = m.group(1).replaceAll("[\\n\\r]+", "");
-			String email = m.group(2).replaceAll("[\\n\\r]+", "");
-
-			if (Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, email)) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-
-		if (Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, val)) {
-			return true;
-		}
-		return false;
+	private boolean validatePhoneNumber(String val) {
+		return true;
 	}
 
 }

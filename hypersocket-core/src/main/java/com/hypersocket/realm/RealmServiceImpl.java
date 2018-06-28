@@ -1673,8 +1673,26 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public String getPrincipalAddress(Principal principal, MediaType type) throws MediaNotFoundException {
 
-		RealmProvider provider = getProviderForPrincipal(principal);
-		return provider.getAddress(principal, type);
+		UserPrincipal  user = (UserPrincipal) principal;
+		switch(type) {
+		case EMAIL:
+			if(StringUtils.isNotBlank(user.getEmail())) {
+				return user.getEmail();
+			} else if(StringUtils.isNotBlank(user.getSecondaryEmail())) {
+				return ResourceUtils.explodeValues(user.getSecondaryEmail())[0];
+			}
+			throw new MediaNotFoundException();
+		case PHONE: 
+			if(StringUtils.isNotBlank(user.getMobile())) {
+				return user.getMobile();
+			} else if(StringUtils.isNotBlank(user.getSecondaryMobile())) {
+				return ResourceUtils.explodeValues(user.getSecondaryMobile())[0];
+			}
+			throw new MediaNotFoundException();
+		default:
+			throw new MediaNotFoundException();
+		}
+		
 	}
 
 	@Override

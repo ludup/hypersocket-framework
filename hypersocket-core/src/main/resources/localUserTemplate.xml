@@ -13,14 +13,15 @@
 
 	<propertyCategory resourceKey="local.userDetailsE"
 		resourceBundle="LocalRealm" weight="0">
-		<property resourceKey="fullname" inputType="text" weight="0"
-			defaultValue="" />
-		<property resourceKey="email" inputType="text" weight="100" allowEmpty="true" validateAll="email"
-			defaultValue="" />
-		<property resourceKey="secondaryEmail" inputType="multipleTextInput" weight="200" allowEmpty="true" validateAll="email"
-			defaultValue="" />
-		<property resourceKey="mobile" inputType="text" weight="300"
-			defaultValue="" />
+		<property resourceKey="fullname" inputType="text" weight="0"  defaultValue="" />
+		<property resourceKey="email" inputType="text" weight="100" allowEmpty="true" validateAll="email" defaultValue="" />
+		
+		<property resourceKey="mobile" inputType="text" weight="300" defaultValue="" />
+	</propertyCategory>
+	<propertyCategory resourceKey="local.userContacts"
+		resourceBundle="LocalRealm" weight="9999">
+		<property resourceKey="secondaryEmail" inputType="multipleTextInput" weight="200" allowEmpty="true" validateAll="email" defaultValue="" />
+		<property resourceKey="secondaryMobile" inputType="multipleTextInput" weight="400" allowEmpty="true" defaultValue="" />
 	</propertyCategory>
 	<propertyCategory resourceKey="local.userStatus"
 		resourceBundle="LocalRealm" weight="0">
