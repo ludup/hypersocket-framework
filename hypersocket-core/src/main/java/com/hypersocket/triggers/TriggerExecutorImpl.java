@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.SessionFactory;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -67,6 +68,9 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 
 	@Autowired
 	TransactionService transactionService;
+	
+	@Autowired
+	SessionFactory sessionFactory;
 
 	public TriggerExecutorImpl() {
 	}
@@ -225,11 +229,8 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 
 
 									/* The whole point of DynamicResultsTaskProvider is to keep memory usage during imports and 
-									 * other large data tasks to a minimum. So we cannot store evey single propogated
+									 * other large data tasks to a minimum. So we cannot store every single propagated
 									 * event in the chain (sourceEvents), so we restrict to this event and its result. 
-									 * 
-									 * TODO Check with LDP, I'm not entirely should of the consequences of this, but it appears
-									 * it may be something to do with conditions? 
 									 */
 									List<SystemEvent> results = new ArrayList<SystemEvent>();
 									results.add(lastResult);
@@ -244,6 +245,18 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 									} catch (ValidationException e) {
 										throw new IllegalStateException(e.getMessage(), e);
 									}
+								}
+
+								@Override
+								public void flush() {
+									log.info("Flushing");
+									sessionFactory.getCurrentSession().flush();	
+									sessionFactory.getCurrentSession().clear();								
+								}
+
+								@Override
+								public boolean isTransactional() {
+									return true;
 								}
 							}, trigger, lastResult.getCurrentRealm(), sourceEvents);
 						} else {

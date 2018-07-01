@@ -3,6 +3,7 @@ package com.hypersocket.automation;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.SessionFactory;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
@@ -50,6 +51,9 @@ public class AutomationJob extends AbstractTriggerJob {
 	
 	@Autowired
 	TransactionService transactionService;
+	
+	@Autowired
+	SessionFactory sessionFactory;
 	
 	public AutomationJob() {
 	}
@@ -144,6 +148,18 @@ public class AutomationJob extends AbstractTriggerJob {
 					} catch (ValidationException e) {
 						throw new IllegalStateException(e.getMessage(), e);
 					}
+				}
+
+				@Override
+				public void flush() {
+					log.info("Flushing");
+					sessionFactory.getCurrentSession().flush();
+					sessionFactory.getCurrentSession().clear();
+				}
+
+				@Override
+				public boolean isTransactional() {
+					return Boolean.TRUE.equals(resource.getTransactional());
 				}
 			}, resource, lastEvent.getCurrentRealm(), sourceEvents);
 		} else {
