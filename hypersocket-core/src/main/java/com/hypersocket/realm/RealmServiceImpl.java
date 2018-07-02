@@ -86,6 +86,9 @@ import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
 import com.hypersocket.realm.ou.OrganizationalUnitRepository;
+import com.hypersocket.resource.AbstractAssignableResourceRepository;
+import com.hypersocket.resource.AbstractSimpleResourceRepository;
+import com.hypersocket.resource.FindableResourceRepository;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceCreationException;
@@ -1322,18 +1325,18 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 	}
 
-//	private void fireRealmDelete(Realm realm) throws ResourceException {
-//
-//		for (RealmListener l : realmListeners) {
-//			try {
-//				l.onDeleteRealm(realm);
-//			} catch (ResourceChangeException e) {
-//				throw e;
-//			} catch (Throwable t) {
-//				log.error("Caught error in RealmListener", t);
-//			}
-//		}
-//	}
+	private void fireRealmDelete(Realm realm) throws ResourceException {
+
+		for (RealmListener l : realmListeners) {
+			try {
+				l.onDeleteRealm(realm);
+			} catch(ResourceChangeException e) { 
+				throw e;
+			} catch (Throwable t) {
+				log.error("Caught error in RealmListener", t);
+			}
+		}
+	}
 
 	@Override
 	public void deleteRealm(final Realm realm) throws AccessDeniedException, ResourceException {
@@ -1345,69 +1348,68 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			if (realm.isDefaultRealm()) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.cannotDeleteDefault", realm.getName());
 			}
-
+			
 			if (realm.isSystem()) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.cannotDeleteSystem", realm.getName());
 			}
+			
+			eventService.delayEvents(true);
+			
+			transactionService.doInTransaction(new TransactionCallback<Void>() {
 
-			realmRepository.deleteRealmSoftly(realm);
-//			/**
-//			 * Get a copy of the realm to delete so we can fire events with the
-//			 * current realm detail as delete will rename it
-//			 */
-//
-//			eventService.delayEvents(true);
-//
-//			transactionService.doInTransaction(new TransactionCallback<Void>() {
-//
-//				@Override
-//				public Void doInTransaction(TransactionStatus status) {
-//					try {
-//						Realm deletedRealm = getRealmById(realm.getId());
-//
-//						clearCache(deletedRealm);
-//
-//						sessionService.deleteRealm(realm);
-//
-//						fireRealmDelete(deletedRealm);
-//
-//						for (FindableResourceRepository<?> repository : EntityResourcePropertyStore.getRepositories()) {
-//							if (repository instanceof AbstractSimpleResourceRepository
-//									&& !(repository instanceof RealmRepository)
-//									&& !(repository instanceof PermissionRepository)) {
-//								if (repository.isDeletable()) {
-//									repository.deleteRealm(realm);
-//								}
-//							}
-//							if (repository instanceof AbstractAssignableResourceRepository) {
-//								AbstractAssignableResourceRepository<?> r = (AbstractAssignableResourceRepository<?>) repository;
-//								if (r.isDeletable()) {
-//									r.deleteRealm(realm);
-//								}
-//							}
-//						}
-//
-//						permissionRepository.deleteRealm(realm);
-//						ouRepository.deleteRealm(realm);
-//
-//						suspensionRepository.deleteRealm(realm);
-//						getLocalProvider().deleteRealm(realm);
-//
-//						RealmProvider provider = getProviderForRealm(realm);
-//						provider.deleteRealm(realm);
-//
-//						passwordPolicyService.deleteRealm(realm);
-//						configurationService.deleteRealm(realm);
-//
-//						realmRepository.deleteRealm(deletedRealm);
-//						return null;
-//					} catch (ResourceException e) {
-//						throw new IllegalStateException(e.getMessage(), e);
-//					}
-//				}
-//			});
-//
-//			eventService.publishDelayedEvents();
+				@Override
+				public Void doInTransaction(TransactionStatus status) {
+					try {
+						/**
+						 * Get a copy of the realm to delete so we can fire events with the
+						 * current realm detail as delete will rename it
+						 */
+						
+						Realm deletedRealm = getRealmById(realm.getId());
+
+						clearCache(deletedRealm);
+
+						sessionService.deleteRealm(realm);
+						
+						fireRealmDelete(deletedRealm);
+						
+						for(FindableResourceRepository<?> repository : EntityResourcePropertyStore.getRepositories()) {
+							if(repository instanceof AbstractSimpleResourceRepository
+									&& !(repository instanceof RealmRepository)
+									&& !(repository instanceof PermissionRepository)) {
+								if(repository.isDeletable()) {
+									repository.deleteRealm(realm);
+								}
+							}
+							if(repository instanceof AbstractAssignableResourceRepository) {
+								AbstractAssignableResourceRepository<?> r = (AbstractAssignableResourceRepository<?>)repository;
+								if(r.isDeletable()) {
+									r.deleteRealm(realm);
+								}
+							}
+						}
+						
+						permissionRepository.deleteRealm(realm);
+						ouRepository.deleteRealm(realm);
+						
+						suspensionRepository.deleteRealm(realm);
+						getLocalProvider().deleteRealm(realm);
+						
+						RealmProvider provider = getProviderForRealm(realm);
+						provider.deleteRealm(realm);
+						
+						passwordPolicyService.deleteRealm(realm);
+						configurationService.deleteRealm(realm);
+						
+						realmRepository.deleteRealm(deletedRealm);
+						return null;
+					} catch (ResourceException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+			});
+			
+			eventService.publishDelayedEvents();
 			eventService.publishEvent(new RealmDeletedEvent(this, getCurrentSession(), realm));
 
 		} catch (AccessDeniedException e) {
@@ -1421,7 +1423,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (Throwable t) {
 			eventService.rollbackDelayedEvents(false);
 			eventService.publishEvent(new RealmDeletedEvent(this, t, getCurrentSession(), realm));
-			throw new ResourceChangeException(t, RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
+			throw new ResourceChangeException(t, RESOURCE_BUNDLE, "error.unexpectedError");
 		}
 	}
 
