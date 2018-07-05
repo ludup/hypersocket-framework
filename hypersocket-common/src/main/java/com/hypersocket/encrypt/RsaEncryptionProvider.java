@@ -20,7 +20,6 @@ import javax.crypto.SecretKey;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.lf5.util.StreamUtils;
 
 import com.hypersocket.utils.HypersocketUtils;
 
@@ -77,11 +76,11 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 	private void loadKeys() throws Exception {
 		
 		InputStream in = new FileInputStream(prvFile);
-		byte[] prvBytes = StreamUtils.getBytes(in);
+		byte[] prvBytes = IOUtils.toByteArray(in);
 		IOUtils.closeQuietly(in);
 		
 		in = new FileInputStream(pubFile);
-		byte[] pubBytes = StreamUtils.getBytes(in);
+		byte[] pubBytes = IOUtils.toByteArray(in);
 		IOUtils.closeQuietly(in);
 
 		PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(prvBytes);

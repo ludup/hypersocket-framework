@@ -18,13 +18,14 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 
 public class I18N {
 
-	static Logger log = Logger.getLogger(I18N.class);
+	static Logger log = LoggerFactory.getLogger(I18N.class);
 	
 	private I18N() {
 	}

@@ -27,10 +27,11 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.log4j.Logger;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -49,7 +50,7 @@ public class Session extends AbstractEntity<String> {
 
 	private static final long serialVersionUID = -830036435585689895L;
 
-	static Logger log = Logger.getLogger(Session.class);
+	static Logger log = LoggerFactory.getLogger(Session.class);
 
 	@Id
 	@GeneratedValue(generator = "uuid")
