@@ -25,7 +25,7 @@ public class I18nOverride extends AbstractEntity<Long> {
 	@Column(name="locale")
 	String locale;
 	
-	@Column(name="bundle")
+	@Column(name="bundle", length=512)
 	String bundle;
 	
 	@Column(name="name", length=512)
