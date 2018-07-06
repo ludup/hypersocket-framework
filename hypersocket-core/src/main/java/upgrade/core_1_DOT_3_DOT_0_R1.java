@@ -78,7 +78,7 @@ public class core_1_DOT_3_DOT_0_R1 implements Runnable {
 							try {
 								permissionService.createRole(user.getPrincipalDescription(), realm, 
 										Arrays.asList(user), 
-										Collections.<Permission>emptyList(), null, null, true, true, RoleType.USER, false, false, false);
+										Collections.<Permission>emptyList(), Collections.<Realm>emptyList(), null, true, true, RoleType.USER, false, false, false);
 							} catch (ResourceCreationException e) {
 								log.error("Could not create principal role", e);
 							}
