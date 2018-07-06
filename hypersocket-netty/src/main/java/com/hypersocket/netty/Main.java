@@ -102,6 +102,7 @@ public class Main {
 			runServer();
 		} catch (Throwable e) {
 			log.error("Failed to run application", e);
+			System.exit(1);
 		}
 	}
 
