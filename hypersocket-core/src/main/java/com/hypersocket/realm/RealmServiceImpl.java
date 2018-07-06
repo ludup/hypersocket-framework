@@ -1330,15 +1330,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			if (realm.isSystem()) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.cannotDeleteSystem", realm.getName());
 			}
-
-			/**
-			 * Get a copy of the realm to delete so we can fire events with the
-			 * current realm detail as delete will rename it
-			 */
-			
-//			fireRealmDelete(realm);
-//			
-//			realmRepository.deleteRealm(realm);
 			
 			eventService.delayEvents(true);
 			
@@ -1347,6 +1338,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				@Override
 				public Void doInTransaction(TransactionStatus status) {
 					try {
+						/**
+						 * Get a copy of the realm to delete so we can fire events with the
+						 * current realm detail as delete will rename it
+						 */
+						
 						Realm deletedRealm = getRealmById(realm.getId());
 
 						clearCache(deletedRealm);
