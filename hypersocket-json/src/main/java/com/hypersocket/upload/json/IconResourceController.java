@@ -1,6 +1,5 @@
 package com.hypersocket.upload.json;
 
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -33,7 +32,6 @@ import com.sshtools.icongenerator.Colors;
 import com.sshtools.icongenerator.IconBuilder;
 import com.sshtools.icongenerator.IconBuilder.IconShape;
 import com.sshtools.icongenerator.IconBuilder.TextCase;
-import com.sshtools.icongenerator.java2d.Java2DIconCanvas;
 
 public abstract class IconResourceController<T extends Resource> extends ResourceController {
 
@@ -187,17 +185,12 @@ public abstract class IconResourceController<T extends Resource> extends Resourc
 		} else
 			builder.text(iconText);
 
-		// Draw icon
-		BufferedImage image = new BufferedImage((int) builder.width(),
-				(int) builder.height(), BufferedImage.TYPE_4BYTE_ABGR);
-		new Java2DIconCanvas(builder).draw((Graphics2D) image.getGraphics());
 
 		// Respond
 		String contentType = mimeTypesMap.getContentType(spec + "." + ext);
 		response.setContentType(contentType);
 		CacheUtils.setDateAndCacheHeaders(response, resource.getModifiedDate().getTime());
-		
-		ImageIO.write(image, ext.toUpperCase(), response.getOutputStream());
+		ImageIO.write(builder.build(BufferedImage.class), ext.toUpperCase(), response.getOutputStream());
 		response.flushBuffer();
 
 	}
