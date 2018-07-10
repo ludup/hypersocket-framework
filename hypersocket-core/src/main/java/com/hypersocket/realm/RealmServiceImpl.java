@@ -68,6 +68,8 @@ import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.realm.events.AccountDisabledEvent;
+import com.hypersocket.realm.events.AccountEnabledEvent;
 import com.hypersocket.realm.events.ChangePasswordEvent;
 import com.hypersocket.realm.events.GroupCreatedEvent;
 import com.hypersocket.realm.events.GroupDeletedEvent;
@@ -191,8 +193,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	OrganizationalUnitRepository ouRepository;
 
 	@Autowired
-	ProfileCredentialsService profileService; 
-	
+	ProfileCredentialsService profileService;
+
 	@Autowired
 	PasswordPolicyResourceService passwordPolicyService;
 
@@ -294,12 +296,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		registerBuiltInPrincipalFilter(new LocalAccountFilter());
 		registerBuiltInPrincipalFilter(new RemoteAccountFilter());
-		
+
 		profileService.registerProvider(new ProfileCredentialsProvider() {
-			
+
 			@Override
 			public ProfileCredentialsState hasCredentials(Principal principal) throws AccessDeniedException {
-				return verifyPrincipalEmailCredentials((UserPrincipal)principal);
+				return verifyPrincipalEmailCredentials((UserPrincipal) principal);
 			}
 
 			@Override
@@ -307,12 +309,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				return "missingEmail.label";
 			}
 		});
-		
+
 		profileService.registerProvider(new ProfileCredentialsProvider() {
-			
+
 			@Override
 			public ProfileCredentialsState hasCredentials(Principal principal) throws AccessDeniedException {
-				return verifyPrincipalMobileCredentials((UserPrincipal)principal);
+				return verifyPrincipalMobileCredentials((UserPrincipal) principal);
 			}
 
 			@Override
@@ -364,7 +366,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public List<RealmProvider> getProviders() throws AccessDeniedException {
 
-		assertAnyPermissionOrRealmAdministrator(PermissionScope.INCLUDE_CHILD_REALMS, RealmPermission.READ, UserPermission.READ, SystemPermission.SWITCH_REALM);
+		assertAnyPermissionOrRealmAdministrator(PermissionScope.INCLUDE_CHILD_REALMS, RealmPermission.READ,
+				UserPermission.READ, SystemPermission.SWITCH_REALM);
 
 		return new ArrayList<RealmProvider>(providersByModule.values());
 	}
@@ -795,9 +798,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public boolean verifyPassword(Principal principal, char[] password) throws LogonException, IOException {
 
 		/**
-		 * Adds support for session tokens. These can be created and used
-		 * instead of passwords where we may not have, or want to distribute the
-		 * password to an external service.
+		 * Adds support for session tokens. These can be created and used instead of
+		 * passwords where we may not have, or want to distribute the password to an
+		 * external service.
 		 */
 
 		setupSystemContext(principal.getRealm());
@@ -1202,9 +1205,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			final RealmProvider realmProvider = getProviderForRealm(realm.getResourceCategory());
 
 			/**
-			 * Switch to system context in the updated realm so that updates
-			 * from system realm will be be able to correctly route through a
-			 * secure node.
+			 * Switch to system context in the updated realm so that updates from system
+			 * realm will be be able to correctly route through a secure node.
 			 */
 			setupSystemContext(realm);
 			try {
@@ -1330,7 +1332,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		for (RealmListener l : realmListeners) {
 			try {
 				l.onDeleteRealm(realm);
-			} catch(ResourceChangeException e) { 
+			} catch (ResourceChangeException e) {
 				throw e;
 			} catch (Throwable t) {
 				log.error("Caught error in RealmListener", t);
@@ -1348,59 +1350,59 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			if (realm.isDefaultRealm()) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.cannotDeleteDefault", realm.getName());
 			}
-			
+
 			if (realm.isSystem()) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.cannotDeleteSystem", realm.getName());
 			}
-			
+
 			eventService.delayEvents(true);
-			
+
 			transactionService.doInTransaction(new TransactionCallback<Void>() {
 
 				@Override
 				public Void doInTransaction(TransactionStatus status) {
 					try {
 						/**
-						 * Get a copy of the realm to delete so we can fire events with the
-						 * current realm detail as delete will rename it
+						 * Get a copy of the realm to delete so we can fire events with the current
+						 * realm detail as delete will rename it
 						 */
-						
+
 						Realm deletedRealm = getRealmById(realm.getId());
 
 						clearCache(deletedRealm);
 
 						sessionService.deleteRealm(realm);
-						
+
 						fireRealmDelete(deletedRealm);
-						
-						for(FindableResourceRepository<?> repository : EntityResourcePropertyStore.getRepositories()) {
-							if(repository instanceof AbstractSimpleResourceRepository
+
+						for (FindableResourceRepository<?> repository : EntityResourcePropertyStore.getRepositories()) {
+							if (repository instanceof AbstractSimpleResourceRepository
 									&& !(repository instanceof RealmRepository)
 									&& !(repository instanceof PermissionRepository)) {
-								if(repository.isDeletable()) {
+								if (repository.isDeletable()) {
 									repository.deleteRealm(realm);
 								}
 							}
-							if(repository instanceof AbstractAssignableResourceRepository) {
-								AbstractAssignableResourceRepository<?> r = (AbstractAssignableResourceRepository<?>)repository;
-								if(r.isDeletable()) {
+							if (repository instanceof AbstractAssignableResourceRepository) {
+								AbstractAssignableResourceRepository<?> r = (AbstractAssignableResourceRepository<?>) repository;
+								if (r.isDeletable()) {
 									r.deleteRealm(realm);
 								}
 							}
 						}
-						
+
 						permissionRepository.deleteRealm(realm);
 						ouRepository.deleteRealm(realm);
-						
+
 						suspensionRepository.deleteRealm(realm);
 						getLocalProvider().deleteRealm(realm);
-						
+
 						RealmProvider provider = getProviderForRealm(realm);
 						provider.deleteRealm(realm);
-						
+
 						passwordPolicyService.deleteRealm(realm);
 						configurationService.deleteRealm(realm);
-						
+
 						realmRepository.deleteRealm(deletedRealm);
 						return null;
 					} catch (ResourceException e) {
@@ -1408,7 +1410,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					}
 				}
 			});
-			
+
 			eventService.publishDelayedEvents();
 			eventService.publishEvent(new RealmDeletedEvent(this, getCurrentSession(), realm));
 
@@ -1692,7 +1694,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			permissionService.revokePermissions(user, new TransactionAdapter<Principal>() {
 				@Override
-				public void afterOperation(Principal resource, Map<String, String> properties) throws ResourceException {
+				public void afterOperation(Principal resource, Map<String, String> properties)
+						throws ResourceException {
 					try {
 						provider.deleteUser(resource);
 					} catch (ResourceChangeException e) {
@@ -1722,26 +1725,26 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public String getPrincipalAddress(Principal principal, MediaType type) throws MediaNotFoundException {
 
-		UserPrincipal  user = (UserPrincipal) principal;
-		switch(type) {
+		UserPrincipal user = (UserPrincipal) principal;
+		switch (type) {
 		case EMAIL:
-			if(StringUtils.isNotBlank(user.getEmail())) {
+			if (StringUtils.isNotBlank(user.getEmail())) {
 				return user.getEmail();
-			} else if(StringUtils.isNotBlank(user.getSecondaryEmail())) {
+			} else if (StringUtils.isNotBlank(user.getSecondaryEmail())) {
 				return ResourceUtils.explodeValues(user.getSecondaryEmail())[0];
 			}
 			throw new MediaNotFoundException();
-		case PHONE: 
-			if(StringUtils.isNotBlank(user.getMobile())) {
+		case PHONE:
+			if (StringUtils.isNotBlank(user.getMobile())) {
 				return user.getMobile();
-			} else if(StringUtils.isNotBlank(user.getSecondaryMobile())) {
+			} else if (StringUtils.isNotBlank(user.getSecondaryMobile())) {
 				return ResourceUtils.explodeValues(user.getSecondaryMobile())[0];
 			}
 			throw new MediaNotFoundException();
 		default:
 			throw new MediaNotFoundException();
 		}
-		
+
 	}
 
 	@Override
@@ -1780,8 +1783,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				Arrays.asList(configurationService.getValues(principal.getRealm(), "realm.userVisibleProperties")));
 
 		/**
-		 * Filter the properties down to read only and editable as defined by
-		 * the realm configuration.
+		 * Filter the properties down to read only and editable as defined by the realm
+		 * configuration.
 		 */
 
 		List<PropertyCategory> results = new ArrayList<PropertyCategory>();
@@ -2103,8 +2106,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
 
 		return realmRepository.searchRealms(searchPattern, searchColumn, start, length, sorting, getCurrentRealm(),
-				permissionService.hasSystemPermission(getCurrentPrincipal()) ? Collections.<Realm>emptyList() : 
-					permissionService.getPrincipalPermissionRealms(getCurrentPrincipal()));
+				permissionService.hasSystemPermission(getCurrentPrincipal()) ? Collections.<Realm>emptyList()
+						: permissionService.getPrincipalPermissionRealms(getCurrentPrincipal()));
 	}
 
 	@Override
@@ -2113,8 +2116,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
 
 		return realmRepository.countRealms(searchPattern, searchColumn, getCurrentRealm(),
-				permissionService.hasSystemPermission(getCurrentPrincipal()) ? Collections.<Realm>emptyList() : 
-					permissionService.getPrincipalPermissionRealms(getCurrentPrincipal()));
+				permissionService.hasSystemPermission(getCurrentPrincipal()) ? Collections.<Realm>emptyList()
+						: permissionService.getPrincipalPermissionRealms(getCurrentPrincipal()));
 	}
 
 	@Override
@@ -2127,8 +2130,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		if (realmProvider.equals(provider)) {
 			/**
-			 * This ensures we only ever update those properties that are
-			 * allowed
+			 * This ensures we only ever update those properties that are allowed
 			 */
 			String[] editableProperties = configurationService.getValues(realm, "realm.userEditableProperties");
 
@@ -2202,11 +2204,21 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
-		if (provider.isReadOnly(principal.getRealm())) {
-			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
+
+		try {
+			if (provider.isReadOnly(principal.getRealm())) {
+				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
+			}
+			principal = provider.disableAccount(principal);
+			eventService.publishEvent(
+					new AccountDisabledEvent(this, getCurrentSession(), provider, getCurrentPrincipal(), principal));
+		} catch (ResourceException re) {
+			eventService.publishEvent(
+					new AccountDisabledEvent(this, re, getCurrentSession(), provider, getCurrentPrincipal(), principal));
+			throw re;
 		}
 
-		return provider.disableAccount(principal);
+		return principal;
 
 	}
 
@@ -2221,7 +2233,20 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 		}
 
-		return provider.enableAccount(principal);
+		try {
+			if (provider.isReadOnly(principal.getRealm())) {
+				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
+			}
+			principal = provider.enableAccount(principal);
+			eventService.publishEvent(
+					new AccountEnabledEvent(this, getCurrentSession(), provider, getCurrentPrincipal(), principal));
+		} catch (ResourceException re) {
+			eventService.publishEvent(
+					new AccountEnabledEvent(this, re, getCurrentSession(), provider, getCurrentPrincipal(), principal));
+			throw re;
+		}
+
+		return principal;
 	}
 
 	@Override
@@ -2657,37 +2682,43 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		RealmProvider provider = getProviderForRealm(realm);
 		return provider.getProperties(realm);
 	}
-	
+
 	private ProfileCredentialsState verifyPrincipalEmailCredentials(UserPrincipal principal) {
-		
+
 		String required = configurationService.getValue(principal.getRealm(), "missingEmail.required");
-		
-		if(required.equals(MissingEmailAddressPostAuthenticationStep.REQUIRE_NONE)) {
+
+		if (required.equals(MissingEmailAddressPostAuthenticationStep.REQUIRE_NONE)) {
 			return ProfileCredentialsState.NOT_REQUIRED;
 		}
-		
+
 		boolean primariExists = StringUtils.isNotBlank(principal.getEmail());
 		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryEmail());
-		if(((MissingEmailAddressPostAuthenticationStep.REQUIRE_ALL.equals(required) || MissingEmailAddressPostAuthenticationStep.REQUIRE_PRIMARY.equals(required)) && !primariExists)
-				|| ((MissingEmailAddressPostAuthenticationStep.REQUIRE_ALL.equals(required) || MissingEmailAddressPostAuthenticationStep.REQUIRE_SECONDARY.equals(required)) && !secondaryExists)){
+		if (((MissingEmailAddressPostAuthenticationStep.REQUIRE_ALL.equals(required)
+				|| MissingEmailAddressPostAuthenticationStep.REQUIRE_PRIMARY.equals(required)) && !primariExists)
+				|| ((MissingEmailAddressPostAuthenticationStep.REQUIRE_ALL.equals(required)
+						|| MissingEmailAddressPostAuthenticationStep.REQUIRE_SECONDARY.equals(required))
+						&& !secondaryExists)) {
 			return ProfileCredentialsState.INCOMPLETE;
 		}
 
 		return ProfileCredentialsState.COMPLETE;
 	}
-	
+
 	private ProfileCredentialsState verifyPrincipalMobileCredentials(UserPrincipal principal) {
 
 		String required = configurationService.getValue(principal.getRealm(), "missingPhone.required");
-		
-		if(required.equals(MissingEmailAddressPostAuthenticationStep.REQUIRE_NONE)) {
+
+		if (required.equals(MissingEmailAddressPostAuthenticationStep.REQUIRE_NONE)) {
 			return ProfileCredentialsState.NOT_REQUIRED;
 		}
-		
+
 		boolean primariExists = StringUtils.isNotBlank(principal.getMobile());
 		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryMobile());
-		if(((MissingEmailAddressPostAuthenticationStep.REQUIRE_ALL.equals(required) || MissingEmailAddressPostAuthenticationStep.REQUIRE_PRIMARY.equals(required)) && !primariExists)
-				|| ((MissingEmailAddressPostAuthenticationStep.REQUIRE_ALL.equals(required) || MissingEmailAddressPostAuthenticationStep.REQUIRE_SECONDARY.equals(required)) && !secondaryExists)){
+		if (((MissingEmailAddressPostAuthenticationStep.REQUIRE_ALL.equals(required)
+				|| MissingEmailAddressPostAuthenticationStep.REQUIRE_PRIMARY.equals(required)) && !primariExists)
+				|| ((MissingEmailAddressPostAuthenticationStep.REQUIRE_ALL.equals(required)
+						|| MissingEmailAddressPostAuthenticationStep.REQUIRE_SECONDARY.equals(required))
+						&& !secondaryExists)) {
 			return ProfileCredentialsState.INCOMPLETE;
 		}
 
@@ -2752,7 +2783,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				map.put(TEXT_EXPIRES, HypersocketUtils.formatDate(princ.getExpires(), "yyyy-MM-dd HH:mm:ss"));
 				map.put(TEXT_STATUS, princ.getPrincipalStatus().name());
 				final Map<String, String> properties = princ.getProperties();
-				if(properties != null)
+				if (properties != null)
 					map.putAll(properties);
 				return map;
 			}
