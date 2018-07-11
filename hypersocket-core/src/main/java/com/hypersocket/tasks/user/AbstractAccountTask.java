@@ -20,20 +20,19 @@ import com.hypersocket.triggers.ValidationException;
 
 public abstract class AbstractAccountTask extends AbstractTaskProvider {
 
-
 	@Autowired
 	private RealmService realmService;
 
 	//
-	
+
 	private String principalIdKey;
 	private String principalNameKey;
-	
-	
+
 	protected AbstractAccountTask(String principalIdKey, String principalNameKey) {
 		this.principalIdKey = principalIdKey;
 		this.principalNameKey = principalNameKey;
 	}
+
 	@Override
 	public String getResourceBundle() {
 		return RealmServiceImpl.RESOURCE_BUNDLE;
@@ -50,12 +49,11 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 	@Override
 	public final AbstractTaskResult execute(final Task task, final Realm currentRealm, final List<SystemEvent> event)
 			throws ValidationException {
-
 		Principal p;
 		Long id = getRepository().getLongValue(task, principalIdKey);
+		String name = getRepository().getValue(task, principalNameKey);
 		if (id == 0) {
-			p = realmService.getPrincipalByName(currentRealm, getRepository().getValue(task, principalNameKey),
-					PrincipalType.USER);
+			p = realmService.getPrincipalByName(currentRealm, name, getType(task));
 		} else
 			p = realmService.getPrincipalById(id);
 
@@ -97,4 +95,7 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 		return false;
 	}
 
+	protected PrincipalType getType(final Task task) {
+		return PrincipalType.USER;
+	}
 }
