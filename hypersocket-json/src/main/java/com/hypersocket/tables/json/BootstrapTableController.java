@@ -57,13 +57,13 @@ public class BootstrapTableController<T> extends AuthenticatedController {
 		String searchColumn = "";
 		
 		if(request.getParameter("sSearch") != null) {
-			searchPattern = HypersocketUtils.urlEncode(request.getParameter("sSearch"));
+			searchPattern = HypersocketUtils.urlDecode(request.getParameter("sSearch"));
 		} else if(request.getParameter("search") != null) {
-			searchPattern = HypersocketUtils.urlEncode(request.getParameter("search"));
+			searchPattern = HypersocketUtils.urlDecode(request.getParameter("search"));
 		}
 		
 		if(request.getParameter("searchColumn") != null) {
-			searchColumn = HypersocketUtils.urlEncode(request.getParameter("searchColumn"));
+			searchColumn = HypersocketUtils.urlDecode(request.getParameter("searchColumn"));
 		}
 
 		BootstrapTableResult<T> result = new BootstrapTableResult<T>(processor.getPage(

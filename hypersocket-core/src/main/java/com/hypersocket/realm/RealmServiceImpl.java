@@ -1945,7 +1945,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public List<?> searchPrincipals(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
 			int start, int length, ColumnSort[] sorting) throws AccessDeniedException {
-		return searchPrincipals(realm, type, searchColumn, "name", searchPattern, start, length, sorting);
+		return searchPrincipals(realm, type, null, searchColumn, searchPattern, start, length, sorting);
 	}
 
 	@Override

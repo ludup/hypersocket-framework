@@ -1315,6 +1315,7 @@ public class CurrentRealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/csv", method = RequestMethod.POST, produces = { "application/octet-stream" })
 	@ResponseBody
