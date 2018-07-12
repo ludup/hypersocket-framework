@@ -1,9 +1,19 @@
 package com.hypersocket.scheduler;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.ObjectInputStream;
+import java.util.List;
 
+import org.hibernate.SQLQuery;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.quartz.TriggerKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,12 +24,17 @@ import com.hypersocket.utils.HypersocketUtils;
 @Service
 public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl implements 
 		ClusteredSchedulerService {
+	
+	final static Logger LOG = LoggerFactory.getLogger(ClusteredSchedulerServiceImpl.class);
 
 	@Autowired
-	Scheduler clusteredScheduler;
+	private Scheduler clusteredScheduler;
 	
 	@Autowired
-	UpgradeService upgradeService; 
+	private UpgradeService upgradeService; 
+	
+	@Autowired
+	private SessionFactory sessionFactory;
 	
 	protected Scheduler configureScheduler() throws SchedulerException {
 		
@@ -29,10 +44,50 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 			System.setProperty("org.quartz.properties", quartzProperties.getAbsolutePath());
 		}
 
+		
+		
 		upgradeService.registerListener(new UpgradeServiceListener() {
 			
+			@SuppressWarnings("unchecked")
 			@Override
 			public void onUpgradeComplete() {
+				/* Clean up jobs and triggers that no longer exist */
+				Session session = sessionFactory.openSession();
+				try {
+					SQLQuery query = session.createSQLQuery("SELECT JOB_NAME, JOB_CLASS_NAME FROM QRTZ_JOB_DETAILS");
+					List<Object[]> results = query.list();
+					for(Object[] row : results) {
+						try {
+							Class.forName((String)row[1]);
+						}
+						catch(Exception e) {
+							LOG.warn(String.format("Removing job %s as the class %s no longer exists.", row[0], row[1]), e);
+							clusteredScheduler.deleteJob(new JobKey((String)row[0]));
+						}
+					}
+					
+					query = session.createSQLQuery("SELECT TRIGGER_NAME, JOB_DATA FROM QRTZ_TRIGGERS");
+					results = query.list();
+					for(Object[] row : results) {
+						try {
+							ByteArrayInputStream bain = new ByteArrayInputStream((byte[])row[1]);
+							ObjectInputStream oin = new ObjectInputStream(bain);
+							oin.readObject();
+						}
+						catch(Exception e) {
+							LOG.warn(String.format("Removing job %s as the class %s no longer exists.", row[0], row[1]));
+							clusteredScheduler.unscheduleJob(new TriggerKey((String)row[0]));
+						}
+					}
+				}
+				catch(Exception e) {
+					throw new IllegalStateException("Failed to clean up missing jobs.", e);
+				}
+				finally {
+					session.close();
+				}
+				
+				
 				try {
 					clusteredScheduler.start();
 				} catch (SchedulerException e) {
