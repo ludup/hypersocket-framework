@@ -437,6 +437,19 @@ public class MessageResourceServiceImpl extends
 	}
 	
 	@Override
+	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients, ITokenResolver tokenResolver) {
+	
+		MessageResource message = repository.getMessageById(resourceKey, realm);
+		
+		if(message==null) {
+			log.error(String.format("Invalid message id %s", resourceKey));
+			return;
+		}
+		
+		sendMessage(message, realm, tokenResolver, new ArrayList<RecipientHolder>(recipients));
+	}
+	
+	@Override
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals) {
 
 		MessageResource message = repository.getMessageById(resourceKey, realm);

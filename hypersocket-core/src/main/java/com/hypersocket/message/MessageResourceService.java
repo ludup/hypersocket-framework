@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import com.hypersocket.email.RecipientHolder;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
@@ -44,6 +45,8 @@ public interface MessageResourceService extends
 	
 	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system);
+
+	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> emails, ITokenResolver tokenResolver);
 
 	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails);
 	
