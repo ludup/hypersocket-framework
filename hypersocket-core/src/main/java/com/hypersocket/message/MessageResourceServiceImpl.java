@@ -61,7 +61,6 @@ import com.hypersocket.utils.ITokenResolver;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
-
 @Service
 public class MessageResourceServiceImpl extends
 		AbstractResourceServiceImpl<MessageResource> implements
@@ -72,37 +71,37 @@ public class MessageResourceServiceImpl extends
 	public static final String RESOURCE_BUNDLE = "MessageResourceService";
 
 	@Autowired
-	MessageResourceRepository repository;
+	private MessageResourceRepository repository;
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
 	@Autowired
-	PermissionService permissionService;
+	private PermissionService permissionService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 	
 	@Autowired
-	EmailNotificationService emailService;
+	private EmailNotificationService emailService;
 
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	@Autowired
-	FileUploadService uploadService; 
+	private FileUploadService uploadService; 
 	
 	@Autowired
-	ConfigurationService configurationService;
+	private ConfigurationService configurationService;
 	
 	@Autowired
-	FreeMarkerService templateService; 
+	private FreeMarkerService templateService; 
 	
 	@Autowired
-	EmailTrackerService trackerService; 
+	private EmailTrackerService trackerService; 
 	
-	Map<String,MessageRegistration> messageRegistrations = new HashMap<String, MessageRegistration>();
-	List<String> messageIds = new ArrayList<String>();
+	private Map<String,MessageRegistration> messageRegistrations = new HashMap<String, MessageRegistration>();
+	private List<String> messageIds = new ArrayList<String>();
 	
 	public MessageResourceServiceImpl() {
 		super("Message");
