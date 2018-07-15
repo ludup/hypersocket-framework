@@ -39,6 +39,12 @@ public class RecipientHolder {
 		this.principal = principal;
 	}
 	
+	public RecipientHolder(Principal principal) {
+		this.name = principal.getPrincipalDescription();
+		this.email = principal.getEmail();
+		this.principal = principal;
+	}
+	
 	public String getEmail() {
 		return email;
 	}
@@ -62,6 +68,10 @@ public class RecipientHolder {
 			return name;
 		}
 		return "";
+	}
+	
+	public Principal getPrincipal() {
+		return principal;
 	}
 	
 	public String getPrincipalId() {
