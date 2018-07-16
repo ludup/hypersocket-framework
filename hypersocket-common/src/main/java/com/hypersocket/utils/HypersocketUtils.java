@@ -293,6 +293,13 @@ public class HypersocketUtils {
 		}
 	}
 	
+	public static String[] urlDecodeAll(String... message) {
+		String[] a = new String[message.length];
+		for(int i = 0 ; i < a.length ; i++)
+			a[i] = urlDecode(message[i]);
+		return a;
+	}
+	
 	public static String urlDecode(String message) {
 		try {
 			return URLDecoder.decode(message, "UTF-8");
