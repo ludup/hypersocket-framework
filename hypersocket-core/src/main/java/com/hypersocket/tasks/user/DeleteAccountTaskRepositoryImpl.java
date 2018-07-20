@@ -8,7 +8,7 @@ import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 
 @Repository
 public class DeleteAccountTaskRepositoryImpl extends
-		ResourceTemplateRepositoryImpl implements DisableAccountTaskRepository {
+		ResourceTemplateRepositoryImpl implements DeleteAccountTaskRepository {
 
 	public DeleteAccountTaskRepositoryImpl() {
 		super(true);
