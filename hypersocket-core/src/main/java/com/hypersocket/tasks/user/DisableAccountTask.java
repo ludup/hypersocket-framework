@@ -26,7 +26,7 @@ public class DisableAccountTask extends AbstractAccountTask {
 	public static final String ACTION_DISABLE_ACCOUNT = "disableAccount";
 
 	@Autowired
-	private EnableAccountTaskRepository taskRepository;
+	private DisableAccountTaskRepository taskRepository;
 
 	@Autowired
 	private EventService eventService;
