@@ -75,7 +75,7 @@ public class CertificateResourceController extends ResourceController {
 	@RequestMapping(value = "certificates/providers", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public List<CertificateProviderData> getStates(HttpServletRequest request)
+	public ResourceList<CertificateProviderData> getStates(HttpServletRequest request)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		setupAnonymousContext(request.getRemoteAddr(), request.getServerName(),
@@ -88,7 +88,7 @@ public class CertificateResourceController extends ResourceController {
 		} finally {
 			clearAuthenticatedContext();
 		}
-		return results;
+		return new ResourceList<>(results);
 	}
 
 	@AuthenticationRequired
