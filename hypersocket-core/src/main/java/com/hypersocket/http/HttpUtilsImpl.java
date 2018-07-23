@@ -12,6 +12,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import javax.annotation.PostConstruct;
 import javax.naming.InvalidNameException;
@@ -74,7 +75,7 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 	RealmService realmService;
 
 	//
-	private ThreadLocal<HostnameVerifier> verifier = new ThreadLocal<>();
+	private ThreadLocal<Stack<HostnameVerifier>> verifier = new ThreadLocal<>();
 
 	@PostConstruct
 	private void postConstruct() {
@@ -85,12 +86,21 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 	}
 
 	public void setVerifier(HostnameVerifier verifier) {
-		HostnameVerifier v = this.verifier.get();
-		;
-		if (v != null && verifier != null)
-			throw new IllegalStateException(
-					"Cannot set a verifier until previous caller has relinquised by setting null. This method is not reentrant.");
-		this.verifier.set(verifier);
+		Stack<HostnameVerifier> v = this.verifier.get();
+		if (verifier == null && (v == null || v.isEmpty()))
+			throw new IllegalStateException("Cannot unset a verifier if none has been set.");
+
+		if (verifier == null) {
+			v.pop();
+			if (v.isEmpty())
+				this.verifier.remove();
+		} else {
+			if (v == null) {
+				v = new Stack<>();
+				this.verifier.set(v);
+			}
+			v.push(verifier);
+		}
 	}
 
 	@Override
@@ -100,26 +110,31 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 
 	protected CloseableHttpClient createHttpClient(boolean allowSelfSigned, int requestTimeout) throws IOException {
 
-		if(log.isDebugEnabled()) {
+		if (log.isDebugEnabled()) {
 			log.debug("Creating a new client");
 		}
-		
+
 		CloseableHttpClient httpclient = null;
 
 		try {
-			HostnameVerifier cb = verifier.get();
-			if (cb == null)
+			Stack<HostnameVerifier> cbl = verifier.get();
+			HostnameVerifier cb;
+			if (cbl == null || cbl.isEmpty())
 				cb = this;
+			else
+				cb = cbl.get(cbl.size() - 1);
 
 			SSLContextBuilder builder = new SSLContextBuilder();
 			builder.loadTrustMaterial(null, this);
-			Registry<ConnectionSocketFactory> reg = RegistryBuilder.<ConnectionSocketFactory> create()
+			Registry<ConnectionSocketFactory> reg = RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", new ProxiedSocketFactory())
 					.register("https", new ProxiedSSLSocketFactory(builder.build(), cb)).build();
 
 			PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(reg);
-			RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(requestTimeout).setSocketTimeout(requestTimeout).setConnectTimeout(requestTimeout).build();
-			httpclient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(requestConfig).setDefaultCookieStore(cookieStore).build();
+			RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(requestTimeout)
+					.setSocketTimeout(requestTimeout).setConnectTimeout(requestTimeout).build();
+			httpclient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(requestConfig)
+					.setDefaultCookieStore(cookieStore).build();
 
 			return httpclient;
 		} catch (Exception e) {
@@ -131,8 +146,10 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 	public String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned) throws IOException {
 		return doHttpPost(url, parameters, allowSelfSigned, null);
 	}
+
 	@Override
-	public String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned, Map<String,String> additionalHeaders) throws IOException {
+	public String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned,
+			Map<String, String> additionalHeaders) throws IOException {
 
 		CloseableHttpClient client = createHttpClient(allowSelfSigned);
 
@@ -144,9 +161,9 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 			for (String name : parameters.keySet()) {
 				nameValuePairs.add(new BasicNameValuePair(name, parameters.get(name)));
 			}
-			
-			if(additionalHeaders!=null) {
-				for(Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
+
+			if (additionalHeaders != null) {
+				for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
 					request.addHeader(entry.getKey(), entry.getValue());
 				}
 			}
@@ -185,7 +202,7 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 		CloseableHttpClient client = createHttpClient(allowSelfSigned);
 
 		HttpGet request = new HttpGet(uri);
-		if(headers!=null) {
+		if (headers != null) {
 			for (String key : headers.keySet()) {
 				request.setHeader(key, headers.get(key));
 			}
@@ -206,19 +223,19 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 	@Override
 	public boolean verify(String hostname, SSLSession session) {
 		/*
-		 * This default implementation uses the system realm to store the known
-		 * hosts for anything that isn't a realm connection. When realms are
-		 * involved {@link #setVerifier} should be used.
+		 * This default implementation uses the system realm to store the known hosts
+		 * for anything that isn't a realm connection. When realms are involved {@link
+		 * #setVerifier} should be used.
 		 * 
 		 * Match against all known hosts we have connected and accepted before.
 		 * 
-		 * LDP - I changed this to a system property because its now possible to
-		 * change the realm provider of the system realm and this broke any
-		 * external HTTPS connection as it was trying to load, for example, SSH
-		 * known hosts after changing system realm to a SSH realm.
+		 * LDP - I changed this to a system property because its now possible to change
+		 * the realm provider of the system realm and this broke any external HTTPS
+		 * connection as it was trying to load, for example, SSH known hosts after
+		 * changing system realm to a SSH realm.
 		 * 
-		 * The problem is I don't see where these "other" hosts are getting set?
-		 * only the realm subsystem appears to use this.
+		 * The problem is I don't see where these "other" hosts are getting set? only
+		 * the realm subsystem appears to use this.
 		 */
 		X509KnownHost thisX509KnownHost = new X509KnownHost(hostname, session);
 		boolean found = false;
@@ -231,47 +248,51 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 				if (thisX509KnownHost.matches(x509KnownHost)) {
 					found = true;
 					break;
-				}
-				else if (thisX509KnownHost.hostMatches(x509KnownHost)) {
+				} else if (thisX509KnownHost.hostMatches(x509KnownHost)) {
 					hostMatches = true;
 				}
 			}
 		}
 
 		/*
-		 * We can't return false here, because we'll lose the SSLSession which
-		 * we need for the signature confirmation.
+		 * We can't return false here, because we'll lose the SSLSession which we need
+		 * for the signature confirmation.
 		 */
-		if(hostMatches)
-			throw new CertificateVerificationException(CertificateVerificationException.Type.SIGNATURE_CHANGED, hostname, session);
-		
+		if (hostMatches)
+			throw new CertificateVerificationException(CertificateVerificationException.Type.SIGNATURE_CHANGED,
+					hostname, session);
+
 		if (!found) {
-			
-			// If not in strict mode, just let this pass, otherwise just make sure the hostname we are connecting to matches the hostname of the cert
-			if(systemConfigurationService.getBooleanValue("ssl.strict")) {
+
+			// If not in strict mode, just let this pass, otherwise just make sure the
+			// hostname we are connecting to matches the hostname of the cert
+			if (systemConfigurationService.getBooleanValue("ssl.strict")) {
 				String subject = thisX509KnownHost.getSubject();
 				try {
 					LdapName name = new LdapName(subject);
 					boolean foundCN = false;
-					for(Rdn rdn : name.getRdns()) {
-						if(rdn.getType().equalsIgnoreCase("cn")) {
-							if(((String)rdn.getValue()).equals(hostname)) {
-								log.error(String.format("Certificate hostname %s does not match %s.", rdn.getValue(), hostname));
-								throw new CertificateVerificationException(CertificateVerificationException.Type.SIGNATURE_INVALID, hostname, session);
-							}
-							else {
+					for (Rdn rdn : name.getRdns()) {
+						if (rdn.getType().equalsIgnoreCase("cn")) {
+							if (((String) rdn.getValue()).equals(hostname)) {
+								log.error(String.format("Certificate hostname %s does not match %s.", rdn.getValue(),
+										hostname));
+								throw new CertificateVerificationException(
+										CertificateVerificationException.Type.SIGNATURE_INVALID, hostname, session);
+							} else {
 								foundCN = true;
 								break;
 							}
 						}
 					}
-					if(!foundCN) {
+					if (!foundCN) {
 						log.error(String.format("Certificate subject %s contains no Common Name.", subject, hostname));
-						throw new CertificateVerificationException(CertificateVerificationException.Type.SIGNATURE_INVALID, hostname, session);						
+						throw new CertificateVerificationException(
+								CertificateVerificationException.Type.SIGNATURE_INVALID, hostname, session);
 					}
 				} catch (InvalidNameException e) {
 					log.error(String.format("Certificate subjecct %s is invalid.", subject, hostname));
-					throw new CertificateVerificationException(CertificateVerificationException.Type.SIGNATURE_INVALID, hostname, session);
+					throw new CertificateVerificationException(CertificateVerificationException.Type.SIGNATURE_INVALID,
+							hostname, session);
 				}
 			}
 		}
