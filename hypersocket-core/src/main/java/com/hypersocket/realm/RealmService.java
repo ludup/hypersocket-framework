@@ -188,7 +188,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean isRegistered(RealmProvider provider);
 
-	boolean verifyPrincipal(Principal principal);
+	boolean verifyPrincipal(String principal, Realm realm);
 
 	String getPrincipalEmail(Principal currentPrincipal);
 

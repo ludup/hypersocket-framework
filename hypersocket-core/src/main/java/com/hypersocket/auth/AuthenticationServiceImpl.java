@@ -742,24 +742,24 @@ public class AuthenticationServiceImpl extends
 
 	private boolean checkSuspensions(AuthenticationState state, Authenticator authenticator) {
 		
-		Principal principal = state.getPrincipal();
-		if(principal==null) {
-			principal = state.getLastPrincipal();
-		}
-		if(principal!=null && !(principal instanceof FakePrincipal)) {
-			if (!realmService.verifyPrincipal(principal)) {
-				state.clean();
-				state.setLastErrorMsg("error.accountSuspended");
-				state.setLastErrorIsResourceKey(true);
-				
-				eventService.publishEvent(new AuthenticationAttemptEvent(
-						this, state, authenticator,
-						"hint.accountSuspended"));
-				
-				
-				return false;
-			} 
-		}
+//		Principal principal = state.getPrincipal();
+//		if(principal==null) {
+//			principal = state.getLastPrincipal();
+//		}
+//		if(principal!=null && !(principal instanceof FakePrincipal)) {
+		if (!realmService.verifyPrincipal(state.getLastPrincipalName(), state.getRealm())) {
+			state.clean();
+			state.setLastErrorMsg("error.accountSuspended");
+			state.setLastErrorIsResourceKey(true);
+			
+			eventService.publishEvent(new AuthenticationAttemptEvent(
+					this, state, authenticator,
+					"hint.accountSuspended"));
+			
+			
+			return false;
+		} 
+//		}
 		return true;
 	}
 	
