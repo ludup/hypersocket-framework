@@ -255,14 +255,14 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 	protected void checkExpiry(LocalUser user) throws ResourceNotFoundException, ResourceException {
 
-		PrincipalSuspension suspension = suspensionService.getSuspension(user, PrincipalSuspensionType.EXPIRY);
+		PrincipalSuspension suspension = suspensionService.getSuspension(user.getPrincipalName(), user.getRealm(), PrincipalSuspensionType.EXPIRY);
 
 		if(suspension!=null) {
 			suspensionService.deletePrincipalSuspension(user, PrincipalSuspensionType.EXPIRY);
 		} 
 
 		if(user.getExpires()!=null) {
-			suspensionService.createPrincipalSuspension(user, user.getExpires(), 0L, PrincipalSuspensionType.EXPIRY);
+			suspensionService.createPrincipalSuspension(user, user.getPrincipalName(), user.getRealm(), user.getExpires(), 0L, PrincipalSuspensionType.EXPIRY);
 		}
 	}
 	

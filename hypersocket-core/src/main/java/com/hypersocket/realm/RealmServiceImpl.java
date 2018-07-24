@@ -758,9 +758,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean verifyPrincipal(final Principal principal) {
+	public boolean verifyPrincipal(String principalName, Realm realm) {
 		
-		Collection<PrincipalSuspension> suspensions = suspensionRepository.getSuspensions(principal);
+		Collection<PrincipalSuspension> suspensions = suspensionRepository.getSuspensions(principalName, realm);
 		
 		for(PrincipalSuspension s : suspensions) {
 			if(s.isActive()) {

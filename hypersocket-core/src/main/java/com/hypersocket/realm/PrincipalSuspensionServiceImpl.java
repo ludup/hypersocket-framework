@@ -31,12 +31,10 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	SessionService sessionService; 
 	
 	@Override
-	public PrincipalSuspension createPrincipalSuspension(Principal principal,
+	public PrincipalSuspension createPrincipalSuspension(Principal principal, String name, Realm realm,
 			Date startDate, Long duration, PrincipalSuspensionType type) throws ResourceException {
 
-		String name = principal.getPrincipalName();
-
-		Collection<PrincipalSuspension> principalSuspensions = repository.getSuspensions(principal, type);
+		Collection<PrincipalSuspension> principalSuspensions = repository.getSuspensions(name, realm, type);
 		
 		PrincipalSuspension principalSuspension = null;
 		
@@ -44,7 +42,7 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 			principalSuspension = new PrincipalSuspension();
 			principalSuspension.setPrincipal(principal);
 			principalSuspension.setName(name);
-			principalSuspension.setRealm(principal.getRealm());
+			principalSuspension.setRealm(realm);
 			
 		} else {
 			principalSuspension = principalSuspensions.iterator().next();
@@ -54,7 +52,7 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 		principalSuspension.setDuration(duration);
 		principalSuspension.setSuspensionType(type);
 	
-		String scheduleId = principal.getId().toString();
+		String scheduleId = name + "/" + realm.getId();
 		
 		try {
 			if (schedulerService.jobExists(scheduleId)) {
@@ -82,14 +80,14 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 						+ " in " + duration + " minutes");
 			}
 
-			scheduleResume(principal, startDate, duration);
+			scheduleResume(name, realm, startDate, duration);
 			
 		}
 
 		return principalSuspension;
 	}
 
-	private void scheduleResume(Principal principal, Date startDate, long duration) throws ResourceException {
+	private void scheduleResume(String username, Realm realm, Date startDate, long duration) throws ResourceException {
 		
 		Calendar c = Calendar.getInstance();
 		c.setTime(startDate);
@@ -102,11 +100,10 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 			return;
 		}
 		PermissionsAwareJobData data = new PermissionsAwareJobData(
-				principal.getRealm(), "resumeUserJob");
-		data.put("name", principal.getPrincipalName());
+				realm, "resumeUserJob");
+		data.put("name", username);
 
-		String scheduleId = principal.getId().toString();
-		
+		String scheduleId = username + "/" + realm.getId();
 		
 		try {
 			schedulerService.scheduleAt(ResumeUserJob.class, scheduleId, data, c.getTime());
@@ -120,7 +117,7 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	@Override
 	public PrincipalSuspension deletePrincipalSuspension(Principal principal, PrincipalSuspensionType type) {
 		Collection<PrincipalSuspension> suspensions = repository
-				.getSuspensions(principal, type);
+				.getSuspensions(principal.getPrincipalName(), principal.getRealm(), type);
 		if(suspensions.isEmpty()) {
 			return null;
 		}
@@ -143,8 +140,8 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	}
 
 	@Override
-	public PrincipalSuspension getSuspension(Principal principal, PrincipalSuspensionType type) {
-		Collection<PrincipalSuspension> suspensions = repository.getSuspensions(principal, type);
+	public PrincipalSuspension getSuspension(String username, Realm realm, PrincipalSuspensionType type) {
+		Collection<PrincipalSuspension> suspensions = repository.getSuspensions(username, realm, type);
 		if(suspensions.isEmpty()) {
 			return null;
 		}
@@ -152,8 +149,8 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	}
 	
 	@Override
-	public Collection<PrincipalSuspension> getSuspensions(Principal principal) {
-		Collection<PrincipalSuspension> suspensions = repository.getSuspensions(principal);
+	public Collection<PrincipalSuspension> getSuspensions(String username, Realm realm) {
+		Collection<PrincipalSuspension> suspensions = repository.getSuspensions(username, realm);
 		if(suspensions.isEmpty()) {
 			return null;
 		}
