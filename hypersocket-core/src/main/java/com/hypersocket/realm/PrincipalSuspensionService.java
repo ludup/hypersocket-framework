@@ -7,15 +7,15 @@ import com.hypersocket.resource.ResourceException;
 
 public interface PrincipalSuspensionService {
 
-	PrincipalSuspension createPrincipalSuspension(Principal principal,
+	PrincipalSuspension createPrincipalSuspension(Principal principal, String username, Realm realm,
 			Date startDate, Long duration, PrincipalSuspensionType type) throws ResourceException;
 
 	PrincipalSuspension deletePrincipalSuspension(Principal principal, PrincipalSuspensionType type);
 
 	public void notifyResume(String scheduleId, String name, boolean onSchedule);
 
-	PrincipalSuspension getSuspension(Principal principal, PrincipalSuspensionType type);
+	PrincipalSuspension getSuspension(String username, Realm realm, PrincipalSuspensionType type);
 
-	Collection<PrincipalSuspension> getSuspensions(Principal principal);
+	Collection<PrincipalSuspension> getSuspensions(String username, Realm realm);
 
 }

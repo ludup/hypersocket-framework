@@ -13,9 +13,9 @@ public interface PrincipalSuspensionRepository extends
 
 	void saveSuspension(PrincipalSuspension principalSuspension);
 
-	Collection<PrincipalSuspension> getSuspensions(Principal principal, PrincipalSuspensionType type);
+	Collection<PrincipalSuspension> getSuspensions(String username, Realm realm, PrincipalSuspensionType type);
 	
-	Collection<PrincipalSuspension> getSuspensions(Principal principal);
+	Collection<PrincipalSuspension> getSuspensions(String username, Realm realm);
 
 	void deleteRealm(Realm realm);
 

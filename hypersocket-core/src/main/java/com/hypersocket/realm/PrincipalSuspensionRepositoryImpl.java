@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
+import com.hypersocket.resource.RealmCriteria;
 
 @Repository
 public class PrincipalSuspensionRepositoryImpl extends
@@ -24,8 +25,8 @@ public class PrincipalSuspensionRepositoryImpl extends
 
 	@Override
 	@Transactional(readOnly = true)
-	public Collection<PrincipalSuspension> getSuspensions(Principal principal, final PrincipalSuspensionType type) {
-		return list("principal", principal, PrincipalSuspension.class, new CriteriaConfiguration() {
+	public Collection<PrincipalSuspension> getSuspensions(String username, Realm realm, final PrincipalSuspensionType type) {
+		return list("name", username, PrincipalSuspension.class, new RealmCriteria(realm), new CriteriaConfiguration() {
 			
 			@Override
 			public void configure(Criteria criteria) {
@@ -41,8 +42,8 @@ public class PrincipalSuspensionRepositoryImpl extends
 	
 	@Override
 	@Transactional(readOnly = true)
-	public Collection<PrincipalSuspension> getSuspensions(Principal principal) {
-		return list("principal", principal, PrincipalSuspension.class);
+	public Collection<PrincipalSuspension> getSuspensions(String username, Realm realm) {
+		return list("name", username, PrincipalSuspension.class, new RealmCriteria(realm));
 	}
 	
 	@Override

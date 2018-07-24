@@ -1004,7 +1004,7 @@ public class CurrentRealmController extends ResourceController {
 		try {
 
 			PrincipalSuspension principalSuspension = suspensionService
-					.createPrincipalSuspension(principal,
+					.createPrincipalSuspension(principal, principal.getPrincipalName(), principal.getRealm(),
 							principalSuspensionUpdate.getStartDate(),
 							principalSuspensionUpdate.getDuration(),
 							PrincipalSuspensionType.MANUAL);

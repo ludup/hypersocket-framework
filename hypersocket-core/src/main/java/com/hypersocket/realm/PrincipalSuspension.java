@@ -26,7 +26,7 @@ public class PrincipalSuspension extends Resource {
 	@OneToOne
 	@JoinColumn(name = "principal_id")
 	protected Principal principal;
-
+	
 	@Column(name = "start_time")
 	Date startTime;
 
