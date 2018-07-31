@@ -337,7 +337,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			} else if (t.getCause() instanceof ResourceException) {
 				throw (ResourceException) t.getCause();
 			} else {
-				throw new ResourceChangeException(RESOURCE_BUNDLE_DEFAULT,
+				throw new ResourceChangeException(t, RESOURCE_BUNDLE_DEFAULT,
 						"generic.update.error", t.getMessage());
 			}
 		}
