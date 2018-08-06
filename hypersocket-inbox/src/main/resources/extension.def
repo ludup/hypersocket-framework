@@ -1,9 +1,0 @@
-extension.id=hypersocket-inbox
-extension.depends=server-core
-extension.image=hypersocket.png
-extension.license=Commercial
-extension.licenseUrl=/webapp/licenses/EULA.txt
-extension.vendor=Hypersocket Limited
-extension.url=http://www.hypersocket.com
-extension.weight=10000
-extension.system=false

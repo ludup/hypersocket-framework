@@ -34,8 +34,6 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	public static final String HELPZONE = "helpzone";
 	public static final String USERDASH = "userdash";
 	
-	static final String MENU_DASHBOARD_HELPZONE = "helpzone"; 
-	
 	private Collection<Link> cachedLinks = null;
 	private Collection<Link> cachedVideos = null;
 	private Collection<Link> cachedDocumentation = null;
@@ -118,7 +116,7 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 		Collections.sort(widgetList.get(resourceKey));
 	}
 
-	public List<OverviewWidget> getWidgets(String resourceKey) throws AccessDeniedException {
+	public List<OverviewWidget> getWidgets(String resourceKey) {
 
 		List<OverviewWidget> visibleWidgets = new ArrayList<OverviewWidget>();
 		if(widgetList!=null) {
@@ -273,5 +271,10 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 		}
 
 		return cachedFirstSteps;
+	}
+
+	@Override
+	public boolean hasActiveWidgets(String resourceKey) {
+		return !getWidgets(resourceKey).isEmpty();
 	}
 }

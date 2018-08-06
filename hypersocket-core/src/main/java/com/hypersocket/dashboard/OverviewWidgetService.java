@@ -19,4 +19,6 @@ public interface OverviewWidgetService {
 	public Collection<Link> getDocumentation() throws ResourceException;
 
 	Collection<Link> getFirstSteps() throws ResourceException;
+
+	public boolean hasActiveWidgets(String resourceKey);
 }
