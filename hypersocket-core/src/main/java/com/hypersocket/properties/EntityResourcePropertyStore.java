@@ -176,9 +176,39 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 				} else if(Resource.class.isAssignableFrom(type)) {
 					String inputType = template.getAttributes().get("inputType");
 					if(inputType!=null && inputType.equals("multipleSearchInput")) {
-						return ResourceUtils.implodeNamePairValues((Collection<? extends Resource>) m.invoke(resource));
+						return ResourceUtils.implodeNamePairValues(new NameValueImploder<Resource>() {
+
+							@Override
+							public String getId(Resource t) {
+								if(template.getAttributes().containsKey("valueAttr")) {
+									String nameMethod = "get" + StringUtils.capitalize(template.getAttributes().get("valueAttr"));
+									try {
+										Method method = t.getClass().getMethod(nameMethod, (Class<?>[])null);
+										return method.invoke(t).toString();
+									} catch (NoSuchMethodException | SecurityException | IllegalAccessException
+											| IllegalArgumentException | InvocationTargetException e) {
+									}
+								} 
+								return t.getId().toString();
+								
+							}
+
+							@Override
+							public String getName(Resource t) {
+								if(template.getAttributes().containsKey("nameAttr")) {
+									String nameMethod = "get" + StringUtils.capitalize(template.getAttributes().get("nameAttr"));
+									try {
+										Method method = t.getClass().getMethod(nameMethod, (Class<?>[])null);
+										return method.invoke(t).toString();
+									} catch (NoSuchMethodException | SecurityException | IllegalAccessException
+											| IllegalArgumentException | InvocationTargetException e) {
+									}
+								} 
+								return t.getName();
+							}
+						}, (Collection<Resource>) m.invoke(resource));
 					}
-					return ResourceUtils.implodeResourceValues((Collection<? extends Resource>) m.invoke(resource));
+					return ResourceUtils.implodeResourceValues((Collection<Resource>) m.invoke(resource));
 				} else {
 					throw new IllegalStateException("Unhandled Collection type for " + template.getResourceKey() + "! Type " + m.getReturnType() + " is not an enum, nor is it assignable as a Resource.");
 				}
