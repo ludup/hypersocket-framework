@@ -36,7 +36,6 @@ import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
-import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -222,18 +221,16 @@ public class FileUploadServiceImpl extends
 	public void deleteFile(FileUpload fileUpload)
 			throws ResourceException, AccessDeniedException {
 
+		
 		try {
-			File file = new File(System.getProperty("hypersocket.uploadPath", DEFAULT_UPLOAD_PATH)
-					+ fileUpload.getRealm().getId()
-					+ "/" 
-					+ fileUpload.getName());
-			if (file.delete()) {
-				deleteResource(fileUpload);
-			} else {
-				throw new ResourceChangeException(RESOURCE_BUNDLE,
-						"error.noValidatorPresent");
-			}
-		} catch (Throwable e) {
+			defaultStore.delete(String.format("%d/%s", 
+					fileUpload.getRealm().getId(), fileUpload.getName()));
+			
+			deleteResource(fileUpload);
+		} catch (IOException  e) { 
+			fireResourceDeletionEvent(fileUpload, e);
+			throw new ResourceException(e);
+		} catch(ResourceException | AccessDeniedException e) {
 			fireResourceDeletionEvent(fileUpload, e);
 			throw e;
 		}
@@ -384,6 +381,16 @@ public class FileUploadServiceImpl extends
 					+ path);
 			f.getParentFile().mkdirs();
 			return new FileOutputStream(f);
+		}
+
+		@Override
+		public void delete(String path) throws IOException {
+			
+			File f = new File(
+					System.getProperty("hypersocket.uploadPath", DEFAULT_UPLOAD_PATH)
+					+ path);
+			
+			f.delete();
 		}
 	}
 

@@ -11,4 +11,6 @@ public interface FileStore {
 	OutputStream getOutputStream(String path) throws IOException;
 
 	long upload(String path, InputStream in) throws IOException;
+
+	void delete(String path) throws IOException;
 }

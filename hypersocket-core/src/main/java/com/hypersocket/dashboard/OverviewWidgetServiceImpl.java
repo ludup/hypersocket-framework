@@ -19,7 +19,6 @@ import com.hypersocket.HypersocketVersion;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.http.HttpUtilsImpl;
 import com.hypersocket.i18n.I18NService;
-import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;

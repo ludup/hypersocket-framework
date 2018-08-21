@@ -37,6 +37,10 @@ public class ResourceException extends Exception {
 		this.args = args;
 	}
 	
+	public ResourceException(Throwable e) {
+		super(e.getMessage(), e);
+	}
+
 	public String getBundle() {
 		return bundle;
 	}

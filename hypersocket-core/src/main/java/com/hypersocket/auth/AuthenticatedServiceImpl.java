@@ -316,6 +316,9 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	}
 	
 	protected void assertRole(Role... roles) throws AccessDeniedException {
+		if(hasAdministrativePermission(getCurrentPrincipal())) {
+			return;
+		}
 		Set<Role> principalRoles = getCurrentRoles();
 		for(Role role : roles) {
 			if(principalRoles.contains(role)) {
