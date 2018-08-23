@@ -11,6 +11,8 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +32,8 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	public static final String RESOURCE_BUNDLE = "OverviewWidgetService";
 	private Map<String,List<OverviewWidget>> widgetList = new HashMap<String,List<OverviewWidget>>();
 
+	static Logger log = LoggerFactory.getLogger(OverviewWidgetServiceImpl.class);
+	
 	public static final String HELPZONE = "helpzone";
 	public static final String USERDASH = "userdash";
 	
@@ -60,51 +64,71 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
 		
-		this.registerWidget(HELPZONE, new OverviewWidget(4, "overview.usefulLinks.title",
-				"usefulLinks", false) {
-			public boolean hasContent() {
-				try {
-					return getLinks().size() > 0;
-				} catch (ResourceException e) {
-					return false;
-				}
-			}
-		});
+//		this.registerWidget(HELPZONE, new OverviewWidget(4, "overview.usefulLinks.title",
+//				"usefulLinks", false) {
+//			public boolean hasContent() {
+//				try {
+//					return getLinks().size() > 0;
+//				} catch (ResourceException e) {
+//					return false;
+//				}
+//			}
+//		});
+//		
+//		this.registerWidget(HELPZONE, new OverviewWidget(3, "overview.featureReel.title",
+//				"featureReel", true) {
+//			public boolean hasContent() {
+//				try {
+//					return getVideos().size() > 0;
+//				} catch (ResourceException e) {
+//					return false;
+//				}
+//			}
+//		});
+//		
+//		this.registerWidget(HELPZONE, new OverviewWidget(3, "overview.quickSetup.title",
+//				"quickSetup", false) {
+//			public boolean hasContent() {
+//				try {
+//					return getDocumentation().size() > 0;
+//				} catch (ResourceException e) {
+//					return false;
+//				}
+//			}
+//		});
+//		
+//		this.registerWidget(HELPZONE, new OverviewWidget(0, "overview.firstSteps.title",
+//				"firstSteps", true) {
+//			public boolean hasContent() {
+//				try {
+//					return getFirstSteps().size() > 0;
+//				} catch (ResourceException e) {
+//					return false;
+//				}
+//			}
+//		});
 		
-		this.registerWidget(HELPZONE, new OverviewWidget(3, "overview.featureReel.title",
-				"featureReel", true) {
-			public boolean hasContent() {
-				try {
-					return getVideos().size() > 0;
-				} catch (ResourceException e) {
-					return false;
-				}
-			}
-		});
-		
-		this.registerWidget(HELPZONE, new OverviewWidget(3, "overview.quickSetup.title",
-				"quickSetup", false) {
-			public boolean hasContent() {
-				try {
-					return getDocumentation().size() > 0;
-				} catch (ResourceException e) {
-					return false;
-				}
-			}
-		});
-		
-		this.registerWidget(HELPZONE, new OverviewWidget(0, "overview.firstSteps.title",
-				"firstSteps", true) {
-			public boolean hasContent() {
-				try {
-					return getFirstSteps().size() > 0;
-				} catch (ResourceException e) {
-					return false;
-				}
-			}
-		});
-		
-		
+//		Thread t = new Thread() {
+//			public void run() {
+//				try {
+//					getDocumentation();
+//				} catch (ResourceException e) {
+//				}
+//				try {
+//					getVideos();
+//				} catch (ResourceException e) {
+//				}
+//				try {
+//					getFirstSteps();
+//				} catch (ResourceException e) {
+//				}
+//				try {
+//					getLinks();
+//				} catch (ResourceException e) {
+//				}
+//			}
+//		};
+//		t.start();
 	}
 
 	public void registerWidget(String resourceKey, OverviewWidget widget) {
@@ -137,11 +161,13 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 		if (System.currentTimeMillis() - lastLinkUpdate > (24 * 60 * 60 * 1000)) {
 
+			log.info("getLinks in");
+			
 			ObjectMapper mapper = new ObjectMapper();
 
+			List<Link> results = new ArrayList<Link>();
+			
 			try {
-
-				List<Link> results = new ArrayList<Link>();
 
 				// Get global documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
@@ -153,12 +179,15 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/links-"
 								+ HypersocketVersion.getProductId(), true), Link[].class)));
 
-				cachedLinks = sort(results);
-				lastLinkUpdate = System.currentTimeMillis();
 			} catch (Throwable e) {
 				throw new ResourceException(RESOURCE_BUNDLE,
 						"error.readingArticleList", e.getMessage());
+			} finally {			
+				cachedLinks = sort(results);
+				lastLinkUpdate = System.currentTimeMillis();
 			}
+			
+			log.info("getLinks out");
 		}
 
 		return cachedLinks;
@@ -169,11 +198,13 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 		if (System.currentTimeMillis() - lastVideoUpdate > (24 * 60 * 60 * 1000)) {
 
+			log.info("getVideos in");
+			
 			ObjectMapper mapper = new ObjectMapper();
 
+			List<Link> results = new ArrayList<Link>();
+			
 			try {
-
-				List<Link> results = new ArrayList<Link>();
 
 				// Get global documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
@@ -185,12 +216,16 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/videos-"
 								+ HypersocketVersion.getProductId(), true), Link[].class)));
 
-				cachedVideos = sort(results);
-				lastVideoUpdate = System.currentTimeMillis();
+
 			} catch (Throwable e) {
 				throw new ResourceException(RESOURCE_BUNDLE,
 						"error.readingArticleList", e.getMessage());
+			} finally {	
+				cachedVideos = sort(results);
+				lastVideoUpdate = System.currentTimeMillis();
 			}
+			
+			log.info("getVideos out");
 		}
 
 		return cachedVideos;
@@ -213,11 +248,12 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 		if (System.currentTimeMillis() - lastDocumentationUpdate > (24 * 60 * 60 * 1000)) {
 
+			log.info("getDocumentation in");
 			ObjectMapper mapper = new ObjectMapper();
 
+			List<Link> results = new ArrayList<Link>();
+			
 			try {
-
-				List<Link> results = new ArrayList<Link>();
 
 				// Get global documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
@@ -229,12 +265,16 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/docs-"
 								+ HypersocketVersion.getProductId(), true), Link[].class)));
 
-				cachedDocumentation = sort(results);
-				lastDocumentationUpdate = System.currentTimeMillis();
+				
 			} catch (Throwable e) {
 				throw new ResourceException(RESOURCE_BUNDLE,
 						"error.readingDocumentationList", e.getMessage());
+			} finally {
+				cachedDocumentation = sort(results);
+				lastDocumentationUpdate = System.currentTimeMillis();
 			}
+			
+			log.info("getDocumentation ouot");
 		}
 
 		return cachedDocumentation;
@@ -245,11 +285,14 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 		if (System.currentTimeMillis() - lastFirstStepsUpdate > (24 * 60 * 60 * 1000)) {
 
+			log.info("getFirstSteps in");
+			
 			ObjectMapper mapper = new ObjectMapper();
 
+			List<Link> results = new ArrayList<Link>();
+			
 			try {
 
-				List<Link> results = new ArrayList<Link>();
 
 				// Get global documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
@@ -261,12 +304,15 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/steps-"
 								+ HypersocketVersion.getProductId(), true), Link[].class)));
 
-				cachedFirstSteps = sort(results);
-				lastFirstStepsUpdate = System.currentTimeMillis();
 			} catch (Throwable e) {
 				throw new ResourceException(RESOURCE_BUNDLE,
 						"error.readingDocumentationList", e.getMessage());
+			} finally {
+				cachedFirstSteps = sort(results);
+				lastFirstStepsUpdate = System.currentTimeMillis();
 			}
+			
+			log.info("getFirstSteps out");
 		}
 
 		return cachedFirstSteps;
@@ -274,6 +320,6 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public boolean hasActiveWidgets(String resourceKey) {
-		return !getWidgets(resourceKey).isEmpty();
+		return false; //!getWidgets(resourceKey).isEmpty();
 	}
 }
