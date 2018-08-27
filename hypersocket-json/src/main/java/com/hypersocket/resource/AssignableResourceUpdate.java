@@ -11,6 +11,7 @@ public class AssignableResourceUpdate {
 	Long[] roles;
 	PropertyItem[] properties;
 	String logo;
+	boolean personal;
 	
 	public AssignableResourceUpdate() {
 		
@@ -55,5 +56,14 @@ public class AssignableResourceUpdate {
 	public void setProperties(PropertyItem[] properties) {
 		this.properties = properties;
 	}
+
+	public boolean isPersonal() {
+		return personal;
+	}
+
+	public void setPersonal(boolean personal) {
+		this.personal = personal;
+	}
+	
 	
 }

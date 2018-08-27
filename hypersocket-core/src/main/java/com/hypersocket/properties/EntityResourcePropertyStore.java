@@ -25,11 +25,11 @@ import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.resource.FindableResourceRepository;
 import com.hypersocket.resource.RealmResource;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.utils.HypersocketUtils;
 
 public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
@@ -293,7 +293,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 				if(clz.isEnum()){
 					try {
 						Enum<?>[] enumConstants = (Enum<?>[]) resource.getClass().getDeclaredField(template.getResourceKey()).getType().getEnumConstants();
-						if(NumberUtils.isNumber(value)){//ordinal
+						if(NumberUtils.isCreatable(value)){//ordinal
 							Enum<?> enumConstant = enumConstants[Integer.parseInt(value)];
 							m.invoke(resource, enumConstant);
 							return;  
@@ -404,7 +404,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	@SuppressWarnings("unchecked")
 	private <T> T getEnum(String value, Class<T> enumType) {
 		Enum<?>[] enumConstants = (Enum<?>[]) enumType.getEnumConstants();
-		if(NumberUtils.isNumber(value)){//ordinal
+		if(NumberUtils.isCreatable(value)){//ordinal
 			return (T) enumConstants[Integer.parseInt(value)];
 		}else{
 			for (Enum<?> enumConstant : enumConstants) {

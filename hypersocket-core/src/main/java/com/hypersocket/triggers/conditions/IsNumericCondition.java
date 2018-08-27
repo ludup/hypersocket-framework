@@ -21,7 +21,7 @@ public class IsNumericCondition implements Condition {
 			return false;
 		}
 
-		return NumberUtils.isNumber(value);
+		return NumberUtils.isCreatable(value);
 	}
 
 	@Override

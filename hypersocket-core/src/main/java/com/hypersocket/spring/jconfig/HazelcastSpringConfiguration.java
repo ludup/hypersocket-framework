@@ -68,7 +68,7 @@ public class HazelcastSpringConfiguration {
         NetworkConfig networkConfig = new NetworkConfig();
         
         String port = hazelcastProperties.getProperty("ha.hazelcast.port");
-    	if(StringUtils.isNotEmpty(port) && NumberUtils.isNumber(port)){
+    	if(StringUtils.isNotEmpty(port) && NumberUtils.isCreatable(port)){
     		networkConfig.setPort(Integer.parseInt(port));
     	}
     	

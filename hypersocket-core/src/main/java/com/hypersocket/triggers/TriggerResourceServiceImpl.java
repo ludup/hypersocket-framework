@@ -353,7 +353,7 @@ public class TriggerResourceServiceImpl extends
 				resource, allConditions, anyConditions, parent, attachment,
 				allRealms);
 
-		updateResource(resource, properties, ArrayUtils.add(ops, 0,
+		updateResource(resource, properties, ArrayUtils.insert(0, ops, 
 				new TransactionAdapter<TriggerResource>() {
 
 					@Override
@@ -398,7 +398,7 @@ public class TriggerResourceServiceImpl extends
 		populateTrigger(name, event, result, task, realm, resource,
 				allConditions, anyConditions, parent, attachment, allRealms);
 
-		createResource(resource, properties, ArrayUtils.add(ops, 0,
+		createResource(resource, properties, ArrayUtils.insert(0, ops,
 				new TransactionAdapter<TriggerResource>() {
 
 					@Override
