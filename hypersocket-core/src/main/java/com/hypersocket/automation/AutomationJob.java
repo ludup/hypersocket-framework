@@ -122,7 +122,7 @@ public class AutomationJob extends AbstractTriggerJob {
 		
 		final SystemEvent lastEvent = sourceEvents.get(sourceEvents.size()-1);
 		
-		TaskResult outputEvent;
+		TaskResult outputEvent = null;
 		if (provider instanceof DynamicResultsTaskProvider) {
 			DynamicResultsTaskProvider dProvider = (DynamicResultsTaskProvider) provider;
 			outputEvent = dProvider.execute(new DynamicTaskExecutionContext() {
@@ -162,7 +162,7 @@ public class AutomationJob extends AbstractTriggerJob {
 					return Boolean.TRUE.equals(resource.getTransactional());
 				}
 			}, resource, lastEvent.getCurrentRealm(), sourceEvents);
-		} else {
+		} else if(provider != null) {
 			outputEvent = provider.execute(resource, lastEvent.getCurrentRealm(), sourceEvents);
 		}
 		
