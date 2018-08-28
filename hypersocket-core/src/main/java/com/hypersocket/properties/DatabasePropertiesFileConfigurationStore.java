@@ -141,9 +141,12 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 		if(StringUtils.isNotBlank(jdbcUrl)) {
 			Map<String, String> tokens = JDBCURIParser.parse(jdbcUrl);
 			properties.setProperty(JDBC_VENDOR, tokens.get(JDBCURIParser.SCHEME));
-			properties.setProperty(JDBC_HOST, tokens.get(JDBCURIParser.HOST));
-			properties.setProperty(JDBC_PORT, tokens.get(JDBCURIParser.PORT));
-			properties.setProperty(JDBC_DATABASE, tokens.get(JDBCURIParser.DATABASE));
+			if(tokens.containsKey(JDBCURIParser.HOST))
+				properties.setProperty(JDBC_HOST, tokens.get(JDBCURIParser.HOST));
+			if(tokens.containsKey(JDBCURIParser.PORT))
+				properties.setProperty(JDBC_PORT, tokens.get(JDBCURIParser.PORT));
+			if(tokens.containsKey(JDBCURIParser.DATABASE))
+				properties.setProperty(JDBC_DATABASE, tokens.get(JDBCURIParser.DATABASE));
 		}
 	}
 
@@ -291,12 +294,14 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 			URI uriObj = URI.create(uri);
 			Map<String, String> tokens = new HashMap<>();
 			tokens.put(SCHEME, mapDatabase(uriObj.getScheme()));
-			tokens.put(HOST, uriObj.getHost());
+			if(StringUtils.isNotBlank(uriObj.getHost()))
+				tokens.put(HOST, uriObj.getHost());
 			tokens.put(PORT, mapPort(tokens.get(SCHEME), uriObj.getPort()));
 			tokens.put(PATH, uriObj.getPath());
 
 			String database = getDatabase(uriObj.getPath());
-			tokens.put(DATABASE, database);
+			if(StringUtils.isNotBlank(database))
+				tokens.put(DATABASE, database);
 			return tokens;
 		}
 
@@ -319,7 +324,10 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 		}
 
 		private static String getDatabase(String path){
-			if(path.contains("?")){
+			if(path == null) {
+				return path;
+			}
+			else if(path.contains("?")){
 				return path.substring(1, path.indexOf("?"));
 			}else if(path.contains(":")){
 				return path.substring(1, path.indexOf(":"));
