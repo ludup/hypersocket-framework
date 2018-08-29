@@ -108,6 +108,11 @@ public class AutomationJob extends AbstractTriggerJob {
 
 	
 	private TaskResult executeTask(AutomationResource resource, TaskProvider provider, SystemEvent event) throws ValidationException {
+		
+		if(provider==null) {
+			throw new ValidationException("Task provide is no longer installed.");
+		}
+		
 		TaskResult outputEvent = provider.execute(resource, event.getCurrentRealm(), event);
 		
 		if(outputEvent!=null) {
