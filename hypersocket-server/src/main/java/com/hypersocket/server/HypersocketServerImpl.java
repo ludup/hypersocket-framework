@@ -24,9 +24,11 @@ import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+import javax.net.ssl.X509ExtendedKeyManager;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -540,12 +542,31 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 			// KeyManager's decide which key material to use.
 			KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
 			kmf.init(ks, "changeit".toCharArray());
-			defaultSSLContext.init(kmf.getKeyManagers(), null, null);
+//			defaultSSLContext.init(kmf.getKeyManagers(), null, null);
 
 			if (log.isInfoEnabled()) {
 				log.info("Completed SSL initialization");
 			}
-			
+
+
+			// Javadoc of SSLContext.init() states the first KeyManager implementing X509ExtendedKeyManager in the array is
+			// used. We duplicate this behaviour when picking the KeyManager to wrap around.
+			X509ExtendedKeyManager x509KeyManager = null;
+			for (KeyManager keyManager : kmf.getKeyManagers()) {
+				if (keyManager instanceof X509ExtendedKeyManager) {
+					x509KeyManager = (X509ExtendedKeyManager) keyManager;
+				}
+			}
+
+			if (x509KeyManager == null)
+				throw new Exception("KeyManagerFactory did not create an X509ExtendedKeyManager");
+
+			SniKeyManager sniKeyManager = new SniKeyManager(x509KeyManager);
+
+//			context = SSLContext.getInstance("TLS");
+			defaultSSLContext.init(new KeyManager[] {
+				sniKeyManager
+			}, null, null);
 			sslContexts.put(resource, defaultSSLContext);
 			return defaultSSLContext;
 		} catch (Exception ex) {
@@ -615,7 +636,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 		engine.setUseClientMode(false);
 		engine.setWantClientAuth(false);
-		
+
 		if(enabledCipherSuites!=null && enabledCipherSuites.length > 0) {
 			engine.setEnabledCipherSuites(enabledCipherSuites);
 		}
