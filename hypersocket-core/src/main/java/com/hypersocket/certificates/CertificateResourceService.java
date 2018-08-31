@@ -70,6 +70,8 @@ public interface CertificateResourceService extends
 
 	KeyStore getResourceKeystore(CertificateResource resource) throws ResourceException;
 
+	KeyStore getLiveCertificates() throws ResourceException, AccessDeniedException; 
+	
 	void updateCertificate(CertificateResource resource, InputStream file, InputStream bundle)
 			throws ResourceException;
 

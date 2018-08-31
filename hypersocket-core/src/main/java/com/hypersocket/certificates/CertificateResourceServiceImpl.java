@@ -91,6 +91,8 @@ public class CertificateResourceServiceImpl extends
 	@Autowired
 	EventService eventService;
 
+	private KeyStore liveCertificates = null;
+	
 	public CertificateResourceServiceImpl() {
 		super("certificates");
 	}
@@ -352,8 +354,7 @@ public class CertificateResourceServiceImpl extends
 	}
 
 	@Override
-	public KeyStore getDefaultCertificate() throws ResourceException,
-			AccessDeniedException {
+	public KeyStore getDefaultCertificate() throws ResourceException, AccessDeniedException {
 
 		CertificateResource resource;
 		try {
@@ -402,6 +403,85 @@ public class CertificateResourceServiceImpl extends
 			}
 		} catch (MismatchedCertificateException ex) {
 			throw ex;
+		} catch (Exception e) {
+			throw new CertificateException(
+					"Failed to load key/certificate files", e);
+		}
+
+	}
+	
+	protected void loadPEMCertificate(CertificateResource resource,
+			String alias, String password, KeyStore keystore) throws ResourceException {
+		
+		try {
+			ByteArrayInputStream keyStream = new ByteArrayInputStream(resource
+					.getPrivateKey().getBytes("UTF-8"));
+			ByteArrayInputStream certStream = new ByteArrayInputStream(resource
+					.getCertificate().getBytes("UTF-8"));
+			ByteArrayInputStream caStream = null;
+
+			if (!StringUtils.isEmpty(resource.getBundle())) {
+				caStream = new ByteArrayInputStream(resource.getBundle()
+						.getBytes("UTF-8"));
+			}
+
+			loadPEMCertificate(keyStream, certStream, caStream, alias,
+					null, password.toCharArray(), keystore);
+
+		} catch (UnsupportedEncodingException e) {
+			log.error("Failed to encode certificate", e);
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"error.certificateError", e.getMessage());
+		} catch (CertificateException e) {
+			log.error("Failed to generate certificate", e);
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"error.certificateError", e.getMessage());
+		} catch (MismatchedCertificateException e) {
+			log.error("Failed to load certificate", e);
+			throw new ResourceCreationException(RESOURCE_BUNDLE,
+					"error.certificateError", e.getMessage());
+		}
+	}
+	
+	
+	protected void loadPEMCertificate(InputStream keyStream,
+			InputStream certStream, InputStream caStream, String alias,
+			char[] keyPassphrase, char[] keystorePassphrase, KeyStore keystore)
+			throws CertificateException, MismatchedCertificateException {
+
+		try {
+
+			KeyPair pair = X509CertificateUtils
+					.loadKeyPairFromPEM(keyStream, keyPassphrase);
+			
+			if (caStream != null) {
+				
+				X509Certificate[] cert = X509CertificateUtils
+						.loadCertificateChainFromPEM(caStream);
+				
+				X509Certificate[] ca = ArrayUtils.add(cert, X509CertificateUtils
+						.loadCertificateFromPEM(certStream));
+				ArrayUtils.reverse(ca);
+
+				if (!pair.getPublic().equals(cert[0].getPublicKey())) {
+					throw new MismatchedCertificateException();
+				}
+				
+				keystore.setKeyEntry(alias, pair.getPrivate(), keystorePassphrase, ca);
+
+			} else {
+				
+				X509Certificate cert = X509CertificateUtils
+						.loadCertificateFromPEM(certStream);
+				
+				if (!pair.getPublic().equals(cert.getPublicKey())) {
+					throw new MismatchedCertificateException();
+				}
+				
+				keystore.setKeyEntry(alias, pair.getPrivate(), keystorePassphrase, 
+						new X509Certificate[] {  });
+
+			}
 		} catch (Exception e) {
 			throw new CertificateException(
 					"Failed to load key/certificate files", e);
@@ -787,6 +867,17 @@ public class CertificateResourceServiceImpl extends
 	@Override
 	public KeyStore getResourceKeystore(CertificateResource resource) throws ResourceException {
 		return getResourceKeystore(resource, "hypersocket", "changeit");
+	}
+	
+	@Override
+	public KeyStore getLiveCertificates() throws  ResourceException, AccessDeniedException {
+		if(liveCertificates==null) {
+			liveCertificates = getDefaultCertificate();
+			for(CertificateResource resource : repository.allRealmsResources()) {
+				loadPEMCertificate(resource, resource.getCommonName(), "changeit", liveCertificates);
+			}
+		}
+		return liveCertificates;
 	}
 	
 	@Override
