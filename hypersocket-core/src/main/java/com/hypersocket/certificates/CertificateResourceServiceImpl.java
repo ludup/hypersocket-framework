@@ -94,8 +94,6 @@ public class CertificateResourceServiceImpl extends
 	
 	//
 	private Map<String, CertificateProvider> providers = new HashMap<>();
-
-	private KeyStore liveCertificates = null;
 	
 	public CertificateResourceServiceImpl() {
 		super("certificates");
@@ -431,7 +429,7 @@ public class CertificateResourceServiceImpl extends
 				}
 				
 				keystore.setKeyEntry(alias, pair.getPrivate(), keystorePassphrase, 
-						new X509Certificate[] {  });
+						new X509Certificate[] { cert });
 
 			}
 		} catch (Exception e) {
@@ -829,14 +827,14 @@ public class CertificateResourceServiceImpl extends
 	}
 	
 	@Override
-	public KeyStore getLiveCertificates() throws  ResourceException, AccessDeniedException {
-		if(liveCertificates==null) {
-			liveCertificates = getDefaultCertificate();
-			for(CertificateResource resource : repository.allRealmsResources()) {
-				loadPEMCertificate(resource, resource.getCommonName(), "changeit", liveCertificates);
-			}
+	public KeyStore getKeystoreWithCertificates(CertificateResource defaultCertificate, 
+			Collection<CertificateResource> certificates) throws  ResourceException, AccessDeniedException {
+		
+		KeyStore ks = getResourceKeystore(defaultCertificate, "hypersocket", "changeit");
+		for(CertificateResource resource : certificates) {
+			loadPEMCertificate(resource, resource.getCommonName(), "changeit", ks);
 		}
-		return liveCertificates;
+		return ks;
 	}
 	
 	@Override

@@ -7,7 +7,7 @@ import java.security.cert.X509Certificate;
 
 public final class SniKeyManager extends X509ExtendedKeyManager {
 	private final X509ExtendedKeyManager keyManager;
-	private final String defaultAlias = "test1.example.com";
+	private final String defaultAlias = "hypersocket";
 
 	public SniKeyManager(X509ExtendedKeyManager keyManager) {
 		this.keyManager = keyManager;
