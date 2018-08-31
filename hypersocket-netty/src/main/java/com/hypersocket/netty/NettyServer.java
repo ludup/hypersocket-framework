@@ -279,9 +279,9 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		}
 		return ((InetSocketAddress)httpsChannels.values().iterator().next().iterator().next().getLocalAddress()).getPort();
 	}
-	
-	protected void unbindInterface(HTTPInterfaceResource interfaceResource) {
-		
+
+	protected synchronized void unbindInterface(HTTPInterfaceResource interfaceResource) {
+
 		Set<Channel> channels = httpChannels.get(interfaceResource);
 		
 		closeChannels(interfaceResource, channels);
@@ -323,9 +323,9 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		
 		channels.clear();
 	}
-	
-	protected void bindInterface(HTTPInterfaceResource interfaceResource) throws IOException {
-			
+
+	protected synchronized void bindInterface(HTTPInterfaceResource interfaceResource) throws IOException {
+
 		Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
 		
 		Set<String> interfacesToBind = new HashSet<String>();
@@ -333,6 +333,9 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		if(!interfaceResource.getAllInterfaces()) {
 			interfacesToBind.addAll(ResourceUtils.explodeCollectionValues(interfaceResource.getInterfaces()));
 		}
+
+
+		clearSSLContexts(interfaceResource);
 		
 		httpChannels.put(interfaceResource, new HashSet<Channel>());
 		httpsChannels.put(interfaceResource, new HashSet<Channel>());

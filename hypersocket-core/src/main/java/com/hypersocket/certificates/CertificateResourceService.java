@@ -70,8 +70,6 @@ public interface CertificateResourceService extends
 
 	KeyStore getResourceKeystore(CertificateResource resource) throws ResourceException;
 
-	KeyStore getLiveCertificates() throws ResourceException, AccessDeniedException; 
-	
 	void updateCertificate(CertificateResource resource, InputStream file, InputStream bundle)
 			throws ResourceException;
 
@@ -80,5 +78,10 @@ public interface CertificateResourceService extends
 
 	CertificateResource replacePrivateKey(CertificateResource resource, InputStream key, String passphrase,
 			InputStream file, InputStream bundle) throws ResourceException, InvalidPassphraseException;
+
+
+	KeyStore getKeystoreWithCertificates(CertificateResource defaultCertificate, 
+			Collection<CertificateResource> certificates)
+			throws ResourceException, AccessDeniedException;
 
 }

@@ -86,6 +86,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	private List<String> controllerPackages = new ArrayList<String>();
 	
 	private Map<HTTPInterfaceResource,SSLContext> sslContexts = new HashMap<HTTPInterfaceResource,SSLContext>();
+	private Map<HTTPInterfaceResource,KeyStore> sslCertificates = new HashMap<HTTPInterfaceResource,KeyStore>();
 	private String defaultRedirectPath = null;
 	private HomePageResolver homePageResolver = null;
 	
@@ -533,23 +534,23 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 				log.info("Initializing SSL contexts");
 			}
 
-			KeyStore ks = certificateService.getResourceKeystore(resource.getCertificate());
+			if(!sslCertificates.containsKey(resource)) {
+				sslCertificates.put(resource, certificateService.getKeystoreWithCertificates(
+						resource.getCertificate(),
+						resource.getAdditionalCertificates()));
+			}
+			
+			KeyStore ks = sslCertificates.get(resource);
 
-			// Get the default context
 			SSLContext defaultSSLContext = SSLContext.getInstance("TLS");
-
-			// KeyManager's decide which key material to use.
 			KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+			
 			kmf.init(ks, "changeit".toCharArray());
-//			defaultSSLContext.init(kmf.getKeyManagers(), null, null);
-
+			
 			if (log.isInfoEnabled()) {
 				log.info("Completed SSL initialization");
 			}
 
-
-			// Javadoc of SSLContext.init() states the first KeyManager implementing X509ExtendedKeyManager in the array is
-			// used. We duplicate this behaviour when picking the KeyManager to wrap around.
 			X509ExtendedKeyManager x509KeyManager = null;
 			for (KeyManager keyManager : kmf.getKeyManagers()) {
 				if (keyManager instanceof X509ExtendedKeyManager) {
@@ -562,7 +563,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 			SniKeyManager sniKeyManager = new SniKeyManager(x509KeyManager);
 
-//			context = SSLContext.getInstance("TLS");
 			defaultSSLContext.init(new KeyManager[] {
 				sniKeyManager
 			}, null, null);
@@ -622,7 +622,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 				}
 			}
 		} catch(Throwable ex) {
-			
 		}
 	}
 
@@ -679,6 +678,12 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	}
 	
 	protected abstract void processApplicationEvent(SystemEvent event);
+	
+	protected synchronized void clearSSLContexts(HTTPInterfaceResource interfaceResource) {
+		sslContexts.remove(interfaceResource);
+		sslCertificates.remove(interfaceResource);
+	}
+	
 	@Override
 	public ApplicationContext getApplicationContext() {
 		return applicationContext;

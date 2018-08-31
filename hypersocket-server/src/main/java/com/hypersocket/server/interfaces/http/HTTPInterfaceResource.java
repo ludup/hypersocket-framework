@@ -1,7 +1,12 @@
 package com.hypersocket.server.interfaces.http;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -26,6 +31,9 @@ public class HTTPInterfaceResource extends InterfaceResource {
 	@Column(name="redirect_port")
 	Integer redirectPort;
 
+	@ManyToMany(fetch=FetchType.EAGER)
+	Set<CertificateResource> additionalCertificates = new HashSet<CertificateResource>();
+	
 	public HTTPProtocol getProtocol() {
 		return protocol;
 	}
@@ -57,12 +65,17 @@ public class HTTPInterfaceResource extends InterfaceResource {
 	public void setRedirectPort(Integer redirectPort) {
 		this.redirectPort = redirectPort;
 	}
-	
 
 	@Override
 	protected Integer getDefaultPort() {
 		return 80;
 	}
-	
-	
+
+	public Set<CertificateResource> getAdditionalCertificates() {
+		return additionalCertificates;
+	}
+
+	public void setAdditionalCertificates(Set<CertificateResource> additionalCertificates) {
+		this.additionalCertificates = additionalCertificates;
+	}
 }
