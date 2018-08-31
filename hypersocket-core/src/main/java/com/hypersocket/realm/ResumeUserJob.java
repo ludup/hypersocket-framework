@@ -1,5 +1,6 @@
 package com.hypersocket.realm;
 
+import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
@@ -7,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.scheduler.PermissionsAwareJob;
-import com.hypersocket.scheduler.PermissionsAwareJobData;
 
 public class ResumeUserJob extends PermissionsAwareJob {
 
@@ -26,7 +26,7 @@ public class ResumeUserJob extends PermissionsAwareJob {
 	protected void executeJob(JobExecutionContext context)
 			throws JobExecutionException {
 
-		PermissionsAwareJobData data = (PermissionsAwareJobData) context.getTrigger().getJobDataMap();
+		JobDataMap data = context.getTrigger().getJobDataMap();
 		
 		String name = (String) data.get("name");
 
