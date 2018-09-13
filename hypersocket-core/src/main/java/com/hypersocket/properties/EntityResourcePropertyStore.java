@@ -209,6 +209,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 						}, (Collection<Resource>) m.invoke(resource));
 					}
 					return ResourceUtils.implodeResourceValues((Collection<Resource>) m.invoke(resource));
+				} else if(String.class.isAssignableFrom(type)) { 
+					return ResourceUtils.implodeValues((Collection<String>) m.invoke(resource));
 				} else {
 					throw new IllegalStateException("Unhandled Collection type for " + template.getResourceKey() + "! Type " + m.getReturnType() + " is not an enum, nor is it assignable as a Resource.");
 				}
@@ -350,6 +352,21 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 								String[] ids = ResourceUtils.explodeValues(value);
 								for(String id : ids) {
 									values.add(getEnum(id, type));
+								}
+							}
+							m.invoke(resource, values);
+							return;
+						} catch (Exception e) {
+							log.error("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
+							throw new IllegalStateException("Could not lookup " + template.getResourceKey() + " value " + value + " for resource " + resource.getClass().getName(), e);
+						}
+					}  else if(String.class.isAssignableFrom(type)) {
+						try {
+							Collection<String> values = new ArrayList<String>();
+							if(!StringUtils.isEmpty(value)) {
+								String[] vals = ResourceUtils.explodeValues(value);
+								for(String val : vals) {
+									values.add(val);
 								}
 							}
 							m.invoke(resource, values);
