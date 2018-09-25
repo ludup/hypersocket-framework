@@ -29,6 +29,8 @@ public interface MessageResourceService extends
 			throws AccessDeniedException;
 
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Principal... principals);
+
+	void sendMessage(String resourceKey, Realm realm, RecipientHolder replyTo, ITokenResolver tokenResolver, Principal... principals);
 	
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals);
 
@@ -48,9 +50,13 @@ public interface MessageResourceService extends
 
 	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> emails, ITokenResolver tokenResolver);
 
+	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients, RecipientHolder replyTo, ITokenResolver tokenResolver);
+
 	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails);
 	
 	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, String... emails);
+
+	void sendMessage(String resourceKey, Realm realm, RecipientHolder replyTo, ITokenResolver tokenResolver, Collection<Principal> principals);
 
 	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system, MessageTemplateRepository repository, boolean enabled);

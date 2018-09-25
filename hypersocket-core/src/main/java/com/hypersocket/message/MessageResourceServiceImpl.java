@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -312,10 +313,17 @@ public class MessageResourceServiceImpl extends
 	private void createI18nMessage(String resourceBundle, 
 			String resourceKey, Set<String> variables, Realm realm, boolean enabled, EmailDeliveryStrategy delivery) throws ResourceException,
 			AccessDeniedException {
+		final String plainBody = I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".body");
+		String htmlBody = null;
+		try {
+			htmlBody = I18N.getResourceOrException(Locale.getDefault(), resourceBundle, resourceKey + ".html");
+		}
+		catch(MissingResourceException mre) {
+		}
 		createResource(resourceKey, I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".name"),
 				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".subject"), 
-				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".body"), 
-				"", variables, enabled, false, null, realm, delivery);
+				plainBody, 
+				htmlBody, variables, enabled, false, null, realm, delivery);
 	}
 
 	@Override
@@ -409,6 +417,11 @@ public class MessageResourceServiceImpl extends
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Principal... principals) {
 		sendMessage(resourceKey, realm, tokenResolver, Arrays.asList(principals));
 	}
+
+	@Override
+	public void sendMessage(String resourceKey, Realm realm, RecipientHolder replyTo, ITokenResolver tokenResolver, Principal... principals) {
+		sendMessage(resourceKey, realm, replyTo, tokenResolver, Arrays.asList(principals));
+	}
 	
 	@Override
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, String... principals) {
@@ -432,11 +445,17 @@ public class MessageResourceServiceImpl extends
 		}
 		
 		
-		sendMessage(message, realm, tokenResolver, recipients);
+		sendMessage(message, realm, tokenResolver, null, recipients);
 	}
+
 	
 	@Override
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients, ITokenResolver tokenResolver) {
+		sendMessageToEmailAddress(resourceKey, realm, recipients, null, tokenResolver);
+	}
+	
+	@Override
+	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients, RecipientHolder replyTo, ITokenResolver tokenResolver) {
 	
 		MessageResource message = repository.getMessageById(resourceKey, realm);
 		
@@ -445,11 +464,17 @@ public class MessageResourceServiceImpl extends
 			return;
 		}
 		
-		sendMessage(message, realm, tokenResolver, new ArrayList<RecipientHolder>(recipients));
+		sendMessage(message, realm, tokenResolver, replyTo, new ArrayList<RecipientHolder>(recipients));
 	}
+
 	
 	@Override
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals) {
+		sendMessage(resourceKey, realm, null, tokenResolver);
+	}
+	
+	@Override
+	public void sendMessage(String resourceKey, Realm realm, RecipientHolder replyTo, ITokenResolver tokenResolver, Collection<Principal> principals) {
 
 		MessageResource message = repository.getMessageById(resourceKey, realm);
 		
@@ -485,11 +510,11 @@ public class MessageResourceServiceImpl extends
 			}
 		}
 		
-		sendMessage(message, realm, tokenResolver, recipients);
+		sendMessage(message, realm, tokenResolver, replyTo, recipients);
 	}
 	
 	
-	private void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, List<RecipientHolder> recipients ) {
+	private void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, List<RecipientHolder> recipients ) {
 		
 		if(!message.getEnabled()) {
 			log.info(String.format("Message template %s has been disabled", message.getName()));
@@ -548,15 +573,20 @@ public class MessageResourceServiceImpl extends
 				
 				String receipientHtml = "";
 				
-				if(message.getHtmlTemplate()!=null && StringUtils.isNotBlank(message.getHtml())) {
-					
-					Document doc = Jsoup.parse(message.getHtmlTemplate().getHtml());
-					Elements elements = doc.select(message.getHtmlTemplate().getContentSelector());
-					if(elements.isEmpty()) {
-						throw new IllegalStateException(String.format("Invalid content selector %s",message.getHtmlTemplate().getContentSelector()));
+				if(StringUtils.isNotBlank(message.getHtml())) {
+					if(message.getHtmlTemplate()!=null ) {
+						Document doc = Jsoup.parse(message.getHtmlTemplate().getHtml());
+						Elements elements = doc.select(message.getHtmlTemplate().getContentSelector());
+						if(elements.isEmpty()) {
+							throw new IllegalStateException(String.format("Invalid content selector %s",message.getHtmlTemplate().getContentSelector()));
+						}
+						elements.first().append(message.getHtml());
+						receipientHtml = doc.toString();		
 					}
-					elements.first().append(message.getHtml());
-					receipientHtml = doc.toString();		
+					else {
+						//receipientHtml = Jsoup.parse(message.getHtml()).toString();				
+						receipientHtml = message.getHtml();
+					}
 				}
 				
 				Template htmlTemplate = templateService.createTemplate("message.html." + message.getId(), 
@@ -570,8 +600,8 @@ public class MessageResourceServiceImpl extends
 						subjectWriter.toString(),
 						bodyWriter.toString(),
 						htmlWriter.toString(),
-						message.getReplyToName(),
-						message.getReplyToEmail(),
+						replyTo == null ? message.getReplyToName() : replyTo.getName(),
+						replyTo == null ? message.getReplyToEmail() : replyTo.getEmail(),
 						new RecipientHolder[] { recipient }, 
 						null,
 						message.getTrack(), 
