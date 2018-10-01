@@ -47,11 +47,11 @@ public interface MessageResourceService extends
 	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system);
 
-	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> emails, ITokenResolver tokenResolver) throws ResourceException;
+	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> emails, ITokenResolver tokenResolver);
 
-	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails) throws ResourceException;
+	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails);
 	
-	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, String... emails) throws ResourceException;
+	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, String... emails);
 
 	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system, MessageTemplateRepository repository, boolean enabled);
@@ -63,9 +63,20 @@ public interface MessageResourceService extends
 			boolean system, MessageTemplateRepository repository, boolean enabled, EmailDeliveryStrategy delivery);
 
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals,
-			Date schedule) throws ResourceException;
+			Date schedule);
 
-	void sendMessageNow(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals)
-			throws ResourceException;
+	void sendMessageNow(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals);
+
+	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
+			Collection<Principal> principals);
+
+	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
+			Collection<Principal> principals, Date schedule);
+
+	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
+			Principal... principals);
+
+	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients,
+			RecipientHolder replyTo, ITokenResolver tokenResolver);
 
 }
