@@ -1,6 +1,7 @@
 package com.hypersocket.message;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,11 +29,9 @@ public interface MessageResourceService extends
 	Collection<PropertyCategory> getPropertyTemplate(MessageResource resource)
 			throws AccessDeniedException;
 
-	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Principal... principals);
-
-	void sendMessage(String resourceKey, Realm realm, RecipientHolder replyTo, ITokenResolver tokenResolver, Principal... principals);
+	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Principal... principals) throws ResourceException;
 	
-	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals);
+	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals) throws ResourceException;
 
 	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables);
 
@@ -48,15 +47,11 @@ public interface MessageResourceService extends
 	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system);
 
-	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> emails, ITokenResolver tokenResolver);
+	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> emails, ITokenResolver tokenResolver) throws ResourceException;
 
-	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients, RecipientHolder replyTo, ITokenResolver tokenResolver);
-
-	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails);
+	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails) throws ResourceException;
 	
-	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, String... emails);
-
-	void sendMessage(String resourceKey, Realm realm, RecipientHolder replyTo, ITokenResolver tokenResolver, Collection<Principal> principals);
+	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, String... emails) throws ResourceException;
 
 	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system, MessageTemplateRepository repository, boolean enabled);
@@ -66,5 +61,11 @@ public interface MessageResourceService extends
 
 	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system, MessageTemplateRepository repository, boolean enabled, EmailDeliveryStrategy delivery);
+
+	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals,
+			Date schedule) throws ResourceException;
+
+	void sendMessageNow(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals)
+			throws ResourceException;
 
 }

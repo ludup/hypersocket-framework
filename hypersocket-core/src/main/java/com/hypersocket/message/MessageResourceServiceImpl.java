@@ -5,11 +5,11 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.EmailAttachment;
+import com.hypersocket.email.EmailBatchService;
 import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.email.EmailTrackerService;
 import com.hypersocket.email.RecipientHolder;
@@ -82,15 +83,9 @@ public class MessageResourceServiceImpl extends
 
 	@Autowired
 	private EventService eventService;
-	
-	@Autowired
-	private EmailNotificationService emailService;
 
 	@Autowired
 	private RealmService realmService; 
-	
-	@Autowired
-	private FileUploadService uploadService; 
 	
 	@Autowired
 	private ConfigurationService configurationService;
@@ -100,6 +95,15 @@ public class MessageResourceServiceImpl extends
 	
 	@Autowired
 	private EmailTrackerService trackerService; 
+	
+	@Autowired
+	private EmailBatchService batchService; 
+	
+	@Autowired
+	private EmailNotificationService emailService; 
+	
+	@Autowired
+	private FileUploadService uploadService; 
 	
 	private Map<String,MessageRegistration> messageRegistrations = new HashMap<String, MessageRegistration>();
 	private List<String> messageIds = new ArrayList<String>();
@@ -313,17 +317,10 @@ public class MessageResourceServiceImpl extends
 	private void createI18nMessage(String resourceBundle, 
 			String resourceKey, Set<String> variables, Realm realm, boolean enabled, EmailDeliveryStrategy delivery) throws ResourceException,
 			AccessDeniedException {
-		final String plainBody = I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".body");
-		String htmlBody = null;
-		try {
-			htmlBody = I18N.getResourceOrException(Locale.getDefault(), resourceBundle, resourceKey + ".html");
-		}
-		catch(MissingResourceException mre) {
-		}
 		createResource(resourceKey, I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".name"),
 				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".subject"), 
-				plainBody, 
-				htmlBody, variables, enabled, false, null, realm, delivery);
+				I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".body"), 
+				"", variables, enabled, false, null, realm, delivery);
 	}
 
 	@Override
@@ -414,22 +411,17 @@ public class MessageResourceServiceImpl extends
 	}
 
 	@Override
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Principal... principals) {
+	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Principal... principals) throws ResourceException {
 		sendMessage(resourceKey, realm, tokenResolver, Arrays.asList(principals));
-	}
-
-	@Override
-	public void sendMessage(String resourceKey, Realm realm, RecipientHolder replyTo, ITokenResolver tokenResolver, Principal... principals) {
-		sendMessage(resourceKey, realm, replyTo, tokenResolver, Arrays.asList(principals));
 	}
 	
 	@Override
-	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, String... principals) {
+	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, String... principals) throws ResourceException {
 		sendMessageToEmailAddress(resourceKey, realm, tokenResolver, Arrays.asList(principals));
 	}
 	
 	@Override
-	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails) {
+	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails) throws ResourceException {
 	
 		MessageResource message = repository.getMessageById(resourceKey, realm);
 		
@@ -445,17 +437,11 @@ public class MessageResourceServiceImpl extends
 		}
 		
 		
-		sendMessage(message, realm, tokenResolver, null, recipients);
-	}
-
-	
-	@Override
-	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients, ITokenResolver tokenResolver) {
-		sendMessageToEmailAddress(resourceKey, realm, recipients, null, tokenResolver);
+		sendMessage(message, realm, tokenResolver, recipients);
 	}
 	
 	@Override
-	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients, RecipientHolder replyTo, ITokenResolver tokenResolver) {
+	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients, ITokenResolver tokenResolver) throws ResourceException {
 	
 		MessageResource message = repository.getMessageById(resourceKey, realm);
 		
@@ -464,17 +450,21 @@ public class MessageResourceServiceImpl extends
 			return;
 		}
 		
-		sendMessage(message, realm, tokenResolver, replyTo, new ArrayList<RecipientHolder>(recipients));
-	}
-
-	
-	@Override
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals) {
-		sendMessage(resourceKey, realm, null, tokenResolver);
+		sendMessage(message, realm, tokenResolver, new ArrayList<RecipientHolder>(recipients));
 	}
 	
 	@Override
-	public void sendMessage(String resourceKey, Realm realm, RecipientHolder replyTo, ITokenResolver tokenResolver, Collection<Principal> principals) {
+	public void sendMessageNow(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals) throws ResourceException {
+		sendMessage(resourceKey, realm, tokenResolver, principals, null);
+	}
+	
+	@Override
+	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals) throws ResourceException {
+		sendMessage(resourceKey, realm, tokenResolver, principals, new Date());
+	}
+	
+	@Override
+	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals, Date schedule) throws ResourceException {
 
 		MessageResource message = repository.getMessageById(resourceKey, realm);
 		
@@ -510,27 +500,18 @@ public class MessageResourceServiceImpl extends
 			}
 		}
 		
-		sendMessage(message, realm, tokenResolver, replyTo, recipients);
+		sendMessage(message, realm, tokenResolver, recipients, schedule);
 	}
 	
+	private void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, List<RecipientHolder> recipients) throws ResourceException {
+		sendMessage(message,  realm, tokenResolver, recipients, new Date());
+	}
 	
-	private void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, List<RecipientHolder> recipients ) {
+	private void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, List<RecipientHolder> recipients, Date schedule) {
 		
 		if(!message.getEnabled()) {
 			log.info(String.format("Message template %s has been disabled", message.getName()));
 			return;
-		}
-		
-		List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
-		for(String uuid : ResourceUtils.explodeValues(message.getAttachments())) {
-			try {
-				FileUpload upload = uploadService.getFileUpload(uuid);
-				attachments.add(new EmailAttachment(upload.getFileName(), 
-						uploadService.getContentType(uuid), 
-						uploadService.getInputStream(uuid)));
-			} catch (ResourceNotFoundException | IOException e) {
-				log.error(String.format("Unable to locate upload %s", uuid), e);
-			}
 		}
 		
 		for(String additional : ResourceUtils.explodeCollectionValues(message.getAdditionalTo())) {
@@ -573,20 +554,15 @@ public class MessageResourceServiceImpl extends
 				
 				String receipientHtml = "";
 				
-				if(StringUtils.isNotBlank(message.getHtml())) {
-					if(message.getHtmlTemplate()!=null ) {
-						Document doc = Jsoup.parse(message.getHtmlTemplate().getHtml());
-						Elements elements = doc.select(message.getHtmlTemplate().getContentSelector());
-						if(elements.isEmpty()) {
-							throw new IllegalStateException(String.format("Invalid content selector %s",message.getHtmlTemplate().getContentSelector()));
-						}
-						elements.first().append(message.getHtml());
-						receipientHtml = doc.toString();		
+				if(message.getHtmlTemplate()!=null && StringUtils.isNotBlank(message.getHtml())) {
+					
+					Document doc = Jsoup.parse(message.getHtmlTemplate().getHtml());
+					Elements elements = doc.select(message.getHtmlTemplate().getContentSelector());
+					if(elements.isEmpty()) {
+						throw new IllegalStateException(String.format("Invalid content selector %s",message.getHtmlTemplate().getContentSelector()));
 					}
-					else {
-						//receipientHtml = Jsoup.parse(message.getHtml()).toString();				
-						receipientHtml = message.getHtml();
-					}
+					elements.first().append(message.getHtml());
+					receipientHtml = doc.toString();		
 				}
 				
 				Template htmlTemplate = templateService.createTemplate("message.html." + message.getId(), 
@@ -595,24 +571,50 @@ public class MessageResourceServiceImpl extends
 				StringWriter htmlWriter = new StringWriter();
 				htmlTemplate.process(data, htmlWriter);
 				
-				emailService.sendEmail(
-						realm,
-						subjectWriter.toString(),
-						bodyWriter.toString(),
-						htmlWriter.toString(),
-						replyTo == null ? message.getReplyToName() : replyTo.getName(),
-						replyTo == null ? message.getReplyToEmail() : replyTo.getEmail(),
-						new RecipientHolder[] { recipient }, 
-						null,
-						message.getTrack(), 
-						configurationService.getIntValue(realm, "smtp.delay"),
-						attachments.toArray(new EmailAttachment[0]));
+				if(schedule!=null) {
+				
+					batchService.scheduleEmail(realm, subjectWriter.toString(),
+							bodyWriter.toString(),
+							htmlWriter.toString(),
+							message.getReplyToName(),
+							message.getReplyToEmail(),
+							recipient.getName(),
+							recipient.getEmail(),
+							message.getTrack(),
+							message.getAttachments(),
+							schedule);
+				
+				} else {
+					
+					List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
+					for(String uuid : ResourceUtils.explodeValues(message.getAttachments())) {
+						try {
+							FileUpload upload = uploadService.getFileUpload(uuid);
+							attachments.add(new EmailAttachment(upload.getFileName(), 
+									uploadService.getContentType(uuid), 
+									uploadService.getInputStream(uuid)));
+						} catch (ResourceNotFoundException | IOException e) {
+							log.error(String.format("Unable to locate upload %s", uuid), e);
+						}
+					}
+					
+					emailService.sendEmail(realm, 
+							subjectWriter.toString(), 
+							bodyWriter.toString(), 
+							htmlWriter.toString(), 
+							message.getReplyToName(), 
+							message.getReplyToEmail(), 
+							recipients.toArray(new RecipientHolder[0]),
+							message.getTrack(), 50,
+							attachments.toArray(new EmailAttachment[0]));
+					
+				}
 			}
 			
 			
 		} catch (MailException e) { 
 			// Will be logged by mail API
-		} catch(AccessDeniedException | IOException | TemplateException | ValidationException e) {
+		} catch(AccessDeniedException | ValidationException | IOException | TemplateException | ResourceException e) {
 			log.error("Failed to send email", e);
 		}
 		

@@ -24,7 +24,7 @@ public abstract class BatchProcessingServiceImpl<T extends RealmResource> implem
 	
 	protected abstract int getBatchInterval();
 	
-	protected abstract void process(T item);
+	protected abstract boolean process(T item);
 	
 	protected abstract String getResourceKey();
 	
@@ -72,20 +72,28 @@ public abstract class BatchProcessingServiceImpl<T extends RealmResource> implem
 		}
 			
 		for(T item : items) {
-				
+			
+			boolean processed = true; 
 			try {
-				process(item);			
+				processed = process(item);			
 			} catch(Throwable t) {
 				log.error("Failed to process batch item", t);
+				processed = onProcessFailure(item);
 			} finally {
-				try {
-					getRepository().deleteResource(item);
-				} catch (ResourceException e) {
-					log.error("Failed to delete batch item resource", e);
+				if(processed) {
+					try {
+						getRepository().deleteResource(item);
+					} catch (ResourceException e) {
+						log.error("Failed to delete batch item resource", e);
+					}
 				}
 			}
 		}
 		
+	}
+
+	protected boolean onProcessFailure(T item) {
+		return true;
 	}
 
 	
