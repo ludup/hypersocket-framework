@@ -104,7 +104,10 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	@Override
 	@Transactional(readOnly=true)
 	public List<?> searchIncompleteProfiles(final Realm realm, String searchColumn, String searchPattern, ColumnSort[] sorting, int start, int length) {
-		return search(Principal.class, searchColumn, searchPattern, start, length, sorting, new RealmCriteria(realm), new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+		return search(Principal.class, searchColumn, searchPattern, start, length, sorting, 
+				new RealmCriteria(realm), 
+				new DeletedCriteria(false), 
+				new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -125,7 +128,10 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	@Transactional(readOnly=true)
 	public Long searchIncompleteProfilesCount(final Realm realm, String searchColumn, String searchPattern) {
 		
-		return getCount(Principal.class, searchColumn, searchPattern, new RealmCriteria(realm), new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+		return getCount(Principal.class, searchColumn, searchPattern, 
+				new RealmCriteria(realm), 
+				new DeletedCriteria(false), 
+				new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -144,7 +150,9 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	@Override
 	@Transactional(readOnly=true)
 	public List<?> searchCompleteProfiles(final Realm realm, String searchColumn, String searchPattern, ColumnSort[] sorting, int start, int length) {
-		return search(Principal.class, searchColumn, searchPattern, start, length, sorting, new RealmCriteria(realm), new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+		return search(Principal.class, searchColumn, searchPattern, start, length, sorting, new RealmCriteria(realm), 
+				new DeletedCriteria(false), 
+				new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -165,7 +173,9 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	@Transactional(readOnly=true)
 	public Long searchCompleteProfilesCount(final Realm realm, String searchColumn, String searchPattern) {
 		
-		return getCount(Principal.class, searchColumn, searchPattern, new RealmCriteria(realm), new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+		return getCount(Principal.class, searchColumn, searchPattern, new RealmCriteria(realm), 
+				new DeletedCriteria(false), 
+				new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -184,7 +194,9 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	@Override
 	@Transactional(readOnly=true)
 	public List<?> searchNeverVisitedProfiles(final Realm realm, String searchColumn, String searchPattern, ColumnSort[] sorting, int start, int length) {
-		return search(Principal.class, searchColumn, searchPattern, start, length, sorting, new RealmCriteria(realm), new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+		return search(Principal.class, searchColumn, searchPattern, start, length, sorting, new RealmCriteria(realm), 				
+				new DeletedCriteria(false), 
+				new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -203,7 +215,9 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	@Transactional(readOnly=true)
 	public Long searchNeverVisitedProfilesCount(final Realm realm, String searchColumn, String searchPattern) {
 		
-		return getCount(Principal.class, searchColumn, searchPattern, new RealmCriteria(realm), new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+		return getCount(Principal.class, searchColumn, searchPattern, new RealmCriteria(realm), 
+				new DeletedCriteria(false), 
+				new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
