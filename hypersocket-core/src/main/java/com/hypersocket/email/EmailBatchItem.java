@@ -24,7 +24,7 @@ public class EmailBatchItem extends RealmResource {
 	@Lob
 	String text;
 
-	@Column(name="subject")
+	@Column(name="html")
 	@Lob
 	String html;
 	
