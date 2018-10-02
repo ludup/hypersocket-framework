@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.codemonkey.simplejavamail.MailException;
 import org.slf4j.Logger;
@@ -92,6 +93,7 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 			String replyToEmail, String name, String email, Boolean track, String attachments, Date schedule) throws ResourceException {
 
 		EmailBatchItem item = new EmailBatchItem();
+		item.setName(UUID.randomUUID().toString());
 		item.setRealm(realm);
 		item.setSubject(subject);
 		item.setText(body);
