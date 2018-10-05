@@ -40,6 +40,14 @@ public class ComparisonConditionProvider implements TriggerConditionProvider {
 		supportedConditions.put("condition.isNumeric", new IsNotEmptyCondition());
 		supportedConditions.put("condition.isTrue", new IsTrueCondition());
 		supportedConditions.put("condition.isNotTrue", new IsNotTrueCondition());
+		supportedConditions.put("condition.greaterThan", new GreaterThanCondition());
+		supportedConditions.put("condition.greaterThanOrEquals", new GreaterThanOrEqualsCondition());
+		supportedConditions.put("condition.lessThan", new LessThanCondition());
+		supportedConditions.put("condition.lessThanOrEquals", new LessThanOrEqualsCondition());
+		supportedConditions.put("condition.notGreaterThan", new NotGreaterThanCondition());
+		supportedConditions.put("condition.notGreaterThanOrEquals", new NotGreaterThanOrEqualsCondition());
+		supportedConditions.put("condition.notLessThan", new NotLessThanCondition());
+		supportedConditions.put("condition.notLessThanOrEquals", new NotLessThanOrEqualsCondition());
 		
 		triggerService.registerConditionProvider(this);
 		
