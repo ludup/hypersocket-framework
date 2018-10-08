@@ -55,6 +55,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		primitiveParsers.put(Date.class, new DateValue());
 		primitiveParsers.put(int.class, new IntegerValue());
 		primitiveParsers.put(long.class, new LongValue());
+		primitiveParsers.put(boolean.class, new BooleanValue());
 		
 		setEncryptionService(encryptionService);
 	}
@@ -160,7 +161,25 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		String methodName = "get" + StringUtils.capitalize(fieldName);
 		try {
 			
-			Method m = resource.getClass().getMethod(methodName, (Class<?>[])null);
+			Method m = null;
+			try {
+				m = resource.getClass().getMethod(methodName, (Class<?>[])null);
+			}
+			catch(NoSuchMethodException nsme) {
+				/* Look for an is* method, but only use it if the return type is boolean and there are no parameters */
+				String isName = "is" + StringUtils.capitalize(fieldName);
+				try {
+					Method is = resource.getClass().getMethod(isName, (Class<?>[])null);
+					if(is.getParameterCount() == 0 && ( is.getReturnType().equals(boolean.class) || is.getReturnType().equals(Boolean.class))) {
+						methodName = isName;
+						m = is;
+					}
+				}
+				catch(NoSuchMethodException nsme2) {
+					/* Re-throw original error to keep existing behaviour */
+					throw nsme;
+				}
+			}
 			
 			if(findableResourceRepositories.containsKey(m.getReturnType())) {
 				Resource r = (Resource) m.invoke(resource);
