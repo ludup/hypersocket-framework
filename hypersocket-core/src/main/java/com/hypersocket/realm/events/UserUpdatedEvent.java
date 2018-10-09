@@ -1,7 +1,9 @@
 package com.hypersocket.realm.events;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -15,12 +17,46 @@ public class UserUpdatedEvent extends UserEvent {
 	private static final long serialVersionUID = 3984021807869214879L;
 
 	public static final String EVENT_RESOURCE_KEY = "event.userUpdated";
+
+	public static final String ATTR_CHANGES = "attr.changes";
 	
 	public UserUpdatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
-			List<? extends Principal> associatedPrincipals, Map<String,String> properties) {
+			List<? extends Principal> associatedPrincipals, Map<String,String> properties,
+			List<? extends Principal> previouslyAssociatedPrincipals, Map<String,String> oldProperties) {
 		super(source, "event.userUpdated", session, realm, provider, principal,
 				associatedPrincipals, properties);
+
+		List<String> changes = new ArrayList<>();
+		
+		// Find property additions or changes
+		for(Map.Entry<String, String> en : properties.entrySet()) {
+			if(oldProperties.containsKey(en.getKey())) {
+				final String oldVal = oldProperties.get(en.getKey());
+				if(!Objects.equals(en.getValue(), oldVal))
+					changes.add(String.format("%s was changed from %s to %s", en.getKey(), oldVal, en.getValue())); 
+			}
+			else {
+				changes.add(String.format("%s was added with a value of %s", en.getKey(), en.getValue()));
+			} 
+		}
+		
+		// Find principal additions
+		for(Principal p : associatedPrincipals) {
+			if(!previouslyAssociatedPrincipals.contains(p)) {
+				changes.add(String.format("Principal %s (%s) was associated", p.getPrincipalName(), p.getPrincipalType()));
+			} 
+		}
+		// Find principal removals
+
+		for(Principal p : previouslyAssociatedPrincipals) {
+			if(!associatedPrincipals.contains(p)) {
+				changes.add(String.format("Principal %s (%s) was unassociated", p.getPrincipalName(), p.getPrincipalType()));
+			} 
+		}
+
+		if(!changes.isEmpty())
+			addAttribute(ATTR_CHANGES, String.join("\n", changes));
 	}
 
 	public UserUpdatedEvent(Object source, Throwable e, Session session,

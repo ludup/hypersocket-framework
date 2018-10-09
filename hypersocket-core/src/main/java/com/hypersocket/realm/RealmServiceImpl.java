@@ -708,7 +708,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			throws ResourceException, AccessDeniedException {
 
 		final RealmProvider provider = getProviderForPrincipal(user);
-
+		Map<String, String> oldProperties = getUserPropertyValues(getPrincipalById(user.getId()));
+		
 		List<Principal> associated = getAssociatedPrincipals(user);
 		try {
 
@@ -725,7 +726,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 
 			eventService.publishEvent(new UserUpdatedEvent(this, getCurrentSession(), principal.getRealm(), provider,
-					principal, associated, filterSecretProperties(principal, provider, properties)));
+					principal, associated, filterSecretProperties(principal, provider, properties), associated, filterSecretProperties(principal, provider, oldProperties)));
 
 			return principal;
 		} catch (AccessDeniedException e) {
@@ -748,6 +749,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			List<Principal> principals) throws ResourceException, AccessDeniedException {
 
 		final RealmProvider provider = getProviderForPrincipal(user);
+		Principal existing = getPrincipalById(user.getId());
+		Map<String, String> oldProperties = getUserPropertyValues(existing);
+		List<Principal> previousPrincipals = getAssociatedPrincipals(existing);
 
 		try {
 
@@ -764,7 +768,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 
 			eventService.publishEvent(new UserUpdatedEvent(this, getCurrentSession(), realm, provider, principal,
-					principals, filterSecretProperties(principal, provider, properties)));
+					getAssociatedPrincipals(principal), filterSecretProperties(principal, provider, properties), previousPrincipals, filterSecretProperties(principal, provider, oldProperties)));
 
 			return principal;
 		} catch (AccessDeniedException e) {
