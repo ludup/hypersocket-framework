@@ -525,6 +525,8 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		// Now set any remaining values
 		setValues(resource, properties);
 		
+		clearPropertyCache(resource);
+		
 		afterSave(resource, properties);
 		
 		for(TransactionOperation<T> op : ops) {
@@ -533,7 +535,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		
 		return changes;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly=true)

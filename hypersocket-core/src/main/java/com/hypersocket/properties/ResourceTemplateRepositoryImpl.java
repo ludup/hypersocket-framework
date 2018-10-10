@@ -788,6 +788,10 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		((ResourcePropertyStore) template.getPropertyStore()).setPropertyValue(template, resource, value);
 	}
 
+	protected void clearPropertyCache(SimpleResource resource) {
+		getPropertyStore().clearPropertyCache(resource);
+	}
+	
 	private void validate(PropertyTemplate template, String value) {
 		
 

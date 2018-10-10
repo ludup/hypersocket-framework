@@ -71,4 +71,9 @@ public class TransientPropertyStore implements ResourcePropertyStore {
 		return "";
 	}
 
+	@Override
+	public void clearPropertyCache(SimpleResource resource) {
+		
+	}
+
 }

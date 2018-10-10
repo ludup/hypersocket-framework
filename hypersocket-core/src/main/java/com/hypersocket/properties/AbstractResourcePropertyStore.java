@@ -83,6 +83,16 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		return c;
 	}
 	
+	public void clearPropertyCache(SimpleResource resource) {
+		try {
+			Cache<String, String> cache = getCache();
+			for(String name : getPropertyNames()) {
+				cache.remove(createCacheKey(name, resource));
+			}
+		} catch (CacheUnavailableException e) {
+		}
+	}
+	
 	@Override
 	public Collection<String> getPropertyNames() {
 		return templates.keySet();

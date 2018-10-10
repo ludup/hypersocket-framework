@@ -16,4 +16,6 @@ public interface ResourcePropertyStore extends XmlTemplatePropertyStore {
 
 	String getDecryptedValue(AbstractPropertyTemplate template, SimpleResource resource);
 
+	void clearPropertyCache(SimpleResource resource);
+
 }
