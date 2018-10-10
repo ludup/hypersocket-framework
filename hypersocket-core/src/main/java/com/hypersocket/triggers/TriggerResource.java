@@ -22,9 +22,6 @@ import com.hypersocket.tasks.Task;
 @JsonDeserialize(using = TriggerResourceDeserializer.class)
 public class TriggerResource extends Task {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 4055884752102231593L;
 
 	@Column(name = "result")
@@ -52,7 +49,7 @@ public class TriggerResource extends Task {
 	Long attachmentId;
 	
 	@Column(name="all_realms")
-	Boolean allRealms;
+	Boolean allRealms = Boolean.FALSE;
 
 	public TriggerResultType getResult() {
 		return result;
