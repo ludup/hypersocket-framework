@@ -33,6 +33,6 @@
 		<property resourceKey="jdbc.username" inputType="text" store="databaseConfiguration"
 			allowEmpty="false" weight="500" defaultValue="hypersocket" />
 		<property resourceKey="jdbc.password" inputType="password" store="databaseConfiguration"
-			allowEmpty="false" weight="600" defaultValue="hypersocket" />		
+			allowEmpty="true" weight="600" defaultValue="hypersocket" />		
 	</propertyCategory>
 </propertyTemplates>
