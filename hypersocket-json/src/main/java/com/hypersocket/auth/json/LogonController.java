@@ -326,6 +326,9 @@ public class LogonController extends AuthenticatedController {
 		if(request.getParameter("redirectTo")!=null) {
 			throw new RedirectException(request.getParameter("redirectTo"));
 		}
+		if(request.getAttribute("redirectTo")!=null) {
+			throw new RedirectException((String)request.getAttribute("redirectTo"));
+		}
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
