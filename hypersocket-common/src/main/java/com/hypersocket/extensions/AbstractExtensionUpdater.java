@@ -33,8 +33,17 @@ import com.hypersocket.utils.HypersocketUtils;
 public abstract class AbstractExtensionUpdater {
 
 	static Logger log = LoggerFactory.getLogger(AbstractExtensionUpdater.class);
+	
 	private long transfered;
 	private long totalSize;
+	private int totalUpdates;
+	
+	Map<ExtensionVersion, File> tmpArchives;
+	Set<ExtensionVersion> updates;
+	Map<String, ExtensionVersion> allExtensions;
+	
+	boolean checked;
+	File backupFolder;
 	
 	public long getTransfered() {
 		return transfered;
@@ -58,30 +67,43 @@ public abstract class AbstractExtensionUpdater {
 	
 	protected abstract boolean getInstallMandatoryExtensions();
 	
-	public final boolean update() throws IOException {
-
+	public boolean checkForUpdates() throws IOException {
+	
 		if (log.isInfoEnabled()) {
 			log.info("Checking updatable extensions");
 		}
 		
-		int totalUpdates = 0;
+		backupFolder = new File(HypersocketUtils.getConfigDir().getParent(), "backups");
+		backupFolder = new File(backupFolder, HypersocketVersion.getVersion());
+		FileUtils.deleteFolder(backupFolder);
+		if (!backupFolder.exists()) {
+			backupFolder.mkdirs();
+		}
+		allExtensions = onResolveExtensions(getVersion());
+		updates = new HashSet<ExtensionVersion>();
 		
-		try {
-			File tmpFolder = Files.createTempDirectory("hypersocket").toFile();
-			File backupFolder = new File(HypersocketUtils.getConfigDir().getParent(), "backups");
-			backupFolder = new File(backupFolder, HypersocketVersion.getVersion());
-			FileUtils.deleteFolder(backupFolder);
-			if (!backupFolder.exists()) {
-				backupFolder.mkdirs();
-			}
-			final Map<String, ExtensionVersion> allExtensions = onResolveExtensions(getVersion());
-			Set<ExtensionVersion> updates = new HashSet<ExtensionVersion>();
-			
-			for(ExtensionVersion v : allExtensions.values()) {
-				switch(v.getState()) {
-				case UPDATABLE:
-					
-					if(ArrayUtils.contains(getUpdateTargets(),ExtensionTarget.valueOf(v.getTarget()))) {
+		for(ExtensionVersion v : allExtensions.values()) {
+			switch(v.getState()) {
+			case UPDATABLE:
+				
+				if(ArrayUtils.contains(getUpdateTargets(),ExtensionTarget.valueOf(v.getTarget()))) {
+					updates.add(v);
+					for(String depend : v.getDependsOn()) {
+						if(StringUtils.isNotBlank(depend)) {
+							ExtensionVersion dep = allExtensions.get(depend);
+							updates.add(dep);
+						}
+					}
+				}
+				
+				break;
+			case NOT_INSTALLED:
+				
+				if(ArrayUtils.contains(getUpdateTargets(), ExtensionTarget.valueOf(v.getTarget()))) {
+					if(log.isInfoEnabled()) {
+						log.info(String.format("Checking install state for %s %s", v.getExtensionId(), v.getFeatureGroup()));
+					}
+					if(getInstallMandatoryExtensions() && v.isMandatory() || getNewFeatures().contains(v.getFeatureGroup())) {
 						updates.add(v);
 						for(String depend : v.getDependsOn()) {
 							if(StringUtils.isNotBlank(depend)) {
@@ -90,46 +112,42 @@ public abstract class AbstractExtensionUpdater {
 							}
 						}
 					}
-					
-					break;
-				case NOT_INSTALLED:
-					
-					if(ArrayUtils.contains(getUpdateTargets(), ExtensionTarget.valueOf(v.getTarget()))) {
-						if(log.isInfoEnabled()) {
-							log.info(String.format("Checking install state for %s %s", v.getExtensionId(), v.getFeatureGroup()));
-						}
-						if(getInstallMandatoryExtensions() && v.isMandatory() || getNewFeatures().contains(v.getFeatureGroup())) {
-							updates.add(v);
-							for(String depend : v.getDependsOn()) {
-								if(StringUtils.isNotBlank(depend)) {
-									ExtensionVersion dep = allExtensions.get(depend);
-									updates.add(dep);
-								}
-							}
-						}
-					}
-					
-					break;
-				default:
-					break;
 				}
+				
+				break;
+			default:
+				break;
+			}
+		}
+		
+		tmpArchives = new HashMap<ExtensionVersion, File>();
+
+		totalSize = 0;
+
+		for (ExtensionVersion def : updates) {
+			log.info(String.format("Checking %s %s - State %s (%d bytes)", 
+					def.getVersion(),
+					def.getExtensionId(), 
+					def.getState(),
+					def.getSize()));
+
+				totalUpdates++;
+				totalSize += def.getSize();
+		}
+		
+		checked = true;
+		return totalSize > 0;
+	}
+	
+	public final boolean update() throws IOException {
+
+		try {
+
+			if(!checked) {
+				checkForUpdates();
 			}
 			
-			Map<ExtensionVersion, File> tmpArchives = new HashMap<ExtensionVersion, File>();
-
-			totalSize = 0;
-
-			for (ExtensionVersion def : updates) {
-				log.info(String.format("Checking %s %s - State %s (%d bytes)", 
-						def.getVersion(),
-						def.getExtensionId(), 
-						def.getState(),
-						def.getSize()));
-
-					totalUpdates++;
-					totalSize += def.getSize();
-			}
-
+			File tmpFolder = Files.createTempDirectory("hypersocket").toFile();
 			onUpdateStart(totalSize);
 
 			transfered = 0;
