@@ -2,9 +2,11 @@ package com.hypersocket.message;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.RecipientHolder;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
@@ -49,7 +51,7 @@ public interface MessageResourceService extends
 
 	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> emails, ITokenResolver tokenResolver);
 
-	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails);
+	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails, List<EmailAttachment> attachments);
 	
 	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, String... emails);
 
@@ -68,15 +70,15 @@ public interface MessageResourceService extends
 	void sendMessageNow(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals);
 
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			Collection<Principal> principals);
+			List<EmailAttachment> attachments, Collection<Principal> principals);
 
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			Collection<Principal> principals, Date schedule);
+			Collection<Principal> principals, Date schedule, List<EmailAttachment> attachments);
 
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			Principal... principals);
+			List<EmailAttachment> attachments, Principal... principals);
 
 	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients,
-			RecipientHolder replyTo, ITokenResolver tokenResolver);
+			RecipientHolder replyTo, ITokenResolver tokenResolver, List<EmailAttachment> attachments);
 
 }

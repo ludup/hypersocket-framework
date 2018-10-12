@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -243,18 +244,25 @@ public class EmailTask extends AbstractTaskProvider {
 		
 	}
 	
-	private void addUUIDAttachment(String uuid, String[] typesRequired, List<EmailAttachment> attachments) throws ResourceNotFoundException, FileNotFoundException, IOException {
-		FileUpload upload = uploadService.getFileUpload(uuid);	
-		if(typesRequired.length==0) {
-			attachments.add(new EmailAttachment(upload.getFileName(), 
-					uploadService.getContentType(uuid), 
-					new CloseOnEOFInputStream(uploadService.getInputStream(uuid))));
+	private void addUUIDAttachment(String uuid, String[] typesRequired, List<EmailAttachment> attachments)
+			throws ResourceNotFoundException, FileNotFoundException, IOException {
+		FileUpload upload = uploadService.getFileUpload(uuid);
+		if (typesRequired.length == 0) {
+			attachments.add(new EmailAttachment(upload.getFileName(), uploadService.getContentType(uuid)) {
+				@Override
+				public InputStream getInputStream() throws IOException {
+					return new CloseOnEOFInputStream(uploadService.getInputStream(uuid));
+				}
+			});
 		} else {
-			for(String typeRequired : typesRequired) {
-				if(upload.getType().equalsIgnoreCase(typeRequired)) {
-					attachments.add(new EmailAttachment(upload.getFileName(), 
-						uploadService.getContentType(uuid), 
-						new CloseOnEOFInputStream(uploadService.getInputStream(uuid))));
+			for (String typeRequired : typesRequired) {
+				if (upload.getType().equalsIgnoreCase(typeRequired)) {
+					attachments.add(new EmailAttachment(upload.getFileName(), uploadService.getContentType(uuid)) {
+						@Override
+						public InputStream getInputStream() throws IOException {
+							return new CloseOnEOFInputStream(uploadService.getInputStream(getName()));
+						}
+					});
 				}
 			}
 		}
@@ -285,8 +293,12 @@ public class EmailTask extends AbstractTaskProvider {
 			filename = file.getName();
 		}
 		
-		attachments.add(new EmailAttachment(filename, uploadService.getContentType(file), 
-				new CloseOnEOFInputStream(new FileInputStream(file))));
+		attachments.add(new EmailAttachment(filename, uploadService.getContentType(file)) {
+			@Override
+			public InputStream getInputStream() throws IOException {
+				return new CloseOnEOFInputStream(new FileInputStream(file));
+			}
+		});
 
 	}
 	public String[] getResultResourceKeys() {

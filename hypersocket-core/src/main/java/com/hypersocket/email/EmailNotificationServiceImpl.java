@@ -3,18 +3,23 @@ package com.hypersocket.email;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.mail.Message.RecipientType;
 import javax.mail.Session;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import org.codemonkey.simplejavamail.MailException;
 import org.codemonkey.simplejavamail.Mailer;
 import org.codemonkey.simplejavamail.TransportStrategy;
 import org.codemonkey.simplejavamail.email.Email;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,16 +65,16 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	
 	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
 
-	final static String SMTP_ENABLED = "smtp.enabled";
-	final static String SMTP_HOST = "smtp.host";
-	final static String SMTP_PORT = "smtp.port";
-	final static String SMTP_PROTOCOL = "smtp.protocol";
-	final static String SMTP_USERNAME = "smtp.username";
-	final static String SMTP_PASSWORD = "smtp.password";
-	final static String SMTP_FROM_ADDRESS = "smtp.fromAddress";
-	final static String SMTP_FROM_NAME = "smtp.fromName";
-	final static String SMTP_REPLY_ADDRESS = "smtp.replyAddress";
-	final static String SMTP_REPLY_NAME = "smtp.replyName";
+	public final static String SMTP_ENABLED = "smtp.enabled";
+	public final static String SMTP_HOST = "smtp.host";
+	public final static String SMTP_PORT = "smtp.port";
+	public final static String SMTP_PROTOCOL = "smtp.protocol";
+	public final static String SMTP_USERNAME = "smtp.username";
+	public final static String SMTP_PASSWORD = "smtp.password";
+	public final static String SMTP_FROM_ADDRESS = "smtp.fromAddress";
+	public final static String SMTP_FROM_NAME = "smtp.fromName";
+	public final static String SMTP_REPLY_ADDRESS = "smtp.replyAddress";
+	public final static String SMTP_REPLY_NAME = "smtp.replyName";
 	
 	public static final String EMAIL_PATTERN = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 	
@@ -258,7 +263,33 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		
 		
 		if(StringUtils.isNotBlank(htmlText)) {
-			email.setTextHTML(htmlText);
+			Document doc = Jsoup.parse(htmlText);
+			try {
+				for (Element el : doc.select("img")) {
+					String src = el.attr("src");
+					if(src != null && src.startsWith("data:")) {
+						int idx = src.indexOf(':');
+						src = src.substring(idx + 1);
+						idx = src.indexOf(';');
+						String mime = src.substring(0, idx);
+						src = src.substring(idx + 1);
+						idx = src.indexOf(',');
+						String enc = src.substring(0, idx);
+						String data = src.substring(idx + 1);
+						if(!"base64".equals(enc)) {
+							throw new UnsupportedOperationException(String.format("%s is not supported for embedded images.", enc));
+						}
+						byte[] bytes = Base64.decodeBase64(data);
+						UUID cid = UUID.randomUUID();
+						el.attr("src", "cid:" + cid);
+						email.addEmbeddedImage(cid.toString(), bytes, mime);
+					}
+				}
+			}
+			catch(Exception e) {
+				log.error(String.format("Failed to parse embedded images in email %s to %s.", subject, r.getEmail()), e);
+			}
+			email.setTextHTML(doc.toString());
 		}
 		
 		email.setText(plainText);
@@ -277,7 +308,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				} catch (InterruptedException e) {
 				};
 			}
-			mail.sendMail(email);
+			
+			if("true".equals(System.getProperty("hypersocket.email", "true")))
+				mail.sendMail(email);
 			
 			eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail()));
 		} catch (MailException e) {

@@ -1,6 +1,7 @@
 package com.hypersocket.message;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -424,17 +425,17 @@ public class MessageResourceServiceImpl extends
 	}
 	
 	@Override
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, Principal... principals) {
-		sendMessage(resourceKey, realm, tokenResolver, replyTo, Arrays.asList(principals));
+	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, List<EmailAttachment> attachments, Principal... principals) {
+		sendMessage(resourceKey, realm, tokenResolver, replyTo, attachments, Arrays.asList(principals));
 	}
 	
 	@Override
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, String... principals) {
-		sendMessageToEmailAddress(resourceKey, realm, tokenResolver, Arrays.asList(principals));
+		sendMessageToEmailAddress(resourceKey, realm, tokenResolver, Arrays.asList(principals), null);
 	}
 	
 	@Override
-	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails) {
+	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails, List<EmailAttachment> attachments) {
 	
 		MessageResource message = repository.getMessageById(resourceKey, realm);
 		
@@ -450,11 +451,11 @@ public class MessageResourceServiceImpl extends
 		}
 		
 		
-		sendMessage(message, realm, tokenResolver, null, recipients);
+		sendMessage(message, realm, tokenResolver, null, recipients, attachments);
 	}
 	
 	@Override
-	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients, RecipientHolder replyTo, ITokenResolver tokenResolver) {
+	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients, RecipientHolder replyTo, ITokenResolver tokenResolver, List<EmailAttachment> attachments) {
 		MessageResource message = repository.getMessageById(resourceKey, realm);
 		
 		if(message==null) {
@@ -462,13 +463,13 @@ public class MessageResourceServiceImpl extends
 			return;
 		}
 		
-		sendMessage(message, realm, tokenResolver, replyTo, new ArrayList<RecipientHolder>(recipients));
+		sendMessage(message, realm, tokenResolver, replyTo, new ArrayList<RecipientHolder>(recipients), attachments);
 		
 	}
 	
 	@Override
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients, ITokenResolver tokenResolver) {
-		sendMessageToEmailAddress(resourceKey, realm, recipients, null, tokenResolver);
+		sendMessageToEmailAddress(resourceKey, realm, recipients, null, tokenResolver, null);
 	}
 	
 	@Override
@@ -477,8 +478,8 @@ public class MessageResourceServiceImpl extends
 	}
 	
 	@Override
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, Collection<Principal> principals) {
-		sendMessage(resourceKey, realm, tokenResolver, replyTo, principals, new Date());
+	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, List<EmailAttachment> attachments, Collection<Principal> principals) {
+		sendMessage(resourceKey, realm, tokenResolver, replyTo, principals, new Date(), attachments);
 	}
 	
 	@Override
@@ -488,11 +489,11 @@ public class MessageResourceServiceImpl extends
 	
 	@Override
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals, Date schedule) {
-		sendMessage(resourceKey, realm, tokenResolver, null, principals, schedule);
+		sendMessage(resourceKey, realm, tokenResolver, null, principals, schedule, null);
 	}
 	
 	@Override
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, Collection<Principal> principals, Date schedule) {
+	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, Collection<Principal> principals, Date schedule, List<EmailAttachment> attachments) {
 
 		MessageResource message = repository.getMessageById(resourceKey, realm);
 		
@@ -528,14 +529,14 @@ public class MessageResourceServiceImpl extends
 			}
 		}
 		
-		sendMessage(message, realm, tokenResolver, replyTo, recipients, schedule);
+		sendMessage(message, realm, tokenResolver, replyTo, recipients, schedule, null);
 	}
 	
-	private void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, List<RecipientHolder> recipients) {
-		sendMessage(message,  realm, tokenResolver, replyTo, recipients, new Date());
+	private void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, List<RecipientHolder> recipients, List<EmailAttachment> attachments) {
+		sendMessage(message,  realm, tokenResolver, replyTo, recipients, new Date(), attachments);
 	}
 	
-	private void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, List<RecipientHolder> recipients, Date schedule) {
+	private void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, List<RecipientHolder> recipients, Date schedule, List<EmailAttachment> attachments) {
 		
 		if(!message.getEnabled()) {
 			log.info(String.format("Message template %s has been disabled", message.getName()));
@@ -603,8 +604,16 @@ public class MessageResourceServiceImpl extends
 				StringWriter htmlWriter = new StringWriter();
 				htmlTemplate.process(data, htmlWriter);
 				
-				if(schedule!=null) {
+				String attachmentsListString = message.getAttachments();
+				List<String>  attachmentUUIDs = new ArrayList<>(Arrays.asList(ResourceUtils.explodeValues(attachmentsListString)));
 				
+				if(schedule!=null) {
+					if(attachments != null) {
+						for(EmailAttachment attachment : attachments) {
+							attachmentUUIDs.add(attachment.getName());
+						}
+						attachmentsListString = ResourceUtils.implodeValues(attachmentUUIDs);
+					}				
 					batchService.scheduleEmail(realm, subjectWriter.toString(),
 							bodyWriter.toString(),
 							htmlWriter.toString(),
@@ -613,18 +622,23 @@ public class MessageResourceServiceImpl extends
 							recipient.getName(),
 							recipient.getEmail(),
 							message.getTrack(),
-							message.getAttachments(),
+							attachmentsListString,
 							schedule);
 				
 				} else {
-					
-					List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
-					for(String uuid : ResourceUtils.explodeValues(message.getAttachments())) {
+					List<EmailAttachment> emailAttachments = new ArrayList<EmailAttachment>();
+					if(attachments != null)
+						emailAttachments.addAll(attachments);
+					for(String uuid : attachmentUUIDs) {
 						try {
 							FileUpload upload = uploadService.getFileUpload(uuid);
-							attachments.add(new EmailAttachment(upload.getFileName(), 
-									uploadService.getContentType(uuid), 
-									uploadService.getInputStream(uuid)));
+							emailAttachments.add(new EmailAttachment(upload.getFileName(), 
+									uploadService.getContentType(uuid)) {
+								@Override
+								public InputStream getInputStream() throws IOException {
+									return uploadService.getInputStream(getName());
+								}
+							});
 						} catch (ResourceNotFoundException | IOException e) {
 							log.error(String.format("Unable to locate upload %s", uuid), e);
 						}
@@ -638,7 +652,7 @@ public class MessageResourceServiceImpl extends
 							message.getReplyToEmail(), 
 							recipients.toArray(new RecipientHolder[0]),
 							message.getTrack(), 50,
-							attachments.toArray(new EmailAttachment[0]));
+							emailAttachments.toArray(new EmailAttachment[0]));
 					
 				}
 			}

@@ -1,6 +1,7 @@
 package com.hypersocket.email;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -50,16 +51,21 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 
 		try {
 
-			if(item.getSchedule()!=null && item.getSchedule().after(new Date())) {
+			if (item.getSchedule() != null && item.getSchedule().after(new Date())) {
 				return false;
 			}
-			
+
 			List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
 			for (String uuid : ResourceUtils.explodeValues(item.getAttachments())) {
 				try {
 					FileUpload upload = uploadService.getFileUpload(uuid);
-					attachments.add(new EmailAttachment(upload.getFileName(), uploadService.getContentType(uuid),
-							uploadService.getInputStream(uuid)));
+					attachments.add(new EmailAttachment(upload.getFileName(), uploadService.getContentType(uuid)) {
+						@Override
+						public InputStream getInputStream() throws IOException {
+							return uploadService.getInputStream(uuid);
+						}
+						
+					});
 				} catch (ResourceNotFoundException | IOException e) {
 					log.error(String.format("Unable to locate upload %s", uuid), e);
 				}
@@ -73,7 +79,7 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 			return true;
 		} catch (MailException | AccessDeniedException | ValidationException e) {
 			throw new IllegalStateException(e.getMessage(), e);
-		} 
+		}
 
 	}
 
@@ -84,13 +90,15 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 
 	@Override
 	public void queueEmail(Realm realm, String subject, String body, String html, String replyToName,
-			String replyToEmail, String name, String email, Boolean track, String attachments) throws ResourceException {
+			String replyToEmail, String name, String email, Boolean track, String attachments)
+			throws ResourceException {
 		scheduleEmail(realm, subject, body, html, replyToName, replyToEmail, name, email, track, attachments, null);
 	}
 
 	@Override
 	public void scheduleEmail(Realm realm, String subject, String body, String html, String replyToName,
-			String replyToEmail, String name, String email, Boolean track, String attachments, Date schedule) throws ResourceException {
+			String replyToEmail, String name, String email, Boolean track, String attachments, Date schedule)
+			throws ResourceException {
 
 		EmailBatchItem item = new EmailBatchItem();
 		item.setName(UUID.randomUUID().toString());
@@ -104,10 +112,10 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 		item.setToEmail(email);
 		item.setTrack(track);
 		item.setAttachments(attachments);
-		if(schedule!=null) {
+		if (schedule != null) {
 			item.setSchedule(schedule);
 		}
-		
+
 		repository.saveResource(item);
 	}
 
