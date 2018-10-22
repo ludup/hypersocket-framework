@@ -26,6 +26,13 @@ public class ResourceUtils {
 	static final String[] DELIMS = { "]|[", "\r\n" };
 	static Pattern pattern = Pattern.compile("\\$\\{(.*?)\\}");
 	
+	public static String[] explodeValuesExactly(String values) {
+		if(StringUtils.isBlank(values)) {
+			return new String[] { };
+		}
+		return StringUtils.splitByWholeSeparator(values, "]|[");
+	}
+	
 	public static String[] explodeValues(String values) {
 		if(StringUtils.isBlank(values)) {
 			return new String[] { };
