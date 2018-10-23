@@ -52,7 +52,7 @@ public class HypersocketUtils {
 
 	static ThreadLocal<Long> times = new ThreadLocal<Long>();
 
-	static Map<String,SimpleDateFormat> dateFormats = new HashMap<String,SimpleDateFormat>();
+	//static Map<String,SimpleDateFormat> dateFormats = new HashMap<String,SimpleDateFormat>();
 	
 	static DecimalFormat df = new DecimalFormat("0.00");
 	static SecureRandom random = new SecureRandom();
@@ -106,6 +106,9 @@ public class HypersocketUtils {
 	 */
 	public static String formatDate(Date date, String format) {
 		
+		/* BUG: This is a bad idea. Date formatters are not thread safe */
+		
+		/*
 		if(!dateFormats.containsKey(format)) {
 			dateFormats.put(format, new SimpleDateFormat(format));
 		}
@@ -115,6 +118,9 @@ public class HypersocketUtils {
 		}
 		
 		return dateFormats.get(format).format(date);
+		*/
+		
+		return new SimpleDateFormat(format).format(date);
 	}
 	
 	public static String formatDateTime(Long date) {
@@ -141,11 +147,18 @@ public class HypersocketUtils {
 	 * @throws ParseException
 	 */
 	public static Date parseDate(String date, String format) throws ParseException {
+		
+		/* BUG: Date formatters are not thread safe */
+		
+		/*
 		if(!dateFormats.containsKey(format)) {
 			dateFormats.put(format, new SimpleDateFormat(format));
 		}
 		
 		return dateFormats.get(format).parse(date);
+		*/
+		
+		return new SimpleDateFormat(format).parse(date);
 	}
 	
 	public static Date today() {
