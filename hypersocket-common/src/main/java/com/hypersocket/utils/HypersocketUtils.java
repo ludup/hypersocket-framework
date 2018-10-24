@@ -206,13 +206,18 @@ public class HypersocketUtils {
 	 * @return
 	 */
 	public static String stripPort(String hostHeader) {
-		int idx = hostHeader.indexOf(':');
-		if(idx > -1) {
-			return hostHeader.substring(0, idx);
-		}
-		return hostHeader;
+		return before(hostHeader, ":");
 	}
 
+	public static String after(String value, String string) {
+		int idx = value.indexOf(string);
+		if(idx > -1) {
+			return value.substring(idx+1);
+		}
+		return "";
+	}
+	
+	
 	public static String before(String value, String string) {
 		int idx = value.indexOf(string);
 		if(idx > -1) {
@@ -429,6 +434,10 @@ public class HypersocketUtils {
 
 	public static Date convertToUTC(Date date, TimeZone tz) {
 		return new Date(date.getTime() + tz.getOffset(date.getTime()));
+	}
+
+	public static String stripHostname(String uri) {
+		return after(uri, ":");
 	}
 
 }
