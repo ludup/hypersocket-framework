@@ -44,14 +44,14 @@ public class UserUpdatedEvent extends UserEvent {
 		// Find principal additions
 		for(Principal p : associatedPrincipals) {
 			if(!previouslyAssociatedPrincipals.contains(p)) {
-				changes.add(String.format("Principal %s (%s) was associated", p.getPrincipalName(), p.getPrincipalType()));
+				changes.add(String.format("%s %s was added", p.getPrincipalType(), p.getPrincipalName()));
 			} 
 		}
 		// Find principal removals
 
 		for(Principal p : previouslyAssociatedPrincipals) {
 			if(!associatedPrincipals.contains(p)) {
-				changes.add(String.format("Principal %s (%s) was unassociated", p.getPrincipalName(), p.getPrincipalType()));
+				changes.add(String.format("%s %s was removed", p.getPrincipalType(), p.getPrincipalName()));
 			} 
 		}
 

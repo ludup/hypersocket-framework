@@ -16,9 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -52,6 +50,7 @@ public class HypersocketUtils {
 
 	static ThreadLocal<Long> times = new ThreadLocal<Long>();
 
+	/* BUG: Date formatters are not thread safe. */
 	//static Map<String,SimpleDateFormat> dateFormats = new HashMap<String,SimpleDateFormat>();
 	
 	static DecimalFormat df = new DecimalFormat("0.00");

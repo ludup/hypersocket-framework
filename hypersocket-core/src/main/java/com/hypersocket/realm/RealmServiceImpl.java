@@ -708,9 +708,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			throws ResourceException, AccessDeniedException {
 
 		final RealmProvider provider = getProviderForPrincipal(user);
-		Map<String, String> oldProperties = getUserPropertyValues(getPrincipalById(user.getId()));
-		
-		List<Principal> associated = getAssociatedPrincipals(user);
+		final Principal existing = getPrincipalById(user.getId());
+		Map<String, String> oldProperties = getUserPropertyValues(existing);
+		List<Principal> associated = getAssociatedPrincipals(existing);
 		try {
 
 			assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
@@ -726,7 +726,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 
 			eventService.publishEvent(new UserUpdatedEvent(this, getCurrentSession(), principal.getRealm(), provider,
-					principal, associated, filterSecretProperties(principal, provider, properties), associated, filterSecretProperties(principal, provider, oldProperties)));
+					principal, getAssociatedPrincipals(principal), filterSecretProperties(principal, provider, properties), associated, filterSecretProperties(principal, provider, oldProperties)));
 
 			return principal;
 		} catch (AccessDeniedException e) {
