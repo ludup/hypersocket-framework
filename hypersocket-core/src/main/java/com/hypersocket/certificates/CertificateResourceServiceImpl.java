@@ -399,44 +399,25 @@ public class CertificateResourceServiceImpl extends
 			char[] keyPassphrase, char[] keystorePassphrase, KeyStore keystore)
 			throws CertificateException, MismatchedCertificateException {
 
+		mergeKeystores(keystore, 
+				loadPEMCertificate(keyStream, certStream, caStream, alias, keyPassphrase, keystorePassphrase),
+				"changeit");
+	}
+
+	private void mergeKeystores(KeyStore newKeystore, KeyStore oldKeystore, String sPassword) throws CertificateException {
+		
 		try {
 
-			KeyPair pair = X509CertificateUtils
-					.loadKeyPairFromPEM(keyStream, keyPassphrase);
-			
-			if (caStream != null) {
-				
-				X509Certificate[] cert = X509CertificateUtils
-						.loadCertificateChainFromPEM(caStream);
-				
-				X509Certificate[] ca = ArrayUtils.add(cert, X509CertificateUtils
-						.loadCertificateFromPEM(certStream));
-				ArrayUtils.reverse(ca);
-
-				if (!pair.getPublic().equals(cert[0].getPublicKey())) {
-					throw new MismatchedCertificateException();
-				}
-				
-				keystore.setKeyEntry(alias, pair.getPrivate(), keystorePassphrase, ca);
-
-			} else {
-				
-				X509Certificate cert = X509CertificateUtils
-						.loadCertificateFromPEM(certStream);
-				
-				if (!pair.getPublic().equals(cert.getPublicKey())) {
-					throw new MismatchedCertificateException();
-				}
-				
-				keystore.setKeyEntry(alias, pair.getPrivate(), keystorePassphrase, 
-						new X509Certificate[] { cert });
-
+			Enumeration<?> enumeration = oldKeystore.aliases();
+			while (enumeration.hasMoreElements()) {
+				String alias = (String) enumeration.nextElement();
+				Key key = oldKeystore.getKey(alias, sPassword.toCharArray());
+				Certificate[] certs = oldKeystore.getCertificateChain(alias);
+				newKeystore.setKeyEntry(alias, key, sPassword.toCharArray(), certs);
 			}
 		} catch (Exception e) {
-			throw new CertificateException(
-					"Failed to load key/certificate files", e);
+			throw new CertificateException("Failed to load key/certificate files", e);
 		}
-
 	}
 
 	private KeyPair loadKeyPair(CertificateResource resource)
