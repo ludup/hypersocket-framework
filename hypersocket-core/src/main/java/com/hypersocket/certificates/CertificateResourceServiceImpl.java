@@ -399,7 +399,7 @@ public class CertificateResourceServiceImpl extends AbstractResourceServiceImpl<
 		
 		try {
 
-			Enumeration enumeration = oldKeystore.aliases();
+			Enumeration<?> enumeration = oldKeystore.aliases();
 			while (enumeration.hasMoreElements()) {
 				String alias = (String) enumeration.nextElement();
 				Key key = oldKeystore.getKey(alias, sPassword.toCharArray());
