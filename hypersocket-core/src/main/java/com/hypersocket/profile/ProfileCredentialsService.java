@@ -3,6 +3,7 @@ package com.hypersocket.profile;
 import java.util.Collection;
 
 import com.hypersocket.auth.AuthenticationScheme;
+import com.hypersocket.authenticator.events.AuthenticationSchemeUpdatedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.events.UserDeletedEvent;
@@ -31,5 +32,7 @@ public interface ProfileCredentialsService {
 	void updateProfile(Profile profile, Principal target) throws AccessDeniedException;
 
 	Profile generateProfile(Principal target) throws AccessDeniedException;
+
+	void onSchemeChange(AuthenticationSchemeUpdatedEvent event);
 
 }

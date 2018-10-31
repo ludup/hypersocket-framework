@@ -1,6 +1,7 @@
 package com.hypersocket.profile;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +20,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticationScheme;
+import com.hypersocket.authenticator.events.AuthenticationSchemeUpdatedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.profile.jobs.ProfileBatchUpdateJob;
@@ -273,6 +275,19 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 	public void onBatchChange(ProfileBatchChangeEvent event) {
 		if(event.isSuccess()) {
 			fireBatchUpdateJob(event.getCurrentRealm());
+		}
+	}
+	
+	@EventListener
+	@Override
+	public void onSchemeChange(AuthenticationSchemeUpdatedEvent event) {
+		if(event.isSuccess()) {
+			String[] oldModules = event.getAttribute(AuthenticationSchemeUpdatedEvent.ATTR_AUTHENTICATION_OLD_SCHEME_MODULES).split(",");
+			String[] newModules = event.getAttribute(AuthenticationSchemeUpdatedEvent.ATTR_AUTHENTICATION_SCHEME_MODULES).split(",");
+			
+			if(!Arrays.equals(oldModules, newModules)) {
+				fireBatchUpdateJob(event.getCurrentRealm());
+			}
 		}
 	}
 
