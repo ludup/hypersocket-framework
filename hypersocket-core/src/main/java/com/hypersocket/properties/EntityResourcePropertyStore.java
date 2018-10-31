@@ -366,8 +366,10 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 			}
 		}
 		
-		if(log.isDebugEnabled()) {
-			log.debug(template.getResourceKey() + " is not a property of the entity " + resource.getClass().getName());
+		if(Boolean.getBoolean("hypersocket.development")) {
+			if(log.isWarnEnabled()) {
+				log.warn(template.getResourceKey() + " is not a property of the entity " + resource.getClass().getName());
+			}
 		}
 	}
 
