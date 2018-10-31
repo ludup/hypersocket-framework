@@ -14,6 +14,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.DefaultPasswordCreator;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
@@ -36,12 +37,18 @@ public abstract class AbstractCreateUserTask extends AbstractTaskProvider {
 	public TaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event) throws ValidationException {
 
 		String principalName = getRepository().getValue(task, "createUser.principalName");
-		boolean sendNotifications = true; // Get from task property
-		boolean forceChange = true;       // And again..
-		boolean generatePassword = true;  // And again..
-		String staticPassword = "";
+		boolean sendNotifications = getRepository().getBooleanValue(task, "createUser.sendNotification");
+		boolean forceChange = getRepository().getBooleanValue(task, "createUser.forceChange");
+		boolean generatePassword = getRepository().getBooleanValue(task, "createUser.generatePassword");
+		String staticPassword = getRepository().getValue(task, "createUser.defaultPassword");
 		
-		List<Principal> assosciated = new ArrayList<Principal>(); // Get from groups list
+		List<Principal> assosciated = new ArrayList<Principal>(); 
+		for(String group : getRepository().getValues(task, "createUser.groups")) {
+			Principal g = realmService.getPrincipalByName(currentRealm, group, PrincipalType.GROUP);
+			if(g!=null) {
+				assosciated.add(g);
+			}
+		}
 		
 		Map<String,String> properties = new HashMap<String,String>();
 		for(PropertyTemplate t : getRepository().getPropertyTemplates(null)) {

@@ -2,5 +2,15 @@
 <propertyTemplates context="createUser">
 	<propertyCategory resourceKey="category.principalInfo" resourceBundle="TaskProviderService" weight="-1000">
 		<property resourceKey="createUser.principalName" inputType="text" defaultValue="" weight="100" />
+		<property resourceKey="createUser.sendNotification" inputType="switch" defaultValue="true" weight="200" />
+		<property resourceKey="createUser.forceChange" inputType="switch" defaultValue="true" weight="300" />
+		<property resourceKey="createUser.generatePassword" inputType="switch" defaultValue="true" weight="400" />
+		<property resourceKey="createUser.defaultPassword" inputType="text" defaultValue="" 
+						visibilityDependsOn="createUser.generatePassword" visibilityDependsValue="false" allowEmpty="false" weight="500" />
+	</propertyCategory>
+	<propertyCategory resourceKey="category.principalGroups" resourceBundle="TaskProviderService" weight="-900">
+		<property resourceKey="createUser.groups" inputType="multipleSearchInput"
+			weight="0" defaultValue="" url="currentRealm/groups/table"
+				isNamePairValue="false" valueAttr="principalName" remoteSearch="true"/>	
 	</propertyCategory>
 </propertyTemplates>
