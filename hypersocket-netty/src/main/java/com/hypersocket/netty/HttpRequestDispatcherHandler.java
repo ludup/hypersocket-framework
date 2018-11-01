@@ -424,11 +424,15 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			if(!StringUtils.equals(RestApi.API_REST, (CharSequence) servletRequest.getAttribute(RestApi.API_REST))) {
 				switch (nettyResponse.getStatus().getCode()) {
 					case HttpStatus.SC_NOT_FOUND: {
-						send404(servletRequest, servletResponse);
+						if(!servletResponse.hasContent()) {
+							send404(servletRequest, servletResponse);
+						}
 						break;
 					}
 					case HttpStatus.SC_INTERNAL_SERVER_ERROR: {
-						send500(servletRequest, servletResponse);
+						if(!servletResponse.hasContent()) {
+							send500(servletRequest, servletResponse);
+						}
 						break;
 					}
 					default: {

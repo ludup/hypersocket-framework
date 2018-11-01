@@ -18,6 +18,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.DateUtils;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -100,6 +101,11 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 	@Override
 	public void setContentLength(int len) {
 		response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(len));
+	}
+	
+	public boolean hasContent() {
+		String l = response.getHeader(HttpHeaders.CONTENT_LENGTH);
+		return StringUtils.isNotBlank(l) && StringUtils.isNumeric(l) && Long.parseLong(l) > 0;
 	}
 
 	@Override
