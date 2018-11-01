@@ -2,7 +2,6 @@ package com.hypersocket.tasks.user;
 
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.events.SystemEvent;
@@ -22,14 +21,9 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 	@Autowired
 	private RealmService realmService;
 
-	//
 
-	private String principalIdKey;
-	private String principalNameKey;
+	protected AbstractAccountTask() {
 
-	protected AbstractAccountTask(String principalIdKey, String principalNameKey) {
-		this.principalIdKey = principalIdKey;
-		this.principalNameKey = principalNameKey;
 	}
 
 	@Override
@@ -39,22 +33,15 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 
 	@Override
 	public void validate(Task task, Map<String, String> parameters) throws ValidationException {
-		boolean haveId = StringUtils.isNotBlank(parameters.get(principalIdKey));
-		boolean haveName = StringUtils.isNotBlank(parameters.get(principalNameKey));
-		if ((!haveId && !haveName) || (haveId && haveName))
-			throw new ValidationException("error.accountTask.mustProvideIdOrName");
+
 	}
 
 	@Override
 	public final AbstractTaskResult execute(final Task task, final Realm currentRealm, final SystemEvent event)
 			throws ValidationException {
-		Principal p;
-		Long id = getRepository().getLongValue(task, principalIdKey);
-		String name = getRepository().getValue(task, principalNameKey);
-		if (id == 0) {
-			p = realmService.getPrincipalByName(currentRealm, name, getType(task));
-		} else
-			p = realmService.getPrincipalById(id);
+		
+		String principalName = processTokenReplacements(getRepository().getValue(task, "accountTask.principalName"), event);
+		Principal p = realmService.getPrincipalByName(currentRealm, principalName, PrincipalType.USER);
 
 		return doExecute(p, task, currentRealm, event);
 	}

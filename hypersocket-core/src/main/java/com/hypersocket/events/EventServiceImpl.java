@@ -3,6 +3,7 @@ package com.hypersocket.events;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -48,6 +49,7 @@ public class EventServiceImpl implements EventService {
 
 	ThreadLocal<Boolean> isDelayingEvents = new ThreadLocal<Boolean>();
 	ThreadLocal<LinkedList<SystemEvent>> delayedEvents = new ThreadLocal<LinkedList<SystemEvent>>();
+	ThreadLocal<SystemEvent> lastResult = new ThreadLocal<SystemEvent>();
 	
 	List<EventExtender> extenders = new ArrayList<EventExtender>();
 	
@@ -118,6 +120,22 @@ public class EventServiceImpl implements EventService {
 		}
 	}
 	
+	@Override
+	public List<SystemEvent> removeDelayedEvents() {
+		
+		isDelayingEvents.set(false);
+		if(delayedEvents.get()==null) {
+			return Collections.<SystemEvent>emptyList();
+		}
+		
+		LinkedList<SystemEvent> events = delayedEvents.get();
+		synchronized (events) {
+			delayedEvents.set(null);
+		}
+		
+		return events;
+	}
+	
 	protected void delayEvent(SystemEvent event) {
 		
 		if(log.isDebugEnabled()) {
@@ -132,6 +150,8 @@ public class EventServiceImpl implements EventService {
 		synchronized (events) {
 			events.addLast(event);
 		}
+		
+		lastResult.set(event);
 	}
 	
 	@PostConstruct
@@ -284,6 +304,7 @@ public class EventServiceImpl implements EventService {
 			}
 			
 			eventPublisher.publishEvent(extendEvent(event));
+			lastResult.set(event);
 		}
 	}
 
@@ -311,5 +332,10 @@ public class EventServiceImpl implements EventService {
 	@Override
 	public Set<String> getAttributeNames() {
 		return attributeNames;
+	}
+
+	@Override
+	public SystemEvent getLastResult() {
+		return lastResult.get();
 	}
 }

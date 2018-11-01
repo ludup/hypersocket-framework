@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<propertyTemplates>
+	<propertyCategory resourceKey="category.account"
+		resourceBundle="RealmResourceService" weight="3000">
+		<property resourceKey="accountTask.principalName" inputType="text" weight="100" defaultValue="" />
+	</propertyCategory>
+</propertyTemplates>

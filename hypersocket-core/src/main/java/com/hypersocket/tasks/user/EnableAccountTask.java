@@ -35,8 +35,8 @@ public class EnableAccountTask extends AbstractAccountTask {
 	@Autowired
 	private RealmService realmService;
 
-	protected EnableAccountTask() {
-		super("enableAccount.principalId", "enableAccount.principalName");
+	public EnableAccountTask() {
+
 	}
 
 	@PostConstruct

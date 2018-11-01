@@ -1,8 +1,3 @@
 <?xml version="1.0" ?>
-<propertyTemplates context="disableAccount">
-	<propertyCategory resourceKey="category.account"
-		resourceBundle="RealmResourceService" weight="3000">
-		<property resourceKey="disableAccount.principalId" inputType="integer" weight="100" minValue="0" defaultValue="0" />
-		<property resourceKey="disableAccount.principalName" inputType="text" weight="100" defaultValue="" />
-	</propertyCategory>
+<propertyTemplates context="disableAccount" extends="tasks/accountTask.xml">
 </propertyTemplates>

@@ -5,14 +5,11 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.realm.RealmServiceImpl;
-import com.hypersocket.realm.events.AccountDisabledEvent;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.AbstractTaskResult;
@@ -28,16 +25,13 @@ public class DeleteAccountTask extends AbstractAccountTask {
 	private EnableAccountTaskRepository taskRepository;
 
 	@Autowired
-	private EventService eventService;
-
-	@Autowired
 	private TaskProviderService taskService;
 
 	@Autowired
 	private RealmService realmService;
 
-	protected DeleteAccountTask() {
-		super("deleteAccount.principalId", "deleteAccount.principalName");
+	public DeleteAccountTask() {
+
 	}
 
 	@PostConstruct
