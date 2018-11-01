@@ -174,6 +174,17 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 	}
 	
 	@Override
+	public Profile updateOrGenerate(Principal target) throws AccessDeniedException {
+		Profile profile = profileRepository.getEntityById(target.getId());
+		if(profile!=null) {
+			updateProfile(profile, target);
+			return profile;
+		} else {
+			return generateProfile(target);
+		}
+	}
+	
+	@Override
 	public void updateProfile(Principal target) throws AccessDeniedException {
 		Profile profile = profileRepository.getEntityById(target.getId());
 		if(profile==null) {
@@ -202,6 +213,7 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 		if(log.isInfoEnabled()) {
 			log.info(String.format("Saving profile as %s for user %s", profile.getState(), target.getPrincipalName()));
 		}
+		
 		profileRepository.saveEntity(profile);
 		
 	}

@@ -35,4 +35,6 @@ public interface ProfileCredentialsService {
 
 	void onSchemeChange(AuthenticationSchemeUpdatedEvent event);
 
+	Profile updateOrGenerate(Principal target) throws AccessDeniedException;
+
 }
