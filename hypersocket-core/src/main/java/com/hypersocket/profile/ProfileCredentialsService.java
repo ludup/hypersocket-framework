@@ -33,8 +33,6 @@ public interface ProfileCredentialsService {
 
 	Profile generateProfile(Principal target) throws AccessDeniedException;
 
-	void onSchemeChange(AuthenticationSchemeUpdatedEvent event);
-
 	Profile updateOrGenerate(Principal target) throws AccessDeniedException;
 
 }

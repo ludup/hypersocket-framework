@@ -1,20 +1,19 @@
 package com.hypersocket.profile;
 
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -34,9 +33,9 @@ public class Profile extends AbstractEntity<Long>{
 	@OneToOne
 	Realm realm;
 	
-	@OneToMany(orphanRemoval=true, fetch=FetchType.EAGER, mappedBy="profile")
-	@Cascade({ CascadeType.ALL })
-	Set<ProfileCredentials> credentials;
+	@OneToMany(orphanRemoval=true, fetch=FetchType.EAGER, cascade=CascadeType.ALL)
+	@JoinColumn(name="profile_principal_id")
+	List<ProfileCredentials> credentials;
 	
 	@Column(name="state")
 	ProfileCredentialsState state;
@@ -54,11 +53,11 @@ public class Profile extends AbstractEntity<Long>{
 		this.id = principal.getId();
 	}
 
-	public Set<ProfileCredentials> getCredentials() {
+	public List<ProfileCredentials> getCredentials() {
 		return credentials;
 	}
 
-	public void setCredentials(Set<ProfileCredentials> credentials) {
+	public void setCredentials(List<ProfileCredentials> credentials) {
 		this.credentials = credentials;
 	}
 
@@ -77,6 +76,8 @@ public class Profile extends AbstractEntity<Long>{
 	public void setState(ProfileCredentialsState state) {
 		if(state == ProfileCredentialsState.COMPLETE && this.state != ProfileCredentialsState.COMPLETE) {
 			completed = HypersocketUtils.today();
+		} else if(state != ProfileCredentialsState.COMPLETE) {
+			completed = null;
 		}
 		this.state = state;
 	}

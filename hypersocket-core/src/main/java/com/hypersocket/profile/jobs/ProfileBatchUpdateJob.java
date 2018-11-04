@@ -28,6 +28,7 @@ public class ProfileBatchUpdateJob extends PermissionsAwareJob {
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {
 		
 		try {
+			
 			for(Profile profile : repository.getProfilesWithStatus(Arrays.asList(getCurrentRealm()))) {
 				profileService.updateProfile(realmService.getPrincipalById(profile.getId()));
 			}
