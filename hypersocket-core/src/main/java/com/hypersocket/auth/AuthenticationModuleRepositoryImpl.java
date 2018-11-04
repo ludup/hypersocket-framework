@@ -165,6 +165,7 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.createAlias("modules", "m");
+				criteria.add(Restrictions.eq("m.deleted", false));
 				criteria.add(Restrictions.in("m.template", resourceKeys));
 			}
 			
