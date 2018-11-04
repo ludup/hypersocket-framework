@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -92,9 +90,10 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 		return userSchemes;
 	}
 	
-	protected Set<ProfileCredentials> collectAuthenticatorStates(Profile profile, Principal principal, Map<String,ProfileCredentials> existingCredentials) throws AccessDeniedException {
+	protected List<ProfileCredentials> collectAuthenticatorStates(Profile profile, Principal principal, Map<String,ProfileCredentials> existingCredentials) throws AccessDeniedException {
 		
-		Set<ProfileCredentials> states = new HashSet<ProfileCredentials>();
+		List<ProfileCredentials> states = new ArrayList<ProfileCredentials>();
+		
 		for(ProfileCredentialsProvider provider : providers.values()) {
 			ProfileCredentialsState currentState = provider.hasCredentials(principal);
 			if(currentState!=ProfileCredentialsState.NOT_REQUIRED) {
@@ -102,7 +101,6 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 				if(!existingCredentials.containsKey(provider.getResourceKey())) {
 					c = new ProfileCredentials();
 					c.setResourceKey(provider.getResourceKey());
-					c.setProfile(profile);
 				} else {
 					c = existingCredentials.get(provider.getResourceKey());
 				}
@@ -205,9 +203,11 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 		for(ProfileCredentials c : profile.getCredentials()) {
 			creds.put(c.getResourceKey(), c);
 		}
-		Set<ProfileCredentials> currentCreds = collectAuthenticatorStates(profile, target, creds);
+		List<ProfileCredentials> currentCreds = collectAuthenticatorStates(profile, target, creds);
 		profile.getCredentials().clear();
-		profile.getCredentials().addAll(currentCreds);
+		if(!currentCreds.isEmpty()) {
+			profile.getCredentials().addAll(currentCreds);
+		}
 		calculateCompleteness(profile);
 		
 		if(log.isInfoEnabled()) {
@@ -285,19 +285,6 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 	public void onBatchChange(ProfileBatchChangeEvent event) {
 		if(event.isSuccess()) {
 			fireBatchUpdateJob(event.getCurrentRealm());
-		}
-	}
-	
-	@EventListener
-	@Override
-	public void onSchemeChange(AuthenticationSchemeUpdatedEvent event) {
-		if(event.isSuccess()) {
-			String[] oldModules = event.getAttribute(AuthenticationSchemeUpdatedEvent.ATTR_AUTHENTICATION_OLD_SCHEME_MODULES).split(",");
-			String[] newModules = event.getAttribute(AuthenticationSchemeUpdatedEvent.ATTR_AUTHENTICATION_SCHEME_MODULES).split(",");
-			
-			if(!Arrays.equals(oldModules, newModules)) {
-				fireBatchUpdateJob(event.getCurrentRealm());
-			}
 		}
 	}
 
