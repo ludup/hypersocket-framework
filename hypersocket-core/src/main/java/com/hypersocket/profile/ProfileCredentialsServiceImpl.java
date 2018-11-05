@@ -1,7 +1,6 @@
 package com.hypersocket.profile;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +17,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticationScheme;
-import com.hypersocket.authenticator.events.AuthenticationSchemeUpdatedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.profile.jobs.ProfileBatchUpdateJob;
