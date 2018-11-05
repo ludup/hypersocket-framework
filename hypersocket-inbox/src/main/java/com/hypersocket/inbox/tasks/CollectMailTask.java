@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.email.EmailNotificationServiceImpl;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
@@ -95,7 +96,8 @@ public class CollectMailTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public TaskResult execute(final Task task, final Realm currentRealm, List<SystemEvent> event) throws ValidationException {
+	public TaskResult execute(final Task task, final Realm currentRealm, List<SystemEvent> event)
+			throws ValidationException {
 
 		// for IMAP
 		String protocol = processTokenReplacements(repository.getValue(task, ATTR_PROTOCOL), event);
@@ -127,25 +129,31 @@ public class CollectMailTask extends AbstractTaskProvider {
 					List<String> attachmentUUIDs = new ArrayList<>();
 					if (doAttachments) {
 						for (EmailAttachment attachment : attachments) {
-							try {
-								final InputStream inputStream = attachment.getInputStream();
+							String filename = attachment.getFilename();
+							if (!filename.startsWith(
+									EmailNotificationServiceImpl.OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-")) {
 								try {
-									FileUpload upload = fileUploadService.createFile(inputStream,
-											attachment.getFilename(), currentRealm,
-											fileUploadService.getDefaultStore(), false, attachment.getContentType());
-									attachmentUUIDs.add(upload.getName());
-								} finally {
-									IOUtils.closeQuietly(inputStream);
+									final InputStream inputStream = attachment.getInputStream();
+									try {
+										FileUpload upload = fileUploadService.createFile(inputStream,
+												filename, currentRealm,
+												fileUploadService.getDefaultStore(), false,
+												attachment.getContentType());
+										attachmentUUIDs.add(upload.getName());
+									} finally {
+										IOUtils.closeQuietly(inputStream);
+									}
+								} catch (ResourceException e) {
+									log.error(String.format("Failed to attach %s", filename), e);
+									results.add(new CollectMailTaskResult(this, e, currentRealm, task));
+								} catch (AccessDeniedException e) {
+									log.error(String.format("Access denied for attaching %s", filename),
+											e);
+									results.add(new CollectMailTaskResult(this, e, currentRealm, task));
+								} catch (IOException e) {
+									log.error(String.format("I/O error attaching %s", filename), e);
+									results.add(new CollectMailTaskResult(this, e, currentRealm, task));
 								}
-							} catch (ResourceException e) {
-								log.error(String.format("Failed to attach %s", attachment.getFilename()), e);
-								results.add(new CollectMailTaskResult(this, e, currentRealm, task));
-							} catch (AccessDeniedException e) {
-								log.error(String.format("Access denied for attaching %s", attachment.getFilename()), e);
-								results.add(new CollectMailTaskResult(this, e, currentRealm, task));
-							} catch (IOException e) {
-								log.error(String.format("I/O error attaching %s", attachment.getFilename()), e);
-								results.add(new CollectMailTaskResult(this, e, currentRealm, task));
 							}
 						}
 					}

@@ -80,6 +80,8 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	
 	public static final String EMAIL_NAME_PATTERN = "(.*?)<([^>]+)>\\s*,?";
 
+	public static final String OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX = "OGIAU";
+
 	@Override
 	@SafeVarargs
 	public final void sendEmail(String subject, String text, String html, RecipientHolder[] recipients, boolean track, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
@@ -281,8 +283,8 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 						}
 						byte[] bytes = Base64.decodeBase64(data);
 						UUID cid = UUID.randomUUID();
-						el.attr("src", "cid:" + cid);
-						email.addEmbeddedImage(cid.toString(), bytes, mime);
+						el.attr("src", "cid:" + OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-" + cid);
+						email.addEmbeddedImage(OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-" + cid.toString(), bytes, mime);
 					}
 				}
 			}
