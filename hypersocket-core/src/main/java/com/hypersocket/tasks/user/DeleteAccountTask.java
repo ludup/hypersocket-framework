@@ -27,7 +27,7 @@ public class DeleteAccountTask extends AbstractAccountTask {
 	public static final String ACTION_DELETE_ACCOUNT = "deleteAccount";
 
 	@Autowired
-	private EnableAccountTaskRepository taskRepository;
+	private DeleteAccountTaskRepository taskRepository;
 
 	@Autowired
 	private EventService eventService;
@@ -61,6 +61,7 @@ public class DeleteAccountTask extends AbstractAccountTask {
 			realmService.deleteUser(currentRealm, p);
 			return new DeleteAccountTaskResult(this, currentRealm, task);
 		} catch (Exception e) {
+			e.printStackTrace();
 			return new DeleteAccountTaskResult(this, currentRealm, task, e);
 		}
 	}

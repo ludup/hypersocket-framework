@@ -52,11 +52,17 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 		Principal p;
 		Long id = getRepository().getLongValue(task, principalIdKey);
 		String name = getRepository().getValue(task, principalNameKey);
-		if (id == 0) {
+		if (id == null || id == 0) {
 			p = realmService.getPrincipalByName(currentRealm, name, getType(task));
 		} else
 			p = realmService.getPrincipalById(id);
 
+		if(p==null) {
+			if (id == null || id == 0) 
+				throw new ValidationException(String.format("Principal %s not found", name));
+			else
+				throw new ValidationException(String.format("Principal %d not found", id));
+		}
 		return doExecute(p, task, currentRealm, event);
 	}
 
