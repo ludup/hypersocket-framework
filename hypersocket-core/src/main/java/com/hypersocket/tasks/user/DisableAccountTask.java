@@ -37,8 +37,8 @@ public class DisableAccountTask extends AbstractAccountTask {
 	@Autowired
 	private RealmService realmService;
 
-	public DisableAccountTask() {
-
+	protected DisableAccountTask() {
+		super("disableAccount.principalId", "disableAccount.principalName");
 	}
 	
 	@PostConstruct

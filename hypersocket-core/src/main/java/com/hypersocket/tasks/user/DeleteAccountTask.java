@@ -38,8 +38,8 @@ public class DeleteAccountTask extends AbstractAccountTask {
 	@Autowired
 	private RealmService realmService;
 
-	public DeleteAccountTask() {
-
+	protected DeleteAccountTask() {
+		super("deleteAccount.principalId", "deleteAccount.principalName");
 	}
 
 	@PostConstruct
