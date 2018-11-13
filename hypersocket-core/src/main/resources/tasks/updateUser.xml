@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="updateUser" extends="tasks/accountTask.xml">
+	<propertyCategory resourceKey="category.principalGroups" resourceBundle="TaskProviderService" weight="-900">
+		<property resourceKey="updateUser.addGroups" inputType="multipleSearchInput"
+			weight="0" defaultValue="" url="currentRealm/groups/table"
+				isNamePairValue="false" valueAttr="principalName" remoteSearch="true"/>	
+		<property resourceKey="updateUser.removeGroups" inputType="multipleSearchInput"
+			weight="0" defaultValue="" url="currentRealm/groups/table"
+				isNamePairValue="false" valueAttr="principalName" remoteSearch="true"/>	
+	</propertyCategory>	
+</propertyTemplates>

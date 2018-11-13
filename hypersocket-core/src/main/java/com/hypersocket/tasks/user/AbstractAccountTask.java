@@ -12,8 +12,8 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
+import com.hypersocket.tasks.TaskResult;
 import com.hypersocket.tasks.alert.AlertEvent;
-import com.hypersocket.triggers.AbstractTaskResult;
 import com.hypersocket.triggers.ValidationException;
 
 public abstract class AbstractAccountTask extends AbstractTaskProvider {
@@ -37,7 +37,7 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public final AbstractTaskResult execute(final Task task, final Realm currentRealm, final SystemEvent event)
+	public final TaskResult execute(final Task task, final Realm currentRealm, final SystemEvent event)
 			throws ValidationException {
 		
 		String principalName = processTokenReplacements(getRepository().getValue(task, "accountTask.principalName"), event);
@@ -46,7 +46,7 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 		return doExecute(p, task, currentRealm, event);
 	}
 
-	protected abstract AbstractTaskResult doExecute(Principal p, final Task task, final Realm currentRealm,
+	protected abstract TaskResult doExecute(Principal p, final Task task, final Realm currentRealm,
 			final SystemEvent event) throws ValidationException;
 
 	public String[] getResultResourceKeys() {
