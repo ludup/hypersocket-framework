@@ -49,10 +49,12 @@ public abstract class AbstractCreateUserTask extends AbstractTaskProvider {
 		String staticPassword = processTokenReplacements(getRepository().getValue(task, "createUser.defaultPassword"), event);
 		
 		List<Principal> assosciated = new ArrayList<Principal>(); 
-		for(String group : ResourceUtils.explodeCollectionValues(processTokenReplacements(getRepository().getValue(task, "createUser.groups"), event))) {
-			Principal g = realmService.getPrincipalByName(currentRealm, group, PrincipalType.GROUP);
-			if(g!=null) {
-				assosciated.add(g);
+		for(String group : ResourceUtils.explodeCollectionValues(getRepository().getValue(task, "createUser.groups"))) {
+			for(String groupName : processTokenReplacements(group, event).split(",")) {
+				Principal g = realmService.getPrincipalByName(currentRealm, groupName, PrincipalType.GROUP);
+				if(g!=null) {
+					assosciated.add(g);
+				}
 			}
 		}
 		
