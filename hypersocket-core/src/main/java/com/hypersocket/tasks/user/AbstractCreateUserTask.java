@@ -12,6 +12,7 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.password.policy.PasswordPolicyPasswordCreator;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.DefaultPasswordCreator;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
@@ -43,10 +44,13 @@ public abstract class AbstractCreateUserTask extends AbstractTaskProvider {
 		String staticPassword = getRepository().getValue(task, "createUser.defaultPassword");
 		
 		List<Principal> assosciated = new ArrayList<Principal>(); 
-		for(String group : getRepository().getValues(task, "createUser.groups")) {
-			Principal g = realmService.getPrincipalByName(currentRealm, group, PrincipalType.GROUP);
-			if(g!=null) {
-				assosciated.add(g);
+
+		for(String group : ResourceUtils.explodeCollectionValues(getRepository().getValue(task, "createUser.groups"))) {
+			for(String groupName : processTokenReplacements(group, event).split(",")) {
+				Principal g = realmService.getPrincipalByName(currentRealm, groupName, PrincipalType.GROUP);
+				if(g!=null) {
+					assosciated.add(g);
+				}
 			}
 		}
 		
