@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates context="updateUser" extends="tasks/accountTask.xml">
 	<propertyCategory resourceKey="category.principalGroups" resourceBundle="TaskProviderService" weight="-900">
 		<property resourceKey="updateUser.addGroups" inputType="multipleSearchInput"
