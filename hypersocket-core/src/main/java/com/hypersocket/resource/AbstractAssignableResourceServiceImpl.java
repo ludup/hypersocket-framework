@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -497,7 +498,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		final T resource = getResourceById(id);
 		return exportResources(true, resource);
 	}
-
+	
 	@Override
 	public String exportAllResources() throws ResourceExportException {
 		List<T> list = getResources();
@@ -513,14 +514,15 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		return false;
 	}
 	
-	protected void prepareExport(T resource) {
-		prepareExport(resource, true);
+	protected boolean prepareExport(T resource) {
+		return prepareExport(resource, true);
 	}
 	
-	protected void prepareExport(T resource, boolean stripIdentity) {
+	protected boolean prepareExport(T resource, boolean stripIdentity) {
 		if(isExportingAdditionalProperties()) {
 			resource.setProperties(getRepository().getProperties(resource));
 		}
+		return true;
 	}
 	
 	protected void prepareImport(T resource, Realm realm) throws ResourceCreationException, AccessDeniedException {
@@ -535,18 +537,22 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		}
 		
 		ObjectMapper mapper = new ObjectMapper();
+		List<T> exported = new  ArrayList<T>();
+		
 		try {
 			for(T resource : resources) {
-				prepareExport(resource, stripIdentity);
-				if(stripIdentity) {
-					resource.setLegacyId(resource.getId());
-					resource.setId(null);
-					resource.setRealm(null);
-					resource.getRoles().clear();
+				if(prepareExport(resource, stripIdentity)) {
+					if(stripIdentity) {
+						resource.setLegacyId(resource.getId());
+						resource.setId(null);
+						resource.setRealm(null);
+						resource.getRoles().clear();
+					}
+					exported.add(resource);
 				}
 			}
 
-			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resources);
+			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(exported);
 		} catch (JsonProcessingException e) {
 			throw new ResourceExportException(RESOURCE_BUNDLE, "error.exportError", e.getMessage());
 		}
@@ -588,19 +594,21 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	
 	protected void performImport(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 		resource.setRealm(realm);
-		checkImportName(resource, realm);
-		createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() : resource.getProperties());
+		if(checkImportName(resource, realm)) {
+			createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() : resource.getProperties());
+		}
 	}
 	
-	protected void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
+	protected boolean checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 		
 		try {
 			prepareImport(resource, realm);
 			getResourceByName(resource.getName(), realm);
 			resource.setName(resource.getName() + " [imported]");
 		} catch(ResourceNotFoundException e) {
-			return;
 		}
+		
+		return true;
 	}
 	
 	
