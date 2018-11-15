@@ -64,21 +64,24 @@ public interface MessageResourceService extends
 	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system, MessageTemplateRepository repository, boolean enabled, EmailDeliveryStrategy delivery);
 
-	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals,
-			Date schedule);
-
 	void sendMessageNow(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals);
 
+	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals,
+			Collection<String> emails, Date schedule);
+	
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			List<EmailAttachment> attachments, Collection<Principal> principals);
+			List<EmailAttachment> attachments, Collection<Principal> principals, Collection<String> emails);
 
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			Collection<Principal> principals, Date schedule, List<EmailAttachment> attachments);
+			Collection<Principal> principals, Collection<String> emails, Date schedule, List<EmailAttachment> attachments);
 
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
 			List<EmailAttachment> attachments, Principal... principals);
 
 	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients,
 			RecipientHolder replyTo, ITokenResolver tokenResolver, List<EmailAttachment> attachments);
+
+	void sendMessage(String messageRequesterNewComment, Realm currentRealm, ITokenResolver ticketResolver,
+			List<Principal> ticketPrincipals, Collection<String> emails);
 
 }

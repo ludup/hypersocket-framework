@@ -6,6 +6,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -426,7 +427,7 @@ public class MessageResourceServiceImpl extends
 	
 	@Override
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, List<EmailAttachment> attachments, Principal... principals) {
-		sendMessage(resourceKey, realm, tokenResolver, replyTo, attachments, Arrays.asList(principals));
+		sendMessage(resourceKey, realm, tokenResolver, replyTo, attachments, Arrays.asList(principals), Collections.<String>emptyList());
 	}
 	
 	@Override
@@ -474,26 +475,26 @@ public class MessageResourceServiceImpl extends
 	
 	@Override
 	public void sendMessageNow(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals) {
-		sendMessage(resourceKey, realm, tokenResolver, principals, null);
+		sendMessage(resourceKey, realm, tokenResolver, principals, Collections.<String>emptyList(), null);
 	}
 	
 	@Override
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, List<EmailAttachment> attachments, Collection<Principal> principals) {
-		sendMessage(resourceKey, realm, tokenResolver, replyTo, principals, new Date(), attachments);
+	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, List<EmailAttachment> attachments, Collection<Principal> principals, Collection<String> emails) {
+		sendMessage(resourceKey, realm, tokenResolver, replyTo, principals, emails, new Date(), attachments);
 	}
 	
 	@Override
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals) throws ResourceException {
-		sendMessage(resourceKey, realm, tokenResolver, principals, new Date());
+		sendMessage(resourceKey, realm, tokenResolver, principals, Collections.<String>emptyList(), new Date());
 	}
 	
 	@Override
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals, Date schedule) {
-		sendMessage(resourceKey, realm, tokenResolver, null, principals, schedule, null);
+	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals, Collection<String> emails, Date schedule) {
+		sendMessage(resourceKey, realm, tokenResolver, null, principals, emails, schedule, null);
 	}
 	
 	@Override
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, Collection<Principal> principals, Date schedule, List<EmailAttachment> attachments) {
+	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, Collection<Principal> principals, Collection<String> emails, Date schedule, List<EmailAttachment> attachments) {
 
 		MessageResource message = repository.getMessageById(resourceKey, realm);
 		
@@ -527,6 +528,10 @@ public class MessageResourceServiceImpl extends
 				default:
 				}
 			}
+		}
+		
+		for(String email : emails) {
+			recipients.add(new RecipientHolder(email));
 		}
 		
 		sendMessage(message, realm, tokenResolver, replyTo, recipients, schedule, null);
@@ -683,6 +688,12 @@ public class MessageResourceServiceImpl extends
 	@Override
 	public MessageResource getMessageById(String resourceKey, Realm realm) {
 		return repository.getMessageById(resourceKey, realm);
+	}
+
+	@Override
+	public void sendMessage(String resourceKey, Realm currentRealm, ITokenResolver ticketResolver,
+			List<Principal> ticketPrincipals, Collection<String> emails) {
+		sendMessage(resourceKey, currentRealm, ticketResolver, ticketPrincipals, emails, new Date());
 	}
 
 }
