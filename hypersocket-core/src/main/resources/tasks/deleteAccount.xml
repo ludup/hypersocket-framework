@@ -1,3 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates context="deleteAccount" extends="tasks/accountTask.xml">
+
 </propertyTemplates>

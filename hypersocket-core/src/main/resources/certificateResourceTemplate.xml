@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates context="certificateResource">
 	<propertyCategory resourceKey="cert.cert" resourceBundle="CertificateResourceService" weight="0" displayMode='create'>
 		<property resourceKey="certType" inputType="select" weight="0" nameIsResourceKey="true" defaultValue="RSA_2048" options="RSA_1024,RSA_2048,RSA_4096,DSA_1024" displayMode='create'/>

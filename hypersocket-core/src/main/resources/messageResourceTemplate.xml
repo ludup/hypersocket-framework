@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates context="messageResource">
 	<propertyCategory resourceKey="category.plain"
 		resourceBundle="MessageResourceService" weight="1000">

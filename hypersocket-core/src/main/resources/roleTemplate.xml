@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates context="role">
 <!-- 	<propertyCategory resourceKey="role.options"  -->
 <!-- 		resourceBundle="PermissionService" weight="0" store="db"> -->

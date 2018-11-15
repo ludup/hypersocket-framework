@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates>
 	<propertyCategory resourceKey="category.logon"
 		resourceBundle="AuthenticationService" group="authentication" weight="500">

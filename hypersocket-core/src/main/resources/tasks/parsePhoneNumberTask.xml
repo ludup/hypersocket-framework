@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates context="parsePhoneNumberTask">
 	<propertyCategory resourceKey="category.parsePhoneNumberTask"
 		resourceBundle="ParsePhoneNumberTask" weight="1000">

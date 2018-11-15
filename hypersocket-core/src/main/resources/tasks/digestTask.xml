@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates context="digestTask">
 	<propertyCategory resourceKey="category.digestTask" resourceBundle="DigestTask"  weight="0">
 		<property resourceKey="digest.source" inputType="select" options="UPLOAD,PATH,TEXT" weight="0" defaultValue="UPLOAD" system="true"/>

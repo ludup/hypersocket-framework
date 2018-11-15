@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates context="httpInterfaceResource" extends="interfaceResourceTemplate.xml">
 	<propertyCategory resourceKey="category.interface" resourceBundle="HypersocketServer" weight="0">
 		<property resourceKey="allInterfaces" inputType="switch" defaultValue="true" weight="0" profile="!HA"/>

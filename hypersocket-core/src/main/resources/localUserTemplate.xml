@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates extends="userTemplate.xml">
 	<propertyCategory resourceKey="local.userDetails" hidden="true"
 		resourceBundle="LocalRealm" weight="0" store="db">

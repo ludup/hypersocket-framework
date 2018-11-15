@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates context="sendEmail">
 	<propertyCategory resourceKey="category.email.message"
 		resourceBundle="TriggerResourceService" weight="1000">
