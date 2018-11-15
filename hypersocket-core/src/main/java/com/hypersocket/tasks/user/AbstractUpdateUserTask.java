@@ -31,7 +31,7 @@ public abstract class AbstractUpdateUserTask extends AbstractAccountTask {
 	EventService eventService; 
 	
 	@Override
-	protected TaskResult doExecute(Principal principal, Task task, Realm currentRealm, SystemEvent event)
+	protected TaskResult doExecute(Principal principal, Task task, Realm currentRealm, List<SystemEvent> event)
 			throws ValidationException {
 		
 		

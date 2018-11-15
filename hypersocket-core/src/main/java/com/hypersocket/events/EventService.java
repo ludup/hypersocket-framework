@@ -33,5 +33,7 @@ public interface EventService  {
 	void registerDynamicEvent(String resourceKey, String name, Set<String> attributeNames, String successMessage,
 			String failureMessage, String warningMessage);
 
+	SystemEvent getLastResult();
+
 
 }
