@@ -707,6 +707,11 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		resource.setRealm(realm);
 		checkImportName(resource, realm);
 		createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() : resource.getProperties());
+		onResourceImported(resource);
+	}
+	
+	protected void onResourceImported(T resource) {
+		
 	}
 	
 	protected void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
