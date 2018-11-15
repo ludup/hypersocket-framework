@@ -3,7 +3,7 @@ package com.hypersocket.tasks.user;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.events.SystemEvent;
@@ -23,14 +23,8 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 	@Autowired
 	private RealmService realmService;
 
-	//
+	protected AbstractAccountTask() {
 
-	private String principalIdKey;
-	private String principalNameKey;
-
-	protected AbstractAccountTask(String principalIdKey, String principalNameKey) {
-		this.principalIdKey = principalIdKey;
-		this.principalNameKey = principalNameKey;
 	}
 
 	@Override
@@ -40,28 +34,23 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 
 	@Override
 	public void validate(Task task, Map<String, String> parameters) throws ValidationException {
-		boolean haveId = StringUtils.isNotBlank(parameters.get(principalIdKey));
-		boolean haveName = StringUtils.isNotBlank(parameters.get(principalNameKey));
-		if ((!haveId && !haveName) || (haveId && haveName))
-			throw new ValidationException("error.accountTask.mustProvideIdOrName");
+
 	}
 
 	@Override
 	public final TaskResult execute(final Task task, final Realm currentRealm, final List<SystemEvent> event)
 			throws ValidationException {
 		Principal p;
-		Long id = getRepository().getLongValue(task, principalIdKey);
-		String name = getRepository().getValue(task, principalNameKey);
-		if (id == null || id == 0) {
+		String name = getRepository().getValue(task, "accountTask.principalName");
+		if(NumberUtils.isCreatable(name)) {
+			p = realmService.getPrincipalById(Long.parseLong(name));
+		} else {
 			p = realmService.getPrincipalByName(currentRealm, name, getType(task));
-		} else
-			p = realmService.getPrincipalById(id);
+		}
 
 		if(p==null) {
-			if (id == null || id == 0) 
-				throw new ValidationException(String.format("Principal %s not found", name));
-			else
-				throw new ValidationException(String.format("Principal %d not found", id));
+			throw new ValidationException(String.format("Principal %s not found", name));
+
 		}
 		return doExecute(p, task, currentRealm, event);
 	}
