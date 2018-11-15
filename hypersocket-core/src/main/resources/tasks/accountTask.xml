@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <propertyTemplates>
-	<propertyCategory resourceKey="category.account"
+	<propertyCategory resourceKey="category.account" weight="-3000" resourceBundle="RealmService">
 		<property resourceKey="accountTask.principalName" inputType="text" weight="100" defaultValue="" />
 	</propertyCategory>
 </propertyTemplates>

@@ -61,7 +61,6 @@ public class DeleteAccountTask extends AbstractAccountTask {
 			realmService.deleteUser(currentRealm, p);
 			return new DeleteAccountTaskResult(this, currentRealm, task);
 		} catch (Exception e) {
-			e.printStackTrace();
 			return new DeleteAccountTaskResult(this, currentRealm, task, e);
 		}
 	}

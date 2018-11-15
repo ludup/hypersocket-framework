@@ -1,8 +1,4 @@
 <?xml version="1.0" ?>
-<propertyTemplates context="enableAccount">
-	<propertyCategory resourceKey="category.account"
-		resourceBundle="RealmResourceService" weight="3000">
-		<property resourceKey="enableAccount.principalId" inputType="integer" weight="100" minValue="0" defaultValue="0" />
-		<property resourceKey="enableAccount.principalName" inputType="text" weight="100" defaultValue="" />
-	</propertyCategory>
+<propertyTemplates context="enableAccount" extends="tasks/accountTask.xml">
+
 </propertyTemplates>
