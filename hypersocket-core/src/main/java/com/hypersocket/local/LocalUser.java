@@ -93,6 +93,11 @@ public class LocalUser extends UserPrincipal implements Serializable {
 		return type;
 	}
 	
+	@JsonIgnore
+	public LocalUserCredentials getCredentials() {
+		return credentials;
+	}
+	
 	@Override
 	public String getPrincipalDescription() {
 		return getFullname();
