@@ -4,3 +4,5 @@
 /.settings
 /derby.log
 /bin/
+*.classpath
+*.project
