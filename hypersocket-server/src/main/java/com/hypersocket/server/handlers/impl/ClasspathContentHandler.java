@@ -83,7 +83,7 @@ public class ClasspathContentHandler extends ContentHandlerImpl {
 	}
 
 	@Override
-	public int getResourceStatus(String path) {
+	public int getResourceStatus(String path) throws RedirectException {
 		
 		URL url = getClass().getResource(classpathPrefix + "/" + path);
 		
