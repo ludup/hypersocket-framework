@@ -610,7 +610,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		try {
 			String val = getValue(resource, name);
 			if(val==null) {
-				return null;
+				// Why are we returning null when we expect a value or the default?
+				return Integer.parseInt(getPropertyTemplate(resource, name).getDefaultValue());
 			}
 			return Integer.parseInt(val);
 		} catch (NumberFormatException e) {
