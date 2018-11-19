@@ -21,6 +21,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import com.hypersocket.auth.PasswordEncryptionType;
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.utils.HypersocketUtils;
+import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 @Entity
 @Table(name="local_user_credentials")
@@ -108,6 +110,7 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 
 	public void setEncodedPassword(String encodedPassword) {
 		this.encodedPassword = encodedPassword;
+		this.password = HypersocketUtils.getUTF8Bytes(encodedPassword);
 	}
 
 	public String getEncodedSalt() {
