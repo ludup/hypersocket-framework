@@ -180,6 +180,14 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	}
 	
 	@Override
+	public Realm getCurrentRealm(Principal principal) {
+		if(currentRealm.get()==null) {
+			return principal.getRealm();
+		}
+		return currentRealm.get().peek();
+	}
+	
+	@Override
 	public Realm getCurrentRealm() {
 		if(currentRealm.get()==null) {
 			throw new InvalidAuthenticationContext("No session is attached to the current context!");

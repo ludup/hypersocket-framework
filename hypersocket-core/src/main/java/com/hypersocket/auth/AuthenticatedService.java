@@ -57,4 +57,6 @@ public interface AuthenticatedService {
 
 	void setupSystemContext(Principal principal);
 
+	Realm getCurrentRealm(Principal principal);
+
 }
