@@ -21,8 +21,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import com.hypersocket.auth.PasswordEncryptionType;
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.utils.HypersocketUtils;
-import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 @Entity
 @Table(name="local_user_credentials")
