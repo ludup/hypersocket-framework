@@ -84,4 +84,6 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	boolean isDeletable();
 	
 	List<T> allRealmResources(Realm realm);
+
+	T getResourceByLegacyId(Long id);
 }

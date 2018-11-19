@@ -446,6 +446,12 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 
 	@Override
+	@Transactional(readOnly=true)
+	public T getResourceByLegacyId(Long id) {
+		return get("legacyId", id, getResourceClass());
+	}
+	
+	@Override
 	@Transactional
 	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException {
 

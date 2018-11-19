@@ -571,6 +571,21 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		
 		return resource;
 	}
+	
+	@Override
+	public T getResourceByLegacyId(Long id) throws ResourceNotFoundException, AccessDeniedException {
+		
+		T resource = getRepository().getResourceByLegacyId(id);
+		if (resource == null) {
+			assertPermission(getReadPermission());
+			throw new ResourceNotFoundException(getResourceBundle(),
+					"error.invalidResourceId", id);
+		}
+		
+		assertPrincipalAssignment(resource, getReadPermission());
+		
+		return resource;
+	}
 
 	@Override
 	public Collection<T> getResources(Principal principal)

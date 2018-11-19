@@ -118,4 +118,6 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 	
 	List<T> getResourcesByIds(Long...ids) throws AccessDeniedException;
 
+	T getResourceByLegacyId(Long id) throws ResourceNotFoundException, AccessDeniedException;
+
 }
