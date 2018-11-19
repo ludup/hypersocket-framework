@@ -76,9 +76,9 @@
  		</dependency>
 
 		<dependency>
-			<artifactId>icon-generator</artifactId>
 			<groupId>com.sshtools</groupId>
-			<version>0.0.1-SNAPSHOT</version>
+			<artifactId>icon-generator</artifactId>
+			<version>1.0.1</version>
 		</dependency>
 		
 	</dependencies>
