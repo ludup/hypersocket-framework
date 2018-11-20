@@ -86,4 +86,6 @@ public interface AbstractAssignableResourceRepository<T extends AssignableResour
 	List<T> allRealmResources(Realm realm);
 
 	T getResourceByLegacyId(Long id);
+
+	T getResourceByReference(String reference, Realm realm);
 }

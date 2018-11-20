@@ -58,5 +58,7 @@ public interface AbstractSimpleResourceRepository<T extends SimpleResource> exte
 
 	T getResourceByLegacyId(Long id);
 
+	T getResourceByReference(String reference, Realm realm);
+
 
 }

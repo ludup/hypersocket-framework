@@ -10,6 +10,7 @@ import java.util.Objects;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
@@ -73,6 +74,16 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 				new DeletedCriteria(deleted));
 	}
 
+	@Override
+	@Transactional(readOnly=true)
+	public T getResourceByReference(String reference, Realm realm) {
+		if(NumberUtils.isCreatable(reference)) {
+			return getResourceById(Long.parseLong(reference));
+		} else {
+			return getResourceByName(reference, realm);
+		}
+	}
+	
 	@Override
 	@Transactional(readOnly=true)
 	public T getResourceById(Long id) {

@@ -21,6 +21,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.CriteriaSpecification;
@@ -439,6 +440,16 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 				deleted), new RealmRestriction(realm), new PersonalRestriction(false));
 	}
 
+	@Override
+	@Transactional(readOnly=true)
+	public T getResourceByReference(String reference, Realm realm) {
+		if(NumberUtils.isCreatable(reference)) {
+			return getResourceById(Long.parseLong(reference));
+		} else {
+			return getResourceByName(reference, realm);
+		}
+	}
+	
 	@Override
 	@Transactional(readOnly=true)
 	public T getResourceById(Long id) {
