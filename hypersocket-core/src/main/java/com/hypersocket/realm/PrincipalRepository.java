@@ -23,4 +23,6 @@ public interface PrincipalRepository extends AbstractResourceRepository<Principa
 
 	Collection<Principal> allPrincipals();
 
+	Principal getPrincipalByReference(String reference, Realm realm);
+
 }

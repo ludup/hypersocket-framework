@@ -3,6 +3,7 @@ package com.hypersocket.realm;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
@@ -98,5 +99,14 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	
 	public boolean isDeletable() {
 		return false;
+	}
+
+	@Override
+	public Principal getPrincipalByReference(String reference, Realm realm) {
+		if(NumberUtils.isCreatable(reference)) {
+			return getResourceById(Long.parseLong(reference));
+		} else {
+			return getResourceByName(reference, realm);
+		}
 	}
 }
