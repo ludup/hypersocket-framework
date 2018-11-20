@@ -52,8 +52,7 @@ public class HypersocketUtils {
 
 	/* BUG: Date formatters are not thread safe. */
 	//static Map<String,SimpleDateFormat> dateFormats = new HashMap<String,SimpleDateFormat>();
-	
-	static DecimalFormat df = new DecimalFormat("0.00");
+
 	static SecureRandom random = new SecureRandom();
 	
 	public static void resetInterval() {
@@ -122,7 +121,11 @@ public class HypersocketUtils {
 		return new SimpleDateFormat(format).format(date);
 	}
 	
-	public static String formatDateTime(Long date) {
+	public static String formatDate(Date date) {
+		return formatDate(date, "MMM d, yyyy");
+	}
+	
+ 	public static String formatDateTime(Long date) {
 		return formatDateTime(new Date(date));
 	}
 	
@@ -262,11 +265,11 @@ public class HypersocketUtils {
 		}
 
 	public static String format(Double d) {
-		return df.format(d);
+		return new DecimalFormat("0.00").format(d);
 	}
 	
 	public static String format(Float f) {
-		return df.format(f);
+		return new DecimalFormat("0.00").format(f);
 	}
 	
 	public static String prettyPrintXml(SOAPMessage message) throws SOAPException, IOException, TransformerFactoryConfigurationError, TransformerException {
