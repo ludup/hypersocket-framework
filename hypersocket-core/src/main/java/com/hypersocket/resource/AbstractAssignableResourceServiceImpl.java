@@ -507,8 +507,6 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		T resource = getRepository().getResourceByName(name, getCurrentRealm());
 		
 		if (resource == null) {
-			assertPermission(getReadPermission());
-
 			throw new ResourceNotFoundException(getResourceBundle(),
 					"error.invalidResourceName", name);
 		}
@@ -524,7 +522,6 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		T resource = getRepository().getResourceByName(name, realm);
 		
 		if (resource == null) {
-			assertPermission(getReadPermission());
 			throw new ResourceNotFoundException(getResourceBundle(),
 					"error.invalidResourceName", name);
 		}
@@ -562,7 +559,6 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		
 		T resource = getRepository().getResourceById(id);
 		if (resource == null) {
-			assertPermission(getReadPermission());
 			throw new ResourceNotFoundException(getResourceBundle(),
 					"error.invalidResourceId", id);
 		}
@@ -577,7 +573,6 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		
 		T resource = getRepository().getResourceByLegacyId(id);
 		if (resource == null) {
-			assertPermission(getReadPermission());
 			throw new ResourceNotFoundException(getResourceBundle(),
 					"error.invalidResourceId", id);
 		}
