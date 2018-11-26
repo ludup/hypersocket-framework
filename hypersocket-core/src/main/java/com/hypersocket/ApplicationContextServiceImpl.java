@@ -3,6 +3,7 @@ package com.hypersocket;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
@@ -34,5 +35,9 @@ public class ApplicationContextServiceImpl {
 	@SuppressWarnings("unchecked")
 	public <T> T getBean(String name, Class<T> clz) {
 		return (T) applicationContext.getBean(name);
+	}
+
+	public AutowireCapableBeanFactory getAutowireCapableBeanFactory() {
+		return applicationContext.getAutowireCapableBeanFactory();
 	}
 }
