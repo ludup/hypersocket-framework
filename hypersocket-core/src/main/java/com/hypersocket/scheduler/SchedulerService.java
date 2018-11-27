@@ -1,10 +1,17 @@
 package com.hypersocket.scheduler;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
+
+import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.tables.ColumnSort;
 
 public interface SchedulerService {
 
@@ -88,5 +95,24 @@ public interface SchedulerService {
 	public boolean jobExists(String scheduleId) throws SchedulerException;
 	
 	public boolean jobDoesNotExists(String scheduleId) throws SchedulerException;
+
+	List<SchedulerResource> searchResources(Realm currentRealm, String searchColumn, String searchPattern, int start, int length,
+			ColumnSort[] sorting) throws AccessDeniedException ;
+
+	Long getResourceCount(Realm currentRealm, String searchColumn, String searchPattern) throws AccessDeniedException;
+
+	Collection<SchedulerResource> getResources(Realm currentRealm) throws SchedulerException, AccessDeniedException;
+
+	SchedulerResource getResourceById(String id) throws SchedulerException, NotScheduledException, AccessDeniedException;
+
+	void deleteResource(SchedulerResource resource) throws SchedulerException, AccessDeniedException;
+
+	List<SchedulerResource> getResourcesByIds(String[] ids) throws SchedulerException, AccessDeniedException;
+
+	void deleteResources(List<SchedulerResource> messageResources) throws SchedulerException, AccessDeniedException;
+
+	Collection<PropertyCategory> getPropertyTemplate(SchedulerResource resource);
+
+	Collection<PropertyCategory> getPropertyTemplate();
 
 }

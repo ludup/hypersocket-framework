@@ -1,0 +1,153 @@
+<!-- 
+	Replace any Job or Jobs with Capitalized name of your resources e.g. Application or Applications
+	Replace any job or jobs with lower case name of your resources e.g. application or applications
+ -->
+
+<div id="contentClusteredScheduler">
+	<div class="modal" id="addClusteredSchedulerForm" tabindex="-1" role="dialog" dialog-for="contentClusteredScheduler">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+					<h4 class="modal-title"></h4>
+				</div>
+				<div class="modal-body">
+					<div class="propertyItem form-group">
+						<label class="col-xs-3 control-label" localize="job.name.label"></label>
+						<div class="propertyValue col-xs-9">
+							<input type="text" class="form-control"
+								 id="resourceName" maxlength="" name="resourceName" value="">
+							<div>
+								<span class="help-block" localize="job.name.info"></span>
+							</div>
+						</div>
+					</div>
+					
+					<div id="clusteredSchedulerProperties"></div>
+					<input type="hidden" id="resourceId" name="resourceId" value="" />
+				</div>
+				<div class="modal-footer"></div>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<script type="text/javascript">
+
+function jobDateFormatter(value, row, index) {
+	var today = new Date();
+	var yesterday = (function(d){ d.setDate(d.getDate()-1); return d})(new Date);
+	var fileDate = new Date(value);
+	var todayStr = today.format('yyyy-mm-dd');
+	var yesterdayStr = yesterday.format('yyyy-mm-dd');
+	var fileStr = fileDate.format('yyyy-mm-dd');
+	if(todayStr === fileStr) {
+		return getResource("job.today.text") + " " + fileDate.format("HH:MM");	
+	} else if(yesterdayStr === fileStr) {
+		return getResource("job.yesterday.text") + " " + fileDate.format("HH:MM");
+	} else {
+		return fileDate.format("d mmmm yyyy HH:MM");	
+	}
+}
+
+	$(document).ready(function() {
+				$('#contentClusteredScheduler').localize();
+				
+				$('#clusteredSchedulerProperties').propertyPage({
+					url : 'clusteredScheduler/template',
+					showButtons : false,
+					useTemplates : true,
+					canUpdate : currentMenu.canUpdate
+				});
+
+				$('#contentClusteredScheduler').ajaxResourcePage(
+						{
+							id : "ClusteredScheduler",
+							tableUrl : "clusteredScheduler/table",
+							title: getResource("jobs.label"),
+							icon: 'fa-cog',
+							resourceUrl : "clusteredScheduler/job",
+							fields : [ {
+								name : "id",
+								sortable: true
+							},{
+								name : "status",
+								sortable: true
+							}, {
+								name: 'nextFire',
+								sortable: true,
+								formatter: jobDateFormatter
+							}, {
+								name: 'lastFire',
+								sortable: true,
+								formatter: jobDateFormatter
+							}],
+							disableDecoration: true,
+							resourceKey : "job",
+							canCreate: false,
+							canUpdate: false,
+							canDelete: true,
+							validate : function() {
+
+								if ($('#resourceName').val() == '') {
+									showError("error.nameRequired");
+									return false;
+								}
+
+								if(!$('#clusteredSchedulerProperties').validateProperties()) {
+									showError("error.correctValidationErrors");
+									return false;
+								}
+								
+								return true;
+							},
+							clearDialog : function(create) {
+								
+								$('#resourceId').val('');
+								$('#resourceName').val('');
+								
+								$('#clusteredSchedulerProperties').clearProperties();
+								if(create) {
+									$('#clusteredSchedulerProperties').propertyPage({ 
+										url : 'clusteredScheduler/template/', 
+										showButtons : false, 
+										canUpdate : currentMenu.canUpdate, 
+										useTemplates : true 
+									});
+								}
+
+								$('.tabPropertiesTab').first().trigger('click');
+							},
+							createResource : function() {
+								resource = new Object();
+								resource.id = $('#resourceId').val();
+								resource.name = $('#resourceName').val();
+								
+								$('#clusteredSchedulerProperties').saveProperties(true,
+										function(items) {
+											resource.properties = items;
+								});
+								
+								return resource;
+							},
+							displayResource : function(resource, readOnly) {
+								
+								$('#resourceId').val(resource.id);
+								$('#resourceName').val(resource.name);
+								
+								$('#clusteredSchedulerProperties').propertyPage(
+										{ url : 'clusteredScheduler/properties/' + resource.id, 
+											showButtons : false, 
+											canUpdate : currentMenu.canUpdate && !readOnly
+								});
+							
+							},
+							complete : function() {
+								loadComplete();
+							}
+						});
+
+			});
+</script>
