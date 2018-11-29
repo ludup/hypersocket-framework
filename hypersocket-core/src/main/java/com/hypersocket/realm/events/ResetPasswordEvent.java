@@ -8,18 +8,18 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.session.Session;
 
-public class SetPasswordEvent extends UserEvent implements ChargeableEvent {
+public class ResetPasswordEvent extends UserEvent implements ChargeableEvent {
 
 	private static final long serialVersionUID = -7054465917307746647L;
 
-	public static final String EVENT_RESOURCE_KEY = "event.setPassword";
+	public static final String EVENT_RESOURCE_KEY = "event.resetPassword";
 	
-	public SetPasswordEvent(Object source, Session session, Realm realm,
+	public ResetPasswordEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal, String password) {
 		super(source, EVENT_RESOURCE_KEY, session, realm, provider, principal);
 	}
 
-	public SetPasswordEvent(Object source, Throwable t, Session session,
+	public ResetPasswordEvent(Object source, Throwable t, Session session,
 			Realm realm, RealmProvider provider, String principal, String password) {
 		super(source, EVENT_RESOURCE_KEY, t, session, realm, provider,
 				principal);

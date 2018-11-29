@@ -82,6 +82,7 @@ import com.hypersocket.realm.events.RealmCreatedEvent;
 import com.hypersocket.realm.events.RealmDeletedEvent;
 import com.hypersocket.realm.events.RealmEvent;
 import com.hypersocket.realm.events.RealmUpdatedEvent;
+import com.hypersocket.realm.events.ResetPasswordEvent;
 import com.hypersocket.realm.events.SetPasswordEvent;
 import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserDeletedEvent;
@@ -271,6 +272,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		eventService.registerEvent(ProfileUpdatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(ChangePasswordEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SetPasswordEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(ResetPasswordEvent.class, RESOURCE_BUNDLE);
 
 		upgradeService.registerListener(this);
 
@@ -987,21 +989,37 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				proc.afterSetPassword(principal, password);
 			}
 
-			if (administrative) {
-				messageService.sendMessage(MESSAGE_PASSWORD_RESET, principal.getRealm(),
-						new PrincipalWithPasswordResolver((UserPrincipal) principal, password, forceChangeAtNextLogon),
+			
+			if(administrative) {
+				
+				eventService.publishEvent(
+						new SetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), 
+								provider, principal, password));
+				
+				messageService.sendMessage(MESSAGE_PASSWORD_RESET, 
+						principal.getRealm(), 
+						new PrincipalWithPasswordResolver((UserPrincipal)principal, password, forceChangeAtNextLogon), 
 						principal);
 			} else {
-				messageService.sendMessage(MESSAGE_PASSWORD_CHANGED, principal.getRealm(),
-						new PrincipalWithoutPasswordResolver((UserPrincipal) principal), principal);
+				
+				eventService.publishEvent(
+						new ResetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), 
+								provider, principal, password));
+				
+				messageService.sendMessage(MESSAGE_PASSWORD_CHANGED, 
+						principal.getRealm(), 
+						new PrincipalWithoutPasswordResolver((UserPrincipal)principal), 
+						principal);
 			}
-
-			eventService.publishEvent(new SetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider,
-					principal, password, administrative));
-
+			
 		} catch (ResourceException ex) {
-			eventService.publishEvent(new SetPasswordEvent(this, ex, getCurrentSession(), getCurrentRealm(), provider,
-					principal.getPrincipalName(), password, administrative));
+			if(administrative) {
+				eventService.publishEvent(new SetPasswordEvent(this, ex, getCurrentSession(), getCurrentRealm(), provider,
+					principal.getPrincipalName(), password));
+			} else {
+				eventService.publishEvent(new ResetPasswordEvent(this, ex, getCurrentSession(), getCurrentRealm(), provider,
+						principal.getPrincipalName(), password));
+			}
 			throw ex;
 		}
 
