@@ -11,7 +11,6 @@ import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.activation.MimetypesFileTypeMap;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,6 +22,7 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.ConfigurableMimeFileTypeMap;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,7 +49,7 @@ public class FileUploadServiceImpl extends
 	public static final String RESOURCE_BUNDLE = "FileUploadService";
 	public static final String DEFAULT_UPLOAD_PATH = "conf/uploads/";
 	
-	static MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
+	static ConfigurableMimeFileTypeMap mimeTypesMap = new ConfigurableMimeFileTypeMap();
 
 	static Logger log = LoggerFactory.getLogger(FileUploadServiceImpl.class);
 	
@@ -238,7 +238,7 @@ public class FileUploadServiceImpl extends
 	}
 
 	@Override
-	public void downloadURIFile(String uuid, HttpServletRequest request, HttpServletResponse response, boolean forceDownload, boolean requirePublic)
+	public void downloadURIFile(String uuid, HttpServletRequest request, HttpServletResponse response, boolean forceDownload, boolean requirePublic, boolean checkCache)
 			throws IOException, AccessDeniedException, ResourceNotFoundException {
 
 		FileUpload fileUpload = getFileUpload(uuid);
@@ -247,13 +247,13 @@ public class FileUploadServiceImpl extends
 			throw new AccessDeniedException();
 		}
 		
-		if(CacheUtils.checkValidCache(request, response, fileUpload.getModifiedDate().getTime())) {
+		if(checkCache && CacheUtils.checkValidCache(request, response, fileUpload.getModifiedDate().getTime())) {
 			return;
 		}
 		
 		InputStream in = getInputStream(uuid);
 		String contentType = mimeTypesMap.getContentType(fileUpload.getFileName());
-		
+
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("Setting Content-Type of request to %s", contentType));
 		}

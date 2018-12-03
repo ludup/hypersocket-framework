@@ -571,7 +571,8 @@ public class MessageResourceServiceImpl extends
 				
 				String trackingImage = configurationService.getValue(realm, "email.trackingImage");
 				if(message.getTrack() && StringUtils.isNotBlank(trackingImage)) {
-					data.put("trackingImage", trackerService.generateTrackingUri(subjectWriter.toString(), 
+					data.put("trackingImage", trackerService.generateTrackingUri(trackingImage, 
+							subjectWriter.toString(), 
 							recipient.getName(), recipient.getEmail(), realm));
 				} else {
 					try {

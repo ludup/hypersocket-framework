@@ -75,7 +75,7 @@ public class EmailNotificationController extends AuthenticatedController {
 		
 		String trackerImage = configurationService.getValue(currentRealm, "email.trackingImage");
 		
-		uploadService.downloadURIFile(trackerImage, request, response, false, true);
+		uploadService.downloadURIFile(trackerImage, request, response, false, true, false);
 	}
 
 }

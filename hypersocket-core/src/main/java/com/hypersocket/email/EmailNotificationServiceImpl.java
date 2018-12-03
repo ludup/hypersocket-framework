@@ -161,7 +161,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				try {
 					String trackingImage = configurationService.getValue(realm, "email.trackingImage");
 					if(track && StringUtils.isNotBlank(trackingImage)) {
-						String trackingUri = trackerService.generateTrackingUri(recipeintSubject, r.getName(), r.getEmail(), realm);
+						String trackingUri = trackerService.generateTrackingUri(trackingImage, recipeintSubject, r.getName(), r.getEmail(), realm);
 						receipientHtml = receipientHtml.replace("${trackingImage}", trackingUri);
 					} else {
 						String trackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);

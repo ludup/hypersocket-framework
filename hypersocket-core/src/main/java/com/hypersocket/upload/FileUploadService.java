@@ -48,7 +48,8 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 			throws ResourceException, AccessDeniedException;
 	
 	void downloadURIFile(String uuid, HttpServletRequest request,
-			HttpServletResponse response, boolean forceDownload, boolean requirePublic)
+			HttpServletResponse response, boolean forceDownload, 
+			boolean requirePublic, boolean checkCache)
 			throws IOException, AccessDeniedException, ResourceNotFoundException;
 
 	String getContentType(String uuid) throws ResourceNotFoundException,

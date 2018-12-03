@@ -233,7 +233,7 @@ public class FileStoreController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, IOException, ResourceNotFoundException {
 
-			resourceService.downloadURIFile(uuid, request, response, true, false);
+			resourceService.downloadURIFile(uuid, request, response, true, false, true);
 	}
 	
 	@AuthenticationRequiredButDontTouchSession
@@ -244,7 +244,7 @@ public class FileStoreController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, IOException, ResourceNotFoundException {
 
-			resourceService.downloadURIFile(uuid, request, response, true, false);
+			resourceService.downloadURIFile(uuid, request, response, true, false, true);
 	}
 	
 	@RequestMapping(value = "files/public/{uuid}/{filename}", method = RequestMethod.GET)
@@ -255,7 +255,7 @@ public class FileStoreController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, IOException, ResourceNotFoundException {
 
-		resourceService.downloadURIFile(uuid, request, response, true, true);
+		resourceService.downloadURIFile(uuid, request, response, true, true, true);
 	}
 	
 	@RequestMapping(value = "files/public/{uuid}", method = RequestMethod.GET)
@@ -268,7 +268,7 @@ public class FileStoreController extends ResourceController {
 		/**
 		 * TODO only files that are declared public
 		 */
-		resourceService.downloadURIFile(uuid, request, response, true, true);
+		resourceService.downloadURIFile(uuid, request, response, true, true, true);
 	}
 	
 	@AuthenticationRequired

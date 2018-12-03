@@ -79,7 +79,7 @@ public class EmailTrackerServiceImpl implements EmailTrackerService {
 	}
 	
 	@Override
-	public String generateTrackingUri(String subject, String name, String emailAddress, Realm realm) throws AccessDeniedException {
+	public String generateTrackingUri(String uuid, String subject, String name, String emailAddress, Realm realm) throws AccessDeniedException, ResourceNotFoundException {
 		
 		Principal principal = null;
 		try {
@@ -87,6 +87,7 @@ public class EmailTrackerServiceImpl implements EmailTrackerService {
 		} catch(ResourceNotFoundException ex) {
 		}
 		EmailReceipt receipt = repository.trackEmail(subject, emailAddress, realm, principal);
+		FileUpload upload = fileService.getFileUpload(uuid);
 		
 		String externalHostname = realmService.getRealmHostname(realm);
 		if(StringUtils.isBlank(externalHostname)) {
@@ -96,13 +97,15 @@ public class EmailTrackerServiceImpl implements EmailTrackerService {
 			throw new AccessDeniedException("External hostname cannot be resolved for tracking image");
 		}
 		if(externalHostname.startsWith("http")) {
-			return String.format("%s/%s/api/emails/receipt/%d/image.png", FileUtils.checkEndsWithNoSlash(externalHostname),
+			return String.format("%s/%s/api/emails/receipt/%d/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
 				systemConfigurationService.getValue("application.path"),
-				receipt.getId());
+				receipt.getId(),
+				upload.getFileName());
 		} else {
-			return String.format("https://%s/%s/api/emails/receipt/%d/image.png", FileUtils.checkEndsWithNoSlash(externalHostname),
+			return String.format("https://%s/%s/api/emails/receipt/%d/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
 					systemConfigurationService.getValue("application.path"),
-					receipt.getId());
+					receipt.getId(),
+					upload.getFileName());
 		}
 		
 	}
