@@ -314,6 +314,10 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 				if(clz.isEnum()){
 					try {
 						Enum<?>[] enumConstants = (Enum<?>[]) resource.getClass().getDeclaredField(template.getResourceKey()).getType().getEnumConstants();
+						if(StringUtils.isBlank(value)) {
+							m.invoke(resource, (Object)null);
+							return;  
+						}
 						if(NumberUtils.isCreatable(value)){//ordinal
 							Enum<?> enumConstant = enumConstants[Integer.parseInt(value)];
 							m.invoke(resource, enumConstant);
