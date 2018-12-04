@@ -47,8 +47,13 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 	private HibernateTemplate hibernateTemplate;
 	protected SessionFactory sessionFactory;
-
+	
+	private static ThreadLocal<Boolean> cache = new ThreadLocal<>();
 	private boolean requiresDemoWrite = false;
+	
+	static {
+		cache.set(true);
+	}
 
 	protected AbstractRepositoryImpl() {
 
@@ -61,7 +66,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	@Autowired
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		hibernateTemplate = new HibernateTemplate(this.sessionFactory = sessionFactory);
-		hibernateTemplate.setCacheQueries(true);
+		hibernateTemplate.setCacheQueries(isCache());
 	}
 
 	private void checkDemoMode() {
@@ -297,13 +302,30 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		}
 		return (List<T>) criteria.list();
 	}
+	
+	public static boolean setCache(boolean cache) {
+		boolean was = isCache();
+		AbstractRepositoryImpl.cache.set(cache);
+		return was;
+	}
+	
+	public static boolean isCache() {
+		return Boolean.TRUE.equals(AbstractRepositoryImpl.cache.get());
+	}
 
 	protected Criteria createCriteria(Class<?> entityClass) {
-		return sessionFactory.getCurrentSession().createCriteria(entityClass).setCacheable(true).setCacheMode(CacheMode.NORMAL);
+		if(isCache())
+			return sessionFactory.getCurrentSession().createCriteria(entityClass).setCacheable(true).setCacheMode(CacheMode.NORMAL);
+		else
+			return sessionFactory.getCurrentSession().createCriteria(entityClass).setCacheable(false).setCacheMode(CacheMode.IGNORE);
 	}
 
 	protected Criteria createCriteria(Class<?> entityClass, String alias) {
-		return sessionFactory.getCurrentSession().createCriteria(entityClass, alias).setCacheable(true).setCacheMode(CacheMode.NORMAL);
+		if(isCache())
+			return sessionFactory.getCurrentSession().createCriteria(entityClass, alias).setCacheable(true).setCacheMode(CacheMode.NORMAL);
+		else
+			return sessionFactory.getCurrentSession().createCriteria(entityClass, alias).setCacheable(false).setCacheMode(CacheMode.IGNORE);
+		
 	}
 
 	@Override

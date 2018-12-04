@@ -408,4 +408,12 @@ public class HypersocketUtils {
 		return new Date(date.getTime() + tz.getOffset(date.getTime()));
 	}
 
+	public static void memDbg(String ctx) {
+		if("true".equalsIgnoreCase(System.getProperty("hypersocket.memDbg", "false")))
+			System.out.println(String.format("Total: %6d MiB   Free: %6d   Used: %6d   Max: %6d    Ctx: %s",
+					Runtime.getRuntime().totalMemory() / 1024 / 1024, Runtime.getRuntime().freeMemory() / 1024 / 1024,
+					(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024,
+					Runtime.getRuntime().maxMemory() / 1024 / 1024, ctx));
+		
+	}
 }
