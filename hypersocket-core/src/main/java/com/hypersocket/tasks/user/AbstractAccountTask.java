@@ -38,10 +38,11 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 	}
 
 	@Override
-	public final TaskResult execute(final Task task, final Realm currentRealm, final List<SystemEvent> event)
+	public final TaskResult execute(final Task task, final Realm currentRealm, final List<SystemEvent> events)
 			throws ValidationException {
 		Principal p;
-		String name = getRepository().getValue(task, "accountTask.principalName");
+		String name = processTokenReplacements(getRepository().getValue(task, "accountTask.principalName"), events);;
+		
 		if(NumberUtils.isCreatable(name)) {
 			p = realmService.getPrincipalById(Long.parseLong(name));
 		} else {
@@ -52,7 +53,7 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 			throw new ValidationException(String.format("Principal %s not found", name));
 
 		}
-		return doExecute(p, task, currentRealm, event);
+		return doExecute(p, task, currentRealm, events);
 	}
 
 	protected abstract TaskResult doExecute(Principal p, final Task task, final Realm currentRealm,
