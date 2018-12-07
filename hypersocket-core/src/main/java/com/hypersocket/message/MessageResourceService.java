@@ -84,4 +84,8 @@ public interface MessageResourceService extends
 	void sendMessage(String messageRequesterNewComment, Realm currentRealm, ITokenResolver ticketResolver,
 			List<Principal> ticketPrincipals, Collection<String> emails);
 
+	void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
+			Collection<Principal> principals, Collection<String> emails, Date schedule,
+			List<EmailAttachment> attachments);
+
 }

@@ -503,6 +503,12 @@ public class MessageResourceServiceImpl extends
 			return;
 		}
 		
+		sendMessage(message, realm, tokenResolver, replyTo, principals, emails, schedule, attachments);
+	}
+	
+	@Override
+	public void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo, Collection<Principal> principals, Collection<String> emails, Date schedule, List<EmailAttachment> attachments) {
+
 		List<RecipientHolder> recipients = new ArrayList<RecipientHolder>();
 		EmailDeliveryStrategy strategy = message.getDeliveryStrategy();
 		
