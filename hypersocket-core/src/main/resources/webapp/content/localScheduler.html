@@ -27,7 +27,7 @@
 			</div>
 		</div>
 	</div>
-
+<div id="additionalActions"></div>
 </div>
 
 <script type="text/javascript">
@@ -58,6 +58,8 @@ function jobDateFormatter(value, row, index) {
 					canUpdate : currentMenu.canUpdate
 				});
 
+				$('#additionalActions').load('${uiPath}/content/fireJob.html');
+				
 				$('#contentLocalScheduler').ajaxResourcePage(
 						{
 							id : "LocalScheduler",
@@ -79,6 +81,22 @@ function jobDateFormatter(value, row, index) {
 								name: 'lastFire',
 								sortable: true,
 								formatter: jobDateFormatter
+							}],
+							forceActionsDropdown: true,
+							additionalActions: [{
+								resourceKey : 'fireJob',
+								iconClass : 'fa-play',
+								action : function(resource, callback) {
+									getJSON('scheduler/fire/' + resource.name, null, function(data) {
+										if(data.success) {
+											showSuccess(getResource('text.jobTriggered').format(resource.name));
+										} else {
+											showError(data.message);
+										}
+										callback();
+									});
+								},
+								enabled : true
 							}],
 							disableDecoration: true,
 							resourceKey : "job",

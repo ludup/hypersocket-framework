@@ -246,6 +246,11 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	}
 
 	@Override
+	public void fireJob(String scheduleId) throws SchedulerException {
+		scheduler.triggerJob(new JobKey(scheduleId));
+	}
+	
+	@Override
 	public boolean jobDoesNotExists(String scheduleId) throws SchedulerException {
 		return !jobExists(scheduleId);
 	}

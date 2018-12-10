@@ -84,6 +84,22 @@ function jobDateFormatter(value, row, index) {
 								sortable: true,
 								formatter: jobDateFormatter
 							}],
+							forceActionsDropdown: true,
+							additionalActions: [{
+								resourceKey : 'fireJob',
+								iconClass : 'fa-play',
+								action : function(resource, callback) {
+									getJSON('clusteredScheduler/fire/' + resource.name, null, function(data) {
+										if(data.success) {
+											showSuccess(getResource('text.jobTriggered').format(resource.name));
+										} else {
+											showError(data.message);
+										}
+										callback();
+									});
+								},
+								enabled : true
+							}],
 							disableDecoration: true,
 							resourceKey : "job",
 							canCreate: false,

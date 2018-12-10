@@ -80,6 +80,21 @@ public class SchedulerResourceController extends AbstractSchedulerResourceContro
 			ResourceNotFoundException, SessionTimeoutException, SchedulerException, NotScheduledException {
 		return super.getResource(resourceService, request, response, id);
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "scheduler/fire/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus fireJob(HttpServletRequest request, HttpServletResponse response,
+			@PathVariable("id") String id) {
+		try {
+			super.fireJob(resourceService, request, response, id);
+			return new RequestStatus(true);
+		} catch (ResourceNotFoundException | AccessDeniedException | UnauthorizedException | SessionTimeoutException
+				| SchedulerException | NotScheduledException e) {
+			return new RequestStatus(false, e.getMessage());
+		}
+	}
 
 	@RequestMapping(value = "scheduler/job/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
