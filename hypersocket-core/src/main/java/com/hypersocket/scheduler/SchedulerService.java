@@ -115,6 +115,6 @@ public interface SchedulerService {
 
 	Collection<PropertyCategory> getPropertyTemplate();
 
-	void fireJob(String scheduleId) throws SchedulerException;
+	void fireJob(String scheduleId) throws SchedulerException, NotScheduledException;
 
 }

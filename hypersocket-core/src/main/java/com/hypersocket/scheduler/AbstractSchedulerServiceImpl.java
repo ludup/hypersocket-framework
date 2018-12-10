@@ -246,8 +246,13 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	}
 
 	@Override
-	public void fireJob(String scheduleId) throws SchedulerException {
-		scheduler.triggerJob(new JobKey(scheduleId));
+	public void fireJob(String scheduleId) throws SchedulerException, NotScheduledException {
+		List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(new JobKey(scheduleId));
+		if (triggersOfJob.isEmpty()) {
+			throw new NotScheduledException();
+		}
+		Trigger trigger = triggersOfJob.get(0);
+		scheduler.triggerJob(trigger.getJobKey(), trigger.getJobDataMap());
 	}
 	
 	@Override
