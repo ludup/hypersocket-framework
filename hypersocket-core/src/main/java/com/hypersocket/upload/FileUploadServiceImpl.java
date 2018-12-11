@@ -202,7 +202,7 @@ public class FileUploadServiceImpl extends
 			return fileUpload;
 		} catch (Throwable e) {
 			fireResourceCreationEvent(fileUpload, e);
-			throw new ResourceCreationException(
+			throw new ResourceCreationException(e, 
 					FileUploadServiceImpl.RESOURCE_BUNDLE,
 					"error.genericError", e.getMessage());
 		}
