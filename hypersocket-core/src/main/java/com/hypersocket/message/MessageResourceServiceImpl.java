@@ -619,13 +619,20 @@ public class MessageResourceServiceImpl extends
 				String attachmentsListString = message.getAttachments();
 				List<String>  attachmentUUIDs = new ArrayList<>(Arrays.asList(ResourceUtils.explodeValues(attachmentsListString)));
 				
+				if(tokenResolver instanceof ResolverWithAttachments) {
+					attachmentUUIDs.addAll(((ResolverWithAttachments)tokenResolver).getAttachmentUUIDS());
+				}
+				
+				if(attachments != null) {
+					for(EmailAttachment attachment : attachments) {
+						attachmentUUIDs.add(attachment.getName());
+					}
+				}	
+				
 				if(schedule!=null) {
-					if(attachments != null) {
-						for(EmailAttachment attachment : attachments) {
-							attachmentUUIDs.add(attachment.getName());
-						}
-						attachmentsListString = ResourceUtils.implodeValues(attachmentUUIDs);
-					}				
+					
+					attachmentsListString = ResourceUtils.implodeValues(attachmentUUIDs);
+					
 					batchService.scheduleEmail(realm, subjectWriter.toString(),
 							bodyWriter.toString(),
 							htmlWriter.toString(),
@@ -639,8 +646,9 @@ public class MessageResourceServiceImpl extends
 				
 				} else {
 					List<EmailAttachment> emailAttachments = new ArrayList<EmailAttachment>();
-					if(attachments != null)
+					if(attachments != null) {
 						emailAttachments.addAll(attachments);
+					}
 					for(String uuid : attachmentUUIDs) {
 						try {
 							FileUpload upload = uploadService.getFileUpload(uuid);

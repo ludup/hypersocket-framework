@@ -634,8 +634,8 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			ResourceUtils.filterResourceProperties(getRepository().getPropertyTemplates(null), resource.getProperties()));
 	}
 
-
-	protected void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
+	@Override
+	public void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 
 		prepareImport(resource, isSystemResource() ? realmService.getSystemRealm() : realm);
 		
