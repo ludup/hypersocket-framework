@@ -2,6 +2,7 @@ package com.hypersocket.automation;
 
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -30,6 +31,7 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmRepository;
@@ -46,6 +48,7 @@ import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.TriggerCondition;
 import com.hypersocket.triggers.TriggerResource;
+import com.hypersocket.triggers.TriggerResourceRepository;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResultType;
 import com.hypersocket.triggers.TriggerType;
@@ -88,6 +91,9 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	
 	@Autowired
 	SchedulingResourceService resourceScheduler;
+	
+	@Autowired
+	TriggerResourceRepository triggerRepository; 
 	
 	public AutomationResourceServiceImpl() {
 		super("automationResource");
@@ -414,5 +420,95 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		}
 
 	}
+	protected boolean isExportingAdditionalProperties() {
+		return false;
+	}
+	
+	protected void performImport(AutomationResource resource, Realm realm)
+			throws ResourceException, AccessDeniedException {
 
+		Map<String, String> properties = resource.getProperties();
+		resource.setProperties(null);
+
+		super.performImport(resource, realm);
+
+		TaskProvider provider = taskService.getTaskProvider(resource
+				.getResourceKey());
+		provider.getRepository().setValues(resource, properties);
+
+		TriggerResource parentTrigger = null;
+		for (TriggerResource child : resource.getChildTriggers()) {
+			if(parentTrigger == null) {
+				parentTrigger = child;
+			} else {
+				child.setParentTrigger(parentTrigger);
+				parentTrigger = child;
+			}
+			performImport(child, realm);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected void performImport(TriggerResource resource, Realm realm)
+			throws ResourceException, AccessDeniedException {
+
+		Map<String, String> properties = resource.getProperties();
+		resource.setProperties(null);
+
+		resource.setRealm(realm);
+		resource.setTriggerType(TriggerType.AUTOMATION);
+		
+		triggerService.checkImportName(resource, isSystemResource() ? realmService.getSystemRealm() : realm);
+		triggerService.createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() :
+			ResourceUtils.filterResourceProperties(triggerRepository.getPropertyTemplates(null), 
+					resource.getProperties()));
+
+		TaskProvider provider = taskService.getTaskProvider(resource
+				.getResourceKey());
+		provider.getRepository().setValues(resource, properties);
+
+		for (TriggerResource child : resource.getChildTriggers()) {
+			child.setParentTrigger(resource);
+			performImport(child, realm);
+		}
+	}
+
+	protected void prepareExport(AutomationResource resource) throws ResourceException, AccessDeniedException {
+
+		TaskProvider provider = taskService.getTaskProvider(resource
+				.getResourceKey());
+		resource.setProperties(provider.getTaskProperties(resource));
+
+		for (TriggerResource childTrigger : resource.getChildTriggers()) {
+			prepareExport(childTrigger);
+		}
+
+		super.prepareExport(resource);
+	}
+
+	protected void prepareExport(TriggerResource resource) throws ResourceException, AccessDeniedException {
+
+		TaskProvider provider = taskService.getTaskProvider(resource
+				.getResourceKey());
+		resource.setProperties(provider.getTaskProperties(resource));
+
+		for (TriggerCondition condition : resource.getConditions()) {
+			condition.setId(null);
+			condition.setTrigger(null);
+		}
+		for (TriggerResource childTrigger : resource.getChildTriggers()) {
+			prepareExport(childTrigger);
+		}
+
+		if (resource.getParentTrigger() != null) {
+			resource.getParentTrigger().setId(null);
+		}
+
+		resource.setId(null);
+	}
+	
+	protected void performImportDropResources(AutomationResource resource)
+			throws ResourceException, AccessDeniedException {
+		deleteResource(resource);
+	}
 }

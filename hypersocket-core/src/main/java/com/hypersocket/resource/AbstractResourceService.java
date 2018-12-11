@@ -93,4 +93,6 @@ public interface AbstractResourceService<T extends RealmResource> extends Authen
 
 	Collection<T> allRealmsResources();
 
+	void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException;
+
 }

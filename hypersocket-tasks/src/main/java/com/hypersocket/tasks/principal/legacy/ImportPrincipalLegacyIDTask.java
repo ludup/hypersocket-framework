@@ -79,7 +79,7 @@ public class ImportPrincipalLegacyIDTask extends AbstractTaskProvider {
 
 		try {
 			String reference = processTokenReplacements(repository.getValue(task, "importPrincipalLegacyID.reference"), events);
-			Long legacyId = Long.parseLong(processTokenReplacements(repository.getValue(task, "importPrincipalLegacyID.reference"), events));
+			Long legacyId = Long.parseLong(processTokenReplacements(repository.getValue(task, "importPrincipalLegacyID.legacyId"), events));
 			
 			Principal principal = principalRepository.getPrincipalByReference(reference, currentRealm);
 			if(Objects.isNull(principal)) {

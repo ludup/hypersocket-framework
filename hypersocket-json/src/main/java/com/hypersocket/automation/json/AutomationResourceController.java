@@ -1,6 +1,7 @@
 package com.hypersocket.automation.json;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -15,8 +17,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
@@ -36,6 +40,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceExportException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.BootstrapTableResult;
@@ -50,6 +55,7 @@ import com.hypersocket.triggers.TriggerResultType;
 import com.hypersocket.triggers.TriggerType;
 import com.hypersocket.triggers.json.AbstractTriggerController;
 import com.hypersocket.triggers.json.TriggerResourceUpdate;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Controller
 public class AutomationResourceController extends AbstractTriggerController {
@@ -485,6 +491,100 @@ public class AutomationResourceController extends AbstractTriggerController {
 			
 		} catch (Exception e) {
 			return new RequestStatus(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "automations/export/{id}", method = RequestMethod.GET, produces = { "text/plain" })
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public String exportResource(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable("id") long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException, ResourceNotFoundException,
+			ResourceExportException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Thread.sleep(1000);
+		} catch (Exception e) {
+		}
+		try {
+			response.setHeader("Content-Disposition", "attachment; filename=\""
+					+ resourceService.getResourceCategory() + "-"
+					+ resourceService.getResourceById(id).getName() + ".json\"");
+			return resourceService.exportResoure(id);
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "automations/export", method = RequestMethod.GET, produces = { "text/plain" })
+	@ResponseStatus(value = HttpStatus.OK)
+	@ResponseBody
+	public String exportAll(HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException,
+			ResourceNotFoundException, ResourceExportException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Thread.sleep(1000);
+		} catch (Exception e) {
+		}
+		try {
+			response.setHeader("Content-Disposition", "attachment; filename=\""
+					+ resourceService.getResourceCategory() + ".json\"");
+			return resourceService.exportAllResoures();
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "automations/import", method = { RequestMethod.POST }, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<AutomationResource> importAll(
+			HttpServletRequest request, HttpServletResponse response,
+			@RequestParam(value = "file") MultipartFile jsonFile,
+			@RequestParam(required = false) boolean dropExisting)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Thread.sleep(2000);
+		} catch (Exception e) {
+		}
+		try {
+			String json = IOUtils.toString(jsonFile.getInputStream());
+			if (!HypersocketUtils.isValidJSON(json)) {
+				throw new ResourceException(
+						I18NServiceImpl.USER_INTERFACE_BUNDLE,
+						"error.incorrectJSON");
+			}
+			Collection<AutomationResource> collects = resourceService
+					.importResources(json, getCurrentRealm(), dropExisting);
+			return new ResourceStatus<AutomationResource>(true, I18N.getResource(
+					sessionUtils.getLocale(request),
+					I18NServiceImpl.USER_INTERFACE_BUNDLE,
+					"resource.import.success", collects.size()));
+		} catch (ResourceException e) {
+			return new ResourceStatus<AutomationResource>(false, e.getMessage());
+		} catch (Exception e) {
+			return new ResourceStatus<AutomationResource>(false, I18N.getResource(
+					sessionUtils.getLocale(request),
+					I18NServiceImpl.USER_INTERFACE_BUNDLE,
+					"resource.import.failure", e.getMessage()));
 		} finally {
 			clearAuthenticatedContext();
 		}
