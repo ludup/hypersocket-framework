@@ -113,4 +113,19 @@ public class ClusteredSchedulerResourceController extends AbstractSchedulerResou
 			return new RequestStatus(false, e.getMessage());
 		}
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "clusteredScheduler/interrupt/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus interruptJob(HttpServletRequest request, HttpServletResponse response,
+			@PathVariable("id") String id) {
+		try {
+			super.interruptJob(resourceService, request, response, id);
+			return new RequestStatus(true);
+		} catch (ResourceNotFoundException | AccessDeniedException | UnauthorizedException | SessionTimeoutException
+				| SchedulerException | NotScheduledException e) {
+			return new RequestStatus(false, e.getMessage());
+		}
+	}
 }

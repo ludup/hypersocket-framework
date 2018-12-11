@@ -113,4 +113,19 @@ public class SchedulerResourceController extends AbstractSchedulerResourceContro
 			@RequestBody String[] ids) throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		return super.deleteResources(resourceService, request, response, ids);
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "scheduler/interrupt/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus interruptJob(HttpServletRequest request, HttpServletResponse response,
+			@PathVariable("id") String id) {
+		try {
+			super.interruptJob(resourceService, request, response, id);
+			return new RequestStatus(true);
+		} catch (ResourceNotFoundException | AccessDeniedException | UnauthorizedException | SessionTimeoutException
+				| SchedulerException | NotScheduledException e) {
+			return new RequestStatus(false, e.getMessage());
+		}
+	}
 }

@@ -125,6 +125,19 @@ public class AbstractSchedulerResourceController extends ResourceController {
 		}
 
 	}
+	
+	public void interruptJob(SchedulerService resourceService, HttpServletRequest request,
+			HttpServletResponse response, String id) throws AccessDeniedException, UnauthorizedException,
+			ResourceNotFoundException, SessionTimeoutException, SchedulerException, NotScheduledException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+		try {
+			resourceService.interrupt(resourceService.getResourceById(id).getId());
+		} finally {
+			clearAuthenticatedContext();
+		}
+
+	}
 
 	public ResourceStatus<SchedulerResource> deleteResource(SchedulerService resourceService,
 			HttpServletRequest request, HttpServletResponse response, String id)

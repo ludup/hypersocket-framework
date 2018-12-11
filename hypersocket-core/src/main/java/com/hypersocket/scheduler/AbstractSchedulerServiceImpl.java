@@ -329,6 +329,17 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 			scheduler.deleteJob(jobKey);
 		}
 	}
+	
+	public void interrupt(String id) throws SchedulerException, NotScheduledException {
+		JobKey jobKey = new JobKey(id);
+		if (scheduler.checkExists(jobKey)) {
+			List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(jobKey);
+			if (triggersOfJob.isEmpty()) {
+				throw new NotScheduledException();
+			}
+			scheduler.interrupt(jobKey);
+		}
+	}
 
 	@Override
 	public Date getNextSchedule(String id) throws SchedulerException, NotScheduledException {

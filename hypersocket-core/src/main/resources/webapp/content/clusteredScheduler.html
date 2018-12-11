@@ -99,6 +99,20 @@ function jobDateFormatter(value, row, index) {
 									});
 								},
 								enabled : true
+							},{
+								resourceKey : 'interruptJob',
+								iconClass : 'fa-hand-paper-o ',
+								action : function(resource, callback) {
+									getJSON('clusteredScheduler/interrupt/' + resource.name, null, function(data) {
+										if(data.success) {
+											showSuccess(getResource('text.jobInterrupted').format(resource.name));
+										} else {
+											showError(data.message);
+										}
+										callback();
+									});
+								},
+								enabled : true
 							}],
 							disableDecoration: true,
 							resourceKey : "job",
