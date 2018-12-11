@@ -49,11 +49,8 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	protected SessionFactory sessionFactory;
 	
 	private static ThreadLocal<Boolean> cache = new ThreadLocal<>();
+	private static ThreadLocal<String> cacheRegion = new ThreadLocal<>();
 	private boolean requiresDemoWrite = false;
-	
-	static {
-		cache.set(true);
-	}
 
 	protected AbstractRepositoryImpl() {
 
@@ -309,23 +306,42 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		return was;
 	}
 	
+	public static String setCacheRegion(String cacheRegion) {
+		String was = getCacheRegion();
+		AbstractRepositoryImpl.cacheRegion.set(cacheRegion);
+		return was;
+	}
+	
+	public static String getCacheRegion() {
+		return AbstractRepositoryImpl.cacheRegion.get();
+	}
+
+	
 	public static boolean isCache() {
-		return Boolean.TRUE.equals(AbstractRepositoryImpl.cache.get());
+		return !Boolean.FALSE.equals(AbstractRepositoryImpl.cache.get());
 	}
 
 	protected Criteria createCriteria(Class<?> entityClass) {
-		if(isCache())
-			return sessionFactory.getCurrentSession().createCriteria(entityClass).setCacheable(true).setCacheMode(CacheMode.NORMAL);
-		else
-			return sessionFactory.getCurrentSession().createCriteria(entityClass).setCacheable(false).setCacheMode(CacheMode.IGNORE);
+		return configureCriteriaCaching(sessionFactory.getCurrentSession().createCriteria(entityClass));
+	}
+
+	protected Criteria configureCriteriaCaching(final Criteria crit) {
+		if(isCache()) {
+			crit.setCacheable(true);
+			crit.setCacheMode(CacheMode.NORMAL);
+			final String region = cacheRegion.get();
+			if(StringUtils.isNotBlank(region))
+				crit.setCacheRegion(region);
+		}
+		else {
+			crit.setCacheable(false);
+			crit.setCacheMode(CacheMode.IGNORE);
+		}
+		return crit;
 	}
 
 	protected Criteria createCriteria(Class<?> entityClass, String alias) {
-		if(isCache())
-			return sessionFactory.getCurrentSession().createCriteria(entityClass, alias).setCacheable(true).setCacheMode(CacheMode.NORMAL);
-		else
-			return sessionFactory.getCurrentSession().createCriteria(entityClass, alias).setCacheable(false).setCacheMode(CacheMode.IGNORE);
-		
+		return configureCriteriaCaching(sessionFactory.getCurrentSession().createCriteria(entityClass, alias));
 	}
 
 	@Override

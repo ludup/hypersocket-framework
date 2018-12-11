@@ -70,6 +70,7 @@ import com.hypersocket.role.events.RoleEvent;
 import com.hypersocket.role.events.RoleUpdatedEvent;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.transactions.TransactionService;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Service
 public class PermissionServiceImpl extends AuthenticatedServiceImpl
@@ -973,6 +974,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 					roles.size(), 
 					ResourceUtils.createCommaSeparatedString(roles)));
 		}
+		HypersocketUtils.memDbg("revokePermissions " + principal.getName());
 		
 		for(Role role : roles) {
 			if(!role.isPersonalRole() && !role.isAllUsers()) {
