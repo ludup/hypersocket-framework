@@ -68,4 +68,10 @@ public class HttpUtilsHolder implements HttpUtils {
 	public CloseableHttpResponse execute(HttpUriRequest request, boolean allowSelfSigned) throws IOException {
 		return instance.execute(request, allowSelfSigned);
 	}
+
+	@Override
+	public InputStream doHttpGetInputStream(String uri, boolean allowSelfSigned, Map<String, String> headers)
+			throws IOException {
+		return instance.doHttpGetInputStream(uri, allowSelfSigned, headers);
+	}
 }

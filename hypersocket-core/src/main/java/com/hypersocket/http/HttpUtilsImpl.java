@@ -194,6 +194,22 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 		return new ContentInputStream(client, client.execute(request).getEntity().getContent());
 
 	}
+	
+	@Override
+	public InputStream doHttpGetInputStream(String uri, boolean allowSelfSigned, Map<String, String> headers) throws IOException {
+
+		CloseableHttpClient client = createHttpClient(allowSelfSigned);
+
+		HttpGet request = new HttpGet(uri);
+		if (headers != null) {
+			for (String key : headers.keySet()) {
+				request.setHeader(key, headers.get(key));
+			}
+		}
+		
+		return new ContentInputStream(client, client.execute(request).getEntity().getContent());
+
+	}
 
 	@Override
 	public CloseableHttpResponse doHttpGet(String uri, boolean allowSelfSigned, Map<String, String> headers)

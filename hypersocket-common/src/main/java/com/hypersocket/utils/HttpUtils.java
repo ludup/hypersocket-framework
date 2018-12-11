@@ -33,4 +33,7 @@ public interface HttpUtils {
 
 	CloseableHttpResponse execute(HttpUriRequest request, boolean allowSelfSigned) throws IOException;
 
+	InputStream doHttpGetInputStream(String uri, boolean allowSelfSigned, Map<String, String> headers)
+			throws IOException;
+
 }
