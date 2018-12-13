@@ -25,7 +25,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.automation.AutomationResourceService;
-import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
@@ -45,7 +44,6 @@ import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
-import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
@@ -54,6 +52,7 @@ import com.hypersocket.triggers.events.TriggerResourceCreatedEvent;
 import com.hypersocket.triggers.events.TriggerResourceDeletedEvent;
 import com.hypersocket.triggers.events.TriggerResourceEvent;
 import com.hypersocket.triggers.events.TriggerResourceUpdatedEvent;
+import com.hypersocket.util.MaxSizeHashMap;
 
 @Service
 public class TriggerResourceServiceImpl extends
@@ -66,48 +65,44 @@ public class TriggerResourceServiceImpl extends
 	public static final String RESOURCE_BUNDLE = "TriggerResourceService";
 
 	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
+	
+	private static final int MAX_CACHED_TRIGGERS = 1024;
 
 	@Autowired
-	TriggerResourceRepository repository;
+	private TriggerResourceRepository repository;
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
 	@Autowired
-	PermissionService permissionService;
+	private PermissionService permissionService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Autowired
-	ClusteredSchedulerService schedulerService;
+	private RealmService realmService;
 
 	@Autowired
-	RealmService realmService;
-
-	@Autowired
-	TaskProviderService taskService;
-
-	@Autowired
-	ConfigurationService configurationService; 
+	private TaskProviderService taskService;
 	
 	@Autowired
-	AutomationResourceService automationService;
+	private AutomationResourceService automationService;
 	
 	@Autowired
-	TriggerExecutor triggerExecutor;
+	private TriggerExecutor triggerExecutor;
 	
 	@Autowired
-	SessionService sessionService; 
+	private SessionService sessionService; 
 	
 	@Autowired
-	HttpUtilsImpl httpUtils;
+	private HttpUtilsImpl httpUtils;
 	
-	Map<String, TriggerConditionProvider> registeredConditions = new HashMap<String, TriggerConditionProvider>();
+	private Map<String, TriggerConditionProvider> registeredConditions = new HashMap<String, TriggerConditionProvider>();
+	private Map<String, ReplacementVariableProvider> replacementVariables = new HashMap<String, ReplacementVariableProvider>();
+	private MaxSizeHashMap<String, List<TriggerResource>> eventTriggerCache;
 
-	Map<String, ReplacementVariableProvider> replacementVariables = new HashMap<String, ReplacementVariableProvider>();
-
-	boolean running = true;
+	private boolean running = true;
 
 	public TriggerResourceServiceImpl() {
 		super("triggerResource");
@@ -115,6 +110,8 @@ public class TriggerResourceServiceImpl extends
 
 	@PostConstruct
 	private void postConstruct() {
+		
+		eventTriggerCache = new MaxSizeHashMap<>(MAX_CACHED_TRIGGERS);
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
@@ -370,6 +367,7 @@ public class TriggerResourceServiceImpl extends
 		TaskProvider provider = taskService.getTaskProvider(resource
 				.getResourceKey());
 		provider.taskUpdated(resource);
+		eventTriggerCache.clear();
 
 		return resource;
 	}
@@ -417,6 +415,7 @@ public class TriggerResourceServiceImpl extends
 		TaskProvider provider = taskService.getTaskProvider(resource
 				.getResourceKey());
 		provider.taskCreated(resource);
+		eventTriggerCache.clear();
 
 		return resource;
 	}
@@ -448,6 +447,7 @@ public class TriggerResourceServiceImpl extends
 		TaskProvider provider = taskService.getTaskProvider(resource
 				.getResourceKey());
 		provider.taskDeleted(resource);
+		eventTriggerCache.clear();
 	}
 
 	private void populateTrigger(String name, String event,
@@ -505,8 +505,6 @@ public class TriggerResourceServiceImpl extends
 
 	private void processEventTriggers(SystemEvent sourceEvent) {
 
-		// TODO cache triggers to prevent constant database lookup
-
 		// TODO need some security to prevent inifinte loops
 		if (!running) {
 			if (log.isDebugEnabled()) {
@@ -521,7 +519,12 @@ public class TriggerResourceServiceImpl extends
 					+ sourceEvent.getStatus().toString());
 		}
 
-		List<TriggerResource> triggers = repository.getTriggersForEvent(sourceEvent);
+		String cacheKey = getCacheKey(sourceEvent);
+		List<TriggerResource> triggers = eventTriggerCache.get(cacheKey);
+		if(triggers == null) {
+			triggers = repository.getTriggersForEvent(sourceEvent);
+			eventTriggerCache.put(cacheKey, triggers);
+		}
 		
 		for (TriggerResource trigger : triggers) {
 
@@ -736,6 +739,10 @@ public class TriggerResourceServiceImpl extends
 			}
 		});
 		return new Long(ret.size());
+	}
+
+	private String getCacheKey(SystemEvent sourceEvent) {
+		return sourceEvent.getCurrentRealm().getId() + "-" + String.join("-", sourceEvent.getResourceKeys() + "-" + sourceEvent.getStatus().name());
 	}
 	
 	abstract class DefaultVariableReplacementProvider implements ReplacementVariableProvider {
