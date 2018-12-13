@@ -183,7 +183,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 			
 			if(findableResourceRepositories.containsKey(m.getReturnType())) {
 				Resource r = (Resource) m.invoke(resource);
-				if(r==null) {
+				if(r==null || r.getId()==null) {
 					return null;
 				} else {
 					return r.getId().toString();
