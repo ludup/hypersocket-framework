@@ -373,9 +373,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		} catch (SchedulerException se) {
 			throw new IllegalStateException("Failed to search.", se);
 		}
-		final List<SchedulerResource> subList = l.subList(Math.min(l.size(), start),
-				Math.min(l.size(), start + length));
-		Collections.sort(subList, new Comparator<SchedulerResource>() {
+		Collections.sort(l, new Comparator<SchedulerResource>() {
 
 			@SuppressWarnings("unchecked")
 			@Override
@@ -418,7 +416,8 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 				return 0;
 			}
 		});
-		return subList;
+		return l.subList(Math.min(l.size(), start),
+				Math.min(l.size(), start + length));
 	}
 
 	@Override
