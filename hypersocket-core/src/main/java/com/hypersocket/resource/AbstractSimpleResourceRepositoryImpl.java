@@ -183,6 +183,8 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 		// Now set any remaining values
 		setValues(resource, properties);
 		
+		clearPropertyCache(resource);
+		
 		afterSave(resource, properties);
 		
 		for(TransactionOperation<T> op : operations) {
