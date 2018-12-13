@@ -63,18 +63,14 @@ public abstract class AbstractUpdateUserTask extends AbstractAccountTask {
 			}
 		}
 		
-		eventService.delayEvents(true);
-		
+		eventService.delayEvents();
 		try {	
-			
 			realmService.updateUser(currentRealm, principal, principal.getName(), properties, assosciated);
-			
 			return new TaskResultHolder(eventService.getLastResult(), true);
-				
 		} catch (ResourceException | AccessDeniedException e) {
 			return new TaskResultHolder(eventService.getLastResult(), true);
 		} finally {
-			eventService.delayEvents(false);
+			eventService.undelayEvents();
 		}
 	}
 

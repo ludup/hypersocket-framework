@@ -22,7 +22,9 @@ public interface EventService  {
 
 	void publishDelayedEvents();
 
-	void delayEvents(Boolean val);
+	void delayEvents();
+	
+	void undelayEvents();
 
 	void rollbackDelayedEvents(boolean fireFailedEvents);
 

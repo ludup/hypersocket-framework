@@ -1379,61 +1379,66 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.cannotDeleteSystem", realm.getName());
 			}
 
-			eventService.delayEvents(true);
+			eventService.delayEvents();
+			try {
 
-			transactionService.doInTransaction(new TransactionCallback<Void>() {
+				transactionService.doInTransaction(new TransactionCallback<Void>() {
 
-				@Override
-				public Void doInTransaction(TransactionStatus status) {
-					try {
-						/**
-						 * Get a copy of the realm to delete so we can fire events with the current
-						 * realm detail as delete will rename it
-						 */
+					@Override
+					public Void doInTransaction(TransactionStatus status) {
+						try {
+							/**
+							 * Get a copy of the realm to delete so we can fire events with the current
+							 * realm detail as delete will rename it
+							 */
 
-						Realm deletedRealm = getRealmById(realm.getId());
+							Realm deletedRealm = getRealmById(realm.getId());
 
-						clearCache(deletedRealm);
+							clearCache(deletedRealm);
 
-						sessionService.deleteRealm(realm);
+							sessionService.deleteRealm(realm);
 
-						fireRealmDelete(deletedRealm);
+							fireRealmDelete(deletedRealm);
 
-						for (FindableResourceRepository<?> repository : EntityResourcePropertyStore.getRepositories()) {
-							if (repository instanceof AbstractSimpleResourceRepository
-									&& !(repository instanceof RealmRepository)
-									&& !(repository instanceof PermissionRepository)) {
-								if (repository.isDeletable()) {
-									repository.deleteRealm(realm);
+							for (FindableResourceRepository<?> repository : EntityResourcePropertyStore
+									.getRepositories()) {
+								if (repository instanceof AbstractSimpleResourceRepository
+										&& !(repository instanceof RealmRepository)
+										&& !(repository instanceof PermissionRepository)) {
+									if (repository.isDeletable()) {
+										repository.deleteRealm(realm);
+									}
+								}
+								if (repository instanceof AbstractAssignableResourceRepository) {
+									AbstractAssignableResourceRepository<?> r = (AbstractAssignableResourceRepository<?>) repository;
+									if (r.isDeletable()) {
+										r.deleteRealm(realm);
+									}
 								}
 							}
-							if (repository instanceof AbstractAssignableResourceRepository) {
-								AbstractAssignableResourceRepository<?> r = (AbstractAssignableResourceRepository<?>) repository;
-								if (r.isDeletable()) {
-									r.deleteRealm(realm);
-								}
-							}
+
+							permissionRepository.deleteRealm(realm);
+							ouRepository.deleteRealm(realm);
+
+							suspensionRepository.deleteRealm(realm);
+							getLocalProvider().deleteRealm(realm);
+
+							RealmProvider provider = getProviderForRealm(realm);
+							provider.deleteRealm(realm);
+
+							passwordPolicyService.deleteRealm(realm);
+							configurationService.deleteRealm(realm);
+
+							realmRepository.deleteRealm(deletedRealm);
+							return null;
+						} catch (ResourceException e) {
+							throw new IllegalStateException(e.getMessage(), e);
 						}
-
-						permissionRepository.deleteRealm(realm);
-						ouRepository.deleteRealm(realm);
-
-						suspensionRepository.deleteRealm(realm);
-						getLocalProvider().deleteRealm(realm);
-
-						RealmProvider provider = getProviderForRealm(realm);
-						provider.deleteRealm(realm);
-
-						passwordPolicyService.deleteRealm(realm);
-						configurationService.deleteRealm(realm);
-
-						realmRepository.deleteRealm(deletedRealm);
-						return null;
-					} catch (ResourceException e) {
-						throw new IllegalStateException(e.getMessage(), e);
 					}
-				}
-			});
+				});
+			} finally {
+				eventService.undelayEvents();
+			}
 
 			eventService.publishDelayedEvents();
 			eventService.publishEvent(new RealmDeletedEvent(this, getCurrentSession(), realm));

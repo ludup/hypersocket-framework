@@ -18,63 +18,67 @@ import com.hypersocket.resource.ResourceException;
 public class TransactionServiceImpl implements TransactionService {
 
 	static Logger log = LoggerFactory.getLogger(TransactionServiceImpl.class);
-	
+
 	@Autowired
 	@Qualifier("transactionManager")
 	PlatformTransactionManager txManager;
-	
+
 	@Autowired
 	EventService eventService;
-	
+
 	@Override
-	public <T> T doInTransaction(TransactionCallback<T> transaction)
-			throws ResourceException, AccessDeniedException {
+	public <T> T doInTransaction(TransactionCallback<T> transaction) throws ResourceException, AccessDeniedException {
 
 		TransactionTemplate tmpl = new TransactionTemplate(txManager);
-		eventService.delayEvents(true);
 		try {
-			T result = tmpl.execute(transaction);
+			T result;
+			eventService.delayEvents();
+			try {
+				result = tmpl.execute(transaction);
+			} finally {
+				eventService.undelayEvents();
+			}
 			eventService.publishDelayedEvents();
 			return result;
 		} catch (Throwable e) {
 			log.error("Error in transaction", e);
 			eventService.rollbackDelayedEvents(true);
-			if(transaction instanceof TransactionCallbackWithError) {
-				((TransactionCallbackWithError<T>)transaction).doTransacationError(e);
+			if (transaction instanceof TransactionCallbackWithError) {
+				((TransactionCallbackWithError<T>) transaction).doTransacationError(e);
 			}
-			if(e.getCause() instanceof ResourceException) {
+			if (e.getCause() instanceof ResourceException) {
 				throw (ResourceException) e.getCause();
-			}else if(e.getCause() instanceof AccessDeniedException) {
+			} else if (e.getCause() instanceof AccessDeniedException) {
 				throw (AccessDeniedException) e.getCause();
 			}
-			
-			throw new ResourceException(AuthenticationService.RESOURCE_BUNDLE, "error.transactionFailed", e.getMessage());
-		} finally {
-			eventService.delayEvents(false);
+
+			throw new ResourceException(AuthenticationService.RESOURCE_BUNDLE, "error.transactionFailed",
+					e.getMessage());
 		}
-		
-		
 	}
-	
+
 	@Override
 	public <T> T doInTransaction(TransactionCallbackWithError<T> transaction) throws ResourceException {
-		
+
 		TransactionTemplate tmpl = new TransactionTemplate(txManager);
-		eventService.delayEvents(true);
 		try {
-			T result = tmpl.execute(transaction);
+			T result;
+			eventService.delayEvents();
+			try {
+				result = tmpl.execute(transaction);
+			} finally {
+				eventService.undelayEvents();
+			}
 			eventService.publishDelayedEvents();
 			return result;
 		} catch (Throwable e) {
 			log.error("Error in transaction", e);
 			eventService.rollbackDelayedEvents(true);
 			transaction.doTransacationError(e);
-			throw new ResourceException(AuthenticationService.RESOURCE_BUNDLE, "error.transactionFailed", e.getMessage(), e);
-		} finally {
-			eventService.delayEvents(false);
-		}
-		
-		
+			throw new ResourceException(AuthenticationService.RESOURCE_BUNDLE, "error.transactionFailed",
+					e.getMessage(), e);
+		} 
+
 	}
 
 }
