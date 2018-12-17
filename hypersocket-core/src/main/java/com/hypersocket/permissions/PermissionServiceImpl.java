@@ -968,8 +968,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public void revokePermissionsNonTransactional(Principal principal) {
 		
 		Collection<Role> roles = getRolesByPrincipal(principal);
-		if(log.isInfoEnabled()) {
-			log.info(String.format("Revoking principal permissioms %s with %d roles [%s]", 
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("Revoking principal permissioms %s with %d roles [%s]", 
 					principal.getPrincipalName(), 
 					roles.size(), 
 					ResourceUtils.createCommaSeparatedString(roles)));
