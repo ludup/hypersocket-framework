@@ -22,7 +22,7 @@ public abstract class TransactionalJob implements Job, InterruptableJob {
 	TransactionService transactionService;
 	
 	boolean transactionFailed = false;
-	boolean interrupted = true;
+	boolean interrupted = false;
 	Thread jobThread = null;
 	
 	public TransactionalJob() {
