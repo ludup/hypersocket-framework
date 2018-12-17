@@ -10,11 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.email.events.EmailOpenedEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -24,7 +26,7 @@ import com.hypersocket.upload.FileUploadService;
 import com.hypersocket.utils.FileUtils;
 
 @Service
-public class EmailTrackerServiceImpl implements EmailTrackerService {
+public class EmailTrackerServiceImpl extends AbstractAuthenticatedServiceImpl implements EmailTrackerService {
 
 	static Logger log = LoggerFactory.getLogger(EmailTrackerServiceImpl.class);
 	
@@ -54,30 +56,36 @@ public class EmailTrackerServiceImpl implements EmailTrackerService {
 	@Override
 	public String generateNonTrackingUri(String uuid, Realm realm) throws AccessDeniedException, ResourceNotFoundException {
 		
-		String externalHostname = realmService.getRealmHostname(realm);
-		if(StringUtils.isBlank(externalHostname)) {
-			externalHostname = configurationService.getValue(realm,"email.externalHostname");
-		}
-		if(StringUtils.isBlank(externalHostname)) {
-			throw new AccessDeniedException("External hostname cannot be resolved for tracking image");
-		}
+		elevatePermissions(SystemPermission.SYSTEM);
 		
 		try {
-			FileUpload file = fileService.getFileUpload(uuid);
+			String externalHostname = realmService.getRealmHostname(realm);
+			if(StringUtils.isBlank(externalHostname)) {
+				externalHostname = configurationService.getValue(realm,"email.externalHostname");
+			}
+			if(StringUtils.isBlank(externalHostname)) {
+				throw new AccessDeniedException("External hostname cannot be resolved for tracking image");
+			}
 			
-			if(externalHostname.startsWith("http")) {
-				return String.format("%s/%s/api/files/public/%s/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
-					systemConfigurationService.getValue("application.path"),
-					uuid,
-					file.getFileName());
-			} else {
-				return String.format("https://%s/%s/api/files/public/%s/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
+			try {
+				FileUpload file = fileService.getFileUpload(uuid);
+				
+				if(externalHostname.startsWith("http")) {
+					return String.format("%s/%s/api/files/public/%s/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
 						systemConfigurationService.getValue("application.path"),
 						uuid,
 						file.getFileName());
+				} else {
+					return String.format("https://%s/%s/api/files/public/%s/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
+							systemConfigurationService.getValue("application.path"),
+							uuid,
+							file.getFileName());
+				}
+			} catch (ResourceNotFoundException  e) {
+				return "#";
 			}
-		} catch (ResourceNotFoundException  e) {
-			return "#";
+		} finally {
+			clearElevatedPermissions();
 		}
 		
 	}
@@ -85,31 +93,37 @@ public class EmailTrackerServiceImpl implements EmailTrackerService {
 	@Override
 	public String generateTrackingUri(String uuid, String subject, String name, String emailAddress, Realm realm) throws AccessDeniedException, ResourceNotFoundException {
 		
-		Principal principal = null;
-		try {
-			principal = realmService.getPrincipalByEmail(realm, emailAddress);
-		} catch(ResourceNotFoundException ex) {
-		}
-		EmailReceipt receipt = repository.trackEmail(subject, emailAddress, realm, principal);
-		FileUpload upload = fileService.getFileUpload(uuid);
+		elevatePermissions(SystemPermission.SYSTEM);
 		
-		String externalHostname = realmService.getRealmHostname(realm);
-		if(StringUtils.isBlank(externalHostname)) {
-			externalHostname = configurationService.getValue(realm,"email.externalHostname");
-		}
-		if(StringUtils.isBlank(externalHostname)) {
-			throw new AccessDeniedException("External hostname cannot be resolved for tracking image");
-		}
-		if(externalHostname.startsWith("http")) {
-			return String.format("%s/%s/api/emails/receipt/%d/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
-				systemConfigurationService.getValue("application.path"),
-				receipt.getId(),
-				upload.getFileName());
-		} else {
-			return String.format("https://%s/%s/api/emails/receipt/%d/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
+		try {
+			Principal principal = null;
+			try {
+				principal = realmService.getPrincipalByEmail(realm, emailAddress);
+			} catch(ResourceNotFoundException ex) {
+			}
+			EmailReceipt receipt = repository.trackEmail(subject, emailAddress, realm, principal);
+			FileUpload upload = fileService.getFileUpload(uuid);
+			
+			String externalHostname = realmService.getRealmHostname(realm);
+			if(StringUtils.isBlank(externalHostname)) {
+				externalHostname = configurationService.getValue(realm,"email.externalHostname");
+			}
+			if(StringUtils.isBlank(externalHostname)) {
+				throw new AccessDeniedException("External hostname cannot be resolved for tracking image");
+			}
+			if(externalHostname.startsWith("http")) {
+				return String.format("%s/%s/api/emails/receipt/%d/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
 					systemConfigurationService.getValue("application.path"),
 					receipt.getId(),
 					upload.getFileName());
+			} else {
+				return String.format("https://%s/%s/api/emails/receipt/%d/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
+						systemConfigurationService.getValue("application.path"),
+						receipt.getId(),
+						upload.getFileName());
+			}
+		} finally {
+			clearElevatedPermissions();
 		}
 		
 	}
