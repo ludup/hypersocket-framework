@@ -617,7 +617,10 @@ public class MessageResourceServiceImpl extends
 				
 				Template htmlTemplate = templateService.createTemplate("message.html." + message.getId(), 
 						receipientHtml, 
-						message.getModifiedDate().getTime());				
+						message.getModifiedDate().getTime());
+				
+				data.put("htmlTitle", subjectWriter.toString());
+				
 				StringWriter htmlWriter = new StringWriter();
 				htmlTemplate.process(data, htmlWriter);
 				
