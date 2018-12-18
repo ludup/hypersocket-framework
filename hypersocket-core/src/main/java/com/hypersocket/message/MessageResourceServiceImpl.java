@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -155,9 +156,13 @@ public class MessageResourceServiceImpl extends
 						message = repository.getResourceByName(I18N.getResource(
 								Locale.getDefault(), r.resourceBundle, r.resourceKey + ".name"), realm);
 					}
-					if(message==null) {
+					String existingName = I18N.getResource(Locale.getDefault(), r.resourceBundle, r.resourceKey + ".name");
+					if(message==null || !message.getName().equals(existingName)) {
 						if(r.systemOnly && !realm.isSystem()) {
 							continue;
+						}
+						if(!Objects.isNull(message)) {
+							deleteResource(message);
 						}
 						createI18nMessage(r.resourceBundle, r.resourceKey, r.variables, realm, r.enabled, r.delivery);
 						if(r.repository!=null) {
