@@ -210,7 +210,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 
 		if (jobExists(scheduleId)) {
 			if (log.isInfoEnabled()) {
-				log.info(String.format("The job with identity %s already exists will not be scheduled again !!!!!!!.",
+				log.info(String.format("The job with identity %s already exists so will not be scheduled again !!!!!!!.",
 						scheduleId));
 			}
 		}

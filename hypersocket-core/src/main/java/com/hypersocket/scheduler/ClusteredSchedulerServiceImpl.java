@@ -11,6 +11,7 @@ import org.hibernate.SessionFactory;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,21 +63,10 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 						}
 						catch(Exception e) {
 							LOG.warn(String.format("Removing job %s as the class %s no longer exists.", row[0], row[1]), e);
+							for(Trigger key : clusteredScheduler.getTriggersOfJob(new JobKey((String)row[0]))) {
+								clusteredScheduler.unscheduleJob(key.getKey());
+							}
 							clusteredScheduler.deleteJob(new JobKey((String)row[0]));
-						}
-					}
-					
-					query = session.createSQLQuery("SELECT TRIGGER_NAME, JOB_DATA FROM QRTZ_TRIGGERS");
-					results = query.list();
-					for(Object[] row : results) {
-						try {
-							ByteArrayInputStream bain = new ByteArrayInputStream((byte[])row[1]);
-							ObjectInputStream oin = new ObjectInputStream(bain);
-							oin.readObject();
-						}
-						catch(Exception e) {
-							LOG.warn(String.format("Removing job %s as the class %s no longer exists.", row[0], row[1]));
-							clusteredScheduler.unscheduleJob(new TriggerKey((String)row[0]));
 						}
 					}
 				}

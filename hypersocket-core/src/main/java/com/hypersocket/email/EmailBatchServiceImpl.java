@@ -11,6 +11,7 @@ import org.codemonkey.simplejavamail.MailException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.hypersocket.batch.BatchProcessingItemRepository;
 import com.hypersocket.batch.BatchProcessingServiceImpl;
@@ -23,6 +24,7 @@ import com.hypersocket.triggers.ValidationException;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.upload.FileUploadService;
 
+@Service
 public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatchItem> implements EmailBatchService {
 
 	static Logger log = LoggerFactory.getLogger(EmailBatchServiceImpl.class);
