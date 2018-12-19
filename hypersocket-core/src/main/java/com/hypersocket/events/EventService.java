@@ -37,5 +37,6 @@ public interface EventService  {
 
 	SystemEvent getLastResult();
 
+	void onDelayedEventsPublished(Runnable r);
 
 }

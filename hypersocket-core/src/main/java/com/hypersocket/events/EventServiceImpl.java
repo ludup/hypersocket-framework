@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,16 +47,16 @@ public class EventServiceImpl implements EventService {
 	public static final String RESOURCE_BUNDLE = "EventService";
 
 	@Autowired
-	ApplicationEventPublisher eventPublisher;
+	private ApplicationEventPublisher eventPublisher;
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
-	ThreadLocal<List<Boolean>> isDelayingEvents = new ThreadLocal<List<Boolean>>();
-	ThreadLocal<BufferedSerializer<SystemEvent>> delayedEvents = new ThreadLocal<BufferedSerializer<SystemEvent>>();
-	ThreadLocal<SystemEvent> lastResult = new ThreadLocal<SystemEvent>();
-
-	List<EventExtender> extenders = new ArrayList<EventExtender>();
+	private ThreadLocal<List<Boolean>> isDelayingEvents = new ThreadLocal<List<Boolean>>();
+	private ThreadLocal<BufferedSerializer<SystemEvent>> delayedEvents = new ThreadLocal<BufferedSerializer<SystemEvent>>();
+	private ThreadLocal<SystemEvent> lastResult = new ThreadLocal<SystemEvent>();
+	private List<EventExtender> extenders = new ArrayList<EventExtender>();
+	private List<Runnable> publishCallbacks = Collections.synchronizedList(new ArrayList<>());
 
 	@Override
 	public void undelayEvents() {
@@ -79,6 +80,11 @@ public class EventServiceImpl implements EventService {
 	@Override
 	public void registerExtender(EventExtender extender) {
 		extenders.add(extender);
+	}
+
+	@Override
+	public void onDelayedEventsPublished(Runnable r) {
+		publishCallbacks.add(r);
 	}
 
 	@Override
@@ -108,9 +114,15 @@ public class EventServiceImpl implements EventService {
 					delayedEvents.set(null);
 				}
 			}
+			
 		} catch (Throwable t) {
 			log.error("Failed to process delayed events", t);
 		}
+
+		for(Runnable r : publishCallbacks) {
+			r.run();
+		}
+		publishCallbacks.clear();
 	}
 
 	@Override
