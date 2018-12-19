@@ -68,6 +68,36 @@ import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.realm.DefaultPasswordCreator;
+import com.hypersocket.realm.GroupPermission;
+import com.hypersocket.realm.LogonException;
+import com.hypersocket.realm.MediaNotFoundException;
+import com.hypersocket.realm.MediaType;
+import com.hypersocket.realm.PasswordCreator;
+import com.hypersocket.realm.PasswordPermission;
+import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalProcessor;
+import com.hypersocket.realm.PrincipalRepository;
+import com.hypersocket.realm.PrincipalStatus;
+import com.hypersocket.realm.PrincipalSuspension;
+import com.hypersocket.realm.PrincipalSuspensionRepository;
+import com.hypersocket.realm.PrincipalSuspensionService;
+import com.hypersocket.realm.PrincipalType;
+import com.hypersocket.realm.PrincipalWithPasswordResolver;
+import com.hypersocket.realm.PrincipalWithoutPasswordResolver;
+import com.hypersocket.realm.ProfilePermission;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmListener;
+import com.hypersocket.realm.RealmOwnershipResolver;
+import com.hypersocket.realm.RealmPermission;
+import com.hypersocket.realm.RealmProvider;
+import com.hypersocket.realm.RealmRepository;
+import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.RolePermission;
+import com.hypersocket.realm.UserPermission;
+import com.hypersocket.realm.UserPrincipal;
+import com.hypersocket.realm.UserVariableReplacementService;
+import com.hypersocket.realm.UserVariableReplacementServiceImpl;
 import com.hypersocket.realm.events.AccountDisabledEvent;
 import com.hypersocket.realm.events.AccountEnabledEvent;
 import com.hypersocket.realm.events.ChangePasswordEvent;
@@ -2645,6 +2675,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			throw new UnsupportedOperationException();
 		}
 
+	}
+	
+	@Override
+	public boolean isDisabled(Principal principal) {
+		RealmProvider provider = getProviderForRealm(principal.getRealm());
+		return provider.isDisabled(principal);
 	}
 
 	class RemoteAccountFilter extends DefaultTableFilter {

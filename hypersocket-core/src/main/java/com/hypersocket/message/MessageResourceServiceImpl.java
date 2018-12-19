@@ -519,24 +519,26 @@ public class MessageResourceServiceImpl extends
 		
 		if(strategy!=EmailDeliveryStrategy.ONLY_ADDITIONAL) {
 			for(Principal principal : principals) {
-				switch(strategy) {
-				case ALL:
-					recipients.add(new RecipientHolder(principal, 
-							principal.getEmail()));
-					for(String email : ResourceUtils.explodeCollectionValues(((UserPrincipal)principal).getSecondaryEmail())) {
-						recipients.add(new RecipientHolder(principal, email));
+				if(!realmService.isDisabled(principal)) {
+					switch(strategy) {
+					case ALL:
+						recipients.add(new RecipientHolder(principal, 
+								principal.getEmail()));
+						for(String email : ResourceUtils.explodeCollectionValues(((UserPrincipal)principal).getSecondaryEmail())) {
+							recipients.add(new RecipientHolder(principal, email));
+						}
+						break;
+					case PRIMARY:
+						recipients.add(new RecipientHolder(principal, 
+								principal.getEmail()));
+						break;
+					case SECONDARY:
+						for(String email : ResourceUtils.explodeCollectionValues(((UserPrincipal)principal).getSecondaryEmail())) {
+							recipients.add(new RecipientHolder(principal, email));
+						}
+						break;
+					default:
 					}
-					break;
-				case PRIMARY:
-					recipients.add(new RecipientHolder(principal, 
-							principal.getEmail()));
-					break;
-				case SECONDARY:
-					for(String email : ResourceUtils.explodeCollectionValues(((UserPrincipal)principal).getSecondaryEmail())) {
-						recipients.add(new RecipientHolder(principal, email));
-					}
-					break;
-				default:
 				}
 			}
 		}
