@@ -89,7 +89,10 @@
 
 				<prop key="hypersocket.hibernate.search.ha">false</prop>
 
-
+				<prop key="hibernate.jdbc.batch_size">50</prop>
+				<prop key="hibernate.order_inserts">true</prop>
+				<prop key="hibernate.order_updates">true</prop>
+				
 				<!--
 				HA will auto configure below properties with values as below.
 
