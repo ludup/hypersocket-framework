@@ -308,5 +308,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Map<String, String> getRealmProperties(Realm realm);
 
+	boolean isDisabled(Principal principal);
+
 }
 

@@ -2649,5 +2649,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		return ProfileCredentialsState.COMPLETE;
 	}
+
+	@Override
+	public boolean isDisabled(Principal principal) {
+		RealmProvider provider = getProviderForRealm(principal.getRealm());
+		return provider.isDisabled(principal);
+	}
 }
 
