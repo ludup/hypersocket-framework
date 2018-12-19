@@ -7,3 +7,4 @@
 /client-service/
 /hypersocket-client/
 *.log
+**/.classpath
