@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.hypersocket.certs.FileFormatException;
 import com.hypersocket.certs.InvalidPassphraseException;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.ResourceException;
 
 public interface CertificateProvider {
@@ -16,8 +17,8 @@ public interface CertificateProvider {
 	
 	String getBundle();
 
-	void create(CertificateResource resource, Map<String, String> properties) throws CertificateException, UnsupportedEncodingException, ResourceException;
+	void create(CertificateResource resource, Map<String, String> properties) throws CertificateException, UnsupportedEncodingException, ResourceException, AccessDeniedException;
 
-	void update(CertificateResource resource, String name, Map<String, String> properties) throws CertificateException, UnsupportedEncodingException, InvalidPassphraseException, FileFormatException, ResourceException;
+	void update(CertificateResource resource, String name, Map<String, String> properties) throws CertificateException, UnsupportedEncodingException, InvalidPassphraseException, FileFormatException, ResourceException, AccessDeniedException;
 
 }
