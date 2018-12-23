@@ -10,7 +10,7 @@ public class StaticResolver implements ITokenResolver {
 		
 	}
 	
-	protected void addToken(String name, Object value) {
+	public void addToken(String name, Object value) {
 		tokens.put(name, value);
 	}
 	
