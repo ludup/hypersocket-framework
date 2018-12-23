@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 import javax.mail.Address;
@@ -127,6 +128,8 @@ public class CollectMailTask extends AbstractTaskProvider {
 						String textContent, String htmlContent, Date sent, Date received,
 						EmailAttachment... attachments) {
 					List<String> attachmentUUIDs = new ArrayList<>();
+					TaskResult result = null;
+					
 					if (doAttachments) {
 						for (EmailAttachment attachment : attachments) {
 							String filename = attachment.getFilename();
@@ -145,20 +148,28 @@ public class CollectMailTask extends AbstractTaskProvider {
 									}
 								} catch (ResourceException e) {
 									log.error(String.format("Failed to attach %s", filename), e);
-									results.add(new CollectMailTaskResult(this, e, currentRealm, task));
+									result = new CollectMailTaskResult(this, e, currentRealm, task);
+									break;
 								} catch (AccessDeniedException e) {
 									log.error(String.format("Access denied for attaching %s", filename),
 											e);
-									results.add(new CollectMailTaskResult(this, e, currentRealm, task));
+									result = new CollectMailTaskResult(this, e, currentRealm, task);
+									break;
 								} catch (IOException e) {
 									log.error(String.format("I/O error attaching %s", filename), e);
-									results.add(new CollectMailTaskResult(this, e, currentRealm, task));
+									result = new CollectMailTaskResult(this, e, currentRealm, task);
+									break;
 								}
 							}
 						}
 					}
-					results.add(new CollectMailTaskResult(this, true, currentRealm, task, from, replyTo, to, cc,
+					
+					if(Objects.isNull(result)) {
+						results.add(new CollectMailTaskResult(this, true, currentRealm, task, from, replyTo, to, cc,
 							subject, textContent, htmlContent, sent, received, attachmentUUIDs.toArray(new String[0])));
+					} else {
+						results.add(result);
+					}
 				}
 			});
 		} catch (Exception e) {
