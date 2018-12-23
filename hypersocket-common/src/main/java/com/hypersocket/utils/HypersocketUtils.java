@@ -452,4 +452,22 @@ public class HypersocketUtils {
 		
 	}
 
+	public static Date oneWeek() {
+		return fromToday(7);
+	}
+	
+	public static Date oneMonth() {
+		return fromToday(30);
+	}
+	
+	public static Date oneYear() {
+		return fromToday(365);
+	}
+	
+	public static Date fromToday(int days) {
+		Calendar c = todayCalendar();
+		c.add(Calendar.DAY_OF_MONTH, days);
+		return c.getTime();
+	}
+
 }
