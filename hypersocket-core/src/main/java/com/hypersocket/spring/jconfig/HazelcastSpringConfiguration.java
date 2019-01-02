@@ -39,7 +39,6 @@ import com.hazelcast.config.TcpIpConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.hibernate.HazelcastCacheRegionFactory;
-import com.hypersocket.config.SystemConfigurationService;
 
 @Configuration
 public class HazelcastSpringConfiguration {

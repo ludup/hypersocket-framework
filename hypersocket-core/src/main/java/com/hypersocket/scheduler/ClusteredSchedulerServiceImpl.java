@@ -1,8 +1,6 @@
 package com.hypersocket.scheduler;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.ObjectInputStream;
 import java.util.List;
 
 import org.hibernate.SQLQuery;
@@ -12,7 +10,6 @@ import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
-import org.quartz.TriggerKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
