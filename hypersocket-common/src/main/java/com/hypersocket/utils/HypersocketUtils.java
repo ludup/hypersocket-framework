@@ -470,4 +470,24 @@ public class HypersocketUtils {
 		return c.getTime();
 	}
 
+	@SafeVarargs
+	public static <T> boolean in(T element, T... values) {
+		for(T value : values) {
+			if(value.equals(element)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	@SafeVarargs
+	public static <T> boolean notIn(T element, T... values) {
+		for(T value : values) {
+			if(value.equals(element)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 }
