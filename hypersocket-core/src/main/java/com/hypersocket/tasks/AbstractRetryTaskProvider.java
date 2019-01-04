@@ -38,7 +38,7 @@ public abstract class AbstractRetryTaskProvider extends AbstractTaskProvider {
 				}
 				
 				if(log.isInfoEnabled()) {
-					log.info("Task WAS NOT a success, waiting for %d seconds before retrying", interval);
+					log.info("Task WAS NOT a success, waiting for {} seconds before retrying", interval);
 				}
 				
 				try {
