@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
+<propertyTemplates>
+	<propertyCategory resourceKey="certificateExpiring"
+		resourceBundle="CertificateResourceService" weight="0" >
+
+		<property resourceKey="certificate.reminder.days" inputType="multipleTextInput"
+			defaultValue="1]|[5]|[10" weight="0" validateAll="int"/>
+			
+		<property resourceKey="certificate.reminder.time" inputType="timeInput"
+			defaultValue="9:00" weight="100" />
+			
+	</propertyCategory>	
+</propertyTemplates>

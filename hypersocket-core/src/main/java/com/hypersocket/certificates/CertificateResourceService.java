@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyStore;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Map;
 
@@ -86,5 +88,9 @@ public interface CertificateResourceService extends
 	KeyStore getKeystoreWithCertificates(CertificateResource defaultCertificate, 
 			Collection<CertificateResource> certificates)
 			throws ResourceException, AccessDeniedException;
+
+	X509Certificate getX509Certificate(CertificateResource resource) throws CertificateException;
+
+	void sendExpiringNotification(CertificateResource resource, X509Certificate x509);
 
 }

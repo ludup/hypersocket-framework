@@ -16,11 +16,13 @@ import java.security.PublicKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -47,17 +49,21 @@ import com.hypersocket.certificates.events.CertificateResourceCreatedEvent;
 import com.hypersocket.certificates.events.CertificateResourceDeletedEvent;
 import com.hypersocket.certificates.events.CertificateResourceEvent;
 import com.hypersocket.certificates.events.CertificateResourceUpdatedEvent;
+import com.hypersocket.certificates.jobs.CertificateExpiringMessageRepository;
 import com.hypersocket.certs.FileFormatException;
 import com.hypersocket.certs.InvalidPassphraseException;
 import com.hypersocket.certs.MismatchedCertificateException;
 import com.hypersocket.certs.X509CertificateUtils;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.json.utils.HypersocketUtils;
+import com.hypersocket.message.MessageResourceService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractResourceRepository;
@@ -66,6 +72,7 @@ import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.TransactionAdapter;
 
 @Service
 public class CertificateResourceServiceImpl extends
@@ -77,6 +84,11 @@ public class CertificateResourceServiceImpl extends
 
 	public static final String DEFAULT_CERTIFICATE_NAME = "Default SSL Certificate";
 
+	public static final String MESSAGE_CERTIFICATE_CREATED = "message.certificateCreated";
+	public static final String MESSAGE_CERTIFICATE_UPDATED = "message.certificateUpdated";
+	public static final String MESSAGE_CERTIFICATE_EXPIRING = "message.certificateExpiring";
+	public static final String MESSAGE_CERTIFICATE_EXPIRED=  "message.certificateExpired";
+	
 	@Autowired
 	private CertificateResourceRepository repository;
 
@@ -92,7 +104,12 @@ public class CertificateResourceServiceImpl extends
 	@Autowired
 	private EventService eventService;
 	
-	//
+	@Autowired
+	private MessageResourceService messageService; 
+	
+	@Autowired
+	private CertificateExpiringMessageRepository certificateExpiryMessageRepository;
+	
 	private Map<String, CertificateProvider> providers = new HashMap<>();
 	
 	public CertificateResourceServiceImpl() {
@@ -130,6 +147,11 @@ public class CertificateResourceServiceImpl extends
 		EntityResourcePropertyStore.registerResourceService(CertificateResource.class, repository);
 		
 		registerProvider(new DefaultCertificateProvider());
+		
+		messageService.registerI18nMessage(RESOURCE_BUNDLE, MESSAGE_CERTIFICATE_CREATED, CertificateResolver.getVariables());
+		messageService.registerI18nMessage(RESOURCE_BUNDLE, MESSAGE_CERTIFICATE_UPDATED, CertificateResolver.getVariables());
+		messageService.registerI18nMessage(RESOURCE_BUNDLE, MESSAGE_CERTIFICATE_EXPIRED, CertificateResolver.getVariables());
+		messageService.registerI18nMessage(RESOURCE_BUNDLE, MESSAGE_CERTIFICATE_EXPIRING, CertificateResolver.getVariables(), false, certificateExpiryMessageRepository);
 	
 	}
 
@@ -212,7 +234,15 @@ public class CertificateResourceServiceImpl extends
 
 		try {
 			getProvider(properties).update(resource, name, properties);
-			updateResource(resource, properties);
+			updateResource(resource, properties, new TransactionAdapter<CertificateResource>() {
+
+				@Override
+				public void afterOperation(CertificateResource resource, Map<String, String> properties)
+						throws ResourceException {
+					sendCertificateNotification(resource, MESSAGE_CERTIFICATE_UPDATED);
+				}
+				
+			});
 			return resource;
 		} catch (CertificateException e) {
 			log.error("Failed to generate certificate", e);
@@ -245,7 +275,15 @@ public class CertificateResourceServiceImpl extends
 		
 		try {
 			getProvider(properties).create(resource, properties);
-			createResource(resource, properties);
+			createResource(resource, properties, new TransactionAdapter<CertificateResource>() {
+
+				@Override
+				public void afterOperation(CertificateResource resource, Map<String, String> properties)
+						throws ResourceException {
+					sendCertificateNotification(resource, MESSAGE_CERTIFICATE_CREATED);
+				}
+				
+			});
 			return resource;
 		} catch (CertificateException e) {
 			log.error("Failed to generate certificate", e);
@@ -859,4 +897,34 @@ public class CertificateResourceServiceImpl extends
 	}
 
 
+	private void sendCertificateNotification(CertificateResource resource, String message) {
+		
+		try {
+			Collection<Principal> principals = permissionService.getPrincipalsByRole(resource.getRealm(), 
+					permissionService.getSystemAdministratorRole(),
+					permissionService.getRealmAdministratorRole(resource.getRealm()));
+
+	        messageService.sendMessage(message, resource.getRealm(), new CertificateResolver(resource, getX509Certificate(resource)), principals);
+		} catch (AccessDeniedException | CertificateException | ResourceException e) {
+			log.error("Failed to send certificate message", e);
+		}
+	}
+
+	@Override
+	public X509Certificate getX509Certificate(CertificateResource resource) throws CertificateException {
+		
+		CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+        return (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(
+        		HypersocketUtils.getUTF8Bytes(resource.getCertificate())));
+	}
+	
+	@Override
+	public void sendExpiringNotification(CertificateResource resource, X509Certificate x509) {
+		
+		if(x509.getNotAfter().before(new Date())) {
+			sendCertificateNotification(resource, MESSAGE_CERTIFICATE_EXPIRED);
+		} else {
+			sendCertificateNotification(resource, MESSAGE_CERTIFICATE_EXPIRING);
+		}
+	}
 }
