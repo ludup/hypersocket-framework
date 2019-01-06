@@ -37,6 +37,9 @@
 <script type="text/javascript">
 
 function jobDateFormatter(value, row, index) {
+	if(!value) {
+		return getResource("job.never.text");
+	}
 	var today = new Date();
 	var yesterday = (function(d){ d.setDate(d.getDate()-1); return d})(new Date);
 	var fileDate = new Date(value);
