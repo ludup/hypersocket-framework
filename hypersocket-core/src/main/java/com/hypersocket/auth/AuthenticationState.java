@@ -40,6 +40,7 @@ public class AuthenticationState {
 	Locale locale;
 	String homePage = "";
 	boolean hasEnded = false;
+	List<AuthenticationStateListener> listeners = new ArrayList<AuthenticationStateListener>();
 	
 	Map<String, String> parameters = new HashMap<String, String>();
 	Map<String, Object> environment = new HashMap<String, Object>();
@@ -65,6 +66,16 @@ public class AuthenticationState {
 		lastErrorMsg = null;
 		lastErrorIsResourceKey = false;
 		parameters.clear();
+	}
+	
+	public void addListener(AuthenticationStateListener listener) {
+		listeners.add(listener);
+	}
+	
+	public void complete(Session session) {
+		for(AuthenticationStateListener listener : listeners) {
+			listener.logonComplete(session);
+		}
 	}
 	
 	public void addParameter(String name, String value) {

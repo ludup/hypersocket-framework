@@ -787,6 +787,8 @@ public class AuthenticationServiceImpl extends
 
 		setCurrentSession(session, state.getLocale());
 
+		state.complete(session);
+		
 		if (state.hasParameter("password")) {
 			sessionService.setCurrentPassword(session,
 					state.getParameter("password"));
