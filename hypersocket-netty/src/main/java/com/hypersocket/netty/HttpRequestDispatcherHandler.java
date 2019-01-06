@@ -243,7 +243,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					}
 				}
 				
-				Request.set(servletRequest);
+				Request.set(servletRequest, nettyResponse);
 				
 				if (log.isDebugEnabled()) {
 					synchronized (log) {
