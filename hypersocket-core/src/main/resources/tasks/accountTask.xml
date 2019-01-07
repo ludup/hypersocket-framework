@@ -2,6 +2,9 @@
 <propertyTemplates>
 	<propertyCategory resourceKey="category.account"
 		resourceBundle="RealmResourceService" weight="-1000">
-		<property resourceKey="accountTask.principalName" inputType="text" weight="100" defaultValue="" />
+		<property resourceKey="accountTask.principalName" inputType="text" weight="0" defaultValue="" />
+		<property resourceKey="accountTask.checkPrincipalName" inputType="switch" weight="100" defaultValue="true" />
+		<property resourceKey="accountTask.checkPrincipalId" inputType="switch" weight="200" defaultValue="true" />
+		<property resourceKey="accountTask.checkPrincipalEmail" inputType="switch" weight="300" defaultValue="true" />
 	</propertyCategory>
 </propertyTemplates>

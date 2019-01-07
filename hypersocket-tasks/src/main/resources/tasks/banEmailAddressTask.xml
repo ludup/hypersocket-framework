@@ -1,0 +1,4 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="banEmailAddressTask" extends="tasks/accountTask.xml">
+
+</propertyTemplates>

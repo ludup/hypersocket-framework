@@ -12,6 +12,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
+import com.hypersocket.tasks.TaskResult;
 import com.hypersocket.triggers.AbstractTaskResult;
 import com.hypersocket.triggers.ValidationException;
 
@@ -62,6 +63,11 @@ public class DeleteAccountTask extends AbstractAccountTask {
 	@Override
 	public ResourceTemplateRepository getRepository() {
 		return taskRepository;
+	}
+
+	@Override
+	protected TaskResult getFailedResult(Task task, Realm currentRealm, SystemEvent event, Exception e) {
+		return new DeleteAccountTaskResult(this, currentRealm, task, e);
 	}
 
 

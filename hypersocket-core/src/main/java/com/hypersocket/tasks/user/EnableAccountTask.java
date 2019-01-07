@@ -15,6 +15,7 @@ import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.realm.events.AccountEnabledEvent;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
+import com.hypersocket.tasks.TaskResult;
 import com.hypersocket.triggers.AbstractTaskResult;
 import com.hypersocket.triggers.ValidationException;
 
@@ -69,6 +70,11 @@ public class EnableAccountTask extends AbstractAccountTask {
 	@Override
 	public ResourceTemplateRepository getRepository() {
 		return taskRepository;
+	}
+
+	@Override
+	protected TaskResult getFailedResult(Task task, Realm currentRealm, SystemEvent event, Exception e) {
+		return new EnableAccountTaskResult(this, currentRealm, task, e);
 	}
 
 }

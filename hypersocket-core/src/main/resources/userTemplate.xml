@@ -1,4 +1,8 @@
 <?xml version="1.0" ?>
 <propertyTemplates context="user">
-
+	<propertyCategory resourceKey="category.system" store="db"
+		resourceBundle="UserInterface" weight="9999999" displayMode="admin">
+		<property resourceKey="user.bannedEmail" inputType="switch" 
+		       weight="0" defaultValue="false"/>
+	</propertyCategory>
 </propertyTemplates>

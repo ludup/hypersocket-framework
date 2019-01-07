@@ -1,15 +1,19 @@
 package com.hypersocket.tasks.user;
 
 import java.util.Map;
+import java.util.Objects;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.events.SystemEvent;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RealmServiceImpl;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskResult;
@@ -41,10 +45,32 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 			throws ValidationException {
 		
 		String principalName = processTokenReplacements(getRepository().getValue(task, "accountTask.principalName"), event);
-		Principal p = realmService.getPrincipalByName(currentRealm, principalName, PrincipalType.USER);
-
-		return doExecute(p, task, currentRealm, event);
+		boolean checkName = getRepository().getBooleanValue(task, "accountTask.checkPrincipalName");
+		boolean checkID = getRepository().getBooleanValue(task, "accountTask.checkPrincipalId");
+		boolean checkEmail = getRepository().getBooleanValue(task, "accountTask.checkPrincipalEmail");
+		
+		try {
+			Principal p = null;
+			
+			if(checkName) {
+				p = realmService.getPrincipalByName(currentRealm, principalName, getType(task));
+			}
+			
+			if(Objects.isNull(p) && checkID && NumberUtils.isNumber(principalName)) {
+				p = realmService.getPrincipalById(Long.parseLong(principalName));
+			}
+			
+			if(Objects.isNull(p) && checkEmail) {
+				p = realmService.getPrincipalByEmail(currentRealm, principalName);
+			}
+			
+			return doExecute(p, task, currentRealm, event);
+		} catch (NumberFormatException | ResourceNotFoundException | AccessDeniedException e) {
+			return getFailedResult(task, currentRealm, event, e);
+		}
 	}
+
+	protected abstract TaskResult getFailedResult(Task task, Realm currentRealm, SystemEvent event, Exception e);
 
 	protected abstract TaskResult doExecute(Principal p, final Task task, final Realm currentRealm,
 			final SystemEvent event) throws ValidationException;
