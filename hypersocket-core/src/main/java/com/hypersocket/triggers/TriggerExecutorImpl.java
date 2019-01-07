@@ -205,7 +205,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 		return provider.checkCondition(condition, trigger, event, sourceEvents);
 	}
 
-	protected void executeTrigger(final TriggerResource trigger, final SystemEvent lastResult,
+	protected void executeTrigger(final TriggerResource trigger, final SystemEvent triggeredEvent,
 			final List<SystemEvent> sourceEvents) throws ValidationException {
 
 		final TaskProvider provider = taskService.getTaskProvider(trigger.getResourceKey());
@@ -233,7 +233,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 									 * event in the chain (sourceEvents), so we restrict to this event and its result. 
 									 */
 									List<SystemEvent> results = new ArrayList<SystemEvent>();
-									results.add(lastResult);
+									results.add(triggeredEvent);
 									results.add(result.getEvent());
 
 
@@ -241,7 +241,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 										eventService.publishEvent(result.getEvent());
 									}
 									try {
-										processResult(trigger, result, results);
+										processResult(trigger, triggeredEvent, result, results);
 									} catch (ValidationException e) {
 										throw new IllegalStateException(e.getMessage(), e);
 									}
@@ -258,9 +258,9 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 								public boolean isTransactional() {
 									return true;
 								}
-							}, trigger, lastResult.getCurrentRealm(), sourceEvents);
+							}, trigger, triggeredEvent.getCurrentRealm(), sourceEvents);
 						} else {
-							return provider.execute(trigger, lastResult.getCurrentRealm(), sourceEvents);
+							return provider.execute(trigger, triggeredEvent.getCurrentRealm(), sourceEvents);
 						}
 					} catch (ValidationException e) {
 						throw new IllegalStateException(e.getMessage(), e);
@@ -281,7 +281,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 							eventService.publishEvent(result.getEvent());
 						}
 
-						processResult(trigger, result, new ArrayList<SystemEvent>(sourceEvents));
+						processResult(trigger, triggeredEvent, result, new ArrayList<SystemEvent>(sourceEvents));
 					}
 
 				} else {
@@ -292,7 +292,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 						eventService.publishEvent(outputEvent.getEvent());
 					}
 
-					processResult(trigger, outputEvent, sourceEvents);
+					processResult(trigger, triggeredEvent, outputEvent, sourceEvents);
 				}
 			}
 		} catch (ResourceException | AccessDeniedException e) {
@@ -300,16 +300,16 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 		}
 	}
 
-	protected void processResult(TriggerResource trigger, TaskResult result, List<SystemEvent> sourceEvents)
+	protected void processResult(TriggerResource trigger, SystemEvent triggeredEvent, TaskResult result, List<SystemEvent> sourceEvents)
 			throws ValidationException {
 
-		SystemEvent sourceEvent = sourceEvents.get(sourceEvents.size() - 1);
-
-		if (sourceEvent instanceof TaskResultCallback) {
-			TaskResultCallback callbackEvent = (TaskResultCallback) sourceEvent;
-			try {
-				callbackEvent.processResult(result);
-			} catch (Throwable e) {
+		for(SystemEvent event : sourceEvents) {
+			if (event instanceof TaskResultCallback) {
+				TaskResultCallback callbackEvent = (TaskResultCallback) event;
+				try {
+					callbackEvent.processResult(result);
+				} catch (Throwable e) {
+				}
 			}
 		}
 
