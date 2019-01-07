@@ -442,6 +442,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 						break;
 					}
 					default: {
+						
 					}
 				}
 			}
@@ -454,10 +455,10 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					servletResponse.getRequest().getHeader(
 							HttpHeaders.ACCEPT_ENCODING));
 
-			if (log.isDebugEnabled() && nettyResponse != null) {
+			if (nettyResponse != null && (log.isDebugEnabled() || isLoggableStatus(nettyResponse.getStatus()))) {
 				synchronized (log) {
-					log.debug("Begin Response >>>>>>");
-					log.debug(nettyResponse.getStatus()
+					log.info("Begin Response >>>>>> " + servletRequest.getRequestURI());
+					log.info(nettyResponse.getStatus()
 							.toString());
 					for (String header : nettyResponse
 							.getHeaderNames()) {
@@ -516,6 +517,18 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 	}
 	
+	private boolean isLoggableStatus(HttpResponseStatus status) {
+		switch(status.getCode()) {
+		case 400:
+		case 405:
+		case 406:
+		case 415:	
+			return true;
+		default:
+			return false;
+		}
+	}
+
 	class CheckCloseStateListener implements ChannelFutureListener {
 
 		HttpResponseServletWrapper servletResponse;
