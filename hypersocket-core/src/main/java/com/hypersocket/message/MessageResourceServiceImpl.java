@@ -519,7 +519,7 @@ public class MessageResourceServiceImpl extends
 		
 		if(strategy!=EmailDeliveryStrategy.ONLY_ADDITIONAL) {
 			for(Principal principal : principals) {
-				if(!realmService.isDisabled(principal)) {
+				if(!realmService.isDisabled(principal) && !realmService.getUserPropertyBoolean(principal, "user.bannedEmail")) {
 					switch(strategy) {
 					case ALL:
 						recipients.add(new RecipientHolder(principal, 

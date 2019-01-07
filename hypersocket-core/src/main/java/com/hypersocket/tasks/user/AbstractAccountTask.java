@@ -2,16 +2,19 @@ package com.hypersocket.tasks.user;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.events.SystemEvent;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RealmServiceImpl;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskResult;
@@ -40,21 +43,34 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 	@Override
 	public final TaskResult execute(final Task task, final Realm currentRealm, final List<SystemEvent> events)
 			throws ValidationException {
-		Principal p;
-		String name = processTokenReplacements(getRepository().getValue(task, "accountTask.principalName"), events);;
+
+		String principalName = processTokenReplacements(getRepository().getValue(task, "accountTask.principalName"), events);
+		boolean checkName = getRepository().getBooleanValue(task, "accountTask.checkPrincipalName");
+		boolean checkID = getRepository().getBooleanValue(task, "accountTask.checkPrincipalId");
+		boolean checkEmail = getRepository().getBooleanValue(task, "accountTask.checkPrincipalEmail");
 		
-		if(NumberUtils.isCreatable(name)) {
-			p = realmService.getPrincipalById(Long.parseLong(name));
-		} else {
-			p = realmService.getPrincipalByName(currentRealm, name, getType(task));
+		try {
+			Principal p = null;
+			
+			if(checkName) {
+				p = realmService.getPrincipalByName(currentRealm, principalName, getType(task));
+			}
+			
+			if(Objects.isNull(p) && checkID && NumberUtils.isCreatable(principalName)) {
+				p = realmService.getPrincipalById(Long.parseLong(principalName));
+			}
+			
+			if(Objects.isNull(p) && checkEmail) {
+				p = realmService.getPrincipalByEmail(currentRealm, principalName);
+			}
+			
+			return doExecute(p, task, currentRealm, events);
+		} catch (NumberFormatException | ResourceNotFoundException | AccessDeniedException e) {
+			return getFailedResult(task, currentRealm, events, e);
 		}
-
-		if(p==null) {
-			throw new ValidationException(String.format("Principal %s not found", name));
-
-		}
-		return doExecute(p, task, currentRealm, events);
 	}
+
+	protected abstract TaskResult getFailedResult(Task task, Realm currentRealm, List<SystemEvent> events, Exception e);
 
 	protected abstract TaskResult doExecute(Principal p, final Task task, final Realm currentRealm,
 			final List<SystemEvent> event) throws ValidationException;
