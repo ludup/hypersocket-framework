@@ -58,7 +58,8 @@ public class MessageResource extends RealmResource {
 	@Column(name="reply_email", length=1024)
 	String replyToEmail;
 
-	@Column(name="variables", length=1024)
+	@Column(name="variables")
+	@Lob
 	String supportedVariables;
 
 	@ManyToOne
