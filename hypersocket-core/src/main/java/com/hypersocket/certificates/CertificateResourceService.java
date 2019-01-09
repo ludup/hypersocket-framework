@@ -93,4 +93,6 @@ public interface CertificateResourceService extends
 
 	void sendExpiringNotification(CertificateResource resource, X509Certificate x509);
 
+	void updateCertificate(CertificateResource resource) throws ResourceException, AccessDeniedException;
+
 }

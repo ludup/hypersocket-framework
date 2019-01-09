@@ -225,6 +225,19 @@ public class CertificateResourceServiceImpl extends
 	}
 
 	@Override
+	public void updateCertificate(CertificateResource resource) throws ResourceException, AccessDeniedException {
+		updateResource(resource, new HashMap<String,String>(), new TransactionAdapter<CertificateResource>() {
+
+			@Override
+			public void afterOperation(CertificateResource resource, Map<String, String> properties)
+					throws ResourceException {
+				sendCertificateNotification(resource, MESSAGE_CERTIFICATE_UPDATED);
+			}
+			
+		});
+	}
+	
+	@Override
 	public CertificateResource updateResource(CertificateResource resource,
 			String name, Map<String, String> properties)
 			throws ResourceException, AccessDeniedException {
@@ -242,6 +255,7 @@ public class CertificateResourceServiceImpl extends
 				}
 				
 			});
+			
 			return resource;
 		} catch (CertificateException e) {
 			log.error("Failed to generate certificate", e);

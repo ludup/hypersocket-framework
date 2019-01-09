@@ -45,7 +45,7 @@ public class DefaultCertificateProvider extends AbstractCertificateProvider {
 	}
 
 	@Override
-	public void update(CertificateResource resource, String name, Map<String, String> properties)
+	public boolean update(CertificateResource resource, String name, Map<String, String> properties)
 			throws CertificateException, UnsupportedEncodingException, InvalidPassphraseException, FileFormatException {
 		KeyPair pair = getKeyPair(resource);
 		Certificate cert = populateCertificate(properties, pair, resource.getSignatureAlgorithm());
@@ -56,6 +56,10 @@ public class DefaultCertificateProvider extends AbstractCertificateProvider {
 		resource.setCertificate(new String(certFile.toByteArray(), "UTF-8"));
 		resource.setBundle(null);
 
+		/**
+		 * We did not update the resource
+		 */
+		return false;
 	}
 
 	@Override

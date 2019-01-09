@@ -19,6 +19,6 @@ public interface CertificateProvider {
 
 	void create(CertificateResource resource, Map<String, String> properties) throws CertificateException, UnsupportedEncodingException, ResourceException, AccessDeniedException;
 
-	void update(CertificateResource resource, String name, Map<String, String> properties) throws CertificateException, UnsupportedEncodingException, InvalidPassphraseException, FileFormatException, ResourceException, AccessDeniedException;
+	boolean update(CertificateResource resource, String name, Map<String, String> properties) throws CertificateException, UnsupportedEncodingException, InvalidPassphraseException, FileFormatException, ResourceException, AccessDeniedException;
 
 }
