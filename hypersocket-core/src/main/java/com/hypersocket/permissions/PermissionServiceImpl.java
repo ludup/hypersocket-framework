@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -50,6 +51,7 @@ import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.PasswordPermission;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.ProfilePermission;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
@@ -70,6 +72,7 @@ import com.hypersocket.role.events.RoleEvent;
 import com.hypersocket.role.events.RoleUpdatedEvent;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.transactions.TransactionService;
+import com.hypersocket.util.ProxiedIterator;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Service
@@ -364,8 +367,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	private void checkSystemAdministratorAssignments(Role role) throws ResourceException, AccessDeniedException {
 		if(role.getName().equals(ROLE_SYSTEM_ADMINISTRATOR)) {
-			Collection<Principal> admins = getPrincipalsByRole(realmService.getSystemRealm(), role);
-			if(admins.size() <= 1) {
+			Iterator<Principal> admins = iteratePrincipalsByRole(realmService.getSystemRealm(), role);
+			if(!admins.hasNext()) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.sysAdminRequired");
 			}
 		}
@@ -884,6 +887,51 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		return repository.getPermissionById(id);
 	}
 
+	public class RecursivePrincipalIterator extends ProxiedIterator<Principal> {
+		private final Iterator<Principal> principals;
+		Iterator<Principal> groupIterator;
+
+		public RecursivePrincipalIterator(Iterator<Principal> principals) {
+			this.principals = principals;
+		}
+
+		Iterator<Principal> iterateGroups(Principal group) {
+			// TODO make get associated principals an iterator
+			return new RecursivePrincipalIterator(realmService.getAssociatedPrincipals(group).iterator());
+		}
+
+		@Override
+		protected Principal checkNext(Principal item) {
+			if(item == null) {
+				boolean go = false;
+				while(go) {
+					go = false;
+					if(groupIterator != null) {
+						if(groupIterator.hasNext()) {
+							item = groupIterator.next();
+						}
+						else
+							groupIterator = null;
+					}
+					
+					while(item == null && principals.hasNext()) {
+						Principal principal = principals.next();
+						if(principal.getType() == PrincipalType.USER) {
+							item = principal;
+							break;
+						}
+						else if(principal.getType() == PrincipalType.GROUP) {
+							groupIterator = iterateGroups(principal);
+							go = true;
+							break;
+						}
+					}
+				}
+			}
+			return item;
+		}
+	}
+
 	private interface EntityMatch<T> {
 		boolean validate(T t);
 	}
@@ -1013,9 +1061,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public boolean hasEveryoneRole(Collection<Role> roles, Realm realm)
 			throws ResourceNotFoundException {
-
-		Role everyone = getRole(ROLE_EVERYONE, realm);
-		return roles.contains(everyone);
+		for(Role r : roles)
+			if(r.getName().equals(ROLE_EVERYONE))
+				return true;
+		return false;
 	}
 
 	@Override
@@ -1143,18 +1192,18 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public Collection<Role> getRolesByPrincipal(Principal principal) {
 		return repository.getRolesForPrincipal(Arrays.asList(principal));
 	}
-
+	
 	@Override
-	public Collection<Principal> getPrincipalsByRole(Realm realm, Role... roles) throws ResourceNotFoundException, AccessDeniedException {
-		return getPrincipalsByRole(realm, Arrays.asList(roles));
+	public Iterator<Principal> iteratePrincipalsByRole(Realm realm, Role... roles) throws ResourceNotFoundException, AccessDeniedException {
+		return iteratePrincipalsByRole(realm, Arrays.asList(roles));
 	}
 	
 	@Override
-	public Collection<Principal> getPrincipalsByRole(Realm realm, Collection<Role> roles) throws ResourceNotFoundException {
+	public Iterator<Principal> iteratePrincipalsByRole(Realm realm, Collection<Role> roles) throws ResourceNotFoundException {
 		if(hasEveryoneRole(roles, realm)) {
-			return realmService.allUsers(realm);
+			return realmService.iterateUsers(realm);
 		}
-		return repository.getPrincpalsByRole(realm, roles);
+		return repository.iteratePrincpalsByRole(realm, roles);
 	}
 
 	protected void deletePrincipalRole(Principal principal) {
@@ -1171,53 +1220,18 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 	
 	@Override
-	public Collection<Principal> resolveUsers(Collection<Role> roles, Realm realm) throws ResourceNotFoundException, AccessDeniedException {
+	public Iterator<Principal> resolveUsers(Collection<Role> roles, Realm realm) throws ResourceNotFoundException, AccessDeniedException {
 		if(hasEveryoneRole(roles, realm)) {
-			return realmService.allUsers(realm);
+			return realmService.iterateUsers(realm);
 		} else {
-			return resolveUsers(getPrincipalsByRole(realm, roles));
+			return resolveUsers(iteratePrincipalsByRole(realm, roles));
 		}
 	}
 	@Override
-	public Set<Principal> resolveUsers(Collection<Principal> principals) {
-		
-		Set<Principal> resolved = new HashSet<Principal>();
-		Set<Principal> processedGroups = new HashSet<Principal>();
-		
-		for(Principal principal : principals) {
-			switch(principal.getType()) {
-			case USER:
-				resolved.add(principal);
-				break;
-			case GROUP:
-				resolveGroupUsers(principal, resolved, processedGroups);
-				break;
-			default:
-				// Not processing SYSTEM or SERVICE principals.
-			}
-		}
-		return resolved;
+	public Iterator<Principal> resolveUsers(Iterator<Principal> principals) {
+		return new RecursivePrincipalIterator(principals);
 	}
 	
-	private void resolveGroupUsers(Principal group, Collection<Principal> resolved, Set<Principal> processed) {
-		if(!processed.contains(group)) {
-			processed.add(group);
-			for(Principal principal : realmService.getAssociatedPrincipals(group)) {
-				switch(principal.getType()) {
-				case USER:
-					resolved.add(principal);
-					break;
-				case GROUP:
-					resolveGroupUsers(principal, resolved, processed);
-					break;
-				default:
-					// Not processing SYSTEM or SERVICE principals.
-				}
-			}
-			
-		}
-	}
-
 	@Override
 	public boolean hasPermission(Principal principal, PermissionType permission) {
 		return hasPermission(principal, getPermission(permission.getResourceKey()));

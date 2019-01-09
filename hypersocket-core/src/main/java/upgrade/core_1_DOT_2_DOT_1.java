@@ -8,7 +8,7 @@
 package upgrade;
 
 
-import java.util.Collection;
+import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +19,7 @@ import com.hypersocket.local.LocalUser;
 import com.hypersocket.local.LocalUserRepository;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
+import com.hypersocket.tables.ColumnSort;
 
 
 public class core_1_DOT_2_DOT_1 implements Runnable {
@@ -32,14 +33,13 @@ public class core_1_DOT_2_DOT_1 implements Runnable {
 	RealmRepository realmRepository;
 	
 		
-	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
 
 		try {
 			for(Realm realm : realmRepository.allRealms(LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY)) {
-				for(LocalUser user : (Collection<LocalUser>)repository.allUsers(realm)) {
-	
+				for(Iterator<LocalUser> userIt = repository.iterateUsers(realm, new ColumnSort[0]); userIt.hasNext(); ) {
+					LocalUser user = userIt.next();
 					try {
 						user.setFullname(repository.getValue(user, "user.fullname"));
 						user.setEmail(repository.getValue(user, "user.email"));

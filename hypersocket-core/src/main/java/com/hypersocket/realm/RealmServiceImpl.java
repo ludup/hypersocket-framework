@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -68,36 +69,6 @@ import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourceUtils;
-import com.hypersocket.realm.DefaultPasswordCreator;
-import com.hypersocket.realm.GroupPermission;
-import com.hypersocket.realm.LogonException;
-import com.hypersocket.realm.MediaNotFoundException;
-import com.hypersocket.realm.MediaType;
-import com.hypersocket.realm.PasswordCreator;
-import com.hypersocket.realm.PasswordPermission;
-import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.PrincipalProcessor;
-import com.hypersocket.realm.PrincipalRepository;
-import com.hypersocket.realm.PrincipalStatus;
-import com.hypersocket.realm.PrincipalSuspension;
-import com.hypersocket.realm.PrincipalSuspensionRepository;
-import com.hypersocket.realm.PrincipalSuspensionService;
-import com.hypersocket.realm.PrincipalType;
-import com.hypersocket.realm.PrincipalWithPasswordResolver;
-import com.hypersocket.realm.PrincipalWithoutPasswordResolver;
-import com.hypersocket.realm.ProfilePermission;
-import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmListener;
-import com.hypersocket.realm.RealmOwnershipResolver;
-import com.hypersocket.realm.RealmPermission;
-import com.hypersocket.realm.RealmProvider;
-import com.hypersocket.realm.RealmRepository;
-import com.hypersocket.realm.RealmService;
-import com.hypersocket.realm.RolePermission;
-import com.hypersocket.realm.UserPermission;
-import com.hypersocket.realm.UserPrincipal;
-import com.hypersocket.realm.UserVariableReplacementService;
-import com.hypersocket.realm.UserVariableReplacementServiceImpl;
 import com.hypersocket.realm.events.AccountDisabledEvent;
 import com.hypersocket.realm.events.AccountEnabledEvent;
 import com.hypersocket.realm.events.ChangePasswordEvent;
@@ -430,16 +401,14 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public List<Principal> allUsers(Realm realm) {
-		return allPrincipals(realm, PrincipalType.USER);
+	public Iterator<Principal> iterateUsers(Realm realm) {
+		return iterateAllPrincipals(realm, PrincipalType.USER);
 	}
 
 	@Override
-	public List<Principal> allGroups(Realm realm) throws AccessDeniedException {
-
+	public Iterator<Principal> iterateGroups(Realm realm) throws AccessDeniedException {
 		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
-
-		return allPrincipals(realm, PrincipalType.GROUP);
+		return iterateAllPrincipals(realm, PrincipalType.GROUP);
 	}
 
 	protected List<Principal> allPrincipals(Realm realm, PrincipalType... types) {
@@ -447,6 +416,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			types = PrincipalType.ALL_TYPES;
 		}
 		return getProviderForRealm(realm).allPrincipals(realm, types);
+	}
+
+	protected Iterator<Principal> iterateAllPrincipals(Realm realm, PrincipalType... types) {
+		if (types.length == 0) {
+			types = PrincipalType.ALL_TYPES;
+		}
+		return getProviderForRealm(realm).iterateAllPrincipals(realm, types);
 	}
 
 	@Override

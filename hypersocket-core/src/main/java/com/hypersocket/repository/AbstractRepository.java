@@ -7,8 +7,10 @@
  ******************************************************************************/
 package com.hypersocket.repository;
 
+import java.util.Iterator;
 import java.util.List;
 
+import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
 
 public interface AbstractRepository<K> {
@@ -38,5 +40,7 @@ public interface AbstractRepository<K> {
 			CriteriaConfiguration... configs);
 
 	void assosicate(Object entity);
+
+	<I> Iterator<I> iterate(Class<I> clazz, ColumnSort[] sorting, CriteriaConfiguration... configs);
 	
 }

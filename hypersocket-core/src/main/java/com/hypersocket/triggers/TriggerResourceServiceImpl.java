@@ -52,20 +52,19 @@ import com.hypersocket.triggers.events.TriggerResourceCreatedEvent;
 import com.hypersocket.triggers.events.TriggerResourceDeletedEvent;
 import com.hypersocket.triggers.events.TriggerResourceEvent;
 import com.hypersocket.triggers.events.TriggerResourceUpdatedEvent;
+import com.hypersocket.util.Iterators;
 import com.hypersocket.util.MaxSizeHashMap;
 
 @Service
-public class TriggerResourceServiceImpl extends
-		AbstractResourceServiceImpl<TriggerResource> implements
-		TriggerResourceService, ApplicationListener<SystemEvent> {
+public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<TriggerResource>
+		implements TriggerResourceService, ApplicationListener<SystemEvent> {
 
-	static Logger log = LoggerFactory
-			.getLogger(TriggerResourceServiceImpl.class);
+	static Logger log = LoggerFactory.getLogger(TriggerResourceServiceImpl.class);
 
 	public static final String RESOURCE_BUNDLE = "TriggerResourceService";
 
 	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
-	
+
 	private static final int MAX_CACHED_TRIGGERS = 1024;
 
 	@Autowired
@@ -85,19 +84,19 @@ public class TriggerResourceServiceImpl extends
 
 	@Autowired
 	private TaskProviderService taskService;
-	
+
 	@Autowired
 	private AutomationResourceService automationService;
-	
+
 	@Autowired
 	private TriggerExecutor triggerExecutor;
-	
+
 	@Autowired
-	private SessionService sessionService; 
-	
+	private SessionService sessionService;
+
 	@Autowired
 	private HttpUtilsImpl httpUtils;
-	
+
 	private Map<String, TriggerConditionProvider> registeredConditions = new HashMap<String, TriggerConditionProvider>();
 	private Map<String, ReplacementVariableProvider> replacementVariables = new HashMap<String, ReplacementVariableProvider>();
 	private MaxSizeHashMap<String, List<TriggerResource>> eventTriggerCache;
@@ -110,13 +109,12 @@ public class TriggerResourceServiceImpl extends
 
 	@PostConstruct
 	private void postConstruct() {
-		
+
 		eventTriggerCache = new MaxSizeHashMap<>(MAX_CACHED_TRIGGERS);
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-		PermissionCategory cat = permissionService.registerPermissionCategory(
-				RESOURCE_BUNDLE, "category.triggers");
+		PermissionCategory cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE, "category.triggers");
 
 		for (TriggerResourcePermission p : TriggerResourcePermission.values()) {
 			permissionService.registerPermission(p, cat);
@@ -127,53 +125,48 @@ public class TriggerResourceServiceImpl extends
 		repository.loadPropertyTemplates("triggerTemplate.xml");
 
 		/**
-		 * Register the events. All events have to be registered so the system
-		 * knows about them.
+		 * Register the events. All events have to be registered so the system knows
+		 * about them.
 		 */
-		eventService.registerEvent(TriggerResourceEvent.class, RESOURCE_BUNDLE,
-				this);
-		eventService.registerEvent(TriggerResourceCreatedEvent.class,
-				RESOURCE_BUNDLE, this);
-		eventService.registerEvent(TriggerResourceUpdatedEvent.class,
-				RESOURCE_BUNDLE, this);
-		eventService.registerEvent(TriggerResourceDeletedEvent.class,
-				RESOURCE_BUNDLE, this);
+		eventService.registerEvent(TriggerResourceEvent.class, RESOURCE_BUNDLE, this);
+		eventService.registerEvent(TriggerResourceCreatedEvent.class, RESOURCE_BUNDLE, this);
+		eventService.registerEvent(TriggerResourceUpdatedEvent.class, RESOURCE_BUNDLE, this);
+		eventService.registerEvent(TriggerResourceDeletedEvent.class, RESOURCE_BUNDLE, this);
 
 		eventService.registerEvent(TriggerExecutedEvent.class, RESOURCE_BUNDLE);
 
 		new DefaultVariableReplacementProvider("default.currentUser.email") {
-				
+
 			@Override
 			public String getReplacementValue(String variable) {
-				return 	getCurrentPrincipal().getEmail();
+				return getCurrentPrincipal().getEmail();
 			}
-				
+
 		};
-		
+
 		new DefaultVariableReplacementProvider("default.currentUser.phone") {
-			
+
 			@Override
 			public String getReplacementValue(String variable) {
 				try {
-					return realmService.getPrincipalAddress(
-							getCurrentPrincipal(), MediaType.PHONE);
+					return realmService.getPrincipalAddress(getCurrentPrincipal(), MediaType.PHONE);
 				} catch (MediaNotFoundException e) {
 					return "";
 				}
 			}
-				
+
 		};
-		
+
 		new DefaultVariableReplacementProvider("default.administrators.email") {
-			
+
 			@Override
 			public String getReplacementValue(String variable) {
 				StringBuffer buf = new StringBuffer();
 				try {
-					for(Principal principal : permissionService.getPrincipalsByRole(
-							getCurrentRealm(), permissionService.getRealmAdministratorRole(getCurrentRealm()))) {
-						if(StringUtils.isNotBlank(principal.getPrimaryEmail())) {
-							if(buf.length() > 0) {
+					for (Principal principal : Iterators.iterable(permissionService.iteratePrincipalsByRole(getCurrentRealm(),
+							permissionService.getRealmAdministratorRole(getCurrentRealm())))) {
+						if (StringUtils.isNotBlank(principal.getPrimaryEmail())) {
+							if (buf.length() > 0) {
 								buf.append("\r\n");
 							}
 							buf.append(principal.getPrimaryEmail());
@@ -184,21 +177,21 @@ public class TriggerResourceServiceImpl extends
 				}
 				return buf.toString();
 			}
-				
+
 		};
 	}
 
-	@Override 
+	@Override
 	public void registerReplacementVariables(ReplacementVariableProvider provider) {
-		for(String variable : provider.getReplacementVariableNames()) {
+		for (String variable : provider.getReplacementVariableNames()) {
 			replacementVariables.put(variable, provider);
 		}
 	}
-	
+
 	@Override
 	public Set<String> getDefaultVariableNames() {
 		Set<String> tmp = new HashSet<String>();
-		for(ReplacementVariableProvider provider : replacementVariables.values()) {
+		for (ReplacementVariableProvider provider : replacementVariables.values()) {
 			tmp.addAll(provider.getReplacementVariableNames());
 		}
 		return tmp;
@@ -209,10 +202,10 @@ public class TriggerResourceServiceImpl extends
 		/*
 		 * Backwards compatibiltiy
 		 */
-		if(variableName.startsWith("currentUser.")) {
+		if (variableName.startsWith("currentUser.")) {
 			variableName = "default." + variableName;
 		}
-		if(variableName.equals("administrators.email")) {
+		if (variableName.equals("administrators.email")) {
 			variableName = "default." + variableName;
 		}
 		return replacementVariables.get(variableName).getReplacementValue(variableName);
@@ -220,23 +213,22 @@ public class TriggerResourceServiceImpl extends
 
 	@Override
 	protected boolean checkUnique(TriggerResource resource, boolean create) throws AccessDeniedException {
-		if(super.checkUnique(resource, create)) {
+		if (super.checkUnique(resource, create)) {
 			try {
 				automationService.getResourceByName(resource.getName());
 				return false;
 			} catch (ResourceNotFoundException e) {
 				return true;
-			} 
+			}
 		}
 		return false;
 	}
-	
+
 	@Override
 	public List<EventDefinition> getTriggerEvents() {
 		List<EventDefinition> ret = new ArrayList<EventDefinition>();
 		for (EventDefinition def : eventService.getEvents()) {
-			ret.add(new EventDefinition(def, def.getI18nNamespace(),
-					getEventAttributes(def)));
+			ret.add(new EventDefinition(def, def.getI18nNamespace(), getEventAttributes(def)));
 		}
 		Collections.sort(ret, new Comparator<EventDefinition>() {
 
@@ -258,8 +250,7 @@ public class TriggerResourceServiceImpl extends
 		Set<String> attributeNames = new HashSet<String>();
 		attributeNames.addAll(evt.getAttributeNames());
 		if (evt.getPropertyCollector() != null) {
-			attributeNames.addAll(evt.getPropertyCollector().getPropertyNames(
-					evt.getResourceKey(), getCurrentRealm()));
+			attributeNames.addAll(evt.getPropertyCollector().getPropertyNames(evt.getResourceKey(), getCurrentRealm()));
 		}
 		attributeNames.addAll(replacementVariables.keySet());
 		return attributeNames;
@@ -291,81 +282,57 @@ public class TriggerResourceServiceImpl extends
 
 	@Override
 	protected void fireResourceCreationEvent(TriggerResource resource) {
-		eventService.publishEvent(new TriggerResourceCreatedEvent(this,
-				getCurrentSession(), resource));
+		eventService.publishEvent(new TriggerResourceCreatedEvent(this, getCurrentSession(), resource));
 	}
 
 	@Override
-	protected void fireResourceCreationEvent(TriggerResource resource,
-			Throwable t) {
-		eventService.publishEvent(new TriggerResourceCreatedEvent(this,
-				resource, t, getCurrentSession()));
+	protected void fireResourceCreationEvent(TriggerResource resource, Throwable t) {
+		eventService.publishEvent(new TriggerResourceCreatedEvent(this, resource, t, getCurrentSession()));
 	}
 
 	@Override
 	protected void fireResourceUpdateEvent(TriggerResource resource) {
-		eventService.publishEvent(new TriggerResourceUpdatedEvent(this,
-				getCurrentSession(), resource));
+		eventService.publishEvent(new TriggerResourceUpdatedEvent(this, getCurrentSession(), resource));
 	}
 
 	@Override
 	protected void fireResourceUpdateEvent(TriggerResource resource, Throwable t) {
-		eventService.publishEvent(new TriggerResourceUpdatedEvent(this,
-				resource, t, getCurrentSession()));
+		eventService.publishEvent(new TriggerResourceUpdatedEvent(this, resource, t, getCurrentSession()));
 	}
 
 	@Override
 	protected void fireResourceDeletionEvent(TriggerResource resource) {
-		eventService.publishEvent(new TriggerResourceDeletedEvent(this,
-				getCurrentSession(), resource));
+		eventService.publishEvent(new TriggerResourceDeletedEvent(this, getCurrentSession(), resource));
 	}
 
 	@Override
-	protected void fireResourceDeletionEvent(TriggerResource resource,
-			Throwable t) {
-		eventService.publishEvent(new TriggerResourceDeletedEvent(this,
-				resource, t, getCurrentSession()));
+	protected void fireResourceDeletionEvent(TriggerResource resource, Throwable t) {
+		eventService.publishEvent(new TriggerResourceDeletedEvent(this, resource, t, getCurrentSession()));
 	}
 
 	@Override
-	public TriggerResource updateResource(
-			TriggerResource resource,
-			String name,
-			TriggerType type,
-			String event,
-			TriggerResultType result,
-			String task,
-			Map<String, String> properties,
-			List<TriggerCondition> allConditions,
-			List<TriggerCondition> anyConditions,
-			TriggerResource parent,
-			Long attachment,
-			boolean allRealms,
+	public TriggerResource updateResource(TriggerResource resource, String name, TriggerType type, String event,
+			TriggerResultType result, String task, Map<String, String> properties, List<TriggerCondition> allConditions,
+			List<TriggerCondition> anyConditions, TriggerResource parent, Long attachment, boolean allRealms,
 			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
 			throws ResourceException, AccessDeniedException {
 
 		resource.getConditions().clear();
 
-		populateTrigger(name, event, result, task, resource.getRealm(),
-				resource, allConditions, anyConditions, parent, attachment,
-				allRealms);
+		populateTrigger(name, event, result, task, resource.getRealm(), resource, allConditions, anyConditions, parent,
+				attachment, allRealms);
 
-		updateResource(resource, properties, ArrayUtils.insert(0, ops, 
-				new TransactionAdapter<TriggerResource>() {
+		updateResource(resource, properties, ArrayUtils.insert(0, ops, new TransactionAdapter<TriggerResource>() {
 
-					@Override
-					public void afterOperation(TriggerResource resource,
-							Map<String, String> properties) {
-						TaskProvider provider = taskService
-								.getTaskProvider(resource.getResourceKey());
-						provider.getRepository()
-								.setValues(resource, properties);
-					}
+			@Override
+			public void afterOperation(TriggerResource resource, Map<String, String> properties) {
+				TaskProvider provider = taskService.getTaskProvider(resource.getResourceKey());
+				provider.getRepository().setValues(resource, properties);
+			}
 
-				}));
+		}));
 
-		TaskProvider provider = taskService.getTaskProvider(resource
-				.getResourceKey());
+		TaskProvider provider = taskService.getTaskProvider(resource.getResourceKey());
 		provider.taskUpdated(resource);
 		eventTriggerCache.clear();
 
@@ -373,19 +340,9 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	@Override
-	public TriggerResource createResource(
-			String name,
-			TriggerType type,
-			String event,
-			TriggerResultType result,
-			String task,
-			Map<String, String> properties,
-			Realm realm,
-			List<TriggerCondition> allConditions,
-			List<TriggerCondition> anyConditions,
-			TriggerResource parent,
-			Long attachment,
-			boolean allRealms,
+	public TriggerResource createResource(String name, TriggerType type, String event, TriggerResultType result,
+			String task, Map<String, String> properties, Realm realm, List<TriggerCondition> allConditions,
+			List<TriggerCondition> anyConditions, TriggerResource parent, Long attachment, boolean allRealms,
 			@SuppressWarnings("unchecked") TransactionAdapter<TriggerResource>... ops)
 			throws ResourceException, AccessDeniedException {
 
@@ -393,27 +350,22 @@ public class TriggerResourceServiceImpl extends
 
 		resource.setTriggerType(type);
 
-		populateTrigger(name, event, result, task, realm, resource,
-				allConditions, anyConditions, parent, attachment, allRealms);
+		populateTrigger(name, event, result, task, realm, resource, allConditions, anyConditions, parent, attachment,
+				allRealms);
 
-		createResource(resource, properties, ArrayUtils.insert(0, ops,
-				new TransactionAdapter<TriggerResource>() {
+		createResource(resource, properties, ArrayUtils.insert(0, ops, new TransactionAdapter<TriggerResource>() {
 
-					@Override
-					public void afterOperation(TriggerResource resource,
-							Map<String, String> properties) {
+			@Override
+			public void afterOperation(TriggerResource resource, Map<String, String> properties) {
 
-						TaskProvider provider = taskService
-								.getTaskProvider(resource.getResourceKey());
-						provider.getRepository()
-								.setValues(resource, properties);
+				TaskProvider provider = taskService.getTaskProvider(resource.getResourceKey());
+				provider.getRepository().setValues(resource, properties);
 
-					}
+			}
 
-				}));
+		}));
 
-		TaskProvider provider = taskService.getTaskProvider(resource
-				.getResourceKey());
+		TaskProvider provider = taskService.getTaskProvider(resource.getResourceKey());
 		provider.taskCreated(resource);
 		eventTriggerCache.clear();
 
@@ -421,40 +373,32 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	@Override
-	public void deleteResource(final TriggerResource resource)
-			throws ResourceException, AccessDeniedException {
+	public void deleteResource(final TriggerResource resource) throws ResourceException, AccessDeniedException {
 
-		super.deleteResource(resource,
-				new TransactionAdapter<TriggerResource>() {
+		super.deleteResource(resource, new TransactionAdapter<TriggerResource>() {
 
-					public void beforeOperation(TriggerResource resource,
-							Map<String, String> properties) {
+			public void beforeOperation(TriggerResource resource, Map<String, String> properties) {
 
-						try {
-							for (TriggerResource child : resource
-									.getChildTriggers()) {
-								deleteResource(child);
-							}
-							resource.setParentTrigger(null);
-							getRepository().deletePropertiesForResource(
-									resource);
-						} catch (Throwable e) {
-							throw new IllegalStateException(e.getMessage(), e);
-						}
+				try {
+					for (TriggerResource child : resource.getChildTriggers()) {
+						deleteResource(child);
 					}
-				});
+					resource.setParentTrigger(null);
+					getRepository().deletePropertiesForResource(resource);
+				} catch (Throwable e) {
+					throw new IllegalStateException(e.getMessage(), e);
+				}
+			}
+		});
 
-		TaskProvider provider = taskService.getTaskProvider(resource
-				.getResourceKey());
+		TaskProvider provider = taskService.getTaskProvider(resource.getResourceKey());
 		provider.taskDeleted(resource);
 		eventTriggerCache.clear();
 	}
 
-	private void populateTrigger(String name, String event,
-			TriggerResultType result, String task, Realm realm,
-			TriggerResource resource, List<TriggerCondition> allConditions,
-			List<TriggerCondition> anyConditions, TriggerResource parent,
-			Long attachment, boolean allRealms) {
+	private void populateTrigger(String name, String event, TriggerResultType result, String task, Realm realm,
+			TriggerResource resource, List<TriggerCondition> allConditions, List<TriggerCondition> anyConditions,
+			TriggerResource parent, Long attachment, boolean allRealms) {
 
 		resource.setName(name);
 		resource.setEvent(event);
@@ -498,9 +442,9 @@ public class TriggerResourceServiceImpl extends
 					log.error("Failed to process triggers", t);
 				}
 			}
-			
+
 		});
-		
+
 	}
 
 	private void processEventTriggers(SystemEvent sourceEvent) {
@@ -514,24 +458,23 @@ public class TriggerResourceServiceImpl extends
 		}
 
 		if (log.isInfoEnabled()) {
-			log.info("Looking for triggers for events "
-					+ StringUtils.join(sourceEvent.getResourceKeys(), ",") + " "
+			log.info("Looking for triggers for events " + StringUtils.join(sourceEvent.getResourceKeys(), ",") + " "
 					+ sourceEvent.getStatus().toString());
 		}
 
 		String cacheKey = getCacheKey(sourceEvent);
 		List<TriggerResource> triggers = eventTriggerCache.get(cacheKey);
-		if(triggers == null) {
+		if (triggers == null) {
 			triggers = repository.getTriggersForEvent(sourceEvent);
 			eventTriggerCache.put(cacheKey, triggers);
 		}
-		
+
 		for (TriggerResource trigger : triggers) {
 
 			if (log.isInfoEnabled()) {
 				log.info("Found trigger " + trigger.getName());
 			}
-			
+
 			try {
 				List<SystemEvent> sourceEvents = new ArrayList<SystemEvent>();
 				sourceEvents.add(sourceEvent);
@@ -539,20 +482,18 @@ public class TriggerResourceServiceImpl extends
 			} catch (ValidationException e) {
 				log.error("Trigger execution failed", e);
 			}
-			
+
 		}
 
 	}
 
 	@Override
-	public TriggerConditionProvider getConditionProvider(
-			TriggerCondition condition) {
+	public TriggerConditionProvider getConditionProvider(TriggerCondition condition) {
 		return registeredConditions.get(condition.getConditionKey());
 	}
 
 	@Override
-	public TriggerCondition getConditionById(Long id)
-			throws AccessDeniedException {
+	public TriggerCondition getConditionById(Long id) throws AccessDeniedException {
 
 		assertPermission(TriggerResourcePermission.READ);
 
@@ -560,8 +501,7 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	@Override
-	public Collection<TriggerResource> getTriggersByResourceKey(
-			String resourceKey) {
+	public Collection<TriggerResource> getTriggersByResourceKey(String resourceKey) {
 
 		return repository.getActionsByResourceKey(resourceKey);
 	}
@@ -575,8 +515,7 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	@Override
-	public List<TriggerResource> getParentTriggers(Long id)
-			throws ResourceNotFoundException, AccessDeniedException {
+	public List<TriggerResource> getParentTriggers(Long id) throws ResourceNotFoundException, AccessDeniedException {
 
 		List<TriggerResource> triggers = new ArrayList<TriggerResource>();
 
@@ -612,8 +551,7 @@ public class TriggerResourceServiceImpl extends
 
 		super.performImport(resource, realm);
 
-		TaskProvider provider = taskService.getTaskProvider(resource
-				.getResourceKey());
+		TaskProvider provider = taskService.getTaskProvider(resource.getResourceKey());
 		provider.getRepository().setValues(resource, properties);
 
 		for (TriggerResource child : resource.getChildTriggers()) {
@@ -624,8 +562,7 @@ public class TriggerResourceServiceImpl extends
 
 	protected void prepareExport(TriggerResource resource) throws ResourceException, AccessDeniedException {
 
-		TaskProvider provider = taskService.getTaskProvider(resource
-				.getResourceKey());
+		TaskProvider provider = taskService.getTaskProvider(resource.getResourceKey());
 		resource.setProperties(provider.getTaskProperties(resource));
 
 		for (TriggerCondition condition : resource.getConditions()) {
@@ -649,22 +586,21 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	@Override
-	public void downloadTemplateImage(String uuid, HttpServletRequest request,
-			HttpServletResponse response) throws IOException {
+	public void downloadTemplateImage(String uuid, HttpServletRequest request, HttpServletResponse response)
+			throws IOException {
 
-		request.setAttribute(
-				CONTENT_INPUTSTREAM,
-				httpUtils.doHttpGet(
-						System.getProperty(
-								"hypersocket.templateServerImageUrl",
-								"https://updates2.hypersocket.com/hypersocket/api/templates/image/")
-								+ uuid, true));
+		request.setAttribute(CONTENT_INPUTSTREAM,
+				httpUtils
+						.doHttpGet(
+								System.getProperty("hypersocket.templateServerImageUrl",
+										"https://updates2.hypersocket.com/hypersocket/api/templates/image/") + uuid,
+								true));
 
 	}
 
 	@Override
-	public String searchTemplates(String search, int iDisplayStart,
-			int iDisplayLength) throws IOException, AccessDeniedException {
+	public String searchTemplates(String search, int iDisplayStart, int iDisplayLength)
+			throws IOException, AccessDeniedException {
 		assertPermission(TriggerResourcePermission.CREATE);
 
 		Map<String, String> params = new HashMap<String, String>();
@@ -676,39 +612,36 @@ public class TriggerResourceServiceImpl extends
 		params.put("iSortCol_0", "0");
 		params.put("sSortDir_0", "asc");
 
-		String json = httpUtils
-				.doHttpPost(
-						System.getProperty("hypersocket.templateServerUrl",
-								"https://updates2.hypersocket.com/hypersocket/api/templates")
-								+ "/"
-								+ (Boolean
-										.getBoolean("hypersocketTriggers.enablePrivate") ? "developer"
-										: "table" + "/3"), params, true);
+		String json = httpUtils.doHttpPost(
+				System.getProperty("hypersocket.templateServerUrl",
+						"https://updates2.hypersocket.com/hypersocket/api/templates") + "/"
+						+ (Boolean.getBoolean("hypersocketTriggers.enablePrivate") ? "developer" : "table" + "/3"),
+				params, true);
 
 		return json;
 	}
 
 	@Override
 	public List<EventDefinition> getTriggerEvents(String pattern, Locale locale) {
-		
+
 		List<EventDefinition> ret = new ArrayList<EventDefinition>();
-		String [] cards = pattern.toLowerCase().split("\\*");
+		String[] cards = pattern.toLowerCase().split("\\*");
 		for (EventDefinition def : eventService.getEvents()) {
 			boolean matchesPattern = true;
 			String eventName = I18N.getResource(locale, def.getResourceBundle(), def.getResourceKey()).toLowerCase();
 			for (String card : cards) {
-		        int idx = eventName.indexOf(card);
-		        if(idx == -1) {
-		        	matchesPattern = false;
-		        	break;
-		        }
-		        if(eventName.length() < idx + card.length()){
-		        	eventName = "";
-		        }else{
-		        	eventName = eventName.substring(idx + card.length());
-		        }
-		    }
-			if(matchesPattern){
+				int idx = eventName.indexOf(card);
+				if (idx == -1) {
+					matchesPattern = false;
+					break;
+				}
+				if (eventName.length() < idx + card.length()) {
+					eventName = "";
+				} else {
+					eventName = eventName.substring(idx + card.length());
+				}
+			}
+			if (matchesPattern) {
 				ret.add(new EventDefinition(def, def.getI18nNamespace(), getEventAttributes(def)));
 			}
 		}
@@ -721,14 +654,14 @@ public class TriggerResourceServiceImpl extends
 		});
 		return ret;
 	}
-	
+
 	@Override
 	public Long getTriggerEventCount(String pattern, Locale locale) {
 		List<EventDefinition> ret = new ArrayList<EventDefinition>();
 		for (EventDefinition def : eventService.getEvents()) {
-			if(I18N.getResource(locale, def.getResourceBundle(), def.getResourceKey()).toLowerCase().indexOf(pattern.toLowerCase()) > -1){
-				ret.add(new EventDefinition(def, def.getI18nNamespace(),
-						getEventAttributes(def)));				
+			if (I18N.getResource(locale, def.getResourceBundle(), def.getResourceKey()).toLowerCase()
+					.indexOf(pattern.toLowerCase()) > -1) {
+				ret.add(new EventDefinition(def, def.getI18nNamespace(), getEventAttributes(def)));
 			}
 		}
 		Collections.sort(ret, new Comparator<EventDefinition>() {
@@ -742,19 +675,21 @@ public class TriggerResourceServiceImpl extends
 	}
 
 	private String getCacheKey(SystemEvent sourceEvent) {
-		return sourceEvent.getCurrentRealm().getId() + "-" + String.join("-", sourceEvent.getResourceKeys() + "-" + sourceEvent.getStatus().name());
+		return sourceEvent.getCurrentRealm().getId() + "-"
+				+ String.join("-", sourceEvent.getResourceKeys() + "-" + sourceEvent.getStatus().name());
 	}
-	
+
 	abstract class DefaultVariableReplacementProvider implements ReplacementVariableProvider {
 
 		String variable;
 		Set<String> variables;
+
 		DefaultVariableReplacementProvider(String variable) {
 			this.variable = variable;
-			this.variables =  new HashSet<String>();
+			this.variables = new HashSet<String>();
 			replacementVariables.put(variable, this);
 		}
-		
+
 		@Override
 		public Set<String> getReplacementVariableNames() {
 			return variables;

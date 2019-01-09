@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,7 +96,7 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return new ResourceList<Principal>(
-					realmService.allGroups(sessionUtils
+					realmService.iterateGroups(sessionUtils
 							.getCurrentRealm(request)));
 		} finally {
 			clearAuthenticatedContext();
@@ -140,7 +141,7 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return new ResourceList<Principal>(
-					realmService.allUsers(sessionUtils.getCurrentRealm(request)));
+					realmService.iterateUsers(sessionUtils.getCurrentRealm(request)));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -246,33 +247,31 @@ public class CurrentRealmController extends ResourceController {
 						
 						List<?> filter(final String searchColumn,  final String searchPattern) throws AccessDeniedException {
 							Principal principal = realmService.getPrincipalById(userId);
-							List<?> groups = realmService.allGroups(principal.getRealm());
 							final List<Principal> principalGroups = realmService.getUserGroups(principal);
-
-							CollectionUtils.filter(groups, new Predicate() {
-								@Override
-								public boolean evaluate(Object o) {
-									if(!principalGroups.contains(o)) {
-										Principal principal = (Principal)o;
-										if(searchPattern.equals("*")) {
-											return true;
-										}
-										if(searchPattern.contains("*")) {
-											if(searchPattern.startsWith("*")) {
-												return principal.getPrincipalName().endsWith(searchPattern.substring(1));
-											} else if(searchPattern.endsWith("*")) {
-												return principal.getPrincipalName().startsWith(searchPattern.replace("*", ""));
-											} else {
-												return principal.getPrincipalName().contains(searchPattern.replace("*", ""));
-											}
-										} else {
-											return principal.getPrincipalName().startsWith(searchPattern);
-										}
+							List<Principal> groups = new ArrayList<>();
+							for(Iterator<Principal> groupIt = realmService.iterateGroups(principal.getRealm()); groupIt.hasNext(); ) {
+								Principal group = groupIt.next();
+								boolean add = false;
+								if(!principalGroups.contains(group)) {
+									if(searchPattern.equals("*")) {
+										add = true;
 									}
-									return false;
+									else if(searchPattern.contains("*")) {
+										if(searchPattern.startsWith("*")) {
+											add = group.getPrincipalName().endsWith(searchPattern.substring(1));
+										} else if(searchPattern.endsWith("*")) {
+											add = group.getPrincipalName().startsWith(searchPattern.replace("*", ""));
+										} else {
+											add = group.getPrincipalName().contains(searchPattern.replace("*", ""));
+										}
+									} else {
+										add = group.getPrincipalName().startsWith(searchPattern);
+									}
 								}
-							});
-							
+								if(add)
+									groups.add(group);
+							}
+
 							return groups;
 						}
 					});

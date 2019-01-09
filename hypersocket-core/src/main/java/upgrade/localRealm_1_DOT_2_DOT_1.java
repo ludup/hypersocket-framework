@@ -1,5 +1,7 @@
 package upgrade;
 
+import java.util.Iterator;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,9 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.local.LocalRealmProvider;
 import com.hypersocket.local.LocalUser;
 import com.hypersocket.local.LocalUserRepository;
-import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.tables.ColumnSort;
 
 public class localRealm_1_DOT_2_DOT_1 implements Runnable {
 
@@ -30,10 +32,10 @@ public class localRealm_1_DOT_2_DOT_1 implements Runnable {
 		for(Realm realm : realmService.allRealms(LocalRealmProvider.class)) {
 		
 			log.info(String.format("Process users in realm %s", realm.getName()));
-			
-			for(Principal principal : userRepository.allUsers(realm)) {
+
+			for(Iterator<LocalUser> userIt = userRepository.iterateUsers(realm, new ColumnSort[0]); userIt.hasNext(); ) {
+				LocalUser user = userIt.next();
 				boolean updated = false;
-				LocalUser user = (LocalUser) principal;
 				if(StringUtils.isBlank(user.getEmail())) {
 					String email = userRepository.getValue(user, "user.email");
 					if(StringUtils.isNotBlank(email)) {

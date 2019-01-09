@@ -9,6 +9,7 @@ package com.hypersocket.realm;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +32,8 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	void assertCreateRealm(Map<String, String> properties) throws ResourceException;
 	
 	List<Principal> allPrincipals(Realm realm, PrincipalType... types);
+	
+	Iterator<Principal> iterateAllPrincipals(Realm realm, PrincipalType... types);
 
 	Principal getPrincipalByName(String principalName, Realm realm, PrincipalType... acceptTypes);
 

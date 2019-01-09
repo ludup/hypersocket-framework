@@ -10,6 +10,7 @@ package upgrade;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,8 +71,8 @@ public class core_1_DOT_3_DOT_0_R1 implements Runnable {
 						} catch (ResourceNotFoundException e1) {
 						}
 						
-						
-						for(Principal user : realmService.allUsers(realm)) {
+						for(Iterator<Principal> userIt = realmService.iterateUsers(realm); userIt.hasNext(); ) {
+							Principal user = userIt.next();
 							if(user.isHidden()) {
 								continue;
 							}
@@ -83,7 +84,8 @@ public class core_1_DOT_3_DOT_0_R1 implements Runnable {
 								log.error("Could not create principal role", e);
 							}
 						}
-						for(Principal group : realmService.allGroups(realm)) {
+						for(Iterator<Principal> userIt = realmService.iterateGroups(realm); userIt.hasNext(); ) {
+							Principal group = userIt.next();
 							try { 
 								permissionService.createRole(group.getPrincipalName(), realm, 
 										Arrays.asList(group), 

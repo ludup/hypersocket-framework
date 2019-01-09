@@ -2,6 +2,7 @@ package com.hypersocket.message;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +35,8 @@ public interface MessageResourceService extends
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Principal... principals) throws ResourceException;
 	
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals) throws ResourceException;
+	
+	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Iterator<Principal> principals) throws ResourceException;
 
 	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables);
 
@@ -66,26 +69,26 @@ public interface MessageResourceService extends
 
 	void sendMessageNow(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals);
 
-	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<Principal> principals,
+	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Iterator<Principal> principals,
 			Collection<String> emails, Date schedule);
 	
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			List<EmailAttachment> attachments, Collection<Principal> principals, Collection<String> emails);
+			List<EmailAttachment> attachments, Iterator<Principal> principals, Collection<String> emails);
 
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			Collection<Principal> principals, Collection<String> emails, Date schedule, List<EmailAttachment> attachments);
+			Iterator<Principal> principals, Collection<String> emails, Date schedule, List<EmailAttachment> attachments);
 
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			List<EmailAttachment> attachments, Principal... principals);
+			List<EmailAttachment> attachments, Iterator<Principal> principals);
 
 	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients,
 			RecipientHolder replyTo, ITokenResolver tokenResolver, List<EmailAttachment> attachments);
 
-	void sendMessage(String messageRequesterNewComment, Realm currentRealm, ITokenResolver ticketResolver,
-			List<Principal> ticketPrincipals, Collection<String> emails);
+	void sendMessage(String message, Realm currentRealm, ITokenResolver resolver,
+			Iterator<Principal> principals, Collection<String> emails);
 
 	void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			Collection<Principal> principals, Collection<String> emails, Date schedule,
+			Iterator<Principal> principals, Collection<String> emails, Date schedule,
 			List<EmailAttachment> attachments);
 
 }

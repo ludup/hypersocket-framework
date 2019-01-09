@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,6 +53,7 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.events.SessionOpenEvent;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.util.CompoundIterator;
 
 public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvider implements
 		 ApplicationListener<SessionOpenEvent> {
@@ -108,6 +110,27 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	public abstract String getResourceBundle();
 
+	
+	@Override
+	public Iterator<Principal> iterateAllPrincipals(Realm realm, PrincipalType... types) {
+		CompoundIterator<Principal> compoundIterator = new CompoundIterator<>();
+		for (PrincipalType type : types) {
+			switch (type) {
+			case USER:
+				compoundIterator.addIterator(userRepository.iterateUsers(realm, new ColumnSort[0]));
+				break;
+			case GROUP:
+				compoundIterator.addIterator(userRepository.iterateGroups(realm, new ColumnSort[0]));
+				break;
+			case SERVICE:
+			case SYSTEM:
+			case TEMPLATE:
+				break;
+			}
+		}
+		return compoundIterator;
+	}
+	
 	@Override
 	@Transactional(readOnly=true)
 	public List<Principal> allPrincipals(Realm realm, PrincipalType... types) {
@@ -186,6 +209,15 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		LocalUser user = (LocalUser) principal;
 
 		LocalUserCredentials creds = userRepository.getCredentials(user);
+		if(creds == null) {
+			/* If there are NO credentials, the record has been deleted from the database as a last
+			 * resort recovery method to regain access if the administrator password has been lost
+			 * of the encryption systems is failing to decrypt secrets for some reason. Doing this
+			 * will trigger a password change upon login.
+			 */
+			log.warn(String.format("Allow credentialess user to login.", user.getPrincipalName()));
+			return true;
+		}
 
 		try {
 			return encryptionService.authenticate(password,

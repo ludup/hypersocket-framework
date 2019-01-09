@@ -7,6 +7,8 @@
  ******************************************************************************/
 package upgrade;
 
+import java.util.Iterator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,17 +52,20 @@ public class core_1_DOT_2_DOT_3 implements Runnable {
 				
 				RealmProvider provider = realmService.getProviderForRealm(realm);
 				
-				for(Principal user : provider.allPrincipals(realm, PrincipalType.USER)) {
+				for(Iterator<Principal> userIt = provider.iterateAllPrincipals(realm, PrincipalType.USER); userIt.hasNext(); ) {
+					Principal user = userIt.next();
 					user.setPrincipalType(PrincipalType.USER);
 					principalRepository.saveResource(user, null);
 				}
-				
-				for(Principal group : provider.allPrincipals(realm, PrincipalType.GROUP)) {
+
+				for(Iterator<Principal> groupIt = provider.iterateAllPrincipals(realm, PrincipalType.GROUP); groupIt.hasNext(); ) {
+					Principal group = groupIt.next();
 					group.setPrincipalType(PrincipalType.GROUP);
 					principalRepository.saveResource(group, null);
 				}
-				
-				for(Principal service : provider.allPrincipals(realm, PrincipalType.SERVICE)) {
+
+				for(Iterator<Principal> serviceIt = provider.iterateAllPrincipals(realm, PrincipalType.SERVICE); serviceIt.hasNext(); ) {
+					Principal service = serviceIt.next();
 					service.setPrincipalType(PrincipalType.SERVICE);
 					principalRepository.saveResource(service, null);
 				}

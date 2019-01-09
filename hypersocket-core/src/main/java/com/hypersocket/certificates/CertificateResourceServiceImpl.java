@@ -63,7 +63,6 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractResourceRepository;
@@ -900,11 +899,9 @@ public class CertificateResourceServiceImpl extends
 	private void sendCertificateNotification(CertificateResource resource, String message) {
 		
 		try {
-			Collection<Principal> principals = permissionService.getPrincipalsByRole(resource.getRealm(), 
+	        messageService.sendMessage(message, resource.getRealm(), new CertificateResolver(resource, getX509Certificate(resource)), permissionService.iteratePrincipalsByRole(resource.getRealm(), 
 					permissionService.getSystemAdministratorRole(),
-					permissionService.getRealmAdministratorRole(resource.getRealm()));
-
-	        messageService.sendMessage(message, resource.getRealm(), new CertificateResolver(resource, getX509Certificate(resource)), principals);
+					permissionService.getRealmAdministratorRole(resource.getRealm())));
 		} catch (AccessDeniedException | CertificateException | ResourceException e) {
 			log.error("Failed to send certificate message", e);
 		}

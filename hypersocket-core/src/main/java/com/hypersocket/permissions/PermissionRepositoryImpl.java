@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,6 +39,8 @@ import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.util.EmptyIterator;
+import com.hypersocket.util.PagedIterator;
 
 @Repository
 public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Role>
@@ -638,6 +641,45 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 			roles.addAll(getAllUserRoles(principals.get(0).getRealm()));
 		}
 		return roles;
+	}
+
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly = true)
+	public Iterator<Principal> iteratePrincpalsByRole(Realm realm, Collection<Role> roles) {
+
+		if(roles.isEmpty()) {
+			return new EmptyIterator<>();
+		}
+		
+		return new PagedIterator<Principal>() {
+
+			@Override
+			protected List<Principal> listItems(int start, int pageSize, ColumnSort[] sorting) {
+				Criteria crit = createCriteria(Principal.class);
+				crit.add(Restrictions.eq("realm", realm));
+				crit.add(Restrictions.eq("deleted", false));
+				crit.setFirstResult(start);
+				crit.setMaxResults(pageSize);
+				
+				boolean allUsers = false;
+				for(Role r : roles) {
+					if(r.isAllUsers()) {
+						allUsers = true;
+						break;
+					}
+				}
+				
+				if(!allUsers) {
+					crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY)
+						.createCriteria("roles")
+						.add(Restrictions.in("id", ResourceUtils.createResourceIdArray(roles)));
+				}
+				
+				return crit.list();
+			}
+		};
 	}
 	
 	@SuppressWarnings("unchecked")

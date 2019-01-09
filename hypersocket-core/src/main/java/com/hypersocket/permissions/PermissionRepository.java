@@ -15,6 +15,7 @@ import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.tables.ColumnSort;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -94,7 +95,14 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 	Role createRole(String name, Realm realm, RoleType type);
 
 	Set<Role> getRolesForPrincipal(List<Principal> associatedPrincipals);
+
+	Iterator<Principal> iteratePrincpalsByRole(Realm realm, Collection<Role> associatedPrincipals);
 	
+	/**
+	 * Deprecated. Possibly loads all users into memory at once depending on role used. Use
+	 * {@link #iteratePrincpalsByRole(Realm, Collection)} instead.
+	 */
+	@Deprecated
 	Collection<Principal> getPrincpalsByRole(Realm realm, Collection<Role> associatedPrincipals);
 
 	Set<Role> getAllUserRoles(Realm realm);

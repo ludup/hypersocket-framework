@@ -1,13 +1,14 @@
 /*******************************************************************************
 x * Copyright (c) 2013 LogonBox Limited.
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Public License v3.0
+ * are made available under the terms of the GNU License v3.0
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
 package com.hypersocket.local;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -21,43 +22,47 @@ import com.hypersocket.tables.ColumnSort;
 
 public interface LocalUserRepository extends ResourceTemplateRepository, AbstractRepository<Long> {
 
-	public LocalUser createUser(String username, Realm realm);
+	LocalUser createUser(String username, Realm realm);
 	
-	public LocalGroup createGroup(String name, Realm realm);
+	LocalGroup createGroup(String name, Realm realm);
 	
-	public LocalUser getUserByName(String name, Realm realm);
+	LocalUser getUserByName(String name, Realm realm);
 	
-	public LocalGroup getGroupByName(String name, Realm realm);
+	LocalGroup getGroupByName(String name, Realm realm);
 	
-	public void assign(LocalUser user, LocalGroup group);
+	void assign(LocalUser user, LocalGroup group);
 	
-	public void unassign(LocalUser user, LocalGroup group);
+	void unassign(LocalUser user, LocalGroup group);
 
-	public Collection<? extends Principal> allUsers(Realm realm);
+	Collection<? extends Principal> allUsers(Realm realm);
 
-	public Collection<? extends Principal> allGroups(Realm realm);
-
-	public LocalUserCredentials getCredentials(LocalUser user);
+	Collection<? extends Principal> allGroups(Realm realm);
 	
-	public void saveGroup(LocalGroup group);
+	Iterator<LocalUser> iterateUsers(Realm realm, ColumnSort[] sorting);
 	
-	public void saveUser(LocalUser user, Map<String,String> properties);
+	Iterator<LocalGroup> iterateGroups(Realm realm, ColumnSort[] sorting);
 
-	public void saveCredentials(LocalUserCredentials creds);
+	LocalUserCredentials getCredentials(LocalUser user);
+	
+	void saveGroup(LocalGroup group);
+	
+	void saveUser(LocalUser user, Map<String,String> properties);
 
-	public Principal getUserByNameAndType(String principalName, Realm realm,
+	void saveCredentials(LocalUserCredentials creds);
+
+	Principal getUserByNameAndType(String principalName, Realm realm,
 			PrincipalType system);
 
-	public Principal getUserById(Long id, Realm realm, boolean deleted);
+	Principal getUserById(Long id, Realm realm, boolean deleted);
 
-	public Principal getGroupById(Long id, Realm realm, boolean deleted);
+	Principal getGroupById(Long id, Realm realm, boolean deleted);
 
-	public Principal getUserByIdAndType(Long id, Realm realm,
+	Principal getUserByIdAndType(Long id, Realm realm,
 			PrincipalType system);
 
-	public void deleteGroup(LocalGroup group);
+	void deleteGroup(LocalGroup group);
 
-	public void deleteUser(LocalUser usr);
+	void deleteUser(LocalUser usr);
 
 	Long countUsers(Realm realm, String searchColumn, String searchPattern);
 
@@ -67,17 +72,17 @@ public interface LocalUserRepository extends ResourceTemplateRepository, Abstrac
 
 	List<?> getUsers(Realm realm, String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting);
 
-	public Collection<? extends Principal> getGroupsByUser(LocalUser principal);
+	Collection<? extends Principal> getGroupsByUser(LocalUser principal);
 
-	public Collection<? extends Principal> getUsersByGroup(LocalGroup principal);
+	Collection<? extends Principal> getUsersByGroup(LocalGroup principal);
 
-	public Collection<? extends Principal> getGroupsByGroup(LocalGroup principal);
+	Collection<? extends Principal> getGroupsByGroup(LocalGroup principal);
 
-	public Principal getUserByEmail(String email, Realm realm);
+	Principal getUserByEmail(String email, Realm realm);
 
-	public void resetRealm(Collection<Principal> admins);
+	void resetRealm(Iterator<Principal> admins);
 
 	void deleteRealm(Realm realm);
 
-	public Collection<LocalUserCredentials> allCredentials();
+	Collection<LocalUserCredentials> allCredentials();
 }

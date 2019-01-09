@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -119,9 +120,9 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean findUniquePrincipal(String user);
 
-	List<Principal> allUsers(Realm realm);
+	Iterator<Principal> iterateUsers(Realm realm);
 
-	List<Principal> allGroups(Realm realm) throws AccessDeniedException;
+	Iterator<Principal> iterateGroups(Realm realm) throws AccessDeniedException;
 
 	List<?> getRealms(String searchPattern, String searchColumn, int start, int length, ColumnSort[] sorting) throws AccessDeniedException;
 

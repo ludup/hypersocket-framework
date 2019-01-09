@@ -9,6 +9,7 @@ package com.hypersocket.local;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,7 @@ import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.resource.RealmCriteria;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.util.PrincipalIterator;
 
 @Repository
 public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl implements LocalUserRepository {
@@ -152,6 +154,40 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		flush();
 
 		
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Iterator<LocalUser> iterateUsers(Realm realm, ColumnSort[] sorting) {
+		return new PrincipalIterator<LocalUser>(sorting, realm) { 
+			@Override
+			protected void remove(LocalUser principal) {
+				deleteUser(principal);
+			}
+
+			@SuppressWarnings("unchecked")
+			@Override
+			protected List<LocalUser> listUsers(Realm realm, int start, int iteratorPageSize, ColumnSort[] sorting) {
+				return (List<LocalUser>) getUsers(realm, "", "", start, iteratorPageSize, sorting);
+			}
+		};
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Iterator<LocalGroup> iterateGroups(Realm realm, ColumnSort[] sorting) {
+		return new PrincipalIterator<LocalGroup>(sorting, realm) { 
+			@Override
+			protected void remove(LocalGroup principal) {
+				deleteGroup(principal);
+			}
+
+			@SuppressWarnings("unchecked")
+			@Override
+			protected List<LocalGroup> listUsers(Realm realm, int start, int iteratorPageSize, ColumnSort[] sorting) {
+				return (List<LocalGroup>) getGroups(realm, "", "", start, iteratorPageSize, sorting);
+			}
+		};
 	}
 
 	@Override
@@ -386,8 +422,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 
 	@Override
-	public void resetRealm(Collection<Principal> admins) {
-		
+	public void resetRealm(Iterator<Principal> admins) {
 	}
 	
 	@Override

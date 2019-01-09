@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
+import com.hypersocket.util.PagedIterator;
 
 @Repository
 public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K> {
@@ -75,6 +77,17 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	protected Session getCurrentSession() {
 		return hibernateTemplate.getSessionFactory().getCurrentSession();
 		
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public <I> Iterator<I> iterate(Class<I> clazz, ColumnSort[] sorting, CriteriaConfiguration... configs) {
+		return new PagedIterator<I>(sorting, 100) { 
+			@Override
+			protected List<I> listItems(int start, int length, ColumnSort[] sorting) {
+				return search(clazz, null, null, start, length, sorting, configs);
+			}
+		};
 	}
 	
 	@Transactional

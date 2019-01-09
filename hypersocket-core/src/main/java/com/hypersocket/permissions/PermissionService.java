@@ -1,13 +1,14 @@
 /*******************************************************************************
  * Copyright (c) 2013 LogonBox Limited.
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Public License v3.0
+ * are made available under the terms of the GNU License v3.0
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
 package com.hypersocket.permissions;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,17 +32,17 @@ public interface PermissionService extends AuthenticatedService {
 	static final String ROLE_EVERYONE = "Everyone";
 	static final String ROLE_SYSTEM_ADMINISTRATOR = "System Administrator";
 
-	public PermissionCategory registerPermissionCategory(String resourceBundle, String resourceKey);
+	PermissionCategory registerPermissionCategory(String resourceBundle, String resourceKey);
 
-	public Permission getPermission(String resourceKey);
+	Permission getPermission(String resourceKey);
 
 	List<Permission> getPermissions(String...resourceKeys);
 
-	public Role createRole(String name, Realm realm, RoleType type) throws AccessDeniedException, ResourceException;
+	Role createRole(String name, Realm realm, RoleType type) throws AccessDeniedException, ResourceException;
 
-	public void unassignRole(Role customerRole, Principal principal) throws AccessDeniedException, ResourceException;
+	void unassignRole(Role customerRole, Principal principal) throws AccessDeniedException, ResourceException;
 	
-	public void unassignRole(Role customerRole, Principal... principals) throws AccessDeniedException, ResourceException;
+	void unassignRole(Role customerRole, Principal... principals) throws AccessDeniedException, ResourceException;
 	
 	void assignRole(Role role, Principal principal) throws AccessDeniedException;
 
@@ -59,7 +60,7 @@ public interface PermissionService extends AuthenticatedService {
 
 	List<Role> allRoles(Realm realm) throws AccessDeniedException;
 
-	public List<Permission> allPermissions();
+	List<Permission> allPermissions();
 
 	Role createRole(String name, Realm realm, List<Principal> principals, List<Permission> permissions, List<Realm> realms,
 			Map<String, String> properties, RoleType type, boolean allUsers, boolean allPerms, boolean allRealms)
@@ -72,9 +73,9 @@ public interface PermissionService extends AuthenticatedService {
 	Role updateRole(Role role, String name, List<Principal> principals, List<Permission> permissions, List<Realm> realms, Map<String,String> properties, boolean allUsers, boolean allPerm, boolean allRealms)
 			throws AccessDeniedException, ResourceException;
 
-	public Role getRoleById(Long id, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
+	Role getRoleById(Long id, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
 
-	public Permission getPermissionById(Long perm);
+	Permission getPermissionById(Long perm);
 
 	Set<Permission> getPrincipalPermissions(Principal principal) throws AccessDeniedException;
 
@@ -125,36 +126,36 @@ public interface PermissionService extends AuthenticatedService {
 
 	boolean hasAnyPermission(Principal principal, Permission...permissions);
 
-	public boolean hasRole(Principal principal, Role role) throws AccessDeniedException;
+	boolean hasRole(Principal principal, Role role) throws AccessDeniedException;
 
-	public void assertResourceAccess(AssignableResource resource, Principal principal) throws AccessDeniedException;
+	void assertResourceAccess(AssignableResource resource, Principal principal) throws AccessDeniedException;
 	
-	public Role createRoleAndAssignPrincipals(String roleName, Realm realm,Principal...principals) throws ResourceException,AccessDeniedException;
+	Role createRoleAndAssignPrincipals(String roleName, Realm realm,Principal...principals) throws ResourceException,AccessDeniedException;
 
-	public Set<String> getRolePropertyNames();
+	Set<String> getRolePropertyNames();
 
-	public boolean hasRole(Principal principal, Collection<Role> roles);
+	boolean hasRole(Principal principal, Collection<Role> roles);
 
 	boolean hasEveryoneRole(Collection<Role> roles, Realm realm) throws AccessDeniedException, ResourceNotFoundException;
 
-	public Collection<Role> getRolesByPrincipal(Principal principal);
+	Collection<Role> getRolesByPrincipal(Principal principal);
 
 	void registerAssignableRepository(Class<? extends AssignableResource> clz,
 			AbstractAssignableResourceRepository<?> repository);
 
-	Set<Principal> resolveUsers(Collection<Principal> principals);
+	Iterator<Principal> resolveUsers(Iterator<Principal> principals);
 
-	Collection<Principal> resolveUsers(Collection<Role> roles, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
+	Iterator<Principal> resolveUsers(Collection<Role> roles, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
 
-	Collection<Principal> getPrincipalsByRole(Realm realm, Role... roles) throws ResourceNotFoundException, AccessDeniedException;
+	Iterator<Principal> iteratePrincipalsByRole(Realm realm, Role... roles) throws ResourceNotFoundException, AccessDeniedException;
 
-	Collection<Principal> getPrincipalsByRole(Realm realm, Collection<Role> roles) throws ResourceNotFoundException;
+	Iterator<Principal> iteratePrincipalsByRole(Realm realm, Collection<Role> roles) throws ResourceNotFoundException;
 
 	void deleteResources(List<Role> resources) throws ResourceException, AccessDeniedException;
 	
 	List<Role> getResourcesByIds(Long...ids) throws AccessDeniedException;
 
-	public Role getRealmAdministratorRole(Realm realm);
+	Role getRealmAdministratorRole(Realm realm);
 
 	Role getSystemAdministratorRole();
 

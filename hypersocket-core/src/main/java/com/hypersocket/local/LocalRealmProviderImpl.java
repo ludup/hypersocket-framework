@@ -139,9 +139,7 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 			roles.add(permissionService.getSystemAdministratorRole());
 		}
 		
-		Collection<Principal> admins = permissionService.getPrincipalsByRole(realm, roles);
-		
-		userRepository.resetRealm(admins);
+		userRepository.resetRealm(permissionService.iteratePrincipalsByRole(realm, roles));
 		
 	}
 	

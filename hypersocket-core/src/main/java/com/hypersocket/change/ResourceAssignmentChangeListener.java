@@ -1,7 +1,5 @@
 package com.hypersocket.change;
 
-import java.util.Collection;
-
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
@@ -13,7 +11,7 @@ public interface ResourceAssignmentChangeListener<T extends AssignableResource> 
 
 	Class<? extends AssignableResource> getResourceClass();
 
-	void principalUnassigned(Realm realm, AssignableResource resource, Collection<Principal> principals);
+	void principalUnassigned(Realm realm, AssignableResource resource, Iterable<Principal> principals);
 
-	void principalAssigned(Realm realm, AssignableResource resource, Collection<Principal> principals);
+	void principalAssigned(Realm realm, AssignableResource resource, Iterable<Principal> principals);
 }

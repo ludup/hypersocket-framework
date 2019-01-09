@@ -8,6 +8,8 @@
 package upgrade;
 
 
+import java.util.Iterator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,14 +58,16 @@ public class core_2_DOT_1_DOT_0 implements Runnable {
 			for(Realm realm : realmService.allRealms()) {
 				
 				log.info(String.format("Upgrading realm %s", realm.getName()));
-				
-				for(Principal principal : realmService.allUsers(realm)) {
+
+				for(Iterator<Principal> userIt = realmService.iterateUsers(realm); userIt.hasNext(); ) {
+					Principal principal = userIt.next();
 					Role r = permissionService.getPersonalRole(principal);
 					r.setType(RoleType.USER);
 					repository.saveRole(r);
 				}
-				
-				for(Principal principal : realmService.allGroups(realm)) {
+
+				for(Iterator<Principal> userIt = realmService.iterateGroups(realm); userIt.hasNext(); ) {
+					Principal principal = userIt.next();
 					Role r = permissionService.getPersonalRole(principal);
 					r.setType(RoleType.GROUP);
 					repository.saveRole(r);
