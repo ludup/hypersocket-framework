@@ -558,6 +558,16 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, null, provider, sendNotifications);
 	}
 	
+	@Override
+	public Principal createLocalUser(Realm realm, String username, Map<String,String> properties,
+			List<Principal> principals, PasswordCreator passwordCreator, boolean forceChange, boolean selfCreated, boolean sendNotifications)
+					throws ResourceException, AccessDeniedException {
+		
+		RealmProvider provider = getLocalProvider();
+		
+		return createUser(realm, username, properties, principals, passwordCreator, forceChange, selfCreated, null, provider, sendNotifications);
+	}
+	
 	private RealmProvider getLocalProvider() {
 		return getProviderForRealm(LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY);
 	}
@@ -2652,7 +2662,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public boolean isDisabled(Principal principal) {
-		RealmProvider provider = getProviderForRealm(principal.getRealm());
+		RealmProvider provider = getProviderForPrincipal(principal);
 		return provider.isDisabled(principal);
 	}
 }

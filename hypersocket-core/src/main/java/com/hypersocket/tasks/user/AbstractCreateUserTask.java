@@ -70,9 +70,8 @@ public abstract class AbstractCreateUserTask extends AbstractTaskProvider {
 		
 		try {	
 			
-			realmService.createUser(currentRealm, principalName, properties, assosciated, 
-					generatePassword ? new PasswordPolicyPasswordCreator() : new DefaultPasswordCreator(staticPassword), 
-							forceChange, false, sendNotifications);
+			doCreateUser(currentRealm, principalName, properties, assosciated, generatePassword, staticPassword, 
+					forceChange, sendNotifications);
 			
 			return new TaskResultHolder(eventService.getLastResult(), true);
 				
@@ -82,6 +81,13 @@ public abstract class AbstractCreateUserTask extends AbstractTaskProvider {
 			eventService.delayEvents(false);
 		}
 
+	}
+	
+	protected void doCreateUser(Realm currentRealm, String principalName, Map<String,String> properties, 
+			List<Principal> associated, boolean generatePassword, String staticPassword, boolean forceChange, boolean sendNotifications) throws AccessDeniedException, ResourceException {
+		realmService.createUser(currentRealm, principalName, properties, associated, 
+				generatePassword ? new PasswordPolicyPasswordCreator() : new DefaultPasswordCreator(staticPassword), 
+						forceChange, false, sendNotifications);
 	}
 
 	@Override

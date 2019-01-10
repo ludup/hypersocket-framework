@@ -310,5 +310,9 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean isDisabled(Principal principal);
 
+	Principal createLocalUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
+			PasswordCreator passwordCreator, boolean forceChange, boolean selfCreated, boolean sendNotifications)
+			throws ResourceException, AccessDeniedException;
+
 }
 

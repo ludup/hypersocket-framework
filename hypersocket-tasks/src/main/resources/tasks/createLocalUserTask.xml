@@ -1,0 +1,3 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="createLocalUserTask" extends="tasks/createUser.xml,localUserTemplate.xml">
+</propertyTemplates>
