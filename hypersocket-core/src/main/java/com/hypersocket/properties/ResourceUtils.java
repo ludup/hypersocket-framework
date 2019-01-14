@@ -141,7 +141,7 @@ public class ResourceUtils {
 
 	public static String[] getNamePairArray(String[] source) {
 		if(source==null) {
-			return null;
+			return new String[0];
 		}
 		String[] dest = new String[source.length];
 		for(int i=0;i<source.length;i++) {
