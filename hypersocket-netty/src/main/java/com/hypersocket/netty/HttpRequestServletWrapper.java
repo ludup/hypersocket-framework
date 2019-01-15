@@ -214,7 +214,10 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 			pathInfo = pathInfo.substring(0, idx);
 		}
 
-		if (pathInfo.equals("") || pathInfo.equals("/"))
+		/**
+		 * Removed pathInfo.equals("/") from this check
+		 */
+		if (pathInfo.equals(""))
 			pathInfo = null;
 
 		if (queryString != null && queryString.length() > 0) {
