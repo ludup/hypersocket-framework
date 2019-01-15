@@ -1,0 +1,83 @@
+package com.hypersocket.server.handlers.impl;
+
+import java.io.IOException;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.hypersocket.ApplicationContextServiceImpl;
+import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.server.handlers.HttpResponseProcessor;
+import com.hypersocket.servlet.HypersocketServletConfig;
+import com.hypersocket.session.json.SessionUtils;
+
+public class H2ConsoleServlet extends ServletRequestHandler {
+
+	SessionUtils sessionUtils;
+	PermissionService permissionService; 
+	
+	public H2ConsoleServlet() {
+		super("console", new org.h2.server.web.WebServlet(), Integer.MIN_VALUE);
+	}
+	
+	protected void registered() {
+		try {
+			
+			sessionUtils = ApplicationContextServiceImpl.getInstance().getBean(SessionUtils.class);
+			permissionService = ApplicationContextServiceImpl.getInstance().getBean(PermissionService.class);
+			
+			server.getServletContext().setInitParameter("db.user", "hypersocket");
+			server.getServletContext().setInitParameter("db.password", "hypersocket");
+			server.getServletContext().setInitParameter("db.url", "jdbc:h2:./h2/data");
+			
+			HypersocketServletConfig servletConfig = new HypersocketServletConfig(getName(), server.getServletContext());
+			servletConfig.setInitParameter("webAllowOthers", "");
+			servletConfig.setInitParameter("trace", "");
+			servlet.init(servletConfig);
+		} catch (ServletException e) {
+			log.error("Failed to init servlet", e);
+		}
+	}
+	
+	@PostConstruct
+	private void postConstruct() {
+		server.registerHttpHandler(this);
+	}
+
+	
+	@Override
+	public void handleHttpRequest(HttpServletRequest request, HttpServletResponse response,
+			HttpResponseProcessor responseProcessor) {
+		
+		try {
+			if(sessionUtils.hasActiveSession(request)) {
+				if(permissionService.hasSystemPermission(sessionUtils.getPrincipal(request))) {
+					super.handleHttpRequest(request, response, responseProcessor);
+					return;
+				}
+			}
+		} catch (UnauthorizedException e) {
+		}
+		
+		try {
+			responseProcessor.send404(request, response);
+			responseProcessor.sendResponse(request, response, false);
+		} catch (IOException e) {
+			log.error("Failed to send response", e);
+		}
+	}
+	
+	@Override
+	public boolean handlesRequest(HttpServletRequest request) {
+		return request.getRequestURI().startsWith(String.format("/%s", getName()));
+	}
+
+	@Override
+	public boolean getDisableCache() {
+		return true;
+	}
+
+}
