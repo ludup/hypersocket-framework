@@ -36,6 +36,10 @@ public class ApplicationContextServiceImpl {
 	public <T> T getBean(String name, Class<T> clz) {
 		return (T) applicationContext.getBean(name);
 	}
+	
+	public boolean containsBean(String name) {
+		return applicationContext.containsBean(name);
+	}
 
 	public AutowireCapableBeanFactory getAutowireCapableBeanFactory() {
 		return applicationContext.getAutowireCapableBeanFactory();

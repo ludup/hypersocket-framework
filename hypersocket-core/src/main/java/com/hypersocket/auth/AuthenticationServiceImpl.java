@@ -46,6 +46,7 @@ import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserVariableReplacementService;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
@@ -55,12 +56,15 @@ public class AuthenticationServiceImpl extends
 		PasswordEnabledAuthenticatedServiceImpl implements
 		AuthenticationService {
 
-	public static final String BROWSER_AUTHENTICATION_SCHEME = "Browser";
-	public static final String BROWSER_AUTHENTICATION_RESOURCE_KEY = "basic";
+	public static final String BASIC_AUTHENTICATION_SCHEME = "Basic";
+	public static final String BASIC_AUTHENTICATION_RESOURCE_KEY = "basic";
 
 	public static final String ANONYMOUS_AUTHENTICATION_SCHEME = "Anonymous";
 	public static final String ANONYMOUS_AUTHENTICATION_RESOURCE_KEY = "anonymous";
 
+	public static final String AUTHENTICATION_SCHEME_USER_LOGIN_RESOURCE_KEY = "userLogin";
+	public static final String AUTHENTICATION_SCHEME_NAME = "User Login";
+	
 	public static final String FALLBACK_AUTHENTICATION_RESOURCE_KEY = "fallback";
 	
 	private static Logger log = LoggerFactory
@@ -128,7 +132,6 @@ public class AuthenticationServiceImpl extends
 		setupRealms();
 		setupFallback();
 		
-//		schemeService.enableScheme(BROWSER_AUTHENTICATION_RESOURCE_KEY);
 	}
 	
 	private void setupFallback() {
@@ -165,7 +168,7 @@ public class AuthenticationServiceImpl extends
 			@Override
 			public boolean hasCreatedDefaultResources(Realm realm) {
 				return schemeRepository.getSchemeByResourceKeyCount(realm,
-						BROWSER_AUTHENTICATION_RESOURCE_KEY) > 0;
+						BASIC_AUTHENTICATION_RESOURCE_KEY) > 0;
 			}
 
 			@Override
@@ -184,15 +187,15 @@ public class AuthenticationServiceImpl extends
 						AuthenticationModuleType.HIDDEN, false);
 
 				if (log.isInfoEnabled()) {
-					log.info("Creating " + BROWSER_AUTHENTICATION_SCHEME
+					log.info("Creating " + BASIC_AUTHENTICATION_SCHEME
 							+ " authentication scheme for realm "
 							+ realm.getName());
 				}
 
 				modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
 				schemeRepository.createScheme(realm,
-						BROWSER_AUTHENTICATION_SCHEME, modules,
-						BROWSER_AUTHENTICATION_RESOURCE_KEY, false, 10,
+						BASIC_AUTHENTICATION_SCHEME, modules,
+						BASIC_AUTHENTICATION_RESOURCE_KEY, false, 10,
 						AuthenticationModuleType.HTML, false);
 
 			}
@@ -203,6 +206,77 @@ public class AuthenticationServiceImpl extends
 			}
 		});
 
+		realmService.registerRealmListener(new RealmAdapter() {
+			public boolean hasCreatedDefaultResources(Realm realm) {
+				return schemeRepository.getSchemeByResourceKeyCount(realm,
+							AUTHENTICATION_SCHEME_USER_LOGIN_RESOURCE_KEY) > 0;
+			}
+			
+			public void onCreateRealm(Realm realm) {
+
+				if (log.isInfoEnabled()) {
+					log.info("Creating " + AUTHENTICATION_SCHEME_NAME
+							+ " authentication scheme for realm "
+							+ realm.getName());
+				}
+				
+				AuthenticationScheme basicScheme = schemeRepository.getSchemeByResourceKey(realm, AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY);
+				List<String> modules = new ArrayList<String>();
+				List<AuthenticationModule> basicModules = repository.getModulesForScheme(basicScheme);
+				for(AuthenticationModule m : basicModules ) {
+					modules.add(m.getTemplate());
+				}
+				
+				if (log.isInfoEnabled()) {
+					log.info("Creating " + AUTHENTICATION_SCHEME_NAME
+							+ " authentication scheme for realm "
+							+ realm.getName());
+				}
+				
+				AuthenticationScheme userLoginScheme = schemeRepository.createScheme(realm,
+						AUTHENTICATION_SCHEME_NAME, modules,
+						AUTHENTICATION_SCHEME_USER_LOGIN_RESOURCE_KEY,
+						false, 
+						10, 
+						AuthenticationModuleType.HTML,
+						true);
+				
+				userLoginScheme.setSupportsHomeRedirect(true);
+			
+				try {
+					schemeRepository.saveResource(userLoginScheme);
+				} catch (ResourceException e) {
+					throw new IllegalStateException(e.getMessage(), e);
+				}
+				
+				
+				AuthenticationModule m = basicModules.iterator().next();
+				m.setTemplate(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
+				m.setIndex(0);
+				
+				repository.updateAuthenticationModule(m);
+				
+				if(basicModules.size() > 1) {
+					for(int i = 1;i<basicModules.size();i++) {
+						repository.deleteModule(basicModules.get(i));
+					}
+				}
+				
+				basicScheme.setHidden(true);
+				try {
+					schemeRepository.saveResource(basicScheme);
+				} catch (ResourceException e) {
+					throw new IllegalStateException(e.getMessage(), e);
+				}
+			}
+			
+			@Override
+			public Integer getWeight() {
+				return Integer.MIN_VALUE + 1001;
+			}
+		});
+		
+		
 	}
 
 	@Override
@@ -238,7 +312,7 @@ public class AuthenticationServiceImpl extends
 	@Override
 	public AuthenticationScheme getDefaultScheme(String remoteAddress,
 			Map<String, Object> environment, Realm realm) {
-		AuthenticationScheme scheme = schemeRepository.getSchemeByResourceKey(realm, BROWSER_AUTHENTICATION_RESOURCE_KEY);
+		AuthenticationScheme scheme = schemeRepository.getSchemeByResourceKey(realm, BASIC_AUTHENTICATION_RESOURCE_KEY);
 		if(scheme!=null) {
 			return scheme;
 		}
@@ -342,7 +416,7 @@ public class AuthenticationServiceImpl extends
 			}
 			scheme = getSchemeByResourceKey(
 					state.getRealm(),
-					AuthenticationServiceImpl.BROWSER_AUTHENTICATION_RESOURCE_KEY);
+					AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY);
 		}
 
 		state.setScheme(scheme);
