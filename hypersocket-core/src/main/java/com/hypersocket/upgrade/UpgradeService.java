@@ -25,4 +25,6 @@ public interface UpgradeService {
 	void registerListener(UpgradeServiceListener listener);
 
 	boolean isFreshInstall();
+
+	boolean isDone();
 }

@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.certificates.events.CertificateResourceCreatedEvent;
 import com.hypersocket.certificates.events.CertificateResourceDeletedEvent;
 import com.hypersocket.certificates.events.CertificateResourceEvent;
@@ -72,6 +73,7 @@ import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
+import com.hypersocket.upgrade.UpgradeService;
 
 @Service
 public class CertificateResourceServiceImpl extends
@@ -912,12 +914,14 @@ public class CertificateResourceServiceImpl extends
 
 	private void sendCertificateNotification(CertificateResource resource, String message) {
 		
-		try {
-	        messageService.sendMessage(message, resource.getRealm(), new CertificateResolver(resource, getX509Certificate(resource)), permissionService.iteratePrincipalsByRole(resource.getRealm(), 
-					permissionService.getSystemAdministratorRole(),
-					permissionService.getRealmAdministratorRole(resource.getRealm())));
-		} catch (AccessDeniedException | CertificateException | ResourceException e) {
-			log.error("Failed to send certificate message", e);
+		if(ApplicationContextServiceImpl.getInstance().getBean("upgradeService", UpgradeService.class).isDone()) {
+			try {
+		        messageService.sendMessage(message, resource.getRealm(), new CertificateResolver(resource, getX509Certificate(resource)), permissionService.iteratePrincipalsByRole(resource.getRealm(), 
+						permissionService.getSystemAdministratorRole(),
+						permissionService.getRealmAdministratorRole(resource.getRealm())));
+			} catch (AccessDeniedException | CertificateException | ResourceException e) {
+				log.error("Failed to send certificate message", e);
+			}
 		}
 	}
 

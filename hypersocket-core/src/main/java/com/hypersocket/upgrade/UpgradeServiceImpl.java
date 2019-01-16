@@ -66,6 +66,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	
 	String databaseType = null;
 	boolean fresh = true;
+	boolean done = false;
 	
 	public UpgradeServiceImpl() {
 		manager = new ScriptEngineManager();
@@ -184,7 +185,14 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 		for(UpgradeServiceListener listener : listeners) {
 			listener.onUpgradeComplete();
 		}
+		
+		done = true;
 	
+	}
+	
+	@Override
+	public boolean isDone() {
+		return done;
 	}
 
 	protected void doOps(List<UpgradeOp> ops, Map<String, Object> beans, String... languages) throws ScriptException, IOException {
