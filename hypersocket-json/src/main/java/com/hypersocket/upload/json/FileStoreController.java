@@ -265,9 +265,6 @@ public class FileStoreController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, IOException, ResourceNotFoundException {
 
-		/**
-		 * TODO only files that are declared public
-		 */
 		resourceService.downloadURIFile(uuid, request, response, true, true, true);
 	}
 	

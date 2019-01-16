@@ -243,7 +243,7 @@ public class FileUploadServiceImpl extends
 
 		FileUpload fileUpload = getFileUpload(uuid);
 
-		if(requirePublic && !fileUpload.getPublicFile()) {
+		if(!hasSessionContext() && requirePublic && !fileUpload.getPublicFile()) {
 			throw new AccessDeniedException();
 		}
 		
