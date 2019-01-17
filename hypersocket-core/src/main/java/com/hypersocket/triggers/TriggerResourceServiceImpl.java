@@ -457,8 +457,8 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 			return;
 		}
 
-		if (log.isInfoEnabled()) {
-			log.info("Looking for triggers for events " + StringUtils.join(sourceEvent.getResourceKeys(), ",") + " "
+		if (log.isDebugEnabled()) {
+			log.debug("Looking for triggers for events " + StringUtils.join(sourceEvent.getResourceKeys(), ",") + " "
 					+ sourceEvent.getStatus().toString());
 		}
 
@@ -471,8 +471,8 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 
 		for (TriggerResource trigger : triggers) {
 
-			if (log.isInfoEnabled()) {
-				log.info("Found trigger " + trigger.getName());
+			if (log.isDebugEnabled()) {
+				log.debug("Found trigger " + trigger.getName());
 			}
 
 			try {
