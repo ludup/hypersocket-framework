@@ -108,8 +108,7 @@ public class SessionUtils {
 	 * Use AuthenticatedService.getCurrentPrincipal instead ensuring that a valid
 	 * principal context has been setup previously.
 	 */
-	public Realm getCurrentRealmOrDefault(HttpServletRequest request)
-			throws UnauthorizedException {
+	public Realm getCurrentRealmOrDefault(HttpServletRequest request) {
 		Session session = getActiveSession(request);
 		if (session == null)
 			return realmService.getRealmByHost(request.getServerName());
