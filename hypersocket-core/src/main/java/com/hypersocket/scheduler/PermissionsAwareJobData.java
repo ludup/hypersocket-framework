@@ -46,7 +46,7 @@ public class PermissionsAwareJobData extends JobDataMap {
 			put("principal", principal.getId());
 		}
 		if(locale!=null) {
-			put("locale", locale.toLanguageTag());
+			put("locale", locale.getLanguage());
 		}
 	}
 	

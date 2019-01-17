@@ -55,7 +55,7 @@ public class I18nOverrideRepositoryImpl extends AbstractEntityRepositoryImpl<I18
 			delete(o);
 		}
 		
-		String cacheKey = "i18n-" + locale.toString();
+		String cacheKey = "i18n-" + locale.getLanguage();
 		Cache<String,String> cache = cacheService.getCacheIfExists(cacheKey, String.class, String.class);
 		if(cache!=null) {
 			cache.remove(key);
@@ -79,18 +79,11 @@ public class I18nOverrideRepositoryImpl extends AbstractEntityRepositoryImpl<I18
 		
 		save(o);
 		
-		String cacheKey = "i18n-" + locale.toString();
+		String cacheKey = "i18n-" + locale.getLanguage();
 		Cache<String,String> cache = cacheService.getCacheIfExists(cacheKey, String.class, String.class);
 		if(cache!=null) {
 			cache.put(id, translated);
 		}
-		
-		cacheKey = "i18n-" + locale.getLanguage();
-		cache = cacheService.getCacheIfExists(cacheKey, String.class, String.class);
-		if(cache!=null) {
-			cache.put(id, translated);
-		}
-		
 	}
 
 	@Override

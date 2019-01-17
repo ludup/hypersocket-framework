@@ -10,7 +10,6 @@ package com.hypersocket.i18n;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -22,8 +21,6 @@ import javax.cache.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.ContextStartedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticationService;
@@ -85,33 +82,19 @@ public class I18NServiceImpl implements I18NService {
 		
 	}
 	
-	@Override
-	@EventListener
-	public void onContextStarted(ContextStartedEvent event) {
-		
-		Cache<String,String> locales = cacheService.getCacheOrCreate("i18n-locales", String.class, String.class);
-		for(Iterator<Cache.Entry<String,String>> it = locales.iterator(); it.hasNext();) {
-			Cache.Entry<String,String> entry = it.next();
-			Cache<String,String> cache = cacheService.getCacheIfExists(entry.getValue(), String.class, String.class);	
-			if(cache!=null) {
-				Locale locale = Locale.forLanguageTag(entry.getKey());
-				if(log.isInfoEnabled()) {
-					log.info(String.format("Upgrading i18n resources cache for %s", locale.toLanguageTag()));
-				}
-				buildCache(cache, locale);
-			}
-		}
+	private String getCacheKey(Locale locale) {
+		return String.format("i18n-%s", locale.getLanguage());
 	}
 	
 	private void buildCache(Cache<String,String> cache, Locale locale) {
 		if(log.isInfoEnabled()) {
-			log.info(String.format("Building i18n resources cache for %s", locale.toLanguageTag()));
+			log.info(String.format("Building i18n resources cache for %s", locale.getLanguage()));
 		}
 		for(String bundle : bundles) {
 			buildBundleMap(bundle, locale, cache);
 		}
 		if(log.isInfoEnabled()) {
-			log.info(String.format("Completed i18n resources cache for %s", locale.toLanguageTag()));
+			log.info(String.format("Completed i18n resources cache for %s", locale.getLanguage()));
 		}
 	}
 	
@@ -124,14 +107,12 @@ public class I18NServiceImpl implements I18NService {
 	@Override
 	public synchronized Cache<String,String> getResourceMap(Locale locale) {
 		
-		String cacheKey = "i18n-" + locale.toLanguageTag();
+		String cacheKey = getCacheKey(locale);
 		Cache<String,String> cache = cacheService.getCacheIfExists(cacheKey,String.class, String.class);
 
 		if(cache==null) {
 			cache = cacheService.getCacheOrCreate(cacheKey, String.class, String.class);
 			buildCache(cache, locale);
-			Cache<String,String> locales = cacheService.getCacheOrCreate("i18n-locales", String.class, String.class);
-			locales.put( locale.toLanguageTag(), cacheKey);
 		}
 		return cache;
 	}
@@ -154,15 +135,12 @@ public class I18NServiceImpl implements I18NService {
 
 	@Override
 	public Locale getLocale(String locale) {
-		for(Locale l : Locale.getAvailableLocales()) {
-			if(l.toString().equals(locale)) {
-				return l;
-			}
+		
+		Locale result = Locale.forLanguageTag(locale);
+		if(result==null) {
+			return Locale.ENGLISH;
 		}
-		if(log.isWarnEnabled()) {
-			log.warn(locale + " is missing");
-		}
-		return Locale.ENGLISH;
+		return result;
 	}
 	
 	public static String tagForConversion(String resourceBundle, String resourceKey) {
