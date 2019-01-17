@@ -534,7 +534,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 									childAddressIt = null;
 							}
 							if (item == null) {
-								if (principals.hasNext()) {
+								if (principals!=null && principals.hasNext()) {
 									principal = principals.next();
 									if(!realmService.isDisabled(principal) && !realmService.getUserPropertyBoolean(principal, "user.bannedEmail")) {
 										switch (strategy) {
