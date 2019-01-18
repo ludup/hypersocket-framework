@@ -34,4 +34,6 @@ public abstract class UserPrincipal extends Principal {
 	public abstract void setSecondaryEmail(String email);
 	
 	public abstract void setSecondaryMobile(String mobile);
+
+	public abstract void setMobile(String processTokenReplacements);
 }

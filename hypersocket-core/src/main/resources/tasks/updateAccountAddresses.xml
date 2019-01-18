@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
+<propertyTemplates context="updateAccountAddresses" extends="tasks/accountTask.xml">
+
+	<propertyCategory resourceKey="category.updateAccountAddresses" resourceBundle="TaskProviderService" weight="-900">
+		<property resourceKey="updateAccountAddresses.primaryEmail" inputType="text" weight="100" defaultValue="${attr.primaryEmail}"/>	
+		<property resourceKey="updateAccountAddresses.secondaryEmail" inputType="text" weight="200" defaultValue="${attr.secondaryEmail}"/>
+		<property resourceKey="updateAccountAddresses.primaryMobile" inputType="text" weight="300" defaultValue="${attr.primaryMobile}"/>
+		<property resourceKey="updateAccountAddresses.secondaryMobile" inputType="text" weight="400" defaultValue="${attr.secondaryMobile}"/>
+	</propertyCategory>	
+</propertyTemplates>
