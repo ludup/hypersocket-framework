@@ -17,6 +17,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -38,8 +39,11 @@ public class HttpUtilsApacheImpl implements HttpUtils {
 			try {
 				SSLContextBuilder builder = new SSLContextBuilder();
 				builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
-				SSLConnectionSocketFactory cm = new SSLConnectionSocketFactory(builder.build());
-				httpclient = HttpClients.custom().setSSLSocketFactory(cm).setDefaultCookieStore(cookieStore)
+				SSLConnectionSocketFactory cm = new SSLConnectionSocketFactory(builder.build(),
+						NoopHostnameVerifier.INSTANCE);
+				httpclient = HttpClients.custom()
+						.setSSLSocketFactory(cm)
+			            .setDefaultCookieStore(cookieStore)
 						.build();
 			} catch (Exception e) {
 				throw new IOException(e.getMessage(), e);
