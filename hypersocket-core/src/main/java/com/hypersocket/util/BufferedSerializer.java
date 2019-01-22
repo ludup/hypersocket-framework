@@ -115,7 +115,7 @@ public class BufferedSerializer<S> implements Closeable {
 
 					if (in != null) {
 						try {
-							next = (S) in.readObject();
+							next = (S) in.readUnshared();
 							if (next != null)
 								return;
 							/* No more in the cache */
@@ -157,9 +157,10 @@ public class BufferedSerializer<S> implements Closeable {
 		try {
 			synchronized (buffer) {
 				for (S s : buffer) {
-					oos.writeObject(s);
+					oos.writeUnshared(s);
 				}
 				oos.flush();
+				oos.reset();
 				items += buffer.size();
 				buffer.clear();
 			}
