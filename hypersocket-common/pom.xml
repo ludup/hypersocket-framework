@@ -20,7 +20,7 @@
 		<dependency>
 			<artifactId>hypersocket-json-client</artifactId>
 			<groupId>com.sshtools</groupId>
-			<version>1.0.3-SNAPSHOT</version>
+			<version>1.0.3</version>
 		</dependency>
 		<dependency>
 			<artifactId>jackson-databind</artifactId>
