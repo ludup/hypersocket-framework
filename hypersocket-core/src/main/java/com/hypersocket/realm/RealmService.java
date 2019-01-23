@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.export.CommonEndOfLine;
@@ -123,6 +124,10 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Iterator<Principal> iterateUsers(Realm realm);
 
 	Iterator<Principal> iterateGroups(Realm realm) throws AccessDeniedException;
+
+	Set<Principal> getUsers(Realm realm, int max);
+
+	Set<Principal> getGroups(Realm realm, int max) throws AccessDeniedException;
 
 	List<?> getRealms(String searchPattern, String searchColumn, int start, int length, ColumnSort[] sorting) throws AccessDeniedException;
 

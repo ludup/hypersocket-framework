@@ -94,8 +94,8 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return new ResourceList<Principal>(
-					realmService.iterateGroups(sessionUtils
-							.getCurrentRealm(request)));
+					realmService.getGroups(sessionUtils
+							.getCurrentRealm(request), ResourceList.DEFAULT_MAXIMUM_RESOURCES));
 		} finally {
 			clearAuthenticatedContext();
 		}
@@ -139,7 +139,7 @@ public class CurrentRealmController extends ResourceController {
 
 		try {
 			return new ResourceList<Principal>(
-					realmService.iterateUsers(sessionUtils.getCurrentRealm(request)));
+					realmService.getUsers(sessionUtils.getCurrentRealm(request), ResourceList.DEFAULT_MAXIMUM_RESOURCES));
 		} finally {
 			clearAuthenticatedContext();
 		}

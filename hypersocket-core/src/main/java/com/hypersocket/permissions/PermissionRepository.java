@@ -97,13 +97,8 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 	Set<Role> getRolesForPrincipal(List<Principal> associatedPrincipals);
 
 	Iterator<Principal> iteratePrincpalsByRole(Realm realm, Collection<Role> associatedPrincipals);
-	
-	/**
-	 * Deprecated. Possibly loads all users into memory at once depending on role used. Use
-	 * {@link #iteratePrincpalsByRole(Realm, Collection)} instead.
-	 */
-	@Deprecated
-	Collection<Principal> getPrincpalsByRole(Realm realm, Collection<Role> associatedPrincipals);
+
+	Set<Principal> getPrincpalsByRole(Realm realm, int max, Collection<Role> associatedPrincipals);
 
 	Set<Role> getAllUserRoles(Realm realm);
 

@@ -147,7 +147,11 @@ public interface PermissionService extends AuthenticatedService {
 
 	Iterator<Principal> resolveUsers(Collection<Role> roles, Realm realm) throws ResourceNotFoundException, AccessDeniedException;
 
+	Set<Principal> getPrincipalsByRole(Realm realm, int maximum, Role... roles) throws ResourceNotFoundException, AccessDeniedException;
+
 	Iterator<Principal> iteratePrincipalsByRole(Realm realm, Role... roles) throws ResourceNotFoundException, AccessDeniedException;
+
+	Set<Principal> getPrincipalsByRole(Realm realm, int maximum, Collection<Role> roles) throws ResourceNotFoundException;
 
 	Iterator<Principal> iteratePrincipalsByRole(Realm realm, Collection<Role> roles) throws ResourceNotFoundException;
 

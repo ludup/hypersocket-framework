@@ -411,11 +411,23 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return iterateAllPrincipals(realm, PrincipalType.GROUP);
 	}
 
-	protected List<Principal> allPrincipals(Realm realm, PrincipalType... types) {
-		if (types.length == 0) {
-			types = PrincipalType.ALL_TYPES;
-		}
-		return getProviderForRealm(realm).allPrincipals(realm, types);
+	@Override
+	public Set<Principal> getUsers(Realm realm, int max) {
+		return getAllPrincipals(realm, max, PrincipalType.USER);
+	}
+
+	@Override
+	public Set<Principal> getGroups(Realm realm, int max) throws AccessDeniedException {
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
+		return getAllPrincipals(realm, max, PrincipalType.GROUP);
+	}
+
+	protected Set<Principal> getAllPrincipals(Realm realm, int max, PrincipalType... types) {
+		Set<Principal> s = new HashSet<>();
+		Iterator<Principal> p = iterateAllPrincipals(realm, types);
+		while(p.hasNext())
+			s.add(p.next());
+		return s;
 	}
 
 	protected Iterator<Principal> iterateAllPrincipals(Realm realm, PrincipalType... types) {

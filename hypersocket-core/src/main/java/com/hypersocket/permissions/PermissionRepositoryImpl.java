@@ -685,7 +685,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly = true)
-	public Collection<Principal> getPrincpalsByRole(Realm realm, Collection<Role> roles) {
+	public Set<Principal> getPrincpalsByRole(Realm realm, int max, Collection<Role> roles) {
 
 		if(roles.isEmpty()) {
 			return new HashSet<Principal>();
@@ -694,6 +694,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		Criteria crit = createCriteria(Principal.class);
 		crit.add(Restrictions.eq("realm", realm));
 		crit.add(Restrictions.eq("deleted", false));
+		crit.setMaxResults(max);
 		
 		boolean allUsers = false;
 		for(Role r : roles) {

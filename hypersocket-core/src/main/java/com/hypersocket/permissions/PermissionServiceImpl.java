@@ -1205,6 +1205,19 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		}
 		return repository.iteratePrincpalsByRole(realm, roles);
 	}
+	
+	@Override
+	public Set<Principal> getPrincipalsByRole(Realm realm, int max, Role... roles) throws ResourceNotFoundException, AccessDeniedException {
+		return getPrincipalsByRole(realm, max, Arrays.asList(roles));
+	}
+	
+	@Override
+	public Set<Principal> getPrincipalsByRole(Realm realm, int max, Collection<Role> roles) throws ResourceNotFoundException {
+		if(hasEveryoneRole(roles, realm))
+			return realmService.getUsers(realm, max);
+		else 
+			return repository.getPrincpalsByRole(realm, max, roles);
+	}
 
 	protected void deletePrincipalRole(Principal principal) {
 		if (principal.isPrimaryAccount()) {
