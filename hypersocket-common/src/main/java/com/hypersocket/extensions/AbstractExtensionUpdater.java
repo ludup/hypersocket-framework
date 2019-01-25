@@ -11,6 +11,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +33,8 @@ import com.hypersocket.utils.HttpUtilsHolder;
 import com.hypersocket.utils.HypersocketUtils;
 
 public abstract class AbstractExtensionUpdater {
+
+	private static final int MAX_BACKUPS = 10;
 
 	static Logger log = LoggerFactory.getLogger(AbstractExtensionUpdater.class);
 	
@@ -74,6 +78,17 @@ public abstract class AbstractExtensionUpdater {
 		}
 		
 		backupFolder = new File(HypersocketUtils.getConfigDir().getParent(), "backups");
+		
+		if(backupFolder.exists()) {
+			/* Trim to MAX_BACKUPS based on modification date of folder */
+			List<File> dirs = new ArrayList<>(Arrays.asList(backupFolder.listFiles((dir, name) -> dir.isDirectory())));
+			if (dirs.size() >= MAX_BACKUPS) {
+				Collections.sort(dirs, (o1, o2) -> Long.valueOf(o1.lastModified()).compareTo(o2.lastModified()));
+				for (int i = 0; i < dirs.size() - MAX_BACKUPS + 1; i++)
+					FileUtils.deleteFolder(dirs.get(i));
+			}
+		}
+		
 		backupFolder = new File(backupFolder, HypersocketVersion.getVersion());
 		FileUtils.deleteFolder(backupFolder);
 		if (!backupFolder.exists()) {
