@@ -446,7 +446,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	@SuppressWarnings("unchecked")
 	private <T> T getEnum(String value, Class<T> enumType) {
 		Enum<?>[] enumConstants = (Enum<?>[]) enumType.getEnumConstants();
-		if(NumberUtils.isCreatable(value)){//ordinal
+		if(NumberUtils.isNumber(value)){//ordinal
 			return (T) enumConstants[Integer.parseInt(value)];
 		}else{
 			for (Enum<?> enumConstant : enumConstants) {
