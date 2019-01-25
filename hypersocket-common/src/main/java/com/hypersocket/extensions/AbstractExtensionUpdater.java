@@ -78,17 +78,6 @@ public abstract class AbstractExtensionUpdater {
 		}
 		
 		backupFolder = new File(HypersocketUtils.getConfigDir().getParent(), "backups");
-		
-		if(backupFolder.exists()) {
-			/* Trim to MAX_BACKUPS based on modification date of folder */
-			List<File> dirs = new ArrayList<>(Arrays.asList(backupFolder.listFiles((dir, name) -> dir.isDirectory())));
-			if (dirs.size() >= MAX_BACKUPS) {
-				Collections.sort(dirs, (o1, o2) -> Long.valueOf(o1.lastModified()).compareTo(o2.lastModified()));
-				for (int i = 0; i < dirs.size() - MAX_BACKUPS + 1; i++)
-					FileUtils.deleteFolder(dirs.get(i));
-			}
-		}
-		
 		backupFolder = new File(backupFolder, HypersocketVersion.getVersion());
 		FileUtils.deleteFolder(backupFolder);
 		if (!backupFolder.exists()) {
@@ -344,6 +333,16 @@ public abstract class AbstractExtensionUpdater {
 					}
 				}
 
+			}
+			
+			if(backupFolder.exists()) {
+				/* Trim to MAX_BACKUPS based on modification date of folder */
+				List<File> dirs = new ArrayList<>(Arrays.asList(backupFolder.listFiles((dir, name) -> dir.isDirectory())));
+				if (dirs.size() > MAX_BACKUPS) {
+					Collections.sort(dirs, (o1, o2) -> Long.valueOf(o1.lastModified()).compareTo(o2.lastModified()));
+					for (int i = 0; i < dirs.size() - MAX_BACKUPS; i++)
+						FileUtils.deleteFolder(dirs.get(i));
+				}
 			}
 
 			onUpdateComplete(totalSize, totalUpdates);
