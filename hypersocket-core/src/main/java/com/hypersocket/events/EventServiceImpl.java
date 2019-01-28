@@ -99,10 +99,6 @@ public class EventServiceImpl implements EventService {
 				/* Defer until no longer delaying in the thread */
 				return;
 			
-			if (delayedEvents.get() == null) {
-				return;
-			}
-
 			BufferedSerializer<SystemEvent> events = delayedEvents.get();
 			if (events != null) {
 				synchronized (events) {

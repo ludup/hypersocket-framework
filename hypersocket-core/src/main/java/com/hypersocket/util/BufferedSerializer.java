@@ -102,7 +102,7 @@ public class BufferedSerializer<S> implements Closeable {
 				if (next == null) {
 					if (inFile == null) {
 						inFile = bufferFile;
-						if (inFile.exists()) {
+						if (inFile.exists() && items > 0) {
 							try {
 								in = new ObjectInputStream(new FileInputStream(inFile));
 							} catch (EOFException eof) {
@@ -147,10 +147,11 @@ public class BufferedSerializer<S> implements Closeable {
 		};
 	}
 
-	public void setBufferSize(int bufferSize) {
+	public BufferedSerializer<S> setBufferSize(int bufferSize) {
 		this.bufferSize = bufferSize;
 		if (bufferSize < buffer.size())
 			flush();
+		return this;
 	}
 
 	protected void flush() {
