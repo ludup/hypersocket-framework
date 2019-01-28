@@ -443,7 +443,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	private <T> T getEnum(String value, Class<T> enumType) {
 		Enum<?>[] enumConstants = (Enum<?>[]) enumType.getEnumConstants();
 		if(NumberUtils.isNumber(value)){//ordinal
