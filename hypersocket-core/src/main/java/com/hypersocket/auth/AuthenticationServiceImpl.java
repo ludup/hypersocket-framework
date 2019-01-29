@@ -715,8 +715,8 @@ public class AuthenticationServiceImpl extends
 							}
 						} catch(IllegalStateException e) { 
 							
-							state.setLastErrorMsg("error.invalidConfiguration");
-							state.setLastErrorIsResourceKey(true);
+							state.setLastErrorMsg(e.getMessage());
+							state.setLastErrorIsResourceKey(false);
 							state.revertModule();
 							success = false;
 							
