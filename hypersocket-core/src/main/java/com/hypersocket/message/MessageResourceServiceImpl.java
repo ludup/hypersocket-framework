@@ -619,6 +619,10 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 				data.put("fullName", recipient.getName());
 				data.put("principalId", recipient.getPrincipalId());
 
+				if(recipient.hasPrincipal()) {
+					data.putAll(realmService.getUserPropertyValues(recipient.getPrincipal()));
+				}
+				
 				Template subjectTemplate = templateService.createTemplate("message.subject." + message.getId(),
 						message.getSubject(), message.getModifiedDate().getTime());
 				StringWriter subjectWriter = new StringWriter();

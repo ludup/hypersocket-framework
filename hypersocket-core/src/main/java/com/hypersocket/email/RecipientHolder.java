@@ -2,6 +2,7 @@ package com.hypersocket.email;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -68,6 +69,10 @@ public class RecipientHolder {
 			return name;
 		}
 		return "";
+	}
+	
+	public boolean hasPrincipal() {
+		return !Objects.isNull(principal);
 	}
 	
 	public Principal getPrincipal() {
