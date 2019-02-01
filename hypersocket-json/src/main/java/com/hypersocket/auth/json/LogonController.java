@@ -116,7 +116,7 @@ public class LogonController extends AuthenticatedController {
 			HttpServletRequest request, HttpServletResponse response,
 			String scheme, Realm realm) throws AccessDeniedException, UnsupportedEncodingException {
 		AuthenticationState.clearCurrentState(request);
-		return AuthenticationState.getOrCreateState(scheme, request, response,
+		return AuthenticationState.getOrCreateState(scheme, request,
 								realm, null, sessionUtils.getLocale(request));
 	}
 	
@@ -189,11 +189,10 @@ public class LogonController extends AuthenticatedController {
 			}
 			
 			if (state == null
-					|| (!StringUtils.isEmpty(scheme) && !state.getSystemScheme()
-							.getResourceKey().equals(scheme))) {
+					|| (!StringUtils.isEmpty(scheme) && !state.getInitialScheme().equals(scheme))) {
 				// We have not got login state so create
 				state = AuthenticationState.createAuthenticationState(scheme, request,
-						response, null, state, sessionUtils.getLocale(request));
+						null, state, sessionUtils.getLocale(request));
 			}
 
 			String redirectHome = (String) request.getSession().getAttribute("redirectHome");
@@ -212,7 +211,7 @@ public class LogonController extends AuthenticatedController {
 			if(state.getSession()!=null) {
 				attachSession(state.getSession(), request, response);
 			}
-			
+						
 			if (state.isAuthenticationComplete()
 					&& !state.hasPostAuthenticationStep()) {
 

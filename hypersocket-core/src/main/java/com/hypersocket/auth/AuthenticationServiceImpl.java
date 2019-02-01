@@ -359,7 +359,7 @@ public class AuthenticationServiceImpl extends
 			Map<String, Object> environment, Realm realm, Locale locale)
 			throws AccessDeniedException {
 
-		AuthenticationState state = new AuthenticationState(remoteAddress, environment, locale);
+		AuthenticationState state = new AuthenticationState(schemeResourceKey, remoteAddress, environment, locale);
 
 		if(realm==null) {
 			realm = realmService.getDefaultRealm();
@@ -608,10 +608,14 @@ public class AuthenticationServiceImpl extends
 	
 						break;
 					}
-					case AUTHENTICATION_SUCCESS: {
+					case AUTHENTICATION_SUCCESS: 
+					case AUTHENTICATION_SWITCHED: {
 						try {
 							success = true;
-	
+							
+							state.setLastErrorMsg(null);
+							state.setLastErrorIsResourceKey(false);
+							
 							if((currentRealm==null || !state.getRealm().equals(currentRealm)) && state.getCurrentIndex()==0) {
 								/**
 								 * The users realm is not the realm we started off in. We need to switch
@@ -674,8 +678,14 @@ public class AuthenticationServiceImpl extends
 								}
 							}
 							
-							state.nextModule();
+							if(result==AuthenticatorResult.AUTHENTICATION_SUCCESS) {
+								state.nextModule();
+							}
 	
+							if(!state.isPrimaryState() && state.isAuthenticationComplete()) {
+								state.switchBack();
+							}
+							
 							if (state.isAuthenticationComplete()) {
 	
 								permissionService.verifyPermission(

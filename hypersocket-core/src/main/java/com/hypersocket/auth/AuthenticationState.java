@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Stack;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -32,7 +32,11 @@ public class AuthenticationState {
 
 	private static final String PREVIOUS_AUTHENTICATION_SCHEME = "previousAuthenticationScheme";
 	private static final String AUTHENTICATION_STATE = "authenticationState";
-	AuthenticationScheme systemScheme;
+	
+	String initialScheme;
+	Stack<AuthenticationScheme> previousSchemes = new Stack<>();
+	Stack<Integer> previousIndex = new Stack<>();
+	Stack<List<AuthenticationModule>> previousModules = new Stack<>();
 	AuthenticationScheme scheme;
 	String remoteAddress;
 	Integer currentIndex = new Integer(0);
@@ -55,7 +59,10 @@ public class AuthenticationState {
 	Locale locale;
 	Map<String, String> parameters = new HashMap<String, String>();
 	Map<String, Object> environment = new HashMap<String, Object>();
-	AuthenticationState(String remoteAddress, Map<String,Object> environment, Locale locale) {
+	
+	
+	AuthenticationState(String intialScheme, String remoteAddress, Map<String,Object> environment, Locale locale) {
+		this.initialScheme = intialScheme;
 		this.remoteAddress = remoteAddress;
 		this.environment = environment;
 		this.locale = locale;
@@ -65,12 +72,12 @@ public class AuthenticationState {
 		return locale;
 	}
 	
-	public String getSchemeResourceKey() {
-		if(Objects.isNull(systemScheme)) {
-			return scheme.getResourceKey();
-		} else {
-			return systemScheme.getResourceKey();
-		}
+	public String getInitialScheme() {
+		return initialScheme;
+	}
+	
+	public boolean isPrimaryState() {
+		return previousSchemes.isEmpty();
 	}
 	
 	public AuthenticationModule getCurrentModule() {
@@ -92,12 +99,22 @@ public class AuthenticationState {
 	}
 	
 	public void switchScheme(AuthenticationScheme scheme, List<AuthenticationModule> modules) {
-		currentIndex = 0;
-		if(Objects.isNull(systemScheme)) {
-			this.systemScheme = this.scheme;
-		}
+		
+		this.previousIndex.push(currentIndex);
+		this.previousSchemes.push(this.scheme);
+		this.previousModules.push(this.modules);
+		
 		this.scheme = scheme;
 		this.modules = modules;
+		currentIndex = 0;
+	}
+	
+	public void switchBack() {
+		
+		this.currentIndex = previousIndex.pop();
+		this.scheme = previousSchemes.pop();
+		this.modules = previousModules.pop();
+		
 	}
 	
 	public void addListener(AuthenticationStateListener listener) {
@@ -344,18 +361,17 @@ public class AuthenticationState {
 	public void setHasEnded(boolean hasEnded) {
 		this.hasEnded = hasEnded;
 	}
-
-	public AuthenticationScheme getSystemScheme() {
-		return Objects.isNull(systemScheme) ? scheme : systemScheme;
-	}
 	
 	public static AuthenticationState getCurrentState(HttpServletRequest request) {
-		return (AuthenticationState) request.getSession().getAttribute(AUTHENTICATION_STATE);
+		
+		return (AuthenticationState)
+				request.getSession().getAttribute(AUTHENTICATION_STATE);
+	
 	}
 	
 	public static AuthenticationState getOrCreateState(String logonScheme, 
 			HttpServletRequest request, 
-			HttpServletResponse response,
+
 			Realm realm, 
 			AuthenticationState mergeState,
 			Locale locale) throws AccessDeniedException {
@@ -367,12 +383,11 @@ public class AuthenticationState {
 		}
 		
 		return createAuthenticationState(logonScheme,
-					request, response, realm, mergeState, locale);
+					request, realm, mergeState, locale);
 	}
 	
 	public static AuthenticationState createAuthenticationState(String logonScheme, 
 			HttpServletRequest request, 
-			HttpServletResponse response,
 			Realm realm, 
 			AuthenticationState mergeState,
 			Locale locale) throws AccessDeniedException {
@@ -409,7 +424,7 @@ public class AuthenticationState {
 		for(AuthenticationModule module : modules) {
 			if(authenticationService.getAuthenticator(module.getTemplate())==null) {
 				
-				state = createAuthenticationState("fallback", request, response, realm, mergeState, locale);
+				state = createAuthenticationState("fallback", request, realm, mergeState, locale);
 				state.setLastErrorIsResourceKey(true);
 				state.setLastErrorMsg("revertedFallback.adminOnly");
 				return state;
@@ -427,8 +442,9 @@ public class AuthenticationState {
 				state.addParameter(name, HypersocketUtils.urlDecode(request.getParameter(name)));
 			}
 		}
-		
+
 		request.getSession().setAttribute(AUTHENTICATION_STATE, state);
+	
 		return state;
 	}
 
@@ -444,5 +460,7 @@ public class AuthenticationState {
 		request.getSession().setAttribute(AUTHENTICATION_STATE, null);
 		
 	}
+
+
 	
 }
