@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,6 +22,7 @@ import com.hypersocket.session.Session;
 
 public class AuthenticationState {
 
+	AuthenticationScheme systemScheme;
 	AuthenticationScheme scheme;
 	String remoteAddress;
 	Integer currentIndex = new Integer(0);
@@ -50,6 +52,14 @@ public class AuthenticationState {
 		this.locale = locale;
 	}
 
+	public String getSchemeResourceKey() {
+		if(Objects.isNull(systemScheme)) {
+			return scheme.getResourceKey();
+		} else {
+			return systemScheme.getResourceKey();
+		}
+	}
+	
 	public AuthenticationModule getCurrentModule() {
 		if (currentIndex >= modules.size())
 			throw new IllegalStateException(
@@ -66,6 +76,15 @@ public class AuthenticationState {
 		lastErrorMsg = null;
 		lastErrorIsResourceKey = false;
 		parameters.clear();
+	}
+	
+	public void switchScheme(AuthenticationScheme scheme, List<AuthenticationModule> modules) {
+		currentIndex = 0;
+		if(Objects.isNull(systemScheme)) {
+			this.systemScheme = this.scheme;
+		}
+		this.scheme = scheme;
+		this.modules = modules;
 	}
 	
 	public void addListener(AuthenticationStateListener listener) {
@@ -315,6 +334,10 @@ public class AuthenticationState {
 
 	public void setHasEnded(boolean hasEnded) {
 		this.hasEnded = hasEnded;
+	}
+
+	public AuthenticationScheme getSystemScheme() {
+		return Objects.isNull(systemScheme) ? scheme : systemScheme;
 	}
 	
 	

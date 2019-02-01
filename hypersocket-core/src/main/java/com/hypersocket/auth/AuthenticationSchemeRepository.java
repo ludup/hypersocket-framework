@@ -22,6 +22,8 @@ public interface AuthenticationSchemeRepository extends AbstractResourceReposito
 	public AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey);
 
 	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm, boolean onlyEnabled);
+	
+	public List<AuthenticationScheme> getCustomAuthenticationSchemes(Realm realm);
 
 	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm);
 

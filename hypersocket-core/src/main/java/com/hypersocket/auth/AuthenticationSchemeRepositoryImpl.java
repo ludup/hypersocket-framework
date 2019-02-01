@@ -29,6 +29,7 @@ import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
+import com.hypersocket.repository.SystemRestriction;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 
 @Repository
@@ -168,7 +169,9 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 					@Override
 					public void configure(Criteria criteria) {
 						if(enabledOnly) {
-							criteria.add(Restrictions.in("resourceKey", enabledSchemes));
+							criteria.add(Restrictions.or(Restrictions.eq("system", false),
+									Restrictions.and(Restrictions.in("resourceKey", enabledSchemes), 
+											Restrictions.eq("system", true))));
 						}
 					}
 		});
@@ -204,5 +207,13 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	@Override
 	protected Class<AuthenticationScheme> getResourceClass() {
 		return AuthenticationScheme.class;
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public List<AuthenticationScheme> getCustomAuthenticationSchemes(Realm realm) {
+		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
+				false), new HiddenCriteria(false), new DistinctRootEntity(), 
+				new RealmRestriction(realm), new SystemRestriction(false));
 	}
 }

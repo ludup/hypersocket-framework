@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
 import javax.annotation.PostConstruct;
@@ -939,13 +940,15 @@ public class AuthenticationServiceImpl extends
 		AuthenticationScheme scheme = schemeRepository.getSchemeByResourceKey(
 				getCurrentRealm(), schemeResourceKey);
 
+		AuthenticationModuleType type = Objects.isNull(scheme) ? AuthenticationModuleType.HTML : scheme.getType(); 
+		
 		for (Authenticator a : authenticators.values()) {
 
 			if (a.isHidden()) {
 				continue;
 			}
-			if (scheme.getType() != AuthenticationModuleType.CUSTOM) {
-				if (scheme.getType().ordinal() >= a.getType().ordinal()) {
+			if (type != AuthenticationModuleType.CUSTOM) {
+				if (type.ordinal() >= a.getType().ordinal()) {
 					tmp.put(a.getResourceKey(), a);
 				}
 			}  else {
