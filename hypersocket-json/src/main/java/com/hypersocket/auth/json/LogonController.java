@@ -38,6 +38,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.servlet.request.Request;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.session.json.SessionUtils;
@@ -56,8 +57,7 @@ public class LogonController extends AuthenticatedController {
 			@RequestParam(required = false) Boolean redirect)
 			throws AccessDeniedException, UnauthorizedException, IOException,
 			RedirectException {
-		AuthenticationState state = (AuthenticationState) request.getSession()
-				.getAttribute(AUTHENTICATION_STATE_KEY);
+		AuthenticationState state = AuthenticationState.getCurrentState(Request.get());
 		
 		String previousScheme = (String) request.getSession().getAttribute(PREVIOUS_AUTHENTICATION_SCHEME);
 		if(previousScheme==null) {	
@@ -79,22 +79,17 @@ public class LogonController extends AuthenticatedController {
 			throws AccessDeniedException, UnauthorizedException, IOException,
 			RedirectException {
 		
-		AuthenticationState currentState = 
-				(AuthenticationState) request.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
 		
-		if(currentState!=null) {
-			request.getSession().setAttribute(PREVIOUS_AUTHENTICATION_SCHEME,currentState.getScheme().getResourceKey());
-		}
 		
-		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, null);
+		AuthenticationState.clearCurrentState(request);
+		
 		AuthenticationResult result = logon(request, response, scheme);
 		if (Boolean.TRUE.equals(redirect)) {
 			/**
 			 * This resets back to zero so the logon UI does not show
 			 * any error messages.
 			 */
-			AuthenticationState state = (AuthenticationState) request
-					.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
+			AuthenticationState state = AuthenticationState.getCurrentState(request);
 			if(state!=null) {
 				state.clean();
 			}
@@ -113,22 +108,16 @@ public class LogonController extends AuthenticatedController {
 			throws AccessDeniedException, UnauthorizedException, IOException,
 			RedirectException {
 		
-		AuthenticationState currentState = 
-				(AuthenticationState) request.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
-		
-		if(currentState!=null) {
-			request.getSession().setAttribute(PREVIOUS_AUTHENTICATION_SCHEME,currentState.getScheme().getResourceKey());
-		}
-		
-		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, null);
+		AuthenticationState.clearCurrentState(request);
 
 	}
 
 	public AuthenticationState resetAuthenticationState(
 			HttpServletRequest request, HttpServletResponse response,
 			String scheme, Realm realm) throws AccessDeniedException, UnsupportedEncodingException {
-		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, null);
-		return createAuthenticationState(scheme, request, response, realm, null);
+		AuthenticationState.clearCurrentState(request);
+		return AuthenticationState.getOrCreateState(scheme, request, response,
+								realm, null, sessionUtils.getLocale(request));
 	}
 	
 	@RequestMapping(value = "logon/switchRealm/{scheme}/{realm}", method = { RequestMethod.GET,
@@ -162,9 +151,7 @@ public class LogonController extends AuthenticatedController {
 
 		setupSystemContext(realmService.getRealmByHost(request.getServerName()));
 
-		AuthenticationState state = (AuthenticationState) request
-				.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
-
+		AuthenticationState state = AuthenticationState.getCurrentState(request);
 
 		String flash = (String) request.getSession().getAttribute("flash");
 		
@@ -205,7 +192,8 @@ public class LogonController extends AuthenticatedController {
 					|| (!StringUtils.isEmpty(scheme) && !state.getSystemScheme()
 							.getResourceKey().equals(scheme))) {
 				// We have not got login state so create
-				state = createAuthenticationState(scheme, request, response, null, state);
+				state = AuthenticationState.createAuthenticationState(scheme, request,
+						response, null, state, sessionUtils.getLocale(request));
 			}
 
 			String redirectHome = (String) request.getSession().getAttribute("redirectHome");
@@ -229,9 +217,9 @@ public class LogonController extends AuthenticatedController {
 					&& !state.hasPostAuthenticationStep()) {
 
 				// We have authenticated!
-				request.getSession().removeAttribute(AUTHENTICATION_STATE_KEY);
-
-				setupAuthenticatedContext(state.getSession(), state.getLocale());
+				AuthenticationState.clearCurrentState(request);
+				
+				setupAuthenticatedContext(state.getSession(), sessionUtils.getLocale(request));
 				
 				List<String> schemes = Arrays.asList(
 						configurationService.getValues(state.getRealm(), "session.altHomePage.onSchemes"));

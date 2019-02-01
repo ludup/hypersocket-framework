@@ -176,7 +176,7 @@ public class PasswordPolicyResourceController extends ResourceController {
 					sessionUtils.getLocale(request));
 			principal = getCurrentPrincipal();
 		} else {
-			AuthenticationState state = (AuthenticationState) request.getSession().getAttribute(AUTHENTICATION_STATE_KEY);
+			AuthenticationState state = AuthenticationState.getCurrentState(request);
 			if(state!=null && state.getPrincipal()!=null) {
 				setupSystemContext(realmService.getRealmByHost(request.getServerName()));
 				principal = state.getPrincipal();

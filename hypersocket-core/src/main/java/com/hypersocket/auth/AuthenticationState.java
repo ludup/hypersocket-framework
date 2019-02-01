@@ -8,20 +8,30 @@
 package com.hypersocket.auth;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
 
+import com.hypersocket.ApplicationContextServiceImpl;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
+import com.hypersocket.utils.HypersocketUtils;
 
 public class AuthenticationState {
 
+	private static final String PREVIOUS_AUTHENTICATION_SCHEME = "previousAuthenticationScheme";
+	private static final String AUTHENTICATION_STATE = "authenticationState";
 	AuthenticationScheme systemScheme;
 	AuthenticationScheme scheme;
 	String remoteAddress;
@@ -39,19 +49,22 @@ public class AuthenticationState {
 	Principal lastPrincipal;
 	Session session;
 	int attempts = 0;
-	Locale locale;
 	String homePage = "";
 	boolean hasEnded = false;
 	List<AuthenticationStateListener> listeners = new ArrayList<AuthenticationStateListener>();
-	
+	Locale locale;
 	Map<String, String> parameters = new HashMap<String, String>();
 	Map<String, Object> environment = new HashMap<String, Object>();
-	AuthenticationState(String remoteAddress, Locale locale, Map<String,Object> environment) {
+	AuthenticationState(String remoteAddress, Map<String,Object> environment, Locale locale) {
 		this.remoteAddress = remoteAddress;
 		this.environment = environment;
 		this.locale = locale;
 	}
 
+	public Locale getLocale() {
+		return locale;
+	}
+	
 	public String getSchemeResourceKey() {
 		if(Objects.isNull(systemScheme)) {
 			return scheme.getResourceKey();
@@ -201,10 +214,6 @@ public class AuthenticationState {
 		}
 	}
 
-	public Locale getLocale() {
-		return locale;
-	}
-
 	public boolean hasParameter(String name) {
 		return parameters.containsKey(name);
 	}
@@ -340,5 +349,100 @@ public class AuthenticationState {
 		return Objects.isNull(systemScheme) ? scheme : systemScheme;
 	}
 	
+	public static AuthenticationState getCurrentState(HttpServletRequest request) {
+		return (AuthenticationState) request.getSession().getAttribute(AUTHENTICATION_STATE);
+	}
+	
+	public static AuthenticationState getOrCreateState(String logonScheme, 
+			HttpServletRequest request, 
+			HttpServletResponse response,
+			Realm realm, 
+			AuthenticationState mergeState,
+			Locale locale) throws AccessDeniedException {
+		
+		AuthenticationState state = getCurrentState(request);
+		
+		if(!Objects.isNull(state)) {
+			return state;
+		}
+		
+		return createAuthenticationState(logonScheme,
+					request, response, realm, mergeState, locale);
+	}
+	
+	public static AuthenticationState createAuthenticationState(String logonScheme, 
+			HttpServletRequest request, 
+			HttpServletResponse response,
+			Realm realm, 
+			AuthenticationState mergeState,
+			Locale locale) throws AccessDeniedException {
+		
+		AuthenticationService authenticationService = ApplicationContextServiceImpl.getInstance().getBean(AuthenticationService.class);
+		RealmService realmService = ApplicationContextServiceImpl.getInstance().getBean(RealmService.class);
+		
+		
+		if(realm==null) {
+			realm = realmService.getRealmByHost(request.getServerName());
+		}
+
+		Map<String, Object> environment = new HashMap<String, Object>();
+		for (BrowserEnvironment env : BrowserEnvironment.values()) {
+			if (request.getHeader(env.toString()) != null) {
+				environment.put(env.toString(),
+						request.getHeader(env.toString()));
+			}
+		}
+		
+		String originalUri = (String)request.getAttribute("browserRequestUri");
+		if(originalUri!=null) {
+			environment.put("originalUri", originalUri);
+		}
+		environment.put("uri", request.getRequestURI());
+		environment.put("url", request.getRequestURL().toString());
+
+		AuthenticationState state = authenticationService
+				.createAuthenticationState(logonScheme, 
+						request.getRemoteAddr(), 
+						environment, realm, locale);
+		
+		List<AuthenticationModule> modules = state.getModules();
+		for(AuthenticationModule module : modules) {
+			if(authenticationService.getAuthenticator(module.getTemplate())==null) {
+				
+				state = createAuthenticationState("fallback", request, response, realm, mergeState, locale);
+				state.setLastErrorIsResourceKey(true);
+				state.setLastErrorMsg("revertedFallback.adminOnly");
+				return state;
+			}
+		}
+		
+		if(mergeState!=null) {
+			state.getParameters().putAll(mergeState.getParameters());
+			state.setLastErrorIsResourceKey(mergeState.getLastErrorIsResourceKey());
+			state.setLastErrorMsg(mergeState.getLastErrorMsg());
+		} else {
+			Enumeration<?> names = request.getParameterNames();
+			while(names.hasMoreElements()) {
+				String name = (String) names.nextElement();
+				state.addParameter(name, HypersocketUtils.urlDecode(request.getParameter(name)));
+			}
+		}
+		
+		request.getSession().setAttribute(AUTHENTICATION_STATE, state);
+		return state;
+	}
+
+	public static void clearCurrentState(HttpServletRequest request) {
+		
+		AuthenticationState currentState = AuthenticationState.getCurrentState(request);
+		
+		if(currentState!=null) {
+			request.getSession().setAttribute(PREVIOUS_AUTHENTICATION_SCHEME,
+					currentState.getScheme().getResourceKey());
+		}
+		
+		request.getSession().setAttribute(AUTHENTICATION_STATE, null);
+		
+	}
 	
 }

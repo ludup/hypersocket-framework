@@ -50,7 +50,6 @@ public class AuthenticatedController {
 
 	static Logger log = LoggerFactory.getLogger(AuthenticatedController.class);
 
-	public static final String AUTHENTICATION_STATE_KEY = "authenticationState";
 	public static final String PREVIOUS_AUTHENTICATION_SCHEME = "previousAuthScheme";
 	
 	public static final String LOCATION = "Location";
@@ -75,60 +74,6 @@ public class AuthenticatedController {
 
 	@Autowired
 	protected I18NService i18nService;
-
-	synchronized AuthenticationState createAuthenticationState(String scheme,
-			HttpServletRequest request, HttpServletResponse response,
-			Realm realm, AuthenticationState mergeState)
-			throws AccessDeniedException, UnsupportedEncodingException {
-		
-		if(realm==null) {
-			realm = realmService.getRealmByHost(request.getServerName());
-		}
-
-		Map<String, Object> environment = new HashMap<String, Object>();
-		for (BrowserEnvironment env : BrowserEnvironment.values()) {
-			if (request.getHeader(env.toString()) != null) {
-				environment.put(env.toString(),
-						request.getHeader(env.toString()));
-			}
-		}
-		
-		String originalUri = (String)request.getAttribute("browserRequestUri");
-		if(originalUri!=null) {
-			environment.put("originalUri", originalUri);
-		}
-		environment.put("uri", request.getRequestURI());
-		environment.put("url", request.getRequestURL().toString());
-
-		AuthenticationState state = authenticationService
-				.createAuthenticationState(scheme, request.getRemoteAddr(),
-						environment, sessionUtils.getLocale(request), realm);
-		List<AuthenticationModule> modules = state.getModules();
-		for(AuthenticationModule module : modules) {
-			if(authenticationService.getAuthenticator(module.getTemplate())==null) {
-				
-				state = createAuthenticationState("fallback", request, response, realm, mergeState);
-				state.setLastErrorIsResourceKey(true);
-				state.setLastErrorMsg("revertedFallback.adminOnly");
-				return state;
-			}
-		}
-		
-		if(mergeState!=null) {
-			state.getParameters().putAll(mergeState.getParameters());
-			state.setLastErrorIsResourceKey(mergeState.getLastErrorIsResourceKey());
-			state.setLastErrorMsg(mergeState.getLastErrorMsg());
-		} else {
-			Enumeration<?> names = request.getParameterNames();
-			while(names.hasMoreElements()) {
-				String name = (String) names.nextElement();
-				state.addParameter(name, URLDecoder.decode(request.getParameter(name), "UTF-8"));
-			}
-		}
-		
-		request.getSession().setAttribute(AUTHENTICATION_STATE_KEY, state);
-		return state;
-	}
 
 	@ExceptionHandler(RedirectException.class)
 	@ResponseStatus(value = HttpStatus.FOUND)

@@ -356,11 +356,10 @@ public class AuthenticationServiceImpl extends
 	@Override
 	public AuthenticationState createAuthenticationState(
 			String schemeResourceKey, String remoteAddress,
-			Map<String, Object> environment, Locale locale, Realm realm)
+			Map<String, Object> environment, Realm realm, Locale locale)
 			throws AccessDeniedException {
 
-		AuthenticationState state = new AuthenticationState(remoteAddress,
-				locale, environment);
+		AuthenticationState state = new AuthenticationState(remoteAddress, environment, locale);
 
 		if(realm==null) {
 			realm = realmService.getDefaultRealm();
