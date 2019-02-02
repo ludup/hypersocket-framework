@@ -86,6 +86,13 @@
 		    		url="enum/com.hypersocket.auth.PasswordEncryptionType/"
 						defaultValue="PBKDF2_SHA256_50000" weight="0" nameAttr="name" valueAttr="name"/>	
 	</propertyCategory>
+	<propertyCategory resourceKey="category.cors"
+		 resourceBundle="PermissionService" weight="999999">
+		<property resourceKey="cors.enabled" inputType="switch"
+		    	defaultValue="false" weight="0" />	
+		<property resourceKey="cors.origins" inputType="multipleTextInput"
+		    	defaultValue="" weight="100" />	
+	</propertyCategory>
 </propertyTemplates>
 
 		

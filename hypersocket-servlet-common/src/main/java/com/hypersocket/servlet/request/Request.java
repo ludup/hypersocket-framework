@@ -29,4 +29,12 @@ public class Request {
 		threadRequests.remove();
 		threadResponses.remove();
 	}
+
+	public static String generateBaseUrl(HttpServletRequest request) {
+		StringBuffer b = new StringBuffer();
+		b.append(request.getProtocol());
+		b.append("://");
+		b.append(request.getHeader("Host"));
+		return b.toString();
+	}
 }
