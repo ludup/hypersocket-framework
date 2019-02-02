@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.session.json;
 
+import java.util.List;
 import java.util.Locale;
 
 import javax.servlet.http.Cookie;
@@ -22,6 +23,7 @@ import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -224,6 +226,10 @@ public class SessionUtils {
 			return;
 		}
 
+		if(isValidCORSRequest(request)) {
+			return;
+		}
+		
 		String requestToken = request.getHeader("X-Csrf-Token");
 		if(requestToken==null) {
 			requestToken = request.getParameter("token");
@@ -238,6 +244,23 @@ public class SessionUtils {
 			throw new UnauthorizedException();
 		}
 
+	}
+
+	public boolean isValidCORSRequest(HttpServletRequest request) {
+		
+		Realm currentRealm = getCurrentRealmOrDefault(request);
+		
+		if(configurationService.getBooleanValue(currentRealm, "cors.enabled")) {
+			
+			List<String> origins = ResourceUtils.explodeCollectionValues(configurationService.getValue(currentRealm, "cors.origins"));
+			String requestOrigin = request.getHeader("Origin");
+
+			if(origins.contains(requestOrigin)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public void addAPISession(HttpServletRequest request,

@@ -7,7 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.server.handlers.impl;
 
-import java.util.List;
 import java.util.Objects;
 
 import javax.servlet.Servlet;
@@ -16,8 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.config.ConfigurationService;
-import com.hypersocket.properties.ResourceUtils;
-import com.hypersocket.realm.Realm;
 import com.hypersocket.server.HypersocketServerImpl;
 import com.hypersocket.server.handlers.HttpResponseProcessor;
 import com.hypersocket.session.json.SessionUtils;
@@ -36,20 +33,16 @@ public class APIRequestHandler extends ServletRequestHandler {
 			configurationService = ApplicationContextServiceImpl.getInstance().getBean(ConfigurationService.class);
 		}
 		
-		Realm currentRealm = sessionUtils.getCurrentRealmOrDefault(request);
-		if(configurationService.getBooleanValue(currentRealm, "cors.enabled")) {
 		
-			List<String> origins = ResourceUtils.explodeCollectionValues(configurationService.getValue(currentRealm, "cors.origins"));
-			String requestOrigin = request.getHeader("Origin");
-
-			if(origins.contains(requestOrigin)) {
-				/**
-				 * Allow CORS to this realm. We must allow credentials as the
-				 * API will be useless without them.
-				 */
-				response.addHeader("Access-Control-Allow-Credentials", "true");
-				response.addHeader("Access-Control-Allow-Origin", requestOrigin);
-			}
+		if(sessionUtils.isValidCORSRequest(request)) {
+			
+			/**
+			 * Allow CORS to this realm. We must allow credentials as the
+			 * API will be useless without them.
+			 */
+			response.addHeader("Access-Control-Allow-Credentials", "true");
+			response.addHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
+			
 		}
 		
 		super.handleHttpRequest(request, response, responseProcessor);
