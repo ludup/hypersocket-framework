@@ -122,6 +122,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		eventService.registerEvent(AutomationResourceDeletedEvent.class, RESOURCE_BUNDLE, this);
 		eventService.registerEvent(AutomationTaskStartedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(AutomationTaskFinishedEvent.class, RESOURCE_BUNDLE);
+		
 		EntityResourcePropertyStore.registerResourceService(AutomationResource.class, repository);
 		
 		realmService.registerRealmListener(new RealmAdapter() {
