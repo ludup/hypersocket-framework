@@ -37,6 +37,11 @@ public abstract class SimpleResource extends AbstractEntity<Long> {
 		return reference;
 	}
 	
+	@JsonIgnore
+	public UUID toUUID() {
+		return UUID.fromString(reference);
+	}
+	
 	public abstract String getName();
 
 	@PreRemove
