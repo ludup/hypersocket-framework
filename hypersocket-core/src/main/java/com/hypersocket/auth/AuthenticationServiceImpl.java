@@ -488,7 +488,7 @@ public class AuthenticationServiceImpl extends
 					}
 					case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
 	
-						if (authenticator.isIdentityModule() && state.hasNextStep()) {
+						if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
 							state.fakeCredentials();
 							state.nextModule();
 						} else {
@@ -504,7 +504,7 @@ public class AuthenticationServiceImpl extends
 					}
 					case AUTHENTICATION_FAILURE_INVALID_PRINCIPAL: {
 	
-						if (authenticator.isIdentityModule() && state.hasNextStep()) {
+						if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
 							state.fakeCredentials();
 							state.nextModule();
 						} else {
