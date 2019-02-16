@@ -203,7 +203,9 @@ public class TriggerResourceController extends AbstractTriggerController {
 			List<TriggerResource> triggers = resourceService.getParentTriggers(id);
 			List<EventDefinition> events = new ArrayList<EventDefinition>();
 			for (TriggerResource trigger : triggers) {
-				events.add(eventService.getEventDefinition(trigger.getEvent()));
+				if(trigger.getId()!=id) {
+					events.add(eventService.getEventDefinition(trigger.getEvent()));
+				}
 			}
 			return new ResourceList<EventDefinition>(events);
 
