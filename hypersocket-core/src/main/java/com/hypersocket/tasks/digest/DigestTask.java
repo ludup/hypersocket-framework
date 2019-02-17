@@ -120,8 +120,8 @@ public class DigestTask extends AbstractTaskProvider {
 		}
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { DigestTaskResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return DigestTaskResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

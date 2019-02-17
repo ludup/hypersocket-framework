@@ -180,8 +180,8 @@ public class CollectMailTask extends AbstractTaskProvider {
 		return new MultipleTaskResults(this, currentRealm, task, results);
 	}
 
-	public String[] getResultResourceKeys() {
-		return new String[] { CollectMailTaskResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return CollectMailTaskResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

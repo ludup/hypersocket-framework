@@ -72,8 +72,8 @@ public class BanEmailAddressTask extends AbstractAccountTask {
 
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { BanEmailAddressTaskResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return BanEmailAddressTaskResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

@@ -75,8 +75,8 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 	protected abstract TaskResult doExecute(Principal p, final Task task, final Realm currentRealm,
 			final List<SystemEvent> event) throws ValidationException;
 
-	public String[] getResultResourceKeys() {
-		return new String[] { AlertEvent.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return AlertEvent.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

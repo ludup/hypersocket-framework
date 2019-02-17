@@ -66,8 +66,8 @@ public class CreateLocalUserTask extends AbstractCreateUserTask {
 		return new String[] { TASK_RESOURCE_KEY };
 	}
 
-	public String[] getResultResourceKeys() {
-		return new String[] { CreateLocalUserTaskResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return CreateLocalUserTaskResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

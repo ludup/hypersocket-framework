@@ -131,8 +131,8 @@ public class SuspendUserTask extends AbstractTaskProvider {
 		} 
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { SuspendUserResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return SuspendUserResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

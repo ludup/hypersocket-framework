@@ -161,8 +161,8 @@ public class BlockIPTask extends AbstractTaskProvider {
 		return new MultipleTaskResults(this, currentRealm, task, results.toArray(new AbstractTaskResult[0]));
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { BlockedIPResult.EVENT_RESOURCE_KEY, BlockedIPTempResult.EVENT_RESOURCE_KEY, BlockedIPPermResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return BlockedIPResult.EVENT_RESOURCE_KEY;
 	}
 	
 	@Override

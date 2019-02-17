@@ -231,10 +231,7 @@ public class TriggerResourceController extends AbstractTriggerController {
 			final TaskProvider taskProvider = taskService.getTaskProvider(resourceKey);
 			if(taskProvider == null)
 				throw new ResourceNotFoundException(TriggerResourceServiceImpl.RESOURCE_BUNDLE, "error.notfound", resourceKey);
-			for (String result : taskProvider
-					.getResultResourceKeys()) {
-				events.add(eventService.getEventDefinition(result));
-			}
+			events.add(eventService.getEventDefinition(taskProvider.getResultResourceKey()));
 
 			return new ResourceList<EventDefinition>(events);
 

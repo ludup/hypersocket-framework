@@ -30,7 +30,7 @@ public interface TaskProvider {
 	
 	Map<String,String> getTaskProperties(Task task);
 	
-	String[] getResultResourceKeys();
+	String getResultResourceKey();
 	
 	void taskCreated(Task task);
 	

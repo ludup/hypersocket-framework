@@ -85,8 +85,8 @@ public class SleepTask extends AbstractTaskProvider {
 		
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { SleepTaskResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return SleepTaskResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

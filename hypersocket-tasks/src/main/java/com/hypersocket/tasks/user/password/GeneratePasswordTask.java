@@ -150,8 +150,8 @@ public class GeneratePasswordTask extends AbstractTaskProvider {
 		return password;
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { GeneratePasswordTaskResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return GeneratePasswordTaskResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

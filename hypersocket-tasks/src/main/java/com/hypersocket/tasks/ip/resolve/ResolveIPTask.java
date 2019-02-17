@@ -125,8 +125,8 @@ public class ResolveIPTask extends AbstractTaskProvider {
 		}
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { ResolveIPTaskResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return ResolveIPTaskResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

@@ -66,8 +66,8 @@ public class DeleteAccountTask extends AbstractAccountTask {
 		}
 	}
 
-	public String[] getResultResourceKeys() {
-		return new String[] { DeleteAccountTaskResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return DeleteAccountTaskResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

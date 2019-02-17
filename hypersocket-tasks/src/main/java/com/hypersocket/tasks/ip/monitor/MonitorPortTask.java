@@ -106,8 +106,8 @@ public class MonitorPortTask extends AbstractTaskProvider {
 		}
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { MonitorPortResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return MonitorPortResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

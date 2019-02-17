@@ -65,8 +65,8 @@ public class DisableAccountTask extends AbstractAccountTask {
 		}
 	}
 
-	public String[] getResultResourceKeys() {
-		return new String[] { DisableAccountTaskResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return DisableAccountTaskResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

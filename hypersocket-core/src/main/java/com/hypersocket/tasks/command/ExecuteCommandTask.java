@@ -89,8 +89,8 @@ public class ExecuteCommandTask extends AbstractTaskProvider {
 		}
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { ExecuteCommandResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return ExecuteCommandResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

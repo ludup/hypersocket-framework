@@ -301,8 +301,8 @@ public class EmailTask extends AbstractTaskProvider {
 		});
 
 	}
-	public String[] getResultResourceKeys() {
-		return new String[] { EmailEvent.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return EmailEvent.EVENT_RESOURCE_KEY;
 	}
 
 	private String populateEmailList(Task task,

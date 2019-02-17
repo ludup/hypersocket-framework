@@ -97,8 +97,8 @@ public class ImportPrincipalLegacyIDTask extends AbstractTaskProvider {
 		
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { ImportPrincipalLegacyIDTaskResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return ImportPrincipalLegacyIDTaskResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

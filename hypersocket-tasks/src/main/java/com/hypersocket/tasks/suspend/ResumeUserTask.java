@@ -109,8 +109,8 @@ public class ResumeUserTask extends AbstractTaskProvider {
 		}
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { ResumeUserResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return ResumeUserResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

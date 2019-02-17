@@ -104,8 +104,8 @@ public class ChangePasswordTask extends AbstractTaskProvider {
 		}
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { ChangePasswordTaskResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return ChangePasswordTaskResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

@@ -83,8 +83,8 @@ public class SystemTriggerActionImpl extends AbstractTaskProvider {
  		return null;
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { };
+	public String getResultResourceKey() {
+		return null;
 	}
 
 	@Override

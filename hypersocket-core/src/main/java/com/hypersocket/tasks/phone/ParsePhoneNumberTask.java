@@ -87,8 +87,8 @@ public class ParsePhoneNumberTask extends AbstractTaskProvider {
 		
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { ParsePhoneNumberTaskResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return ParsePhoneNumberTaskResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override

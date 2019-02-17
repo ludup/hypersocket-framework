@@ -111,8 +111,8 @@ public class UnblockIPTask extends AbstractTaskProvider {
 		return new MultipleTaskResults(this, currentRealm, task, results.toArray(new AbstractTaskResult[0]));
 	}
 	
-	public String[] getResultResourceKeys() {
-		return new String[] { UnblockedIPResult.EVENT_RESOURCE_KEY };
+	public String getResultResourceKey() {
+		return UnblockedIPResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override
