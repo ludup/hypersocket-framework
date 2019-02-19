@@ -143,7 +143,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		session.setPrincipal(realmService.getSystemPrincipal());
 		session.setUserAgent("N/A");
 		session.setUserAgentVersion("N/A");
-		session.setRemoteAddress("N/A");
+		session.setRemoteAddress("");
 		session.system = true;
 
 		repository.saveEntity(session);
