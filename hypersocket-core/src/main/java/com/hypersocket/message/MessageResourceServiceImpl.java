@@ -145,35 +145,39 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 			public void onCreateRealm(Realm realm) throws ResourceException, AccessDeniedException {
 
 				for (MessageRegistration r : messageRegistrations.values()) {
-					MessageResource message = repository.getMessageById(r.getMessageId(), realm);
-					if (message == null) {
-						message = repository.getResourceByName(
-								I18N.getResource(Locale.getDefault(), r.resourceBundle, r.resourceKey + ".name"),
-								realm);
-					}
-					String existingName = I18N.getResource(Locale.getDefault(), r.resourceBundle,
-							r.resourceKey + ".name");
-					if (message == null || !message.getName().equals(existingName)) {
-						if (r.systemOnly && !realm.isSystem()) {
-							continue;
+					try {
+						MessageResource message = repository.getMessageById(r.getMessageId(), realm);
+						if (message == null) {
+							message = repository.getResourceByName(
+									I18N.getResource(Locale.getDefault(), r.resourceBundle, r.resourceKey + ".name"),
+									realm);
 						}
-						if (!Objects.isNull(message)) {
-							deleteResource(message);
+						String existingName = I18N.getResource(Locale.getDefault(), r.resourceBundle,
+								r.resourceKey + ".name");
+						if (message == null || !message.getName().equals(existingName)) {
+							if (r.systemOnly && !realm.isSystem()) {
+								continue;
+							}
+							if (!Objects.isNull(message)) {
+								deleteResource(message);
+							}
+							createI18nMessage(r.resourceBundle, r.resourceKey, r.variables, realm, r.enabled, r.delivery);
+							if (r.repository != null) {
+								r.repository.onCreated(getMessageById(r.getMessageId(), realm));
+							}
+						} else {
+							if (message.getResourceKey() == null) {
+								message.setResourceKey(r.resourceKey);
+								repository.saveResource(message);
+							}
+							String vars = ResourceUtils.implodeValues(r.variables);
+							if (!vars.equals(message.getSupportedVariables())) {
+								message.setSupportedVariables(vars);
+								repository.saveResource(message);
+							}
 						}
-						createI18nMessage(r.resourceBundle, r.resourceKey, r.variables, realm, r.enabled, r.delivery);
-						if (r.repository != null) {
-							r.repository.onCreated(getMessageById(r.getMessageId(), realm));
-						}
-					} else {
-						if (message.getResourceKey() == null) {
-							message.setResourceKey(r.resourceKey);
-							repository.saveResource(message);
-						}
-						String vars = ResourceUtils.implodeValues(r.variables);
-						if (!vars.equals(message.getSupportedVariables())) {
-							message.setSupportedVariables(vars);
-							repository.saveResource(message);
-						}
+					} catch (Exception e) {
+						log.error("Faied to create message template", e);
 					}
 				}
 			}
