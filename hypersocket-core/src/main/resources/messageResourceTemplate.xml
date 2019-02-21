@@ -6,12 +6,12 @@
 		<property resourceKey="subject" inputType="text" url="messages/variables/{id}" variableScope="update"
 			weight="80" defaultValue="" size="255" allowEmpty="false" invalidResourceKey="error.subjectRequired"/>
 		<property resourceKey="body" inputType="textarea" rows="10" url="messages/variables/{id}" variableScope="update"
-			cols="100" maxlength="1024" defaultValue="" weight="100" allowEmpty="true" invalidResourceKey="error.bodyRequired"/>
+			cols="100" maxlength="-1" defaultValue="" weight="100" allowEmpty="true" invalidResourceKey="error.bodyRequired"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.html"
 		resourceBundle="TriggerResourceService" weight="2000">
 		<property resourceKey="html" inputType="html" rows="10" url="messages/variables/{id}" variableScope="update"
-			cols="100" maxlength="8000" defaultValue="" weight="100" allowEmpty="true"/>
+			cols="100" defaultValue="" weight="100" allowEmpty="true"/>
 		<property resourceKey="htmlTemplate" emptySelectionAllowed="true" valueAttr="id" inputType="select" url="htmlTemplates/list" 
 										weight="0" defaultValue=""/>
 	</propertyCategory>
