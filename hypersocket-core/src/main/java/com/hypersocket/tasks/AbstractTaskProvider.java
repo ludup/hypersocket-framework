@@ -39,22 +39,27 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 
 	protected String[] processTokenReplacements(String[] values, List<SystemEvent> events, boolean evaluateScripts) {
 		for (int i = 0; i < values.length; i++) {
-			values[i] = processTokenReplacements(values[i], events, evaluateScripts);
+			values[i] = processTokenReplacements(values[i], events, evaluateScripts, true);
 		}
 		return values;
 	}
 
 	protected String processTokenReplacements(String value, final List<SystemEvent> events) {
-		return processTokenReplacements(value, events, false);
+		return processTokenReplacements(value, events, false, true);
 	}
 	
 	protected String processTokenReplacements(String value, final List<SystemEvent> events, boolean evaluateScripts) {
+		return processTokenReplacements(value, events, evaluateScripts, true);
+	}
+	
+	protected String processTokenReplacements(String value, final List<SystemEvent> events, boolean evaluateScripts, boolean replaceUnkown) {
 
 		if (value == null) {
 			return null;
 		}
 		final Set<String> defaultAttributes = triggerService.getDefaultVariableNames();
 		TextProcessor tp = new TextProcessor();
+		tp.setUnknownVariablesAreBlank(replaceUnkown);
 		tp.setEvaluateScripts(evaluateScripts);
 		
 		if(evaluateScripts) {

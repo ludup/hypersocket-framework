@@ -157,6 +157,11 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				continue;
 			}
 			
+			ServerResolver serverResolver = new ServerResolver(realm);
+			
+			recipeintSubject = processDefaultReplacements(recipeintSubject, r, serverResolver);
+			receipientText = processDefaultReplacements(receipientText, r, serverResolver);
+			
 			if(StringUtils.isNotBlank(receipientHtml)) {
 				try {
 					String trackingImage = configurationService.getValue(realm, "email.trackingImage");
@@ -170,12 +175,10 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				} catch (ResourceNotFoundException e) {
 					log.error("Cannot find non tracking image", e);
 				}
+				
+				receipientHtml = receipientHtml.replace("${htmlTitle}", recipeintSubject);
 			}
 			
-			ServerResolver serverResolver = new ServerResolver(realm);
-			
-			recipeintSubject = processDefaultReplacements(recipeintSubject, r, serverResolver);
-			receipientText = processDefaultReplacements(receipientText, r, serverResolver);
 			receipientHtml = processDefaultReplacements(receipientHtml, r, serverResolver);
 			
 			send(realm, mail, 
@@ -261,9 +264,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		email.addRecipient(r.getName(), r.getEmail(), RecipientType.TO);
 		
 		email.setSubject(subject);
-		
-		
-		
+
 		if(StringUtils.isNotBlank(htmlText)) {
 			Document doc = Jsoup.parse(htmlText);
 			try {

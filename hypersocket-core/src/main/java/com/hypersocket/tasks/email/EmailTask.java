@@ -222,9 +222,9 @@ public class EmailTask extends AbstractTaskProvider {
 				
 				Document doc = Jsoup.parse(template.getHtml());
 				Elements elements = doc.select(template.getContentSelector());
-				elements.first().append(template.getHtml());
+				elements.first().append(bodyHtml);
 				bodyHtml = doc.toString();		
-				bodyHtml = processTokenReplacements(bodyHtml, event);
+				bodyHtml = processTokenReplacements(bodyHtml, event, false, false);
 			}
 		}
 		
