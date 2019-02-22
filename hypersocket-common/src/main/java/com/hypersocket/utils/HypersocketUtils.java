@@ -490,4 +490,11 @@ public class HypersocketUtils {
 		return true;
 	}
 
+	public static String[] toStringArray(Object[] args) {
+		String[] a = new String[args.length];
+		for(int i = 0 ; i < args.length; i++)
+			a[i] = args[i] == null ? null : String.valueOf(args[i]);
+		return a;
+	}
+
 }

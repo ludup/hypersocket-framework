@@ -29,12 +29,21 @@ public class FeedbackProgress implements Serializable{
 		return uuid;
 	}
 	
+	public synchronized void update(String error, String bundle, String[] options, FeedbackStatus status, String resourceKey, String... args) {
+		final Feedback f = new Feedback(feedback.size(), status, resourceKey, false, null, args);
+		f.setBundle(bundle);
+		f.setError(error);
+		f.setOptions(options);
+		feedback.addLast(f);
+	}
+	
 	public synchronized void update(FeedbackStatus status, String resourceKey, String... args) {
 		feedback.addLast(new Feedback(feedback.size(), status, resourceKey, false, null, args));
 	}
 
 	public synchronized void complete(String resourceKey, String... args) {
-		feedback.addLast(new Feedback(feedback.size(), FeedbackStatus.SUCCESS, resourceKey, true, null, args));
+		if(!isConfirming())
+			feedback.addLast(new Feedback(feedback.size(), FeedbackStatus.SUCCESS, resourceKey, true, null, args));
 	}
 
 	public synchronized void failed(String resourceKey, Throwable t, String... args) {
@@ -56,4 +65,11 @@ public class FeedbackProgress implements Serializable{
         feedback = (LinkedList<Feedback>) stream.readObject();
         feedbackService = SpringApplicationContextProvider.getApplicationContext().getBean("feedbackServiceImpl",FeedbackService.class);
     }
+
+	public boolean isConfirming() {
+		for(Feedback f : feedback)
+			if(FeedbackStatus.CONFIRM == f.getStatus())
+				return true;
+		return false;
+	}
 }

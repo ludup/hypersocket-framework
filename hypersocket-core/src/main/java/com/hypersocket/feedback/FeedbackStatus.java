@@ -2,5 +2,5 @@ package com.hypersocket.feedback;
 
 public enum FeedbackStatus {
 	
-	INFO, WARNING, ERROR, SUCCESS
+	INFO, WARNING, ERROR, SUCCESS, CONFIRM
 }

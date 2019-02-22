@@ -11,15 +11,17 @@ public class Feedback implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 106680764431465306L;
-	int index;
-	boolean finished;
-	String resourceKey;
-	FeedbackStatus status;
-	String error;
-	List<String> args;
+	
+	private int index;
+	private boolean finished;
+	private String resourceKey;
+	private FeedbackStatus status;
+	private String error;
+	private List<String> args;
+	private String bundle;
+	private String[] options;
 	
 	public Feedback() {
-		
 	}
 	
 	public Feedback(int index, FeedbackStatus status, String resourceKey, boolean finished, Throwable t, String... args) {
@@ -32,8 +34,23 @@ public class Feedback implements Serializable{
 		}
 		this.args = new ArrayList<String>(Arrays.asList(args));
 	}
-
 	
+	public String[] getOptions() {
+		return options;
+	}
+
+	public void setOptions(String[] options) {
+		this.options = options;
+	}
+
+	public String getBundle() {
+		return bundle;
+	}
+
+	public void setBundle(String bundle) {
+		this.bundle = bundle;
+	}
+
 	public int getIndex() {
 		return index;
 	}
