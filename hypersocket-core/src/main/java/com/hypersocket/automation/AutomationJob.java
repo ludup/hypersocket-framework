@@ -83,7 +83,9 @@ public class AutomationJob extends AbstractTriggerJob {
 			final TaskProvider provider = taskService.getTaskProvider(resource);
 			final AutomationTaskStartedEvent event = new AutomationTaskStartedEvent(this, resource);
 			
-			eventService.publishEvent(event);
+			if(resource.getFireAutomationEvents()) {
+				eventService.publishEvent(event);
+			}
 			
 			TaskResult result;
 			final List<SystemEvent> sourceEvents = new ArrayList<SystemEvent>();
@@ -107,10 +109,12 @@ public class AutomationJob extends AbstractTriggerJob {
 				result = executeTask(resource, provider, sourceEvents);
 			}
 			
-			if(result==null || result.isSuccess()) {
-				eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource));
-			} else {
-				eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource, false));
+			if(resource.getFireAutomationEvents()) {
+				if(result==null || result.isSuccess()) {
+					eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource));
+				} else {
+					eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource, false));
+				}
 			}
 		} catch (Throwable e) {
 			eventService.publishEvent(new AutomationTaskFinishedEvent(this, resource, e));

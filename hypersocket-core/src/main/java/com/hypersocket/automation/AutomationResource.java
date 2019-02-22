@@ -26,9 +26,6 @@ import com.hypersocket.utils.HypersocketUtils;
 @Table(name="automations")
 public class AutomationResource extends Task {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 2363415972604814835L;
 
 	@Column(name="resource_key")
@@ -60,6 +57,9 @@ public class AutomationResource extends Task {
 	
 	@Column(name="transactional")
 	Boolean transactional;
+	
+	@Column(name="automation_events")
+	Boolean fireAutomationEvents;
 	
 	@OneToMany(fetch=FetchType.EAGER)
 	@JoinTable(name="automations_trigger_resources")
@@ -169,4 +169,14 @@ public class AutomationResource extends Task {
 				&& StringUtils.isNotEmpty(endTime) 
 				&& !endTime.equals("0:00");
 	}
+
+	public Boolean getFireAutomationEvents() {
+		return fireAutomationEvents == null ? Boolean.FALSE : fireAutomationEvents;
+	}
+
+	public void setFireAutomationEvents(Boolean fireAutomationEvents) {
+		this.fireAutomationEvents = fireAutomationEvents;
+	}
+	
+	
 }
