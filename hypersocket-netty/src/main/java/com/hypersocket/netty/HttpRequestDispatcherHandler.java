@@ -28,6 +28,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
@@ -187,6 +188,31 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		
 			try {
 
+				String contentType = nettyRequest.getHeader(HttpHeaders.CONTENT_TYPE);
+				
+				int idx;
+				if (contentType != null) {
+					String contentTypeCharset = "UTF-8";
+					if ((idx = contentType.indexOf(';')) > -1) {
+						String tmp = contentType.substring(idx + 1);
+						contentType = contentType.substring(0, idx);
+						if ((idx = tmp.indexOf("charset=")) > -1) {
+							contentTypeCharset = tmp.substring(idx + 8);
+						}
+					}
+					if (contentType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
+						String content; 
+						if(nettyRequest.isChunked()) {
+							content = IOUtils.toString(servletRequest.getInputStream(), contentTypeCharset);
+						} else {
+							content = servletRequest.getNettyRequest().getContent().toString(Charset.forName(contentTypeCharset));
+						}
+						servletRequest.processParameters(content);
+					}
+				}
+				
+				
+				
 				if (log.isDebugEnabled()) { 
 					synchronized (log) {
 						log.debug("Begin Request <<<<<<<<<");
@@ -279,7 +305,6 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 							if(host==null) {
 								nettyResponse.sendError(400, "No Host Header");
 							} else {
-								int idx;
 								if ((idx = host.indexOf(':')) > -1) {
 									host = host.substring(0, idx);
 								}

@@ -85,25 +85,6 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 		this.session = session;
 
 		parseUri(request.getUri());
-
-		String contentType = request.getHeader(HttpHeaders.CONTENT_TYPE);
-
-		String contentTypeCharset = "UTF-8";
-		int idx;
-		if (contentType != null) {
-
-			if ((idx = contentType.indexOf(';')) > -1) {
-				String tmp = contentType.substring(idx + 1);
-				contentType = contentType.substring(0, idx);
-				if ((idx = tmp.indexOf("charset=")) > -1) {
-					contentTypeCharset = tmp.substring(idx + 8);
-				}
-			}
-
-			if (contentType != null && contentType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
-				processParameters(request.getContent().toString(Charset.forName(contentTypeCharset)));
-			}
-		}
 	}
 
 	void parseUri(String uri) {
@@ -226,7 +207,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	}
 
-	private void processParameters(String params) {
+	void processParameters(String params) {
 		StringTokenizer paramsParser = new StringTokenizer(params, "&");
 		while (paramsParser.hasMoreTokens()) {
 			String parameter = paramsParser.nextToken();
