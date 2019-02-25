@@ -40,6 +40,8 @@ import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
+import com.hypersocket.properties.AbstractPropertyTemplate;
+import com.hypersocket.properties.NameValuePair;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Principal;
@@ -777,6 +779,28 @@ public class CurrentRealmController extends ResourceController {
 			return new ResourceStatus<Map<String, String>>(
 					realmService.getUserPropertyValues(
 							sessionUtils.getPrincipal(request), variableNames));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/user/allUserReplacementVariables", method = {
+			RequestMethod.GET, RequestMethod.POST }, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<NameValuePair> getAllUserReplacementVariables(HttpServletRequest request,
+			HttpServletResponse response) throws UnauthorizedException, SessionTimeoutException, AccessDeniedException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+		try {
+			final Realm currentRealm = sessionUtils.getCurrentRealm(request);
+			Collection<String> names = realmService.getAllUserAttributeNames(currentRealm);
+			List<NameValuePair> pairs = new ArrayList<>();
+			for(String n : names) {
+				pairs.add(new NameValuePair("${" + n + "}", "${" + n + "}"));
+			}
+			return new ResourceList<NameValuePair>(pairs);
 		} finally {
 			clearAuthenticatedContext();
 		}

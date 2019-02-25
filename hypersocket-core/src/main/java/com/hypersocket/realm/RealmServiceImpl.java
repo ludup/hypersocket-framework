@@ -2390,6 +2390,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			for (AbstractPropertyTemplate temp : cat.getTemplates()) {
 				if (StringUtils.isNotBlank(temp.getName()))
 					names.add(temp.getName());
+				else if (StringUtils.isNotBlank(temp.getResourceKey()))
+					names.add(temp.getResourceKey());
 			}
 		}
 
