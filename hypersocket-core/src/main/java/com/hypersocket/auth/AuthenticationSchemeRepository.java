@@ -31,13 +31,13 @@ public interface AuthenticationSchemeRepository extends AbstractResourceReposito
 
 	public void saveScheme(AuthenticationScheme s);
 
-	public AuthenticationScheme getSchemeByName(Realm realm, String name);
-
 	Long getSchemeByResourceKeyCount(Realm realm, String resourceKey);
 
 	AuthenticationScheme createScheme(Realm realm, String name, List<String> templates, String resourceKey,
 			boolean hidden, Integer maximumModules, AuthenticationModuleType type, String allowedModules,
 			String lastButtonResourceKey, boolean supportsHomeRedirect);
 
-	void enableAuthenticationScheme(String scheme);
+	void registerAuthenticationScheme(String scheme);
+
+	AuthenticationScheme getSchemeByResourceKey2(Realm realm, String resourceKey);
 }

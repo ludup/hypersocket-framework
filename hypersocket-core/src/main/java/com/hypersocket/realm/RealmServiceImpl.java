@@ -373,8 +373,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				RealmPermission.READ,
 				UserPermission.READ, 
 				SystemPermission.SWITCH_REALM);
-
-		return new ArrayList<RealmProvider>(providersByModule.values());
+		List<RealmProvider> providers = new ArrayList<>();
+		for(RealmProvider p : providersByModule.values()) {
+			if(p.isEnabled()) {
+				providers.add(p);
+			}
+		}
+		return providers;
 	}
 
 	@Override

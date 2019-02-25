@@ -159,4 +159,9 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 	public ResourceTemplateRepository getTemplateRepository() {
 		return templateRepository;
 	}
+	
+	@Override
+	public boolean isEnabled() {
+		return true;
+	}
 }

@@ -7,9 +7,9 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
@@ -41,7 +41,6 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	@Autowired
 	AuthenticationModuleRepository moduleRepository; 
 	
-	Set<String> enabledSchemes = new HashSet<String>();
 	
 	@Override
 	@Transactional
@@ -58,11 +57,6 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 		}
 		
 		log.info(String.format("Deleted %d AuthenticationScheme", count));
-	}
-	
-	@Override
-	public void enableAuthenticationScheme(String scheme) {
-		enabledSchemes.add(scheme);
 	}
 	
 	CriteriaConfiguration ORDER_BY_PRIORITY = new CriteriaConfiguration() {
@@ -122,7 +116,8 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	@Override
 	@Transactional(readOnly=true)
 	public List<AuthenticationScheme> allSchemes(Realm realm) {
-		return allEntities(AuthenticationScheme.class, ORDER_BY_PRIORITY, new HiddenCriteria(false), new RealmRestriction(realm));
+		return allEntities(AuthenticationScheme.class, ORDER_BY_PRIORITY, new HiddenCriteria(false), new RealmRestriction(realm),
+				new EnabledSchemesCriteria(realm));
 	}
 
 	class SchemeRestriction implements CriteriaConfiguration {
@@ -143,7 +138,13 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	@HypersocketExtension
 	@Transactional(readOnly=true)
 	public AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey) {
-		return get("resourceKey", resourceKey, AuthenticationScheme.class, new RealmRestriction(realm));
+		return get("resourceKey", resourceKey, AuthenticationScheme.class, new RealmRestriction(realm), new EnabledSchemesCriteria(realm));
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public AuthenticationScheme getSchemeByResourceKey2(Realm realm, String resourceKey) {
+		return get("resourceKey", resourceKey, AuthenticationScheme.class, new RealmRestriction(realm), new EnabledSchemesCriteria(realm));
 	}
 	
 	@Override
@@ -164,17 +165,27 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 			final boolean enabledOnly) {
 		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
 				false), new HiddenCriteria(false), new DistinctRootEntity(), 
-				new RealmRestriction(realm), new CriteriaConfiguration() {
-
-					@Override
-					public void configure(Criteria criteria) {
-						if(enabledOnly) {
-							criteria.add(Restrictions.or(Restrictions.eq("system", false),
-									Restrictions.and(Restrictions.in("resourceKey", enabledSchemes), 
-											Restrictions.eq("system", true))));
-						}
-					}
-		});
+				new RealmRestriction(realm), new EnabledSchemesCriteria(realm));
+	}
+	
+	class EnabledSchemesCriteria implements CriteriaConfiguration {
+		
+		Realm realm;
+		
+		EnabledSchemesCriteria(Realm realm) {
+			this.realm = realm;
+		}
+		
+		@Override
+		public void configure(Criteria criteria) {
+			criteria.add(Restrictions.or(Restrictions.eq("system", false),
+					Restrictions.and(Restrictions.in("resourceKey", getEnabledSchemes(realm)), 
+							Restrictions.eq("system", true))));
+		}
+	}
+	
+	private Collection<String> getEnabledSchemes(Realm realm) {
+		return Arrays.asList("userLogin", "passwordReset");
 	}
 	
 	@Override
@@ -182,7 +193,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm) {
 		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
 				false), new HiddenCriteria(false), new DistinctRootEntity(), 
-				new RealmRestriction(realm));
+				new RealmRestriction(realm), new EnabledSchemesCriteria(realm));
 	}
 
 	@Override
@@ -199,12 +210,6 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	}
 
 	@Override
-	@Transactional(readOnly=true)
-	public AuthenticationScheme getSchemeByName(Realm realm, String name) {
-		return get("name", name, AuthenticationScheme.class, new RealmRestriction(realm));
-	}
-
-	@Override
 	protected Class<AuthenticationScheme> getResourceClass() {
 		return AuthenticationScheme.class;
 	}
@@ -215,5 +220,11 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
 				false), new HiddenCriteria(false), new DistinctRootEntity(), 
 				new RealmRestriction(realm), new SystemRestriction(false));
+	}
+
+	@Override
+	public void registerAuthenticationScheme(String scheme) {
+		
+		
 	}
 }

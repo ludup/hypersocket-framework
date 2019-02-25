@@ -171,4 +171,6 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Map<String, String> getPrincipalTemplateProperties(Resource resource);
 
+	boolean isEnabled();
+
 }

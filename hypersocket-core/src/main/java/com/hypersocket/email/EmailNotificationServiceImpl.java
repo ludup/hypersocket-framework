@@ -2,6 +2,7 @@ package com.hypersocket.email;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -40,28 +41,26 @@ import com.hypersocket.replace.ReplacementUtils;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.triggers.ValidationException;
-import com.hypersocket.upload.FileUploadService;
 
 @Service
 public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceImpl implements EmailNotificationService {
 
 	@Autowired
-	ConfigurationService configurationService;
+	private ConfigurationService configurationService;
 
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService;  
 	
 	@Autowired
-	FileUploadService uploadService; 
+	private EmailTrackerService trackerService; 
 	
 	@Autowired
-	EmailTrackerService trackerService; 
+	private EventService eventService;
 	
 	@Autowired
-	EventService eventService;
+	private SystemConfigurationService systemConfigurationService;
 	
-	@Autowired
-	SystemConfigurationService systemConfigurationService;
+	private EmailController controller; 
 	
 	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
 
@@ -101,6 +100,14 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		sendEmail(realm, subject, text, html, replyToName, replyToEmail, recipients, new String[0], track, delay, attachments);
 	}
 	
+	public EmailController getController() {
+		return controller;
+	}
+
+	public void setController(EmailController controller) {
+		this.controller = controller;
+	}
+
 	private Session createSession(Realm realm) {
 		
 		Properties properties = new Properties();
@@ -233,7 +240,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	}
 	
 	private boolean isEnabled() {
-		return systemConfigurationService.getBooleanValue("smtp.on");
+		return systemConfigurationService.getBooleanValue("smtp.on") && (Objects.isNull(controller) || controller.canSend());
 	}
 	
 	private void send(Realm realm, 

@@ -241,7 +241,7 @@ public class AuthenticationServiceImpl extends
 						10, 
 						AuthenticationModuleType.HTML,
 						true);
-				
+				userLoginScheme.setSystem(true);
 				userLoginScheme.setSupportsHomeRedirect(true);
 			
 				try {
@@ -350,7 +350,17 @@ public class AuthenticationServiceImpl extends
 	@Override
 	public AuthenticationScheme getSchemeByResourceKey(Realm realm,
 			String resourceKey) throws AccessDeniedException {
-		return schemeRepository.getSchemeByResourceKey(realm, resourceKey);
+		return getSchemeByResourceKey(realm, resourceKey, true);
+	}
+	
+	@Override
+	public AuthenticationScheme getSchemeByResourceKey(Realm realm,
+			String resourceKey, boolean allowFallback) throws AccessDeniedException {
+		if(allowFallback) {
+			return schemeRepository.getSchemeByResourceKey(realm, resourceKey);
+		} else {
+			return schemeRepository.getSchemeByResourceKey2(realm, resourceKey);
+		}
 	}
 
 	@Override
