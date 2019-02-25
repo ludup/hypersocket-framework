@@ -7,7 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -41,6 +41,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	@Autowired
 	AuthenticationModuleRepository moduleRepository; 
 	
+	List<AuthenticationSchemeRegistration> schemes = new ArrayList<>();
 	
 	@Override
 	@Transactional
@@ -116,7 +117,17 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	@Override
 	@Transactional(readOnly=true)
 	public List<AuthenticationScheme> allSchemes(Realm realm) {
-		return allEntities(AuthenticationScheme.class, ORDER_BY_PRIORITY, new HiddenCriteria(false), new RealmRestriction(realm),
+		return allEntities(AuthenticationScheme.class, ORDER_BY_PRIORITY, 
+				new HiddenCriteria(false), 
+				new RealmRestriction(realm));
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public List<AuthenticationScheme> allEnabledSchemes(Realm realm) {
+		return allEntities(AuthenticationScheme.class, ORDER_BY_PRIORITY, 
+				new HiddenCriteria(false), 
+				new RealmRestriction(realm),
 				new EnabledSchemesCriteria(realm));
 	}
 
@@ -144,7 +155,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	@Override
 	@Transactional(readOnly=true)
 	public AuthenticationScheme getSchemeByResourceKey2(Realm realm, String resourceKey) {
-		return get("resourceKey", resourceKey, AuthenticationScheme.class, new RealmRestriction(realm), new EnabledSchemesCriteria(realm));
+		return get("resourceKey", resourceKey, AuthenticationScheme.class, new RealmRestriction(realm));
 	}
 	
 	@Override
@@ -159,14 +170,14 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 		});
 	}
 
-	@Override
-	@Transactional(readOnly=true)
-	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm, 
-			final boolean enabledOnly) {
-		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
-				false), new HiddenCriteria(false), new DistinctRootEntity(), 
-				new RealmRestriction(realm), new EnabledSchemesCriteria(realm));
-	}
+//	@Override
+//	@Transactional(readOnly=true)
+//	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm, 
+//			final boolean enabledOnly) {
+//		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
+//				false), new HiddenCriteria(false), new DistinctRootEntity(), 
+//				new RealmRestriction(realm), new EnabledSchemesCriteria(realm));
+//	}
 	
 	class EnabledSchemesCriteria implements CriteriaConfiguration {
 		
@@ -185,16 +196,22 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	}
 	
 	private Collection<String> getEnabledSchemes(Realm realm) {
-		return Arrays.asList("userLogin", "passwordReset");
+		List<String> results = new ArrayList<>();
+		for(AuthenticationSchemeRegistration r : schemes) {
+			if(r.isEnabled()) {
+				results.add(r.getResourceKey());
+			}
+		}
+		return results;
 	}
 	
-	@Override
-	@Transactional(readOnly=true)
-	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm) {
-		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
-				false), new HiddenCriteria(false), new DistinctRootEntity(), 
-				new RealmRestriction(realm), new EnabledSchemesCriteria(realm));
-	}
+//	@Override
+//	@Transactional(readOnly=true)
+//	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm) {
+//		return allEntities(AuthenticationScheme.class, new DeletedCriteria(
+//				false), new HiddenCriteria(false), new DistinctRootEntity(), 
+//				new RealmRestriction(realm), new EnabledSchemesCriteria(realm));
+//	}
 
 	@Override
 	@Transactional(readOnly=true)
@@ -224,7 +241,41 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 
 	@Override
 	public void registerAuthenticationScheme(String scheme) {
+		schemes.add(new DefaultRegistration(scheme));
+	}
+	
+	@Override
+	public void registerAuthenticationScheme(AuthenticationSchemeRegistration scheme) {
+		schemes.add(scheme);
+	}
+	
+	class DefaultRegistration implements AuthenticationSchemeRegistration {
+
+		String resourceKey;
 		
+		DefaultRegistration(String resourceKey) {
+			this.resourceKey = resourceKey;
+		}
 		
+		@Override
+		public String getResourceKey() {
+			return resourceKey;
+		}
+
+		@Override
+		public boolean isEnabled() {
+			return true;
+		}
+		
+	}
+
+	@Override
+	public boolean isEnabled(String template) {
+		for(AuthenticationSchemeRegistration r : schemes) {
+			if(r.getResourceKey().equals(template)) {
+				return r.isEnabled();
+			}
+		}
+		return false;
 	}
 }

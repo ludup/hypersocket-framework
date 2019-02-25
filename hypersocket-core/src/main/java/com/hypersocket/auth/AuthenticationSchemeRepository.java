@@ -19,13 +19,11 @@ public interface AuthenticationSchemeRepository extends AbstractResourceReposito
 
 	List<AuthenticationScheme> allSchemes(Realm realm);
 
+	List<AuthenticationScheme> allEnabledSchemes(Realm realm);
+	
 	public AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey);
 
-	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm, boolean onlyEnabled);
-	
 	public List<AuthenticationScheme> getCustomAuthenticationSchemes(Realm realm);
-
-	public List<AuthenticationScheme> getAuthenticationSchemes(Realm realm);
 
 	public AuthenticationScheme getSchemeById(Long id);
 
@@ -37,7 +35,13 @@ public interface AuthenticationSchemeRepository extends AbstractResourceReposito
 			boolean hidden, Integer maximumModules, AuthenticationModuleType type, String allowedModules,
 			String lastButtonResourceKey, boolean supportsHomeRedirect);
 
-	void registerAuthenticationScheme(String scheme);
+	void registerAuthenticationScheme(AuthenticationSchemeRegistration scheme);
 
 	AuthenticationScheme getSchemeByResourceKey2(Realm realm, String resourceKey);
+
+	void registerAuthenticationScheme(String scheme);
+
+	boolean isEnabled(String template);
+
+	
 }

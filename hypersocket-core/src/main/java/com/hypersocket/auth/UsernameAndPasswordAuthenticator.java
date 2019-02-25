@@ -142,4 +142,9 @@ public class UsernameAndPasswordAuthenticator extends
 	public boolean requiresUserInput(AuthenticationState state) {
 		return true;
 	}
+	
+	@Override
+	public boolean isEnabled() {
+		return true;
+	}
 }

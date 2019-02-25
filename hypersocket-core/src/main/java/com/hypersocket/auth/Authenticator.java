@@ -37,6 +37,8 @@ public interface Authenticator {
 
 	boolean isHidden();
 	
+	boolean isEnabled();
+	
 	@JsonIgnore
 	AbstractResourceRepository<AuthenticationScheme> getRepository();
 	

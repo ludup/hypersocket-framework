@@ -221,7 +221,7 @@ public class AuthenticationServiceImpl extends
 							+ realm.getName());
 				}
 				
-				AuthenticationScheme basicScheme = schemeRepository.getSchemeByResourceKey(realm, AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY);
+				AuthenticationScheme basicScheme = schemeRepository.getSchemeByResourceKey2(realm, AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY);
 				List<String> modules = new ArrayList<String>();
 				List<AuthenticationModule> basicModules = repository.getModulesForScheme(basicScheme);
 				for(AuthenticationModule m : basicModules ) {
@@ -313,7 +313,7 @@ public class AuthenticationServiceImpl extends
 	@Override
 	public AuthenticationScheme getDefaultScheme(String remoteAddress,
 			Map<String, Object> environment, Realm realm) {
-		AuthenticationScheme scheme = schemeRepository.getSchemeByResourceKey(realm, BASIC_AUTHENTICATION_RESOURCE_KEY);
+		AuthenticationScheme scheme = schemeRepository.getSchemeByResourceKey2(realm, BASIC_AUTHENTICATION_RESOURCE_KEY);
 		if(scheme!=null) {
 			return scheme;
 		}
@@ -963,7 +963,7 @@ public class AuthenticationServiceImpl extends
 		
 		for (Authenticator a : authenticators.values()) {
 
-			if (a.isHidden()) {
+			if (a.isHidden() || !a.isEnabled()) {
 				continue;
 			}
 			if (type != AuthenticationModuleType.CUSTOM) {
@@ -973,22 +973,6 @@ public class AuthenticationServiceImpl extends
 			}  else {
 				tmp.put(a.getResourceKey(), a);
 			}
-			/**
-			 * Don't filter by what the scheme wants. This requires database change evertime a new authenticator
-			 * is added causing upgrade issues. We will rely on Authenticator's allowedSchemes.
-			 */
-//			else {
-//				if (scheme.getAllowedModules() == null) {
-//					throw new IllegalStateException(
-//							"CUSTOM authentication scheme type must declare allowed modules");
-//				}
-//				for (String s : scheme.getAllowedModules().split(",")) {
-//					if (a.getResourceKey().matches(s)) {
-//						tmp.put(a.getResourceKey(), a);
-//						break;
-//					}
-//				}
-//			}
 		}
 		return tmp;
 	}
@@ -1067,7 +1051,7 @@ public class AuthenticationServiceImpl extends
 
 		Session session = sessionService.openSession(remoteAddress,
 				realmService.getSystemPrincipal(), schemeRepository
-						.getSchemeByResourceKey(realmService.getSystemRealm(),
+						.getSchemeByResourceKey2(realmService.getSystemRealm(),
 								ANONYMOUS_AUTHENTICATION_RESOURCE_KEY),
 				userAgent, parameters, realmService.getRealmByHost(serverName));
 		return session;
