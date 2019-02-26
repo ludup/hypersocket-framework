@@ -254,12 +254,19 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					String path = processReplacements(aliases.get(reverseUri));
 					if(path.startsWith("redirect:")) {
 						String redirPath = path.substring(9);
-						if(StringUtils.isNotBlank(servletRequest.getQueryString()))
+						if(StringUtils.isNotBlank(servletRequest.getQueryString())) {
 							redirPath += "?" + servletRequest.getQueryString();
+						}
+						if(log.isDebugEnabled()) {
+							log.debug("Redirecting to " + redirPath + " for " + reverseUri);
+						}
 						nettyResponse.sendRedirect(redirPath, false /* Don't use a permanent redirection as the alias target may change */);
 						sendResponse(servletRequest, nettyResponse, false);
 						return;
 					} else {
+						if(log.isDebugEnabled()) {
+							log.debug("Using alias " + path + " for path " + reverseUri);
+						}
 						servletRequest.setAttribute(BROWSER_URI, nettyRequest.getUri());
 						servletRequest.parseUri(path);
 						reverseUri = path;
