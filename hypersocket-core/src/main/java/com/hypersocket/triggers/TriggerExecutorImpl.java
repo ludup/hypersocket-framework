@@ -208,6 +208,10 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 	protected void executeTrigger(final TriggerResource trigger, final SystemEvent triggeredEvent,
 			final List<SystemEvent> sourceEvents) throws ValidationException {
 
+		if(!triggerService.isEnabled()) {
+			return;
+		}
+		
 		final TaskProvider provider = taskService.getTaskProvider(trigger.getResourceKey());
 		if (provider == null) {
 			throw new ValidationException(

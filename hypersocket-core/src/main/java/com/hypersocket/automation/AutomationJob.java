@@ -62,6 +62,9 @@ public class AutomationJob extends AbstractTriggerJob {
 	protected void executeJob(JobExecutionContext context)
 			throws JobExecutionException {
 		
+		if(!automationService.isEnabled()) {
+			return;
+		}
 		Long resourceId = context.getTrigger().getJobDataMap().getLong("resourceId");
 		Long realmId = context.getTrigger().getJobDataMap().getLong("realm");
 		

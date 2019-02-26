@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -95,6 +96,8 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	@Autowired
 	TriggerResourceRepository triggerRepository; 
 	
+	AutomationController controller;
+	
 	public AutomationResourceServiceImpl() {
 		super("automationResource");
 	}
@@ -133,6 +136,11 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		});
 	}
 
+	@Override
+	public void setController(AutomationController controller) {
+		this.controller = controller;
+	}
+	
 	@Override
 	protected AbstractResourceRepository<AutomationResource> getRepository() {
 		return repository;
@@ -511,5 +519,10 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	protected void performImportDropResources(AutomationResource resource)
 			throws ResourceException, AccessDeniedException {
 		deleteResource(resource);
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return Objects.isNull(controller) || controller.canAutomate();
 	}
 }

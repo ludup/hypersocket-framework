@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -100,7 +101,7 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 	private Map<String, TriggerConditionProvider> registeredConditions = new HashMap<String, TriggerConditionProvider>();
 	private Map<String, ReplacementVariableProvider> replacementVariables = new HashMap<String, ReplacementVariableProvider>();
 	private MaxSizeHashMap<String, List<TriggerResource>> eventTriggerCache;
-
+	private TriggerController controller;
 	private boolean running = true;
 
 	public TriggerResourceServiceImpl() {
@@ -181,6 +182,11 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 		};
 	}
 
+	@Override
+	public void setController(TriggerController controller) {
+		this.controller = controller;
+	}
+	
 	@Override
 	public void registerReplacementVariables(ReplacementVariableProvider provider) {
 		for (String variable : provider.getReplacementVariableNames()) {
@@ -694,5 +700,10 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 		public Set<String> getReplacementVariableNames() {
 			return variables;
 		}
+	}
+	
+	@Override
+	public boolean isEnabled() {
+		return Objects.isNull(controller) || controller.canTrigger();
 	}
 }

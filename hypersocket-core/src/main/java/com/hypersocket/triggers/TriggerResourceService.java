@@ -95,4 +95,8 @@ public interface TriggerResourceService extends
 	Long getTriggerEventCount(String pattern, Locale locale);
 
 	void registerReplacementVariables(ReplacementVariableProvider provider);
+
+	void setController(TriggerController controller);
+
+	boolean isEnabled();
 }

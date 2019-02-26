@@ -48,4 +48,8 @@ public interface AutomationResourceService extends
 
 	void runNow(AutomationResource resource) throws SchedulerException;
 
+	boolean isEnabled();
+
+	void setController(AutomationController controller);
+
 }
