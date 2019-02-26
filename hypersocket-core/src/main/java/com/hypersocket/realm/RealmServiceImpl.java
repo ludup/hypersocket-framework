@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 
 import com.hypersocket.attributes.AttributeType;
@@ -417,6 +418,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
+	@Transactional
 	public Set<Principal> getUsers(Realm realm, int max) {
 		return getAllPrincipals(realm, max, PrincipalType.USER);
 	}
