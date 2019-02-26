@@ -82,7 +82,6 @@ public class AutomationJob extends AbstractTriggerJob {
 		
 		try {
 			
-			
 			final TaskProvider provider = taskService.getTaskProvider(resource);
 			final AutomationTaskStartedEvent event = new AutomationTaskStartedEvent(this, resource);
 			
