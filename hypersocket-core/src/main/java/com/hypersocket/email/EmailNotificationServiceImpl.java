@@ -134,7 +134,11 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
 		
 		if(!isEnabled()) {
-			log.warn("Sending messages is disabled. Enable SMTP settings in System realm to allow sending of emails");
+			if(systemConfigurationService.getBooleanValue("smtp.on")) {
+				log.warn("This system is not allowed to send email messages.");
+			} else {
+				log.warn("Sending messages is disabled. Enable SMTP settings in System realm to allow sending of emails");
+			}
 			return;
 		}
 		
@@ -239,7 +243,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		return configurationService.getDecryptedValue(realm, name);
 	}
 	
-	private boolean isEnabled() {
+	public final boolean isEnabled() {
 		return systemConfigurationService.getBooleanValue("smtp.on") && (Objects.isNull(controller) || controller.canSend());
 	}
 	

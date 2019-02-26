@@ -35,4 +35,8 @@ public interface EmailNotificationService {
 			RecipientHolder[] recipients, String[] archiveAddresses, boolean track, int delay, EmailAttachment... attachments)
 			throws MailException, ValidationException, AccessDeniedException;
 
+	void setController(EmailController controller);
+
+	boolean isEnabled();
+
 }
