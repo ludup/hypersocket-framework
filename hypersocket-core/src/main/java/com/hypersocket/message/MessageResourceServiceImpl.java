@@ -574,12 +574,17 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 		}
 
 		if (!emails.isEmpty()) {
-			recipients.addIterator(new TransformingIterator<String, RecipientHolder>(emails.iterator()) {
-				@Override
-				protected RecipientHolder transform(String email) {
-					return new RecipientHolder(email);
+			/**
+			 * LDP discovered issue where a blank value was in this collection. 
+			 * Guard against that here.
+			 */
+			List<RecipientHolder> validated = new ArrayList<>();
+			for(String email : emails) {
+				if(StringUtils.isNotBlank(email)) {
+					validated.add(new RecipientHolder(email));
 				}
-			});
+			}
+			recipients.addIterator(validated.iterator());
 		}
 
 		sendMessage(message, realm, tokenResolver, replyTo, recipients, schedule, null);
