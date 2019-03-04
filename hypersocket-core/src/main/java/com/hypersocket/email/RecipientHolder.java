@@ -23,10 +23,12 @@ public class RecipientHolder {
 		
 		Pattern depArrHours = Pattern.compile("(?:\"?([^\"]*)\"?\\s)?(?:<?(.+@[^>]+)>?)");
 		Matcher matcher = depArrHours.matcher(name);
-		matcher.find();
-		this.name = matcher.group(1);
-		this.email = matcher.group(2);
-
+		if(matcher.find()) {
+			this.name = StringUtils.defaultString(matcher.group(1));
+			this.email = StringUtils.defaultString(matcher.group(2));
+		} else {
+			this.email = name;
+		}	
 	}
 	
 	public RecipientHolder(String name, String email) {
@@ -96,6 +98,8 @@ public class RecipientHolder {
 		new RecipientHolder("Lee Painter <lee@javassh.com>");
 		new RecipientHolder("Lee <lee@javassh.com>");
 		new RecipientHolder("\"Lee Painter\" <lee@javassh.com>");
-		
+		new RecipientHolder("\"Lee Painter (Testing Account)\" <test@javassh.com>");
+		new RecipientHolder("test@javassh.com");
+		new RecipientHolder("");
 	}
 }
