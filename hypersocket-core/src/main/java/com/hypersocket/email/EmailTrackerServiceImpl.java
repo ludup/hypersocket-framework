@@ -54,7 +54,7 @@ public class EmailTrackerServiceImpl extends AbstractAuthenticatedServiceImpl im
 	}
 	
 	@Override
-	public String generateNonTrackingUri(String uuid, Realm realm) throws AccessDeniedException, ResourceNotFoundException {
+	public String generateNonTrackingUri(String uuid, Realm realm) throws AccessDeniedException {
 		
 		elevatePermissions(SystemPermission.SYSTEM);
 		
@@ -91,7 +91,7 @@ public class EmailTrackerServiceImpl extends AbstractAuthenticatedServiceImpl im
 	}
 	
 	@Override
-	public String generateTrackingUri(String uuid, String subject, String name, String emailAddress, Realm realm) throws AccessDeniedException, ResourceNotFoundException {
+	public String generateTrackingUri(String uuid, String subject, String name, String emailAddress, Realm realm) throws AccessDeniedException{
 		
 		elevatePermissions(SystemPermission.SYSTEM);
 		
@@ -122,6 +122,8 @@ public class EmailTrackerServiceImpl extends AbstractAuthenticatedServiceImpl im
 						receipt.getId(),
 						upload.getFileName());
 			}
+		} catch (ResourceNotFoundException e) {
+			return "#";
 		} finally {
 			clearElevatedPermissions();
 		}

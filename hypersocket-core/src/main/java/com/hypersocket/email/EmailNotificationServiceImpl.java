@@ -174,39 +174,70 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			receipientText = processDefaultReplacements(receipientText, r, serverResolver);
 			
 			if(StringUtils.isNotBlank(receipientHtml)) {
-				try {
-					String trackingImage = configurationService.getValue(realm, "email.trackingImage");
-					if(track && StringUtils.isNotBlank(trackingImage)) {
-						String trackingUri = trackerService.generateTrackingUri(trackingImage, recipeintSubject, r.getName(), r.getEmail(), realm);
-						receipientHtml = receipientHtml.replace("${trackingImage}", trackingUri);
-					} else {
-						String trackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);
-						receipientHtml = receipientHtml.replace("${trackingImage}", trackingUri);
-					}
-				} catch (ResourceNotFoundException e) {
-					log.error("Cannot find non tracking image", e);
+			
+				/**
+				 * Send a HTML email and generate tracking if required. Make sure
+				 * only the recipients get a tracking email. We don't want to 
+				 * track the archive emails.
+				 */
+				String trackingImage = configurationService.getValue(realm, "email.trackingImage");
+				String nonTrackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);
+				String nonTrackingHtml = receipientHtml.replace("${trackingImage}", nonTrackingUri);
+				nonTrackingHtml = nonTrackingHtml.replace("${htmlTitle}", recipeintSubject);
+				
+
+				if(track && StringUtils.isNotBlank(trackingImage)) {
+					String trackingUri = trackerService.generateTrackingUri(trackingImage, recipeintSubject, r.getName(), r.getEmail(), realm);
+					receipientHtml = receipientHtml.replace("${trackingImage}", trackingUri);
+				} else {
+					receipientHtml = receipientHtml.replace("${trackingImage}", nonTrackingUri);
 				}
 				
+				
 				receipientHtml = receipientHtml.replace("${htmlTitle}", recipeintSubject);
+				
+				send(realm, mail, 
+						recipeintSubject, 
+						receipientText, 
+						"", 
+						replyToName, 
+						replyToEmail, 
+						r, 
+						delay,
+						attachments);
+				
+				
+				for(RecipientHolder recipient : archiveRecipients) {
+					send(realm, mail, recipeintSubject, receipientText, nonTrackingHtml, 
+							replyToName, replyToEmail, recipient, delay, attachments);
+				}
+				
+			} else {
+			
+				/**
+				 * Send plain email without any tracking
+				 */
+				send(realm, mail, 
+						recipeintSubject, 
+						receipientText, 
+						"", 
+						replyToName, 
+						replyToEmail, 
+						r, 
+						delay,
+						attachments);
+				
+				for(RecipientHolder recipient : archiveRecipients) {
+					send(realm, mail, recipeintSubject, receipientText, "", 
+							replyToName, replyToEmail, recipient, delay, attachments);
+				}
 			}
 			
 			receipientHtml = processDefaultReplacements(receipientHtml, r, serverResolver);
 			
-			send(realm, mail, 
-					recipeintSubject, 
-					receipientText, 
-					receipientHtml, 
-					replyToName, 
-					replyToEmail, 
-					track, 
-					r, 
-					delay,
-					attachments);
 			
-			for(RecipientHolder recipient : archiveRecipients) {
-				send(realm, mail, recipeintSubject, receipientText, receipientHtml, 
-						replyToName, replyToEmail, false, recipient, delay, attachments);
-			}
+			
+			
 		}
 	}
 	
@@ -254,7 +285,6 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			String htmlText, 
 			String replyToName, 
 			String replyToEmail, 
-			boolean track,
 			RecipientHolder r, 
 			int delay,
 			EmailAttachment... attachments) throws AccessDeniedException {
