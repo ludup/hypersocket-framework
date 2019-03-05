@@ -15,10 +15,16 @@ import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.encrypt.EncryptionService;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
@@ -28,6 +34,7 @@ import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.transactions.TransactionCallbackWithError;
 
 @Repository
 public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResource>
@@ -36,6 +43,10 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 
 	protected EntityResourcePropertyStore entityPropertyStore;
 
+	@Autowired
+	@Qualifier("transactionManager")
+	PlatformTransactionManager txManager;
+	
 	@Autowired
 	EncryptionService encryptionService;
 	
@@ -344,6 +355,25 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 	public void deleteResources(List<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException {
 		for (T resource: resources) {
 			deleteResource(resource, ops);
+		}
+	}
+	
+	@Override
+	public <E> E doInTransaction(TransactionCallback<E> transaction) throws ResourceException {
+
+		TransactionTemplate tmpl = new TransactionTemplate(txManager);
+		try {
+			return tmpl.execute(transaction);
+		} catch (Throwable e) {
+			if (transaction instanceof TransactionCallbackWithError) {
+				((TransactionCallbackWithError<E>) transaction).doTransacationError(e);
+			}
+			if (e.getCause() instanceof ResourceException) {
+				throw (ResourceException) e.getCause();
+			} 
+			throw new ResourceException(AuthenticationService.RESOURCE_BUNDLE, 
+					"error.transactionFailed",
+					e.getMessage());
 		}
 	}
 }

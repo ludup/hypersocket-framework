@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.transaction.support.TransactionCallback;
+
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Realm;
@@ -59,6 +61,8 @@ public interface AbstractSimpleResourceRepository<T extends SimpleResource> exte
 	T getResourceByLegacyId(Long id);
 
 	T getResourceByReference(String reference, Realm realm);
+
+	<E> E doInTransaction(TransactionCallback<E> transaction) throws ResourceException;
 
 
 }

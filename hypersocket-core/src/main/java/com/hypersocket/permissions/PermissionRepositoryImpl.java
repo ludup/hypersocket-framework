@@ -23,7 +23,9 @@ import org.hibernate.Query;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
 
 import com.hypersocket.properties.ResourceKeyRestriction;
 import com.hypersocket.properties.ResourceUtils;
@@ -657,27 +659,39 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 
 			@Override
 			protected List<Principal> listItems(int start, int pageSize, ColumnSort[] sorting) {
-				Criteria crit = createCriteria(Principal.class);
-				crit.add(Restrictions.eq("realm", realm));
-				crit.add(Restrictions.eq("deleted", false));
-				crit.setFirstResult(start);
-				crit.setMaxResults(pageSize);
-				
-				boolean allUsers = false;
-				for(Role r : roles) {
-					if(r.isAllUsers()) {
-						allUsers = true;
-						break;
-					}
+				try {
+					return doInTransaction(new TransactionCallback<List<Principal>>() {
+
+						@Override
+						public List<Principal> doInTransaction(TransactionStatus status) {
+							Criteria crit = createCriteria(Principal.class);
+							crit.add(Restrictions.eq("realm", realm));
+							crit.add(Restrictions.eq("deleted", false));
+							crit.setFirstResult(start);
+							crit.setMaxResults(pageSize);
+							
+							boolean allUsers = false;
+							for(Role r : roles) {
+								if(r.isAllUsers()) {
+									allUsers = true;
+									break;
+								}
+							}
+							
+							if(!allUsers) {
+								crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY)
+									.createCriteria("roles")
+									.add(Restrictions.in("id", ResourceUtils.createResourceIdArray(roles)));
+							}
+							
+							return crit.list();
+						}
+					});
+				} catch (ResourceException e) {
+					throw new IllegalStateException(e.getMessage(), e);
 				}
 				
-				if(!allUsers) {
-					crit.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY)
-						.createCriteria("roles")
-						.add(Restrictions.in("id", ResourceUtils.createResourceIdArray(roles)));
-				}
 				
-				return crit.list();
 			}
 		};
 	}
