@@ -170,8 +170,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			
 			ServerResolver serverResolver = new ServerResolver(realm);
 			
-			recipeintSubject = processDefaultReplacements(recipeintSubject, r, serverResolver);
-			receipientText = processDefaultReplacements(receipientText, r, serverResolver);
+			String messageSubject = processDefaultReplacements(recipeintSubject, r, serverResolver);
+			String messageText = processDefaultReplacements(receipientText, r, serverResolver);
+			
 			
 			if(StringUtils.isNotBlank(receipientHtml)) {
 			
@@ -183,21 +184,22 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				String trackingImage = configurationService.getValue(realm, "email.trackingImage");
 				String nonTrackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);
 				
-				receipientHtml = receipientHtml.replace("${htmlTitle}", recipeintSubject);
+				String messageHtml = processDefaultReplacements(receipientHtml, r, serverResolver);
+				messageHtml = messageHtml.replace("${htmlTitle}", messageSubject);
 				
-				String archiveRecipientHtml = receipientHtml.replace("__trackingImage__", nonTrackingUri);
+				String archiveRecipientHtml = messageHtml.replace("__trackingImage__", nonTrackingUri);
 
 				if(track && StringUtils.isNotBlank(trackingImage)) {
-					String trackingUri = trackerService.generateTrackingUri(trackingImage, recipeintSubject, r.getName(), r.getEmail(), realm);
-					receipientHtml = receipientHtml.replace("__trackingImage__", trackingUri);
+					String trackingUri = trackerService.generateTrackingUri(trackingImage, messageSubject, r.getName(), r.getEmail(), realm);
+					messageHtml = messageHtml.replace("__trackingImage__", trackingUri);
 				} else {
-					receipientHtml = receipientHtml.replace("__trackingImage__", nonTrackingUri);
+					messageHtml = messageHtml.replace("__trackingImage__", nonTrackingUri);
 				}
 
 				send(realm, mail, 
-						recipeintSubject, 
-						receipientText, 
-						receipientHtml, 
+						messageSubject, 
+						messageText,
+						messageHtml, 
 						replyToName, 
 						replyToEmail, 
 						r, 
@@ -205,7 +207,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 						attachments);
 				
 				for(RecipientHolder recipient : archiveRecipients) {
-					send(realm, mail, recipeintSubject, receipientText, archiveRecipientHtml, 
+					send(realm, mail, messageSubject, messageText, archiveRecipientHtml, 
 							replyToName, replyToEmail, recipient, delay, attachments);
 				}
 				
@@ -215,8 +217,8 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				 * Send plain email without any tracking
 				 */
 				send(realm, mail, 
-						recipeintSubject, 
-						receipientText, 
+						messageSubject, 
+						messageText, 
 						"", 
 						replyToName, 
 						replyToEmail, 
@@ -225,16 +227,10 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 						attachments);
 				
 				for(RecipientHolder recipient : archiveRecipients) {
-					send(realm, mail, recipeintSubject, receipientText, "", 
+					send(realm, mail, messageSubject, messageText, "", 
 							replyToName, replyToEmail, recipient, delay, attachments);
 				}
 			}
-			
-			receipientHtml = processDefaultReplacements(receipientHtml, r, serverResolver);
-			
-			
-			
-			
 		}
 	}
 	
