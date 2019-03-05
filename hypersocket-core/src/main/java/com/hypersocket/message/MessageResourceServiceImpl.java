@@ -637,17 +637,6 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 				StringWriter subjectWriter = new StringWriter();
 				subjectTemplate.process(data, subjectWriter);
 
-				String trackingImage = configurationService.getValue(realm, "email.trackingImage");
-				if (message.getTrack() && StringUtils.isNotBlank(trackingImage)) {
-					data.put("trackingImage", trackerService.generateTrackingUri(trackingImage,
-							subjectWriter.toString(), recipient.getName(), recipient.getEmail(), realm));
-				} else {
-					try {
-						data.put("trackingImage", trackerService.generateNonTrackingUri(trackingImage, realm));
-					} catch (ResourceNotFoundException e) {
-					}
-				}
-
 				Template bodyTemplate = templateService.createTemplate("message.body." + message.getId(),
 						message.getBody(), message.getModifiedDate().getTime());
 				StringWriter bodyWriter = new StringWriter();
