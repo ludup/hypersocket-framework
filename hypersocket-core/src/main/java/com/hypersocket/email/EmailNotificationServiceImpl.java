@@ -182,9 +182,10 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				 */
 				String trackingImage = configurationService.getValue(realm, "email.trackingImage");
 				String nonTrackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);
-				String nonTrackingHtml = receipientHtml.replace("${trackingImage}", nonTrackingUri);
-				nonTrackingHtml = nonTrackingHtml.replace("${htmlTitle}", recipeintSubject);
 				
+				receipientHtml = receipientHtml.replace("${htmlTitle}", recipeintSubject);
+				
+				String archiveRecipientHtml = receipientHtml.replace("${trackingImage}", nonTrackingUri);
 
 				if(track && StringUtils.isNotBlank(trackingImage)) {
 					String trackingUri = trackerService.generateTrackingUri(trackingImage, recipeintSubject, r.getName(), r.getEmail(), realm);
@@ -192,23 +193,19 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				} else {
 					receipientHtml = receipientHtml.replace("${trackingImage}", nonTrackingUri);
 				}
-				
-				
-				receipientHtml = receipientHtml.replace("${htmlTitle}", recipeintSubject);
-				
+
 				send(realm, mail, 
 						recipeintSubject, 
 						receipientText, 
-						"", 
+						receipientHtml, 
 						replyToName, 
 						replyToEmail, 
 						r, 
 						delay,
 						attachments);
 				
-				
 				for(RecipientHolder recipient : archiveRecipients) {
-					send(realm, mail, recipeintSubject, receipientText, nonTrackingHtml, 
+					send(realm, mail, recipeintSubject, receipientText, archiveRecipientHtml, 
 							replyToName, replyToEmail, recipient, delay, attachments);
 				}
 				
