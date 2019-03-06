@@ -708,22 +708,28 @@ public class AuthenticationServiceImpl extends
 								eventService.publishEvent(new AuthenticationAttemptEvent(
 												this, state, authenticator));
 
-								for (PostAuthenticationStep proc : postAuthenticationSteps) {
-									if (proc.requiresProcessing(state)) {
-										state.addPostAuthenticationStep(proc);
+								setupSystemContext(state.getPrincipal());
+								
+								try {
+									for (PostAuthenticationStep proc : postAuthenticationSteps) {
+										if (proc.requiresProcessing(state)) {
+											state.addPostAuthenticationStep(proc);
+										}
 									}
-								}
-
-								if (state.canCreateSession()) {
-									state.setSession(completeLogon(state));
-								}
-
-								if (state.hasPostAuthenticationStep()) {
-									PostAuthenticationStep step = state
-											.getCurrentPostAuthenticationStep();
-									if (!step.requiresUserInput(state)) {
-										success = logon(state, parameterMap);
+	
+									if (state.canCreateSession()) {
+										state.setSession(completeLogon(state));
 									}
+	
+									if (state.hasPostAuthenticationStep()) {
+										PostAuthenticationStep step = state
+												.getCurrentPostAuthenticationStep();
+										if (!step.requiresUserInput(state)) {
+											success = logon(state, parameterMap);
+										}
+									}
+								} finally {
+									clearPrincipalContext();
 								}
 								
 							} else {
