@@ -10,6 +10,7 @@ package com.hypersocket.auth;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -33,46 +34,51 @@ public class AuthenticationScheme extends RealmResource {
 	private static final long serialVersionUID = 96922791807675582L;
 
 	@Column(name = "resourceKey")
-	String resourceKey;
+	private String resourceKey;
 
 	@Column(name = "priority")
-	Integer priority;
+	private Integer priority;
 	
 	@Column(name = "max_modules", nullable=true)
-	Integer maximumModules;
+	private Integer maximumModules;
 
 	@Column(name = "type", nullable=true)
-	AuthenticationModuleType type;
+	private AuthenticationModuleType type;
 	
 	@Column(name = "allowed_modules")
-	String allowedModules;
+	private String allowedModules;
 	
 	@Column(name = "last_button_resource_key")
-	String lastButtonResourceKey;
+	private String lastButtonResourceKey;
 	
-	@ManyToMany(fetch=FetchType.EAGER)
+	@ManyToMany(fetch=FetchType.EAGER, cascade = CascadeType.REMOVE)
 	@Fetch(FetchMode.SELECT)
 	@JoinTable(name = "scheme_allowed_roles", joinColumns={@JoinColumn(name="resource_id")}, 
 			inverseJoinColumns={@JoinColumn(name="role_id")})
-	Set<Role> allowedRoles = new HashSet<Role>();
+	private Set<Role> allowedRoles = new HashSet<Role>();
 	
-	@ManyToMany(fetch=FetchType.EAGER)
+	@ManyToMany(fetch=FetchType.EAGER, cascade = CascadeType.REMOVE)
 	@Fetch(FetchMode.SELECT)
 	@JoinTable(name = "scheme_denied_roles", joinColumns={@JoinColumn(name="resource_id")}, 
 			inverseJoinColumns={@JoinColumn(name="role_id")})
-	Set<Role> deniedRoles = new HashSet<Role>();
+	private Set<Role> deniedRoles = new HashSet<Role>();
 	
-	@OneToMany(fetch=FetchType.LAZY, mappedBy="scheme") 
-	Set<AuthenticationModule> modules;
-	
-	@Column
-	String deniedRoleError;
+	@OneToMany(fetch=FetchType.LAZY, mappedBy="scheme", cascade = CascadeType.REMOVE) 
+	@JsonIgnore
+	private Set<AuthenticationModule> modules;
 	
 	@Column
-	Boolean supportsHomeRedirect;
+	private String deniedRoleError;
+	
+	@Column
+	private Boolean supportsHomeRedirect;
 	
 	public String getResourceKey() {
 		return resourceKey;
+	}
+	
+	public Set<AuthenticationModule> getModules() {
+		return modules;
 	}
 
 	public void setResourceKey(String name) {
