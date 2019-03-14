@@ -255,6 +255,9 @@ public class SessionUtils {
 			List<String> origins = ResourceUtils.explodeCollectionValues(configurationService.getValue(currentRealm, "cors.origins"));
 			String requestOrigin = request.getHeader("Origin");
 
+			if(log.isInfoEnabled()) {
+				log.info("CORS request for origin {}", requestOrigin);
+			}
 			if(origins.contains(requestOrigin)) {
 				return true;
 			}
