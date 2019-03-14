@@ -39,6 +39,7 @@ import org.xml.sax.SAXException;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.encrypt.EncryptionService;
+import com.hypersocket.replace.ReplacementUtils;
 import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.triggers.ValidationException;
 
@@ -809,6 +810,12 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			return;
 		}
 		
+		if(ReplacementUtils.isVariable(value) 
+				&& template.getAttributes().containsKey("allowAttribute") 
+				&& Boolean.parseBoolean(template.getAttributes().get("allowAttribute"))) {
+			return;
+		}
+		
 		if(template.getAttributes().containsKey("inputType")) {
 			
 			String inputType = template.getAttributes().get("inputType");
@@ -825,6 +832,9 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				try {
 					Long.parseLong(value);
 				} catch (NumberFormatException e) {
+					if(template.getAttributes().containsKey("allowAttribute") && Boolean.parseBoolean(template.getAttributes().get("allowAttribute"))) {
+						break;
+					}
 					throw new IllegalArgumentException(String.format("Invalid long value %s", value));
 				}
 				break;

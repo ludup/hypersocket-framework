@@ -64,4 +64,9 @@ public class ReplacementUtils {
 		
 		return builder.toString();
 	}
+
+	public static boolean isVariable(String value) {
+		Pattern pattern = Pattern.compile("\\$\\{(.*?)\\}");
+		return pattern.matcher(value).matches();
+	}
 }
