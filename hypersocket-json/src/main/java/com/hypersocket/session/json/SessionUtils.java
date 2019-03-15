@@ -9,6 +9,7 @@ package com.hypersocket.session.json;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -249,12 +250,12 @@ public class SessionUtils {
 	public boolean isValidCORSRequest(HttpServletRequest request) {
 		
 		Realm currentRealm = getCurrentRealmOrDefault(request);
+		String requestOrigin = request.getHeader("Origin");
 		
-		if(configurationService.getBooleanValue(currentRealm, "cors.enabled")) {
+		if(configurationService.getBooleanValue(currentRealm, "cors.enabled") && !Objects.isNull(requestOrigin)) {
 			
 			List<String> origins = ResourceUtils.explodeCollectionValues(configurationService.getValue(currentRealm, "cors.origins"));
-			String requestOrigin = request.getHeader("Origin");
-
+		
 			if(log.isInfoEnabled()) {
 				log.info("CORS request for origin {}", requestOrigin);
 			}
