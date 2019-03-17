@@ -426,6 +426,13 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		
 		if(principal==null) {
 			try {
+				principal = realmService.getPrincipalByEmail(getCurrentRealm(), val);
+			} catch (ResourceNotFoundException | AccessDeniedException e) {
+			}
+		}
+		
+		if(principal==null) {
+			try {
 				principal = realmService.getPrincipalById(getCurrentRealm(), Long.parseLong(val), PrincipalType.USER);
 			} catch(AccessDeniedException | NumberFormatException e) { };
 		}
