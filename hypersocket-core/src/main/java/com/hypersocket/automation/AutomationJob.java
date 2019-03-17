@@ -91,7 +91,13 @@ public class AutomationJob extends AbstractTriggerJob {
 			
 			TaskResult result;
 			final List<SystemEvent> sourceEvents = new ArrayList<SystemEvent>();
-			sourceEvents.add(event);
+
+			/**
+			 * LDP - This messes up event history and use of attributes of previous
+			 * events as it makes the index of the trigger event +1. Therefore we 
+			 * SHOULD NOT add the AutomationStartedEvent to the list of source events.
+			 */
+//			sourceEvents.add(event);
 			
 			if(resource.getTransactional()) {
 				result = transactionService.doInTransaction(new TransactionCallback<TaskResult>() {
@@ -100,7 +106,7 @@ public class AutomationJob extends AbstractTriggerJob {
 					public TaskResult doInTransaction(TransactionStatus status) {
 
 						try {
-							return executeTask(resource, provider, sourceEvents);
+							return executeTask(resource, resource.getRealm(), provider, sourceEvents);
 						} catch (ValidationException e) {
 							throw new IllegalStateException(e.getMessage(), e);
 						}
@@ -108,7 +114,7 @@ public class AutomationJob extends AbstractTriggerJob {
 					
 				});
 			} else {
-				result = executeTask(resource, provider, sourceEvents);
+				result = executeTask(resource, resource.getRealm(), provider, sourceEvents);
 			}
 			
 			if(resource.getFireAutomationEvents()) {
@@ -124,9 +130,9 @@ public class AutomationJob extends AbstractTriggerJob {
 	}
 
 	
-	private TaskResult executeTask(final AutomationResource resource, TaskProvider provider, final List<SystemEvent> sourceEvents) throws ValidationException {
+	private TaskResult executeTask(final AutomationResource resource, Realm currentRealm, TaskProvider provider, final List<SystemEvent> sourceEvents) throws ValidationException {
 		
-		final SystemEvent lastEvent = sourceEvents.get(sourceEvents.size()-1);
+		//final SystemEvent lastEvent = sourceEvents.get(sourceEvents.size()-1);
 		
 		TaskResult outputEvent = null;
 		if (provider instanceof DynamicResultsTaskProvider) {
@@ -141,7 +147,6 @@ public class AutomationJob extends AbstractTriggerJob {
 					 * this event and its result but do not ADD to the source events. 
 					 */
 					List<SystemEvent> results = new ArrayList<SystemEvent>(sourceEvents);
-					results.add(lastEvent);
 					results.add(result.getEvent());
 
 					if (result.isPublishable()) {
@@ -167,9 +172,9 @@ public class AutomationJob extends AbstractTriggerJob {
 				public boolean isTransactional() {
 					return Boolean.TRUE.equals(resource.getTransactional());
 				}
-			}, resource, lastEvent.getCurrentRealm(), sourceEvents);
+			}, resource, currentRealm, sourceEvents);
 		} else if(provider != null) {
-			outputEvent = provider.execute(resource, lastEvent.getCurrentRealm(), sourceEvents);
+			outputEvent = provider.execute(resource, currentRealm, sourceEvents);
 		}
 		
 		if(outputEvent!=null) {
