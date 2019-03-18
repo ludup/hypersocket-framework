@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.mail.Message.RecipientType;
 
+import org.apache.http.auth.InvalidCredentialsException;
 import org.codemonkey.simplejavamail.MailException;
 
 import com.hypersocket.permissions.AccessDeniedException;
@@ -38,5 +39,9 @@ public interface EmailNotificationService {
 	void setController(EmailController controller);
 
 	boolean isEnabled();
+
+	String getEmailName(String val) throws InvalidCredentialsException;
+
+	String getEmailAddress(String val) throws InvalidCredentialsException;
 
 }

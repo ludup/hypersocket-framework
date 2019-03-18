@@ -14,6 +14,7 @@ import javax.mail.Session;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
+import org.apache.http.auth.InvalidCredentialsException;
 import org.codemonkey.simplejavamail.MailException;
 import org.codemonkey.simplejavamail.Mailer;
 import org.codemonkey.simplejavamail.TransportStrategy;
@@ -470,5 +471,44 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		}
 
 		return ret.toString();
+	}
+	
+	@Override
+	public String getEmailName(String val) throws InvalidCredentialsException {
+		
+		Pattern p = Pattern.compile(EmailNotificationServiceImpl.EMAIL_NAME_PATTERN);
+
+		Matcher m = p.matcher(val);
+
+		if (m.find()) {
+			return m.group(1).replaceAll("[\\n\\r]+", "");
+		}
+		
+		return "";
+	}
+	
+	@Override
+	public String getEmailAddress(String val) throws InvalidCredentialsException {
+		Pattern p = Pattern.compile(EmailNotificationServiceImpl.EMAIL_NAME_PATTERN);
+
+		Matcher m = p.matcher(val);
+
+		if (m.find()) {
+			@SuppressWarnings("unused")
+			String name = m.group(1).replaceAll("[\\n\\r]+", "");
+			String email = m.group(2).replaceAll("[\\n\\r]+", "");
+
+			if (Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, email)) {
+				return email;
+			} else {
+				throw new InvalidCredentialsException();
+			}
+		}
+
+		if (Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, val)) {
+			return val;
+		}
+		
+		throw new InvalidCredentialsException();
 	}
 }
