@@ -173,11 +173,11 @@ public class EmailTask extends AbstractTaskProvider {
 
 		
 		String subject = processTokenReplacements(
-				repository.getValue(task, ATTR_SUBJECT), event);
+				repository.getValue(task, ATTR_SUBJECT), event, false, false);
 		String body = processTokenReplacements(
-				repository.getValue(task, ATTR_BODY), event);
+				repository.getValue(task, ATTR_BODY), event, false, false);
 		String bodyHtml = processTokenReplacements(
-				repository.getValue(task, ATTR_BODY_HTML), event);
+				repository.getValue(task, ATTR_BODY_HTML), event, false, false);
 		List<RecipientHolder> recipients = new ArrayList<RecipientHolder>();
 
 		populateEmailList(task, ATTR_TO_ADDRESSES, recipients,
