@@ -279,13 +279,14 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 					MultipleTaskResults results = (MultipleTaskResults) outputEvent;
 					for (TaskResult result : results.getResults()) {
 
-						sourceEvents.add(result.getEvent());
+						List<SystemEvent> jobEvents = new ArrayList<>(sourceEvents);
+						jobEvents.add(result.getEvent());
 
 						if (result.isPublishable()) {
 							eventService.publishEvent(result.getEvent());
 						}
 
-						processResult(trigger, triggeredEvent, result, new ArrayList<SystemEvent>(sourceEvents));
+						processResult(trigger, triggeredEvent, result, jobEvents);
 					}
 
 				} else {
