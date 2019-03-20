@@ -2018,19 +2018,15 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		assertAnyPermission(UserPermission.READ, GroupPermission.READ, ProfilePermission.READ, RealmPermission.READ);
 
-		log.info("REMOVEME: Starting principal search for {}={}", searchColumn, searchPattern);
-		
 		switch (type) {
 		case USER: {
 			if (StringUtils.isNotBlank(module)) {
-				log.info("REMOVEME: Search is a filter {}", module);
 				TableFilter filter = principalFilters.get(module);
 				if (filter == null) {
 					filter = builtInPrincipalFilters.get(module);
 				}
 				return filter.searchResources(realm, searchColumn, searchPattern, start, length, sorting);
 			} else {
-				log.info("REMOVEME: Performing principal repository search");
 				return principalRepository.search(realm, type, searchColumn, searchPattern, start, length, sorting);
 			}
 		}

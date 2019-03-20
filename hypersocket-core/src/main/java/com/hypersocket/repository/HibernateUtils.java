@@ -1,6 +1,7 @@
 package com.hypersocket.repository;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -86,8 +87,6 @@ public class HibernateUtils {
 			return;
 		}
 		
-		log.info("REMOVEME: Got return type {}", method.getReturnType().getName());
-		
 		if(method.getReturnType().equals(String.class)) {	
 			searchPattern = searchPattern.replace('*', '%');
 			if(!searchPattern.contains("%")) {
@@ -99,19 +98,14 @@ public class HibernateUtils {
 		
 		try {
 			if(method.getReturnType().equals(Integer.class)) {
-				log.info("REMOVEME: Adding integer search type");
 				criteria.add(Restrictions.eq(searchColumn, Integer.parseInt(searchPattern)));
 			} else if(method.getReturnType().equals(Long.class)) {
-				log.info("REMOVEME: Adding long search type");
 				criteria.add(Restrictions.eq(searchColumn, Long.parseLong(searchPattern)));
 			} else if(method.getReturnType().equals(Double.class)) {
-				log.info("REMOVEME: Adding double search type");
 				criteria.add(Restrictions.eq(searchColumn, Double.parseDouble(searchPattern)));
 			} else if(method.getReturnType().equals(Boolean.class)) {
-				log.info("REMOVEME: Adding boolean search type");
 				criteria.add(Restrictions.eq(searchColumn, Boolean.parseBoolean(searchPattern)));
 			} else if(method.getReturnType().equals(Date.class)) {
-				log.info("REMOVEME: Adding date search type");
 				String[] elements = searchPattern.split(",");
 				if(elements.length > 0) {
 					Date to;
@@ -188,6 +182,8 @@ public class HibernateUtils {
 				} else {
 					criteria.add(Restrictions.ilike("search.name", searchPattern));
 				}
+			} else {
+				log.error("Could not configure search column {}", searchColumn);
 			}
 		
 		} catch(Throwable t) {
