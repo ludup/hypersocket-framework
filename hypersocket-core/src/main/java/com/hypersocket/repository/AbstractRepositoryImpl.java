@@ -489,10 +489,15 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	public <T> List<T> search(Class<T> clz, String searchColumn, String searchPattern, final int start,
 			final int length, final ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		
+		log.info("REMOVEME: search {}={} start={} length={} class={}",
+				searchColumn, searchPattern, start, length, clz.getName());
+		
 		if(length < 0) {
+			log.info("REMOVEME: Invalid length");
 			throw new IllegalArgumentException("Search length cannot be negative");
 		} 
 		if(length == 0) {
+			log.info("REMOVEME: No results requested");
 			return new ArrayList<T>();
 		}
 		

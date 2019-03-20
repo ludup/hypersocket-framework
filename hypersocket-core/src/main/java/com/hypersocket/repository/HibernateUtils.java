@@ -85,6 +85,9 @@ public class HibernateUtils {
 			}
 			return;
 		}
+		
+		log.info("REMOVEME: Got return type {}", method.getReturnType().getName());
+		
 		if(method.getReturnType().equals(String.class)) {	
 			searchPattern = searchPattern.replace('*', '%');
 			if(!searchPattern.contains("%")) {
@@ -96,14 +99,19 @@ public class HibernateUtils {
 		
 		try {
 			if(method.getReturnType().equals(Integer.class)) {
+				log.info("REMOVEME: Adding integer search type");
 				criteria.add(Restrictions.eq(searchColumn, Integer.parseInt(searchPattern)));
 			} else if(method.getReturnType().equals(Long.class)) {
+				log.info("REMOVEME: Adding long search type");
 				criteria.add(Restrictions.eq(searchColumn, Long.parseLong(searchPattern)));
 			} else if(method.getReturnType().equals(Double.class)) {
+				log.info("REMOVEME: Adding double search type");
 				criteria.add(Restrictions.eq(searchColumn, Double.parseDouble(searchPattern)));
 			} else if(method.getReturnType().equals(Boolean.class)) {
+				log.info("REMOVEME: Adding boolean search type");
 				criteria.add(Restrictions.eq(searchColumn, Boolean.parseBoolean(searchPattern)));
 			} else if(method.getReturnType().equals(Date.class)) {
+				log.info("REMOVEME: Adding date search type");
 				String[] elements = searchPattern.split(",");
 				if(elements.length > 0) {
 					Date to;
@@ -149,6 +157,8 @@ public class HibernateUtils {
 				}
 			} else if(Enum.class.isAssignableFrom(method.getReturnType())) {
 				
+				log.info("REMOVEME: Adding enum search type");
+				
 				String[] matchValues = searchPattern.split(",");
 				Class<?> enumType = method.getReturnType();
 				Method valuesMethod = ReflectionUtils.findMethod(enumType, "values");
@@ -169,6 +179,7 @@ public class HibernateUtils {
 					criteria.add(Restrictions.in(searchColumn, searchValues));
 				}
 			} else if(Resource.class.isAssignableFrom(method.getReturnType())) {
+				log.info("REMOVEME: Adding resource search type");
 				criteria.createAlias(searchColumn, "search");
 				if(StringUtils.isNumeric(searchPattern)) {
 					criteria.add(Restrictions.or(
