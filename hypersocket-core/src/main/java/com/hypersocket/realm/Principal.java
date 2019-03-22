@@ -68,6 +68,10 @@ public abstract class Principal extends RealmResource {
 	@Column(name="ou", length=1024)
 	String organizationalUnit;
 	
+	public Long getId() {
+		return super.getId();
+	}
+	
 	@JsonIgnore
 	public Realm getRealm() {
 		return super.getRealm();
