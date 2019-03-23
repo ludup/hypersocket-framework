@@ -1,7 +1,6 @@
 package com.hypersocket.repository;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -9,6 +8,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
 
+import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
@@ -79,7 +80,8 @@ public class HibernateUtils {
 			}
 			searchColumn = elements[elements.length-1];
 		}
-		Method method = ReflectionUtils.findMethod(clz, "get" + StringUtils.capitalize(searchColumn));
+		Method method = findMethod(clz, "get" + StringUtils.capitalize(searchColumn));
+
 		if(method==null) {
 			if(log.isErrorEnabled()) {
 				log.error("Cannot find method for search column value " + searchColumn);
@@ -151,8 +153,6 @@ public class HibernateUtils {
 				}
 			} else if(Enum.class.isAssignableFrom(method.getReturnType())) {
 				
-				log.info("REMOVEME: Adding enum search type");
-				
 				String[] matchValues = searchPattern.split(",");
 				Class<?> enumType = method.getReturnType();
 				Method valuesMethod = ReflectionUtils.findMethod(enumType, "values");
@@ -173,7 +173,7 @@ public class HibernateUtils {
 					criteria.add(Restrictions.in(searchColumn, searchValues));
 				}
 			} else if(Resource.class.isAssignableFrom(method.getReturnType())) {
-				log.info("REMOVEME: Adding resource search type");
+
 				criteria.createAlias(searchColumn, "search");
 				if(StringUtils.isNumeric(searchPattern)) {
 					criteria.add(Restrictions.or(
@@ -220,5 +220,18 @@ public class HibernateUtils {
 	public static boolean isString(Class<?> clz, String column) {
 		return ReflectionUtils.findMethod(clz, "get" + StringUtils.capitalize(column)).getReturnType().equals(String.class);
 	}
+	
+	public static Method findMethod(Class<?> clz, String name) {
+		Method m = null;
+		try {
+			m = clz.getMethod(name);
+		} catch (NoSuchMethodException | SecurityException e) {
+		}
+		if(Objects.isNull(m)) {
+			m = ReflectionUtils.findMethod(clz, name);
+		}
+		return m;
+    }
+
 
 }
