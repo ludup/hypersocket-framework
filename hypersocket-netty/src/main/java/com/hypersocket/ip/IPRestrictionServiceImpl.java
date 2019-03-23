@@ -40,12 +40,7 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 			log.info("Blocking " + addr);
 		}
 		
-		String cidr = addr;
-		if(cidr.indexOf('/')==-1) {
-			cidr += "/32";
-		}
-		
-		IpSubnetFilterRule rule = new IpSubnetFilterRule(false, cidr);
+		IpSubnetFilterRule rule = new IpSubnetFilterRule(false, processAddress(addr));
 		deny.add(rule);
 
 	}
@@ -86,17 +81,24 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 		if(log.isInfoEnabled()) {
 			log.info("Unblocking " + addr);
 		}
-		
-		String cidr = addr;
-		if(cidr.indexOf('/')==-1) {
-			cidr += "/32";
-		}
-		
-		IpFilterRule rule = new IpSubnetFilterRule(false, cidr);
+
+		IpFilterRule rule = new IpSubnetFilterRule(false, processAddress(addr));
 		deny.remove(rule);
 		
 	}
 	
+	private String processAddress(String addr) {
+
+		if(addr.indexOf('/')==-1) {
+			if(addr.indexOf(":") > -1) {
+				addr += "/128";
+			} else {
+				addr += "/32";
+			}
+		}
+		return addr;
+	}
+
 	@Override
 	public synchronized void disallowIPAddress(String addr) throws UnknownHostException {
 		
@@ -104,12 +106,7 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 			log.info("Removing allow rule for " + addr);
 		}
 		
-		String cidr = addr;
-		if(cidr.indexOf('/')==-1) {
-			cidr += "/32";
-		}
-
-		IpFilterRule rule = new IpSubnetFilterRule(true, cidr);
+		IpFilterRule rule = new IpSubnetFilterRule(true, processAddress(addr));
 		allow.remove(rule);
 	}
 
@@ -120,12 +117,7 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 			log.info("Allowing " + addr);
 		}
 		
-		String cidr = addr;
-		if(cidr.indexOf('/')==-1) {
-			cidr += "/32";
-		}
-		
-		IpFilterRule rule = new IpSubnetFilterRule(true, cidr);
+		IpFilterRule rule = new IpSubnetFilterRule(true, processAddress(addr));
 		allow.add(rule);
 	}
 
