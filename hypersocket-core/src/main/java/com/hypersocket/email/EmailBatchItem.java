@@ -43,6 +43,9 @@ public class EmailBatchItem extends RealmResource {
 	@Column(name="track")
 	boolean track;
 	
+	@Column(name="archive")
+	Boolean archive;
+	
 	@Column(name="attachments")
 	@Lob
 	String attachments;
@@ -129,4 +132,14 @@ public class EmailBatchItem extends RealmResource {
 	public void setSchedule(Date schedule) {
 		this.schedule = schedule;
 	}
+
+	public Boolean getArchive() {
+		return archive == null ? Boolean.FALSE : archive;
+	}
+
+	public void setArchive(Boolean archive) {
+		this.archive = archive;
+	}
+	
+	
 }

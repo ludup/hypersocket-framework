@@ -75,7 +75,9 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 
 			emailService.sendEmail(item.getRealm(), item.getSubject(), item.getText(), item.getHtml(),
 					item.getReplyToName(), item.getReplyToEmail(),
-					new RecipientHolder[] { new RecipientHolder(item.getToName(), item.getToEmail()) }, item.getTrack(),
+					new RecipientHolder[] { new RecipientHolder(item.getToName(), item.getToEmail()) }, 
+					item.getArchive(),
+					item.getTrack(),
 					50, attachments.toArray(new EmailAttachment[0]));
 
 			return true;

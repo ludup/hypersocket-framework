@@ -18,9 +18,10 @@
 	<propertyCategory resourceKey="category.options"
 		resourceBundle="MessageResourceService" weight="3000">
 		<property resourceKey="enabled" inputType="switch" weight="0" defaultValue="true"/>
-		<property resourceKey="track" inputType="switch" weight="0" defaultValue="true"/>
+		<property resourceKey="archive" inputType="switch" weight="100" defaultValue="false"/>
+		<property resourceKey="track" inputType="switch" weight="200" defaultValue="true"/>
 		<property resourceKey="attachments" inputType="multipleFileInput"
-			weight="50" defaultValue="" allowEmpty="true" text=""/>
+			weight="300" defaultValue="" allowEmpty="true" text=""/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email.delivery"
 		resourceBundle="MessageResourceService" weight="4000">
@@ -28,6 +29,7 @@
 			weight="10" defaultValue="PRIMARY" valueAttr="name" url="enum/com.hypersocket.message.EmailDeliveryStrategy/" allowEmpty="false"/>
 		<property resourceKey="additionalTo" inputType="multipleTextInput"
 			weight="50" defaultValue="" allowEmpty="true" validateAll="email"/>
+		
 		<property resourceKey="replyToName" inputType="text"
 			weight="80" defaultValue="" size="255" allowEmpty="true"/>
 		<property resourceKey="replyToEmail" inputType="text"

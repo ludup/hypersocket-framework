@@ -712,7 +712,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 
 					emailService.sendEmail(realm, subjectWriter.toString(), bodyWriter.toString(),
 							htmlWriter.toString(), message.getReplyToName(), message.getReplyToEmail(),
-							new RecipientHolder[] { recipient }, message.getTrack(), 50,
+							new RecipientHolder[] { recipient }, message.getArchive(), message.getTrack(), 50,
 							emailAttachments.toArray(new EmailAttachment[0]));
 
 				}

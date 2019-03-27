@@ -23,17 +23,14 @@ public interface EmailNotificationService {
 			RecipientType type) throws ValidationException;
 
 	void sendEmail(String subject, String text, String html, RecipientHolder[] recipients,
-			boolean track, int delay, EmailAttachment... attachments)
+			boolean archive, boolean track, int delay, EmailAttachment... attachments)
 			throws MailException, AccessDeniedException, ValidationException;
 
-	void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients, boolean track, 
+	void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients, boolean archive, boolean track, 
 			int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException;
 
 	void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail,
-			RecipientHolder[] recipients, boolean track, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException;
-
-	void sendEmail(Realm realm, String subject, String text, String html, String replyToName, String replyToEmail,
-			RecipientHolder[] recipients, String[] archiveAddresses, boolean track, int delay, EmailAttachment... attachments)
+			RecipientHolder[] recipients, boolean archive, boolean track, int delay, EmailAttachment... attachments)
 			throws MailException, ValidationException, AccessDeniedException;
 
 	void setController(EmailController controller);

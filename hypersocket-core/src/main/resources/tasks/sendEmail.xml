@@ -18,6 +18,7 @@
 		<property resourceKey="email.to" inputType="multipleTextInput"
 			weight="50" defaultValue="" allowEmpty="false" validateAll="email" invalidResourceKey="error.toRequired"/>
 		<property resourceKey="email.track" inputType="switch" weight="0" defaultValue="true"/>
+		<property resourceKey="email.archive" inputType="switch" weight="10" defaultValue="false"/>
 		<property resourceKey="email.replyToName" inputType="text"
 			weight="80" defaultValue="" size="255" allowEmpty="true"/>
 		<property resourceKey="email.replyToEmail" inputType="text"

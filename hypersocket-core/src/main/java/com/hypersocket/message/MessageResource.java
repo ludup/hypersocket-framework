@@ -66,6 +66,9 @@ public class MessageResource extends RealmResource {
 	@JoinColumn(name="html_template")
 	HtmlTemplateResource htmlTemplate;
 	
+	@Column(name="archive")
+	Boolean archive;
+	
 	public String getSubject() {
 		return subject;
 	}
@@ -169,4 +172,14 @@ public class MessageResource extends RealmResource {
 	public void setHtmlTemplate(HtmlTemplateResource htmlTemplate) {
 		this.htmlTemplate = htmlTemplate;
 	}
+
+	public Boolean getArchive() {
+		return archive == null ? Boolean.FALSE : archive;
+	}
+
+	public void setArchive(Boolean archive) {
+		this.archive = archive;
+	}
+	
+	
 }

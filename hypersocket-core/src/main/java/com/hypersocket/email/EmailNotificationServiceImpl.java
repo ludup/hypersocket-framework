@@ -84,21 +84,14 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 	@Override
 	@SafeVarargs
-	public final void sendEmail(String subject, String text, String html, RecipientHolder[] recipients, boolean track, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
-		sendEmail(getCurrentRealm(), subject, text, html, recipients, track, delay, attachments);
+	public final void sendEmail(String subject, String text, String html, RecipientHolder[] recipients, boolean archive, boolean track, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
+		sendEmail(getCurrentRealm(), subject, text, html, recipients, archive, track, delay, attachments);
 	}
 	
 	@Override
 	@SafeVarargs
-	public final void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients, boolean track, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
-		sendEmail(realm, subject, text, html, null, null, recipients, track, delay, attachments);
-	}
-	
-	@Override
-	public void sendEmail(Realm realm, String subject, String text, String html, String replyToName,
-			String replyToEmail, RecipientHolder[] recipients, boolean track, int delay, EmailAttachment... attachments)
-			throws MailException, AccessDeniedException, ValidationException {
-		sendEmail(realm, subject, text, html, replyToName, replyToEmail, recipients, new String[0], track, delay, attachments);
+	public final void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients, boolean archive, boolean track, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
+		sendEmail(realm, subject, text, html, null, null, recipients, archive, track, delay, attachments);
 	}
 	
 	public EmailController getController() {
@@ -129,7 +122,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			String replyToName, 
 			String replyToEmail, 
 			RecipientHolder[] recipients, 
-			String[] archiveAddresses,
+			boolean archive,
 			boolean track,
 			int delay,
 			EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
@@ -158,7 +151,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		String archiveAddress = configurationService.getValue(realm, "email.archiveAddress");
 		List<RecipientHolder> archiveRecipients = new ArrayList<RecipientHolder>();
 
-		if(StringUtils.isNotBlank(archiveAddress)) {
+		if(archive && StringUtils.isNotBlank(archiveAddress)) {
 			populateEmailList(new String[] {archiveAddress} , archiveRecipients, RecipientType.TO);
 		}
 
