@@ -699,7 +699,9 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 					
 					if(dropCurrent) {
 						for(T resource : getResources(realm)) {
-							deleteResource(resource);
+							if(!Objects.isNull(resource.getLegacyId())) {
+								deleteResource(resource);
+							}
 						}
 					}
 					ObjectMapper mapper = new ObjectMapper();
@@ -723,13 +725,19 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	
 	protected void performImport(T resource, Realm realm) throws ResourceException, AccessDeniedException {
 		resource.setRealm(realm);
-		if(prepareImport(resource, realm)) {
-			if(checkImportName(resource, realm)) {
-				createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() : resource.getProperties());
-				onResourceImported(resource);
+		T existing = null;
+		try {
+			existing = getResourceByLegacyId(resource.getLegacyId());
+		} catch(ResourceNotFoundException ex) { }
+		
+		if(Objects.isNull(existing)) {
+			if(prepareImport(resource, realm)) {
+				if(checkImportName(resource, realm)) {
+					createResource(resource, resource.getProperties()==null ? new HashMap<String,String>() : resource.getProperties());
+					onResourceImported(resource);
+				}
 			}
 		}
-		
 	}
 	
 	protected void onResourceImported(T resource) {
