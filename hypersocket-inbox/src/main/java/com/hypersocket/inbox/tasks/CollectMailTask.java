@@ -140,7 +140,7 @@ public class CollectMailTask extends AbstractTaskProvider {
 									try {
 										FileUpload upload = fileUploadService.createFile(inputStream,
 												filename, currentRealm,
-												fileUploadService.getDefaultStore(), false,
+												fileUploadService.getDefaultStore(), true, // Must be publicly accessible for using attachment links in email
 												attachment.getContentType());
 										attachmentUUIDs.add(upload.getName());
 									} finally {
