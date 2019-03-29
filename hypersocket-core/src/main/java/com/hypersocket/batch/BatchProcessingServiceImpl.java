@@ -3,6 +3,7 @@ package com.hypersocket.batch;
 import java.util.Collection;
 
 import javax.annotation.PostConstruct;
+import javax.cache.Cache;
 
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.cache.CacheService;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.RealmResource;
 import com.hypersocket.resource.ResourceException;
@@ -17,6 +19,8 @@ import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 
 public abstract class BatchProcessingServiceImpl<T extends RealmResource> implements BatchProcessingService<T> {
+
+	private static final String IN_PROGRESS_KEY = "BatchProcessRunning";
 
 	static Logger log = LoggerFactory.getLogger(BatchProcessingServiceImpl.class);
 	
@@ -33,6 +37,9 @@ public abstract class BatchProcessingServiceImpl<T extends RealmResource> implem
 	
 	@Autowired
 	RealmService realmService; 
+	
+	@Autowired
+	CacheService cacheService; 
 	
 	@PostConstruct 
 	private void postConstruct() {
@@ -58,36 +65,51 @@ public abstract class BatchProcessingServiceImpl<T extends RealmResource> implem
 	@Override
 	public void processBatchItems() {
 		
-		Collection<T> items = getRepository().allResources();
-			
-		if(items.isEmpty()) {
-			if(log.isDebugEnabled()) {
-				log.debug(String.format("There are no batch items to process"));
-			}
+		
+		Cache<String,Boolean> cache = cacheService.getCacheOrCreate(getJobKey(), String.class, Boolean.class);
+		Boolean running = cache.get(IN_PROGRESS_KEY);
+		if(Boolean.TRUE.equals(running)) {
+			log.info(String.format("Existing batch job for %s is currently in progress", getJobKey()));
 			return;
 		}
-			
-		if(log.isInfoEnabled()) {
-			log.info(String.format("Processing %d batch items", items.size()));
-		}
-			
-		for(T item : items) {
-			
-			boolean processed = true; 
-			try {
-				processed = process(item);			
-			} catch(Throwable t) {
-				log.error("Failed to process batch item", t);
-				processed = onProcessFailure(item);
-			} finally {
-				if(processed) {
-					try {
-						getRepository().deleteResource(item);
-					} catch (ResourceException e) {
-						log.error("Failed to delete batch item resource", e);
+		
+		cache.put(IN_PROGRESS_KEY, Boolean.TRUE);
+		
+		try {
+			Collection<T> items = getRepository().allResources();
+				
+			if(items.isEmpty()) {
+				if(log.isDebugEnabled()) {
+					log.debug(String.format("There are no batch items to process"));
+				}
+				return;
+			}
+				
+			if(log.isInfoEnabled()) {
+				log.info(String.format("Processing %d batch items", items.size()));
+			}
+				
+			for(T item : items) {
+				
+				boolean processed = true; 
+				try {
+					processed = process(item);			
+				} catch(Throwable t) {
+					log.error("Failed to process batch item", t);
+					processed = onProcessFailure(item);
+				} finally {
+					if(processed) {
+						try {
+							getRepository().deleteResource(item);
+						} catch (ResourceException e) {
+							log.error("Failed to delete batch item resource", e);
+						}
 					}
 				}
 			}
+		
+		} finally {
+			cache.remove(IN_PROGRESS_KEY);
 		}
 		
 	}
