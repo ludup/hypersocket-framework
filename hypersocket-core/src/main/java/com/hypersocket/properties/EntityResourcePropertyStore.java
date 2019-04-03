@@ -346,8 +346,21 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 					return;
 				} else if (primitiveParsers.containsKey(clz)) {
 					try {
-						final Object object = StringUtils.isBlank(value) ? null : primitiveParsers.get(clz).parseValue(value);
-						if(object != null && !object.getClass().equals(clz)) {
+						Object object = StringUtils.isBlank(value) ? null : primitiveParsers.get(clz).parseValue(value);
+						if(object == null) {
+							if(clz.equals(boolean.class)) {
+								m.invoke(resource, false);
+							}
+							else if(clz.equals(int.class)) {
+								m.invoke(resource, 0);
+							}
+							else if(clz.equals(long.class)) {
+								m.invoke(resource, 0l);
+							}
+							else
+								m.invoke(resource, object);
+						}
+						else if(object != null && !object.getClass().equals(clz)) {
 							if(clz.equals(boolean.class)) {
 								m.invoke(resource, ((Boolean)object).booleanValue());
 							}
