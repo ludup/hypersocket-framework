@@ -63,7 +63,7 @@ public abstract class BatchProcessingServiceImpl<T extends RealmResource> implem
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public void processBatchItems() {
+	public synchronized void processBatchItems() {
 		
 		
 		Cache<String,Boolean> cache = cacheService.getCacheOrCreate(getJobKey(), String.class, Boolean.class);
