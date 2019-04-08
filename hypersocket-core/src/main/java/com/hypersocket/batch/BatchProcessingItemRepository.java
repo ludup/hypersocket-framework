@@ -7,6 +7,6 @@ import com.hypersocket.resource.RealmResource;
 
 public interface BatchProcessingItemRepository<T extends RealmResource> extends AbstractResourceRepository<T> {
 
-	Collection<T> allResources();
+	Collection<T> getAllResourcesAndMarkDeleted();
 
 }

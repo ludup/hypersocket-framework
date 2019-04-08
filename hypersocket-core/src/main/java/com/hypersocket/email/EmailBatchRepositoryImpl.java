@@ -8,5 +8,4 @@ public class EmailBatchRepositoryImpl extends BatchProcessingItemRepositoryImpl<
 	protected Class<EmailBatchItem> getResourceClass() {
 		return EmailBatchItem.class;
 	}
-
 }

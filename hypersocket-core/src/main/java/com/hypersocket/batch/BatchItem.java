@@ -14,7 +14,7 @@ public class BatchItem extends RealmResource {
 
 	@Column(name="resource_key")
 	String resourceKey;
-
+	
 	public String getResourceKey() {
 		return resourceKey;
 	}

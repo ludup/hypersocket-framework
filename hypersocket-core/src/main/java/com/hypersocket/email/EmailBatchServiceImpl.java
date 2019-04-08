@@ -3,6 +3,7 @@ package com.hypersocket.email;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -79,7 +80,7 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 					new RecipientHolder[] { new RecipientHolder(item.getToName(), item.getToEmail()) }, 
 					item.getArchive(), 
 					item.getTrack(),
-					50, attachments.toArray(new EmailAttachment[0]));
+					5, attachments.toArray(new EmailAttachment[0]));
 
 			return true;
 		} catch (MailException | AccessDeniedException | ValidationException e) {
@@ -124,5 +125,4 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 
 		repository.saveResource(item);
 	}
-
 }

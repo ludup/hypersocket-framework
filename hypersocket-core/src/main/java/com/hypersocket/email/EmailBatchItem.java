@@ -44,7 +44,7 @@ public class EmailBatchItem extends RealmResource {
 	boolean track;
 	
 	@Column(name="archive")
-	Boolean archive;
+	Boolean archive = Boolean.FALSE;
 	
 	@Column(name="attachments")
 	@Lob

@@ -4,9 +4,9 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import com.hypersocket.ApplicationContextServiceImpl;
-import com.hypersocket.scheduler.PermissionsAwareJobNonTransactional;
+import com.hypersocket.scheduler.PermissionsAwareJob;
 
-public class BatchJob extends PermissionsAwareJobNonTransactional {
+public class BatchJob extends PermissionsAwareJob {
 
 	@Override
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {

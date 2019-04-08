@@ -20,8 +20,6 @@ import com.hypersocket.scheduler.PermissionsAwareJobData;
 
 public abstract class BatchProcessingServiceImpl<T extends RealmResource> implements BatchProcessingService<T> {
 
-	private static final String IN_PROGRESS_KEY = "BatchProcessRunning";
-
 	static Logger log = LoggerFactory.getLogger(BatchProcessingServiceImpl.class);
 	
 	protected abstract BatchProcessingItemRepository<T> getRepository();
@@ -67,16 +65,21 @@ public abstract class BatchProcessingServiceImpl<T extends RealmResource> implem
 		
 		
 		Cache<String,Boolean> cache = cacheService.getCacheOrCreate(getJobKey(), String.class, Boolean.class);
-		Boolean running = cache.get(IN_PROGRESS_KEY);
+		Boolean running = cache.get(getJobKey());
 		if(Boolean.TRUE.equals(running)) {
 			log.info(String.format("Existing batch job for %s is currently in progress", getJobKey()));
 			return;
 		}
 		
-		cache.put(IN_PROGRESS_KEY, Boolean.TRUE);
+		cache.put(getJobKey(), Boolean.TRUE);
 		
 		try {
-			Collection<T> items = getRepository().allResources();
+			/**
+			 * We now get all resources and mark them as deleted to prevent further invocations
+			 * of this batch job rescheduling the batch item. Once this method returns the
+			 * batch item should never be returned again.
+			 */
+			Collection<T> items = getRepository().getAllResourcesAndMarkDeleted();
 				
 			if(items.isEmpty()) {
 				if(log.isDebugEnabled()) {
@@ -109,7 +112,7 @@ public abstract class BatchProcessingServiceImpl<T extends RealmResource> implem
 			}
 		
 		} finally {
-			cache.remove(IN_PROGRESS_KEY);
+			cache.remove(getJobKey());
 		}
 		
 	}
