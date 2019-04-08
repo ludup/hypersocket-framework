@@ -74,9 +74,10 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 			}
 
 			emailService.sendEmail(item.getRealm(), item.getSubject(), item.getText(), item.getHtml(),
-					item.getReplyToName(), item.getReplyToEmail(),
+					item.getReplyToName(), 
+					item.getReplyToEmail(),
 					new RecipientHolder[] { new RecipientHolder(item.getToName(), item.getToEmail()) }, 
-					item.getArchive(),
+					item.getArchive(), 
 					item.getTrack(),
 					50, attachments.toArray(new EmailAttachment[0]));
 
@@ -94,14 +95,14 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 
 	@Override
 	public void queueEmail(Realm realm, String subject, String body, String html, String replyToName,
-			String replyToEmail, String name, String email, Boolean track, String attachments)
+			String replyToEmail, String name, String email, Boolean archive, Boolean track, String attachments)
 			throws ResourceException {
-		scheduleEmail(realm, subject, body, html, replyToName, replyToEmail, name, email, track, attachments, null);
+		scheduleEmail(realm, subject, body, html, replyToName, replyToEmail, name, email, archive, track, attachments, null);
 	}
 
 	@Override
 	public void scheduleEmail(Realm realm, String subject, String body, String html, String replyToName,
-			String replyToEmail, String name, String email, Boolean track, String attachments, Date schedule)
+			String replyToEmail, String name, String email, Boolean archive, Boolean track, String attachments, Date schedule)
 			throws ResourceException {
 
 		EmailBatchItem item = new EmailBatchItem();
@@ -116,6 +117,7 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 		item.setToEmail(email);
 		item.setTrack(track);
 		item.setAttachments(attachments);
+		item.setArchive(archive);
 		if (schedule != null) {
 			item.setSchedule(schedule);
 		}

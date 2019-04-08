@@ -133,13 +133,11 @@ public class EmailBatchItem extends RealmResource {
 		this.schedule = schedule;
 	}
 
-	public Boolean getArchive() {
-		return archive == null ? Boolean.FALSE : archive;
-	}
-
 	public void setArchive(Boolean archive) {
 		this.archive = archive;
 	}
 	
-	
+	public Boolean getArchive() {
+		return archive == null ? Boolean.FALSE : archive;
+	}
 }

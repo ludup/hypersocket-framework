@@ -688,7 +688,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 					batchService.scheduleEmail(realm, subjectWriter.toString(), bodyWriter.toString(),
 							htmlWriter.toString(), replyTo != null ? replyTo.getName() : message.getReplyToName(),
 							replyTo != null ? replyTo.getEmail() : message.getReplyToEmail(), recipient.getName(),
-							recipient.getEmail(), message.getTrack(), attachmentsListString, schedule);
+							recipient.getEmail(), message.getArchive(), message.getTrack(), attachmentsListString, schedule);
 
 				} else {
 					List<EmailAttachment> emailAttachments = new ArrayList<EmailAttachment>();
