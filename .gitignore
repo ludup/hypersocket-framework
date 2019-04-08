@@ -8,3 +8,4 @@
 /hypersocket-client/
 *.log
 **/.classpath
+/target/
