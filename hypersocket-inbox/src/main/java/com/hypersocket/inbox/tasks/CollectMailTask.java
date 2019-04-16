@@ -133,6 +133,11 @@ public class CollectMailTask extends AbstractTaskProvider {
 					if (doAttachments) {
 						for (EmailAttachment attachment : attachments) {
 							String filename = attachment.getFilename();
+							
+							if(StringUtils.isBlank(filename)) {
+								filename = attachment.getFile().getName();
+							}
+							
 							if (!filename.startsWith(
 									EmailNotificationServiceImpl.OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-")) {
 								try {
@@ -148,16 +153,24 @@ public class CollectMailTask extends AbstractTaskProvider {
 									}
 								} catch (ResourceException e) {
 									log.error(String.format("Failed to attach %s", filename), e);
-									result = new CollectMailTaskResult(this, e, currentRealm, task);
+									result = new CollectMailTaskResult(this, e, currentRealm, task, from, replyTo, to, cc,
+											subject, textContent, htmlContent, sent, received, attachmentUUIDs.toArray(new String[0]));
 									break;
 								} catch (AccessDeniedException e) {
 									log.error(String.format("Access denied for attaching %s", filename),
 											e);
-									result = new CollectMailTaskResult(this, e, currentRealm, task);
+									result = new CollectMailTaskResult(this, e, currentRealm, task, from, replyTo, to, cc,
+											subject, textContent, htmlContent, sent, received, attachmentUUIDs.toArray(new String[0]));
 									break;
 								} catch (IOException e) {
 									log.error(String.format("I/O error attaching %s", filename), e);
-									result = new CollectMailTaskResult(this, e, currentRealm, task);
+									result = new CollectMailTaskResult(this, e, currentRealm, task, from, replyTo, to, cc,
+											subject, textContent, htmlContent, sent, received, attachmentUUIDs.toArray(new String[0]));
+									break;
+								} catch (Exception e) {
+									log.error(String.format("I/O error attaching %s", filename), e);
+									result = new CollectMailTaskResult(this, e, currentRealm, task, from, replyTo, to, cc,
+											subject, textContent, htmlContent, sent, received, attachmentUUIDs.toArray(new String[0]));
 									break;
 								}
 							}

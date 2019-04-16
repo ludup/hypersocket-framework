@@ -34,7 +34,12 @@ public class CollectMailTaskResult extends AbstractTaskResult {
 			Address[] replyTo, Address[] to, Address[] cc, String subject, String textContent, String htmlContent,
 			Date sent, Date received, String... attachments) {
 		super(source, EVENT_RESOURCE_KEY, success, currentRealm, task);
-
+		addAttributes(from, replyTo, to, cc, subject, textContent, htmlContent, sent, received, attachments);
+	}
+	
+	private void addAttributes(Address[] from,
+			Address[] replyTo, Address[] to, Address[] cc, String subject, String textContent, String htmlContent,
+			Date sent, Date received, String... attachments) {
 		// Not thread safe
 		DateFormat rfc2113 = new SimpleDateFormat("EEE, dd MMM yyyyy HH:mm:ss z");
 		
@@ -57,6 +62,13 @@ public class CollectMailTaskResult extends AbstractTaskResult {
 
 	public CollectMailTaskResult(Object source, Throwable e, Realm currentRealm, Task task) {
 		super(source, EVENT_RESOURCE_KEY, e, currentRealm, task);
+	}
+	
+	public CollectMailTaskResult(Object source, Throwable e, Realm currentRealm, Task task, Address[] from,
+			Address[] replyTo, Address[] to, Address[] cc, String subject, String textContent, String htmlContent,
+			Date sent, Date received, String... attachments) {
+		super(source, EVENT_RESOURCE_KEY, e, currentRealm, task);
+		addAttributes(from, replyTo, to, cc, subject, textContent, htmlContent, sent, received, attachments);
 	}
 
 	@Override
