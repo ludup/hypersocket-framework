@@ -246,36 +246,29 @@ public class CertificateResourceServiceImpl extends
 
 		resource.setName(name);
 
-		try {
-			getProvider(properties).update(resource, name, properties);
-			updateResource(resource, properties, new TransactionAdapter<CertificateResource>() {
+		updateResource(resource, properties, new TransactionAdapter<CertificateResource>() {
 
-				@Override
-				public void afterOperation(CertificateResource resource, Map<String, String> properties)
-						throws ResourceException {
-					sendCertificateNotification(resource, MESSAGE_CERTIFICATE_UPDATED);
-				}
-				
-			});
 			
-			return resource;
-		} catch (CertificateException e) {
-			log.error("Failed to generate certificate", e);
-			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"error.certificateError", e.getMessage());
-		} catch (UnsupportedEncodingException e) {
-			log.error("Failed to encode certificate", e);
-			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"error.certificateError", e.getMessage());
-		} catch (InvalidPassphraseException e) {
-			log.error("Failed to decrypt private key", e);
-			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"error.certificateError", e.getMessage());
-		} catch (FileFormatException e) {
-			log.error("Failed to decode certificate", e);
-			throw new ResourceChangeException(RESOURCE_BUNDLE,
-					"error.certificateError", e.getMessage());
-		}
+			@Override
+			public void beforeOperation(CertificateResource resource, Map<String, String> properties)
+					throws ResourceException {
+				try {
+					getProvider(properties).update(resource, name, properties);
+				} catch (CertificateException | UnsupportedEncodingException | InvalidPassphraseException
+						| FileFormatException | AccessDeniedException e) {
+					throw new IllegalStateException(e.getMessage(), e);
+				}
+			}
+
+			@Override
+			public void afterOperation(CertificateResource resource, Map<String, String> properties)
+					throws ResourceException {
+				sendCertificateNotification(resource, MESSAGE_CERTIFICATE_UPDATED);
+			}
+			
+		});
+		
+		return resource;
 	}
 
 	@Override
@@ -288,27 +281,26 @@ public class CertificateResourceServiceImpl extends
 		resource.setRealm(realm);
 		resource.setSystem(system);
 		
-		try {
-			getProvider(properties).create(resource, properties);
-			createResource(resource, properties, new TransactionAdapter<CertificateResource>() {
+		createResource(resource, properties, new TransactionAdapter<CertificateResource>() {
 
-				@Override
-				public void afterOperation(CertificateResource resource, Map<String, String> properties)
-						throws ResourceException {
-					sendCertificateNotification(resource, MESSAGE_CERTIFICATE_CREATED);
+			@Override
+			public void beforeOperation(CertificateResource resource, Map<String, String> properties)
+					throws ResourceException {
+				try {
+					getProvider(properties).create(resource, properties);
+				} catch (CertificateException | UnsupportedEncodingException | AccessDeniedException e) {
+					throw new IllegalStateException(e.getMessage(), e);
 				}
-				
-			});
-			return resource;
-		} catch (CertificateException e) {
-			log.error("Failed to generate certificate", e);
-			throw new ResourceCreationException(RESOURCE_BUNDLE,
-					"error.certificateError", e.getMessage());
-		} catch (UnsupportedEncodingException e) {
-			log.error("Failed to encode certificate", e);
-			throw new ResourceCreationException(RESOURCE_BUNDLE,
-					"error.certificateError", e.getMessage());
-		}
+			}
+
+			@Override
+			public void afterOperation(CertificateResource resource, Map<String, String> properties)
+					throws ResourceException {
+				sendCertificateNotification(resource, MESSAGE_CERTIFICATE_CREATED);
+			}
+			
+		});
+		return resource;
 	}
 
 	private CertificateProvider getProvider(Map<String, String> properties) {

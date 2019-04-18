@@ -35,9 +35,8 @@ public abstract class AbstractCertificateProvider implements CertificateProvider
 
 	protected KeyPair createKeyPair(CertificateResource resource, Map<String, String> properties)
 			throws ResourceCreationException, CertificateException {
-		CertificateType type = CertificateType.valueOf(properties.get("certType"));
-
-		switch (type) {
+		
+		switch (resource.getCertType()) {
 		case RSA_1024:
 			return X509CertificateUtils.generatePrivateKey("RSA", 1024);
 		case RSA_2048:
