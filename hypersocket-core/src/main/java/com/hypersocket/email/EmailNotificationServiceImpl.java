@@ -295,6 +295,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				return;
 			}
 		}
+		
 		Email email = new Email();
 		
 		email.setFromAddress(

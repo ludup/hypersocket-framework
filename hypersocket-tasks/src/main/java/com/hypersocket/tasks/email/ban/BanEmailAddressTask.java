@@ -95,8 +95,14 @@ public class BanEmailAddressTask extends AbstractAccountTask {
 	protected TaskResult doExecute(Principal p, Task task, Realm currentRealm, List<SystemEvent> events)
 			throws ValidationException {
 		
-		realmService.setUserPropertyBoolean(p, "user.bannedEmail", true);
-		return new BanEmailAddressTaskResult(this, true, currentRealm, task);
+		boolean banned = realmService.getUserPropertyBoolean(p, "user.bannedEmail");
+		
+		if(!banned) {
+			realmService.setUserPropertyBoolean(p, "user.bannedEmail", true);
+			return new BanEmailAddressTaskResult(this, true, currentRealm, task, p.getEmail(), p.getName());
+		} else {
+			return new BanEmailAddressTaskResult(this, false, currentRealm, task, p.getEmail(), p.getName());
+		}
 	}
 
 }
