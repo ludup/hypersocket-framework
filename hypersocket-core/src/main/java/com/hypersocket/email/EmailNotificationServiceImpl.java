@@ -276,6 +276,25 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			int delay,
 			EmailAttachment... attachments) throws AccessDeniedException {
 		
+		Principal p = null;
+		
+		if(r.hasPrincipal()) {
+			p = r.getPrincipal();
+		} else {
+			try {
+				p = realmService.getPrincipalByEmail(realm, r.getEmail());
+			} catch (ResourceNotFoundException e) {
+			}
+		}
+		
+		if(p!=null) {
+			if(realmService.getUserPropertyBoolean(p, "user.bannedEmail")) {
+				if(log.isInfoEnabled()) {
+					log.info("Email to principal {} is banned", r.getEmail());
+				}
+				return;
+			}
+		}
 		Email email = new Email();
 		
 		email.setFromAddress(
