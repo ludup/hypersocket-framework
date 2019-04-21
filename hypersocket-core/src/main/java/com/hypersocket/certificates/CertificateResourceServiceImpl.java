@@ -228,7 +228,7 @@ public class CertificateResourceServiceImpl extends
 
 	@Override
 	public void updateCertificate(CertificateResource resource) throws ResourceException, AccessDeniedException {
-		updateResource(resource, new HashMap<String,String>(), new TransactionAdapter<CertificateResource>() {
+		updateResource(resource, new TransactionAdapter<CertificateResource>() {
 
 			@Override
 			public void afterOperation(CertificateResource resource, Map<String, String> properties)
@@ -532,7 +532,7 @@ public class CertificateResourceServiceImpl extends
 			}
 			resource.setCertificate(new String(certStream.toByteArray(), "UTF-8"));
 
-			updateResource(resource, new HashMap<String, String>());
+			updateResource(resource);
 
 		} catch (CertificateException | ResourceChangeException | IOException
 				| FileFormatException | InvalidPassphraseException

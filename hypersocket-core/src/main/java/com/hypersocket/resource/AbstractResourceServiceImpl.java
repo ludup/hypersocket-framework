@@ -250,12 +250,19 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	
 	@Override
 	@SafeVarargs
-	public final void updateResource(T resource, Map<String,String> properties, TransactionOperation<T>... ops) throws ResourceException,
+	public final void updateResource(T resource, 
+			Map<String,String> properties, 
+			TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
 
 		processName(resource, properties);
 		
-		boolean changedDefault = resource.getOldName()!=null && !resource.getName().equals(resource.getOldName());
+		/**
+		 * LDP = If we pass a null set of properties then assume the resource has changed. We need this because several
+		 * areas don't use properties and this method prevents the essential update events from being fired because it
+		 * assumes the changes are in the properties map.
+		 */
+		boolean changedDefault = properties==null || (resource.getOldName()!=null && !resource.getName().equals(resource.getOldName()))     ;
 
 		if(assertPermissions) {
 			assertPermission(getUpdatePermission(resource));
@@ -332,7 +339,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	@SafeVarargs
 	public final void updateResource(T resource, TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
-		updateResource(resource, new HashMap<String,String>(), ops);
+		updateResource(resource, null, ops);
 	}
 
 	protected abstract void fireResourceUpdateEvent(T resource);
