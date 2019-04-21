@@ -1,6 +1,7 @@
 package com.hypersocket.email;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
@@ -296,11 +297,28 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			}
 		}
 		
-		Email email = new Email();
+		String fromAddress = getSMTPValue(realm, SMTP_FROM_ADDRESS);
+		if(r.getEmail().equalsIgnoreCase(fromAddress)) {
+			if(log.isInfoEnabled()) {
+				log.info("Email loopback detected. The from address {} is the same as the destination", fromAddress, r.getEmail());
+			}
+			return;
+		}
 		
+		List<String> blocked = Arrays.asList(configurationService.getValues(realm, "email.blocked"));
+		for(String emailAddress : blocked) {
+			if(r.getEmail().equalsIgnoreCase(emailAddress)) {
+				if(log.isInfoEnabled()) {
+					log.info("Email blocked. The destination address {} is blocked", emailAddress);
+				}
+				return;
+			}
+		}
+		
+		Email email = new Email();
 		email.setFromAddress(
 				getSMTPValue(realm, SMTP_FROM_NAME), 
-				getSMTPValue(realm, SMTP_FROM_ADDRESS));
+				fromAddress);
 		
 		if(StringUtils.isNotBlank(replyToName) && StringUtils.isNotBlank(replyToEmail)) {
 			email.setReplyToAddress(replyToName, replyToEmail);

@@ -35,6 +35,7 @@
 		<property resourceKey="email.archiveAddress" inputType="text" weight="800" defaultValue="" />
 		<property resourceKey="email.serverName" inputType="text" weight="900" defaultValue="Hypersocket Server" />
 		<property resourceKey="email.externalHostname" inputType="text" weight="1000" defaultValue="localhost" />
+		<property resourceKey="email.blocked" inputType="multipleTextInput" weight="1100" defaultValue="" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.localization"
 		resourceBundle="I18NService" weight="700">
