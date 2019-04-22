@@ -71,8 +71,6 @@ public class RecipientHolder {
 					if(salutations.contains(firstName.toUpperCase()) && idx2 > 0) {
 						firstName = name.substring(idx+1, idx2);
 					}
-					while(firstName.endsWith(","))
-						firstName = firstName.substring(0, firstName.length() - 1);
 					return firstName;
 				}
 			}
