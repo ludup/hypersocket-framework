@@ -59,14 +59,22 @@ public class RecipientHolder {
 	public String getFirstName() {
 		String name = getName();
 		if(StringUtils.isNotBlank(name)) {
-			int idx = name.indexOf(' ');
-			if(idx > 0) {
-				String firstName = name.substring(0,  idx);
-				int idx2 = name.indexOf(' ', idx+1);
-				if(salutations.contains(firstName.toUpperCase()) && idx2 > 0) {
-					firstName = name.substring(idx+1, idx2);
+			int idx = name.indexOf(',');
+			if(idx != -1) {
+				return name.substring(idx + 1).trim();
+			}
+			else {
+				idx = name.indexOf(' ');
+				if(idx > 0) {
+					String firstName = name.substring(0,  idx);
+					int idx2 = name.indexOf(' ', idx+1);
+					if(salutations.contains(firstName.toUpperCase()) && idx2 > 0) {
+						firstName = name.substring(idx+1, idx2);
+					}
+					while(firstName.endsWith(","))
+						firstName = firstName.substring(0, firstName.length() - 1);
+					return firstName;
 				}
-				return firstName;
 			}
 			return name;
 		}
