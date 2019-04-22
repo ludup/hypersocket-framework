@@ -45,12 +45,12 @@ public class CollectMailTaskResult extends AbstractTaskResult {
 		
 		// LDP - We should be honouring reply and should use it in preference to from
 		if(replyTo!=null && replyTo.length > 0) {
-			addAttribute(ATTR_FROM, StringUtils.join(replyTo, ','));
+			addAttribute(ATTR_FROM, StringUtils.join(replyTo, '\n'));
 		} else {
-			addAttribute(ATTR_FROM, StringUtils.join(from, ','));
+			addAttribute(ATTR_FROM, StringUtils.join(from, '\n'));
 		}
-		addAttribute(ATTR_TO, StringUtils.join(to, ','));
-		addAttribute(ATTR_CC, StringUtils.join(cc, ','));
+		addAttribute(ATTR_TO, StringUtils.join(to, '\n'));
+		addAttribute(ATTR_CC, StringUtils.join(cc, '\n'));
 		addAttribute(ATTR_SUBJECT, StringUtils.defaultIfBlank(subject, ""));
 		addAttribute(ATTR_TEXT_CONTENT, StringUtils.defaultIfBlank(textContent, ""));
 		addAttribute(ATTR_HTML_CONTENT, StringUtils.defaultIfBlank(htmlContent, ""));
@@ -59,6 +59,7 @@ public class CollectMailTaskResult extends AbstractTaskResult {
 		addAttribute(ATTR_ATTACHMENTS, StringUtils.join(attachments, ','));
 
 	}
+	
 
 	public CollectMailTaskResult(Object source, Throwable e, Realm currentRealm, Task task) {
 		super(source, EVENT_RESOURCE_KEY, e, currentRealm, task);
