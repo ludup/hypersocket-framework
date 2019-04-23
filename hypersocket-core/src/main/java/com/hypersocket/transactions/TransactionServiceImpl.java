@@ -53,7 +53,7 @@ public class TransactionServiceImpl implements TransactionService {
 			}
 
 			throw new ResourceException(AuthenticationService.RESOURCE_BUNDLE, "error.transactionFailed",
-					e.getMessage());
+					e.getMessage(), e);
 		}
 	}
 
