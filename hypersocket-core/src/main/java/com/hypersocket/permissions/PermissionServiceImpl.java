@@ -511,9 +511,11 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			throw new AccessDeniedException();
 		}
 
-		if (hasElevatedPermissions()) {
-			for (PermissionType perm : getElevatedPermissions()) {
-				principalPermissions.add(getPermission(perm.getResourceKey()));
+		if(principal.equals(getCurrentPrincipal())) {
+			if (hasElevatedPermissions()) {
+				for (PermissionType perm : getElevatedPermissions()) {
+					principalPermissions.add(getPermission(perm.getResourceKey()));
+				}
 			}
 		}
 
@@ -598,9 +600,11 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public boolean hasSystemPermission(Principal principal) {
 
 		Set<Permission> principalPermissions = getPrincipalPermissions(principal.getRealm(), principal);
-		if (hasElevatedPermissions()) {
-			for (PermissionType perm : getElevatedPermissions()) {
-				principalPermissions.add(getPermission(perm.getResourceKey()));
+		if(principal.equals(getCurrentPrincipal())) {
+			if (hasElevatedPermissions()) {
+				for (PermissionType perm : getElevatedPermissions()) {
+					principalPermissions.add(getPermission(perm.getResourceKey()));
+				}
 			}
 		}
 		return hasSystemPrincipal(principalPermissions);
