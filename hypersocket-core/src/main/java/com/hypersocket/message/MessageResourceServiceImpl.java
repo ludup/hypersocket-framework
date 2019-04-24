@@ -629,7 +629,17 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 				data.put("principalId", recipient.getPrincipalId());
 
 				if(recipient.hasPrincipal()) {
-					data.putAll(realmService.getUserPropertyValues(recipient.getPrincipal()));
+					/* 
+					 * #V1HT82 - Issue Title is not showing in outgoing email
+					 * 
+					 * Don't overwrite variables provided by the token resolver, 
+					 * they should have higher priority.
+					 */
+					final Map<String, String> userProps = realmService.getUserPropertyValues(recipient.getPrincipal());
+					for(Map.Entry<String, String> en : userProps.entrySet()) {
+						if(!data.containsKey(en.getKey()))
+							data.put(en.getKey(), en.getValue());
+					}
 				}
 				
 				Template subjectTemplate = templateService.createTemplate("message.subject." + message.getId(),
