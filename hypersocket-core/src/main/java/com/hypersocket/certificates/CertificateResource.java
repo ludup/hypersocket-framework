@@ -1,9 +1,13 @@
 package com.hypersocket.certificates;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.resource.RealmResource;
@@ -52,6 +56,12 @@ public class CertificateResource extends RealmResource {
 	
 	@Column(name="provider")
 	String provider;
+	
+	@Temporal(TemporalType.DATE)
+	Date expiryDate;
+	
+	@Temporal(TemporalType.DATE)
+	Date issueDate;
 	
 	public String getProvider() {
 		return provider;
@@ -156,6 +166,22 @@ public class CertificateResource extends RealmResource {
 
 	public void setSignatureAlgorithm(String signatureAlgorithm) {
 		this.signatureAlgorithm = signatureAlgorithm;
+	}
+
+	public Date getExpiryDate() {
+		return expiryDate;
+	}
+
+	public void setExpiryDate(Date expiryDate) {
+		this.expiryDate = expiryDate;
+	}
+
+	public Date getIssueDate() {
+		return issueDate;
+	}
+
+	public void setIssueDate(Date issueDate) {
+		this.issueDate = issueDate;
 	}
 	
 }

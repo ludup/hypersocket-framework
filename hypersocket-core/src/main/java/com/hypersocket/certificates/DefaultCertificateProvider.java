@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Map;
 
 import com.hypersocket.certs.FileFormatException;
@@ -30,7 +31,7 @@ public class DefaultCertificateProvider extends AbstractCertificateProvider {
 			throws CertificateException, UnsupportedEncodingException, ResourceCreationException {
 		KeyPair pair = createKeyPair(resource, properties);
 		String signatureAlgorithm = getSignatureAlgorithm(properties);
-		Certificate cert = populateCertificate(properties, pair, signatureAlgorithm);
+		X509Certificate cert = populateCertificate(properties, pair, signatureAlgorithm);
 		resource.setSignatureAlgorithm(signatureAlgorithm);
 
 		ByteArrayOutputStream privateKeyFile = new ByteArrayOutputStream();
@@ -41,6 +42,8 @@ public class DefaultCertificateProvider extends AbstractCertificateProvider {
 
 		resource.setPrivateKey(new String(privateKeyFile.toByteArray(), "UTF-8"));
 		resource.setCertificate(new String(certFile.toByteArray(), "UTF-8"));
+		resource.setIssueDate(cert.getNotBefore());
+		resource.setExpiryDate(cert.getNotAfter());
 
 	}
 
@@ -48,14 +51,16 @@ public class DefaultCertificateProvider extends AbstractCertificateProvider {
 	public boolean update(CertificateResource resource, String name, Map<String, String> properties)
 			throws CertificateException, UnsupportedEncodingException, InvalidPassphraseException, FileFormatException {
 		KeyPair pair = getKeyPair(resource);
-		Certificate cert = populateCertificate(properties, pair, resource.getSignatureAlgorithm());
+		X509Certificate cert = populateCertificate(properties, pair, resource.getSignatureAlgorithm());
 
 		ByteArrayOutputStream certFile = new ByteArrayOutputStream();
 		X509CertificateUtils.saveCertificate(new Certificate[] { cert }, certFile);
 
 		resource.setCertificate(new String(certFile.toByteArray(), "UTF-8"));
 		resource.setBundle(null);
-
+		resource.setIssueDate(cert.getNotBefore());
+		resource.setExpiryDate(cert.getNotAfter());
+		
 		/**
 		 * We did not update the resource
 		 */
@@ -67,7 +72,7 @@ public class DefaultCertificateProvider extends AbstractCertificateProvider {
 		return true;
 	}
 
-	private Certificate populateCertificate(Map<String, String> properties, KeyPair pair, String signatureType) {
+	private X509Certificate populateCertificate(Map<String, String> properties, KeyPair pair, String signatureType) {
 		return X509CertificateUtils.generateSelfSignedCertificate(properties.get("commonName"),
 				properties.get("organizationalUnit"), properties.get("organization"), properties.get("location"),
 				properties.get("state"), properties.get("country"), pair, signatureType);
