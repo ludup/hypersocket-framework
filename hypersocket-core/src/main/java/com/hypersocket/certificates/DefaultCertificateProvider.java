@@ -30,8 +30,8 @@ public class DefaultCertificateProvider extends AbstractCertificateProvider {
 	public void create(CertificateResource resource, Map<String, String> properties)
 			throws CertificateException, UnsupportedEncodingException, ResourceCreationException {
 		KeyPair pair = createKeyPair(resource, properties);
-		String signatureAlgorithm = getSignatureAlgorithm(properties);
-		X509Certificate cert = populateCertificate(properties, pair, signatureAlgorithm);
+		String signatureAlgorithm = getSignatureAlgorithm(resource);
+		X509Certificate cert = populateCertificate(resource, pair, signatureAlgorithm);
 		resource.setSignatureAlgorithm(signatureAlgorithm);
 
 		ByteArrayOutputStream privateKeyFile = new ByteArrayOutputStream();
@@ -51,7 +51,7 @@ public class DefaultCertificateProvider extends AbstractCertificateProvider {
 	public boolean update(CertificateResource resource, String name, Map<String, String> properties)
 			throws CertificateException, UnsupportedEncodingException, InvalidPassphraseException, FileFormatException {
 		KeyPair pair = getKeyPair(resource);
-		X509Certificate cert = populateCertificate(properties, pair, resource.getSignatureAlgorithm());
+		X509Certificate cert = populateCertificate(resource, pair, resource.getSignatureAlgorithm());
 
 		ByteArrayOutputStream certFile = new ByteArrayOutputStream();
 		X509CertificateUtils.saveCertificate(new Certificate[] { cert }, certFile);
@@ -72,9 +72,9 @@ public class DefaultCertificateProvider extends AbstractCertificateProvider {
 		return true;
 	}
 
-	private X509Certificate populateCertificate(Map<String, String> properties, KeyPair pair, String signatureType) {
-		return X509CertificateUtils.generateSelfSignedCertificate(properties.get("commonName"),
-				properties.get("organizationalUnit"), properties.get("organization"), properties.get("location"),
-				properties.get("state"), properties.get("country"), pair, signatureType);
+	private X509Certificate populateCertificate(CertificateResource resource, KeyPair pair, String signatureType) {
+		return X509CertificateUtils.generateSelfSignedCertificate(resource.getCommonName(),
+				resource.getOrganizationalUnit(), resource.getOrganization(), resource.getLocation(),
+				resource.getState(), resource.getCountry(), pair, signatureType);
 	}
 }

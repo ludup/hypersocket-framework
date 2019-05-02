@@ -18,9 +18,9 @@ public abstract class AbstractCertificateProvider implements CertificateProvider
 				.loadKeyPairFromPEM(new ByteArrayInputStream(resource.getPrivateKey().getBytes("UTF-8")), null);
 	}
 
-	protected String getSignatureAlgorithm(Map<String, String> properties) throws ResourceCreationException {
-		CertificateType type = CertificateType.valueOf(properties.get("certType"));
-		switch (type) {
+	protected String getSignatureAlgorithm(CertificateResource cert) throws ResourceCreationException {
+
+		switch (cert.getCertType()) {
 		case RSA_1024:
 			return "SHA1WithRSAEncryption";
 		case RSA_2048:
