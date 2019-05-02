@@ -54,9 +54,14 @@ public class H2ConsoleServlet extends ServletRequestHandler {
 		
 		try {
 			if(sessionUtils.hasActiveSession(request)) {
-				if(permissionService.hasSystemPermission(sessionUtils.getPrincipal(request))) {
-					super.handleHttpRequest(request, response, responseProcessor);
-					return;
+				permissionService.setCurrentSession(sessionUtils.getActiveSession(request), sessionUtils.getLocale(request));
+				try {
+					if(permissionService.hasSystemPermission(sessionUtils.getPrincipal(request))) {
+						super.handleHttpRequest(request, response, responseProcessor);
+						return;
+					}
+				} finally {
+					permissionService.clearPrincipalContext();
 				}
 			}
 		} catch (UnauthorizedException e) {
