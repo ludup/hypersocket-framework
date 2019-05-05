@@ -30,11 +30,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.EmailBatchService;
 import com.hypersocket.email.EmailNotificationService;
-import com.hypersocket.email.EmailTrackerService;
 import com.hypersocket.email.RecipientHolder;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18N;
@@ -95,13 +93,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	private RealmService realmService;
 
 	@Autowired
-	private ConfigurationService configurationService;
-
-	@Autowired
 	private FreeMarkerService templateService;
-
-	@Autowired
-	private EmailTrackerService trackerService;
 
 	@Autowired
 	private EmailBatchService batchService;

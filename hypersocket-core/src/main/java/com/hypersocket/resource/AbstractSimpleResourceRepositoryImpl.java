@@ -24,7 +24,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.encrypt.EncryptionService;
-import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
