@@ -413,23 +413,44 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			Set<Permission> principalPermissions = new HashSet<Permission>();
 			Set<Role> roles = getPrincipalRoles(principal);
 		
+			if(Boolean.getBoolean("hypersocket.debugPermissions")) {
+				log.info("{} has {} roles", principal.getName(), roles.size());
+			}
+			
 			for (Role r : roles) {
+				
 				if(!r.getPermissionRealms().contains(realm) || r.getPermissionRealms().size() > 1) {
 					/**
 					 * This user has roles in other realms than their home realm. This implies
 					 * that they can switch realms
 					 */
+					
+					if(Boolean.getBoolean("hypersocket.debugPermissions")) {
+						log.info("{} has roles with permissions in other realms. Adding SWITCH_REALM permission", principal.getName());
+					}
+					
 					principalPermissions.add(repository.getPermissionByResourceKey(SystemPermission.SWITCH_REALM.getResourceKey()));
 				}
 				
 				if(!r.getPermissionRealms().contains(realm)) {
+					if(Boolean.getBoolean("hypersocket.debugPermissions")) {
+						log.info("{} has role {} but its not applicable to this realm", principal.getName(), r.getName());
+					}
 					continue;
 				}
 				
 				if (r.isAllPermissions()) {
+					if(Boolean.getBoolean("hypersocket.debugPermissions")) {
+						log.info("{} has an all permission role {}", principal.getName(), r.getName());
+					}
 					principalPermissions.addAll(repository.getAllPermissions(registerPermissionIds, realm.isSystem()));
 					break;
 				} else {
+					if(Boolean.getBoolean("hypersocket.debugPermissions")) {
+						for(Permission p : r.getPermissions()) {
+							log.info("{} has permission {} from role {}", principal.getName(), p.getResourceKey(), r.getName());
+						}
+					}
 					principalPermissions.addAll(r.getPermissions());
 				}
 			}
@@ -437,7 +458,14 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			permissionsCache.put(cacheKey, principalPermissions);
 		}
 
-		return new HashSet<Permission>(permissionsCache.get(cacheKey));
+		Set<Permission> permissions = new HashSet<>(permissionsCache.get(cacheKey));
+		if(Boolean.getBoolean("hypersocket.debugPermissions")) {
+			for(Permission p : permissions) {
+				log.info("{} has permission {}", principal.getName(), p.getResourceKey());
+			}
+		}
+		return permissions;
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -511,7 +539,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			throw new AccessDeniedException();
 		}
 
-		if(principal.equals(getCurrentPrincipal())) {
+		if(hasAuthenticatedContext() && principal.equals(getCurrentPrincipal())) {
 			if (hasElevatedPermissions()) {
 				for (PermissionType perm : getElevatedPermissions()) {
 					principalPermissions.add(getPermission(perm.getResourceKey()));
