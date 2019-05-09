@@ -253,7 +253,7 @@ public class CertificateResourceServiceImpl extends
 			public void beforeOperation(CertificateResource resource, Map<String, String> properties)
 					throws ResourceException {
 				try {
-					getProvider(properties).update(resource, name, properties);
+					getProvider(resource.getProvider()).update(resource, name, properties);
 				} catch (CertificateException | UnsupportedEncodingException | InvalidPassphraseException
 						| FileFormatException | AccessDeniedException e) {
 					throw new IllegalStateException(e.getMessage(), e);
@@ -287,7 +287,7 @@ public class CertificateResourceServiceImpl extends
 			public void beforeOperation(CertificateResource resource, Map<String, String> properties)
 					throws ResourceException {
 				try {
-					getProvider(properties).create(resource, properties);
+					getProvider(resource.getProvider()).create(resource, properties);
 				} catch (CertificateException | UnsupportedEncodingException | AccessDeniedException e) {
 					throw new IllegalStateException(e.getMessage(), e);
 				}
@@ -303,8 +303,7 @@ public class CertificateResourceServiceImpl extends
 		return resource;
 	}
 
-	private CertificateProvider getProvider(Map<String, String> properties) {
-		final String providerId = properties.get("provider");
+	private CertificateProvider getProvider(String providerId) {
 		CertificateProvider provider = providers.get(StringUtils.isBlank(providerId) ? "default" : providerId);
 		if(provider == null)
 			throw new IllegalArgumentException(String.format("No provider with ID of %s", providerId));
