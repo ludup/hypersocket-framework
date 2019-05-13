@@ -1,0 +1,3 @@
+EXIT IF FRESH;
+ALTER TABLE message_resource MODIFY COLUMN variables LONGTEXT;
+ 
