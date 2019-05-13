@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hypersocket.HypersocketVersion;
+import com.hypersocket.json.version.Version;
 import com.hypersocket.utils.FileUtils;
 import com.hypersocket.utils.HttpUtilsHolder;
 import com.hypersocket.utils.HypersocketUtils;
@@ -86,6 +87,8 @@ public abstract class AbstractExtensionUpdater {
 		updates = new HashSet<ExtensionVersion>();
 		
 		for(ExtensionVersion v : allExtensions.values()) {
+			
+			
 			switch(v.getState()) {
 			case UPDATABLE:
 				
@@ -94,6 +97,7 @@ public abstract class AbstractExtensionUpdater {
 					for(String depend : v.getDependsOn()) {
 						if(StringUtils.isNotBlank(depend)) {
 							ExtensionVersion dep = allExtensions.get(depend);
+							checkDependency(v, depend, dep);
 							updates.add(dep);
 						}
 					}
@@ -111,6 +115,7 @@ public abstract class AbstractExtensionUpdater {
 						for(String depend : v.getDependsOn()) {
 							if(StringUtils.isNotBlank(depend)) {
 								ExtensionVersion dep = allExtensions.get(depend);
+								checkDependency(v, depend, dep);
 								updates.add(dep);
 							}
 						}
@@ -140,6 +145,38 @@ public abstract class AbstractExtensionUpdater {
 		
 		checked = true;
 		return totalSize > 0;
+	}
+
+	protected void checkDependency(ExtensionVersion v, String depend, ExtensionVersion dep) throws IOException {
+		if(dep == null)
+			throw new IOException(String.format("The dependency %s of %s at version %s cannot be found.", depend, v.getExtensionId(), v.getVersion()));
+		if(dep.getState() == ExtensionState.INSTALLED) {
+			/* The dependency is already installed, make sure we are not 
+			 * trying to add an older one. If we are, we should NOT add this 
+			 * extension either as we have no idea if using a newer dependency is OK.
+			 * The HS extension architecture doesnt declare required versions, so all we
+			 * can do is assume that the dependency must be of the same version or higher, NOT
+			 * lower.
+			 * 
+			 * I have decided to throw an error at this point. This will stop the setup wizard messing up an install
+			 * until the problem is resolved rather than messing up an installation. 
+			 * 
+			 * The most likely explanation is that this happens during the setup wizard when mandatory extensions are
+			 * installed and the image is using a repository that doesn't match the one it was built from. This would happen
+			 * for example for a beta image, that has the stable repository baked in. 
+			 */
+			Version installedDepVersion = new Version(dep.getVersion());
+			Version wantedDepVersion = new Version(v.getVersion());
+			if(installedDepVersion.compareTo(wantedDepVersion) > 0) {
+				throw new IOException(String.format("This update would require that an incompatible version of an "
+						+ "extension must be installed in order to satisfy the request. The extension %s "
+						+ "declares that it depends on %s of version %s, but this is already installed with a later "
+						+ "version of %s. This may be because your installation is from an as yet "
+						+ "unreleased version whoses extensions are not yet published to the currently selected repository. "
+						+ "Try switching to a repository that contains version %s.", 
+							v.getExtensionId(), depend, v.getVersion(), dep.getVersion(), getVersion()));
+			}
+		}
 	}
 	
 	public final boolean update() throws IOException {
