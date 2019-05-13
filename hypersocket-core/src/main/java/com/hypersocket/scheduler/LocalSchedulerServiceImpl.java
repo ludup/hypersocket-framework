@@ -39,7 +39,6 @@ public class LocalSchedulerServiceImpl extends AbstractSchedulerServiceImpl impl
 		scheduler.setJobFactory(autowiringSpringBeanJobFactory);
 		
 		upgradeService.registerListener(new UpgradeServiceListener() {
-			
 			@Override
 			public void onUpgradeComplete() {
 				try {
@@ -47,6 +46,10 @@ public class LocalSchedulerServiceImpl extends AbstractSchedulerServiceImpl impl
 				} catch (SchedulerException e) {
 					throw new IllegalStateException(e.getMessage(), e);
 				}
+			}
+			
+			@Override
+			public void onUpgradeFinished() {
 			}
 		});
 		return scheduler;

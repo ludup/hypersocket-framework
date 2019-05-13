@@ -349,6 +349,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public void onUpgradeComplete() {
+		
+	}
+	@Override
+	public void onUpgradeFinished() {
 
 		sessionService.executeInSystemContext(new Runnable() {
 			public void run() {

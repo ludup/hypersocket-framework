@@ -46,13 +46,22 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 		
 		upgradeService.registerListener(new UpgradeServiceListener() {
 			
-			@SuppressWarnings("unchecked")
 			@Override
 			public void onUpgradeComplete() {
+				
+				try {
+					clusteredScheduler.start();
+				} catch (SchedulerException e) {
+					throw new IllegalStateException(e.getMessage(), e);
+				}
+			}
+
+			@Override
+			public void onUpgradeFinished() {
 				/* Clean up jobs and triggers that no longer exist */
 				Session session = sessionFactory.openSession();
 				try {
-					SQLQuery query = session.createSQLQuery("SELECT JOB_NAME, JOB_CLASS_NAME FROM QRTZ_JOB_DETAILS");
+					SQLQuery query = session.createSQLQuery("SELECT JOB_NAME, JOB_CLASS_NAME FROM QRTZ_JOB_DETAILS");			@SuppressWarnings("unchecked")
 					List<Object[]> results = query.list();
 					for(Object[] row : results) {
 						try {
@@ -74,12 +83,6 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 					session.close();
 				}
 				
-				
-				try {
-					clusteredScheduler.start();
-				} catch (SchedulerException e) {
-					throw new IllegalStateException(e.getMessage(), e);
-				}
 			}
 		});
 		return clusteredScheduler;
