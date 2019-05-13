@@ -166,7 +166,14 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 
 						doOps(ops, beans, "js", "class");
 
-					
+
+						if (log.isInfoEnabled()) {
+							log.info("Completed upgrade");
+						}
+							
+						for(UpgradeServiceListener listener : listeners) {
+							listener.onUpgradeComplete();
+						}
 					} catch (Throwable e) {
 						log.error("Failed to upgrade", e);
 						throw new IllegalStateException("Errors upgrading database");
@@ -178,13 +185,6 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			throw new IllegalStateException(e.getMessage(), e);
 		}
 		
-		if (log.isInfoEnabled()) {
-			log.info("Completed upgrade");
-		}
-			
-		for(UpgradeServiceListener listener : listeners) {
-			listener.onUpgradeComplete();
-		}
 		
 		done = true;
 	
