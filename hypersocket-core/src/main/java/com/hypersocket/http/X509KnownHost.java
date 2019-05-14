@@ -67,16 +67,21 @@ public class X509KnownHost {
 	public X509KnownHost(String data) {
 		JsonElement parse = new JsonParser().parse(data);
 		JsonObject cert = parse.getAsJsonObject();
-		algo = cert.get("algo").getAsString();
-		hostname = cert.get("hostname").getAsString();
+		final JsonElement agloEl = cert.get("algo");
+		algo = agloEl == null ? "Unknown" : agloEl.getAsString();
+		final JsonElement hostEl = cert.get("hostname");
+		hostname = hostEl == null ? "unknown" : hostEl.getAsString();
 		try {
 			detail = URLDecoder.decode(cert.get("detail").getAsString(), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
-		port = cert.get("port").getAsInt();
-		subject = cert.get("subject").getAsString();
-		sig = Base64.decode(cert.get("sig").getAsString());
+		final JsonElement portEl = cert.get("port");
+		port = portEl == null ? 0 : portEl.getAsInt();
+		final JsonElement subjEl = cert.get("subject");
+		subject = subjEl == null ? "" : subjEl.getAsString();
+		final JsonElement sigEl = cert.get("sig");
+		sig = sigEl == null ? new byte[0] : Base64.decode(sigEl.getAsString());
 	}
 	
 	public boolean matches(X509KnownHost h) {
