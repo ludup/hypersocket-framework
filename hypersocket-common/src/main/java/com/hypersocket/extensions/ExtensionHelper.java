@@ -77,10 +77,12 @@ public class ExtensionHelper {
 						if (extsByName.containsKey(extensionId)) {
 							ExtensionVersion remote = extsByName.get(extensionId);
 							remote.setState(ExtensionState.INSTALLED);
+							remote.setVersion(HypersocketVersion.getVersion());
 							extsByName.put(extensionId, remote);
 						} else {
 							ExtensionVersion local = new ExtensionVersion();
 							loadLocalExtension(local, props, currentArchive);
+							local.setVersion(HypersocketVersion.getVersion());
 							local.setState(ExtensionState.INSTALLED);
 							extsByName.put(extensionId, local);
 						}

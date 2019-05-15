@@ -98,6 +98,9 @@ public abstract class AbstractExtensionUpdater {
 						if(StringUtils.isNotBlank(depend)) {
 							ExtensionVersion dep = allExtensions.get(depend);
 							checkDependency(v, depend, dep);
+							if(log.isInfoEnabled()) {
+								log.info(String.format("Adding dependency %s (%s - %s) because %s requires it in feature group", dep.getExtensionId(), dep.getVersion(), dep.getState(), v.getExtensionId(), v.getFeatureGroup()));
+							}
 							updates.add(dep);
 						}
 					}
@@ -108,7 +111,7 @@ public abstract class AbstractExtensionUpdater {
 				
 				if(ArrayUtils.contains(getUpdateTargets(), ExtensionTarget.valueOf(v.getTarget()))) {
 					if(log.isInfoEnabled()) {
-						log.info(String.format("Checking install state for %s %s", v.getExtensionId(), v.getFeatureGroup()));
+						log.info(String.format("Checking install state for %s %s", v.getExtensionId(), v.getVersion(), v.getFeatureGroup()));
 					}
 					if(getInstallMandatoryExtensions() && v.isMandatory() || getNewFeatures().contains(v.getFeatureGroup())) {
 						updates.add(v);
@@ -116,6 +119,9 @@ public abstract class AbstractExtensionUpdater {
 							if(StringUtils.isNotBlank(depend)) {
 								ExtensionVersion dep = allExtensions.get(depend);
 								checkDependency(v, depend, dep);
+								if(log.isInfoEnabled()) {
+									log.info(String.format("Adding dependency %s (%s - %s) because %s requires it in feature group", dep.getExtensionId(), dep.getState(), dep.getVersion(), v.getExtensionId(), v.getFeatureGroup()));
+								}
 								updates.add(dep);
 							}
 						}
@@ -206,6 +212,10 @@ public abstract class AbstractExtensionUpdater {
 						log.info(String.format("Copying %s", file.getAbsolutePath()));
 					}
 				} else {
+					if(StringUtils.isBlank(def.getUrl())) {
+						log.warn(String.format("No download URL for %s", def.getExtensionId()));
+						continue;
+					}
 					URL url = new URL(def.getUrl());
 					if (log.isInfoEnabled()) {
 						log.info(String.format("Downloading %s", url));
