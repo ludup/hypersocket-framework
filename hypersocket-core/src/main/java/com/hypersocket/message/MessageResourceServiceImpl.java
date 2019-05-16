@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -511,6 +512,19 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 
 		EmailDeliveryStrategy strategy = message.getDeliveryStrategy();
 
+		List<RecipientHolder> validated = new ArrayList<>();
+		if (!emails.isEmpty()) {
+			/**
+			 * LDP discovered issue where a blank value was in this collection. 
+			 * Guard against that here.
+			 */
+			for(String email : emails) {
+				if(StringUtils.isNotBlank(email)) {
+					validated.add(new RecipientHolder(email.toLowerCase()));
+				}
+			}
+		}
+		
 		CompoundIterator<RecipientHolder> recipients = new CompoundIterator<>();
 
 		if (strategy != EmailDeliveryStrategy.ONLY_ADDITIONAL) {
@@ -564,20 +578,8 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 				}
 			});
 		}
-
-		if (!emails.isEmpty()) {
-			/**
-			 * LDP discovered issue where a blank value was in this collection. 
-			 * Guard against that here.
-			 */
-			List<RecipientHolder> validated = new ArrayList<>();
-			for(String email : emails) {
-				if(StringUtils.isNotBlank(email)) {
-					validated.add(new RecipientHolder(email));
-				}
-			}
-			recipients.addIterator(validated.iterator());
-		}
+	
+		recipients.addIterator(validated.iterator());
 
 		sendMessage(message, realm, tokenResolver, replyTo, recipients, schedule, null);
 	}
@@ -609,10 +611,22 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 			recipients = cit;
 		}
 
+		/**
+		 * LDP - Final guard against a user receiving duplicate messages 
+		 */
+		Set<String> processedEmails = new HashSet<>();
+		
 		try {
 			while (recipients.hasNext()) {
 				RecipientHolder recipient = recipients.next();
 
+				if(processedEmails.contains(recipient.getEmail().toLowerCase())) {
+					log.info("Skipping {} because we already sent this message to that address", recipient.getEmail());
+					continue;
+				}
+				
+				processedEmails.add(recipient.getEmail().toLowerCase());
+				
 				Map<String, Object> data = tokenResolver.getData();
 				data.putAll(new ServerResolver(realm).getData());
 				data.put("email", recipient.getEmail());
