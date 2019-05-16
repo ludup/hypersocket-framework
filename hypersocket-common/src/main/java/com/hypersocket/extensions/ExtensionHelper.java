@@ -77,12 +77,10 @@ public class ExtensionHelper {
 						if (extsByName.containsKey(extensionId)) {
 							ExtensionVersion remote = extsByName.get(extensionId);
 							remote.setState(ExtensionState.INSTALLED);
-							remote.setVersion(HypersocketVersion.getVersion());
 							extsByName.put(extensionId, remote);
 						} else {
 							ExtensionVersion local = new ExtensionVersion();
 							loadLocalExtension(local, props, currentArchive);
-							local.setVersion(HypersocketVersion.getVersion());
 							local.setState(ExtensionState.INSTALLED);
 							extsByName.put(extensionId, local);
 						}
@@ -115,13 +113,17 @@ public class ExtensionHelper {
 									Version localVersion = new Version(HypersocketVersion.getVersion());
 
 									if (remoteVersion.compareTo(localVersion) >= 0) {
+
+										if (log.isInfoEnabled()) {
+											log.info(extensionId + " is installed but an update is available hash=\""
+													+ local.getHash() + "\" modified=\"" + local.getModifiedDate()
+													+ "\" size=\"" + currentArchive.length() + "\" ["
+													+ remoteVersion.compareTo(localVersion) + "]");
+										}
+
 										remote.setState(ExtensionState.UPDATABLE);
 									}
-									else
-										extsByName.put(local.getExtensionId(), local);
 								}
-								else
-									extsByName.put(local.getExtensionId(), local);
 							} else {
 								if (log.isInfoEnabled()) {
 									log.info(extensionId + " is installed but not provided by online store");
