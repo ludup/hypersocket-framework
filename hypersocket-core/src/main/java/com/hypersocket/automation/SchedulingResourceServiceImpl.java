@@ -36,8 +36,19 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 	@Override
 	public <T extends RealmResource> void unschedule(T resource) throws SchedulerException {
 
-		if (schedulerService.jobExists(resource.getId().toString())) {
-			schedulerService.cancelNow(resource.getId().toString());
+		String oldScheduleId = resource.getId().toString();
+		try {
+			if (schedulerService.jobExists(oldScheduleId)) {
+				schedulerService.cancelNow(oldScheduleId);
+			}
+		} catch (SchedulerException e1) {
+			log.error("Cannot unschedule old style job reference {}", oldScheduleId);
+		}
+		
+		String newScheduleId = String.format("%s (%d)", resource.getName(), resource.getId());
+		
+		if (schedulerService.jobExists(newScheduleId)) {
+			schedulerService.cancelNow(newScheduleId);
 		}
 	}
 	
@@ -133,14 +144,23 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 			return;
 		}
 
-		String scheduleId = resource.getId().toString();
+		String oldScheduleId = resource.getId().toString();
+		try {
+			if (schedulerService.jobExists(oldScheduleId)) {
+				schedulerService.cancelNow(oldScheduleId);
+			}
+		} catch (SchedulerException e1) {
+			log.error("Cannot remove old style job reference {}", oldScheduleId);
+		}
+		
+		String newScheduleId = String.format("%s (%d)", resource.getName(), resource.getId());
 		
 		if(start==null && end==null) {
 			if(repeatType==AutomationRepeatType.NEVER) {
 				log.info("Not scheduling " + resource.getName() + " because it is a non-repeating job with no start or end date/time.");
 				try {
-					if (schedulerService.jobExists(scheduleId)) {
-						schedulerService.cancelNow(scheduleId);
+					if (schedulerService.jobExists(newScheduleId)) {
+						schedulerService.cancelNow(newScheduleId);
 					}
 				}
 				catch(Exception e) {
@@ -155,13 +175,13 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 
 		try {
 
-			if (schedulerService.jobExists(scheduleId)) {
+			if (schedulerService.jobExists(newScheduleId)) {
 
 				try {
 					if (start == null) {
-						schedulerService.rescheduleNow(scheduleId, interval, repeat, end);
+						schedulerService.rescheduleNow(newScheduleId, interval, repeat, end);
 					} else {
-						schedulerService.rescheduleAt(scheduleId, start, interval, repeat, end);
+						schedulerService.rescheduleAt(newScheduleId, start, interval, repeat, end);
 					}
 					return;
 				} catch (NotScheduledException e) {
@@ -173,9 +193,9 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 			}
 
 			if (start == null || start.before(new Date())) {
-				schedulerService.scheduleNow(clz, scheduleId, data, interval, repeat, end);
+				schedulerService.scheduleNow(clz, newScheduleId, data, interval, repeat, end);
 			} else {
-				schedulerService.scheduleAt(clz, scheduleId, data, start, interval, repeat, end);
+				schedulerService.scheduleAt(clz, newScheduleId, data, start, interval, repeat, end);
 			}
 
 		} catch (SchedulerException e) {
