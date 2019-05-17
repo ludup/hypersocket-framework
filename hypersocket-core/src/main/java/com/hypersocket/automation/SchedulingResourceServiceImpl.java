@@ -45,7 +45,7 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 			log.error("Cannot unschedule old style job reference {}", oldScheduleId);
 		}
 		
-		String newScheduleId = String.format("%s (%d)", resource.getName(), resource.getId());
+		String newScheduleId = String.format("%s-%d", resource.getName().replaceAll("\\s",""), resource.getId());
 		
 		if (schedulerService.jobExists(newScheduleId)) {
 			schedulerService.cancelNow(newScheduleId);
@@ -153,7 +153,7 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 			log.error("Cannot remove old style job reference {}", oldScheduleId);
 		}
 		
-		String newScheduleId = String.format("%s (%d)", resource.getName(), resource.getId());
+		String newScheduleId = String.format("%s-%d", resource.getName().replaceAll("\\s",""), resource.getId());
 		
 		if(start==null && end==null) {
 			if(repeatType==AutomationRepeatType.NEVER) {
