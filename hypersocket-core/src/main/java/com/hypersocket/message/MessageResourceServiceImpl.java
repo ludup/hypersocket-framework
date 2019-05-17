@@ -620,6 +620,11 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 			while (recipients.hasNext()) {
 				RecipientHolder recipient = recipients.next();
 
+				if(StringUtils.isBlank(recipient.getEmail())) {
+					log.warn("Detected empty email in a RecipientHolder! Skipping");
+					continue;
+				}
+				
 				if(processedEmails.contains(recipient.getEmail().toLowerCase())) {
 					log.info("Skipping {} because we already sent this message to that address", recipient.getEmail());
 					continue;
