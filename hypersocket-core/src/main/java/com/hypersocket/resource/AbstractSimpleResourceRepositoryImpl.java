@@ -276,7 +276,7 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 	@Override
 	@Transactional(readOnly=true)
 	public long getResourceCount(Realm realm) {
-		return getCount(getResourceClass(), "name", "",
+		return getCount(getResourceClass(),
 				new RealmCriteria(realm), new DeletedCriteria(false), new DefaultCriteriaConfiguration());
 	}
 	
@@ -333,6 +333,7 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 		}
 		
 	}
+	
 	protected abstract Class<T> getResourceClass();
 
 	@SuppressWarnings("unchecked")
