@@ -16,6 +16,9 @@ public class TriggerAttributeHelper {
 	
 	public static String getAttribute(String attribute, List<SystemEvent> sourceEvents) {
 		
+		if(sourceEvents.isEmpty()) {
+			return null;
+		}
 		SystemEvent lastEvent = sourceEvents.get(sourceEvents.size()-1);
 		if(lastEvent.hasAttribute(attribute)) {
 			return lastEvent.getAttribute(attribute);
