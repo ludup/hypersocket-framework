@@ -7,8 +7,10 @@
  ******************************************************************************/
 package com.hypersocket.session.json;
 
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.servlet.http.Cookie;
@@ -36,6 +38,8 @@ import com.hypersocket.session.SessionService;
 public class SessionUtils {
 
 	static Logger log = LoggerFactory.getLogger(SessionUtils.class);
+	
+	static boolean debugCSRF = "true".equals(System.getProperty("hypersocket.csrfDebugRequests"));
 
 	public static final String AUTHENTICATED_SESSION = "authenticatedSession";
 	public static final String HYPERSOCKET_API_SESSION = "HYPERSOCKET_API_SESSION";
@@ -236,15 +240,31 @@ public class SessionUtils {
 			requestToken = request.getParameter("token");
 			if(requestToken==null) {
 				log.warn(String.format("CSRF token missing from %s", request.getRemoteAddr()));
+				debugRequest(request);
 				throw new UnauthorizedException();
 			}
 		}
 		
 		if(!session.getCsrfToken().equals(requestToken)) {
 			log.warn(String.format("CSRF token mistmatch from %s", request.getRemoteAddr()));
+			debugRequest(request);
 			throw new UnauthorizedException();
 		}
 
+	}
+
+	protected void debugRequest(HttpServletRequest request) {
+		if(debugCSRF) {
+			log.warn(String.format("The request URI was %s, and contained the following parameters :-",request.getRequestURI()));
+			for(Map.Entry<String, String[]> en : request.getParameterMap().entrySet()) {
+				log.warn(String.format("  %s = %s", en.getKey(), String.join(",", en.getValue())));
+			}
+			log.warn("And the following headers :-");
+			for(Enumeration<String> hdrEnum = request.getHeaderNames(); hdrEnum.hasMoreElements(); ) {
+				String hdr = hdrEnum.nextElement();
+				log.warn(String.format("  %s = %s", hdr, request.getHeader(hdr)));
+			}
+		}
 	}
 
 	public boolean isValidCORSRequest(HttpServletRequest request) {
