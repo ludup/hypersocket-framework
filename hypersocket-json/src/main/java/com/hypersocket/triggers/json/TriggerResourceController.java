@@ -204,7 +204,10 @@ public class TriggerResourceController extends AbstractTriggerController {
 			List<EventDefinition> events = new ArrayList<EventDefinition>();
 			for (TriggerResource trigger : triggers) {
 				if(trigger.getId()!=id) {
-					events.add(eventService.getEventDefinition(trigger.getEvent()));
+					EventDefinition evtDef = eventService.getEventDefinition(trigger.getEvent());
+					if(evtDef == null)
+						throw new IllegalStateException(String.format("No event definition for %s. It is possible the extension that provided this task is no longer installed.", trigger.getEvent()));
+					events.add(evtDef);
 				}
 			}
 			return new ResourceList<EventDefinition>(events);
