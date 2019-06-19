@@ -162,6 +162,25 @@ public class PasswordPolicyResourceController extends ResourceController {
 		
 	}
 	
+	@RequestMapping(value = "passwordPolicys/generateNew", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<String> generatePassword(
+			HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		setupSystemContext(sessionUtils.getCurrentRealm(request));
+		
+		try {
+			PasswordPolicyResource policy = resourceService.getDefaultPasswordPolicy(getCurrentRealm());
+			return new ResourceStatus<String>(resourceService.generatePassword(policy, policy.getMinimumLength()));
+		} finally {
+			clearAuthenticatedContext();
+		}
+		
+	}
+	
 	@RequestMapping(value = "passwordPolicys/myPolicy", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)

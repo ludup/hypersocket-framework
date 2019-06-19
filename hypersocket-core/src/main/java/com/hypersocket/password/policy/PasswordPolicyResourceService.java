@@ -35,6 +35,8 @@ public interface PasswordPolicyResourceService extends
 
 	PasswordPolicyResource getPolicyByDN(String dn, Realm realm);
 
+	PasswordPolicyResource getDefaultPasswordPolicy(Realm realm);
+	
 	PasswordPolicyResource getDefaultPolicy(Realm realm, String moduleName);
 
 	Collection<PasswordPolicyResource> getPoliciesByGroup(Principal principal);
