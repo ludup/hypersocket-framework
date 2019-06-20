@@ -123,6 +123,7 @@ public class TriggerResourceRepositoryImpl extends
 	}
 
 	protected void processDefaultCriteria(Criteria criteria) {
+		super.processDefaultCriteria(criteria);
 		criteria.add(Restrictions.isNull("parentTrigger"));
 		criteria.add(Restrictions.eq("triggerType", TriggerType.TRIGGER));
 		criteria.setFetchMode("conditions", FetchMode.SELECT);

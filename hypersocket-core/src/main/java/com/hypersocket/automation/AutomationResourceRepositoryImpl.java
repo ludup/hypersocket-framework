@@ -30,6 +30,7 @@ public class AutomationResourceRepositoryImpl extends
 	
 	@Override
 	protected void processDefaultCriteria(Criteria criteria) {
+		super.processDefaultCriteria(criteria);
 		criteria.setFetchMode("triggers", FetchMode.SELECT);
 	}
 
