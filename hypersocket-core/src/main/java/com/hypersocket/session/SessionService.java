@@ -131,4 +131,6 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	void deleteRealm(Realm realm);
 
 	void executeInSystemContext(Runnable r, Realm currentRealm);
+	
+	void executeInSystemContext(Runnable r, Realm currentRealm, Principal principal);
 }

@@ -147,7 +147,7 @@ public class MissingPhoneNumberPostAuthenticationStep implements PostAuthenticat
 						e.printStackTrace();
 					}
 				}
-			});
+			}, state.getRealm(), state.getPrincipal());
 			
 			return AuthenticatorResult.AUTHENTICATION_SUCCESS;
 		}

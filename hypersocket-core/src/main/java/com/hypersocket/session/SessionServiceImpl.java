@@ -703,9 +703,14 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 	
 	@Override
-	public void executeInSystemContext(Runnable r, Realm currentRealm) {
+	public void executeInSystemContext(Runnable r, Realm realm) {
+		executeInSystemContext(r, realm);
+	}
+	
+	@Override
+	public void executeInSystemContext(Runnable r, Realm currentRealm, Principal principal) {
 		
-		setCurrentSession(getSystemSession(), currentRealm, Locale.getDefault());
+		setCurrentSession(getSystemSession(), currentRealm, principal, Locale.getDefault());
 		try {
 			r.run();
 		} finally {
