@@ -699,12 +699,12 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public void executeInSystemContext(Runnable r) {
-		executeInSystemContext(r, realmService.getSystemRealm());
+		executeInSystemContext(r, realmService.getSystemRealm(), realmService.getSystemPrincipal());
 	}
 	
 	@Override
 	public void executeInSystemContext(Runnable r, Realm realm) {
-		executeInSystemContext(r, realm);
+		executeInSystemContext(r, realm, realmService.getSystemPrincipal());
 	}
 	
 	@Override
