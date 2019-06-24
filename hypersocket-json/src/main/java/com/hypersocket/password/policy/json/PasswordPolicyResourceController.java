@@ -170,7 +170,7 @@ public class PasswordPolicyResourceController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupSystemContext(sessionUtils.getCurrentRealm(request));
+		setupSystemContext(sessionUtils.getCurrentRealmOrDefault(request));
 		
 		try {
 			PasswordPolicyResource policy = resourceService.getDefaultPasswordPolicy(getCurrentRealm());
