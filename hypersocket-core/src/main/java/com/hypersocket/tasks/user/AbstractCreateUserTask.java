@@ -42,11 +42,11 @@ public abstract class AbstractCreateUserTask extends AbstractTaskProvider {
 	@Override
 	public TaskResult execute(Task task, Realm currentRealm, List<SystemEvent> event) throws ValidationException {
 
-		String principalName = getRepository().getValue(task, "createUser.principalName");
+		String principalName = processTokenReplacements(getRepository().getValue(task, "createUser.principalName"), event);
 		boolean sendNotifications = getRepository().getBooleanValue(task, "createUser.sendNotification");
 		boolean forceChange = getRepository().getBooleanValue(task, "createUser.forceChange");
 		boolean generatePassword = getRepository().getBooleanValue(task, "createUser.generatePassword");
-		String staticPassword = getRepository().getValue(task, "createUser.defaultPassword");
+		String staticPassword = processTokenReplacements(getRepository().getValue(task, "createUser.defaultPassword"), event);
 		
 		List<Principal> assosciated = new ArrayList<Principal>(); 
 
@@ -61,7 +61,7 @@ public abstract class AbstractCreateUserTask extends AbstractTaskProvider {
 		
 		Map<String,String> properties = new HashMap<String,String>();
 		for(PropertyTemplate t : getRepository().getPropertyTemplates(null)) {
-			String value = getRepository().getValue(task, t.getResourceKey());
+			String value = processTokenReplacements(getRepository().getValue(task, t.getResourceKey()), event);
 			if(StringUtils.isNotBlank(value)) {
 				properties.put(t.getResourceKey(), value);
 			}
