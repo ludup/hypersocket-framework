@@ -17,6 +17,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -436,7 +437,11 @@ public class HypersocketUtils {
 	}
 
 	public static Date convertToUTC(Date date, TimeZone tz) {
-		return new Date(date.getTime() + tz.getOffset(date.getTime()));
+		Calendar c = Calendar.getInstance();
+		long serverOffset = -c.getTimeZone().getOffset(date.getTime());
+		long clientOffset = tz.getOffset(date.getTime());
+		long utc  = date.getTime() - serverOffset;
+		return new Date(utc - clientOffset);
 	}
 
 	public static String stripHostname(String uri) {
