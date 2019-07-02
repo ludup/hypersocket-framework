@@ -9,8 +9,10 @@ package com.hypersocket.realm.json;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -119,16 +121,19 @@ public class RealmController extends ResourceController {
 	
 
 	@AuthenticationRequired
-	@RequestMapping(value = "realms/children", method = RequestMethod.GET, produces = { "application/json" })
+	@RequestMapping(value = "realms/delegatable", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<Realm> listChildRealms(HttpServletRequest request, HttpServletResponse response)
+	public ResourceList<Realm> listCurrentAndChildRealms(HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 
 		try {
-			return new ResourceList<Realm>(realmService.getRealmsByParent(getCurrentRealm()));
+			Set<Realm> realms = new HashSet<>();
+			realms.add(getCurrentRealm());
+			realms.addAll(realmService.getRealmsByParent(getCurrentRealm()));
+			return new ResourceList<Realm>(realms);
 		} finally {
 			clearAuthenticatedContext();
 		}
