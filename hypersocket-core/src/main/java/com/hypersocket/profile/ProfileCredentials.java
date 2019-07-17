@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -23,6 +24,9 @@ public class ProfileCredentials extends AbstractEntity<Long> {
 	@Column(name="credential_id")
 	Long id;
 	
+	@ManyToOne
+	Profile profile;
+	
 	@Column(name="state")
 	ProfileCredentialsState state; 
 	
@@ -32,6 +36,10 @@ public class ProfileCredentials extends AbstractEntity<Long> {
 	@Override
 	public Long getId() {
 		return id;
+	}
+	
+	public Profile getProfile() {
+		return profile;
 	}
 
 	public ProfileCredentialsState getState() {
