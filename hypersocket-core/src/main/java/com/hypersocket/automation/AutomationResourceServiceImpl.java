@@ -116,7 +116,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		repository.loadPropertyTemplates("automationTemplate.xml");
 
 		/**
-		 * Register the events. All events have to be registerd so the system
+		 * Register the events. All events have to be registered so the system
 		 * knows about them.
 		 */
 		eventService.registerEvent(AutomationResourceEvent.class, RESOURCE_BUNDLE, this);
