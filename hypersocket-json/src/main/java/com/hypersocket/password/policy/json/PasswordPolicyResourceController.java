@@ -255,7 +255,7 @@ public class PasswordPolicyResourceController extends ResourceController {
 				policy = resourceService.resolvePolicy(principal);
 				username = principal.getPrincipalName();
 			} else {
-				policy = resourceService.getDefaultPolicy(getCurrentRealm(), getCurrentRealm().getResourceCategory());
+				policy = getCurrentPrincipalPolicy(request, response).getResource();
 			}
 			
 			analyserService.analyse(sessionUtils.getLocale(request), 
