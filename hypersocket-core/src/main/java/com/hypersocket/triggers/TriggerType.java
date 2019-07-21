@@ -4,5 +4,6 @@ public enum TriggerType {
 
 	TRIGGER,
 	AUTOMATION,
-	WORKFLOW
+	WORKFLOW,
+	WEBHOOK
 }

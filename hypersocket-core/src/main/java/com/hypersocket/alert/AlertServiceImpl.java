@@ -71,7 +71,7 @@ public class AlertServiceImpl implements AlertService {
 	@Override
 	public void onStartup(ContextStartedEvent event) {
 		for (TriggerResource trigger : triggerService
-				.getTriggersByResourceKey(AlertTask.ACTION_GENERATE_ALERT)) {
+				.getTriggersByTask(AlertTask.ACTION_GENERATE_ALERT)) {
 			registerDynamicEvent(trigger);
 		}
 	}

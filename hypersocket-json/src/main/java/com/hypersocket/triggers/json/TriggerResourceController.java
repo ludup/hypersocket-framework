@@ -231,11 +231,14 @@ public class TriggerResourceController extends AbstractTriggerController {
 
 			List<EventDefinition> events = new ArrayList<EventDefinition>();
 
-			final TaskProvider taskProvider = taskService.getTaskProvider(resourceKey);
-			if(taskProvider == null)
-				throw new ResourceNotFoundException(TriggerResourceServiceImpl.RESOURCE_BUNDLE, "error.notfound", resourceKey);
-			events.add(eventService.getEventDefinition(taskProvider.getResultResourceKey()));
-
+			if(eventService.isDynamicEvent(resourceKey)) {
+				events.add(eventService.getEventDefinition(resourceKey));
+			} else {
+				final TaskProvider taskProvider = taskService.getTaskProvider(resourceKey);
+				if(taskProvider == null)
+					throw new ResourceNotFoundException(TriggerResourceServiceImpl.RESOURCE_BUNDLE, "error.notfound", resourceKey);
+				events.add(eventService.getEventDefinition(taskProvider.getResultResourceKey()));
+			}
 			return new ResourceList<EventDefinition>(events);
 
 		} finally {

@@ -69,7 +69,7 @@ public interface TriggerResourceService extends
 
 	Collection<String> getEventAttributes(String resourceKey);
 
-	Collection<TriggerResource> getTriggersByResourceKey(
+	Collection<TriggerResource> getTriggersByTask(
 			String actionGenerateAlert);
 
 	List<TriggerResource> getParentTriggers(Long id)
@@ -99,4 +99,6 @@ public interface TriggerResourceService extends
 	void setController(TriggerController controller);
 
 	boolean isEnabled();
+
+	Collection<TriggerResource> getTriggersByEvent(String resourceKey);
 }

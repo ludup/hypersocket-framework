@@ -507,11 +507,18 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 	}
 
 	@Override
-	public Collection<TriggerResource> getTriggersByResourceKey(String resourceKey) {
+	public Collection<TriggerResource> getTriggersByTask(String resourceKey) {
 
-		return repository.getActionsByResourceKey(resourceKey);
+		return repository.getTriggersByTask(resourceKey);
 	}
 
+	@Override
+	public Collection<TriggerResource> getTriggersByEvent(String resourceKey) {
+
+		return repository.getTriggersByEvent(resourceKey);
+	}
+
+	
 	@Override
 	public Collection<String> getTasks() throws AccessDeniedException {
 

@@ -130,6 +130,13 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 			log.info("Processing trigger " + trigger.getName());
 		}
 
+		if(!trigger.getAllRealms()) {
+			if(!trigger.getRealm().equals(getCurrentRealm())) {
+				log.info("Trigger {} is not executable in this realm {} [{}]", trigger.getName(), getCurrentRealm().getName(), trigger.getRealm().getName());
+				return;
+			}
+		}
+		
 		if (trigger.getResult() != TriggerResultType.EVENT_ANY_RESULT
 				&& result.getStatus().ordinal() != trigger.getResult().ordinal()) {
 			if (log.isInfoEnabled()) {

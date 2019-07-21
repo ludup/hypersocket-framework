@@ -39,4 +39,6 @@ public interface EventService  {
 
 	void onDelayedEventsPublished(Runnable r);
 
+	boolean isDynamicEvent(String resourceKey);
+
 }

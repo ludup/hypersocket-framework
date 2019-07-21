@@ -17,7 +17,9 @@ public interface TriggerResourceRepository extends
 
 	TriggerCondition getConditionById(Long id);
 
-	Collection<TriggerResource> getActionsByResourceKey(String resourceKey);
+	Collection<TriggerResource> getTriggersByTask(String resourceKey);
+
+	Collection<TriggerResource> getTriggersByEvent(String resourceKey);
 
 
 }

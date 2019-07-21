@@ -112,7 +112,7 @@ public class TriggerResourceRepositoryImpl extends
 
 	@Override
 	@Transactional(readOnly=true)
-	public Collection<TriggerResource> getActionsByResourceKey(final String resourceKey) {
+	public Collection<TriggerResource> getTriggersByTask(final String resourceKey) {
 		return list(TriggerResource.class, true, new CriteriaConfiguration() {
 			
 			@Override
@@ -128,5 +128,17 @@ public class TriggerResourceRepositoryImpl extends
 		criteria.add(Restrictions.eq("triggerType", TriggerType.TRIGGER));
 		criteria.setFetchMode("conditions", FetchMode.SELECT);
 		criteria.setFetchMode("childTriggers", FetchMode.SELECT);
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public Collection<TriggerResource> getTriggersByEvent(String resourceKey) {
+		return list(TriggerResource.class, true, new CriteriaConfiguration() {
+			
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("event", resourceKey));
+			}
+		});
 	}
 }

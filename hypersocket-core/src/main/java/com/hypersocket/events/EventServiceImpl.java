@@ -57,7 +57,8 @@ public class EventServiceImpl implements EventService {
 	private ThreadLocal<SystemEvent> lastResult = new ThreadLocal<SystemEvent>();
 	private List<EventExtender> extenders = new ArrayList<EventExtender>();
 	private List<Runnable> publishCallbacks = Collections.synchronizedList(new ArrayList<>());
-
+	private Set<String> dynamicEvents = new HashSet<>();
+	
 	@Override
 	public void undelayEvents() {
 		List<Boolean> was = isDelayingEvents.get();
@@ -228,7 +229,7 @@ public class EventServiceImpl implements EventService {
 		EventDefinition def = new EventDefinition(TriggerResourceServiceImpl.RESOURCE_BUNDLE, resourceKey, "", null);
 
 		def.getAttributeNames().addAll(variableNames);
-
+		dynamicEvents.add(resourceKey);
 		registerEventDefinition(def);
 	}
 
@@ -336,5 +337,10 @@ public class EventServiceImpl implements EventService {
 	@Override
 	public SystemEvent getLastResult() {
 		return lastResult.get();
+	}
+
+	@Override
+	public boolean isDynamicEvent(String resourceKey) {
+		return dynamicEvents.contains(resourceKey);
 	}
 }
