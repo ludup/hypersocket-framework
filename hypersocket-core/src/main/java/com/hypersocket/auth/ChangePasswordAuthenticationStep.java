@@ -41,7 +41,8 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 	
 	@Override
 	public boolean requiresProcessing(AuthenticationState state) {
-		return realmService.requiresPasswordChange(state.getPrincipal(), state.getRealm());
+		return AuthenticationServiceImpl.AUTHENTICATION_SCHEME_USER_LOGIN_RESOURCE_KEY.equals(state.getScheme().getResourceKey()) 
+				&& realmService.requiresPasswordChange(state.getPrincipal(), state.getRealm());
 	}
 
 	@Override
