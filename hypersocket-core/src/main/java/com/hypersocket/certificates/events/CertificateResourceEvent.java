@@ -2,7 +2,9 @@ package com.hypersocket.certificates.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.certificates.CertificateResource;
+import com.hypersocket.certificates.CertificateResourceRepository;
 import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.session.Session;
 
@@ -15,13 +17,7 @@ public class CertificateResourceEvent extends ResourceEvent {
 	public CertificateResourceEvent(Object source, String resourceKey,
 			Session session, CertificateResource resource) {
 		super(source, resourceKey, true, session, resource);
-
-		/**
-		 * TODO add attributes of your resource here. Make sure all attributes
-		 * have a constant string definition like the commented out example above,
-		 * its important for its name to start with ATTR_ as this is picked up during 
-		 * the registration process
-		 */
+		addAllAttributes(ApplicationContextServiceImpl.getInstance().getBean(CertificateResourceRepository.class).getProperties(resource));
 	}
 
 	public CertificateResourceEvent(Object source, String resourceKey,
