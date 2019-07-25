@@ -83,9 +83,11 @@ public class SystemConfigurationServiceImpl extends
 			fireChangeEvent(resourceKey, oldValue, value);
 			eventService.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession(), getCurrentRealm()));
 		} catch (AccessDeniedException e) {
+			log.error("Failed to set configuration.", e);
 			fireChangeEvent(resourceKey, e);
 			throw e;
 		} catch (Throwable t) {
+			log.error("Failed to set configuration.", t);
 			fireChangeEvent(resourceKey, t);
 			throw new ResourceChangeException(
 					ConfigurationService.RESOURCE_BUNDLE,
