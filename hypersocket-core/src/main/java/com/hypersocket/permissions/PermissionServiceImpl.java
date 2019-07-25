@@ -418,8 +418,11 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			}
 			
 			for (Role r : roles) {
-				
-				if(!r.getPermissionRealms().contains(realm) || r.getPermissionRealms().size() > 1) {
+				if(r == null) {
+					log.warn(String.format("NULL role in list of %d roles for %s", roles.size(), principal.getName()));
+					continue;
+				}
+				if(r.getPermissionRealms() == null || !r.getPermissionRealms().contains(realm) || r.getPermissionRealms().size() > 1) {
 					/**
 					 * This user has roles in other realms than their home realm. This implies
 					 * that they can switch realms
@@ -432,7 +435,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 					principalPermissions.add(repository.getPermissionByResourceKey(SystemPermission.SWITCH_REALM.getResourceKey()));
 				}
 				
-				if(!r.getPermissionRealms().contains(realm)) {
+				if(r.getPermissionRealms() == null || !r.getPermissionRealms().contains(realm)) {
 					if(Boolean.getBoolean("hypersocket.debugPermissions")) {
 						log.info("{} has role {} but its not applicable to this realm", principal.getName(), r.getName());
 					}
