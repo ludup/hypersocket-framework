@@ -7,7 +7,9 @@
  ******************************************************************************/
 package com.hypersocket.permissions;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -142,6 +144,12 @@ public class Role extends RealmResource {
 	
 	@JsonIgnore
 	public Set<Realm> getPermissionRealms() {
+		/**
+		 * Protection against a role having no realms. Default it to the roles own realm.
+		 */
+		if(Objects.isNull(realms) || realms.isEmpty()) {
+			return new HashSet<Realm>(Arrays.asList(getRealm()));
+		}
 		return realms;
 	}
 
