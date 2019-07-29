@@ -2854,11 +2854,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				map.put(TEXT_PRIMARY_EMAIL, princ.getPrimaryEmail());
 				map.put(TEXT_DESCRIPTION, princ.getPrincipalDescription());
 				map.put(TEXT_UUID, princ.getUUID());
-				map.put(TEXT_CREATE_DATE, HypersocketUtils.formatDate(princ.getCreateDate(), "yyyy-MM-dd HH:mm:ss"));
-				map.put(TEXT_MODIFIED_DATE,
+				map.put(TEXT_CREATE_DATE, princ.getCreateDate() == null ? "" : HypersocketUtils.formatDate(princ.getCreateDate(), "yyyy-MM-dd HH:mm:ss"));
+				map.put(TEXT_MODIFIED_DATE, princ.getModifiedDate() == null ? "" :
 						HypersocketUtils.formatDate(princ.getModifiedDate(), "yyyy-MM-dd HH:mm:ss"));
-				map.put(TEXT_EXPIRES, HypersocketUtils.formatDate(princ.getExpires(), "yyyy-MM-dd HH:mm:ss"));
-				map.put(TEXT_STATUS, princ.getPrincipalStatus().name());
+				map.put(TEXT_EXPIRES, princ.getExpires() == null ? "" : HypersocketUtils.formatDate(princ.getExpires(), "yyyy-MM-dd HH:mm:ss"));
+				map.put(TEXT_STATUS, princ.getPrincipalStatus() == null ? "" :princ.getPrincipalStatus().name());
 				final Map<String, String> properties = princ.getProperties();
 				if (properties != null)
 					map.putAll(properties);
