@@ -2,10 +2,13 @@ package com.hypersocket.scheduler;
 
 import java.util.Date;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobKey;
 import org.quartz.Trigger;
 import org.quartz.Trigger.TriggerState;
+
+import com.hypersocket.utils.HypersocketUtils;
 
 public class SchedulerResource {
 	private String name;
@@ -26,7 +29,7 @@ public class SchedulerResource {
 
 	public SchedulerResource(Trigger trigger, TriggerState status) {
 		/* NOTE: At the moment, job groups are not used, so ID is same as Name */
-		setId(trigger.getJobKey().getName());
+		setId(HypersocketUtils.base64Encode(trigger.getJobKey().getName()));
 		setGroup(trigger.getJobKey().getGroup());
 		setName(trigger.getJobKey().getName());
 		setLastFire(trigger.getPreviousFireTime());
