@@ -2821,17 +2821,14 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		// assertPermission(RealmPermission.READ);
 
 		exportService.downloadCSV(realm, new AbstractPagingExportDataProvider<Principal>(PAGE_SIZE) {
-			Collection<Realm> realms = new ArrayList<Realm>();
 			Set<String> includeAttributes;
 			Cache<String, String> i18n;
+			Realm currentRealm = realm;
 
 			{
-				if (realm == null) {
-					realms.add(getCurrentRealm());
-					realms.addAll(getRealmsByParent(getCurrentRealm()));
-				} else {
-					realms.add(realm);
-				}
+				if (currentRealm == null) {
+					currentRealm = getCurrentRealm();
+				} 
 
 				includeAttributes = new HashSet<String>();
 				includeAttributes.addAll(Arrays.asList(TEXT_REALM, TEXT_NAME, TEXT_EMAIL, TEXT_OU, TEXT_PRIMARY_EMAIL,
@@ -2868,7 +2865,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			@SuppressWarnings("unchecked")
 			@Override
 			protected List<Principal> fetchPage(int startPosition) throws AccessDeniedException {
-				return (List<Principal>) searchPrincipals(realm, PrincipalType.USER, module, searchColumn,
+				return (List<Principal>) searchPrincipals(currentRealm, PrincipalType.USER, module, searchColumn,
 						searchPattern, startPosition, PAGE_SIZE, sort);
 			}
 		}, outputHeaders, delimiters, eol, wrap, escape, attributes, output, locale);
