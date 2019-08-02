@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.hazelcast.client.proxy.ClientAtomicReferenceProxy;
 import com.hypersocket.auth.AuthenticationRequiredResult;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.FallbackAuthenticationRequired;
@@ -128,7 +129,13 @@ public class LogonController extends AuthenticatedController {
 			HttpServletRequest request, HttpServletResponse response,
 			@PathVariable String scheme,
 			@PathVariable String realm) throws AccessDeniedException, UnsupportedEncodingException {
-		return resetAuthenticationState(request, response, scheme, realmService.getRealmByName(realm));
+		realmService.setupSystemContext(); 
+		try {
+			return resetAuthenticationState(request, response, scheme, realmService.getRealmByName(realm));
+		}
+		finally {
+			realmService.clearPrincipalContext();
+		}
 	}
 
 	@RequestMapping(value = "logon", method = { RequestMethod.GET,
