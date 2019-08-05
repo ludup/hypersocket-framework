@@ -429,8 +429,12 @@ public class AuthenticationServiceImpl extends
 					AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY);
 		}
 
+		List<AuthenticationModule> modulesForScheme = repository.getModulesForScheme(scheme);
+		if(modulesForScheme.isEmpty())
+			throw new AccessDeniedException(String.format("No authentication modules for the scheme %s.", scheme.getName()));
+		
 		state.setScheme(scheme);
-		state.setModules(repository.getModulesForScheme(state.getScheme()));
+		state.setModules(modulesForScheme);
 
 		return state;
 	}
