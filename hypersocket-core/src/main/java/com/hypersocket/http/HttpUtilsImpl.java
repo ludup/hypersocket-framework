@@ -238,6 +238,9 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 
 	@Override
 	public boolean verify(String hostname, SSLSession session) {
+		if("true".equals(System.getProperty("hypersocket.alwaysTrustAllHosts")))
+			return true;
+		
 		/*
 		 * This default implementation uses the system realm to store the known hosts
 		 * for anything that isn't a realm connection. When realms are involved {@link
