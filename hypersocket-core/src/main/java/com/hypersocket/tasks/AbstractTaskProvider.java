@@ -9,11 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hypersocket.events.EventService;
+import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.UserVariableReplacementService;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.conditions.TriggerAttributeHelper;
 import com.hypersocket.util.TextProcessor;
@@ -24,14 +27,13 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	static Logger log = LoggerFactory.getLogger(AbstractTaskProvider.class);
 
 	@Autowired
-	EventService eventService;
-
+	private TriggerResourceService triggerService;
+	
 	@Autowired
-	RealmService realmService;
-
+	private RealmService realmService;
+	
 	@Autowired
-	TriggerResourceService triggerService;
-
+	private UserVariableReplacementService userVariableReplacementService; 
 
 	protected String[] processTokenReplacements(String[] values, List<SystemEvent> events) {
 		return processTokenReplacements(values, events, false);
@@ -53,6 +55,17 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	}
 	
 	protected String processTokenReplacements(String value, final List<SystemEvent> events, boolean evaluateScripts, boolean replaceUnkown) {
+		Principal p = null;
+		if(!events.isEmpty()) {
+			SystemEvent last = events.get(events.size() - 1);
+			if(last.hasAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME)) {
+				p = realmService.getPrincipalByName(last.getCurrentRealm(), last.getAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME), PrincipalType.USER);
+			}
+		}
+		return processTokenReplacements(value, events, evaluateScripts, replaceUnkown, p);
+	}
+	
+	protected String processTokenReplacements(String value, final List<SystemEvent> events, boolean evaluateScripts, boolean replaceUnkown, Principal principal) {
 
 		if (value == null) {
 			return null;
@@ -76,7 +89,15 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 			tp.addBindings("value", value);
 			tp.addBindings("events", events);
 		}
-		
+		if(principal != null) {
+			tp.addResolver(new Resolver() {
+	
+				@Override
+				public String evaluate(String variable) {
+					return userVariableReplacementService.getVariableValue(principal, variable);
+				}
+			});
+		}
 		tp.addResolver(new Resolver() {
 			@Override
 			public String evaluate(String variable) {
