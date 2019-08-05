@@ -679,7 +679,8 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		nettyResponse.setHeader("X-XSS-Protection", "1; mode=block");
 
 		if(request.isSecure()
-				&& configurationService.getBooleanValue("security.strictTransportSecurity")) {
+				&& configurationService.getBooleanValue("security.strictTransportSecurity")
+				&& "true".equals(System.getProperty("hypersocket.security.strictTransportSecurity","true"))) {
 			nettyResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubdomains");
 		}
 	}
