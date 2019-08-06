@@ -34,6 +34,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
+import com.hypersocket.realm.UserPrincipal;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.DistinctRootEntity;
@@ -419,6 +420,12 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	@Transactional(readOnly=true)
 	public Principal getUserByEmail(String email, Realm realm) {
 		return get("email", email, LocalUser.class, true, new DeletedCriteria(false), new RealmCriteria(realm));
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public UserPrincipal getUserByFullName(String fullName, Realm realm) {
+		return get("fullname", fullName, LocalUser.class, true, new DeletedCriteria(false), new RealmCriteria(realm));
 	}
 
 	@Override

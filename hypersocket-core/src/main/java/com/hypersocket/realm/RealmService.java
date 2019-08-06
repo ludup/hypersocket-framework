@@ -242,6 +242,8 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	List<?> searchPrincipals(Realm realm, PrincipalType type, String searchColumn, String searchPattern, int start, int length,
 							 ColumnSort[] sorting) throws AccessDeniedException;
 
+	UserPrincipal getPrincipalByFullName(Realm realm, String value) throws AccessDeniedException, ResourceNotFoundException;
+
 	Principal getPrincipalByEmail(Realm realm, String email) throws AccessDeniedException, ResourceNotFoundException;
 
 	Principal getDeletedPrincipalById(Realm realm, Long id, PrincipalType... type) throws AccessDeniedException;

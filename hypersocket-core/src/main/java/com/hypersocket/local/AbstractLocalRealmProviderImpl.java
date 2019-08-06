@@ -46,6 +46,7 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.UserPrincipal;
 import com.hypersocket.resource.RealmResource;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
@@ -186,6 +187,11 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	public Principal getPrincipalByEmail(Realm realm, String email) {
 		return userRepository.getUserByEmail(email, realm);
+	}
+	
+	@Override
+	public UserPrincipal getPrincipalByFullName(Realm realm, String fullName) {
+		return userRepository.getUserByFullName(fullName, realm);
 	}
 
 	@Override

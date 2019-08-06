@@ -16,6 +16,7 @@ import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.UserPrincipal;
 import com.hypersocket.repository.AbstractRepository;
 import com.hypersocket.tables.ColumnSort;
 
@@ -79,6 +80,8 @@ public interface LocalUserRepository extends ResourceTemplateRepository, Abstrac
 	Collection<? extends Principal> getGroupsByGroup(LocalGroup principal);
 
 	Principal getUserByEmail(String email, Realm realm);
+
+	UserPrincipal getUserByFullName(String fullName, Realm realm);
 
 	void resetRealm(Iterator<Principal> admins);
 

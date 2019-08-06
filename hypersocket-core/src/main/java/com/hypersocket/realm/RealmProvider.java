@@ -173,4 +173,6 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	boolean isEnabled();
 
+	UserPrincipal getPrincipalByFullName(Realm realm, String fullName);
+
 }

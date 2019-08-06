@@ -7,7 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.local;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,14 +20,13 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.GroupPrincipal;
 import com.hypersocket.realm.PrincipalStatus;
-import com.hypersocket.realm.PrincipalType;
 
 @Entity
 @Table(name = "local_groups")
 @XmlRootElement(name="group")
-public class LocalGroup extends Principal {
+public class LocalGroup extends GroupPrincipal<LocalUser, LocalGroup> {
 
 	private static final long serialVersionUID = 8447795179729315608L;
 
@@ -45,10 +43,6 @@ public class LocalGroup extends Principal {
 	private Set<LocalGroup> parents = new HashSet<LocalGroup>();
 	
 	@Override
-	public PrincipalType getType() {
-		return PrincipalType.GROUP;
-	}
-	
 	public PrincipalStatus getPrincipalStatus() {
 		return PrincipalStatus.ENABLED;
 	}
@@ -57,35 +51,26 @@ public class LocalGroup extends Principal {
 		return "fa-database";
 	}
 	
-	public String getPrincipalDescription() {
-		return getName();
-	}
-	
+	@Override
 	@JsonIgnore
 	public Set<LocalUser> getUsers() {
 		return users;
 	}
 	
-	public String getEmail() {
-		return "";
-	}
-	
+	@Override
 	@JsonIgnore
 	public Set<LocalGroup> getGroups() {
 		return groups;
 	}
 	
+	@Override
 	@JsonIgnore
 	public Set<LocalGroup> getParents() {
 		return parents;
 	}
 
+	@Override
 	public String getRealmModule() {
 		return LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY;
-	}
-
-	@Override
-	public Date getExpires() {
-		return null;
 	}
 }

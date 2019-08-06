@@ -1572,6 +1572,22 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
+	public UserPrincipal getPrincipalByFullName(Realm realm, String fullName)
+			throws AccessDeniedException, ResourceNotFoundException {
+
+		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
+
+		UserPrincipal principal = getProviderForRealm(realm).getPrincipalByFullName(realm, fullName);
+		if (principal == null) {
+			principal = getLocalProvider().getPrincipalByFullName(realm, fullName);
+		}
+		if (principal == null) {
+			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.noPrincipalForFullName", fullName);
+		}
+		return principal;
+	}
+
+	@Override
 	public boolean requiresPasswordChange(Principal principal, Realm realm) {
 		return getProviderForPrincipal(principal).requiresPasswordChange(principal);
 	}

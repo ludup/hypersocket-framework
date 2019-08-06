@@ -290,13 +290,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		category.getTemplates().add(template);
 
 		Collections.sort(category.getTemplates(),
-				new Comparator<AbstractPropertyTemplate>() {
-					@Override
-					public int compare(AbstractPropertyTemplate cat1,
-							AbstractPropertyTemplate cat2) {
-						return cat1.getWeight().compareTo(cat2.getWeight());
-					}
-				});
+				new PropertyTemplateWeightComparator());
 
 		propertyStoresByResourceKey.put(resourceKey, propertyStore);
 
