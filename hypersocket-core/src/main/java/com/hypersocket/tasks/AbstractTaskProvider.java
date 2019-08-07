@@ -94,7 +94,16 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	
 				@Override
 				public String evaluate(String variable) {
-					return userVariableReplacementService.getVariableValue(principal, variable);
+					try {
+						return userVariableReplacementService.getVariableValue(principal, variable);
+					}
+					catch(IllegalStateException ise) {
+						// No such variable
+						if(log.isDebugEnabled())
+							log.debug(String.format("Failed to variable value for %s and user %s",  variable, principal.getName()), ise);
+						return null;
+						
+					}
 				}
 			});
 		}
