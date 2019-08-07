@@ -598,7 +598,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 
 			if (template == null) {
-				throw new IllegalStateException("Template required for encrypted property!");
+				throw new IllegalStateException(String.format("No property template with name of %s", resourceKey));
 			}
 		}
 
