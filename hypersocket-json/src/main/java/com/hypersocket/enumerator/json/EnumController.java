@@ -32,7 +32,6 @@ public class EnumController extends AuthenticatedController {
 	@Autowired
 	SessionUtils sessionUtils;
 	
-	@AuthenticationRequired
 	@RequestMapping(value = "enum/{className}/", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -41,8 +40,7 @@ public class EnumController extends AuthenticatedController {
 			@PathVariable("className") String className)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		setupSystemContext();
 		try {
 			
 			Set<String> ignoredTypes = new HashSet<String>();
@@ -67,8 +65,6 @@ public class EnumController extends AuthenticatedController {
 		}
 	}
 	
-
-	@AuthenticationRequired
 	@RequestMapping(value = "enum/{className}/{ignore}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -78,8 +74,7 @@ public class EnumController extends AuthenticatedController {
 			@PathVariable("ignore") String ignored)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		setupSystemContext();
 		try {
 			
 			Set<String> ignoredTypes = new HashSet<String>();
@@ -103,7 +98,6 @@ public class EnumController extends AuthenticatedController {
 		}
 	}
 
-	@AuthenticationRequired
 	@RequestMapping(value = "enum/displayable/{className}/", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -112,8 +106,7 @@ public class EnumController extends AuthenticatedController {
 			@PathVariable("className") String className)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		setupSystemContext();
 		try {
 
 			Class<?> enumType = Class.forName(className);
