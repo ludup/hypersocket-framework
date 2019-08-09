@@ -69,11 +69,7 @@ public abstract class PropertyRepositoryImpl extends AbstractRepositoryImpl<Long
 	@Override
 	@Transactional
 	public void deletePropertiesForResource(SimpleResource resource) {
-		
-		List<DatabaseProperty> properties = getPropertiesForResource(resource);
-		for(Property p : properties) {
-			delete(p);
-		}
+		deleteProperties(resource);
 	}
 	
 	@Override

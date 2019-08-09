@@ -370,7 +370,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 				throw (ResourceChangeException) t;
 			} else {
 				throw new ResourceChangeException(RESOURCE_BUNDLE_DEFAULT,
-						"generic.delete.error", t.getMessage());
+						"generic.delete.error", t.getMessage(), t);
 			}
 		}
 
