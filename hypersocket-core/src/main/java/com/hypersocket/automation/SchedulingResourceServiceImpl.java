@@ -53,31 +53,8 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 	}
 	
 	protected Date calculateDateTime(Realm realm, Date from, String time) {
-
-		Calendar c = Calendar.getInstance();
 		String timezone = configurationService.getValue(realm, "realm.defaultTimezone");
-		if(StringUtils.isBlank(timezone)) {
-			timezone = TimeZone.getDefault().getID();
-		}
-		
-		c.setTime(HypersocketUtils.today());
-		c.setTimeZone(TimeZone.getTimeZone(timezone));
-		
-		Date ret = null;
-
-		if (from != null) {
-			c.setTime(from);
-			ret = c.getTime();
-		}
-
-		if (!StringUtils.isEmpty(time)) {
-			int idx = time.indexOf(':');
-			c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(time.substring(0, idx)));
-			c.set(Calendar.MINUTE, Integer.parseInt(time.substring(idx + 1)));
-			ret = c.getTime();
-		}
-
-		return ret;
+		return HypersocketUtils.calculateDateTime(timezone, from, timezone);
 	}
 	
 	

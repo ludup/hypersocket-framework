@@ -32,6 +32,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,33 @@ public class HypersocketUtils {
 	//static Map<String,SimpleDateFormat> dateFormats = new HashMap<String,SimpleDateFormat>();
 
 	static SecureRandom random = new SecureRandom();
+	
+	public static Date calculateDateTime(String timezone, Date from, String time) {
+
+		Calendar c = Calendar.getInstance();
+		if(StringUtils.isBlank(timezone)) {
+			timezone = TimeZone.getDefault().getID();
+		}
+		
+		c.setTime(HypersocketUtils.today());
+		c.setTimeZone(TimeZone.getTimeZone(timezone));
+		
+		Date ret = null;
+
+		if (from != null) {
+			c.setTime(from);
+			ret = c.getTime();
+		}
+
+		if (!StringUtils.isEmpty(time)) {
+			int idx = time.indexOf(':');
+			c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(time.substring(0, idx)));
+			c.set(Calendar.MINUTE, Integer.parseInt(time.substring(idx + 1)));
+			ret = c.getTime();
+		}
+
+		return ret;
+	}
 	
 	public static void resetInterval() {
 		times.set(System.currentTimeMillis());
