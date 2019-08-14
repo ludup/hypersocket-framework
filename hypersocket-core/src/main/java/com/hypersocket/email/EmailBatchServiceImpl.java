@@ -81,11 +81,16 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 					item.getTrack(),
 					5, attachments.toArray(new EmailAttachment[0]));
 
-			return true;
+			
 		} catch (MailException | AccessDeniedException | ValidationException e) {
-			throw new IllegalStateException(e.getMessage(), e);
+			log.error("I could not send an email in realm {} to user {} with subject {}",
+					item.getRealm().getName(),
+					item.getToEmail(), 
+					item.getSubject(),
+					e);
 		}
 
+		return true;
 	}
 
 	@Override
