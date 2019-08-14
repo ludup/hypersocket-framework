@@ -73,12 +73,21 @@ public class HypersocketUtils {
 			ret = c.getTime();
 		}
 
-		if (!StringUtils.isEmpty(time)) {
-			int idx = time.indexOf(':');
-			c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(time.substring(0, idx)));
-			c.set(Calendar.MINUTE, Integer.parseInt(time.substring(idx + 1)));
-			ret = c.getTime();
+		
+		if (StringUtils.isEmpty(time)) {
+			return ret;
 		}
+				
+		int idx = time.indexOf(":");
+		if(idx==-1) {
+			log.warn("calculateDateTime has invalid time parameter {}", time);
+			return ret;
+		}
+		
+		c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(time.substring(0, idx)));
+		c.set(Calendar.MINUTE, Integer.parseInt(time.substring(idx + 1)));
+		ret = c.getTime();
+		
 
 		return ret;
 	}
