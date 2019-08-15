@@ -41,12 +41,22 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 	Channel channel;
 	HttpRequest request;
 	boolean closeOnComplete = false;
+	Date timestamp;
 	
 	public HttpResponseServletWrapper(HttpResponse response, Channel channel, HttpRequest request) {
 		this.response = response;
 		this.channel = channel;
 		this.request = request;
+		timestamp = new Date();
 		reset();
+	}
+	
+	public void stamp() {
+		timestamp = new Date();
+	}
+	
+	public Date getTimestamp() {
+		return timestamp;
 	}
 	
 	public void setChunked(boolean chunked) {

@@ -17,6 +17,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -72,12 +73,15 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	private HttpRequestChunkStream chunkedInputStream = null;
 	private String servletPath;
 	private String requestUrl;
+	private Date timestamp;
 
 	public HttpRequestServletWrapper(HttpRequest request, InetSocketAddress localAddress,
 			InetSocketAddress remoteAddress, boolean secure, ServletContext context, HttpSession session) {
 		this.request = request;
 		this.localAddress = localAddress;
 		this.remoteAddress = remoteAddress;
+		
+		timestamp = new Date();
 
 		this.secure = secure;
 		this.context = context;
@@ -232,7 +236,11 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 		}
 		parameters.get(name).add(value);
 	}
-
+	
+	public Date getTimestamp() {
+		return timestamp;
+	}
+	
 	public HttpRequest getNettyRequest() {
 		return request;
 	}

@@ -69,6 +69,7 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.ip.ExtendedIpFilterRuleHandler;
 import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
+import com.hypersocket.netty.log.NCSARequestLog;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.server.ClientConnector;
@@ -130,9 +131,14 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	List<ClientConnector> clientConnectors = new ArrayList<ClientConnector>();
 
 	private Set<String> preventUrlRedirection = new HashSet<>();
+	private NCSARequestLog requestLog;
 
 	public NettyServer() {
 
+	}
+	
+	public NCSARequestLog getRequestLog() {
+		return requestLog;
 	}
 
 	@PostConstruct
@@ -149,6 +155,19 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	            		TimeUnit.SECONDS,
 	            		this,
 	            		nettyThreadFactory));
+		
+		requestLog = new NCSARequestLog();
+		requestLog.setFilename("logs/request.log");
+		requestLog.setRetainDays(30);
+		requestLog.setAppend(true);
+		requestLog.setLogDispatch(true);
+		requestLog.setLogLatency(true);
+		requestLog.setPreferProxiedForAddress(true);
+		try {
+			requestLog.start();
+		} catch (Exception e) {
+			throw new IllegalStateException("Failed to start NCSA request log.", e);
+		}
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}

@@ -454,11 +454,11 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 	@Override
 	public void sendResponse(HttpServletRequest request,
 			HttpServletResponse response, boolean chunked) {
-		sendResponse(request,
+		sendResponse((HttpRequestServletWrapper)request,
 				(HttpResponseServletWrapper) response, chunked);
 	}
 
-	public void sendResponse(final HttpServletRequest servletRequest,
+	public void sendResponse(final HttpRequestServletWrapper servletRequest,
 			final HttpResponseServletWrapper servletResponse, boolean chunked) {
 
 		try {
@@ -543,6 +543,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			if (log.isDebugEnabled()) {
 				log.debug("End Response >>>>>>");
 			}
+			servletResponse.stamp();
+			server.getRequestLog().log(servletRequest, servletResponse);
 
 			Request.remove();
 		}
