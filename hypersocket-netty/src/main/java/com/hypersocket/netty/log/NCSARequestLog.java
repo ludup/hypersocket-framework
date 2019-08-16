@@ -26,7 +26,6 @@ import java.util.TimeZone;
 
 import javax.servlet.http.Cookie;
 
-import org.jboss.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -452,8 +451,6 @@ public class NCSARequestLog implements Closeable
     /* ------------------------------------------------------------ */
     /**
      * Writes the request and response information to the output stream.
-     * 
-     * @see org.eclipse.jetty.server.RequestLog#log(org.eclipse.jetty.server.Request, org.eclipse.jetty.server.Response)
      */
     public void log(HttpRequestServletWrapper request, HttpResponseServletWrapper response)
     {
@@ -635,8 +632,6 @@ public class NCSARequestLog implements Closeable
     /* ------------------------------------------------------------ */
     /**
      * Set up request logging and open log file.
-     * 
-     * @see org.eclipse.jetty.util.component.AbstractLifeCycle#doStart()
      */
     public void start() throws Exception
     {
@@ -671,8 +666,6 @@ public class NCSARequestLog implements Closeable
     /* ------------------------------------------------------------ */
     /**
      * Close the log file and perform cleanup.
-     * 
-     * @see org.eclipse.jetty.util.component.AbstractLifeCycle#doStop()
      */
     @Override
     public void close() throws IOException

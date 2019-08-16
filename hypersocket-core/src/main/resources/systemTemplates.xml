@@ -14,7 +14,7 @@
 			<property resourceKey="smtp.on" inputType="switch" weight="0" defaultValue="true"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.security" resourceBundle="HypersocketServer" weight="400">
-		<property resourceKey="security.knownHosts" inputType="hidden" defaultValue="" weight="0"/>
+		<property resourceKey="security.knownHosts" inputType="hidden" defaultValue="" weight="0" cache="false"/>
 	    <property resourceKey="security.enableCSRFProtection" inputType="switch" defaultValue="true" weight="0"/>
 	    <property resourceKey="security.xFrameOptionsEnabled" inputType="switch" defaultValue="true" weight="100"/>
 	    <property resourceKey="security.strictTransportSecurity" inputType="switch" defaultValue="true" weight="200"/>
