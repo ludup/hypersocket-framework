@@ -117,7 +117,10 @@ public abstract class BatchProcessingServiceImpl<T extends RealmResource> implem
 			}
 		
 		} finally {
-			cache.remove(getJobKey());
+			synchronized(this) {
+				Cache<String,Boolean> cache = cacheService.getCacheOrCreate(getJobKey(), String.class, Boolean.class);
+				cache.remove(getJobKey());
+			}
 		}
 		
 	}
