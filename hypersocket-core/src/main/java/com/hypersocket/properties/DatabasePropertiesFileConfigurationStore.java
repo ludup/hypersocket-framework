@@ -31,7 +31,12 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 	public static final String JDBC_HOST = "jdbc.host";
 	public static final String JDBC_PORT = "jdbc.port";
 	public static final String JDBC_URL = "jdbc.url";
-
+	public static final String JDBC_MAX_POOL_SIZE = "jdbc.maxPoolSize";
+	public static final String JDBC_MAX_STATEMENTS_PER_CONNECTION = "jdbc.maxStatementsPerConnection"; // 500
+	public static final String JDBC_NUM_HELPER_THREADS = "jdbc.numHelperThreads"; // 20
+	public static final String JDBC_ACQUIRE_RETRY_DELAY = "jdbc.acquireRetryDelay"; // 1000
+	public static final String JDBC_ACQUIRE_RETRY_ATTEMPTS = "jdbc.acquireRetryAttempts"; // 10
+	
 
 	public static final String INSTALLER_DATABASE_HOST = "${installer:databaseHost}";
 	public static final String INSTALLER_DATABASE_PORT = "${installer:databasePort}";
@@ -105,6 +110,13 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 				}else{
 					properties.put(JDBC_PORT, value);
 				}
+			}
+			else if(JDBC_MAX_POOL_SIZE.equals(template.getResourceKey()) || 
+					JDBC_MAX_STATEMENTS_PER_CONNECTION.equals(template.getResourceKey()) ||
+					JDBC_ACQUIRE_RETRY_ATTEMPTS.equals(template.getResourceKey()) ||
+					JDBC_ACQUIRE_RETRY_DELAY.equals(template.getResourceKey())) {
+
+				properties.put(template.getResourceKey(), value);
 			}
 
 			if(properties.containsKey(JDBC_VENDOR) && properties.containsKey(JDBC_HOST) && properties.containsKey(JDBC_PORT) && properties.containsKey(JDBC_DATABASE)){

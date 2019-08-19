@@ -4,6 +4,11 @@
 		type="com.hypersocket.properties.DatabasePropertiesFileConfigurationStore">
 		<filename>${hypersocket.conf}/database.properties</filename>
 	</propertyStore>
+	<propertyStore id="schedulerConfiguration"
+		type="com.hypersocket.properties.SchedulerPropertiesFileConfigurationStore"
+		create="true">
+		<filename>${hypersocket.conf}/quartz.properties</filename>
+	</propertyStore>
 	<propertyCategory resourceKey="category.authentication"
 		 resourceBundle="AuthenticationService" weight="100" hidden="true">
 		<property resourceKey="auth.chooseRealm" inputType="switch"
@@ -33,6 +38,21 @@
 		<property resourceKey="jdbc.username" inputType="text" store="databaseConfiguration"
 			allowEmpty="true" weight="500" defaultValue="hypersocket" />
 		<property resourceKey="jdbc.password" inputType="password" store="databaseConfiguration"
-			allowEmpty="true" weight="600" defaultValue="hypersocket" />		
+			allowEmpty="true" weight="600" defaultValue="hypersocket" />
+		<property resourceKey="jdbc.maxPoolSize" inputType="integer" store="databaseConfiguration" 
+				  allowEmpty="false" weight="700" defaultValue="500" minValue="1" maxValue="10000"/>		
+		<property resourceKey="jdbc.numHelperThreads" inputType="integer" store="databaseConfiguration" 
+				  allowEmpty="false" weight="800" defaultValue="20" minValue="1" maxValue="100"/>		
+		<property resourceKey="jdbc.maxStatementsPerConnection" inputType="integer" store="databaseConfiguration" 
+				  allowEmpty="false" weight="900" defaultValue="100" minValue="1" maxValue="1000"/>		
+		<property resourceKey="jdbc.acquireRetryDelay" inputType="integer" store="databaseConfiguration" 
+				  allowEmpty="false" weight="1000" defaultValue="1000" minValue="1" maxValue="100000"/>		
+		<property resourceKey="jdbc.acquireRetryAttempts" inputType="integer" store="databaseConfiguration" 
+				  allowEmpty="false" weight="1100" defaultValue="10" minValue="1" maxValue="100"/>
+	</propertyCategory>
+	<propertyCategory resourceKey="category.schedulerSettings"
+		resourceBundle="SchedulerService" weight="300">
+		<property resourceKey="org.quartz.threadPool.threadCount" inputType="integer" store="schedulerConfiguration" 
+				  allowEmpty="false" weight="700" defaultValue="50" minValue="1" maxValue="1000"/>		
 	</propertyCategory>
 </propertyTemplates>
