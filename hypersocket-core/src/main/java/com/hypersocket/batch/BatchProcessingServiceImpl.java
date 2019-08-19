@@ -61,17 +61,22 @@ public abstract class BatchProcessingServiceImpl<T extends RealmResource> implem
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public synchronized void processBatchItems() {
+	public  void processBatchItems() {
 		
+		/**
+		 * Check for the status of this job running across the cluster. We don't want to run it again.
+		 */
+		synchronized(this) {
 		
-		Cache<String,Boolean> cache = cacheService.getCacheOrCreate(getJobKey(), String.class, Boolean.class);
-		Boolean running = cache.get(getJobKey());
-		if(Boolean.TRUE.equals(running)) {
-			log.info(String.format("Existing batch job for %s is currently in progress", getJobKey()));
-			return;
+			Cache<String,Boolean> cache = cacheService.getCacheOrCreate(getJobKey(), String.class, Boolean.class);
+			Boolean running = cache.get(getJobKey());
+			if(Boolean.TRUE.equals(running)) {
+				log.info(String.format("Existing batch job for %s is currently in progress", getJobKey()));
+				return;
+			}
+			cache.put(getJobKey(), Boolean.TRUE);
 		}
 		
-		cache.put(getJobKey(), Boolean.TRUE);
 		
 		try {
 			/**
