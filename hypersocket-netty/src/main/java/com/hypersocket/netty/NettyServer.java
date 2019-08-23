@@ -140,6 +140,10 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	public NCSARequestLog getRequestLog() {
 		return requestLog;
 	}
+	
+	public OrderedMemoryAwareThreadPoolExecutor getExecutionHandler() {
+		return (OrderedMemoryAwareThreadPoolExecutor) executionHandler.getExecutor();
+	}
 
 	@PostConstruct
 	private void postConstruct() {

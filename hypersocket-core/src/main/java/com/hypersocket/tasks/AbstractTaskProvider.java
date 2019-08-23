@@ -75,7 +75,7 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 		tp.setUnknownVariablesAreBlank(replaceUnkown);
 		tp.setEvaluateScripts(evaluateScripts);
 		
-		if(evaluateScripts) {
+		if(evaluateScripts && !events.isEmpty()) {
 			/* When evaluating scripts, it should be possible to access the property
 			 * values from the bindings. This means the pattern based approach for
 			 * resolving variables won't work, so we have to add them all.

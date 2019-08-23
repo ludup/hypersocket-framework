@@ -53,9 +53,16 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 			if(!this.propertiesFile.createNewFile()){
 				log.error(String.format("Problem in creating file %s", this.propertiesFile.getAbsolutePath()));
 			}
+			else
+				properties = newPropertiesFile(readProperties(propertiesFile));
 		}
-
-		properties = readProperties(propertiesFile);
+		else
+			properties = readProperties(propertiesFile);
+	}
+	
+	protected Properties newPropertiesFile(Properties properties) {
+		// For sub-classes to override and populate default properties when file is created
+		return properties;
 	}
 
 	protected Properties readProperties(File propertiesFile) throws IOException {
