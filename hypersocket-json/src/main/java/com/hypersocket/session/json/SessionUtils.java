@@ -227,11 +227,12 @@ public class SessionUtils {
 	
 	private void verifySameSiteRequest(HttpServletRequest request, Session session) throws AccessDeniedException, UnauthorizedException {
 		
-		if(!systemConfigurationService.getBooleanValue("security.enableCSRFProtection")) {
-			return;
-		}
 
 		if(isValidCORSRequest(request)) {
+			return;
+		}
+		
+		if(!systemConfigurationService.getBooleanValue("security.enableCSRFProtection")) {
 			return;
 		}
 		
