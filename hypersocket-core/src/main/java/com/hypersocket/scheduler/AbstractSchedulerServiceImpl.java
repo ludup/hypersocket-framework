@@ -295,20 +295,19 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 					+ interval + " and repeat " + (repeat >= 0 ? repeat : "indefinatley")
 					+ (end != null ? " until " + HypersocketUtils.formatDateTime(end) : ""));
 		}
-		TriggerKey triggerKey = scheduler.getTriggersOfJob(new JobKey(id)).get(0).getKey();
+		
+		List<? extends Trigger> triggers = scheduler.getTriggersOfJob(new JobKey(id));
+		if(triggers.isEmpty()) {
+			throw new NotScheduledException();
+		}
+		
+		TriggerKey triggerKey = triggers.get(0).getKey();
 
 		if (triggerKey != null) {
 
 			Trigger oldTrigger = scheduler.getTrigger(triggerKey);
 			Trigger trigger = createTrigger(oldTrigger.getJobDataMap(), start, interval, repeat, end);
 			scheduler.rescheduleJob(triggerKey, trigger);
-			/*
-			 * BUG?: This properties map is not getting set anywhere? I presume it should be
-			 */
-			Map<String, String> properties = new HashMap<String, String>();
-			properties.put("started", (start == null ? HypersocketUtils.formatDate(new Date(), "yyyy/MM/dd HH:mm")
-					: HypersocketUtils.formatDate(start, "yyyy/MM/dd HH:mm")));
-			properties.put("intervals", String.valueOf((interval / 60000)));
 
 		} else {
 			cancelNow(id);
