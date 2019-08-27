@@ -662,6 +662,21 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					}
 					closeSession(session);
 				}
+				
+				for(Session session : repository.getActiveSessions()) {
+					if(session.isTransient()) {
+						closeSession(session);
+					}
+					else if(!session.isSystem()) {
+						if(isLoggedOn(session, false)) {
+							if(realmService.getRealmPropertyBoolean(session.getPrincipalRealm(), "session.closeOnShutdown")) {
+									closeSession(session);
+									continue;
+							}
+						}
+						notifyReaperListeners(session);
+					}
+				}
 
 				try {
 					if(schedulerService.jobDoesNotExists("sessionReaperJob")){

@@ -33,20 +33,12 @@ public class SessionReaperJob extends PermissionsAwareJob {
 				log.debug("There are " + activeSessions.size() + " users connected");
 			}
 			
-			boolean firstRun = context.getTrigger().getJobDataMap().containsKey("firstRun");
-			
 			for(Session session : activeSessions) {
-				if(firstRun && session.isTransient()) {
+				if(session.isTransient()) {
 					sessionService.closeSession(session);
 				}
 				else if(!session.isSystem()) {
 					if(sessionService.isLoggedOn(session, false)) {
-						if(firstRun) {
-							if(realmService.getRealmPropertyBoolean(session.getPrincipalRealm(), "session.closeOnShutdown")) {
-								sessionService.closeSession(session);
-								continue;
-							}
-						}
 						sessionService.notifyReaperListeners(session);
 					}
 				}
