@@ -7,6 +7,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceNotFoundException;
 
 public interface SecretKeyService extends AbstractResourceService<SecretKeyResource> {
 
@@ -24,5 +25,7 @@ public interface SecretKeyService extends AbstractResourceService<SecretKeyResou
 	void setEncryptorProvider(EncryptionProvider encryptionProvider);
 
 	EncryptionProvider getEncryptorProvider();
+
+	void deleteSecretKey(String name, Realm realm) throws ResourceNotFoundException, ResourceException, AccessDeniedException;
 
 }

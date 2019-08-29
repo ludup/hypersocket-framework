@@ -87,6 +87,12 @@ public class SecretKeyServiceImpl extends
 	
 	@SuppressWarnings("unchecked")
 	@Override
+	public void deleteSecretKey(String name, Realm realm) throws ResourceNotFoundException, ResourceException, AccessDeniedException {
+		repository.deleteResource(getSecretKey(name, realm));
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
 	public SecretKeyResource createSecretKey(String name, Realm realm) throws ResourceException, AccessDeniedException {
 		
 		

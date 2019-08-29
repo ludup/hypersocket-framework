@@ -30,6 +30,8 @@ public class DefaultEncryptor implements Encryptor {
 	public String encryptString(String reference, String data, Realm realm)
 			throws IOException {
 
+		boolean existingKey = true;
+		
 		try {
 			
 			SecretKeyResource key;
@@ -37,6 +39,7 @@ public class DefaultEncryptor implements Encryptor {
 			key = secretKeyService.getSecretKey(reference, realm);
 			if(key==null) {
 				key = secretKeyService.createSecretKey(reference, realm);
+				existingKey = false;
 			}
 			SecretKey secretKeySpec = new SecretKeySpec(secretKeyService.generateSecreyKeyData(key), "AES");
 			byte[] iv = secretKeyService.generateIvData(key);
@@ -53,6 +56,10 @@ public class DefaultEncryptor implements Encryptor {
 
 			return Base64.encodeBase64String(byteCipherText);
 		} catch (Exception e) {
+			if(existingKey) {
+				secretKeyService.deleteSecretkey(reference, realm);
+				return encryptString(reference, data, realm);
+			}
 			throw new IOException(e.getMessage(), e);
 		}
 
