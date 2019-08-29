@@ -34,10 +34,7 @@ public class SessionReaperJob extends PermissionsAwareJob {
 			}
 			
 			for(Session session : activeSessions) {
-				if(session.isTransient()) {
-					sessionService.closeSession(session);
-				}
-				else if(!session.isSystem()) {
+				if(!session.isSystem()) {
 					if(sessionService.isLoggedOn(session, false)) {
 						sessionService.notifyReaperListeners(session);
 					}
