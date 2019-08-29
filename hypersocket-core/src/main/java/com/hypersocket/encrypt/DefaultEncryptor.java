@@ -60,6 +60,13 @@ public class DefaultEncryptor implements Encryptor {
 		} catch (Exception e) {
 			if(existingKey) {
 				try {
+					/**
+					 * LDP - I don't want this logged. I'm trying to fix encryption 
+					 * if an existing key is corrupt in order to prevent excessive
+					 * logging of the problem. If there is still a problem next time
+					 * around its likely to be the same exception anyway due to badly
+					 * configured encryption store.
+					 */
 					secretKeyService.deleteSecretKey(reference, realm);
 					return encryptString(reference, data, realm);
 				} catch (ResourceException | AccessDeniedException e1) {
