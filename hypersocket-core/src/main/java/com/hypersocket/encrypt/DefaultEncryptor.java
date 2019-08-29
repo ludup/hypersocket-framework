@@ -14,7 +14,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.resource.ResourceException;
 import com.hypersocket.secret.SecretKeyResource;
 import com.hypersocket.secret.SecretKeyService;
 
@@ -57,8 +59,13 @@ public class DefaultEncryptor implements Encryptor {
 			return Base64.encodeBase64String(byteCipherText);
 		} catch (Exception e) {
 			if(existingKey) {
-				secretKeyService.deleteSecretkey(reference, realm);
-				return encryptString(reference, data, realm);
+				try {
+					secretKeyService.deleteSecretKey(reference, realm);
+					return encryptString(reference, data, realm);
+				} catch (ResourceException | AccessDeniedException e1) {
+					/* Just log this so the actual error that caused this is not lost **/
+					log.error("Failed to remove existing secret key while attempting to clear up after an exception.", e1);
+				}
 			}
 			throw new IOException(e.getMessage(), e);
 		}
