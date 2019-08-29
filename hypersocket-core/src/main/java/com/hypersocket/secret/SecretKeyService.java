@@ -29,3 +29,4 @@ public interface SecretKeyService extends AbstractResourceService<SecretKeyResou
 	void deleteSecretKey(String name, Realm realm) throws ResourceNotFoundException, ResourceException, AccessDeniedException;
 
 }
+

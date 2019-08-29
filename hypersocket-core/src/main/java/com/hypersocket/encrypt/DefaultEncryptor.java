@@ -63,8 +63,7 @@ public class DefaultEncryptor implements Encryptor {
 					secretKeyService.deleteSecretKey(reference, realm);
 					return encryptString(reference, data, realm);
 				} catch (ResourceException | AccessDeniedException e1) {
-					/* Just log this so the actual error that caused this is not lost **/
-					log.error("Failed to remove existing secret key while attempting to clear up after an exception.", e1);
+					throw new IOException(e.getMessage(), e);
 				}
 			}
 			throw new IOException(e.getMessage(), e);
