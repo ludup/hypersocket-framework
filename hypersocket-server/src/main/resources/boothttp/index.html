@@ -1,0 +1,185 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="index.css">
+</head>
+<body>
+	<div id="header">
+		<img id="logo" src="banner.png"/>
+	</div>
+	<div style="display: none;" id="offline">
+		<h1>Server Offline</h1>
+		<p>The server is offline.</p>
+		<small>Page will automatically refresh when server comes back online.</small>
+		<p>
+			<img src="ajax-loader.gif" />
+		</p>
+	</div>
+	<div id="online">
+		<h1>Please Wait</h1>
+		<p>The server is starting up ..</p>
+		<p>
+			<img src="ajax-loader.gif" />
+		</p>
+		<div id="progress-bar">
+			<div id="progress-text"></div>
+			<div id="progress-bar-inner"></div>
+		</div>
+		<div id="reveal-console">
+			<a href="javascript:revealConsole();">Show log output</a>
+		</div>
+		<div id="log-console" style="display: none;">
+			<pre><code id="log-console-out"></code></pre>
+		</div>
+		<div id="hide-console" style="display: none;">
+			<a href="javascript:hideConsole();">Hide log output</a>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var since;
+		var online = true;
+		
+		function revealConsole() {
+			document.getElementById('reveal-console').style.display = 'none';
+			document.getElementById('log-console').style.display = 'block';
+			document.getElementById('hide-console').style.display = 'block';	
+		}
+		
+		function hideConsole() {
+			document.getElementById('reveal-console').style.display = 'block';
+			document.getElementById('log-console').style.display = 'none';
+			document.getElementById('hide-console').style.display = 'none';	
+		}
+
+		function loadProgress() {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4) {
+					if(this.status == 404) {
+						/* Getting a 404 on the progress call is an indication the server is now up! */
+						window.setTimeout(function() {
+							window.location.reload(false);
+						}, 1000);
+						return;
+					}
+					else if(this.status == 200) {
+						
+						var parts = xhttp.responseText.split('/');
+						var el = document.getElementById('progress-bar');
+						var progress = parseInt(parts[0]);
+						var total  = parseInt(parts[1]);
+						if(total == 0) {
+							// Indeterminate
+							el.style.display = 'none';
+						}
+						else {
+							el.style.display = 'block';
+							el = document.getElementById('progress-bar-inner');
+							// TODO get from parent width
+							var fac = parseFloat(progress)/parseFloat(total);
+							var w = fac * 300.0;
+							if(w > 300)
+								w = 300;
+							var pc = parseInt(fac * 100);
+							el.style.width = w + 'px';
+							var txt = pc + '%';
+							var fc = false;
+							if(pc > 150) {
+								txt = 'Possible issue. Please check logs';
+								el.style['background-color'] = 'red';
+								fc = 'white';
+							}
+							else if(pc > 125) {
+								txt = 'Taking a bit longer than usual ..'
+								el.style['background-color'] = 'orange';
+								fc = 'white';
+							}
+							else if(pc > 100) {
+								txt = 'Almost ready ...'
+								el.style['background-color'] = 'green';
+								fc = 'white';
+							}
+							else if(pc > 90) {
+								el.style['background-color'] = 'green';
+								fc = 'white';
+							}
+							else {
+								el.style['background-color'] = '#32325D';
+								fc = '#aaa'
+							}
+							el = document.getElementById('progress-text'); 
+							el.innerHTML = txt;
+							if(fc)
+								el.style['color'] = fc;
+						}		
+					}
+					else if(this.status == 0) {
+						if(online) {
+							console.log('Server gone offline');
+							online = false;
+							document.getElementById('online').style.display = 'none';
+							document.getElementById('offline').style.display = 'block';
+						}
+					}
+					else {
+						console.log('XMLHTTP error status ' + this.status);
+					}
+					
+					if(this.status != 0 && !online) {
+						online = true;
+						document.getElementById('online').style.display = 'block';
+						document.getElementById('offline').style.display = 'none';
+					}
+					
+					window.setTimeout(loadProgress, online ? 1000 : 5000);	
+				}
+				else if (this.readyState == 1) {
+				}
+				else if (this.readyState == 2) {
+				}
+				else if (this.readyState == 3) {
+				}
+				else {
+					console.log('XMLHTTP Error.');	
+					window.location.reload(false); 		
+				}
+			};
+			xhttp.open('GET', 'progress', true);
+			xhttp.send();
+		}
+
+		function loadLog() {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4) {
+					if(this.status == 200) {
+						var lines = xhttp.responseText.split('\n');
+						var el = document.getElementById('log-console-out');
+						var h = el.innerHTML;
+						for(var i = 0 ; i < lines.length; i++) {
+							if(i == lines.length - 1) {
+								since = parseInt(lines[i]);	
+							}
+							else {
+								if(i > 0)
+									h += '\n';
+								if(h.length > 13200)
+									h = h.substring(13200 - h.length); 
+								h += lines[i].trim();
+							}
+						}
+						el.innerHTML = h;
+						console.log('scroll to ' + el.scrollHeight);
+						el = document.getElementById('log-console');
+						el.scrollTop = el.scrollHeight;		
+						window.setTimeout(loadLog, 1000);			
+					}
+				}
+			};
+			xhttp.open('GET', 'log' + (since ? '?' + since : ''), true);
+			xhttp.send();
+		}
+		window.setTimeout(loadLog, 100);
+		window.setTimeout(loadProgress, 100);
+	</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+body {
+	text-align: center;
+	margin-top: 6em;
+	font: 12px "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans",
+		Verdana, Tahoma, sans-serif;
+}
+
+#header {
+	position: absolute;
+	top: 0;
+	height: 4em;
+	background-color: #32325D;
+	left: 0;
+	right: 0;
+	text-align: left;
+	padding-top: 6px;
+	padding-left: 12px;
+}
+
+#progress-bar {
+	display: none;
+	width: 300px;
+	height: 24px;
+	border: 1px solid #333;
+	background-color: #ddd;
+	margin: 1em auto;
+}
+
+#progress-text {
+	display: block;
+	width: 100%;
+	text-align: center;
+	color: #aaa;
+	float: left;
+	margin-top: 6px;
+	font-weight: bold;
+	z-index: 999;
+	height: 24px;
+	
+}
+
+#progress-bar-inner {
+	background-color: #32325D;
+	height: 24px;
+}
+
+#online a {
+	text-decoration: none;
+	color: grey;
+}
+#online a:HOVER {
+	text-decoration: underline;
+}
+
+#log-console {
+	position: absolute;
+	background-color: black;
+	color: #0f0;
+	top: 20em;
+	bottom: 5em;
+	left: 8em;
+	right: 8em;	
+	overflow: scroll;
+	text-align: left;
+}

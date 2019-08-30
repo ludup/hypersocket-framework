@@ -7,8 +7,13 @@
  ******************************************************************************/
 package com.hypersocket.netty;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.prefs.Preferences;
 
 import javax.servlet.ServletException;
 
@@ -23,41 +28,52 @@ import org.springframework.core.SpringVersion;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.hypersocket.netty.log.UIAppender;
+import com.hypersocket.netty.log.UIAppender.UILogEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.profile.ProfileLoaderClassPathXmlApplicationContext;
 import com.hypersocket.profile.ProfileNameFinder;
 import com.hypersocket.server.HypersocketServer;
+import com.hypersocket.server.MiniHttpServer;
+import com.hypersocket.server.MiniHttpServer.DynamicContent;
+import com.hypersocket.server.MiniHttpServer.DynamicContentFactory;
 import com.hypersocket.upgrade.UpgradeService;
 
 public class Main {
 
+	private static final String STARTUP_TOOK = "startupTook";
 	static Logger log = LoggerFactory.getLogger(Main.class);
+	static Preferences PREFS = Preferences.userNodeForPackage(Main.class);
+
+	private ApplicationContext applicationContext;
+	private HypersocketServer server;
+	private Runnable restartCallback;
+	private Runnable shutdownCallback;
+	private ClassLoader classLoader;
+	private File conf;
+
+	private MiniHttpServer miniServer;
+	private long miniserverStarted;
 	
-	ApplicationContext applicationContext;
-	HypersocketServer server;
-	Runnable restartCallback;
-	Runnable shutdownCallback;
-	ClassLoader classLoader;
-	File conf;
 	static Main instance;
 
 	public Main(Runnable restartCallback, Runnable shutdownCallback) {
 		this.restartCallback = restartCallback;
 		this.shutdownCallback = shutdownCallback;
 	}
-	
+
 	public void setConfigurationDir(File conf) {
 		this.conf = conf;
 	}
-	
+
 	public File getConfigurationDir() {
 		return conf;
 	}
-	
+
 	public HypersocketServer getServer() {
 		return server;
 	}
-	
+
 	public static void main(String[] args) {
 		try {
 			runApplication(new DefaultRestartCallback(), new DefaultShutdownCallback());
@@ -65,9 +81,8 @@ public class Main {
 			log.error("Failed to run application", e);
 		}
 	}
-	
-	public static void runApplication(Runnable restartCallback,
-			Runnable shutdownCallback) throws IOException {
+
+	public static void runApplication(Runnable restartCallback, Runnable shutdownCallback) throws IOException {
 
 		new Main(restartCallback, shutdownCallback).run();
 
@@ -75,28 +90,28 @@ public class Main {
 
 	public void run() {
 
-		if(instance!=null) {
+		if (instance != null) {
 			throw new IllegalStateException("An attempt has been made to start a second instance of Main");
 		}
 		Main.instance = this;
-		
-		if(conf==null) {
+
+		if (conf == null) {
 			conf = new File("conf");
 		}
-		
+
 		System.setProperty("hypersocket.conf", conf.getPath());
-		
+
 		PropertyConfigurator.configure(new File(conf, "log4j.properties").getAbsolutePath());
-		
+
 		classLoader = getClass().getClassLoader();
-		if(log.isInfoEnabled()) {
+		if (log.isInfoEnabled()) {
 			log.info("Using class loader " + classLoader.getClass().getName());
 		}
-		
+
 		InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
 
 		try {
-
+			createMiniServer();
 			createApplicationContext();
 
 			runServer();
@@ -113,17 +128,83 @@ public class Main {
 	public ClassLoader getClassLoader() {
 		return classLoader;
 	}
-	
-	
-	
-	protected void runServer() throws AccessDeniedException, ServletException,
-			IOException {
+
+	protected void createMiniServer() {
+		try {
+			/*
+			 * This lightweight HTTP/HTTPS server is started to provide the user with some kind 
+			 * of UI while all other subsystems are initializing. 
+			 * 
+			 * It also provides log output (via a custom log appender), and startup progress
+			 * based on the last known time taken.
+			 */
+			if("true".equals(System.getProperty("hypersocket.bootHttpServer","true"))) {
+				String username = System.getProperty("user.name");
+				miniserverStarted = System.currentTimeMillis();
+				File bootKeystore = new File(conf, "boothttp.keystore");
+				if (username.equals("root") || username.equals("Administrator"))
+					miniServer = new MiniHttpServer(80, 443, bootKeystore);
+				else
+					miniServer = new MiniHttpServer(8080, 8443, bootKeystore);
+				miniServer.addContent(new DynamicContentFactory() {
+					@Override
+					public DynamicContent get(String path) throws IOException {
+						if (path.startsWith("/progress")) {
+							/* Estimate of 5 minutes for first startup */
+							long took = PREFS.getLong(STARTUP_TOOK, TimeUnit.MINUTES.toMillis(5));
+							long taken = System.currentTimeMillis() - miniserverStarted;
+							return new DynamicContent("text/plain", new ByteArrayInputStream((took == 0 ? "0/0" : taken + "/" + took).getBytes()));
+						}
+						return null;
+					}
+				});
+				miniServer.addContent(new DynamicContentFactory() {
+					@Override
+					public DynamicContent get(String path) throws IOException {
+						if (path.startsWith("/log")) {
+							int idx = path.indexOf('?');
+							long since = 0;
+							if (idx != -1)
+								since = Long.parseLong(path.substring(idx + 1));
+							ByteArrayOutputStream bos = new ByteArrayOutputStream();
+							List<UILogEvent> buf = UIAppender.getLoggingEventBuffer();
+							if (!buf.isEmpty()) {
+								synchronized (buf) {
+									UILogEvent lastevt = null;
+									for (UILogEvent evt : buf) {
+										lastevt = evt;
+										if (evt.getTimestamp() >= since) {
+											bos.write((evt.getText()).getBytes());
+										}
+									}
+									bos.write((lastevt.getTimestamp() + "").getBytes());
+								}
+							}
+							return new DynamicContent("text/plain", new ByteArrayInputStream(bos.toByteArray()));
+						}
+						return null;
+					}
+				});
+				miniServer.start();
+			}
+		} catch (IOException e) {
+			log.error(
+					"Failed to setup bootstrap HTTP server, no web requests will be served until the app is fully started.",
+					e);
+		}
+	}
+
+	protected void runServer() throws AccessDeniedException, ServletException, IOException {
 
 		server = (HypersocketServer) applicationContext.getBean("nettyServer");
 
 		server.init(applicationContext);
 
 		try {
+			if (miniServer != null) {
+				miniServer.close();
+				PREFS.putLong(STARTUP_TOOK, System.currentTimeMillis() - miniserverStarted);
+			}
 			server.start();
 
 			Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -147,7 +228,7 @@ public class Main {
 	 */
 	public void restartServer() throws IOException {
 
-		if(server!=null) {
+		if (server != null) {
 			server.stop();
 		}
 		restartCallback.run();
@@ -158,7 +239,7 @@ public class Main {
 
 		server.stop();
 		shutdownCallback.run();
-		
+
 	}
 
 	protected void createApplicationContext() {
@@ -169,10 +250,10 @@ public class Main {
 
 		String[] profiles = ProfileNameFinder.findProfiles();
 		String configLocation = "classpath*:/applicationContext.xml";
-		
-		if(profiles.length == 0){
+
+		if (profiles.length == 0) {
 			applicationContext = new ClassPathXmlApplicationContext(configLocation);
-		}else{
+		} else {
 			applicationContext = new ProfileLoaderClassPathXmlApplicationContext(configLocation, profiles);
 		}
 
@@ -187,8 +268,7 @@ public class Main {
 			log.info("Creating transaction template");
 		}
 
-		TransactionTemplate txnTemplate = new TransactionTemplate(
-				transactionManager);
+		TransactionTemplate txnTemplate = new TransactionTemplate(transactionManager);
 
 		if (log.isInfoEnabled()) {
 			log.info("Calling TransactionTemplate.afterPropertiesSet");
@@ -200,41 +280,38 @@ public class Main {
 			log.info("Creating transaction for upgrade");
 		}
 
-		UpgradeService upgradeService = (UpgradeService) applicationContext
-				.getBean("upgradeService");
-		
+		UpgradeService upgradeService = (UpgradeService) applicationContext.getBean("upgradeService");
+
 		upgradeService.upgrade(txnTemplate);
 
-
 	}
-	
-	
+
 	static class DefaultRestartCallback implements Runnable {
 
 		@Override
 		public void run() {
-			
-			if(log.isInfoEnabled()) {
+
+			if (log.isInfoEnabled()) {
 				log.info("There is no restart mechanism available. Shutting down");
 			}
-			
+
 			System.exit(0);
 		}
-		
+
 	}
-	
+
 	static class DefaultShutdownCallback implements Runnable {
 
 		@Override
 		public void run() {
-			
-			if(log.isInfoEnabled()) {
+
+			if (log.isInfoEnabled()) {
 				log.info("Shutting down using default shutdown mechanism");
 			}
-			
+
 			System.exit(0);
 		}
-		
+
 	}
 
 }
