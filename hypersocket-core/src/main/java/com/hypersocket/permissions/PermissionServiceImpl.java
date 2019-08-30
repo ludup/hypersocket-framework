@@ -82,41 +82,41 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	static Logger log = LoggerFactory.getLogger(PermissionServiceImpl.class);
 
 	@Autowired
-	PermissionRepository repository;
+	private PermissionRepository repository;
 
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 
 	@Autowired
 	@Qualifier("transactionManager")
 	protected PlatformTransactionManager txManager;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
-	Set<Long> registerPermissionIds = new HashSet<Long>();
-	Set<Long> nonSystemPermissionIds = new HashSet<Long>();
-	Map<String, PermissionType> registeredPermissions = new HashMap<String, PermissionType>();
-
-	@SuppressWarnings("rawtypes")
-	Cache<Object, Set> permissionsCache;
+	private Set<Long> registerPermissionIds = new HashSet<Long>();
+	private Set<Long> nonSystemPermissionIds = new HashSet<Long>();
+	private Map<String, PermissionType> registeredPermissions = new HashMap<String, PermissionType>();
 
 	@SuppressWarnings("rawtypes")
-	Cache<Object, Set> roleCache;
+	private Cache<Object, Set> permissionsCache;
+
+	@SuppressWarnings("rawtypes")
+	private Cache<Object, Set> roleCache;
 
 	@Autowired
-	TransactionService transactionService;
+	private TransactionService transactionService;
 
 	@Autowired
-	CacheService cacheService;
+	private CacheService cacheService;
 
 	@Autowired
-	RoleAttributeService attributeService;
+	private RoleAttributeService attributeService;
 
 	@Autowired
-	RoleAttributeRepository attributeRepository;
+	private RoleAttributeRepository attributeRepository;
 
-	Map<Class<? extends AssignableResource>, AbstractAssignableResourceRepository<?>> repositories = new HashMap<Class<? extends AssignableResource>, AbstractAssignableResourceRepository<?>>();
+	private Map<Class<? extends AssignableResource>, AbstractAssignableResourceRepository<?>> repositories = new HashMap<Class<? extends AssignableResource>, AbstractAssignableResourceRepository<?>>();
 
 	@PostConstruct
 	private void postConstruct() {
@@ -279,8 +279,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 							}
 
 						});
-				permissionsCache.removeAll();
-				roleCache.removeAll();
+				synchronized (permissionsCache) {
+					permissionsCache.removeAll();
+					roleCache.removeAll();
+				}
 				eventService.publishEvent(new RoleCreatedEvent(this, getCurrentSession(), realm, role, principals));
 				return role;
 			} catch (Throwable te) {
@@ -310,8 +312,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				throw new AccessDeniedException("You cannot assign a personal role to any principal");
 			}
 			repository.assignRole(role, principal);
-			permissionsCache.removeAll();
-			roleCache.removeAll();
+			synchronized (permissionsCache) {
+				permissionsCache.removeAll();
+				roleCache.removeAll();	
+			}
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					Arrays.asList(principal), new ArrayList<Principal>()));
 		} catch (Throwable e) {
@@ -331,8 +335,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				throw new AccessDeniedException("You cannot assign a personal role to any principal");
 			}
 			repository.assignRole(role, principals);
-			permissionsCache.removeAll();
-			roleCache.removeAll();
+			synchronized (permissionsCache) {
+				permissionsCache.removeAll();
+				roleCache.removeAll();
+			}
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					Arrays.asList(principals), new ArrayList<Principal>()));
 		} catch (Throwable e) {
@@ -354,8 +360,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				throw new AccessDeniedException("You cannot unassign a personal role from any principal");
 			}
 			repository.unassignRole(role, principal);
-			permissionsCache.removeAll();
-			roleCache.removeAll();
+			synchronized (permissionsCache) {
+				permissionsCache.removeAll();
+				roleCache.removeAll();
+			}
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					new ArrayList<Principal>(), Arrays.asList(principal)));
 		} catch (Throwable e) {
@@ -386,8 +394,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				throw new AccessDeniedException("You cannot unassign a personal role from any principal");
 			}
 			repository.unassignRole(role, principals);
-			permissionsCache.removeAll();
-			roleCache.removeAll();
+			synchronized (permissionsCache) {
+				permissionsCache.removeAll();
+				roleCache.removeAll();
+			}
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					new ArrayList<Principal>(), Arrays.asList(principals)));
 		} catch (Throwable e) {
@@ -407,66 +417,82 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public Set<Permission> getPrincipalPermissions(Realm realm, Principal principal) {
 		
 		String cacheKey = String.format("%d:::%d", principal.getId(), realm.getId());
+		boolean needPerms = false;		
+		Set<Permission> permissions = null;
 		
-		if (!permissionsCache.containsKey(cacheKey) || permissionsCache.get(cacheKey)==null) {
-
-			Set<Permission> principalPermissions = new HashSet<Permission>();
-			Set<Role> roles = getPrincipalRoles(principal);
-		
-			if(Boolean.getBoolean("hypersocket.debugPermissions")) {
-				log.info("{} has {} roles", principal.getName(), roles.size());
+		synchronized (permissionsCache) {
+			/* We do this up front to only keep the permission cache lock held for a short time */
+			if (!permissionsCache.containsKey(cacheKey) || ( permissions = permissionsCache.get(cacheKey))==null) {
+				needPerms = true;
 			}
-			
-			for (Role r : roles) {
-				if(r == null) {
-					log.warn(String.format("NULL role in list of %d roles for %s", roles.size(), principal.getName()));
-					continue;
-				}
-				if(r.getPermissionRealms() == null || !r.getPermissionRealms().contains(realm) || r.getPermissionRealms().size() > 1) {
-					/**
-					 * This user has roles in other realms than their home realm. This implies
-					 * that they can switch realms
-					 */
-					
-					if(Boolean.getBoolean("hypersocket.debugPermissions")) {
-						log.info("{} has roles with permissions in other realms. Adding SWITCH_REALM permission", principal.getName());
-					}
-					
-					principalPermissions.add(repository.getPermissionByResourceKey(SystemPermission.SWITCH_REALM.getResourceKey()));
-				}
+		}
+		
+		if(needPerms) {
+			/* Load the roles, make take a while, so do it outside of the lock */
+			Set<Role> roles = getPrincipalRoles(principal);
+			synchronized (permissionsCache) {
+				/* Now check again inside the lock. If things have changed since then, then
+				 * we have waste a call to getPrincipalRoles() but at least we won't be holding up other threads
+				 */
+				if (!permissionsCache.containsKey(cacheKey) || ( permissions = permissionsCache.get(cacheKey))==null) {
+					permissions = new HashSet<Permission>();
 				
-				if(r.getPermissionRealms() == null || !r.getPermissionRealms().contains(realm)) {
 					if(Boolean.getBoolean("hypersocket.debugPermissions")) {
-						log.info("{} has role {} but its not applicable to this realm", principal.getName(), r.getName());
+						log.info("{} has {} roles", principal.getName(), roles.size());
 					}
-					continue;
-				}
-				
-				if (r.isAllPermissions()) {
-					if(Boolean.getBoolean("hypersocket.debugPermissions")) {
-						log.info("{} has an all permission role {}", principal.getName(), r.getName());
-					}
-					principalPermissions.addAll(repository.getAllPermissions(registerPermissionIds, realm.isSystem()));
-					break;
-				} else {
-					if(Boolean.getBoolean("hypersocket.debugPermissions")) {
-						for(Permission p : r.getPermissions()) {
-							log.info("{} has permission {} from role {}", principal.getName(), p.getResourceKey(), r.getName());
+					
+					for (Role r : roles) {
+						if(r == null) {
+							log.warn(String.format("NULL role in list of %d roles for %s", roles.size(), principal.getName()));
+							continue;
+						}
+						if(r.getPermissionRealms() == null || !r.getPermissionRealms().contains(realm) || r.getPermissionRealms().size() > 1) {
+							/**
+							 * This user has roles in other realms than their home realm. This implies
+							 * that they can switch realms
+							 */
+							
+							if(Boolean.getBoolean("hypersocket.debugPermissions")) {
+								log.info("{} has roles with permissions in other realms. Adding SWITCH_REALM permission", principal.getName());
+							}
+							
+							permissions.add(repository.getPermissionByResourceKey(SystemPermission.SWITCH_REALM.getResourceKey()));
+						}
+						
+						if(r.getPermissionRealms() == null || !r.getPermissionRealms().contains(realm)) {
+							if(Boolean.getBoolean("hypersocket.debugPermissions")) {
+								log.info("{} has role {} but its not applicable to this realm", principal.getName(), r.getName());
+							}
+							continue;
+						}
+						
+						if (r.isAllPermissions()) {
+							if(Boolean.getBoolean("hypersocket.debugPermissions")) {
+								log.info("{} has an all permission role {}", principal.getName(), r.getName());
+							}
+							permissions.addAll(repository.getAllPermissions(registerPermissionIds, realm.isSystem()));
+							break;
+						} else {
+							if(Boolean.getBoolean("hypersocket.debugPermissions")) {
+								for(Permission p : r.getPermissions()) {
+									log.info("{} has permission {} from role {}", principal.getName(), p.getResourceKey(), r.getName());
+								}
+							}
+							permissions.addAll(r.getPermissions());
 						}
 					}
-					principalPermissions.addAll(r.getPermissions());
+		
+					permissionsCache.put(cacheKey, permissions);
 				}
 			}
-
-			permissionsCache.put(cacheKey, principalPermissions);
 		}
-
-		Set<Permission> permissions = new HashSet<>(permissionsCache.get(cacheKey));
+		
 		if(Boolean.getBoolean("hypersocket.debugPermissions")) {
 			for(Permission p : permissions) {
 				log.info("{} has permission {}", principal.getName(), p.getResourceKey());
 			}
 		}
+		
 		return permissions;
 
 	}
@@ -753,8 +779,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			role.getPermissions().clear();
 			repository.saveRole(role);
 			repository.deleteRole(role);
-			permissionsCache.removeAll();
-			roleCache.removeAll();
+			synchronized (permissionsCache) {
+				permissionsCache.removeAll();
+				roleCache.removeAll();
+			}
 			if(needEvent) {
 				eventService.publishEvent(new RoleDeletedEvent(
 						this, getCurrentSession(), role.getRealm(), role, revoked));
@@ -805,8 +833,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 		try {
 			repository.grantPermission(role, permission);
-			permissionsCache.removeAll();
-			roleCache.removeAll();
+			synchronized (permissionsCache) {
+				permissionsCache.removeAll();
+				roleCache.removeAll();
+			}
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					new ArrayList<Principal>(), new ArrayList<Principal>()));
 		} catch (Throwable e) {
@@ -893,8 +923,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 						}
 
 					});
-			permissionsCache.removeAll();
-			roleCache.removeAll();
+			synchronized (permissionsCache) {
+				permissionsCache.removeAll();
+				roleCache.removeAll();
+			}
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					assignPrincipals, unassignPrincipals));
 			return role;
@@ -1003,8 +1035,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public void onApplicationEvent(SystemEvent event) {
 
 		if (event instanceof GroupEvent || event instanceof UserEvent) {
-			permissionsCache.removeAll();
-			roleCache.removeAll();
+			synchronized (permissionsCache) {
+				permissionsCache.removeAll();
+				roleCache.removeAll();
+			}
 		}
 
 	}
