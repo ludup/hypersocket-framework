@@ -771,5 +771,11 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 			Iterator<Principal> principals, Collection<String> emails) {
 		sendMessage(resourceKey, currentRealm, ticketResolver, principals, emails, new Date());
 	}
+	
+	@Override
+	public void sendMessageNow(String resourceKey, Realm currentRealm, ITokenResolver ticketResolver,
+			Iterator<Principal> principals, Collection<String> emails) {
+		sendMessage(resourceKey, currentRealm, ticketResolver, principals, emails, null);
+	}
 
 }

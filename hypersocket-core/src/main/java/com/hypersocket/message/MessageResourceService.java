@@ -91,4 +91,7 @@ public interface MessageResourceService extends
 			Iterator<Principal> principals, Collection<String> emails, Date schedule,
 			List<EmailAttachment> attachments);
 
+	void sendMessageNow(String resourceKey, Realm currentRealm, ITokenResolver ticketResolver,
+			Iterator<Principal> principals, Collection<String> emails);
+
 }
