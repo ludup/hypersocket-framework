@@ -252,7 +252,7 @@ public class HypersocketUtils {
 	public static String after(String value, String string) {
 		int idx = value.indexOf(string);
 		if(idx > -1) {
-			return value.substring(idx+1);
+			return value.substring(idx+string.length());
 		}
 		return "";
 	}
@@ -489,8 +489,12 @@ public class HypersocketUtils {
 	}
 
 	public static String getBaseURL(String url) {
-		return before(url, "/");
+		String protocol = before(url, "//");
+		String tmp = after(url, "//");
+		
+		return protocol + "//" + before(tmp, "/");
 	}
+	
 	public static void memDbg(String ctx) {
 		if("true".equalsIgnoreCase(System.getProperty("hypersocket.memDbg", "false")))
 			System.out.println(String.format("Total: %6d MiB   Free: %6d   Used: %6d   Max: %6d    Ctx: %s",
