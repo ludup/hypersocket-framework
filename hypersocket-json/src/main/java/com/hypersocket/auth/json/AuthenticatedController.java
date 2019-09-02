@@ -18,6 +18,7 @@ import java.util.concurrent.Callable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -191,7 +192,7 @@ public class AuthenticatedController {
 	
 	@ExceptionHandler(Throwable.class)
 	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-	public void handleException(HttpServletRequest request, Throwable ex) {
+	public void handleException(HttpServletRequest request, HttpServletResponse response, Throwable ex) {
 		// Log this?
 		if (log.isErrorEnabled()) {
 			log.error("Caught internal error", ex);
@@ -203,6 +204,8 @@ public class AuthenticatedController {
 		
 		StringWriter writer = new StringWriter();
 		PrintWriter pwriter = new PrintWriter(writer);
+		
+		response.setContentType("text/html");
 		
 		try {
 		ex.printStackTrace(pwriter);
