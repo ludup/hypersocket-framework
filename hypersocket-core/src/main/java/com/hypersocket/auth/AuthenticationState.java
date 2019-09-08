@@ -439,7 +439,7 @@ public class AuthenticationState {
 			Enumeration<?> names = request.getParameterNames();
 			while(names.hasMoreElements()) {
 				String name = (String) names.nextElement();
-				state.addParameter(name, HypersocketUtils.urlDecode(request.getParameter(name)));
+				state.addParameter(name, request.getParameter(name));
 			}
 		}
 
