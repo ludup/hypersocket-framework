@@ -14,15 +14,16 @@ public class GreaterThanCondition implements Condition {
 			List<SystemEvent> sourceEvents) throws ValidationException {
 
 		String value = TriggerAttributeHelper.getAttribute(condition.getAttributeKey(), sourceEvents);
+		String value2 = TriggerAttributeHelper.processEventReplacements(condition.getConditionValue(), sourceEvents);
 		try {
-			return Long.valueOf(value) > Long.parseLong(condition.getConditionValue());
+			return Long.valueOf(value) > Long.parseLong(value2);
 		}
 		catch(NumberFormatException nfe) {
 			try {
-				return Double.valueOf(value) > Double.parseDouble(condition.getConditionValue());
+				return Double.valueOf(value) > Double.parseDouble(value2);
 			}
 			catch(NumberFormatException nfe2) {
-				return value.compareTo(condition.getConditionValue()) > 0;
+				return value.compareTo(value2) > 0;
 			}	
 		}
 	}

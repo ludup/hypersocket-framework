@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.hypersocket.events.SystemEvent;
+import com.hypersocket.replace.ReplacementUtils;
 
 public class TriggerAttributeHelper {
 
@@ -32,6 +33,10 @@ public class TriggerAttributeHelper {
 		}
 
 		return null;
+	}
+	
+	public static String processEventReplacements(String value, List<SystemEvent> sourceEvents) {
+		return ReplacementUtils.processTokenReplacements(value, new EventTokenResolver(sourceEvents));
 	}
 
 }

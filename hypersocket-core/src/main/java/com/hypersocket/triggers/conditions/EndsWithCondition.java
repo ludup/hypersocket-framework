@@ -19,7 +19,8 @@ public class EndsWithCondition implements Condition {
 			return false;
 		}
 
-		return value.endsWith(condition.getConditionValue());
+		String value2 = TriggerAttributeHelper.processEventReplacements(condition.getConditionValue(), sourceEvents);
+		return value.endsWith(value2);
 	}
 
 	@Override

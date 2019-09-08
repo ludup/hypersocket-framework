@@ -19,7 +19,8 @@ public class EqualsCondition implements Condition {
 			return false;
 		}
 
-		return value.equals(condition.getConditionValue());
+		String value2 = TriggerAttributeHelper.processEventReplacements(condition.getConditionValue(), sourceEvents);
+		return value.equals(value2);
 	}
 
 	@Override

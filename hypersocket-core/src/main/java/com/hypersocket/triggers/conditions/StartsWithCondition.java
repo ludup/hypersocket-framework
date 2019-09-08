@@ -14,12 +14,12 @@ public class StartsWithCondition implements Condition {
 			List<SystemEvent> sourceEvents) throws ValidationException {
 		
 		String value = TriggerAttributeHelper.getAttribute(condition.getAttributeKey(), sourceEvents);
-		
+		String value2 = TriggerAttributeHelper.processEventReplacements(condition.getConditionValue(), sourceEvents);
 		if (value==null) {
 			return false;
 		}
 
-		return value.startsWith(condition.getConditionValue());
+		return value.startsWith(value2);
 	}
 
 	@Override

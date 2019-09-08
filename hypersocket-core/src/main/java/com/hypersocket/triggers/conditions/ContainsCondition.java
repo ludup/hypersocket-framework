@@ -19,7 +19,8 @@ public class ContainsCondition implements Condition {
 			return false;
 		}
 
-		return value.contains(condition.getConditionValue());
+		String value2 = TriggerAttributeHelper.processEventReplacements(condition.getConditionValue(), sourceEvents);
+		return value.contains(value2);
 	}
 
 	@Override

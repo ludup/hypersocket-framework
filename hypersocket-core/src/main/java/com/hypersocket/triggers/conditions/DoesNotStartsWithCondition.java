@@ -19,7 +19,8 @@ public class DoesNotStartsWithCondition implements Condition {
 			return false;
 		}
 
-		return !value.startsWith(condition.getConditionValue());
+		String value2 = TriggerAttributeHelper.processEventReplacements(condition.getConditionValue(), sourceEvents);
+		return !value.startsWith(value2);
 	}
 
 	@Override
