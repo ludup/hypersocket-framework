@@ -87,8 +87,8 @@ public class BanEmailAddressTask extends AbstractAccountTask {
 	}
 
 	@Override
-	protected TaskResult getFailedResult(Task task, Realm currentRealm, List<SystemEvent> events, Exception e) {
-		return new BanEmailAddressTaskResult(this, e, currentRealm, task);
+	protected TaskResult getFailedResult(Task task, Realm currentRealm, List<SystemEvent> events, Exception e, String principalName) {
+		return new BanEmailAddressTaskResult(this, false, currentRealm, task, principalName, principalName);
 	}
 
 	@Override

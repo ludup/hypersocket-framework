@@ -61,7 +61,7 @@ public class EnableAccountTask extends AbstractAccountTask {
 			realmService.enableAccount(p);
 			return new EnableAccountTaskResult(this, currentRealm, task);
 		} catch (Exception e) {
-			return new EnableAccountTaskResult(this, currentRealm, task, e);
+			return new EnableAccountTaskResult(this, currentRealm, task, e, p.getPrincipalName());
 		}
 	}
 
@@ -75,8 +75,8 @@ public class EnableAccountTask extends AbstractAccountTask {
 	}
 
 	@Override
-	protected TaskResult getFailedResult(Task task, Realm currentRealm, List<SystemEvent> events, Exception e) {
-		return new EnableAccountTaskResult(this, currentRealm, task, e);
+	protected TaskResult getFailedResult(Task task, Realm currentRealm, List<SystemEvent> events, Exception e, String principalName) {
+		return new EnableAccountTaskResult(this, currentRealm, task, e, principalName);
 	}
 
 }

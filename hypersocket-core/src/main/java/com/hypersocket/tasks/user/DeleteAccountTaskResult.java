@@ -1,5 +1,6 @@
 package com.hypersocket.tasks.user;
 
+import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmServiceImpl;
@@ -11,12 +12,16 @@ public class DeleteAccountTaskResult extends AbstractTaskResult {
 	private static final long serialVersionUID = 712812739563857588L;
 
 	public static final String EVENT_RESOURCE_KEY = "event.deleteAccountResult";
+	
+	public static final String ATTR_PRINCIPAL_NAME = CommonAttributes.ATTR_PRINCIPAL_NAME;
+	
 	public DeleteAccountTaskResult(Object source, Realm currentRealm, Task task) {
 		super(source, EVENT_RESOURCE_KEY, true, currentRealm, task);
 	}
 
-	public DeleteAccountTaskResult(Object source,Realm currentRealm, Task task, Throwable e) {
+	public DeleteAccountTaskResult(Object source,Realm currentRealm, Task task, Throwable e, String principalName) {
 		super(source, EVENT_RESOURCE_KEY, e, currentRealm, task);
+		addAttribute(ATTR_PRINCIPAL_NAME, principalName);
 	}
 
 	@Override

@@ -109,7 +109,7 @@ public class UpdateAccountAddressesTask extends AbstractAccountTask {
 	}
 
 	@Override
-	protected TaskResult getFailedResult(Task task, Realm currentRealm, List<SystemEvent> events, Exception e) {
+	protected TaskResult getFailedResult(Task task, Realm currentRealm, List<SystemEvent> events, Exception e, String principalName) {
 		return new UpdateAccountAddressesTaskResult(this, currentRealm, task, e);
 	}
 

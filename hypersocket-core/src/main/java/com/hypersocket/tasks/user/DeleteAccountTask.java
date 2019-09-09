@@ -62,7 +62,7 @@ public class DeleteAccountTask extends AbstractAccountTask {
 			realmService.deleteUser(currentRealm, p);
 			return new DeleteAccountTaskResult(this, currentRealm, task);
 		} catch (Exception e) {
-			return new DeleteAccountTaskResult(this, currentRealm, task, e);
+			return new DeleteAccountTaskResult(this, currentRealm, task, e, p.getPrincipalName());
 		}
 	}
 
@@ -76,8 +76,8 @@ public class DeleteAccountTask extends AbstractAccountTask {
 	}
 
 	@Override
-	protected TaskResult getFailedResult(Task task, Realm currentRealm, List<SystemEvent> events, Exception e) {
-		return new DeleteAccountTaskResult(this, currentRealm, task, e);
+	protected TaskResult getFailedResult(Task task, Realm currentRealm, List<SystemEvent> events, Exception e, String principalName) {
+		return new DeleteAccountTaskResult(this, currentRealm, task, e, principalName);
 	}
 
 

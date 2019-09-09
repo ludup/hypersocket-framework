@@ -23,11 +23,6 @@ public class BanEmailAddressTaskResult extends AbstractTaskResult {
 		addAttribute(ATTR_PRINCIPAL_NAME, name);
 	}
 
-	public BanEmailAddressTaskResult(Object source, Throwable e,
-			Realm currentRealm, Task task) {
-		super(source, EVENT_RESOURCE_KEY, e, currentRealm, task);
-	}
-
 	@Override
 	public boolean isPublishable() {
 		return true;

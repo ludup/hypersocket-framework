@@ -66,11 +66,11 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 			
 			return doExecute(p, task, currentRealm, events);
 		} catch (NumberFormatException | ResourceNotFoundException | AccessDeniedException e) {
-			return getFailedResult(task, currentRealm, events, e);
+			return getFailedResult(task, currentRealm, events, e, principalName);
 		}
 	}
 
-	protected abstract TaskResult getFailedResult(Task task, Realm currentRealm, List<SystemEvent> events, Exception e);
+	protected abstract TaskResult getFailedResult(Task task, Realm currentRealm, List<SystemEvent> events, Exception e, String principalNamme);
 
 	protected abstract TaskResult doExecute(Principal p, final Task task, final Realm currentRealm,
 			final List<SystemEvent> event) throws ValidationException;
