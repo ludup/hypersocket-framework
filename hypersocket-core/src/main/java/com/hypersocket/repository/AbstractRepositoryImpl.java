@@ -152,6 +152,14 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		}
 		return sessionFactory.getCurrentSession().createQuery(hql);
 	}
+	
+	protected Query createSQLQuery(String hql, boolean isWritable) {
+
+		if (isWritable) {
+			checkDemoMode();
+		}
+		return sessionFactory.getCurrentSession().createSQLQuery(hql);
+	}
 
 	@Transactional(readOnly = true)
 	public void refresh(Object entity) {
