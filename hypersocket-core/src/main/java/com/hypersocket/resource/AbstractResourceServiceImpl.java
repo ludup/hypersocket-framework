@@ -442,11 +442,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	}
 
 	@Override
-	public T getResourceByName(String name, Realm realm) throws ResourceNotFoundException, AccessDeniedException {
-
-		if(assertPermissions) {
-			assertPermission(getReadPermission());
-		}
+	public T getResourceByName(String name, Realm realm) throws ResourceNotFoundException {
 
 		T resource = getRepository().getResourceByName(name, isSystemResource() ? realmService.getSystemRealm() : realm);
 		if (resource == null) {
