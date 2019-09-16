@@ -49,7 +49,7 @@ public interface AbstractSimpleResourceRepository<T extends SimpleResource> exte
 
 	long getResourceCount(Realm realm);
 
-	void deleteResources(List<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException;
+	void deleteResources(Collection<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException;
 
 	long getResourceCount(Collection<Realm> realms, String searchColumn, String searchPattern,
 			CriteriaConfiguration... configs);
@@ -63,6 +63,8 @@ public interface AbstractSimpleResourceRepository<T extends SimpleResource> exte
 	T getResourceByReference(String reference, Realm realm);
 
 	<E> E doInTransaction(TransactionCallback<E> transaction) throws ResourceException;
+
+	Collection<T> list(CriteriaConfiguration... configs);
 
 
 }

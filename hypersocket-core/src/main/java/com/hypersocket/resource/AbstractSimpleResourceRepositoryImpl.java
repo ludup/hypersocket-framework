@@ -223,6 +223,11 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 		return saveResource(resource, null);
 	}
 
+	
+	@Override
+	public Collection<T> list(CriteriaConfiguration... configs) {
+		return list(getResourceClass(), configs);
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -352,7 +357,7 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 
 	@Override
 	@Transactional
-	public void deleteResources(List<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException {
+	public void deleteResources(Collection<T> resources, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException {
 		for (T resource: resources) {
 			deleteResource(resource, ops);
 		}

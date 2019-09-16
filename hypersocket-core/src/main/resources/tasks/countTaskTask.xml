@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="countTaskTask">
+	<propertyCategory resourceKey="category.countTaskTask"
+		resourceBundle="CountTaskTask" weight="1000">
+		<property resourceKey="countTask.resourceKey" inputType="text" weight="0" defaultValue="" />
+		<property resourceKey="countTask.increment" inputType="integer" weight="100" defaultValue="1" />
+	</propertyCategory>
+</propertyTemplates>
