@@ -73,6 +73,7 @@ import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
+import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.upgrade.UpgradeService;
 
 @Service
@@ -112,6 +113,7 @@ public class CertificateResourceServiceImpl extends
 	private CertificateExpiringMessageRepository certificateExpiryMessageRepository;
 	
 	private Map<String, CertificateProvider> providers = new HashMap<>();
+	private List<CertificateListener> listeners = new ArrayList<>();
 	
 	public CertificateResourceServiceImpl() {
 		super("certificates");
@@ -156,6 +158,11 @@ public class CertificateResourceServiceImpl extends
 	
 	}
 
+	@Override
+	public void addListener(CertificateListener listener) {
+		listeners.add(listener);
+	}
+	
 	@Override
 	protected AbstractResourceRepository<CertificateResource> getRepository() {
 		return repository;
@@ -233,6 +240,15 @@ public class CertificateResourceServiceImpl extends
 			@Override
 			public void afterOperation(CertificateResource resource, Map<String, String> properties)
 					throws ResourceException {
+				
+				for(CertificateListener listener : listeners) {
+					try {
+						listener.onUpdateCertificate(resource);
+					} catch (AccessDeniedException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+				
 				sendCertificateNotification(resource, MESSAGE_CERTIFICATE_UPDATED);
 			}
 			
@@ -263,6 +279,15 @@ public class CertificateResourceServiceImpl extends
 			@Override
 			public void afterOperation(CertificateResource resource, Map<String, String> properties)
 					throws ResourceException {
+				
+				for(CertificateListener listener : listeners) {
+					try {
+						listener.onUpdateCertificate(resource);
+					} catch (AccessDeniedException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+				
 				sendCertificateNotification(resource, MESSAGE_CERTIFICATE_UPDATED);
 			}
 			
@@ -291,11 +316,21 @@ public class CertificateResourceServiceImpl extends
 				} catch (CertificateException | UnsupportedEncodingException | AccessDeniedException e) {
 					throw new IllegalStateException(e.getMessage(), e);
 				}
+				
 			}
 
 			@Override
 			public void afterOperation(CertificateResource resource, Map<String, String> properties)
 					throws ResourceException {
+				
+				for(CertificateListener listener : listeners) {
+					try {
+						listener.onCreateCertificate(resource);
+					} catch (AccessDeniedException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+				
 				sendCertificateNotification(resource, MESSAGE_CERTIFICATE_CREATED);
 			}
 			
@@ -933,4 +968,50 @@ public class CertificateResourceServiceImpl extends
 			sendCertificateNotification(resource, MESSAGE_CERTIFICATE_EXPIRING);
 		}
 	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void deleteResource(CertificateResource resource)
+			throws ResourceException, AccessDeniedException {
+		super.deleteResource(resource, new TransactionAdapter<CertificateResource>() {
+
+			@Override
+			public void afterOperation(CertificateResource resource, Map<String, String> properties)
+					throws ResourceException {
+				
+				for(CertificateListener listener : listeners) {
+					try {
+						listener.onDeleteCertificate(resource);
+					} catch (AccessDeniedException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+			}
+			
+		});
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void deleteResources(List<CertificateResource> resources)
+			throws ResourceException, AccessDeniedException {
+
+		super.deleteResources(resources, new TransactionAdapter<CertificateResource>() {
+
+			@Override
+			public void afterOperation(CertificateResource resource, Map<String, String> properties)
+					throws ResourceException {
+				
+				for(CertificateListener listener : listeners) {
+					try {
+						listener.onDeleteCertificate(resource);
+					} catch (AccessDeniedException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+			}
+			
+		});
+	}
+
 }

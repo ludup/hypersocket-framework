@@ -7,6 +7,7 @@ import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -94,5 +95,11 @@ public interface CertificateResourceService extends
 	void sendExpiringNotification(CertificateResource resource, X509Certificate x509);
 
 	void updateCertificate(CertificateResource resource) throws ResourceException, AccessDeniedException;
+
+	void addListener(CertificateListener listener);
+
+	void deleteResource(CertificateResource resource) throws ResourceException, AccessDeniedException;
+
+	void deleteResources(List<CertificateResource> resources) throws ResourceException, AccessDeniedException;
 
 }
