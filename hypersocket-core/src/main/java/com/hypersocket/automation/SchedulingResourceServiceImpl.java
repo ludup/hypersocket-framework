@@ -54,7 +54,7 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 	
 	protected Date calculateDateTime(Realm realm, Date from, String time) {
 		String timezone = configurationService.getValue(realm, "realm.defaultTimezone");
-		return HypersocketUtils.calculateDateTime(timezone, from, timezone);
+		return HypersocketUtils.calculateDateTime(timezone, from, time);
 	}
 	
 	
