@@ -972,9 +972,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						proc.afterChangePassword(principal, newPassword, oldPassword);
 					}
 
-					messageService.sendMessage(MESSAGE_PASSWORD_CHANGED, principal.getRealm(),
-							new PrincipalWithoutPasswordResolver((UserPrincipal) principal), principal);
-
 					eventService.publishEvent(new ChangePasswordEvent(this, getCurrentSession(), getCurrentRealm(),
 							provider, newPassword));
 
@@ -990,6 +987,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						provider, newPassword));
 			}
 		});
+		
+		messageService.sendMessageNow(MESSAGE_PASSWORD_CHANGED, principal.getRealm(),
+				new PrincipalWithoutPasswordResolver((UserPrincipal) principal), Arrays.asList(principal));
 	}
 
 	@Override
@@ -1035,10 +1035,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						new SetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), 
 								provider, principal, password));
 				
-				messageService.sendMessage(MESSAGE_PASSWORD_RESET, 
+				messageService.sendMessageNow(MESSAGE_PASSWORD_RESET, 
 						principal.getRealm(), 
 						new PrincipalWithPasswordResolver((UserPrincipal)principal, password, forceChangeAtNextLogon), 
-						principal);
+						Arrays.asList(principal));
 			} else {
 				
 				eventService.publishEvent(
@@ -1048,7 +1048,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				messageService.sendMessage(MESSAGE_PASSWORD_CHANGED, 
 						principal.getRealm(), 
 						new PrincipalWithoutPasswordResolver((UserPrincipal)principal), 
-						principal);
+						Arrays.asList(principal));
 			}
 			
 		} catch (ResourceException ex) {
