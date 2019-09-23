@@ -138,7 +138,7 @@ public class Main {
 			 * It also provides log output (via a custom log appender), and startup progress
 			 * based on the last known time taken.
 			 */
-			if("true".equals(System.getProperty("hypersocket.bootHttpServer","true"))) {
+			if("true".equals(System.getProperty("hypersocket.bootHttpServer","false"))) {
 				String username = System.getProperty("user.name");
 				miniserverStarted = System.currentTimeMillis();
 				File bootKeystore = new File(conf, "boothttp.keystore");
