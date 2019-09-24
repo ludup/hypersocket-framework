@@ -196,6 +196,10 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	@Transactional(readOnly=true)
 	public T getPersonalResourceByName(String name, Principal principal, CriteriaConfiguration... configs) {
 		
+		/**
+		 * Not sure on the effectiveness of this method. Since assignment was removed it would not
+		 * guarantee to return a users private resource.
+		 */
 		Criteria criteria = createCriteria(getResourceClass());
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		
