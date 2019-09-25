@@ -2,7 +2,10 @@ package com.hypersocket.properties;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +24,6 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 	public static final String DERBY = "DERBY";
 	public static final String H2 = "H2";
 
-
 	public static final String JDBC_HIBERNATE_DIALECT = "jdbc.hibernate.dialect";
 	public static final String JDBC_DRIVER_CLASS_NAME = "jdbc.driver.className";
 	public static final String JDBC_VENDOR = "jdbc.vendor";
@@ -36,11 +38,13 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 	public static final String JDBC_NUM_HELPER_THREADS = "jdbc.numHelperThreads"; // 20
 	public static final String JDBC_ACQUIRE_RETRY_DELAY = "jdbc.acquireRetryDelay"; // 1000
 	public static final String JDBC_ACQUIRE_RETRY_ATTEMPTS = "jdbc.acquireRetryAttempts"; // 10
+	public static final String JDBC_TIMEZONE = "jdbc.timeZone"; // 10
 	
 
 	public static final String INSTALLER_DATABASE_HOST = "${installer:databaseHost}";
 	public static final String INSTALLER_DATABASE_PORT = "${installer:databasePort}";
 	public static final String INSTALLER_DATABASE_NAME = "${installer:databaseName}";
+	public static final String INSTALLER_DATABASE_TIMEZONE = "${installer:databaseTimezone}";
 	public static final String DERBY_DATA = "derby:data";
 
 	static Logger log = LoggerFactory.getLogger(DatabasePropertiesFileConfigurationStore.class);
@@ -104,6 +108,12 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 				}else{
 					properties.put(JDBC_HOST, value);
 				}
+			}else if(JDBC_TIMEZONE.equals(template.getResourceKey())){
+				if(MYSQL.equals(currentVendor)) {
+					properties.put(JDBC_TIMEZONE, value);
+				}else{
+					properties.put(JDBC_TIMEZONE, null);
+				}
 			}else if(JDBC_PORT.equals(template.getResourceKey())){
 				if(DERBY.equals(currentVendor) || H2.equals(currentVendor)) {
 					properties.put(JDBC_PORT, null);
@@ -123,10 +133,12 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 				String jdbcUrlTemplate = vendorTemplateProperties.getProperty(JDBC_URL);
 				String jdbcUrl = StringUtils.replaceEach(jdbcUrlTemplate,
 										new String[] {INSTALLER_DATABASE_HOST, INSTALLER_DATABASE_PORT,
-												INSTALLER_DATABASE_NAME, DERBY_DATA},
+												INSTALLER_DATABASE_NAME, DERBY_DATA,
+												INSTALLER_DATABASE_TIMEZONE},
 										new String[] {properties.getProperty(JDBC_HOST), properties.getProperty(JDBC_PORT),
 												properties.getProperty(JDBC_DATABASE),
-												String.format("derby:%s", properties.getProperty(JDBC_DATABASE))});
+												String.format("derby:%s", properties.getProperty(JDBC_DATABASE)),
+												URLEncoder.encode(properties.getProperty(JDBC_TIMEZONE), "UTF-8")});
 
 				properties.put(JDBC_URL, jdbcUrl);
 			}
@@ -159,6 +171,9 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 				properties.setProperty(JDBC_PORT, tokens.get(JDBCURIParser.PORT));
 			if(tokens.containsKey(JDBCURIParser.DATABASE))
 				properties.setProperty(JDBC_DATABASE, tokens.get(JDBCURIParser.DATABASE));
+			if(tokens.containsKey(JDBCURIParser.MYSQL_TIMEZONE)) {
+				properties.setProperty(JDBC_TIMEZONE, tokens.get(JDBCURIParser.MYSQL_TIMEZONE));
+			}
 		}
 	}
 
@@ -200,6 +215,8 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 		public static String PATH = "PATH";
 		public static String DATABASE = "DATABASE";
 
+		public static final String MYSQL_TIMEZONE = "serverTimezone";
+
 		public static Map<String, String> parse(String uri){
 			if(StringUtils.isBlank(uri)){
 				throw new IllegalArgumentException("Uri cannot be null or blank.");
@@ -221,7 +238,11 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 
 		private static Map<String, String> parseMySql(String uri){
 			String toParse = uri.replaceAll("jdbc:", "");
-			return makeTokens(toParse);
+			Map<String, String> tksn = makeTokens(toParse);
+			if(tksn.containsKey(MYSQL_TIMEZONE)) {
+				tksn.put(JDBC_TIMEZONE, tksn.get(MYSQL_TIMEZONE));
+			}
+			return tksn;
 		}
 
 		private static Map<String, String> parsePostgres(String uri){
@@ -310,7 +331,24 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 				tokens.put(HOST, uriObj.getHost());
 			tokens.put(PORT, mapPort(tokens.get(SCHEME), uriObj.getPort()));
 			tokens.put(PATH, uriObj.getPath());
-
+			
+			String query = uriObj.getQuery();
+			if(StringUtils.isNotBlank(query)) {
+				for(String a : query.split("&")) {
+					int idx = a.indexOf('=');
+					if(idx == -1) {
+						tokens.put(a, "");
+					}
+					else {
+						try {
+							tokens.put(URLDecoder.decode(a.substring(0, idx), "UTF-8"), URLDecoder.decode(a.substring(idx + 1), "UTF-8"));
+						} catch (UnsupportedEncodingException e) {
+							throw new IllegalStateException("Failed to decode.", e);
+						}
+					}
+				}
+			}
+			
 			String database = getDatabase(uriObj.getPath());
 			if(StringUtils.isNotBlank(database))
 				tokens.put(DATABASE, database);

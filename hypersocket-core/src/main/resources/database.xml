@@ -29,13 +29,13 @@
 		<property name="password" value="${jdbc.password}" />
 		<property name="acquireIncrement" value="3" />
 		<property name="minPoolSize" value="1" />
-		<property name="maxPoolSize" value="${jdbc.maxPoolSize}" />
-		<property name="maxStatementsPerConnection" value="${jdbc.maxStatementsPerConnection}" />
+		<property name="maxPoolSize" value="${jdbc.maxPoolSize:500}" />
+		<property name="maxStatementsPerConnection" value="${jdbc.maxStatementsPerConnection:100}" />
 		<property name="automaticTestTable" value="c3p0_test_table" />
-		<property name="numHelperThreads" value="${jdbc.numHelperThreads}" />
+		<property name="numHelperThreads" value="${jdbc.numHelperThreads:20}" />
 		<property name="testConnectionOnCheckout" value="true" />
-		<property name="acquireRetryDelay" value="${jdbc.acquireRetryDelay}" />
-		<property name="acquireRetryAttempts" value="${jdbc.acquireRetryAttempts}" />
+		<property name="acquireRetryDelay" value="${jdbc.acquireRetryDelay:1000}" />
+		<property name="acquireRetryAttempts" value="${jdbc.acquireRetryAttempts:10}" />
 	</bean>
     
 	<bean id="transactionManager"

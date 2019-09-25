@@ -49,6 +49,9 @@
 				  allowEmpty="false" weight="1000" defaultValue="1000" minValue="1" maxValue="100000"/>		
 		<property resourceKey="jdbc.acquireRetryAttempts" inputType="integer" store="databaseConfiguration" 
 				  allowEmpty="false" weight="1100" defaultValue="10" minValue="1" maxValue="100"/>
+		<property resourceKey="jdbc.timeZone" inputType="select" defaultValue="UTC" store="databaseConfiguration" allowEmpty="false" weight="1200" 
+				  emptySelectionAllowed="true" url="configuration/timeZone/list"  visibilityDependsOn="jdbc.vendor"
+				  visibilityDependsValue="MYSQL"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.schedulerSettings"
 		resourceBundle="SchedulerService" weight="300">
