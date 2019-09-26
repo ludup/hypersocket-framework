@@ -103,7 +103,7 @@ public class MiniHttpServer extends Thread implements Closeable {
 
 	}
 
-	public static final String KEYSTORE_PASSWORD = "lean_and_mean";
+	public static final String KEYSTORE_PASSWORD = "changeit";
 
 	private static Logger LOG = LoggerFactory.getLogger(MiniHttpServer.class);
 
@@ -134,6 +134,9 @@ public class MiniHttpServer extends Thread implements Closeable {
 	private ServerSocket serversocket;
 	private SSLServerSocket sslServersocket;
 
+	public static final String HYPERSOCKET_BOOT_HTTP_SERVER = "hypersocket.bootHttpServer";
+	public static final String HYPERSOCKET_BOOT_HTTP_SERVER_DEFAULT = "false";
+
 	public MiniHttpServer(int http, int https, File keystoreFile) throws IOException {
 		super("MiniHttpServer");
 
@@ -146,33 +149,43 @@ public class MiniHttpServer extends Thread implements Closeable {
 
 		if (https > 0) {
 			LOG.info(String.format("Open temporary HTTPS server on port %d", https));
+			
 			SSLContext sc = null;
 			try {
 				Security.addProvider(new BouncyCastleProvider());
 				KeyStore ks = null;
+				KeyManagerFactory kmf = null;
 
 				if (keystoreFile != null && keystoreFile.exists()) {
-					ks = KeyStore.getInstance("JKS");
+					LOG.info(String.format("Using keystore %s", keystoreFile));
 					try (InputStream fin = new FileInputStream(keystoreFile)) {
-						ks.load(fin, KEYSTORE_PASSWORD.toCharArray());
+						ks = X509CertificateUtils.loadKeyStoreFromJKS(fin, KEYSTORE_PASSWORD.toCharArray());
+						kmf = KeyManagerFactory.getInstance("SunX509");
+						kmf.init(ks, KEYSTORE_PASSWORD.toCharArray());
+					}
+					catch(Exception e) {
+						LOG.error("Failed to load temporary keystore, reverting to default.", e);
+						ks = null;
 					}
 				}
 
 				if (ks == null) {
+					LOG.info(String.format("Generating keystore"));
 					KeyPair kp = X509CertificateUtils.generatePrivateKey("RSA", 2048);
 					X509Certificate cert = X509CertificateUtils.generateSelfSignedCertificate(
 							InetAddress.getLocalHost().getHostName(), "", "", "", "", "", kp, "SHA1WithRSAEncryption");
-					ks = X509CertificateUtils.createKeystore(kp, new X509Certificate[] { cert }, "server",
+					ks = X509CertificateUtils.createPKCS12Keystore(kp, new X509Certificate[] { cert }, "server",
 							KEYSTORE_PASSWORD.toCharArray());
 					if (keystoreFile != null) {
+						LOG.info(String.format("Writing temporary keystore to %s", keystoreFile));
 						try (OutputStream fout = new FileOutputStream(keystoreFile)) {
 							ks.store(fout, KEYSTORE_PASSWORD.toCharArray());
 						}
 					}
+					kmf = KeyManagerFactory.getInstance("SunX509");
+					kmf.init(ks, KEYSTORE_PASSWORD.toCharArray());
 				}
 
-				KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-				kmf.init(ks, KEYSTORE_PASSWORD.toCharArray());
 				sc = SSLContext.getInstance("TLS");
 				sc.init(kmf.getKeyManagers(), null, null);
 			} catch (Exception e) {
@@ -327,7 +340,7 @@ public class MiniHttpServer extends Thread implements Closeable {
 		if (!path.startsWith("/"))
 			path = "/" + path;
 
-		if (path.startsWith("/app")) {
+		if (path.startsWith("/app") || path.startsWith("/hypersocket")) {
 			output.write(header(Status.FOUND, "text/plain", -1, "Location", "/"));
 			return;
 		}

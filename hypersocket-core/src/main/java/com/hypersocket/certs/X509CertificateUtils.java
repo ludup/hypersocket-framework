@@ -253,6 +253,20 @@ public class X509CertificateUtils {
 		}
 	}
 
+	public static KeyStore loadKeyStoreFromJKS(InputStream jksFile,
+			char[] passphrase) throws KeyStoreException,
+			NoSuchAlgorithmException, CertificateException, IOException,
+			NoSuchProviderException, UnrecoverableKeyException {
+
+		try {
+			KeyStore keystore = KeyStore.getInstance("JKS");
+			keystore.load(jksFile, passphrase);
+			return keystore;
+		} finally {
+			IOUtils.closeQuietly(jksFile);
+		}
+	}
+
 	public static KeyPair loadKeyPairFromPEM(InputStream keyfile,
 			char[] passphrase) throws InvalidPassphraseException,
 			CertificateException, FileFormatException {
