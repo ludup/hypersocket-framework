@@ -1777,7 +1777,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 
 			permissionService.revokePermissions(user, new TransactionAdapter<Principal>() {
-				@Override
+				@Override 
 				public void afterOperation(Principal resource, Map<String, String> properties)
 						throws ResourceException {
 					try {
