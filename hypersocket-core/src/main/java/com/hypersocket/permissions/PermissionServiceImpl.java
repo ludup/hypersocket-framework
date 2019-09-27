@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -873,19 +874,21 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			
 			if(realms!=null) {
 				
-				role.setPermissionRealms(new HashSet<Realm>(realms));
-				
 				unassignRealms.addAll(getEntitiesNotIn(realms, role.getPermissionRealms(),
 						new EntityMatch<Realm>() {
 							@Override
 							public boolean validate(Realm t) {
-								return t.getParent().equals(getCurrentRealm());
+								return true;
 							}
 	
 				}));
+				
+				
 				assignRealms.addAll(realms);
 				assignRealms.removeAll(role.getPermissionRealms());
 			}
+			
+			role.setPermissionRealms(new HashSet<Realm>(realms));
 			Set<Principal> assignPrincipals = new HashSet<Principal>();
 			Set<Principal> unassignPrincipals = new HashSet<Principal>();
 			

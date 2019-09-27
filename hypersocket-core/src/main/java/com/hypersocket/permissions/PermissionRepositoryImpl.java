@@ -61,7 +61,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		public void configure(Criteria criteria) {
 			criteria.setFetchMode("permissions", FetchMode.SELECT);
 			criteria.setFetchMode("principals", FetchMode.SELECT);
-			criteria.setFetchMode("resources", FetchMode.SELECT);
+			criteria.setFetchMode("realms", FetchMode.SELECT);
 			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		}
 	};
@@ -735,16 +735,21 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	public Set<Role> getAllUserRoles(final Realm realm) {
 
 		return new HashSet<Role>(allEntities(Role.class,
-				JOIN_PRINCIPALS_PERMISSIONS, new RealmRestriction(realm),
+				JOIN_PRINCIPALS_PERMISSIONS,
+				new RealmRestriction(realm),
 				new CriteriaConfiguration() {
 					@Override
 					public void configure(Criteria criteria) {
 						criteria.add(Restrictions.eq("allUsers", true));
-						criteria.createCriteria("realms").add(Restrictions.in("id", Arrays.asList(realm.getId())));
+						/**
+						 * LDP - This is causing problems and I do not know why some systems appear
+						 * to lose the realm listing with Everyone not being returned by the query.
+						 */
+//						criteria.createCriteria("realms").add(Restrictions.in("id", Arrays.asList(realm.getId())));
 					}
 				}));
 	}
-
+	
 	@Override
 	protected Class<Role> getResourceClass() {
 		return Role.class;
