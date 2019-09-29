@@ -269,7 +269,7 @@ public class MiniHttpServer extends Thread implements Closeable {
 				}
 			} else {
 				try {
-					LOG.info(String.format("%s connected to server", client.getHostName()));
+					LOG.debug(String.format("%s connected to server", client.getHostName()));
 					BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 					try (OutputStream out = socket.getOutputStream()) {
 						handle(input, out);
@@ -397,7 +397,7 @@ public class MiniHttpServer extends Thread implements Closeable {
 
 	private void runOn(ServerSocket so) {
 		while (open) {
-			LOG.info("Waiting for connection");
+			LOG.debug("Waiting for connection");
 			try {
 				Socket connectionsocket = so.accept();
 				pool.execute(() -> connection(connectionsocket));
