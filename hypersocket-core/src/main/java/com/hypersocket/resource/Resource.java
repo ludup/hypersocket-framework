@@ -16,6 +16,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -67,7 +68,7 @@ public abstract class Resource extends SimpleResource {
 	
 	public void setName(String name) {
 		this.oldName = this.name;
-		this.name = name.trim();
+		this.name = StringUtils.defaultString(name, "").trim();
 	}
 
 	public boolean hasNameChanged() {
