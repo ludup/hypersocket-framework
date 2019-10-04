@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
-<propertyTemplates context="resolveIPTask">
-	<propertyCategory resourceKey="category.resolveIPTask"
+<propertyTemplates context="lookupIPTask">
+	<propertyCategory resourceKey="category.lookupIPTask"
 		resourceBundle="ResolveIPTask" weight="1000">
-		<property resourceKey="resolveIP.hostnames" inputType="multipleTextInput"
+		<property resourceKey="lookupIPTask.hostnames" inputType="multipleTextInput"
 			weight="0" defaultValue="" />
 	</propertyCategory>
 </propertyTemplates>

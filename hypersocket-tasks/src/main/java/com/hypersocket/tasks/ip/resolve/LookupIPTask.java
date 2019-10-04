@@ -27,16 +27,16 @@ import com.hypersocket.triggers.AbstractTaskResult;
 import com.hypersocket.triggers.ValidationException;
 
 @Component
-public class ResolveIPTask extends AbstractTaskProvider {
+public class LookupIPTask extends AbstractTaskProvider {
 
-	static Logger log = LoggerFactory.getLogger(ResolveIPTask.class);
+	static Logger log = LoggerFactory.getLogger(LookupIPTask.class);
 	
-	public static final String TASK_RESOURCE_KEY = "resolveIPTask";
+	public static final String TASK_RESOURCE_KEY = "lookupIPTask";
 
-	public static final String RESOURCE_BUNDLE = "ResolveIPTask";
+	public static final String RESOURCE_BUNDLE = "LookupIPTask";
 	
 	@Autowired
-	ResolveIPTaskRepository repository;
+	LookupIPTaskRepository repository;
 
 	@Autowired
 	TaskProviderService taskService;
@@ -47,7 +47,7 @@ public class ResolveIPTask extends AbstractTaskProvider {
 	@Autowired
 	I18NService i18nService; 
 
-	public ResolveIPTask() {
+	public LookupIPTask() {
 	}
 	
 	@PostConstruct
@@ -56,7 +56,7 @@ public class ResolveIPTask extends AbstractTaskProvider {
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-		eventService.registerEvent(ResolveIPTaskResult.class,
+		eventService.registerEvent(LookupIPTaskResult.class,
 				RESOURCE_BUNDLE);
 	}
 
@@ -84,7 +84,7 @@ public class ResolveIPTask extends AbstractTaskProvider {
 
 		String[] values = ResourceUtils.explodeValues(repository.getValue(task, "resolveIP.hostnames"));
 		
-		List<ResolveIPTaskResult> results = new ArrayList<ResolveIPTaskResult>();
+		List<LookupIPTaskResult> results = new ArrayList<LookupIPTaskResult>();
 		List<InetAddress> successfull = new ArrayList<InetAddress>();
 		
 		for(String val : values) {
@@ -100,7 +100,7 @@ public class ResolveIPTask extends AbstractTaskProvider {
 					if(log.isErrorEnabled()) {
 						log.error("Unable to resolve IP for host " + hostname, e);
 					}
-					results.add(new ResolveIPTaskResult(this, hostname, e, currentRealm, task));
+					results.add(new LookupIPTaskResult(this, hostname, e, currentRealm, task));
 				}
 			}
 			
@@ -114,7 +114,7 @@ public class ResolveIPTask extends AbstractTaskProvider {
 			ips.add(addr.getHostAddress());
 		}
 		
-		ResolveIPTaskResult successfullResult = new ResolveIPTaskResult
+		LookupIPTaskResult successfullResult = new LookupIPTaskResult
 				(this, hosts.toArray(new String[0]), ips.toArray(new String[0]), currentRealm, task);
 		
 		if(results.size() > 0) {
@@ -126,7 +126,7 @@ public class ResolveIPTask extends AbstractTaskProvider {
 	}
 	
 	public String getResultResourceKey() {
-		return ResolveIPTaskResult.EVENT_RESOURCE_KEY;
+		return LookupIPTaskResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override
