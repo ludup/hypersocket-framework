@@ -81,10 +81,10 @@ public class HypersocketAnnotationSessionFactoryBean extends
 	
 	@Override
 	public void afterPropertiesSet() throws IOException {
-		if(environment.getActiveProfiles() != null && Arrays.asList(environment.getActiveProfiles()).contains("HA")) {
-			//needed to be done else default integrator from hibernate search will register everything before hypersocket search integrator
-			getHibernateProperties().put(HibernateSearchIntegrator.AUTO_REGISTER, false);
-		}
+//		if(environment.getActiveProfiles() != null && Arrays.asList(environment.getActiveProfiles()).contains("HA")) {
+//			//needed to be done else default integrator from hibernate search will register everything before hypersocket search integrator
+//			getHibernateProperties().put(HibernateSearchIntegrator.AUTO_REGISTER, false);
+//		}
 		String key = "hibernate.id.new_generator_mappings";
 		if(databaseInformation.isClean()){
 			log.info("No tables found in database from application was clean on start up, setting id gen value as true");
