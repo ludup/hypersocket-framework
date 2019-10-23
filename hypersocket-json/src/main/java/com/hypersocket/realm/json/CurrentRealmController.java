@@ -437,7 +437,7 @@ public class CurrentRealmController extends ResourceController {
 						List<AttributeView> search(String searchColumn, String searchPattern) {
 							List<AttributeView> l = new ArrayList<>();
 							for(String a : realmService.getAllUserAttributeNames(getCurrentRealm())) {
-								if(searchPattern.equals("") || a.toLowerCase().contains(searchPattern.toLowerCase()))
+								if(searchPattern.equals("*") || searchPattern.equals("") || a.toLowerCase().contains(searchPattern.toLowerCase()))
 									l.add(new AttributeView(a));
 							}
 							
