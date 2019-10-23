@@ -68,6 +68,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
+import com.hypersocket.resource.PropertyChange;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
@@ -198,6 +199,11 @@ public class CertificateResourceServiceImpl extends
 			eventService.publishEvent(new CertificateResourceCreatedEvent(this,
 					resource, t, getCurrentSession()));
 		}
+	}
+	
+	@Override
+	protected boolean fireNonStandardEvents(CertificateResource issue, List<PropertyChange> changes) {
+		return true;
 	}
 
 	@Override
