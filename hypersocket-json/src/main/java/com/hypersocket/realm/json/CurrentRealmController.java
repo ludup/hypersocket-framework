@@ -32,6 +32,7 @@ import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.export.AttributeView;
 import com.hypersocket.export.CommonEndOfLineEnum;
 import com.hypersocket.i18n.I18N;
+import com.hypersocket.i18n.I18NService;
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.json.PropertyItem;
 import com.hypersocket.json.RequestStatus;
@@ -81,6 +82,9 @@ public class CurrentRealmController extends ResourceController {
 	
 	@Autowired
 	OrganizationalUnitService ouService;
+	
+	@Autowired
+	I18NService i18nService;
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/groups/list", method = RequestMethod.GET, produces = { "application/json" })
@@ -436,11 +440,13 @@ public class CurrentRealmController extends ResourceController {
 						
 						List<AttributeView> search(String searchColumn, String searchPattern) {
 							List<AttributeView> l = new ArrayList<>();
-							for(String a : realmService.getAllUserAttributeNames(getCurrentRealm())) {
-								if(searchPattern.equals("*") || searchPattern.equals("") || a.toLowerCase().contains(searchPattern.toLowerCase()))
+							for (String a : realmService.getAllUserAttributeNames(getCurrentRealm())) {
+								if (searchPattern.equals("*") || searchPattern.equals("")
+										|| a.toLowerCase().contains(searchPattern.toLowerCase())
+										|| i18nService.getResource(a).toLowerCase().contains(searchPattern.toLowerCase()))
 									l.add(new AttributeView(a));
 							}
-							
+
 							return l;
 						}
 					});

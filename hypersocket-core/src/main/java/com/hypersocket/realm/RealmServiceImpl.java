@@ -116,6 +116,7 @@ import com.hypersocket.utils.HypersocketUtils;
 public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		implements RealmService, UpgradeServiceListener {
 
+	private static final String TEXT_PRINCIPAL_NAME = "text.principalName";
 	private static final String TEXT_REALM = "text.realm";
 	private static final String TEXT_NAME = "text.name";
 	private static final String TEXT_EMAIL = "text.email";
@@ -127,6 +128,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	private static final String TEXT_MODIFIED_DATE = "text.modifiedDate";
 	private static final String TEXT_EXPIRES = "text.expires";
 	private static final String TEXT_STATUS = "text.status";
+	private static final List<String> DEFAULT_PRINCIPAL_ATTRIBUTE_NAMES = Arrays.asList(TEXT_REALM, TEXT_PRINCIPAL_NAME, TEXT_NAME, TEXT_EMAIL, TEXT_OU, TEXT_PRIMARY_EMAIL,
+			TEXT_DESCRIPTION, TEXT_UUID, TEXT_CREATE_DATE, TEXT_MODIFIED_DATE, TEXT_EXPIRES, TEXT_STATUS);
 
 	static Logger log = LoggerFactory.getLogger(RealmServiceImpl.class);
 
@@ -349,8 +352,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public void onUpgradeComplete() {
-		
+
 	}
+
 	@Override
 	public void onUpgradeFinished() {
 
@@ -374,13 +378,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public List<RealmProvider> getProviders() throws AccessDeniedException {
 
-		assertAnyPermissionOrRealmAdministrator(PermissionScope.INCLUDE_CHILD_REALMS, 
-				RealmPermission.READ,
-				UserPermission.READ, 
-				SystemPermission.SWITCH_REALM);
+		assertAnyPermissionOrRealmAdministrator(PermissionScope.INCLUDE_CHILD_REALMS, RealmPermission.READ,
+				UserPermission.READ, SystemPermission.SWITCH_REALM);
 		List<RealmProvider> providers = new ArrayList<>();
-		for(RealmProvider p : providersByModule.values()) {
-			if(p.isEnabled()) {
+		for (RealmProvider p : providersByModule.values()) {
+			if (p.isEnabled()) {
 				providers.add(p);
 			}
 		}
@@ -436,7 +438,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	protected Set<Principal> getAllPrincipals(Realm realm, int max, PrincipalType... types) {
 		Set<Principal> s = new HashSet<>();
 		Iterator<Principal> p = iterateAllPrincipals(realm, types);
-		while(p.hasNext())
+		while (p.hasNext())
 			s.add(p.next());
 		return s;
 	}
@@ -620,17 +622,18 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, null, provider,
 				sendNotifications);
 	}
-	
+
 	@Override
-	public Principal createLocalUser(Realm realm, String username, Map<String,String> properties,
-			List<Principal> principals, PasswordCreator passwordCreator, boolean forceChange, boolean selfCreated, boolean sendNotifications)
-					throws ResourceException, AccessDeniedException {
-		
+	public Principal createLocalUser(Realm realm, String username, Map<String, String> properties,
+			List<Principal> principals, PasswordCreator passwordCreator, boolean forceChange, boolean selfCreated,
+			boolean sendNotifications) throws ResourceException, AccessDeniedException {
+
 		RealmProvider provider = getLocalProvider();
-		
-		return createUser(realm, username, properties, principals, passwordCreator, forceChange, selfCreated, null, provider, sendNotifications);
+
+		return createUser(realm, username, properties, principals, passwordCreator, forceChange, selfCreated, null,
+				provider, sendNotifications);
 	}
-	
+
 	private RealmProvider getLocalProvider() {
 		return getProviderForRealm(LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY);
 	}
@@ -766,8 +769,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				processor.afterUpdate(principal, properties);
 			}
 
-			eventService.publishEvent(new UserUpdatedEvent(this, getCurrentSession(), principal.getRealm(), provider,
-					principal, getAssociatedPrincipals(principal), filterSecretProperties(principal, provider, properties), associated, filterSecretProperties(principal, provider, oldProperties)));
+			eventService.publishEvent(
+					new UserUpdatedEvent(this, getCurrentSession(), principal.getRealm(), provider, principal,
+							getAssociatedPrincipals(principal), filterSecretProperties(principal, provider, properties),
+							associated, filterSecretProperties(principal, provider, oldProperties)));
 
 			return principal;
 		} catch (AccessDeniedException e) {
@@ -809,7 +814,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 
 			eventService.publishEvent(new UserUpdatedEvent(this, getCurrentSession(), realm, provider, principal,
-					getAssociatedPrincipals(principal), filterSecretProperties(principal, provider, properties), previousPrincipals, filterSecretProperties(principal, provider, oldProperties)));
+					getAssociatedPrincipals(principal), filterSecretProperties(principal, provider, properties),
+					previousPrincipals, filterSecretProperties(principal, provider, oldProperties)));
 
 			return principal;
 		} catch (AccessDeniedException e) {
@@ -829,11 +835,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public boolean verifyPrincipal(String principalName, Realm realm) {
-		
+
 		Collection<PrincipalSuspension> suspensions = suspensionRepository.getSuspensions(principalName, realm);
-		
-		for(PrincipalSuspension s : suspensions) {
-			if(s.isActive()) {
+
+		for (PrincipalSuspension s : suspensions) {
+			if (s.isActive()) {
 				return false;
 			}
 		}
@@ -987,7 +993,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						provider, newPassword));
 			}
 		});
-		
+
 		messageService.sendMessageNow(MESSAGE_PASSWORD_CHANGED, principal.getRealm(),
 				new PrincipalWithoutPasswordResolver((UserPrincipal) principal), Arrays.asList(principal));
 	}
@@ -1028,36 +1034,30 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				proc.afterSetPassword(principal, password);
 			}
 
-			
-			if(administrative) {
-				
-				eventService.publishEvent(
-						new SetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), 
-								provider, principal, password));
-				
-				messageService.sendMessageNow(MESSAGE_PASSWORD_RESET, 
-						principal.getRealm(), 
-						new PrincipalWithPasswordResolver((UserPrincipal)principal, password, forceChangeAtNextLogon), 
+			if (administrative) {
+
+				eventService.publishEvent(new SetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider,
+						principal, password));
+
+				messageService.sendMessageNow(MESSAGE_PASSWORD_RESET, principal.getRealm(),
+						new PrincipalWithPasswordResolver((UserPrincipal) principal, password, forceChangeAtNextLogon),
 						Arrays.asList(principal));
 			} else {
-				
-				eventService.publishEvent(
-						new ResetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), 
-								provider, principal, password));
-				
-				messageService.sendMessage(MESSAGE_PASSWORD_CHANGED, 
-						principal.getRealm(), 
-						new PrincipalWithoutPasswordResolver((UserPrincipal)principal), 
-						Arrays.asList(principal));
+
+				eventService.publishEvent(new ResetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider,
+						principal, password));
+
+				messageService.sendMessage(MESSAGE_PASSWORD_CHANGED, principal.getRealm(),
+						new PrincipalWithoutPasswordResolver((UserPrincipal) principal), Arrays.asList(principal));
 			}
-			
+
 		} catch (ResourceException ex) {
-			if(administrative) {
-				eventService.publishEvent(new SetPasswordEvent(this, ex, getCurrentSession(), getCurrentRealm(), provider,
-					principal.getPrincipalName(), password));
+			if (administrative) {
+				eventService.publishEvent(new SetPasswordEvent(this, ex, getCurrentSession(), getCurrentRealm(),
+						provider, principal.getPrincipalName(), password));
 			} else {
-				eventService.publishEvent(new ResetPasswordEvent(this, ex, getCurrentSession(), getCurrentRealm(), provider,
-						principal.getPrincipalName(), password));
+				eventService.publishEvent(new ResetPasswordEvent(this, ex, getCurrentSession(), getCurrentRealm(),
+						provider, principal.getPrincipalName(), password));
 			}
 			throw ex;
 		}
@@ -1777,7 +1777,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 
 			permissionService.revokePermissions(user, new TransactionAdapter<Principal>() {
-				@Override 
+				@Override
 				public void afterOperation(Principal resource, Map<String, String> properties)
 						throws ResourceException {
 					try {
@@ -2288,7 +2288,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
-
 		try {
 			if (provider.isReadOnly(principal.getRealm())) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
@@ -2297,8 +2296,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			eventService.publishEvent(
 					new AccountDisabledEvent(this, getCurrentSession(), provider, getCurrentPrincipal(), principal));
 		} catch (ResourceException re) {
-			eventService.publishEvent(
-					new AccountDisabledEvent(this, re, getCurrentSession(), provider, getCurrentPrincipal(), principal));
+			eventService.publishEvent(new AccountDisabledEvent(this, re, getCurrentSession(), provider,
+					getCurrentPrincipal(), principal));
 			throw re;
 		}
 
@@ -2410,22 +2409,31 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Collection<String> getAllUserAttributeNames(Realm realm) {
-
 		RealmProvider provider = getProviderForRealm(realm);
 		Set<String> names = new LinkedHashSet<>();
-		for (PropertyCategory cat : provider.getPrincipalTemplate()) {
+		for (PropertyCategory cat : provider.getPrincipalTemplate(realm)) {
 			for (AbstractPropertyTemplate temp : cat.getTemplates()) {
-				if (StringUtils.isNotBlank(temp.getName()))
+				if (StringUtils.isNotBlank(temp.getName())) {
 					names.add(temp.getName());
-				else if (StringUtils.isNotBlank(temp.getResourceKey()))
+				} else if (StringUtils.isNotBlank(temp.getResourceKey())) {
 					names.add(temp.getResourceKey());
+				} 
 			}
 		}
-
+		for (PropertyCategory cat : provider.getUserProperties(null)) {
+			if (cat.getCategoryKey().startsWith("remoteUser.") || cat.getCategoryKey().startsWith("localUser.")) {
+				for (AbstractPropertyTemplate temp : cat.getTemplates()) {
+					if (StringUtils.isNotBlank(temp.getName())) {
+						names.add(temp.getName());
+					} else if (StringUtils.isNotBlank(temp.getResourceKey())) {
+						names.add(temp.getResourceKey());
+					} 
+				}
+			}
+		}
 		names.addAll(provider.getDefaultUserPropertyNames());
-
+		names.addAll(DEFAULT_PRINCIPAL_ATTRIBUTE_NAMES);
 		return names;
-
 	}
 
 	@Override
@@ -2703,14 +2711,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 
 	}
-	
+
 	@Override
 	public boolean isDisabled(Principal principal) {
 		RealmProvider provider = getProviderForPrincipal(principal);
 		return provider.isDisabled(principal);
 	}
 
-	
 	class RemoteAccountFilter extends DefaultTableFilter {
 
 		@Override
@@ -2840,16 +2847,21 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			Set<String> includeAttributes;
 			Cache<String, String> i18n;
 			Realm currentRealm = realm;
+			List<String> attrs;
 
 			{
 				if (currentRealm == null) {
 					currentRealm = getCurrentRealm();
-				} 
+				}
 
-				includeAttributes = new HashSet<String>();
-				includeAttributes.addAll(Arrays.asList(TEXT_REALM, TEXT_NAME, TEXT_EMAIL, TEXT_OU, TEXT_PRIMARY_EMAIL,
-						TEXT_DESCRIPTION, TEXT_UUID, TEXT_CREATE_DATE, TEXT_MODIFIED_DATE, TEXT_EXPIRES, TEXT_STATUS));
-				includeAttributes.addAll(Arrays.asList(attributes.split("\\]\\|\\[")));
+				includeAttributes = new LinkedHashSet<String>();
+				if(StringUtils.isNotBlank(attributes))
+					attrs = Arrays.asList(attributes.split(","));
+				if(attrs != null) {
+					if(attrs.isEmpty())
+						includeAttributes.addAll(DEFAULT_PRINCIPAL_ATTRIBUTE_NAMES);
+					includeAttributes.addAll(attrs);
+				}
 				i18n = i18nService.getResourceMap(locale);
 			}
 
@@ -2860,18 +2872,41 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			protected Map<String, String> convertToMap(Principal princ) {
 				final Map<String, String> map = new HashMap<String, String>();
-				map.put(TEXT_REALM, princ.getRealm().getName());
-				map.put(TEXT_NAME, i18n.get(princ.getName()));
-				map.put(TEXT_EMAIL, princ.getEmail());
-				map.put(TEXT_OU, princ.getOrganizationalUnit());
-				map.put(TEXT_PRIMARY_EMAIL, princ.getPrimaryEmail());
-				map.put(TEXT_DESCRIPTION, princ.getPrincipalDescription());
-				map.put(TEXT_UUID, princ.getUUID());
-				map.put(TEXT_CREATE_DATE, princ.getCreateDate() == null ? "" : HypersocketUtils.formatDate(princ.getCreateDate(), "yyyy-MM-dd HH:mm:ss"));
-				map.put(TEXT_MODIFIED_DATE, princ.getModifiedDate() == null ? "" :
-						HypersocketUtils.formatDate(princ.getModifiedDate(), "yyyy-MM-dd HH:mm:ss"));
-				map.put(TEXT_EXPIRES, princ.getExpires() == null ? "" : HypersocketUtils.formatDate(princ.getExpires(), "yyyy-MM-dd HH:mm:ss"));
-				map.put(TEXT_STATUS, princ.getPrincipalStatus() == null ? "" :princ.getPrincipalStatus().name());
+				if(includeAttributes.contains(TEXT_REALM)) 
+					map.put(TEXT_REALM, princ.getRealm().getName());
+				if(includeAttributes.contains(TEXT_PRINCIPAL_NAME)) 
+					map.put(TEXT_PRINCIPAL_NAME, princ.getPrincipalName());
+				if(includeAttributes.contains(TEXT_NAME)) 
+					map.put(TEXT_NAME, i18n.get(princ.getName()));
+				if(includeAttributes.contains(TEXT_EMAIL)) 
+					map.put(TEXT_EMAIL, princ.getEmail());
+				if(includeAttributes.contains(TEXT_OU)) 
+					map.put(TEXT_OU, princ.getOrganizationalUnit());
+				if(includeAttributes.contains(TEXT_PRIMARY_EMAIL)) 
+					map.put(TEXT_PRIMARY_EMAIL, princ.getPrimaryEmail());
+				if(includeAttributes.contains(TEXT_DESCRIPTION)) 
+					map.put(TEXT_DESCRIPTION, princ.getPrincipalDescription());
+				if(includeAttributes.contains(TEXT_UUID)) 
+					map.put(TEXT_UUID, princ.getUUID());
+				if(includeAttributes.contains(TEXT_CREATE_DATE)) 
+					map.put(TEXT_CREATE_DATE, princ.getCreateDate() == null ? ""
+							: HypersocketUtils.formatDate(princ.getCreateDate(), "yyyy-MM-dd HH:mm:ss"));
+				if(includeAttributes.contains(TEXT_MODIFIED_DATE)) 
+					map.put(TEXT_MODIFIED_DATE, princ.getModifiedDate() == null ? ""
+							: HypersocketUtils.formatDate(princ.getModifiedDate(), "yyyy-MM-dd HH:mm:ss"));
+				if(includeAttributes.contains(TEXT_EXPIRES)) 
+					map.put(TEXT_EXPIRES, princ.getExpires() == null ? ""
+							: HypersocketUtils.formatDate(princ.getExpires(), "yyyy-MM-dd HH:mm:ss"));
+				if(includeAttributes.contains(TEXT_STATUS)) 
+					map.put(TEXT_STATUS, princ.getPrincipalStatus() == null ? "" : princ.getPrincipalStatus().name());
+				if(!attributes.isEmpty()){
+					RealmProvider provider = getProviderForRealm(princ.getRealm());
+					for(String a : attrs) {
+						if(!map.containsKey(a))
+							map.put(a, provider.getUserProperty(princ, a));
+					}
+				}
+				
 				final Map<String, String> properties = princ.getProperties();
 				if (properties != null)
 					map.putAll(properties);
@@ -2884,7 +2919,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				return (List<Principal>) searchPrincipals(currentRealm, PrincipalType.USER, module, searchColumn,
 						searchPattern, startPosition, PAGE_SIZE, sort);
 			}
-		}, outputHeaders, delimiters, eol, wrap, escape, attributes, output, locale);
+		}, outputHeaders, delimiters, eol, wrap, escape, "", output, locale);
 
 	}
 }

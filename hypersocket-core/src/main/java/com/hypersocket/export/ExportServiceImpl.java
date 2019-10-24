@@ -42,7 +42,8 @@ public class ExportServiceImpl implements ExportService {
 		List<String> headers = new ArrayList<String>(provider.getHeaders());
 		Cache<String, String> i18n = i18nService.getResourceMap(locale);
 		Set<String> includeAttributes = new HashSet<String>();
-		includeAttributes.addAll(Arrays.asList(attributes.split(",")));
+		if(StringUtils.isNotBlank(attributes))
+			includeAttributes.addAll(Arrays.asList(attributes.split(",")));
 		for (String attributeName : includeAttributes) {
 			headers.add(attributeName);
 		}
