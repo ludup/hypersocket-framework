@@ -2421,13 +2421,15 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 		}
 		for (PropertyCategory cat : provider.getUserProperties(null)) {
-			if (cat.getCategoryKey().startsWith("remoteUser.") || cat.getCategoryKey().startsWith("localUser.")) {
+			if(!cat.isHidden()) {
 				for (AbstractPropertyTemplate temp : cat.getTemplates()) {
-					if (StringUtils.isNotBlank(temp.getName())) {
-						names.add(temp.getName());
-					} else if (StringUtils.isNotBlank(temp.getResourceKey())) {
-						names.add(temp.getResourceKey());
-					} 
+					if(!temp.isHidden()) {
+						if (StringUtils.isNotBlank(temp.getName())) {
+							names.add(temp.getName());
+						} else if (StringUtils.isNotBlank(temp.getResourceKey())) {
+							names.add(temp.getResourceKey());
+						} 
+					}
 				}
 			}
 		}
