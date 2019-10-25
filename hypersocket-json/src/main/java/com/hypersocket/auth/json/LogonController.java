@@ -163,6 +163,8 @@ public class LogonController extends AuthenticatedController {
 		
 		Session session;
 		
+		boolean requireRedirect = request.getParameterMap().containsKey("rr");
+		
 		request.getSession().removeAttribute("flash");
 
 		try {
@@ -233,6 +235,12 @@ public class LogonController extends AuthenticatedController {
 						|| (schemes.contains(state.getScheme().getResourceKey())
 								&& !permissionService.hasAdministrativePermission(state.getPrincipal()));
 			
+				if(requireRedirect && performRedirect && StringUtils.isNotBlank(state.getHomePage())) {
+					throw new RedirectException(state.getHomePage());
+				}
+				
+				checkRedirect(request,response);
+				 
 				
 				try {
 					return getSuccessfulResult(
@@ -446,7 +454,6 @@ public class LogonController extends AuthenticatedController {
 			HttpServletRequest request, 
 			HttpServletResponse response) throws IOException, RedirectException {
 		
-		checkRedirect(request,response);
 		return new AuthenticationSuccessResult(info,
 				configurationService.hasUserLocales(), session, homePage,
 				getCurrentRole(session));
