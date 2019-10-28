@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,7 +34,7 @@ import com.hypersocket.utils.HypersocketUtils;
 
 public abstract class AbstractExtensionUpdater {
 
-	private static final int MAX_BACKUPS = 10;
+	private static final int MAX_BACKUPS = Integer.parseInt(System.getProperty("hypersocket.maxExtensionBackups", "10"));
 
 	static Logger log = LoggerFactory.getLogger(AbstractExtensionUpdater.class);
 	
@@ -41,12 +42,12 @@ public abstract class AbstractExtensionUpdater {
 	private long totalSize;
 	private int totalUpdates;
 	
-	Map<ExtensionVersion, File> tmpArchives;
-	Set<ExtensionVersion> updates;
-	Map<String, ExtensionVersion> allExtensions;
+	private Map<ExtensionVersion, File> tmpArchives;
+	private Set<ExtensionVersion> updates;
+	private Map<String, ExtensionVersion> allExtensions;
 	
-	boolean checked;
-	File backupFolder;
+	private boolean checked;
+	private File backupFolder;
 	
 	public long getTransfered() {
 		return transfered;
@@ -320,9 +321,26 @@ public abstract class AbstractExtensionUpdater {
 			 * Finally delete the current files
 			 */
 			for (File f : toRemove) {
-				log.info("Moving " + f + " to backup");
+				Path target = new File(backupFolder, f.getName()).toPath();
+				Path source = f.toPath();
+				log.info(String.format("Moving %s to %s", source, target));
 				try {
-					Files.move(f.toPath(), new File(backupFolder, f.getName()).toPath());
+					Files.move(source, target);
+					log.info(String.format("Moved %s to %s, checking it is there", source, target));
+					if(Files.exists(target)) {
+						log.info(String.format("Backup of %s to %s all good", source, target));
+					}
+					else {
+						log.warn(String.format("Backup of %s to %s does not exist!", source, target));
+						Files.copy(source, target);
+						if(Files.exists(target)) {
+							log.info(String.format("Copy worked, backup of %s to %s all good", source, target));
+						}
+						else {
+							log.error(String.format("Failed to either copy or move %s to %s, given up, extension backup will be incomplete.", source ,target));
+						}
+						throw new IOException("Copy was used.");
+					}
 				} catch (IOException ex) {
 					log.error(String.format("Failed to move %s to backup folder", f.getName()));
 					if (!f.delete()) {
@@ -338,9 +356,12 @@ public abstract class AbstractExtensionUpdater {
 				/* Trim to MAX_BACKUPS based on modification date of folder */
 				List<File> dirs = new ArrayList<>(Arrays.asList(backupFolder.listFiles((dir, name) -> dir.isDirectory())));
 				if (dirs.size() > MAX_BACKUPS) {
+					log.error(String.format("There are now more backup folders (%d) than the maximum of %d, trimming", dirs.size(), MAX_BACKUPS));
 					Collections.sort(dirs, (o1, o2) -> Long.valueOf(o1.lastModified()).compareTo(o2.lastModified()));
-					for (int i = 0; i < dirs.size() - MAX_BACKUPS; i++)
+					for (int i = 0; i < dirs.size() - MAX_BACKUPS; i++) {
+						log.error(String.format("Trimming backups Failed to move %s to backup folder", dirs.get(i)));
 						FileUtils.deleteFolder(dirs.get(i));
+					}
 				}
 			}
 
