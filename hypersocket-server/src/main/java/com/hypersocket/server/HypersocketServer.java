@@ -121,4 +121,6 @@ public interface HypersocketServer {
 	HomePageResolver getHomePageResolver();
 
 	void setHomePageResolver(HomePageResolver homePageResolver);
+
+	String processReplacements(String str);
 }

@@ -178,7 +178,8 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		aliases.remove(alias);
 	}
 	
-	protected String processReplacements(String str) {
+	@Override
+	public String processReplacements(String str) {
 		str = str.replace("${uiPath}", getUiPath());
 		str = str.replace("${basePath}", getBasePath());
 		return str;
